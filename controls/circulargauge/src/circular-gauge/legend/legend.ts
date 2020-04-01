@@ -15,127 +15,133 @@ import { RangeModel } from '../axes/axis-model';
 import { Range } from '../axes/axis';
 
 /**
- * Configures the location for the legend.
+ * Sets and gets the location of the legend in circular gauge.
  */
 export class Location extends ChildProperty<Location>  {
     /**
-     * X coordinate of the legend in pixels.
+     * Sets and gets the X coordinate of the legend in the circular gauge.
      * @default 0
      */
     @Property(0)
     public x: number;
 
     /**
-     * Y coordinate of the legend in pixels.
+     * Sets and gets the Y coordinate of the legend in the circular gauge.
      * @default 0
      */
     @Property(0)
     public y: number;
 }
 /**
- * Configures the legends in charts.
+ * Sets and gets the options to customize the legend for the ranges in the circular gauge.
  */
 export class LegendSettings extends ChildProperty<LegendSettings> {
 
     /**
-     * If set to true, legend will be visible.
+     * Enable and disables the visibility of the legend in circular gauge.
      * @default false
      */
     @Property(false)
     public visible: boolean;
+
     /**
-     * If set to true, series' visibility collapses based on the legend visibility.
+     * Enables and disables the ranges visibility collapses based on the legend visibility.
      * @default true
      */
     @Property(true)
     public toggleVisibility: boolean;
+
     /**
-     * Legend in chart can be aligned as follows:
-     * * Near: Aligns the legend to the left of the chart.
-     * * Center: Aligns the legend to the center of the chart.
-     * * Far: Aligns the legend to the right of the chart.
+     * Sets and gets the alignment of the legend in the circular gauge.
      * @default 'Center'
      */
     @Property('Center')
     public alignment: Alignment;
+
     /**
-     * Options to customize the border of the legend.
+     * Sets and gets the options to customize the border settings of the legend.
      */
     @Complex<BorderModel>({}, Border)
     public border: BorderModel;
 
     /**
-     * Options to customize the border of the legend.
+     * Sets and gets the options to customize the border for the shape of the legend in the circular gauge.
      */
     @Complex<BorderModel>({}, Border)
     public shapeBorder: BorderModel;
+
     /**
-     * Option to customize the padding between legend items.
+     * Sets and gets the options to customize the padding between legend items.
      * @default 8
      */
     @Property(8)
     public padding: number;
+
     /**
-     * Opacity of the legend.
+     * Sets and gets the opacity of the legend.
      * @default 1
      */
     @Property(1)
     public opacity: number;
+
     /**
-     * Position of the legend in the circular gauge are,
-     * * Auto: Displays the legend based on the avail space of the circular this.gauge.
-     * * Top: Displays the legend at the top of the circular this.gauge.
-     * * Left: Displays the legend at the left of the circular this.gauge.
-     * * Bottom: Displays the legend at the bottom of the circular this.gauge.
-     * * Right: Displays the legend at the right of the circular this.gauge.
+     * Sets and gets the position of the legend in the circular gauge.
      * @default 'Auto'
      */
     @Property('Auto')
     public position: LegendPosition;
+
     /**
-     * Customize the legend shape of the maps.
+     * Sets and gets the shape of the legend in circular gauge.
      * @default Circle
      */
     @Property('Circle')
     public shape: GaugeShape;
+
     /**
-     * The height of the legend in pixels.
+     * Sets and gets the height of the legend in the circular gauge.
      * @default null
      */
     @Property(null)
     public height: string;
+
     /**
-     * The width of the legend in pixels.
+     * Sets and gets the width of the legend in the circular gauge.
      * @default null
      */
     @Property(null)
     public width: string;
+
     /**
-     * Options to customize the legend text.
+     * Sets and gets the options to customize the text of the legend.
      */
     @Complex<FontModel>(Theme.legendLabelFont, Font)
     public textStyle: FontModel;
+
     /**
-     * Height of the shape
+     * Sets and gets the height of the legend shape in circular gauge.
      * @default 10
      */
     @Property(10)
     public shapeHeight: number;
+
     /**
-     * Width of the shape
+     * Sets and gets the width of the legend shape in circular gauge.
      * @default 10
      */
     @Property(10)
     public shapeWidth: number;
+
     /**
-     * Padding for the shape
+     * Sets and gets the padding for the legend shape in circular gauge.
      * @default 5
      */
     @Property(5)
     public shapePadding: number;
+
     /**
-     * Specifies the location of the legend, relative to the chart.
-     * If x is 20, legend moves by 20 pixels to the right of the chart. It requires the `position` to be `Custom`.
+     * Sets and gets the location of the legend, relative to the circular gauge.
+     * If x is 20, legend moves by 20 pixels to the right of the gauge. It requires the `position` to be `Custom`.
      * ```html
      * <div id='Gauge'></div>
      * ```
@@ -154,21 +160,23 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
      */
     @Complex<LocationModel>({ x: 0, y: 0 }, Location)
     public location: LocationModel;
+
     /**
-     * Options to customize the legend background
+     * Sets and gets the background color of the legend in circular gauge.
      * @default 'transparent'
      */
     @Property('transparent')
     public background: string;
+
     /**
-     * Options to customize the legend margin
+     * Sets and gets the options to customize the legend margin.
      */
     @Complex<MarginModel>({ left: 0, right: 0, top: 0, bottom: 0 }, Margin)
     public margin: MarginModel;
 }
 
 /*
- * Legend module is used to render legend for the Circular Gauge
+ * Sets and gets the module to add the legend in the circular gauge.
  */
 export class Legend {
     /* tslint:disable:no-string-literal */
@@ -197,7 +205,7 @@ export class Legend {
     private clipPathHeight: number;
     private toggledIndexes: Index[];
     /**
-     * Gets the legend bounds in chart.
+     * Sets and gets the legend bounds in circular gauge.
      * @private
      */
     public legendBounds: Rect;

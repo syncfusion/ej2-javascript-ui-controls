@@ -49,6 +49,23 @@ export function isBreakLabel(label: string): boolean {
     return label.indexOf('<br>') !== -1;
 }
 
+export function getVisiblePoints(series: Series): Points[] {
+    let points: Points[] = extend([], series.points, null, true) as Points[];
+    let tempPoints: Points[] = [];
+    let tempPoint: Points;
+    let pointIndex: number = 0;
+    for (let i: number = 0; i < points.length; i++) {
+        tempPoint = points[i];
+        if (isNullOrUndefined(tempPoint.x) || tempPoint.x === '') {
+            continue;
+        } else {
+            tempPoint.index = pointIndex++;
+            tempPoints.push(tempPoint);
+        }
+    }
+    return tempPoints;
+}
+
 /** @private */
 export function rotateTextSize(font: FontModel, text: string, angle: number, chart: Chart): Size {
 
@@ -107,9 +124,9 @@ export function showTooltip(
             innerHTML: text,
             id: id,
             styles: 'top:' + (y + 15).toString() + 'px;left:' + (x + 15).toString() +
-            'px;background-color: rgb(255, 255, 255) !important; color:black !important; ' +
-            'position:absolute;border:1px solid rgb(112, 112, 112); padding-left : 3px; padding-right : 2px;' +
-            'padding-bottom : 2px; padding-top : 2px; font-size:12px; font-family: "Segoe UI"'
+                'px;background-color: rgb(255, 255, 255) !important; color:black !important; ' +
+                'position:absolute;border:1px solid rgb(112, 112, 112); padding-left : 3px; padding-right : 2px;' +
+                'padding-bottom : 2px; padding-top : 2px; font-size:12px; font-family: "Segoe UI"'
         });
         element.appendChild(tooltip);
         let left: number = parseInt(tooltip.style.left.replace('px', ''), 10);
@@ -446,7 +463,7 @@ export function createZoomingLabels(chart: Chart, axis: Axis, parent: Element, i
     let arrowLocation: ChartLocation;
     let direction: string;
     let scrollBarHeight: number = axis.scrollbarSettings.enable || (axis.zoomingScrollBar && axis.zoomingScrollBar.svgObject)
-     ? axis.scrollBarHeight : 0;
+        ? axis.scrollBarHeight : 0;
     for (let i: number = 0; i < 2; i++) {
         size = measureText(i ? axis.endLabel : axis.startLabel, axis.labelStyle);
         if (isVertical) {
@@ -678,7 +695,7 @@ export function animateRectElement(
  * @param previousDirection previous direction of the path
  */
 export function pathAnimation(
-    element: Element, direction: string, redraw: boolean, previousDirection?: string, animateDuration ?: number
+    element: Element, direction: string, redraw: boolean, previousDirection?: string, animateDuration?: number
 ): void {
     if (!redraw || (!previousDirection && !element)) {
         return null;
@@ -830,13 +847,14 @@ export function templateAnimate(
 
 /** @private */
 export function drawSymbol(
-location: ChartLocation, shape: string, size: Size, url: string, options: PathOption, label: string,
-renderer?: SvgRenderer | CanvasRenderer, clipRect?: Rect, isChartControl?: boolean, control?: BulletChart
+    location: ChartLocation, shape: string, size: Size, url: string, options: PathOption, label: string,
+    renderer?: SvgRenderer | CanvasRenderer, clipRect?: Rect, isChartControl?: boolean, control?: BulletChart
 ): Element {
     let chartRenderer: SvgRenderer | CanvasRenderer = renderer ? renderer : new SvgRenderer('');
     let shapeOption: IShapes = calculateShapes(location, size, shape, options, url, isChartControl, control);
-    let drawElement: Element =
-    chartRenderer['draw' + shapeOption.functionName](shapeOption.renderOption, clipRect ? new Int32Array([clipRect.x, clipRect.y]) : null);
+    let drawElement: Element = chartRenderer['draw' + shapeOption.functionName](
+        shapeOption.renderOption, clipRect ? new Int32Array([clipRect.x, clipRect.y]) : null
+    );
     //drawElement.setAttribute('aria-label', label);
     return drawElement;
 }
@@ -1000,16 +1018,16 @@ export function getTemplateFunction(template: string): Function {
 export function createTemplate(
     childElement: HTMLElement, pointIndex: number, content: string,
     chart: Chart | AccumulationChart | RangeNavigator,
-    point?: Points | AccPoints, series?: Series | AccumulationSeries, dataLabelId ?: string
+    point?: Points | AccPoints, series?: Series | AccumulationSeries, dataLabelId?: string
 ): HTMLElement {
     let templateFn: Function;
     let templateElement: HTMLCollection;
     templateFn = getTemplateFunction(content);
     try {
         let blazor: string = 'Blazor';
-        let tempObject: Object = window[blazor] ? (dataLabelId ? point : { point: point}) : { chart: chart, series: series, point: point };
+        let tempObject: Object = window[blazor] ? (dataLabelId ? point : { point: point }) : { chart: chart, series: series, point: point };
         let elementData: Element[] = templateFn ? templateFn(tempObject, null, null, dataLabelId ||
-                                                             childElement.id.replace(/[^a-zA-Z0-9]/g, '')) : [];
+            childElement.id.replace(/[^a-zA-Z0-9]/g, '')) : [];
         if (elementData.length) {
             templateElement = Array.prototype.slice.call(elementData);
             let len: number = templateElement.length;
@@ -1091,7 +1109,7 @@ export function appendChildElement(
     parent: Element | HTMLElement, childElement: Element | HTMLElement,
     redraw?: boolean, isAnimate: boolean = false, x: string = 'x', y: string = 'y',
     start?: ChartLocation, direction?: string, forceAnimate: boolean = false,
-    isRect: boolean = false, previousRect: Rect = null , animateDuration ?: number
+    isRect: boolean = false, previousRect: Rect = null, animateDuration?: number
 ): void {
     if (isCanvas) {
         return null;
@@ -1730,7 +1748,7 @@ export function getUnicodeText(text: string, regexp: RegExp): string {
 /**
  * Method to reset the blazor templates
  */
-export function blazorTemplatesReset(control: Chart | AccumulationChart ) : void {
+export function blazorTemplatesReset(control: Chart | AccumulationChart): void {
     for (let i: number = 0; i < control.annotations.length; i++) {
         resetBlazorTemplate((control.element.id + '_Annotation_' + i).replace(/[^a-zA-Z0-9]/g, ''), 'ContentTemplate');
     }
@@ -1797,8 +1815,10 @@ export class ImageOption {
     public visibility: string;
     public preserveAspectRatio: string;
 
-    constructor(height: number, width: number, href: string, x: number, y: number,
-                id: string, visibility: string, preserveAspectRatio: string) {
+    constructor(
+        height: number, width: number, href: string, x: number, y: number,
+        id: string, visibility: string, preserveAspectRatio: string
+    ) {
         this.height = height;
         this.width = width;
         this.href = href;

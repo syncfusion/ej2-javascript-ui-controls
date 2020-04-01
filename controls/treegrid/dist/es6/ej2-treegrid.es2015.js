@@ -2210,6 +2210,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             RowIndent: 'Indent',
             RowOutdent: 'Outdent'
         };
+        this.l10n = new L10n('treegrid', this.defaultLocale, this.locale);
         if (this.isSelfReference && isNullOrUndefined(this.childMapping)) {
             this.childMapping = 'Children';
         }
@@ -2312,13 +2313,19 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
                     let collapsetarget = e.target;
                     let collapsecolumn = collapsetarget.closest('.e-rowcell');
                     let collapserow = collapsecolumn.closest('tr');
-                    this.expandCollapseRequest(collapserow.querySelector('.e-treegridexpand'));
+                    let collapseRow = collapserow.querySelector('.e-treegridexpand');
+                    if (collapseRow !== null && collapseRow !== undefined) {
+                        this.expandCollapseRequest(collapserow.querySelector('.e-treegridexpand'));
+                    }
                     break;
                 case 'ctrlShiftDownArrow':
                     let expandtarget = e.target;
                     let expandcolumn = expandtarget.closest('.e-rowcell');
                     let expandrow = expandcolumn.closest('tr');
-                    this.expandCollapseRequest(expandrow.querySelector('.e-treegridcollapse'));
+                    let expandRow = expandrow.querySelector('.e-treegridcollapse');
+                    if (expandRow !== null && expandRow !== undefined) {
+                        this.expandCollapseRequest(expandrow.querySelector('.e-treegridcollapse'));
+                    }
                     break;
                 case 'downArrow':
                     let target = e.target.parentElement;
@@ -2363,7 +2370,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     }
     // Get Proper Row Element from the summary 
     findPreviousRowElement(summaryRowElement) {
-        let rowElement = summaryRowElement.previousSibling;
+        let rowElement = summaryRowElement.previousElementSibling;
         if (rowElement !== null && (rowElement.className.indexOf('e-summaryrow') !== -1 ||
             rowElement.style.display === 'none')) {
             rowElement = this.findPreviousRowElement(rowElement);
@@ -3246,8 +3253,9 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
                 switch (this.contextMenuItems[i]) {
                     case 'AddRow':
                     case ContextMenuItems.AddRow:
-                        items.push({ text: 'AddRow', target: '.e-content', id: this.element.id + '_gridcontrol_cmenu_AddRow',
-                            items: [{ text: 'Above', id: 'Above' }, { text: 'Below', id: 'Below' }] });
+                        items.push({ text: this.l10n.getConstant('AddRow'),
+                            target: '.e-content', id: this.element.id + '_gridcontrol_cmenu_AddRow',
+                            items: [{ text: this.l10n.getConstant('Above'), id: 'Above' }, { text: this.l10n.getConstant('Below'), id: 'Below' }] });
                         break;
                     default:
                         items.push(this.contextMenuItems[i]);
@@ -3265,7 +3273,6 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
      */
     getGridToolbar() {
         if (this.toolbar) {
-            this.l10n = new L10n('treegrid', this.defaultLocale, this.locale);
             let items = [];
             for (let i = 0; i < this.toolbar.length; i++) {
                 switch (this.toolbar[i]) {
@@ -5381,7 +5388,14 @@ function addAction(details, treeData, control, isSelfReference, addRowIndex, sel
                 value = getPlainData(value);
             }
             else {
-                value = extend({}, currentViewRecords[addRowIndex]);
+                let primaryKeys = control.grid.getPrimaryKeyFieldNames()[0];
+                let currentdata = currentViewRecords[addRowIndex];
+                if (!isNullOrUndefined(currentdata) && currentdata[primaryKeys] === details.value[primaryKeys] || selectedIndex !== -1) {
+                    value = extend({}, currentdata);
+                }
+                else {
+                    value = extend({}, details.value);
+                }
                 value = getPlainData(value);
             }
             if (selectedIndex === -1) {
@@ -6315,15 +6329,21 @@ class RowDD$1 {
                     this.removeChildItem(deletedRow);
                 }
                 let idx;
+                let idz;
                 let treeGridData = dataSource;
                 for (let i = 0; i < treeGridData.length; i++) {
                     if (treeGridData[i][this.parent.idMapping] === deletedRow.taskData[this.parent.idMapping]) {
                         idx = i;
                     }
                 }
-                if (idx !== -1) {
+                for (let i = 0; i < this.treeGridData.length; i++) {
+                    if (this.treeGridData[i][this.parent.idMapping] === deletedRow.taskData[this.parent.idMapping]) {
+                        idz = i;
+                    }
+                }
+                if (idx !== -1 || idz !== -1) {
                     dataSource.splice(idx, 1);
-                    this.treeGridData.splice(idx, 1);
+                    this.treeGridData.splice(idz, 1);
                 }
             }
             let recordIndex = this.treeGridData.indexOf(deletedRow);
@@ -6357,6 +6377,14 @@ class RowDD$1 {
         let tObj = this.parent;
         let currentRecord;
         let idx;
+        let idz;
+        let dataSource;
+        if (this.parent.dataSource instanceof DataManager && isOffline(this.parent)) {
+            dataSource = this.parent.dataSource.dataSource.json;
+        }
+        else {
+            dataSource = this.parent.dataSource;
+        }
         for (let i = 0; i < record.childRecords.length; i++) {
             currentRecord = record.childRecords[i];
             let treeGridData;
@@ -6371,9 +6399,15 @@ class RowDD$1 {
                     idx = i;
                 }
             }
-            if (idx !== -1) {
-                this.treeData.splice(idx, 1);
-                this.treeGridData.splice(idx, 1);
+            for (let i = 0; i < this.treeGridData.length; i++) {
+                if (this.treeGridData[i][this.parent.idMapping] === currentRecord.taskData[this.parent.idMapping]) {
+                    idz = i;
+                    break;
+                }
+            }
+            if (idx !== -1 || idz !== -1) {
+                dataSource.splice(idx, 1);
+                this.treeGridData.splice(idz, 1);
             }
             if (currentRecord.hasChildRecords) {
                 this.removeChildItem(currentRecord);
@@ -7873,7 +7907,7 @@ class BatchEdit {
                     }
                     else if (this.parent.editSettings.newRowPosition === 'Above' || this.parent.editSettings.newRowPosition === 'Below') {
                         added.level = this.batchRecords[this.addRowIndex][level];
-                        if (added.level) {
+                        if (added.level && this.selectedIndex > -1) {
                             added.parentItem = parentRecord;
                             added.parentUniqueID = parentUniqueID;
                             delete added.parentItem.childRecords;
@@ -9267,6 +9301,14 @@ class VirtualScroll$1 {
         this.prevstartIndex = -1;
         this.prevendIndex = -1;
         this.parent = parent;
+        let injectedModules = 'injectedModules';
+        let modules = Grid.prototype[injectedModules];
+        for (let i = 0; i < modules.length; i++) {
+            if (modules[i] === VirtualScroll) {
+                modules.splice(i, 1);
+                break;
+            }
+        }
         Grid.Inject(TreeVirtual);
         this.addEventListener();
     }

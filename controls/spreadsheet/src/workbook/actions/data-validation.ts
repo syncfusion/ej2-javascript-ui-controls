@@ -1,5 +1,5 @@
 import { Workbook, setCell, SheetModel, setRow, CellModel } from '../base/index';
-import { setValidation, applyCellFormat, isValidation, removeValidation, addHighlight } from '../common/index';
+import { setValidation, applyCellFormat, isValidation, removeValidation, addHighlight, CellStyleModel } from '../common/index';
 import { removeHighlight } from '../common/index';
 import { getRangeIndexes } from '../common/index';
 import { CellFormatArgs, ValidationType, ValidationOperator, ValidationModel } from '../common/index';
@@ -55,14 +55,22 @@ export class WorkbookDataValidation {
     private ValidationHandler(rules: ValidationModel, range: string, isRemoveValidation: boolean): void {
         let cell: CellModel;
         let sheet: SheetModel = this.parent.getActiveSheet();
+        range = range || sheet.selectedRange;
         let indexes: number[] = getRangeIndexes(range);
         for (let rowIdx: number = indexes[0]; rowIdx <= indexes[2]; rowIdx++) {
             if (!sheet.rows[rowIdx]) { setRow(sheet, rowIdx, {}); }
             for (let colIdx: number = indexes[1]; colIdx <= indexes[3]; colIdx++) {
                 if (!sheet.rows[rowIdx].cells || !sheet.rows[rowIdx].cells[colIdx]) { setCell(rowIdx, colIdx, sheet, {}); }
                 cell = sheet.rows[rowIdx].cells[colIdx];
-                if (isRemoveValidation && cell.validation) {
-                    delete (cell.validation);
+                if (isRemoveValidation) {
+                    if (cell.validation) {
+                        delete (cell.validation);
+                        let style: CellStyleModel =
+                            this.parent.getCellStyleValue(['backgroundColor', 'color'], [rowIdx, colIdx]);
+                        this.parent.notify(applyCellFormat, <CellFormatArgs>{
+                            style: style, rowIdx: rowIdx, colIdx: colIdx
+                        });
+                    }
                 } else {
                     cell.validation = {
                         type: rules.type as ValidationType,
@@ -90,6 +98,7 @@ export class WorkbookDataValidation {
         let cell: CellModel;
         let value: string;
         let sheet: SheetModel = this.parent.getActiveSheet();
+        range = range || sheet.selectedRange;
         let indexes: number[] = range ? getRangeIndexes(range) : [];
         let rowIdx: number = range ? indexes[0] : 0;
         let lastRowIdx: number = range ? indexes[2] : sheet.rows.length;
@@ -102,28 +111,22 @@ export class WorkbookDataValidation {
                         cell = sheet.rows[rowIdx].cells[colIdx];
                         value = cell.value ? cell.value : '';
                         let range: number[] = [rowIdx, colIdx];
-                        let sheetIdx: number = this.parent.activeSheetTab;
+                        let sheetIdx: number = this.parent.activeSheetIndex;
                         if (cell.validation && this.parent.allowDataValidation) {
                             this.parent.notify(isValidation, { value, range, sheetIdx, isCell });
                             let isValid: boolean = this.parent.allowDataValidation;
                             this.parent.allowDataValidation = true;
                             if (!isValid) {
                                 if (!isRemoveHighlightedData) {
-                                    setCell(rowIdx, colIdx, sheet, { style: { backgroundColor: '#ffff00', color: '#ff0000' } }, true);
                                     this.parent.notify(applyCellFormat, <CellFormatArgs>{
-                                        style: { backgroundColor: '#ffff00', color: '#ff0000' }, rowIdx: rowIdx, colIdx: colIdx,
-                                        isHeightCheckNeeded: true, manualUpdate: true,
-                                        onActionUpdate: true
+                                        style: { backgroundColor: '#ffff00', color: '#ff0000' }, rowIdx: rowIdx, colIdx: colIdx
                                     });
                                 } else if (isRemoveHighlightedData) {
-                                    if (cell.style && cell.style.backgroundColor === '#ffff00' && cell.style.color === '#ff0000') {
-                                        cell.style.backgroundColor = ''; cell.style.color = '';
-                                        this.parent.notify(applyCellFormat, <CellFormatArgs>{
-                                            style: { backgroundColor: '', color: '' }, rowIdx: rowIdx, colIdx: colIdx,
-                                            isHeightCheckNeeded: true, manualUpdate: true,
-                                            onActionUpdate: true
-                                        });
-                                    }
+                                    let style: CellStyleModel =
+                                        this.parent.getCellStyleValue(['backgroundColor', 'color'], [rowIdx, colIdx]);
+                                    this.parent.notify(applyCellFormat, <CellFormatArgs>{
+                                        style: style, rowIdx: rowIdx, colIdx: colIdx
+                                    });
                                 }
                             }
                         }

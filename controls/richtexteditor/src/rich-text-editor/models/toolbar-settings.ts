@@ -80,7 +80,8 @@ export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
      * Specifies the Toolbar display types.
      * The possible types are:
      * - Expand: Toolbar items placed within the available space and rest of the items are placed to the extended menu section.
-     * - MultiRow: Toolbar which placed at top of RichTextEditor editing area.
+     * - MultiRow: Toolbar which placed at top of Rich Text Editor editing area.
+     * - Scrollable: All the toolbar items are displayed in a single line with horizontal scrolling enabled.
      * @default Expand
      */
     @Property(ToolbarType.Expand)

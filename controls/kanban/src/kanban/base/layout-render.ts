@@ -187,6 +187,11 @@ export class LayoutRender extends MobileLayout {
                         td.appendChild(createElement('div', { className: cls.COLLAPSE_HEADER_TEXT_CLASS, innerHTML: column.headerText }));
                         td.setAttribute('aria-expanded', 'false');
                     }
+                    if (column.showAddButton) {
+                        let button: HTMLElement = createElement('div', { className: cls.SHOW_ADD_BUTTON });
+                        button.appendChild(createElement('div', { className: cls.SHOW_ADD_ICON + ' ' + cls.ICON_CLASS }));
+                        td.appendChild(button);
+                    }
                     tr.appendChild(td);
                     let dataObj: HeaderArgs[] = [{ keyField: row.keyField, textField: row.textField, count: row.count }];
                     let args: QueryCellInfoEventArgs = { data: dataObj, element: tr, cancel: false, requestType: 'contentRow' };
@@ -269,7 +274,11 @@ export class LayoutRender extends MobileLayout {
                     dataCount += columnData.length;
                     let columnWrapper: HTMLElement = tr.querySelector('[data-key="' + column.keyField + '"]');
                     let cardWrapper: HTMLElement = createElement('div', { className: cls.CARD_WRAPPER_CLASS });
-                    columnWrapper.appendChild(cardWrapper);
+                    if (column.showAddButton) {
+                        columnWrapper.insertBefore(cardWrapper, columnWrapper.querySelector('.' + cls.SHOW_ADD_BUTTON));
+                    } else {
+                        columnWrapper.appendChild(cardWrapper);
+                    }
                     for (let data of columnData as { [key: string]: string }[]) {
                         let cardText: string = data[this.parent.cardSettings.headerField] as string;
                         let cardIndex: number = this.parent.actionModule.selectionArray.indexOf(cardText);

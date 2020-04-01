@@ -3,43 +3,43 @@
  */
 export class Chip {
     /**
-     * This text property helps to render ChipList component.
+     * Specifies the text content for the chip.
      * @default ''
      */
     public text: string;
 
     /**
-     * This avatarText property helps to customize avatar content.
+     * Specifies the customized text value for the avatar in the chip.
      * @default ''
      */
     public avatarText: string;
 
     /**
-     * This avatarIconCss property helps to customize avatar element.
+     * Specifies the icon CSS class for the avatar in the chip.
      * @default ''
      */
     public avatarIconCss: string;
 
     /**
-     * This leadingIconCss property helps to customize leading icon element.
+     * Specifies the leading icon CSS class for the chip.
      * @default ''
      */
     public leadingIconCss: string;
 
     /**
-     * This trailingIconCss property helps to customize trailing icon element.
+     * Specifies the trailing icon CSS class for the chip.
      * @default ''
      */
     public trailingIconCss: string;
 
     /**
-     * This cssClass property helps to customize ChipList component.
+     * Specifies the custom classes to be added to the chip element used to customize the ChipList component.
      * @default ''
      */
     public cssClass: string;
 
     /**
-     * This enabled property helps to enable/disable ChipList component.
+     * Specifies a value that indicates whether the chip component is enabled or not.
      * @default true
      * @blazorDefaultValue null
      * @blazorType bool?
@@ -47,7 +47,7 @@ export class Chip {
     public enabled: boolean;
 
     /**
-     * This value property helps to store the Chip component value.
+     * Defines the value of the chip.
      * @default ''
      */
     public value: string | number;
@@ -56,48 +56,48 @@ export class Chip {
 
 export interface ChipModel {
     /**
-     * This text property helps to render ChipList component.
+     * Specifies the text content for the chip.
      * @default ''
      */
     text?: string;
     /**
-     * This value property helps to store the ChipList component values.
+     * Defines the value of the chip.
      * @default ''
      */
     value?: string | number;
 
     /**
-     * This avatarText property helps to customize avatar content.
+     * Specifies the customized text value for the avatar in the chip.
      * @default ''
      */
     avatarText?: string;
 
     /**
-     * This avatarIconCss property helps to customize avatar element.
+     * Specifies the icon CSS class for the avatar in the chip.
      * @default ''
      */
     avatarIconCss?: string;
 
     /**
-     * This leadingIconCss property helps to customize leading icon element.
+     * Specifies the leading icon CSS class for the chip.
      * @default ''
      */
     leadingIconCss?: string;
 
     /**
-     * This trailingIconCss property helps to customize trailing icon element.
+     * Specifies the trailing icon CSS class for the chip.
      * @default ''
      */
     trailingIconCss?: string;
 
     /**
-     * This cssClass property helps to customize ChipList component.
+     * Specifies the custom classes to be added to the chip element used to customize the ChipList component.
      * @default ''
      */
     cssClass?: string;
 
     /**
-     * This enabled property helps to enable/disable ChipList component.
+     * Specifies a value that indicates whether the chip component is enabled or not.
      * @default true
      * @blazorDefaultValue null
      * @blazorType bool?

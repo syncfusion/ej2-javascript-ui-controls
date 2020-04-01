@@ -217,7 +217,7 @@ export class TreeGrid extends Component<HTMLElement> implements INotifyPropertyC
   @Property([])
   public columns: ColumnModel[] | string[] | Column[];
   /**
-   * Specifies the mapping property path for sub tasks in data source
+   * Specifies the mapping property path for child records in data source
    * @default null
    */
   @Property(null)
@@ -341,7 +341,7 @@ public allowReordering: boolean;
 @Property(false)
 public allowResizing: boolean;
 /**    
- * If `autoCheckHierarchy` is set to true, hierarchy checkbox selection has been enabled in TreeGrid.      
+ * If `autoCheckHierarchy` is set to true, hierarchy checkbox selection is enabled in TreeGrid.      
  * @default false    
  */
 @Property(false)
@@ -408,7 +408,9 @@ public pagerTemplate: string;
     @Complex<EditSettingsModel>({}, EditSettings)
     public editSettings: EditSettingsModel;
   /**
-   * If `allowFiltering` is set to true, pager renders.
+   * If `allowFiltering` is set to true the filter bar will be displayed. 
+   * If set to false the filter bar will not be displayed. 
+   * Filter bar allows the user to filter tree grid records with required criteria.
    * @default false
    */
   @Property(false)
@@ -617,7 +619,7 @@ public pagerTemplate: string;
   @Event()
   public expanding: EmitType<RowExpandingEventArgs>;
   /**
-   * Triggers after expand the record
+   * Triggers after the record is expanded
    * @event
    * @blazorproperty 'Expanded'
    */
@@ -631,7 +633,7 @@ public pagerTemplate: string;
   @Event()
   public collapsing: EmitType<RowExpandingEventArgs>;
   /**
-   * Triggers after collapse the TreeGrid record
+   * Triggers after the record is collapsed.
    * @event
    * @blazorproperty 'Collapsed'
    */
@@ -986,7 +988,7 @@ public pagerTemplate: string;
   @Event()
   public toolbarClick: EmitType<ClickEventArgs>;
   /**
-   * Triggers when a particular selected cell is deselected.
+   * Triggers before data is bound to Tree Grid.
    * @event 
    * @blazorproperty 'OnDataBound'
    * @blazorType Syncfusion.Blazor.Grids.BeforeDataBoundArgs<TValue>
@@ -1240,6 +1242,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       RowIndent: 'Indent',
       RowOutdent: 'Outdent'
     };
+    this.l10n = new L10n('treegrid', this.defaultLocale, this.locale);
     if (this.isSelfReference && isNullOrUndefined(this.childMapping)) {
       this.childMapping = 'Children';
     }
@@ -1348,14 +1351,20 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
           let collapsetarget: HTMLElement = <HTMLElement>e.target;
           let collapsecolumn: HTMLElement = <HTMLElement>collapsetarget.closest('.e-rowcell');
           let collapserow : HTMLElement = <HTMLElement>collapsecolumn.closest('tr');
+          let collapseRow : HTMLElement = <HTMLElement>collapserow.querySelector('.e-treegridexpand');
+          if (collapseRow !== null && collapseRow !== undefined) {
           this.expandCollapseRequest(<HTMLElement>collapserow.querySelector('.e-treegridexpand'));
+          }
           break;
         case 'ctrlShiftDownArrow':
           let expandtarget: HTMLElement = <HTMLElement>e.target;
           let expandcolumn: HTMLElement = <HTMLElement>expandtarget.closest('.e-rowcell');
           let expandrow: HTMLElement = <HTMLElement>expandcolumn.closest('tr');
+          let expandRow : HTMLElement = <HTMLElement>expandrow.querySelector('.e-treegridcollapse');
+          if (expandRow !== null && expandRow !== undefined) {
           this.expandCollapseRequest(<HTMLElement>expandrow.querySelector('.e-treegridcollapse'));
-          break;
+          }
+           break;
           case 'downArrow':
             let target: HTMLElement = (<HTMLTableCellElement>e.target).parentElement;
             let summaryElement: Element = this.findnextRowElement(target);
@@ -1401,7 +1410,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
   // Get Proper Row Element from the summary 
 
   private findPreviousRowElement(summaryRowElement: HTMLElement ): Element {
-    let rowElement: Element = <Element>summaryRowElement.previousSibling;
+    let rowElement: Element = <Element>summaryRowElement.previousElementSibling;
     if (rowElement !== null && (rowElement.className.indexOf('e-summaryrow') !== -1 ||
         (<HTMLTableRowElement>rowElement).style.display === 'none')) {
         rowElement = this.findPreviousRowElement(<HTMLElement>rowElement);
@@ -2282,8 +2291,9 @@ private getGridEditSettings(): GridEditModel {
         switch (this.contextMenuItems[i]) {
           case 'AddRow':
           case ContextMenuItems.AddRow:
-          items.push(<ContextMenuItemModel>{ text: 'AddRow' , target: '.e-content' , id: this.element.id + '_gridcontrol_cmenu_AddRow' ,
-                 items: [{ text: 'Above' , id: 'Above' }, { text: 'Below' , id: 'Below'}]});
+          items.push(<ContextMenuItemModel>{ text: this.l10n.getConstant('AddRow') ,
+           target: '.e-content' , id: this.element.id + '_gridcontrol_cmenu_AddRow' ,
+                 items: [{ text: this.l10n.getConstant('Above') , id: 'Above' }, { text: this.l10n.getConstant('Below') , id: 'Below'}]});
                break;
           default:
             items.push(this.contextMenuItems[i]);
@@ -2301,7 +2311,6 @@ private getGridEditSettings(): GridEditModel {
    */
   private getGridToolbar(): Object[] {
     if (this.toolbar) {
-      this.l10n = new L10n('treegrid', this.defaultLocale, this.locale);
       let items: Object[] = [];
       for (let i: number = 0; i < this.toolbar.length; i++) {
         let item: ItemModel;

@@ -113,7 +113,9 @@ let Toast = class Toast extends Component {
             detach(this.refElement);
             this.refElement = undefined;
         }
-        super.destroy();
+        if (!this.isBlazorServer()) {
+            super.destroy();
+        }
     }
     /**
      * Initialize the event handler
@@ -598,25 +600,6 @@ let Toast = class Toast extends Component {
         });
         if (actionBtnContainer.childElementCount > 0) {
             this.appendMessageContainer(actionBtnContainer);
-        }
-    }
-    /* istanbul ignore next */
-    wireClientSideEvent(toastObj) {
-        if (this.isBlazorServer()) {
-            this.toastEle = this.element.lastElementChild;
-            EventHandler.add(this.toastEle, 'click', this.clickHandler, this);
-            EventHandler.add(this.toastEle, 'keydown', this.keyDownHandler, this);
-            let count = 0;
-            [].slice.call(this.buttons).forEach((actionBtn) => {
-                if (isNullOrUndefined(actionBtn.model)) {
-                    return;
-                }
-                let btnDom = this.toastEle.querySelectorAll('.e-toast-actions button')[count];
-                if (!isNullOrUndefined(actionBtn.click) && typeof (actionBtn.click) === 'function') {
-                    EventHandler.add(btnDom, 'click', actionBtn.click);
-                }
-                count++;
-            });
         }
     }
     appendToTarget(toastObj) {

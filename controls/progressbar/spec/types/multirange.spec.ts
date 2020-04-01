@@ -62,7 +62,7 @@ describe('ProgressBar Control', () => {
         });
         it('checking with sufficient segmentColor  for linear', () => {
             loaded = (args: Object): void => {
-                path = document.getElementById('container_LinearProgress2');
+                path = document.getElementById('container_LinearProgressSegment2');
                 strokeColor = path.getAttribute('stroke');
                 expect(strokeColor === 'green').toBe(true);
             }
@@ -73,7 +73,7 @@ describe('ProgressBar Control', () => {
         });
         it('checking with insufficient segmentColor  for linear', () => {
             loaded = (args: Object): void => {
-                path = document.getElementById('container_LinearProgress2');
+                path = document.getElementById('container_LinearProgressSegment2');
                 strokeColor = path.getAttribute('stroke');
                 expect(strokeColor === 'black').toBe(true);
             }
@@ -84,7 +84,7 @@ describe('ProgressBar Control', () => {
         });
         it('checking with segment color for linear buffer', ()=>{
             loaded = (args: Object): void => {
-                path = document.getElementById('container_LinearBuffer3');
+                path = document.getElementById('container_LinearBufferSegment3');
                 strokeColor = path.getAttribute('stroke');
                 expect(strokeColor === 'green').toBe(true);
             }
@@ -95,7 +95,7 @@ describe('ProgressBar Control', () => {
         });
         it('checking with segment color with RTL for linear ', ()=>{
             loaded = (args: Object): void => {
-                path = document.getElementById('container_LinearProgress1');
+                path = document.getElementById('container_LinearProgressSegment1');
                 strokeColor = path.getAttribute('stroke');
                 expect(strokeColor === 'green').toBe(true);
             }
@@ -106,7 +106,7 @@ describe('ProgressBar Control', () => {
         });
         it('checking with segment color and corner round',()=>{
             loaded = (args: Object): void => {
-                path = document.getElementById('container_LinearProgress1');
+                path = document.getElementById('container_LinearProgressSegment1');
                 strokeColor = path.getAttribute('stroke');
                 expect(strokeColor === 'green').toBe(true);
             }
@@ -117,7 +117,7 @@ describe('ProgressBar Control', () => {
         });
         it('checking with segment color for linear buffer and corner round', ()=>{
             loaded = (args: Object): void => {
-                path = document.getElementById('container_LinearBuffer3');
+                path = document.getElementById('container_LinearBufferSegment3');
                 strokeColor = path.getAttribute('stroke');
                 expect(strokeColor === 'green').toBe(true);
             }
@@ -165,7 +165,7 @@ describe('ProgressBar Control', () => {
         });
         it('checking with sufficient segmentColor  for circular', () => {
             loaded = (args: Object): void => {
-                path = document.getElementById('container_CircularProgress2');
+                path = document.getElementById('container_CircularProgressSegment2');
                 strokeColor = path.getAttribute('stroke');
                 expect(strokeColor === 'green').toBe(true);
             }
@@ -176,7 +176,7 @@ describe('ProgressBar Control', () => {
         });
         it('checking with insufficient segmentColor  for circular', () => {
             loaded = (args: Object): void => {
-                path = document.getElementById('container_CircularProgress2');
+                path = document.getElementById('container_CircularProgressSegment2');
                 strokeColor = path.getAttribute('stroke');
                 expect(strokeColor === 'black').toBe(true);
             }
@@ -186,7 +186,7 @@ describe('ProgressBar Control', () => {
         });
         it('checking with insufficient segmentColor  for circularRTl', () => {
             loaded = (args: Object): void => {
-                path = document.getElementById('container_CircularProgress2');
+                path = document.getElementById('container_CircularProgressSegment2');
                 strokeColor = path.getAttribute('stroke');
                 expect(strokeColor === 'black').toBe(true);
             }
@@ -196,7 +196,7 @@ describe('ProgressBar Control', () => {
         });
         it('checking with  segmentColor  for circularbuffer', () => {
             loaded = (args: Object): void => {
-                path = document.getElementById('container_CircularBuffer3');
+                path = document.getElementById('container_CircularBufferSegment3');
                 strokeColor = path.getAttribute('stroke');
                 expect(strokeColor === 'black').toBe(true);
             }
@@ -207,7 +207,7 @@ describe('ProgressBar Control', () => {
         });
         it('checking with  segmentColor with corner round for circulaprogres', () => {
             loaded = (args: Object): void => {
-                path = document.getElementById('container_CircularProgress1');
+                path = document.getElementById('container_CircularProgressSegment1');
                 strokeColor = path.getAttribute('stroke');
                 expect(strokeColor === 'red').toBe(true);
             }
@@ -218,7 +218,7 @@ describe('ProgressBar Control', () => {
         });
         it('checking with  segmentColor with corner round for semicirculaprogres', () => {
             loaded = (args: Object): void => {
-                path = document.getElementById('container_CircularProgress1');
+                path = document.getElementById('container_CircularProgressSegment1');
                 strokeColor = path.getAttribute('stroke');
                 expect(strokeColor === 'red').toBe(true);
             }

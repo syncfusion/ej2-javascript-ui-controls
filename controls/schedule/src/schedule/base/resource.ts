@@ -739,9 +739,9 @@ export class ResourceBase {
         return dateHeaderLevels;
     }
 
-    public setResourceValues(eventObj: { [key: string]: Object }, isCrud: boolean, groupIndex?: number): void {
+    public setResourceValues(eventObj: { [key: string]: Object }, groupIndex?: number): void {
         let setValues: Function = (index: number, field: string, value: Object) => {
-            if (this.resourceCollection[index].allowMultiple && (!isCrud || isCrud && this.parent.activeViewOptions.group.allowGroupEdit)) {
+            if (this.resourceCollection[index].allowMultiple && this.parent.activeViewOptions.group.allowGroupEdit) {
                 eventObj[field] = [value];
             } else {
                 eventObj[field] = value;
@@ -845,19 +845,38 @@ export class ResourceBase {
         }
         this.refreshLayout(true);
     }
-    private getIndexFromResourceId(id: string | number, name: string): number {
-        let indexs: number;
-        if (this.parent.resourceCollection[this.parent.resourceCollection.length - 1].name === name) {
-            indexs = (id as number) - 1;
+
+    private getIndexFromResourceId(id: string | number, name: string, resourceData?: ResourcesModel): number {
+        let resource: { [key: string]: Object } = (resourceData.dataSource as Object[]).filter((e: { [key: string]: Object }) =>
+            e[resourceData.idField] === id)[0] as { [key: string]: Object };
+        return (this.lastResourceLevel.map((e: TdData) => e.resourceData).indexOf(resource));
+    }
+
+    public resourceExpand(id: string | number, name: string, hide: boolean): void {
+        let resource: ResourcesModel = this.parent.resourceCollection.filter((e: ResourcesModel) => {
+            if (e.name === name) {
+                return e;
+            }
+            return null;
+        })[0];
+        let index: number = 0;
+        let resourceData: { [key: string]: Object } = (resource.dataSource as Object[]).filter((e: { [key: string]: Object }) =>
+            e[resource.idField] === id)[0] as { [key: string]: Object };
+        if (!this.parent.activeViewOptions.group.byGroupID) {
+            index = this.getIndexFromResourceId(id, name, resource);
         } else {
-            let counts: number = 1;
-            for (let i: number = this.parent.resourceCollection.length - 1; i >= 0; i--) {
-                if (this.parent.resourceCollection[i].name === name) {
-                    indexs = ((id as number) - 1) * (counts); break;
-                } else { counts = counts * ((this.parent.resourceCollection[i].dataSource) as object[]).length; }
+            index = this.lastResourceLevel.map((e: TdData) => e.resourceData).indexOf(resourceData);
+        }
+        let target: HTMLElement =
+            this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS + ' ' + `[data-group-index="${index}"]` +
+                ' ' + '.' + cls.RESOURCE_TREE_ICON_CLASS) as HTMLElement;
+        if (resourceData.ClassName === cls.RESOURCE_PARENT_CLASS && target) {
+            if (target.classList.contains(cls.RESOURCE_EXPAND_CLASS) && !hide) {
+                target.click();
+            } else if (target.classList.contains(cls.RESOURCE_COLLAPSE_CLASS) && hide) {
+                target.click();
             }
         }
-        return indexs;
     }
     public resourceScroll(id: string | number, name: string): void {
         if (this.parent.isAdaptive || ['Agenda', 'MonthAgenda'].indexOf(this.parent.currentView) > -1) {
@@ -876,7 +895,7 @@ export class ResourceBase {
         let index: number = 0;
         if (this.parent.activeView.isTimelineView()) {
             if (!this.parent.activeViewOptions.group.byGroupID) {
-                index = this.getIndexFromResourceId(id, levelName);
+                index = this.getIndexFromResourceId(id, levelName, resource);
             } else {
                 let resourceData: { [key: string]: Object } = (resource.dataSource as Object[]).filter((e: { [key: string]: Object }) =>
                     e[resource.idField] === id)[0] as { [key: string]: Object };
@@ -885,7 +904,11 @@ export class ResourceBase {
             if (this.parent.virtualScrollModule) {
                 let virtual: HTMLElement = this.parent.element.querySelector('.' + cls.VIRTUAL_TRACK_CLASS) as HTMLElement;
                 let averageRowHeight: number = Math.round(virtual.offsetHeight / this.expandedResources.length);
-                if (this.renderedResources[0].resourceData[this.renderedResources[0].resource.idField] > index) {
+                let isRendered: Object[] = (this.renderedResources as Object[]).filter((e: { [key: string]: Object }) =>
+                    e.groupIndex === index);
+                if (((((Math.round((this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement).offsetHeight / 60)
+                    - this.parent.virtualScrollModule.bufferCount) < index))
+                    && this.renderedResources[this.renderedResources.length - 1].groupIndex > index) && (isRendered.length === 0)) {
                     scrollElement.scrollTop =
                         (index * averageRowHeight) + ((this.parent.virtualScrollModule.bufferCount - 1) * averageRowHeight);
                 } else {
@@ -900,7 +923,7 @@ export class ResourceBase {
             }
         } else {
             if (!this.parent.activeViewOptions.group.byGroupID) {
-                index = this.getIndexFromResourceId(id, levelName);
+                index = this.getIndexFromResourceId(id, levelName, resource);
             } else {
                 index = (resource.dataSource as Object[]).map((e: { [key: string]: Object }) => e[resource.idField]).indexOf(id);
             }

@@ -17,6 +17,9 @@ import { DropDownButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitb
 import { Tooltip, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 type ReturnType = { result: Object[], count: number, aggregates?: Object };
 MultiSelect.Inject(CheckBoxSelection);
+/**
+ * Defines the Columns of Query Builder
+ */
 export class Columns extends ChildProperty<Columns> {
     /**
      * Specifies the fields in columns.
@@ -87,6 +90,9 @@ export class Columns extends ChildProperty<Columns> {
     @Property(null)
     public category: string;
 }
+/**
+ * Defines the rule of Query Builder
+ */
 export class Rule extends ChildProperty<Rule> {
     /**
      * Specifies the condition value in group.
@@ -137,7 +143,9 @@ export class Rule extends ChildProperty<Rule> {
     @Property(false)
     public not: boolean;
 }
-
+/**
+ * Defines the ruleDelete, groupInsert, and groupDelete options of Query Builder.
+ */
 export class ShowButtons extends ChildProperty<ShowButtons> {
     /**
      * Specifies the boolean value in ruleDelete that the enable/disable the buttons in rule.
@@ -2497,7 +2505,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      * return the valid rule or rules collection.
      * @returns RuleModel.
      */
-    public getValidRules(currentRule: RuleModel): RuleModel {
+    public getValidRules(currentRule?: RuleModel): RuleModel {
+        if (!currentRule) {
+            currentRule = this.getRules();
+        }
         let ruleCondtion: string = currentRule.condition;
         let notCondition: boolean = currentRule.not;
         let ruleColl: RuleModel [] = extend([], currentRule.rules, [], true) as RuleModel [];
@@ -3050,7 +3061,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
      * Gets the sql query from rules.
      * @returns object.
      */
-    public getSqlFromRules(rule: RuleModel, allowEscape?: boolean): string {
+    public getSqlFromRules(rule?: RuleModel, allowEscape?: boolean): string {
+        if (!rule) {
+            rule = this.getValidRules();
+        }
         rule = this.getRuleCollection(rule, false);
         return this.getSqlString(this.getValidRules(rule), allowEscape).replace(/"/g, '\'');
     }
@@ -3277,7 +3291,9 @@ class LevelColl {
 export interface Level {
     [key: string]: number[];
 }
-
+/**
+ * Creates the custom component of Query Builder
+ */
 export interface TemplateColumn {
     /**
      * Creates the custom component.
@@ -3295,6 +3311,9 @@ export interface TemplateColumn {
      */
     destroy?: Function | string;
 }
+/**
+ * Defines the validation of Query Builder.
+ */
 export interface Validation {
     /**
      * Specifies the minimum value in textbox validation.
@@ -3326,6 +3345,9 @@ export interface ChangeEventArgs extends BaseEventArgs {
     type?: string;
     not?: boolean;
 }
+/**
+ * Interface for rule change event arguments.
+ */
 export interface RuleChangeEventArgs extends BaseEventArgs {
     previousRule?: RuleModel;
     rule: RuleModel;

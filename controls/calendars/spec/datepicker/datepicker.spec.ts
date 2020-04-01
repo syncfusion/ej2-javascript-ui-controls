@@ -3953,4 +3953,135 @@ describe('Datepicker', () => {
             expect(datePicker.inputElement.value === "1/1/1970").toBe(true);
         });
     });
+    describe('EJ2-36604 - While giving the class name with empty space for HtmlAttributes, console error is produced.', function () {
+        let datePicker: any;
+        beforeEach(function () {
+            let inputElement: HTMLElement = createElement('input', { id: 'datepicker' });
+            document.body.appendChild(inputElement);
+        });
+        afterEach(function () {
+            if (datePicker) {
+                datePicker.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('Entering the class name without any empty space', function () {
+            datePicker = new DatePicker({
+                htmlAttributes: { class: 'custom-class' }
+            });
+            datePicker.appendTo('#datepicker');
+            expect(datePicker.inputWrapper.container.classList.contains('custom-class')).toBe(true);
+        });
+        it('Giving empty space before and after the class name', function () {
+            datePicker = new DatePicker({
+                htmlAttributes: { class: ' custom-class ' }
+            });
+            datePicker.appendTo('#datepicker');
+            expect(datePicker.inputWrapper.container.classList.contains('custom-class')).toBe(true);
+        });
+        it('Giving more than one empty space between two class names', function () {
+            datePicker = new DatePicker({
+                htmlAttributes: { class: 'custom-class1     custom-class2' }
+            });
+            datePicker.appendTo('#datepicker');
+            expect(datePicker.inputWrapper.container.classList.contains('custom-class1')).toBe(true);
+            expect(datePicker.inputWrapper.container.classList.contains('custom-class2')).toBe(true);
+        });
+        it('Giving more than one empty space between two class names as well as before and after the class names', function () {
+            datePicker = new DatePicker({
+                htmlAttributes: { class: '   custom-class1     custom-class2   ' }
+            });
+            datePicker.appendTo('#datepicker');
+            expect(datePicker.inputWrapper.container.classList.contains('custom-class1')).toBe(true);
+            expect(datePicker.inputWrapper.container.classList.contains('custom-class2')).toBe(true);
+        });
+        it('Giving only empty space  without entering any class Name', function () {
+            datePicker = new DatePicker({
+            });
+            datePicker.appendTo('#datepicker');
+            let beforeAddClass = datePicker.inputWrapper.container.classList.length;
+            datePicker.htmlAttributes = { class: '  '};
+            datePicker.appendTo('#datepicker');
+            let AfterAddClass = datePicker.inputWrapper.container.classList.length;
+            expect(beforeAddClass == AfterAddClass).toBe(true);
+        });
+        it('Keep input as empty without entering any class Name', function () {
+            datePicker = new DatePicker({
+            });
+            datePicker.appendTo('#datepicker');
+            let beforeAddClass = datePicker.inputWrapper.container.classList.length;
+            datePicker.htmlAttributes = { class: '' };
+            datePicker.appendTo('#datepicker');
+            let AfterAddClass = datePicker.inputWrapper.container.classList.length;
+            expect(beforeAddClass == AfterAddClass).toBe(true);
+        });
+        it('Entering class name without any empty space', function () {
+            datePicker = new DatePicker({
+                cssClass :'custom-class'
+            });
+            datePicker.appendTo('#datepicker');
+            expect(datePicker.inputWrapper.container.classList.contains('custom-class')).toBe(true);
+        });
+        it('Giving empty space before and after the class name', function () {
+            datePicker = new DatePicker({
+                cssClass :' custom-class '
+            });
+            datePicker.appendTo('#datepicker');
+            expect(datePicker.inputWrapper.container.classList.contains('custom-class')).toBe(true);
+        });
+        it('Giving more than one empty space between two class names', function () {
+            datePicker = new DatePicker({
+                cssClass :'custom-class-one   custom-class-two'
+            });
+            datePicker.appendTo('#datepicker');
+            expect(datePicker.inputWrapper.container.classList.contains('custom-class-one')).toBe(true);
+            expect(datePicker.inputWrapper.container.classList.contains('custom-class-two')).toBe(true);
+        });
+        it('Giving more than one empty space between two class names as well as before and after the class names', function () {
+            datePicker = new DatePicker({
+                cssClass :'  custom-class-one   custom-class-two  '
+            });
+            datePicker.appendTo('#datepicker');
+            expect(datePicker.inputWrapper.container.classList.contains('custom-class-one')).toBe(true);
+            expect(datePicker.inputWrapper.container.classList.contains('custom-class-two')).toBe(true);
+        });
+        it('Giving only empty space  without entering any class Name', function () {
+            datePicker = new DatePicker({
+            });
+            datePicker.appendTo('#datepicker');
+            let beforeAddClass = datePicker.inputWrapper.container.classList.length;
+            datePicker.cssClass = '  ';
+            datePicker.appendTo('#datepicker');
+            let AfterAddClass = datePicker.inputWrapper.container.classList.length;
+            expect(beforeAddClass == AfterAddClass).toBe(true);
+        });
+        it('Keep input as empty without entering any class Name', function () {
+            datePicker = new DatePicker({
+            });
+            datePicker.appendTo('#datepicker');
+            let beforeAddClass = datePicker.inputWrapper.container.classList.length;
+            datePicker.cssClass = '';
+            datePicker.appendTo('#datepicker');
+            let AfterAddClass = datePicker.inputWrapper.container.classList.length;
+            expect(beforeAddClass == AfterAddClass).toBe(true);
+        });
+        it('Giving class name with underscore in the beginning', function () {
+            datePicker = new DatePicker({
+                htmlAttributes : { class : '_custom-class-one'},
+                cssClass : '_custom-class-two'
+            });
+            datePicker.appendTo('#datepicker');
+            expect(datePicker.inputWrapper.container.classList.contains('_custom-class-one')).toBe(true);
+            expect(datePicker.inputWrapper.container.classList.contains('_custom-class-two')).toBe(true);
+        });
+        it('Giving class name with empty space in both cases seperatly', function () {
+            datePicker = new DatePicker({
+                htmlAttributes : { class : '  custom-class-one  '},
+                cssClass : '   custom-class-two  '
+            });
+            datePicker.appendTo('#datepicker');
+            expect(datePicker.inputWrapper.container.classList.contains('custom-class-one')).toBe(true);
+            expect(datePicker.inputWrapper.container.classList.contains('custom-class-two')).toBe(true);
+        });
+    });
 });

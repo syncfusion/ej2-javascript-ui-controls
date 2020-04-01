@@ -1,4 +1,4 @@
-import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Collection, Complex, EmitType } from '@syncfusion/ej2-base';import { initSheet, getSheet, getSheetIndexFromId, getSheetIndexByName, getSheetIndex } from './sheet';import { Event, ModuleDeclaration, merge, L10n } from '@syncfusion/ej2-base';import { getWorkbookRequiredModules } from '../common/module';import { SheetModel, CellModel, ColumnModel, RowModel, getData, clearRange } from './index';import { OpenOptions, BeforeOpenEventArgs, OpenFailureArgs, CellValidationEventArgs } from '../../spreadsheet/common/interface';import { DefineName, CellStyle, updateUsedRange, getIndexesFromAddress, localeData, workbookLocale, BorderType } from '../common/index';import * as events from '../common/event';import { CellStyleModel, DefineNameModel, HyperlinkModel, insertModel, InsertDeleteModelArgs, getAddressInfo } from '../common/index';import { setCellFormat, sheetCreated, deleteModel, ModelType, ProtectSettingsModel, ValidationModel } from '../common/index';import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, SaveOptions, SetCellFormatArgs } from '../common/interface';import { SortOptions, BeforeSortEventArgs, SortEventArgs, FindOptions, CellInfoEventArgs } from '../common/index';import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs } from '../common/index';import { getCell, skipDefaultValue, setCell, wrap as wrapText } from './cell';import { DataBind, setRow, setColumn } from '../index';import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookFilter } from '../integrations/index';import { WorkbookNumberFormat } from '../integrations/number-format';import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink, WorkbookInsert, WorkbookProtectSheet } from '../actions/index';import { WorkbookDataValidation } from '../actions/index';import { ServiceLocator } from '../services/index';import { setLinkModel } from '../common/event';import { beginAction, completeAction } from '../../spreadsheet/common/event';import { WorkbookFindAndReplace } from '../actions/find-and-replace';
+import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Collection, Complex, EmitType } from '@syncfusion/ej2-base';import { initSheet, getSheet, getSheetIndexFromId, getSheetIndexByName, getSheetIndex } from './sheet';import { Event, ModuleDeclaration, merge, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';import { getWorkbookRequiredModules } from '../common/module';import { SheetModel, CellModel, ColumnModel, RowModel, getData, clearRange } from './index';import { OpenOptions, BeforeOpenEventArgs, OpenFailureArgs, CellValidationEventArgs } from '../../spreadsheet/common/interface';import { DefineName, CellStyle, updateUsedRange, getIndexesFromAddress, localeData, workbookLocale, BorderType } from '../common/index';import * as events from '../common/event';import { CellStyleModel, DefineNameModel, HyperlinkModel, insertModel, InsertDeleteModelArgs, getAddressInfo } from '../common/index';import { setCellFormat, sheetCreated, deleteModel, ModelType, ProtectSettingsModel, ValidationModel, setLockCells } from '../common/index';import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, SaveOptions, SetCellFormatArgs } from '../common/interface';import { SortOptions, BeforeSortEventArgs, SortEventArgs, FindOptions, CellInfoEventArgs } from '../common/index';import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs, setMerge, MergeType, MergeArgs } from '../common/index';import { getCell, skipDefaultValue, setCell, wrap as wrapText } from './cell';import { DataBind, setRow, setColumn } from '../index';import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookFilter } from '../integrations/index';import { WorkbookNumberFormat } from '../integrations/number-format';import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink, WorkbookInsert, WorkbookProtectSheet } from '../actions/index';import { WorkbookDataValidation, WorkbookMerge } from '../actions/index';import { ServiceLocator } from '../services/index';import { setLinkModel } from '../common/event';import { beginAction, completeAction } from '../../spreadsheet/common/event';import { WorkbookFindAndReplace } from '../actions/find-and-replace';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -15,7 +15,7 @@ export interface WorkbookModel extends ComponentModel{
      * new Spreadsheet({
      *      sheets: [{
      *                  name: 'First Sheet',
-     *                  rangeSettings: [{ dataSource: data }],
+     *                  range: [{ dataSource: data }],
      *                  rows: [{
      *                          index: 5,
      *                          cells: [{ index: 4, value: 'Total Amount:' },
@@ -33,20 +33,20 @@ export interface WorkbookModel extends ComponentModel{
     sheets?: SheetModel[];
 
     /**
-     * Specifies active sheet tab in workbook.
+     * Specifies active sheet index in workbook.
      *  ```html
      * <div id='Spreadsheet'></div>
      * ```
      * ```typescript
      * new Spreadsheet({
-     *      activeSheetTab: 2
+     *      activeSheetIndex: 2
      * ...
      *  }, '#Spreadsheet');
      * ```
-     * @default 1
+     * @default 0
      * @asptype int
      */
-    activeSheetTab?: number;
+    activeSheetIndex?: number;
 
     /**
      * Defines the height of the Spreadsheet. It accepts height as pixels, number, and percentage.
@@ -162,6 +162,12 @@ export interface WorkbookModel extends ComponentModel{
      * @default true
      */
     allowDelete?: boolean;
+
+    /**
+     * It allows you to merge the range of cells.
+     * @default true
+     */
+    allowMerge?: boolean;
 
     /**
      * It allows you to apply validation to the spreadsheet cells. 

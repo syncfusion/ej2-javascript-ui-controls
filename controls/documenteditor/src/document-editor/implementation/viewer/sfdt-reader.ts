@@ -62,6 +62,9 @@ export class SfdtReader {
         if (!isNullOrUndefined(jsonObject.defaultTabWidth)) {
             this.documentHelper.defaultTabWidth = jsonObject.defaultTabWidth;
         }
+        if (!isNullOrUndefined(jsonObject.dontUseHTMLParagraphAutoSpacing)) {
+            this.documentHelper.dontUseHtmlParagraphAutoSpacing = jsonObject.dontUseHTMLParagraphAutoSpacing;
+        }
         if (!isNullOrUndefined(jsonObject.background)) {
             this.documentHelper.backgroundColor = this.getColor(jsonObject.background.color);
         }

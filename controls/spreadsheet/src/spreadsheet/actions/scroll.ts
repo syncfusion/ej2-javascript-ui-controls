@@ -11,7 +11,7 @@ import { SheetModel, getRowHeight, getColumnWidth, getCellAddress } from '../../
 export class Scroll {
     private parent: Spreadsheet;
     private onScroll: EventListener;
-    private offset: { left: IOffset, top: IOffset };
+    public offset: { left: IOffset, top: IOffset };
     private topIndex: number;
     private leftIndex: number;
     private initScrollValue: number; // For RTL mode

@@ -1,6 +1,6 @@
 import { CellStyleModel, HyperlinkModel } from './class-model';
-import { SaveType, SortOrder, FormatType, BorderType, ModelType } from './index';
-import { Sheet, RangeSettingModel, CellModel, SheetModel, WorkbookModel, ColumnModel, RowModel, UsedRangeModel } from '../base/index';
+import { SaveType, SortOrder, FormatType, BorderType, ModelType, MergeType } from './index';
+import { Sheet, RangeModel, CellModel, SheetModel, WorkbookModel, ColumnModel, RowModel, UsedRangeModel } from '../base/index';
 import { DataManager, Predicate } from '@syncfusion/ej2-data';
 
 export interface SaveOptions {
@@ -35,6 +35,24 @@ export interface FindOptions {
     replaceValue?: string;
     replaceBy?: string;
     findCount?: string;
+}
+export interface ReplaceAllArgs {
+    undoRedoOpt: string;
+    replaceValue?: string;
+    Collection?: string[];
+    address?: string;
+    compareVal?: string;
+}
+/**
+ * Specifies FindAll options in arguments.
+ */
+export interface FindAllArgs {
+    value: string;
+    mode?: string;
+    sheetIndex?: number;
+    isCSen?: boolean;
+    isEMatch?: boolean;
+    findCollection?: string[];
 }
 /**
  * Specifies find next arguments.
@@ -89,7 +107,7 @@ export interface SetCellFormatArgs {
 }
 
 /** @hidden */
-export interface ExtendedRange extends RangeSettingModel {
+export interface ExtendedRange extends RangeModel {
     info?: RangeInfo;
 }
 
@@ -145,10 +163,11 @@ export interface BeforeCellFormatArgs {
 /** @hidden */
 export interface AggregateArgs {
     Count: number;
-    Sum: string;
-    Avg: string;
-    Min: string;
-    Max: string;
+    Sum?: string;
+    Avg?: string;
+    Min?: string;
+    Max?: string;
+    countOnly?: boolean;
 }
 /**
  * Specifies the procedure for sorting.
@@ -241,7 +260,9 @@ export interface BeforeFilterEventArgs extends FilterEventArgs {
  * Specifies the border options.
  */
 export interface BorderOptions {
+    /** Specifies the border property value to set border */
     border: string;
+    /** Specifies the custom border type. */
     type: BorderType;
 }
 
@@ -253,7 +274,7 @@ export interface InsertDeleteModelArgs {
     isAction?: boolean;
     modelType: ModelType;
     columnCellsModel?: RowModel[];
-    activeSheetTab?: number;
+    activeSheetIndex?: number;
     checkCount?: number;
 }
 
@@ -265,4 +286,22 @@ export interface CellInfoEventArgs {
     cell: CellModel;
     /** Defines the cell address. */
     address: string;
+}
+
+/** @hidden */
+export interface MergeArgs {
+    range: string | number[];
+    merge?: boolean;
+    isAction?: boolean;
+    type?: MergeType;
+    isActiveCell?: boolean;
+    activeCell?: number[];
+    selectedRange?: number[];
+    skipChecking?: boolean;
+    model?: RowModel[];
+    insertCount?: number;
+    deleteCount?: number;
+    insertModel?: ModelType;
+    preventRefresh?: boolean;
+    refreshRibbon?: boolean;
 }

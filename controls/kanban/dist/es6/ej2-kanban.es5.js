@@ -320,6 +320,9 @@ var Columns = /** @__PURE__ @class */ (function (_super) {
     __decorate$4([
         Property(true)
     ], Columns.prototype, "showItemCount", void 0);
+    __decorate$4([
+        Property(false)
+    ], Columns.prototype, "showAddButton", void 0);
     return Columns;
 }(ChildProperty));
 
@@ -524,6 +527,10 @@ var CLOSE_ICON_CLASS = 'e-close-icon';
 var POPUP_OPEN_CLASS = 'e-popup-open';
 /** @hidden */
 var DIALOG_CONTENT_CONTAINER = 'e-kanban-dialog-content';
+/** @hidden */
+var SHOW_ADD_BUTTON = 'e-show-add-button';
+/** @hidden */
+var SHOW_ADD_ICON = 'e-show-add-icon';
 
 /**
  * Action module is used to perform card actions.
@@ -546,8 +553,9 @@ var Action = /** @__PURE__ @class */ (function () {
         this.hideColumnKeys = [];
     }
     Action.prototype.clickHandler = function (e) {
+        var _this = this;
         var elementSelector = '.' + CARD_CLASS + ',.' + HEADER_ICON_CLASS + ',.' + CONTENT_ROW_CLASS + '.' +
-            SWIMLANE_ROW_CLASS;
+            SWIMLANE_ROW_CLASS + ',.' + SHOW_ADD_BUTTON;
         var target = closest(e.target, elementSelector);
         if (!target) {
             return;
@@ -560,6 +568,25 @@ var Action = /** @__PURE__ @class */ (function () {
         }
         else if (target.classList.contains(CONTENT_ROW_CLASS) && target.classList.contains(SWIMLANE_ROW_CLASS)) {
             this.rowExpandCollapse(e);
+        }
+        else if (target.classList.contains(SHOW_ADD_BUTTON)) {
+            var newData = {};
+            if (typeof this.parent.kanbanData[0][this.parent.cardSettings.headerField] === 'number') {
+                newData[this.parent.cardSettings.headerField] = Math.max.apply(Math, this.parent.kanbanData.map(function (obj) { return parseInt(obj[_this.parent.cardSettings.headerField], 10); })) + 1;
+            }
+            newData[this.parent.keyField] = target.closest('.' + CONTENT_CELLS_CLASS).getAttribute('data-key');
+            if (this.parent.cardSettings.priority) {
+                newData[this.parent.cardSettings.priority] = 1;
+                if (target.closest('.' + CONTENT_CELLS_CLASS).querySelector('.' + CARD_CLASS)) {
+                    var data = this.parent.getCardDetails(target.previousElementSibling.lastElementChild);
+                    newData[this.parent.cardSettings.priority] = data[this.parent.cardSettings.priority] + 1;
+                }
+            }
+            if (this.parent.swimlaneSettings.keyField) {
+                newData[this.parent.swimlaneSettings.keyField] =
+                    target.closest('.' + CONTENT_ROW_CLASS).previousElementSibling.getAttribute('data-key');
+            }
+            this.parent.openDialog('Add', newData);
         }
     };
     Action.prototype.doubleClickHandler = function (e) {
@@ -600,8 +627,14 @@ var Action = /** @__PURE__ @class */ (function () {
         this.parent.activeCardData = { data: cardDoubleClickObj, element: target };
         var args = { data: cardDoubleClickObj, element: target, cancel: false, event: e };
         this.parent.trigger(cardDoubleClick, args, function (doubleClickArgs) {
-            if (!doubleClickArgs.cancel && !_this.parent.isBlazorRender()) {
-                _this.parent.dialogModule.openDialog('Edit', args.data);
+            if (!doubleClickArgs.cancel) {
+                if (_this.parent.isBlazorRender()) {
+                    // tslint:disable-next-line
+                    _this.parent.interopAdaptor.invokeMethodAsync('OpenDialog', 'Edit', args.data);
+                }
+                else {
+                    _this.parent.dialogModule.openDialog('Edit', args.data);
+                }
             }
         });
     };
@@ -1193,27 +1226,7 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
                 }
             }
             else if (keys.length > 1) {
-                var offsetHeight = contentCell.offsetHeight;
-                var limitEle = contentCell.querySelector('.' + LIMITS_CLASS);
-                if (limitEle) {
-                    offsetHeight -= limitEle.offsetHeight;
-                }
-                this.dragObj.targetCloneMulti.style.height = formatUnit(offsetHeight);
-                addClass([contentCell.querySelector('.' + CARD_WRAPPER_CLASS)], MULTI_CARD_WRAPPER_CLASS);
-                contentCell.querySelector('.' + CARD_WRAPPER_CLASS).style.height = 'auto';
-                contentCell.style.borderStyle = 'none';
-                this.removeElement(this.dragObj.targetClone);
-                for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
-                    var key = keys_1[_i];
-                    var colKey = createElement('div', {
-                        className: MULTI_COLUMN_KEY_CLASS,
-                        attrs: { 'data-key': key.trim() }
-                    });
-                    var text = createElement('div', { className: 'e-text', innerHTML: key.trim() });
-                    contentCell.appendChild(this.dragObj.targetCloneMulti).appendChild(colKey).appendChild(text);
-                    colKey.style.lineHeight = colKey.style.height = formatUnit((offsetHeight / keys.length));
-                    text.style.top = formatUnit((offsetHeight / 2) - (text.offsetHeight / 2));
-                }
+                this.multiCloneCreate(keys, contentCell);
             }
             this.parent.notify(contentReady, {});
         }
@@ -1273,6 +1286,32 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
             remove(element);
         }
     };
+    DragAndDrop.prototype.multiCloneCreate = function (keys, contentCell) {
+        var offsetHeight = contentCell.offsetHeight;
+        var limitEle = contentCell.querySelector('.' + LIMITS_CLASS);
+        if (limitEle) {
+            offsetHeight -= limitEle.offsetHeight;
+        }
+        this.dragObj.targetCloneMulti.style.height = formatUnit(offsetHeight);
+        if (contentCell.querySelector('.' + SHOW_ADD_BUTTON)) {
+            addClass([contentCell.querySelector('.' + SHOW_ADD_BUTTON)], MULTI_CARD_WRAPPER_CLASS);
+        }
+        addClass([contentCell.querySelector('.' + CARD_WRAPPER_CLASS)], MULTI_CARD_WRAPPER_CLASS);
+        contentCell.querySelector('.' + CARD_WRAPPER_CLASS).style.height = 'auto';
+        contentCell.style.borderStyle = 'none';
+        this.removeElement(this.dragObj.targetClone);
+        for (var _i = 0, keys_1 = keys; _i < keys_1.length; _i++) {
+            var key = keys_1[_i];
+            var colKey = createElement('div', {
+                className: MULTI_COLUMN_KEY_CLASS,
+                attrs: { 'data-key': key.trim() }
+            });
+            var text = createElement('div', { className: 'e-text', innerHTML: key.trim() });
+            contentCell.appendChild(this.dragObj.targetCloneMulti).appendChild(colKey).appendChild(text);
+            colKey.style.lineHeight = colKey.style.height = formatUnit((offsetHeight / keys.length));
+            text.style.top = formatUnit((offsetHeight / 2) - (text.offsetHeight / 2));
+        }
+    };
     DragAndDrop.prototype.addDropping = function () {
         if (this.parent.swimlaneSettings.keyField && this.parent.swimlaneSettings.allowDragAndDrop) {
             var className = '.' + CONTENT_ROW_CLASS + ':not(.' + SWIMLANE_ROW_CLASS + '):not(.' + COLLAPSED_CLASS + ')';
@@ -1297,29 +1336,31 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
         if (this.parent.element.querySelector('.' + TARGET_MULTI_CLONE_CLASS)) {
             columnKey = closest(e.target, '.' + MULTI_COLUMN_KEY_CLASS);
         }
-        var dragArgs = { cancel: false, data: this.dragObj.cardDetails, event: e, element: this.dragObj.selectedCards };
+        if (contentCell || columnKey) {
+            var cardStatus_1;
+            if (contentCell) {
+                cardStatus_1 = this.getColumnKey(contentCell);
+            }
+            else {
+                cardStatus_1 = this.getColumnKey(columnKey);
+                contentCell = closest(columnKey, '.' + CONTENT_CELLS_CLASS);
+            }
+            if (this.dragObj.selectedCards instanceof HTMLElement) {
+                this.updateDroppedData(this.dragObj.selectedCards, cardStatus_1, contentCell);
+            }
+            else {
+                this.dragObj.selectedCards.forEach(function (element) {
+                    _this.updateDroppedData(element, cardStatus_1, contentCell);
+                });
+            }
+            if (this.parent.cardSettings.priority) {
+                this.changeOrder(this.dragObj.modifiedData);
+            }
+        }
+        var dragArgs = { cancel: false, data: this.dragObj.modifiedData, event: e, element: this.dragObj.selectedCards };
         this.parent.trigger(dragStop, dragArgs, function (dragEventArgs) {
             if (!dragEventArgs.cancel) {
                 if (contentCell || columnKey) {
-                    var cardStatus_1;
-                    if (contentCell) {
-                        cardStatus_1 = _this.getColumnKey(contentCell);
-                    }
-                    else {
-                        cardStatus_1 = _this.getColumnKey(columnKey);
-                        contentCell = closest(columnKey, '.' + CONTENT_CELLS_CLASS);
-                    }
-                    if (_this.dragObj.selectedCards instanceof HTMLElement) {
-                        _this.updateDroppedData(_this.dragObj.selectedCards, cardStatus_1, contentCell);
-                    }
-                    else {
-                        _this.dragObj.selectedCards.forEach(function (element) {
-                            _this.updateDroppedData(element, cardStatus_1, contentCell);
-                        });
-                    }
-                    if (_this.parent.cardSettings.priority) {
-                        _this.changeOrder(_this.dragObj.modifiedData);
-                    }
                     _this.parent.crudModule.updateCard(_this.dragObj.modifiedData);
                 }
             }
@@ -1613,14 +1654,13 @@ var KanbanDialog = /** @__PURE__ @class */ (function () {
             fields = [
                 { text: 'ID', key: this.parent.cardSettings.headerField, type: 'Input' },
                 { key: this.parent.keyField, type: 'DropDown' },
-                { key: 'Estimate', type: 'Numeric' },
-                { key: 'Summary', type: 'TextArea' }
+                { key: this.parent.cardSettings.contentField, type: 'TextArea' }
             ];
             if (this.parent.cardSettings.priority) {
                 fields.splice(fields.length - 1, 0, { key: this.parent.cardSettings.priority, type: 'Numeric' });
             }
             if (this.parent.swimlaneSettings.keyField) {
-                fields.splice(fields.length - 1, 0, { key: 'Assignee', type: 'DropDown' });
+                fields.splice(fields.length - 1, 0, { key: this.parent.swimlaneSettings.keyField, type: 'DropDown' });
             }
         }
         return fields;
@@ -1943,7 +1983,8 @@ var Keyboard = /** @__PURE__ @class */ (function () {
             multiSelectionByRightArrow: 'shift+39',
             shiftTab: 'shift+tab',
             enter: '13',
-            tab: 'tab'
+            tab: 'tab',
+            delete: '46'
         };
         this.parent = parent;
         this.parent.element.tabIndex = this.parent.element.tabIndex === -1 ? 0 : this.parent.element.tabIndex;
@@ -1955,6 +1996,7 @@ var Keyboard = /** @__PURE__ @class */ (function () {
         this.prevAction = '';
     }
     Keyboard.prototype.keyActionHandler = function (e) {
+        var _this = this;
         var selectedCard = this.parent.element.querySelectorAll("." + CARD_CLASS + "." + CARD_SELECTION_CLASS).item(0);
         if (!selectedCard && !closest(document.activeElement, "." + ROOT_CLASS)) {
             return;
@@ -1992,6 +2034,11 @@ var Keyboard = /** @__PURE__ @class */ (function () {
             case 'tab':
             case 'shiftTab':
                 this.processTab(e.action, selectedCard);
+                break;
+            case 'delete':
+                var className = '.' + CARD_CLASS + '.' + CARD_SELECTION_CLASS;
+                var selectedCards = [].slice.call(this.parent.element.querySelectorAll(className));
+                selectedCards.forEach(function (selected) { return _this.parent.crudModule.deleteCard(_this.parent.getCardDetails(selected)); });
                 break;
         }
     };
@@ -2138,6 +2185,8 @@ var Keyboard = /** @__PURE__ @class */ (function () {
         }
         if (selectedCard) {
             this.parent.actionModule.cardClick(e, selectedCard);
+            this.parent.activeCardData = { data: this.parent.getCardDetails(selectedCard), element: selectedCard };
+            this.parent.dialogModule.openDialog('Edit', this.parent.getCardDetails(selectedCard));
         }
     };
     Keyboard.prototype.processTab = function (action, selectedCard) {
@@ -2665,6 +2714,11 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                         td.appendChild(createElement('div', { className: COLLAPSE_HEADER_TEXT_CLASS, innerHTML: column.headerText }));
                         td.setAttribute('aria-expanded', 'false');
                     }
+                    if (column.showAddButton) {
+                        var button = createElement('div', { className: SHOW_ADD_BUTTON });
+                        button.appendChild(createElement('div', { className: SHOW_ADD_ICON + ' ' + ICON_CLASS }));
+                        td.appendChild(button);
+                    }
                     tr.appendChild(td);
                     var dataObj = [{ keyField: row.keyField, textField: row.textField, count: row.count }];
                     var args = { data: dataObj, element: tr, cancel: false, requestType: 'contentRow' };
@@ -2752,7 +2806,12 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                     dataCount += columnData.length;
                     var columnWrapper = tr.querySelector('[data-key="' + column.keyField + '"]');
                     var cardWrapper_1 = createElement('div', { className: CARD_WRAPPER_CLASS });
-                    columnWrapper.appendChild(cardWrapper_1);
+                    if (column.showAddButton) {
+                        columnWrapper.insertBefore(cardWrapper_1, columnWrapper.querySelector('.' + SHOW_ADD_BUTTON));
+                    }
+                    else {
+                        columnWrapper.appendChild(cardWrapper_1);
+                    }
                     var _loop_4 = function (data) {
                         var cardText = data[_this.parent.cardSettings.headerField];
                         var cardIndex = _this.parent.actionModule.selectionArray.indexOf(cardText);

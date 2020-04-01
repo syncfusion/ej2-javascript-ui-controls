@@ -1,10 +1,10 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';
 // tslint:disable-next-line:max-line-length
-import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel, TextSearchColorSettingsModel } from './pdfviewer-model';
+import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel, TextSearchColorSettingsModel, DocumentTextCollectionSettingsModel, TextDataSettingsModel, RectangleBoundsModel } from './pdfviewer-model';
 import { ToolbarSettingsModel, AnnotationToolbarSettingsModel, ShapeLabelSettingsModel } from './pdfviewer-model';
 // tslint:disable-next-line:max-line-length
-import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampItemModel, HandWrittenSignatureSettingsModel, AnnotationSettingsModel } from './pdfviewer-model';
+import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampItemModel, HandWrittenSignatureSettingsModel, AnnotationSettingsModel, TileRenderingSettingsModel } from './pdfviewer-model';
 import { PdfViewerBase } from './index';
 import { Navigation } from './index';
 import { Magnification } from './index';
@@ -22,7 +22,7 @@ import { FormFields } from './index';
 import { Print, CalibrationUnit } from './index';
 // tslint:disable-next-line:max-line-length
 import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs } from './index';
-import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs } from './index';
+import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs } from './index';
 // tslint:disable-next-line:max-line-length
 import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs } from './index';
 import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';
@@ -1881,6 +1881,123 @@ export class AnnotationSettings extends ChildProperty<AnnotationSettings> {
 }
 
 /**
+ * The `DocumentTextCollectionSettings` module is used to provide the properties to DocumentTextCollection.
+ */
+export class DocumentTextCollectionSettings extends ChildProperty<DocumentTextCollectionSettings> {
+    /**
+     * specifies the text data of the document.
+     */
+    @Property()
+    public textData: TextDataSettingsModel[];
+    /**
+     * specifies the page text of the document.
+     */
+    @Property()
+    public pageText: string;
+    /**
+     * specifies the page size of the document.
+     */
+    @Property()
+    public pageSize: number;
+}
+
+/**
+ * The `TextDataSettings` module is used to provide the properties of text data.
+ */
+export class TextDataSettings extends ChildProperty<TextDataSettings> {
+    /**
+     * specifies the bounds of the rectangle.
+     */
+    @Property()
+    public bounds: RectangleBoundsModel;
+    /**
+     * specifies the text of the document.
+     */
+    @Property()
+    public text: string;
+}
+
+/**
+ * The `RectangleBounds` module is used to provide the properties of rectangle bounds.
+ */
+export class RectangleBounds extends ChildProperty<RectangleBounds> {
+    /**
+     * specifies the size of the rectangle.
+     */
+    @Property()
+    public size: number;
+    /**
+     * specifies the x co-ordinate of the upper-left corner of the rectangle.
+     */
+    @Property()
+    public x: number;
+    /**
+     * specifies the y co-ordinate of the upper-left corner of the rectangle.
+     */
+    @Property()
+    public y: number;
+    /**
+     * specifies the width of the rectangle.
+     */
+    @Property()
+    public width: number;
+    /**
+     * specifies the height of the rectangle.
+     */
+    @Property()
+    public height: number;
+    /**
+     * specifies the left value of the rectangle.
+     */
+    @Property()
+    public left: number;
+    /**
+     * specifies the top value of the rectangle.
+     */
+    @Property()
+    public top: number;
+    /**
+     * specifies the right of the rectangle.
+     */
+    @Property()
+    public right: number;
+    /**
+     * specifies the bottom value of the rectangle.
+     */
+    @Property()
+    public bottom: number;
+    /**
+     * Returns true if height and width of the rectangle is zero.
+     * @default 'false'
+     */
+    @Property()
+    public isEmpty: boolean;
+}
+
+/**
+ * The `TileRenderingSettings` module is used to provide the tile rendering settings of the PDF viewer.
+ */
+export class TileRenderingSettings extends ChildProperty<TileRenderingSettings> {
+    /**
+     * Enable or disables tile rendering mode in the PDF Viewer.
+     */
+    @Property(true)
+    public enableTileRendering: boolean;
+
+    /**
+     * specifies the tileX count of the render Page.
+     */
+    @Property(0)
+    public x: number;
+
+    /**
+     * specifies the tileY count of the render Page.
+     */
+    @Property(0)
+    public y: number;
+}
+
+/**
  * Represents the PDF viewer component.
  * ```html
  * <div id="pdfViewer"></div>
@@ -2239,6 +2356,20 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public printMode: PrintMode;
 
     /**
+     * Sets the initial loading zoom value from 10 to 400 in PdfViewer Control.
+     * @default 0
+     */
+    @Property(0)
+    public zoomValue: number;
+
+    /** 
+     *  Enable or disable the zoom optimization mode in PDF Viewer.
+     * @default true
+     */
+    @Property(true)
+    public enableZoomOptimization: boolean;
+
+    /**
      * Enable or disables the get the document text collections.
      * @default false
      */
@@ -2438,6 +2569,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     // tslint:disable-next-line:max-line-length
     @Property({ author: 'Guest', minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, isPrint: true, isDownload: true })
     public annotationSettings: AnnotationSettingsModel;
+
+    /**
+     * Defines the tile rendering settings.
+     */
+    @Property({ enableTileRendering: true, x: 0, y: 0 })
+    public tileRenderingSettings: TileRenderingSettingsModel;
 
     /**
      * @private
@@ -2789,6 +2926,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Event()
     public annotationMouseover: EmitType<AnnotationMouseoverEventArgs>;
+
+    /**
+     * Triggers when mouse over the page.
+     * @event
+     */
+    @Event()
+    public pageMouseover: EmitType<PageMouseoverEventArgs>;
 
     /**
      * Triggers when an imported annotations started in the PDF document.
@@ -3716,9 +3860,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     // tslint:disable-next-line
-    public fireAnnotationMouseover(id: string, pageNumber: number, annotationType: AnnotationType, bounds: any, annotation: any) {
-        let eventArgs: AnnotationMouseoverEventArgs = { name: 'annotationMouseover', annotationId: id, pageIndex: pageNumber, annotationType: annotationType, annotationBounds: bounds, annotation: annotation };
+    public fireAnnotationMouseover(id: string, pageNumber: number, annotationType: AnnotationType, bounds: any, annotation: any, currentPosition: any) {
+        let eventArgs: AnnotationMouseoverEventArgs = { name: 'annotationMouseover', annotationId: id, pageIndex: pageNumber, annotationType: annotationType, annotationBounds: bounds, annotation: annotation, pageX: currentPosition.left, pageY: currentPosition.top };
         this.trigger('annotationMouseover', eventArgs);
+    }
+    /**
+     * @private
+     */
+    public firePageMouseover(pageX: number, pageY: number): void {
+        let eventArgs: PageMouseoverEventArgs = { pageX: pageX, pageY: pageY };
+        this.trigger('pageMouseover', eventArgs);
     }
     /**
      * @private
@@ -3795,7 +3946,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     // tslint:disable-next-line
-    public fireTextExtractionCompleted(documentCollection: any): void {
+    public fireTextExtractionCompleted(documentCollection: DocumentTextCollectionSettingsModel[][]): void {
         let eventArgs: ExtractTextCompletedEventArgs = { documentTextCollection: documentCollection };
         this.trigger('extractTextCompleted', eventArgs);
     }

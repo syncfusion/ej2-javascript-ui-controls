@@ -31,6 +31,9 @@ type HTEle = HTMLElement;
 type Str = string;
 type ItmAlign = 'lefts' | 'centers' | 'rights';
 
+/**
+ * Specifies the options for aligning the Toolbar items.
+ */
 export type ItemAlign = 'Left' | 'Center' | 'Right';
 
 const CLS_VERTICAL: Str = 'e-vertical';
@@ -83,6 +86,7 @@ interface ToolbarItemAlignIn {
     centers: HTMLElement[];
     rights: HTMLElement[];
 }
+/** An interface that holds options to control the toolbar clicked action. */
 export interface ClickEventArgs extends BaseEventArgs {
     /** Defines the current Toolbar Item Object. */
     item: ItemModel;
@@ -216,7 +220,7 @@ export class Item extends ChildProperty<Item>  {
     @Property(null)
     public htmlAttributes: { [key: string]: string; };
     /**
-     * Specifies the text to be displayed on the Toolbar button.
+     * Specifies the text to be displayed on hovering the Toolbar button.
      * @default ""
      */
     @Property('')
@@ -354,6 +358,13 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     @Property(true)
     public enableHtmlSanitizer: boolean;
     /**
+     * When this property is set to true, it allows the keyboard interaction in toolbar.
+     * @default true
+     */
+    @Property(true)
+    public allowKeyboard: boolean;
+
+    /**
      * The event will be fired on clicking the Toolbar elements.
      * @event
      * @blazorProperty 'Clicked'
@@ -456,14 +467,24 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     private wireEvents(): void {
         EventHandler.add(this.element, 'click', this.clickHandler, this);
         window.addEventListener('resize', this.resizeContext);
-        this.keyModule = new KeyboardEvents(
-            this.element,
-            {
-                keyAction: this.keyActionHandler.bind(this),
-                keyConfigs: this.keyConfigs
-            });
+        if (this.allowKeyboard) {
+            this.wireKeyboardEvent();
+        }
+    }
+    private wireKeyboardEvent(): void {
+        this.keyModule = new KeyboardEvents(this.element, {
+            keyAction: this.keyActionHandler.bind(this),
+            keyConfigs: this.keyConfigs
+        });
         EventHandler.add(this.element, 'keydown', this.docKeyDown, this);
         this.element.setAttribute('tabIndex', '0');
+    }
+    private unwireKeyboardEvent(): void {
+        if (this.keyModule) {
+            EventHandler.remove(this.element, 'keydown', this.docKeyDown);
+            this.keyModule.destroy();
+            this.keyModule = null;
+        }
     }
     private docKeyDown(e: KeyboardEvent): void {
         if ((<HTEle>e.target).tagName === 'INPUT') { return; }
@@ -479,10 +500,9 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
     private unwireEvents(): void {
         EventHandler.remove(this.element, 'click', this.clickHandler);
         this.destroyScroll();
-        this.keyModule.destroy();
+        this.unwireKeyboardEvent();
         window.removeEventListener('resize', this.resizeContext);
         EventHandler.remove(document, 'scroll', this.docEvent);
-        EventHandler.remove(this.element, 'keydown', this.docKeyDown);
         EventHandler.remove(document, 'click', this.docEvent);
     }
     private clearProperty(): void {
@@ -752,7 +772,30 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             return;
         }
         if (clst) {
-            itemObj = this.items[this.tbarEle.indexOf(clst)];
+            let tempItem: ItemModel = this.items[this.tbarEle.indexOf(clst)];
+            if (tempItem && isBlazor() && this.isServerRendered) {
+                itemObj = {
+                    id: tempItem.id,
+                    text: tempItem.text,
+                    width: tempItem.width,
+                    cssClass: tempItem.cssClass,
+                    showAlwaysInPopup: tempItem.showAlwaysInPopup,
+                    disabled: tempItem.disabled,
+                    prefixIcon: tempItem.prefixIcon,
+                    suffixIcon: tempItem.suffixIcon,
+                    visible: tempItem.visible,
+                    overflow: tempItem.overflow,
+                    template: tempItem.template,
+                    type: tempItem.type,
+                    showTextOn: tempItem.showTextOn,
+                    htmlAttributes: tempItem.htmlAttributes,
+                    tooltipText: tempItem.tooltipText,
+                    align: tempItem.align,
+                    click: tempItem.click
+                };
+            } else {
+                itemObj = tempItem;
+            }
         }
         let eventArgs: ClickEventArgs = { originalEvent: e, item: itemObj };
         if (itemObj && !isNOU(itemObj.click)) {
@@ -2127,6 +2170,12 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
                 case 'cssClass':
                     if (oldProp.cssClass) { removeClass([this.element], oldProp.cssClass.split(' ')); }
                     if (newProp.cssClass) { addClass([this.element], newProp.cssClass.split(' ')); }
+                    break;
+                case 'allowKeyboard':
+                    this.unwireKeyboardEvent();
+                    if (newProp.allowKeyboard) {
+                        this.wireKeyboardEvent();
+                    }
                     break;
             }
         }

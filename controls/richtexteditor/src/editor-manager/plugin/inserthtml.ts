@@ -4,6 +4,7 @@ import { NodeCutter } from './nodecutter';
 import * as CONSTANT from './../base/constant';
 import { detach, Browser, isNullOrUndefined as isNOU, createElement } from '@syncfusion/ej2-base';
 import { InsertMethods } from './insert-methods';
+import { updateTextNode } from './../../common/util';
 
 /**
  * Insert a HTML Node or Text
@@ -98,22 +99,23 @@ export class InsertHtml {
                     }
                 } else { parentNode.appendChild(node); }
             }
-            if (node.nodeType !== 3) {
+            if (node.nodeName === 'IMG') { this.imageFocus(node, nodeSelection, docElement);
+            } else if (node.nodeType !== 3) {
                 nodeSelection.setSelectionText(docElement, node, node, 0, node.childNodes.length);
-            } else {
-                nodeSelection.setSelectionText(docElement, node, node, 0, node.textContent.length);
-            }
+            } else { nodeSelection.setSelectionText(docElement, node, node, 0, node.textContent.length); }
         } else {
             range.deleteContents();
+            if (isCursor && range.startContainer.textContent === '') {
+                (range.startContainer as HTMLElement).innerHTML = '';
+            }
             if (Browser.isIE) {
                 let frag: DocumentFragment = docElement.createDocumentFragment();
-                frag.appendChild(node);
-                range.insertNode(frag);
-            } else {
-                range.insertNode(node);
-            }
+                frag.appendChild(node); range.insertNode(frag);
+            } else { range.insertNode(node); }
             if (node.nodeType !== 3 && node.childNodes.length > 0) {
                 nodeSelection.setSelectionText(docElement, node, node, 1, 1);
+            } else if (node.nodeName === 'IMG') {
+                this.imageFocus(node, nodeSelection, docElement);
             } else if (node.nodeType !== 3) {
                 nodeSelection.setSelectionContents(docElement, node);
             } else {
@@ -168,7 +170,8 @@ export class InsertHtml {
                 }
                 if (isSingleNode) { preNode.parentNode.replaceChild(fragment, preNode);
                 } else {
-                    range.deleteContents(); detach(lasNode); sibNode.parentNode.appendChild(fragment);
+                    range.deleteContents(); detach(lasNode);
+                    !isNOU(sibNode) ? sibNode.parentNode.appendChild(fragment) : editNode.appendChild(fragment);
                 }
             } else {
                 let tempSpan: HTMLElement = createElement('span', { className: 'tempSpan' });
@@ -203,25 +206,26 @@ export class InsertHtml {
                     if (node.firstChild.nodeName === '#text' ||
                     (this.inlineNode.indexOf(node.firstChild.nodeName.toLocaleLowerCase()) >= 0)) {
                         if (!isPreviousInlineElem) {
-                            paraElm = createElement('p');
-                            paraElm.appendChild(node.firstChild);
+                            paraElm = createElement('p'); paraElm.appendChild(node.firstChild);
                             fragment.appendChild(paraElm);
                         } else {
                             previousParent.appendChild(node.firstChild);
                             fragment.appendChild(previousParent);
                         }
-                        previousParent = paraElm;
-                        isPreviousInlineElem = true;
+                        previousParent = paraElm; isPreviousInlineElem = true;
                     } else {
-                        fragment.appendChild(node.firstChild);
-                        isPreviousInlineElem = false;
+                        fragment.appendChild(node.firstChild); isPreviousInlineElem = false;
                     }
                     isFirstTextNode = false;
                 }
             }
             node.parentNode.replaceChild(fragment, node);
         }
-        this.placeCursorEnd(lastSelectionNode, node, nodeSelection, docElement, editNode);
+        if (lastSelectionNode.nodeName === '#text') {
+            this.placeCursorEnd(lastSelectionNode, node, nodeSelection, docElement, editNode);
+        } else {
+            this.cursorPos(lastSelectionNode, node, nodeSelection, docElement, editNode);
+        }
     }
     private static placeCursorEnd(
         lastSelectionNode: Node, node: Node, nodeSelection: NodeSelection, docElement: Document, editNode?: Element): void {
@@ -229,10 +233,32 @@ export class InsertHtml {
         while (!isNOU(lastSelectionNode) && lastSelectionNode.nodeName !== '#text' && lastSelectionNode.nodeName !== 'IMG' &&
         lastSelectionNode.nodeName !== 'BR') { lastSelectionNode = lastSelectionNode.lastChild; }
         lastSelectionNode = isNOU(lastSelectionNode) ? node : lastSelectionNode;
-        nodeSelection.setSelectionText(
-        docElement, lastSelectionNode, lastSelectionNode,
-        lastSelectionNode.textContent.length, lastSelectionNode.textContent.length);
+        if (lastSelectionNode.nodeName === 'IMG') {
+            this.imageFocus(lastSelectionNode, nodeSelection, docElement);
+        } else {
+            nodeSelection.setSelectionText(
+            docElement, lastSelectionNode, lastSelectionNode,
+            lastSelectionNode.textContent.length, lastSelectionNode.textContent.length);
+        }
         this.removeEmptyElements(editNode as HTMLElement);
+    }
+
+    private static cursorPos(
+        lastSelectionNode: Node, node: Node, nodeSelection: NodeSelection, docElement: Document, editNode?: Element): void {
+        (lastSelectionNode as HTMLElement).classList.add('lastNode');
+        editNode.innerHTML = updateTextNode(editNode.innerHTML);
+        lastSelectionNode = (editNode as HTMLElement).querySelector('.lastNode');
+        this.placeCursorEnd(lastSelectionNode, node, nodeSelection, docElement, editNode);
+        (lastSelectionNode as HTMLElement).classList.remove('lastNode');
+        if ((lastSelectionNode as HTMLElement).classList.length === 0) {
+            (lastSelectionNode as HTMLElement).removeAttribute('class');
+        }
+    }
+
+    private static imageFocus(node: Node, nodeSelection: NodeSelection, docElement: Document): void {
+        let focusNode: Node = document.createTextNode(' ');
+        node.parentNode.insertBefore(focusNode, node.nextSibling);
+        nodeSelection.setSelectionText(docElement, node.nextSibling, node.nextSibling, 0, 0);
     }
 
     private static getImmediateBlockNode(node: Node, editNode: Node): Node {

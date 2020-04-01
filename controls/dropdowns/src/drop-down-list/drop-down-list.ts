@@ -529,12 +529,14 @@ export class DropDownList extends DropDownBase implements IInput {
         this.updateIconState();
         this.cloneElements();
     }
-
     private setHTMLAttributes(): void {
         if (Object.keys(this.htmlAttributes).length) {
             for (let htmlAttr of Object.keys(this.htmlAttributes)) {
                 if (htmlAttr === 'class') {
-                    this.inputWrapper.container.classList.add(this.htmlAttributes[htmlAttr]);
+                let updatedClassValue : string = (this.htmlAttributes[htmlAttr].replace(/\s+/g, ' ')).trim();
+                if (updatedClassValue !== '') {
+                        addClass([this.inputWrapper.container], updatedClassValue.split(' '));
+                }
                 } else if (htmlAttr === 'disabled' && this.htmlAttributes[htmlAttr] === 'disabled') {
                     this.enabled = false;
                     this.setEnable();
@@ -965,7 +967,7 @@ export class DropDownList extends DropDownBase implements IInput {
                             index = index < 0 ? this.liCollections.length - 1 : index === this.liCollections.length ? 0 : index;
                         }
                         nextItem = isNullOrUndefined(this.activeIndex) ? this.liCollections[startIndex] : this.liCollections[index];
-                        this.setSelection(nextItem, e);
+                        if (!isNullOrUndefined(nextItem)) { this.setSelection(nextItem, e); }
                     }
                     e.preventDefault();
                     break;
@@ -2013,7 +2015,6 @@ export class DropDownList extends DropDownBase implements IInput {
             }
         });
     }
-
     private isEmptyList(): boolean {
         return !isNullOrUndefined(this.liCollections) && this.liCollections.length === 0;
     }
@@ -2304,6 +2305,10 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.element.parentElement.insertBefore(this.inputElement, this.element);
                 this.preventTabIndex(this.inputElement);
             }
+            let updatedCssClassValues: string = this.cssClass;
+            if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+                updatedCssClassValues = (this.cssClass.replace(/\s+/g, ' ')).trim();
+            }
             this.inputWrapper = Input.createInput(
                 {
                     element: <HTMLInputElement>this.inputElement,
@@ -2312,7 +2317,7 @@ export class DropDownList extends DropDownBase implements IInput {
                     properties: {
                         readonly: this.getModuleName() === 'dropdownlist' ? true : this.readonly,
                         placeholder: this.placeholder,
-                        cssClass: this.cssClass,
+                        cssClass: updatedCssClassValues,
                         enabled: this.enabled,
                         enableRtl: this.enableRtl,
                         showClearButton: this.showClearButton
@@ -2478,7 +2483,7 @@ export class DropDownList extends DropDownBase implements IInput {
                     if (this.getModuleName() !== 'dropdownlist') {
                         Input.setReadonly(newProp.readonly, this.inputElement as HTMLInputElement); }
                     break;
-                case 'cssClass': this.setCssClass(newProp, oldProp); break;
+                case 'cssClass': this.setCssClass(newProp.cssClass, oldProp.cssClass); break;
                 case 'enableRtl': this.setEnableRtl(); break;
                 case 'enabled': this.setEnable(); break;
                 case 'text': if (newProp.text === null) { this.clearAll(); break; }
@@ -2591,18 +2596,16 @@ export class DropDownList extends DropDownBase implements IInput {
         };
     }
 
-    private setCssClass(newProp: DropDownListModel, oldProp: DropDownListModel): void {
-        if (!isNullOrUndefined(oldProp.cssClass) && oldProp.cssClass !== '' ) {
-            removeClass([this.inputWrapper.container], oldProp.cssClass.split(' '));
+    private setCssClass(newClass: string, oldClass: string): void {
+        if (!isNullOrUndefined(oldClass)) {
+            oldClass = (oldClass.replace(/\s+/g, ' ')).trim();
         }
-        Input.setCssClass(newProp.cssClass, [this.inputWrapper.container]);
+        if (!isNullOrUndefined(newClass)) {
+            newClass = (newClass.replace(/\s+/g, ' ')).trim();
+        }
+        Input.setCssClass(newClass, [this.inputWrapper.container], oldClass);
         if (this.popupObj) {
-            if (!isNullOrUndefined(oldProp.cssClass) && oldProp.cssClass !== '' ) {
-                removeClass([this.popupObj.element], oldProp.cssClass.split(' '));
-            }
-            if (!isNullOrUndefined(newProp.cssClass) && newProp.cssClass !== '' ) {
-                addClass([this.popupObj.element], newProp.cssClass.split(' '));
-            }
+            Input.setCssClass(newClass, [this.popupObj.element], oldClass);
         }
     }
     /**

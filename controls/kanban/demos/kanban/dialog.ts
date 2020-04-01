@@ -13,9 +13,9 @@ let kanbanOptions: KanbanModel = {
     dataSource: kanbanData,
     keyField: 'Status',
     columns: [
-        { headerText: 'Backlog', keyField: 'Open' },
+        { headerText: 'Backlog', keyField: 'Open', showAddButton: true },
         { headerText: 'In Progress', keyField: 'InProgress' },
-        { headerText: 'Testing', keyField: 'Testing' },
+        { headerText: 'Testing', keyField: 'Testing', showAddButton: true },
         { headerText: 'Done', keyField: 'Close' }
     ],
     cardSettings: {

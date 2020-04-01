@@ -1,4 +1,4 @@
-import { createElement, remove } from '@syncfusion/ej2-base';
+import { createElement, remove, isBlazor } from '@syncfusion/ej2-base';
 import { Pager } from './pager';
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 
@@ -48,7 +48,9 @@ export class PagerDropDown {
         let dropDownDiv: Element = createElement('div', { className: 'e-pagerdropdown' });
         let defaultTextDiv: Element = createElement('div', { className: 'e-pagerconstant' });
         let input: HTMLElement = createElement('input', { attrs: { type: 'text', tabindex: '1' } });
-        this.pagerCons = createElement('span', { className: 'e-constant', innerHTML: this.pagerModule.getLocalizedLabel('pagerDropDown') });
+        this.pagerCons = createElement('span', { className: 'e-constant', innerHTML: isBlazor() ?
+        this.pagerModule.getLocalizedLabel('PagerDropDown') :
+        this.pagerModule.getLocalizedLabel('pagerDropDown') });
         dropDownDiv.appendChild(input);
         defaultTextDiv.appendChild(this.pagerCons);
         this.pagerDropDownDiv.appendChild(dropDownDiv);
@@ -81,7 +83,8 @@ export class PagerDropDown {
     private onChange(e: ChangeEventArgs): void {
         if (this.dropDownListObject.value === this.pagerModule.getLocalizedLabel('All')) {
             this.pagerModule.pageSize = this.pagerModule.totalRecordsCount;
-            this.pagerCons.innerHTML = this.pagerModule.getLocalizedLabel('pagerAllDropDown');
+            this.pagerCons.innerHTML = isBlazor() ? this.pagerModule.getLocalizedLabel('PagerAllDropDown') :
+            this.pagerModule.getLocalizedLabel('pagerAllDropDown');
             e.value = this.pagerModule.pageSize;
             if (document.getElementsByClassName('e-popup-open e-alldrop').length) {
                 (<HTMLElement>document.getElementsByClassName('e-popup-open e-alldrop')[0]).style.display = 'none';
@@ -89,7 +92,8 @@ export class PagerDropDown {
         } else {
             this.pagerModule.pageSize = parseInt(this.dropDownListObject.value as string, 10);
             if (this.pagerCons.innerHTML !== this.pagerModule.getLocalizedLabel('pagerDropDown')) {
-                this.pagerCons.innerHTML = this.pagerModule.getLocalizedLabel('pagerDropDown');
+                this.pagerCons.innerHTML = isBlazor() ? this.pagerModule.getLocalizedLabel('PagerDropDown') :
+                this.pagerModule.getLocalizedLabel('pagerDropDown');
             }
         }
         this.pagerModule.dataBind();

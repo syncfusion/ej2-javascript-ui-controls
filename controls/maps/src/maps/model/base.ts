@@ -17,45 +17,45 @@ import { AnnotationAlignment, GeometryType, LabelPosition, LabelIntersectAction 
 
 
 /**
- * Options for customizing the annotation.
+ * Sets and gets the options for customizing the annotation element in maps.
  */
 
 export class Annotation extends ChildProperty<Annotation> {
 
     /**
-     * Specifies the id of html element.
+     * Sets and gets the content for the annotation in maps component.
      */
     @Property('')
     public content: string;
 
     /**
-     * Specifies the position of x.
+     * Sets and gets the x position of the annotation in maps component.
      */
     @Property('0px')
     public x: string;
 
     /**
-     * Specifies the position of y.
+     * Sets and gets the y position of the annotation in maps component.
      */
     @Property('0px')
     public y: string;
 
     /**
-     * Specifies the vertical alignment of annotation.
+     * Sets and gets the annotation element to be aligned vertically.
      * @default None
      */
     @Property('None')
     public verticalAlignment: AnnotationAlignment;
 
     /**
-     * Specifies the horizontal alignment of annotation.
+     * Sets and gets the annotation element to be aligned horizontally.
      * @default None
      */
     @Property('None')
     public horizontalAlignment: AnnotationAlignment;
 
     /**
-     * Specifies the zIndex of the annotation.
+     * Sets and gets the z-index of the annotation in maps component.
      * @default '-1'
      */
     @Property('-1')
@@ -63,106 +63,106 @@ export class Annotation extends ChildProperty<Annotation> {
 }
 export class Arrow extends ChildProperty<Arrow> {
     /**
-     * arrowPosition
+     * Sets and gets the type of the position to place the arrow in navigation lines.
      */
     @Property('Start')
     public position: string;
     /**
-     * show
+     * Enables or disables the visibility state of the arrow in navigation line.
      */
     @Property('false')
     public showArrow: boolean;
     /**
-     * size
+     * Sets and gets the size of the arrow in navigation line in maps.
      */
     @Property(2)
     public size: number;
     /**
-     * color
+     * Sets and gets the color for the arrow in navigation line.
      */
     @Property('black')
     public color: string;
     /**
-     * offset the arrow in navigation line by specified pixels
+     * Sets and gets the offset value to position the arrow in navigation line.
      */
     @Property(0)
     public offSet: number;
 }
 
 /**
- * Configures the fonts in maps.
+ * Sets and gets the options to customize the style of the text in data label, legend and other texts.
  */
 export class Font extends ChildProperty<Font> {
 
     /**
-     * Font size for the text.
+     * Sets and gets the size for the text in data label, legend and other texts.
      */
     @Property('12px')
     public size: string;
 
     /**
-     * Color for the text.
+     * Sets and gets the color for the text in data label, legend and other texts in maps component.
      */
     @Property(null)
     public color: string;
 
     /**
-     * FontFamily for the text.
+     * Sets and gets the style of the text in data label, legend and other texts in maps component.
      */
     @Property('Roboto, Noto, Sans-serif')
     public fontFamily: string;
 
     /**
-     * FontWeight for the text.
+     * Sets and gets the font weight of the text in data label, legend and other texts in maps component.
      */
     @Property('Medium')
     public fontWeight: string;
 
     /**
-     * FontStyle for the text.
+     * Sets and gets the style of the text in data label, legend and other texts in maps component.
      */
     @Property('Medium')
     public fontStyle: string;
 
     /**
-     * Opacity for the text.
+     * Sets and gets the opacity for the text in data label, legend and other texts in maps component.
      * @default 1
      */
     @Property(1)
     public opacity: number;
 }
 /**
- * Configures the borders in the maps.
+ * Sets and gets the options to customize the border for the maps.
  */
 export class Border extends ChildProperty<Border> {
 
     /**
-     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     * Sets and gets the color of the border. This property accepts the value in hex code and rgba string as a valid CSS color string.
      */
     @Property('')
     public color: string;
 
     /**
-     * The width of the border in pixels.
+     * Sets and gets the width of the border in maps.
      */
     @Property(0)
     public width: number;
 
 }
 /**
- * Configures the center position in the maps.
+ * Sets and gets the center position in maps.
  */
 export class CenterPosition extends ChildProperty<CenterPosition> {
 
     /**
-     * latitude for the center position of maps
+     * Sets and gets the latitude for the center position of maps.
      * @default null
      */
     @Property(null)
     public latitude: number;
 
     /**
-     * longitude for the center position of maps
+     * Sets and gets the longitude for the center position of maps.
      * @default null
      */
     @Property(null)
@@ -170,221 +170,227 @@ export class CenterPosition extends ChildProperty<CenterPosition> {
 
 }
 /**
- * To configure the tooltip settings of the maps.
+ * Sets and gets the options to customize the tooltip for layers, markers, and bubble in maps.
  */
 export class TooltipSettings extends ChildProperty<TooltipSettings> {
     /**
-     * Toggle the tooltip visibility.
+     * Enables or disables the tooltip visibility for layers, markers, and bubbles in maps.
      * @default false
      */
     @Property(false)
     public visible: boolean;
     /**
-     * To customize the tooltip template.
+     * Sets and gets the tooltip template for layers, markers, and bubbles in maps.
      * @default ''
      */
     @Property('')
     public template: string;
     /**
-     * To customize the fill color of the tooltip.
+     * Sets and gets the color of the tooltip in layers, markers, and bubbles of maps.
      */
     @Property('')
     public fill: string;
 
     /**
-     * Options for customizing the color and width of the tooltip.
+     * Sets and gets the options for customizing the color and width of the border of the tooltip in layers, markers, and bubbles of maps.
      */
     @Complex<BorderModel>({ color: 'transparent', width: 1 }, Border)
     public border: BorderModel;
 
     /**
-     * Options for customizing text styles of the tooltip.
+     * Sets and gets the options for customizing the style of the text in tooltip for layers, markers, and bubbles of maps.
      */
     @Complex<FontModel>(Theme.tooltipLabelFont, Font)
     public textStyle: FontModel;
+
     /**
-     * To customize the format of the tooltip.
+     * Sets and gets the format of the tooltip in layers, markers, and bubbles of maps.
      * @default null
      */
     @Property(null)
     public format: string;
     /**
-     * To customize the value of the tooltip.
+     * Sets and gets the value from the data source based on which the tooltip is visible on layers, markers, and bubbles of maps.
      * @default null
      */
     @Property(null)
     public valuePath: string;
 }
 /**
- * Configures the maps margins.
+ * Sets and gets the margin for the maps component.
  */
 export class Margin extends ChildProperty<Margin> {
 
     /**
-     * Left margin in pixels.
+     * Sets and gets the left margin for maps.
      * @default 10
      */
     @Property(10)
     public left: number;
 
     /**
-     * Right margin in pixels.
+     * Sets and gets the right margin for maps.
      * @default 10
      */
     @Property(10)
     public right: number;
 
     /**
-     * Top margin in pixels.
+     * Sets and gets the top margin for maps.
      * @default 10
      */
     @Property(10)
     public top: number;
 
     /**
-     * Bottom margin in pixels.
+     * Sets and gets the bottom margin for maps.
      * @default 10
      */
     @Property(10)
     public bottom: number;
 }
 /*
- * To configure cluster separate connector line style
+ * Sets and gets the options to customize the line that connects the markers in marker cluster in maps.
  */
 export class ConnectorLineSettings extends ChildProperty<ConnectorLineSettings> {
     /**
-     * Set the color for connector line
+     * Sets and gets the color for connector line between the markers in marker cluster.
      * @default '#000000'
      */
     @Property('#000000')
     public color: string;
 
     /**
-     * Set the line width for connector line
+     * Sets and gets the line width for connector line between the markers in marker cluster.
      * @default 1
      */
     @Property(1)
     public width: number;
 
     /**
-     * Set the opacity for connector line
+     * Sets and gets the opacity for connector line between the markers in marker cluster.
      * @default 1
      */
     @Property(1)
     public opacity: number;
 }
-/**
- * To configure cluster in marker
- */
 
+/**
+ * Sets and gets the options to customize the cluster of markers in Maps.
+ */
 export class MarkerClusterSettings extends ChildProperty<MarkerClusterSettings> {
     /**
-     * Toggle the Clustering visibility.
+     * Enables or disables the visibility state of the clustering of markers in the maps component.
      * @default false
      */
     @Property(false)
     public allowClustering: boolean;
     /**
-     * Options for customizing the color and width of the Clustering.
+     * Sets and gets the options for customizing the color and width of the border of cluster in maps.
      */
     @Complex<BorderModel>({ color: 'transparent', width: 1 }, Border)
     public border: BorderModel;
     /**
-     * To customize the fill color of the Clustering.
+     * Sets and gets the fill color of the cluster.
      * @default '#D2691E'
      */
     @Property('#D2691E')
     public fill: string;
     /**
-     * To customize the opacity of the Clustering.
+     * Sets and gets the opacity of the marker cluster.
      * @default 1
      */
     @Property(1)
     public opacity: number;
     /**
-     * To customize the Clustering of the marker.
+     * Sets and gets shape for the cluster of markers.
      * @default Rectangle
      */
     @Property('Rectangle')
     public shape: MarkerType;
 
     /**
-     * Customize the legend width of the maps.
+     * Sets and gets the width of the marker cluster in maps.
      * @default 12
      */
     @Property(12)
     public width: number;
 
     /**
-     * Customize the legend height of the maps.
+     * Sets and gets the height of the marker cluster in maps.
      * @default 12
      */
     @Property(12)
     public height: number;
     /**
-     * To move the marker by setting offset values
+     * Sets and gets the offset position for the marker cluster in maps.
      */
     @Property(new Point(0, 0))
     public offset: Point;
     /**
-     * To provide the image url for rendering marker image
+     * Sets and gets the URL path for the marker cluster when the cluster shape is set as image in maps.
      */
     @Property('')
     public imageUrl: string;
     /**
-     * dashArray
+     * Sets and gets the dash array for the marker cluster in maps.
      *  @default ''
      */
     @Property('')
     public dashArray: string;
     /**
-     * cluster style
+     * Sets and gets the options to customize the text in marker cluster.
      */
     @Complex<FontModel>({}, Font)
     public labelStyle: FontModel;
     /**
-     * Toggle the cluster separate
+     * Enables or disables the cluster expand when many markers are in same location.
      * @default false
      */
     @Property(false)
     public allowClusterExpand: boolean;
     /**
-     * Set connector style for cluster separating
+     * Sets and gets the options to customize the connector line in cluster separating the markers.
      */
     @Complex<ConnectorLineSettingsModel>({}, ConnectorLineSettings)
     public connectorLineSettings: ConnectorLineSettingsModel;
 }
 /**
- * To configure cluster separate collections.
+ * Sets and gets the data in the marker cluster.
  */
 export class MarkerClusterData extends ChildProperty<MarkerClusterData> {
     /**
+     * Sets and gets the data for the marker cluster.
      * @private
      */
     public data: Object[];
     /**
+     * Sets and gets the index value for the layer in which the marker cluster is rendered.
      * @private
      */
     public layerIndex: number;
     /**
+     * Sets and gets the index value for the marker in the maps.
      * @private
      */
     public markerIndex: number;
     /**
+     * Sets and gets the index value for cluster for which the click operation is triggered.
      * @private
      */
     public targetClusterIndex: number;
     /**
+     * Enables or disables the same cluster occurs in maps.
      * @private
      */
     public isClusterSame: boolean;
 }
 /**
- * To configure ColorMapping in Maps
+ * Sets and gets the options to customize the color-mapping in maps.
  */
 export class ColorMappingSettings extends ChildProperty<ColorMappingSettings> {
     /**
-     * To configure from
+     * Sets and gets the value from where the range color-mapping starts.
      * @aspDefaultValueIgnore
      * @default null
      * @isBlazorNullableType true
@@ -392,7 +398,7 @@ export class ColorMappingSettings extends ChildProperty<ColorMappingSettings> {
     @Property(null)
     public from: number;
     /**
-     * To configure to
+     * Sets and gets the value to where the range color-mapping ends.
      * @aspDefaultValueIgnore
      * @default null
      * @isBlazorNullableType true
@@ -400,208 +406,208 @@ export class ColorMappingSettings extends ChildProperty<ColorMappingSettings> {
     @Property(null)
     public to: number;
     /**
-     * To configure value
+     * Sets and gets the value for the color-mapping from the data source.
      * @default null
      */
     @Property(null)
     public value: string;
     /**
-     * To configure color
+     * Sets and gets the color for the color-mapping in maps.
      * @default null
      */
     @Property(null)
     public color: string | string[];
     /**
-     * To configure min opacity
+     * Sets and gets the minimum opacity for the color-mapping in maps.
      * @default null
      */
     @Property(null)
     public minOpacity: number;
     /**
-     * To configure max opacity
+     * Sets and gets the maximum opacity for the color-mapping in maps.
      * @default null
      */
     @Property(null)
     public maxOpacity: number;
     /**
-     * To configure labels
+     * Sets and gets the label for the color-mapping from the data source in maps.
      * @default null
      */
     @Property(null)
     public label: string;
     /**
-     * To enable or disable the legend
+     * Enables or disables the visibility state of legend for the color-mapping shapes in maps.
      * @default true
      */
     @Property(true)
     public showLegend: boolean;
 }
 /**
- * To configure the initial shape selection settings
+ * Sets and gets the shapes that is selected initially on rendering the maps.
  */
 export class InitialShapeSelectionSettings extends ChildProperty<InitialShapeSelectionSettings> {
 
     /**
-     * To customize the fill color of the highlight.
+     * Sets and gets the property name from the data source in maps.
      * @default null
      */
     @Property(null)
     public shapePath: string;
     /**
-     * Toggle the highlight settings.
+     * Sets and gets the value for the shape from data source in maps.
      * @default null
      */
     @Property(null)
     public shapeValue: string;
 }
 /**
- * To configure the selection settings
+ * Sets and gets the options to customize the maps on selecting the shapes.
  */
 export class SelectionSettings extends ChildProperty<SelectionSettings> {
 
     /**
-     * Toggle the selection settings.
+     * Enables or disables the selection for the layers, markers in maps.
      * @default false
      */
     @Property(false)
     public enable: boolean;
     /**
-     * To customize the fill color of the Selection.
+     * Sets and gets the color for the shape that is selected.
      * @default null
      */
     @Property(null)
     public fill: string;
     /**
-     * To customize the opacity of the Selection.
+     * Sets and gets the opacity for the shape that is selected.
      * @default 1
      */
     @Property(1)
     public opacity: number;
     /**
-     * Toggle the multi selection.
+     * Enables or disables the selection for many shapes in maps.
      * @default false
      */
     @Property(false)
     public enableMultiSelect: boolean;
 
     /**
-     * Options for customizing the color and width of the selection.
+     * Sets and gets the options for customizing the color and width of the border of selected shapes in maps.
      */
     @Complex<BorderModel>({ color: 'transparent', width: 0 }, Border)
     public border: BorderModel;
 }
 /**
- * To configure the highlight settings
+ * Sets and gets the options to customize the shapes on which the mouse has hovered in maps.
  */
 export class HighlightSettings extends ChildProperty<HighlightSettings> {
 
     /**
-     * To customize the fill color of the highlight.
+     * Sets and gets the color for the shapes on which the mouse has hovered in maps. 
      * @default null
      */
     @Property(null)
     public fill: string;
     /**
-     * Toggle the highlight settings.
+     * Enables or disables the highlight settings for maps.
      * @default false
      */
     @Property(false)
     public enable: boolean;
     /**
-     * To customize the opacity of the highlight.
+     * Sets and gets the opacity for the highlighted shapes in maps.
      * @default 1
      */
     @Property(1)
     public opacity: number;
     /**
-     * Options for customizing the color and width of the highlight.
+     * Sets and gets the options for customizing the color and width of the border for the highlighted shapes in maps.
      */
     @Complex<BorderModel>({ color: 'transparent', width: 0 }, Border)
     public border: BorderModel;
 
 }
 /**
- * NavigationSelectedLine
+ * Sets and gets the options to customize the navigation line in maps.
  */
 export class NavigationLineSettings extends ChildProperty<NavigationLineSettings> {
     /**
-     * NavigationSelectedLine visible
-     *  @default false
-     */
-    @Property(false)
-    public visible: boolean;
-    /**
-     * Configures the label border
-     * @default 1
-     */
-    @Property(1)
-    public width: number;
-    /**
-     * NavigationSelectedLine longitude
-     *  @default []
-     */
-    @Property(null)
-    public longitude: number[];
-    /**
-     * NavigationSelectedLine latitude
-     *  @default []
-     */
-    @Property(null)
-    public latitude: number[];
-    /**
-     * dashArray
-     *  @default ''
-     */
-    @Property('')
-    public dashArray: string;
-    /**
-     * NavigationSelectedLine color
-     */
-    @Property('black')
-    public color: string;
-    /**
-     * Specifies the angle of curve connecting different locations in map
-     * @default 0
-     */
-    @Property(0)
-    public angle: number;
-    /**
-     * arrow
-     */
-    @Complex<ArrowModel>({ showArrow: false, position: 'Start', size: 5, color: 'black' }, Arrow)
-    public arrowSettings: ArrowModel;
-    /**
-     * To configure the selection settings of the maps.
-     */
-    @Complex<SelectionSettingsModel>({}, SelectionSettings)
-    public selectionSettings: SelectionSettingsModel;
-    /**
-     * To configure the highlight settings of the maps.
-     */
-    @Complex<HighlightSettingsModel>({}, HighlightSettings)
-    public highlightSettings: HighlightSettingsModel;
-}
-/**
- * Bubble settings model class
- */
- /*tslint:disable-next-line:max-line-length*/
-export class BubbleSettings extends ChildProperty<BubbleSettings> {
-    /**
-     * Configures the bubble border
-     */
-    @Complex<BorderModel>({}, Border)
-    public border: BorderModel;
-    /**
-     * Toggle the visibility of bubble
+     * Enables or disables the navigation lines to be drawn in maps.
      * @default false
      */
     @Property(false)
     public visible: boolean;
     /**
-     * * Specifies dataSource for the bubble.
-     * * The datasource must contain the size value of the bubble that can be bound to the bubble 
+     * Sets and gets the width of the navigation lines in maps.
+     * @default 1
+     */
+    @Property(1)
+    public width: number;
+    /**
+     * Sets and gets the longitude for the navigation lines drawn in maps.
+     * @default []
+     */
+    @Property(null)
+    public longitude: number[];
+    /**
+     * Sets and gets the latitude value for the navigation lines drawn in maps.
+     * @default []
+     */
+    @Property(null)
+    public latitude: number[];
+    /**
+     * Sets and gets the dash-array for the navigation lines drawn in maps.
+     * @default ''
+     */
+    @Property('')
+    public dashArray: string;
+    /**
+     * Sets and gets the color for the navigation lines in maps.
+     */
+    @Property('black')
+    public color: string;
+    /**
+     * Sets and gets the angle of curve connecting different locations in maps.
+     * @default 0
+     */
+    @Property(0)
+    public angle: number;
+    /**
+     * Sets and gets the options to customize the arrow for the navigation line in maps.
+     */
+    @Complex<ArrowModel>({ showArrow: false, position: 'Start', size: 5, color: 'black' }, Arrow)
+    public arrowSettings: ArrowModel;
+    /**
+     * Sets and gets the selection settings of the navigation line in maps.
+     */
+    @Complex<SelectionSettingsModel>({}, SelectionSettings)
+    public selectionSettings: SelectionSettingsModel;
+    /**
+     * Sets and gets the highlight settings of the navigation line in maps.
+     */
+    @Complex<HighlightSettingsModel>({}, HighlightSettings)
+    public highlightSettings: HighlightSettingsModel;
+}
+/**
+ * Sets and gets the options to customize the bubble elements in maps.
+ */
+ /*tslint:disable-next-line:max-line-length*/
+export class BubbleSettings extends ChildProperty<BubbleSettings> {
+    /**
+     * Sets and gets the options to customize the color and width of the border for the bubble in maps.
+     */
+    @Complex<BorderModel>({}, Border)
+    public border: BorderModel;
+    /**
+     * Enables or disables the visibility state of the bubbles in maps.
+     * @default false
+     */
+    @Property(false)
+    public visible: boolean;
+    /**
+     * Sets and gets the data source for the bubble.
+     * The data source must contain the size value of the bubble that can be bound to the bubble 
      * of the Maps using the valuePath property in the bubbleSettings.
-     * * The datasource can contain data such as color, and the other information that can be bound to the color, and tooltip of the bubble.
+     * The data source can contain data such as color, and the other information that can be bound to the bubble, and tooltip of the bubble.
      * @isdatamanager false
      * @isObservable true
      * @default []
@@ -609,166 +615,166 @@ export class BubbleSettings extends ChildProperty<BubbleSettings> {
     @Property([])
     public dataSource: object[];
     /**
-     * To configure bubble animation duration
+     * Sets and gets the duration for the animation for bubble in maps.
      * @default 1000
      */
     @Property(1000)
     public animationDuration: number;
 
     /**
-     * Animation duration
+     * Sets and gets the delay in animation for bubble in maps.
      * @default 0
      */
     @Property(0)
     public animationDelay: number;
 
     /**
-     * To configure bubble fill color
+     * Sets and gets the color for the bubble in maps.
      * @default ''
      */
     @Property('')
     public fill: string;
     /**
-     * To configure bubble minRadius
+     * Sets and gets the minimum radius for the bubble in maps.
      * @default 10
      */
     @Property(10)
     public minRadius: number;
     /**
-     * To configure bubble maxRadius
+     * Sets and gets the maximum radius for the bubble in maps.
      * @default 20
      */
     @Property(20)
     public maxRadius: number;
     /**
-     * To configure bubble opacity
+     * Sets and gets the opacity of the bubble in maps.
      * @default 1
      */
     @Property(1)
     public opacity: number;
     /**
-     * To configure bubble valuePath
+     * Sets and gets the value from the data source of bubble settings for the bubble to be rendered in maps.
      * @default null
      */
     @Property(null)
     public valuePath: string;
     /**
-     * To configure bubble shape type
+     * Sets and gets the type of the bubble in maps.
      * @default Circle
      */
     @Property('Circle')
     public bubbleType: BubbleType;
     /**
-     * To configure bubble colorValuePath
+     * Sets and gets the value from the data source of bubble settings for the color of the bubble in maps.
      * @default null
      */
     @Property(null)
     public colorValuePath: string;
     /**
-     * To configure bubble colorMapping
+     * Sets and gets the color-mapping for the bubble in maps.
      * @default []
      */
     @Collection<ColorMappingSettingsModel>([], ColorMappingSettings)
     public colorMapping: ColorMappingSettingsModel[];
 
     /**
-     * To configure the tooltip settings of the bubble .
+     * Sets and gets the options to customize the tooltip for the bubbles in maps.
      */
     @Complex<TooltipSettingsModel>({}, TooltipSettings)
     public tooltipSettings: TooltipSettingsModel;
     /**
-     * To configure the selection settings of the maps.
+     * Sets and gets the selection settings for the bubble in maps.
      */
     @Complex<SelectionSettingsModel>({}, SelectionSettings)
     public selectionSettings: SelectionSettingsModel;
     /**
-     * To configure the highlight settings of the maps.
+     * Sets and gets the highlight settings for the bubble in maps.
      */
     @Complex<HighlightSettingsModel>({}, HighlightSettings)
     public highlightSettings: HighlightSettingsModel;
 }
 
 /**
- * To configure title of the maps.
+ * Sets and gets the title for the maps.
  */
 export class CommonTitleSettings extends ChildProperty<CommonTitleSettings> {
     /**
-     * To customize the text of the title.
+     * Sets and gets the text for the title in maps.
      * @default ''
      */
     @Property('')
     public text: string;
     /**
-     * To customize title description for the accessibility.
+     * Sets and gets the description of the title in maps.
      * @default ''
      */
     @Property('')
     public description: string;
 }
 /**
- * To configure subtitle of the maps.
+ * Sets and gets the subtitle for maps.
  */
 export class SubTitleSettings extends CommonTitleSettings {
     /**
-     * Options for customizing title styles of the Maps.
+     * Sets and gets the options for customizing the text in the subtitle for maps.
      */
     @Complex<FontModel>({ size: Theme.mapsSubTitleFont.size }, Font)
     public textStyle: FontModel;
     /**
-     * text alignment
+     * Sets and gets the alignment of the subtitle for maps.
      * @default Center
      */
     @Property('Center')
     public alignment: Alignment;
 }
 /**
- * To configure title of the maps.
+ * Sets and gets the title for the maps.
  */
 export class TitleSettings extends CommonTitleSettings {
     /**
-     * Options for customizing title styles of the Maps.
+     * Sets and gets the options for customizing the text of the title in Maps.
      */
     @Complex<FontModel>({ size: Theme.mapsTitleFont.size }, Font)
     public textStyle: FontModel;
     /**
-     * text alignment
+     * Sets and gets the alignment for the text in the title for the maps.
      * @default Center
      */
     @Property('Center')
     public alignment: Alignment;
     /**
-     * To configure sub title of maps.
+     * Sets and gets the subtitle for the maps.
      */
     @Complex<SubTitleSettingsModel>({}, SubTitleSettings)
     public subtitleSettings: SubTitleSettingsModel;
 }
 /**
- * Options to configure maps Zooming Settings.
+ * Sets and gets the options to configure maps zooming operations.
  */
 export class ZoomSettings extends ChildProperty<ZoomSettings> {
     /**
-     * Toggle the visibility of zooming.
+     * Enables or disables the zooming operation in the maps component.
      * @default false
      */
     @Property(false)
     public enable: boolean;
 
     /**
-     * Toggle the visibility of Panning
+     * Enables or disables the panning operation in the maps component.
      * @default true
      */
     @Property(true)
     public enablePanning: boolean;
 
     /**
-     * Toggle the visibility of Selection Zooming
+     * Enables or disables the selection zooming operation in the maps component.
      * @default true
      */
     @Property(true)
     public enableSelectionZooming: boolean;
 
     /**
-     * Configures tool bar orientation
+     * Sets and gets the orientation of the zoom toolbar.
      * @default Horizontal
      * @blazorProperty 'ToolbarOrientation'
      */
@@ -776,299 +782,298 @@ export class ZoomSettings extends ChildProperty<ZoomSettings> {
     public toolBarOrientation: Orientation;
 
     /**
-     * Specifies the tool bar color.
+     * Sets and gets the color for the toolbar in maps.
      */
     @Property(null)
     public color: string;
     /**
-     * Specifies the tool bar highlight color.
+     * Sets and gets the color for the zooming toolbar when the mouse has hovered on toolbar element in maps.
      */
     @Property('#e61576')
     public highlightColor: string;
     /**
-     * Specifies the tool bar selection color.
-     * 
+     * Sets and gets the color for the zooming toolbar when clicking the zooming toolbar in maps.
      */
     @Property('#e61576')
     public selectionColor: string;
 
     /**
-     * Configures vertical placement of tool bar 
+     * Sets and gets the position type of toolbar when it is placed horizontally.
      * @default Far
      */
     @Property('Far')
     public horizontalAlignment: Alignment;
 
     /**
-     * Configures vertical placement of tool bar 
+     * Sets and gets the position type of toolbar when it is placed vertically.
      * @default Near
      */
     @Property('Near')
     public verticalAlignment: Alignment;
     /**
-     * To configure zooming items.
+     * Sets and gets the items that are to be shown in the zooming toolbar in maps.
      */
     @Property(['ZoomIn', 'ZoomOut', 'Reset'])
     public toolbars: string[];
     /**
-     * Toggle the mouse wheel zooming.
+     * Enables or disables the mouse wheel zooming in maps.
      * @default true
      */
     @Property(true)
     public mouseWheelZoom: boolean;
 
     /**
-     * Double tab zooming
+     * Enables or disables the double click zooming in maps.
      * @default false
      * @blazorProperty 'ZoomOnDoubleClick'
      */
     @Property(false)
     public doubleClickZoom: boolean;
     /**
-     * Toggle the pinch zooming.
+     * Enables or disables the pinch zooming in maps.
      * @default true
      */
     @Property(false)
     public pinchZooming: boolean;
     /**
-     * Toggle the selection on zooming.
+     * Enables or disables the zooming on clicking the shapes in maps.
      * @default false
      */
     @Property(false)
     public zoomOnClick: boolean;
     /**
-     * Configures zoom factor.
+     * Sets and gets the factor of zoom to be displayed while rendering the maps.
      * @default 1
      */
     @Property(1)
     public zoomFactor: number;
     /**
-     * Configures max zooming.
+     * Sets and gets the maximum zooming value in maps.
      * @default 10
      */
     @Property(10)
     public maxZoom: number;
     /**
-     * Configures minimum zooming.
+     * Sets and gets the minimum zooming value in maps.
      * @default 1
      */
     @Property(1)
     public minZoom: number;
     /**
-     * Zoom map based on marker positions.
+     * Enables or disables the zoom based on the marker position while rendering the maps.
      */
     @Property(false)
     public shouldZoomInitially: boolean;
     /**
-     * Zoom map based on marker positions.
+     * Enables or disables the zoom to set the initial State.
      */
     @Property(true)
     public resetToInitial: boolean;
 }
 /**
- * To configure the toggle legend settings in the maps
+ * Sets and gets the settings to customize the color-mapping visibility based on the legend visibility.
  */
 export class ToggleLegendSettings extends ChildProperty<ToggleLegendSettings> {
     /**
-     * To toggle the legend
+     * Enables or disables the legend to be toggled.
      * @default false
      */
     @Property(false)
     public enable: boolean;
     /**
-     * To apply the shape settings
+     * Enables or disables the property of the shape settings to be displayed while clicking the legend.
      * @default true
      */
     @Property(true)
     public applyShapeSettings: boolean;
     /**
-     * To specify the opacity of the shape
+     * Sets and gets the opacity for the shape for which the legend is selected.
      * @default 1
      */
     @Property(1)
     public opacity: number;
     /**
-     * To fill the color for shape
+     * Sets and gets the color of the shape for which the legend is selected.
      * @default ''
      */
     @Property('')
     public fill: string;
     /**
-     * To apply border for the shapes
+     * Sets and gets the options to customize the color and width of the border for the shape in maps.
      */
     @Complex<BorderModel>({ color: '', width: 0 }, Border)
     public border: BorderModel;
 }
 /**
- * Configures the legend settings.
+ * Sets and gets the options to customize the legend of the maps.
  */
 export class LegendSettings extends ChildProperty<LegendSettings> {
     /**
-     * Toggle the legend selection
+     * Enables or disables the toggle visibility for legend in maps.
      * @default false
      */
     @Property(false)
     public toggleVisibility: boolean;
     /**
-     * Toggle the legend visibility.
+     * Enables or disables the visibility state of the legend in maps.
      * @default false
      */
     @Property(false)
     public visible: boolean;
 
     /**
-     * Customize the legend background
+     * Sets and gets the background color for the legend in maps.
      * @default 'transparent'
      */
     @Property('transparent')
     public background: string;
 
     /**
-     * Type of the legend rendering
+     * Sets and gets the type of the legend in maps.
      * @default Layers
      */
     @Property('Layers')
     public type: LegendType;
 
     /**
-     * Inverted pointer for interactive legend
+     * Enables or disables the visibility of the inverted pointer in interactive legend in maps.
      */
     @Property(false)
     public invertedPointer: boolean;
 
     /**
-     * To place the label position for interactive legend.
+     * Sets and gets the position of the label in legend.
      * @default After
      */
     @Property('After')
     public labelPosition: LabelPosition;
     /**
-     * Specifies the label intersect action.
+     * Sets and gets the display mode for the label in legend.
      * @default None
      */
     @Property('None')
     public labelDisplayMode: LabelIntersectAction;
     /**
-     * Customize the legend shape of the maps.
+     * Sets and gets the shape of the legend in maps.
      * @default Circle
      */
     @Property('Circle')
     public shape: LegendShape;
 
     /**
-     * Customize the legend width of the maps.
+     * Sets and gets the width of the legend in maps.
      * @default ''
      */
     @Property('')
     public width: string;
 
     /**
-     * Customize the legend height of the maps.
+     * Sets and gets the height of the legend in maps.
      * @default ''
      */
     @Property('')
     public height: string;
 
     /**
-     * Options for customizing text styles of the legend.
+     * Sets and gets the options for customizing the text styles for the legend in maps.
      */
     @Complex<FontModel>({}, Font)
     public textStyle: FontModel;
 
     /**
-     * Customize the legend width of the maps.
+     * Sets and gets the width of the shapes in legend.
      * @default 15
      */
     @Property(15)
     public shapeWidth: number;
 
     /**
-     * Customize the legend height of the maps.
+     * Sets and gets the width of the shapes in legend.
      * @default 15
      */
     @Property(15)
     public shapeHeight: number;
 
     /**
-     * Customize the shape padding
+     * Sets and gets the padding for the shapes in legend.
      * @default 10
      */
     @Property(10)
     public shapePadding: number;
 
     /**
-     * Options for customizing the color and width of the legend border.
+     * Sets and gets the options for customizing the color and width of the legend border.
      */
     @Complex<BorderModel>({ color: '#000000', width: 0 }, Border)
     public border: BorderModel;
 
     /**
-     * Options for customizing the color and width of the shape border.
+     * Sets and gets the options for customizing the color and width of the border for the shape in legend.
      */
     @Complex<BorderModel>({ color: '#000000', width: 0 }, Border)
     public shapeBorder: BorderModel;
 
     /**
-     * To configure the title of the legend.
+     * Sets and gets the title for the legend in maps.
      */
     @Complex<CommonTitleSettingsModel>({}, CommonTitleSettings)
     public title: CommonTitleSettingsModel;
 
     /**
-     * Options for customizing text styles of the legend.
+     * Sets and gets the options for customizing the style of the title for the legend in maps.
      */
     @Complex<FontModel>({}, Font)
     public titleStyle: FontModel;
 
     /**
-     * Customize the legend position of the maps.
+     * Sets and gets the position of the legend in maps.
      * @default Bottom
      */
     @Property('Bottom')
     public position: LegendPosition;
 
     /**
-     * Customize the legend alignment of the maps.
+     * Sets and gets the alignment for the legend in maps.
      * @default Center
      */
     @Property('Center')
     public alignment: Alignment;
 
     /**
-     * Customize the legend items placed
+     * Sets and gets the orientation of the legend in maps.
      * @default None
      */
     @Property('None')
     public orientation: LegendArrangement;
 
     /** 
-     * Customize the legend placed by given x and y values. 
+     * Sets and gets the location of the legend, given by x and y values. 
      */
     @Property({ x: 0, y: 0 })
     public location: Point;
 
     /**
-     * Specifies the legend shape color
+     * Sets and gets the color of the legend in maps.
      */
     @Property(null)
     public fill: string;
 
     /**
-     * Specifies the opacity of legend shape color
+     * Sets and gets the opacity for the legend in maps.
      * @default 1
      */
     @Property(1)
     public opacity: number;
 
     /**
-     * Customize the legend mode.
+     * Sets and gets the mode of the legend in maps. The modes available are default and interactive modes.
      * @default Default
      */
     @Property('Default')
     public mode: LegendMode;
 
     /**
-     * Enable or disable the visibility of legend
+     * Sets and gets the path for the legend from the data source to be shown.
      * @default null
      * @blazorProperty 'LegendPath'
      */
@@ -1076,268 +1081,269 @@ export class LegendSettings extends ChildProperty<LegendSettings> {
     public showLegendPath: string;
 
     /**
-     * Bind the dataSource field for legend
+     * Set and gets the value from the data source for legend.
      * @default null
      */
     @Property(null)
     public valuePath: string;
 
     /**
-     * Removes the duplicate legend item
+     * Enables or disables to remove the duplicate legend item.
      * @default false
      */
     @Property(false)
     public removeDuplicateLegend: boolean;
 
     /**
-     * Options for customizing the color and width of the selection.
+     * Sets and gets the options for customizing the color and width of the shape related to the legend on selecting the legend.
      */
     @Complex<ToggleLegendSettingsModel>({}, ToggleLegendSettings)
     public toggleLegendSettings: ToggleLegendSettingsModel;
 }
 /**
- * Customization for Data label settings.
+ * Sets and gets the options to customize the data-labels in maps.
  */
 export class DataLabelSettings extends ChildProperty<DataLabelSettings> {
     /**
-     * Toggle the data label visibility.
+     * Enables or disables the visibility of data-labels in maps.
      * @default false
      */
     @Property(false)
     public visible: boolean;
     /**
-     * Configures the label border
+     * Sets and gets the options for customizing the color and width of the border for the data-labels.
      */
     @Complex<BorderModel>({ width: 0, color: 'transparent' }, Border)
     public border: BorderModel;
     /**
-     * configure the fill
+     * Sets and gets the color for the data-labels in maps.
      */
     @Property('black')
     public fill: string;
     /**
-     * configure the label opacity
+     * Sets and gets the opacity for the color of the data-labels in maps.
      */
     @Property(1)
     public opacity: number;
     /**
-     * rectangle rx 
+     * Sets and gets the x position for the data-labels.
      * @default 10
      */
     @Property(5)
     public rx: number;
 
     /**
-     * ry value
+     * Sets and gets the y position for the data-labels in maps.
      * @default 10
      */
     @Property(5)
     public ry: number;
     /**
-     * Options for customizing text styles of the data label.
+     * Sets and gets the options for customizing the styles of the text in data-labels.
      */
     @Complex<FontModel>({}, Font)
     public textStyle: FontModel;
     /**
-     * To customize the label path values.
+     * Sets and gets the path from the data source based on which the data-labels gets rendered.
      * @default ''
      */
     @Property('')
     public labelPath: string;
     /**
-     * To customize the smartLabels.
+     * Sets and gets the label mode for the data-labels.
      * @default None
      */
     @Property('None')
     public smartLabelMode: SmartLabelMode;
     /**
-     * intersection action
+     * Sets and gets the intersection action for the data-labels in maps.
      * @default None
      */
     @Property('None')
     public intersectionAction: IntersectAction;
     /**
-     * To customize the data label template.
+     * Sets and gets the template for the data-labels in maps.
      * @default ''
      */
     @Property('')
     public template: string;
 }
 /**
- * To configure the shapeSettings in the maps.
+ * Sets and gets the options to customize the shapes in the maps.
  */
 export class ShapeSettings extends ChildProperty<ShapeSettings> {
     /**
-     * To customize the fill color of the shape.
+     * Sets and gets the color of the shapes in maps.
      * @default '#A6A6A6'
      */
     @Property('#A6A6A6')
     public fill: string;
     /**
-     * To customize the palette of the shape.
+     * Sets and gets a set of colors for the shapes in maps.
      * @default []
      */
     @Property([])
     public palette: string[];
 
     /**
-     * Customize the radius for points
+     * Sets and gets the radius of the shape.
      */
     @Property(5)
     public circleRadius: number;
+
     /**
-     * Options for customizing the color and width of the shape.
+     * Sets and gets the options for customizing the color and width of the border for the shapes in maps.
      */
     @Complex<BorderModel>({ width: 0, color: '#000000' }, Border)
     public border: BorderModel;
 
     /**
-     * Dash array of line
+     * Sets and gets the dash-array for the shapes in maps.
      */
     @Property('')
     public dashArray: string;
 
     /**
-     * To customize the opacity of the shape.
+     * Sets and gets the opacity for the shapes in maps.
      * @default 1
      */
     @Property(1)
     public opacity: number;
     /**
-     * To customize the colorValuePath of the shape.
+     * Sets and gets the value path from the data source to set the color for the shapes in maps.
      * @default null
      */
     @Property(null)
     public colorValuePath: string;
     /**
-     * To customize the valuePath of the shape.
+     * Sets and gets the value from the data source based on which the shape gets rendered.
      * @default null
      */
     @Property(null)
     public valuePath: string;
     /**
-     * To configure shape colorMapping
+     * Sets and gets the options to map the color for some set of the shapes in maps.
      * @default []
      */
     @Collection<ColorMappingSettingsModel>([], ColorMappingSettings)
     public colorMapping: ColorMappingSettingsModel[];
     /**
-     * Toggle the auto fill.
+     * Enables or disables the filling of color for the shapes automatically.
      * @default false
      */
     @Property(false)
     public autofill: boolean;
 }
-/**
- * To configure the marker settings for the maps.
- */
 
+/**
+ * Sets and gets the options to customize the marker in the maps.
+ */
 export class MarkerBase extends ChildProperty<MarkerBase> {
 
     /**
-     * Options for customizing the color and width of the marker.
+     * Sets and gets the options for customizing the color and width of the border for the marker in maps.
      */
     @Complex<BorderModel>({ color: 'transparent', width: 1 }, Border)
     public border: BorderModel;
 
     /**
-     * Options for customizing the dash array options
+     * Sets and gets the dash-array for the marker.
      */
     @Property(null)
     public dashArray: string;
 
     /**
-     * Toggle the visibility of the marker.
+     * Enables or disables the visibility state of the marker based on the marker data source in maps.
      * @default false
      */
     @Property(false)
     public visible: boolean;
 
     /**
-     * To customize the fill color of the marker.
+     * Sets and gets the color for the marker in maps.
      * @default '#FF471A'
      */
     @Property('#FF471A')
     public fill: string;
 
     /**
-     * To customize the height of the marker.
+     * Sets and gets the height of the marker in maps.
      * @default 10
      */
     @Property(10)
     public height: number;
 
     /**
-     * To customize the width of the marker.
+     * Sets and gets the width of the marker in maps.
      * @default 10
      */
     @Property(10)
     public width: number;
 
     /**
-     * To customize the opacity of the marker.
+     * Sets and gets the opacity for the marker in maps.
      * @default 1
      */
     @Property(1)
     public opacity: number;
 
     /**
-     * To customize the color of marker from marker dataSource.
+     * Sets and gets the value path from the marker data source to apply color for the marker.
      * @default null
      */
     @Property(null)
     public colorValuePath: string;
 
     /**
-     * To customize the shape of marker from marker dataSource.
+     * Sets and gets the value path from the marker data source to set the shape of the marker.
      * @default null
      */
     @Property(null)
     public shapeValuePath: string;
 
     /**
-     * To customize the shape image of marker from marker dataSource.
+     * Sets and gets the value path from the marker data source for the image of the marker.
      * @default null
      */
     @Property(null)
     public imageUrlValuePath: string;
 
     /**
-     * To customize the shape of the marker.
+     * Sets and gets the shape of the marker in maps.
      * @default Balloon
      */
     @Property('Balloon')
     public shape: MarkerType;
 
     /**
-     * To provide the dataSource field to display legend text
+     * Sets and gets the text for the legend from the marker data source.
      * @default ''
      */
     @Property('')
     public legendText: string;
     /**
-     * To move the marker by setting offset values
+     * Sets and gets the position to move the marker by setting specific value.
      */
     @Property(new Point(0, 0))
     public offset: Point;
     /**
-     * To provide the image url for rendering marker image
+     * Sets and gets the URL for rendering the marker as image.
      */
     @Property('')
     public imageUrl: string;
 
     /**
-     * To customize the template of the marker.
+     * Sets and gets the template for the marker.
      * @default null
      */
     @Property(null)
     public template: string;
     /**
-     * * Specifies datasource for the marker.
-     * * The datasource for the marker will contain latitude and longitude values to specify the location 
+     * Sets and gets the data source for the marker.
+     * The data source for the marker will contain latitude and longitude values to specify the location 
      * of the marker.
-     * * The datasource can contain data such as color, shape, and other details that can be bound to the color, shape,
-     *  and tooltip of the marker.
+     * The data source can contain data such as color, shape, and other details that can be bound to the color, shape,
+     * and tooltip of the marker.
      * @isdatamanager false
      * @isObservable true
      * @default []
@@ -1346,42 +1352,42 @@ export class MarkerBase extends ChildProperty<MarkerBase> {
     public dataSource: Object[];
 
     /**
-     * To configure the tooltip settings of the maps marker.
+     * Sets and gets the options to customize the tooltip for the marker in maps.
      */
     @Complex<TooltipSettingsModel>({}, TooltipSettings)
     public tooltipSettings: TooltipSettingsModel;
 
     /**
-     * Animation duration time
+     * Sets and gets the duration time for animating the marker.
      * @default 1000
      */
     @Property(1000)
     public animationDuration: number;
 
     /**
-     * Animation delay time
+     * Sets and gets the delay time for the animation in marker.
      * @default 0
      */
     @Property(0)
     public animationDelay: number;
     /**
-     * To configure the selection settings of the maps.
+     * Sets and gets the options to customize the marker while selecting the marker in maps.
      */
     @Complex<SelectionSettingsModel>({}, SelectionSettings)
     public selectionSettings: SelectionSettingsModel;
     /**
-     * To configure the highlight settings of the maps.
+     * Sets and gets the options to customize the marker while the mouse has hovered on the marker in maps.
      */
     @Complex<HighlightSettingsModel>({}, HighlightSettings)
     public highlightSettings: HighlightSettingsModel;
     /**
-     * Options for customizing the enable Complex property
+     * Defines the value path from the marker data source for setting latitude for a set of markers.
      */
     @Property(null)
     public latitudeValuePath: string;
 
     /**
-     * Options for customizing the enable Complex property
+     * Defines the value path from the marker data source for setting longitude for a set of markers.
      */
     @Property(null)
     public longitudeValuePath: string;
@@ -1396,11 +1402,11 @@ export class MarkerSettings extends MarkerBase {
 }
 
 /**
- * To configure the layers of the maps.
+ * Sets and gets the options to customize the layers of the maps.
  */
 export class LayerSettings extends ChildProperty<LayerSettings> {
     /**
-     * Specifies the shape data for the layer.
+     * Sets and gets the shape data for the maps to render.
      * @isdatamanager false
      * @default null
      */
@@ -1408,22 +1414,22 @@ export class LayerSettings extends ChildProperty<LayerSettings> {
     public shapeData: Object | DataManager | MapAjax;
 
     /**
-     * Specifies the query to select particular data from the shape data. 
-     * This property is applicable only when the DataSource is `ej.DataManager`.
+     * Sets and gets the query to select particular data from the shape data. 
+     * This property is applicable only when the data source is created by data manager.
      * @default null
      */
     @Property()
     public query: Query;
 
     /**
-     * Specifies the shape properties 
+     * Sets and gets the options to customize the shape of the maps.
      */
     @Complex<ShapeSettingsModel>({}, ShapeSettings)
     public shapeSettings: ShapeSettingsModel;
 
     /**
-     * * Specifies dataSource for the layer.
-     * * The datasource can contain data that can be bound to the tooltip, marker, and bubble.
+     * * Sets and gets the data source for the layer.
+     * * The data source can contain data that can be bound to the tooltip, marker, and bubble.
      * @isdatamanager false
      * @isObservable true
      * @default []
@@ -1431,119 +1437,121 @@ export class LayerSettings extends ChildProperty<LayerSettings> {
     @Property([])
     public dataSource: Object[] | DataManager | MapAjax;
     /**
-     * Specifies the type for the layer.
+     * Sets and gets the type of the layer in maps.
      * @default Layer
      */
     @Property('Layer')
     public type: Type;
     /**
-     * Specifies the geometry type
+     * Sets and gets the geometry type for the layer in maps.
      * @default Geographic
      */
     @Property('Geographic')
     public geometryType: GeometryType;
     /**
-     * Specifies the type for the bing map.
+     * Sets and gets the Bing map type for the layer. If you use shape data with BingMapType without using layer type as Bing,
+     * then the map will render based on shape data since default layer type will be set as Geometry.
      * @default Aerial
      */
     @Property('Aerial')
     public bingMapType: BingMapType;
     /**
-     * Specifies the type for the static map.
+     * Sets and gets the type of the static maps.
      * @default RoadMap
      */
     @Property('RoadMap')
     public staticMapType: StaticMapType;
     /**
-     * Specifies the key for the layer.
+     * Sets and gets the key for the tile map layer in maps.
      * @default ''
      */
     @Property('')
     public key: string;
     /**
-     * Specifies the layerType for the layer.
+     * Sets and gets the type of the layer in maps. If we use layer type with shape data property in layer of the maps 
+     * then map will render based on the provided layer type.
      * @default Geometry
      */
     @Property('Geometry')
     public layerType: ShapeLayerType;
     /**
-     * Specifies the urlTemplate for the layer.
+     * Sets and gets the template for the map using the url.
      * @default 'https://a.tile.openstreetmap.org/level/tileX/tileY.png'
      */
     @Property('https://a.tile.openstreetmap.org/level/tileX/tileY.png')
     public urlTemplate: string;
     /**
-     * Toggle the visibility of the layers.
+     * Enables or disables the visibility state for the layers in maps.
      * @default true
      */
     @Property(true)
     public visible: boolean;
     /**
-     * Specifies the shapeDataPath for the layer.
+     * Sets and gets the path for the shape from the shape data in maps.
      * @default 'name'
      */
     @Property('name')
     public shapeDataPath: string;
     /**
-     * Specifies the shapePropertyPath for the layer.
+     * Sets and gets the path for the layers from the layer data source in maps.
      * @default 'name'
      */
     @Property('name')
     public shapePropertyPath: string | string[];
     /**
-     * Specifies the animation duration for the layer.
+     * Sets and gets the duration for the animation of layers in maps.
      * @default 0
      */
     @Property(0)
     public animationDuration: number;
 
     /**
-     * To configure the marker settings.
+     * Sets and gets the options for customizing the marker in maps.
      */
     @Collection<MarkerSettingsModel>([], MarkerSettings)
     public markerSettings: MarkerSettingsModel[];
     /**
-     * To configure the cluster settings.
+     * Sets and gets the options for customizing the cluster of markers in maps.
      */
     @Complex<MarkerClusterSettingsModel>({}, MarkerClusterSettings)
     public markerClusterSettings: MarkerClusterSettingsModel;
     /**
-     * To configure the datalabel settings of the maps.
+     * Sets and gets the options for customizing the data-label in maps.
      */
     @Complex<DataLabelSettingsModel>({}, DataLabelSettings)
     public dataLabelSettings: DataLabelSettingsModel;
     /**
-     * To configure the bubble settings of the maps.
+     * Sets and gets the options for customizing the bubble in maps.
      */
     @Collection<BubbleSettingsModel>([], BubbleSettings)
     public bubbleSettings: BubbleSettingsModel[];
     /**
-     * navigationLineSetting
+     * Sets and gets the options for customizing the navigation line in maps.
      */
     @Collection<NavigationLineSettingsModel>([], NavigationLineSettings)
     public navigationLineSettings: NavigationLineSettingsModel[];
     /**
-     * To configure the tooltip settings of the maps layer.
+     * Sets and gets the options for customizing the tooltip for the layers, markers, and bubbles in maps.
      */
     @Complex<TooltipSettingsModel>({}, TooltipSettings)
     public tooltipSettings: TooltipSettingsModel;
     /**
-     * To configure the selection settings of the maps.
+     * Sets and gets the options for customizing the shapes when clicking the shapes in maps.
      */
     @Complex<SelectionSettingsModel>({}, SelectionSettings)
     public selectionSettings: SelectionSettingsModel;
     /**
-     * To configure the highlight settings of the maps.
+     * Sets and gets the options for customizing the shapes when the mouse has hovered on maps.
      */
     @Complex<HighlightSettingsModel>({}, HighlightSettings)
     public highlightSettings: HighlightSettingsModel;
     /**
-     * To configure the legend toggle settings.
+     * Sets and gets the options for customizing the toggle state of shapes when selecting the legend in maps.
      */
     @Complex<ToggleLegendSettingsModel>({}, ToggleLegendSettings)
     public toggleLegendSettings: ToggleLegendSettingsModel;
     /**
-     * To select the shape at the rendering time.
+     * Sets and gets the settings for shapes that is selected at the time of rendering.
      */
     @Collection<InitialShapeSelectionSettingsModel>([], InitialShapeSelectionSettings)
     public initialShapeSelection: InitialShapeSelectionSettingsModel[];
@@ -1596,17 +1604,17 @@ export class Tile {
     }
 }
 /**
- * Maps area configuration
+ * Sets and gets the maps area settings
  */
 export class MapsAreaSettings extends ChildProperty<MapsAreaSettings> {
     /**
-     * To configure maps area background color
+     * Sets and gets the background color for the map area.
      */
     @Property(null)
     public background: string;
 
     /**
-     * Options for customizing the color and width of maps area.
+     * Sets and gets the options for customizing the color and width of the border of maps area.
      */
     @Complex<BorderModel>({ color: 'transparent', width: 1 }, Border)
     public border: BorderModel;

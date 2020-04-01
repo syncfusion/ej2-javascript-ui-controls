@@ -143,7 +143,7 @@ export class WorkbookFormula {
             case 'deleteSheetTab':
                 let length: number = this.sheetInfo.length;
                 for (let i: number = 0; i < length; i++) {
-                    if (this.sheetInfo[i].index === (args.index as number) + 1) {
+                    if (this.sheetInfo[i].index === (args.index as number)) {
                         args.sheetName = this.sheetInfo[i].sheet;
                         this.sheetInfo.splice(i, 1);
                         break;
@@ -321,8 +321,7 @@ export class WorkbookFormula {
         return value;
     }
 
-    private registerSheet(
-        sheetIndex: number = 0, sheetCount: number = this.parent.sheets.length): void {
+    private registerSheet(sheetIndex: number = 0, sheetCount: number = this.parent.sheets.length): void {
         let id: string;
         while (sheetIndex < sheetCount) {
             id = getSheet(this.parent, sheetIndex).id + '';
@@ -344,9 +343,8 @@ export class WorkbookFormula {
 
     private refreshCalculate(rowIdx: number, colIdx: number, value: string, isFormula: boolean, sheetIdx: number): void {
         if (!sheetIdx) {
-            sheetIdx = this.parent.activeSheetTab;
+            sheetIdx = this.parent.activeSheetIndex;
         }
-        sheetIdx--;
         let sheetName: string = getSheet(this.parent, sheetIdx).id + '';
         if (isFormula) {
             value = this.parseSheetRef(value);
@@ -465,7 +463,7 @@ export class WorkbookFormula {
             if (scope) {
                 let sheetIdx: number = getSheetIndex(this.parent, scope);
                 if (sheetIdx) {
-                    calcName = getSheetName(this.parent, sheetIdx - 1) + '!' + name;
+                    calcName = getSheetName(this.parent, sheetIdx) + '!' + name;
                 }
             }
             this.calculateInstance.removeNamedRange(calcName);
@@ -506,7 +504,7 @@ export class WorkbookFormula {
             range = `A1:${getCellAddress(sheet.usedRange.rowIndex, sheet.usedRange.colIndex)}`;
         }
         args.Count = this.calculateInstance.getFunction('COUNTA')(range);
-        if (!args.Count) { return; }
+        if (!args.Count || args.countOnly) { return; }
         args.Sum = this.toFixed(this.calculateInstance.getFunction('SUM')(range));
         args.Avg = this.toFixed(this.calculateInstance.getFunction('AVERAGE')(range));
         args.Min = this.toFixed(this.calculateInstance.getFunction('MIN')(range));

@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 18.1.42 (2020-04-01)
+
+### PDF Viewer
+
+#### New Features
+
+- `#268975` - Exposed the event for notifying page mouse over action.
+- `#264529` - Exposed the volume calibrate annotation depth value in annotationSelect event arguments and provide options to edit the depth value.
+- `#263297`, `#268677` - Provided the options to enable and disable the tile rendering mode.
+- `#263473` - Provided the isLock options to  individual annotation object level.
+
+#### Bug Fixes
+
+- `#269004` – The typo errors in PDF Viewer JSON objects has been resolved.
+- `#266218`, `#266559` - The import/export form fields are now working properly for the form fields data contains special characters.
+- `#268505` - Download is now working properly for different culture settings.
+- `#268109` - The updated label content is now preserved properly in the exported annotation data.
+
 ## 18.1.36-beta (2020-03-19)
 
 ### PDF Viewer

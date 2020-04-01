@@ -22,7 +22,8 @@ export class StepAreaSeries extends LineBase {
         let secondPoint: ChartLocation;
         let start: ChartLocation = null;
         let direction: string = '';
-        let pointsLength: number = series.points.length;
+        let visiblePoints: Points[] = this.enableComplexProperty(series);
+        let pointsLength: number = visiblePoints.length;
         let origin: number = Math.max(<number>series.yAxis.visibleRange.min, 0);
         let options: PathOption;
         let point: Points;
@@ -35,10 +36,10 @@ export class StepAreaSeries extends LineBase {
             lineLength = 0;
         }
         for (let i: number = 0; i < pointsLength; i++) {
-            point = series.points[i];
+            point = visiblePoints[i];
             xValue = point.xValue;
             point.symbolLocations = []; point.regions = [];
-            if (point.visible && withInRange(series.points[i - 1], point, series.points[i + 1], series)) {
+            if (point.visible && withInRange(visiblePoints[i - 1], point, visiblePoints[i + 1], series)) {
                 if (start === null) {
                     start = new ChartLocation(xValue, 0);
                     // Start point for the current path
@@ -60,7 +61,7 @@ export class StepAreaSeries extends LineBase {
                 this.storePointLocation(point, series, isInverted, getPoint);
                 prevPoint = point;
             }
-            if (series.points[i + 1] && !series.points[i + 1].visible && series.emptyPointSettings.mode !== 'Drop') {
+            if (visiblePoints[i + 1] && !visiblePoints[i + 1].visible && series.emptyPointSettings.mode !== 'Drop') {
                 // current start point
                 currentPoint = getPoint(xValue + lineLength, origin, xAxis, yAxis, isInverted);
                 direction += ('L' + ' ' + (currentPoint.x) + ' ' + (currentPoint.y));
@@ -70,10 +71,10 @@ export class StepAreaSeries extends LineBase {
         }
 
         if ((pointsLength > 1) && direction !== '') {
-            start = { 'x': series.points[pointsLength - 1].xValue + lineLength, 'y': series.points[pointsLength - 1].yValue };
+            start = { 'x': visiblePoints[pointsLength - 1].xValue + lineLength, 'y': visiblePoints[pointsLength - 1].yValue };
             secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
             direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
-            start = { 'x': series.points[pointsLength - 1].xValue + lineLength, 'y': origin };
+            start = { 'x': visiblePoints[pointsLength - 1].xValue + lineLength, 'y': origin };
             secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
             direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
         } else {

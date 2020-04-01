@@ -37,6 +37,9 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
     let parentDocument: Document;
     let targetContainer: HTMLElement;
 
+    /**
+     * Provides information about a CollisionCoordinates.
+     */
     export interface CollisionCoordinates {
         X: boolean;
         Y: boolean;

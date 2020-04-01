@@ -670,7 +670,8 @@ export class GanttChart {
      * @private
      */
     public onTabAction(e: KeyboardEventArgs): void {
-        let isInEditedState: boolean = this.parent.editModule.cellEditModule.isCellEdit;
+        let isInEditedState: boolean = this.parent.editModule && this.parent.editModule.cellEditModule &&
+            this.parent.editModule.cellEditModule.isCellEdit;
         if (!this.parent.showActiveElement && !isInEditedState) {
             return;
         }
@@ -713,6 +714,12 @@ export class GanttChart {
      */
     private getNextElement($target: Element, isTab: boolean): Element {
         let nextElement: Element = isTab ? $target.nextElementSibling : $target.previousElementSibling;
+        while (nextElement && nextElement.parentElement.classList.contains('e-row')) {
+            if (!nextElement.matches('.e-hide')) {
+                return nextElement;
+            }
+            nextElement = isTab ? nextElement.nextElementSibling : nextElement.previousElementSibling;
+        }
         if (this.validateNextElement(nextElement)) {
             return nextElement;
         } else {
@@ -741,15 +748,25 @@ export class GanttChart {
                     }
                 }
             } else if ($target.parentElement.classList.contains('e-chart-row-cell')) {
+                let childElement: Element;
                 /* tslint:disable-next-line:no-any */
                 rowIndex = (closest($target, '.e-chart-row') as any).rowIndex;
 
                 if (isTab) {
                     rowElement = this.getNextRowElement(rowIndex, isTab, true);
-                    return rowElement ? (rowElement.children[0]) : null;
                 } else {
                     rowElement = this.parent.treeGrid.grid.getRowByIndex(rowIndex);
-                    return rowElement ? (rowElement.children[this.parent.ganttColumns.length - 1]) : null;
+                }
+                if (rowElement) {
+                    childElement = isTab ? rowElement.children[0] : rowElement.children[rowElement.children.length - 1];
+                    while (childElement) {
+                        if (!childElement.matches('.e-hide')) {
+                            return childElement;
+                        }
+                        childElement = isTab ? childElement.nextElementSibling : childElement.previousElementSibling;
+                    }
+                } else {
+                    return null;
                 }
             }
         }

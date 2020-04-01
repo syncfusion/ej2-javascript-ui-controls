@@ -643,7 +643,7 @@ export function addTouchPointer(touchList: ITouches[], e: PointerEvent, touches:
 
 /**
  * removes the element from dom
- * @param elementId
+ * @param {string} elementId
  */
 export function removeElement(elementId: string, contentId?: string): void {
     let div: HTMLElement = getDiagramElement(elementId, contentId);

@@ -11,7 +11,7 @@ let definedNames: DefineNameModel[] = [
 ];
 let sheet: SheetModel[] = [
     {
-        rangeSettings: [{
+        range: [{
             dataSource: dataSource,
             startCell: 'A1'
         }],

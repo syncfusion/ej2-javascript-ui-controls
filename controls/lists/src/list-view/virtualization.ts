@@ -726,10 +726,32 @@ export class Virtualization {
     }
 
     public createUIItem(args: ItemCreatedArgs): void {
+        let virtualTemplate: string = this.listViewInstance.template;
         let template: HTMLElement = this.listViewInstance.createElement('div');
         let commonTemplate: string = '<div class="e-text-content" role="presentation"> ' +
             '<span class="e-list-text"> ${' + this.listViewInstance.fields.text + '} </span></div>';
-        template.innerHTML = this.listViewInstance.template || commonTemplate;
+        if (this.listViewInstance.showCheckBox) {
+            // tslint:disable-next-line:no-any
+            (this.listViewInstance as any).renderCheckbox(args);
+            // tslint:enable-next-line:no-any
+            if (!isNullOrUndefined(this.listViewInstance.virtualCheckBox.outerHTML)) {
+                let div: HTMLElement = document.createElement('div');
+                div.innerHTML = this.listViewInstance.template || commonTemplate;
+                div.children[0].classList.add('e-checkbox');
+                this.listViewInstance.checkBoxPosition === 'Left' ? div.children[0].classList.add('e-checkbox-left') :
+                    div.children[0].classList.add('e-checkbox-right');
+                if (this.listViewInstance.checkBoxPosition === 'Left') {
+                    div.children[0].insertBefore(this.listViewInstance.virtualCheckBox, (div.childNodes[0] as HTMLElement).children[0]);
+                } else {
+                    div.children[0].appendChild(this.listViewInstance.virtualCheckBox);
+                }
+                this.listViewInstance.template = div.innerHTML;
+            }
+            template.innerHTML =  this.listViewInstance.template;
+            this.listViewInstance.template = virtualTemplate;
+        } else {
+            template.innerHTML = this.listViewInstance.template || commonTemplate;
+        }
         // tslint:disable-next-line:no-any
         let templateElements: any = template.getElementsByTagName('*');
         let groupTemplate: HTMLElement = this.listViewInstance.createElement('div');

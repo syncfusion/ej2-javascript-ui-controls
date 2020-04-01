@@ -269,8 +269,8 @@ export class Legend extends BaseLegend {
         if (!this.chart.legendSettings.visible) {
             return;
         }
-        let pageX: number = (event as PointerEvent).pageX;
-        let pageY: number = (event as PointerEvent).pageY;
+        let pageX: number = this.chart.mouseX;
+        let pageY: number = this.chart.mouseY;
         let legendRegion: ILegendRegions[] = [];
         let targetId: string = (<HTMLElement>event.target).id;
         let legendItemsId: string[] = [this.legendID + '_text_', this.legendID + '_shape_marker_',

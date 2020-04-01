@@ -40,10 +40,10 @@ export class DataBind {
         let deferred: Deferred = new Deferred(); let sRowIdx: number; let sColIdx: number;
         let loadedInfo: { isNotLoaded: boolean, unloadedRange: number[] };
         args.promise = deferred.promise;
-        if (args.sheet && args.sheet.rangeSettings.length) {
-            for (let k: number = args.sheet.rangeSettings.length - 1; k >= 0; k--) {
+        if (args.sheet && args.sheet.range.length) {
+            for (let k: number = args.sheet.range.length - 1; k >= 0; k--) {
                 let sRange: number = args.indexes[0]; let eRange: number = args.indexes[2];
-                let range: ExtendedRange = args.sheet.rangeSettings[k];
+                let range: ExtendedRange = args.sheet.range[k];
                 sRowIdx = getRangeIndexes(range.startCell)[0];
                 dataManager = range.dataSource instanceof DataManager ? range.dataSource as DataManager
                     : range.dataSource ? new DataManager(range.dataSource) : new DataManager();
@@ -82,12 +82,12 @@ export class DataBind {
                         .requiresCount()).then((e: ReturnOption) => {
                             if (!this.parent || this.parent.isDestroyed) { return; }
                             result = (e.result && e.result.result ? e.result.result : e.result) as Object[];
+                            sCellIdx = getRangeIndexes(range.startCell);
+                            sRowIdx = sCellIdx[0]; sColIdx = sCellIdx[1];
                             if (result.length) {
                                 if (!range.info.count) { count = e.count; range.info.count = e.count; }
                                 flds = Object.keys(result[0]);
                                 if (!range.info.fldLen) { range.info.fldLen = flds.length; }
-                                sCellIdx = getRangeIndexes(range.startCell);
-                                sRowIdx = sCellIdx[0]; sColIdx = sCellIdx[1];
                                 if (range.info.insertColumnRange) {
                                     let insertCount: number = 0;
                                     range.info.insertColumnRange.forEach((insertRange: number[]): void => {
@@ -319,10 +319,10 @@ export class DataBind {
         let oldSheet: SheetModel = args.oldProp.sheets[args.sheetIdx];
         let row: RowModel;
         let sheet: SheetModel = this.parent.sheets[args.sheetIdx];
-        let oldRange: ExtendedRange = oldSheet && oldSheet.rangeSettings && oldSheet.rangeSettings[args.rangeIdx];
+        let oldRange: ExtendedRange = oldSheet && oldSheet.range && oldSheet.range[args.rangeIdx];
         if (oldRange) {
             let indexes: number[] = getRangeIndexes(oldRange.startCell);
-            (sheet.rangeSettings[args.rangeIdx] as ExtendedRange).info.loadedRange = [];
+            (sheet.range[args.rangeIdx] as ExtendedRange).info.loadedRange = [];
             oldRange.info.loadedRange.forEach((range: number[]) => {
                 for (let i: number = range[0]; i < range[1]; i++) {
                     row = sheet.rows[i + indexes[0]];

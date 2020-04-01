@@ -11,6 +11,10 @@
 - Provided support to highlight the data points in chart.
 - Provided support for patterns to the selected and highlighted data.
 
+#### Bug Fixes
+
+- `#268306` - Console error thrown while hiding tooltip issue has been fixed.
+
 ### Bullet Chart
 
 #### New Features

@@ -77,4 +77,15 @@ export type ValidationType = 'WholeNumber' | 'Decimal' | 'Date' | 'TextLength' |
  * validation operator
  */
 export type ValidationOperator = 'Between' | 'NotBetween' | 'EqualTo' | 'NotEqualTo' | 'LessThan' |
- 'GreaterThan' | 'GreaterThanOrEqualTo' | 'LessThanOrEqualTo';
+'GreaterThan' | 'GreaterThanOrEqualTo' | 'LessThanOrEqualTo';
+
+/**
+ * Merge type
+ */
+export type MergeType =
+    /** Merge all the cells between provided range. */
+    'All' |
+    /** Merge the cells row-wise. */
+    'Horizontally' |
+    /** Merge the cells column-wise. */
+    'Vertically';

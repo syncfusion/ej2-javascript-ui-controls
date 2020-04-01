@@ -64,7 +64,7 @@ export function getDateInMs(date: Date): number {
         - (tzOffsetDiff * 60 * 1000));
 }
 export function getDateCount(startDate: Date, endDate: Date): number {
-    return (endDate.getTime() - startDate.getTime()) / MS_PER_DAY;
+    return Math.ceil((endDate.getTime() - startDate.getTime()) / MS_PER_DAY);
 }
 export function addDays(date: Date, i: number): Date {
     date = new Date('' + date);

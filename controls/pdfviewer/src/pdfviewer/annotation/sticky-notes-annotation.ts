@@ -132,7 +132,7 @@ export class StickyNotesAnnotation {
                     let position: any = annotation.Bounds;
                     let author: string = annotation.Author;
                     // tslint:disable-next-line:max-line-length
-                    let isLock: boolean = this.pdfViewer.stickyNotesSettings.isLock ? this.pdfViewer.stickyNotesSettings.isLock : this.pdfViewer.annotationSettings.isLock;
+                    annotation.AnnotationSettings = annotation.AnnotationSettings ? annotation.AnnotationSettings : this.pdfViewer.annotationModule.updateAnnotationSettings(annotation);
                     annotationObject = {
                         // tslint:disable-next-line:max-line-length
                         shapeAnnotationType: 'sticky', author: author, modifiedDate: annotation.ModifiedDate, subject: annotation.Subject, note: annotation.Note, opacity: annotation.Opacity, state: annotation.State, stateModel: annotation.StateModel,
@@ -141,7 +141,8 @@ export class StickyNotesAnnotation {
                         bounds: { left: annotation.Bounds.X, top: annotation.Bounds.Y, width: annotation.Bounds.Width, height: annotation.Bounds.Height, right: annotation.Bounds.Right, bottom: annotation.Bounds.Bottom },
                         annotName: annotation.AnnotName, color: annotation.color,
                         annotationSelectorSettings: this.getSettings(annotation),
-                        customData: this.pdfViewer.annotation.getCustomData(annotation), annotationSettings: { isLock: isLock}
+                        customData: this.pdfViewer.annotation.getCustomData(annotation),
+                        annotationSettings: annotation.AnnotationSettings
                     };
                     let annot: PdfAnnotationBaseModel;
                     // tslint:disable-next-line:max-line-length
@@ -150,7 +151,8 @@ export class StickyNotesAnnotation {
                         // tslint:disable-next-line:max-line-length
                         author: author, modifiedDate: annotationObject.modifiedDate, annotName: annotationObject.annotName, pageIndex: pageNumber, bounds: { x: position.Left, y: position.Top, width: position.Width, height: position.Height }, strokeColor: 'transparent', stampStrokeColor: '', data: this.setImageSource(), shapeAnnotationType: 'StickyNotes',
                         subject: annotationObject.subject, notes: annotationObject.note, opacity: annotationObject.opacity, id: annotationObject.annotName, fillColor: annotationObject.color,
-                        annotationSelectorSettings: annotation.AnnotationSelectorSettings
+                        annotationSelectorSettings: annotation.AnnotationSelectorSettings,
+                        annotationSettings: annotationObject.annotationSettings
                     };
                     if (canvas) {
                         this.drawStickyNotes(position.Left, position.Top, position.Width, position.Height, pageNumber, annot, canvas);

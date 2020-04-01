@@ -448,4 +448,40 @@ describe('RTE SELECTION BASED - fontColor - ', () => {
             });
         });
     });
+    describe('font color in table-', () => {
+        let rteObj: RichTextEditor;
+        let controlId: string;
+        beforeAll((done: Function) => {
+            rteObj = renderRTE({
+                value: "<p><b>Description:</b></p><p>The Rich Text Editor (RTE) control is an easy to render in\n                client side.</p><table class=\"e-rte-table\" style=\"width: 100%;\"><thead><tr><th class=\"e-cell-select\"><br></th><th><br></th></tr></thead><tbody><tr><td style=\"width: 50%;\" class=\"\">Rich Text Editor</td><td style=\"width: 50%;\"><br></td></tr><tr><td style=\"width: 50%;\"><br></td><td style=\"width: 50%;\"><br></td></tr></tbody></table>\n                ",
+                toolbarSettings: {
+                    items: ['fontColor']
+                },
+                fontColor: {
+                    default: '#ffff00',
+                    colorCode: {
+                        'Custom': ['', '#000000', '#ffff00', '#00ff00']
+                    }
+                }
+            });
+            controlId = rteObj.element.id;
+            done();
+        });
+        afterAll((done: Function) => {
+            destroy(rteObj);
+            done();
+        })
+        it(' Test the apply the font color to the selected node while click the toolbar item', (done) => {
+            let pEle: HTMLElement = rteObj.element.querySelector('td');
+            rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, pEle.childNodes[0], pEle.childNodes[0], 0, 3);
+            let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_FontColor');
+            item = (item.querySelector('.e-rte-color-content') as HTMLElement);
+            dispatchEvent(item, 'mousedown');
+            item.click();
+            dispatchEvent(item, 'mousedown');
+            let span: HTMLSpanElement = pEle.querySelector('span');
+            expect(span.style.color === 'rgb(255, 255, 0)').toBe(true);
+            done();
+        });
+    });
 });

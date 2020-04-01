@@ -279,6 +279,7 @@ export class WordExport {
     private defCharacterFormat: any;
     private defParagraphFormat: any;
     private defaultTabWidthValue: number;
+    private dontUseHtmlParagraphAutoSpacing: boolean;
     private mRelationShipID: number = 0;
     private cRelationShipId: number = 0;
     private eRelationShipId: number = 0;
@@ -497,6 +498,7 @@ export class WordExport {
         this.defCharacterFormat = document.characterFormat;
         this.defParagraphFormat = document.paragraphFormat;
         this.defaultTabWidthValue = document.defaultTabWidth;
+        this.dontUseHtmlParagraphAutoSpacing = document.dontUseHTMLParagraphAutoSpacing;
         this.mStyles = document.styles;
         this.formatting = document.formatting;
         this.enforcement = document.enforcement;
@@ -4636,8 +4638,10 @@ export class WordExport {
         // SerializeFootnoteSettings();
         //w:compat - Compatibility Settings
         writer.writeStartElement(undefined, 'compat', this.wNamespace);
+        if (this.dontUseHtmlParagraphAutoSpacing) {
+            this.serializeBoolProperty(writer, 'doNotUseHTMLParagraphAutoSpacing', this.dontUseHtmlParagraphAutoSpacing);
+        }
         writer.writeStartElement(undefined, 'compatSetting', this.wNamespace);
-
         writer.writeAttributeString(undefined, 'name', this.wNamespace, 'compatibilityMode');
         writer.writeAttributeString(undefined, 'uri', this.wNamespace, 'http://schemas.microsoft.com/office/word');
         writer.writeAttributeString(undefined, 'val', this.wNamespace, '15');

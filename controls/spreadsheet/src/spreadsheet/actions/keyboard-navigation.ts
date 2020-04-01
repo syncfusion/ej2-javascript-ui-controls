@@ -1,6 +1,6 @@
 import { Spreadsheet } from '../base/index';
 import { keyDown, cellNavigate, renameSheet, filterCellKeyDown } from '../common/index';
-import { SheetModel, getCellIndexes, getRangeAddress, getRowHeight, getColumnWidth } from '../../workbook/index';
+import { SheetModel, getCellIndexes, getRangeAddress, getRowHeight, getColumnWidth, CellModel, getCell } from '../../workbook/index';
 import { closest } from '@syncfusion/ej2-base';
 
 /**
@@ -64,11 +64,15 @@ export class KeyboardNavigation {
                     if (actIdxes[0] === 0 && content.scrollTop) { content.scrollTop = 0; }
                 }
             } else if ((!e.shiftKey && ((!isRtl && e.keyCode === 39) || (isRtl && e.keyCode === 37))) || e.keyCode === 9) { // Right key
+                let cell: CellModel = getCell(actIdxes[0], actIdxes[1], sheet);
+                if (cell && cell.colSpan > 1) { actIdxes[1] += (cell.colSpan - 1); }
                 if (actIdxes[1] < sheet.colCount - 1) {
                     actIdxes[1] += 1;
                     isNavigate = true;
                 }
             } else if ((!filterArgs.isFilterCell && !e.shiftKey && e.keyCode === 40) || e.keyCode === 13) {      // Down Key
+                let cell: CellModel = getCell(actIdxes[0], actIdxes[1], sheet);
+                if (cell && cell.rowSpan > 1) { actIdxes[0] += (cell.rowSpan - 1); }
                 if (actIdxes[0] < sheet.rowCount - 1) {
                     actIdxes[0] += 1;
                     isNavigate = true;

@@ -555,12 +555,13 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private ele: number;
     private disableNode: string[] = [];
     private onLoaded: boolean;
-    private parentNodeCheck: string[] = [];
+    private parentNodeCheck: string[];
     private parentCheckData :  { [key: string]: Object }[];
     private validArr :  { [key: string]: Object }[] = [];
     private expandChildren: string[] = [];
     private isBlazorPlatform: boolean;
     private isFieldChange: boolean = false;
+    private changeDataSource: boolean = false;
     /**
      * Indicates whether the TreeView allows drag and drop of nodes. To drag and drop a node in
      * desktop, hold the mouse on the node, drag it to the target node and drop the node by releasing
@@ -693,6 +694,13 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property(true)
     public loadOnDemand: boolean;
+
+    /**
+     * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
+     * @private
+     */
+    @Property()
+    public locale: string;
 
     /**
      * Specifies a template to render customized content for all the nodes. If the `nodeTemplate` property
@@ -945,6 +953,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     protected preRender(): void {
         this.isBlazorPlatform = (isBlazor() && this.isServerRendered);
         this.checkActionNodes = [];
+        this.parentNodeCheck = [];
         this.dragStartAction = false;
         this.isAnimate = false;
         this.keyConfigs = {
@@ -1026,7 +1035,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         this.initialRender = true;
         this.blazorInitialRender = false;
         this.initialize();
-        this.setDataBinding();
+        this.setDataBinding(false);
         this.setDisabledMode();
         this.setExpandOnType();
         if (!this.disabled) {
@@ -1106,7 +1115,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         return undefined;
     }
 
-    private setDataBinding(): void {
+    private setDataBinding(changeDataSource: boolean): void {
         this.treeList.push('false');
         if (this.fields.dataSource instanceof DataManager) {
             if ((this.fields.dataSource as DataManager).ready) {
@@ -1130,7 +1139,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     this.treeData = (e as ResultData).result;
                     this.isNumberTypeId = this.getType();
                     this.setRootData();
+                    if (changeDataSource) {
+                        this.changeDataSource = true;
+                    }
                     this.renderItems(true);
+                    this.changeDataSource = false;
                     if (this.treeList.length === 0 && !this.isLoaded) {
                             this.finalize();
                     }
@@ -1201,19 +1214,21 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     private renderItems(isSorted: boolean): void {
         // tslint:disable
-        if (!this.isBlazorPlatform || (this.isBlazorPlatform && this.fields.dataSource instanceof DataManager && ((this.fields.dataSource as any).adaptorName !== 'BlazorAdaptor'))) {
+        if (!this.isBlazorPlatform || (this.isBlazorPlatform && this.fields.dataSource instanceof DataManager && ((this.fields.dataSource as any).adaptorName !== 'BlazorAdaptor')) || this.changeDataSource) {
             this.listBaseOption.ariaAttributes.level = 1;
             let sortedData : { [key: string]: Object }[] = this.getSortedData(this.rootData);
             this.ulElement = ListBase.createList(this.createElement, isSorted ? this.rootData : sortedData, this.listBaseOption);
             this.element.appendChild(this.ulElement);
+            let rootNodes: NodeListOf<Element> = this.ulElement.querySelectorAll('.e-list-item');
             if (this.loadOnDemand === false) {
-                let rootNodes: NodeListOf<Element> = this.ulElement.querySelectorAll('.e-list-item');
                 let i: number = 0;
                 while (i < rootNodes.length) {
                     this.renderChildNodes(rootNodes[i], true, null, true);
                     i++;
                 }
-            } else {
+            }
+            let parentEle = selectAll('.' + PARENTITEM, this.element);
+            if ((parentEle.length === 1 && (rootNodes && rootNodes.length !== 0)) || this.loadOnDemand) {
                 this.finalizeNode(this.element);
             }
         }
@@ -1482,7 +1497,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private getDataType(ds: { [key: string]: Object }[], mapper: FieldsSettingsModel): number {
-        if (this.fields.dataSource instanceof DataManager) {
+        if (this.fields.dataSource instanceof DataManager && ((this.fields.dataSource as any).adaptorName !== 'BlazorAdaptor')) {
             for (let i: number = 0; i < ds.length; i++) {
                 if ((typeof mapper.child === 'string') && isNOU(getValue(mapper.child, ds[i]))) {
                     return 1;
@@ -1620,15 +1635,19 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 let expandState: string = childElement.parentElement.getAttribute('aria-expanded');
                 let checkedState: string;
                 for (let index: number = 0; index < checkBoxes.length; index++) {
+                    let childId: string = childCheck[index].getAttribute('data-uid');
                     if (!isNOU(this.currentLoadData) && !isNOU(getValue(this.fields.isChecked, this.currentLoadData[index]))) {
                         checkedState = getValue(this.fields.isChecked, this.currentLoadData[index]) ? 'check' : 'uncheck';
                         if (this.ele !== -1) {
                             checkedState = isChecked ? 'check' : 'uncheck';
                         }
+                        if ((checkedState === 'uncheck') && (!isUndefined(this.parentNodeCheck) && this.autoCheck 
+                                && this.parentNodeCheck.indexOf(childId) !== -1)) {
+                            this.parentNodeCheck.splice(this.parentNodeCheck.indexOf(childId), 1);
+                            checkedState = 'indeterminate';
+                        }
                     } else {
                         let isNodeChecked: boolean = checkBoxes[index].getElementsByClassName(CHECKBOXFRAME)[0].classList.contains(CHECK);
-
-                        let childId: string = childCheck[index].getAttribute('data-uid');
                         if (isChecked) {
                             checkedState = 'check';
                         } else if (isNodeChecked && !this.isLoaded) {
@@ -1942,7 +1961,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         if (!isPrevent) {
             if (!isNOU(ariaState)) {
                 wrapper.setAttribute('aria-checked', ariaState);
+                this.allowServerDataBinding = true;
                 this.updateServerProperties("check");
+                this.allowServerDataBinding = false;
                 eventArgs.data[0].checked = ariaState;
                 this.trigger('nodeChecked', eventArgs);
                 this.checkActionNodes = [];
@@ -1972,15 +1993,17 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     private finalize(): void {
         let firstUl: Element = select('.' + PARENTITEM, this.element);
-        firstUl.setAttribute('role', treeAriaAttr.treeRole);
-        this.setMultiSelect(this.allowMultiSelection);
-        let firstNode: Element = select('.' + LISTITEM, this.element);
-        if (firstNode) {
-            addClass([firstNode], FOCUS);
-            this.updateIdAttr(null, firstNode);
+        if (!isNullOrUndefined(firstUl)) {
+            firstUl.setAttribute('role', treeAriaAttr.treeRole);
+            this.setMultiSelect(this.allowMultiSelection);
+            let firstNode: Element = select('.' + LISTITEM, this.element);
+            if (firstNode) {
+                addClass([firstNode], FOCUS);
+                this.updateIdAttr(null, firstNode);
+            }
+            this.hasPid = this.rootData[0] ? this.rootData[0].hasOwnProperty(this.fields.parentID) : false;
+            this.doExpandAction();
         }
-        this.hasPid = this.rootData[0] ? this.rootData[0].hasOwnProperty(this.fields.parentID) : false;
-        this.doExpandAction();
     }
 
     private doExpandAction(): void {
@@ -2222,7 +2245,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         currLi.style.height = '';
         removeClass([icon], PROCESS);
         this.addExpand(currLi);
+        this.allowServerDataBinding = true;
         this.updateServerProperties("expand");
+        this.allowServerDataBinding = false;
         if (this.isLoaded && this.expandArgs && !this.isRefreshed) {
             this.expandArgs = this.getExpandEvent(currLi, null);
             this.trigger('nodeExpanded', this.expandArgs);
@@ -2604,7 +2629,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         }
         this.setFocusElement(li);
         if (this.isLoaded) {
+            this.allowServerDataBinding = true;
             this.updateServerProperties("select");
+            this.allowServerDataBinding = false;
             eventArgs.nodeData = this.getNodeData(li);
             this.trigger('nodeSelected', eventArgs);
         }
@@ -2615,6 +2642,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             eventArgs = this.getSelectEvent(li, 'un-select', e);
             this.trigger('nodeSelecting', eventArgs, (observedArgs: NodeSelectEventArgs) => {
                 if (!observedArgs.cancel) {
+                    this.allowServerDataBinding = true;
+                    this.updateServerProperties("select");
+                    this.allowServerDataBinding = false;
                     this.nodeUnselectAction(li, observedArgs);
                 }
             });
@@ -2627,7 +2657,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         this.removeSelect(li);
         this.setFocusElement(li);
         if (this.isLoaded) {
+            this.allowServerDataBinding = true;
             this.updateServerProperties("select");
+            this.allowServerDataBinding = false;
             eventArgs.nodeData = this.getNodeData(li);
             this.trigger('nodeSelected', eventArgs);
         }
@@ -2933,7 +2965,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             }
             this.ensureStateChange(li, doCheck);
         }
+        this.allowServerDataBinding = true;
         this.updateServerProperties("check");
+        this.allowServerDataBinding = false;
         this.nodeCheckedEvent(checkWrap, isCheck, e);
     }
 
@@ -3318,7 +3352,8 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
 
     private reRenderNodes(): void {
         resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate');
-        if (this.isBlazorPlatform && this.ulElement && this.ulElement.parentElement) {
+        if (this.isBlazorPlatform) {
+            this.ulElement = this.element.querySelector('.e-list-parent.e-ul');
             this.ulElement.parentElement.removeChild(this.ulElement);
         } else {
             this.element.innerHTML = '';
@@ -3330,7 +3365,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         this.setProperties({ selectedNodes: [], checkedNodes: [], expandedNodes: [] }, true);
         this.checkedElement = [];
         this.isLoaded = false;
-        this.setDataBinding();
+        this.setDataBinding(true);
     }
 
     private setCssClass(oldClass: string, newClass: string): void {
@@ -4179,14 +4214,15 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         this.updateList();
         this.updateSelectedNodes();
         this.updateExpandedNodes();
+        this.allowServerDataBinding = false;
         this.updateServerProperties("expand");
         this.updateServerProperties("check");
         this.updateServerProperties("select");
+        this.allowServerDataBinding = true;
     }
 
     private updateServerProperties(action: string): void {
         if(this.isBlazorPlatform ) {
-            this.allowServerDataBinding = true;
             if(action == "expand") {
                 this.setProperties({ expandedNodes:  [] }, true);
             }
@@ -4196,8 +4232,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             else {
                 this.setProperties({ selectedNodes: this.selectedNodes }, true);                
             }
-            this.serverDataBind();
-            this.allowServerDataBinding = false;
         }
     }
 
@@ -4384,6 +4418,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 (this.fields.dataSource instanceof DataManager && obj[i].hasOwnProperty('child'))) {
                     let key: string = (typeof mapper.child === 'string') ? mapper.child : 'child';
                     let childData: { [key: string]: Object }[] = <{ [key: string]: Object }[]>getValue(key, obj[i]);
+                    if (isNOU(childData)) {
+                        childData = [];
+                    }
                     index = isNOU(index) ? childData.length : index;
                     for (let k: number = 0, len: number = data.length; k < len; k++) {
                         childData.splice(index, 0, data[k]);

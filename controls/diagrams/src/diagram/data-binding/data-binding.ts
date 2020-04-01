@@ -51,8 +51,8 @@ export class DataBinding {
 
     /**
      * Initialize nodes and connectors when we have a data as JSON 
-     * @param data 
-     * @param diagram 
+     * @param {DataSourceModel} data 
+     * @param {Diagram} diagram 
      * @private
      */
 
@@ -74,8 +74,8 @@ export class DataBinding {
 
     /**
      * Initialize nodes and connector when we have a data as remote url
-     * @param data 
-     * @param diagram 
+     * @param {DataSourceModel} data 
+     * @param {Diagram} diagram 
      * @private
      */
 
@@ -151,10 +151,10 @@ export class DataBinding {
 
     /**
      * updateMultipleRootNodes method is used  to update the multiple Root Nodes
-     * @param object 
-     * @param rootnodes 
-     * @param mapper 
-     * @param data 
+     * @param {Object} object 
+     * @param {Object[]} rootnodes 
+     * @param {DataSourceModel} mapper 
+     * @param {Object[]} data 
      */
 
     private updateMultipleRootNodes(obj: Object, rootNodes: Object[], mapper: DataSourceModel, data: Object[]): Object[] {
@@ -172,9 +172,9 @@ export class DataBinding {
 
     /**
      * Get the node values 
-     * @param mapper 
-     * @param item 
-     * @param diagram 
+     * @param {DataSourceModel} mapper 
+     * @param {Object} item 
+     * @param {Diagram} diagram 
      */
 
     private applyNodeTemplate(mapper: DataSourceModel, item: Object, diagram: Diagram): Node {
@@ -281,10 +281,10 @@ export class DataBinding {
 
     /**
      *  collectionContains method is used to  check wthear the node is already present in collection or not
-     * @param node
-     * @param diagram 
-     * @param id 
-     * @param parentId 
+     * @param {Node} node
+     * @param {Diagram} diagram 
+     * @param {string} id 
+     * @param {string} parentId 
      */
 
     private collectionContains(node: Node, diagram: Diagram, id: string, parentId: string): boolean {
@@ -300,9 +300,9 @@ export class DataBinding {
 
     /**
      * Get the Connector values
-     * @param sourceNode
-     * @param targetNode 
-     * @param diagram 
+     * @param {string} sNode
+     * @param {string} tNode 
+     * @param {Diagram} diagram 
      */
 
     private applyConnectorTemplate(sNode: string, tNode: string, diagram: Diagram): Connector {

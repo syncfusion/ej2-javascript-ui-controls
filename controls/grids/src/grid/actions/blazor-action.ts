@@ -45,7 +45,7 @@ export class BlazorAction {
         this.parent.on(events.modelChanged, this.modelChanged, this);
         this.parent.on('group-expand-collapse', this.onGroupClick, this);
         this.parent.on('setcolumnstyles', this.setColVTableWidthAndTranslate, this);
-        this.parent.on('refresh-virtual-indices', this.editSuccess, this);
+        this.parent.on('refresh-virtual-indices', this.invokeServerDataBind, this);
         this.parent.on('contentcolgroup', this.contentColGroup, this);
         this.parent.on(events.dataSourceModified, this.dataSourceModified, this);
      }
@@ -63,7 +63,7 @@ export class BlazorAction {
         this.parent.off(events.modelChanged, this.modelChanged);
         this.parent.off('group-expand-collapse', this.onGroupClick);
         this.parent.off('setcolumnstyles', this.setColVTableWidthAndTranslate);
-        this.parent.off('refresh-virtual-indices', this.editSuccess);
+        this.parent.off('refresh-virtual-indices', this.invokeServerDataBind);
         this.parent.off('contentcolgroup', this.contentColGroup);
         this.parent.off(events.dataSourceModified, this.dataSourceModified);
      }
@@ -78,13 +78,17 @@ export class BlazorAction {
     public addDeleteSuccess(args: NotifyArgs): void {
 
         let editArgs: Object;
-        let action: string = 'name';
+        let action: string = 'action';
         let data: string = 'data';
+        let index: string = 'index';
         editArgs = {
             requestType: args.requestType,
             data: args[data],
             action: args[action]
         };
+        if (!isNullOrUndefined(args[index])) {
+            editArgs[index] = args[index];
+        }
         args.promise.then((e: ReturnType) => this.editSuccess(editArgs)
         ).catch((e: Error) => {
             if (isBlazor() && this.parent.isServerRendered) {
@@ -100,6 +104,11 @@ export class BlazorAction {
         });
     }
     public editSuccess(args: ActionArgs): void {
+        this.parent.renderModule.resetTemplates();
+        this.invokeServerDataBind(args);
+    }
+
+    public invokeServerDataBind(args: ActionArgs): void {
         this.actionArgs = args;
         this.parent.currentAction = args;
         this.parent.allowServerDataBinding = true;

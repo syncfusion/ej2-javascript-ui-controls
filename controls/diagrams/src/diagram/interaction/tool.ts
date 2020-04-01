@@ -40,7 +40,7 @@ import { DeepDiffMapper } from '../utility/diff-map';
 export class ToolBase {
     /**
      * Initializes the tool
-     * @param command Command that is corresponding to the current action
+     * @param {CommandHandler} command Command that is corresponding to the current action
      */
     constructor(command: CommandHandler, protectChange: boolean = false) {
         this.commandHandler = command;
@@ -404,7 +404,7 @@ export class ConnectTool extends ToolBase {
                 };
                 let trigger: DiagramEvent = DiagramEvent.connectionChange;
                 let temparg: IBlazorConnectionChangeEventArgs;
-                temparg = await this.commandHandler.triggerEvent(trigger, arg) as IBlazorConnectionChangeEventArgs;
+                temparg = await this.commandHandler.triggerEvent(trigger, arg) as IBlazorConnectionChangeEventArgs || arg;
                 this.tempArgs = temparg;
                 if (arg.cancel || (temparg && temparg.cancel)) {
                     this.canCancel = true;
@@ -1257,19 +1257,21 @@ export class ResizeTool extends ToolBase {
         let object: NodeModel | SelectorModel;
         this.commandHandler.updateSelector();
         object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Node | Selector;
-        if (!isBlazor() && (this.undoElement.offsetX !== object.wrapper.offsetX || this.undoElement.offsetY !== object.wrapper.offsetY)) {
-            let deltaValues: Rect = this.updateSize(args.source, this.currentPosition, this.prevPosition, this.corner, this.initialBounds);
-            this.blocked = this.scaleObjects(
-                deltaValues.width, deltaValues.height, this.corner, this.currentPosition, this.prevPosition, object);
-            let oldValue: SelectorModel = {
-                offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY,
-                width: args.source.wrapper.actualSize.width, height: args.source.wrapper.actualSize.height
-            };
-            let arg: ISizeChangeEventArgs = {
-                source: cloneBlazorObject(args.source), state: 'Completed',
-                oldValue: oldValue, newValue: oldValue, cancel: false
-            };
-            if (!isBlazor()) { this.commandHandler.triggerEvent(DiagramEvent.sizeChange, arg); }
+        if ((this.undoElement.offsetX !== object.wrapper.offsetX || this.undoElement.offsetY !== object.wrapper.offsetY)) {
+            if (!isBlazor()) {
+                let deltaValues: Rect = this.updateSize(args.source, this.currentPosition, this.prevPosition, this.corner, this.initialBounds);
+                this.blocked = this.scaleObjects(
+                    deltaValues.width, deltaValues.height, this.corner, this.currentPosition, this.prevPosition, object);
+                let oldValue: SelectorModel = {
+                    offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY,
+                    width: args.source.wrapper.actualSize.width, height: args.source.wrapper.actualSize.height
+                };
+                let arg: ISizeChangeEventArgs = {
+                    source: cloneBlazorObject(args.source), state: 'Completed',
+                    oldValue: oldValue, newValue: oldValue, cancel: false
+                };
+                this.commandHandler.triggerEvent(DiagramEvent.sizeChange, arg);
+            }
             let obj: SelectorModel = cloneObject(args.source);
             let entry: HistoryEntry = {
                 type: 'SizeChanged', redoObject: cloneObject(obj), undoObject: cloneObject(this.undoElement), category: 'Internal',

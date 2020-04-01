@@ -53,7 +53,7 @@ export class EditTooltip {
      * @private
      */
     public showHideTaskbarEditTooltip(bool: boolean): void {
-        if (bool) {
+        if (bool && this.parent.tooltipSettings.showTooltip) {
             this.createTooltip('Custom', false);
             this.parent.tooltipModule.toolTipObj.close();
             this.updateTooltip();

@@ -1,5 +1,5 @@
 import { L10n, closest, isNullOrUndefined, KeyboardEventArgs, EventHandler } from '@syncfusion/ej2-base';
-import { remove } from '@syncfusion/ej2-base';
+import { remove, isBlazor } from '@syncfusion/ej2-base';
 import { ContextMenu as Menu, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { OpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
 import { IGrid, ContextMenuItemModel, IAction, NotifyArgs, ContextMenuOpenEventArgs, ContextMenuClickEventArgs } from '../base/interface';
@@ -585,7 +585,7 @@ export class ContextMenu implements IAction {
             'FirstPage', 'PrevPage', 'LastPage', 'NextPage'];
     }
     private setLocaleKey(): { [key: string]: string } {
-        return {
+        let localeKeys: { [key: string]: string } = {
             'AutoFitAll': 'autoFitAll',
             'AutoFit': 'autoFit',
             'Copy': 'Copy',
@@ -606,6 +606,13 @@ export class ContextMenu implements IAction {
             'PrevPage': 'PreviousPage',
             'NextPage': 'NextPage'
         };
+        if (isBlazor()) {
+            let autoFitAll: string = 'AutoFitAll';
+            localeKeys[autoFitAll] = 'AutoFitAll';
+            let autoFit: string = 'AutoFit';
+            localeKeys[autoFit] = 'AutoFit';
+        }
+        return localeKeys;
     }
 
     private getColumn(e: Event): Column {

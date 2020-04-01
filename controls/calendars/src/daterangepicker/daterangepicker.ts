@@ -767,7 +767,7 @@ export class DateRangePicker extends CalendarBase {
     };
 
     private updateValue(): void {
-        let dateOptions: object = { format: this.formatString, type: 'date', skeleton: 'yMd' };
+        let dateOptions: object = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
         if (this.value && (<Date[]>this.value).length > 0) {
             if ((<Date[]>this.value)[0] instanceof Date && !isNaN(+(<Date[]>this.value)[0])) {
                 this.setProperties({ startDate: (<Date[]>this.value)[0] }, true);
@@ -930,7 +930,10 @@ export class DateRangePicker extends CalendarBase {
             for (let key of Object.keys(this.htmlAttributes)) {
                 if (wrapperAttr.indexOf(key) > -1 ) {
                     if (key === 'class') {
-                        addClass([this.inputWrapper.container], this.htmlAttributes[key].split(' '));
+                        let updatedClassValue: string = (this.htmlAttributes[key].replace(/\s+/g, ' ')).trim();
+                        if (updatedClassValue !== '') {
+                            addClass([this.inputWrapper.container], updatedClassValue.split(' '));
+                        }
                     } else if (key === 'style') {
                         let dateRangeStyle: string = this.inputWrapper.container.getAttribute(key);
                         dateRangeStyle = !isNullOrUndefined(dateRangeStyle) ? (dateRangeStyle + this.htmlAttributes[key]) :
@@ -951,6 +954,18 @@ export class DateRangePicker extends CalendarBase {
                     this.inputElement.setAttribute(key, this.htmlAttributes[key]);
                 }
             }
+        }
+    }
+    private updateCssClass(cssNewClass : string, cssOldClass : string) : void {
+        if (!isNullOrUndefined(cssOldClass)) {
+            cssOldClass = (cssOldClass.replace(/\s+/g, ' ')).trim();
+        }
+        if (!isNullOrUndefined(cssNewClass)) {
+            cssNewClass = (cssNewClass.replace(/\s+/g, ' ')).trim();
+        }
+        Input.setCssClass(cssNewClass, [this.inputWrapper.container], cssOldClass);
+        if (this.popupWrapper) {
+            Input.setCssClass(cssNewClass, [this.popupWrapper], cssOldClass);
         }
     }
     private processPresets(): void {
@@ -1019,7 +1034,7 @@ export class DateRangePicker extends CalendarBase {
     }
     private updateHiddenInput(): void {
         if (this.firstHiddenChild && this.secondHiddenChild) {
-            let format: Object = { type: 'datetime', skeleton: 'yMd' };
+            let format: Object = { type: 'datetime', skeleton: isBlazor() ? 'd' : 'yMd' };
             if (typeof this.startDate === 'string') {
                 this.startDate = this.globalize.parseDate(this.startDate, format);
             }
@@ -1149,7 +1164,7 @@ export class DateRangePicker extends CalendarBase {
         let attributes: string[] = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
             ['startDate', 'endDate', 'minDays', 'maxDays', 'min', 'max', 'disabled', 'readonly', 'style', 'name', 'placeholder',
             'type', 'value'];
-        let format: Object = { format: this.formatString, type: 'date', skeleton: 'yMd' };
+        let format: Object = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
         for (let prop of attributes) {
             if (!isNullOrUndefined(this.inputElement.getAttribute(prop))) {
                 switch (prop) {
@@ -1429,7 +1444,7 @@ export class DateRangePicker extends CalendarBase {
                 let range: string[] = value.split(' ' + this.separator + ' ');
                 if (range.length > 1) {
                     this.invalidValueString = null;
-                    let dateOptions: object = { format: this.formatString, type: 'date', skeleton: 'yMd' };
+                    let dateOptions: object = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
                     let startDate: Date = this.globalize.parseDate(range[0].trim(), dateOptions);
                     let endDate: Date = this.globalize.parseDate(range[1].trim(), dateOptions);
                     if (!isNullOrUndefined(startDate) && !isNaN(+startDate) && !isNullOrUndefined(endDate) && !isNaN(+endDate)) {
@@ -1989,9 +2004,13 @@ export class DateRangePicker extends CalendarBase {
         let inputValue: string;
         let range: number;
         let startDate: string = !isNullOrUndefined(this.startValue) ?
-            this.globalize.formatDate(this.startValue, { format: this.formatString, type: 'date', skeleton: 'yMd' }) : null;
+            this.globalize.formatDate(this.startValue, {
+                format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd'
+            }) : null;
         let endDate: string = !isNullOrUndefined(this.endValue) ?
-            this.globalize.formatDate(this.endValue, { format: this.formatString, type: 'date', skeleton: 'yMd' }) : null;
+            this.globalize.formatDate(this.endValue, {
+                format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd'
+            }) : null;
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
             inputValue = startDate + ' ' + this.separator + ' ' + endDate;
             range = (Math.round(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
@@ -2325,7 +2344,7 @@ export class DateRangePicker extends CalendarBase {
         }
     }
     private updateHeader(): void {
-        let format: Object = { type: 'date', skeleton: 'yMMMd' };
+        let format: Object = { type: 'date', skeleton: isBlazor() ? 'D' : 'yMMMd' };
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
             let range: number = (Math.round(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
             if (!isNullOrUndefined(this.disabledDayCnt)) {
@@ -2402,7 +2421,7 @@ export class DateRangePicker extends CalendarBase {
     }
     private addSelectedAttributes(ele: Element, date: Date, isStartDate: boolean, sameDate?: boolean): void {
         if (ele) {
-            let title: string = this.globalize.formatDate(date, { type: 'date', skeleton: 'full' });
+            let title: string = this.globalize.formatDate(date, { type: 'date', skeleton: isBlazor() ? 'D' : 'full' });
             if (!isNullOrUndefined(sameDate) && sameDate) {
                 ele.setAttribute('aria-label', 'The current start and end date is ' + '' + title);
             } else {
@@ -3548,6 +3567,10 @@ export class DateRangePicker extends CalendarBase {
         }
     }
     private createInput(): void {
+        let updatedCssClassValue: string = this.cssClass;
+        if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+            updatedCssClassValue = (this.cssClass.replace(/\s+/g, ' ')).trim();
+        }
         this.inputWrapper = Input.createInput(
             {
                 floatLabelType: this.floatLabelType,
@@ -3555,7 +3578,7 @@ export class DateRangePicker extends CalendarBase {
                 properties: {
                     readonly: this.readonly,
                     placeholder: this.placeholder,
-                    cssClass: this.cssClass,
+                    cssClass: updatedCssClassValue,
                     enabled: this.enabled,
                     enableRtl: this.enableRtl,
                     showClearButton: this.showClearButton,
@@ -3636,7 +3659,7 @@ export class DateRangePicker extends CalendarBase {
     }
     private updateInput(): void {
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
-            let formatOption: object = { format: this.formatString, type: 'date', skeleton: 'yMd' };
+            let formatOption: object = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
             let startDate: string = this.globalize.formatDate(this.startValue, formatOption);
             let endDate: string = this.globalize.formatDate(this.endValue, formatOption);
             Input.setValue(startDate + ' ' + this.separator + ' ' + endDate, this.inputElement, this.floatLabelType, this.showClearButton);
@@ -3733,7 +3756,7 @@ export class DateRangePicker extends CalendarBase {
         let valueString: string = value;
         let invalid: boolean = false;
         let formatOpt: object = null;
-        formatOpt = { format: this.formatString, type: 'date', skeleton: 'yMd' };
+        formatOpt = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
         if (typeof valueString !== 'string') {
             invalid = true;
         } else {
@@ -4261,7 +4284,7 @@ export class DateRangePicker extends CalendarBase {
         attributes(this.secondHiddenChild, {
             'type': 'text', 'name': this.inputElement.getAttribute('data-name'), 'class' : HIDDENELEMENT
         });
-        let format: Object = { type: 'datetime', skeleton: 'yMd' };
+        let format: Object = { type: 'datetime', skeleton: isBlazor() ? 'd' : 'yMd' };
         this.firstHiddenChild.value = this.startDate && this.globalize.formatDate(this.startDate, format);
         this.secondHiddenChild.value = this.endDate && this.globalize.formatDate(this.endDate, format);
         this.inputElement.parentElement.appendChild(this.firstHiddenChild);
@@ -4274,7 +4297,7 @@ export class DateRangePicker extends CalendarBase {
      */
     // tslint:disable-next-line:max-func-body-length
     public onPropertyChanged(newProp: DateRangePickerModel, oldProp: DateRangePickerModel): void {
-        let format: Object = { format: this.formatString, type: 'date', skeleton: 'yMd' };
+        let format: Object = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
         for (let prop of Object.keys(newProp)) {
             this.hide(null);
             switch (prop) {
@@ -4297,10 +4320,7 @@ export class DateRangePicker extends CalendarBase {
                     this.setRangeAllowEdit();
                     break;
                 case 'cssClass':
-                    Input.setCssClass(newProp.cssClass, [this.inputWrapper.container], oldProp.cssClass);
-                    if (this.popupWrapper) {
-                        Input.setCssClass(newProp.cssClass, [this.popupWrapper], oldProp.cssClass);
-                    }
+                    this.updateCssClass(newProp.cssClass, oldProp.cssClass);
                     break;
                 case 'enabled':
                     this.setProperties({ enabled: newProp.enabled }, true);

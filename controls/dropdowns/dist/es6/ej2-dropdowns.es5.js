@@ -2,7 +2,7 @@ import { Animation, Browser, ChildProperty, Complex, Component, Event, EventHand
 import { DataManager, DataUtil, Predicate, Query } from '@syncfusion/ej2-data';
 import { ListBase, Sortable, cssClass, moveTo } from '@syncfusion/ej2-lists';
 import { Popup, createSpinner, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
-import { Input } from '@syncfusion/ej2-inputs';
+import { Input, TextBox } from '@syncfusion/ej2-inputs';
 import { Button, createCheckBox } from '@syncfusion/ej2-buttons';
 import { TreeView } from '@syncfusion/ej2-navigations';
 
@@ -1534,7 +1534,10 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
                 var htmlAttr = _a[_i];
                 if (htmlAttr === 'class') {
-                    this.inputWrapper.container.classList.add(this.htmlAttributes[htmlAttr]);
+                    var updatedClassValue = (this.htmlAttributes[htmlAttr].replace(/\s+/g, ' ')).trim();
+                    if (updatedClassValue !== '') {
+                        addClass([this.inputWrapper.container], updatedClassValue.split(' '));
+                    }
                 }
                 else if (htmlAttr === 'disabled' && this.htmlAttributes[htmlAttr] === 'disabled') {
                     this.enabled = false;
@@ -1961,7 +1964,9 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                             index = index < 0 ? this.liCollections.length - 1 : index === this.liCollections.length ? 0 : index;
                         }
                         nextItem = isNullOrUndefined(this.activeIndex) ? this.liCollections[startIndex] : this.liCollections[index];
-                        this.setSelection(nextItem, e);
+                        if (!isNullOrUndefined(nextItem)) {
+                            this.setSelection(nextItem, e);
+                        }
                     }
                     e.preventDefault();
                     break;
@@ -3325,6 +3330,10 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                 this.element.parentElement.insertBefore(this.inputElement, this.element);
                 this.preventTabIndex(this.inputElement);
             }
+            var updatedCssClassValues = this.cssClass;
+            if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+                updatedCssClassValues = (this.cssClass.replace(/\s+/g, ' ')).trim();
+            }
             this.inputWrapper = Input.createInput({
                 element: this.inputElement,
                 buttons: this.isPopupButton() ? [dropDownListClasses.icon] : null,
@@ -3332,7 +3341,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                 properties: {
                     readonly: this.getModuleName() === 'dropdownlist' ? true : this.readonly,
                     placeholder: this.placeholder,
-                    cssClass: this.cssClass,
+                    cssClass: updatedCssClassValues,
                     enabled: this.enabled,
                     enableRtl: this.enableRtl,
                     showClearButton: this.showClearButton
@@ -3508,7 +3517,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                     }
                     break;
                 case 'cssClass':
-                    this.setCssClass(newProp, oldProp);
+                    this.setCssClass(newProp.cssClass, oldProp.cssClass);
                     break;
                 case 'enableRtl':
                     this.setEnableRtl();
@@ -3661,18 +3670,16 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             }
         };
     };
-    DropDownList.prototype.setCssClass = function (newProp, oldProp) {
-        if (!isNullOrUndefined(oldProp.cssClass) && oldProp.cssClass !== '') {
-            removeClass([this.inputWrapper.container], oldProp.cssClass.split(' '));
+    DropDownList.prototype.setCssClass = function (newClass, oldClass) {
+        if (!isNullOrUndefined(oldClass)) {
+            oldClass = (oldClass.replace(/\s+/g, ' ')).trim();
         }
-        Input.setCssClass(newProp.cssClass, [this.inputWrapper.container]);
+        if (!isNullOrUndefined(newClass)) {
+            newClass = (newClass.replace(/\s+/g, ' ')).trim();
+        }
+        Input.setCssClass(newClass, [this.inputWrapper.container], oldClass);
         if (this.popupObj) {
-            if (!isNullOrUndefined(oldProp.cssClass) && oldProp.cssClass !== '') {
-                removeClass([this.popupObj.element], oldProp.cssClass.split(' '));
-            }
-            if (!isNullOrUndefined(newProp.cssClass) && newProp.cssClass !== '') {
-                addClass([this.popupObj.element], newProp.cssClass.split(' '));
-            }
+            Input.setCssClass(newClass, [this.popupObj.element], oldClass);
         }
     };
     /**
@@ -4024,8 +4031,9 @@ var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, 
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /**
- * The DropDownTree component contains a list of predefined values from which you can
- * choose a single or multiple values.
+ * The Dropdown Tree control allows you to select single or multiple values from hierarchical data in a tree-like structure.
+ * It has several out-of-the-box features, such as data binding, check boxes, templates,
+ * UI customization, accessibility, and preselected values.
  * ```html
  * <input type="text" tabindex="1" id="tree"> </input>
  * ```
@@ -4059,18 +4067,23 @@ var DROPDOWN = 'e-dropdown';
 var DISABLED = 'e-disabled';
 var ICONS = 'e-icons';
 var CHECKALLPARENT = 'e-selectall-parent';
+var CHECKALLHIDE = 'e-hide-selectall';
+var BIGGER = 'e-bigger';
+var SMALL = 'e-small';
 var ALLTEXT = 'e-all-text';
 var CHECKBOXFRAME = 'e-frame';
 var CHECK = 'e-check';
 var CHECKBOXWRAP = 'e-checkbox-wrapper';
+var FILTERWRAP = 'e-filter-wrap';
 var DDTICON = 'e-ddt-icon';
 var FOOTER = 'e-ddt-footer';
 var HEADER = 'e-ddt-header';
+var NODATACONTAINER = 'e-ddt-nodata';
 var NODATA = 'e-no-data';
-var HEADERTEMPLATE_PROPERTY$1 = 'HeaderTemplate';
-var FOOTERTEMPLATE_PROPERTY$1 = 'FooterTemplate';
-var NORECORDSTEMPLATE_PROPERTY$1 = 'NoRecordsTemplate';
-var ACTIONFAILURETEMPLATE_PROPERTY$1 = 'ActionFailureTemplate';
+var HEADERTEMPLATE = 'HeaderTemplate';
+var FOOTERTEMPLATE = 'FooterTemplate';
+var NORECORDSTEMPLATE = 'NoRecordsTemplate';
+var ACTIONFAILURETEMPLATE = 'ActionFailureTemplate';
 var Fields = /** @__PURE__ @class */ (function (_super) {
     __extends$2(Fields, _super);
     function Fields() {
@@ -4139,7 +4152,13 @@ var TreeSettings = /** @__PURE__ @class */ (function (_super) {
 var DropDownTree = /** @__PURE__ @class */ (function (_super) {
     __extends$2(DropDownTree, _super);
     function DropDownTree(options, element) {
-        return _super.call(this, options, element) || this;
+        var _this = _super.call(this, options, element) || this;
+        _this.filterTimer = null;
+        _this.isFilteredData = false;
+        _this.isFilterRestore = false;
+        _this.selectedData = [];
+        _this.filterDelayTime = 300;
+        return _this;
     }
     /**
      * Get the properties to be maintained in the persisted state.
@@ -4169,16 +4188,47 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
         this.isNodeSelected = false;
         this.isDynamicChange = false;
         this.isBlazorPlatForm = isBlazor();
-        this.headerTemplateId = "" + this.element.id + HEADERTEMPLATE_PROPERTY$1;
-        this.footerTemplateId = "" + this.element.id + FOOTERTEMPLATE_PROPERTY$1;
-        this.actionFailureTemplateId = "" + this.element.id + ACTIONFAILURETEMPLATE_PROPERTY$1;
-        this.noRecordsTemplateId = "" + this.element.id + NORECORDSTEMPLATE_PROPERTY$1;
+        this.headerTemplateId = "" + this.element.id + HEADERTEMPLATE;
+        this.footerTemplateId = "" + this.element.id + FOOTERTEMPLATE;
+        this.actionFailureTemplateId = "" + this.element.id + ACTIONFAILURETEMPLATE;
+        this.noRecordsTemplateId = "" + this.element.id + NORECORDSTEMPLATE;
+        this.keyConfigs = {
+            escape: 'escape',
+            altUp: 'alt+uparrow',
+            altDown: 'alt+downarrow',
+            tab: 'tab',
+            shiftTab: 'shift+tab',
+            end: 'end',
+            enter: 'enter',
+            home: 'home',
+            moveDown: 'downarrow',
+            moveLeft: 'leftarrow',
+            moveRight: 'rightarrow',
+            moveUp: 'uparrow',
+            ctrlDown: 'ctrl+downarrow',
+            ctrlUp: 'ctrl+uparrow',
+            ctrlEnter: 'ctrl+enter',
+            ctrlHome: 'ctrl+home',
+            ctrlEnd: 'ctrl+end',
+            shiftDown: 'shift+downarrow',
+            shiftUp: 'shift+uparrow',
+            shiftEnter: 'shift+enter',
+            shiftHome: 'shift+home',
+            shiftEnd: 'shift+end',
+            csDown: 'ctrl+shift+downarrow',
+            csUp: 'ctrl+shift+uparrow',
+            csEnter: 'ctrl+shift+enter',
+            csHome: 'ctrl+shift+home',
+            csEnd: 'ctrl+shift+end',
+            space: 'space',
+        };
     };
     /**
      * To Initialize the control rendering
      * @private
      */
     DropDownTree.prototype.render = function () {
+        this.ensureAutoCheck();
         if (this.element.tagName === 'INPUT') {
             this.inputEle = this.element;
             if (isNullOrUndefined(this.inputEle.getAttribute('role'))) {
@@ -4226,6 +4276,7 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
         this.tree = this.createElement('div', { id: this.element.id + '_tree', });
         this.popupDiv.appendChild(this.tree);
         document.body.appendChild(this.popupDiv);
+        this.wireTreeEvents();
         this.popupDiv.style.display = 'none';
         this.renderTree();
         this.isRemoteData = this.fields.dataSource instanceof DataManager;
@@ -4237,14 +4288,188 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
         if ((this.allowMultiSelection || this.showCheckBox) && this.mode !== 'Delimiter') {
             this.createChip();
         }
-        if (this.showCheckBox && this.showSelectAll) {
-            this.createSelectAllWrapper();
-            this.popupDiv.insertBefore(this.checkAllParent, this.tree);
-        }
         this.wireEvents();
         this.oldValue = this.value;
         this.isInitialized = true;
         this.renderComplete();
+    };
+    DropDownTree.prototype.ensureAutoCheck = function () {
+        if (this.allowFiltering && this.treeSettings.autoCheck) {
+            this.setProperties({ treeSettings: { autoCheck: false } }, true);
+        }
+    };
+    DropDownTree.prototype.hideCheckAll = function (flag) {
+        var checkAllEle = !isNullOrUndefined(this.popupEle) ? this.popupEle.querySelector('.' + CHECKALLPARENT) : null;
+        if (!isNullOrUndefined(checkAllEle)) {
+            if (flag && !checkAllEle.classList.contains(CHECKALLHIDE)) {
+                addClass([checkAllEle], CHECKALLHIDE);
+            }
+            else if (!flag && checkAllEle.classList.contains(CHECKALLHIDE)) {
+                removeClass([checkAllEle], CHECKALLHIDE);
+            }
+        }
+    };
+    DropDownTree.prototype.renderFilter = function () {
+        this.filterContainer = this.createElement('div', {
+            id: this.element.id + '_filter_wrap',
+            className: FILTERWRAP
+        });
+        var filterInput = this.createElement('input', {
+            id: this.element.id + '_filter',
+            attrs: { autocomplete: 'off', 'aria-label': this.filterBarPlaceholder }
+        });
+        this.filterContainer.appendChild(filterInput);
+        prepend([this.filterContainer], this.popupEle);
+        this.filterObj = new TextBox({
+            value: '',
+            showClearButton: true,
+            placeholder: this.filterBarPlaceholder,
+            input: this.filterChangeHandler.bind(this),
+        });
+        this.filterObj.appendTo('#' + this.element.id + '_filter');
+    };
+    DropDownTree.prototype.filterChangeHandler = function (args) {
+        var _this = this;
+        if (!isNullOrUndefined(args.value)) {
+            window.clearTimeout(this.filterTimer);
+            this.filterTimer = window.setTimeout(function () { _this.filterHandler(args.value, args.event); }, this.filterDelayTime);
+        }
+    };
+    DropDownTree.prototype.filterHandler = function (value, event) {
+        var _this = this;
+        if (!this.isFilteredData) {
+            this.treeData = this.treeObj.getTreeData();
+        }
+        var filterFields = this.cloneFields(this.fields);
+        var args = {
+            cancel: false,
+            preventDefaultAction: false,
+            event: event,
+            text: value,
+            fields: filterFields
+        };
+        this.trigger('filtering', args, function (args) {
+            if (!args.cancel) {
+                var flag = false;
+                var fields = void 0;
+                _this.isFilteredData = true;
+                if (value === '') {
+                    _this.isFilteredData = false;
+                    _this.isFilterRestore = true;
+                    fields = _this.cloneFields(_this.fields);
+                }
+                else if (args.preventDefaultAction) {
+                    fields = args.fields;
+                }
+                else {
+                    if (_this.treeDataType === 1) {
+                        fields = _this.selfReferencefilter(value, args.fields);
+                    }
+                    else {
+                        if (_this.fields.dataSource instanceof DataManager) {
+                            flag = true;
+                        }
+                        else {
+                            fields = _this.nestedFilter(value, args.fields);
+                        }
+                    }
+                }
+                _this.hideCheckAll(_this.isFilteredData);
+                if (flag) {
+                    return;
+                }
+                _this.treeObj.fields = _this.getTreeFields(fields);
+                _this.treeObj.dataBind();
+            }
+        });
+    };
+    DropDownTree.prototype.nestedFilter = function (value, filteredFields) {
+        var matchedDataSource = [];
+        for (var i = 0; i < this.treeData.length; i++) {
+            var filteredChild = this.nestedChildFilter(value, this.treeData[i]);
+            if (!isNullOrUndefined(filteredChild)) {
+                matchedDataSource.push(filteredChild);
+            }
+        }
+        filteredFields.dataSource = matchedDataSource;
+        return filteredFields;
+    };
+    DropDownTree.prototype.nestedChildFilter = function (value, node) {
+        var children = node[this.fields.child];
+        if (isNullOrUndefined(children)) {
+            return (this.isMatchedNode(value, node)) ? node : null;
+        }
+        else {
+            var matchedChildren = [];
+            for (var i = 0; i < children.length; i++) {
+                var filteredChild = this.nestedChildFilter(value, children[i]);
+                if (!isNullOrUndefined(filteredChild)) {
+                    matchedChildren.push(filteredChild);
+                }
+            }
+            if (matchedChildren.length !== 0) {
+                node[this.fields.child] = matchedChildren;
+                return node;
+            }
+            else {
+                node[this.fields.child] = null;
+                return (this.isMatchedNode(value, node)) ? node : null;
+            }
+        }
+    };
+    DropDownTree.prototype.selfReferencefilter = function (value, filteredFields) {
+        var matchedData = [];
+        var matchedDataSource = [];
+        for (var i = 0; i < this.treeData.length; i++) {
+            if (this.isMatchedNode(value, this.treeData[i])) {
+                matchedData.push(this.treeData[i]);
+            }
+        }
+        for (var i = 0; i < matchedData.length; i++) {
+            if (matchedDataSource.indexOf(matchedData[i]) === -1) {
+                matchedDataSource.push(matchedData[i]);
+                var parentId = matchedData[i][this.fields.parentValue];
+                while (!isNullOrUndefined(parentId)) {
+                    var parent_1 = null;
+                    for (var j = 0; j < this.treeData.length; j++) {
+                        var value_1 = this.treeData[j][this.fields.value];
+                        if (!isNullOrUndefined(value_1) && (value_1 === parentId)) {
+                            parent_1 = this.treeData[j];
+                            break;
+                        }
+                    }
+                    if (!isNullOrUndefined(parent_1) && (matchedDataSource.indexOf(parent_1) === -1)) {
+                        matchedDataSource.push(parent_1);
+                        parentId = parent_1[this.fields.parentValue];
+                    }
+                    else {
+                        break;
+                    }
+                }
+            }
+        }
+        filteredFields.dataSource = matchedDataSource;
+        return filteredFields;
+    };
+    DropDownTree.prototype.isMatchedNode = function (value, node) {
+        var checkValue = node[this.fields.text];
+        if (this.ignoreCase) {
+            checkValue = checkValue.toLowerCase();
+            value = value.toLowerCase();
+        }
+        if (this.ignoreAccent) {
+            checkValue = DataUtil.ignoreDiacritics(checkValue);
+            value = DataUtil.ignoreDiacritics(value);
+        }
+        if (this.filterType === 'StartsWith') {
+            return checkValue.slice(0, value.length) === value;
+        }
+        else if (this.filterType === 'EndsWith') {
+            return checkValue.slice(-value.length) === value;
+        }
+        else {
+            return checkValue.indexOf(value) !== -1;
+        }
     };
     /* To wire events for the dropdown tree */
     DropDownTree.prototype.wireEvents = function () {
@@ -4254,6 +4479,26 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
         EventHandler.add(this.inputWrapper, 'mousemove', this.mouseIn, this);
         EventHandler.add(this.inputWrapper, 'mouseout', this.onMouseLeave, this);
         EventHandler.add(this.overAllClear, 'mousedown', this.clearAll, this);
+        EventHandler.add(window, 'resize', this.windowResize, this);
+        this.keyboardModule = new KeyboardEvents(this.inputWrapper, {
+            keyAction: this.keyActionHandler.bind(this),
+            keyConfigs: this.keyConfigs,
+            eventName: 'keydown',
+        });
+    };
+    DropDownTree.prototype.wireTreeEvents = function () {
+        this.keyboardModule = new KeyboardEvents(this.tree, {
+            keyAction: this.treeAction.bind(this),
+            keyConfigs: this.keyConfigs,
+            eventName: 'keydown',
+        });
+    };
+    DropDownTree.prototype.wireCheckAllWrapperEvents = function () {
+        this.keyboardModule = new KeyboardEvents(this.checkAllParent, {
+            keyAction: this.checkAllAction.bind(this),
+            keyConfigs: this.keyConfigs,
+            eventName: 'keydown',
+        });
     };
     /* To unwire events for the dropdown tree */
     DropDownTree.prototype.unWireEvents = function () {
@@ -4263,6 +4508,7 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
         EventHandler.remove(this.inputWrapper, 'mousemove', this.mouseIn);
         EventHandler.remove(this.inputWrapper, 'mouseout', this.onMouseLeave);
         EventHandler.remove(this.overAllClear, 'mousedown', this.clearAll);
+        EventHandler.remove(window, 'resize', this.windowResize);
     };
     /* Trigger when the dropdown is clicked */
     DropDownTree.prototype.dropDownClick = function (e) {
@@ -4304,9 +4550,6 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
             return;
         }
         var target = e.relatedTarget;
-        if (isNullOrUndefined(target) && document.activeElement !== this.inputEle && this.isDocumentClick) {
-            this.hidePopup();
-        }
         if ((target !== this.inputEle) && (isNullOrUndefined(target)) && (e.target !== this.inputWrapper || !this.isPopupOpen)) {
             this.onFocusOut(e);
         }
@@ -4330,9 +4573,6 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
                 addClass([this.chipWrapper], HIDEICON);
                 removeClass([this.inputWrapper], SHOW_CHIP);
                 removeClass([this.inputEle], CHIP_INPUT);
-            }
-            if (this.mode === 'Default') {
-                Input.setValue(this.dataValue, this.inputEle, this.floatLabelType);
             }
         }
         if (this.changeOnBlur) {
@@ -4387,10 +4627,128 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
             if (this.popupObj) {
                 this.popupObj.refreshPosition();
             }
-            Input.setValue(null, this.inputEle, this.floatLabelType);
         }
         var args = { isInteracted: e ? true : false, event: e };
         this.trigger('focus', args);
+    };
+    DropDownTree.prototype.treeAction = function (e) {
+        var _this = this;
+        var eventArgs = {
+            cancel: false,
+            event: e,
+        };
+        this.trigger('keyPress', eventArgs, function (observedArgs) {
+            if (!observedArgs.cancel) {
+                switch (e.action) {
+                    case 'escape':
+                    case 'altUp':
+                        _this.inputWrapper.focus();
+                        e.preventDefault();
+                        if (_this.isPopupOpen) {
+                            _this.hidePopup();
+                        }
+                        break;
+                    case 'shiftTab':
+                        if (_this.isPopupOpen) {
+                            _this.hidePopup();
+                        }
+                        break;
+                    case 'enter':
+                    case 'ctrlEnter':
+                    case 'shiftEnter':
+                    case 'csEnter':
+                        if (!_this.showCheckBox) {
+                            _this.isValueChange = true;
+                            _this.keyEventArgs = e;
+                        }
+                        break;
+                    case 'space':
+                        _this.isValueChange = true;
+                        _this.keyEventArgs = e;
+                        break;
+                    case 'moveRight':
+                    case 'moveLeft':
+                    case 'shiftDown':
+                    case 'moveDown':
+                    case 'ctrlDown':
+                    case 'csDown':
+                    case 'shiftUp':
+                    case 'moveUp':
+                    case 'ctrlUp':
+                    case 'csUp':
+                    case 'home':
+                    case 'shiftHome':
+                    case 'ctrlHome':
+                    case 'csHome':
+                    case 'end':
+                    case 'shiftEnd':
+                    case 'ctrlEnd':
+                    case 'csEnd':
+                }
+            }
+            else {
+                e.stopImmediatePropagation();
+            }
+        });
+    };
+    DropDownTree.prototype.keyActionHandler = function (e) {
+        var _this = this;
+        var eventArgs = {
+            cancel: false,
+            event: e,
+        };
+        this.trigger('keyPress', eventArgs, function (observedArgs) {
+            if (!observedArgs.cancel) {
+                switch (e.action) {
+                    case 'escape':
+                    case 'altUp':
+                    case 'shiftTab':
+                        e.preventDefault();
+                        _this.hidePopup();
+                        break;
+                    case 'tab':
+                        e.preventDefault();
+                        _this.hidePopup();
+                        _this.inputEle.focus();
+                        break;
+                    case 'altDown':
+                        if (!_this.isPopupOpen) {
+                            _this.showPopup();
+                            e.preventDefault();
+                        }
+                        break;
+                    case 'moveDown':
+                        if (_this.showSelectAll && _this.showCheckBox) {
+                            _this.checkAllParent.focus();
+                        }
+                        break;
+                }
+            }
+        });
+    };
+    DropDownTree.prototype.checkAllAction = function (e) {
+        var _this = this;
+        var eventArgs = {
+            cancel: false,
+            event: e,
+        };
+        this.trigger('keyPress', eventArgs, function (observedArgs) {
+            if (!observedArgs.cancel) {
+                switch (e.action) {
+                    case 'space':
+                        _this.clickHandler(e);
+                        break;
+                    case 'moveDown':
+                        _this.treeObj.element.focus();
+                }
+            }
+        });
+    };
+    DropDownTree.prototype.windowResize = function () {
+        if (this.popupObj) {
+            this.popupObj.setProperties({ width: this.setWidth() });
+            this.popupObj.refreshPosition();
+        }
     };
     DropDownTree.prototype.getAriaAttributes = function () {
         var disable = this.enabled ? 'false' : 'true';
@@ -4460,22 +4818,25 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
     };
     DropDownTree.prototype.createSelectAllWrapper = function () {
         this.checkAllParent = this.createElement('div', {
-            className: CHECKALLPARENT
+            className: CHECKALLPARENT, attrs: { 'tabindex': '0' }
         });
         this.selectAllSpan = this.createElement('span', {
             className: ALLTEXT
         });
         this.selectAllSpan.textContent = '';
-        this.checkBoxElement = createCheckBox(this.createElement, true);
+        var ele = closest(this.element, '.' + BIGGER);
+        var touchClass = isNullOrUndefined(ele) ? '' : SMALL;
+        this.checkBoxElement = createCheckBox(this.createElement, true, { cssClass: touchClass });
         this.checkBoxElement.setAttribute('role', 'checkbox');
         this.checkAllParent.appendChild(this.checkBoxElement);
         this.checkAllParent.appendChild(this.selectAllSpan);
         this.setLocale();
         EventHandler.add(this.checkAllParent, 'mousedown', this.clickHandler, this);
+        this.wireCheckAllWrapperEvents();
     };
     DropDownTree.prototype.clickHandler = function (e) {
         var target;
-        if (e.currentTarget.classList.contains(this.checkAllParent.className)) {
+        if ((e.currentTarget && e.currentTarget.classList.contains(CHECKALLPARENT))) {
             target = e.currentTarget.firstElementChild.lastElementChild;
         }
         else {
@@ -4552,11 +4913,11 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
                     this.inputWrapper.classList.add(this.htmlAttributes[htmlAttr]);
                 }
                 else if (htmlAttr === 'disabled' && this.htmlAttributes[htmlAttr] === 'disabled') {
-                    this.enabled = false;
+                    this.setProperties({ enabled: false }, true);
                     this.setEnable();
                 }
                 else if (htmlAttr === 'readonly' && !isNullOrUndefined(this.htmlAttributes[htmlAttr])) {
-                    this.readonly = true;
+                    this.setProperties({ readonly: true }, true);
                     this.dataBind();
                 }
                 else if (htmlAttr === 'style') {
@@ -4771,7 +5132,7 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
     /* To render the treeview */
     DropDownTree.prototype.renderTree = function () {
         this.treeObj = new TreeView({
-            fields: this.getFields(),
+            fields: this.getTreeFields(this.fields),
             enableRtl: this.enableRtl,
             nodeSelected: this.onNodeSelected.bind(this),
             nodeChecked: this.onNodeChecked.bind(this),
@@ -4793,6 +5154,13 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
     /* To render the popup element */
     DropDownTree.prototype.renderPopup = function () {
         var _this = this;
+        if (this.isFilteredData) {
+            this.filterObj.value = '';
+            this.treeObj.fields = this.getTreeFields(this.fields);
+            this.isFilterRestore = true;
+            this.isFilteredData = false;
+            this.hideCheckAll(false);
+        }
         var isCancelled = false;
         var args = { cancel: false };
         this.trigger('beforeOpen', args, function (args) {
@@ -4815,6 +5183,13 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
             if (_this.isFirstRender && !isCancelled) {
                 prepend([_this.popupDiv], _this.popupEle);
                 _this.popupDiv.style.display = 'block';
+                if (_this.allowFiltering) {
+                    _this.renderFilter();
+                }
+                if (_this.showCheckBox && _this.showSelectAll && (!_this.popupDiv.classList.contains(NODATA))) {
+                    _this.createSelectAllWrapper();
+                    _this.popupEle.insertBefore(_this.checkAllParent, _this.popupDiv);
+                }
                 if (_this.headerTemplate) {
                     _this.setHeaderTemplate();
                 }
@@ -4829,7 +5204,8 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
                 _this.popupObj.refreshPosition();
                 _this.popupEle.style.display = 'block';
                 _this.updatePopupHeight();
-                if (!_this.showCheckBox && (!_this.popupDiv.classList.contains(NODATA) && _this.treeItems.length > 0)) {
+                if (!(_this.showCheckBox && _this.showSelectAll) && (!_this.popupDiv.classList.contains(NODATA)
+                    && _this.treeItems.length > 0)) {
                     _this.treeObj.element.focus();
                 }
                 if (_this.checkSelectAll && _this.checkBoxElement) {
@@ -4843,10 +5219,21 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
         });
     };
     DropDownTree.prototype.updatePopupHeight = function () {
+        if (this.isFirstRender) {
+            return;
+        }
         var popupHeight = this.getHeight();
         this.popupEle.style.maxHeight = popupHeight;
+        if (this.allowFiltering) {
+            var height = Math.round(this.filterContainer.getBoundingClientRect().height);
+            popupHeight = formatUnit(parseInt(popupHeight, 10) - height + 'px');
+        }
         if (this.headerTemplate) {
             var height = Math.round(this.header.getBoundingClientRect().height);
+            popupHeight = formatUnit(parseInt(popupHeight, 10) - height + 'px');
+        }
+        if (this.showCheckBox && this.showSelectAll) {
+            var height = Math.round(this.checkAllParent.getBoundingClientRect().height);
             popupHeight = formatUnit(parseInt(popupHeight, 10) - height + 'px');
         }
         if (this.footerTemplate) {
@@ -4857,15 +5244,6 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
         border = border + parseInt(window.getComputedStyle(this.popupEle).borderBottomWidth, 10);
         popupHeight = formatUnit(parseInt(popupHeight, 10) - border + 'px');
         this.popupDiv.style.maxHeight = popupHeight;
-        this.updateTreeHeight();
-    };
-    DropDownTree.prototype.updateTreeHeight = function () {
-        var treeHeight = this.popupDiv.style.maxHeight;
-        if (this.showCheckBox && this.showSelectAll) {
-            var height = Math.round(this.checkAllParent.getBoundingClientRect().height);
-            treeHeight = formatUnit(parseInt(treeHeight, 10) - height + 'px');
-        }
-        this.tree.style.maxHeight = treeHeight;
     };
     DropDownTree.prototype.createPopup = function (element) {
         var _this = this;
@@ -4928,9 +5306,10 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
     DropDownTree.prototype.onDocumentClick = function (e) {
         var target = e.target;
         var isTree = closest(target, '.' + PARENTITEM);
-        if ((this.isPopupOpen && (this.inputWrapper.contains(target) || isTree)) || ((this.allowMultiSelection || this.showCheckBox) &&
-            (this.isPopupOpen && (target.classList.contains(CHIP_CLOSE)) || target.classList.contains(ALLTEXT)) || (this.isPopupOpen &&
-            (target.classList.contains(CHECKALLPARENT) || target.classList.contains(CHECKBOXFRAME))))) {
+        var isFilter = closest(target, '.' + FILTERWRAP);
+        if ((this.isPopupOpen && (this.inputWrapper.contains(target) || isTree || isFilter)) ||
+            ((this.allowMultiSelection || this.showCheckBox) && (this.isPopupOpen && target.classList.contains(CHIP_CLOSE) ||
+                (this.isPopupOpen && (target.classList.contains(CHECKALLPARENT) || target.classList.contains(CHECKBOXFRAME)))))) {
             this.isDocumentClick = false;
         }
         else if (!this.inputWrapper.contains(target)) {
@@ -4951,9 +5330,11 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
         if (this.treeItems.length <= 0) {
             this.l10nUpdate();
             addClass([this.popupDiv], NODATA);
+            this.hideCheckAll(true);
         }
         else if (this.popupDiv.classList.contains(NODATA) && this.treeItems.length >= 1) {
             removeClass([this.popupDiv], NODATA);
+            this.hideCheckAll(false);
         }
         this.treeDataType = this.getTreeDataType(this.treeItems, this.fields);
         if (this.isFirstRender && this.isRemoteData) {
@@ -4964,6 +5345,21 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
         }
         var eventArgs = { data: args.data };
         this.trigger('dataBound', eventArgs);
+        if (this.isFilteredData) {
+            this.treeObj.expandAll();
+        }
+        if (this.isFilterRestore) {
+            this.restoreFilterSelection();
+            this.isFilterRestore = false;
+        }
+    };
+    DropDownTree.prototype.restoreFilterSelection = function () {
+        if (this.showCheckBox) {
+            this.treeObj.checkedNodes = this.value ? this.value : [];
+        }
+        else {
+            this.treeObj.selectedNodes = this.value ? this.value : [];
+        }
     };
     /* To set cssclass for the dropdowntree */
     DropDownTree.prototype.setCssClass = function (newClass, oldClass) {
@@ -5004,30 +5400,52 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
                 this.hidePopup();
             }
             addClass([this.inputWrapper], DISABLED);
-            var isFocus = this.inputWrapper ? (this.inputWrapper.classList.contains(INPUTFOCUS) ? true : false) : false;
-            if (isFocus) {
+            if (this.inputWrapper && this.inputWrapper.classList.contains(INPUTFOCUS)) {
                 removeClass([this.inputWrapper], [INPUTFOCUS]);
             }
             this.inputEle.setAttribute('aria-disabled', 'true');
             this.inputWrapper.setAttribute('aria-disabled', 'true');
         }
     };
-    DropDownTree.prototype.getFields = function () {
+    DropDownTree.prototype.cloneFields = function (fields) {
+        var clonedField = {
+            dataSource: fields.dataSource, value: fields.value, text: fields.text, parentValue: fields.parentValue,
+            child: this.cloneChildField(fields.child), hasChildren: fields.hasChildren, expanded: fields.expanded,
+            iconCss: fields.iconCss, imageUrl: fields.imageUrl, htmlAttributes: fields.htmlAttributes, query: fields.query,
+            selected: fields.selected, tableName: fields.tableName, tooltip: fields.tooltip
+        };
+        return clonedField;
+    };
+    DropDownTree.prototype.cloneChildField = function (fields) {
+        if (typeof fields === 'string') {
+            return fields;
+        }
+        else {
+            var clonedField = {
+                dataSource: fields.dataSource, value: fields.value, text: fields.text, parentValue: fields.parentValue,
+                child: (fields.child ? this.cloneChildField(fields.child) : null), hasChildren: fields.hasChildren,
+                expanded: fields.expanded, iconCss: fields.iconCss, imageUrl: fields.imageUrl, htmlAttributes: fields.htmlAttributes,
+                query: fields.query, selected: fields.selected, tableName: fields.tableName, tooltip: fields.tooltip
+            };
+            return clonedField;
+        }
+    };
+    DropDownTree.prototype.getTreeFields = function (fields) {
         var treeFields = {
-            dataSource: this.fields.dataSource, id: this.fields.value, text: this.fields.text, parentID: this.fields.parentValue,
-            child: this.getChildren(this.fields.child), hasChildren: this.fields.hasChildren, expanded: this.fields.expanded,
-            iconCss: this.fields.iconCss, imageUrl: this.fields.imageUrl, isChecked: this.fields.selected,
-            htmlAttributes: this.fields.htmlAttributes, query: this.fields.query, selected: this.fields.selected,
-            tableName: this.fields.tableName, tooltip: this.fields.tooltip
+            dataSource: fields.dataSource, id: fields.value, text: fields.text, parentID: fields.parentValue,
+            child: this.getTreeChildren(fields.child), hasChildren: fields.hasChildren, expanded: fields.expanded,
+            iconCss: fields.iconCss, imageUrl: fields.imageUrl, isChecked: fields.selected,
+            htmlAttributes: fields.htmlAttributes, query: fields.query, selected: fields.selected,
+            tableName: fields.tableName, tooltip: fields.tooltip
         };
         return treeFields;
     };
-    DropDownTree.prototype.getChildren = function (mapper) {
-        var childFields;
-        if (typeof this.fields.child === 'string') {
-            childFields = this.fields.child;
+    DropDownTree.prototype.getTreeChildren = function (mapper) {
+        if (typeof mapper === 'string') {
+            return mapper;
         }
         else if (!isNullOrUndefined(mapper)) {
+            var childFields = void 0;
             mapper = this.getActualProperties(mapper);
             childFields = mapper;
             if (mapper.value) {
@@ -5037,13 +5455,14 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
                 childFields.parentID = mapper.parentValue;
             }
             if (mapper.child) {
-                childFields.child = this.getChildren(mapper.child);
+                childFields.child = this.getTreeChildren(mapper.child);
             }
             if (mapper.selected && this.showCheckBox) {
                 childFields.isChecked = mapper.selected;
             }
+            return childFields;
         }
-        return childFields;
+        return null;
     };
     DropDownTree.prototype.getTreeDataType = function (ds, field) {
         if (this.fields.dataSource instanceof DataManager) {
@@ -5067,18 +5486,26 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
     /* Triggers when the tree fields is changed dynamically */
     DropDownTree.prototype.setFields = function () {
         this.resetValue();
-        this.treeObj.fields = this.getFields();
+        this.treeObj.fields = this.getTreeFields(this.fields);
         this.treeObj.dataBind();
     };
     DropDownTree.prototype.getEventArgs = function (args) {
         var checkData = args.data;
         var selectData = args.nodeData;
+        var state;
+        if (this.showCheckBox) {
+            if (args.action === 'check') {
+                state = 'select';
+            }
+            else if (args.action === 'uncheck') {
+                state = 'un-select';
+            }
+        }
         var eventArgs = {
-            action: this.showCheckBox ? (args.action === 'check' ? 'select' : args.action === 'uncheck' ? 'un-select' : args.action)
-                : args.action,
+            action: this.showCheckBox ? state : args.action,
             isInteracted: args.isInteracted,
             item: args.node,
-            itemData: this.showCheckBox ? (checkData ? checkData[0] : selectData) : selectData
+            itemData: this.showCheckBox ? checkData[0] : selectData
         };
         return eventArgs;
     };
@@ -5096,8 +5523,6 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
             return;
         }
         var selectedText;
-        var eventArgs = this.getEventArgs(args);
-        this.trigger('select', eventArgs);
         if (args.isInteracted) {
             var id = getValue('id', args.nodeData).toString();
             if (!this.allowMultiSelection) {
@@ -5124,6 +5549,12 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
                 this.setMultiSelect();
             }
         }
+        var eventArgs = this.getEventArgs(args);
+        this.trigger('select', eventArgs);
+        if (this.isValueChange && !this.changeOnBlur) {
+            this.triggerChangeEvent(this.keyEventArgs);
+            this.isValueChange = false;
+        }
     };
     DropDownTree.prototype.onNodeClicked = function (args) {
         if (!this.changeOnBlur && this.isNodeSelected) {
@@ -5148,6 +5579,10 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
     DropDownTree.prototype.onNodeChecked = function (args) {
         var eventArgs = this.getEventArgs(args);
         this.trigger('select', eventArgs);
+        if (this.isFilteredData && args.action === 'uncheck') {
+            var id = getValue('id', args.data[0]).toString();
+            this.removeSelectedData(id, true);
+        }
         if (!this.isChipDelete && args.isInteracted) {
             this.setMultiSelect();
         }
@@ -5174,8 +5609,7 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
     };
     DropDownTree.prototype.updateClearButton = function (state) {
         if (state) {
-            var isClearIcon = this.overAllClear ? (this.inputWrapper.contains(this.overAllClear) ? true : false) : false;
-            if (!isClearIcon) {
+            if (!this.inputWrapper.contains(this.overAllClear)) {
                 this.inputEle.parentElement.insertBefore(this.overAllClear, this.inputEle.nextSibling);
             }
             else {
@@ -5220,7 +5654,6 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
             if (!this.inputWrapper.contains(this.chipWrapper)) {
                 this.createChip();
             }
-            Input.setValue(null, this.inputEle, this.floatLabelType);
             var isValid = this.getValidMode();
             if (this.chipWrapper.classList.contains(HIDEICON) && isValid) {
                 removeClass([this.chipWrapper], HIDEICON);
@@ -5238,7 +5671,7 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
                 removeClass([this.inputEle], CHIP_INPUT);
             }
         }
-        else if (this.inputEle.classList.contains(CHIP)) {
+        else if (this.inputEle.classList.contains(CHIP_INPUT)) {
             removeClass([this.inputEle], CHIP_INPUT);
             if (this.chipWrapper) {
                 addClass([this.chipWrapper], HIDEICON);
@@ -5251,14 +5684,28 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
             this.inputWrapper.insertBefore(this.overAllClear, this.inputObj.buttons[0]);
         }
     };
+    DropDownTree.prototype.setMultiSelectValue = function (newValues) {
+        if (!this.isFilteredData) {
+            this.setProperties({ value: newValues }, true);
+        }
+        else {
+            var selectedValues = isNullOrUndefined(this.value) ? [] : this.value;
+            for (var i = 0; i < newValues.length; i++) {
+                if (isNullOrUndefined(this.value) || this.value.indexOf(newValues[i]) === -1) {
+                    selectedValues.push(newValues[i]);
+                }
+            }
+            this.setProperties({ value: selectedValues }, true);
+        }
+    };
     DropDownTree.prototype.setMultiSelect = function () {
         if (this.showCheckBox && !this.isDynamicChange) {
-            this.setProperties({ value: this.treeObj.checkedNodes }, true);
+            this.setMultiSelectValue(this.treeObj.checkedNodes);
         }
         else {
             var ddtValue = this.allowMultiSelection ? (this.showCheckBox ? this.treeObj.checkedNodes
                 : this.treeObj.selectedNodes) : (this.value ? (this.showCheckBox ? this.value : [this.value[0]]) : null);
-            this.setProperties({ value: ddtValue }, true);
+            this.setMultiSelectValue(ddtValue);
             if (this.showCheckBox && this.value !== null) {
                 this.treeObj.checkedNodes = this.value;
                 this.treeObj.dataBind();
@@ -5284,6 +5731,40 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
         }
         this.updateSelectedValues();
     };
+    DropDownTree.prototype.getSelectedData = function (value) {
+        var data = null;
+        if (this.isFilteredData) {
+            for (var i = 0; i < this.selectedData.length; i++) {
+                if (getValue(this.treeSettings.loadOnDemand ? this.fields.value : 'id', this.selectedData[i]).toString() === value) {
+                    data = this.selectedData[i];
+                    break;
+                }
+            }
+        }
+        if (isNullOrUndefined(data)) {
+            if (this.treeSettings.loadOnDemand) {
+                data = this.treeObj.getTreeData(value)[0];
+            }
+            else {
+                data = this.treeObj.getNode(value);
+            }
+            if (!isNullOrUndefined(data)) {
+                this.selectedData.push(data);
+            }
+        }
+        return data;
+    };
+    DropDownTree.prototype.removeSelectedData = function (value, muteOnChange) {
+        var selectedValues = isNullOrUndefined(this.value) ? [] : this.value.slice();
+        selectedValues.splice(selectedValues.indexOf(value), 1);
+        this.setProperties({ value: selectedValues }, muteOnChange);
+        for (var i = 0; i < this.selectedData.length; i++) {
+            if (getValue(this.treeSettings.loadOnDemand ? this.fields.value : 'id', this.selectedData[i]).toString() === value) {
+                this.selectedData.splice(i, 1);
+                break;
+            }
+        }
+    };
     DropDownTree.prototype.updateSelectedValues = function () {
         this.dataValue = '';
         var temp;
@@ -5294,22 +5775,13 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
         if ((!this.isChipDelete || this.treeSettings.autoCheck) && (this.inputWrapper.contains(this.chipWrapper))) {
             this.chipCollection.innerHTML = '';
         }
+        if (!this.isFilteredData) {
+            this.selectedData = [];
+        }
         if (!isNullOrUndefined(this.value)) {
-            var val = this.value.slice();
             for (var i = 0, len = this.value.length; i < len; i++) {
-                if (this.treeSettings.loadOnDemand) {
-                    selectedData = this.treeObj.getTreeData(this.value[i])[0];
-                    text = getValue(this.fields.text, selectedData);
-                }
-                else {
-                    selectedData = this.treeObj.getNode(this.value[i]);
-                    text = getValue('text', selectedData);
-                }
-                if (text === '') {
-                    var index = val.indexOf(val[i]);
-                    val.splice(index, 1);
-                    continue;
-                }
+                selectedData = this.getSelectedData(this.value[i]);
+                text = getValue(this.treeSettings.loadOnDemand ? this.fields.text : 'text', selectedData);
                 this.selectedText.push(text);
                 temp = this.selectedText[this.selectedText.length - 1];
                 if (this.selectedText.length > 1) {
@@ -5328,7 +5800,6 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
                 this.hiddenElement.innerHTML += '<option selected value ="' + this.value[i] + '">' +
                     this.selectedText[this.selectedText.length - 1] + '</option>';
             }
-            this.setProperties({ value: val }, true);
         }
         var isValid = this.getValidMode();
         if (this.mode !== 'Box' && (this.allowMultiSelection || this.showCheckBox) && !isValid) {
@@ -5336,11 +5807,8 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
                 addClass([this.chipWrapper], HIDEICON);
                 removeClass([this.inputWrapper], SHOW_CHIP);
             }
-            Input.setValue(this.dataValue, this.inputEle, this.floatLabelType);
         }
-        else if (!this.allowMultiSelection || !this.showCheckBox) {
-            Input.setValue(this.dataValue, this.inputEle, this.floatLabelType);
-        }
+        Input.setValue(this.dataValue, this.inputEle, this.floatLabelType);
         if (textValue === '') {
             this.setProperties({ text: null }, true);
         }
@@ -5375,12 +5843,16 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DropDownTree.prototype.setSelectAllWrapper = function (state) {
-        if (state && !this.popupDiv.contains(this.checkAllParent) && this.showCheckBox) {
-            this.createSelectAllWrapper();
-            prepend([this.checkAllParent], this.popupDiv);
+        if (this.isFirstRender) {
+            return;
         }
-        else if (this.popupDiv.contains(this.checkAllParent)) {
+        if (state && !this.popupEle.contains(this.checkAllParent) && this.showCheckBox) {
+            this.createSelectAllWrapper();
+            this.popupEle.insertBefore(this.checkAllParent, this.popupDiv);
+        }
+        else if (this.popupEle.contains(this.checkAllParent)) {
             detach(this.checkAllParent);
+            this.checkAllParent = null;
         }
     };
     DropDownTree.prototype.setHeaderTemplate = function () {
@@ -5398,7 +5870,7 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
             this.header.appendChild(item);
         }
         this.ddtupdateBlazorTemplates(false, false, true, false);
-        this.popupEle.insertBefore(this.header, this.popupDiv);
+        this.popupEle.insertBefore(this.header, this.checkAllParent ? this.checkAllParent : this.popupDiv);
     };
     DropDownTree.prototype.templateComplier = function (template) {
         if (template) {
@@ -5459,7 +5931,7 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
         }
         this.isChipDelete = true;
         this.isClearButtonClick = true;
-        this.value.splice(this.value.indexOf(value), 1);
+        this.removeSelectedData(value, true);
         this.selectedText = [];
         if (this.allowMultiSelection) {
             this.treeObj.selectedNodes = this.value.slice();
@@ -5479,6 +5951,7 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
         this.dataValue = null;
         this.setProperties({ value: [] }, true);
         this.setProperties({ text: null }, true);
+        this.selectedData = [];
         setValue('selectedNodes', [], this.treeObj);
         if (this.showCheckBox) {
             this.treeObj.uncheckAll();
@@ -5496,26 +5969,14 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DropDownTree.prototype.clearCheckAll = function () {
-        if (this.showSelectAll && this.value.length === 0 && this.checkWrapper) {
-            var frameSpan = this.checkWrapper.getElementsByClassName(CHECKBOXFRAME)[0];
-            if (frameSpan.classList.contains(CHECK)) {
-                removeClass([frameSpan], CHECK);
-            }
+        if (this.showSelectAll && this.value.length === 0) {
             this.setLocale(false);
-        }
-    };
-    DropDownTree.prototype.checkForSelectAll = function (state, e) {
-        if (this.checkWrapper) {
-            this.changeState(this.checkWrapper, !state ? 'uncheck' : 'check', e);
-        }
-        else {
-            this.checkSelectAll = true;
         }
     };
     DropDownTree.prototype.selectAllItems = function (state) {
         if (this.showCheckBox) {
             state ? this.treeObj.checkAll() : this.treeObj.uncheckAll();
-            this.checkForSelectAll(state);
+            this.checkSelectAll = true;
         }
         else if (this.allowMultiSelection) {
             if (!state) {
@@ -5538,6 +5999,7 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
     DropDownTree.prototype.updateTreeSettings = function (prop) {
         var value = Object.keys(prop.treeSettings)[0];
         if (value === 'autoCheck') {
+            this.ensureAutoCheck();
             this.treeObj.autoCheck = this.treeSettings.autoCheck;
         }
         else if (value === 'loadOnDemand') {
@@ -5579,61 +6041,66 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DropDownTree.prototype.l10nUpdate = function (actionFailure) {
-        var ele = this.popupDiv;
+        if (this.noRecord) {
+            this.noRecord.innerHTML = '';
+        }
+        else {
+            this.noRecord = this.createElement('div');
+            addClass([this.noRecord], NODATACONTAINER);
+            prepend([this.noRecord], this.popupDiv);
+        }
         if (this.noRecordsTemplate !== 'No Records Found' || this.actionFailureTemplate !== 'The Request Failed') {
             var template = actionFailure ? this.actionFailureTemplate : this.noRecordsTemplate;
             var compiledString = void 0;
             var templateId = actionFailure ? this.actionFailureTemplateId : this.noRecordsTemplateId;
-            ele.innerHTML = '';
             compiledString = this.templateComplier(template);
             for (var _i = 0, _a = compiledString({}, null, null, templateId, this.isStringTemplate); _i < _a.length; _i++) {
                 var item = _a[_i];
-                ele.appendChild(item);
+                this.noRecord.appendChild(item);
             }
             this.ddtupdateBlazorTemplates(!actionFailure, actionFailure);
         }
         else {
             var l10nLocale = { noRecordsTemplate: 'No Records Found', actionFailureTemplate: 'The Request Failed' };
             this.l10n = new L10n(this.getModuleName(), l10nLocale, this.locale);
-            ele.innerHTML = actionFailure ?
+            this.noRecord.innerHTML = actionFailure ?
                 this.l10n.getConstant('actionFailureTemplate') : this.l10n.getConstant('noRecordsTemplate');
         }
     };
     DropDownTree.prototype.ddtupdateBlazorTemplates = function (noRecord, action, header, footer, isEmpty) {
         if (!this.isStringTemplate) {
             if (this.noRecordsTemplate && noRecord) {
-                updateBlazorTemplate(this.noRecordsTemplateId, NORECORDSTEMPLATE_PROPERTY$1, this, isEmpty);
+                updateBlazorTemplate(this.noRecordsTemplateId, NORECORDSTEMPLATE, this, isEmpty);
             }
             if (this.actionFailureTemplate && action) {
-                updateBlazorTemplate(this.actionFailureTemplateId, ACTIONFAILURETEMPLATE_PROPERTY$1, this, isEmpty);
+                updateBlazorTemplate(this.actionFailureTemplateId, ACTIONFAILURETEMPLATE, this, isEmpty);
             }
             if (header) {
-                updateBlazorTemplate(this.headerTemplateId, HEADERTEMPLATE_PROPERTY$1, this);
+                updateBlazorTemplate(this.headerTemplateId, HEADERTEMPLATE, this);
             }
             if (footer) {
-                updateBlazorTemplate(this.footerTemplateId, FOOTERTEMPLATE_PROPERTY$1, this);
+                updateBlazorTemplate(this.footerTemplateId, FOOTERTEMPLATE, this);
             }
         }
     };
     DropDownTree.prototype.ddtresetBlazorTemplates = function (noRecord, action, header, footer) {
         if (!this.isStringTemplate) {
             if (this.noRecordsTemplate && noRecord) {
-                resetBlazorTemplate(this.noRecordsTemplateId, NORECORDSTEMPLATE_PROPERTY$1);
+                resetBlazorTemplate(this.noRecordsTemplateId, NORECORDSTEMPLATE);
             }
             if (this.actionFailureTemplate && action) {
-                resetBlazorTemplate(this.actionFailureTemplateId, ACTIONFAILURETEMPLATE_PROPERTY$1);
+                resetBlazorTemplate(this.actionFailureTemplateId, ACTIONFAILURETEMPLATE);
             }
             if (header) {
-                resetBlazorTemplate(this.headerTemplateId, HEADERTEMPLATE_PROPERTY$1);
+                resetBlazorTemplate(this.headerTemplateId, HEADERTEMPLATE);
             }
             if (footer) {
-                resetBlazorTemplate(this.footerTemplateId, FOOTERTEMPLATE_PROPERTY$1);
+                resetBlazorTemplate(this.footerTemplateId, FOOTERTEMPLATE);
             }
         }
     };
     DropDownTree.prototype.updateRecordTemplate = function (action) {
-        var isEmptyData = this.treeItems ? (this.treeItems.length <= 0 ? true : false) : true;
-        if (isEmptyData) {
+        if (this.treeItems && this.treeItems.length <= 0) {
             this.l10nUpdate(action);
             this.updateTemplate();
         }
@@ -5646,10 +6113,52 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
         }
         this.setMultiSelect();
     };
+    DropDownTree.prototype.updateAllowFiltering = function (state) {
+        if (!this.isFirstRender) {
+            if (state) {
+                this.renderFilter();
+            }
+            else {
+                this.destroyFilter();
+            }
+        }
+        this.ensureAutoCheck();
+    };
+    DropDownTree.prototype.updateFilterPlaceHolder = function () {
+        if (this.filterObj) {
+            this.filterObj.placeholder = this.filterBarPlaceholder;
+            this.filterObj.element.setAttribute('aria-label', this.filterBarPlaceholder);
+        }
+    };
+    DropDownTree.prototype.updateValue = function (value) {
+        if (isNullOrUndefined(value) || value.length === 0) {
+            this.resetValue(true);
+        }
+        else {
+            this.setTreeValue();
+        }
+    };
+    DropDownTree.prototype.updateText = function (text) {
+        if (isNullOrUndefined(text)) {
+            this.resetValue();
+        }
+        else {
+            this.setTreeText();
+        }
+    };
+    DropDownTree.prototype.updateModelMode = function () {
+        var validMode = this.allowMultiSelection ? true : (this.showCheckBox ? true : false);
+        if (!validMode) {
+            return;
+        }
+        this.updateMode();
+        this.setMultiSelect();
+    };
     /**
      * Dynamically change the value of properties.
      * @private
      */
+    // tslint:disable-next-line:max-func-body-length
     DropDownTree.prototype.onPropertyChanged = function (newProp, oldProp) {
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
@@ -5686,32 +6195,23 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
                 case 'showClearButton':
                     this.updateClearButton(newProp.showClearButton);
                     break;
+                case 'allowFiltering':
+                    this.updateAllowFiltering(newProp.allowFiltering);
+                    break;
+                case 'filterBarPlaceholder':
+                    this.updateFilterPlaceHolder();
+                    break;
                 case 'value':
-                    if (isNullOrUndefined(newProp.value) || newProp.value.length === 0) {
-                        this.resetValue(true);
-                    }
-                    else {
-                        this.setTreeValue();
-                    }
+                    this.updateValue(newProp.value);
                     break;
                 case 'text':
-                    if (isNullOrUndefined(newProp.text)) {
-                        this.resetValue();
-                    }
-                    else {
-                        this.setTreeText();
-                    }
+                    this.updateText(newProp.text);
                     break;
                 case 'allowMultiSelection':
                     this.updateMultiSelection(newProp.allowMultiSelection);
                     break;
                 case 'mode':
-                    var validMode = this.allowMultiSelection ? true : (this.showCheckBox ? true : false);
-                    if (!validMode) {
-                        return;
-                    }
-                    this.updateMode();
-                    this.setMultiSelect();
+                    this.updateModelMode();
                     break;
                 case 'delimiterChar':
                     if (this.mode === 'Box') {
@@ -5734,12 +6234,12 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
                 case 'showSelectAll':
                     if (this.showCheckBox) {
                         this.setSelectAllWrapper(newProp.showSelectAll);
-                        this.updateTreeHeight();
+                        this.updatePopupHeight();
                     }
                     break;
                 case 'showCheckBox':
                     this.updateCheckBoxState(newProp.showCheckBox);
-                    this.updateTreeHeight();
+                    this.updatePopupHeight();
                     break;
                 case 'treeSettings':
                     this.updateTreeSettings(newProp);
@@ -5764,6 +6264,7 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
                 case 'zIndex':
                     if (this.popupObj) {
                         this.popupObj.zIndex = newProp.zIndex;
+                        this.popupObj.dataBind();
                     }
                     break;
                 case 'headerTemplate':
@@ -5782,11 +6283,14 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
                 case 'actionFailureTemplate':
                     this.updateRecordTemplate(true);
                     break;
+                case 'htmlAttributes':
+                    this.setHTMLAttributes();
+                    break;
             }
         }
     };
     /**
-     * Allows you to clear the selected values from the DropDownTree component
+     * Allows you to clear the selected values from the Dropdown Tree component.
      * @method clear
      * @return {void}.
      */
@@ -5813,6 +6317,7 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
         this.setCssClass(null, this.cssClass);
         this.resetValue();
         this.treeObj.destroy();
+        this.destroyFilter();
         if (this.popupObj) {
             this.popupObj.destroy();
             detach(this.popupObj.element);
@@ -5825,25 +6330,33 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
         this.element.classList.remove('e-input');
         _super.prototype.destroy.call(this);
     };
+    DropDownTree.prototype.destroyFilter = function () {
+        if (this.filterObj) {
+            this.filterObj.destroy();
+            detach(this.filterObj.element);
+            detach(this.filterContainer);
+            this.filterObj = null;
+        }
+    };
     /**
-     * Ensures visibility of the DropDownTree node by using node ID or node element.
-     * When many DropDownTree nodes are present and we need to find a particular node, `ensureVisible` property
-     * helps to bring the node to visibility by expanding the DropDownTree and scrolling to the specific node.
-     * @param  {string | Element} item - Specifies ID of TreeView node/TreeView nodes.
+     * Ensures visibility of the Dropdown Tree item by using item value or item element.
+     * When many Dropdown Tree items are present and we need to find a particular item, `ensureVisible` property
+     * helps to bring the item to visibility by expanding the Dropdown Tree and scrolling to the specific item.
+     * @param  {string | Element} item - Specifies value of Dropdown Tree item/ Dropdown Tree item element.
      */
     DropDownTree.prototype.ensureVisible = function (item) {
         this.treeObj.ensureVisible(item);
     };
     /**
-     * To get the updated data source of DropDownTree
-     * @param  {string | Element} item - Specifies ID of TreeView node/TreeView node.
+     * To get the updated data of source of the Dropdown Tree.
+     * @param  {string | Element} item - Specifies value of Dropdown Tree item/ Dropdown Tree item element.
      * @returns { { [key: string]: Object }[] }.
      */
     DropDownTree.prototype.getData = function (item) {
         return this.treeObj.getTreeData(item);
     };
     /**
-     * Close the popup that displays the tree items.
+     * Close the Dropdown tree pop-up.
      * @returns void.
      */
     DropDownTree.prototype.hidePopup = function () {
@@ -5861,15 +6374,15 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
     /**
      * Based on the state parameter, entire list item will be selected/deselected.
      * parameter
-     * `true`   - Selects entire list items.
-     * `false`  - Un Selects entire list items.
+     * `true`   - Selects entire Dropdown Tree items.
+     * `false`  - Un Selects entire Dropdown Tree items.
      * @returns void
      */
     DropDownTree.prototype.selectAll = function (state) {
         this.selectAllItems(state);
     };
     /**
-     * Opens the popup that displays the tree items.
+     * Opens the popup that displays the Dropdown Tree items.
      * @returns void.
      */
     DropDownTree.prototype.showPopup = function () {
@@ -5891,6 +6404,9 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
     ], DropDownTree.prototype, "actionFailureTemplate", void 0);
     __decorate$2([
         Property(false)
+    ], DropDownTree.prototype, "allowFiltering", void 0);
+    __decorate$2([
+        Property(false)
     ], DropDownTree.prototype, "allowMultiSelection", void 0);
     __decorate$2([
         Property(true)
@@ -5908,20 +6424,32 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
         Complex({}, Fields)
     ], DropDownTree.prototype, "fields", void 0);
     __decorate$2([
+        Property(null)
+    ], DropDownTree.prototype, "filterBarPlaceholder", void 0);
+    __decorate$2([
+        Property('StartsWith')
+    ], DropDownTree.prototype, "filterType", void 0);
+    __decorate$2([
         Property('Never')
     ], DropDownTree.prototype, "floatLabelType", void 0);
     __decorate$2([
         Property(null)
     ], DropDownTree.prototype, "footerTemplate", void 0);
     __decorate$2([
+        Property(false)
+    ], DropDownTree.prototype, "ignoreAccent", void 0);
+    __decorate$2([
+        Property(true)
+    ], DropDownTree.prototype, "ignoreCase", void 0);
+    __decorate$2([
         Property(null)
     ], DropDownTree.prototype, "headerTemplate", void 0);
     __decorate$2([
-        Property(null)
-    ], DropDownTree.prototype, "itemTemplate", void 0);
-    __decorate$2([
         Property({})
     ], DropDownTree.prototype, "htmlAttributes", void 0);
+    __decorate$2([
+        Property(null)
+    ], DropDownTree.prototype, "itemTemplate", void 0);
     __decorate$2([
         Property('Default')
     ], DropDownTree.prototype, "mode", void 0);
@@ -6002,7 +6530,13 @@ var DropDownTree = /** @__PURE__ @class */ (function (_super) {
     ], DropDownTree.prototype, "destroyed", void 0);
     __decorate$2([
         Event()
+    ], DropDownTree.prototype, "filtering", void 0);
+    __decorate$2([
+        Event()
     ], DropDownTree.prototype, "focus", void 0);
+    __decorate$2([
+        Event()
+    ], DropDownTree.prototype, "keyPress", void 0);
     __decorate$2([
         Event()
     ], DropDownTree.prototype, "open", void 0);
@@ -7478,8 +8012,11 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                 var htmlAttr = _a[_i];
                 switch (htmlAttr) {
                     case 'class':
-                        this.overAllWrapper.classList.add(this.htmlAttributes[htmlAttr]);
-                        this.popupWrapper.classList.add(this.htmlAttributes[htmlAttr]);
+                        var updatedClassValue = (this.htmlAttributes[htmlAttr].replace(/\s+/g, ' ')).trim();
+                        if (updatedClassValue !== '') {
+                            addClass([this.overAllWrapper], updatedClassValue.split(' '));
+                            addClass([this.popupWrapper], updatedClassValue.split(' '));
+                        }
                         break;
                     case 'disabled':
                         this.enable(false);
@@ -7537,8 +8074,21 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
     };
     MultiSelect.prototype.updateCssClass = function () {
         if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
-            addClass([this.overAllWrapper], this.cssClass.split(' '));
-            addClass([this.popupWrapper], this.cssClass.split(' '));
+            var updatedCssClassValues = this.cssClass;
+            updatedCssClassValues = (this.cssClass.replace(/\s+/g, ' ')).trim();
+            if (updatedCssClassValues !== '') {
+                addClass([this.overAllWrapper], updatedCssClassValues.split(' '));
+                addClass([this.popupWrapper], updatedCssClassValues.split(' '));
+            }
+        }
+    };
+    MultiSelect.prototype.updateOldPropCssClass = function (oldClass) {
+        if (!isNullOrUndefined(oldClass) && oldClass !== '') {
+            oldClass = (oldClass.replace(/\s+/g, ' ')).trim();
+            if (oldClass !== '') {
+                removeClass([this.overAllWrapper], oldClass.split(' '));
+                removeClass([this.popupWrapper], oldClass.split(' '));
+            }
         }
     };
     MultiSelect.prototype.onPopupShown = function () {
@@ -9080,7 +9630,8 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         var chipContent = this.createElement('span', { className: CHIP_CONTENT$1 });
         var chipClose = this.createElement('span', { className: CHIP_CLOSE$1 });
         if (this.mainData) {
-            itemData = isBlazor() ? JSON.parse(JSON.stringify(this.getDataByValue(value))) : this.getDataByValue(value);
+            itemData = (isBlazor() && this.isServerRendered) ? JSON.parse(JSON.stringify(this.getDataByValue(value)))
+                : this.getDataByValue(value);
         }
         if (this.valueTemplate && !isNullOrUndefined(itemData)) {
             var compiledString = compile(this.valueTemplate);
@@ -9105,7 +9656,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         };
         this.trigger('tagging', eventArgs, function (eventArgs) {
             if (!eventArgs.cancel) {
-                if (eventArgs.setClass && typeof eventArgs.setClass === 'string' && isBlazor()) {
+                if (eventArgs.setClass && typeof eventArgs.setClass === 'string' && (isBlazor() && _this.isServerRendered)) {
                     addClass([chip], eventArgs.setClass);
                 }
                 if (Browser.isDevice) {
@@ -9236,7 +9787,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                             if (!_this.isFirstClick) {
                                 var ulElement = _this.list.querySelector('ul');
                                 if (ulElement) {
-                                    if (_this.itemTemplate && (_this.mode === 'CheckBox') && isBlazor()) {
+                                    if (_this.itemTemplate && (isBlazor() && _this.isServerRendered)) {
                                         setTimeout(function () { _this.mainList = _this.ulElement; }, 0);
                                     }
                                     else {
@@ -10482,10 +11033,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                     this.updateData(newProp.delimiterChar);
                     break;
                 case 'cssClass':
-                    if (!isNullOrUndefined(oldProp.cssClass) && oldProp.cssClass !== '') {
-                        removeClass([this.overAllWrapper], oldProp.cssClass.split(' '));
-                        removeClass([this.popupWrapper], oldProp.cssClass.split(' '));
-                    }
+                    this.updateOldPropCssClass(oldProp.cssClass);
                     this.updateCssClass();
                     break;
                 case 'enableRtl':
@@ -10620,7 +11168,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         if (!this.enabled) {
             return;
         }
-        if (isBlazor() && this.itemTemplate) {
+        if ((isBlazor() && this.isServerRendered) && this.itemTemplate) {
             this.DropDownBaseupdateBlazorTemplates(true, false, false, false, false, false, false, false);
             if (this.mode !== 'CheckBox' && this.list) {
                 this.refreshSelection();
@@ -11591,6 +12139,9 @@ var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, 
 };
 /// <reference path='../drop-down-base/drop-down-base-model.d.ts'/>
 var ITEMTEMPLATE_PROPERTY$1 = 'ItemTemplate';
+/**
+ * Defines the Selection settings of List Box.
+ */
 var SelectionSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$6(SelectionSettings, _super);
     function SelectionSettings() {
@@ -11610,6 +12161,9 @@ var SelectionSettings = /** @__PURE__ @class */ (function (_super) {
     ], SelectionSettings.prototype, "checkboxPosition", void 0);
     return SelectionSettings;
 }(ChildProperty));
+/**
+ * Defines the toolbar settings of List Box.
+ */
 var ToolbarSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$6(ToolbarSettings, _super);
     function ToolbarSettings() {
@@ -11680,6 +12234,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             this.list = this.element.parentElement;
             this.liCollections = this.list.querySelectorAll('.' + cssClass.li);
             this.mainList = this.ulElement = this.list.querySelector('ul');
+            this.setSelection(this.value);
             if (this.allowFiltering) {
                 this.setFiltering();
             }
@@ -12844,8 +13399,10 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             if (elems.length === 1 && childCnt && !fListBox.selectionSettings.showCheckbox) {
                 liIdx = childCnt <= dataLiIdx[0] ? childCnt - 1 : dataLiIdx[0];
                 ele = fListBox.ulElement.querySelectorAll('.e-list-item')[liIdx];
-                fListBox.ulElement.querySelectorAll('.e-list-item')[fListBox.getValidIndex(ele, liIdx, childCnt === dataIdx[0]
-                    ? 38 : 40)].classList.add(cssClass.selected);
+                var validIdx = fListBox.getValidIndex(ele, liIdx, childCnt === dataIdx[0] ? 38 : 40);
+                if (validIdx > -1) {
+                    (fListBox.ulElement.querySelectorAll('.e-list-item')[validIdx].classList.add(cssClass.selected));
+                }
             }
             if (isKey) {
                 this.list.focus();
@@ -13214,9 +13771,6 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         if (this.tBListBox) {
             this.tBListBox.updateToolBarState();
         }
-        if (this.allowFiltering) {
-            this.list.getElementsByClassName('e-input-filter')[0].focus();
-        }
     };
     ListBox.prototype.clearSelection = function (values) {
         var _this = this;
@@ -13403,7 +13957,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
             this.element.innerHTML = '';
         }
         else {
-            if (!isBlazor()) {
+            if (!isBlazor() || (isBlazor() && !this.isServerRendered)) {
                 this.element.style.display = 'inline-block';
                 if (this.toolbarSettings.items.length) {
                     this.list.parentElement.parentElement.insertBefore(this.list, this.list.parentElement);
@@ -13412,7 +13966,7 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                 this.list.parentElement.insertBefore(this.element, this.list);
             }
         }
-        if (!isBlazor()) {
+        if (!isBlazor() || (isBlazor() && !this.isServerRendered)) {
             _super.prototype.destroy.call(this);
         }
     };

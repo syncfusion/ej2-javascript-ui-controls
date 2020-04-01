@@ -3,97 +3,97 @@
  */
 
 /**
- * Specifies TreeMap load event name.
+ * Triggers when the treemap is on load.
  * @private
  */
 export const load: string = 'load';
 /**
- * Specifies TreeMap loaded event name.
+ * Triggers after treemap rendered.
  * @private
  */
 export const loaded: string = 'loaded';
 /**
- * Specifies TreeMap beforePrint event name.
+ * Trigger before call the print method.
  * @private
  */
 export const beforePrint: string = 'beforePrint';
 /**
- * Specifies the itemRendering event name.
+ * Trigger before each treemap item rendered.
  * @private
  */
 export const itemRendering: string = 'itemRendering';
 /**
- * Specifies the drilldown start event name.
+ * Trigger after click on treemap item.
  * @private
  */
 export const drillStart: string = 'drillStart';
 /**
- * Specifies the drilldown end event name.
+ * Trigger after drill start event completed.
  * @private
  */
 export const drillEnd: string = 'drillEnd';
 /**
- * Specifies the item selected event name.
+ * Trigger after select the treemap item.
  * @private
  */
 export const itemSelected: string = 'itemSelected';
 /**
- * Specifies the item highlight event name.
+ * Trigger after hover on the treemap item.
  * @private
  */
 export const itemHighlight: string = 'itemHighlight';
 /**
- * Specifies the tooltip rendering event name.
+ * Trigger after mouse hover on the treemap item.
  * @private
  */
 export const tooltipRendering: string = 'tooltipRendering';
 /**
- * Specifies the item click event name.
+ * Trigger after click on the treemap item.
  * @private
  */
 export const itemClick: string = 'itemClick';
 /**
- * Specifies the item move event name.
+ * Trigger after mouse hover on the treemap item.
  * @private
  */
 export const itemMove: string = 'itemMove';
 /**
- * Specifies the mouse click event name.
+ * Trigger after click on the treemap item.
  * @private
  */
 export const click: string = 'click';
 /**
- * Specifies maps double click event name.
+ * Trigger after double click on the treemap item.
  * @private
  */
 export const doubleClick: string = 'doubleClick';
 /**
- * Specifies maps right click event name.
+ * Trigger after right click on the treemap item.
  * @private
  */
 export const rightClick: string = 'rightClick';
 /**
- * Specifies the mouse move event name.
+ * Trigger after mouse hover on the treemap item.
  * @private
  */
 export const mouseMove: string = 'mouseMove';
 /**
- * Specifies legend item rendering event name.
+ * Trigger before each treemap item.
  * @private
  */
 export const legendItemRendering: string = 'legendItemRendering';
 /**
- * Specifies legend rendering event name.
+ * Trigger before legend items.
  * @private
  */
 export const legendRendering: string = 'legendRendering';
 /**
- * Specifies treemap resize event name.
+ * Trigger after resize the treemap.
  * @private
  */
 export const resize: string = 'resize';
 /**
- * Specifies the font family
+ * Define the font family in treemap component.
  * @private
  */
 export const defaultFont: string = 'Roboto, Segoe UI, Noto, Sans-serif';

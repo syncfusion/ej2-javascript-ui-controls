@@ -543,6 +543,8 @@ describe('Gantt dialog module', () => {
                 }
             };
             ganttObj.dataBind();
+            let checkbox: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(1) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
+            triggerMouseEvent(checkbox, 'click');
             let unit: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(1) > td:nth-child(4)') as HTMLElement;
             if (unit) {
                 triggerMouseEvent(unit, 'dblclick');
@@ -657,6 +659,8 @@ describe('Gantt dialog module', () => {
                 }
             };
             ganttObj.dataBind();
+            let checkbox: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(2) > td.e-rowcell.e-gridchkbox > div > span.e-frame.e-icons.e-uncheck') as HTMLElement;
+            triggerMouseEvent(checkbox, 'click');
             let unit: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'ResourcesTabContainer_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(4)') as HTMLElement;
             if (unit) {
                 triggerMouseEvent(unit, 'dblclick');

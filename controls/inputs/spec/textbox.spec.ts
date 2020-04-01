@@ -2749,4 +2749,136 @@ describe('TextBox ', () => {
            
         });
     });
+    describe('EJ2-36604 - While giving the class name with empty space for HtmlAttributes, console error is produced.', function () {
+        let inputObj: any;
+        beforeEach(function () {
+            let inputElement: HTMLElement = createElement('input', { id: 'textbox' });
+            document.body.appendChild(inputElement);
+        });
+        afterEach(function () {
+            if (inputObj) {
+                inputObj.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('Entering the class name without any empty space', function () {
+            inputObj = new TextBox({
+                htmlAttributes: { class: 'custom-class' }
+            });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.textboxWrapper.container.classList.contains('custom-class')).toBe(true);
+        });
+        it('Giving empty space before and after the class name', function () {
+            inputObj = new TextBox({
+                htmlAttributes: { class: ' custom-class ' }
+            });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.textboxWrapper.container.classList.contains('custom-class')).toBe(true);
+        });
+        it('Giving more than one empty space between two class names', function () {
+            inputObj = new TextBox({
+                htmlAttributes: { class: 'custom-class-one      custom-class-two'}
+            });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.textboxWrapper.container.classList.contains('custom-class-one')).toBe(true);
+            expect(inputObj.textboxWrapper.container.classList.contains('custom-class-two')).toBe(true);
+        });
+        it('Giving more than one empty space between two class names as well before and after the class name', function () {
+            inputObj = new TextBox({
+                htmlAttributes: {  class: ' custom-class-one       custom-class-two ' }
+            });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.textboxWrapper.container.classList.contains('custom-class-one')).toBe(true);
+            expect(inputObj.textboxWrapper.container.classList.contains('custom-class-two')).toBe(true);
+        });
+        it('Giving only empty space  without entering any class Name', function () {
+            inputObj = new TextBox({
+            });
+            inputObj.appendTo('#textbox');
+            let beforeAddClass = inputObj.textboxWrapper.container.classList.length;
+            inputObj.htmlAttributes = { class: '  ' };
+            inputObj.appendTo('#textbox');
+            let AfterAddClass = inputObj.textboxWrapper.container.classList.length;
+            expect(beforeAddClass == AfterAddClass).toBe(true);
+        });
+        it('Keep input as empty without entering any class Name', function () {
+            inputObj = new TextBox({
+            });
+            inputObj.appendTo('#textbox');
+            let beforeAddClass = inputObj.textboxWrapper.container.classList.length;
+            inputObj.htmlAttributes = { class: '' };
+            inputObj.appendTo('#textbox');
+            let AfterAddClass = inputObj.textboxWrapper.container.classList.length;
+            expect(beforeAddClass == AfterAddClass).toBe(true);
+        });
+    
+        it('Entering the class name without any empty space', function () {
+            inputObj = new TextBox({
+                cssClass: 'custom-class' 
+            });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.textboxWrapper.container.classList.contains('custom-class')).toBe(true);
+        });
+        it('Giving empty space before and after the class name', function () {
+            inputObj = new TextBox({
+                 cssClass: ' custom-class ' 
+            });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.textboxWrapper.container.classList.contains('custom-class')).toBe(true);
+        });
+        it('Giving more than one empty space between two class names', function () {
+            inputObj = new TextBox({
+                 cssClass: 'custom-class-one      custom-class-two'
+            });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.textboxWrapper.container.classList.contains('custom-class-one')).toBe(true);
+            expect(inputObj.textboxWrapper.container.classList.contains('custom-class-two')).toBe(true);
+        });
+        it('Giving more than one empty space between two class names as well before and after the class name', function () {
+            inputObj = new TextBox({
+                 cssClass: ' custom-class-one       custom-class-two ' 
+            });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.textboxWrapper.container.classList.contains('custom-class-one')).toBe(true);
+            expect(inputObj.textboxWrapper.container.classList.contains('custom-class-two')).toBe(true);
+        });
+        it('Giving only empty space  without entering any class Name', function () {
+            inputObj = new TextBox({
+            });
+            inputObj.appendTo('#textbox');
+            let beforeAddClass = inputObj.textboxWrapper.container.classList.length;
+            inputObj.cssClass =  '  ' ;
+            inputObj.appendTo('#textbox');
+            let AfterAddClass = inputObj.textboxWrapper.container.classList.length;
+            expect(beforeAddClass == AfterAddClass).toBe(true);
+        });
+        it('Keep input as empty without entering any class Name', function () {
+            inputObj = new TextBox({
+            });
+            inputObj.appendTo('#textbox');
+            let beforeAddClass = inputObj.textboxWrapper.container.classList.length;
+            inputObj.cssClass =  '' ;
+            inputObj.appendTo('#textbox');
+            let AfterAddClass = inputObj.textboxWrapper.container.classList.length;
+            expect(beforeAddClass == AfterAddClass).toBe(true);
+        });
+        it('Giving class name with underscore in the beginning', function () {
+            inputObj = new TextBox({
+                htmlAttributes : { class : '  _custom-class-one  '},
+                cssClass : '   _custom-class-two  '
+            });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.textboxWrapper.container.classList.contains('_custom-class-one')).toBe(true);
+            expect(inputObj.textboxWrapper.container.classList.contains('_custom-class-two')).toBe(true);
+        });
+        it('Giving class name with empty space in both cases seperatly', function () {
+            inputObj = new TextBox({
+                htmlAttributes : { class : '  custom-class-one  '},
+                cssClass : '   custom-class-two  '
+            });
+            inputObj.appendTo('#textbox');
+            expect(inputObj.textboxWrapper.container.classList.contains('custom-class-one')).toBe(true);
+            expect(inputObj.textboxWrapper.container.classList.contains('custom-class-two')).toBe(true);
+        });   
+    });
 })

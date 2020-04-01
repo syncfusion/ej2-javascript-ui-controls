@@ -7,7 +7,7 @@ export let hierarchicalData: any = [
         value: 1, text: "Artwork", iconCss: 'folder', imageUrl: 'base/spec/images/Shooting.png', tooltip: 'This is Artwork node', selected: true,
         child: [
             {
-                id: 2, text: "Abstract",
+                value: 2, text: "Abstract",
                 child: [
                     { value: 3, text: "2 Acrylic Mediums" },
                     { value: 4, text: "Creative Acrylic" },
@@ -239,7 +239,7 @@ export let hierarchicalData3: { [key: string]: Object }[] = [
     {
         id: 1, name: 'Australia', expanded: true,
         child: [
-            { id: 2, name: 'New South Wales' },
+            { id: 2, name: 'New South Wales', isSelected: true },
             { id: 3, name: 'Victoria' },
             { id: 4, name: 'South Australia' },
             { id: 6, name: 'Western Australia' },
@@ -248,7 +248,7 @@ export let hierarchicalData3: { [key: string]: Object }[] = [
     {
         id: 7, name: 'Brazil', child: [
             { id: 8, name: 'Paraná' },
-            { id: 9, name: 'Ceará' },
+            { id: 9, name: 'Ceará', isSelected: true },
             { id: 10, name: 'Acre' },
         ]
     },
@@ -268,6 +268,66 @@ export let hierarchicalData3: { [key: string]: Object }[] = [
             { id: 20, pid: 16, name: 'Lorraine' },
         ]
     },
+    {
+        id: 21, name: 'India', child: [
+            { id: 22, pid: 21, name: 'Assam' },
+            { id: 23, pid: 21, name: 'Bihar' },
+            { id: 24, pid: 21, name: 'Tamil Nadu' },
+            { id: 25, pid: 21, name: 'Punjab' }
+        ]
+    }
+]
+
+
+export let hierarchicalData3filtering: { [key: string]: Object }[] = [
+    {
+        id: 1, name: 'Australia', expanded: true,
+        child: [
+            { id: 2, name: 'New South Wales', isSelected: true },
+            { id: 3, name: 'Victoria' },
+            { id: 4, name: 'South Australia' },
+            { id: 6, name: 'Western Australia' },
+        ]
+    },
+    {
+        id: 7, name: 'Brazil', child: [
+            { id: 8, name: 'Paraná' },
+            { id: 9, name: 'Ceará', isSelected: true },
+            { id: 10, name: 'Acre' },
+        ]
+    },
+    {
+        id: 11, name: 'China', child: [
+            { id: 12, pid: 11, name: 'Guangzhou' },
+            { id: 13, pid: 11, name: 'Shanghai' },
+            { id: 14, pid: 11, name: 'Beijing' },
+            { id: 15, pid: 11, name: 'Shantou' }
+        ]
+    },
+    {
+        id: 16, name: 'France', child: [
+            { id: 17, pid: 16, name: 'Pays de la Loire' },
+            { id: 18, pid: 16, name: 'Aquitaine' },
+            { id: 19, pid: 16, name: 'Brittany' },
+            { id: 20, pid: 16, name: 'Lorraine' },
+        ]
+    },
+    {
+        id: 21, name: 'India', child: [
+            { id: 22, pid: 21, name: 'Assam' },
+            { id: 23, pid: 21, name: 'Bihar' },
+            { id: 24, pid: 21, name: 'Tamil Nadu', child: [
+                { id: 26, pid: 24, name: 'Namakkal' },
+                { id: 27, pid: 24, name: 'Salem' },
+                { id: 28, pid: 24, name: 'Coimbatore' },
+                { id: 29, pid: 24, name: 'Chennai' }
+            ] },
+            { id: 25, pid: 21, name: 'Punjab' }
+        ]
+    }
+]
+
+export let filteredhierarchicalData3: { [key: string]: Object }[] = [
     {
         id: 21, name: 'India', child: [
             { id: 22, pid: 21, name: 'Assam' },
@@ -332,6 +392,13 @@ export let listData: { [key: string]: Object }[] = [
     { id: 19, pid: 16, name: 'Brittany' },
     { id: 20, pid: 16, name: 'Lorraine' },
     { id: 21, name: 'India', hasChild: true },
+    { id: 22, pid: 21, name: 'Assam' },
+    { id: 23, pid: 21, name: 'Bihar' },
+    { id: 24, pid: 21, name: 'Tamil Nadu' },
+    { id: 25, pid: 21, name: 'Punjab' }
+];
+export let filteredlistData: { [key: string]: Object }[] = [
+    { id: 21, name: 'India', hasChild: true,expanded: true },
     { id: 22, pid: 21, name: 'Assam' },
     { id: 23, pid: 21, name: 'Bihar' },
     { id: 24, pid: 21, name: 'Tamil Nadu' },
@@ -506,11 +573,17 @@ export let remoteData2: { [key: string]: Object }[] = [
     },
 ];
 
+export let filteredremoteData2: { [key: string]: Object }[] = [
+    {
+        nodeId: '01', nodeText: 'Music', nodeIcon: 'folder', nodeImage: 'base/spec/images/Shooting.png', nodeTooltip: 'This is Music node', hasChild: true, nodeSelected: 'true', nodeUrl: 'http://npmci.syncfusion.com/',
+    }
+];
+
 export let remoteData3_1: { [key: string]: Object }[] = [
     {
-        nodeId: '01', nodeText: 'Music', nodeIcon: 'folder', nodeImage: 'base/spec/images/Shooting.png', nodeTooltip: 'This is Music node', nodeUrl: 'http://npmci.syncfusion.com/', nodeImage1: 'base/spec/images/Shooting.png',
+        nodeId: '01', nodeText: 'Music', nodeIcon: 'folder', nodeImage: 'base/spec/images/Shooting.png', nodeTooltip: 'This is Music node', nodeUrl: 'http://npmci.syncfusion.com/', nodeImage1: 'base/spec/images/Shooting.png',nodeSelected: true ,
         nodeChild: [
-            { nodeId: '01-01', nodeText: 'Gouttes.mp3', nodeIcon: 'file' }
+            { nodeId: '01-01', nodeText: 'Gouttes.mp3', nodeIcon: 'file',nodeSelected: true  }
         ]
     },
     {

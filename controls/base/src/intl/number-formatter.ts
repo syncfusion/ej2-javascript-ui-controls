@@ -1,4 +1,4 @@
-import { isUndefined, throwError, isNullOrUndefined, extend } from '../util';
+import { isUndefined, throwError, isNullOrUndefined, extend, isBlazor, getValue } from '../util';
 import { NumberFormatOptions, defaultCurrencyCode } from '../internationalization';
 import { IntlBase as base } from './intl-base';
 import { ParserBase as parser, NumberMapper } from './parser-base';
@@ -69,12 +69,16 @@ export class NumberFormat {
         let dOptions: CommonOptions = {};
         let symbolPattern: string;
         let dependable: base.Dependables = base.getDependables(cldr, culture, '', true);
-        dOptions.numberMapper = parser.getNumberMapper(dependable.parserObject, parser.getNumberingSystem(cldr), true);
-        dOptions.currencySymbol = base.getCurrencySymbol(
+        let numObject: Object = dependable.numericObject;
+        dOptions.numberMapper = isBlazor() ? extend({}, numObject) :
+         parser.getNumberMapper(dependable.parserObject, parser.getNumberingSystem(cldr), true);
+        dOptions.currencySymbol = isBlazor() ? getValue('currencySymbol', numObject) : base.getCurrencySymbol(
             dependable.numericObject, fOptions.currency || defaultCurrencyCode, option.altSymbol);
         /* tslint:disable no-any */
-        dOptions.percentSymbol = (<any>dOptions).numberMapper.numberSymbols[percentSign];
-        dOptions.minusSymbol = (<any>dOptions).numberMapper.numberSymbols[minusSign];
+        dOptions.percentSymbol = isBlazor() ? getValue('numberSymbols.percentSign', numObject) :
+         (<any>dOptions).numberMapper.numberSymbols[percentSign];
+        dOptions.minusSymbol = isBlazor() ? getValue('numberSymbols.minusSign', numObject) :
+         (<any>dOptions).numberMapper.numberSymbols[minusSign];
         let symbols: any = dOptions.numberMapper.numberSymbols;
         if ((option.format) && !(base.formatRegex.test(option.format))) {
             cOptions = base.customFormat(option.format, dOptions, dependable.numericObject);
@@ -82,8 +86,10 @@ export class NumberFormat {
             extend(fOptions, base.getProperNumericSkeleton(option.format || 'N'));
             fOptions.isCurrency = fOptions.type === 'currency';
             fOptions.isPercent = fOptions.type === 'percent';
-            symbolPattern = base.getSymbolPattern(
-                fOptions.type, dOptions.numberMapper.numberSystem, dependable.numericObject, fOptions.isAccount);
+            if (!isBlazor()) {
+                symbolPattern = base.getSymbolPattern(
+                    fOptions.type, dOptions.numberMapper.numberSystem, dependable.numericObject, fOptions.isAccount);
+            }
             fOptions.groupOne = this.checkValueRange(fOptions.maximumSignificantDigits, fOptions.minimumSignificantDigits, true);
             this.checkValueRange(fOptions.maximumFractionDigits, fOptions.minimumFractionDigits, false, true);
             if (!isUndefined(fOptions.fractionDigits)) {
@@ -92,15 +98,20 @@ export class NumberFormat {
             if (isUndefined(fOptions.useGrouping)) {
                 fOptions.useGrouping = true;
             }
-            if (fOptions.isCurrency) {
+            if (fOptions.isCurrency && !isBlazor()) {
                 symbolPattern = symbolPattern.replace(/\u00A4/g, base.defaultCurrency);
             }
-            let split: string[] = symbolPattern.split(';');
-            cOptions.nData = base.getFormatData(split[1] || '-' + split[0], true, dOptions.currencySymbol);
-            cOptions.pData = base.getFormatData(split[0], false, dOptions.currencySymbol);
-            if (fOptions.useGrouping) {
-                fOptions.groupSeparator = symbols[mapper[2]];
-                fOptions.groupData = this.getGroupingDetails(split[0]);
+            if (!isBlazor()) {
+                let split: string[] = symbolPattern.split(';');
+                cOptions.nData = base.getFormatData(split[1] || '-' + split[0], true, dOptions.currencySymbol);
+                cOptions.pData = base.getFormatData(split[0], false, dOptions.currencySymbol);
+                if (fOptions.useGrouping) {
+                    fOptions.groupSeparator = symbols[mapper[2]];
+                    fOptions.groupData = this.getGroupingDetails(split[0]);
+                }
+            } else {
+                cOptions.nData = getValue(fOptions.type + 'nData', numObject);
+                cOptions.pData = getValue(fOptions.type + 'pData', numObject);
             }
             let minFrac: boolean = isUndefined(fOptions.minimumFractionDigits);
             if (minFrac) {

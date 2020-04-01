@@ -7,12 +7,14 @@ export interface DialogSettingsModel {
 
     /**
      * Defines the dialog template
+     * @deprecated
      * @default null
      */
     template?: string;
 
     /**
      * Defines the dialog fields
+     * @deprecated
      * @default []
      */
     fields?: DialogFieldsModel[];

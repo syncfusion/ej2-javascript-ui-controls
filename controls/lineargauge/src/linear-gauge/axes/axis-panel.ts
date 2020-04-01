@@ -4,8 +4,9 @@ import { Axis, Label, Tick, Pointer, Range } from './axis';
 import { PointerModel } from './axis-model';
 import { Orientation, Position } from '../utils/enum';
 import { axisLabelRender } from '../model/constant';
+import { AxisRenderer } from './axis-renderer';
 import { IAxisLabelRenderEventArgs } from '../model/interface';
-import { VisibleLabels, Size, measureText, getLabelFormat, Rect, textFormatter, formatValue, stringToNumber } from '../utils/helper';
+import { VisibleLabels, Size, measureText, Rect, textFormatter, formatValue, stringToNumber } from '../utils/helper';
 import { valueToCoefficient, Align, getRangePalette, VisibleRange, withInRange, calculateNiceInterval } from '../utils/helper';
 
 /**
@@ -15,8 +16,10 @@ import { valueToCoefficient, Align, getRangePalette, VisibleRange, withInRange, 
 export class AxisLayoutPanel {
     private gauge: LinearGauge;
     private htmlObject: HTMLElement;
+    private axisRenderer: AxisRenderer;
     constructor(gauge: LinearGauge) {
         this.gauge = gauge;
+        this.axisRenderer = new AxisRenderer(gauge);
     }
 
     /**
@@ -446,14 +449,11 @@ export class AxisLayoutPanel {
         let min: number = axis.visibleRange.min;
         let max: number = axis.visibleRange.max;
         let interval: number = axis.visibleRange.interval;
-        let format: Function;
         let argsData: IAxisLabelRenderEventArgs;
+        let blazorArgsData : IAxisLabelRenderEventArgs;
         let style: Label = <Label>axis.labelStyle;
         let text: string; let labelSize: Size;
         let customLabelFormat: boolean = style.format && style.format.match('{value}') !== null;
-        format = this.gauge.intl.getNumberFormat({
-            format: getLabelFormat(style.format), useGrouping: this.gauge.useGroupingSeparator
-        });
         for (let i: number = min; (i <= max && interval > 0); i += interval) {
             argsData = {
                 cancel: false, name: axisLabelRender, axis: axis,
@@ -461,11 +461,33 @@ export class AxisLayoutPanel {
                     formatValue(i, this.gauge).toString(),
                 value: i
             };
+            blazorArgsData = {
+                cancel: false, name: axisLabelRender, axis: null,
+                text: customLabelFormat ? textFormatter(style.format, { value: i }, this.gauge) :
+                    formatValue(i, this.gauge).toString(),
+                value: i
+            };
+            if (this.gauge.isBlazor) {
+                let {cancel, name, text, value, axis} : IAxisLabelRenderEventArgs = blazorArgsData;
+                blazorArgsData = {cancel, name, text, value, axis};
+                argsData = blazorArgsData;
+            }
             let axisLabelRenderSuccess: Function = (argsData: IAxisLabelRenderEventArgs) => {
                 if (!argsData.cancel) {
                     axis.visibleLabels.push(new VisibleLabels(
                         argsData.text, i, labelSize
                     ));
+                    if (i === max && this.gauge.isBlazor && document.getElementById(this.gauge.element.id + '_Axis_Collections')) {
+                        let currentLast: number = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value
+                            : null;
+                        if ( currentLast === axis.visibleRange.max || axis.showLastLabel !== true) {
+                            this.getMaxLabelWidth(this.gauge, axis);
+                            this.axisRenderer.drawAxisLabels(
+                                axis,
+                                (document.getElementById(this.gauge.element.id + '_Axis_Group_' + (this.gauge.axes.length - 1)))
+                            );
+                        }
+                    }
                 }
             };
             axisLabelRenderSuccess.bind(this);
@@ -477,20 +499,35 @@ export class AxisLayoutPanel {
         if (lastLabel !== maxVal && axis.showLastLabel === true) {
             argsData = {
                 cancel: false, name: axisLabelRender, axis: axis,
-                text: customLabelFormat ? style.format.replace(new RegExp('{value}', 'g'), format(maxVal)) :
-                    format(maxVal),
+                text: customLabelFormat ? textFormatter(style.format, { value: maxVal }, this.gauge)  :
+                formatValue(maxVal, this.gauge).toString(),
                 value: maxVal
             };
-            // if (this.gauge.isBlazor) {
-            //     const { axis, ...blazorArgsData } : IAxisLabelRenderEventArgs = argsData;
-            //     argsData = blazorArgsData;
-            // }
+            blazorArgsData = {
+                cancel: false, name: axisLabelRender, axis : null,
+                text: customLabelFormat ? textFormatter(style.format, { value: maxVal }, this.gauge)  :
+                formatValue(maxVal, this.gauge).toString(),
+                value: maxVal
+            };
+            if (this.gauge.isBlazor) {
+                let {cancel, name, text, value, axis} : IAxisLabelRenderEventArgs = blazorArgsData;
+                blazorArgsData = {cancel, name, text, value, axis};
+                argsData = blazorArgsData;
+            }
             let axisLabelRenderSuccess: Function = (argsData: IAxisLabelRenderEventArgs) => {
                 labelSize = measureText(argsData.text, axis.labelStyle.font);
                 if (!argsData.cancel) {
                     axis.visibleLabels.push(new VisibleLabels(
                         argsData.text, maxVal, labelSize
                     ));
+                    if (this.gauge.isBlazor && document.getElementById(this.gauge.element.id + '_Axis_Collections')) {
+                        this.getMaxLabelWidth(this.gauge, axis);
+                        this.axisRenderer.drawAxisLabels(
+                            axis,
+                            (
+                                document.getElementById(this.gauge.element.id + '_Axis_Group_' + (this.gauge.axes.length - 1)))
+                            );
+                    }
                 }
             };
             axisLabelRenderSuccess.bind(this);

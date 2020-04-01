@@ -5,6 +5,9 @@ import { CurrentAction } from './type';
  * Kanban Interface
  */
 
+/**
+ * Provides information about a ActionBegin, ActionComplete, ActionFailure event.
+ */
 export interface ActionEventArgs extends BaseEventArgs {
     /** Returns the request type of the current action. */
     requestType: string;
@@ -20,6 +23,9 @@ export interface ActionEventArgs extends BaseEventArgs {
     deletedRecords?: Object[];
 }
 
+/**
+ * Provides information about a Card Click/Double Click event.
+ */
 export interface CardClickEventArgs extends BaseEventArgs {
     /** Returns the object of the element which is currently being clicked or double clicked. */
     data: { [key: string]: Object };
@@ -34,6 +40,9 @@ export interface CardClickEventArgs extends BaseEventArgs {
     event?: Event | MouseEvent | KeyboardEvent;
 }
 
+/**
+ * Provides information about a QueryCellInfo event.
+ */
 export interface QueryCellInfoEventArgs extends BaseEventArgs {
     /** Returns the object of the elements which is currently being rendered on the UI. */
     data?: HeaderArgs[];
@@ -48,6 +57,9 @@ export interface QueryCellInfoEventArgs extends BaseEventArgs {
     requestType: string;
 }
 
+/**
+ * Provides information about a CardRendered event.
+ */
 export interface CardRenderedEventArgs extends BaseEventArgs {
     /** Returns the object of the elements which is currently being rendered on the UI. */
     data?: { [key: string]: Object };
@@ -60,6 +72,9 @@ export interface CardRenderedEventArgs extends BaseEventArgs {
     cancel: boolean;
 }
 
+/**
+ * Provides information about a Drag, Drag Start/End event.
+ */
 export interface DragEventArgs extends BaseEventArgs {
     /**
      * Returns the drag element.
@@ -75,19 +90,33 @@ export interface DragEventArgs extends BaseEventArgs {
 }
 
 /**
- * @deprecated
+ * Provides information about a DialogOpen event.
  */
 export interface DialogEventArgs extends BaseEventArgs {
     /** Returns the cell or event data. */
     data: { [key: string]: Object };
-    /** Returns the target element on which the popup is getting opened. */
+    /**
+     * @deprecated
+     * Returns the target element on which the popup is getting opened.
+     */
     target?: Element;
-    /** Returns the popup wrapper element. */
+    /**
+     * @deprecated
+     * Returns the popup wrapper element.
+     */
     element?: Element;
     /** Defines the cancel option. */
     cancel?: boolean;
     /** Defines the dialog actions. */
     requestType?: CurrentAction;
+}
+
+/**
+ * Provides information about a DialogClose event.
+ */
+export interface DialogCloseEventArgs extends DialogEventArgs {
+    /** Defines the dialog interaction. */
+    interaction?: string;
 }
 
 /** @hidden */

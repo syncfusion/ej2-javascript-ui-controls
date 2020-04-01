@@ -1287,8 +1287,9 @@ function calculateValues() {
 function onTouchStart(e) {
     targetElement = e.target.parentElement;
     calculateValues();
-    originalMouseX = e.touches[0].pageX;
-    originalMouseY = e.touches[0].pageY;
+    var coordinates = e.touches ? e.changedTouches[0] : e;
+    originalMouseX = coordinates.pageX;
+    originalMouseY = coordinates.pageY;
     if (!isNullOrUndefined(resizeStart)) {
         if (resizeStart(e) === true) {
             return;
@@ -1361,7 +1362,8 @@ function resizeSouth(e) {
     var documentHeight = document.documentElement.clientHeight;
     var calculateValue = false;
     var containerRectValues;
-    var currentpageY = (getEventType(e.type) === 'mouse') ? e.pageY : e.touches[0].pageY;
+    var coordinates = e.touches ? e.changedTouches[0] : e;
+    var currentpageY = coordinates.pageY;
     var targetRectValues = getClientRectValues(targetElement);
     if (!isNullOrUndefined(containerElement)) {
         containerRectValues = getClientRectValues(containerElement);
@@ -1509,7 +1511,8 @@ function resizeEast(e) {
     if (!isNullOrUndefined(containerElement)) {
         containerRectValues = getClientRectValues(containerElement);
     }
-    var pageX = (getEventType(e.type) === 'mouse') ? e.pageX : e.touches[0].pageX;
+    var coordinates = e.touches ? e.changedTouches[0] : e;
+    var pageX = coordinates.pageX;
     var targetRectValues = getClientRectValues(targetElement);
     if (!isNullOrUndefined(containerElement) && (((targetRectValues.left - containerRectValues.left) + targetRectValues.width) < maxWidth
         || (targetRectValues.right - containerRectValues.left) > targetRectValues.width)) {
@@ -2631,7 +2634,9 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         for (var i = 0; i < attrs.length; i++) {
             this.element.removeAttribute(attrs[i]);
         }
-        _super.prototype.destroy.call(this);
+        if (!this.isBlazorServerRender()) {
+            _super.prototype.destroy.call(this);
+        }
     };
     /**
      * Binding event to the element while widget creation
@@ -3807,6 +3812,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         //if (isNullOrUndefined(target)) { return; }
         this.trigger('beforeClose', this.tooltipEventArgs, function (observedArgs) {
             if (!observedArgs.cancel) {
+                _this.clearTemplate();
                 if (target) {
                     _this.restoreElement(target);
                 }
@@ -3882,7 +3888,9 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
             }
             else {
                 this.hideTooltip(this.animation.close, e);
-                this.clear();
+                if (this.closeDelay === 0) {
+                    this.clear();
+                }
             }
         }
         else {

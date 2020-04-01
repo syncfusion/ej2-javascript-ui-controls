@@ -62,7 +62,7 @@ export function degreeToLocation(centerX: number, centerY: number, radius: numbe
 /** calculate the path of the circle */
 export function getPathArc(
     x: number, y: number, radius: number, startAngle: number, endAngle: number,
-    enableRtl: boolean, animation?: boolean
+    enableRtl: boolean, pieView?: boolean
 ): string {
     // tslint:disable-next-line
     let start: any = degreeToLocation(x, y, radius, startAngle);
@@ -76,9 +76,9 @@ export function getPathArc(
         largeArcFlag = ((startAngle >= endAngle) ? startAngle : startAngle + 360) - endAngle <= 180 ? '0' : '1';
     }
     let d: string;
-    if (animation) {
+    if (pieView) {
         d = 'M ' + x + ' ' + y + ' L ' + start.x + ' ' + start.y + ' A ' + radius + ' ' +
-            radius + ' ' + ' 0 ' + ' ' + largeArcFlag + ' ' + sweepFlag + ' ' + end.x + ' ' + end.y;
+            radius + ' ' + ' 0 ' + ' ' + largeArcFlag + ' ' + sweepFlag + ' ' + end.x + ' ' + end.y + ' ' + 'Z';
     } else {
         d = 'M' + start.x + ' ' + start.y +
             'A' + radius + ' ' + radius + ' ' + '0' + ' ' + largeArcFlag + ' ' + sweepFlag + ' ' + end.x + ' ' + end.y;

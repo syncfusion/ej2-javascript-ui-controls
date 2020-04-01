@@ -752,12 +752,12 @@ describe('UI virtualization', () => {
         });
         it('checking attribute', () => {
             let id: string = listObj.ulElement.getElementsByClassName('e-list-item')[0].firstElementChild.getAttribute('id');
-            let type: string = listObj.ulElement.getElementsByClassName('e-list-item')[0].firstElementChild.firstElementChild.getAttribute('type');
+            let type: string = listObj.ulElement.getElementsByClassName('e-list-item')[0].firstElementChild.lastElementChild.getAttribute('type');
             expect(id).toBe('0');
             expect(type).toBe('even-list');
             simulateScrollEvent(listObj.element, 51);
             id = listObj.ulElement.getElementsByClassName('e-list-item')[0].firstElementChild.getAttribute('id');
-            type = listObj.ulElement.getElementsByClassName('e-list-item')[0].firstElementChild.firstElementChild.getAttribute('type');
+            type = listObj.ulElement.getElementsByClassName('e-list-item')[0].firstElementChild.lastElementChild.getAttribute('type');
             expect(id).toBe('1');
             expect(type).toBe('odd-list');
         });
@@ -772,10 +772,10 @@ describe('UI virtualization', () => {
         });
 
         it('checking text content', () => {
-            let textContent: string = listObj.ulElement.getElementsByClassName('e-list-item')[0].firstElementChild.firstElementChild.innerText.trim();
+            let textContent: string = listObj.ulElement.getElementsByClassName('e-list-item')[0].firstElementChild.lastElementChild.innerText.trim();
             expect(textContent).toBe('evenText');
-            simulateScrollEvent(listObj.element, 251);
-            textContent = listObj.ulElement.getElementsByClassName('e-list-item')[0].firstElementChild.firstElementChild.innerText.trim();
+            simulateScrollEvent(listObj.element, 253);
+            textContent = listObj.ulElement.getElementsByClassName('e-list-item')[0].firstElementChild.lastElementChild.innerText.trim();
             expect(textContent).toBe('oddText');
         });
         afterAll(() => {
@@ -807,12 +807,12 @@ describe('UI virtualization', () => {
         });
         it('checking attribute', () => {
             let id: string = listObj.ulElement.getElementsByClassName('e-list-item')[0].firstElementChild.getAttribute('id');
-            let type: string = listObj.ulElement.getElementsByClassName('e-list-item')[0].firstElementChild.firstElementChild.getAttribute('type');
+            let type: string = listObj.ulElement.getElementsByClassName('e-list-item')[0].firstElementChild.lastElementChild.getAttribute('type');
             expect(id).toBe('0');
             expect(type).toBe('even-list');
             simulateScrollEvent(listObj.element, 101);
             id = listObj.ulElement.getElementsByClassName('e-list-item')[0].firstElementChild.getAttribute('id');
-            type = listObj.ulElement.getElementsByClassName('e-list-item')[0].firstElementChild.firstElementChild.getAttribute('type');
+            type = listObj.ulElement.getElementsByClassName('e-list-item')[0].firstElementChild.lastElementChild.getAttribute('type');
             expect(id).toBe('1');
             expect(type).toBe('odd-list');
         });
@@ -827,10 +827,10 @@ describe('UI virtualization', () => {
         });
 
         it('checking text content', () => {
-            let textContent: string = listObj.ulElement.getElementsByClassName('e-list-item')[0].firstElementChild.firstElementChild.innerText.trim();
+            let textContent: string = listObj.ulElement.getElementsByClassName('e-list-item')[0].firstElementChild.lastElementChild.innerText.trim();
             expect(textContent).toBe('evenText');
             simulateScrollEvent(listObj.element, 301);
-            textContent = listObj.ulElement.getElementsByClassName('e-list-item')[0].firstElementChild.firstElementChild.innerText.trim();
+            textContent = listObj.ulElement.getElementsByClassName('e-list-item')[0].firstElementChild.lastElementChild.innerText.trim();
             expect(textContent).toBe('oddText');
         });
         afterAll(() => {
@@ -866,7 +866,7 @@ describe('UI virtualization', () => {
             expect(textContent).toBe('0');
             expect(type).toBe('even-list');
             expect(className.contains('r-0')).toBe(true);
-            simulateScrollEvent(listObj.element, 301);
+            simulateScrollEvent(listObj.element, 50);
         });
         afterAll(() => {
             ele.remove();

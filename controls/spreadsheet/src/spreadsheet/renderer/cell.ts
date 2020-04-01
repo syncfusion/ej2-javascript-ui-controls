@@ -1,9 +1,9 @@
 import { Spreadsheet } from '../base/index';
 import { ICellRenderer, CellRenderEventArgs, inView, CellRenderArgs, renderFilterCell } from '../common/index';
-import { hasTemplate, createHyperlinkElement } from '../common/index';
+import { hasTemplate, createHyperlinkElement, checkPrevMerge } from '../common/index';
 import { getColumnHeaderText, CellStyleModel, CellFormatArgs, getRangeIndexes } from '../../workbook/common/index';
 import { CellStyleExtendedModel } from '../../workbook/common/index';
-import { CellModel, SheetModel, getCell, skipDefaultValue, isHiddenRow, RangeSettingModel, isHiddenCol } from '../../workbook/base/index';
+import { CellModel, SheetModel, getCell, skipDefaultValue, isHiddenRow, RangeModel, isHiddenCol } from '../../workbook/base/index';
 import { getRowHeight, setRowHeight } from '../../workbook/base/index';
 import { addClass, attributes, getNumberDependable, extend, compile, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { getFormattedCellObject, applyCellFormat, workbookFormulaOperation, wrapEvent } from '../../workbook/common/event';
@@ -41,13 +41,14 @@ export class CellRenderer implements ICellRenderer {
         return headerCell;
     }
     public render(args: CellRenderArgs): Element {
-        args.td = this.element.cloneNode() as HTMLElement;
+        args.td = this.element.cloneNode() as HTMLTableCellElement;
         args.td.className = 'e-cell';
         attributes(args.td, { 'role': 'gridcell', 'aria-colindex': (args.colIdx + 1).toString(), 'tabindex': '-1' });
+        if (this.checkMerged(args)) { return args.td; }
         args.td.innerHTML = this.processTemplates(args.cell, args.rowIdx, args.colIdx);
         args.isRefresh = false;
         this.update(args);
-        if (!hasTemplate(this.parent, args.rowIdx, args.colIdx, this.parent.activeSheetTab - 1)) {
+        if (!hasTemplate(this.parent, args.rowIdx, args.colIdx, this.parent.activeSheetIndex)) {
             this.parent.notify(renderFilterCell, { td: args.td, rowIndex: args.rowIdx, colIndex: args.colIdx });
         }
         let evtArgs: CellRenderEventArgs = { cell: args.cell, element: args.td, address: args.address };
@@ -63,6 +64,10 @@ export class CellRenderer implements ICellRenderer {
         return evtArgs.element;
     }
     private update(args: CellRenderArgs): void {
+        if (args.isRefresh) {
+            if (this.checkMerged(args)) { return; }
+            if (args.td.rowSpan) { args.td.removeAttribute('rowSpan'); } if (args.td.colSpan) { args.td.removeAttribute('colSpan'); }
+        }
         if (args.cell && args.cell.formula && !args.cell.value) {
             let isFormula: boolean = checkIsFormula(args.cell.formula);
             let eventArgs: { [key: string]: string | number | boolean } = {
@@ -81,15 +86,10 @@ export class CellRenderer implements ICellRenderer {
             formattedText: args.cell && args.cell.value, onLoad: true, isRightAlign: false, cell: args.cell,
             rowIdx: args.rowIdx.toString(), colIdx: args.colIdx.toString()
         };
-        if (args.cell) {
-            this.parent.notify(getFormattedCellObject, formatArgs);
-        }
+        if (args.cell) { this.parent.notify(getFormattedCellObject, formatArgs); }
         if (!isNullOrUndefined(args.td)) {
-            this.parent.refreshNode(args.td, {
-                type: formatArgs.type as string,
-                result: formatArgs.formattedText as string,
-                curSymbol: getNumberDependable(this.parent.locale, 'USD'),
-                isRightAlign: formatArgs.isRightAlign as boolean,
+            this.parent.refreshNode(args.td, { type: formatArgs.type as string, result: formatArgs.formattedText as string,
+                curSymbol: getNumberDependable(this.parent.locale, 'USD'), isRightAlign: formatArgs.isRightAlign as boolean,
                 value: <string>formatArgs.value || ''
             });
         }
@@ -110,6 +110,15 @@ export class CellRenderer implements ICellRenderer {
                     range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx], wrap: true, sheet:
                         this.parent.getActiveSheet(), initial: true, td: args.td, row: args.row, hRow: args.hRow
                 });
+            }
+            if (args.cell.rowSpan > 1) {
+                let rowSpan: number = args.cell.rowSpan - this.parent.hiddenCount(args.rowIdx, args.rowIdx + (args.cell.rowSpan - 1));
+                if (rowSpan > 1) { args.td.rowSpan = rowSpan; }
+            }
+            if (args.cell.colSpan > 1) {
+                let colSpan: number = args.cell.colSpan -
+                    this.parent.hiddenCount(args.colIdx, args.colIdx + (args.cell.colSpan - 1), 'columns');
+                if (colSpan > 1) { args.td.colSpan = colSpan; }
             }
         }
         if (args.isRefresh) { this.removeStyle(args.td, args.rowIdx, args.colIdx); }
@@ -134,7 +143,7 @@ export class CellRenderer implements ICellRenderer {
                     cell: args.td });
             }
         }
-        if (args.cell && args.cell.hyperlink && !hasTemplate(this.parent, args.rowIdx, args.colIdx, this.parent.activeSheetTab - 1)) {
+        if (args.cell && args.cell.hyperlink && !hasTemplate(this.parent, args.rowIdx, args.colIdx, this.parent.activeSheetIndex)) {
             let address: string;
             if (typeof (args.cell.hyperlink) === 'string') {
                 address = args.cell.hyperlink;
@@ -150,14 +159,23 @@ export class CellRenderer implements ICellRenderer {
             this.parent.notify(createHyperlinkElement, { cell: args.cell, td: args.td, rowIdx: args.rowIdx, colIdx: args.colIdx });
         }
     }
+    private checkMerged(args: CellRenderArgs): boolean {
+        if (args.cell && (args.cell.colSpan < 0 || args.cell.rowSpan < 0)) {
+            args.td.style.display = 'none';
+            if (args.cell.colSpan < 0) { this.parent.notify(checkPrevMerge, args); }
+            if (args.cell.rowSpan < 0) { args.isRow = true; this.parent.notify(checkPrevMerge, args); }
+            return true;
+        }
+        return false;
+    }
 
     private processTemplates(cell: CellModel, rowIdx: number, colIdx: number): string {
         let sheet: SheetModel = this.parent.getActiveSheet();
-        let rangeSettings: RangeSettingModel[] = sheet.rangeSettings;
+        let rangeSettings: RangeModel[] = sheet.range;
         let range: number[];
         for (let j: number = 0, len: number = rangeSettings.length; j < len; j++) {
             if (rangeSettings[j].template) {
-                range = getRangeIndexes(rangeSettings[j].range.length ? rangeSettings[j].range : rangeSettings[j].startCell);
+                range = getRangeIndexes(rangeSettings[j].address.length ? rangeSettings[j].address : rangeSettings[j].startCell);
                 if (range[0] <= rowIdx && range[1] <= colIdx && range[2] >= rowIdx && range[3] >= colIdx) {
                     if (cell) {
                         return this.compileCellTemplate(rangeSettings[j].template);
@@ -246,6 +264,19 @@ export class CellRenderer implements ICellRenderer {
                     }
                 }
             }
+        }
+    }
+    public refresh(rowIdx: number, colIdx: number, lastCell?: boolean): void {
+        let sheet: SheetModel = this.parent.getActiveSheet();
+        if (isHiddenRow(sheet, rowIdx) || isHiddenCol(sheet, colIdx)) { return; }
+        if (!this.parent.scrollSettings.enableVirtualization || (rowIdx >= this.parent.viewport.topIndex && rowIdx <=
+            this.parent.viewport.bottomIndex && colIdx >= this.parent.viewport.leftIndex && colIdx <=
+            this.parent.viewport.rightIndex)) {
+            let cell: HTMLElement = this.parent.getCell(rowIdx, colIdx);
+            this.update(<CellRenderArgs>{ rowIdx: rowIdx, colIdx: colIdx, td: cell, cell: getCell(
+                rowIdx, colIdx, sheet), lastCell: lastCell, isRefresh: true, isHeightCheckNeeded: true,
+                manualUpdate: true, first: '' });
+            this.parent.notify(renderFilterCell, { td: cell, rowIndex: rowIdx, colIndex: colIdx });
         }
     }
 }

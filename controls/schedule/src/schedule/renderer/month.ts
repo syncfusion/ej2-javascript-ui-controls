@@ -66,6 +66,8 @@ export class Month extends ViewBase implements IRenderer {
         this.setContentHeight(content, leftPanel, height);
         let scrollBarWidth: number = util.getScrollBarWidth();
         // tslint:disable:no-any
+        (header.firstElementChild as HTMLElement).style[<any>args.cssProperties.rtlBorder] = '';
+        header.style[<any>args.cssProperties.rtlPadding] = '';
         if (content.offsetWidth - content.clientWidth > 0) {
             (<HTMLElement>header.firstElementChild).style[<any>args.cssProperties.border] = scrollBarWidth > 0 ? '1px' : '0px';
             header.style[<any>args.cssProperties.padding] = scrollBarWidth > 0 ? scrollBarWidth - 1 + 'px' : '0px';
@@ -294,8 +296,9 @@ export class Month extends ViewBase implements IRenderer {
                 }
             } else {
                 let ele: Element = createElement('span', { className: cls.NAVIGATE_CLASS });
+                let skeleton: string = isBlazor() ? 'D' : 'full';
                 let title: string =
-                    this.parent.globalize.formatDate(td.date, { skeleton: 'full', calendar: this.parent.getCalendarMode() });
+                    this.parent.globalize.formatDate(td.date, { skeleton: skeleton, calendar: this.parent.getCalendarMode() });
                 ele.setAttribute('title', util.capitalizeFirstWord(title, 'multiple'));
                 let innerText: string =
                     (this.parent.calendarUtil.isMonthStart(td.date) && !this.isCurrentDate(td.date) && !this.parent.isAdaptive) ?
@@ -469,14 +472,16 @@ export class Month extends ViewBase implements IRenderer {
             let innerText: string =
                 (this.parent.calendarUtil.isMonthStart(data.date) && !this.isCurrentDate(data.date) && !this.parent.isAdaptive) ?
                     this.parent.globalize.formatDate(data.date, { format: 'MMM d', calendar: this.parent.getCalendarMode() }) :
+                    isBlazor() ? this.parent.globalize.formatDate(data.date, { format: 'd', calendar: this.parent.getCalendarMode() }) :
                     this.parent.globalize.formatDate(data.date, { skeleton: 'd', calendar: this.parent.getCalendarMode() });
             dateHeader.innerHTML = util.capitalizeFirstWord(innerText, 'single');
         }
         ntd.appendChild(dateHeader);
         if (this.getModuleName() === 'month') {
             addClass([dateHeader], cls.NAVIGATE_CLASS);
+            let skeleton: string = isBlazor() ? 'D' : 'full';
             let annocementText: string =
-                this.parent.globalize.formatDate(data.date, { skeleton: 'full', calendar: this.parent.getCalendarMode() });
+                this.parent.globalize.formatDate(data.date, { skeleton: skeleton, calendar: this.parent.getCalendarMode() });
             dateHeader.setAttribute('aria-label', annocementText);
         }
     }

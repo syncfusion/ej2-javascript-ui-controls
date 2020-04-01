@@ -213,15 +213,17 @@ export class Marker extends MarkerExplode {
             let j: number = 1;
             let incFactor: number = (series.type === 'RangeArea' || series.type === 'RangeColumn') ? 2 : 1;
             for (let i: number = 0; i < series.points.length; i++) {
-                if (!series.points[i].symbolLocations.length || !markerElements[j]) {
-                    continue;
+                if (series.points[i].symbolLocations) {
+                    if (!series.points[i].symbolLocations.length || !markerElements[j]) {
+                        continue;
+                    }
+                    markerAnimate(markerElements[j] as HTMLElement, delay, duration, series, i, series.points[i].symbolLocations[0], false);
+                    if (incFactor === 2) {
+                        let lowPoint: ChartLocation = this.getRangeLowPoint(series.points[i].regions[0], series);
+                        markerAnimate(markerElements[j + 1] as HTMLElement, delay, duration, series, i, lowPoint, false);
+                    }
+                    j += incFactor;
                 }
-                markerAnimate(markerElements[j] as HTMLElement, delay, duration, series, i, series.points[i].symbolLocations[0], false);
-                if (incFactor === 2) {
-                    let lowPoint: ChartLocation = this.getRangeLowPoint(series.points[i].regions[0], series);
-                    markerAnimate(markerElements[j + 1] as HTMLElement, delay, duration, series, i, lowPoint, false);
-                }
-                j += incFactor;
             }
         }
     }

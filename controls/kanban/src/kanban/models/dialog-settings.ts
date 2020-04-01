@@ -4,10 +4,10 @@ import { DialogFieldsModel } from './dialog-fields-model';
 /**
  * Holds the configuration of editor settings.
  */
-
 export class DialogSettings extends ChildProperty<DialogSettings> {
     /**
      * Defines the dialog template
+     * @deprecated
      * @default null
      */
     @Property()
@@ -15,6 +15,7 @@ export class DialogSettings extends ChildProperty<DialogSettings> {
 
     /**
      * Defines the dialog fields
+     * @deprecated
      * @default []
      */
     @Property([])

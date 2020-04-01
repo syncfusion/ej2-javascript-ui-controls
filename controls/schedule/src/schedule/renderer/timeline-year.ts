@@ -1,4 +1,4 @@
-import { append, addClass, createElement } from '@syncfusion/ej2-base';
+import { append, addClass, createElement, isBlazor } from '@syncfusion/ej2-base';
 import { Schedule } from '../base/schedule';
 import { Year } from './year';
 import * as event from '../base/constant';
@@ -112,10 +112,12 @@ export class TimelineYear extends Year {
                     className: cls.DATE_HEADER_CLASS + ' ' + cls.NAVIGATE_CLASS,
                     innerHTML: (isDateAvail) ? date.getDate().toString() : ''
                 });
-                let annocementText: string = this.parent.globalize.formatDate(date, {
-                    skeleton: 'full',
-                    calendar: this.parent.getCalendarMode()
-                });
+                let skeleton: string = isBlazor() ? 'D' : 'full';
+                let annocementText: string =
+                    this.parent.globalize.formatDate(date, {
+                        skeleton: skeleton,
+                        calendar: this.parent.getCalendarMode()
+                    });
                 dateHeader.setAttribute('aria-label', annocementText);
 
                 if (isDateAvail) {

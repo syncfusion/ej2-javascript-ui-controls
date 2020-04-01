@@ -8,7 +8,7 @@ import { MaskedTextBox, MaskChangeEventArgs } from '@syncfusion/ej2-inputs';
 import * as cls from '../../common/base/css-constant';
 import {
     TreeView, DragAndDropEventArgs, NodeExpandEventArgs, BeforeOpenCloseMenuEventArgs,
-    NodeClickEventArgs, MenuEventArgs, DrawNodeEventArgs, ExpandEventArgs, NodeSelectEventArgs
+    NodeClickEventArgs, MenuEventArgs, DrawNodeEventArgs, ExpandEventArgs, NodeSelectEventArgs, NodeKeyPressEventArgs
 } from '@syncfusion/ej2-navigations';
 import { ContextMenu as Menu, MenuItemModel, ContextMenuModel } from '@syncfusion/ej2-navigations';
 import { IAction, CalculatedFieldCreateEventArgs, AggregateMenuOpenEventArgs } from '../../common/base/interface';
@@ -18,7 +18,7 @@ import { Tab, Accordion, AccordionItemModel, AccordionClickArgs } from '@syncfus
 import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { PivotUtil } from '../../base/util';
 import { IOlapField, OlapEngine } from '../../base/olap/engine';
-import { FormatSettingsModel } from '../../pivotview/model/datasourcesettings-model';
+import { FormatSettingsModel, CalculatedFieldSettingsModel } from '../../pivotview/model/datasourcesettings-model';
 import { AggregateTypes } from '../base/enum';
 
 /**
@@ -71,7 +71,7 @@ export class CalculatedField implements IAction {
     private currentFieldName: string;
     private confirmPopUp: Dialog;
     private field: string;
-    private summaryTypeField: string;
+    private accordion: Accordion;
 
     /** Constructor for calculatedfield module */
     constructor(parent: PivotView | PivotFieldList) {
@@ -113,7 +113,7 @@ export class CalculatedField implements IAction {
             switch (e.action) {
                 case 'moveRight':
                     if (this.parent.dataType === 'pivot') {
-                        this.displayMenu(node.previousSibling as HTMLElement);
+                        this.displayMenu(node);
                     }
                     break;
                 case 'enter':
@@ -160,9 +160,10 @@ export class CalculatedField implements IAction {
         let node: HTMLElement = closest(e.event.target as Element, 'li') as HTMLElement;
         if ((e.event.target as HTMLElement).classList.contains(cls.FORMAT) ||
             (e.event.target as HTMLElement).classList.contains(cls.CALC_EDIT) ||
-            (e.event.target as HTMLElement).classList.contains(cls.CALC_EDITED)) {
+            (e.event.target as HTMLElement).classList.contains(cls.CALC_EDITED) ||
+            (e.event.target as HTMLElement).classList.contains(cls.GRID_REMOVE)) {
             if (!this.parent.isAdaptive) {
-                this.displayMenu(node);
+                this.displayMenu(node, e.node, e.event.target as HTMLElement);
             } else if (this.parent.dataType === 'olap' && this.parent.isAdaptive) {
                 if (node.tagName === 'LI' && node.querySelector('.e-list-edit-icon').classList.contains(cls.CALC_EDIT)) {
                     this.isEdit = true;
@@ -199,7 +200,7 @@ export class CalculatedField implements IAction {
             let fieldName: string = node.getAttribute('data-field');
             let formatObj: IFormatSettings = PivotUtil.getFieldByName(fieldName, this.parent.dataSourceSettings.formatSettings);
             let optionElement: HTMLElement = closest(e.originalEvent.target as Element, '.e-acrdn-header-icon') as HTMLElement;
-            if (optionElement.querySelector('.' + cls.CALC_EDIT)) {
+            if (optionElement.querySelector('.' + cls.CALC_EDIT) && (e.originalEvent.target as Element).classList.contains(cls.CALC_EDIT)) {
                 this.isEdit = true;
                 this.currentFieldName = this.fieldText = fieldName;
                 this.formulaText = this.parent.engineModule.fieldList[fieldName].formula;
@@ -207,11 +208,29 @@ export class CalculatedField implements IAction {
                 addClass([optionElement.querySelector('.e-list-icon')], cls.CALC_EDITED);
                 removeClass([optionElement.querySelector('.e-list-icon')], cls.CALC_EDIT);
                 this.renderMobileLayout((this.parent as PivotFieldList).dialogRenderer.adaptiveElement);
-            } else if (optionElement.querySelector('.' + cls.CALC_EDITED)) {
+            } else if (optionElement.querySelector('.' + cls.CALC_EDITED) &&
+                (e.originalEvent.target as Element).classList.contains(cls.CALC_EDITED)) {
                 this.isEdit = false;
                 this.fieldText = this.formatText = this.formulaText = this.currentFieldName = null;
                 addClass([optionElement.querySelector('.e-list-icon')], cls.CALC_EDIT);
                 removeClass([optionElement.querySelector('.e-list-icon')], cls.CALC_EDITED);
+            } else if (optionElement.querySelector('.' + cls.GRID_REMOVE) &&
+                (e.originalEvent.target as Element).classList.contains(cls.GRID_REMOVE)) {
+                this.createConfirmDialog(
+                    this.parent.localeObj.getConstant('alert'),
+                    this.parent.localeObj.getConstant('removeCalculatedField'), {}, true, node);
+            }
+        }
+    }
+
+    private accordionCreated(): void {
+        let allElement: NodeListOf<Element> = this.accordion.element.querySelectorAll('.e-acrdn-item');
+        for (let i: number = 0; i < allElement.length; i++) {
+            if (allElement[i].querySelector('.' + cls.CALC_EDIT) || allElement[i].querySelector('.' + cls.CALC_EDITED)) {
+                let element: HTMLElement = createElement('span', {
+                    className: 'e-list-icon ' + cls.GRID_REMOVE + ' e-icons',
+                });
+                append([element], allElement[i].querySelector('.e-acrdn-header-icon') as HTMLElement);
             }
         }
     }
@@ -228,17 +247,22 @@ export class CalculatedField implements IAction {
      * @param  {HTMLElement} node
      * @returns void
      */
-    private displayMenu(node: HTMLElement): void {
+    /* tslint:disable:max-func-body-length */
+    private displayMenu(node: HTMLElement, treeNode?: HTMLElement, target?: HTMLElement): void {
+        let edit: boolean = target ? target.classList.contains(cls.CALC_EDIT) : true;
+        let edited: boolean = target ? target.classList.contains(cls.CALC_EDITED) : true;
         if (this.parent.dataType === 'pivot' && node.querySelector('.e-list-icon.e-format') &&
             node.querySelector('.e-list-icon.e-format').classList.contains(cls.ICON) &&
             !node.querySelector('.e-list-icon').classList.contains(cls.CALC_EDITED) &&
+            !node.querySelector('.e-list-icon').classList.contains(cls.GRID_REMOVE) &&
             !node.querySelector('.e-list-icon').classList.contains(cls.CALC_EDIT) && node.tagName === 'LI') {
             if (this.menuObj && !this.menuObj.isDestroyed) {
                 this.menuObj.destroy();
             }
             this.curMenu = (node.querySelector('.' + cls.LIST_TEXT_CLASS) as HTMLElement);
             this.openContextMenu(node);
-        } else if (node.tagName === 'LI' && (node.querySelector('.e-list-icon').classList.contains(cls.CALC_EDIT) ||
+        } else if (node.tagName === 'LI' && (node.querySelector('.' + cls.CALC_EDIT) &&
+            node.querySelector('.' + cls.CALC_EDIT).classList.contains('e-list-icon') && edit ||
             (this.parent.dataType === 'olap' && node.getAttribute('data-type') === CALC && node.classList.contains('e-active')))) {
             this.isEdit = true;
             let fieldName: string = node.getAttribute('data-field');
@@ -283,7 +307,8 @@ export class CalculatedField implements IAction {
                 (document.querySelector('#' + this.parentID + 'droppable') as HTMLTextAreaElement).value = node.getAttribute('data-uid');
             }
             customFormat.dataBind();
-        } else if (node.tagName === 'LI' && (node.querySelector('.e-list-icon').classList.contains(cls.CALC_EDITED) ||
+        } else if (node.tagName === 'LI' && (node.querySelector('.' + cls.CALC_EDITED) &&
+            node.querySelector('.' + cls.CALC_EDITED).classList.contains('e-list-icon') && edited ||
             (this.parent.dataType === 'olap' && !node.classList.contains('e-active')))) {
             this.isEdit = false;
             this.inputObj.value = '';
@@ -313,9 +338,73 @@ export class CalculatedField implements IAction {
                 node.querySelector('.' + cls.CALC_EDIT).setAttribute('title', this.parent.localeObj.getConstant('edit'));
             }
             (document.querySelector('#' + this.parentID + 'droppable') as HTMLTextAreaElement).value = '';
+        } else if (node.tagName === 'LI' && (node.querySelector('.' + cls.GRID_REMOVE) &&
+            node.querySelector('.' + cls.GRID_REMOVE).classList.contains('e-list-icon')) && !edit && !edited) {
+            let dropField: HTMLTextAreaElement = document.querySelector('#' + this.parentID + 'droppable') as HTMLTextAreaElement;
+            let field: ICalculatedFields = {
+                name: this.isEdit ? this.currentFieldName : this.inputObj.value,
+                caption: this.inputObj.value,
+                formula: dropField.value
+            };
+            let fieldName: string = node.getAttribute('data-field');
+            this.createConfirmDialog(
+                this.parent.localeObj.getConstant('alert'),
+                this.parent.localeObj.getConstant('removeCalculatedField'), field, true, treeNode);
         }
     }
 
+    private removeCalcField(node: Element): void {
+        if (this.parent.dataType === 'pivot') {
+            if (!this.parent.isAdaptive) {
+                let dialogElement: HTMLElement = this.dialog.element;
+                /* tslint:disable:max-line-length */
+                let customFormat: MaskedTextBox = getInstance(dialogElement.querySelector('#' + this.parentID + 'Custom_Format_Element') as HTMLElement, MaskedTextBox) as MaskedTextBox;
+                customFormat.value = '';
+                customFormat.dataBind();
+                this.isEdit = false;
+                this.inputObj.value = '';
+                this.inputObj.dataBind();
+                this.treeObj.removeNodes([node]);
+                let dropField: HTMLTextAreaElement = document.querySelector('#' + this.parentID + 'droppable') as HTMLTextAreaElement;
+                dropField.value = '';
+            } else {
+                let index: number = parseInt(node.getAttribute('id').split(this.parentID + '_')[1], 10);
+                if (typeof index === 'number') {
+                    this.accordion.removeItem(index);
+                }
+            }
+            let fieldName: string = node.getAttribute('data-field');
+            let calcfields: CalculatedFieldSettingsModel[] = this.parent.dataSourceSettings.calculatedFieldSettings;
+            for (let i: number = 0; i < calcfields.length; i++) {
+                if (calcfields[i] && calcfields[i].name === fieldName) {
+                    calcfields.splice(i, 1);
+                    break;
+                }
+            }
+            if (this.parent.engineModule.savedFieldList && this.parent.engineModule.savedFieldList[fieldName]) {
+                delete this.parent.engineModule.savedFieldList[fieldName];
+            }
+            if (this.parent.engineModule.fieldList && this.parent.engineModule.fieldList[fieldName]) {
+                delete this.parent.engineModule.fieldList[fieldName];
+            }
+            let formatFields: FormatSettingsModel[] = this.parent.dataSourceSettings.formatSettings;
+            for (let i: number = 0; i < formatFields.length; i++) {
+                if (formatFields[i] && formatFields[i].name === fieldName) {
+                    formatFields.splice(i, 1);
+                    break;
+                }
+            }
+            let fields: IFieldOptions[] = this.parent.dataSourceSettings.values;
+            for (let i: number = 0, n: number = fields.length; i < n; i++) {
+                if (fields[i].name === fieldName) {
+                    fields.splice(i, 1);
+                    break;
+                }
+            }
+            this.removeErrorDialog();
+            this.parent.updateDataSource();
+        }
+    }
     /**
      * To set position for context menu.
      * @returns void
@@ -344,7 +433,7 @@ export class CalculatedField implements IAction {
                         });
                     }
                 }
-                this.createMenu(items);
+                this.createMenu(items, node);
                 let pos: OffsetPosition = node.getBoundingClientRect();
                 let offset: number = window.scrollY || document.documentElement.scrollTop;
                 if (this.parent.enableRtl) {
@@ -376,13 +465,18 @@ export class CalculatedField implements IAction {
      * To create context menu.
      * @returns void
      */
-    private createMenu(menuItems: MenuItemModel[]): void {
+    private createMenu(menuItems: MenuItemModel[], node: HTMLElement): void {
         let menuOptions: ContextMenuModel = {
             cssClass: this.parentID + 'calculatedmenu',
             items: menuItems,
             enableRtl: this.parent.enableRtl,
             // beforeOpen: this.beforeMenuOpen.bind(this),
-            select: this.selectContextMenu.bind(this)
+            select: this.selectContextMenu.bind(this),
+            onClose: () => {
+                this.treeObj.element.focus();
+                addClass([node], ['e-hover', 'e-node-focus']);
+            }
+
         };
         let contextMenu: HTMLElement;
         if (document.querySelector('#' + this.parentID + 'CalcContextmenu')) {
@@ -1300,6 +1394,11 @@ export class CalculatedField implements IAction {
                 nodeClicked: this.fieldClickHandler.bind(this),
                 nodeDragStop: this.fieldDropped.bind(this),
                 drawNode: this.drawTreeNode.bind(this),
+                keyPress: (args: NodeKeyPressEventArgs) => {
+                    if (args.event.keyCode === 39) {
+                        args.cancel = true;
+                    }
+                },
                 sortOrder: 'Ascending'
             });
         }
@@ -1431,17 +1530,26 @@ export class CalculatedField implements IAction {
                 attrs: { 'tabindex': '-1', 'aria-disabled': 'false', 'title': this.parent.localeObj.getConstant('dragField') },
                 className: cls.ICON + ' e-drag'
             });
+            let spaceElement: Element = createElement('div', {
+                className: ' e-iconspace'
+            });
             prepend([dragElement], args.node.querySelector('.' + cls.TEXT_CONTENT_CLASS) as HTMLElement);
-            append([args.node.querySelector('.' + cls.FORMAT)], args.node.querySelector('.' + cls.TEXT_CONTENT_CLASS) as HTMLElement);
+            /* tslint:disable-next-line:max-line-length */
+            append([spaceElement, args.node.querySelector('.' + cls.FORMAT)], args.node.querySelector('.' + cls.TEXT_CONTENT_CLASS) as HTMLElement);
             if (this.getMenuItems(this.parent.engineModule.fieldList[field].type).length <= 0) {
                 removeClass([args.node.querySelector('.' + cls.FORMAT)], cls.ICON);
             } else {
                 args.node.querySelector('.' + cls.FORMAT).setAttribute('title', this.parent.localeObj.getConstant('format'));
             }
             if (this.parent.engineModule.fieldList[field].aggregateType === CALC) {
-                args.node.querySelector('.' + cls.FORMAT).setAttribute('title', this.parent.localeObj.getConstant('edit'));
-                addClass([args.node.querySelector('.' + cls.FORMAT)], cls.CALC_EDIT);
+                args.node.querySelector('.' + cls.FORMAT).setAttribute('title', this.parent.localeObj.getConstant('remove'));
+                addClass([args.node.querySelector('.' + cls.FORMAT)], cls.GRID_REMOVE);
+                addClass([args.node.querySelector('.' + 'e-iconspace')], [cls.CALC_EDIT, cls.ICON, 'e-list-icon']);
+                args.node.querySelector('.' + cls.CALC_EDIT).setAttribute('title', this.parent.localeObj.getConstant('edit'));
+                args.node.querySelector('.' + cls.CALC_EDIT).setAttribute('aria-disabled', 'false');
+                args.node.querySelector('.' + cls.CALC_EDIT).setAttribute('tabindex', '-1');
                 removeClass([args.node.querySelector('.' + cls.FORMAT)], cls.FORMAT);
+                removeClass([args.node.querySelector('.e-iconspace')], 'e-iconspace');
             }
         }
     }
@@ -1595,14 +1703,15 @@ export class CalculatedField implements IAction {
                 this.treeObj.isStringTemplate = true;
                 this.treeObj.appendTo('#' + this.parentID + 'accordDiv');
             } else {
-                let accordion: Accordion = new Accordion({
+                this.accordion = new Accordion({
                     items: this.getAccordionData(this.parent),
                     enableRtl: this.parent.enableRtl,
                     expanding: this.accordionExpand.bind(this),
-                    clicked: this.accordionClickHandler.bind(this)
+                    clicked: this.accordionClickHandler.bind(this),
+                    created: this.accordionCreated.bind(this)
                 });
-                accordion.isStringTemplate = true;
-                accordion.appendTo('#' + this.parentID + 'accordDiv');
+                this.accordion.isStringTemplate = true;
+                this.accordion.appendTo('#' + this.parentID + 'accordDiv');
                 this.updateType();
             }
             if (addBtn.element) {
@@ -1787,7 +1896,7 @@ export class CalculatedField implements IAction {
      * @return {void}
      * @hidden
      */
-    private createConfirmDialog(title: string, description: string, calcInfo: ICalculatedFields): void {
+    private createConfirmDialog(title: string, description: string, calcInfo: ICalculatedFields, isRemove?: boolean, node?: Element): void {
         let errorDialog: HTMLElement = createElement('div', {
             id: this.parentID + '_ErrorDialog',
             className: cls.ERROR_DIALOG_CLASS
@@ -1803,17 +1912,17 @@ export class CalculatedField implements IAction {
             position: { X: 'center', Y: 'center' },
             buttons: [
                 {
-                    click: this.replaceFormula.bind(this, calcInfo),
+                    click: isRemove ? this.removeCalcField.bind(this, node) : this.replaceFormula.bind(this, calcInfo),
                     buttonModel: {
                         cssClass: cls.OK_BUTTON_CLASS + ' ' + cls.OUTLINE_CLASS,
-                        content: this.parent.localeObj.getConstant('ok'), isPrimary: true
+                        content: isRemove ? this.parent.localeObj.getConstant('yes') : this.parent.localeObj.getConstant('ok'), isPrimary: true
                     }
                 },
                 {
                     click: this.removeErrorDialog.bind(this),
                     buttonModel: {
                         cssClass: cls.CANCEL_BUTTON_CLASS,
-                        content: this.parent.localeObj.getConstant('cancel'), isPrimary: true
+                        content: isRemove ? this.parent.localeObj.getConstant('no') : this.parent.localeObj.getConstant('cancel'), isPrimary: true
                     }
                 }
             ],

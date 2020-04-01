@@ -50,7 +50,7 @@ export class ImageElement extends DiagramElement {
 
     /**
      * Measures minimum space that is required to render the image
-     * @param availableSize 
+     * @param {Size} availableSize 
      */
     public measure(availableSize: Size, id?: string, callback?: Function): Size {
         if (this.isDirt && (this.stretch !== 'Stretch' || this.width === undefined && this.height === undefined)) {
@@ -69,7 +69,7 @@ export class ImageElement extends DiagramElement {
 
     /**
      * Arranges the image
-     * @param desiredSize 
+     * @param {Size} desiredSize 
      */
     public arrange(desiredSize: Size): Size {
         this.actualSize = new Size(this.desiredSize.width, this.desiredSize.height);

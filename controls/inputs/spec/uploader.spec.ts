@@ -4376,4 +4376,136 @@ describe('Uploader Control', () => {
             done()
         });
     });
+    describe('EJ2-36604 - While giving the class name with empty space for HtmlAttributes, console error is produced.', function () {
+        let uploadObj: any;
+        beforeEach(function () {
+            let inputElement: HTMLElement = createElement('input', { id: 'uploader' });
+            document.body.appendChild(inputElement);
+        });
+        afterEach(function () {
+            if (uploadObj) {
+                uploadObj.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('Entering the class name without any empty space', function () {
+            uploadObj = new Uploader({
+                htmlAttributes: { class: 'custom-class' }
+            });
+            uploadObj.appendTo('#uploader');
+            expect(uploadObj.uploadWrapper.classList.contains('custom-class')).toBe(true);
+        });
+        it('Giving empty space before and after the class name', function () {
+            uploadObj = new Uploader({
+                htmlAttributes: { class: ' custom-class ' }
+            });
+            uploadObj.appendTo('#uploader');
+            expect(uploadObj.uploadWrapper.classList.contains('custom-class')).toBe(true);
+        });
+        it('Giving more than one empty space between two class names', function () {
+            uploadObj = new Uploader({
+                htmlAttributes: { class: 'custom-class-one      custom-class-two'}
+            });
+            uploadObj.appendTo('#uploader');
+            expect(uploadObj.uploadWrapper.classList.contains('custom-class-one')).toBe(true);
+            expect(uploadObj.uploadWrapper.classList.contains('custom-class-two')).toBe(true);
+        });
+        it('Giving more than one empty space between two class names as well before and after the class name', function () {
+            uploadObj = new Uploader({
+                htmlAttributes: {  class: ' custom-class-one       custom-class-two ' }
+            });
+            uploadObj.appendTo('#uploader');
+            expect(uploadObj.uploadWrapper.classList.contains('custom-class-one')).toBe(true);
+            expect(uploadObj.uploadWrapper.classList.contains('custom-class-two')).toBe(true);
+        });
+        it('Giving only empty space  without entering any class Name', function () {
+            uploadObj = new Uploader({
+            });
+            uploadObj.appendTo('#uploader');
+            let beforeAddClass = uploadObj.uploadWrapper.classList.length;
+            uploadObj.htmlAttributes = { class: '  ' };
+            uploadObj.appendTo('#uploader');
+            let AfterAddClass = uploadObj.uploadWrapper.classList.length;
+            expect(beforeAddClass == AfterAddClass).toBe(true);
+        });
+        it('Keep input as empty without entering any class Name', function () {
+            uploadObj = new Uploader({
+            });
+            uploadObj.appendTo('#uploader');
+            let beforeAddClass = uploadObj.uploadWrapper.classList.length;
+            uploadObj.htmlAttributes = { class: '' };
+            uploadObj.appendTo('#uploader');
+            let AfterAddClass = uploadObj.uploadWrapper.classList.length;
+            expect(beforeAddClass == AfterAddClass).toBe(true);
+        });
+    
+        it('Entering the class name without any empty space', function () {
+            uploadObj = new Uploader({
+                cssClass: 'custom-class' 
+            });
+            uploadObj.appendTo('#uploader');
+            expect(uploadObj.uploadWrapper.classList.contains('custom-class')).toBe(true);
+        });
+        it('Giving empty space before and after the class name', function () {
+            uploadObj = new Uploader({
+                 cssClass: ' custom-class ' 
+            });
+            uploadObj.appendTo('#uploader');
+            expect(uploadObj.uploadWrapper.classList.contains('custom-class')).toBe(true);
+        });
+        it('Giving more than one empty space between two class names', function () {
+            uploadObj = new Uploader({
+                 cssClass: 'custom-class-one      custom-class-two'
+            });
+            uploadObj.appendTo('#uploader');
+            expect(uploadObj.uploadWrapper.classList.contains('custom-class-one')).toBe(true);
+            expect(uploadObj.uploadWrapper.classList.contains('custom-class-two')).toBe(true);
+        });
+        it('Giving more than one empty space between two class names as well before and after the class name', function () {
+            uploadObj = new Uploader({
+                 cssClass: ' custom-class-one       custom-class-two ' 
+            });
+            uploadObj.appendTo('#uploader');
+            expect(uploadObj.uploadWrapper.classList.contains('custom-class-one')).toBe(true);
+            expect(uploadObj.uploadWrapper.classList.contains('custom-class-two')).toBe(true);
+        });
+        it('Keep input as empty without entering any class Name', function () {
+            uploadObj = new Uploader({
+            });
+            uploadObj.appendTo('#uploader');
+            let beforeAddClass = uploadObj.uploadWrapper.classList.length;
+            uploadObj.cssClass =  '' ;
+            uploadObj.appendTo('#uploader');
+            let AfterAddClass = uploadObj.uploadWrapper.classList.length;
+            expect(beforeAddClass == AfterAddClass).toBe(true);
+        });
+        it('Keep input as empty without entering any class Name', function () {
+            uploadObj = new Uploader({
+            });
+            uploadObj.appendTo('#uploader');
+            let beforeAddClass = uploadObj.uploadWrapper.classList.length;
+            uploadObj.cssClass =  ' ' ;
+            uploadObj.appendTo('#uploader');
+            let AfterAddClass = uploadObj.uploadWrapper.classList.length;
+            expect(beforeAddClass == AfterAddClass).toBe(true);
+        });
+        it('Giving class name with underscore in the beginning', function () {
+            uploadObj = new Uploader({
+                htmlAttributes : { class : '  _custom-class-one  '},
+                cssClass : '   _custom-class-two  '
+            });
+            uploadObj.appendTo('#uploader');
+            expect(uploadObj.uploadWrapper.classList.contains('_custom-class-one')).toBe(true);
+            expect(uploadObj.uploadWrapper.classList.contains('_custom-class-two')).toBe(true);
+        });
+        it('Giving class name with empty space in both cases seperatly', function () {
+            uploadObj = new Uploader({
+                htmlAttributes : { class : '  custom-class-one  '},
+                cssClass : '   custom-class-two  '
+            });
+            uploadObj.appendTo('#uploader');
+            expect(uploadObj.uploadWrapper.classList.contains('custom-class-one')).toBe(true);
+            expect(uploadObj.uploadWrapper.classList.contains('custom-class-two')).toBe(true);
+        });   
+    });
 });

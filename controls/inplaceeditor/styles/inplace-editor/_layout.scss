@@ -331,6 +331,12 @@
           margin: $editor-rtl-nrml-btn-cancel-margin;
         }
       }
+
+      .e-editable-loading.e-show:not(.e-rte-spin-wrap) .e-spinner-inner {
+        left: 5px;
+        right: auto;
+        transform: translateX(30%) translateY(-50%);
+      }
     }
   }
 

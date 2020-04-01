@@ -1,5 +1,5 @@
 /**
- * RichTextEditor component exported items
+ * Rich Text Editor component exported items
  */
 export * from './actions';
 export * from './formatter'

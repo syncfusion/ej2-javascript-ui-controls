@@ -2,13 +2,13 @@ import { Spreadsheet } from '../index';
 import { EventHandler, KeyboardEventArgs, Browser, closest } from '@syncfusion/ej2-base';
 import { getRangeIndexes, getRangeFromAddress, getIndexesFromAddress, getRangeAddress } from '../../workbook/common/address';
 import { keyDown, editOperation, clearCopy, mouseDown, selectionComplete, enableToolbarItems, completeAction } from '../common/event';
-import { formulaBarOperation, formulaOperation, setActionData, keyUp } from '../common/event';
+import { formulaBarOperation, formulaOperation, setActionData, keyUp, getCellPosition } from '../common/index';
 import { workbookEditOperation, getFormattedBarText, getFormattedCellObject, wrapEvent, isValidation } from '../../workbook/common/event';
 import { CellModel, SheetModel, getSheetName, getSheetIndex, getCell } from '../../workbook/base/index';
-import { getSheetNameFromAddress, getCellPosition, getSheet } from '../../workbook/base/index';
+import { getSheetNameFromAddress, getSheet } from '../../workbook/base/index';
 import { RefreshValueArgs } from '../integrations/index';
 import { CellEditEventArgs, CellSaveEventArgs, ICellRenderer, hasTemplate, editAlert } from '../common/index';
-import { getSwapRange } from '../../workbook/index';
+import { getSwapRange, getCellIndexes } from '../../workbook/index';
 
 /**
  * The `Protect-Sheet` module is used to handle the Protecting functionalities in Spreadsheet.
@@ -151,13 +151,15 @@ export class Edit {
     private keyDownHandler(e: KeyboardEventArgs): void {
         let trgtElem: HTMLElement = <HTMLElement>e.target;
         let keyCode: number = e.keyCode;
+        let sheet: SheetModel = this.parent.getActiveSheet();
+        let actCell: number[] = getCellIndexes(sheet.activeCell);
+        let cell: CellModel = getCell(actCell[0], actCell[1], sheet) || {};
         if (!closest(e.target as Element, '.e-findtool-dlg') && !closest(e.target as Element, '.e-validationerror-dlg')) {
-            if (!this.parent.getActiveSheet().isProtected || closest(e.target as Element, '.e-sheet-rename')) {
+            if (!sheet.isProtected || closest(e.target as Element, '.e-sheet-rename') || (cell.isLocked === false)) {
                 if (this.isEdit) {
                     if (this.isCellEdit) {
                         this.refreshEditor(this.editorElem.textContent, this.isCellEdit);
                     }
-
                     switch (keyCode) {
                         case this.keyCodes.ENTER:
                             if (Browser.isWindows) {
@@ -208,8 +210,8 @@ export class Edit {
                 || (keyCode >= this.keyCodes.FIRSTNUMPAD && keyCode <= this.keyCodes.LASTNUMPAD) ||
                 (keyCode >= this.keyCodes.SYMBOLSETONESTART && keyCode <= this.keyCodes.SYMBOLSETONEEND)
                 || (keyCode >= 219 && keyCode <= 222) || (!e.shiftKey && !e.ctrlKey && keyCode === this.keyCodes.F2))
-                && (keyCode !== 67) ) {
-                    if (this.parent.getActiveSheet().protectSettings.insertLink && keyCode === 75) {
+                && (keyCode !== 67) && (keyCode !== 89) && (keyCode !== 90 )) {
+                    if (sheet.protectSettings.insertLink && keyCode === 75) {
                       return;
                     }
                     this.parent.notify(editAlert, null);
@@ -225,7 +227,7 @@ export class Edit {
             editor.contentEditable = 'true';
             editor.spellcheck = false;
             this.editorElem = editor;
-            this.parent.element.querySelector('.e-main-content').appendChild(this.editorElem);
+            this.parent.element.querySelector('.e-sheet-content').appendChild(this.editorElem);
         }
         this.parent.notify(formulaOperation, { action: 'renderAutoComplete' });
     }
@@ -259,7 +261,7 @@ export class Edit {
 
     private startEdit(address?: string, value?: string, refreshCurPos: boolean = true): void {
         let range: number[] = getRangeIndexes(this.parent.getActiveSheet().activeCell);
-        if (hasTemplate(this.parent, range[0], range[1], this.parent.activeSheetTab - 1)) {
+        if (hasTemplate(this.parent, range[0], range[1], this.parent.activeSheetIndex)) {
             return;
         }
         this.updateEditCellDetail(address, value);
@@ -317,10 +319,12 @@ export class Edit {
     }
     private dblClickHandler(e: MouseEvent & TouchEvent): void {
         let trgtElem: HTMLElement = <HTMLElement>e.target;
-        let target: HTMLInputElement = e.target as HTMLInputElement;
-        if (!this.parent.getActiveSheet().isProtected) {
+        let sheet: SheetModel = this.parent.getActiveSheet();
+        let actCell: number[] = getCellIndexes(sheet.activeCell);
+        let cell: CellModel = getCell(actCell[0], actCell[1], sheet) || {};
+        if (!sheet.isProtected || (cell.isLocked === false)) {
             if (trgtElem.classList.contains('e-active-cell') || trgtElem.classList.contains('e-cell')
-                || closest(trgtElem, '.e-main-content')) {
+                || closest(trgtElem, '.e-sheet-content')) {
                 if (this.isEdit) {
                     this.endEdit();
                 } else {
@@ -341,12 +345,12 @@ export class Edit {
             if (addr && addr.split('!').length > 1) {
                 sheetIdx = getSheetIndex(this.parent, getSheetNameFromAddress(addr));
             } else {
-                sheetIdx = this.parent.activeSheetTab;
+                sheetIdx = this.parent.activeSheetIndex;
             }
         }
 
         if (!this.editCellData.addr) {
-            sheet = getSheet(this.parent, sheetIdx - 1);
+            sheet = getSheet(this.parent, sheetIdx);
             if (addr) {
                 addr = getRangeFromAddress(addr);
             } else {
@@ -442,7 +446,7 @@ export class Edit {
             let value: string =
                 (this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0] as HTMLElement).innerText;
             let isCell: boolean = true;
-            let sheetIdx: number = this.parent.activeSheetTab;
+            let sheetIdx: number = this.parent.activeSheetIndex;
             let range: number[];
             if (typeof address === 'string') {
                 range = getRangeIndexes(address);
@@ -477,10 +481,10 @@ export class Edit {
         if (rowIdx && colIdx) {
             rowIdx--; colIdx--;
             if ((this.editCellData.rowIndex !== rowIdx || this.editCellData.colIndex !== colIdx)
-                && this.parent.activeSheetTab === sheetIdx) {
+                && this.parent.activeSheetIndex  === sheetIdx) {
                 let td: HTMLElement = this.parent.getCell(rowIdx, colIdx);
                 if (td) {
-                    let sheet: SheetModel = getSheet(this.parent, sheetIdx - 1);
+                    let sheet: SheetModel = getSheet(this.parent, sheetIdx);
                     let cell: CellModel = getCell(rowIdx, colIdx, sheet);
                     let eventArgs: RefreshValueArgs = this.getRefreshNodeArgs(cell);
                     this.parent.refreshNode(td, eventArgs);
@@ -520,7 +524,7 @@ export class Edit {
             this.triggerEvent('cellSave', event);
             this.resetEditState();
             this.focusElement();
-        } else {
+        } else if (event) {
             event.preventDefault();
         }
     }

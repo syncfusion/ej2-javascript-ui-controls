@@ -1471,3 +1471,40 @@ describe('Grid base module', () => {
             gridObj.actionComplete = null;
         });
     });
+
+    describe('EJ2-37293-double click in row-drag-n-drop icon to get row object', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: false,
+                    allowGrouping: true,
+                    allowRowDragAndDrop: true,
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID', isPrimaryKey: true },
+                        { headerText: 'CustomerID', field: 'CustomerID', visible: false },
+                        { headerText: 'Freight', field: 'Freight' },
+                        { headerText: 'EmployeeID', field: 'EmployeeID' },
+                        { headerText: 'ShipAddress', field: 'Shipping Address of the order' },
+                        { headerText: 'ShipCity', field: 'ShipCity' },
+                        { headerText: 'ShipCountry', field: 'ShipCountry' },
+                    ],
+                }, done);
+        });
+        it('double click in row-drag-n-drop icon', (done: Function) => {
+            let recordDoubleClick = (args: any) => {
+                expect(args.rowData).toBeDefined();
+                expect(args.rowIndex).toBe(0);
+                expect(args.row).toBeDefined();
+                done();
+            }
+            gridObj.recordDoubleClick = recordDoubleClick;
+            (gridObj as any).dblClickHandler({target:gridObj.element.querySelector('.e-rowdragdrop')});
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+            gridObj.recordDoubleClick = null;
+        });
+    });

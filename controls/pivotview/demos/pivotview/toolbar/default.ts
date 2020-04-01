@@ -87,9 +87,16 @@ let pivotGridObj: PivotView = new PivotView({
         }
     },
     renameReport: function (args: RenameReportArgs): void {
-        let reportCollection: string[] = [];
+        let reportCollection: any[] = [];
         if (localStorage.pivotviewReports && localStorage.pivotviewReports !== "") {
             reportCollection = JSON.parse(localStorage.pivotviewReports);
+        }
+        if (args.isReportExists) {
+            for (let i: number = 0; i < reportCollection.length; i++) {
+                if (reportCollection[i].reportName === args.rename) {
+                    reportCollection.splice(i, 1);
+                }
+            }
         }
         reportCollection.map(function (item: any): any { if (args.reportName === item.reportName) { item.reportName = args.rename; } });
         if (localStorage.pivotviewReports && localStorage.pivotviewReports !== "") {

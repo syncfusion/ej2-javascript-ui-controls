@@ -8,7 +8,7 @@ import { DiagramConstraints } from '../../../src/diagram/enum/enum';
 import { MouseEvents } from '../interaction/mouseevents.spec';
 import { NodeConstraints, ConnectorModel, ConnectorConstraints } from '../../../src/diagram/index';
 import { Position } from '@syncfusion/ej2-popups';
-import  {profile , inMB, getMemoryProfile} from '../../../spec/common.spec';
+import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 
 /**
  * Tooltip test cases
@@ -20,11 +20,11 @@ describe('Tool Tip object', () => {
     let mouseEvents: MouseEvents = new MouseEvents();
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
         ele = createElement('div', { id: 'diagram_tooltip_1' });
         document.body.appendChild(ele);
 
@@ -554,7 +554,7 @@ describe('Tool Tip object', () => {
         }, 1);
     });
 
-   
+
 });
 
 describe('Tool Tip mouse', () => {
@@ -563,11 +563,11 @@ describe('Tool Tip mouse', () => {
     let mouseEvents: MouseEvents = new MouseEvents();
     beforeAll((): void => {
         const isDef = (o: any) => o !== undefined && o !== null;
-                if (!isDef(window.performance)) {
-                    console.log("Unsupported environment, window.performance.memory is unavailable");
-                    this.skip(); //Skips test (in Chai)
-                    return;
-                }
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
         ele = createElement('div', { id: 'diagram_tooltip_2' });
         document.body.appendChild(ele);
 
@@ -1079,7 +1079,7 @@ describe('Tool Tip mouse', () => {
         expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length === 0).toBe(true);
         done()
     });
-    it('memory leak', () => { 
+    it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)
         //Check average change in memory samples to not be over 10MB
@@ -1088,4 +1088,119 @@ describe('Tool Tip mouse', () => {
         //Check the final memory usage against the first usage, there should be little change if everything was properly deallocated
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
+});
+
+describe('Tool Tip mouse-swimlane', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    let mouseEvents: MouseEvents = new MouseEvents();
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagram_tooltip_2' });
+        document.body.appendChild(ele);
+
+
+        diagram = new Diagram({
+            width: '1000px', height: '1000px',
+            nodes: [
+                {
+                    id: "Businessworkflow",
+                    offsetX: 300,
+                    offsetY: 200,
+                    height: 120,
+                    width: 3 * 120,
+                    constraints: NodeConstraints.None,
+                    shape: {
+                        type: "SwimLane",
+                        orientation: "Vertical",
+                        header: {
+                            annotation: { content: "Process" }
+                        },
+                        lanes: [
+                            {
+                                id: "lane1",
+                                width: 120,
+                                header: {
+                                    annotation: { content: "11 - Prep" }
+                                },
+                                constraints: NodeConstraints.None,
+                                children: [
+                                    {
+                                        id: "40",
+                                        height: 100,
+                                        width: 100,
+                                        shape: { type: "Basic" },
+                                        annotations: [
+                                            {
+                                                content: "Hover me!"
+                                            }
+                                        ],
+                                        constraints: (NodeConstraints.Default & ~NodeConstraints.InheritTooltip) | NodeConstraints.Tooltip,
+                                        tooltip: {
+                                            content: "Tooltip keeps following outside of Childnode",
+                                            position: "BottomCenter",
+                                            relativeMode: "Object",
+                                            showTipPointer: true,
+                                            //   animation: {
+                                            //     open: { effect: "FadeZoomIn", delay: 1000 },
+                                            //     close: { effect: "FadeZoomOut", delay: 0 }
+                                            //   }
+                                        }
+                                    }
+                                ]
+                            },
+                            {
+                                id: "lane2",
+                                width: 120,
+                                header: {
+                                    annotation: { content: "12 - Do Smth" }
+                                },
+                                constraints: NodeConstraints.None,
+                                children: [
+                                    {
+                                        id: "50",
+                                        height: 100,
+                                        width: 100,
+                                        shape: { type: "Basic" },
+                                        annotations: [
+                                            {
+                                                content: "Without Tooltip"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            },
+                            {
+                                id: "lane3",
+                                width: 120,
+                                header: {
+                                    annotation: { content: "13 - End" }
+                                },
+                                constraints: NodeConstraints.None
+                            }
+                        ]
+                    }
+                }
+            ],
+        });
+        diagram.appendTo('#diagram_tooltip_2');
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+    it('checking tooltip with relative mode Mouse positions - Top Left', (done: Function) => {
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.mouseMoveEvent(diagramCanvas, 150, 270, false, false);
+        expect(document.getElementsByClassName('e-tooltip-wrap e-popup e-control e-popup-open').length === 0).toBe(true);
+        done();  
+    });
+
 });

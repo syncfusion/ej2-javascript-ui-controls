@@ -1137,14 +1137,12 @@ export class HierarchicalTree {
     }
 
     private updateAnchor(layout: ILayout, bounds: Bounds, viewPort: PointModel): void {
-        let node: INode;
-        let fixedNode: INode;
+        let node: INode; let fixedNode: INode;
         let width: number = 0; let height: number = 0; let mod: number = 0;
-        let viewPortBounds: Rect = new Rect(0, 0, viewPort.x, viewPort.y);
-        let layoutBounds: Rect;
+        let yValue: number = 0;
+        let viewPortBounds: Rect = new Rect(0, 0, viewPort.x, viewPort.y); let layoutBounds: Rect;
         layoutBounds = layout.bounds ? layout.bounds : viewPortBounds;
         let orientation: string = layout.orientation;
-
         //Anchor based on fixed nodes
         if (layout.fixedNode) {
             fixedNode = layout.nameTable[layout.fixedNode];
@@ -1162,11 +1160,13 @@ export class HierarchicalTree {
                 mod += layout.graphNodes[node.id].subTreeTranslation || 0;
             }
             if (layout.orientation.indexOf('Left') !== -1) {
-                layout.anchorX -= layout.graphNodes[fixedNode.id].y;
+                yValue = layout.graphNodes[fixedNode.id].y;
+                orientation === 'LeftToRight' ? layout.anchorX -= yValue : layout.anchorX += yValue;
                 layout.anchorY -= layout.graphNodes[fixedNode.id].x + mod;
             } else {
+                yValue = layout.graphNodes[fixedNode.id].y;
                 layout.anchorX -= layout.graphNodes[fixedNode.id].x + mod;
-                layout.anchorY -= layout.graphNodes[fixedNode.id].y;
+                orientation === 'TopToBottom' ? layout.anchorY -= yValue : layout.anchorY += yValue;
             }
         } else {
             if (orientation === 'TopToBottom' || orientation === 'BottomToTop') {

@@ -27,6 +27,7 @@ import { checkParentAsContainer } from '../interaction/container-interaction';
  * 
  */
 
+/* tslint:disable */
 /** @private */
 export function findToolToActivate(
     obj: Object, wrapper: DiagramElement, position: PointModel, diagram: Diagram,
@@ -72,7 +73,18 @@ export function findToolToActivate(
                     return 'ConnectorTargetEnd';
                 }
                 let action: Actions = checkForConnectorSegment(conn, handle, position, diagram);
-                if (action) { return action; }
+                if (action !== 'OrthoThumb') {
+                    if ((canShowCorner(handle.constraints, 'ConnectorSourceThumb'))
+                        && canDragSourceEnd(conn as Connector)) {
+                        if (action) { return action; }
+                    }
+                    if ((canShowCorner(handle.constraints, 'ConnectorTargetThumb'))
+                        && canDragTargetEnd(conn as Connector)) {
+                        if (action) { return action; }
+                    }
+                } else {
+                    return action;
+                }
             }
         } else {
             let ten: number = 10 / diagram.scroller.currentZoom;
@@ -131,6 +143,7 @@ export function findToolToActivate(
     }
     return 'Select';
 }
+/* tslint:enable */
 
 function checkResizeHandles(
     diagram: Diagram, element: DiagramElement, position: PointModel, matrix: Matrix, x: number, y: number): Actions {

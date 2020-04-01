@@ -50,3 +50,33 @@ describe('Selection API', () => {
         expect(editor.selection.isTableSelected()).toBe(true);
     });
 });
+
+
+describe('Para mark selection validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container', styles: 'width:1100px;height:700px' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, ContextMenu);
+        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done: DoneFn) => {
+        document.body.removeChild(document.getElementById('container'));
+        editor.destroy();
+        editor = undefined;
+        setTimeout(() => {
+            done();
+        }, 750);
+    });
+    it('using shift home key', () => {
+        editor.editorModule.insertText('sample');
+        editor.selection.handleShiftHomeKey();
+        editor.selection.characterFormat.bold = true;
+        expect(editor.selection.start.paragraph.characterFormat.bold).toBe(true);
+    });
+});

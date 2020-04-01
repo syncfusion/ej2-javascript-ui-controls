@@ -22,7 +22,7 @@ export class ExportUtils {
     }
 
     /**
-     * To print the Maps
+     * This method is used to perform the print functionality in treemap.
      * @param elements 
      */
     public print(elements?: string[] | string | Element): void {
@@ -62,7 +62,7 @@ export class ExportUtils {
         return div;
     }
     /**
-     * To export the file as image/svg format
+     * This method is used to perform the export functionality for the rendered treemap.
      * @param type 
      * @param fileName 
      */

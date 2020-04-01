@@ -128,7 +128,9 @@ export interface CheckBoxUtilModel {
     enableRtl?: boolean;
     cssClass?: string;
 }
-
+/**
+ * Interface for change event arguments.
+ */
 export interface ChangeEventArgs extends BaseEventArgs {
     /** Returns the event parameters of the CheckBox or Switch.
      * @blazorType MouseEventArgs

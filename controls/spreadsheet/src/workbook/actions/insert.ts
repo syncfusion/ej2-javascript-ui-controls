@@ -1,6 +1,6 @@
 import { Workbook } from '../base/index';
 import { insert, insertModel, ExtendedRange, InsertDeleteModelArgs, workbookFormulaOperation } from '../../workbook/common/index';
-import { ModelType } from '../../workbook/common/index';
+import { ModelType, insertMerge, MergeArgs } from '../../workbook/common/index';
 import { SheetModel, RowModel, CellModel } from '../../workbook/base/index';
 
 /**
@@ -17,7 +17,7 @@ export class WorkbookInsert {
         this.addEventListener();
     }
     private insertModel(args: InsertDeleteModelArgs): void {
-        let index: number; let model: RowModel[] = [];
+        let index: number; let model: RowModel[] = []; let mergeCollection: MergeArgs[];
         if (typeof(args.start) === 'number') {
             index = args.start; args.end = args.end || index;
             if (index > args.end) { index = args.end; args.end = args.start; }
@@ -39,6 +39,14 @@ export class WorkbookInsert {
             } else {
                 this.parent.setUsedRange(args.model.usedRange.rowIndex + model.length, args.model.usedRange.colIndex);
             }
+            let curIdx: number = index + model.length;
+            for (let i: number = 0; i <= args.model.usedRange.colIndex; i++) {
+                if (args.model.rows[curIdx].cells[i] && args.model.rows[curIdx].cells[i].rowSpan !== undefined &&
+                    args.model.rows[curIdx].cells[i].rowSpan < 0 && args.model.rows[curIdx].cells[i].colSpan === undefined) {
+                    this.parent.notify(insertMerge, <MergeArgs>{ range: [curIdx, i, curIdx, i], insertCount: model.length,
+                        insertModel: 'Row' });
+                }
+            }
         } else if (args.modelType === 'Column') {
             args.model = <SheetModel>args.model;
             if (!args.model.columns) { args.model.columns = []; }
@@ -53,6 +61,7 @@ export class WorkbookInsert {
             let cellModel: CellModel[] = [];
             if (!args.columnCellsModel) { args.columnCellsModel = []; }
             for (let i: number = 0; i < model.length; i++) { cellModel.push({}); }
+            mergeCollection = [];
             for (let i: number = 0; i <= args.model.usedRange.rowIndex; i++) {
                 if (!args.model.rows[i]) {
                     args.model.rows[i] = { cells: [] };
@@ -64,23 +73,30 @@ export class WorkbookInsert {
                 }
                 args.model.rows[i].cells.splice(index, 0, ...(args.columnCellsModel[i] && args.columnCellsModel[i].cells ?
                     args.columnCellsModel[i].cells : cellModel));
+                let curIdx: number = index + model.length;
+                if (args.model.rows[i].cells[curIdx] && args.model.rows[i].cells[curIdx].colSpan !== undefined &&
+                    args.model.rows[i].cells[curIdx].colSpan < 0 && args.model.rows[i].cells[curIdx].rowSpan === undefined) {
+                    mergeCollection.push(<MergeArgs>{ range: [i, curIdx, i, curIdx], insertCount: cellModel.length,
+                        insertModel: 'Column' });
+                }
             }
+            mergeCollection.forEach((mergeArgs: MergeArgs): void => { this.parent.notify(insertMerge, mergeArgs); });
         } else {
             if (args.checkCount !== undefined && args.checkCount === this.parent.sheets.length) { return; }
             this.parent.createSheet(index, model); let id: number;
-            if (args.activeSheetTab) { this.parent.setProperties({ activeSheetTab: args.activeSheetTab }, true); }
+            if (args.activeSheetIndex) { this.parent.setProperties({ activeSheetIndex: args.activeSheetIndex }, true); }
             model.forEach((sheet: SheetModel): void => {
                 id = sheet.id;
                 this.parent.notify(workbookFormulaOperation, { action: 'addSheet', visibleName: sheet.name, sheetName: 'Sheet' + id,
                     index: id });
             });
         }
-        this.parent.notify(insert, { model: model, index: index, modelType: args.modelType, isAction: args.isAction, activeSheetTab:
-            args.activeSheetTab, sheetCount: this.parent.sheets.length });
+        this.parent.notify(insert, { model: model, index: index, modelType: args.modelType, isAction: args.isAction, activeSheetIndex:
+            args.activeSheetIndex, sheetCount: this.parent.sheets.length });
     }
     private setInsertInfo(sheet: SheetModel, startIndex: number, count: number, totalKey: string, modelType: ModelType = 'Row'): void {
         let endIndex: number = count = startIndex + (count - 1);
-        sheet.rangeSettings.forEach((range: ExtendedRange): void => {
+        sheet.range.forEach((range: ExtendedRange): void => {
             if (range.info && startIndex < range.info[totalKey]) {
                 if (!range.info[`insert${modelType}Range`]) {
                     range.info[`insert${modelType}Range`] = [[startIndex, endIndex]];

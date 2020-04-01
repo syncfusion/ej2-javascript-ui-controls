@@ -1,7 +1,7 @@
 import { Spreadsheet } from '../base/index';
-import { contentLoaded, mouseDown, virtualContentLoaded, cellNavigate, getUpdateUsingRaf } from '../common/index';
-import { SheetModel, getColumnsWidth, updateSelectedRange, getColumnWidth } from '../../workbook/index';
-import { getRowHeight, isSingleCell, activeCellChanged } from '../../workbook/index';
+import { contentLoaded, mouseDown, virtualContentLoaded, cellNavigate, getUpdateUsingRaf, IOffset } from '../common/index';
+import { SheetModel, getColumnsWidth, updateSelectedRange, getColumnWidth, mergedRange, activeCellMergedRange } from '../../workbook/index';
+import { getRowHeight, isSingleCell, activeCellChanged, CellModel, MergeArgs } from '../../workbook/index';
 import { EventHandler, addClass, removeClass, isNullOrUndefined, Browser, closest } from '@syncfusion/ej2-base';
 import { BeforeSelectEventArgs, selectionComplete, getMoveEvent, getEndEvent, isTouchStart, locateElem } from '../common/index';
 import { isTouchEnd, isTouchMove, getClientX, getClientY, mouseUpAfterSelection, selectRange, rowHeightChanged } from '../common/index';
@@ -103,8 +103,10 @@ export class Selection {
         });
     }
 
-    private selectRange(indexes: number[]): void {
-        this.selectRangeByIdx(this.parent.selectionSettings.mode === 'Single' ? indexes.slice(0, 2).concat(indexes.slice(0, 2)) : indexes);
+    private selectRange(args: { indexes: number[], skipChecking?: boolean }): void {
+        this.selectRangeByIdx(
+            this.parent.selectionSettings.mode === 'Single' ? args.indexes.slice(0, 2).concat(args.indexes.slice(0, 2)) : args.indexes,
+            null, null, null, null, args.skipChecking);
     }
 
     private init(): void {
@@ -116,7 +118,6 @@ export class Selection {
         let inRange: boolean = sRange[0] <= actRange[0] && sRange[2] >= actRange[0] && sRange[1] <= actRange[1]
             && sRange[3] >= actRange[1];
         this.createSelectionElement();
-        this.selectRangeByIdx(range, null, null, inRange);
         this.selectRangeByIdx(range, null, null, inRange, isInit);
     }
 
@@ -201,11 +202,16 @@ export class Selection {
         // remove math.min or handle top and left auto scroll
         let colIdx: number = this.isRowSelected ? sheet.colCount - 1 : this.getColIdxFromClientX(Math.min(clientX, clientRect.right));
         let rowIdx: number = this.isColSelected ? sheet.rowCount - 1 : this.getRowIdxFromClientY(Math.min(clientY, clientRect.bottom));
+        let prevIndex: number[] = getRangeIndexes(sheet.selectedRange);
+        let mergeArgs: MergeArgs = { range: [rowIdx, colIdx, rowIdx, colIdx] };
+        this.parent.notify(activeCellMergedRange, mergeArgs);
+        if (mergeArgs.range[2] === prevIndex[2] && mergeArgs.range[3] === prevIndex[3]) { return; }
         let isScrollDown: boolean = clientY > clientRect.bottom && rowIdx < sheet.rowCount;
         let isScrollUp: boolean = clientY < clientRect.top && rowIdx >= 0 && !this.isColSelected;
         let isScrollRight: boolean = clientX > clientRect.right && colIdx < sheet.colCount;
         let isScrollLeft: boolean = clientX < clientRect.left && colIdx >= 0 && !this.isRowSelected;
         this.clearInterval();
+        if (!this.isColSelected && !this.isRowSelected) { prevIndex = getCellIndexes(sheet.activeCell); }
         if (isScrollDown || isScrollUp || isScrollRight || isScrollLeft) {
             this.scrollInterval = setInterval(() => {
                 if ((isScrollDown || isScrollUp) && !this.isColSelected) {
@@ -224,11 +230,11 @@ export class Selection {
                     }
                     cont.scrollLeft += (isScrollRight ? 1 : -1) * getColumnWidth(sheet, colIdx);
                 }
-                this.selectRangeByIdx([].concat(this.startCell, [rowIdx, colIdx]), e);
+                this.selectRangeByIdx([].concat(prevIndex[0], prevIndex[1], [rowIdx, colIdx]), e);
                 // tslint:disable-next-line
             }, 100);
         } else {
-            this.selectRangeByIdx([].concat(this.startCell ? this.startCell : getCellIndexes(sheet.activeCell), [rowIdx, colIdx]), e);
+            this.selectRangeByIdx([].concat(prevIndex[0], prevIndex[1], [rowIdx, colIdx]), e);
         }
     }
 
@@ -320,25 +326,28 @@ export class Selection {
 
     private selectRangeByIdx(
         range: number[], e?: MouseEvent, isScrollRefresh?: boolean,
-        isActCellChanged?: boolean, isInit?: boolean): void {
+        isActCellChanged?: boolean, isInit?: boolean, skipChecking?: boolean): void {
         let ele: HTMLElement = this.getSelectionElement();
         let sheet: SheetModel = this.parent.getActiveSheet();
+        let mergeArgs: MergeArgs = { range: range, isActiveCell: false, skipChecking: skipChecking };
+        if (!this.isColSelected && !this.isRowSelected) { this.parent.notify(mergedRange, mergeArgs); }
+        range = mergeArgs.range as number[];
         let args: BeforeSelectEventArgs = { range: getRangeAddress(range), cancel: false };
         this.parent.trigger('beforeSelect', args);
         if (args.cancel === true) {
             return;
         }
-        if (isSingleCell(range)) {
+        if (isSingleCell(range) || mergeArgs.isActiveCell) {
             ele.classList.add('e-hide');
         } else {
             ele.classList.remove('e-hide');
-            locateElem(ele, range, sheet, this.parent.enableRtl);
+            locateElem(ele, range, sheet, this.parent.enableRtl, this.getOffset(range[2], range[3]));
         }
         updateSelectedRange(this.parent, getRangeAddress(range), sheet);
         this.UpdateRowColSelected(range);
         this.highlightHdr(range);
         if (!isScrollRefresh && !(e && (e.type === 'mousemove' || isTouchMove(e)))) {
-            this.updateActiveCell(isActCellChanged ? getCellIndexes(sheet.activeCell) : range, isInit);
+            this.updateActiveCell(isActCellChanged ? getRangeIndexes(sheet.activeCell) : range, isInit);
         }
         if (isNullOrUndefined(e)) { e = <MouseEvent>{ type: 'mousedown' }; }
         this.parent.notify(selectionComplete, e);
@@ -352,16 +361,33 @@ export class Selection {
 
     private updateActiveCell(range: number[], isInit?: boolean): void {
         let sheet: SheetModel = this.parent.getActiveSheet();
-        let topLeftIdx: number[] = getRangeIndexes(sheet.topLeftCell);
-        let rowIdx: number = this.isColSelected ? topLeftIdx[0] : range[0];
-        let colIdx: number = this.isRowSelected ? topLeftIdx[1] : range[1];
-        if (sheet.activeCell !== getCellAddress(rowIdx, colIdx) || isInit) {
-            sheet.activeCell = getCellAddress(rowIdx, colIdx);
-            locateElem(this.getActiveCell(), getRangeIndexes(sheet.activeCell), sheet, this.parent.enableRtl);
+        let topLeftIdx: number[] = getRangeIndexes(sheet.topLeftCell); let rowIdx: number; let colIdx: number; let cell: CellModel;
+        if (this.isColSelected) {
+            rowIdx = topLeftIdx[0]; colIdx = range[1];
+            if (this.isRowSelected) { colIdx = topLeftIdx[1]; }
+        } else {
+            rowIdx = range[0]; colIdx = range[1];
+            if (this.isRowSelected) { colIdx = topLeftIdx[1]; }
+        }
+        let mergeArgs: MergeArgs = { range: [rowIdx, colIdx, ...[rowIdx, colIdx]] };
+        this.parent.notify(activeCellMergedRange, mergeArgs);
+        range = mergeArgs.range as number[];
+        if (sheet.activeCell !== getCellAddress(range[0], range[1]) || isInit) {
+            sheet.activeCell = getCellAddress(range[0], range[1]);
+            locateElem(this.getActiveCell(), range, sheet, this.parent.enableRtl, this.getOffset(range[2], range[3]));
             this.parent.notify(activeCellChanged, null);
         } else {
-            locateElem(this.getActiveCell(), getRangeIndexes(sheet.activeCell), sheet, this.parent.enableRtl);
+            locateElem(this.getActiveCell(), range, sheet, this.parent.enableRtl, this.getOffset(range[2], range[3]));
         }
+    }
+
+    private getOffset(rowIdx: number, colIdx: number): { left: IOffset, top: IOffset } {
+        let offset: { left: IOffset, top: IOffset } = { left: { idx: 0, size: 0 }, top: { idx: 0, size: 0 } };
+        if (this.parent.scrollModule) {
+            if (colIdx >= this.parent.scrollModule.offset.left.idx) { offset.left = this.parent.scrollModule.offset.left; }
+            if (rowIdx >= this.parent.scrollModule.offset.top.idx) { offset.top = this.parent.scrollModule.offset.top; }
+        }
+        return offset;
     }
 
     private getSelectionElement(): HTMLElement {

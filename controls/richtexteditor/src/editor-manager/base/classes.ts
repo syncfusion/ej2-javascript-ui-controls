@@ -1,5 +1,5 @@
 /**
- * RichTextEditor classes defined here.
+ * Rich Text Editor classes defined here.
  */
 
 /** 

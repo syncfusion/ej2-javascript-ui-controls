@@ -13,7 +13,7 @@ let sheet: SheetModel[] = [
     {
         name: 'Border Format',
         showGridLines: false,
-        rangeSettings: [{ dataSource: dataSource }],
+        range: [{ dataSource: dataSource }],
         columns: [
             { width: 80 }, { width: 80 }, { width: 80 },
             { width: 160 }, { width: 80 }, { width: 85 }, { width: 85 }
@@ -24,7 +24,7 @@ let sheet: SheetModel[] = [
 let spreadsheet: Spreadsheet = new Spreadsheet({
     sheets: sheet,
     beforeDataBound: (): void => {
-        if (spreadsheet.sheets[spreadsheet.activeSheetTab - 1].name === 'Border Format') {
+        if (spreadsheet.sheets[spreadsheet.activeSheetIndex].name === 'Border Format') {
             spreadsheet.cellFormat({ color: '#2f5496', fontWeight: 'bold', textAlign: 'center' }, 'A1:G1');
             spreadsheet.setBorder({ border: '1px solid #000000' }, 'A1:G78', 'Outer');
             spreadsheet.setBorder({ border: '1px solid #000000' }, 'A1:G78', 'Inner');

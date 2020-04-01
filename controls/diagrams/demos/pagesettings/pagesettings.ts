@@ -2,6 +2,7 @@ import { Diagram } from '../../src/diagram/diagram';
 import { SnapConstraints } from '../../src/diagram/enum/enum';
 import { ConnectorModel } from '../../src/diagram/objects/connector-model';
 import { NodeModel } from '../../src/diagram/objects/node-model';
+import { ITextEditEventArgs } from '../../src';
 /**
  * pageSettings
  */
@@ -25,9 +26,14 @@ diagram = new Diagram({
         orientation: 'Landscape',
         background: { color: 'blue' }, width: 300, height: 300, multiplePage: true, showPageBreaks: true,
         margin: { left: 10, top: 10, bottom: 10 },
-    }
+    },
+    textEdit: textEdit
 });
 diagram.appendTo('#diagram');
-
+function textEdit(args: ITextEditEventArgs) {
+    if(args.annotation) {
+        console.log("Hit");
+    }
+}
 
 

@@ -5,7 +5,7 @@ import { createElement } from '@syncfusion/ej2-base';
 import { Diagram } from '../../../src/diagram/diagram';
 import {
     ConnectorModel, Node, TextModel, Connector, IExpandStateChangeEventArgs,
-    DataBinding, HierarchicalTree, NodeModel, Rect, TextElement, LayoutAnimation, Container, StackPanel, ImageElement, TreeInfo
+    DataBinding, HierarchicalTree, NodeModel, Rect, TextElement, LayoutAnimation, Container, StackPanel, ImageElement, TreeInfo, SnapConstraints
 } from '../../../src/diagram/index';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
 Diagram.Inject(DataBinding, HierarchicalTree);
@@ -463,13 +463,14 @@ describe('Diagram Control', () => {
             done();
         });
         it('Checking fixed node - right to left orientation', (done: Function) => {
+            debugger
             diagram.layout.orientation = 'RightToLeft';
 
             diagram.dataBind();
             let bounds: Rect = diagram.spatialSearch.getPageBounds();
-            expect(bounds.x == -1700 && bounds.y == -130
-                && bounds.width == 1890 && bounds.height == 1020).toBe(true);
-            expect(diagram.nodes[0].offsetX == 90 && diagram.nodes[0].offsetY == 360).toBe(true);
+            expect(bounds.x == -880 && bounds.y == -130
+                    && bounds.width == 1890 && bounds.height == 1020).toBe(true);
+                expect(diagram.nodes[0].offsetX == 910 && diagram.nodes[0].offsetY == 360).toBe(true);
             done();
         });
         it('Checking fixed node - bottom to top orientation', (done: Function) => {
@@ -477,8 +478,8 @@ describe('Diagram Control', () => {
 
             diagram.dataBind();
             let bounds: Rect = diagram.spatialSearch.getPageBounds();
-            expect(bounds.x == -530 && bounds.y == -1525 && bounds.width == 1355 && bounds.height == 1290).toBe(true);
-            expect(diagram.nodes[0].offsetX == 80 && diagram.nodes[0].offsetY == -335).toBe(true);
+            expect(bounds.x == 290 && bounds.y == -905 && bounds.width == 1355 && bounds.height == 1290).toBe(true);
+                expect(diagram.nodes[0].offsetX == 900 && diagram.nodes[0].offsetY == 285).toBe(true);
             done();
         });
         it('Checking Left Top Alignment', (done: Function) => {
@@ -1076,7 +1077,112 @@ describe('Tree Layout', () => {
     });
 
 });
+describe('Tree Layout expand collapse operation of icon take place distance from node', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+    beforeAll(() => {
+        ele = createElement('div', { id: 'diagramanimation' });
+        document.body.appendChild(ele);
+        let items1 = new DataManager(data1, new Query().take(7));
+        diagram = new Diagram({
+            width: '1250px', height: '590px',
+            snapSettings: { constraints: 0 },
+            layout: {
+                enableAnimation: true,
+                type: 'OrganizationalChart', margin: { top: 20 },
+                getLayoutInfo: (node: Node, tree: TreeInfo) => {
+                    if (!tree.hasSubTree) {
+                        tree.orientation = 'Vertical';
+                        tree.type = 'Alternate';
+                    }
+                }
+            },
+            dataSourceSettings: {
+                id: 'Id', parentId: 'ReportingPerson', dataSource: items1
+            },
 
+            getNodeDefaults: (obj: NodeModel, diagram: Diagram) => {
+                obj.expandIcon = { horizontalAlignment: 'Center', verticalAlignment: 'Center', height: 20, width: 20, shape: "ArrowDown", fill: 'red', offset: { x: .7, y: .8 } }
+                obj.expandIcon.margin = { left: 0, right: 0, top: 20, bottom: 0 };
+                obj.collapseIcon.offset = { x: .7, y: .8 }
+                obj.collapseIcon.height = 20;
+                obj.collapseIcon.width = 20;
+                obj.collapseIcon.shape = "ArrowUp";
+                obj.collapseIcon.fill = 'red';
+                obj.collapseIcon.horizontalAlignment = 'Center';
+                obj.collapseIcon.verticalAlignment = 'Center';
+                obj.collapseIcon.margin = { left: 0, right: 0, top: 20, bottom: 0 };
+                obj.width = 150;
+                obj.height = 50;
+                obj.style = {};
+                obj.style.fill = obj.data['color'];
+                obj.annotations = [{ content: obj.data['Role'], style: { color: 'white' } }];
+                return obj;
+            }, getConnectorDefaults: (connector: ConnectorModel, diagram: Diagram) => {
+                let obj: any = {};
+                obj.targetDecorator = {};
+                obj.targetDecorator.shape = 'None';
+                obj.type = 'Orthogonal';
+                return obj;
+            },
+
+            setNodeTemplate: (obj: Node, diagram: Diagram): Container => {
+                let content: StackPanel = new StackPanel();
+                content.id = obj.id + '_outerstack';
+                content.style.strokeColor = 'darkgreen';
+                content.orientation = 'Horizontal';
+                content.padding = { left: 5, right: 10, top: 5, bottom: 5 };
+                let innerStack: StackPanel = new StackPanel();
+                innerStack.style.strokeColor = 'none';
+                innerStack.margin = { left: 5, right: 0, top: 0, bottom: 0 };
+                innerStack.id = obj.id + '_innerstack';
+
+                let text: TextElement = new TextElement();
+                text.content = obj.data['Name'];
+
+                text.style.color = 'blue';
+                text.style.strokeColor = 'none';
+                text.style.fill = 'none';
+                text.id = obj.id + '_text1';
+
+                let desigText: TextElement = new TextElement();
+                desigText.margin = { left: 0, right: 0, top: 5, bottom: 0 };
+                desigText.content = obj.data['Designation'];
+                desigText.style.color = 'blue';
+                desigText.style.strokeColor = 'none';
+                desigText.style.fill = 'none';
+                desigText.style.textWrapping = 'Wrap';
+                desigText.id = obj.id + '_desig';
+                innerStack.children = [text, desigText];
+
+                content.children = [innerStack];
+
+                return content;
+            }
+        });
+        diagram.appendTo('#diagramanimation');
+    });
+
+    afterAll(() => {
+        diagram.destroy();
+        ele.remove();
+    });
+
+  
+
+ 
+    it('ree Layout expand collapse operation of icon take place distance from node', (done: Function) => {
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 658, 148);
+        let nodes: Node = diagram.nodes[0] as Node
+        diagram.animationComplete = () => {
+            expect(diagram.nodes[4].wrapper.visible === false).toBe(true);
+            done();
+        };
+    });
+    
+});
 describe('Organization chart', () => {
     let diagram: Diagram;
     let ele: HTMLElement;
@@ -1868,8 +1974,8 @@ describe('Connector Update in Layout Issue', () => {
         let x = document.getElementById(id).getAttribute('x');
         let y = document.getElementById(id).getAttribute('y');
         console.log("update in DOM");
-            console.log(x);
-            console.log(y);
+        console.log(x);
+        console.log(y);
         expect((x == '433.5' || x === '432.67') && y == '74.9').toBe(true);
         done();
     });
@@ -1891,8 +1997,8 @@ describe('OrgChart-Layout Expand collapse issue exception raise issue', () => {
         node.annotations[0].style.color = "white";
         node.width = 120;
         node.height = 50;
-        node.expandIcon = { shape: 'Minus' , height:20, width:20};
-        node.collapseIcon = { shape: 'Plus' , height:20, width:20};
+        node.expandIcon = { shape: 'Minus', height: 20, width: 20 };
+        node.collapseIcon = { shape: 'Plus', height: 20, width: 20 };
         return node;
     }
 
@@ -1972,9 +2078,9 @@ describe('OrgChart-Layout Expand collapse issue exception raise issue', () => {
             done();
         };
         mouseEvents.clickEvent(diagramCanvas, diagram.nodes[0].offsetX, diagram.nodes[0].offsetY);
-        mouseEvents.mouseMoveEvent(diagramCanvas, (bounds as DOMRect).x + 4, ((bounds as DOMRect).y + (bounds as DOMRect).height / 2)-12);
-    mouseEvents.mouseDownEvent(diagramCanvas, (bounds as DOMRect).x + 4, ((bounds as DOMRect).y + (bounds as DOMRect).height / 2)-12);
-    mouseEvents.mouseUpEvent(diagramCanvas, (bounds as DOMRect).x + 4, ((bounds as DOMRect).y + (bounds as DOMRect).height / 2)-12);
+        mouseEvents.mouseMoveEvent(diagramCanvas, (bounds as DOMRect).x + 4, ((bounds as DOMRect).y + (bounds as DOMRect).height / 2) - 12);
+        mouseEvents.mouseDownEvent(diagramCanvas, (bounds as DOMRect).x + 4, ((bounds as DOMRect).y + (bounds as DOMRect).height / 2) - 12);
+        mouseEvents.mouseUpEvent(diagramCanvas, (bounds as DOMRect).x + 4, ((bounds as DOMRect).y + (bounds as DOMRect).height / 2) - 12);
     });
 
 });
@@ -2831,6 +2937,149 @@ describe('layout-info assistant support', () => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             mouseEvents.clickEvent(diagramCanvas, 716, 446);
             expect(diagram.selectedItems.nodes.length === 1).toBe(true);
+            done();
+        });
+    });
+
+    describe('layout expand collapse orientation issue', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        function nodeDefaults(node: any) {
+            node.annotations[0].style.color = "white";
+            node.width = 120;
+            node.height = 50;
+            node.expandIcon = { shape: 'Minus' };
+            node.collapseIcon = { shape: 'Plus' };
+            return node;
+        }
+
+        //The below method used to define the common settings for connectors.
+        function connectorDefaults(connector: any) {
+            connector.type = 'Orthogonal';
+            connector.targetDecorator = { shape: 'None' };
+            return connector;
+        }
+        beforeAll(() => {
+            ele = createElement('div', { id: 'diagramdataMaps' });
+            document.body.appendChild(ele);
+            let data: object[] = [
+                {
+                    "Name": "Diagram",
+                    "fillColor": "#916DAF"
+                },
+                {
+                    "Name": "Layout",
+                    "Category": "Diagram"
+                },
+                {
+                    "Name": "Tree Layout",
+                    "Category": "Layout"
+                },
+                {
+                    "Name": "Organizational Chart",
+                    "Category": "Layout"
+                },
+                {
+                    "Name": "Hierarchical Tree",
+                    "Category": "Tree Layout"
+                },
+                {
+                    "Name": "Radial Tree",
+                    "Category": "Tree Layout"
+                },
+                {
+                    "Name": "Mind Map",
+                    "Category": "Hierarchical Tree"
+                },
+                {
+                    "Name": "Family Tree",
+                    "Category": "Hierarchical Tree"
+                },
+                {
+                    "Name": "Management",
+                    "Category": "Organizational Chart"
+                },
+                {
+                    "Name": "Human Resources",
+                    "Category": "Management"
+                },
+                {
+                    "Name": "University",
+                    "Category": "Management"
+                },
+                {
+                    "Name": "Business",
+                    "Category": "Management"
+                }
+            ]
+
+
+            //sets node default value
+            function nodeDefaults(obj: NodeModel): NodeModel {
+                obj.style = { fill: '#659be5', strokeColor: 'none', color: 'white', strokeWidth: 2 };
+                obj.borderColor = '#3a6eb5';
+                obj.backgroundColor = '#659be5';
+                (obj.shape as TextModel).margin = { left: 5, right: 5, bottom: 5, top: 5 };
+                obj.expandIcon = { height: 10, width: 10, shape: 'Plus', fill: 'lightgray', offset: { x: .5, y: 1 } };
+                obj.expandIcon.verticalAlignment = 'Auto';
+                obj.expandIcon.margin = { left: 0, right: 0, top: 0, bottom: 0 };
+                obj.collapseIcon.offset = { x: .5, y: 1 };
+                obj.collapseIcon.verticalAlignment = 'Auto';
+                obj.collapseIcon.margin = { left: 0, right: 0, top: 0, bottom: 0 };
+                obj.collapseIcon.height = 10;
+                obj.collapseIcon.width = 10;
+                obj.collapseIcon.padding.top = 5;
+                obj.collapseIcon.shape = 'Minus';
+                obj.collapseIcon.fill = 'lightgray';
+                return obj;
+            }
+
+            function connectorDefaults(connector: ConnectorModel, diagram: Diagram): ConnectorModel {
+                connector.targetDecorator.shape = 'None';
+                connector.type = 'Orthogonal';
+                connector.style.strokeColor = '#6d6d6d';
+                connector.constraints = 0;
+                connector.cornerRadius = 5;
+                return connector;
+            }
+
+            let items: DataManager = new DataManager(data as JSON[], new Query().take(7));
+            diagram = new Diagram({
+                width: '100%', height: '499px', snapSettings: { constraints: SnapConstraints.None },
+                rulerSettings: { showRulers: true },
+                //configures data source settings
+                dataSourceSettings: {
+                    //sets the fields to bind
+                    id: 'Name', parentId: 'Category',
+                    dataSource: new DataManager((data as any)),
+                    //binds the data with the nodes
+                    doBinding: (nodeModel: NodeModel, data: object, diagram: Diagram) => {
+                        nodeModel.shape = { type: 'Text', content: (data as any).Name };
+                    }
+                },
+                
+                layout: {
+                    type: 'HierarchicalTree', verticalSpacing: 30, horizontalSpacing: 40, orientation: "RightToLeft",
+                    enableAnimation: true
+                },
+                //Defines the default node and connector properties
+                getNodeDefaults: nodeDefaults,
+                getConnectorDefaults: connectorDefaults
+            });
+            diagram.appendTo('#diagramdataMaps');
+        });
+        afterAll(() => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('layout expand collapse orientation issue', (done: Function) => {
+            let node1 = diagram.nodes[1]
+            node1.isExpanded = false;
+            diagram.dataBind();
+            console.log(Math.round(node1.offsetY))
+            console.log(Math.round(node1.offsetX))
+            expect(Math.round(node1.offsetY) === 250 && Math.round(node1.offsetX) === 484).toBe(true)
             done();
         });
     });

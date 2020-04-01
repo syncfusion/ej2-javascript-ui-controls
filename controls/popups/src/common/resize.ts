@@ -28,6 +28,9 @@ let setLeft: boolean = true;
 let previousWidth: number = 0;
 let setWidth: boolean = true;
 
+/**
+ * Provides information about a Resize event.
+ */
 export interface ResizeArgs {
     element: HTMLElement | string;
     direction: string;
@@ -139,11 +142,12 @@ function calculateValues(): void {
     originalY = targetElement.getBoundingClientRect().top;
 }
 /* istanbul ignore next */
-function onTouchStart(e: TouchEvent): void {
+function onTouchStart(e: TouchEvent | MouseEvent): void {
     targetElement = (e.target as HTMLElement).parentElement;
     calculateValues();
-    originalMouseX = e.touches[0].pageX;
-    originalMouseY = e.touches[0].pageY;
+    let coordinates: Touch | MouseEvent = (e as TouchEvent).touches ? (e as TouchEvent).changedTouches[0] : e as MouseEvent;
+    originalMouseX = coordinates.pageX;
+    originalMouseY = coordinates.pageY;
     if (!isNullOrUndefined(resizeStart)) {
         if (resizeStart(e) === true) {
             return;
@@ -218,7 +222,8 @@ function resizeSouth(e: any): void {
     let documentHeight: number = document.documentElement.clientHeight;
     let calculateValue: boolean = false;
     let containerRectValues: ClientRect;
-    let currentpageY: number = ( getEventType(e.type) === 'mouse') ? e.pageY : e.touches[0].pageY;
+    let coordinates: Touch | MouseEvent = (e as TouchEvent).touches ? (e as TouchEvent).changedTouches[0] : e as MouseEvent;
+    let currentpageY: number = coordinates.pageY;
     let targetRectValues: ClientRect = getClientRectValues(targetElement);
     if (!isNullOrUndefined(containerElement)) {
         containerRectValues = getClientRectValues(containerElement);
@@ -362,7 +367,8 @@ function resizeEast(e: any): void {
     if (!isNullOrUndefined(containerElement)) {
         containerRectValues = getClientRectValues(containerElement);
     }
-    let pageX: number = (getEventType(e.type) === 'mouse') ? e.pageX : e.touches[0].pageX;
+    let coordinates: Touch | MouseEvent = (e as TouchEvent).touches ? (e as TouchEvent).changedTouches[0] : e as MouseEvent;
+    let pageX: number = coordinates.pageX;
     let targetRectValues: ClientRect | DOMRect =  getClientRectValues(targetElement);
     if (!isNullOrUndefined(containerElement) && (((targetRectValues.left - containerRectValues.left) + targetRectValues.width) < maxWidth
     || (targetRectValues.right - containerRectValues.left) > targetRectValues.width)) {

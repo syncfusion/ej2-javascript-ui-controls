@@ -1232,21 +1232,21 @@ export class Drawing {
                 options.width = (isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize) * t.scale;
                 // tslint:disable-next-line:max-line-length
                 options.height = (isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerSize) * t.scale;
-            }   else if (type === 'Perimeter' && this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize) {
+            }   else if (type === 'Perimeter' && this.pdfViewer.perimeterSettings.annotationSelectorSettings) {
                 // tslint:disable-next-line:max-line-length
                 options.radius = (isNullOrUndefined(this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize) / 2;
                 // tslint:disable-next-line:max-line-length
                 options.width = (isNullOrUndefined(this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize) * t.scale;
                 // tslint:disable-next-line:max-line-length
                 options.height = (isNullOrUndefined(this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.perimeterSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                } else if (type === 'Area' && this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize) {
+                } else if (type === 'Area' && this.pdfViewer.areaSettings.annotationSelectorSettings) {
                 // tslint:disable-next-line:max-line-length
                 options.radius = (isNullOrUndefined(this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize) / 2;
                 // tslint:disable-next-line:max-line-length
                 options.width = (isNullOrUndefined(this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize) * t.scale;
                 // tslint:disable-next-line:max-line-length
                 options.height = (isNullOrUndefined(this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.areaSettings.annotationSelectorSettings.resizerSize) * t.scale;
-                } else if (type === 'Volume' && this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize) {
+                } else if (type === 'Volume' && this.pdfViewer.volumeSettings.annotationSelectorSettings) {
                 // tslint:disable-next-line:max-line-length
                 options.radius = (isNullOrUndefined(this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize) || this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize === 8 ? 8 : this.pdfViewer.volumeSettings.annotationSelectorSettings.resizerSize) / 2;
                 // tslint:disable-next-line:max-line-length
@@ -1301,7 +1301,7 @@ export class Drawing {
                 } else if (type === 'FreeText' && this.pdfViewer.freeTextSettings.annotationSelectorSettings) {
                     // tslint:disable-next-line:max-line-length
                     shapeType = isNullOrUndefined(this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.freeTextSettings.annotationSelectorSettings.resizerShape;
-                } else if (type === 'HandWrittenSignature' && this.pdfViewer.handWrittenSignatureSettings) {
+                } else if (type === 'HandWrittenSignature' && this.pdfViewer.handWrittenSignatureSettings && this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings) {
                     // tslint:disable-next-line:max-line-length
                     shapeType = isNullOrUndefined(this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerShape) || this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerShape === 'Square' ? 'Square' : this.pdfViewer.handWrittenSignatureSettings.annotationSelectorSettings.resizerShape;
                 } else if (type === 'Perimeter' &&  this.pdfViewer.perimeterSettings.annotationSelectorSettings) {
@@ -1684,7 +1684,14 @@ export class Drawing {
             if (obj) {
                 if (!(obj instanceof Selector) && obj.wrapper.visible) {
                     // tslint:disable-next-line
-                    let annotationSettings: any = this.pdfViewer.annotationModule.findAnnotationSettings(obj);
+                    let annotationSettings : any;
+                    if (obj.annotationSettings) {
+                        annotationSettings = obj.annotationSettings;
+                        annotationSettings.isLock = JSON.parse(annotationSettings.isLock);
+                    } else {
+                     annotationSettings = this.pdfViewer.annotationModule.findAnnotationSettings(obj, true);
+                     obj.annotationSettings = annotationSettings;
+                    }
                     if (!annotationSettings.isLock) {
                         selectorModel.annotations.push(obj);
                         this.initSelectorWrapper();
@@ -2683,14 +2690,7 @@ export class Drawing {
                     let pageDiv: HTMLElement = this.pdfViewer.viewerBase.getElement('_pageDiv_' + copy.pageIndex);
                     let events: MouseEvent = event as MouseEvent;
                     if (isLineShapes(copy)) {
-                        for (let i: number = 0; i < copy.vertexPoints.length; i++) {
-                            if (pageDiv) {
-                                let pageCurrentRect: ClientRect =
-                                    pageDiv.getBoundingClientRect();
-                                copy.vertexPoints[i].x += events.clientX - pageCurrentRect.left;
-                                copy.vertexPoints[i].y += events.clientY - pageCurrentRect.top;
-                            }
-                        }
+                        this.calculateCopyPosition(copy, pageDiv, events);
                     } else {
                         if (pageDiv) {
                             let pageCurrentRect: ClientRect =
@@ -2721,8 +2721,29 @@ export class Drawing {
             this.pdfViewer.clipboardData.pasteIndex++;
         }
     }
-
-
+    private calculateCopyPosition(copy: PdfAnnotationBaseModel, pageDiv: HTMLElement, events: MouseEvent) {
+        let x1: number;
+        let y1: number;
+        let x2: number;
+        let y2: number;
+        for (let i: number = 0; i < copy.vertexPoints.length; i++) {
+            if (pageDiv) {
+                if (i === 0) {
+                    let pageCurrentRect: ClientRect =
+                        pageDiv.getBoundingClientRect();
+                    x1 = copy.vertexPoints[i].x;
+                    y1 = copy.vertexPoints[i].y;
+                    copy.vertexPoints[i].x = events.clientX - pageCurrentRect.left;
+                    copy.vertexPoints[i].y = events.clientY - pageCurrentRect.top;
+                    x2 = copy.vertexPoints[i].x;
+                    y2 = copy.vertexPoints[i].y;
+                } else {
+                    copy.vertexPoints[i].x += x2 - x1;
+                    copy.vertexPoints[i].y += y2 - y1;
+                }
+            }
+        }
+    }
     /**
      * @private
      */

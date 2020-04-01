@@ -590,7 +590,9 @@ export class Edit implements IAction {
     }
 
     private getValue(col: Column, input: HTMLInputElement, editedData: Object): string | boolean | number | Date {
-        let value: string | boolean | number | Date = (<EJ2Intance>(input as Element)).ej2_instances ?
+        let value: string | boolean | number | Date = (<EJ2Intance>(input as Element)).ej2_instances &&
+            !(isBlazor() && (<EJ2Intance>(input as Element)).ej2_instances[0].isServerRendered
+            && (col.type === 'date' || col.type === 'datetime')) ?
             (<EJ2Intance>(input as Element)).ej2_instances[0].value : input.value;
         let gObj: IGrid = this.parent;
         let temp: Function = col.edit.read as Function;

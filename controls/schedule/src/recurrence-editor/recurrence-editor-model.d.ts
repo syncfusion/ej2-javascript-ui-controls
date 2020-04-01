@@ -36,6 +36,7 @@ export interface RecurrenceEditorModel extends ComponentModel{
     /**
      * Sets the specific calendar type to be applied on recurrence editor.
      * @default 'Gregorian'
+     * @deprecated
      */
     calendarMode?: CalendarType;
 

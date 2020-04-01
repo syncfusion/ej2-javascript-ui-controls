@@ -44,6 +44,7 @@ module.exports = function (config) {
         { pattern: "spec/field-list/defer-update.spec.js", included: false },
         { pattern: "spec/field-list/keyboard.spec.js", included: false },
         { pattern: "spec/field-list/slicer-filter.spec.js", included: false },
+        { pattern: "spec/field-list/value-sorting.spec.js", included: false },
         { pattern: "spec/pivotview/pivotview.spec.js", included: false },
         { pattern: "spec/pivotview/calculated-field.spec.js", included: false },
         { pattern: "spec/pivotview/conditional-formatting.spec.js", included: false },

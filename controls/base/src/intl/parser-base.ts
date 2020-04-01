@@ -9,7 +9,7 @@ const defaultNumberingSystem: Object = {
     }
 };
 
-import {isUndefined, getValue} from '../util';
+import { isUndefined, getValue, isBlazor } from '../util';
 const latnRegex: RegExp = /^[0-9]*$/;
 const defaultNumberSymbols: Object = {
     'decimal': '.',
@@ -64,7 +64,8 @@ export class ParserBase {
      * @returns {Object}
      */
     public static getMainObject(obj: Object, cName: string): Object {
-        return getValue('main.' + cName, obj);
+        let value: string = isBlazor() ? cName : 'main.' + cName;
+        return getValue(value, obj);
     }
     /**
      * Returns the numbering system object from given cldr data.
@@ -153,18 +154,18 @@ export class ParserBase {
     /**
      * Returns the replaced value of matching regex and obj mapper.
      */
-    public static getCurrentNumericOptions(curObj: Object, numberSystem: Object, needSymbols?: boolean): Object {
+    public static getCurrentNumericOptions(curObj: Object, numberSystem: Object, needSymbols?: boolean, blazorMode?: boolean): Object {
         let ret: NumericOptions = {};
         let cur: NumericObject = this.getDefaultNumberingSystem(curObj);
-        if (!isUndefined(cur.nSystem)) {
-            let digits: string = getValue(cur.nSystem + '._digits', numberSystem);
+        if (!isUndefined(cur.nSystem) || blazorMode) {
+            let digits: string = blazorMode ? getValue('obj.mapperDigits', cur) : getValue(cur.nSystem + '._digits', numberSystem);
             if (!isUndefined(digits)) {
                 ret.numericPair = this.reverseObject(digits, latnNumberSystem);
                 ret.numberParseRegex = new RegExp(this.constructRegex(digits), 'g');
                 ret.numericRegex = '[' + digits[0] + '-' + digits[9] + ']';
                 if (needSymbols) {
                     ret.numericRegex = digits[0] + '-' + digits[9];
-                    ret.symbolNumberSystem = getValue('symbols-numberSystem-' + cur.nSystem, cur.obj);
+                    ret.symbolNumberSystem = getValue(blazorMode ? 'numberSymbols' : 'symbols-numberSystem-' + cur.nSystem, cur.obj);
                     ret.symbolMatch = this.getSymbolMatch(ret.symbolNumberSystem);
                     ret.numberSystem = cur.nSystem;
                 }

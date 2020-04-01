@@ -327,8 +327,9 @@ export namespace Input {
         let result: string = '';
         if (!isNullOrUndefined(placeholder) && placeholder !== '') {
             let spanEle: HTMLElement = document.createElement('span');
-            spanEle.innerHTML = placeholder;
-            result = spanEle.innerHTML;
+            spanEle.innerHTML = '<input  placeholder="' + placeholder + '"/>';
+            let hiddenInput: HTMLInputElement = (spanEle.children[0]) as HTMLInputElement;
+            result = hiddenInput.placeholder;
         }
         return result;
     }

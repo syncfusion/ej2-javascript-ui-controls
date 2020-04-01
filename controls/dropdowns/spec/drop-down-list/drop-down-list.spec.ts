@@ -5210,4 +5210,136 @@ describe('DDList', () => {
             expect(listObj.popupObj.element.querySelector('.e-fixed-header')).toBe(null);
         });
     });
+    describe('EJ2-36604 - While giving the class name with empty space for HtmlAttributes, console error is produced.', function () {
+        let listObj: any;
+        beforeEach(function () {
+            let inputElement: HTMLElement = createElement('input', { id: 'dropdownlist' });
+            document.body.appendChild(inputElement);
+        });
+        afterEach(function () {
+            if (listObj) {
+                listObj.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('Entering the class name without any empty space', function () {
+            listObj = new DropDownList({
+                htmlAttributes: { class: 'custom-class' }
+            });
+            listObj.appendTo('#dropdownlist');
+            expect(listObj.inputWrapper.container.classList.contains('custom-class')).toBe(true);
+        });
+        it('Giving empty space before and after the class name', function () {
+            listObj = new DropDownList({
+                htmlAttributes: { class: ' custom-class ' }
+            });
+            listObj.appendTo('#dropdownlist');
+            expect(listObj.inputWrapper.container.classList.contains('custom-class')).toBe(true);
+        });
+        it('Giving more than one empty space between two class names', function () {
+            listObj = new DropDownList({
+                htmlAttributes: { class: 'custom-class-one      custom-class-two'}
+            });
+            listObj.appendTo('#dropdownlist');
+            expect(listObj.inputWrapper.container.classList.contains('custom-class-one')).toBe(true);
+            expect(listObj.inputWrapper.container.classList.contains('custom-class-two')).toBe(true);
+        });
+        it('Giving more than one empty space between two class names as well before and after the class name', function () {
+            listObj = new DropDownList({
+                htmlAttributes: {  class: ' custom-class-one       custom-class-two ' }
+            });
+            listObj.appendTo('#dropdownlist');
+            expect(listObj.inputWrapper.container.classList.contains('custom-class-one')).toBe(true);
+            expect(listObj.inputWrapper.container.classList.contains('custom-class-two')).toBe(true);
+        });
+        it('Giving only empty space  without entering any class Name', function () {
+            listObj = new DropDownList({
+            });
+            listObj.appendTo('#dropdownlist');
+            let beforeAddClass = listObj.inputWrapper.container.classList.length;
+            listObj.htmlAttributes = { class: '  ' };
+            listObj.appendTo('#dropdownlist');
+            let AfterAddClass = listObj.inputWrapper.container.classList.length;
+            expect(beforeAddClass == AfterAddClass).toBe(true);
+        });
+        it('Keep input as empty without entering any class Name', function () {
+            listObj = new DropDownList({
+            });
+            listObj.appendTo('#dropdownlist');
+            let beforeAddClass = listObj.inputWrapper.container.classList.length;
+            listObj.htmlAttributes = { class: '' };
+            listObj.appendTo('#dropdownlist');
+            let AfterAddClass = listObj.inputWrapper.container.classList.length;
+            expect(beforeAddClass == AfterAddClass).toBe(true);
+        });
+    
+        it('Entering the class name without any empty space', function () {
+            listObj = new DropDownList({
+                cssClass: 'custom-class' 
+            });
+            listObj.appendTo('#dropdownlist');
+            expect(listObj.inputWrapper.container.classList.contains('custom-class')).toBe(true);
+        });
+        it('Giving empty space before and after the class name', function () {
+            listObj = new DropDownList({
+                 cssClass: ' custom-class ' 
+            });
+            listObj.appendTo('#dropdownlist');
+            expect(listObj.inputWrapper.container.classList.contains('custom-class')).toBe(true);
+        });
+        it('Giving more than one empty space between two class names', function () {
+            listObj = new DropDownList({
+                 cssClass: 'custom-class-one      custom-class-two'
+            });
+            listObj.appendTo('#dropdownlist');
+            expect(listObj.inputWrapper.container.classList.contains('custom-class-one')).toBe(true);
+            expect(listObj.inputWrapper.container.classList.contains('custom-class-two')).toBe(true);
+        });
+        it('Giving more than one empty space between two class names as well before and after the class name', function () {
+            listObj = new DropDownList({
+                 cssClass: ' custom-class-one       custom-class-two ' 
+            });
+            listObj.appendTo('#dropdownlist');
+            expect(listObj.inputWrapper.container.classList.contains('custom-class-one')).toBe(true);
+            expect(listObj.inputWrapper.container.classList.contains('custom-class-two')).toBe(true);
+        });
+        it('Giving only empty space  without entering any class Name', function () {
+            listObj = new DropDownList({
+            });
+            listObj.appendTo('#dropdownlist');
+            let beforeAddClass = listObj.inputWrapper.container.classList.length;
+            listObj.cssClass =  '  ' ;
+            listObj.appendTo('#dropdownlist');
+            let AfterAddClass = listObj.inputWrapper.container.classList.length;
+            expect(beforeAddClass == AfterAddClass).toBe(true);
+        });
+        it('Keep input as empty without entering any class Name', function () {
+            listObj = new DropDownList({
+            });
+            listObj.appendTo('#dropdownlist');
+            let beforeAddClass = listObj.inputWrapper.container.classList.length;
+            listObj.cssClass =  '' ;
+            listObj.appendTo('#dropdownlist');
+            let AfterAddClass = listObj.inputWrapper.container.classList.length;
+            expect(beforeAddClass == AfterAddClass).toBe(true);
+        });
+        it('Giving class name with underscore in the beginning', function () {
+            listObj = new DropDownList({
+                htmlAttributes : { class : '  _custom-class-one  '},
+                cssClass : '   _custom-class-two  '
+            });
+            listObj.appendTo('#dropdownlist');
+            expect(listObj.inputWrapper.container.classList.contains('_custom-class-one')).toBe(true);
+            expect(listObj.inputWrapper.container.classList.contains('_custom-class-two')).toBe(true);
+        });
+        it('Giving class name with empty space in both cases seperatly', function () {
+            listObj = new DropDownList({
+                htmlAttributes : { class : '  custom-class-one  '},
+                cssClass : '   custom-class-two  '
+            });
+            listObj.appendTo('#dropdownlist');
+            expect(listObj.inputWrapper.container.classList.contains('custom-class-one')).toBe(true);
+            expect(listObj.inputWrapper.container.classList.contains('custom-class-two')).toBe(true);
+        });   
+    });
 });

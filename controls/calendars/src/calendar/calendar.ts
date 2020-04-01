@@ -328,6 +328,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
      * By default, the date value will be processed based on system time zone.
      * If you want to process the initial date value using server time zone 
      * then specify the time zone value to `serverTimezoneOffset` property.
+     * @default null
      * @deprecated
      */
     @Property(null)
@@ -559,7 +560,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     protected getCultureValues(): string[] {
         let culShortNames: string[] = [];
         let cldrObj: string[];
-        let dayFormat: string = 'days.stand-alone.' + this.dayHeaderFormat.toLowerCase();
+        let dayFormat: string = (isBlazor() ? 'days.' : 'days.stand-alone.') + this.dayHeaderFormat.toLowerCase();
         if (this.locale === 'en' || this.locale === 'en-US') {
             cldrObj = <string[]>(getValue(dayFormat, getDefaultDateObject()));
         } else {
@@ -967,12 +968,12 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             }
             minMaxDate = new Date(+localDate);
             localDate = this.minMaxDate(localDate);
-            let dateFormatOptions: object = { type: 'dateTime', skeleton: 'full' };
+            let dateFormatOptions: object = { type: 'dateTime', skeleton: isBlazor() ? 'D' : 'full' };
             let date: Date = this.globalize.parseDate(this.globalize.formatDate(localDate, dateFormatOptions), dateFormatOptions);
             let tdEle: HTMLElement = this.dayCell(localDate);
-            let title: string = this.globalize.formatDate(localDate, { type: 'date', skeleton: 'full' });
+            let title: string = this.globalize.formatDate(localDate, { type: 'date', skeleton: isBlazor() ? 'D' : 'full' });
             let dayLink: HTMLElement = this.createElement('span');
-            dayLink.textContent = this.globalize.formatDate(localDate, { format: 'd', type: 'date', skeleton: 'yMd'});
+            dayLink.textContent = this.globalize.formatDate(localDate, { format: 'd', type: 'date', skeleton: isBlazor() ? 'd' : 'yMd'});
             let disabled: boolean = (this.min > localDate) || (this.max < localDate);
             if (disabled) {
                 addClass([tdEle], DISABLED);
@@ -1000,9 +1001,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                     if (!isNullOrUndefined(values) && values.length > 0) {
                         for (let index: number = 0; index < values.length; index++) {
                             let localDateString: number =
-                                +new Date(this.globalize.formatDate(argument.date, { type: 'date', skeleton: 'yMd' }));
+                                +new Date(this.globalize.formatDate(argument.date, { type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' }));
                             let tempDateString: number =
-                                +new Date(this.globalize.formatDate(values[index], { type: 'date', skeleton: 'yMd' }));
+                                +new Date(this.globalize.formatDate(values[index], { type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' }));
                             if (localDateString === tempDateString) {
                                 values.splice(index, 1);
                                 index = -1;
@@ -1033,7 +1034,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             if (multiSelection && !isNullOrUndefined(values) && !disabledCls) {
                 for (let tempValue: number = 0; tempValue < values.length; tempValue++) {
                     let type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
-                    let formatOptions: object = { type: 'date', skeleton: 'short', calendar: type };
+                    let formatOptions: object = { format: this.getFromatStringValue(), type: 'date', skeleton: 'short', calendar: type };
                     let localDateString: string = this.globalize.formatDate(localDate, formatOptions);
                     let tempDateString: string = this.globalize.formatDate(values[tempValue], formatOptions);
                     if ((localDateString === tempDateString && this.getDateVal(localDate, values[tempValue]))
@@ -1098,7 +1099,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             let dayLink: HTMLElement = this.createElement('span');
             let localMonth: boolean = (value && (value).getMonth() === localDate.getMonth());
             let select: boolean = (value && (value).getFullYear() === yr && localMonth);
-            dayLink.textContent = this.toCapitalize(this.globalize.formatDate(localDate, { type: 'dateTime', skeleton: 'MMM' }));
+            dayLink.textContent = this.toCapitalize(this.globalize.formatDate(localDate, {
+                format: isBlazor() ? 'MMM' : null, type: 'dateTime', skeleton: 'MMM'
+            }));
             if ((this.min && (curYrs < minYr || (month < minMonth && curYrs === minYr))) || (
                 this.max && (curYrs > maxYr || (month > maxMonth && curYrs >= maxYr)))) {
                 addClass([tdEle], DISABLED);
@@ -1132,8 +1135,10 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         let endYr: Date = new Date(localDate.setFullYear((localYr - localYr % 10 + (10 - 1))));
         let startFullYr: number = startYr.getFullYear();
         let endFullYr: number = endYr.getFullYear();
-        let startHdrYr: string = this.globalize.formatDate(startYr, { type: 'dateTime', skeleton: 'y' });
-        let endHdrYr: string = this.globalize.formatDate(endYr, { type: 'dateTime', skeleton: 'y' });
+        let startHdrYr: string = this.globalize.formatDate(startYr, {
+            format: isBlazor() ? 'yyyy' : null, type: 'dateTime', skeleton: 'y'
+        });
+        let endHdrYr: string = this.globalize.formatDate(endYr, { format: isBlazor() ? 'yyyy' : null, type: 'dateTime', skeleton: 'y' });
         this.headerTitleElement.textContent = startHdrYr + ' - ' + (endHdrYr);
         let start: Date = new Date(localYr - (localYr % 10) - 1, 0, 1);
         let startYear: number = start.getFullYear();
@@ -1143,7 +1148,9 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             let tdEle: HTMLElement = this.dayCell(localDate);
             attributes(tdEle, { 'role': 'gridcell' });
             let dayLink: HTMLElement = this.createElement('span');
-            dayLink.textContent = this.globalize.formatDate(localDate, { type: 'dateTime', skeleton: 'y' });
+            dayLink.textContent = this.globalize.formatDate(localDate, {
+                format: isBlazor() ? 'yyyy' : null, type: 'dateTime', skeleton: 'y'
+            });
             if ((year < startFullYr) || (year > endFullYr)) {
                 addClass([tdEle], OTHERDECADE);
                 if (!isNullOrUndefined(value) && localDate.getFullYear() === (value).getFullYear()) {
@@ -1173,7 +1180,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
     }
     protected dayCell(localDate: Date): HTMLElement {
         let type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
-        let dateFormatOptions: object = { skeleton: 'full', type: 'dateTime', calendar: type };
+        let dateFormatOptions: object = { skeleton: isBlazor() ? 'F' : 'full', type: 'dateTime', calendar: type };
         let date: Date = this.globalize.parseDate(this.globalize.formatDate(localDate, dateFormatOptions), dateFormatOptions);
         let value: number = date.valueOf();
         let attrs: Object = {
@@ -1504,15 +1511,15 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 let tempValueString: string;
                 if (this.calendarMode === 'Gregorian') {
                     /* tslint:disable-next-line:max-line-length */
-                    tempValueString = this.globalize.formatDate(tempValue, { type: 'date', skeleton: 'yMd' });
+                    tempValueString = this.globalize.formatDate(tempValue, { type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' });
                 } else {
                     /* tslint:disable-next-line:max-line-length */
                     tempValueString = this.globalize.formatDate(tempValue, { type: 'dateTime', skeleton: 'full', calendar: 'islamic' });
                 }
-                let minFormatOption: object = { type: 'date', skeleton: 'yMd', calendar: type };
+                let minFormatOption: object = { type: 'date', skeleton: isBlazor() ? 'd' : 'yMd', calendar: type };
                 let minStringValue: string = this.globalize.formatDate(this.min, minFormatOption);
                 let minString: string = minStringValue;
-                let maxFormatOption: object = { type: 'date', skeleton: 'yMd', calendar: type };
+                let maxFormatOption: object = { type: 'date', skeleton: isBlazor() ? 'd' : 'yMd', calendar: type };
                 let maxStringValue: string = this.globalize.formatDate(this.max, maxFormatOption);
                 let maxString: string = maxStringValue;
                 if (+new Date(tempValueString) < +new Date(minString) ||
@@ -1546,8 +1553,10 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         let monthFormatOptions: string;
         let type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
         if (this.calendarMode === 'Gregorian') {
-            dayFormatOptions = globalize.formatDate(date, { type: 'dateTime', skeleton: 'yMMMM', calendar: type });
-            monthFormatOptions = globalize.formatDate(date, { type: 'dateTime', skeleton: 'y', calendar: type });
+            dayFormatOptions = globalize.formatDate(date, { type: 'dateTime', skeleton: isBlazor() ? 'y' : 'yMMMM', calendar: type });
+            monthFormatOptions = globalize.formatDate(date, {
+                format: isBlazor() ? 'yyyy' : null,  type: 'dateTime', skeleton: 'y', calendar: type
+            });
         } else {
 
             dayFormatOptions = globalize.formatDate(date, { type: 'dateTime', format: 'MMMM y', calendar: type });
@@ -1569,15 +1578,17 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         let title: string;
         let view: String = this.currentView();
         if (view === 'Month') {
-            title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: 'full', calendar: type });
+            title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: isBlazor() ? 'D' : 'full', calendar: type });
         } else if (view === 'Year') {
             if (type !== 'islamic') {
-                title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: 'yMMMM', calendar: type });
+                title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: isBlazor() ? 'y' : 'yMMMM', calendar: type });
             } else {
                 title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: 'GyMMM', calendar: type });
             }
         } else {
-            title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: 'y', calendar: type });
+            title = this.globalize.formatDate(this.currentDate, {
+                format: isBlazor() ? 'yyyy' : null, type: 'date', skeleton: 'y', calendar: type
+            });
         }
         if (selectedEle || focusedEle) {
             if (!isNullOrUndefined(selectedEle)) {
@@ -1756,11 +1767,13 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             && date.getMonth() === (value).getMonth() && date.getFullYear() === (value).getFullYear());
     }
     protected getCultureObjects(ld: Object, c: string): Object {
-
-        let gregorianFormat: string = '.dates.calendars.gregorian.days.format.' + this.dayHeaderFormat.toLowerCase();
-        let islamicFormat: string = '.dates.calendars.islamic.days.format.' + this.dayHeaderFormat.toLowerCase();
+        let gregorianFormat: string = (isBlazor() ? '.dates.days.' :
+            '.dates.calendars.gregorian.days.format.') + this.dayHeaderFormat.toLowerCase();
+        let islamicFormat: string = (isBlazor() ? '.dates.days.' :
+            '.dates.calendars.islamic.days.format.') + this.dayHeaderFormat.toLowerCase();
+        let mainVal: string = isBlazor() ? '' : 'main.';
         if (this.calendarMode === 'Gregorian') {
-            return getValue('main.' + '' + this.locale + gregorianFormat, ld);
+            return getValue(mainVal + '' + this.locale + gregorianFormat, ld);
         } else {
             return getValue('main.' + '' + this.locale + islamicFormat, ld);
         }
@@ -1807,7 +1820,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
             eve = element;
         }
         let type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
-        let dateFormatOptions: object = { type: 'dateTime', skeleton: 'full', calendar: type };
+        let dateFormatOptions: object = { type: 'dateTime', skeleton: isBlazor() ? 'F' : 'full', calendar: type };
         let dateString: string = this.globalize.formatDate(new Date(parseInt('' + eve.getAttribute('id'), 0)), dateFormatOptions);
         let date: Date = this.globalize.parseDate(dateString, dateFormatOptions);
         let value: number = date.valueOf() - date.valueOf() % 1000;
@@ -1870,7 +1883,7 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
                 removeClass([element], SELECTED);
                 for (let i: number = 0; i < copyValues.length; i++) {
                     let type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
-                    let formatOptions: object = { type: 'date', skeleton: 'short', calendar: type };
+                    let formatOptions: object = { format: this.getFromatStringValue(), type: 'date', skeleton: 'short', calendar: type };
                     let localDateString: string = this.globalize.formatDate(date, formatOptions);
                     let tempDateString: string = this.globalize.formatDate(copyValues[i], formatOptions);
                     if (localDateString === tempDateString) {
@@ -1888,16 +1901,25 @@ export class CalendarBase extends Component<HTMLElement> implements INotifyPrope
         }
         this.isDateSelected = true;
     }
-
+    private getFromatStringValue(): string {
+        return isBlazor() ?
+            // tslint:disable-next-line
+            'M' + (getDefaultDateObject() as any).dateSeperator + 'd' + (getDefaultDateObject() as any).dateSeperator + 'yy'
+            : null;
+    }
     protected checkPresentDate(dates: Date, values: Date[]): boolean {
         let previousValue: boolean = false;
         if (!isNullOrUndefined(values)) {
             for (let checkPrevious: number = 0; checkPrevious < values.length; checkPrevious++) {
                 let type: string = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
                 /* tslint:disable-next-line:max-line-length */
-                let localDateString: string = this.globalize.formatDate(dates, { type: 'date', skeleton: 'short', calendar: type });
+                let localDateString: string = this.globalize.formatDate(dates, {
+                    format: this.getFromatStringValue(), type: 'date', skeleton: 'short', calendar: type
+                });
                 /* tslint:disable-next-line:max-line-length */
-                let tempDateString: string = this.globalize.formatDate(values[checkPrevious], { type: 'date', skeleton: 'short', calendar: type });
+                let tempDateString: string = this.globalize.formatDate(values[checkPrevious], {
+                    format: this.getFromatStringValue(), type: 'date', skeleton: 'short', calendar: type
+                });
                 if (localDateString === tempDateString) {
                     previousValue = true;
                 }
@@ -2200,7 +2222,7 @@ export class Calendar extends CalendarBase {
         return (this.value.getTimezoneOffset() < Math.max(firstOffset, secondOffset));
     }
     protected setTimeZone(offsetValue: number ): void {
-        if (this.serverTimezoneOffset && this.value) {
+        if (!isNullOrUndefined(this.serverTimezoneOffset) && this.value) {
             let serverTimezoneDiff: number = offsetValue;
             let clientTimeZoneDiff: number = new Date().getTimezoneOffset() / 60;
             let timeZoneDiff: number = serverTimezoneDiff + clientTimeZoneDiff;
@@ -2552,7 +2574,8 @@ export class Calendar extends CalendarBase {
 
 
     protected changeEvent(e: Event): void {
-        if ((this.value && this.value.valueOf()) !== (this.previousDate && +this.previousDate.valueOf())) {
+        if ((this.value && this.value.valueOf()) !== (this.previousDate && +this.previousDate.valueOf())
+        || this.isMultiSelection) {
             this.trigger('change', this.changedArgs);
             this.previousDate = new Date(+this.value);
         }

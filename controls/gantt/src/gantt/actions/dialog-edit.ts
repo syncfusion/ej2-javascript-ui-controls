@@ -39,6 +39,7 @@ export class DialogEdit {
      * @private
      */
     public dialog: HTMLElement;
+    public isAddNewResource: boolean;
     /**
      * @private
      */
@@ -61,7 +62,7 @@ export class DialogEdit {
     private addedRecord: object = null;
     private dialogEditValidationFlag: boolean = false;
     private tabObj: Tab;
-    private ganttResources: Object[] = [];
+    public ganttResources: Object[] = [];
     private previousResource: Object[] = [];
     private isResourceUpdate: boolean = false;
     /**
@@ -398,6 +399,7 @@ export class DialogEdit {
 
     private resetValues(): void {
         this.isEdit = false;
+        this.isAddNewResource = false;
         this.editedRecord = {};
         this.rowData = {};
         this.rowIndex = -1;
@@ -1024,7 +1026,7 @@ export class DialogEdit {
             allowSelection: true,
             rowHeight: this.parent.isAdaptive ? 48 : null,
             filterSettings: { type: 'Menu' },
-            selectionSettings: { checkboxOnly: true, checkboxMode: 'ResetOnRowClick', persistSelection: true, type: 'Multiple' }
+            selectionSettings: { checkboxOnly: true, checkboxMode: 'Default', persistSelection: true, type: 'Multiple' }
         };
         let columns: TreeGridColumnModel[] = [
             { type: 'checkbox', allowEditing: false, allowSorting: false, allowFiltering: false, width: 60 },
@@ -1674,6 +1676,7 @@ export class DialogEdit {
         } else {
             for (let i: number = 0; i < selectedItems.length; i++) {
                 idArray.push(selectedItems[i][this.parent.resourceFields.id]);
+                this.isAddNewResource = true;
             }
             this.addedRecord[this.parent.taskFields.resourceInfo] = idArray;
         }

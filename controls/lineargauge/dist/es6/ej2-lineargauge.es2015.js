@@ -9,7 +9,7 @@ var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, 
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /**
- * Options for customizing the fonts.
+ * Sets and gets the options for customizing the fonts.
  */
 class Font extends ChildProperty {
 }
@@ -32,7 +32,7 @@ __decorate$1([
     Property(1)
 ], Font.prototype, "opacity", void 0);
 /**
- * Configures the margin of linear gauge.
+ * Sets and gets the margin for the linear gauge.
  */
 class Margin extends ChildProperty {
 }
@@ -49,7 +49,7 @@ __decorate$1([
     Property(10)
 ], Margin.prototype, "bottom", void 0);
 /**
- * Configures the border in linear gauge.
+ * Sets and gets the options to customize the border for the linear gauge.
  */
 class Border extends ChildProperty {
 }
@@ -60,7 +60,7 @@ __decorate$1([
     Property(0)
 ], Border.prototype, "width", void 0);
 /**
- * Options for customizing the annotation.
+ * Sets and gets the options for customizing the annotation in linear gauge.
  */
 class Annotation extends ChildProperty {
 }
@@ -92,7 +92,7 @@ __decorate$1([
     Property(null)
 ], Annotation.prototype, "axisValue", void 0);
 /**
- * Options for customizing the container of linear gauge.
+ * Sets and gets the options for customizing the container of linear gauge.
  */
 class Container extends ChildProperty {
 }
@@ -118,7 +118,7 @@ __decorate$1([
     Property(0)
 ], Container.prototype, "offset", void 0);
 /**
- * To set tooltip properties for range tooltip.
+ * Sets and gets the options to customize the tooltip for range in axis.
  */
 class RangeTooltip extends ChildProperty {
 }
@@ -147,7 +147,7 @@ __decorate$1([
     Property(false)
 ], RangeTooltip.prototype, "showAtMousePosition", void 0);
 /**
- * Options for customizing the tooltip in linear gauge.
+ * Sets and gets the options for customizing the tooltip in linear gauge.
  */
 class TooltipSettings extends ChildProperty {
 }
@@ -191,7 +191,7 @@ var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, 
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-/** Options for customizing the axis line. */
+/** Sets and gets the options for customizing the axis line in linear gauge. */
 class Line extends ChildProperty {
 }
 __decorate$2([
@@ -210,7 +210,7 @@ __decorate$2([
     Property(0)
 ], Line.prototype, "offset", void 0);
 /**
- * Options for customizing the axis labels appearance.
+ * Sets and gets the options for customizing the appearance of the axis labels.
  */
 class Label extends ChildProperty {
 }
@@ -230,7 +230,7 @@ __decorate$2([
     Property('Auto')
 ], Label.prototype, "position", void 0);
 /**
- * Options for customizing the ranges of an axis.
+ * Sets and gets the options for customizing the ranges of an axis.
  */
 class Range extends ChildProperty {
 }
@@ -259,7 +259,7 @@ __decorate$2([
     Complex({ color: '#000000', width: 0 }, Border)
 ], Range.prototype, "border", void 0);
 /**
- * Options for customizing the minor tick lines.
+ * Sets and gets the options for customizing the minor tick lines in axis.
  */
 class Tick extends ChildProperty {
 }
@@ -282,7 +282,7 @@ __decorate$2([
     Property('Auto')
 ], Tick.prototype, "position", void 0);
 /**
- * Options for customizing the pointers of an axis.
+ * Sets and gets the options for customizing the pointers of an axis in linear gauge.
  */
 class Pointer extends ChildProperty {
     constructor() {
@@ -342,12 +342,12 @@ __decorate$2([
     Property(null)
 ], Pointer.prototype, "description", void 0);
 /**
- * Options for customizing the axis of a gauge.
+ * Sets and gets the options for customizing the axis of a gauge.
  */
 class Axis extends ChildProperty {
     constructor() {
         /**
-         * Specifies the minimum value of an axis.
+         * Sets and gets the minimum value for the axis.
          * @default 0
          */
         super(...arguments);
@@ -946,543 +946,6 @@ function getBox(location, boxName, orientation, size, type, containerWidth, axis
 
 /**
  * @private
- * To calculate the overall axis bounds for gauge.
- */
-class AxisLayoutPanel {
-    constructor(gauge) {
-        this.gauge = gauge;
-    }
-    /**
-     * To calculate the axis bounds
-     */
-    calculateAxesBounds() {
-        let axis;
-        let bounds;
-        this.gauge.nearSizes = [];
-        this.gauge.farSizes = [];
-        let x;
-        let y;
-        let width;
-        let height;
-        let axisPadding = 8;
-        let containerRect = this.gauge.containerBounds;
-        this.checkThermometer();
-        for (let i = 0; i < this.gauge.axes.length; i++) {
-            axis = this.gauge.axes[i];
-            axis.checkAlign = new Align(i, ((!axis.opposedPosition) ? 'Near' : 'Far'));
-            (!axis.opposedPosition) ? this.gauge.nearSizes.push(1) : this.gauge.farSizes.push(1);
-            this.calculateLineBounds(axis, i);
-            this.calculateTickBounds(axis, i);
-            this.calculateLabelBounds(axis, i);
-            if (axis.pointers.length > 0) {
-                this.calculatePointerBounds(axis, i);
-            }
-            if (axis.ranges.length > 0) {
-                this.calculateRangesBounds(axis, i);
-            }
-            bounds = axis.labelBounds;
-            if (this.gauge.orientation === 'Vertical') {
-                x = (!axis.opposedPosition) ? bounds.x - axisPadding : axis.lineBounds.x;
-                y = axis.lineBounds.y;
-                height = axis.lineBounds.height;
-                width = Math.abs((!axis.opposedPosition) ? (axis.lineBounds.x - x) : ((bounds.x + bounds.width + axisPadding) - x));
-            }
-            else {
-                y = (!axis.opposedPosition) ? bounds.y - bounds.height - axisPadding : axis.lineBounds.y;
-                x = axis.lineBounds.x;
-                width = axis.lineBounds.width;
-                height = Math.abs((!axis.opposedPosition) ? Math.abs(axis.lineBounds.y - y) : (bounds.y + axisPadding) - y);
-            }
-            axis.bounds = new Rect(x, y, width, height);
-        }
-    }
-    /**
-     * Calculate axis line bounds
-     * @param axis
-     * @param axisIndex
-     */
-    calculateLineBounds(axis, axisIndex) {
-        let x;
-        let y;
-        let width;
-        let height;
-        let index;
-        let prevAxis;
-        let lineHeight = axis.line.height;
-        let orientation = this.gauge.orientation;
-        let containerRect = this.gauge.containerBounds;
-        lineHeight = (axis.line.width > 0) ? lineHeight : null;
-        if (orientation === 'Vertical') {
-            y = (isNullOrUndefined(lineHeight)) ? containerRect.y :
-                containerRect.y + ((containerRect.height / 2) - (lineHeight / 2));
-            width = axis.line.width;
-            height = (isNullOrUndefined(lineHeight)) ? containerRect.height : lineHeight;
-        }
-        else {
-            x = (isNullOrUndefined(lineHeight)) ? containerRect.x :
-                containerRect.x + ((containerRect.width / 2) - (lineHeight / 2));
-            height = axis.line.width;
-            width = (isNullOrUndefined(lineHeight)) ? containerRect.width : lineHeight;
-        }
-        index = this.checkPreviousAxes(axis, axisIndex);
-        if (isNullOrUndefined(index)) {
-            if (orientation === 'Vertical') {
-                x = (!axis.opposedPosition ? containerRect.x : containerRect.x + containerRect.width) + axis.line.offset;
-            }
-            else {
-                y = (!axis.opposedPosition ? containerRect.y : containerRect.y + containerRect.height) + axis.line.offset;
-            }
-        }
-        else {
-            prevAxis = this.gauge.axes[index];
-            if (orientation === 'Vertical') {
-                x = ((!axis.opposedPosition) ? prevAxis.bounds.x : (prevAxis.bounds.x + prevAxis.bounds.width)) + axis.line.offset;
-            }
-            else {
-                y = ((!axis.opposedPosition) ? prevAxis.bounds.y : (prevAxis.bounds.y + prevAxis.bounds.height)) + axis.line.offset;
-            }
-        }
-        axis.lineBounds = new Rect(x, y, width, height);
-    }
-    /**
-     * Calculate axis tick bounds
-     * @param axis
-     * @param axisIndex
-     */
-    calculateTickBounds(axis, axisIndex) {
-        let x;
-        let y;
-        let major;
-        let minor;
-        let min = Math.min(axis.minimum, axis.maximum);
-        let max = Math.max(axis.minimum, axis.maximum);
-        min = (min === max) ? max - 1 : min;
-        let interval = axis.majorTicks.interval;
-        let bounds = axis.lineBounds;
-        major = axis.majorTicks;
-        minor = axis.minorTicks;
-        axis.majorInterval = major.interval;
-        axis.minorInterval = minor.interval;
-        let size = (this.gauge.orientation === 'Vertical' ? bounds.height : bounds.width);
-        let lineSize = (this.gauge.orientation === 'Vertical' ? bounds.width : bounds.height) / 2;
-        axis.majorInterval = isNullOrUndefined(axis.majorInterval) ? calculateNiceInterval(min, max, size, this.gauge.orientation)
-            : major.interval;
-        axis.visibleRange = new VisibleRange(min, max, axis.majorInterval, (max - min));
-        axis.minorInterval = (isNullOrUndefined(axis.minorInterval)) ? axis.majorInterval / 2 : axis.minorInterval;
-        if (this.gauge.orientation === 'Vertical') {
-            x = axis.majorTicks.position === 'Auto' ? ((!axis.opposedPosition ? (bounds.x - lineSize - major.height) : bounds.x + lineSize)
-                + major.offset) : x;
-            x = axis.majorTicks.position !== 'Auto' ? (axis.majorTicks.position === 'Cross' ? bounds.x - major.height / 2 - major.offset :
-                ((axis.majorTicks.position === 'Inside' && !axis.opposedPosition) ||
-                    (axis.majorTicks.position === 'Outside' && axis.opposedPosition)) ? (bounds.x - lineSize - major.height - major.offset)
-                    : (bounds.x + lineSize + major.offset)) : x;
-            axis.majorTickBounds = new Rect(x, bounds.y, major.height, bounds.height);
-            x = axis.minorTicks.position === 'Auto' ? ((!axis.opposedPosition ? (bounds.x - lineSize - minor.height) : bounds.x + lineSize)
-                + minor.offset) : x;
-            x = axis.minorTicks.position !== 'Auto' ? (axis.minorTicks.position === 'Cross' ? bounds.x - minor.height / 2 - minor.offset :
-                ((axis.minorTicks.position === 'Inside' && !axis.opposedPosition) ||
-                    (axis.minorTicks.position === 'Outside' && axis.opposedPosition)) ? (bounds.x - lineSize - minor.height - minor.offset)
-                    : (bounds.x + lineSize + minor.offset)) : x;
-            axis.minorTickBounds = new Rect(x, bounds.y, minor.height, bounds.height);
-        }
-        else {
-            y = axis.majorTicks.position === 'Auto' ? ((!axis.opposedPosition ? (bounds.y - lineSize - major.height) : bounds.y + lineSize)
-                + major.offset) : y;
-            y = axis.majorTicks.position !== 'Auto' ? ((axis.majorTicks.position === 'Cross' ? bounds.y - major.height / 2 - major.offset :
-                ((axis.majorTicks.position === 'Inside' && !axis.opposedPosition) ||
-                    (axis.majorTicks.position === 'Outside' && axis.opposedPosition)) ?
-                    (bounds.y - lineSize - major.height) - major.offset : bounds.y + lineSize + major.offset)) : y;
-            axis.majorTickBounds = new Rect(bounds.x, y, bounds.width, major.height);
-            y = axis.minorTicks.position === 'Auto' ? ((!axis.opposedPosition ? (bounds.y - lineSize - minor.height) : bounds.y + lineSize)
-                + minor.offset) : y;
-            y = axis.minorTicks.position !== 'Auto' ? ((axis.minorTicks.position === 'Cross' ? bounds.y - minor.height / 2 - major.offset :
-                ((axis.minorTicks.position === 'Inside' && !axis.opposedPosition) ||
-                    (axis.minorTicks.position === 'Outside' && axis.opposedPosition)) ?
-                    (bounds.y - lineSize - minor.height) - minor.offset : bounds.y + lineSize + minor.offset)) : y;
-            axis.minorTickBounds = new Rect(bounds.x, y, bounds.width, minor.height);
-        }
-    }
-    /**
-     * To Calculate axis label bounds
-     * @param axis
-     * @param axisIndex
-     */
-    calculateLabelBounds(axis, axisIndex) {
-        let x;
-        let y;
-        let width;
-        let height;
-        let padding = 5;
-        let applyPositionBounds = (axis.labelStyle.position !== 'Auto' && axis.majorTicks.position !== 'Auto' &&
-            axis.minorTicks.position !== 'Auto');
-        let bounds = applyPositionBounds ? (axis.labelStyle.position === axis.minorTicks.position &&
-            axis.minorTicks.position !== axis.majorTicks.position ? axis.minorTickBounds : axis.majorTickBounds) :
-            axis.majorTickBounds;
-        let offset = axis.labelStyle.offset;
-        this.calculateVisibleLabels(axis);
-        width = axis.maxLabelSize.width;
-        height = axis.maxLabelSize.height / 2;
-        if (this.gauge.orientation === 'Vertical') {
-            x = axis.labelStyle.position === 'Auto' ? ((!axis.opposedPosition ? (bounds.x - width - padding) :
-                (bounds.x + bounds.width + padding)) + offset) : x;
-            let boundx = bounds.x;
-            let offsetForCross = axis.majorTicks.position === 'Cross' || axis.minorTicks.position === 'Cross' ?
-                (bounds.width > axis.lineBounds.width ? bounds.width / 2 : axis.lineBounds.width / 2) : axis.lineBounds.width / 2;
-            boundx = applyPositionBounds ? ((axis.labelStyle.position !== axis.minorTicks.position &&
-                axis.labelStyle.position !== axis.majorTicks.position) ?
-                (axis.minorTicks.position !== 'Cross' && axis.majorTicks.position !== 'Cross' ? (axis.labelStyle.position === 'Inside' ?
-                    bounds.x - axis.lineBounds.width : axis.labelStyle.position === 'Outside' ?
-                    bounds.x + axis.lineBounds.width : bounds.x) : (axis.labelStyle.position === 'Inside' ?
-                    axis.lineBounds.x - offsetForCross : axis.labelStyle.position === 'Outside' ?
-                    axis.lineBounds.x - bounds.width + offsetForCross : bounds.x)) : bounds.x) : bounds.x;
-            x = axis.labelStyle.position !== 'Auto' ? (axis.labelStyle.position === 'Cross' ? axis.lineBounds.x -
-                axis.maxLabelSize.width / 4 - offset : ((axis.labelStyle.position === 'Inside' && !axis.opposedPosition) ||
-                (axis.labelStyle.position === 'Outside' && axis.opposedPosition)) ?
-                ((boundx - width - padding) - offset) : ((boundx + bounds.width + padding) + offset)) : x;
-            y = axis.lineBounds.y;
-        }
-        else {
-            y = axis.labelStyle.position === 'Auto' ? ((!axis.opposedPosition ?
-                (bounds.y - padding) : ((bounds.y + bounds.height + padding) + height)) + offset) : y;
-            let boundy = bounds.y;
-            let offsetForCross = axis.majorTicks.position === 'Cross' || axis.minorTicks.position === 'Cross' ?
-                (bounds.height > axis.lineBounds.height ? bounds.height / 2 : axis.lineBounds.height / 2) : axis.lineBounds.height / 2;
-            boundy = applyPositionBounds ? ((axis.labelStyle.position !== axis.minorTicks.position &&
-                axis.labelStyle.position !== axis.majorTicks.position) ?
-                (axis.minorTicks.position !== 'Cross' && axis.majorTicks.position !== 'Cross' ?
-                    (axis.labelStyle.position === 'Inside' ? bounds.y - axis.lineBounds.height : axis.labelStyle.position === 'Outside' ?
-                        bounds.y + axis.lineBounds.height : bounds.y) : (axis.labelStyle.position === 'Inside' ?
-                    axis.lineBounds.y - offsetForCross : axis.labelStyle.position === 'Outside' ?
-                    axis.lineBounds.y - bounds.height + offsetForCross : bounds.y)) : bounds.y) : bounds.y;
-            y = axis.labelStyle.position !== 'Auto' ? (axis.labelStyle.position === 'Cross' ? axis.lineBounds.y +
-                axis.maxLabelSize.height / 4 - offset : ((axis.labelStyle.position === 'Inside' && !axis.opposedPosition) ||
-                (axis.labelStyle.position === 'Outside' && axis.opposedPosition)) ?
-                (boundy - padding) - offset : ((boundy + bounds.height + padding) + height) + offset) : y;
-            x = axis.lineBounds.x;
-        }
-        axis.labelBounds = new Rect(x, y, width, height);
-    }
-    /**
-     * Calculate pointer bounds
-     * @param axis
-     * @param axisIndex
-     */
-    calculatePointerBounds(axis, axisIndex) {
-        let pointer;
-        let range = axis.visibleRange;
-        let orientation = this.gauge.orientation;
-        let line = axis.lineBounds;
-        let label = axis.labelBounds;
-        let minimumValue = Math.min(range.min, range.max);
-        let maximumValue = Math.max(range.min, range.max);
-        for (let i = 0; i < axis.pointers.length; i++) {
-            pointer = axis.pointers[i];
-            if (pointer.offset.length > 0) {
-                pointer.currentOffset = stringToNumber(pointer.offset, (this.gauge.orientation === 'Horizontal' ?
-                    this.gauge.availableSize.height / 2 : this.gauge.availableSize.width / 2));
-            }
-            else {
-                pointer.currentOffset = pointer.offset;
-            }
-            pointer.currentValue = pointer.value !== null ?
-                pointer.value < minimumValue ? minimumValue : pointer.value > maximumValue ? maximumValue : pointer.value
-                : minimumValue;
-            if (pointer.width > 0 && withInRange(pointer.currentValue, null, null, range.max, range.min, 'pointer')) {
-                this['calculate' + pointer.type + 'Bounds'](axisIndex, axis, i, pointer);
-            }
-        }
-    }
-    /**
-     * Calculate marker pointer bounds
-     * @param axisIndex
-     * @param axis
-     * @param pointerIndex
-     * @param pointer
-     */
-    calculateMarkerBounds(axisIndex, axis, pointerIndex, pointer) {
-        let x;
-        let y;
-        let line = axis.lineBounds;
-        let offset = pointer.currentOffset;
-        let range = axis.visibleRange;
-        let placement = pointer.placement;
-        let tick = axis.majorTickBounds;
-        let label = axis.labelBounds;
-        let border = pointer.border.width;
-        if (this.gauge.orientation === 'Vertical') {
-            if (pointer.position === 'Auto') {
-                x = (!axis.opposedPosition) ? (placement === 'Near') ? label.x : (placement === 'Center') ? tick.x : line.x :
-                    placement === 'Far' ? label.x + label.width : (placement === 'Center' ? tick.x + tick.width : line.x);
-                x = !axis.opposedPosition ? ((pointer.placement === 'Far' ? x + border : x - border) + (offset)) :
-                    ((pointer.placement === 'Near' ? x - border : x + border) + (offset));
-            }
-            else {
-                x = (pointer.position === 'Cross' ? line.x - pointer.width / 2 - offset :
-                    ((pointer.position === 'Inside' && !axis.opposedPosition) ||
-                        (pointer.position === 'Outside' && axis.opposedPosition)) ?
-                        (line.x - line.width / 2 - (pointer.markerType !== 'InvertedTriangle' && pointer.markerType !== 'Triangle' ?
-                            pointer.width : 0)) - offset : ((line.x + line.width / 2) + offset));
-            }
-            y = ((valueToCoefficient(pointer.currentValue, axis, this.gauge.orientation, range) * line.height) + line.y);
-        }
-        else {
-            if (pointer.position === 'Auto') {
-                y = (!axis.opposedPosition) ? (placement === 'Near') ? label.y - label.height : (placement === 'Center') ? tick.y :
-                    line.y : (placement === 'Far') ? label.y : (placement === 'Center') ? tick.y + tick.height : line.y;
-                y = !axis.opposedPosition ? ((pointer.placement === 'Far' ? y + border : y - border) + (offset)) :
-                    ((pointer.placement === 'Near' ? y - border : y + border) + (offset));
-            }
-            else {
-                y = (pointer.position === 'Cross' ? line.y - pointer.height / 2 - offset :
-                    ((pointer.position === 'Inside' && !axis.opposedPosition) ||
-                        (pointer.position === 'Outside' && axis.opposedPosition)) ?
-                        (line.y - line.height / 2 - (pointer.markerType !== 'InvertedTriangle' && pointer.markerType !== 'Triangle' ?
-                            pointer.height : 0)) - offset : ((line.y + line.height / 2) + offset));
-            }
-            x = ((valueToCoefficient(pointer.currentValue, axis, this.gauge.orientation, range) * line.width) + line.x);
-        }
-        pointer.bounds = new Rect(x, y, pointer.width, pointer.height);
-    }
-    /**
-     * Calculate bar pointer bounds
-     * @param axisIndex
-     * @param axis
-     * @param pointerIndex
-     * @param pointer
-     */
-    calculateBarBounds(axisIndex, axis, pointerIndex, pointer) {
-        let x1;
-        let x2;
-        let y1;
-        let y2;
-        let height;
-        let width;
-        let line = axis.lineBounds;
-        let padding = 10;
-        let range = axis.visibleRange;
-        let orientation = this.gauge.orientation;
-        let offset = pointer.currentOffset;
-        let container = this.gauge.containerBounds;
-        if (orientation === 'Vertical') {
-            if (pointer.position === 'Auto') {
-                x1 = (container.width > 0) ? container.x + ((container.width / 2) - (pointer.width / 2)) :
-                    (!axis.opposedPosition) ? (line.x + padding) : (line.x - pointer.width - padding);
-                x1 += (offset);
-            }
-            else {
-                x1 = (pointer.position === 'Cross' ? line.x - pointer.width / 2 - offset :
-                    ((pointer.position === 'Inside' && !axis.opposedPosition) ||
-                        (pointer.position === 'Outside' && axis.opposedPosition)) ?
-                        (line.x - line.width / 2 - pointer.width) - offset : ((line.x + line.width / 2) + offset));
-            }
-            y1 = ((valueToCoefficient(pointer.currentValue, axis, orientation, range) * line.height) + line.y);
-            y2 = ((valueToCoefficient(range.min, axis, orientation, range) * line.height) + line.y);
-            height = Math.abs(y2 - y1);
-            y1 = (!axis.isInversed) ? y1 : y2;
-            width = pointer.width;
-        }
-        else {
-            if (pointer.position === 'Auto') {
-                y1 = (container.height > 0) ? (container.y + (container.height / 2) - (pointer.height) / 2) :
-                    (!axis.opposedPosition) ? (line.y + padding) : (line.y - pointer.height - padding);
-                y1 += (offset);
-            }
-            else {
-                y1 = (pointer.position === 'Cross' ? line.y - pointer.height / 2 - offset :
-                    ((pointer.position === 'Inside' && !axis.opposedPosition) ||
-                        (pointer.position === 'Outside' && axis.opposedPosition)) ?
-                        (line.y - line.height / 2 - pointer.height) - offset : ((line.y + line.height / 2) + offset));
-            }
-            height = pointer.height;
-            x1 = ((valueToCoefficient(range.min, axis, orientation, range) * line.width) + line.x);
-            x2 = ((valueToCoefficient(pointer.currentValue, axis, orientation, range) * line.width) + line.x);
-            width = Math.abs(x2 - x1);
-            x1 = (!axis.isInversed) ? x1 : x2;
-        }
-        pointer.bounds = new Rect(x1, y1, width, height);
-    }
-    /**
-     * Calculate ranges bounds
-     * @param axis
-     * @param axisIndex
-     */
-    calculateRangesBounds(axis, axisIndex) {
-        let range;
-        let start;
-        let end;
-        let line = axis.lineBounds;
-        let visibleRange = axis.visibleRange;
-        let orientation = this.gauge.orientation;
-        let startVal;
-        let endVal;
-        let pointX;
-        let pointY;
-        let width;
-        let height;
-        let position;
-        let startWidth;
-        let endWidth;
-        let colors;
-        for (let i = 0; i < axis.ranges.length; i++) {
-            range = axis.ranges[i];
-            if (range.offset.length > 0) {
-                range.currentOffset = stringToNumber(range.offset, (this.gauge.orientation === 'Horizontal' ?
-                    this.gauge.availableSize.height / 2 : this.gauge.availableSize.width / 2));
-            }
-            else {
-                range.currentOffset = range.offset;
-            }
-            start = Math.max(range.start, visibleRange.min);
-            end = Math.min(range.end, visibleRange.max);
-            if (withInRange(null, start, end, visibleRange.max, visibleRange.min, 'range')) {
-                start = Math.min(start, range.end);
-                end = Math.max(start, end);
-                position = range.position;
-                startWidth = range.startWidth;
-                endWidth = range.endWidth;
-                colors = this.gauge.rangePalettes.length ? this.gauge.rangePalettes : getRangePalette();
-                range.interior = range.color ? range.color : colors[i % colors.length];
-                if (this.gauge.orientation === 'Vertical') {
-                    pointX = line.x + (range.currentOffset) + (position === 'Cross' ? startWidth / 2 :
-                        (position === 'Outside' || position === 'Auto') ?
-                            -(line.width / 2) : position === 'Inside' ? line.width / 2 : 0);
-                    pointY = (valueToCoefficient(end, axis, orientation, visibleRange) * line.height) + line.y;
-                    height = (valueToCoefficient(start, axis, orientation, visibleRange) * line.height) + line.y;
-                    height -= pointY;
-                    startVal = !axis.opposedPosition ? (position === 'Inside' ? (pointX + startWidth) : position === 'Cross' ?
-                        (pointX - startWidth) : (pointX - startWidth)) : (position === 'Inside' ? (pointX - startWidth) :
-                        position === 'Cross' ? (pointX - startWidth) : (pointX + startWidth));
-                    endVal = !axis.opposedPosition ? position === 'Inside' ? (pointX + endWidth) : position === 'Cross' ?
-                        (pointX - endWidth) : (pointX - endWidth) : position === 'Inside' ? (pointX - endWidth) :
-                        position === 'Cross' ? (pointX - endWidth) : (pointX + endWidth);
-                    range.path = 'M' + pointX + ' ' + pointY + ' L ' + pointX + ' ' + (pointY + height) +
-                        ' L ' + startVal + ' ' + (pointY + height) + ' L ' + endVal + ' ' + pointY +
-                        ' L ' + pointX + ' ' + pointY + ' z ';
-                }
-                else {
-                    pointX = (valueToCoefficient(end, axis, orientation, visibleRange) * line.width) + line.x;
-                    pointY = axis.lineBounds.y + (range.currentOffset) + (position === 'Cross' ? startWidth / 2 :
-                        (position === 'Outside' || position === 'Auto') ? -(line.height / 2) : position === 'Inside' ? line.height / 2 : 0);
-                    width = (valueToCoefficient(start, axis, orientation, visibleRange) * line.width) + line.x;
-                    width = pointX - width;
-                    startVal = !axis.opposedPosition ? position === 'Inside' ? (pointY + startWidth) : position === 'Cross' ?
-                        (pointY - startWidth) : (pointY - startWidth) : (position === 'Inside') ? (pointY - startWidth) :
-                        position === 'Cross' ? (pointY - startWidth) : (pointY + startWidth);
-                    endVal = !axis.opposedPosition ? position === 'Inside' ? (pointY + endWidth) : position === 'Cross' ?
-                        (pointY - endWidth) : (pointY - endWidth) : (position === 'Inside') ? (pointY - endWidth) :
-                        position === 'Cross' ? (pointY - endWidth) : (pointY + endWidth);
-                    range.path = 'M' + pointX + ' ' + pointY + ' L ' + (pointX - width) + ' ' + pointY +
-                        ' L ' + (pointX - width) + ' ' + startVal + ' L ' + pointX + ' ' + endVal +
-                        ' L ' + pointX + ' ' + pointY + ' z ';
-                }
-            }
-        }
-    }
-    checkPreviousAxes(currentAxis, axisIndex) {
-        let index = axisIndex - 1;
-        let prevAxis;
-        let isPositive = (index >= 0) ? true : false;
-        if (isPositive) {
-            prevAxis = this.gauge.axes[index];
-            index = (prevAxis.checkAlign.align === currentAxis.checkAlign.align) ? index : this.checkPreviousAxes(currentAxis, index);
-        }
-        else {
-            index = null;
-        }
-        return index;
-    }
-    /**
-     *
-     * @param axis To calculate the visible labels
-     */
-    calculateVisibleLabels(axis) {
-        axis.visibleLabels = [];
-        let min = axis.visibleRange.min;
-        let max = axis.visibleRange.max;
-        let interval = axis.visibleRange.interval;
-        let format;
-        let argsData;
-        let style = axis.labelStyle;
-        let labelSize;
-        let customLabelFormat = style.format && style.format.match('{value}') !== null;
-        format = this.gauge.intl.getNumberFormat({
-            format: getLabelFormat(style.format), useGrouping: this.gauge.useGroupingSeparator
-        });
-        for (let i = min; (i <= max && interval > 0); i += interval) {
-            argsData = {
-                cancel: false, name: axisLabelRender, axis: axis,
-                text: customLabelFormat ? textFormatter(style.format, { value: i }, this.gauge) :
-                    formatValue(i, this.gauge).toString(),
-                value: i
-            };
-            let axisLabelRenderSuccess = (argsData) => {
-                if (!argsData.cancel) {
-                    axis.visibleLabels.push(new VisibleLabels(argsData.text, i, labelSize));
-                }
-            };
-            axisLabelRenderSuccess.bind(this);
-            this.gauge.trigger(axisLabelRender, argsData, axisLabelRenderSuccess);
-        }
-        let lastLabel = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value : null;
-        let maxVal = axis.visibleRange.max;
-        if (lastLabel !== maxVal && axis.showLastLabel === true) {
-            argsData = {
-                cancel: false, name: axisLabelRender, axis: axis,
-                text: customLabelFormat ? style.format.replace(new RegExp('{value}', 'g'), format(maxVal)) :
-                    format(maxVal),
-                value: maxVal
-            };
-            // if (this.gauge.isBlazor) {
-            //     const { axis, ...blazorArgsData } : IAxisLabelRenderEventArgs = argsData;
-            //     argsData = blazorArgsData;
-            // }
-            let axisLabelRenderSuccess = (argsData) => {
-                labelSize = measureText(argsData.text, axis.labelStyle.font);
-                if (!argsData.cancel) {
-                    axis.visibleLabels.push(new VisibleLabels(argsData.text, maxVal, labelSize));
-                }
-            };
-            axisLabelRenderSuccess.bind(this);
-            this.gauge.trigger(axisLabelRender, argsData, axisLabelRenderSuccess);
-        }
-        this.getMaxLabelWidth(this.gauge, axis);
-    }
-    /**
-     * Calculate maximum label width for the axis.
-     * @return {void}
-     * @private
-     */
-    getMaxLabelWidth(gauge, axis) {
-        axis.maxLabelSize = new Size(0, 0);
-        let label;
-        for (let i = 0; i < axis.visibleLabels.length; i++) {
-            label = axis.visibleLabels[i];
-            label.size = measureText(label.text, axis.labelStyle.font);
-            if (label.size.width > axis.maxLabelSize.width) {
-                axis.maxLabelSize.width = label.size.width;
-            }
-            if (label.size.height > axis.maxLabelSize.height) {
-                axis.maxLabelSize.height = label.size.height;
-            }
-        }
-    }
-    checkThermometer() {
-        if (this.gauge.container.type === 'Thermometer') {
-            this.gauge.axes.map((axis, index) => {
-                if (axis.isInversed) {
-                    axis.pointers.map((pointer, index) => {
-                        if (pointer.type === 'Bar') {
-                            axis.isInversed = false;
-                        }
-                    });
-                }
-            });
-        }
-    }
-}
-
-/**
- * @private
  * To handle the animation for gauge
  */
 class Animations {
@@ -1941,6 +1404,571 @@ class AxisRenderer extends Animations {
             }
         }
         axisObject.appendChild(rangeElement);
+    }
+}
+
+/**
+ * @private
+ * To calculate the overall axis bounds for gauge.
+ */
+class AxisLayoutPanel {
+    constructor(gauge) {
+        this.gauge = gauge;
+        this.axisRenderer = new AxisRenderer(gauge);
+    }
+    /**
+     * To calculate the axis bounds
+     */
+    calculateAxesBounds() {
+        let axis;
+        let bounds;
+        this.gauge.nearSizes = [];
+        this.gauge.farSizes = [];
+        let x;
+        let y;
+        let width;
+        let height;
+        let axisPadding = 8;
+        let containerRect = this.gauge.containerBounds;
+        this.checkThermometer();
+        for (let i = 0; i < this.gauge.axes.length; i++) {
+            axis = this.gauge.axes[i];
+            axis.checkAlign = new Align(i, ((!axis.opposedPosition) ? 'Near' : 'Far'));
+            (!axis.opposedPosition) ? this.gauge.nearSizes.push(1) : this.gauge.farSizes.push(1);
+            this.calculateLineBounds(axis, i);
+            this.calculateTickBounds(axis, i);
+            this.calculateLabelBounds(axis, i);
+            if (axis.pointers.length > 0) {
+                this.calculatePointerBounds(axis, i);
+            }
+            if (axis.ranges.length > 0) {
+                this.calculateRangesBounds(axis, i);
+            }
+            bounds = axis.labelBounds;
+            if (this.gauge.orientation === 'Vertical') {
+                x = (!axis.opposedPosition) ? bounds.x - axisPadding : axis.lineBounds.x;
+                y = axis.lineBounds.y;
+                height = axis.lineBounds.height;
+                width = Math.abs((!axis.opposedPosition) ? (axis.lineBounds.x - x) : ((bounds.x + bounds.width + axisPadding) - x));
+            }
+            else {
+                y = (!axis.opposedPosition) ? bounds.y - bounds.height - axisPadding : axis.lineBounds.y;
+                x = axis.lineBounds.x;
+                width = axis.lineBounds.width;
+                height = Math.abs((!axis.opposedPosition) ? Math.abs(axis.lineBounds.y - y) : (bounds.y + axisPadding) - y);
+            }
+            axis.bounds = new Rect(x, y, width, height);
+        }
+    }
+    /**
+     * Calculate axis line bounds
+     * @param axis
+     * @param axisIndex
+     */
+    calculateLineBounds(axis, axisIndex) {
+        let x;
+        let y;
+        let width;
+        let height;
+        let index;
+        let prevAxis;
+        let lineHeight = axis.line.height;
+        let orientation = this.gauge.orientation;
+        let containerRect = this.gauge.containerBounds;
+        lineHeight = (axis.line.width > 0) ? lineHeight : null;
+        if (orientation === 'Vertical') {
+            y = (isNullOrUndefined(lineHeight)) ? containerRect.y :
+                containerRect.y + ((containerRect.height / 2) - (lineHeight / 2));
+            width = axis.line.width;
+            height = (isNullOrUndefined(lineHeight)) ? containerRect.height : lineHeight;
+        }
+        else {
+            x = (isNullOrUndefined(lineHeight)) ? containerRect.x :
+                containerRect.x + ((containerRect.width / 2) - (lineHeight / 2));
+            height = axis.line.width;
+            width = (isNullOrUndefined(lineHeight)) ? containerRect.width : lineHeight;
+        }
+        index = this.checkPreviousAxes(axis, axisIndex);
+        if (isNullOrUndefined(index)) {
+            if (orientation === 'Vertical') {
+                x = (!axis.opposedPosition ? containerRect.x : containerRect.x + containerRect.width) + axis.line.offset;
+            }
+            else {
+                y = (!axis.opposedPosition ? containerRect.y : containerRect.y + containerRect.height) + axis.line.offset;
+            }
+        }
+        else {
+            prevAxis = this.gauge.axes[index];
+            if (orientation === 'Vertical') {
+                x = ((!axis.opposedPosition) ? prevAxis.bounds.x : (prevAxis.bounds.x + prevAxis.bounds.width)) + axis.line.offset;
+            }
+            else {
+                y = ((!axis.opposedPosition) ? prevAxis.bounds.y : (prevAxis.bounds.y + prevAxis.bounds.height)) + axis.line.offset;
+            }
+        }
+        axis.lineBounds = new Rect(x, y, width, height);
+    }
+    /**
+     * Calculate axis tick bounds
+     * @param axis
+     * @param axisIndex
+     */
+    calculateTickBounds(axis, axisIndex) {
+        let x;
+        let y;
+        let major;
+        let minor;
+        let min = Math.min(axis.minimum, axis.maximum);
+        let max = Math.max(axis.minimum, axis.maximum);
+        min = (min === max) ? max - 1 : min;
+        let interval = axis.majorTicks.interval;
+        let bounds = axis.lineBounds;
+        major = axis.majorTicks;
+        minor = axis.minorTicks;
+        axis.majorInterval = major.interval;
+        axis.minorInterval = minor.interval;
+        let size = (this.gauge.orientation === 'Vertical' ? bounds.height : bounds.width);
+        let lineSize = (this.gauge.orientation === 'Vertical' ? bounds.width : bounds.height) / 2;
+        axis.majorInterval = isNullOrUndefined(axis.majorInterval) ? calculateNiceInterval(min, max, size, this.gauge.orientation)
+            : major.interval;
+        axis.visibleRange = new VisibleRange(min, max, axis.majorInterval, (max - min));
+        axis.minorInterval = (isNullOrUndefined(axis.minorInterval)) ? axis.majorInterval / 2 : axis.minorInterval;
+        if (this.gauge.orientation === 'Vertical') {
+            x = axis.majorTicks.position === 'Auto' ? ((!axis.opposedPosition ? (bounds.x - lineSize - major.height) : bounds.x + lineSize)
+                + major.offset) : x;
+            x = axis.majorTicks.position !== 'Auto' ? (axis.majorTicks.position === 'Cross' ? bounds.x - major.height / 2 - major.offset :
+                ((axis.majorTicks.position === 'Inside' && !axis.opposedPosition) ||
+                    (axis.majorTicks.position === 'Outside' && axis.opposedPosition)) ? (bounds.x - lineSize - major.height - major.offset)
+                    : (bounds.x + lineSize + major.offset)) : x;
+            axis.majorTickBounds = new Rect(x, bounds.y, major.height, bounds.height);
+            x = axis.minorTicks.position === 'Auto' ? ((!axis.opposedPosition ? (bounds.x - lineSize - minor.height) : bounds.x + lineSize)
+                + minor.offset) : x;
+            x = axis.minorTicks.position !== 'Auto' ? (axis.minorTicks.position === 'Cross' ? bounds.x - minor.height / 2 - minor.offset :
+                ((axis.minorTicks.position === 'Inside' && !axis.opposedPosition) ||
+                    (axis.minorTicks.position === 'Outside' && axis.opposedPosition)) ? (bounds.x - lineSize - minor.height - minor.offset)
+                    : (bounds.x + lineSize + minor.offset)) : x;
+            axis.minorTickBounds = new Rect(x, bounds.y, minor.height, bounds.height);
+        }
+        else {
+            y = axis.majorTicks.position === 'Auto' ? ((!axis.opposedPosition ? (bounds.y - lineSize - major.height) : bounds.y + lineSize)
+                + major.offset) : y;
+            y = axis.majorTicks.position !== 'Auto' ? ((axis.majorTicks.position === 'Cross' ? bounds.y - major.height / 2 - major.offset :
+                ((axis.majorTicks.position === 'Inside' && !axis.opposedPosition) ||
+                    (axis.majorTicks.position === 'Outside' && axis.opposedPosition)) ?
+                    (bounds.y - lineSize - major.height) - major.offset : bounds.y + lineSize + major.offset)) : y;
+            axis.majorTickBounds = new Rect(bounds.x, y, bounds.width, major.height);
+            y = axis.minorTicks.position === 'Auto' ? ((!axis.opposedPosition ? (bounds.y - lineSize - minor.height) : bounds.y + lineSize)
+                + minor.offset) : y;
+            y = axis.minorTicks.position !== 'Auto' ? ((axis.minorTicks.position === 'Cross' ? bounds.y - minor.height / 2 - major.offset :
+                ((axis.minorTicks.position === 'Inside' && !axis.opposedPosition) ||
+                    (axis.minorTicks.position === 'Outside' && axis.opposedPosition)) ?
+                    (bounds.y - lineSize - minor.height) - minor.offset : bounds.y + lineSize + minor.offset)) : y;
+            axis.minorTickBounds = new Rect(bounds.x, y, bounds.width, minor.height);
+        }
+    }
+    /**
+     * To Calculate axis label bounds
+     * @param axis
+     * @param axisIndex
+     */
+    calculateLabelBounds(axis, axisIndex) {
+        let x;
+        let y;
+        let width;
+        let height;
+        let padding = 5;
+        let applyPositionBounds = (axis.labelStyle.position !== 'Auto' && axis.majorTicks.position !== 'Auto' &&
+            axis.minorTicks.position !== 'Auto');
+        let bounds = applyPositionBounds ? (axis.labelStyle.position === axis.minorTicks.position &&
+            axis.minorTicks.position !== axis.majorTicks.position ? axis.minorTickBounds : axis.majorTickBounds) :
+            axis.majorTickBounds;
+        let offset = axis.labelStyle.offset;
+        this.calculateVisibleLabels(axis);
+        width = axis.maxLabelSize.width;
+        height = axis.maxLabelSize.height / 2;
+        if (this.gauge.orientation === 'Vertical') {
+            x = axis.labelStyle.position === 'Auto' ? ((!axis.opposedPosition ? (bounds.x - width - padding) :
+                (bounds.x + bounds.width + padding)) + offset) : x;
+            let boundx = bounds.x;
+            let offsetForCross = axis.majorTicks.position === 'Cross' || axis.minorTicks.position === 'Cross' ?
+                (bounds.width > axis.lineBounds.width ? bounds.width / 2 : axis.lineBounds.width / 2) : axis.lineBounds.width / 2;
+            boundx = applyPositionBounds ? ((axis.labelStyle.position !== axis.minorTicks.position &&
+                axis.labelStyle.position !== axis.majorTicks.position) ?
+                (axis.minorTicks.position !== 'Cross' && axis.majorTicks.position !== 'Cross' ? (axis.labelStyle.position === 'Inside' ?
+                    bounds.x - axis.lineBounds.width : axis.labelStyle.position === 'Outside' ?
+                    bounds.x + axis.lineBounds.width : bounds.x) : (axis.labelStyle.position === 'Inside' ?
+                    axis.lineBounds.x - offsetForCross : axis.labelStyle.position === 'Outside' ?
+                    axis.lineBounds.x - bounds.width + offsetForCross : bounds.x)) : bounds.x) : bounds.x;
+            x = axis.labelStyle.position !== 'Auto' ? (axis.labelStyle.position === 'Cross' ? axis.lineBounds.x -
+                axis.maxLabelSize.width / 4 - offset : ((axis.labelStyle.position === 'Inside' && !axis.opposedPosition) ||
+                (axis.labelStyle.position === 'Outside' && axis.opposedPosition)) ?
+                ((boundx - width - padding) - offset) : ((boundx + bounds.width + padding) + offset)) : x;
+            y = axis.lineBounds.y;
+        }
+        else {
+            y = axis.labelStyle.position === 'Auto' ? ((!axis.opposedPosition ?
+                (bounds.y - padding) : ((bounds.y + bounds.height + padding) + height)) + offset) : y;
+            let boundy = bounds.y;
+            let offsetForCross = axis.majorTicks.position === 'Cross' || axis.minorTicks.position === 'Cross' ?
+                (bounds.height > axis.lineBounds.height ? bounds.height / 2 : axis.lineBounds.height / 2) : axis.lineBounds.height / 2;
+            boundy = applyPositionBounds ? ((axis.labelStyle.position !== axis.minorTicks.position &&
+                axis.labelStyle.position !== axis.majorTicks.position) ?
+                (axis.minorTicks.position !== 'Cross' && axis.majorTicks.position !== 'Cross' ?
+                    (axis.labelStyle.position === 'Inside' ? bounds.y - axis.lineBounds.height : axis.labelStyle.position === 'Outside' ?
+                        bounds.y + axis.lineBounds.height : bounds.y) : (axis.labelStyle.position === 'Inside' ?
+                    axis.lineBounds.y - offsetForCross : axis.labelStyle.position === 'Outside' ?
+                    axis.lineBounds.y - bounds.height + offsetForCross : bounds.y)) : bounds.y) : bounds.y;
+            y = axis.labelStyle.position !== 'Auto' ? (axis.labelStyle.position === 'Cross' ? axis.lineBounds.y +
+                axis.maxLabelSize.height / 4 - offset : ((axis.labelStyle.position === 'Inside' && !axis.opposedPosition) ||
+                (axis.labelStyle.position === 'Outside' && axis.opposedPosition)) ?
+                (boundy - padding) - offset : ((boundy + bounds.height + padding) + height) + offset) : y;
+            x = axis.lineBounds.x;
+        }
+        axis.labelBounds = new Rect(x, y, width, height);
+    }
+    /**
+     * Calculate pointer bounds
+     * @param axis
+     * @param axisIndex
+     */
+    calculatePointerBounds(axis, axisIndex) {
+        let pointer;
+        let range = axis.visibleRange;
+        let orientation = this.gauge.orientation;
+        let line = axis.lineBounds;
+        let label = axis.labelBounds;
+        let minimumValue = Math.min(range.min, range.max);
+        let maximumValue = Math.max(range.min, range.max);
+        for (let i = 0; i < axis.pointers.length; i++) {
+            pointer = axis.pointers[i];
+            if (pointer.offset.length > 0) {
+                pointer.currentOffset = stringToNumber(pointer.offset, (this.gauge.orientation === 'Horizontal' ?
+                    this.gauge.availableSize.height / 2 : this.gauge.availableSize.width / 2));
+            }
+            else {
+                pointer.currentOffset = pointer.offset;
+            }
+            pointer.currentValue = pointer.value !== null ?
+                pointer.value < minimumValue ? minimumValue : pointer.value > maximumValue ? maximumValue : pointer.value
+                : minimumValue;
+            if (pointer.width > 0 && withInRange(pointer.currentValue, null, null, range.max, range.min, 'pointer')) {
+                this['calculate' + pointer.type + 'Bounds'](axisIndex, axis, i, pointer);
+            }
+        }
+    }
+    /**
+     * Calculate marker pointer bounds
+     * @param axisIndex
+     * @param axis
+     * @param pointerIndex
+     * @param pointer
+     */
+    calculateMarkerBounds(axisIndex, axis, pointerIndex, pointer) {
+        let x;
+        let y;
+        let line = axis.lineBounds;
+        let offset = pointer.currentOffset;
+        let range = axis.visibleRange;
+        let placement = pointer.placement;
+        let tick = axis.majorTickBounds;
+        let label = axis.labelBounds;
+        let border = pointer.border.width;
+        if (this.gauge.orientation === 'Vertical') {
+            if (pointer.position === 'Auto') {
+                x = (!axis.opposedPosition) ? (placement === 'Near') ? label.x : (placement === 'Center') ? tick.x : line.x :
+                    placement === 'Far' ? label.x + label.width : (placement === 'Center' ? tick.x + tick.width : line.x);
+                x = !axis.opposedPosition ? ((pointer.placement === 'Far' ? x + border : x - border) + (offset)) :
+                    ((pointer.placement === 'Near' ? x - border : x + border) + (offset));
+            }
+            else {
+                x = (pointer.position === 'Cross' ? line.x - pointer.width / 2 - offset :
+                    ((pointer.position === 'Inside' && !axis.opposedPosition) ||
+                        (pointer.position === 'Outside' && axis.opposedPosition)) ?
+                        (line.x - line.width / 2 - (pointer.markerType !== 'InvertedTriangle' && pointer.markerType !== 'Triangle' ?
+                            pointer.width : 0)) - offset : ((line.x + line.width / 2) + offset));
+            }
+            y = ((valueToCoefficient(pointer.currentValue, axis, this.gauge.orientation, range) * line.height) + line.y);
+        }
+        else {
+            if (pointer.position === 'Auto') {
+                y = (!axis.opposedPosition) ? (placement === 'Near') ? label.y - label.height : (placement === 'Center') ? tick.y :
+                    line.y : (placement === 'Far') ? label.y : (placement === 'Center') ? tick.y + tick.height : line.y;
+                y = !axis.opposedPosition ? ((pointer.placement === 'Far' ? y + border : y - border) + (offset)) :
+                    ((pointer.placement === 'Near' ? y - border : y + border) + (offset));
+            }
+            else {
+                y = (pointer.position === 'Cross' ? line.y - pointer.height / 2 - offset :
+                    ((pointer.position === 'Inside' && !axis.opposedPosition) ||
+                        (pointer.position === 'Outside' && axis.opposedPosition)) ?
+                        (line.y - line.height / 2 - (pointer.markerType !== 'InvertedTriangle' && pointer.markerType !== 'Triangle' ?
+                            pointer.height : 0)) - offset : ((line.y + line.height / 2) + offset));
+            }
+            x = ((valueToCoefficient(pointer.currentValue, axis, this.gauge.orientation, range) * line.width) + line.x);
+        }
+        pointer.bounds = new Rect(x, y, pointer.width, pointer.height);
+    }
+    /**
+     * Calculate bar pointer bounds
+     * @param axisIndex
+     * @param axis
+     * @param pointerIndex
+     * @param pointer
+     */
+    calculateBarBounds(axisIndex, axis, pointerIndex, pointer) {
+        let x1;
+        let x2;
+        let y1;
+        let y2;
+        let height;
+        let width;
+        let line = axis.lineBounds;
+        let padding = 10;
+        let range = axis.visibleRange;
+        let orientation = this.gauge.orientation;
+        let offset = pointer.currentOffset;
+        let container = this.gauge.containerBounds;
+        if (orientation === 'Vertical') {
+            if (pointer.position === 'Auto') {
+                x1 = (container.width > 0) ? container.x + ((container.width / 2) - (pointer.width / 2)) :
+                    (!axis.opposedPosition) ? (line.x + padding) : (line.x - pointer.width - padding);
+                x1 += (offset);
+            }
+            else {
+                x1 = (pointer.position === 'Cross' ? line.x - pointer.width / 2 - offset :
+                    ((pointer.position === 'Inside' && !axis.opposedPosition) ||
+                        (pointer.position === 'Outside' && axis.opposedPosition)) ?
+                        (line.x - line.width / 2 - pointer.width) - offset : ((line.x + line.width / 2) + offset));
+            }
+            y1 = ((valueToCoefficient(pointer.currentValue, axis, orientation, range) * line.height) + line.y);
+            y2 = ((valueToCoefficient(range.min, axis, orientation, range) * line.height) + line.y);
+            height = Math.abs(y2 - y1);
+            y1 = (!axis.isInversed) ? y1 : y2;
+            width = pointer.width;
+        }
+        else {
+            if (pointer.position === 'Auto') {
+                y1 = (container.height > 0) ? (container.y + (container.height / 2) - (pointer.height) / 2) :
+                    (!axis.opposedPosition) ? (line.y + padding) : (line.y - pointer.height - padding);
+                y1 += (offset);
+            }
+            else {
+                y1 = (pointer.position === 'Cross' ? line.y - pointer.height / 2 - offset :
+                    ((pointer.position === 'Inside' && !axis.opposedPosition) ||
+                        (pointer.position === 'Outside' && axis.opposedPosition)) ?
+                        (line.y - line.height / 2 - pointer.height) - offset : ((line.y + line.height / 2) + offset));
+            }
+            height = pointer.height;
+            x1 = ((valueToCoefficient(range.min, axis, orientation, range) * line.width) + line.x);
+            x2 = ((valueToCoefficient(pointer.currentValue, axis, orientation, range) * line.width) + line.x);
+            width = Math.abs(x2 - x1);
+            x1 = (!axis.isInversed) ? x1 : x2;
+        }
+        pointer.bounds = new Rect(x1, y1, width, height);
+    }
+    /**
+     * Calculate ranges bounds
+     * @param axis
+     * @param axisIndex
+     */
+    calculateRangesBounds(axis, axisIndex) {
+        let range;
+        let start;
+        let end;
+        let line = axis.lineBounds;
+        let visibleRange = axis.visibleRange;
+        let orientation = this.gauge.orientation;
+        let startVal;
+        let endVal;
+        let pointX;
+        let pointY;
+        let width;
+        let height;
+        let position;
+        let startWidth;
+        let endWidth;
+        let colors;
+        for (let i = 0; i < axis.ranges.length; i++) {
+            range = axis.ranges[i];
+            if (range.offset.length > 0) {
+                range.currentOffset = stringToNumber(range.offset, (this.gauge.orientation === 'Horizontal' ?
+                    this.gauge.availableSize.height / 2 : this.gauge.availableSize.width / 2));
+            }
+            else {
+                range.currentOffset = range.offset;
+            }
+            start = Math.max(range.start, visibleRange.min);
+            end = Math.min(range.end, visibleRange.max);
+            if (withInRange(null, start, end, visibleRange.max, visibleRange.min, 'range')) {
+                start = Math.min(start, range.end);
+                end = Math.max(start, end);
+                position = range.position;
+                startWidth = range.startWidth;
+                endWidth = range.endWidth;
+                colors = this.gauge.rangePalettes.length ? this.gauge.rangePalettes : getRangePalette();
+                range.interior = range.color ? range.color : colors[i % colors.length];
+                if (this.gauge.orientation === 'Vertical') {
+                    pointX = line.x + (range.currentOffset) + (position === 'Cross' ? startWidth / 2 :
+                        (position === 'Outside' || position === 'Auto') ?
+                            -(line.width / 2) : position === 'Inside' ? line.width / 2 : 0);
+                    pointY = (valueToCoefficient(end, axis, orientation, visibleRange) * line.height) + line.y;
+                    height = (valueToCoefficient(start, axis, orientation, visibleRange) * line.height) + line.y;
+                    height -= pointY;
+                    startVal = !axis.opposedPosition ? (position === 'Inside' ? (pointX + startWidth) : position === 'Cross' ?
+                        (pointX - startWidth) : (pointX - startWidth)) : (position === 'Inside' ? (pointX - startWidth) :
+                        position === 'Cross' ? (pointX - startWidth) : (pointX + startWidth));
+                    endVal = !axis.opposedPosition ? position === 'Inside' ? (pointX + endWidth) : position === 'Cross' ?
+                        (pointX - endWidth) : (pointX - endWidth) : position === 'Inside' ? (pointX - endWidth) :
+                        position === 'Cross' ? (pointX - endWidth) : (pointX + endWidth);
+                    range.path = 'M' + pointX + ' ' + pointY + ' L ' + pointX + ' ' + (pointY + height) +
+                        ' L ' + startVal + ' ' + (pointY + height) + ' L ' + endVal + ' ' + pointY +
+                        ' L ' + pointX + ' ' + pointY + ' z ';
+                }
+                else {
+                    pointX = (valueToCoefficient(end, axis, orientation, visibleRange) * line.width) + line.x;
+                    pointY = axis.lineBounds.y + (range.currentOffset) + (position === 'Cross' ? startWidth / 2 :
+                        (position === 'Outside' || position === 'Auto') ? -(line.height / 2) : position === 'Inside' ? line.height / 2 : 0);
+                    width = (valueToCoefficient(start, axis, orientation, visibleRange) * line.width) + line.x;
+                    width = pointX - width;
+                    startVal = !axis.opposedPosition ? position === 'Inside' ? (pointY + startWidth) : position === 'Cross' ?
+                        (pointY - startWidth) : (pointY - startWidth) : (position === 'Inside') ? (pointY - startWidth) :
+                        position === 'Cross' ? (pointY - startWidth) : (pointY + startWidth);
+                    endVal = !axis.opposedPosition ? position === 'Inside' ? (pointY + endWidth) : position === 'Cross' ?
+                        (pointY - endWidth) : (pointY - endWidth) : (position === 'Inside') ? (pointY - endWidth) :
+                        position === 'Cross' ? (pointY - endWidth) : (pointY + endWidth);
+                    range.path = 'M' + pointX + ' ' + pointY + ' L ' + (pointX - width) + ' ' + pointY +
+                        ' L ' + (pointX - width) + ' ' + startVal + ' L ' + pointX + ' ' + endVal +
+                        ' L ' + pointX + ' ' + pointY + ' z ';
+                }
+            }
+        }
+    }
+    checkPreviousAxes(currentAxis, axisIndex) {
+        let index = axisIndex - 1;
+        let prevAxis;
+        let isPositive = (index >= 0) ? true : false;
+        if (isPositive) {
+            prevAxis = this.gauge.axes[index];
+            index = (prevAxis.checkAlign.align === currentAxis.checkAlign.align) ? index : this.checkPreviousAxes(currentAxis, index);
+        }
+        else {
+            index = null;
+        }
+        return index;
+    }
+    /**
+     *
+     * @param axis To calculate the visible labels
+     */
+    calculateVisibleLabels(axis) {
+        axis.visibleLabels = [];
+        let min = axis.visibleRange.min;
+        let max = axis.visibleRange.max;
+        let interval = axis.visibleRange.interval;
+        let argsData;
+        let blazorArgsData;
+        let style = axis.labelStyle;
+        let labelSize;
+        let customLabelFormat = style.format && style.format.match('{value}') !== null;
+        for (let i = min; (i <= max && interval > 0); i += interval) {
+            argsData = {
+                cancel: false, name: axisLabelRender, axis: axis,
+                text: customLabelFormat ? textFormatter(style.format, { value: i }, this.gauge) :
+                    formatValue(i, this.gauge).toString(),
+                value: i
+            };
+            blazorArgsData = {
+                cancel: false, name: axisLabelRender, axis: null,
+                text: customLabelFormat ? textFormatter(style.format, { value: i }, this.gauge) :
+                    formatValue(i, this.gauge).toString(),
+                value: i
+            };
+            if (this.gauge.isBlazor) {
+                let { cancel, name, text, value, axis } = blazorArgsData;
+                blazorArgsData = { cancel, name, text, value, axis };
+                argsData = blazorArgsData;
+            }
+            let axisLabelRenderSuccess = (argsData) => {
+                if (!argsData.cancel) {
+                    axis.visibleLabels.push(new VisibleLabels(argsData.text, i, labelSize));
+                    if (i === max && this.gauge.isBlazor && document.getElementById(this.gauge.element.id + '_Axis_Collections')) {
+                        let currentLast = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value
+                            : null;
+                        if (currentLast === axis.visibleRange.max || axis.showLastLabel !== true) {
+                            this.getMaxLabelWidth(this.gauge, axis);
+                            this.axisRenderer.drawAxisLabels(axis, (document.getElementById(this.gauge.element.id + '_Axis_Group_' + (this.gauge.axes.length - 1))));
+                        }
+                    }
+                }
+            };
+            axisLabelRenderSuccess.bind(this);
+            this.gauge.trigger(axisLabelRender, argsData, axisLabelRenderSuccess);
+        }
+        let lastLabel = axis.visibleLabels.length ? axis.visibleLabels[axis.visibleLabels.length - 1].value : null;
+        let maxVal = axis.visibleRange.max;
+        if (lastLabel !== maxVal && axis.showLastLabel === true) {
+            argsData = {
+                cancel: false, name: axisLabelRender, axis: axis,
+                text: customLabelFormat ? textFormatter(style.format, { value: maxVal }, this.gauge) :
+                    formatValue(maxVal, this.gauge).toString(),
+                value: maxVal
+            };
+            blazorArgsData = {
+                cancel: false, name: axisLabelRender, axis: null,
+                text: customLabelFormat ? textFormatter(style.format, { value: maxVal }, this.gauge) :
+                    formatValue(maxVal, this.gauge).toString(),
+                value: maxVal
+            };
+            if (this.gauge.isBlazor) {
+                let { cancel, name, text, value, axis } = blazorArgsData;
+                blazorArgsData = { cancel, name, text, value, axis };
+                argsData = blazorArgsData;
+            }
+            let axisLabelRenderSuccess = (argsData) => {
+                labelSize = measureText(argsData.text, axis.labelStyle.font);
+                if (!argsData.cancel) {
+                    axis.visibleLabels.push(new VisibleLabels(argsData.text, maxVal, labelSize));
+                    if (this.gauge.isBlazor && document.getElementById(this.gauge.element.id + '_Axis_Collections')) {
+                        this.getMaxLabelWidth(this.gauge, axis);
+                        this.axisRenderer.drawAxisLabels(axis, (document.getElementById(this.gauge.element.id + '_Axis_Group_' + (this.gauge.axes.length - 1))));
+                    }
+                }
+            };
+            axisLabelRenderSuccess.bind(this);
+            this.gauge.trigger(axisLabelRender, argsData, axisLabelRenderSuccess);
+        }
+        this.getMaxLabelWidth(this.gauge, axis);
+    }
+    /**
+     * Calculate maximum label width for the axis.
+     * @return {void}
+     * @private
+     */
+    getMaxLabelWidth(gauge, axis) {
+        axis.maxLabelSize = new Size(0, 0);
+        let label;
+        for (let i = 0; i < axis.visibleLabels.length; i++) {
+            label = axis.visibleLabels[i];
+            label.size = measureText(label.text, axis.labelStyle.font);
+            if (label.size.width > axis.maxLabelSize.width) {
+                axis.maxLabelSize.width = label.size.width;
+            }
+            if (label.size.height > axis.maxLabelSize.height) {
+                axis.maxLabelSize.height = label.size.height;
+            }
+        }
+    }
+    checkThermometer() {
+        if (this.gauge.container.type === 'Thermometer') {
+            this.gauge.axes.map((axis, index) => {
+                if (axis.isInversed) {
+                    axis.pointers.map((pointer, index) => {
+                        if (pointer.type === 'Bar') {
+                            axis.isInversed = false;
+                        }
+                    });
+                }
+            });
+        }
     }
 }
 
@@ -3127,7 +3155,9 @@ let LinearGauge = class LinearGauge extends Component {
                 this.activeAxis = null;
                 this.activePointer = null;
                 this.isDrag = false;
-                this.triggerDragEvent(e.target);
+                if (!isNullOrUndefined(this.mouseElement)) {
+                    this.triggerDragEvent(this.mouseElement);
+                }
             }
         }
         if (!isNullOrUndefined(this.mouseElement)) {
@@ -3141,16 +3171,18 @@ let LinearGauge = class LinearGauge extends Component {
         return true;
     }
     /**
-     * Handles the print method for gauge control.
+     * This method handles the print functionality for linear gauge.
+     * @param id - Specifies the element to print the linear gauge.
      */
     print(id) {
         let exportChart = new ExportUtils(this);
         exportChart.print(id);
     }
     /**
-     * Handles the export method for gauge control.
-     * @param type
-     * @param fileName
+     * This method handles the export functionality for linear gauge.
+     * @param type - Specifies the type of the export.
+     * @param fileName - Specifies the file name for the exported file.
+     * @param orientation - Specified the orientation for the exported pdf document.
      */
     export(type, fileName, orientation) {
         let exportMap = new ExportUtils(this);
@@ -3283,10 +3315,10 @@ let LinearGauge = class LinearGauge extends Component {
         });
     }
     /**
-     * To set the pointer value using this method
-     * @param axisIndex
-     * @param pointerIndex
-     * @param value
+     * This method is used to set the pointer value in the linear gauge.
+     * @param axisIndex - Specifies the index of the axis.
+     * @param pointerIndex - Specifies the index of the pointer.
+     * @param value - Specifies the pointer value.
      */
     setPointerValue(axisIndex, pointerIndex, value) {
         let axis = this.axes[axisIndex];
@@ -3300,9 +3332,9 @@ let LinearGauge = class LinearGauge extends Component {
         }
     }
     /**
-     * To set the annotation value using this method.
-     * @param annotationIndex
-     * @param content
+     * This method is used to set the annotation value in the linear gauge.
+     * @param annotationIndex - Specifies the index of the annotation.
+     * @param content - Specifies the text of the annotation.
      */
     setAnnotationValue(annotationIndex, content, axisValue) {
         let elementExist = getElement(this.element.id + '_Annotation_' + annotationIndex) === null;

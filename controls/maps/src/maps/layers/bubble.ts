@@ -55,7 +55,11 @@ export class Bubble {
             let shape: object = layerData[i];
             shape = shape['property'];
             let shapePath: string = checkPropertyPath(shapeData[layer.shapeDataPath], layer.shapePropertyPath, shape);
-            if (shapeData[layer.shapeDataPath] === shape[shapePath]) {
+            let shapeDataLayerPathValue : string = !isNullOrUndefined(shapeData[layer.shapeDataPath]) &&
+            isNaN(shapeData[layer.shapeDataPath]) ? shapeData[layer.shapeDataPath].toLowerCase() : shapeData[layer.shapeDataPath];
+            let shapePathValue : string =  !isNullOrUndefined(shape[shapePath]) && isNaN(shape[shapePath])
+            ? shape[shapePath].toLowerCase() : shape[shapePath];
+            if (shapeDataLayerPathValue === shapePathValue) {
                 if (layerData[i]['type'] === 'Point') {
                     shapePoints.push(this.getPoints(<Object[]>layerData[i], []));
                 } else if (!layerData[i]['_isMultiPolygon']) {

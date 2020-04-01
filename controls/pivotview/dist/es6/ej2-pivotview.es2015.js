@@ -162,8 +162,9 @@ class PivotUtil {
             alwaysShowValueHeader: dataSourceSettings.alwaysShowValueHeader,
             conditionalFormatSettings: this.cloneConditionalFormattingSettings(dataSourceSettings.conditionalFormatSettings),
             emptyCellsTextContent: dataSourceSettings.emptyCellsTextContent,
-            groupSettings: this.cloneGroupSettings(dataSourceSettings.groupSettings)
-            /* tslint:disable:no-any */
+            groupSettings: this.cloneGroupSettings(dataSourceSettings.groupSettings),
+            showAggregationOnValueField: dataSourceSettings.showAggregationOnValueField,
+            authentication: this.CloneAuthenticationObject(dataSourceSettings.authentication),
         });
         /* tslint:enable:no-any */
         return clonesDataSource;
@@ -204,8 +205,9 @@ class PivotUtil {
                     alwaysShowValueHeader: dataSourceSettings.alwaysShowValueHeader,
                     conditionalFormatSettings: dataSourceSettings.conditionalFormatSettings,
                     emptyCellsTextContent: dataSourceSettings.emptyCellsTextContent,
-                    groupSettings: dataSourceSettings.groupSettings
-                    /* tslint:disable:no-any */
+                    groupSettings: dataSourceSettings.groupSettings,
+                    showAggregationOnValueField: dataSourceSettings.showAggregationOnValueField,
+                    authentication: this.CloneAuthenticationObject(dataSourceSettings.authentication),
                 })
                 /* tslint:enable:no-any */
             });
@@ -339,6 +341,18 @@ class PivotUtil {
                 headerText: collection.headerText,
                 measure: collection.measure,
                 sortOrder: collection.sortOrder
+            };
+            return clonedCollection;
+        }
+        else {
+            return collection;
+        }
+    }
+    static CloneAuthenticationObject(collection) {
+        if (collection) {
+            let clonedCollection = {
+                userName: collection.userName,
+                password: collection.password
             };
             return clonedCollection;
         }
@@ -5576,6 +5590,7 @@ class AggregateMenu {
     }
     openContextMenu(args) {
         let fieldName = args.target.parentElement.id;
+        this.buttonElement = args.target.parentElement;
         let isStringField = this.parent.engineModule.fieldList[fieldName].type !== 'number' ? 1 : 0;
         this.summaryTypes = [...this.getMenuItem(isStringField)];
         let eventArgs = {
@@ -5632,6 +5647,9 @@ class AggregateMenu {
             items: menuItems[isStringField],
             enableRtl: this.parent.enableRtl,
             beforeOpen: this.beforeMenuOpen.bind(this, isStringField),
+            onClose: (args) => {
+                this.buttonElement.focus();
+            },
             select: this.selectOptionInContextMenu.bind(this)
         };
         let contextMenu = document.getElementById(this.parent.element.id + (isStringField ? 'valueFieldStringContextMenu' : 'valueFieldContextMenu'));
@@ -5700,6 +5718,7 @@ class AggregateMenu {
                     buttonModel: { cssClass: CANCEL_BUTTON_CLASS, content: this.parent.localeObj.getConstant('cancel') }
                 }
             ],
+            /* tslint:disable-next-line:max-line-length */
             closeOnEscape: (this.parent.getModuleName() === 'pivotfieldlist' && this.parent.renderMode === 'Popup') ? false : true,
             target: this.parentElement,
             overlayClick: () => { this.removeDialog(); },
@@ -5806,7 +5825,7 @@ class AggregateMenu {
                 optionWrapper3.enabled = baseItemTypes.indexOf(args.value) !== -1 ? true : false;
                 if (optionWrapper3.enabled && optionWrapper3.dataSource.length === 1) {
                     optionWrapper3.dataSource = fieldItemDataSource;
-                    optionWrapper3.refresh();
+                    optionWrapper3.dataBind();
                 }
             }
         });
@@ -5824,7 +5843,7 @@ class AggregateMenu {
                 optionWrapper3.dataSource = fieldItemDataSource;
                 optionWrapper3.value = fieldItemDataSource[0];
                 optionWrapper3.filterBarPlaceholder = popupInstance.parent.localeObj.getConstant('example') + ' ' + fieldItemDataSource[0];
-                optionWrapper3.refresh();
+                optionWrapper3.dataBind();
             }
         });
         optionWrapper2.isStringTemplate = true;
@@ -5938,6 +5957,7 @@ class AggregateMenu {
         this.updateDataSource(true);
     }
     removeDialog() {
+        this.buttonElement.focus();
         if (this.valueDialog && !this.valueDialog.isDestroyed) {
             this.valueDialog.destroy();
         }
@@ -6656,6 +6676,29 @@ class Render {
         }
         this.parent.trigger(contextMenuClick, args);
     }
+    validateColumnTotalcell(columnIndex) {
+        let headerPosKeys = Object.keys(this.engine.headerContent);
+        let keysLength = headerPosKeys.length;
+        let sumLock = false;
+        let fieldName = "";
+        for (let pos = keysLength - 1; pos >= 0; pos--) {
+            let cell = this.engine.headerContent[headerPosKeys[pos]][columnIndex];
+            if (cell) {
+                sumLock = sumLock && fieldName !== '' ? fieldName === cell.valueSort.axis : false;
+                fieldName = cell.valueSort.axis ? cell.valueSort.axis.toString() : '';
+                if (cell.type === 'sum') {
+                    sumLock = true;
+                }
+                if (sumLock && cell.members && cell.members.length > 0) {
+                    return true;
+                }
+            }
+            else {
+                return false;
+            }
+        }
+        return false;
+    }
     validateField(target) {
         let isValueField = false;
         if (target.classList.contains('e-stot') || target.classList.contains('e-gtot') || target.classList.contains('e-valuescontent') || target.classList.contains('e-valuesheader')) {
@@ -6960,6 +7003,9 @@ class Render {
                 if (cell.isGrandSum) {
                     tCell.classList.add('e-gtot');
                 }
+                else if (this.parent.dataType === 'olap' ? cell.isSum : this.validateColumnTotalcell(!isNullOrUndefined(cell.value) ? cell.colIndex : cell.colIndex - 1)) {
+                    tCell.classList.add('e-colstot');
+                }
                 if (cell.cssClass) {
                     tCell.classList.add(cell.cssClass);
                 }
@@ -7150,12 +7196,18 @@ class Render {
                             this.parent.dataSourceSettings.columns[level].name : '';
                         tCell.setAttribute('fieldname', fieldName);
                     }
+                    if (this.validateColumnTotalcell(cell.colIndex)) {
+                        tCell.classList.add('e-colstot');
+                    }
                 }
                 else {
                     tCell = this.onOlapColumnCellBoundEvent(tCell, cell);
                 }
                 if (cell.type) {
                     tCell.classList.add(cell.type === 'grand sum' ? 'e-gtot' : 'e-stot');
+                    if (cell.type !== 'grand sum') {
+                        tCell.classList.add('e-colstot');
+                    }
                     let localizedText = cell.type === 'grand sum' ? this.parent.localeObj.getConstant('grandTotal') :
                         cell.formattedText.split('Total')[0] + this.parent.localeObj.getConstant('total');
                     if (tCell.querySelector('.e-headertext') !== null) {
@@ -7387,7 +7439,7 @@ class Render {
         let gridHeight = this.parent.height;
         let parHeight = this.parent.getHeightAsNumber();
         if (isNaN(parHeight)) {
-            parHeight = this.parent.element.offsetHeight > 0 ? this.parent.element.offsetHeight : 1;
+            parHeight = parHeight > 300 ? parHeight : 300;
         }
         if (this.parent.currentView !== 'Chart') {
             if (this.gridSettings.height === 'auto' && parHeight && this.parent.element.querySelector('.' + GRID_HEADER)) {
@@ -7685,7 +7737,9 @@ class CommonKeyboardInteraction {
             shiftE: 'shift+E',
             delete: 'delete',
             enter: 'enter',
-            escape: 'escape'
+            escape: 'escape',
+            upArrow: 'upArrow',
+            downArrow: 'downArrow'
         };
         this.parent = parent;
         this.parent.element.tabIndex = this.parent.element.tabIndex === -1 ? 0 : this.parent.element.tabIndex;
@@ -7715,23 +7769,48 @@ class CommonKeyboardInteraction {
             case 'escape':
                 this.processClose(e);
                 break;
+            case 'upArrow':
+            case 'downArrow':
+                this.processFilterNodeSelection(e);
+                break;
         }
+    }
+    getButtonElement(target) {
+        let allPivotButtons = [].slice.call(this.parent.element.querySelectorAll('.' + PIVOT_BUTTON_CLASS));
+        for (let i = 0, len = allPivotButtons.length; i < len; i++) {
+            if (allPivotButtons[i].getAttribute('data-uid') === target.getAttribute('data-uid')) {
+                return allPivotButtons[i];
+            }
+        }
+        return target;
     }
     processEnter(e) {
         let target = e.target;
-        if (target && closest(target, '.' + PIVOT_BUTTON_CLASS) &&
-            closest(target, '.' + VALUE_AXIS_CLASS)) {
-            target.querySelector('.' + AXISFIELD_ICON_CLASS).click();
-            closest(target, '.' + PIVOT_BUTTON_CLASS).focus();
+        if (target && closest(target, '.' + PIVOT_BUTTON_CLASS)) {
+            if (target.querySelector('.' + AXISFIELD_ICON_CLASS) && closest(target, '.' + VALUE_AXIS_CLASS)) {
+                target.querySelector('.' + AXISFIELD_ICON_CLASS).click();
+            }
+            else if (target.querySelector('.' + CALC_EDIT)) {
+                target.querySelector('.' + CALC_EDIT).click();
+            }
+            else if (target.querySelector('.' + SORT_CLASS) &&
+                !closest(target, '.' + VALUE_AXIS_CLASS) && !closest(target, '.' + AXIS_FILTER_CLASS)) {
+                target.querySelector('.' + SORT_CLASS).click();
+                this.getButtonElement(target).focus();
+            }
+            else if (target.querySelector('.' + FILTER_COMMON_CLASS) && !closest(target, '.' + VALUE_AXIS_CLASS)) {
+                target.querySelector('.' + FILTER_COMMON_CLASS).click();
+            }
             e.preventDefault();
             return;
         }
     }
     processSort(e) {
         let target = e.target;
-        if (target && closest(target, '.' + PIVOT_BUTTON_CLASS) &&
+        if (target && closest(target, '.' + PIVOT_BUTTON_CLASS) && target.querySelector('.' + SORT_CLASS) &&
             !closest(target, '.' + VALUE_AXIS_CLASS) && !closest(target, '.' + AXIS_FILTER_CLASS)) {
             target.querySelector('.' + SORT_CLASS).click();
+            this.getButtonElement(target).focus();
             e.preventDefault();
             return;
         }
@@ -7746,15 +7825,72 @@ class CommonKeyboardInteraction {
     }
     processFilter(e) {
         let target = e.target;
-        if (target && closest(target, '.' + PIVOT_BUTTON_CLASS) && !closest(target, '.' + VALUE_AXIS_CLASS)) {
+        if (target && closest(target, '.' + PIVOT_BUTTON_CLASS) && target.querySelector('.' + FILTER_COMMON_CLASS) &&
+            !closest(target, '.' + VALUE_AXIS_CLASS)) {
             target.querySelector('.' + FILTER_COMMON_CLASS).click();
+            if (this.parent && this.parent.control && this.parent.moduleName === 'pivotview' &&
+                this.parent.control.grid && this.parent.control.showGroupingBar &&
+                this.parent.control.groupingBarModule && closest(target, '.' + GROUP_ROW_CLASS) &&
+                this.parent.filterDialog && this.parent.filterDialog.dialogPopUp &&
+                !this.parent.filterDialog.dialogPopUp.isDestroyed && this.parent.filterDialog.dialogPopUp.element) {
+                let dialogElement = this.parent.filterDialog.dialogPopUp.element;
+                let isExcelFilter = this.parent.filterDialog.allowExcelLikeFilter;
+                clearTimeout(this.timeOutObj);
+                this.timeOutObj = setTimeout(() => {
+                    if (dialogElement && dialogElement.classList.contains('e-popup-open')) {
+                        if (isExcelFilter && dialogElement.querySelector('.e-dlg-closeicon-btn')) {
+                            dialogElement.querySelector('.e-dlg-closeicon-btn').focus();
+                        }
+                        else if (dialogElement.querySelector('input')) {
+                            dialogElement.querySelector('input').focus();
+                        }
+                    }
+                });
+            }
             e.preventDefault();
             return;
         }
     }
+    processFilterNodeSelection(e) {
+        let target = e.target;
+        if (target && closest(target, '.' + SELECT_ALL_CLASS) && e.keyCode === 40) {
+            /* tslint:disable-next-line:max-line-length */
+            let memberEditorTree = closest(target, '.' + EDITOR_TREE_WRAPPER_CLASS).querySelector('.' + EDITOR_TREE_CONTAINER_CLASS);
+            if (memberEditorTree && memberEditorTree.querySelector('li')) {
+                let firstLi = memberEditorTree.querySelector('li');
+                if (memberEditorTree.querySelector('li#_active')) {
+                    removeClass([memberEditorTree.querySelector('li#_active')], ['e-hover', 'e-node-focus']);
+                    memberEditorTree.querySelector('li#_active').removeAttribute('id');
+                }
+                firstLi.setAttribute('id', '_active');
+                addClass([firstLi], ['e-hover', 'e-node-focus']);
+                memberEditorTree.focus();
+                e.preventDefault();
+                return;
+            }
+        }
+        else if (target && closest(target, '.' + EDITOR_TREE_CONTAINER_CLASS) && e.keyCode === 38) {
+            let memberEditorTree = closest(target, '.' + EDITOR_TREE_CONTAINER_CLASS);
+            if (memberEditorTree.querySelector('li#_active.e-hover.e-node-focus') && memberEditorTree.querySelector('li') &&
+                memberEditorTree.querySelector('li').classList.contains('e-prev-active-node') &&
+                memberEditorTree.querySelector('li') === memberEditorTree.querySelector('li#_active.e-hover.e-node-focus')) {
+                removeClass(memberEditorTree.querySelectorAll('li.e-prev-active-node'), 'e-prev-active-node');
+                /* tslint:disable-next-line:max-line-length */
+                let allMemberEditorTree = closest(target, '.' + EDITOR_TREE_WRAPPER_CLASS).querySelector('.' + SELECT_ALL_CLASS);
+                if (allMemberEditorTree && allMemberEditorTree.querySelector('li')) {
+                    let firstLi = allMemberEditorTree.querySelector('li');
+                    firstLi.setAttribute('id', '_active');
+                    addClass([firstLi], ['e-hover', 'e-node-focus']);
+                    allMemberEditorTree.focus();
+                    e.preventDefault();
+                    return;
+                }
+            }
+        }
+    }
     processDelete(e) {
         let target = e.target;
-        if (target && closest(target, '.' + PIVOT_BUTTON_CLASS)) {
+        if (target && closest(target, '.' + PIVOT_BUTTON_CLASS) && target.querySelector('.' + REMOVE_CLASS)) {
             target.querySelector('.' + REMOVE_CLASS).click();
             e.preventDefault();
             return;
@@ -7763,6 +7899,7 @@ class CommonKeyboardInteraction {
     processClose(e) {
         let target = e.target;
         if (target && closest(target, '.e-popup.e-popup-open')) {
+            /* tslint:disable-next-line:max-line-length */
             let dialogInstance = closest(target, '.e-popup.e-popup-open').ej2_instances[0];
             if (dialogInstance && !dialogInstance.closeOnEscape) {
                 dialogInstance.hide();
@@ -8800,14 +8937,14 @@ class FilterDialog {
             buttons: [
                 {
                     buttonModel: {
-                        cssClass: OK_BUTTON_CLASS, content: this.parent.localeObj.getConstant('ok'), isPrimary: true
+                        cssClass: 'e-clear-filter-button' + (this.allowExcelLikeFilter ? '' : ' ' + ICON_DISABLE),
+                        iconCss: 'e-icons e-clear-filter-icon', enableRtl: this.parent.enableRtl,
+                        content: this.parent.localeObj.getConstant('clearFilter'), disabled: (this.filterObject ? false : true)
                     }
                 },
                 {
                     buttonModel: {
-                        cssClass: 'e-clear-filter-button' + (this.allowExcelLikeFilter ? '' : ' ' + ICON_DISABLE),
-                        iconCss: 'e-icons e-clear-filter-icon', enableRtl: this.parent.enableRtl,
-                        content: this.parent.localeObj.getConstant('clearFilter'), disabled: (this.filterObject ? false : true)
+                        cssClass: OK_BUTTON_CLASS, content: this.parent.localeObj.getConstant('ok'), isPrimary: true
                     }
                 },
                 {
@@ -9119,6 +9256,10 @@ class FilterDialog {
             else {
                 memberObj.checkAll(checkedNode);
             }
+        }
+        else if (args.event.keyCode === 38 && !isAllMember) {
+            removeClass(this.memberTreeView.element.querySelectorAll('li.e-prev-active-node'), 'e-prev-active-node');
+            addClass(checkedNode, 'e-prev-active-node');
         }
     }
     /* tslint:enable:no-any */
@@ -9998,7 +10139,34 @@ var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, 
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /**
- * Configures the fields in dataSource.
+ * Allows specific fields associated with field information that needs to be displayed in the field axes of pivot table. The following configurations which are applicable are as follows:
+ * * `name`: Allows you to set the field name that needs to be displayed in row/column/value/filter axis of pivot table.
+ * * `caption`: Allows you to set caption to the specific field. It will be used to display instead of its name in pivot table component's UI.
+ * * `type`: Allows to display the values in the pivot table with appropriate aggregations such as sum, product, count, average, etc… **Note: It is applicable only for relational data source.**
+ * * `axis`: Allows you to set the axis name to the specific field. This will help to display the field in specified axis such as row/column/value/filter axis of pivot table.
+ * * `showNoDataItems`: Allows you to display all members items of a specific field to the pivot table,
+ * even doesn't have any data in its row/column intersection in data source. **Note: It is applicable only for relational data source.**
+ * * `baseField`: Allows you to set the selective field, which used to display the values with either
+ *  DifferenceFrom or PercentageOfDifferenceFrom or PercentageOfParentTotal aggregate types. **Note: It is applicable only for relational data source.**
+ * * `baseItem`: Allows you to set the selective item of a specific field, which used to display the values with either DifferenceFrom or PercentageOfDifferenceFrom aggregate types.
+ * The selective item should be set the from field specified in the baseField property. **Note: It is applicable only for relational data source.**
+ * * `showSubTotals`: Allows to show or hide sub-totals to a specific field in row/column axis of the pivot table.
+ * * `isNamedSet`: Allows you to set whether the specified field is a named set or not. In general,
+ * the named set is a set of dimension members or a set expression (MDX query) to be created as a dimension in the SSAS OLAP cube itself. **Note: It is applicable only for OLAP data source.**
+ * * `isCalculatedField`: Allows to set whether the specified field is a calculated field or not.
+ * In general, the calculated field is created from the bound data source or using simple formula with basic arithmetic operators in the pivot table. **Note: It is applicable only for OLAP data source.**
+ * * `showFilterIcon`: Allows you to show or hide the filter icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI.
+ * This filter icon is used to filter the members of a specified field at runtime in the pivot table.
+ * * `showSortIcon`: Allows you to show or hide the sort icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI.
+ * This sort icon is used to order members of a specified field either in ascending or descending at runtime.
+ * * `showRemoveIcon`: Allows you to show or hide the remove icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI.
+ * This remove icon is used to remove the specified field during runtime.
+ * * `showValueTypeIcon`: Allows you to show or hide the value type icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI.
+ * This value type icon helps to select the appropriate aggregation type to specified value field at runtime.
+ * * `showEditIcon`: Allows you to show or hide the edit icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI.
+ * This edit icon is used to modify caption, formula, and format of a specified calculated field at runtime that to be displayed in the pivot table.
+ * * `allowDragAndDrop`: Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI.
+ * This will prevent you from modifying the current report.
  */
 class FieldOptions extends ChildProperty {
 }
@@ -10050,9 +10218,39 @@ __decorate$1([
 __decorate$1([
     Property(true)
 ], FieldOptions.prototype, "allowDragAndDrop", void 0);
+/**
+ * Allows specific fields associated with field information that needs to be displayed in the field axes of pivot table. The following configurations which are applicable are as follows:
+ * * `name`: Allows you to set the field name that needs to be displayed in row/column/value/filter axis of pivot table.
+ * * `caption`: Allows you to set caption to the specific field. It will be used to display instead of its name in pivot table component's UI.
+ * * `type`: Allows to display the values in the pivot table with appropriate aggregations such as sum, product, count, average, etc… **Note: It is applicable only for relational data source.**
+ * * `axis`: Allows you to set the axis name to the specific field. This will help to display the field in specified axis such as row/column/value/filter axis of pivot table.
+ * * `showNoDataItems`: Allows you to display all members items of a specific field to the pivot table,
+ * even doesn't have any data in its row/column intersection in data source. **Note: It is applicable only for relational data source.**
+ * * `baseField`: Allows you to set the selective field, which used to display the values with either
+ *  DifferenceFrom or PercentageOfDifferenceFrom or PercentageOfParentTotal aggregate types. **Note: It is applicable only for relational data source.**
+ * * `baseItem`: Allows you to set the selective item of a specific field, which used to display the values with either DifferenceFrom or PercentageOfDifferenceFrom aggregate types.
+ * The selective item should be set the from field specified in the baseField property. **Note: It is applicable only for relational data source.**
+ * * `showSubTotals`: Allows to show or hide sub-totals to a specific field in row/column axis of the pivot table.
+ * * `isNamedSet`: Allows you to set whether the specified field is a named set or not. In general,
+ * the named set is a set of dimension members or a set expression (MDX query) to be created as a dimension in the SSAS OLAP cube itself. **Note: It is applicable only for OLAP data source.**
+ * * `isCalculatedField`: Allows to set whether the specified field is a calculated field or not.
+ * In general, the calculated field is created from the bound data source or using simple formula with basic arithmetic operators in the pivot table. **Note: It is applicable only for OLAP data source.**
+ * * `showFilterIcon`: Allows you to show or hide the filter icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI.
+ * This filter icon is used to filter the members of a specified field at runtime in the pivot table.
+ * * `showSortIcon`: Allows you to show or hide the sort icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI.
+ * This sort icon is used to order members of a specified field either in ascending or descending at runtime.
+ * * `showRemoveIcon`: Allows you to show or hide the remove icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI.
+ * This remove icon is used to remove the specified field during runtime.
+ * * `showValueTypeIcon`: Allows you to show or hide the value type icon of a specific field that used to be displayed in the pivot button of the grouping bar and field list UI.
+ * This value type icon helps to select the appropriate aggregation type to specified value field at runtime.
+ * * `showEditIcon`: Allows you to show or hide the edit icon of a specific field that used to be displayed on the pivot button of the grouping bar and field list UI.
+ * This edit icon is used to modify caption, formula, and format of a specified calculated field at runtime that to be displayed in the pivot table.
+ * * `allowDragAndDrop`: Allows you to restrict the specific field's pivot button that is used to drag on runtime in the grouping bar and field list UI.
+ * This will prevent you from modifying the current report.
+ */
 
 /**
- * Configures the style settings.
+ * Allows the style information to cusotmize the pivot table cell apprearance.
  */
 class Style extends ChildProperty {
 }
@@ -10069,7 +10267,7 @@ __decorate$1([
     Property()
 ], Style.prototype, "fontSize", void 0);
 /**
- * Configures the filter settings.
+ * Allows specific fields associated with either selective or conditional-based filter members that used to be displayed in the pivot table.
  */
 class Filter extends ChildProperty {
 }
@@ -10101,7 +10299,7 @@ __decorate$1([
     Property()
 ], Filter.prototype, "selectedField", void 0);
 /**
- * Configures the conditional format settings.
+ * Allows a collection of values fields to change the appearance of the pivot table value cells with different style properties such as background color, font color, font family, and font size based on specific conditions.
  */
 class ConditionalFormatSettings extends ChildProperty {
 }
@@ -10127,7 +10325,7 @@ __decorate$1([
     Property(true)
 ], ConditionalFormatSettings.prototype, "applyGrandTotals", void 0);
 /**
- * Configures the sort settings.
+ * Allows specific fields associated with sort settings to order their members either in ascending or descending that used to be displayed in the pivot table.
  */
 class Sort extends ChildProperty {
 }
@@ -10138,7 +10336,8 @@ __decorate$1([
     Property('Ascending')
 ], Sort.prototype, "order", void 0);
 /**
- * Configures the format settings of value fields.
+ * Allows specific fields used to display the values with specific format that used to be displayed in the pivot table.
+ * For example, to display a specific field with currency formatted values in the pivot table, the set the `format` property to be **C**.
  */
 class FormatSettings extends ChildProperty {
 }
@@ -10176,7 +10375,9 @@ __decorate$1([
     Property()
 ], FormatSettings.prototype, "format", void 0);
 /**
- * Configures the group settings of fields.
+ * Allows specific fields to group their data on the basis of their type.
+ * For example, the date type fields can be formatted and displayed based on year, quarter, month, and more. Likewise, the number type fields can be grouped range-wise, such as 1-5, 6-10, etc.
+ * You can perform custom group to the string type fields that used to displayed in the pivot table.
  */
 class GroupSettings extends ChildProperty {
 }
@@ -10205,7 +10406,7 @@ __decorate$1([
     Property()
 ], GroupSettings.prototype, "customGroups", void 0);
 /**
- * Configures the custom group settings of fields.
+ * Allows to specify the custom group information of specific field to create custom groups.
  */
 class CustomGroups extends ChildProperty {
 }
@@ -10216,7 +10417,7 @@ __decorate$1([
     Property([])
 ], CustomGroups.prototype, "items", void 0);
 /**
- * Configures the calculatedfields settings.
+ * Allows options to create new calculated fields from the bound data source or using simple formula with basic arithmetic operators in the pivot table.
  */
 class CalculatedFieldSettings extends ChildProperty {
 }
@@ -10233,7 +10434,7 @@ __decorate$1([
     Property()
 ], CalculatedFieldSettings.prototype, "formatString", void 0);
 /**
- * Configures drilled state of field members.
+ * Allows specific fields used to display their the headers to be either expanded or collapsed in the pivot table.
  */
 class DrillOptions extends ChildProperty {
 }
@@ -10247,7 +10448,7 @@ __decorate$1([
     Property()
 ], DrillOptions.prototype, "delimiter", void 0);
 /**
- * Configures value sort settings.
+ * Allows to sort individual value field and its aggregated values either in row or column axis to ascending or descending order.
  */
 class ValueSortSettings extends ChildProperty {
 }
@@ -10264,7 +10465,8 @@ __decorate$1([
     Property()
 ], ValueSortSettings.prototype, "measure", void 0);
 /**
- * Configures value sort settings.
+ * Allows you to set the credential information to access the specified SSAS cube.
+ * > It is applicable only for OLAP data source.
  */
 class Authentication extends ChildProperty {
 }
@@ -10275,7 +10477,53 @@ __decorate$1([
     Property()
 ], Authentication.prototype, "password", void 0);
 /**
- * Configures the settings of dataSource.
+ * Allows the following pivot report information such as rows, columns, values, filters, etc., that are used to render the pivot table and field list.
+ * * `catalog`: Allows to set the database name of SSAS cube as string type that used to retrieve the data from the specified connection string. **Note: It is applicable only for OLAP data source.**
+ * * `cube`: Allows you to set the SSAS cube name as string type that used to retrieve data for pivot table rendering. **Note: It is applicable only for OLAP data source.**
+ * * `providerType`: Allows to set the provider type to identify the given connection is either Relational or SSAS to render the pivot table and field list.
+ * * `url`: Allows to set the URL as string type, which helps to identify the service endpoint where the data are processed and retrieved to render the pivot table and field list. **Note: It is applicable only for OLAP data source.**
+ * * `localeIdentifier`: Allows you to set the specific culture code as number type to render pivot table with desired localization.
+ * By default, the pivot table displays with culture code **1033**, which indicates "en-US" locale. **Note: It is applicale only for OLAP data source.**
+ * * `dataSource`: Allows you to set the data source as JSON collection to the pivot report either from local or from remote server to the render the pivot that and field list.
+ * You can fetch JSON data from remote server by using DataManager. **Note: It is applicable only for relational data source.**
+ * * `rows`: Allows specific fields associated with field information that needs to be displayed in row axis of pivot table.
+ * * `columns`: Allows specific fields associated with field information that needs to be displayed in column axis of pivot table.
+ * * `values`: Allows specific fields associated with field information that needs to be displayed as aggregated numeric values in pivot table.
+ * * `filters`: Allows to filter the values in other axis based on the collection of filter fields in pivot table.
+ * * `excludeFields`: Allows you to restrict the specific field(s) from displaying it in the field list UI.
+ * You may also be unable to render the pivot table with this field(s) by doing so. **Note: It is applicable only for relational data source.**
+ * * `expandAll`: Allows you to either expand or collapse all the headers that are displayed in the pivot table.
+ * By default, all the headers are collapsed in the pivot table. **Note: It is applicable only for Relational data.**
+ * * `valueAxis`: Allows you to set the value fields that to be plotted either in row or column axis in the pivot table.
+ * * `filterSettings`: Allows specific fields associated with either selective or conditional-based filter members that used to be displayed in the pivot table.
+ * * `sortSettings`: Allows specific fields associated with sort settings to order their members either in ascending or descending that used to be displayed in the pivot table.
+ * By default, the data source containing fields are display with Ascending order alone. To use this option, it requires the `enableSorting` property to be **true**.
+ * * `enableSorting`: Allows to perform sort operation to order members of a specific fields either in ascending or descending that used to be displayed in the pivot table.
+ * * `formatSettings`: Allows specific fields used to display the values with specific format that used to be displayed in the pivot table.
+ * For example, to display a specific field with currency formatted values in the pivot table, the set the `format` property to be **C**.
+ * * `drilledMembers`: Allows specific fields used to display their the headers to be either expanded or collapsed in the pivot table.
+ * * `valueSortSettings`: Allows to sort individual value field and its aggregated values either in row or column axis to ascending or descending order.
+ * * `calculatedFieldSettings`: Allows to create new calculated fields from the bound data source or using simple formula with basic arithmetic operators in the pivot table.
+ * * `allowMemberFilter`: Allows to perform filter operation based on the selective filter members of the specific fields used to be displayed in the pivot table.
+ * * `allowLabelFilter`: Allows to perform filter operation based on the selective headers used to be displayed in the pivot table.
+ * * `allowValueFilter`: Allows to perform filter operation based only on value fields and its resultant aggregated values over other fields defined in row and column axes that used to be displayed in the pivot table.
+ * * `showSubTotals`: Allows to show or hide sub-totals in both rows and columns axis of the pivot table.
+ * * `showRowSubTotals`: Allows to show or hide sub-totals in row axis of the pivot table.
+ * * `showColumnSubTotals`: Allows to show or hide sub-totals in column axis of the pivot table.
+ * * `showGrandTotals`: Allows to show or hide grand totals in both rows and columns axis of the pivot table.
+ * * `showRowGrandTotals`: Allows to show or hide grand totals in row axis of the pivot table.
+ * * `showColumnGrandTotals`: Allows to show or hide grand totals in column axis of the pivot table.
+ * * `showHeaderWhenEmpty`: Allows the undefined headers to be displayed in the pivot table, when the specific field(s) are not defined in the raw data.
+ * For example, if the raw data for the field ‘Country’ is defined as “United Kingdom” and “State” is not defined means, it will be shown as “United Kingdom >> Undefined” in the header section.
+ * * `alwaysShowValueHeader`: Allows to show the value field header always in pivot table, even if it holds a single field in the value field axis.
+ * * `conditionalFormatSettings`: Allows a collection of values fields to change the appearance of the pivot table value cells with different style properties such as background color, font color, font family, and font size based on specific conditions.
+ * * `emptyCellsTextContent`: Allows to show custom string to the empty value cells that used to display in the pivot table. You can fill empty value cells with any value like “0”, ”-”, ”*”, “(blank)”, etc.
+ * * `groupSettings`: Allows specific fields to group their data on the basis of their type.
+ * For example, the date type fields can be formatted and displayed based on year, quarter, month, and more. Likewise, the number type fields can be grouped range-wise, such as 1-5, 6-10, etc.
+ * You can perform custom group to the string type fields that used to displayed in the pivot table.
+ * * `showAggregationOnValueField`: Allows the pivot button with specific value field caption along with the aggregation type, to be displayed in the grouping bar and field list UI.
+ * For example, if the value field "Sold Amount" is aggregated with Sum, it will be displayed with caption "Sum of Sold Amount" in its pivot button.
+ * * `authentication`: Allows you to set the credential information to access the specified SSAS cube. **Note: It is applicable only for OLAP data source**.
  */
 class DataSourceSettings extends ChildProperty {
 }
@@ -10462,7 +10710,7 @@ __decorate$2([
     Property({ mode: 'Row', cellSelectionMode: 'Flow', type: 'Single' })
 ], GridSettings.prototype, "selectionSettings", void 0);
 __decorate$2([
-    Property({ WrapMode: 'Both' })
+    Property({ wrapMode: 'Both' })
 ], GridSettings.prototype, "textWrapSettings", void 0);
 __decorate$2([
     Property('AllPages')
@@ -11148,17 +11396,20 @@ class KeyboardInteraction {
     constructor(parent) {
         this.keyConfigs = {
             tab: 'tab',
+            shiftTab: 'shift+tab',
             enter: 'enter',
             shiftUp: 'shift+upArrow',
             shiftDown: 'shift+downArrow',
             shiftLeft: 'shift+leftArrow',
             shiftRight: 'shift+rightArrow',
             shiftEnter: 'shift+enter',
+            ctrlEnter: 'ctrl+enter',
             upArrow: 'upArrow',
             downArrow: 'downArrow',
             leftArrow: 'leftArrow',
             rightArrow: 'rightArrow',
-            escape: 'escape'
+            escape: 'escape',
+            ctrlShiftF: 'ctrl+shift+f'
         };
         this.parent = parent;
         this.event = undefined;
@@ -11174,8 +11425,12 @@ class KeyboardInteraction {
             case 'tab':
                 this.processTab(e);
                 break;
+            case 'shiftTab':
+                this.processShiftTab(e);
+                break;
             case 'enter':
             case 'shiftEnter':
+            case 'ctrlEnter':
                 this.processEnter(e);
                 break;
             case 'shiftUp':
@@ -11191,56 +11446,59 @@ class KeyboardInteraction {
             case 'escape':
                 this.clearSelection();
                 break;
+            case 'ctrlShiftF':
+                this.toggleFieldList(e);
+                break;
         }
     }
     getNextButton(target) {
         let allPivotButtons = [].slice.call(this.parent.element.querySelectorAll('.' + PIVOT_BUTTON_CLASS));
-        let nextElement = target;
+        removeClass(allPivotButtons, 'e-btn-focused');
         if (this.parent.grid.element.querySelector('.' + PIVOT_BUTTON_CLASS)) {
             let len = allPivotButtons.length;
             for (let i = 0; i < len; i++) {
                 if (allPivotButtons[i].getAttribute('data-uid') === target.getAttribute('data-uid')) {
-                    nextElement = allPivotButtons[i + 1] ? allPivotButtons[i + 1] : nextElement;
-                    break;
+                    return (allPivotButtons[i + 1] ? allPivotButtons[i + 1] : target);
                 }
             }
         }
-        return nextElement;
+        return target;
+    }
+    getPrevButton(target) {
+        let allPivotButtons = [].slice.call(this.parent.element.querySelectorAll('.' + PIVOT_BUTTON_CLASS));
+        removeClass(allPivotButtons, 'e-btn-focused');
+        if (this.parent.grid.element.querySelector('.' + PIVOT_BUTTON_CLASS)) {
+            let len = allPivotButtons.length;
+            for (let i = 0; i < len; i++) {
+                if (allPivotButtons[i].getAttribute('data-uid') === target.getAttribute('data-uid')) {
+                    return (allPivotButtons[i - 1] ? allPivotButtons[i - 1] : target);
+                }
+            }
+        }
+        return target;
     }
     processTab(e) {
         let target = e.target;
-        if (target && closest(target, '.' + PIVOT_BUTTON_CLASS)) {
-            let gridFocus = this.parent.grid.serviceLocator.getService('focus');
-            let nextButton = this.getNextButton(target);
-            if (nextButton.getAttribute('data-uid') !== target.getAttribute('data-uid')) {
-                gridFocus.currentInfo.skipAction = true;
-                nextButton.focus();
-            }
-            else {
-                gridFocus.focus();
-                let element = gridFocus.getFocusedElement();
-                addClass([element], ['e-focused', 'e-focus']);
-                element.setAttribute('tabindex', '0');
-            }
-            e.preventDefault();
-            return;
-        }
-        else if (!this.parent.showGroupingBar && this.parent.showFieldList) {
-            if (target && closest(target, '.' + TOGGLE_FIELD_LIST_CLASS)) {
+        if (target && (closest(target, '.' + PIVOT_BUTTON_CLASS) || target.classList.contains('e-group-row'))) {
+            if (this.parent.grid) {
                 let gridFocus = this.parent.grid.serviceLocator.getService('focus');
-                gridFocus.focus();
-                let element = gridFocus.getFocusedElement();
-                addClass([element], ['e-focused', 'e-focus']);
-                element.setAttribute('tabindex', '0');
-            }
-        }
-        else if (!this.parent.showGroupingBar && !this.parent.showFieldList) {
-            if (target && closest(target, '.' + PIVOT_VIEW_CLASS)) {
-                let gridElement = closest(target, '.' + PIVOT_VIEW_CLASS);
-                let gridFocus = this.parent.grid.serviceLocator.getService('focus');
-                let rows = [].slice.call(gridElement.getElementsByTagName('tr'));
-                if (target.innerHTML === (rows[rows.length - 1]).lastChild.innerHTML) {
-                    gridFocus.currentInfo.skipAction = true;
+                if (target.classList.contains('e-group-row') && target.querySelector('.e-btn-focused')) {
+                    target = target.querySelector('.e-btn-focused');
+                }
+                let nextButton = this.getNextButton(target);
+                if (nextButton.getAttribute('data-uid') !== target.getAttribute('data-uid')) {
+                    if (this.parent.element.querySelector('.e-focused')) {
+                        this.parent.element.querySelector('.e-focused').setAttribute('tabindex', '-1');
+                        removeClass(this.parent.element.querySelectorAll('.e-focus'), 'e-focus');
+                        removeClass(this.parent.element.querySelectorAll('.e-focused'), 'e-focused');
+                        gridFocus.setFocusedElement(this.parent.element.querySelector('.e-headercell'));
+                        this.parent.element.querySelector('.e-headercell').setAttribute('tabindex', '0');
+                    }
+                    else {
+                        gridFocus.currentInfo.skipAction = true;
+                    }
+                    addClass([nextButton], 'e-btn-focused');
+                    nextButton.focus();
                 }
                 else {
                     gridFocus.focus();
@@ -11248,6 +11506,73 @@ class KeyboardInteraction {
                     addClass([element], ['e-focused', 'e-focus']);
                     element.setAttribute('tabindex', '0');
                 }
+                e.preventDefault();
+                return;
+            }
+        }
+        else if (!this.parent.showGroupingBar && this.parent.showFieldList) {
+            if (target && closest(target, '.' + TOGGLE_FIELD_LIST_CLASS)) {
+                if (this.parent.grid) {
+                    let gridFocus = this.parent.grid.serviceLocator.getService('focus');
+                    gridFocus.focus();
+                    let element = gridFocus.getFocusedElement();
+                    addClass([element], ['e-focused', 'e-focus']);
+                    element.setAttribute('tabindex', '0');
+                    e.preventDefault();
+                    return;
+                }
+            }
+        }
+        else if (!this.parent.showGroupingBar && !this.parent.showFieldList) {
+            if (target && closest(target, '.' + PIVOT_VIEW_CLASS) && !closest(target, '.e-popup.e-popup-open')) {
+                if (this.parent.grid) {
+                    let gridElement = closest(target, '.' + PIVOT_VIEW_CLASS);
+                    let gridFocus = this.parent.grid.serviceLocator.getService('focus');
+                    let rows = [].slice.call(gridElement.getElementsByTagName('tr'));
+                    if (target.innerHTML === (rows[rows.length - 1]).lastChild.innerHTML) {
+                        gridFocus.currentInfo.skipAction = true;
+                    }
+                    else {
+                        gridFocus.focus();
+                        let element = gridFocus.getFocusedElement();
+                        addClass([element], ['e-focused', 'e-focus']);
+                        element.setAttribute('tabindex', '0');
+                        e.preventDefault();
+                        return;
+                    }
+                }
+            }
+        }
+    }
+    processShiftTab(e) {
+        let target = e.target;
+        if (target && (closest(target, '.' + PIVOT_BUTTON_CLASS) || target.classList.contains('e-group-row'))) {
+            if (this.parent.grid) {
+                let gridFocus = this.parent.grid.serviceLocator.getService('focus');
+                if (target.classList.contains('e-group-row') && target.querySelector('.e-btn-focused')) {
+                    target = target.querySelector('.e-btn-focused');
+                }
+                let prevButton = this.getPrevButton(target);
+                if (prevButton.getAttribute('data-uid') !== target.getAttribute('data-uid')) {
+                    gridFocus.currentInfo.skipAction = true;
+                    prevButton.focus();
+                    e.preventDefault();
+                    return;
+                }
+            }
+        }
+        else if (target && this.parent.grid && (target.classList.contains('e-movablefirst') ||
+            (target.classList.contains('e-rowsheader') && closest(target, 'tr').getAttribute('data-uid') ===
+                this.parent.grid.element.querySelector('.e-frozencontent tr').getAttribute('data-uid')))) {
+            let gridFocus = this.parent.grid.serviceLocator.getService('focus');
+            let allPivotButtons = [].slice.call(this.parent.element.querySelectorAll('.' + PIVOT_BUTTON_CLASS));
+            if (allPivotButtons.length > 0) {
+                gridFocus.currentInfo.skipAction = true;
+                allPivotButtons[allPivotButtons.length - 1].focus();
+                removeClass(allPivotButtons, 'e-btn-focused');
+                addClass([allPivotButtons[allPivotButtons.length - 1]], 'e-btn-focused');
+                e.preventDefault();
+                return;
             }
         }
     }
@@ -11255,7 +11580,7 @@ class KeyboardInteraction {
         let target = e.target;
         if (target && closest(target, '.' + GRID_CLASS)) {
             let gridFocus = this.parent.grid.serviceLocator.getService('focus');
-            if (e.key === 'Enter' && !e.shiftKey) {
+            if (e.keyCode === 13 && !e.shiftKey && !e.ctrlKey) {
                 if (target.querySelector('.' + ICON)) {
                     this.event = e;
                     target.querySelector('.' + ICON).click();
@@ -11272,7 +11597,7 @@ class KeyboardInteraction {
                     }));
                 }
             }
-            else {
+            else if (e.keyCode === 13 && e.shiftKey && !e.ctrlKey) {
                 if (this.parent.enableValueSorting) {
                     this.event = e;
                     target.click();
@@ -11280,6 +11605,11 @@ class KeyboardInteraction {
                     let element = gridFocus.getFocusedElement();
                     addClass([element], ['e-focused', 'e-focus']);
                     element.setAttribute('tabindex', '0');
+                }
+            }
+            else if (e.keyCode === 13 && !e.shiftKey && e.ctrlKey) {
+                if (this.parent.hyperlinkSettings && target.querySelector('a')) {
+                    target.querySelector('a').click();
                 }
             }
             e.preventDefault();
@@ -11294,8 +11624,8 @@ class KeyboardInteraction {
         /* tslint:enable */
     }
     processSelection(e) {
-        if (this.parent.gridSettings.allowSelection && this.parent.gridSettings.selectionSettings.mode !== 'Row') {
-            let target = e.target;
+        let target = e.target;
+        if (this.parent.grid && this.parent.gridSettings.allowSelection && this.parent.gridSettings.selectionSettings.mode !== 'Row') {
             let control = this.parent;
             let colIndex = Number(e.target.getAttribute('aria-colIndex'));
             let rowIndex = Number(e.target.getAttribute('index'));
@@ -11352,6 +11682,21 @@ class KeyboardInteraction {
                 }
             }
         }
+        else if (target && (e.keyCode === 37 || e.keyCode === 38) &&
+            this.parent && this.parent.showGroupingBar && this.parent.groupingBarModule) {
+            if (this.parent.grid && this.parent.element.querySelector('.e-frozenheader') && this.parent.element.querySelector('.e-frozenheader').querySelectorAll('.e-focus').length > 0) {
+                removeClass(this.parent.element.querySelector('.e-frozenheader').querySelectorAll('.e-focus'), 'e-focus');
+                removeClass(this.parent.element.querySelector('.e-frozenheader').querySelectorAll('.e-focused'), 'e-focused');
+                this.parent.element.querySelector('.e-headercell').setAttribute('tabindex', '-1');
+                let gridFocus = this.parent.grid.serviceLocator.getService('focus');
+                gridFocus.setFocusedElement(target);
+                addClass([target], ['e-focused', 'e-focus']);
+                target.setAttribute('tabindex', '0');
+                target.focus();
+                e.preventDefault();
+                return;
+            }
+        }
         /* tslint:enable */
     }
     getParentElement(control, ele, colIndex, rowIndex) {
@@ -11360,6 +11705,23 @@ class KeyboardInteraction {
             colIndex--;
         }
         return ele;
+    }
+    toggleFieldList(e) {
+        let target = e.target;
+        if (this.parent && !this.parent.isDestroyed && this.parent.showFieldList &&
+            this.parent.pivotFieldListModule && !this.parent.pivotFieldListModule.isDestroyed &&
+            this.parent.element.querySelector('.' + TOGGLE_FIELD_LIST_CLASS)) {
+            if (!this.parent.element.querySelector('.' + TOGGLE_FIELD_LIST_CLASS).classList.contains(ICON_HIDDEN)) {
+                this.parent.element.querySelector('.' + TOGGLE_FIELD_LIST_CLASS).click();
+                e.preventDefault();
+                return;
+            }
+            else if (this.parent.element.querySelector('.' + TOGGLE_FIELD_LIST_CLASS).classList.contains(ICON_HIDDEN) &&
+                this.parent.pivotFieldListModule.dialogRenderer && this.parent.pivotFieldListModule.dialogRenderer.fieldListDialog &&
+                !this.parent.pivotFieldListModule.dialogRenderer.fieldListDialog.isDestroyed) {
+                this.parent.pivotFieldListModule.dialogRenderer.fieldListDialog.hide();
+            }
+        }
     }
     /**
      * To destroy the keyboard module.
@@ -11914,9 +12276,7 @@ class DrillThroughDialog {
                     dataSource: this.parent.editSettings.allowEditing ?
                         this.dataWithPrimarykey(eventArgs) : this.gridData,
                     height: !this.parent.editSettings.allowEditing ? 300 : 220
-                }, true);
-                /* tslint:enable:align */
-                this.drillThroughGrid.enableVirtualization = !this.parent.editSettings.allowEditing;
+                }, false);
             },
             beforeClose: () => {
                 if (this.parent.editSettings.allowEditing && this.isUpdated) {
@@ -12063,7 +12423,7 @@ class DrillThroughDialog {
             columns: eventArgs.gridColumns,
             locale: this.parent.locale,
             enableRtl: this.parent.enableRtl,
-            enableVirtualization: this.parent.editSettings.allowEditing,
+            enableVirtualization: !this.parent.editSettings.allowEditing,
             allowPaging: this.parent.editSettings.allowEditing
         });
         if (isBlazor()) {
@@ -13036,7 +13396,10 @@ class PivotChart {
     configTooltipSettings() {
         let tooltip = this.chartSettings.tooltip;
         tooltip.enable = tooltip.enable === undefined ? true : tooltip.enable;
-        if (this.parent.tooltipTemplate || tooltip.template) {
+        if (tooltip.enable && tooltip.template) {
+            this.templateFn = this.parent.templateParser(tooltip.template);
+        }
+        if (this.parent.tooltipTemplate) {
             tooltip.template = tooltip.template ? tooltip.template : this.parent.tooltipTemplate;
         }
         if (isBlazor()) {
@@ -13084,7 +13447,8 @@ class PivotChart {
     }
     tooltipRender(args) {
         let measure = args.series.yAxisName ? (args.series.yAxisName.split('_CumulativeAxis')[0]) :
-            (this.chartSettings.enableMultiAxis ? args.series.name.split(' | ')[1] : this.measuresNames[this.currentMeasure] ?
+            (this.chartSettings.enableMultiAxis ? args.series.name ? args.series.name.split(' | ')[1] : args.data.seriesName ?
+                args.data.seriesName.split(' | ')[1] : this.currentMeasure : this.measuresNames[this.currentMeasure] ?
                 this.measuresNames[this.currentMeasure] : this.currentMeasure);
         /* tslint:disable:no-any */
         let rowIndex = args.series.dataSource ? args.series.dataSource[args.data.pointIndex].rIndex : undefined;
@@ -13102,7 +13466,7 @@ class PivotChart {
             formattedText);
         let columnText = (args.series.name ? args.series.name.split(' | ')[0] : args.data.seriesName.split(' | ')[0]);
         let rowText = args.point.x;
-        if (this.parent.tooltipTemplate && this.parent.getTooltipTemplate() !== undefined) {
+        if (this.parent.tooltipTemplate && this.parent.getTooltipTemplate() !== undefined || this.chartSettings.tooltip.template) {
             let rowFields = args.series.dataSource ? this.parent.getHeaderField(rowIndex, colIndex, 'row') : '';
             let columnFields = args.series.dataSource ? this.parent.getHeaderField(rowIndex, colIndex, 'Column') : '';
             let templateVariable = {
@@ -13114,8 +13478,15 @@ class PivotChart {
                 rowFields: rowFields,
                 columnFields: columnFields
             };
-            /* tslint:enable:no-any */
-            let template = this.parent.getTooltipTemplate()(templateVariable, this, 'tooltipTemplate', this.element.id + 'tooltipTemplate')[0].outerHTML;
+            let template;
+            if (this.parent.chartSettings && this.parent.chartSettings.tooltip &&
+                this.parent.chartSettings.tooltip.enable && this.parent.chartSettings.tooltip.template) {
+                template = this.tooltipTemplateFn()(templateVariable, this, 'tooltipTemplate', this.element.id + '1tooltipTemplate')[0].outerHTML;
+            }
+            else {
+                /* tslint:enable:no-any */
+                template = this.parent.getTooltipTemplate()(templateVariable, this, 'tooltipTemplate', this.element.id + 'tooltipTemplate')[0].outerHTML;
+            }
             args.template = template;
         }
         else {
@@ -13126,6 +13497,9 @@ class PivotChart {
                     (' <br/>' + this.parent.localeObj.getConstant('row') + ': ' + rowText));
             this.parent.trigger(chartTooltipRender, args);
         }
+    }
+    tooltipTemplateFn() {
+        return this.templateFn;
     }
     loaded(args) {
         this.parent.isChartLoaded = true;
@@ -13444,7 +13818,7 @@ var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, 
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /**
- * Configures the animation behavior for chart series.
+ * Allows to configure the animation behavior for chart series such as animation duration and delay.
  */
 class Animation extends ChildProperty {
 }
@@ -13457,6 +13831,9 @@ __decorate$3([
 __decorate$3([
     Property(0)
 ], Animation.prototype, "delay", void 0);
+/**
+ * Allows to customize specific region for line type series with a variety of means such as value, color, pattern of dashes.
+ */
 class ChartSegment extends ChildProperty {
 }
 __decorate$3([
@@ -13469,7 +13846,7 @@ __decorate$3([
     Property('0')
 ], ChartSegment.prototype, "dashArray", void 0);
 /**
- * Configures the fonts in charts.
+ * Allows to customize the apprearance of the text in the chart such as font style, font size, font weight, font color, font family, text alignment, opacity, text overflow.
  */
 class Font extends ChildProperty {
 }
@@ -13498,7 +13875,7 @@ __decorate$3([
     Property('Trim')
 ], Font.prototype, "textOverflow", void 0);
 /**
- * Configures the chart margins.
+ * Allow options to customize the left, right, top and bottom margins of the pivot chart.
  */
 class Margin extends ChildProperty {
 }
@@ -13515,7 +13892,8 @@ __decorate$3([
     Property(10)
 ], Margin.prototype, "bottom", void 0);
 /**
- * Configures the borders in the chart.
+ * Allow options to customize the border of the chart such as color and border size in the pivot chart.
+ * For example, to display the chart border color as red, set the properties `color` to either **"red"** or **"#FF0000"** or **"rgba(255,0,0,1.0)"** and `width` to **0.5**.
  */
 class Border extends ChildProperty {
 }
@@ -13526,7 +13904,7 @@ __decorate$3([
     Property(1)
 ], Border.prototype, "width", void 0);
 /**
- * Configures the marker position in the chart.
+ * Allows to configure the position of the marker such as top and left in the chart.
  */
 class Offset extends ChildProperty {
 }
@@ -13537,7 +13915,8 @@ __decorate$3([
     Property(0)
 ], Offset.prototype, "y", void 0);
 /**
- * Series and point index
+ * Allows you to highlight a specific point of the series while rendering the pivot chart.
+ * For example, to highlight first point in the first series, set the properties series to 0 and points to 1. To use this option, it requires the property `selectionMode` to be **Point** or **Series**.
  * @public
  */
 class Indexes extends ChildProperty {
@@ -13549,7 +13928,8 @@ __decorate$3([
     Property(0)
 ], Indexes.prototype, "point", void 0);
 /**
- * Configures the chart area.
+ * Allow options to customize the chart area with a variety of settings such as background color, border, opacity and background image in the pivot chart.
+ * For example, to change the of the pivot chart's background, set the property `opacity` to **0.5**.
  */
 class ChartArea extends ChildProperty {
 }
@@ -13566,7 +13946,8 @@ __decorate$3([
     Property(null)
 ], ChartArea.prototype, "backgroundImage", void 0);
 /**
- * Configures the crosshair in the chart.
+ * Allow options to customize the crosshair line with different settings such as color and width of the line,
+ * line types that are shown horizontally and vertically to indicate the value of the axis at the mouse hover or touch position in the pivot chart.
  */
 class CrosshairSettings extends ChildProperty {
 }
@@ -13583,7 +13964,7 @@ __decorate$3([
     Property('Both')
 ], CrosshairSettings.prototype, "lineType", void 0);
 /**
- * Configures the data label in the series.
+ * Allows to configure the data label with different settings such as name, fill color, opacity, rotation angle, border, marging, etc in the chart.
  */
 class DataLabelSettings extends ChildProperty {
 }
@@ -13630,7 +14011,7 @@ __decorate$3([
     Property(null)
 ], DataLabelSettings.prototype, "template", void 0);
 /**
- *  Configures the marker in the series.
+ *  Allows to configure the marker of the series such as shape, width, height, border, position, fill color, opacity, data label etc in the chart
  */
 class MarkerSettings extends ChildProperty {
 }
@@ -13665,7 +14046,7 @@ __decorate$3([
     Complex({}, DataLabelSettings)
 ], MarkerSettings.prototype, "dataLabel", void 0);
 /**
- * Configures Error bar in series.
+ * Allows to configure the error bar cap settings such as cap width, length, color, opacity.
  */
 class ErrorBarCapSettings extends ChildProperty {
 }
@@ -13682,7 +14063,7 @@ __decorate$3([
     Property(1)
 ], ErrorBarCapSettings.prototype, "opacity", void 0);
 /**
- * Error bar settings
+ * Allows options for customize the error bar chart with diffent settings such as type, direction, mode, color, width, etc.
  * @public
  */
 class ErrorBarSettings extends ChildProperty {
@@ -13727,7 +14108,7 @@ __decorate$3([
     Complex(null, ErrorBarCapSettings)
 ], ErrorBarSettings.prototype, "errorBarCap", void 0);
 /**
- * Defines the behavior of the Trendlines
+ * Allows to configure the trendlines of the chart such as name, period, type, tooltip, marker, animation, color, legend shape, etc.
  */
 class Trendline extends ChildProperty {
 }
@@ -13777,7 +14158,7 @@ __decorate$3([
     Property('SeriesType')
 ], Trendline.prototype, "legendShape", void 0);
 /**
- * Configures the Empty Points of series
+ * Allows to configure the empty points with a variety of means such as fill color, border and mode in the chart.
  */
 class EmptyPointSettings extends ChildProperty {
 }
@@ -13791,7 +14172,7 @@ __decorate$3([
     Property('Gap')
 ], EmptyPointSettings.prototype, "mode", void 0);
 /**
- * Column series rounded corner options
+ * Allows to customize the rounded corners of the column series in the chart.
  */
 class CornerRadius extends ChildProperty {
 }
@@ -13808,7 +14189,7 @@ __decorate$3([
     Property(0)
 ], CornerRadius.prototype, "bottomRight", void 0);
 /**
- * Configures the crosshair ToolTip.
+ * Allows to configure the crosshair tooltip with text style and fill color in the chart.
  */
 class CrosshairTooltip extends ChildProperty {
 }
@@ -13822,7 +14203,7 @@ __decorate$3([
     Complex(Theme.crosshairLabelFont, Font)
 ], CrosshairTooltip.prototype, "textStyle", void 0);
 /**
- * Strip line properties
+ * Allows to congifure the strip line properties such as line position, size, color, size type, border, text and opacity in the chart.
  */
 class StripLineSettings extends ChildProperty {
 }
@@ -13896,7 +14277,7 @@ __decorate$3([
     Property(1)
 ], StripLineSettings.prototype, "opacity", void 0);
 /**
- * label border properties.
+ * Allows to customize the label border with a variety of means such as label color, width and labe type in the chart.
  */
 class LabelBorder extends ChildProperty {
 }
@@ -13910,7 +14291,7 @@ __decorate$3([
     Property('Rectangle')
 ], LabelBorder.prototype, "type", void 0);
 /**
- * Configures the major grid lines in the `axis`.
+ * Allows to configure the major grid lines such as line width, color and dashArray in the `axis`.
  */
 class MajorGridLines extends ChildProperty {
 }
@@ -13924,7 +14305,7 @@ __decorate$3([
     Property(null)
 ], MajorGridLines.prototype, "color", void 0);
 /**
- * Configures the minor grid lines in the `axis`.
+ * Allows to configure the minor grid lines such as line width, dashArray and color in the `axis`.
  */
 class MinorGridLines extends ChildProperty {
 }
@@ -13938,7 +14319,7 @@ __decorate$3([
     Property(null)
 ], MinorGridLines.prototype, "color", void 0);
 /**
- * Configures the axis line of a chart.
+ * Allows to configure the axis line such as line width, dashArray and color in a chart.
  */
 class AxisLine extends ChildProperty {
 }
@@ -13952,7 +14333,7 @@ __decorate$3([
     Property(null)
 ], AxisLine.prototype, "color", void 0);
 /**
- * Configures the major tick lines.
+ * Allows to configure the major tick lines such as width, height and color in the chart.
  */
 class MajorTickLines extends ChildProperty {
 }
@@ -13966,7 +14347,7 @@ __decorate$3([
     Property(null)
 ], MajorTickLines.prototype, "color", void 0);
 /**
- * Configures the minor tick lines.
+ * Allows to configure the minor tick lines such as width, height and color in the chart.
  */
 class MinorTickLines extends ChildProperty {
 }
@@ -13980,7 +14361,8 @@ __decorate$3([
     Property(null)
 ], MinorTickLines.prototype, "color", void 0);
 /**
- *  third party configures for chart series in chart settings.
+ * Allow options to customize the border of the chart series such as color and border size in the pivot chart.
+ * For example, to display the chart series border color as red, set the properties `color` to either **"red"** or **"#FF0000"** or **"rgba(255,0,0,1.0)"** and `width` to **0.5**.
  */
 class PivotChartSeriesBorder {
 }
@@ -13990,6 +14372,9 @@ __decorate$3([
 __decorate$3([
     Property(1)
 ], PivotChartSeriesBorder.prototype, "width", void 0);
+/**
+ * Allows to configure the animation behavior for chart series such as animation duration and delay.
+ */
 class PivotChartSeriesAnimation {
 }
 __decorate$3([
@@ -14001,6 +14386,9 @@ __decorate$3([
 __decorate$3([
     Property(0)
 ], PivotChartSeriesAnimation.prototype, "delay", void 0);
+/**
+ * Allows to customize specific region for line type series with a variety of means such as value, color, pattern of dashes.
+ */
 class PivotChartSeriesSegment {
 }
 __decorate$3([
@@ -14012,6 +14400,9 @@ __decorate$3([
 __decorate$3([
     Property('0')
 ], PivotChartSeriesSegment.prototype, "dashArray", void 0);
+/**
+ *  Allows to configure the marker of the series such as shape, width, height, border, position, fill color, opacity, data label etc in the chart
+ */
 class PivotChartSeriesMarkerSettings {
 }
 __decorate$3([
@@ -14041,6 +14432,9 @@ __decorate$3([
 __decorate$3([
     Complex({}, DataLabelSettings)
 ], PivotChartSeriesMarkerSettings.prototype, "dataLabel", void 0);
+/**
+ * Allows options for customize the error bar chart series with diffent settings such as type, direction, mode, color, width, etc.
+ */
 class PivotChartSeriesErrorSettings {
 }
 __decorate$3([
@@ -14082,6 +14476,9 @@ __decorate$3([
 __decorate$3([
     Complex(null, ErrorBarCapSettings)
 ], PivotChartSeriesErrorSettings.prototype, "errorBarCap", void 0);
+/**
+ * Allows to configure the trendlines of the chart series such as name, period, type, tooltip, marker, animation, color, legend shape, etc.
+ */
 class PivotChartSeriesTrendline {
 }
 __decorate$3([
@@ -14123,6 +14520,9 @@ __decorate$3([
 __decorate$3([
     Property('SeriesType')
 ], PivotChartSeriesTrendline.prototype, "legendShape", void 0);
+/**
+ * Allows to configure the empty points with a variety of means such as fill color, border and mode in the chart.
+ */
 class PivotChartSeriesEmptyPointSettings {
 }
 __decorate$3([
@@ -14134,6 +14534,9 @@ __decorate$3([
 __decorate$3([
     Property('Gap')
 ], PivotChartSeriesEmptyPointSettings.prototype, "mode", void 0);
+/**
+ * Allows to customize the rounded corners of the column series in the chart.
+ */
 class PivotChartSeriesCornerRadius {
 }
 __decorate$3([
@@ -14149,7 +14552,7 @@ __decorate$3([
     Property(0)
 ], PivotChartSeriesCornerRadius.prototype, "bottomRight", void 0);
 /**
- *  third party configures for chart axis in chart settings.
+ * Allows to customize the apprearance of the text in the chart such as font style, font size, font weight, font color, font family, text alignment, opacity, text overflow.
  */
 class PivotChartAxisFont {
 }
@@ -14177,6 +14580,9 @@ __decorate$3([
 __decorate$3([
     Property('Trim')
 ], PivotChartAxisFont.prototype, "textOverflow", void 0);
+/**
+ * Allows to configure the crosshair tooltip with text style and fill color in the chart.
+ */
 class PivotChartAxisCrosshairTooltip {
 }
 __decorate$3([
@@ -14188,6 +14594,9 @@ __decorate$3([
 __decorate$3([
     Complex(Theme.crosshairLabelFont, Font)
 ], PivotChartAxisCrosshairTooltip.prototype, "textStyle", void 0);
+/**
+ * Allows to configure the major tick lines such as width, height and color in the chart.
+ */
 class PivotChartAxisMajorTickLines {
 }
 __decorate$3([
@@ -14199,6 +14608,9 @@ __decorate$3([
 __decorate$3([
     Property(null)
 ], PivotChartAxisMajorTickLines.prototype, "color", void 0);
+/**
+ * Allows to configure the major grid lines such as line width, color and dashArray in the `axis`.
+ */
 class PivotChartAxisMajorGridLines {
 }
 __decorate$3([
@@ -14210,6 +14622,9 @@ __decorate$3([
 __decorate$3([
     Property(null)
 ], PivotChartAxisMajorGridLines.prototype, "color", void 0);
+/**
+ * Allows to configure the minor tick lines such as width, height and color in the chart.
+ */
 class PivotChartAxisMinorTickLines {
 }
 __decorate$3([
@@ -14221,6 +14636,9 @@ __decorate$3([
 __decorate$3([
     Property(null)
 ], PivotChartAxisMinorTickLines.prototype, "color", void 0);
+/**
+ * Allows to configure the minor grid lines such as line width, dashArray and color in the `axis`.
+ */
 class PivotChartAxisMinorGridLines {
 }
 __decorate$3([
@@ -14232,6 +14650,9 @@ __decorate$3([
 __decorate$3([
     Property(null)
 ], PivotChartAxisMinorGridLines.prototype, "color", void 0);
+/**
+ * Allows to configure the axis line such as line width, dashArray and color in a chart.
+ */
 class PivotChartAxisAxisLine {
 }
 __decorate$3([
@@ -14243,6 +14664,9 @@ __decorate$3([
 __decorate$3([
     Property(null)
 ], PivotChartAxisAxisLine.prototype, "color", void 0);
+/**
+ * Allows to congifure the strip line properties such as line position, size, color, size type, border, text and opacity in the chart.
+ */
 class PivotChartAxisStripLineSettings {
 }
 __decorate$3([
@@ -14314,6 +14738,9 @@ __decorate$3([
 __decorate$3([
     Property(1)
 ], PivotChartAxisStripLineSettings.prototype, "opacity", void 0);
+/**
+ * Allows to customize the label border with a variety of means such as label color, width and labe type in the chart.
+ */
 class PivotChartAxisLabelBorder {
 }
 __decorate$3([
@@ -14326,7 +14753,8 @@ __decorate$3([
     Property('Rectangle')
 ], PivotChartAxisLabelBorder.prototype, "type", void 0);
 /**
- *  third party configures in chart settings.
+ * Allow options to customize the chart area with a variety of settings such as background color, border, opacity and background image in the pivot chart.
+ * For example, to change the of the pivot chart's background, set the property `opacity` to **0.5**.
  */
 class PivotChartSettingsChartArea {
 }
@@ -14339,6 +14767,10 @@ __decorate$3([
 __decorate$3([
     Property(1)
 ], PivotChartSettingsChartArea.prototype, "opacity", void 0);
+/**
+ * Allow options to customize the crosshair line with different settings such as color and width of the line,
+ * line types that are shown horizontally and vertically to indicate the value of the axis at the mouse hover or touch position in the pivot chart.
+ */
 class PivotChartSettingsCrosshairSettings {
 }
 __decorate$3([
@@ -14353,6 +14785,10 @@ __decorate$3([
 __decorate$3([
     Property('Both')
 ], PivotChartSettingsCrosshairSettings.prototype, "lineType", void 0);
+/**
+ * Allow options for customizing legends with different properties such as legend visibility,
+ * height, width, position, legend padding, alignment, textStyle, border, margin, background, opacity, description, tabIndex in the pivot chart.
+ */
 class PivotChartSettingsLegendSettings {
 }
 __decorate$3([
@@ -14409,6 +14845,10 @@ __decorate$3([
 __decorate$3([
     Property(3)
 ], PivotChartSettingsLegendSettings.prototype, "tabIndex", void 0);
+/**
+ * Allows you to highlight a specific point of the series while rendering the pivot chart.
+ * For example, to highlight first point in the first series, set the properties series to 0 and points to 1. To use this option, it requires the property `selectionMode` to be **Point** or **Series**.
+ */
 class PivotChartSettingsIndexes {
 }
 __decorate$3([
@@ -14417,6 +14857,9 @@ __decorate$3([
 __decorate$3([
     Property(0)
 ], PivotChartSettingsIndexes.prototype, "point", void 0);
+/**
+ * Allow options to customize the left, right, top and bottom margins of the pivot chart.
+ */
 class PivotChartSettingsMargin {
 }
 __decorate$3([
@@ -14432,7 +14875,9 @@ __decorate$3([
     Property(10)
 ], PivotChartSettingsMargin.prototype, "bottom", void 0);
 /**
- *  Configures the series in charts.
+ * Allow options to customize the chart series with different settings such as fill color, animation of the series,
+ * series width, border, visibility of the series, opacity, chart series types, marker, tooltip, trendlines, etc., in the pivot chart.
+ * For example, to display the line type pivot chart, set the property `type` to **Line**.
  */
 class PivotSeries extends ChildProperty {
 }
@@ -14521,7 +14966,9 @@ __decorate$3([
     Property(0)
 ], PivotSeries.prototype, "columnSpacing", void 0);
 /**
- * Configures the axes in charts.
+ * Allow options to customize the axis with different properties such as labelIntersectAction, labelStyle, title,
+ * description, crosshairTooltip, labelFormat, titleStyle, plotOffset, edgeLabelPlacement, labelPlacement, tickPosition, opposedPosition, minor and
+ * major grid lines, minor and major tick lines, border, etc. in the pivot chart.
  */
 class PivotAxis extends ChildProperty {
 }
@@ -14625,7 +15072,8 @@ __decorate$3([
     Complex({ color: null, width: 0, type: 'Rectangle' }, LabelBorder)
 ], PivotAxis.prototype, "border", void 0);
 /**
- * Configures the ToolTips in the chart.
+ * Allow options to customize the tooltip of the pivot chart with different properties such as visibility of the tooltip, enableMarker, fill color, opacity, header for tooltip,
+ * format, textStyle, template, border, enableAnimation.
  */
 class PivotTooltipSettings extends ChildProperty {
 }
@@ -14663,7 +15111,8 @@ __decorate$3([
     Property(true)
 ], PivotTooltipSettings.prototype, "enableAnimation", void 0);
 /**
- * Configures the zooming behavior for the chart.
+ * Allow options to customize the pivot chart zooming with different properties such as enablePinchZooming, enableSelectionZooming,
+ * enableDeferredZooming, enableMouseWheelZooming, zoom modes, toolbarItems, enableScrollbar and enablePan.
  */
 class PivotZoomSettings extends ChildProperty {
 }
@@ -14692,7 +15141,53 @@ __decorate$3([
     Property(false)
 ], PivotZoomSettings.prototype, "enablePan", void 0);
 /**
- *  Configures the chart settings.
+ * Allows a set of options to customize a pivot chart with a variety of settings, such as chart series, chart area, axis labels, legends, border, crosshairs, theme, title, tooltip, zooming, etc.
+ * The following options are available to customize the pivot chart.
+ * * `background`: Allows you to change the background color of the chart series in the pivot chart.
+ * For example, to display the chart series with background color as red, set the property `background` to either **"red"** or **"#FF0000"** or **"rgba(255,0,0,1.0)"**.
+ * * `border`: Allow options to customize the border of the chart series such as color and border size in the pivot chart.
+ * For example, to display the chart series border color as red, set the properties `color` to either **"red"** or **"#FF0000"** or **"rgba(255,0,0,1.0)"** and `width` to **0.5**.
+ * * `chartArea`: Allow options to customize the chart area with a variety of settings such as background color, border, opacity and background image in the pivot chart.
+ * For example, to change the of the pivot chart's background, set the property `opacity` to **0.5**.
+ * * `chartSeries`: Allow options to customize the chart series with different settings such as fill color, animation of the series,
+ * series width, border, visibility of the series, opacity, chart series types, marker, tooltip, trendlines, etc., in the pivot chart.
+ * For example, to display the line type pivot chart, set the property `type` to **Line**.
+ * * `crosshair`: Allow options to customize the crosshair line with different settings such as color and width of the line,
+ * line types that are shown horizontally and vertically to indicate the value of the axis at the mouse hover or touch position in the pivot chart.
+ * * `description`: Allows you to add a description of the pivot chart.
+ * * `enableAnimation`: Allows you to enable/disable the tooltip animation while performing the mouse move from one point to another in the pivot chart.
+ * * `enableExport`: Allows the pivot chart to be exported to either **PDF** or **PNG** or **JPEG** or **SVG** filter formats.
+ * * `enableMultiAxis`: Allows you to draw the pivot chart with multiple value fields as separate chart area.
+ * * `enableSideBySidePlacement`: Allows you to draw points of the column type pivot chart series as side by side.
+ * * `isMultiSelect`: Allows you to perform multiple selection in the pivot chart. To enable this option, it requires the property `selectionMode` to be **Point** or **Series** or **Cluster**.
+ * * `isTransposed`: Allows you to render the pivot chart in a transposed manner or not.
+ * * `legendSettings`: Allow options for customizing legends with different properties such as legend visibility,
+ * height, width, position, legend padding, alignment, textStyle, border, margin, background, opacity, description, tabIndex in the pivot chart.
+ * * `margin`: Allow options to customize the left, right, top and bottom margins of the pivot chart.
+ * * `palettes`: Allows you to draw the chart series points with custom color in the pivot chart.
+ * * `primaryXAxis`: Allow options to customize the horzontal(row) axis with different properties such as labelIntersectAction, labelStyle, title,
+ * description, crosshairTooltip, labelFormat, titleStyle, plotOffset, edgeLabelPlacement, labelPlacement, tickPosition, opposedPosition, minor and
+ * major grid lines, minor and major tick lines, border, etc. in the pivot chart.
+ * * `primaryYAxis`: Allow options to customize the vertical(value) axis with different properties such as labelIntersectAction, labelStyle,
+ * title, description, crosshairTooltip, labelFormat, titleStyle, plotOffset, edgeLabelPlacement, labelPlacement, tickPosition, opposedPosition, minor and
+ * major grid lines, minor and major tick lines, border, etc. in the pivot chart.
+ * * `selectedDataIndexes`: Allows you to highlight a specific point of the series while rendering the pivot chart.
+ * For example, to highlight first point in the first series, set the properties series to 0 and points to 1. To use this option, it requires the property `selectionMode` to be **Point** or **Series**.
+ * * `selectionMode`: Allow options for customizing the selection mode to be done either by a specific series or point or cluster or by dragging it to the pivot chart.
+ * For example, to highlight a specific point in a specific series of the pivot chart, set the property `selectionMode` to **Point**.
+ * * `showMultiLevelLabels`: Allows you to display the multi-level label feature in the pivot chart. This multi-level labels used to perform drill operation in the pivot chart.
+ * * `subTitle`: Allows you to add the subtitle to the pivot chart.
+ * * `subTitleStyle`: Allow options to customize the subtitle in the pivot chart with different properties such as fontStyle, font size, fontWeight, font color, testAlignment, fontFamily, opacity, textOverflow.
+ * * `tabIndex`: Allows you to highlight specific legends by clicking the mouse or by interacting with the keyboard in the pivot chart.
+ * * `theme`: Allows you to draw a pivot chart with either material, fabric, bootstrap, highcontrast light, material dark, fabric dark, highcontrast, bootstrap dark, bootstrap4 theme.
+ * * `title`: Allows you to add title to the pivot chart.
+ * * `titleStyle`: Allow options to customize the title in the pivot chart with different properties such as fontStyle, font size, fontWeight, font color, testAlignment, fontFamily, opacity, textOverflow.
+ * * `tooltip`: Allow options to customize the tooltip of the pivot chart with different properties such as visibility of the tooltip, enableMarker, fill color, opacity, header for tooltip,
+ * format, textStyle, template, border, enableAnimation.
+ * * `useGroupingSeparator`: Allows the group separator to be shown to the values in the pivot chart.
+ * * `value`: Allows you to draw a pivot chart with a specific value field during initial loading.
+ * * `zoomSettings`: Allow options to customize the pivot chart zooming with different properties such as enablePinchZooming, enableSelectionZooming,
+ * enableDeferredZooming, enableMouseWheelZooming, zoom modes, toolbarItems, enableScrollbar and enablePan.
  */
 class ChartSettings extends ChildProperty {
 }
@@ -18646,7 +19141,20 @@ var __decorate = (undefined && undefined.__decorate) || function (decorators, ta
 };
 var PivotView_1;
 /**
- * It holds the settings of Grouping Bar.
+ * Allows a set of options for customizing the grouping bar UI with a variety of settings such as UI visibility to a specific view port,
+ * customizing the pivot button features such as filtering, sorting, changing aggregate types, removing any fields.
+ * The options available to customize the grouping bar UI are:
+ * * `showFilterIcon`: Allows you to show or hide the filter icon that used to be displayed on the pivot button of the grouping bar UI.
+ * This filter icon is used to filter the members of a particular field at runtime in the pivot table.
+ * * `showSortIcon`: Allows you to show or hide the sort icon that used to be displayed in the pivot button of the grouping bar UI.
+ * This sort icon is used to order members of a particular fields either in ascending or descending at runtime.
+ * * `showRemoveIcon`: Allows you to show or hide the remove icon that used to be displayed in the pivot button of the grouping bar UI.
+ * This remove icon is used to remove any field during runtime.
+ * * `showValueTypeIcon`: Allows you to show or hide the value type icon that used to be displayed in the pivot button of the grouping bar UI.
+ * This value type icon helps to select the appropriate aggregation type to value fields at runtime.
+ * * `displayMode`: Allow options to show the grouping bar UI to specific view port such as either pivot table or pivot chart or both table and chart.
+ * For example, to show the grouping bar UI to pivot table on its own, set the property `displayMode` to **Table**.
+ * * `allowDragAndDrop`: Allows you to restrict the pivot buttons that were used to drag on runtime in the grouping bar UI. This will prevent you from modifying the current report.
  */
 class GroupingBarSettings extends ChildProperty {
 }
@@ -18669,7 +19177,22 @@ __decorate([
     Property(true)
 ], GroupingBarSettings.prototype, "allowDragAndDrop", void 0);
 /**
- * Configures the edit behavior of the Grid.
+ * Allow options for performing CRUD operations, such as add, edit, delete, and update the raw items of any cell from the pivot table.
+ * The raw items can be viewed in a data grid that used to be displayed as a dialog by double-clicking the appropriate value cell in the pivot table.
+ * CRUD operations can be performed in this data grid either by double-clicking the cells or using toolbar options.
+ * The options available are as follows:
+ * * `allowAdding`: Allows you to add a new record to the data grid used to update the appropriate cells in the pivot table.
+ * * `allowEditing`: Allows you to edit the existing record in the data grid that used to update the appropriate cells in the pivot table.
+ * * `allowDeleting`: Allows you to delete the existing record from the data grid that used to  update the appropriate cells in the pivot table.
+ * * `allowCommandColumns`: Allows an additional column appended in the data grid layout holds the command buttons to perform the CRUD operations to edit,
+ * delete, and update the raw items to the data grid that used to update the appropriate cells in the pivot table.
+ * * `mode`: Allow options for performing CRUD operations with different modes in the data grid that used to update the appropriate cells in the pivot table.
+ * The available modes are normal, batch and dialog. **Normal** mode is enabled for CRUD operations in the data grid by default.
+ * * `allowEditOnDblClick`: Allows you to restrict CRUD operations by double-clicking the appropriate value cell in the pivot table.
+ * * `showConfirmDialog`: Allows you to show the confirmation dialog to save and discard CRUD operations performed in the data grid that used to update the appropriate cells in the pivot table.
+ * * `showDeleteConfirmDialog`: Allows you to show the confirmation dialog to delete any records from the data grid.
+ *
+ * > This feature is applicable only for the relational data source.
  */
 class CellEditSettings extends ChildProperty {
 }
@@ -18698,7 +19221,11 @@ __decorate([
     Property(false)
 ], CellEditSettings.prototype, "showDeleteConfirmDialog", void 0);
 /**
- * Configures the conditional based hyper link settings.
+ * Allow options for setting the visibility of hyperlink based on specific condition. The options available here are as follows:
+ * * `measure`: Allows you to specify the value field caption to get visibility of hyperlink option for specific measure.
+ * * `condition`: Allows you to choose the operator type such as equals, greater than, less than, etc.
+ * * `value1`: Allows you to set the start value.
+ * * `value2`: Allows you to set the end value. This option will be used by default when the operator **Between** and **NotBetween** is chosen to apply.
  */
 class ConditionalSettings extends ChildProperty {
 }
@@ -18718,7 +19245,19 @@ __decorate([
     Property()
 ], ConditionalSettings.prototype, "value2", void 0);
 /**
- * It holds the settings of Hyperlink.
+ * Allow a set of options to display a hyperlink to link data for individual cells that are shown in the pivot table.
+ * These options allow you to enable a separate hyperlink for row headers, column headers, value cells, and summary cells in the `hyperlinkSettings` class.
+ * The options available are:
+ * * `showHyperlink`: Allows you to set the visibility of hyperlink in all cells.
+ * * `showRowHeaderHyperlink`: Allows you to set the visibility of hyperlink in row headers.
+ * * `showColumnHeaderHyperlink`: Allows you to set the visibility of hyperlink in column headers.
+ * * `showValueCellHyperlink`: Allows you to set the visibility of hyperlink in value cells.
+ * * `showSummaryCellHyperlink`: Allows you to set the visibility of hyperlink in summary cells.
+ * * `headerText`: Allows you to set the visibility of hyperlink based on header text.
+ * * `conditionalSettings`: Allows you to set the visibility of hyperlink based on specific condition.
+ * * `cssClass`: Allows you to add CSS class name to the hyperlink options.
+ *
+ * > By default, the hyperlink options are disabled for all cells in the pivot table.
  */
 class HyperlinkSettings extends ChildProperty {
 }
@@ -18747,7 +19286,9 @@ __decorate([
     Property('')
 ], HyperlinkSettings.prototype, "cssClass", void 0);
 /**
- * It holds the option for configure the chart and grid view.
+ * Allow options to configure the view port as either pivot table or pivot chart or both table and chart. The options available are:
+ * * `view`: Allows you to choose the view port as either pivot table or pivot chart or both table and chart.
+ * * `primary`: Allows you to set the primary view to be either pivot table or pivot chart. To use this option, it requires the property `view` to be **Both**.
  */
 class DisplayOption extends ChildProperty {
 }
@@ -19122,7 +19663,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             drillError: 'Cannot show the raw items of calculated fields.',
             caption: 'Field Caption',
             copy: 'Copy',
-            defaultReport: 'Default report',
+            defaultReport: 'Sample Report',
             customFormatString: 'Custom Format',
             invalidFormat: 'Invalid Format.',
             group: 'Group',
@@ -19143,7 +19684,10 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             yes: 'Yes',
             no: 'No',
             numberFormatMenu: 'Number Formatting...',
-            conditionalFormatingMenu: 'Conditional Formatting...'
+            conditionalFormatingMenu: 'Conditional Formatting...',
+            removeCalculatedField: 'Are you sure you want to delete this calculated field?',
+            replaceConfirmBefore: 'A report named ',
+            replaceConfirmAfter: ' already exists. Do you want to replace it?'
         };
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
         this.renderContextMenu();
@@ -19745,6 +20289,9 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             }
         }
     }
+    /**
+     * Method to parse the template string.
+     */
     templateParser(template) {
         if (template) {
             try {
@@ -19758,6 +20305,9 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         }
         return undefined;
     }
+    /**
+     * Method to get the cell template.
+     */
     getCellTemplate() {
         return this.cellTemplateFn;
     }
@@ -19860,9 +20410,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                 && this.toolbarModule.action !== 'Remove') {
                 this.isModified = true;
             }
-            else {
-                this.toolbarModule.action = '';
-            }
+            this.toolbarModule.action = '';
         }
     }
     /**
@@ -20907,8 +21455,8 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         else {
             height = Number(this.height);
         }
-        if (height < this.gridSettings.rowHeight) {
-            height = this.gridSettings.rowHeight;
+        if (height < 300) {
+            height = 300;
         }
         return height;
     }
@@ -21060,7 +21608,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                         this.rowDeselect(ele, e, rowIndex, this.gridSettings.selectionSettings.mode, observedArgs);
                     }
                     if (this.gridSettings.selectionSettings.type === 'Multiple' &&
-                        (this.gridSettings.selectionSettings.mode === 'Row' || this.gridSettings.selectionSettings.mode === 'Both')) {
+                        (this.gridSettings.selectionSettings.mode === 'Row' || this.gridSettings.selectionSettings.mode === 'Both') && !observedArgs.cancel) {
                         this.applyRowSelection(0, rowIndex, e);
                     }
                 }
@@ -21075,7 +21623,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         }
     }
     rowDeselect(ele, e, rowIndex, mode, observedArgs) {
-        if (!e.shiftKey && !e.ctrlKey || this.gridSettings.selectionSettings.type === 'Single') {
+        if (!e.shiftKey && !e.ctrlKey && this.gridSettings.selectionSettings.mode !== 'Both' || this.gridSettings.selectionSettings.type === 'Single') {
             if (!ele.classList.contains(CELL_SELECTED_BGCOLOR) && !ele.classList.contains(SELECTED_BGCOLOR) && !ele.classList.contains(CELL_ACTIVE_BGCOLOR)) {
                 if (!observedArgs.cancel) {
                     removeClass(this.element.querySelectorAll('.' + CELL_SELECTED_BGCOLOR), CELL_SELECTED_BGCOLOR);
@@ -21094,7 +21642,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                     if ((mode === 'Cell')) {
                         addClass([ele], [CELL_SELECTED_BGCOLOR]);
                     }
-                    else if ((mode === 'Row' || mode === 'Both') || this.gridSettings.selectionSettings.type === 'Single') {
+                    else if (mode === 'Row' || this.gridSettings.selectionSettings.type === 'Single') {
                         let query = '[index="' + rowIndex + '"]';
                         addClass(this.element.querySelectorAll(query), [SELECTED_BGCOLOR, CELL_ACTIVE_BGCOLOR]);
                         if (mode !== 'Row') {
@@ -21107,7 +21655,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                 }
             }
         }
-        else if ((e.shiftKey || e.ctrlKey) && (observedArgs.cancel)) {
+        else if (((e.shiftKey || e.ctrlKey) || this.gridSettings.selectionSettings.mode == 'Both') && (observedArgs.cancel)) {
             removeClass(this.element.querySelectorAll('.' + CELL_SELECTED_BGCOLOR), CELL_SELECTED_BGCOLOR);
             removeClass(this.element.querySelectorAll('.' + SELECTED_BGCOLOR), SELECTED_BGCOLOR);
             removeClass(this.element.querySelectorAll('.' + CELL_ACTIVE_BGCOLOR), CELL_ACTIVE_BGCOLOR);
@@ -21851,6 +22399,11 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             }
         }
     }
+    removeButtonFocus(e) {
+        if (document.querySelectorAll('.e-btn-focused')) {
+            removeClass(document.querySelectorAll('.e-btn-focused'), 'e-btn-focused');
+        }
+    }
     /* tslint:enable */
     /* tslint:enable:max-func-body-length */
     wireEvents() {
@@ -21861,6 +22414,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             EventHandler.add(this.element, 'mouseup', this.mouseUpHandler, this);
             EventHandler.add(this.element, this.isAdaptive ? 'touchend' : 'contextmenu', this.mouseRclickHandler, this);
         }
+        EventHandler.add(document, this.isAdaptive ? 'touchend' : 'click', this.removeButtonFocus, this);
         window.addEventListener('resize', this.onWindowResize.bind(this), true);
     }
     unwireEvents() {
@@ -21873,6 +22427,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             EventHandler.remove(this.element, 'mouseup', this.mouseUpHandler);
             EventHandler.remove(this.element, this.isAdaptive ? 'touchend' : 'contextmenu', this.mouseRclickHandler);
         }
+        EventHandler.remove(document, this.isAdaptive ? 'touchend' : 'click', this.removeButtonFocus);
         window.removeEventListener('resize', this.onWindowResize.bind(this), true);
     }
     /**
@@ -23872,7 +24427,9 @@ class PivotButton {
                             let buttonElement = createElement('div', {
                                 id: field[i].name, className: PIVOT_BUTTON_CLASS + ' ' + field[i].name.replace(/[^A-Z0-9]/ig, ''),
                                 attrs: {
-                                    'data-uid': field[i].name, 'tabindex': '0', 'isvalue': (i === valuePos || isMeasureAvail && !isMeasureFieldsAvail) ? 'true' : 'false',
+                                    'data-uid': field[i].name,
+                                    'tabindex': this.parent.getModuleName() === 'pivotview' && this.parent.grid && axis === 'rows' ? '-1' : '0',
+                                    'isvalue': (i === valuePos || isMeasureAvail && !isMeasureFieldsAvail) ? 'true' : 'false',
                                     'aria-disabled': 'false', 'aria-label': field[i].caption ? field[i].caption : field[i].name,
                                     'data-type': (this.parent.dataType === 'olap' ? isMeasureFieldsAvail ? 'isMeasureFieldsAvail' : isMeasureAvail ? 'isMeasureAvail' : field[i].type : field[i].type),
                                     'data-caption': field[i].caption ? field[i].caption : field[i].name,
@@ -24626,12 +25183,6 @@ class PivotButton {
     buttonModel() {
         return [
             {
-                buttonModel: {
-                    cssClass: OK_BUTTON_CLASS, content: this.parent.localeObj.getConstant('ok'), isPrimary: true
-                },
-                click: (this.index === 0 ? this.updateFilterState.bind(this, this.fieldName) : this.updateCustomFilter.bind(this))
-            },
-            {
                 /* tslint:disable:max-line-length */
                 buttonModel: {
                     cssClass: 'e-clear-filter-button' + (this.parent.pivotCommon.filterDialog.allowExcelLikeFilter ? '' : ' ' + ICON_DISABLE),
@@ -24640,6 +25191,12 @@ class PivotButton {
                 },
                 click: this.ClearFilter.bind(this)
                 /* tslint:enable:max-line-length */
+            },
+            {
+                buttonModel: {
+                    cssClass: OK_BUTTON_CLASS, content: this.parent.localeObj.getConstant('ok'), isPrimary: true
+                },
+                click: (this.index === 0 ? this.updateFilterState.bind(this, this.fieldName) : this.updateCustomFilter.bind(this))
             },
             {
                 click: this.parent.pivotCommon.filterDialog.closeFilterDialog.bind(this),
@@ -25218,6 +25775,8 @@ let PivotFieldList = class PivotFieldList extends Component {
         this.lastCalcFieldInfo = {};
         /** @hidden */
         this.isPopupView = false;
+        /** @hidden */
+        this.enableValueSorting = false;
     }
     /**
      * To provide the array of modules needed for control rendering
@@ -25405,7 +25964,10 @@ let PivotFieldList = class PivotFieldList extends Component {
             caption: 'Field Caption',
             copy: 'Copy',
             of: 'of',
-            group: 'Group'
+            group: 'Group',
+            removeCalculatedField: 'Are you sure you want to delete this calculated field?',
+            yes: 'Yes',
+            no: 'No',
         };
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
         this.isDragging = false;
@@ -25611,7 +26173,10 @@ let PivotFieldList = class PivotFieldList extends Component {
                         this.setProperties({ dataSourceSettings: { dataSource: pivotDataSet } }, true);
                     }
                 }
-                this.engineModule.renderEngine(this.dataSourceSettings, this.frameCustomProperties(), this.getValueCellInfo.bind(this));
+                let customProperties = this.frameCustomProperties();
+                customProperties.enableValueSorting = this.staticPivotGridModule ?
+                    this.staticPivotGridModule.enableValueSorting : this.enableValueSorting;
+                this.engineModule.renderEngine(this.dataSourceSettings, customProperties, this.getValueCellInfo.bind(this));
                 this.pivotFieldList = this.engineModule.fieldList;
                 let eventArgs = {
                     pivotFieldList: this.pivotFieldList,
@@ -25781,6 +26346,14 @@ let PivotFieldList = class PivotFieldList extends Component {
             if (isNullOrUndefined(isEngineRefresh)) {
                 if (pivot.dataType === 'pivot') {
                     let customProperties = pivot.frameCustomProperties();
+                    if (!isSorted) {
+                        customProperties.enableValueSorting = pivot.staticPivotGridModule ?
+                            pivot.staticPivotGridModule.enableValueSorting : pivot.enableValueSorting;
+                    }
+                    else {
+                        pivot.setProperties({ dataSourceSettings: { valueSortSettings: { headerText: '' } } }, true);
+                        customProperties.enableValueSorting = false;
+                    }
                     customProperties.savedFieldList = pivot.pivotFieldList;
                     if (pageSettings && (isSorted || isFiltered || isAggChange || isCalcChange)) {
                         let interopArguments = {};
@@ -26253,7 +26826,7 @@ class CalculatedField {
             switch (e.action) {
                 case 'moveRight':
                     if (this.parent.dataType === 'pivot') {
-                        this.displayMenu(node.previousSibling);
+                        this.displayMenu(node);
                     }
                     break;
                 case 'enter':
@@ -26303,9 +26876,10 @@ class CalculatedField {
         let node = closest(e.event.target, 'li');
         if (e.event.target.classList.contains(FORMAT) ||
             e.event.target.classList.contains(CALC_EDIT) ||
-            e.event.target.classList.contains(CALC_EDITED)) {
+            e.event.target.classList.contains(CALC_EDITED) ||
+            e.event.target.classList.contains(GRID_REMOVE)) {
             if (!this.parent.isAdaptive) {
-                this.displayMenu(node);
+                this.displayMenu(node, e.node, e.event.target);
             }
             else if (this.parent.dataType === 'olap' && this.parent.isAdaptive) {
                 if (node.tagName === 'LI' && node.querySelector('.e-list-edit-icon').classList.contains(CALC_EDIT)) {
@@ -26343,7 +26917,7 @@ class CalculatedField {
             let fieldName = node.getAttribute('data-field');
             let formatObj = PivotUtil.getFieldByName(fieldName, this.parent.dataSourceSettings.formatSettings);
             let optionElement = closest(e.originalEvent.target, '.e-acrdn-header-icon');
-            if (optionElement.querySelector('.' + CALC_EDIT)) {
+            if (optionElement.querySelector('.' + CALC_EDIT) && e.originalEvent.target.classList.contains(CALC_EDIT)) {
                 this.isEdit = true;
                 this.currentFieldName = this.fieldText = fieldName;
                 this.formulaText = this.parent.engineModule.fieldList[fieldName].formula;
@@ -26352,11 +26926,27 @@ class CalculatedField {
                 removeClass([optionElement.querySelector('.e-list-icon')], CALC_EDIT);
                 this.renderMobileLayout(this.parent.dialogRenderer.adaptiveElement);
             }
-            else if (optionElement.querySelector('.' + CALC_EDITED)) {
+            else if (optionElement.querySelector('.' + CALC_EDITED) &&
+                e.originalEvent.target.classList.contains(CALC_EDITED)) {
                 this.isEdit = false;
                 this.fieldText = this.formatText = this.formulaText = this.currentFieldName = null;
                 addClass([optionElement.querySelector('.e-list-icon')], CALC_EDIT);
                 removeClass([optionElement.querySelector('.e-list-icon')], CALC_EDITED);
+            }
+            else if (optionElement.querySelector('.' + GRID_REMOVE) &&
+                e.originalEvent.target.classList.contains(GRID_REMOVE)) {
+                this.createConfirmDialog(this.parent.localeObj.getConstant('alert'), this.parent.localeObj.getConstant('removeCalculatedField'), {}, true, node);
+            }
+        }
+    }
+    accordionCreated() {
+        let allElement = this.accordion.element.querySelectorAll('.e-acrdn-item');
+        for (let i = 0; i < allElement.length; i++) {
+            if (allElement[i].querySelector('.' + CALC_EDIT) || allElement[i].querySelector('.' + CALC_EDITED)) {
+                let element = createElement('span', {
+                    className: 'e-list-icon ' + GRID_REMOVE + ' e-icons',
+                });
+                append([element], allElement[i].querySelector('.e-acrdn-header-icon'));
             }
         }
     }
@@ -26371,10 +26961,14 @@ class CalculatedField {
      * @param  {HTMLElement} node
      * @returns void
      */
-    displayMenu(node) {
+    /* tslint:disable:max-func-body-length */
+    displayMenu(node, treeNode, target) {
+        let edit = target ? target.classList.contains(CALC_EDIT) : true;
+        let edited = target ? target.classList.contains(CALC_EDITED) : true;
         if (this.parent.dataType === 'pivot' && node.querySelector('.e-list-icon.e-format') &&
             node.querySelector('.e-list-icon.e-format').classList.contains(ICON) &&
             !node.querySelector('.e-list-icon').classList.contains(CALC_EDITED) &&
+            !node.querySelector('.e-list-icon').classList.contains(GRID_REMOVE) &&
             !node.querySelector('.e-list-icon').classList.contains(CALC_EDIT) && node.tagName === 'LI') {
             if (this.menuObj && !this.menuObj.isDestroyed) {
                 this.menuObj.destroy();
@@ -26382,7 +26976,8 @@ class CalculatedField {
             this.curMenu = node.querySelector('.' + LIST_TEXT_CLASS);
             this.openContextMenu(node);
         }
-        else if (node.tagName === 'LI' && (node.querySelector('.e-list-icon').classList.contains(CALC_EDIT) ||
+        else if (node.tagName === 'LI' && (node.querySelector('.' + CALC_EDIT) &&
+            node.querySelector('.' + CALC_EDIT).classList.contains('e-list-icon') && edit ||
             (this.parent.dataType === 'olap' && node.getAttribute('data-type') === CALC && node.classList.contains('e-active')))) {
             this.isEdit = true;
             let fieldName = node.getAttribute('data-field');
@@ -26429,7 +27024,8 @@ class CalculatedField {
             }
             customFormat.dataBind();
         }
-        else if (node.tagName === 'LI' && (node.querySelector('.e-list-icon').classList.contains(CALC_EDITED) ||
+        else if (node.tagName === 'LI' && (node.querySelector('.' + CALC_EDITED) &&
+            node.querySelector('.' + CALC_EDITED).classList.contains('e-list-icon') && edited ||
             (this.parent.dataType === 'olap' && !node.classList.contains('e-active')))) {
             this.isEdit = false;
             this.inputObj.value = '';
@@ -26461,6 +27057,70 @@ class CalculatedField {
             }
             document.querySelector('#' + this.parentID + 'droppable').value = '';
         }
+        else if (node.tagName === 'LI' && (node.querySelector('.' + GRID_REMOVE) &&
+            node.querySelector('.' + GRID_REMOVE).classList.contains('e-list-icon')) && !edit && !edited) {
+            let dropField = document.querySelector('#' + this.parentID + 'droppable');
+            let field = {
+                name: this.isEdit ? this.currentFieldName : this.inputObj.value,
+                caption: this.inputObj.value,
+                formula: dropField.value
+            };
+            let fieldName = node.getAttribute('data-field');
+            this.createConfirmDialog(this.parent.localeObj.getConstant('alert'), this.parent.localeObj.getConstant('removeCalculatedField'), field, true, treeNode);
+        }
+    }
+    removeCalcField(node) {
+        if (this.parent.dataType === 'pivot') {
+            if (!this.parent.isAdaptive) {
+                let dialogElement = this.dialog.element;
+                /* tslint:disable:max-line-length */
+                let customFormat = getInstance(dialogElement.querySelector('#' + this.parentID + 'Custom_Format_Element'), MaskedTextBox);
+                customFormat.value = '';
+                customFormat.dataBind();
+                this.isEdit = false;
+                this.inputObj.value = '';
+                this.inputObj.dataBind();
+                this.treeObj.removeNodes([node]);
+                let dropField = document.querySelector('#' + this.parentID + 'droppable');
+                dropField.value = '';
+            }
+            else {
+                let index = parseInt(node.getAttribute('id').split(this.parentID + '_')[1], 10);
+                if (typeof index === 'number') {
+                    this.accordion.removeItem(index);
+                }
+            }
+            let fieldName = node.getAttribute('data-field');
+            let calcfields = this.parent.dataSourceSettings.calculatedFieldSettings;
+            for (let i = 0; i < calcfields.length; i++) {
+                if (calcfields[i] && calcfields[i].name === fieldName) {
+                    calcfields.splice(i, 1);
+                    break;
+                }
+            }
+            if (this.parent.engineModule.savedFieldList && this.parent.engineModule.savedFieldList[fieldName]) {
+                delete this.parent.engineModule.savedFieldList[fieldName];
+            }
+            if (this.parent.engineModule.fieldList && this.parent.engineModule.fieldList[fieldName]) {
+                delete this.parent.engineModule.fieldList[fieldName];
+            }
+            let formatFields = this.parent.dataSourceSettings.formatSettings;
+            for (let i = 0; i < formatFields.length; i++) {
+                if (formatFields[i] && formatFields[i].name === fieldName) {
+                    formatFields.splice(i, 1);
+                    break;
+                }
+            }
+            let fields = this.parent.dataSourceSettings.values;
+            for (let i = 0, n = fields.length; i < n; i++) {
+                if (fields[i].name === fieldName) {
+                    fields.splice(i, 1);
+                    break;
+                }
+            }
+            this.removeErrorDialog();
+            this.parent.updateDataSource();
+        }
     }
     /**
      * To set position for context menu.
@@ -26489,7 +27149,7 @@ class CalculatedField {
                         });
                     }
                 }
-                this.createMenu(items);
+                this.createMenu(items, node);
                 let pos = node.getBoundingClientRect();
                 let offset = window.scrollY || document.documentElement.scrollTop;
                 if (this.parent.enableRtl) {
@@ -26520,13 +27180,17 @@ class CalculatedField {
      * To create context menu.
      * @returns void
      */
-    createMenu(menuItems) {
+    createMenu(menuItems, node) {
         let menuOptions = {
             cssClass: this.parentID + 'calculatedmenu',
             items: menuItems,
             enableRtl: this.parent.enableRtl,
             // beforeOpen: this.beforeMenuOpen.bind(this),
-            select: this.selectContextMenu.bind(this)
+            select: this.selectContextMenu.bind(this),
+            onClose: () => {
+                this.treeObj.element.focus();
+                addClass([node], ['e-hover', 'e-node-focus']);
+            }
         };
         let contextMenu;
         if (document.querySelector('#' + this.parentID + 'CalcContextmenu')) {
@@ -27457,6 +28121,11 @@ class CalculatedField {
                 nodeClicked: this.fieldClickHandler.bind(this),
                 nodeDragStop: this.fieldDropped.bind(this),
                 drawNode: this.drawTreeNode.bind(this),
+                keyPress: (args) => {
+                    if (args.event.keyCode === 39) {
+                        args.cancel = true;
+                    }
+                },
                 sortOrder: 'Ascending'
             });
         }
@@ -27590,8 +28259,12 @@ class CalculatedField {
                 attrs: { 'tabindex': '-1', 'aria-disabled': 'false', 'title': this.parent.localeObj.getConstant('dragField') },
                 className: ICON + ' e-drag'
             });
+            let spaceElement = createElement('div', {
+                className: ' e-iconspace'
+            });
             prepend([dragElement], args.node.querySelector('.' + TEXT_CONTENT_CLASS));
-            append([args.node.querySelector('.' + FORMAT)], args.node.querySelector('.' + TEXT_CONTENT_CLASS));
+            /* tslint:disable-next-line:max-line-length */
+            append([spaceElement, args.node.querySelector('.' + FORMAT)], args.node.querySelector('.' + TEXT_CONTENT_CLASS));
             if (this.getMenuItems(this.parent.engineModule.fieldList[field].type).length <= 0) {
                 removeClass([args.node.querySelector('.' + FORMAT)], ICON);
             }
@@ -27599,9 +28272,14 @@ class CalculatedField {
                 args.node.querySelector('.' + FORMAT).setAttribute('title', this.parent.localeObj.getConstant('format'));
             }
             if (this.parent.engineModule.fieldList[field].aggregateType === CALC) {
-                args.node.querySelector('.' + FORMAT).setAttribute('title', this.parent.localeObj.getConstant('edit'));
-                addClass([args.node.querySelector('.' + FORMAT)], CALC_EDIT);
+                args.node.querySelector('.' + FORMAT).setAttribute('title', this.parent.localeObj.getConstant('remove'));
+                addClass([args.node.querySelector('.' + FORMAT)], GRID_REMOVE);
+                addClass([args.node.querySelector('.' + 'e-iconspace')], [CALC_EDIT, ICON, 'e-list-icon']);
+                args.node.querySelector('.' + CALC_EDIT).setAttribute('title', this.parent.localeObj.getConstant('edit'));
+                args.node.querySelector('.' + CALC_EDIT).setAttribute('aria-disabled', 'false');
+                args.node.querySelector('.' + CALC_EDIT).setAttribute('tabindex', '-1');
                 removeClass([args.node.querySelector('.' + FORMAT)], FORMAT);
+                removeClass([args.node.querySelector('.e-iconspace')], 'e-iconspace');
             }
         }
     }
@@ -27756,14 +28434,15 @@ class CalculatedField {
                 this.treeObj.appendTo('#' + this.parentID + 'accordDiv');
             }
             else {
-                let accordion = new Accordion({
+                this.accordion = new Accordion({
                     items: this.getAccordionData(this.parent),
                     enableRtl: this.parent.enableRtl,
                     expanding: this.accordionExpand.bind(this),
-                    clicked: this.accordionClickHandler.bind(this)
+                    clicked: this.accordionClickHandler.bind(this),
+                    created: this.accordionCreated.bind(this)
                 });
-                accordion.isStringTemplate = true;
-                accordion.appendTo('#' + this.parentID + 'accordDiv');
+                this.accordion.isStringTemplate = true;
+                this.accordion.appendTo('#' + this.parentID + 'accordDiv');
                 this.updateType();
             }
             if (addBtn.element) {
@@ -27944,7 +28623,7 @@ class CalculatedField {
      * @return {void}
      * @hidden
      */
-    createConfirmDialog(title, description, calcInfo) {
+    createConfirmDialog(title, description, calcInfo, isRemove, node) {
         let errorDialog = createElement('div', {
             id: this.parentID + '_ErrorDialog',
             className: ERROR_DIALOG_CLASS
@@ -27960,17 +28639,17 @@ class CalculatedField {
             position: { X: 'center', Y: 'center' },
             buttons: [
                 {
-                    click: this.replaceFormula.bind(this, calcInfo),
+                    click: isRemove ? this.removeCalcField.bind(this, node) : this.replaceFormula.bind(this, calcInfo),
                     buttonModel: {
                         cssClass: OK_BUTTON_CLASS + ' ' + OUTLINE_CLASS,
-                        content: this.parent.localeObj.getConstant('ok'), isPrimary: true
+                        content: isRemove ? this.parent.localeObj.getConstant('yes') : this.parent.localeObj.getConstant('ok'), isPrimary: true
                     }
                 },
                 {
                     click: this.removeErrorDialog.bind(this),
                     buttonModel: {
                         cssClass: CANCEL_BUTTON_CLASS,
-                        content: this.parent.localeObj.getConstant('cancel'), isPrimary: true
+                        content: isRemove ? this.parent.localeObj.getConstant('no') : this.parent.localeObj.getConstant('cancel'), isPrimary: true
                     }
                 }
             ],
@@ -28385,7 +29064,6 @@ class GroupingBar {
                     }
                     if (!isNullOrUndefined(emptyRowCount)) {
                         let emptyHeader = this.parent.element.querySelector('.e-frozenheader').querySelector('.e-columnheader');
-                        addClass([emptyHeader], 'e-row');
                         emptyHeader.removeAttribute('style');
                         addClass([emptyHeader.querySelector('.e-headercell')], 'e-group-row');
                         emptyHeader.querySelector('.e-group-row').appendChild(this.rowAxisPanel);
@@ -28467,7 +29145,6 @@ class GroupingBar {
             }
             if (!this.parent.grid.element.querySelector('.e-group-row')) {
                 let emptyRowHeader = this.parent.element.querySelector('.e-frozenheader').querySelector('.e-columnheader');
-                addClass([emptyRowHeader], 'e-row');
                 addClass([emptyRowHeader.querySelector('.e-headercell')], 'e-group-row');
                 setStyleAttribute(this.rowPanel, {
                     height: this.parent.element.querySelector('.e-headercontent').offsetHeight + 'px'
@@ -28749,14 +29426,14 @@ class ConditionalFormatting {
                 animationSettings: { effect: 'Zoom' }, isModal: true, width: '100%', height: '100%',
                 showCloseIcon: false, closeOnEscape: false, enableRtl: this.parent.enableRtl,
                 position: { X: 'center', Y: 'center' }, allowDragging: true, buttons: buttonModel,
-                beforeOpen: this.beforeOpen.bind(this),
+                beforeOpen: this.beforeOpen.bind(this), close: this.removeDialog.bind(this),
                 cssClass: FORMAT_DIALOG, header: this.parent.localeObj.getConstant('conditionalFormating'), target: document.body
             });
         }
         else {
             this.dialog = new Dialog({
                 allowDragging: true, position: { X: 'center', Y: this.parent.element.offsetTop }, buttons: buttonModel,
-                beforeOpen: this.beforeOpen.bind(this),
+                beforeOpen: this.beforeOpen.bind(this), close: this.removeDialog.bind(this),
                 cssClass: FORMAT_DIALOG, isModal: false, closeOnEscape: true, enableRtl: this.parent.enableRtl,
                 showCloseIcon: true, header: this.parent.localeObj.getConstant('conditionalFormating'), target: this.parent.element
             });
@@ -28784,6 +29461,7 @@ class ConditionalFormatting {
         let conditionalFormating = this;
         this.parent.trigger(conditionalFormatting, format, (observedArgs) => {
             conditionalFormating.refreshConditionValues();
+            this.destroyColorPickers();
             conditionalFormating.newFormat.push(observedArgs);
             conditionalFormating.addFormat();
         });
@@ -28792,11 +29470,11 @@ class ConditionalFormatting {
         if (this.refreshConditionValues()) {
             this.parent.setProperties({ dataSourceSettings: { conditionalFormatSettings: this.newFormat } }, true);
             this.parent.renderPivotGrid();
-            this.destroy();
+            this.dialog.close();
         }
     }
     cancelButtonClick() {
-        this.destroy();
+        this.dialog.close();
         this.newFormat = [];
     }
     refreshConditionValues() {
@@ -28844,7 +29522,7 @@ class ConditionalFormatting {
             let format = this.newFormat[i];
             let button = createElement('button', {
                 id: this.parentID + 'removeButton' + i, className: FORMAT_DELETE_BUTTON,
-                attrs: { 'title': this.parent.localeObj.getConstant('delete') }
+                attrs: { type: 'button', 'title': this.parent.localeObj.getConstant('delete') }
             });
             outerDiv.appendChild(button);
             let innerDiv = createElement('div', { id: this.parentID + 'innerDiv', className: FORMAT_INNER });
@@ -28863,7 +29541,7 @@ class ConditionalFormatting {
             let measureDropdown = createElement('div', { id: this.parentID + 'measure' + i });
             let measureInput = createElement('input', {
                 id: this.parentID + 'measureinput' + i,
-                attrs: { 'type': 'text', 'tabindex': '1' }
+                attrs: { 'type': 'text', 'tabindex': '0' }
             });
             measureDropdown.appendChild(measureInput);
             td.appendChild(measureDropdown);
@@ -28872,7 +29550,7 @@ class ConditionalFormatting {
             let conditionDropdown = createElement('div', { id: this.parentID + 'condition' });
             let conditionInput = createElement('input', {
                 id: this.parentID + 'conditioninput' + i,
-                attrs: { 'type': 'text', 'tabindex': '1' }
+                attrs: { 'type': 'text', 'tabindex': '0' }
             });
             conditionDropdown.appendChild(conditionInput);
             td.appendChild(conditionDropdown);
@@ -28882,7 +29560,7 @@ class ConditionalFormatting {
             let value1 = createElement('input', {
                 id: this.parentID + 'conditionvalue1' + i,
                 attrs: {
-                    'type': 'text', 'tabindex': '1', 'value': !isNullOrUndefined(format.value1) ? format.value1.toString() : '0',
+                    'type': 'text', 'tabindex': '0', 'value': !isNullOrUndefined(format.value1) ? format.value1.toString() : '0',
                     'placeholder': this.parent.localeObj.getConstant('emptyInput')
                 },
                 styles: this.parent.isAdaptive ? style === '' ? 'width: 35%' : 'width: 100%' : style === '' ? 'width: 45px' :
@@ -28898,7 +29576,7 @@ class ConditionalFormatting {
             let value2 = createElement('input', {
                 id: this.parentID + 'conditionvalue2' + i,
                 attrs: {
-                    'type': 'text', 'tabindex': '1', 'value': !isNullOrUndefined(format.value2) ? format.value2.toString() : '0',
+                    'type': 'text', 'tabindex': '0', 'value': !isNullOrUndefined(format.value2) ? format.value2.toString() : '0',
                     'placeholder': this.parent.localeObj.getConstant('emptyInput')
                 },
                 styles: (this.parent.isAdaptive && style === '') ? 'width: 35%' : style === '' ? 'width: 45px' : style,
@@ -28924,7 +29602,7 @@ class ConditionalFormatting {
             td = createElement('td');
             let fontNameDropdown = createElement('div', { id: this.parentID + 'fontname' });
             let fontNameInput = createElement('input', {
-                id: this.parentID + 'fontnameinput' + i, attrs: { 'type': 'text', 'tabindex': '1' }
+                id: this.parentID + 'fontnameinput' + i, attrs: { 'type': 'text', 'tabindex': '0' }
             });
             fontNameDropdown.appendChild(fontNameInput);
             td.appendChild(fontNameDropdown);
@@ -28932,7 +29610,7 @@ class ConditionalFormatting {
             td = createElement('td');
             let fontSizeDropdown = createElement('div', { id: this.parentID + 'fontsize' });
             let fontSizeInput = createElement('input', {
-                id: this.parentID + 'fontsizeinput' + i, attrs: { 'type': 'text', 'tabindex': '1' }
+                id: this.parentID + 'fontsizeinput' + i, attrs: { 'type': 'text', 'tabindex': '0' }
             });
             fontSizeDropdown.appendChild(fontSizeInput);
             td.appendChild(fontSizeDropdown);
@@ -28945,11 +29623,11 @@ class ConditionalFormatting {
             }
             td = createElement('td');
             let colorPicker1 = createElement('input', {
-                id: this.parentID + 'fontcolor' + i, attrs: { 'type': 'color', 'tabindex': '1' }, className: FORMAT_FONT_COLOR
+                id: this.parentID + 'fontcolor' + i, attrs: { 'type': 'color', 'tabindex': '0' }, className: FORMAT_FONT_COLOR
             });
             td.appendChild(colorPicker1);
             let colorPicker2 = createElement('input', {
-                id: this.parentID + 'backgroundcolor' + i, attrs: { 'type': 'color', 'tabindex': '1' }, className: FORMAT_BACK_COLOR
+                id: this.parentID + 'backgroundcolor' + i, attrs: { 'type': 'color', 'tabindex': '0' }, className: FORMAT_BACK_COLOR
             });
             td.appendChild(colorPicker2);
             tRow.appendChild(td);
@@ -29111,6 +29789,7 @@ class ConditionalFormatting {
             args.currentValue.hex;
     }
     toggleButtonClick(i) {
+        this.destroyColorPickers();
         this.newFormat.splice(i, 1);
         this.addFormat();
     }
@@ -29190,6 +29869,25 @@ class ConditionalFormatting {
         }
         return '#d5d5d5';
     }
+    removeDialog() {
+        if (this.dialog && !this.dialog.isDestroyed) {
+            this.destroyColorPickers();
+            this.dialog.destroy();
+        }
+        if (document.querySelector('#' + this.parentID + 'conditionalformatting')) {
+            remove(document.querySelector('#' + this.parentID + 'conditionalformatting'));
+        }
+    }
+    destroyColorPickers() {
+        for (let i = 0; i < (this.newFormat ? this.newFormat.length : 0); i++) {
+            if (this.fontColor && this.fontColor[i] && !this.fontColor[i].isDestroyed) {
+                this.fontColor[i].destroy();
+            }
+            if (this.backgroundColor && this.backgroundColor[i] && !this.backgroundColor[i].isDestroyed) {
+                this.backgroundColor[i].destroy();
+            }
+        }
+    }
     /**
      * To create Conditional Formatting dialog.
      * @returns void
@@ -29210,19 +29908,7 @@ class ConditionalFormatting {
      */
     destroy() {
         if (this.dialog && !this.dialog.isDestroyed) {
-            this.dialog.hide();
-            for (let i = 0; i < this.newFormat.length; i++) {
-                if (this.fontColor[i] && !this.fontColor[i].isDestroyed) {
-                    this.fontColor[i].destroy();
-                }
-                if (this.backgroundColor[i] && !this.backgroundColor[i].isDestroyed) {
-                    this.backgroundColor[i].destroy();
-                }
-            }
-            this.dialog.destroy();
-            if (document.querySelector('#' + this.parentID + 'conditionalformatting')) {
-                remove(document.querySelector('#' + this.parentID + 'conditionalformatting'));
-            }
+            this.dialog.close();
         }
         else {
             return;
@@ -29460,6 +30146,10 @@ class Toolbar$2 {
             this.parent.trigger(saveReport, saveArgs);
             this.parent.isModified = false;
         }
+        else if (this.currentReport === '' && (args.item.id === (this.parent.element.id + 'save') || args.item.id === (this.parent.element.id + 'saveas'))) {
+            this.parent.pivotCommon.errorDialog.createErrorDialog(this.parent.localeObj.getConstant('error'), this.parent.localeObj.getConstant('emptyReport'));
+            return;
+        }
         else {
             this.dialogShow(args, 'saveAs');
         }
@@ -29481,28 +30171,30 @@ class Toolbar$2 {
         this.mdxDialog.show();
     }
     dialogShow(args, action) {
-        this.dialog.header = args.item.tooltipText;
-        let outerDiv = createElement('div', {
-            className: GRID_REPORT_OUTER
-        });
-        let label = createElement('div', {
-            className: GRID_REPORT_LABEL,
-            innerHTML: this.parent.localeObj.getConstant('reportName')
-        });
-        let input = createElement('input', {
-            className: GRID_REPORT_INPUT + ' ' + INPUT,
-            innerHTML: (action && action === 'rename' ? this.currentReport : ''),
-            attrs: {
-                'placeholder': this.parent.localeObj.getConstant('emptyReportName'),
-                'value': (action && action === 'rename' ? this.currentReport : '')
-            },
-        });
-        input.setSelectionRange(input.textContent.length, input.textContent.length);
-        outerDiv.appendChild(label);
-        outerDiv.appendChild(input);
-        this.dialog.content = outerDiv;
-        this.dialog.refresh();
-        this.dialog.show();
+        if (args) {
+            this.dialog.header = args.item.tooltipText;
+            let outerDiv = createElement('div', {
+                className: GRID_REPORT_OUTER
+            });
+            let label = createElement('div', {
+                className: GRID_REPORT_LABEL,
+                innerHTML: this.parent.localeObj.getConstant('reportName')
+            });
+            let input = createElement('input', {
+                className: GRID_REPORT_INPUT + ' ' + INPUT,
+                innerHTML: (action && action === 'rename' ? this.currentReport : ''),
+                attrs: {
+                    'placeholder': this.parent.localeObj.getConstant('emptyReportName'),
+                    'value': (action && action === 'rename' ? this.currentReport : '')
+                },
+            });
+            input.setSelectionRange(input.textContent.length, input.textContent.length);
+            outerDiv.appendChild(label);
+            outerDiv.appendChild(input);
+            this.dialog.content = outerDiv;
+            this.dialog.refresh();
+            this.dialog.show();
+        }
     }
     renameReport(args) {
         this.parent.trigger(toolbarClick, args);
@@ -29534,11 +30226,12 @@ class Toolbar$2 {
                 break;
             case (this.parent.element.id + 'new'):
                 this.action = 'New';
-                if (this.parent.isModified) {
+                this.newArgs = args;
+                if (this.parent.isModified && this.currentReport && this.currentReport !== '') {
                     this.createConfirmDialog(this.parent.localeObj.getConstant('alert'), this.parent.localeObj.getConstant('newReportConfirm'));
                 }
                 else {
-                    this.createNewReport();
+                    this.createNewReport(args);
                 }
                 break;
             case (this.parent.element.id + 'load'):
@@ -29656,49 +30349,110 @@ class Toolbar$2 {
             reportInput.focus();
             return;
         }
-        let isNew = false;
         if ((this.dialog.header === this.parent.localeObj.getConstant('save') ||
             this.dialog.header === this.parent.localeObj.getConstant('saveAs')) &&
             reportInput.value && reportInput.value !== '') {
-            if (this.action === 'New') {
-                isNew = true;
-            }
-            else {
-                this.action = 'Save';
-            }
+            this.action = 'Save';
             this.currentReport = reportInput.value;
-            let saveArgs = {
-                report: this.parent.getPersistData(),
-                reportName: reportInput.value
-            };
-            this.parent.trigger(saveReport, saveArgs);
-            this.parent.isModified = false;
+            let isExist = false;
+            /* tslint:disable */
+            let _this = this;
+            /* tslint:enable */
+            let reports = { reportName: [] };
+            this.parent.trigger(fetchReport, reports, (observedArgs) => {
+                for (let i = 0; i < observedArgs.reportName.length; i++) {
+                    if (reportInput.value === observedArgs.reportName[i]) {
+                        isExist = true;
+                        break;
+                    }
+                }
+                if (isExist) {
+                    _this.createConfirmDialog(_this.parent.localeObj.getConstant('alert'), _this.parent.localeObj.getConstant('replaceConfirmBefore') + '"' + reportInput.value + '"' +
+                        _this.parent.localeObj.getConstant('replaceConfirmAfter'));
+                    return;
+                }
+                let saveArgs = {
+                    report: _this.parent.getPersistData(),
+                    reportName: reportInput.value
+                };
+                _this.parent.trigger(saveReport, saveArgs);
+                _this.parent.isModified = false;
+                _this.updateReportList();
+                _this.dialog.hide();
+            });
+        }
+        else if (this.dialog.header === this.parent.localeObj.getConstant('new') &&
+            reportInput.value && reportInput.value !== '') {
+            this.action = 'New';
+            this.currentReport = reportInput.value;
+            let isExist = false;
+            /* tslint:disable */
+            let _this = this;
+            /* tslint:enable */
+            let reports = { reportName: [] };
+            this.parent.trigger(fetchReport, reports, (observedArgs) => {
+                for (let i = 0; i < observedArgs.reportName.length; i++) {
+                    if (reportInput.value === reports.reportName[i]) {
+                        isExist = true;
+                        break;
+                    }
+                }
+                if (isExist) {
+                    _this.createConfirmDialog(_this.parent.localeObj.getConstant('alert'), _this.parent.localeObj.getConstant('replaceConfirmBefore') + '"' + reportInput.value + '"' +
+                        _this.parent.localeObj.getConstant('replaceConfirmAfter'));
+                    return;
+                }
+                _this.parent.trigger(newReport);
+                if (isBlazor()) {
+                    _this.parent.setProperties({ dataSourceSettings: { columns: [], rows: [], values: [], filters: [] } }, false);
+                }
+                let saveArgs = {
+                    report: _this.parent.getPersistData(),
+                    reportName: reportInput.value
+                };
+                _this.parent.trigger(saveReport, saveArgs);
+                _this.parent.isModified = false;
+                _this.updateReportList();
+                _this.dialog.hide();
+            });
         }
         else if (this.dialog.header === this.parent.localeObj.getConstant('rename') && reportInput.value && reportInput.value !== '') {
+            if (this.currentReport === reportInput.value) {
+                this.dialog.hide();
+                return;
+            }
             this.action = 'Rename';
-            let renameArgs = {
-                reportName: this.currentReport,
-                rename: reportInput.value
-            };
-            this.parent.trigger(renameReport, renameArgs);
-            this.currentReport = reportInput.value;
-        }
-        this.updateReportList();
-        this.dialog.hide();
-        if (isNew) {
-            this.createNewReport();
+            let isExist = false;
+            /* tslint:disable */
+            let _this = this;
+            /* tslint:enable */
+            let reports = { reportName: [] };
+            this.parent.trigger(fetchReport, reports, (observedArgs) => {
+                _this.renameText = reportInput.value;
+                for (let i = 0; i < observedArgs.reportName.length; i++) {
+                    if (reportInput.value === observedArgs.reportName[i]) {
+                        isExist = true;
+                        break;
+                    }
+                }
+                if (isExist) {
+                    _this.createConfirmDialog(_this.parent.localeObj.getConstant('alert'), _this.parent.localeObj.getConstant('replaceConfirmBefore') + '"' + reportInput.value + '"' +
+                        _this.parent.localeObj.getConstant('replaceConfirmAfter'));
+                    return;
+                }
+                let renameArgs = {
+                    reportName: _this.currentReport,
+                    rename: reportInput.value
+                };
+                _this.parent.trigger(renameReport, renameArgs);
+                _this.currentReport = reportInput.value;
+                _this.updateReportList();
+                _this.dialog.hide();
+            });
         }
     }
-    createNewReport() {
-        this.currentReport = '';
-        this.reportList.value = '';
-        this.reportList.text = '';
-        this.reportList.refresh();
-        this.parent.trigger(newReport);
-        if (isBlazor()) {
-            this.parent.setProperties({ dataSourceSettings: { columns: [], rows: [], values: [], filters: [] } }, false);
-        }
-        this.parent.isModified = false;
+    createNewReport(args) {
+        this.dialogShow(args);
     }
     cancelBtnClick() {
         this.dialog.hide();
@@ -29753,13 +30507,26 @@ class Toolbar$2 {
                 reportName: this.currentReport
             };
             this.parent.trigger(removeReport, removeArgs);
-            this.currentReport = '';
-            this.parent.isModified = false;
-            this.action = '';
+            let reports = this.fetchReports();
+            if (reports.reportName && reports.reportName.length > 0) {
+                let loadArgs = {
+                    reportName: reports.reportName[reports.reportName.length - 1]
+                };
+                this.parent.trigger(loadReport, loadArgs, (observedArgs) => {
+                    this.currentReport = observedArgs.reportName;
+                    this.parent.isModified = false;
+                });
+                this.currentReport = reports.reportName[reports.reportName.length - 1];
+            }
+            else {
+                this.currentReport = '';
+                this.parent.isModified = false;
+                this.action = '';
+            }
             this.updateReportList();
         }
         else if (this.action === 'New' || (this.action !== 'Save' && this.action !== 'Rename' && this.action !== 'New')) {
-            if (this.currentReport && this.currentReport !== '') {
+            if (this.currentReport && this.currentReport !== '' && this.parent.isModified) {
                 let saveArgs = {
                     report: this.parent.getPersistData(),
                     reportName: this.currentReport
@@ -29767,21 +30534,66 @@ class Toolbar$2 {
                 this.parent.trigger(saveReport, saveArgs);
                 this.parent.isModified = false;
                 if (this.action === 'New') {
-                    this.createNewReport();
+                    this.createNewReport(this.newArgs);
                 }
                 else {
                     this.reportLoad(this.dropArgs);
                 }
             }
-            else {
-                this.dialogShow({ item: { tooltipText: this.parent.localeObj.getConstant('save') } });
+            else if (this.action === 'New') {
+                this.parent.trigger(newReport);
+                if (isBlazor()) {
+                    this.parent.setProperties({ dataSourceSettings: { columns: [], rows: [], values: [], filters: [] } }, false);
+                }
+                let saveArgs = {
+                    report: this.parent.getPersistData(),
+                    reportName: this.currentReport
+                };
+                this.parent.trigger(saveReport, saveArgs);
+                this.parent.isModified = false;
+                this.updateReportList();
+                this.dialog.hide();
             }
+        }
+        else if (this.action === 'Save') {
+            let saveArgs = {
+                report: this.parent.getPersistData(),
+                reportName: this.currentReport
+            };
+            this.parent.trigger(saveReport, saveArgs);
+            this.parent.isModified = false;
+            this.updateReportList();
+            this.dialog.hide();
+        }
+        else if (this.action === 'Rename') {
+            let renameArgs = {
+                reportName: this.currentReport,
+                rename: this.renameText,
+                isReportExists: true
+            };
+            this.parent.trigger(renameReport, renameArgs);
+            this.currentReport = this.renameText;
+            this.parent.isModified = false;
+            this.updateReportList();
+            this.dialog.hide();
         }
         this.confirmPopUp.hide();
     }
     cancelButtonClick() {
         if (this.action === 'New') {
-            this.createNewReport();
+            if (this.parent.isModified) {
+                this.createNewReport(this.newArgs);
+            }
+            else {
+                this.dialog.hide();
+            }
+        }
+        else if (this.action === 'Save') {
+            this.currentReport = this.reportList.value;
+            this.dialog.hide();
+        }
+        else if (this.action === 'Rename') {
+            this.dialog.hide();
         }
         else if (this.dropArgs && this.action !== 'Remove') {
             this.reportLoad(this.dropArgs);
@@ -29976,6 +30788,11 @@ class Toolbar$2 {
                 report: this.parent.getPersistData(),
                 reportName: this.parent.localeObj.getConstant('defaultReport')
             };
+            if (isBlazor()) {
+                let pivotData = JSON.parse(saveArgs.report);
+                pivotData.dataSourceSettings = PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings);
+                saveArgs.report = JSON.stringify(pivotData);
+            }
             this.currentReport = this.parent.localeObj.getConstant('defaultReport');
             this.parent.trigger(saveReport, saveArgs);
             let reports = this.fetchReports();

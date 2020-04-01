@@ -214,8 +214,11 @@ export class MeasureAnnotation {
      * @private
      */
     public measureShapeCount: number = 0;
+    /**
+     * @private
+     */
+    public volumeDepth: number;
     private ratio: number;
-    private volumeDepth: number;
     private scaleRatioString: string;
     private scaleRatioDialog: Dialog;
     private sourceTextBox: NumericTextBox;
@@ -356,7 +359,8 @@ export class MeasureAnnotation {
                              // tslint:disable-next-line:max-line-length
                              labelContent: annotation.LabelContent, enableShapeLabel: annotation.EnableShapeLabel, labelFillColor: annotation.LabelFillColor,
                              fontColor: annotation.FontColor, labelBorderColor: annotation.LabelBorderColor, fontSize: annotation.FontSize,
-                             labelBounds: annotation.LabelBounds, annotationSelectorSettings: annotation.AnnotationSelectorSettings
+                             labelBounds: annotation.LabelBounds, annotationSelectorSettings: annotation.AnnotationSelectorSettings,
+                             annotationSettings: annotationObject.annotationSettings
                         };
                         this.pdfViewer.annotation.storeAnnotations(pageNumber, annotationObject, '_annotations_shape_measure');
                         this.pdfViewer.add(annot as PdfAnnotationBase);

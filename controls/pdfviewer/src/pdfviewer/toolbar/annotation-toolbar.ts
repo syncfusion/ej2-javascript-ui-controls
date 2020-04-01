@@ -679,6 +679,9 @@ export class AnnotationToolbar {
         let currentColor: string = (args.currentValue.hex === '') ? '#ffffff00' : args.currentValue.hex;
         if (this.pdfViewer.selectedItems.annotations.length === 1) {
             this.pdfViewer.annotation.modifyFontColor(currentColor);
+        } else {
+            this.pdfViewer.freeTextSettings.fontColor = currentColor;
+            this.pdfViewer.annotationModule.freeTextAnnotationModule.updateTextProperties();
         }
         this.updateColorInIcon(this.fontColorElement, currentColor);
         this.fontColorDropDown.toggle();
@@ -689,15 +692,21 @@ export class AnnotationToolbar {
         let currentValue: string = (args && args.fontFamily && args.fontFamily.value) ? args.fontFamily.value : '';
         if (this.pdfViewer.selectedItems.annotations.length === 1 && currentValue) {
             this.pdfViewer.annotation.modifyFontFamily(currentValue);
+        } else {
+            this.pdfViewer.freeTextSettings.fontFamily = currentValue;
+            this.pdfViewer.annotationModule.freeTextAnnotationModule.updateTextProperties();
         }
     }
 
     // tslint:disable-next-line
     private onFontSizeChange(args: any): void {
         let currentValue: string = (args && args.fontSize && args.fontSize.value) ? args.fontSize.value : '';
+        let fontSize: number = parseFloat(currentValue);
         if (this.pdfViewer.selectedItems.annotations.length === 1 && currentValue) {
-            let fontSize: number = parseFloat(currentValue);
             this.pdfViewer.annotation.modifyFontSize(fontSize);
+        } else {
+            this.pdfViewer.freeTextSettings.fontSize = fontSize;
+            this.pdfViewer.annotationModule.freeTextAnnotationModule.updateTextProperties();
         }
     }
 
@@ -767,8 +776,11 @@ export class AnnotationToolbar {
         let currentValue: string = (args && args.item && args.item.value) ? args.item.value : '';
         if (this.pdfViewer.selectedItems.annotations.length === 1 && currentValue) {
             this.pdfViewer.annotation.modifyTextAlignment(currentValue);
-            this.updateTextAlignInIcon(currentValue);
+        } else {
+            this.pdfViewer.freeTextSettings.textAlignment = args.item.value;
+            this.pdfViewer.annotationModule.freeTextAnnotationModule.updateTextProperties();
         }
+        this.updateTextAlignInIcon(currentValue);
     }
 
     // tslint:disable-next-line
@@ -786,8 +798,40 @@ export class AnnotationToolbar {
                 fontInfo.isStrikeout = !(this.pdfViewer.selectedItems.annotations[0].font.isStrikeout);
             }
             this.pdfViewer.annotation.modifyTextProperties(fontInfo, currentValue);
-            this.updateTextPropertySelection(currentValue);
+        } else {
+            if (currentValue === 'bold') {
+                if (this.pdfViewer.annotationModule.freeTextAnnotationModule.isBold) {
+                    this.pdfViewer.annotationModule.freeTextAnnotationModule.isBold = false;
+                } else {
+                this.pdfViewer.freeTextSettings.fontStyle = 1;
+                this.pdfViewer.annotationModule.freeTextAnnotationModule.updateTextProperties();
+                }
+            } else if (currentValue === 'italic') {
+                if (this.pdfViewer.annotationModule.freeTextAnnotationModule.isItalic) {
+                    this.pdfViewer.annotationModule.freeTextAnnotationModule.isItalic = false;
+                } else {
+                this.pdfViewer.freeTextSettings.fontStyle = 2;
+                this.pdfViewer.annotationModule.freeTextAnnotationModule.updateTextProperties();
+                }
+            } else if (currentValue === 'underline') {
+                if (this.pdfViewer.annotationModule.freeTextAnnotationModule.isUnderline) {
+                    this.pdfViewer.annotationModule.freeTextAnnotationModule.isUnderline = false;
+                } else {
+                this.pdfViewer.freeTextSettings.fontStyle = 4;
+                this.pdfViewer.annotationModule.freeTextAnnotationModule.isStrikethrough = false;
+                this.pdfViewer.annotationModule.freeTextAnnotationModule.updateTextProperties();
+                }
+            } else if (currentValue === 'strikeout') {
+                if (this.pdfViewer.annotationModule.freeTextAnnotationModule.isStrikethrough) {
+                    this.pdfViewer.annotationModule.freeTextAnnotationModule.isStrikethrough = false;
+                } else {
+                this.pdfViewer.freeTextSettings.fontStyle = 8;
+                this.pdfViewer.annotationModule.freeTextAnnotationModule.isUnderline = false;
+                this.pdfViewer.annotationModule.freeTextAnnotationModule.updateTextProperties();
+                }
+            }
         }
+        this.updateTextPropertySelection(currentValue);
     }
 
     private opacityChange(args: ChangeEventArgs): void {
@@ -853,6 +897,10 @@ export class AnnotationToolbar {
             }
             if (this.pdfViewer.drawingObject) {
                 this.pdfViewer.drawingObject.opacity = args.value / 100;
+                if (this.pdfViewer.drawingObject.shapeAnnotationType === 'FreeText') {
+                    this.pdfViewer.freeTextSettings.opacity = args.value / 100;
+                    this.pdfViewer.annotationModule.freeTextAnnotationModule.updateTextProperties();
+                }
             }
         }
         this.updateOpacityIndicator();
@@ -973,6 +1021,10 @@ export class AnnotationToolbar {
                 }
             }
             this.pdfViewer.drawingObject.thickness = args.value;
+            if (this.pdfViewer.drawingObject.shapeAnnotationType === 'FreeText') {
+                this.pdfViewer.freeTextSettings.borderWidth = args.value;
+                this.pdfViewer.annotationModule.freeTextAnnotationModule.updateTextProperties();
+            }
         }
         this.updateThicknessIndicator();
     }
@@ -1321,6 +1373,10 @@ export class AnnotationToolbar {
             }
             if (this.pdfViewer.drawingObject) {
                 this.pdfViewer.drawingObject.fillColor = currentColor;
+                if (this.pdfViewer.drawingObject.shapeAnnotationType === 'FreeText') {
+                    this.pdfViewer.freeTextSettings.fillColor = currentColor;
+                    this.pdfViewer.annotationModule.freeTextAnnotationModule.updateTextProperties();
+                }
             }
         }
         this.updateColorInIcon(this.colorDropDownElement, currentColor);
@@ -1352,6 +1408,10 @@ export class AnnotationToolbar {
                 }
             }
             this.pdfViewer.drawingObject.strokeColor = currentColor;
+            if (this.pdfViewer.drawingObject.shapeAnnotationType === 'FreeText') {
+                this.pdfViewer.freeTextSettings.borderColor = currentColor;
+                this.pdfViewer.annotationModule.freeTextAnnotationModule.updateTextProperties();
+            }
         }
         this.updateColorInIcon(this.strokeDropDownElement, currentColor);
         this.strokeDropDown.toggle();
@@ -1599,6 +1659,32 @@ export class AnnotationToolbar {
         this.updateColorInIcon(this.fontColorElement, this.pdfViewer.annotationModule.freeTextAnnotationModule.fontColor);
         this.updateFontFamilyInIcon(this.pdfViewer.annotationModule.freeTextAnnotationModule.fontFamily);
         this.updateFontSizeInIcon(this.pdfViewer.annotationModule.freeTextAnnotationModule.fontSize);
+        this.updateTextAlignInIcon(this.pdfViewer.annotationModule.freeTextAnnotationModule.textAlign);
+        this.updateFontFamily();
+    }
+
+    private updateFontFamily(): void {
+        // tslint:disable-next-line:max-line-length
+        this.pdfViewer.annotationModule.freeTextAnnotationModule.isBold ? this.updateFontFamilyIcon('_bold', true) : this.updateFontFamilyIcon('_bold', false);
+        // tslint:disable-next-line:max-line-length
+        this.pdfViewer.annotationModule.freeTextAnnotationModule.isItalic ? this.updateFontFamilyIcon('_italic', true) : this.updateFontFamilyIcon('_italic', false);
+        if (this.pdfViewer.annotationModule.freeTextAnnotationModule.isUnderline) {
+          this.updateFontFamilyIcon('_underline_textinput', true);
+          this.updateFontFamilyIcon('_strikeout', false);
+        } else {
+          this.updateFontFamilyIcon('_underline_textinput', false);
+        }
+        if (this.pdfViewer.annotationModule.freeTextAnnotationModule.isStrikethrough) {
+            this.updateFontFamilyIcon('_strikeout', true);
+            this.updateFontFamilyIcon('_underline_textinput', false);
+        } else {
+            this.updateFontFamilyIcon('_strikeout', false);
+        }
+    }
+
+    private updateFontFamilyIcon(fontFamily: string, isActive: boolean): void {
+       let fontFamilyElement: HTMLElement = document.getElementById(this.pdfViewer.element.id + fontFamily);
+       isActive ? fontFamilyElement.classList.add('textprop-option-active') : fontFamilyElement.classList.remove('textprop-option-active');
     }
 
     /**

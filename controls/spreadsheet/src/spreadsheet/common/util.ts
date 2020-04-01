@@ -1,9 +1,9 @@
 import { Browser, setStyleAttribute as setBaseStyleAttribute, getComponent } from '@syncfusion/ej2-base';
-import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAriaOptions } from './interface';
+import { StyleType, CollaborativeEditArgs, CellSaveEventArgs, ICellRenderer, IAriaOptions, IOffset } from './index';
 import { Spreadsheet } from '../base/index';
-import { SheetModel, getCellPosition, getRowsHeight, getColumnsWidth, getSwapRange, CellModel, CellStyleModel } from '../../workbook/index';
-import { RangeSettingModel, getRangeIndexes, Workbook, wrap, setRowHeight, insertModel, InsertDeleteModelArgs } from '../../workbook/index';
-import { BeforeSortEventArgs, SortEventArgs, initiateSort, getIndexesFromAddress, getRowHeight } from '../../workbook/index';
+import { SheetModel, getRowsHeight, getColumnsWidth, getSwapRange, CellModel, CellStyleModel } from '../../workbook/index';
+import { RangeModel, getRangeIndexes, Workbook, wrap, setRowHeight, insertModel, InsertDeleteModelArgs } from '../../workbook/index';
+import { BeforeSortEventArgs, SortEventArgs, initiateSort, getIndexesFromAddress, getRowHeight, setMerge } from '../../workbook/index';
 import { ValidationModel, setValidation, removeValidation } from '../../workbook/index';
 import { removeSheetTab, rowHeightChanged, replace } from './event';
 
@@ -125,12 +125,32 @@ export function inView(context: Spreadsheet, range: number[], isModify?: boolean
 }
 
 /**
+ * To get the top left cell position in viewport.
+ * @hidden
+ */
+export function getCellPosition(
+    sheet: SheetModel, indexes: number[],
+    offset: { left: IOffset, top: IOffset } = { left: { idx: 0, size: 0 }, top: { idx: 0, size: 0 } }): { top: number, left: number } {
+    let i: number;
+    let top: number = offset.top.size;
+    let left: number = offset.left.size;
+    for (i = offset.top.idx; i < indexes[0]; i++) {
+        top += getRowsHeight(sheet, i);
+    }
+    for (i = offset.left.idx; i < indexes[1]; i++) {
+        left += getColumnsWidth(sheet, i);
+    }
+    return { top: top, left: left };
+}
+
+/**
  * Position element with given range
  * @hidden
  */
-export function locateElem(ele: HTMLElement, range: number[], sheet: SheetModel, isRtl?: boolean): void {
+export function locateElem(
+    ele: HTMLElement, range: number[], sheet: SheetModel, isRtl: boolean, offset?: { left: IOffset, top: IOffset }): void {
     let swapRange: number[] = getSwapRange(range);
-    let cellPosition: { top: number, left: number } = getCellPosition(sheet, swapRange);
+    let cellPosition: { top: number, left: number } = getCellPosition(sheet, swapRange, offset);
     let startIndex: number[] = [skipHiddenIdx(sheet, 0, true), skipHiddenIdx(sheet, 0, true, 'columns')];
     let attrs: { [key: string]: string } = {
         'top': (swapRange[0] === startIndex[0] ? cellPosition.top : cellPosition.top - 1) + 'px',
@@ -255,11 +275,11 @@ export function setResize(index: number, value: string, isCol: boolean, parent: 
     if (isCol) {
         curEle = parent.element.getElementsByClassName('e-column-header')[0].getElementsByTagName('th')[index];
         curEleH = parent.element.getElementsByClassName('e-column-header')[0].getElementsByTagName('col')[index];
-        curEleC = parent.element.getElementsByClassName('e-main-content')[0].getElementsByTagName('col')[index];
+        curEleC = parent.element.getElementsByClassName('e-sheet-content')[0].getElementsByTagName('col')[index];
     } else {
         curEle = parent.element.getElementsByClassName('e-row-header')[0].getElementsByTagName('tr')[index];
         curEleH = parent.element.getElementsByClassName('e-row-header')[0].getElementsByTagName('tr')[index];
-        curEleC = parent.element.getElementsByClassName('e-main-content')[0].getElementsByTagName('tr')[index];
+        curEleC = parent.element.getElementsByClassName('e-sheet-content')[0].getElementsByTagName('tr')[index];
         curEleH.style.height = parseInt(value, 10) > 0 ? value : '2px';
         curEleC.style.height = parseInt(value, 10) > 0 ? value : '0px';
         let hdrRow: HTMLCollectionOf<HTMLTableRowElement> =
@@ -631,10 +651,10 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
             });
             break;
         case 'gridLines':
-            spreadsheet.sheets[eventArgs.sheetIdx - 1].showGridLines = eventArgs.isShow;
+            spreadsheet.sheets[eventArgs.sheetIdx].showGridLines = eventArgs.isShow;
             break;
         case 'headers':
-            spreadsheet.sheets[eventArgs.sheetIdx - 1].showHeaders = eventArgs.isShow;
+            spreadsheet.sheets[eventArgs.sheetIdx].showHeaders = eventArgs.isShow;
             break;
         case 'resize':
         case 'resizeToFit':
@@ -681,7 +701,7 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
                 spreadsheet.notify(insertModel, <InsertDeleteModelArgs>{ model: options.eventArgs.modelType === 'Sheet' ? spreadsheet :
                     spreadsheet.getActiveSheet(), start: options.eventArgs.index, end: options.eventArgs.index + (options.eventArgs.model
                     .length - 1), modelType: options.eventArgs.modelType, isAction: false, checkCount: options.eventArgs.sheetCount,
-                    activeSheetTab: options.eventArgs.activeSheetTab });
+                    activeSheetIndex: options.eventArgs.activeSheetIndex });
             }
             break;
         case 'delete':
@@ -704,6 +724,10 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
                 spreadsheet.notify(removeValidation, { range: eventArgs.range });
             }
             break;
+        case 'merge':
+            options.eventArgs.isAction = false;
+            spreadsheet.notify(setMerge, options.eventArgs);
+            break;
     }
 }
 
@@ -712,11 +736,11 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
  */
 export function hasTemplate(workbook: Workbook, rowIdx: number, colIdx: number, sheetIdx: number): boolean {
     let sheet: SheetModel = workbook.sheets[sheetIdx];
-    let rangeSettings: RangeSettingModel[] = sheet.rangeSettings;
+    let rangeSettings: RangeModel[] = sheet.range;
     let range: number[];
     for (let i: number = 0, len: number = rangeSettings.length; i < len; i++) {
         if (rangeSettings[i].template) {
-            range = getRangeIndexes(rangeSettings[i].range.length ? rangeSettings[i].range : rangeSettings[i].startCell);
+            range = getRangeIndexes(rangeSettings[i].address.length ? rangeSettings[i].address : rangeSettings[i].startCell);
             if (range[0] <= rowIdx && range[1] <= colIdx && range[2] >= rowIdx && range[3] >= colIdx) {
                 return true;
             }

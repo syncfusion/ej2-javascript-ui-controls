@@ -1,6 +1,7 @@
 import { Workbook, SheetModel } from '../base/index';
-import { ProtectSettings } from '../common';
-import { protectsheetHandler, protectSheetWorkBook, updateToggle } from '../common/index';
+import { ProtectSettings, applyLockCells } from '../common/index';
+import { protectsheetHandler, protectSheetWorkBook, updateToggle, setLockCells } from '../common/index';
+import { getRangeIndexes,  getSwapRange } from '../common/index';
 /**
  * The `WorkbookSpreadSheet` module is used to handle the Protecting functionalities in Workbook.
  */
@@ -38,11 +39,31 @@ export class WorkbookProtectSheet {
 
     private addEventListener(): void {
         this.parent.on(protectsheetHandler, this.protectsheetHandler, this);
+        this.parent.on(setLockCells, this.lockCells, this);
     }
 
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
             this.parent.off(protectsheetHandler, this.protectsheetHandler);
+            this.parent.on(setLockCells, this.lockCells);
+        }
+    }
+
+    private lockCells(args?: {range: string | number[], isLocked?: boolean}): void {
+        let sheet: SheetModel = this.parent.getActiveSheet();
+        let range: string | number[];
+        if (args) {
+           range = args.range;
+        } else {range = sheet.selectedRange; }
+        let indexes: number[] = typeof (range) === 'object' ? <number[]>range :
+            getSwapRange(getRangeIndexes(<string>range));
+        for (let i: number = indexes[0]; i <= indexes[2]; i++) {
+            for (let j: number = indexes[1]; j <= indexes[3]; j++) {
+                if (this.parent.getActiveSheet().id === sheet.id) {
+                    this.parent.notify(applyLockCells, {  rowIdx: i, colIdx: j, isLocked: args.isLocked
+                    });
+                }
+            }
         }
     }
     /**

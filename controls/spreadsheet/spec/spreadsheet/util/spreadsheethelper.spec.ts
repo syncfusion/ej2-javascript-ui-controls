@@ -51,7 +51,7 @@ export class SpreadsheetHelper extends TestHelper {
     }
 
     getContentElement(): HTMLElement {
-        return this.getElementFromSpreadsheet('.e-main-content');
+        return this.getElementFromSpreadsheet('.e-sheet-content');
     }
 
     getRowHeaderElement(): HTMLElement {

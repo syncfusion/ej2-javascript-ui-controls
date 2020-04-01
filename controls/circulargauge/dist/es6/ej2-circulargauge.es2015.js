@@ -664,7 +664,7 @@ var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, 
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /**
- * Configures the borders in circular gauge.
+ * Sets and gets the options to customize the color and width of the borders in circular gauge.
  */
 class Border extends ChildProperty {
 }
@@ -675,7 +675,7 @@ __decorate$1([
     Property(1)
 ], Border.prototype, "width", void 0);
 /**
- * Configures the fonts in circular gauge.
+ * Sets and gets the font style for the circular gauge.
  */
 class Font extends ChildProperty {
 }
@@ -698,7 +698,7 @@ __decorate$1([
     Property(1)
 ], Font.prototype, "opacity", void 0);
 /**
- * To set tooltip properties for range tooltip.
+ * Sets and gets the options to customize the tooltip properties for range tooltip.
  */
 class RangeTooltip extends ChildProperty {
 }
@@ -724,7 +724,7 @@ __decorate$1([
     Property(false)
 ], RangeTooltip.prototype, "showAtMousePosition", void 0);
 /**
- * To set tooltip properties for annotation tooltip.
+ * Sets and gets the options to customize the tooltip for annotation in circular gauge.
  */
 class AnnotationTooltip extends ChildProperty {
 }
@@ -747,7 +747,7 @@ __decorate$1([
     Complex({}, Border)
 ], AnnotationTooltip.prototype, "border", void 0);
 /**
- * Configures the margin of circular gauge.
+ * Sets and gets the margin of circular gauge.
  */
 class Margin extends ChildProperty {
 }
@@ -764,7 +764,7 @@ __decorate$1([
     Property(10)
 ], Margin.prototype, "bottom", void 0);
 /**
- * Configures the tooltip in circular gauge.
+ * Sets and gets the options to customize the tooltip of the circular gauge.
  */
 class TooltipSettings extends ChildProperty {
 }
@@ -922,7 +922,7 @@ var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, 
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /**
- * Configures the axis line.
+ * Sets and gets the axis line in circular gauge component.
  */
 class Line extends ChildProperty {
 }
@@ -936,7 +936,7 @@ __decorate$2([
     Property(null)
 ], Line.prototype, "color", void 0);
 /**
- * Configures the axis label.
+ * Sets and gets the axis label in circular gauge component.
  */
 class Label extends ChildProperty {
 }
@@ -965,7 +965,7 @@ __decorate$2([
     Property(true)
 ], Label.prototype, "shouldMaintainPadding", void 0);
 /**
- * Configures the ranges of an axis.
+ * Sets and gets the option to customize the ranges of an axis in circular gauge component.
  */
 class Range extends ChildProperty {
 }
@@ -1003,7 +1003,7 @@ __decorate$2([
     Property(0)
 ], Range.prototype, "offset", void 0);
 /**
- * Configures the major and minor tick lines of an axis.
+ * Sets and gets the major and minor tick lines of an axis in circular gauge component.
  */
 class Tick extends ChildProperty {
 }
@@ -1032,7 +1032,7 @@ __decorate$2([
     Property('0')
 ], Tick.prototype, "dashArray", void 0);
 /**
- * Configures the needle cap in pointer.
+ * Sets and gets the needle cap of pointer in circular gauge component.
  */
 class Cap extends ChildProperty {
 }
@@ -1046,7 +1046,7 @@ __decorate$2([
     Property(8)
 ], Cap.prototype, "radius", void 0);
 /**
- * Configures the back needle in pointers.
+ * Sets and gets the pointer needle in the circular gauge component.
  */
 class NeedleTail extends ChildProperty {
 }
@@ -1060,7 +1060,7 @@ __decorate$2([
     Property('0%')
 ], NeedleTail.prototype, "length", void 0);
 /**
- * Configures the animation of pointers.
+ * Sets and gets the animation of pointers in circular gauge component.
  */
 class Animation$1 extends ChildProperty {
 }
@@ -1071,7 +1071,7 @@ __decorate$2([
     Property(1000)
 ], Animation$1.prototype, "duration", void 0);
 /**
- * ‘Annotation’ module is used to handle annotation action for an axis.
+ * Sets and gets the annotation element for an axis in circular gauge component.
  */
 class Annotation extends ChildProperty {
 }
@@ -1097,7 +1097,7 @@ __decorate$2([
     Property(null)
 ], Annotation.prototype, "description", void 0);
 /**
- * Configures the pointers of an axis.
+ * Sets and gets the pointers of an axis in circular gauge component.
  */
 class Pointer extends ChildProperty {
 }
@@ -1165,12 +1165,12 @@ __decorate$2([
     Property(null)
 ], Pointer.prototype, "needleEndWidth", void 0);
 /**
- * Configures an axis in a gauge.
+ * Sets and gets the options to customize the axis for the circular gauge component.
  */
 class Axis extends ChildProperty {
     constructor() {
         /**
-         * Specifies the minimum value of an axis.
+         * Sets and gets the minimum value of an axis in the circular gauge component.
          * @aspDefaultValueIgnore
          * @default null
          */
@@ -1240,49 +1240,115 @@ __decorate$2([
 /**
  * Specifies the gauge constant value
  */
-/** @private */
+/**
+ * Sets and gets loaded event name in the circular gauge component.
+ *  @private
+ */
 const loaded = 'loaded';
-/** @private */
+/**
+ * Sets and gets load event name in the circular gauge component.
+ * @private
+ */
 const load = 'load';
-/** @private */
+/**
+ * Sets and gets animation complete event name in the circular gauge component.
+ * @private
+ */
 const animationComplete = 'animationComplete';
-/** @private */
+/**
+ * Sets and gets axis label render event name in the circular gauge component.
+ * @private
+ */
 const axisLabelRender = 'axisLabelRender';
-/** @private */
+/**
+ * Sets and gets radius calculate event name in the circular gauge component.
+ *  @private
+ */
 const radiusCalculate = 'radiusCalculate';
-/** @private */
+/**
+ * Sets and gets tooltip render event name in the circular gauge component.
+ * @private
+ */
 const tooltipRender = 'tooltipRender';
-/** @private */
+/**
+ * Sets and gets annotation render event name in the circular gauge component.
+ * @private
+ */
 const annotationRender = 'annotationRender';
-/** @private */
+/**
+ * Sets and gets gauge mouse move event name in the circular gauge component.
+ * @private
+ */
 const gaugeMouseMove = 'gaugeMouseMove';
-/** @private */
+/**
+ * Sets and gets gauge mouse leave event name in the circular gauge component.
+ * @private
+ */
 const gaugeMouseLeave = 'gaugeMouseLeave';
-/** @private */
+/**
+ * Sets and gets gauge mouse down event name in the circular gauge component.
+ * @private
+ */
 const gaugeMouseDown = 'gaugeMouseDown';
-/** @private */
+/**
+ * Sets and gets gauge mouse up event name in circular gauge component.
+ * @private
+ */
 const gaugeMouseUp = 'gaugeMouseUp';
-/** @private */
+/**
+ * Sets and gets drag start event name in the circular gauge component.
+ * @private
+ */
 const dragStart = 'dragStart';
-/** @private */
+/**
+ * Sets and gets drag move event name in the circular gauge component.
+ * @private
+ */
 const dragMove = 'dragMove';
-/** @private */
+/**
+ * Sets and gets drag end event name in the circular gauge component.
+ * @private
+ */
 const dragEnd = 'dragEnd';
-/** @private */
+/**
+ * Sets and gets resize event name in the circular gauge component.
+ * @private
+ */
 const resized = 'resized';
-/** @private */
+/**
+ * Sets and gets before print event name in the circular gauge component.
+ * @private
+ */
 const beforePrint = 'beforePrint';
-/** @private */
+/**
+ * Sets and gets pointer start event name in the circular gauge component.
+ * @private
+ */
 const pointerStart = 'pointerStart';
-/** @private */
+/**
+ * Sets and gets pointer move event name in the circular gauge component.
+ * @private
+ */
 const pointerMove = 'pointerMove';
-/** @private */
+/**
+ * Sets and gets pointer end event name in the circular gauge component.
+ * @private
+ */
 const pointerEnd = 'pointerEnd';
-/** @private */
+/**
+ * Sets and gets range start event name in the circular gauge component.
+ * @private
+ */
 const rangeStart = 'rangeStart';
-/** @private */
+/**
+ * Sets and gets range move event name in the circular gauge component.
+ * @private
+ */
 const rangeMove = 'rangeMove';
-/** @private */
+/**
+ * Sets and gets range end event name in the circular gauge component.
+ * @private
+ */
 const rangeEnd = 'rangeEnd';
 
 /**
@@ -1396,7 +1462,7 @@ class Annotations {
 }
 
 /**
- * Tooltip Module handles the tooltip of the circular gauge
+ * Sets and gets the module that handles the tooltip of the circular gauge
  */
 class GaugeTooltip {
     /**
@@ -2942,7 +3008,7 @@ var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, 
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /**
- * Configures the location for the legend.
+ * Sets and gets the location of the legend in circular gauge.
  */
 class Location extends ChildProperty {
 }
@@ -2953,7 +3019,7 @@ __decorate$3([
     Property(0)
 ], Location.prototype, "y", void 0);
 /**
- * Configures the legends in charts.
+ * Sets and gets the options to customize the legend for the ranges in the circular gauge.
  */
 class LegendSettings extends ChildProperty {
 }
@@ -3012,7 +3078,7 @@ __decorate$3([
     Complex({ left: 0, right: 0, top: 0, bottom: 0 }, Margin)
 ], LegendSettings.prototype, "margin", void 0);
 /*
- * Legend module is used to render legend for the Circular Gauge
+ * Sets and gets the module to add the legend in the circular gauge.
  */
 class Legend {
     constructor(gauge) {
@@ -3746,7 +3812,7 @@ class ExportUtils {
                     let imageString = element.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
                     document.pageSettings.orientation = orientation;
                     imageString = imageString.slice(imageString.indexOf(',') + 1);
-                    document.pages.add().graphics.drawImage(new PdfBitmap(imageString), 0, 0, (this.control.availableSize.width - 60), this.control.availableSize.height);
+                    document.pages.add().graphics.drawImage(new PdfBitmap(imageString), 0, 0, this.control.availableSize.width, this.control.availableSize.height);
                     if (isDownload) {
                         document.save(fileName + '.pdf');
                         document.destroy();
@@ -3789,7 +3855,7 @@ var __decorate = (undefined && undefined.__decorate) || function (decorators, ta
  * Circular Gauge
  */
 /**
- * Represents the Circular gauge control.
+ * Represents the circular gauge control.
  * ```html
  * <div id="gauge"/>
  * <script>
@@ -4359,7 +4425,10 @@ let CircularGauge = class CircularGauge extends Component {
         }
     }
     /**
-     * Method to set the pointer value dynamically for circular gauge.
+     * This method is used to set the pointer value dynamically for circular gauge.
+     * @param axisIndex - Specifies the index value for the axis in circular gauge.
+     * @param pointerIndex - Specifies the index value for the pointer in circular gauge.
+     * @param value - Specifies the value for the pointer in circular gauge.
      */
     setPointerValue(axisIndex, pointerIndex, value) {
         let axis = this.axes[axisIndex];
@@ -4405,7 +4474,10 @@ let CircularGauge = class CircularGauge extends Component {
         this.isProtectedOnChange = false;
     }
     /**
-     * Method to set the annotation content dynamically for circular gauge.
+     * This method is used to set the annotation content dynamically for circular gauge.
+     * @param axisIndex - Specifies the index value for the axis in circular gauge.
+     * @param annotationIndex - Specifies the index value for the annotation in circular gauge.
+     * @param conetent - Specifies the content for the annotation in circular gauge.
      */
     setAnnotationValue(axisIndex, annotationIndex, content) {
         let isElementExist = getElement(this.element.id + '_Annotations_' + axisIndex) !== null;
@@ -4424,16 +4496,18 @@ let CircularGauge = class CircularGauge extends Component {
         }
     }
     /**
-     * Handles the print method for gauge control.
+     * This method is used to print the rendered circular gauge.
+     * @param id - Specifies the element to print the circular gauge.
      */
     print(id) {
         let exportChart = new ExportUtils(this);
         exportChart.print(id);
     }
     /**
-     * Handles the export method for gauge control.
-     * @param type
-     * @param fileName
+     * This method is used to perform the export functionality for the circular gauge.
+     * @param type - Specifies the type of the export.
+     * @param fileName - Specifies the file name for the exported file.
+     * @param orientation - Specified the orientation for the exported pdf document.
      */
     export(type, fileName, orientation) {
         let exportMap = new ExportUtils(this);
@@ -4462,7 +4536,11 @@ let CircularGauge = class CircularGauge extends Component {
         this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
     }
     /**
-     * Method to set the range values dynamically for circular gauge.
+     * This method is used to set the range values dynamically for circular gauge.
+     * @param axisIndex - Specifies the index value for the axis in circular gauge.
+     * @param rangeIndex - Specifies the index value for the range in circular gauge.
+     * @param start - Specifies the start value for the current range in circular gauge.
+     * @param end - Specifies the end value for the current range i circular gauge.
      */
     setRangeValue(axisIndex, rangeIndex, start, end) {
         let element = getElement(this.element.id + '_Axis_' + axisIndex + '_Range_' + rangeIndex);

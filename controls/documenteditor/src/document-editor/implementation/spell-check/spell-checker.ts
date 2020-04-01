@@ -54,6 +54,8 @@ export class SpellChecker {
 
     private performOptimizedCheck: boolean = false;
 
+    private textSearchResults: TextSearchResults;
+
     /**
      * Gets module name.
      */
@@ -153,6 +155,7 @@ export class SpellChecker {
         this.errorSuggestions = new Dictionary<string, string[]>();
         this.ignoreAllItems = [];
         this.uniqueSpelledWords = [];
+        this.textSearchResults = new TextSearchResults(this.documentHelper.owner);
         this.uniqueKey = this.documentHelper.owner.element.id + '_' + this.createGuid();
     }
     get viewer(): LayoutViewer {
@@ -1006,9 +1009,8 @@ export class SpellChecker {
         let line: LineWidget = (errorElement as TextElementBox).line;
         // tslint:disable-next-line:max-line-length
         let pattern: RegExp = this.documentHelper.owner.searchModule.textSearch.stringToRegex((isNullOrUndefined(currentText)) ? (errorElement as TextElementBox).text : currentText, 'CaseSensitive');
-        this.documentHelper.owner.searchModule.textSearchResults.clearResults();
-        // tslint:disable-next-line:max-line-length
-        let results: TextSearchResults = this.documentHelper.owner.searchModule.textSearchResults;
+        this.textSearchResults.clearResults();
+        let results: TextSearchResults = this.textSearchResults;
         let textLineInfo: TextInLineInfo = this.documentHelper.owner.searchModule.textSearch.getElementInfo(line.children[0], 0, false);
         let text: string = textLineInfo.fullText;
         let matches: RegExpExecArray[] = [];
@@ -1232,6 +1234,7 @@ export class SpellChecker {
         this.ignoreAllItems = undefined;
         this.errorSuggestions = undefined;
         this.uniqueSpelledWords = [];
+        this.textSearchResults = undefined;
         if (!isNullOrUndefined(localStorage.getItem(this.uniqueKey))) {
             localStorage.removeItem(this.uniqueKey);
         }

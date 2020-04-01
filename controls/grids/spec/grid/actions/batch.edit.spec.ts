@@ -3183,3 +3183,43 @@ describe('EJ2-37034 - batch edit creates new record after add a record and tab f
     });
 });
 
+describe('EJ2-37546 - While saving the null values numeric type column stores as NaN => ', () => {
+    let gridObj: Grid;
+    let queryCellInfo: () => void;
+    let flag: boolean = false;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                pageSettings: { pageCount: 5, pageSize:5 },
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch',newRowPosition:'Top' },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right', width: 120 },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 140 },
+                    { field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit', width: 120, format: 'C2' },
+                    { field: 'OrderDate', headerText: 'Order Date', editType: 'datepickeredit', format: 'yMd', width: 170 },
+                    { field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 150, edit: { params: { popupHeight: '300px' } } }
+                ],
+            }, done);
+    });
+    it('editing the number column with null', function (done: Function) {
+        queryCellInfo = (args?: any): void => {
+            if(flag){
+                expect(args.data["Freight"]).toBe(null);
+                flag = false;
+                done();
+            }
+        };
+        gridObj.queryCellInfo = queryCellInfo;
+        flag = true;
+        gridObj.updateCell(0, 'Freight', null);
+    });
+    afterAll(() => {
+        gridObj.notify('tooltip-destroy', {});
+        destroy(gridObj);
+        queryCellInfo =null;
+    });
+});
+

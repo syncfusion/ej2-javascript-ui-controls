@@ -88,6 +88,10 @@ export class Marker {
                         let data1: Object = {};
                         let text: string[] = [];
                         let j: number = 0;
+                        if (data == {} || isNullOrUndefined(data['latitude']) || isNullOrUndefined(data['longitude'])) {
+                            lat = (data['latitude'] && !isNullOrUndefined(data['latitude'])) ? data['latitude'] : 0;
+                            lng = (data['longitude'] && !isNullOrUndefined(data['longitude'])) ? data['longitude'] : 0;
+                        }
                         for (let i: number = 0; i < Object.keys(data).length; i++) {
                             if (Object.keys(data)[i].toLowerCase() !== 'latitude' && Object.keys(data)[i].toLowerCase() !== 'longitude'
                                 && Object.keys(data)[i].toLowerCase() !== 'name' && Object.keys(data)[i].toLowerCase() !== 'blazortemplateid'
@@ -180,7 +184,8 @@ export class Marker {
             let mapWidth: number = this.maps.mapAreaRect.width;
             let mapHeight: number = this.maps.mapAreaRect.height; 
             let scaleFactor : number;
-            this.maps.markerZoomedState = this.maps.markerZoomedState ? this.maps.markerZoomedState : isNullOrUndefined(this.maps.markerZoomFactor);
+            this.maps.markerZoomedState =  this.maps.markerZoomedState ? this.maps.markerZoomedState : isNullOrUndefined(this.maps.markerZoomFactor) ?
+            !this.maps.markerZoomedState : this.maps.markerZoomFactor > 1 ? this.maps.markerZoomedState : !this.maps.markerZoomedState;
             this.maps.defaultState = this.maps.markerZoomedState ? !this.maps.markerZoomedState : this.maps.defaultState;
             Array.prototype.forEach.call(layersCollection, (currentLayer: LayerSettings, layerIndex: number) => {
                 let isMarker: boolean = currentLayer.markerSettings.length !== 0;

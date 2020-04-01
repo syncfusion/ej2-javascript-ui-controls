@@ -22,7 +22,7 @@ export class StackingAreaSeries extends LineBase {
         let polarAreaType: boolean = series.chart.chartAreaType === 'PolarRadar';
         let getCoordinate: Function = polarAreaType ? TransformToVisible : getPoint;
         let lineDirection: string = '';
-        let visiblePoints: Points[] = <Points[]>series.points;
+        let visiblePoints: Points[] = this.enableComplexProperty(series);
         let pointsLength: number = visiblePoints.length;
         let stackedvalue: StackValues = series.stackedValues;
         let origin: number = polarAreaType ?
@@ -73,7 +73,7 @@ export class StackingAreaSeries extends LineBase {
             }
         }
         if (series.chart.chartAreaType === 'PolarRadar' && visiblePoints.length > 1) {
-            let connectPoints: { first: Points, last: Points} = this.getFirstLastVisiblePoint(series.points);
+            let connectPoints: { first: Points, last: Points } = this.getFirstLastVisiblePoint(series.points);
             let chart: Chart = this.chart;
             point1 = { 'x': connectPoints.first.xValue, 'y': stackedvalue.endValues[connectPoints.first.index] };
             point2 = getCoordinate(point1.x, point1.y, xAxis, yAxis, isInverted, series);
@@ -81,10 +81,10 @@ export class StackingAreaSeries extends LineBase {
             if (this.chart.visible === 1 && (xAxis.isInversed || yAxis.isInversed)) {
                 this.chart.enableAnimation = false;
                 lineDirection = (series.type === 'Polar' ? chart.polarSeriesModule.getPolarIsInversedPath(xAxis, lineDirection) :
-                chart.radarSeriesModule.getRadarIsInversedPath(xAxis, lineDirection));
+                    chart.radarSeriesModule.getRadarIsInversedPath(xAxis, lineDirection));
             }
         }
-        if (!isPolar || (isPolar && series.index !== this.getFirstSeriesIndex(series.chart.visibleSeries) )) {
+        if (!isPolar || (isPolar && series.index !== this.getFirstSeriesIndex(series.chart.visibleSeries))) {
             for (let j: number = pointsLength - 1; j >= startPoint; j--) {
                 if (isPolar && !visiblePoints[j].visible) {
                     continue;

@@ -99,28 +99,52 @@ export class NiceInterval extends Double {
      * @return {string}
      * @private
      */
-    public getSkeleton(axis: Axis, currentValue: number, previousValue: number): string {
+    public getSkeleton(axis: Axis, currentValue: number, previousValue: number, isBlazor ?: boolean): string {
         let skeleton: string;
         let intervalType: RangeIntervalType = axis.actualIntervalType as RangeIntervalType;
         if (axis.skeleton) {
             return axis.skeleton;
         }
         if (intervalType === 'Years') {
-            skeleton = axis.isChart ? (axis.valueType === 'DateTime' ? 'y' : 'yMMM') : 'y';
+            if (isBlazor) {
+                skeleton = axis.isChart ? (axis.valueType === 'DateTime' ? 'y' : 'y') : 'y';
+            } else {
+                skeleton = axis.isChart ? (axis.valueType === 'DateTime' ? 'y' : 'yMMM') : 'y';
+            }
         } else if (intervalType === 'Quarter') {
-            skeleton = 'yMMM';
+            skeleton = isBlazor ? 'y' : 'yMMM';
         } else if (intervalType === 'Months') {
-            skeleton = axis.isChart ? 'MMMd' : 'MMM';
+            if (isBlazor) {
+                skeleton = axis.isChart ? 'm' : 'm';
+            } else {
+                skeleton = axis.isChart ? 'MMMd' : 'MMM';
+            }
         } else if (intervalType === 'Weeks') {
-            skeleton = 'MEd';
+            skeleton = isBlazor ? 'm' : 'MEd';
         } else if (intervalType === 'Days') {
-            skeleton = axis.isChart ? this.getDayFormat(axis, currentValue, previousValue) : 'MMMd';
+            if (isBlazor) {
+                skeleton = 'd';
+            } else {
+                skeleton = axis.isChart ? this.getDayFormat(axis, currentValue, previousValue) : 'MMMd';
+            }
         } else if (intervalType === 'Hours') {
-            skeleton = axis.isChart ? (axis.valueType === 'DateTime' ? 'Hm' : 'EHm') : 'h';
+            if (isBlazor) {
+                skeleton = 't';
+            } else {
+                skeleton = axis.isChart ? (axis.valueType === 'DateTime' ? 'Hm' : 'EHm') : 'h';
+            }
         } else if (intervalType === 'Minutes') {
-            skeleton = axis.isChart ? 'Hms' : 'hm';
+            if (isBlazor) {
+                skeleton = 'T';
+            } else {
+                skeleton = axis.isChart ? 'Hms' : 'hm';
+            }
         } else {
-            skeleton = axis.isChart ? 'Hms' : 'hms';
+            if (isBlazor) {
+                skeleton = 'T';
+            } else {
+                skeleton = axis.isChart ? 'Hms' : 'hms';
+            }
         }
         return skeleton;
     }

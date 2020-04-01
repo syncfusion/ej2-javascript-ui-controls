@@ -14,7 +14,7 @@ export const destroyed: string = 'destroy';
  */
 export const load: string = 'load';
 /**
- * Specifies RichTextEditor internal events
+ * Specifies Rich Text Editor internal events
  */
 /** 
  * @hidden

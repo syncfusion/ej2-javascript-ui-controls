@@ -6,18 +6,24 @@ import { AutoComplete, ComboBox, MultiSelect } from '@syncfusion/ej2-dropdowns';
 import { RenderMode } from './inplace-editor';
 
 /**
- * InPlace-Editor interface defined here.
+ * Defines component types that can be used in the In-place Editor.
  * @hidden
  */
 
 export type Component = AutoComplete | ColorPicker | ComboBox | DateRangePicker | MultiSelect | RichTextEditor | Slider | TimePicker;
 
+/**
+ * Provides information about a Notify.
+ */
 export interface NotifyParams {
     type?: string;
     module: string;
     target?: HTMLElement | HTMLInputElement;
 }
 
+/**
+ * Provides information about a Component.
+ */
 export interface IComponent {
     showPopup?(): void;
     compObj: Component;
@@ -28,6 +34,9 @@ export interface IComponent {
     getRenderValue?(): void;
 }
 
+/**
+ * Provides information about a Button.
+ */
 export interface IButton {
     type: string;
     constant: string;
@@ -37,6 +46,9 @@ export interface IButton {
     container: HTMLElement;
 }
 
+/**
+ * Provides information about a ActionBegin event.
+ */
 export interface ActionBeginEventArgs {
     /** Defines the name of the field */
     data: { [key: string]: string | number };
@@ -44,6 +56,9 @@ export interface ActionBeginEventArgs {
     cancel?: boolean;
 }
 
+/**
+ * Provides information about a Action event.
+ */
 export interface ActionEventArgs {
     /** Prevents the current value render in the editor. */
     cancel?: boolean;
@@ -53,6 +68,9 @@ export interface ActionEventArgs {
     value: string;
 }
 
+/**
+ * Provides information about a Form event.
+ */
 export interface FormEventArgs {
     inputName: string;
     message: string;
@@ -61,11 +79,17 @@ export interface FormEventArgs {
     errorElement?: HTMLElement;
 }
 
+/**
+ * Provides information about a Validate event.
+ */
 export interface ValidateEventArgs extends ActionBeginEventArgs {
     /** Defines form validation error message. */
     errorMessage: string;
 }
 
+/**
+ * Provides information about a BeginEdit event.
+ */
 export interface BeginEditEventArgs {
     /** Specifies whether to cancel the open action of the editor. */
     cancel?: boolean;

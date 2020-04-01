@@ -1,6 +1,6 @@
 import { Workbook } from './workbook';
 import { Query, DataManager } from '@syncfusion/ej2-data';
-import { RangeSettingModel, SheetModel, UsedRangeModel } from './sheet-model';
+import { RangeModel, SheetModel, UsedRangeModel } from './sheet-model';
 import { RowModel } from './row-model';
 import { ColumnModel } from './column-model';
 import { processIdx } from './data';
@@ -20,7 +20,7 @@ import { WorkbookModel } from './workbook-model';
  * let spreadsheet: Spreadsheet = new Spreadsheet({
  *      sheets: [{
  *                  name: 'First Sheet',
- *                  rangeSettings: [{ dataSource: defaultData }],
+ *                  range: [{ dataSource: defaultData }],
  *                  rows: [{
  *                          index: 30,
  *                          cells: [{ index: 4, value: 'Total Amount:' },
@@ -31,7 +31,7 @@ import { WorkbookModel } from './workbook-model';
  * spreadsheet.appendTo('#Spreadsheet');
  * ```
  */
-export class RangeSetting extends ChildProperty<Sheet> {
+export class Range extends ChildProperty<Sheet> {
     /**
      * Specifies the data as JSON / Data manager to the sheet.
      * @default null
@@ -69,11 +69,11 @@ export class RangeSetting extends ChildProperty<Sheet> {
     public template: string;
 
     /**
-     * Specifies the range for updating the dataSource or template.
+     * Specifies the address for updating the dataSource or template.
      * @default 'A1'
      */
     @Property('A1')
-    public range: string;
+    public address: string;
 
 
 }
@@ -133,11 +133,11 @@ export class Sheet extends ChildProperty<WorkbookModel> {
     public protectSettings: ProtectSettingsModel;
 
     /**
-     * Specifies the range settings for the sheet.
+     * Specifies the range for the sheet.
      * @default []
      */
-    @Collection([], RangeSetting)
-    public rangeSettings: RangeSettingModel[];
+    @Collection([], Range)
+    public range: RangeModel[];
 
     /**
      * Specifies index of the sheet. Based on the index, sheet properties are applied.
@@ -263,7 +263,7 @@ export function getSheetIndex(context: Workbook, name: string): number {
 }
 
 /**
- * To get sheet index from address.
+ * To get sheet index from sheet id.
  * @hidden
  */
 export function getSheetIndexFromId(context: Workbook, id: number): number {
@@ -274,7 +274,7 @@ export function getSheetIndexFromId(context: Workbook, id: number): number {
             break;
         }
     }
-    return idx + 1;
+    return idx;
 }
 
 /**
@@ -366,7 +366,7 @@ export function initSheet(context: Workbook, sheet?: SheetModel[]): void {
         sheet.activeCell = sheet.activeCell || 'A1';
         sheet.selectedRange = sheet.selectedRange || 'A1';
         sheet.usedRange = sheet.usedRange || { rowIndex: 0, colIndex: 0 };
-        sheet.rangeSettings = sheet.rangeSettings ? initRangeSettings(sheet.rangeSettings) : [];
+        sheet.range = sheet.range ? initRangeSettings(sheet.range) : [];
         sheet.rows = sheet.rows || [];
         sheet.columns = sheet.columns || [];
         sheet.showHeaders = isUndefined(sheet.showHeaders) ? true : sheet.showHeaders;
@@ -382,10 +382,10 @@ export function initSheet(context: Workbook, sheet?: SheetModel[]): void {
     processIdx(sheets, true, context);
 }
 
-function initRangeSettings(rangeSettings: RangeSettingModel[]): RangeSettingModel[] {
-    rangeSettings.forEach((rangeSetting: RangeSettingModel) => {
+function initRangeSettings(rangeSettings: RangeModel[]): RangeModel[] {
+    rangeSettings.forEach((rangeSetting: RangeModel) => {
         rangeSetting.startCell = rangeSetting.startCell || 'A1';
-        rangeSetting.range = rangeSetting.range || 'A1';
+        rangeSetting.address = rangeSetting.address || 'A1';
         rangeSetting.template = rangeSetting.template || '';
         rangeSetting.showFieldAsHeader = isUndefined(rangeSetting.showFieldAsHeader) ? true : rangeSetting.showFieldAsHeader;
     });
@@ -405,6 +405,6 @@ function initRow(rows: RowModel[]): void {
  * get sheet name
  * @hidden
  */
-export function getSheetName(context: Workbook, idx: number = context.activeSheetTab): string {
-    return getSheet(context, idx - 1).name;
+export function getSheetName(context: Workbook, idx: number = context.activeSheetIndex): string {
+    return getSheet(context, idx).name;
 }

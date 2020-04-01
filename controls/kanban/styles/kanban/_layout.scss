@@ -200,6 +200,21 @@
             border: 1px dashed $kanban-border-color;
           }
 
+          .e-show-add-button {
+            border: 1px dashed $kanban-dropped-clone-border-color;
+            height: 36px;
+            margin: 0 8px 16px;
+
+            .e-show-add-icon {
+              padding-top: 11px;
+              text-align: center;
+            }
+          }
+
+          .e-multi-card-wrapper {
+            display: none;
+          }
+
           .e-card-wrapper {
             overflow: auto;
             padding: 8px;
@@ -257,10 +272,6 @@
             .e-target-dropped-clone {
               background: $kanban-dropped-clone-bg-color;
               border: 1px dashed $kanban-dropped-clone-border-color;
-            }
-
-            &.e-multi-card-wrapper {
-              display: none;
             }
           }
 

@@ -155,4 +155,7 @@ function pushBasicModules(context: Spreadsheet, modules: ModuleDeclaration[]): v
     if (context.allowFindAndReplace) {
         modules.push({ member: 'findAndReplace', args: [context] });
     }
+    if (context.allowMerge) {
+        modules.push({ member: 'merge', args: [context] });
+    }
 }

@@ -29,7 +29,8 @@ export class Keyboard {
         multiSelectionByRightArrow: 'shift+39',
         shiftTab: 'shift+tab',
         enter: '13',
-        tab: 'tab'
+        tab: 'tab',
+        delete: '46'
     };
     /**
      * Constructor for keyboard module
@@ -84,6 +85,11 @@ export class Keyboard {
             case 'tab':
             case 'shiftTab':
                 this.processTab(e.action, selectedCard);
+                break;
+            case 'delete':
+                let className: string = '.' + cls.CARD_CLASS + '.' + cls.CARD_SELECTION_CLASS;
+                let selectedCards: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(className));
+                selectedCards.forEach((selected: Element) => this.parent.crudModule.deleteCard(this.parent.getCardDetails(selected)));
                 break;
         }
     }
@@ -234,6 +240,8 @@ export class Keyboard {
         }
         if (selectedCard) {
             this.parent.actionModule.cardClick(e as KeyboardEvent, selectedCard as HTMLElement);
+            this.parent.activeCardData = { data: this.parent.getCardDetails(selectedCard), element: selectedCard };
+            this.parent.dialogModule.openDialog('Edit', this.parent.getCardDetails(selectedCard));
         }
     }
 

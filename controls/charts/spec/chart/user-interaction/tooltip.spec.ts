@@ -605,6 +605,91 @@ describe('Chart Control', () => {  beforeAll(() => {
             chartObj.refresh();
         });
     });
+
+    describe('customer issue: Tooltip on property change console error checking', () => {
+        let chartObj: Chart;
+        let div: HTMLElement = createElement('div', { id: 'mainDiv' });
+        let elem: HTMLElement = createElement('div', { id: 'container' });
+        let button1: HTMLElement = createElement('button', {id: 'button1'});
+        let button2: HTMLElement = createElement('button', { id: 'button2' });
+        let targetElement: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let trigger: MouseEvents = new MouseEvents();
+        beforeAll(() => {
+            document.body.appendChild(div);
+            div.appendChild(button1);
+            div.appendChild(button2);
+            div.appendChild(elem);
+            chartObj = new Chart(
+                {
+                    //Initializing Primary X and Y Axis
+                    primaryXAxis: {
+                        valueType: 'Category', interval: 1, majorGridLines: { width: 0 }
+                    },
+                    chartArea: { border: { width: 0 } },
+                    primaryYAxis:
+                    {
+                        majorGridLines: { width: 0 },
+                        majorTickLines: { width: 0 }, lineStyle: { width: 0 }, labelStyle: { color: 'transparent' }
+                    },
+                    //Initializing Chart Series
+                    series: [
+                        {
+                            type: 'Column', xName: 'x', width: 2, yName: 'y', name: 'Gold',
+                            dataSource: [{ x: 'USA', y: 46 }, { x: 'GBR', y: 27 }, { x: 'CHN', y: 26 }],
+                            marker: { dataLabel: { visible: true, position: 'Top', font: { fontWeight: '600', color: '#ffffff' } } }
+                        },
+                        {
+                            type: 'Column', xName: 'x', width: 2, yName: 'y', name: 'Silver',
+                            dataSource: [{ x: 'USA', y: 37 }, { x: 'GBR', y: 23 }, { x: 'CHN', y: 18 }],
+                            marker: { dataLabel: { visible: true, position: 'Top', font: { fontWeight: '600', color: '#ffffff' } } }
+                        },
+                        {
+                            type: 'Column', xName: 'x', width: 2, yName: 'y', name: 'Bronze',
+                            dataSource: [{ x: 'USA', y: 38 }, { x: 'GBR', y: 17 }, { x: 'CHN', y: 26 }],
+                            marker: { dataLabel: { visible: true, position: 'Top', font: { fontWeight: '600', color: '#ffffff' } } }
+                        }
+                    ],
+                    //Initializing Chart title
+                    width: '500px',
+                    title: 'Olympic Medal Counts - RIO', tooltip: { enable: true },
+                });
+            chartObj.appendTo('#container');
+            document.getElementById('button1').onclick = function () {
+                chartObj.tooltip = { enable: false };
+            }
+            document.getElementById('button2').onclick = function () {
+                chartObj.tooltip = { enable: true };
+            }
+        });
+        afterAll((): void => {
+            chartObj.destroy();
+            div.remove();
+        });
+
+        it('Disable the tooltip', (done: Function) => {
+            loaded = (args: Object): void => {
+                targetElement = document.getElementById('button1') as HTMLElement;
+                trigger.clickEvent(targetElement);
+                expect(chartObj.tooltip.enable === false).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+
+        it('Enable the tooltip', (done: Function) => {
+            loaded = (args: Object): void => {
+                targetElement = document.getElementById('button2') as HTMLElement;
+                trigger.clickEvent(targetElement);
+                expect(chartObj.tooltip.enable === true).toBe(true);
+                done();
+            };
+            chartObj.loaded = loaded;
+            chartObj.refresh();
+        });
+    });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

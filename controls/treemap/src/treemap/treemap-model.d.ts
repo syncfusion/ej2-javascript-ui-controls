@@ -7,49 +7,49 @@ import {ComponentModel} from '@syncfusion/ej2-base';
 export interface TreeMapModel extends ComponentModel{
 
     /**
-     * Specifies the width by given pixel or percentage.
+     * Sets and gets the width of the treemap component.
      * @default null
      */
     width?: string;
 
     /**
-     * Specifies the height by given pixel or percentage.
+     * Sets and gets the height of the treemap component.
      * @default null
      */
     height?: string;
 
     /**
-     * Specifies the border of tree map.
+     * Sets and gets the options for customizing the color and width of the treemap border.
      */
     border?: BorderModel;
 
     /**
-     * Specifies the margin to move the render area.
+     * Sets and gets the options for customizing the margin in the treemap component.
      */
     margin?: MarginModel;
 
     /**
-     * Specifies the background.
+     * Sets and gets the background color of the treemap.
      */
     background?: string;
 
     /**
-     * Specifies the theme.
+     * Sets and gets the options for customizing the theme of the treemap component.
      */
     theme?: TreeMapTheme;
 
     /**
-     * Specifies the title for tree map.
+     * Sets and gets the options for customizing the title of the treemap component.
      */
     titleSettings?: TitleSettingsModel;
 
     /**
-     * Specifies the rendering of layout type.
+     * Specifies the rendering type of layout of the treemap component.
      */
     layoutType?: LayoutMode;
 
     /**
-     * Specifies the dataSource.
+     * Sets and gets the data source for the treemap component.
      * @isGenericType true
      * @isObservable true
      * @default null
@@ -57,123 +57,124 @@ export interface TreeMapModel extends ComponentModel{
     dataSource?: DataManager | TreeMapAjax | Object[];
 
     /**
-     * Specifies the query for filter the data.
+     * Sets and gets the query to select particular data from the shape data.
+     * This property is applicable only when the data source is created by data manager.
      * @default null
      */
     query?: Query;
 
     /**
-     * Specifies the weight value path
+     * Sets and gets the value path of the weight from the data source, based on which the map item is rendered.
      */
     weightValuePath?: string;
 
     /**
-     * Specifies the colorValuePath
+     * Sets and gets the value path from the data source, based on it color is filled in treemap.
      */
     rangeColorValuePath?: string;
 
     /**
-     * Specifies the colorValuePath
+     * Sets and gets the value path from the data source, based on it color is filled in treemap.
      */
     equalColorValuePath?: string;
 
     /**
-     * Specifies the colorValuePath from dataSource
+     * Sets and gets the value path from the data source, based on it color is filled in treemap.
      */
     colorValuePath?: string;
 
     /**
-     * Specifies the palette colors.
+     * Sets and gets the set of colors to apply in the treemap items.
      */
     palette?: string[];
 
     /**
-     * Specifies the rendering of layout of the treemap items.
+     * Specifies the rendering direction of layout of the treemap items.
      * @default TopLeftBottomRight
      */
     renderDirection?: RenderingMode;
 
     /**
-     * To enable or disable the drillDown.
+     * Enables or disables the drill down functionality in treemap.
      */
     enableDrillDown?: boolean;
 
     /**
-     * To render the text from right to left.
+     * Enables or disables the connection text in the header of the treemap.
      */
     enableBreadcrumb?: boolean;
 
     /**
-     * To add the breadCrumb connector.
+     * Specifies the connection between the two words.
      */
     breadcrumbConnector?: string;
 
     /**
-     * To control the drillDown view.
+     * Enables or disables the initial drill in the treemap.
      */
     drillDownView?: boolean;
 
     /**
-     * Specifies the initial drillDown.
+     * Specifies the options for customizing the initial drill down in treemap.
      */
     initialDrillDown?: InitialDrillSettingsModel;
 
     /**
-     * Specifies to access all leaf items in levels.
+     * Sets and gets the options for customizing the leaf item of the treemap.
      */
     leafItemSettings?: LeafItemSettingsModel;
 
     /**
-     * Specifies the item levels.
+     * Sets and gets the options for customizing the levels of the treemap.
      */
     levels?: LevelSettingsModel[];
 
     /**
-     * To specifies the highlight settings.
+     * Sets and gets the options for customizing the highlight of the treemap item on mouse over on the treemap component.
      */
     highlightSettings?: HighlightSettingsModel;
 
     /**
-     * To specifies the selection settings.
+     * Sets and gets the options for customizing the selection of the treemap item on click event on the treemap component.
      */
     selectionSettings?: SelectionSettingsModel;
 
     /**
-     * Specifies the tooltip settings.
+     * Sets and gets the options for customizing the tooltip of the treemap.
      */
     tooltipSettings?: TooltipSettingsModel;
 
     /**
-     * Specifies the legend settings.
+     * Sets and gets the options for customizing the legend of the treemap.
      */
     legendSettings?: LegendSettingsModel;
 
     /**
-     * To enable the separator
+     * Enables or disables the visibility state of the separator for grouping.
      * @default false
      */
     useGroupingSeparator?: boolean;
 
     /**
-     * Description for maps.
+     * Sets and gets the description for treemap.
      * @default null
      */
     description?: string;
 
     /**
-     * TabIndex value for treemap.
+     * Sets and gets the tab index value for treemap.
      * @default 1
      */
     tabIndex?: number;
 
     /**
-     * To apply internationalization for treemap
+     * Sets and gets format for the texts in the treemap.
      * @default null
      */
     format?: string;
 
     /**
-     * Triggers before treemap rendered.
+     * Triggers when the treemap is on load.
      * @event
      */
     load?: EmitType<ILoadEventArgs>;
@@ -186,49 +187,49 @@ export interface TreeMapModel extends ComponentModel{
     beforePrint?: EmitType<IPrintEventArgs>;
 
     /**
-     * Triggers after treemap rendered.
+     * Triggers after treemap is rendered.
      * @event
      * @blazorProperty 'Loaded'
      */
     loaded?: EmitType<ILoadedEventArgs>;
 
     /**
-     * Triggers before item rendering.
+     * Triggers before item rendering in the treemap component.
      * @event
      * @blazorProperty 'ItemRendering'
      */
     itemRendering?: EmitType<IItemRenderingEventArgs>;
 
     /**
-     * Triggers the drillDown start.
+     * Triggers on performing drill down functionality in the treemap.
      * @event
      * @blazorProperty 'OnDrillStart'
      */
     drillStart?: EmitType<IDrillStartEventArgs>;
 
     /**
-     * Triggers the drillDown end.
+     * Triggers after drill down functionality gets completed in the treemap.
      * @event
      * @blazorProperty 'DrillCompleted'
      */
     drillEnd?: EmitType<IDrillEndEventArgs>;
 
     /**
-     * Triggers the item selected.
+     * Triggers after selecting a treemap item.
      * @event
      * @blazorProperty 'ItemSelected'
      */
     itemSelected?: EmitType<IItemSelectedEventArgs>;
 
     /**
-     * Triggers the item highlight.
+     * Triggers after highlighting on the treemap item.
      * @event
      * @blazorProperty 'ItemHighlighted'
      */
     itemHighlight?: EmitType<IItemHighlightEventArgs>;
 
     /**
-     * Triggers the tooltip rendering.
+     * Triggers on rendering of the tooltip in the treemap component.
      * @event
      * @blazorProperty 'TooltipRendering'
      * @blazorType ITreeMapTooltipArgs
@@ -236,63 +237,63 @@ export interface TreeMapModel extends ComponentModel{
     tooltipRendering?: EmitType<ITreeMapTooltipRenderEventArgs>;
 
     /**
-     * Triggers the item click.
+     * Triggers after clicking an item in the treemap.
      * @event
      * @blazorProperty 'OnItemClick'
      */
     itemClick?: EmitType<IItemClickEventArgs>;
 
     /**
-     * Triggers the item move.
+     * Triggers after mouse hover on the treemap item.
      * @event
      * @blazorProperty 'OnItemMove'
      */
     itemMove?: EmitType<IItemMoveEventArgs>;
 
     /**
-     * Triggers the click event.
+     * Triggers after clicking on the treemap.
      * @event
      * @blazorProperty 'OnClick'
      */
     click?: EmitType<IItemClickEventArgs>;
 
     /**
-     * Triggers on double clicking the maps.
+     * Triggers after double clicking on the treemap.
      * @event
      * @blazorProperty 'OnDoubleClick'
      */
     doubleClick?: EmitType<IDoubleClickEventArgs>;
 
     /**
-     * Triggers on right clicking the maps.
+     * Triggers after right clicking on the treemap.
      * @event
      * @blazorProperty 'OnRightClick'
      */
     rightClick?: EmitType<IMouseMoveEventArgs>;
 
     /**
-     * Triggers the mouse move event.
+     * Triggers after mouse hover on the treemap.
      * @event
      * @blazorProperty 'OnMouseMove'
      */
     mouseMove?: EmitType<IMouseMoveEventArgs>;
 
     /**
-     * Triggers the resize event.
+     * Triggers after resizing the treemap component.
      * @event
      * @blazorProperty 'Resizing'
      */
     resize?: EmitType<IResizeEventArgs>;
 
     /**
-     * Triggers the legend item rendering.
+     * Triggers before rendering each legend item in the treemap.
      * @event
      * @blazorProperty 'LegendItemRendering'
      */
     legendItemRendering?: EmitType<ILegendItemRenderingEventArgs>;
 
     /**
-     * Triggers the legend rendering event.
+     * Triggers before rendering the legend items in the treemap.
      * @event
      * @deprecated
      * @blazorProperty 'LegendRendering'

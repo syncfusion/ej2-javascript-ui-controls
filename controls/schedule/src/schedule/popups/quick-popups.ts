@@ -408,7 +408,7 @@ export class QuickPopups {
         if (this.parent.activeViewOptions.group.resources.length > 0) {
             let targetCell: HTMLElement = args.element instanceof Array ? args.element[0] : args.element;
             let groupIndex: number = parseInt(targetCell.getAttribute('data-group-index'), 10);
-            this.parent.resourceBase.setResourceValues(tempObj, true, isNaN(groupIndex) ? null : groupIndex);
+            this.parent.resourceBase.setResourceValues(tempObj, isNaN(groupIndex) ? null : groupIndex);
         }
         return this.parent.eventBase.isBlockRange(tempObj);
     }
@@ -736,9 +736,11 @@ export class QuickPopups {
         let eventSubject: string = (eventData[fields.subject] || this.l10n.getConstant('noTitle')) as string;
         let startDate: Date = eventData[fields.startTime] as Date;
         let endDate: Date = eventData[fields.endTime] as Date;
-        let startDateDetails: string = this.getDateFormat(startDate, 'long');
+        let format: string = 'MMMM d, y';
+        let startDateDetails: string = this.getDateFormat(startDate, 'long', format);
         let endDateDetails: string = (eventData[fields.isAllDay] && endDate.getHours() === 0 && endDate.getMinutes() === 0) ?
-            this.getDateFormat(util.addDays(new Date(endDate.getTime()), -1), 'long') : this.getDateFormat(endDate, 'long');
+            this.getDateFormat(util.addDays(new Date(endDate.getTime()), -1), 'long', format) :
+            this.getDateFormat(endDate, 'long', format);
         let startTimeDetail: string = this.parent.getTimeString(startDate);
         let endTimeDetail: string = this.parent.getTimeString(endDate);
         let details: string = '';
@@ -768,7 +770,7 @@ export class QuickPopups {
         let day: string = this.parent.globalize.formatDate(data.date, { format: 'E', calendar: this.parent.getCalendarMode() });
         this.morePopup.element.querySelector('.' + cls.MORE_EVENT_HEADER_DAY_CLASS).innerHTML = util.capitalizeFirstWord(day, 'single');
         let dateElement: Element = this.morePopup.element.querySelector('.' + cls.MORE_EVENT_HEADER_DATE_CLASS);
-        dateElement.innerHTML = this.getDateFormat(data.date, 'd');
+        dateElement.innerHTML = this.getDateFormat(data.date, 'd', 'd');
         dateElement.setAttribute('data-date', selectedDate);
         dateElement.setAttribute('data-end-date', endDate.getTime().toString());
         let groupOrder: string[];
@@ -798,11 +800,6 @@ export class QuickPopups {
             } else {
                 this.morePopup.relateTo = closest(<Element>target, '.' + cls.WORK_CELLS_CLASS) as HTMLElement;
             }
-        }
-        if (this.parent.isAdaptive) {
-            this.morePopup.element.style.top = '0px';
-            this.morePopup.element.style.left = '0px';
-            this.morePopup.element.style.height = formatUnit(window.innerHeight);
         }
         this.parent.updateEventTemplates();
         let eventProp: PopupOpenEventArgs = { type: 'EventContainer', cancel: false, element: this.morePopup.element };
@@ -962,9 +959,12 @@ export class QuickPopups {
         return '';
     }
 
-    private getDateFormat(date: Date, formatString: string): string {
+    private getDateFormat(date: Date, skeletonString: string, formatString: string): string {
         return util.capitalizeFirstWord(
-            this.parent.globalize.formatDate(date, { skeleton: formatString, calendar: this.parent.getCalendarMode() }), 'single');
+            isBlazor() ? this.parent.globalize.formatDate(date, { format: formatString, calendar: this.parent.getCalendarMode() }) :
+                this.parent.globalize.formatDate(date, { skeleton: skeletonString, calendar: this.parent.getCalendarMode() }),
+            'single'
+        );
     }
 
     private getDataFromTarget(target: Element): Object {
@@ -1096,7 +1096,10 @@ export class QuickPopups {
     }
 
     private quickPopupOpen(): void {
-        if (this.parent.isAdaptive) { return; }
+        if (this.parent.isAdaptive) {
+            this.quickPopup.element.style.top = '0px';
+            return;
+        }
         if (this.quickPopup.element.querySelector('.' + cls.CELL_POPUP_CLASS)) {
             let subjectElement: HTMLElement = this.quickPopup.element.querySelector('.' + cls.SUBJECT_CLASS) as HTMLElement;
             if (subjectElement) {
@@ -1179,6 +1182,9 @@ export class QuickPopups {
 
     private morePopupOpen(): void {
         if (this.parent.isAdaptive) {
+            this.morePopup.element.style.top = '0px';
+            this.morePopup.element.style.left = '0px';
+            this.morePopup.element.style.height = formatUnit(window.innerHeight);
             return;
         }
         (this.morePopup.element.querySelector('.' + cls.MORE_EVENT_HEADER_DATE_CLASS) as HTMLElement).focus();
@@ -1217,7 +1223,7 @@ export class QuickPopups {
             saveObj[fields.endTime] = this.parent.activeCellsData.endTime;
             saveObj[fields.isAllDay] = this.parent.activeCellsData.isAllDay;
             if (this.parent.resourceBase) {
-                this.parent.resourceBase.setResourceValues(saveObj, true);
+                this.parent.resourceBase.setResourceValues(saveObj);
             }
             popupData = saveObj;
         } else {

@@ -2415,6 +2415,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             RowIndent: 'Indent',
             RowOutdent: 'Outdent'
         };
+        this.l10n = new L10n('treegrid', this.defaultLocale, this.locale);
         if (this.isSelfReference && isNullOrUndefined(this.childMapping)) {
             this.childMapping = 'Children';
         }
@@ -2517,13 +2518,19 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                     var collapsetarget = e.target;
                     var collapsecolumn = collapsetarget.closest('.e-rowcell');
                     var collapserow = collapsecolumn.closest('tr');
-                    this.expandCollapseRequest(collapserow.querySelector('.e-treegridexpand'));
+                    var collapseRow = collapserow.querySelector('.e-treegridexpand');
+                    if (collapseRow !== null && collapseRow !== undefined) {
+                        this.expandCollapseRequest(collapserow.querySelector('.e-treegridexpand'));
+                    }
                     break;
                 case 'ctrlShiftDownArrow':
                     var expandtarget = e.target;
                     var expandcolumn = expandtarget.closest('.e-rowcell');
                     var expandrow = expandcolumn.closest('tr');
-                    this.expandCollapseRequest(expandrow.querySelector('.e-treegridcollapse'));
+                    var expandRow = expandrow.querySelector('.e-treegridcollapse');
+                    if (expandRow !== null && expandRow !== undefined) {
+                        this.expandCollapseRequest(expandrow.querySelector('.e-treegridcollapse'));
+                    }
                     break;
                 case 'downArrow':
                     var target = e.target.parentElement;
@@ -2568,7 +2575,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     };
     // Get Proper Row Element from the summary 
     TreeGrid.prototype.findPreviousRowElement = function (summaryRowElement) {
-        var rowElement = summaryRowElement.previousSibling;
+        var rowElement = summaryRowElement.previousElementSibling;
         if (rowElement !== null && (rowElement.className.indexOf('e-summaryrow') !== -1 ||
             rowElement.style.display === 'none')) {
             rowElement = this.findPreviousRowElement(rowElement);
@@ -3463,8 +3470,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
                 switch (this.contextMenuItems[i]) {
                     case 'AddRow':
                     case ContextMenuItems.AddRow:
-                        items.push({ text: 'AddRow', target: '.e-content', id: this.element.id + '_gridcontrol_cmenu_AddRow',
-                            items: [{ text: 'Above', id: 'Above' }, { text: 'Below', id: 'Below' }] });
+                        items.push({ text: this.l10n.getConstant('AddRow'),
+                            target: '.e-content', id: this.element.id + '_gridcontrol_cmenu_AddRow',
+                            items: [{ text: this.l10n.getConstant('Above'), id: 'Above' }, { text: this.l10n.getConstant('Below'), id: 'Below' }] });
                         break;
                     default:
                         items.push(this.contextMenuItems[i]);
@@ -3482,7 +3490,6 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      */
     TreeGrid.prototype.getGridToolbar = function () {
         if (this.toolbar) {
-            this.l10n = new L10n('treegrid', this.defaultLocale, this.locale);
             var items = [];
             for (var i = 0; i < this.toolbar.length; i++) {
                 switch (this.toolbar[i]) {
@@ -5625,7 +5632,14 @@ function addAction(details, treeData, control, isSelfReference, addRowIndex, sel
                 value = getPlainData(value);
             }
             else {
-                value = extend({}, currentViewRecords[addRowIndex]);
+                var primaryKeys = control.grid.getPrimaryKeyFieldNames()[0];
+                var currentdata = currentViewRecords[addRowIndex];
+                if (!isNullOrUndefined(currentdata) && currentdata[primaryKeys] === details.value[primaryKeys] || selectedIndex !== -1) {
+                    value = extend({}, currentdata);
+                }
+                else {
+                    value = extend({}, details.value);
+                }
                 value = getPlainData(value);
             }
             if (selectedIndex === -1) {
@@ -6559,15 +6573,21 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
                     this.removeChildItem(deletedRow);
                 }
                 var idx = void 0;
+                var idz = void 0;
                 var treeGridData = dataSource;
                 for (var i = 0; i < treeGridData.length; i++) {
                     if (treeGridData[i][this.parent.idMapping] === deletedRow.taskData[this.parent.idMapping]) {
                         idx = i;
                     }
                 }
-                if (idx !== -1) {
+                for (var i = 0; i < this.treeGridData.length; i++) {
+                    if (this.treeGridData[i][this.parent.idMapping] === deletedRow.taskData[this.parent.idMapping]) {
+                        idz = i;
+                    }
+                }
+                if (idx !== -1 || idz !== -1) {
                     dataSource.splice(idx, 1);
-                    this.treeGridData.splice(idx, 1);
+                    this.treeGridData.splice(idz, 1);
                 }
             }
             var recordIndex_1 = this.treeGridData.indexOf(deletedRow);
@@ -6601,6 +6621,14 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
         var tObj = this.parent;
         var currentRecord;
         var idx;
+        var idz;
+        var dataSource;
+        if (this.parent.dataSource instanceof DataManager && isOffline(this.parent)) {
+            dataSource = this.parent.dataSource.dataSource.json;
+        }
+        else {
+            dataSource = this.parent.dataSource;
+        }
         for (var i = 0; i < record.childRecords.length; i++) {
             currentRecord = record.childRecords[i];
             var treeGridData = void 0;
@@ -6615,9 +6643,15 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
                     idx = i_1;
                 }
             }
-            if (idx !== -1) {
-                this.treeData.splice(idx, 1);
-                this.treeGridData.splice(idx, 1);
+            for (var i_2 = 0; i_2 < this.treeGridData.length; i_2++) {
+                if (this.treeGridData[i_2][this.parent.idMapping] === currentRecord.taskData[this.parent.idMapping]) {
+                    idz = i_2;
+                    break;
+                }
+            }
+            if (idx !== -1 || idz !== -1) {
+                dataSource.splice(idx, 1);
+                this.treeGridData.splice(idz, 1);
             }
             if (currentRecord.hasChildRecords) {
                 this.removeChildItem(currentRecord);
@@ -8173,7 +8207,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                     }
                     else if (this.parent.editSettings.newRowPosition === 'Above' || this.parent.editSettings.newRowPosition === 'Below') {
                         added.level = this.batchRecords[this.addRowIndex][level];
-                        if (added.level) {
+                        if (added.level && this.selectedIndex > -1) {
                             added.parentItem = parentRecord;
                             added.parentUniqueID = parentUniqueID;
                             delete added.parentItem.childRecords;
@@ -9606,6 +9640,14 @@ var VirtualScroll$1 = /** @__PURE__ @class */ (function () {
         this.prevstartIndex = -1;
         this.prevendIndex = -1;
         this.parent = parent;
+        var injectedModules = 'injectedModules';
+        var modules = Grid.prototype[injectedModules];
+        for (var i = 0; i < modules.length; i++) {
+            if (modules[i] === VirtualScroll) {
+                modules.splice(i, 1);
+                break;
+            }
+        }
         Grid.Inject(TreeVirtual);
         this.addEventListener();
     }

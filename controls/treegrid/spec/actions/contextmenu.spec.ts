@@ -5,6 +5,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ContextMenu } from '../../src/treegrid/actions/context-menu';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { CellSaveEventArgs,  } from '../../src';
+import{L10n } from '@syncfusion/ej2-base';
 import { CellEditArgs } from '@syncfusion/ej2-grids';
 
 /**
@@ -430,6 +431,37 @@ describe('ContextMenu module', () => {
           destroy(gridObj);
         });
       });
+
+       
+  describe('Localization', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      L10n.load({
+        'de-DE': {
+            'treegrid': {
+                AddRow: 'Voeg een rij toe',
+                Above: 'Bovenstaand',
+                Below: 'beneden',
+            }
+        }
+      });
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          contextMenuItems:['AddRow'],
+          locale: 'de-DE',
+        },
+        done
+      );
+    });
+    it('render testing', () => {
+     expect(document.getElementsByClassName('e-menu-item')[0].textContent).toBe('Voeg een rij toe');
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  }); 
+
 
   it('memory leak', () => {
     profile.sample();

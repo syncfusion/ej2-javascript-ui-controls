@@ -606,8 +606,8 @@ describe('Chart Control', () => {
         });
         it('Checking with empty data', (done: Function) => {
             loaded = (args: Object): void => {
-                svg = document.getElementById('container_Series_0_Point_3');
-                expect(svg === null).toBe(true);
+                svg = document.getElementById('containerSeriesGroup0');
+                expect(svg.childElementCount === 8).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

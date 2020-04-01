@@ -7,13 +7,13 @@ import {MarkerShape} from "./base";
 export interface BorderModel {
 
     /**
-     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     * Sets and gets the color of the border. This property accepts the value in hex code and rgba string as a valid CSS color string.
      * @default '#808080'
      */
     color?: string;
 
     /**
-     * The width of the border in pixels.
+     * Defines the width of the border in the treemap component.
      * @default 0
      */
     width?: number;
@@ -26,25 +26,25 @@ export interface BorderModel {
 export interface MarginModel {
 
     /**
-     * Left margin in pixels.
+     * Sets and gets the left margin for the treemap component.
      * @default 10
      */
     left?: number;
 
     /**
-     * Right margin in pixels.
+     * Sets and gets the right margin for the treemap component.
      * @default 10
      */
     right?: number;
 
     /**
-     * Top margin in pixels.
+     * Sets and gets the top margin for the treemap component.
      * @default 10
      */
     top?: number;
 
     /**
-     * Bottom margin in pixels.
+     * Sets and gets the bottom margin for the treemap component.
      * @default 10
      */
     bottom?: number;
@@ -57,37 +57,37 @@ export interface MarginModel {
 export interface FontModel {
 
     /**
-     * Font size for the text.
+     * Sets and gets the size for the text in the treemap component.
      * @default null
      */
     size?: string;
 
     /**
-     * Color for the text.
+     * Sets and gets the color for the text in the treemap component.
      * @default null
      */
     color?: string;
 
     /**
-     * fontFamily for the text.
+     * Sets and gets the font family for the text in the treemap component.
      * @default ''
      */
     fontFamily?: string;
 
     /**
-     * FontWeight for the text.
+     * Sets and gets the font weight for the text in the treemap component.
      * @default 'Normal'
      */
     fontWeight?: string;
 
     /**
-     * FontStyle for the text.
+     * Sets and gets the font style for the text in the treemap component.
      * @default 'Normal'
      */
     fontStyle?: string;
 
     /**
-     * Opacity for the text.
+     * Sets and gets the opacity of the text in the treemap component.
      * @default 1
      */
     opacity?: number;
@@ -100,13 +100,13 @@ export interface FontModel {
 export interface CommonTitleSettingsModel {
 
     /**
-     * To customize the text of the title.
+     * Sets and gets the text for the title in the treemap component.
      * @default ''
      */
     text?: string;
 
     /**
-     * To customize title description for the accessibility.
+     * Define the description of the title for the accessibility in the treemap component.
      * @default ''
      */
     description?: string;
@@ -119,12 +119,12 @@ export interface CommonTitleSettingsModel {
 export interface SubTitleSettingsModel extends CommonTitleSettingsModel{
 
     /**
-     * Options for customizing title styles of the Maps.
+     * Sets and gets the text style for the subtitle in the treemap component.
      */
     textStyle?: FontModel;
 
     /**
-     * Options for customize the text alignment.
+     * Sets and gets the alignment of the subtitle text in the treemap component.
      * @default 'Center'
      */
     alignment?: Alignment;
@@ -137,18 +137,18 @@ export interface SubTitleSettingsModel extends CommonTitleSettingsModel{
 export interface TitleSettingsModel extends CommonTitleSettingsModel{
 
     /**
-     * Options for customizing title styles of the Maps.
+     * Sets and gets the options to customizing the text styles of the treemap component.
      */
     textStyle?: FontModel;
 
     /**
-     * Options for customize the text alignment.
+     * Sets and gets the text position of the title text in the treemap component.
      * @default 'Center'
      */
     alignment?: Alignment;
 
     /**
-     * To configure sub title of maps.
+     * Sets and gets the options to customize the subtitle for the treemap.
      */
     subtitleSettings?: SubTitleSettingsModel;
 
@@ -160,51 +160,51 @@ export interface TitleSettingsModel extends CommonTitleSettingsModel{
 export interface ColorMappingModel {
 
     /**
-     * Specifies the from
+     * Sets and gets the value from which the range of color mapping starts.
      * @default null
      * @isBlazorNullableType true
      */
     from?: number;
 
     /**
-     * Specifies the to
+     * Sets and gets the value to which the range of color mapping ends.
      * @default null
      * @isBlazorNullableType true
      */
     to?: number;
 
     /**
-     * specifies the color
+     * Sets and gets the color for the color-mapping in treemap.
      * @default null 
      */
     color?: string | string[];
 
     /**
-     * Specifies the label text.
+     * Sets and gets the label text for the legend based on color mapping.
      * @default null
      */
     label?: string;
 
     /**
-     * Specifies the value
+     * Sets and gets the value for the color-mapping from the data source.
      * @default null
      */
     value?: string | number;
 
     /**
-     * Specifies the minOpacity
+     * Sets and gets the minimum opacity for the color-mapping in the treemap component.
      * @default null 
      */
     minOpacity?: number;
 
     /**
-     * maxOpacity
+     * Sets and gets the maximum opacity for the color-mapping in the treemap component.
      * @default null 
      */
     maxOpacity?: number;
 
     /**
-     * Specifies the visibility of the legend for color mapping
+     * Enables or disables the visibility of the legend for color mapping in the treemap component.
      * @default true
      */
     showLegend?: boolean;
@@ -217,157 +217,157 @@ export interface ColorMappingModel {
 export interface LegendSettingsModel {
 
     /**
-     * Toggle the legend visibility.
+     * Enables or disables the visibility of legend in the treemap component.
      * @default false
      */
     visible?: boolean;
 
     /**
-     * Customize the legend mode.
+     * Sets and gets the mode of legend in the treemap component. The modes available are default and interactive modes.
      * @default 'Default'
      */
     mode?: LegendMode;
 
     /**
-     * Customize the legend background
+     * Sets and gets the background color of legend in the treemap component.
      * @default 'transparent'
      */
     background?: string;
 
     /**
-     * Customize the legend shape.
+     * Sets and gets the shape of legend in the treemap component.
      * @default 'Circle'
      */
     shape?: LegendShape;
 
     /**
-     * Customize the legend width.
+     * Sets and gets the width of legend in the treemap component.
      * @default ''
      */
     width?: string;
 
     /**
-     * Customize the legend height.
+     * Sets and gets the height of legend in the treemap component.
      * @default ''
      */
     height?: string;
 
     /**
-     * Options for customize the legend text.
+     * Sets and gets the options to customize the text style of legend in the treemap component.
      */
     textStyle?: FontModel;
 
     /**
-     * Specifies the legend shape color
+     * Sets and gets the shape color of legend in the treemap component.
      * @default null
      */
     fill?: string;
 
     /**
-     * Specifies the legend opacity of shape color
+     * Sets and gets the opacity of legends in the treemap component.
      * @default 1
      */
     opacity?: number;
 
     /**
-     * Customize the shape width.
+     * Sets and gets the width of the shapes in legend in the treemap component.
      * @default 15
      */
     shapeWidth?: number;
 
     /**
-     * Customize the shape height.
+     * Sets and gets the height of the shapes of legend in the treemap component.
      * @default 15
      */
     shapeHeight?: number;
 
     /**
-     * Customize the shape padding
+     * Sets and gets the shape padding of legend in the treemap component.
      * @default 10
      */
     shapePadding?: number;
 
     /**
-     * Specifies the images url.
+     * Sets and gets the URL path of the legend shapes rendered as image in the treemap component.
      * @default null
      */
     imageUrl?: string;
 
     /**
-     * Options for customizing the color and width of the legend border.
+     * Sets and gets the options for customizing the color and width of the border of the legend in the treemap component.
      */
     border?: BorderModel;
 
     /**
-     * Options for customizing the color and width of the shape border.
+     * Sets and gets the options for customizing the color and width of the border of the legend shape in the treemap.
      */
     shapeBorder?: BorderModel;
 
     /**
-     * To configure the title of the legend.
+     * Sets and gets the options to customize the title of the legend in the treemap component.
      */
     title?: CommonTitleSettingsModel;
 
     /**
-     * Options for customizing text styles of the legend.
+     * Sets and gets the options to customize the text style of the legend in the treemap component.
      */
     titleStyle?: FontModel;
 
     /**
-     * Customize the legend position of the maps.
+     * Sets and gets the position of legend in the treemap component.
      * @default 'Bottom'
      */
     position?: LegendPosition;
 
     /**
-     * Customize the legend items placed
+     * Sets and gets the orientation of legend in the treemap component.
      * @default 'None'
      */
     orientation?: LegendOrientation;
 
     /**
-     * Inverted pointer for interactive legend
+     * Enables or disables the pointer for interactive legend in the treemap component.
      * @default false
      */
     invertedPointer?: boolean;
 
     /**
-     * To place the label position for interactive legend.
+     * Sets and gets the label position for interactive legend in the treemap component.
      * @default 'After'
      */
     labelPosition?: LabelPlacement;
 
     /**
-     * Specifies the label intersect action.
+     * Sets and gets the label intersect action of legend in the treemap component.
      * @default 'None'
      */
     labelDisplayMode?: LabelIntersectAction;
 
     /**
-     * Customize the legend alignment.
+     * Sets and gets the alignment of legend in the treemap component.
      * @default 'Center'
      */
     alignment?: Alignment;
 
     /**
-     * Customize the legend placed by given x and y values. 
+     * Sets and gets the location of the legend using x and y values in the treemap component. 
      */
     location?: Location;
 
     /**
-     * Enable or disable the visibility of the legend.
+     * Sets and gets the visibility state of the legend in the treemap component.
      * @default null
      */
     showLegendPath?: string;
 
     /**
-     * Used to render particular field in dataSource as legend.
+     * Sets and gets the value path from the data source to render legend in the treemap component.
      * @default null
      */
     valuePath?: string;
 
     /**
-     * Used to remove duplicate of the legend items.
+     * Enables or disables to remove the duplicate legend item.
      * @default false
      */
     removeDuplicateLegend?: boolean;
@@ -380,13 +380,13 @@ export interface LegendSettingsModel {
 export interface InitialDrillSettingsModel {
 
     /**
-     * Specifies the initial rendering level.
+     * Sets and gets the initial rendering level index in the treemap component.
      * @default null
      */
     groupIndex?: number;
 
     /**
-     * Specifies the initial rendering name.
+     * Sets and gets the initial rendering level name in the treemap component.
      * @default null
      */
     groupName?: string;
@@ -399,89 +399,89 @@ export interface InitialDrillSettingsModel {
 export interface LeafItemSettingsModel {
 
     /**
-     * Specifies the fill color for leaf items.
+     * Sets and gets the fill color of leaf items in the treemap component.
      * @default null
      */
     fill?: string;
 
     /**
-     * Items rendering with random colors.
+     * Enables or disables automatic filling of colors in leaf items of the treemap component.
      * @default false
      */
     autoFill?: boolean;
 
     /**
-     * Specifies the border
+     * Sets and gets the options for customizing the color and width of the border of the leaf item in the treemap component.
      */
     border?: BorderModel;
 
     /**
-     * Specifies the item gap.
+     * Sets and gets the gap between the leaf item in the treemap component.
      * @default 0
      */
     gap?: number;
 
     /**
-     * Specifies the padding.
+     * Sets and gets the padding of leaf item in the treemap component.
      * @default 10
      */
     padding?: number;
 
     /**
-     * Specifies the opacity for color.
+     * Sets and gets the opacity of leaf item in the treemap component.
      * @default 1
      */
     opacity?: number;
 
     /**
-     * To show or hide the labels
+     * Shows or hides the labels in the treemap component.
      * @default true
      */
     showLabels?: boolean;
 
     /**
-     * Specifies the field name from the dataSource.
+     * Sets and gets the value path from the data source for label of leaf item in the treemap component.
      * @default null
      */
     labelPath?: string;
 
     /**
-     * Specifies the label format.
+     * Sets and gets the label text format of leaf item in the treemap component.
      * @default null
      */
     labelFormat?: string;
 
     /**
-     * Specifies the alignment of label.
+     * Sets and gets the position of the labels in the treemap component.
      * @default 'TopLeft'
      */
     labelPosition?: LabelPosition;
 
     /**
-     * Customize the label style.
+     * Sets and gets the style of the labels of leaf item in the treemap component.
      */
     labelStyle?: FontModel;
 
     /**
-     * Specifies the label template.
+     * Sets and gets the label template of leaf item in the treemap component.
      * @default null
      */
     labelTemplate?: string;
 
     /**
-     * Specifies the alignment of template.
+     * Sets and gets the position of the template of leaf item in the treemap component.
      * @default 'Center'
      */
     templatePosition?: LabelPosition;
 
     /**
-     * Specifies the label intersect action.
+     * Sets and gets the label intersect action of leaf item in the treemap component.
      * @default 'Trim'
      */
     interSectAction?: LabelAlignment;
 
     /**
-     * Specifies the colorMapping
+     * Sets and gets the options to customize color-mapping of the treemap component.
      */
     colorMapping?: ColorMappingModel[];
 
@@ -493,48 +493,48 @@ export interface LeafItemSettingsModel {
 export interface TooltipSettingsModel {
 
     /**
-     * To enable or disable the Tooltip.
+     * Enables or disables the visibility state of tooltip in the treemap component.
      * @default false
      */
     visible?: boolean;
 
     /**
-     * To specifies the template for tooltip.
+     * Sets and gets the template for tooltip in the treemap component.
      * @default ''
      */
     template?: string;
 
     /**
-     * Specifies the format by given ${data}
+     * Sets and gets the format of the tooltip in the treemap component.
      * @default null
      */
     format?: string;
 
     /**
-     * To fill the tooltip background.
+     * Sets and gets the background color of tooltip in the treemap component.
      * @default '#000816'
      */
     fill?: string;
 
     /**
-     * Specifies the opacity for fill.
+     * Sets and gets the opacity of tooltip in the treemap component.
      * @default 0.75
      */
     opacity?: number;
 
     /**
-     * Specifies the marker shapes.
+     * Sets and gets the marker shapes in the treemap component.
      * @default '[Circle]'
      */
     markerShapes?: MarkerShape[];
 
     /**
-     * Specifies the tooltip border.
+     * Sets and gets the options for customizing the color and width of the border of the tooltip.
      */
     border?: BorderModel;
 
     /**
-     * Specifies the text style.
+     * Sets and gets the options for customizing the text style of tooltip of the treemap component.
      */
     textStyle?: FontModel;
 
@@ -546,30 +546,30 @@ export interface TooltipSettingsModel {
 export interface SelectionSettingsModel {
 
     /**
-     * To enable or disable the selection
+     * Enables or disables the selection functionality in the treemap component.
      * @default false
      */
     enable?: boolean;
 
     /**
-     * To specifies the selection color
-     * @default '#808080'
+     * Sets and gets the color of the selection when the leaf item is selected in the treemap component.
+     * @default 'null'
      */
     fill?: string;
 
     /**
-     * To specified the opacity of color.
+     * Sets and gets the opacity of the selection when the leaf item is selected in the treemap component.
      * @default '0.5'
      */
     opacity?: string;
 
     /**
-     * To specifies the border
+     * Sets and gets the border of the selected items in the treemap component.
      */
     border?: BorderModel;
 
     /**
-     * To specifies the selection mode.
+     * Sets and gets the element in which selection must be done in the treemap component.
      * @default 'Item'
      */
     mode?: SelectionMode;
@@ -582,30 +582,31 @@ export interface SelectionSettingsModel {
 export interface HighlightSettingsModel {
 
     /**
-     * To enable or disable the highlight.
+     * Enables or disables the highlight functionality of the treemap component.
      * @default false
      */
     enable?: boolean;
 
     /**
-     * To specifies the highlight color.
+     * Sets and gets the highlight color of the treemap component.
      * @default '#808080'
      */
     fill?: string;
 
     /**
-     * To specified the opacity of color.
+     * Sets and gets the opacity of the treemap component.
      * @default '0.5'
      */
     opacity?: string;
 
     /**
-     * To specifies the border
+     * Sets and gets the options for customizing the color and width of the border of the
+     * highlighted item in the treemap component.
      */
     border?: BorderModel;
 
     /**
-     * To specifies the highlight mode.
+     * Sets and gets the element in which highlight must be done in the treemap component.
      * @default 'Item'
      */
     mode?: HighLightMode;
@@ -618,89 +619,90 @@ export interface HighlightSettingsModel {
 export interface LevelSettingsModel {
 
     /**
-     * Specifies the field name from the dataSource.
+     * Sets and gets the value path from the data source in the treemap component to render the item.
      * @default null
      */
     groupPath?: string;
 
     /**
-     * Specifies the padding.
+     * Sets and gets the gap between the levels in the treemap component.
      * @default 0
      */
     groupGap?: number;
 
     /**
-     * Specifies the padding.
+     * Sets and gets the padding of levels in the treemap component.
      * @default 10
      */
     groupPadding?: number;
 
     /**
-     * Specifies the border
+     * Sets and gets the options for customizing the color and width of the border of
+     * the levels of the treemap component.
      */
     border?: BorderModel;
 
     /**
-     * Specifies the background of level.
+     * Sets and gets the fill color of the level in the treemap component.
      * @default null
      */
     fill?: string;
 
     /**
-     * Items rendering with random colors.
+     * Enables or disables the automatic filling of the colors in the items in the treemap component.
      * @default false
      */
     autoFill?: boolean;
 
     /**
-     * Specifies the opacity for color.
+     * Sets and gets the opacity in the treemap component.
      * @default 1
      */
     opacity?: number;
 
     /**
-     * To Show or hide the header in level.
+     * Shows or hides the header in level of the treemap component.
      * @default true
      */
     showHeader?: boolean;
 
     /**
-     * To specifies the height of header.
+     * Sets and gets the height of header in the treemap component.
      * @default 20
      */
     headerHeight?: number;
 
     /**
-     * Specifies the template for header rendering.
+     * Sets and gets the template for header in the treemap component.
      * @default null
      */
     headerTemplate?: string;
 
     /**
-     * Specifies the header format.
+     * Sets and gets the format of header of the levels in the treemap component.
      * @default null
      */
     headerFormat?: string;
 
     /**
-     * Customize the text alignment
+     * Sets and gets the alignment of the header of the treemap component.
      * @default 'Near'
      */
     headerAlignment?: Alignment;
 
     /**
-     * Customize the header style.
+     * Sets and gets the options for customizing the style of header of the treemap component.
      */
     headerStyle?: FontModel;
 
     /**
-     * Specifies the label position in level.
+     * Sets and gets the options for customizing the template position of the treemap component.
      * @default 'TopLeft'
      */
     templatePosition?: LabelPosition;
 
     /**
-     * Specifies the colorMapping
+     * Sets and gets the options for customizing the color-mapping in the treemap component.
      */
     colorMapping?: ColorMappingModel[];
 

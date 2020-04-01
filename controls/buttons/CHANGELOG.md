@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.42 (2020-04-01)
+
+### Radio Button
+
+#### Bug Fixes
+
+- Radio button not working properly when clicked inside splitter control has been resolved.
+
 ## 17.4.49 (2020-02-11)
 
 ### Button

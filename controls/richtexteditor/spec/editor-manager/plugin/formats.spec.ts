@@ -636,6 +636,7 @@ describe('Formats plugin', () => {
             editorObj.nodeSelection.setCursorPoint(document, start.childNodes[7] as Element, 0);
             (editorObj as any).editorKeyDown(keyBoardEvent);
             let expectedElem: HTMLElement = elem.querySelector('#p1');
+            expect(expectedElem.innerHTML === `<br>Paragraph 4<br>Paragraph 5<br>Paragraph 6<br>`).toBe(true);
             expect(expectedElem.nextElementSibling.tagName === 'P').toBe(true);
         });
         afterAll(() => {

@@ -593,9 +593,9 @@ export function getPoints(element: DiagramElement, corners: Corners, padding?: n
 /**
  * @private
  * sets the offset of the tooltip.
- * @param diagram
- * @param mousePosition 
- * @param node 
+ * @param {Diagram} diagram
+ * @param {PointModel} mousePosition
+ * @param {NodeModel | ConnectorModel} node
  */
 export function getTooltipOffset(diagram: Diagram, mousePosition: PointModel, node: NodeModel | ConnectorModel): PointModel {
     let offset: PointModel;
@@ -1148,7 +1148,7 @@ export function upgrade(dataObj: Diagram): Diagram {
     if (dataObj && (dataObj.version === undefined || (dataObj.version < 17.1))) {
         let nodes: NodeModel[] = dataObj.nodes;
         for (let node of nodes) {
-            if (node && node.ports.length > 0) {
+            if (node && node.ports && node.ports.length > 0) {
                 for (let port of node.ports) {
                     if (port && port.constraints && port.constraints === PortConstraints.None) {
                         port.constraints = PortConstraints.Default;
@@ -1987,7 +1987,7 @@ export function getPoint(
 
 /**
  * Get the object as Node | Connector
- * @param obj  
+ * @param {Object} obj  
  */
 
 export let getObjectType: Function = (obj: Object): Object => {

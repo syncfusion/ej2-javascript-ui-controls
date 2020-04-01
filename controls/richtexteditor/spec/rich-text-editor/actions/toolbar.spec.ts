@@ -1559,4 +1559,33 @@ describe("Toolbar - Actions Module", () => {
             }, 500);
         });
     });
+
+    describe("Scrollable toolbar", () => {
+        let rteObj: any;
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                type: ToolbarType.Scrollable,
+                items: ['Undo', 'Redo', '|',
+                    'Bold', 'Italic', 'Underline', 'StrikeThrough', '|',
+                    'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',
+                    'SubScript', 'SuperScript', '|',
+                    'Bold', 'Italic', 'Underline', 'StrikeThrough', '|',
+                    'FontName', 'FontSize', 'FontColor', 'BackgroundColor', '|',
+                    'SubScript', 'SuperScript', '|',
+                    'LowerCase', 'UpperCase', '|', 
+                    'Formats', 'Alignments', '|', 'OrderedList', 'UnorderedList', '|',
+                    'Indent', 'Outdent', '|', 'CreateTable', '|', 'CreateLink', '|', 'Image', '|', 'SourceCode',
+                    '|', 'ClearFormat', 'Print', 'InsertCode']
+            }
+            })
+        });
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it("Check class", () => {
+           expect(rteObj.element.querySelector('.e-scroll-right-nav')).not.toBe('null');
+           expect(rteObj.element.querySelector('.e-scroll-left-nav')).not.toBe('null');
+        });
+    });
 });

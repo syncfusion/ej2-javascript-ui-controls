@@ -1875,3 +1875,135 @@ describe('AutoComplete', () => {
         expect(memory).toBeLessThan(profile.samples[0] + 0.25);
     })
 });
+describe('EJ2-36604 - While giving the class name with empty space for HtmlAttributes, console error is produced.', function () {
+    let listObj: any;
+    beforeEach(function () {
+        let inputElement: HTMLElement = createElement('input', { id: 'autocomplete' });
+        document.body.appendChild(inputElement);
+    });
+    afterEach(function () {
+        if (listObj) {
+            listObj.destroy();
+            document.body.innerHTML = '';
+        }
+    });
+    it('Entering the class name without any empty space', function () {
+        listObj = new AutoComplete({
+            htmlAttributes: { class: 'custom-class' }
+        });
+        listObj.appendTo('#autocomplete');
+        expect(listObj.inputWrapper.container.classList.contains('custom-class')).toBe(true);
+    });
+    it('Giving empty space before and after the class name', function () {
+        listObj = new AutoComplete({
+            htmlAttributes: { class: ' custom-class ' }
+        });
+        listObj.appendTo('#autocomplete');
+        expect(listObj.inputWrapper.container.classList.contains('custom-class')).toBe(true);
+    });
+    it('Giving more than one empty space between two class names', function () {
+        listObj = new AutoComplete({
+            htmlAttributes: { class: 'custom-class-one      custom-class-two'}
+        });
+        listObj.appendTo('#autocomplete');
+        expect(listObj.inputWrapper.container.classList.contains('custom-class-one')).toBe(true);
+        expect(listObj.inputWrapper.container.classList.contains('custom-class-two')).toBe(true);
+    });
+    it('Giving more than one empty space between two class names as well before and after the class name', function () {
+        listObj = new AutoComplete({
+            htmlAttributes: {  class: ' custom-class-one       custom-class-two ' }
+        });
+        listObj.appendTo('#autocomplete');
+        expect(listObj.inputWrapper.container.classList.contains('custom-class-one')).toBe(true);
+        expect(listObj.inputWrapper.container.classList.contains('custom-class-two')).toBe(true);
+    });
+    it('Giving only empty space  without entering any class Name', function () {
+        listObj = new AutoComplete({
+        });
+        listObj.appendTo('#autocomplete');
+        let beforeAddClass = listObj.inputWrapper.container.classList.length;
+        listObj.htmlAttributes = { class: '  ' };
+        listObj.appendTo('#autocomplete');
+        let AfterAddClass = listObj.inputWrapper.container.classList.length;
+        expect(beforeAddClass == AfterAddClass).toBe(true);
+    });
+    it('Keep input as empty without entering any class Name', function () {
+        listObj = new AutoComplete({
+        });
+        listObj.appendTo('#autocomplete');
+        let beforeAddClass = listObj.inputWrapper.container.classList.length;
+        listObj.htmlAttributes = { class: '' };
+        listObj.appendTo('#autocomplete');
+        let AfterAddClass = listObj.inputWrapper.container.classList.length;
+        expect(beforeAddClass == AfterAddClass).toBe(true);
+    });
+
+    it('Entering the class name without any empty space', function () {
+        listObj = new AutoComplete({
+            cssClass: 'custom-class' 
+        });
+        listObj.appendTo('#autocomplete');
+        expect(listObj.inputWrapper.container.classList.contains('custom-class')).toBe(true);
+    });
+    it('Giving empty space before and after the class name', function () {
+        listObj = new AutoComplete({
+             cssClass: ' custom-class ' 
+        });
+        listObj.appendTo('#autocomplete');
+        expect(listObj.inputWrapper.container.classList.contains('custom-class')).toBe(true);
+    });
+    it('Giving more than one empty space between two class names', function () {
+        listObj = new AutoComplete({
+             cssClass: 'custom-class-one      custom-class-two'
+        });
+        listObj.appendTo('#autocomplete');
+        expect(listObj.inputWrapper.container.classList.contains('custom-class-one')).toBe(true);
+        expect(listObj.inputWrapper.container.classList.contains('custom-class-two')).toBe(true);
+    });
+    it('Giving more than one empty space between two class names as well before and after the class name', function () {
+        listObj = new AutoComplete({
+             cssClass: ' custom-class-one       custom-class-two ' 
+        });
+        listObj.appendTo('#autocomplete');
+        expect(listObj.inputWrapper.container.classList.contains('custom-class-one')).toBe(true);
+        expect(listObj.inputWrapper.container.classList.contains('custom-class-two')).toBe(true);
+    });
+    it('Giving only empty space  without entering any class Name', function () {
+        listObj = new AutoComplete({
+        });
+        listObj.appendTo('#autocomplete');
+        let beforeAddClass = listObj.inputWrapper.container.classList.length;
+        listObj.cssClass =  '  ' ;
+        listObj.appendTo('#autocomplete');
+        let AfterAddClass = listObj.inputWrapper.container.classList.length;
+        expect(beforeAddClass == AfterAddClass).toBe(true);
+    });
+    it('Keep input as empty without entering any class Name', function () {
+        listObj = new AutoComplete({
+        });
+        listObj.appendTo('#autocomplete');
+        let beforeAddClass = listObj.inputWrapper.container.classList.length;
+        listObj.cssClass =  '' ;
+        listObj.appendTo('#autocomplete');
+        let AfterAddClass = listObj.inputWrapper.container.classList.length;
+        expect(beforeAddClass == AfterAddClass).toBe(true);
+    });
+    it('Giving class name with underscore in the beginning', function () {
+        listObj = new AutoComplete({
+            htmlAttributes : { class : '  _custom-class-one  '},
+            cssClass : '   _custom-class-two  '
+        });
+        listObj.appendTo('#autocomplete');
+        expect(listObj.inputWrapper.container.classList.contains('_custom-class-one')).toBe(true);
+        expect(listObj.inputWrapper.container.classList.contains('_custom-class-two')).toBe(true);
+    });
+    it('Giving class name with empty space in both cases seperatly', function () {
+        listObj = new AutoComplete({
+            htmlAttributes : { class : '  custom-class-one  '},
+            cssClass : '   custom-class-two  '
+        });
+        listObj.appendTo('#autocomplete');
+        expect(listObj.inputWrapper.container.classList.contains('custom-class-one')).toBe(true);
+        expect(listObj.inputWrapper.container.classList.contains('custom-class-two')).toBe(true);
+    });   
+});

@@ -122,7 +122,11 @@ let Splitter = class Splitter extends Component {
      * @private
      */
     onPropertyChanged(newProp, oldProp) {
-        if (!this.element.classList.contains(ROOT) || !this.isModalChange) {
+        if (!this.element.classList.contains(ROOT)) {
+            return;
+        }
+        if (!this.isModalChange) {
+            this.isModalChange = true;
             return;
         }
         for (let prop of Object.keys(newProp)) {
@@ -333,8 +337,9 @@ let Splitter = class Splitter extends Component {
             if (((this.orientation !== 'Horizontal' && event.keyCode === 38) || (this.orientation === 'Horizontal' &&
                 event.keyCode === 39) ||
                 (this.orientation === 'Horizontal' && event.keyCode === 37) || (this.orientation !== 'Horizontal' && event.keyCode === 40))
-                && (!isPrevpaneExpanded && !isNextpaneCollapsed && !isPrevpaneCollapsed || (isPrevpaneExpanded) && !isNextpaneCollapsed)
-                && (this.paneSettings[index].resizable && this.paneSettings[index + 1].resizable)) {
+                && (!isPrevpaneExpanded && !isNextpaneCollapsed && !isPrevpaneCollapsed || (isPrevpaneExpanded) && !isNextpaneCollapsed) &&
+                document.activeElement.classList.contains(SPLIT_BAR) && (this.paneSettings[index].resizable &&
+                this.paneSettings[index + 1].resizable)) {
                 this.checkPaneSize(event);
                 this.triggerResizing(event);
             }
@@ -982,18 +987,14 @@ let Splitter = class Splitter extends Component {
             addClass([this.previousPane], EXPAND_PANE);
             addClass([this.nextPane], collapseClass);
             if (this.expandFlag) {
-                this.isModalChange = false;
-                this.paneSettings[this.nextPaneIndex].collapsed = true;
-                this.isModalChange = true;
+                this.updatePaneSettings(this.nextPaneIndex, true);
             }
         }
         else {
             removeClass([this.previousPane], collapseClass);
             removeClass([this.nextPane], EXPAND_PANE);
             if (this.expandFlag) {
-                this.isModalChange = false;
-                this.paneSettings[this.prevPaneIndex].collapsed = false;
-                this.isModalChange = true;
+                this.updatePaneSettings(this.prevPaneIndex, false);
             }
         }
         this.updateIconsOnExpand(e);
@@ -1136,9 +1137,7 @@ let Splitter = class Splitter extends Component {
             removeClass([this.previousPane], EXPAND_PANE);
             removeClass([this.nextPane], collapseClass);
             if (!this.collapseFlag) {
-                this.isModalChange = false;
-                this.paneSettings[this.nextPaneIndex].collapsed = false;
-                this.isModalChange = true;
+                this.updatePaneSettings(this.nextPaneIndex, false);
             }
         }
         else {
@@ -1147,9 +1146,7 @@ let Splitter = class Splitter extends Component {
             addClass([this.nextPane], EXPAND_PANE);
             addClass([this.previousPane], collapseClass);
             if (!this.collapseFlag) {
-                this.isModalChange = false;
-                this.paneSettings[this.prevPaneIndex].collapsed = true;
-                this.isModalChange = true;
+                this.updatePaneSettings(this.prevPaneIndex, true);
             }
         }
         this.updateIconsOnCollapse(e);
@@ -1177,6 +1174,12 @@ let Splitter = class Splitter extends Component {
             cancel: false
         };
         return eventArgs;
+    }
+    updatePaneSettings(index, collapsed) {
+        if (!this.checkBlazor()) {
+            this.isModalChange = false;
+            this.paneSettings[index].collapsed = collapsed;
+        }
     }
     splitterProperty() {
         this.splitInstance = {
@@ -1886,9 +1889,7 @@ let Splitter = class Splitter extends Component {
      */
     expand(index) {
         this.collapsedOnchange(index);
-        this.isModalChange = false;
-        this.paneSettings[index].collapsed = false;
-        this.isModalChange = true;
+        this.updatePaneSettings(index, false);
     }
     /**
      * collapses corresponding pane based on the index is passed.
@@ -1897,9 +1898,7 @@ let Splitter = class Splitter extends Component {
      */
     collapse(index) {
         this.isCollapsed(index);
-        this.isModalChange = false;
-        this.paneSettings[index].collapsed = true;
-        this.isModalChange = true;
+        this.updatePaneSettings(index, true);
     }
     /**
      * Removes the control from the DOM and also removes all its related events.
@@ -4337,7 +4336,6 @@ let DashboardLayout = class DashboardLayout extends Component {
         this.cloneObject[panelProp.id] = { row: panelProp.row, col: panelProp.col };
         this.updateOldRowColumn();
         this.element.insertAdjacentElement('afterbegin', cell);
-        let container = cell.querySelector('.e-panel-container');
         this.addPanelCalled = true;
         if (this.checkMediaQuery()) {
             this.checkMediaQuerySizing();
@@ -4358,15 +4356,11 @@ let DashboardLayout = class DashboardLayout extends Component {
             this.updatePanelLayout(cell, panelProp);
         }
         this.addPanelCalled = false;
-        if (this.allowResizing &&
-            this.mediaQuery ? !(this.checkMediaQuery()) : false) {
-            this.setResizingClass(cell, container);
-        }
         if (this.allowDragging &&
             this.mediaQuery ? !(this.checkMediaQuery()) : false) {
             this.enableDraggingContent([document.getElementById(panelProp.id)]);
-            this.setClasses(this.panelCollection);
         }
+        this.setClasses([cell]);
         if (this.allowFloating) {
             this.moveItemsUpwards();
         }

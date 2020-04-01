@@ -6615,4 +6615,164 @@ describe('MultiSelect', () => {
             expect((<HTMLElement>(<any>listObj).ulElement.querySelector('li[data-value="GO"]')).style.display === '').toBe(true);
         });
     });
+    describe('EJ2-36604 - While giving the class name with empty space for HtmlAttributes, console error is produced.', function () {
+        let listObj: any;
+        beforeEach(function () {
+            let inputElement: HTMLElement = createElement('input', { id: 'multiselect' });
+            document.body.appendChild(inputElement);
+        });
+        afterEach(function () {
+            if (listObj) {
+                listObj.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('Entering the class name without any empty space', function () {
+            listObj = new MultiSelect({
+                htmlAttributes: { class: 'custom-class' }
+            });
+            listObj.appendTo('#multiselect');
+            expect(listObj.overAllWrapper.classList.contains('custom-class')).toBe(true);
+            expect(listObj.popupWrapper.classList.contains('custom-class')).toBe(true);
+        });
+        it('Giving empty space before and after the class name', function () {
+            listObj = new MultiSelect({
+                htmlAttributes: { class: ' custom-class ' }
+            });
+            listObj.appendTo('#multiselect');
+            expect(listObj.overAllWrapper.classList.contains('custom-class')).toBe(true);
+            expect(listObj.popupWrapper.classList.contains('custom-class')).toBe(true);
+        });
+        it('Giving more than one empty space between two class names', function () {
+            listObj = new MultiSelect({
+                htmlAttributes: { class: 'custom-class-one      custom-class-two'}
+            });
+            listObj.appendTo('#multiselect');
+            expect(listObj.overAllWrapper.classList.contains('custom-class-one')).toBe(true);
+            expect(listObj.popupWrapper.classList.contains('custom-class-one')).toBe(true);
+            expect(listObj.overAllWrapper.classList.contains('custom-class-two')).toBe(true);
+            expect(listObj.popupWrapper.classList.contains('custom-class-two')).toBe(true);
+        });
+        it('Giving more than one empty space between two class names as well before and after the class name', function () {
+            listObj = new MultiSelect({
+                htmlAttributes: {  class: ' custom-class-one       custom-class-two ' }
+            });
+            listObj.appendTo('#multiselect');
+            expect(listObj.overAllWrapper.classList.contains('custom-class-one')).toBe(true);
+            expect(listObj.popupWrapper.classList.contains('custom-class-one')).toBe(true);
+            expect(listObj.overAllWrapper.classList.contains('custom-class-two')).toBe(true);
+            expect(listObj.popupWrapper.classList.contains('custom-class-two')).toBe(true);
+        });
+        it('Giving only empty space  without entering any class Name', function () {
+            listObj = new MultiSelect({
+            });
+            listObj.appendTo('#multiselect');
+            let beforeAddClass = listObj.popupWrapper.classList.length;
+            let beforeAddClasses = listObj.overAllWrapper.classList.length;
+            listObj.htmlAttributes = { class: '  ' };
+            listObj.appendTo('#multiselect');
+            let AfterAddClass = listObj.popupWrapper.classList.length;
+            let AfterAddClasses = listObj.overAllWrapper.classList.length;
+            expect(beforeAddClass == AfterAddClass).toBe(true);
+            expect(beforeAddClasses == AfterAddClasses).toBe(true);
+        });
+        it('Keep input as empty without entering any class Name', function () {
+            listObj = new MultiSelect({
+            });
+            listObj.appendTo('#multiselect');
+            let beforeAddClass = listObj.popupWrapper.classList.length;
+            let beforeAddClasses = listObj.overAllWrapper.classList.length;
+            listObj.htmlAttributes = { class: '' };
+            listObj.appendTo('#multiselect');
+            let AfterAddClass = listObj.popupWrapper.classList.length;
+            let AfterAddClasses = listObj.overAllWrapper.classList.length;
+            expect(beforeAddClass == AfterAddClass).toBe(true);
+            expect(beforeAddClasses == AfterAddClasses).toBe(true);
+        });
+    
+        it('Entering the class name without any empty space', function () {
+            listObj = new MultiSelect({
+                cssClass: 'custom-class' 
+            });
+            listObj.appendTo('#multiselect');
+            expect(listObj.overAllWrapper.classList.contains('custom-class')).toBe(true);
+            expect(listObj.popupWrapper.classList.contains('custom-class')).toBe(true);
+        });
+        it('Giving empty space before and after the class name', function () {
+            listObj = new MultiSelect({
+                 cssClass: ' custom-class ' 
+            });
+            listObj.appendTo('#multiselect');
+            expect(listObj.overAllWrapper.classList.contains('custom-class')).toBe(true);
+            expect(listObj.popupWrapper.classList.contains('custom-class')).toBe(true);
+        });
+        it('Giving more than one empty space between two class names', function () {
+            listObj = new MultiSelect({
+                 cssClass: 'custom-class-one      custom-class-two'
+            });
+            listObj.appendTo('#multiselect');
+            expect(listObj.overAllWrapper.classList.contains('custom-class-one')).toBe(true);
+            expect(listObj.popupWrapper.classList.contains('custom-class-one')).toBe(true);
+            expect(listObj.overAllWrapper.classList.contains('custom-class-two')).toBe(true);
+            expect(listObj.popupWrapper.classList.contains('custom-class-two')).toBe(true);
+        });
+        it('Giving more than one empty space between two class names as well before and after the class name', function () {
+            listObj = new MultiSelect({
+                 cssClass: ' custom-class-one       custom-class-two ' 
+            });
+            listObj.appendTo('#multiselect');
+            expect(listObj.overAllWrapper.classList.contains('custom-class-one')).toBe(true);
+            expect(listObj.popupWrapper.classList.contains('custom-class-one')).toBe(true);
+            expect(listObj.overAllWrapper.classList.contains('custom-class-two')).toBe(true);
+            expect(listObj.popupWrapper.classList.contains('custom-class-two')).toBe(true);
+        });
+        it('Giving only empty space  without entering any class Name', function () {
+            listObj = new MultiSelect({
+            });
+            listObj.appendTo('#multiselect');
+            let beforeAddClass = listObj.popupWrapper.classList.length;
+            let beforeAddClasses = listObj.overAllWrapper.classList.length;
+            listObj.cssClass = ' ' ;
+            listObj.appendTo('#multiselect');
+            let AfterAddClass = listObj.popupWrapper.classList.length;
+            let AfterAddClasses = listObj.overAllWrapper.classList.length;
+            expect(beforeAddClass == AfterAddClass).toBe(true);
+            expect(beforeAddClasses == AfterAddClasses).toBe(true);
+        });
+        it('Keep input as empty without entering any class Name', function () {
+            listObj = new MultiSelect({
+            });
+            listObj.appendTo('#multiselect');
+            let beforeAddClass = listObj.popupWrapper.classList.length;
+            let beforeAddClasses = listObj.overAllWrapper.classList.length;
+            listObj.cssClass = '' ;
+            listObj.appendTo('#multiselect');
+            let AfterAddClass = listObj.popupWrapper.classList.length;
+            let AfterAddClasses = listObj.overAllWrapper.classList.length;
+            expect(beforeAddClass == AfterAddClass).toBe(true);
+            expect(beforeAddClasses == AfterAddClasses).toBe(true);
+        });
+        it('Giving class name with underscore in the beginning', function () {
+            listObj = new MultiSelect({
+                htmlAttributes : { class : '  _custom-class-one  '},
+                cssClass : '   _custom-class-two  '
+            });
+            listObj.appendTo('#multiselect');
+            expect(listObj.overAllWrapper.classList.contains('_custom-class-one')).toBe(true);
+            expect(listObj.popupWrapper.classList.contains('_custom-class-one')).toBe(true);
+            expect(listObj.overAllWrapper.classList.contains('_custom-class-two')).toBe(true);
+            expect(listObj.popupWrapper.classList.contains('_custom-class-two')).toBe(true);
+        });
+        it('Giving class name with empty space in both cases seperatly', function () {
+            listObj = new MultiSelect({
+                htmlAttributes : { class : '  custom-class-one  '},
+                cssClass : '   custom-class-two  '
+            });
+            listObj.appendTo('#multiselect');
+            expect(listObj.overAllWrapper.classList.contains('custom-class-one')).toBe(true);
+            expect(listObj.popupWrapper.classList.contains('custom-class-one')).toBe(true);
+            expect(listObj.overAllWrapper.classList.contains('custom-class-two')).toBe(true);
+            expect(listObj.popupWrapper.classList.contains('custom-class-two')).toBe(true);
+        });   
+    });
 });

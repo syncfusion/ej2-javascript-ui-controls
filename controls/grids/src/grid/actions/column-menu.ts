@@ -1,5 +1,5 @@
 import { L10n, EventHandler, closest, Browser, isNullOrUndefined, KeyboardEventArgs } from '@syncfusion/ej2-base';
-import { remove } from '@syncfusion/ej2-base';
+import { remove, isBlazor } from '@syncfusion/ej2-base';
 import { ContextMenu as Menu, MenuEventArgs, OpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
 import { IGrid, IAction, ColumnMenuItemModel, NotifyArgs, ColumnMenuOpenEventArgs, ColumnMenuClickEventArgs } from '../base/interface';
 import { parentsUntil, applyBiggerTheme } from '../base/util';
@@ -465,7 +465,7 @@ export class ColumnMenu implements IAction {
     }
 
     private setLocaleKey(): { [key: string]: string } {
-        return {
+        let localeKeys: { [key: string]: string } = {
             'AutoFitAll': 'autoFitAll',
             'AutoFit': 'autoFit',
             'Group': 'Group',
@@ -475,6 +475,13 @@ export class ColumnMenu implements IAction {
             'ColumnChooser': 'Columnchooser',
             'Filter': 'FilterMenu'
         };
+        if (isBlazor()) {
+            let autoFitAll: string = 'AutoFitAll';
+            localeKeys[autoFitAll] = 'AutoFitAll';
+            let autoFit: string = 'AutoFit';
+            localeKeys[autoFit] = 'AutoFit';
+        }
+        return localeKeys;
     }
 
     private getHeaderCell(e: { target: Element | EventTarget }): HTMLElement {

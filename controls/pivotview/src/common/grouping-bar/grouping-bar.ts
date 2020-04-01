@@ -171,7 +171,6 @@ export class GroupingBar implements IAction {
                     if (!isNullOrUndefined(emptyRowCount)) {
                         let emptyHeader: HTMLElement =
                             this.parent.element.querySelector('.e-frozenheader').querySelector('.e-columnheader') as HTMLElement;
-                        addClass([emptyHeader], 'e-row');
                         emptyHeader.removeAttribute('style');
                         addClass([emptyHeader.querySelector('.e-headercell')], 'e-group-row');
                         emptyHeader.querySelector('.e-group-row').appendChild(this.rowAxisPanel);
@@ -259,7 +258,6 @@ export class GroupingBar implements IAction {
             if (!this.parent.grid.element.querySelector('.e-group-row')) {
                 let emptyRowHeader: HTMLElement =
                     this.parent.element.querySelector('.e-frozenheader').querySelector('.e-columnheader') as HTMLElement;
-                addClass([emptyRowHeader], 'e-row');
                 addClass([emptyRowHeader.querySelector('.e-headercell')], 'e-group-row');
                 setStyleAttribute(this.rowPanel, {
                     height: (this.parent.element.querySelector('.e-headercontent') as HTMLElement).offsetHeight + 'px'

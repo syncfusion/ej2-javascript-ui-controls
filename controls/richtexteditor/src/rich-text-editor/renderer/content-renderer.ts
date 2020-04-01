@@ -3,7 +3,7 @@ import { ServiceLocator } from '../services/service-locator';
 import { getEditValue } from '../base/util';
 
 /**
- * Content module is used to render RichTextEditor content
+ * Content module is used to render Rich Text Editor content
  * @hidden
  * @deprecated
  */
@@ -23,7 +23,7 @@ export class ContentRender implements IRenderer {
     }
 
     /**
-     * The function is used to render RichTextEditor content div
+     * The function is used to render Rich Text Editor content div
      * @hidden
      * @deprecated
      */

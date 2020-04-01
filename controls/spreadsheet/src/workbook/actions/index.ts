@@ -9,3 +9,4 @@ export * from './delete';
 export * from './data-validation';
 export * from './find-and-replace';
 export * from './protect-sheet';
+export * from './merge';

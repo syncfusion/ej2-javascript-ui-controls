@@ -7,7 +7,12 @@ import { EventHandler, EmitType } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, enableRipple  } from '@syncfusion/ej2-base';
 import { TreeView, DragAndDropEventArgs, NodeEditEventArgs, NodeCheckEventArgs, NodeExpandEventArgs,  NodeSelectEventArgs } from "../../src/treeview/treeview";
 import { DataManager, Query,ODataV4Adaptor } from '@syncfusion/ej2-data';
-import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, localData, localData1, localData2, localData3, remoteData, remoteData1, remoteData2, remoteData2_1, remoteData1_1, hierarchicalData4, localData4, localData5, localData6, hierarchicalData5, expandIconParentData, expandIconChildData, remoteData2_2, remoteData2_3 , remoteData3_1, hierarchicalData6, localData7, localData8, localData9, checkData, XSSData, XSSnestedData, checkboxData, updatedremoteNode_1, updatedremoteNode_2, updatedremoteNode_3, updatedremoteNode_4, updatedremoteNode_5, updatedAddNodes, updatedremoteNode_6, updatedremoteNode_7, deletedRemoteData, updatedAddNodes1} from '../../spec/treeview/datasource.spec';
+import { hierarchicalData, hierarchicalData1, hierarchicalData2, hierarchicalData3, localData, localData1, localData2, localData3} from '../../spec/treeview/datasource.spec';
+import { remoteData, remoteData1, remoteData2, remoteData2_1, remoteData1_1, hierarchicalData4, localData4, localData5, localData6} from '../../spec/treeview/datasource.spec';
+import { hierarchicalData5, expandIconParentData, expandIconChildData, remoteData2_2, remoteData2_3 , remoteData3_1, hierarchicalData6} from '../../spec/treeview/datasource.spec';
+import { localData7, localData8, localData9, checkData, XSSData, XSSnestedData, checkboxData, updatedremoteNode_1, updatedremoteNode_2} from '../../spec/treeview/datasource.spec';
+import { updatedremoteNode_3, updatedremoteNode_4, updatedremoteNode_5, updatedAddNodes, updatedremoteNode_6, updatedremoteNode_7} from '../../spec/treeview/datasource.spec';
+import {  deletedRemoteData, updatedAddNodes1, autoCheckData, autoCheckHierarcialData} from '../../spec/treeview/datasource.spec';
 import '../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
 import { enableBlazorMode, disableBlazorMode } from '@syncfusion/ej2-base';
@@ -2432,6 +2437,195 @@ describe('TreeView control', () => {
                     expect(nli[0].classList.contains('e-node-focus')).toBe(true);
                     done();
                 }, 450);
+            });
+            it('f2 key pressed', () => {
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
+                expect(li[0].querySelector('.e-input')).toBe(null);
+                keyboardEventArgs.action = 'f2';
+                treeObj.keyActionHandler(keyboardEventArgs);
+                expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
+                expect(li[0].querySelector('.e-input')).toBe(null);
+                treeObj.allowEditing = true;
+                treeObj.dataBind();
+                treeObj.keyActionHandler(keyboardEventArgs);
+                expect(li[0].querySelector('.e-list-text').childElementCount).toBe(1);
+                expect(li[0].querySelector('.e-input')).not.toBe(null);
+                expect(li[0].querySelector('.e-input').nodeName).toBe('INPUT');
+                expect((li[0].querySelector('.e-input') as HTMLInputElement).value).toBe('Music');
+                (li[0].querySelector('.e-input') as HTMLInputElement).value = 'Music node';
+                keyboardEventArgs.action = 'enter';
+                keyboardEventArgs.target = li[0].querySelector('.e-input');
+                treeObj.keyActionHandler(keyboardEventArgs);
+                expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
+                expect(li[0].querySelector('.e-input')).toBe(null);
+                expect((li[0].querySelector('.e-list-text') as HTMLElement).childNodes[0].nodeValue).toBe('Music node');
+                keyboardEventArgs.action = 'f2';
+                keyboardEventArgs.target = null;
+                treeObj.keyActionHandler(keyboardEventArgs);
+                expect(li[0].querySelector('.e-list-text').childElementCount).toBe(1);
+                expect(li[0].querySelector('.e-input')).not.toBe(null);
+                expect(li[0].querySelector('.e-input').nodeName).toBe('INPUT');
+                expect((li[0].querySelector('.e-input') as HTMLInputElement).value).toBe('Music node');
+                (li[0].querySelector('.e-input') as HTMLInputElement).value = 'Music value';
+                keyboardEventArgs.action = 'escape';
+                keyboardEventArgs.target = li[0].querySelector('.e-input');
+                treeObj.keyActionHandler(keyboardEventArgs);
+                expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
+                expect(li[0].querySelector('.e-input')).toBe(null);
+                expect((li[0].querySelector('.e-list-text') as HTMLElement).childNodes[0].nodeValue).toBe('Music node');
+                keyboardEventArgs.action = 'f2';
+                keyboardEventArgs.target = null;
+                treeObj.keyActionHandler(keyboardEventArgs);
+                expect(li[0].querySelector('.e-list-text').childElementCount).toBe(1);
+                expect(li[0].querySelector('.e-input')).not.toBe(null);
+                expect(li[0].querySelector('.e-input').nodeName).toBe('INPUT');
+                expect((li[0].querySelector('.e-input') as HTMLInputElement).value).toBe('Music node');
+                (li[0].querySelector('.e-input') as HTMLInputElement).value = 'Music';
+                keyboardEventArgs.action = 'tab';
+                keyboardEventArgs.target = li[0].querySelector('.e-input');
+                treeObj.keyActionHandler(keyboardEventArgs);
+                (li[0].querySelector('.e-input') as HTMLInputElement).blur();
+                expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
+                expect(li[0].querySelector('.e-input')).toBe(null);
+                expect((li[0].querySelector('.e-list-text') as HTMLElement).childNodes[0].nodeValue).toBe('Music');
+                treeObj.allowEditing = false;
+                treeObj.dataBind();
+            });
+            it('focus out testing', () => {
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                treeObj.focusOut();
+                expect(li[0].classList.contains('e-hover')).toBe(false);
+                expect(li[0].classList.contains('e-node-focus')).toBe(true);
+            });
+            it('CtrlA testing', () => {
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                keyboardEventArgs.action = 'ctrlA';
+                keyboardEventArgs.target = li[1].querySelector('.e-list-text');
+                treeObj.keyActionHandler(keyboardEventArgs);
+                expect(li[1].classList.contains('e-active')).toBe(false);
+                treeObj.allowMultiSelection = true;
+                treeObj.dataBind();
+                keyboardEventArgs.action = 'ctrlA';
+                keyboardEventArgs.target = li[1].querySelector('.e-list-text');
+                treeObj.keyActionHandler(keyboardEventArgs);
+                expect(li[1].classList.contains('e-active')).toBe(true);
+            });
+        });
+        describe('keyboard navigation testing while disabling loadOnDemand', () => {
+            let keyboardEventArgs: any = {
+                preventDefault: (): void => {},
+                action: null,
+                target: null,
+                stopImmediatePropagation: (): void => {},
+            };
+            let treeObj: any;
+            let eleParent: HTMLElement = createElement('div', { id: 'treeParent', styles: 'height:150px;overflow:auto;' });
+            let ele: HTMLElement = createElement('div', { id: 'tree1' });
+            beforeAll(() => {
+                document.body.appendChild(eleParent);
+                eleParent.appendChild(ele);
+                treeObj = new TreeView({ 
+                    fields: { dataSource: hierarchicalData1, id: "nodeId", text: "nodeText"},
+                    fullRowSelect: false,
+                    loadOnDemand: false
+                });
+                treeObj.appendTo(ele);
+            });
+            afterAll(() => {
+                if (treeObj)
+                    treeObj.destroy();
+                document.body.innerHTML = '';
+            });
+            it('tab key pressed', () => {
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                expect(li[0].classList.contains('e-hover')).toBe(false);
+                expect(li[0].classList.contains('e-node-focus')).toBe(true);
+                expect(li[1].classList.contains('e-node-focus')).toBe(false);
+                keyboardEventArgs.action = 'tab';
+                treeObj.focusIn();
+                expect(li[0].classList.contains('e-hover')).toBe(true);
+                expect(li[0].classList.contains('e-node-focus')).toBe(true);
+                expect(li[1].classList.contains('e-node-focus')).toBe(false);
+            });
+            it('down arrow key pressed', () => {
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                expect(li[0].classList.contains('e-hover')).toBe(true);
+                expect(li[1].classList.contains('e-hover')).toBe(false);
+                expect(li[0].classList.contains('e-node-focus')).toBe(true);
+                expect(li[1].classList.contains('e-node-focus')).toBe(false);
+                keyboardEventArgs.action = 'moveDown';
+                treeObj.keyActionHandler(keyboardEventArgs);
+                expect(li[0].classList.contains('e-hover')).toBe(false);
+                expect(li[1].classList.contains('e-hover')).toBe(true);
+                expect(li[0].classList.contains('e-node-focus')).toBe(false);
+                expect(li[1].classList.contains('e-node-focus')).toBe(true);
+                treeObj.keyActionHandler(keyboardEventArgs);
+                treeObj.keyActionHandler(keyboardEventArgs);
+                treeObj.keyActionHandler(keyboardEventArgs);
+                treeObj.keyActionHandler(keyboardEventArgs);
+                expect(li[1].classList.contains('e-hover')).toBe(false);
+                expect(li[4].classList.contains('e-hover')).toBe(true);
+                expect(li[1].classList.contains('e-node-focus')).toBe(false);
+                expect(li[4].classList.contains('e-node-focus')).toBe(true);
+            });
+            it('up arrow key pressed', () => {
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                expect(li[0].classList.contains('e-hover')).toBe(false);
+                expect(li[4].classList.contains('e-hover')).toBe(true);
+                expect(li[0].classList.contains('e-node-focus')).toBe(false);
+                expect(li[4].classList.contains('e-node-focus')).toBe(true);
+                keyboardEventArgs.action = 'moveUp';
+                treeObj.keyActionHandler(keyboardEventArgs);
+                expect(li[3].classList.contains('e-hover')).toBe(true);
+                expect(li[4].classList.contains('e-hover')).toBe(false);
+                expect(li[3].classList.contains('e-node-focus')).toBe(true);
+                expect(li[4].classList.contains('e-node-focus')).toBe(false);
+                treeObj.keyActionHandler(keyboardEventArgs);
+                treeObj.keyActionHandler(keyboardEventArgs);
+                treeObj.keyActionHandler(keyboardEventArgs);
+                treeObj.keyActionHandler(keyboardEventArgs);
+                expect(li[0].classList.contains('e-hover')).toBe(true);
+                expect(li[1].classList.contains('e-hover')).toBe(false);
+                expect(li[0].classList.contains('e-node-focus')).toBe(true);
+                expect(li[1].classList.contains('e-node-focus')).toBe(false);
+            });
+            it('end key pressed', () => {
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                expect(li[0].classList.contains('e-hover')).toBe(true);
+                expect(li[li.length-1].classList.contains('e-hover')).toBe(false);
+                expect(li[0].classList.contains('e-node-focus')).toBe(true);
+                expect(li[li.length-1].classList.contains('e-node-focus')).toBe(false);
+                keyboardEventArgs.action = 'end';
+                treeObj.keyActionHandler(keyboardEventArgs);
+                expect(li[0].classList.contains('e-hover')).toBe(false);
+                expect(li[li.length-1].classList.contains('e-hover')).toBe(true);
+                expect(li[0].classList.contains('e-node-focus')).toBe(false);
+                expect(li[li.length-1].classList.contains('e-node-focus')).toBe(true);
+            });
+            it('home key pressed', () => {
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                expect(li[0].classList.contains('e-hover')).toBe(false);
+                expect(li[li.length-1].classList.contains('e-hover')).toBe(true);
+                expect(li[0].classList.contains('e-node-focus')).toBe(false);
+                expect(li[li.length-1].classList.contains('e-node-focus')).toBe(true);
+                keyboardEventArgs.action = 'home';
+                treeObj.keyActionHandler(keyboardEventArgs);
+                expect(li[0].classList.contains('e-hover')).toBe(true);
+                expect(li[li.length-1].classList.contains('e-hover')).toBe(false);
+                expect(li[0].classList.contains('e-node-focus')).toBe(true);
+                expect(li[li.length-1].classList.contains('e-node-focus')).toBe(false);
+            });
+            it('enter key pressed', () => {
+                let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+                expect(li[0].classList.contains('e-hover')).toBe(true);
+                expect(li[0].classList.contains('e-node-focus')).toBe(true);
+                expect(li[0].classList.contains('e-active')).toBe(false);
+                keyboardEventArgs.action = 'enter';
+                treeObj.keyActionHandler(keyboardEventArgs);
+                expect(li[0].classList.contains('e-hover')).toBe(true);
+                expect(li[0].classList.contains('e-node-focus')).toBe(true);
+                expect(li[0].classList.contains('e-active')).toBe(true);
             });
             it('f2 key pressed', () => {
                 let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
@@ -12206,6 +12400,21 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 treeObj.checkAll(['1']);
                 expect(treeObj.checkedNodes.length === 5 ).toBe(true);
         });
+        it('local data with load on demand and indeterminate state', () => {
+            treeObj = new TreeView({
+                fields: { dataSource: autoCheckData, id: 'id', text: 'name', isChecked: 'isSelected', parentID: 'pid' },
+                showCheckBox: true,
+                autoCheck: true
+            }, '#tree1');
+            let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+            expect(checkEle.length).toBe(5);
+            expect(treeObj.element.querySelectorAll('.e-checkbox-wrapper .e-frame.e-icons.e-stop').length).toBe(1);
+            treeObj.expandedNodes = ['FY 2006'];
+            treeObj.dataBind();
+            checkEle = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+            expect(checkEle.length).toBe(7);
+            expect(treeObj.element.querySelectorAll('.e-checkbox-wrapper .e-frame.e-icons.e-stop').length).toBe(2);
+        });
          it('local data binding with expanded state', () => {
                 treeObj = new TreeView({ 
                     fields: { dataSource: localData7,  id: 'id', parentID: 'pid', text: 'name', hasChildren: 'hasChild',selected: 'isSelected', isChecked: 'isChecked' },
@@ -12322,8 +12531,22 @@ describe('Drag and drop with different TreeView functionality testing with empty
                 treeObj.expandAll(['04']);
                 treeObj.dataBind();
         });
-       
- });
+        it('local data with load on demand and indeterminate state', () => {
+            treeObj = new TreeView({
+                fields: { dataSource: autoCheckHierarcialData, id: 'id', text: 'name', isChecked: 'isSelected',child:'child' },
+                showCheckBox: true,
+                autoCheck: true
+            }, '#tree1');
+            let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+            expect(checkEle.length).toBe(5);
+            expect(treeObj.element.querySelectorAll('.e-checkbox-wrapper .e-frame.e-icons.e-stop').length).toBe(1);
+            treeObj.expandedNodes = ['FY 2006'];
+            treeObj.dataBind();
+            checkEle = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+            expect(checkEle.length).toBe(7);
+            expect(treeObj.element.querySelectorAll('.e-checkbox-wrapper .e-frame.e-icons.e-stop').length).toBe(2);
+        });
+    });
     describe('Checked Node on loadondemand enabled', () => {
         let mouseEventArgs: any = {
             preventDefault: (): void => {},
@@ -12937,6 +13160,202 @@ describe('Drag and drop with different TreeView functionality testing with empty
             expect(treeObj.getTreeData().length).toBe(25);
             done();
         }, 100);
+    });
+    describe('keyboard navigation testing while disabling loadOnDemand', () => {
+        let mouseEventArgs: any = {
+            preventDefault: (): void => {},
+            stopImmediatePropagation: (): void => {},
+            target: null,
+            type: null,
+            shiftKey: false,
+            ctrlKey: false
+        };
+        let tapEvent: any = {
+            originalEvent: mouseEventArgs,
+            tapCount: 1
+        };
+        let keyboardEventArgs: any = {
+            preventDefault: (): void => {},
+            action: null,
+            target: null,
+            stopImmediatePropagation: (): void => {},
+        };
+        let treeObj: any;
+        let ele: HTMLElement = createElement('div', { id: 'tree1' });
+        let dataManager1: DataManager = new DataManager({ url: '/TreeView/remoteData' });
+        beforeAll((done: Function) => {
+            jasmine.Ajax.install();
+            document.body.appendChild(ele);
+            treeObj = new TreeView({ 
+                fields: { dataSource: dataManager1, id: "nodeId", parentID: 'nodePid', text: "nodeText",
+                },
+               loadOnDemand: false,
+               fullRowSelect: false,
+                dataBound:() => {
+                    done();
+                },
+            });
+            treeObj.appendTo(ele);
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify({d: remoteData1, __count: 5})
+            });
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        });
+        afterAll(() => {
+            if (ele)
+                ele.remove();
+            if (treeObj)
+                treeObj.destroy();
+            document.body.innerHTML = '';
+            jasmine.Ajax.uninstall();
+        });
+        it('tab key pressed', () => {
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            expect(li[0].classList.contains('e-hover')).toBe(false);
+            expect(li[0].classList.contains('e-node-focus')).toBe(true);
+            expect(li[1].classList.contains('e-node-focus')).toBe(false);
+            keyboardEventArgs.action = 'tab';
+            treeObj.focusIn();
+            expect(li[0].classList.contains('e-hover')).toBe(true);
+            expect(li[0].classList.contains('e-node-focus')).toBe(true);
+            expect(li[1].classList.contains('e-node-focus')).toBe(false);
+        });
+        it('down arrow key pressed', () => {
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            expect(li[0].classList.contains('e-hover')).toBe(true);
+            expect(li[1].classList.contains('e-hover')).toBe(false);
+            expect(li[0].classList.contains('e-node-focus')).toBe(true);
+            expect(li[1].classList.contains('e-node-focus')).toBe(false);
+            keyboardEventArgs.action = 'moveDown';
+            treeObj.keyActionHandler(keyboardEventArgs);
+            expect(li[0].classList.contains('e-hover')).toBe(false);
+            expect(li[1].classList.contains('e-hover')).toBe(true);
+            expect(li[0].classList.contains('e-node-focus')).toBe(false);
+            expect(li[1].classList.contains('e-node-focus')).toBe(true);
+            treeObj.keyActionHandler(keyboardEventArgs);
+            treeObj.keyActionHandler(keyboardEventArgs);
+            treeObj.keyActionHandler(keyboardEventArgs);
+            treeObj.keyActionHandler(keyboardEventArgs);
+            expect(li[1].classList.contains('e-hover')).toBe(false);
+            expect(li[4].classList.contains('e-hover')).toBe(true);
+            expect(li[1].classList.contains('e-node-focus')).toBe(false);
+            expect(li[4].classList.contains('e-node-focus')).toBe(true);
+        });
+        it('up arrow key pressed', () => {
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            expect(li[0].classList.contains('e-hover')).toBe(false);
+            expect(li[4].classList.contains('e-hover')).toBe(true);
+            expect(li[0].classList.contains('e-node-focus')).toBe(false);
+            expect(li[4].classList.contains('e-node-focus')).toBe(true);
+            keyboardEventArgs.action = 'moveUp';
+            treeObj.keyActionHandler(keyboardEventArgs);
+            expect(li[3].classList.contains('e-hover')).toBe(true);
+            expect(li[4].classList.contains('e-hover')).toBe(false);
+            expect(li[3].classList.contains('e-node-focus')).toBe(true);
+            expect(li[4].classList.contains('e-node-focus')).toBe(false);
+            treeObj.keyActionHandler(keyboardEventArgs);
+            treeObj.keyActionHandler(keyboardEventArgs);
+            treeObj.keyActionHandler(keyboardEventArgs);
+            treeObj.keyActionHandler(keyboardEventArgs);
+            expect(li[0].classList.contains('e-hover')).toBe(true);
+            expect(li[1].classList.contains('e-hover')).toBe(false);
+            expect(li[0].classList.contains('e-node-focus')).toBe(true);
+            expect(li[1].classList.contains('e-node-focus')).toBe(false);
+        });
+        it('end key pressed', () => {
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            expect(li[0].classList.contains('e-hover')).toBe(true);
+            expect(li[li.length-1].classList.contains('e-hover')).toBe(false);
+            expect(li[0].classList.contains('e-node-focus')).toBe(true);
+            expect(li[li.length-1].classList.contains('e-node-focus')).toBe(false);
+            keyboardEventArgs.action = 'end';
+            treeObj.keyActionHandler(keyboardEventArgs);
+            expect(li[0].classList.contains('e-hover')).toBe(false);
+            expect(li[li.length-1].classList.contains('e-hover')).toBe(true);
+            expect(li[0].classList.contains('e-node-focus')).toBe(false);
+            expect(li[li.length-1].classList.contains('e-node-focus')).toBe(true);
+        });
+        it('home key pressed', () => {
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            expect(li[0].classList.contains('e-hover')).toBe(false);
+            expect(li[li.length-1].classList.contains('e-hover')).toBe(true);
+            expect(li[0].classList.contains('e-node-focus')).toBe(false);
+            expect(li[li.length-1].classList.contains('e-node-focus')).toBe(true);
+            keyboardEventArgs.action = 'home';
+            treeObj.keyActionHandler(keyboardEventArgs);
+            expect(li[0].classList.contains('e-hover')).toBe(true);
+            expect(li[li.length-1].classList.contains('e-hover')).toBe(false);
+            expect(li[0].classList.contains('e-node-focus')).toBe(true);
+            expect(li[li.length-1].classList.contains('e-node-focus')).toBe(false);
+        });
+        it('enter key pressed', () => {
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            expect(li[0].classList.contains('e-hover')).toBe(true);
+            expect(li[0].classList.contains('e-node-focus')).toBe(true);
+            expect(li[0].classList.contains('e-active')).toBe(false);
+            keyboardEventArgs.action = 'enter';
+            treeObj.keyActionHandler(keyboardEventArgs);
+            expect(li[0].classList.contains('e-hover')).toBe(true);
+            expect(li[0].classList.contains('e-node-focus')).toBe(true);
+            expect(li[0].classList.contains('e-active')).toBe(true);
+        });
+        it('f2 key pressed', () => {
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
+            expect(li[0].querySelector('.e-input')).toBe(null);
+            keyboardEventArgs.action = 'f2';
+            treeObj.keyActionHandler(keyboardEventArgs);
+            expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
+            expect(li[0].querySelector('.e-input')).toBe(null);
+            treeObj.allowEditing = true;
+            treeObj.dataBind();
+            treeObj.keyActionHandler(keyboardEventArgs);
+            expect(li[0].querySelector('.e-list-text').childElementCount).toBe(1);
+            expect(li[0].querySelector('.e-input')).not.toBe(null);
+            expect(li[0].querySelector('.e-input').nodeName).toBe('INPUT');
+            expect((li[0].querySelector('.e-input') as HTMLInputElement).value).toBe('Music');
+            (li[0].querySelector('.e-input') as HTMLInputElement).value = 'Music node';
+            keyboardEventArgs.action = 'enter';
+            keyboardEventArgs.target = li[0].querySelector('.e-input');
+            treeObj.keyActionHandler(keyboardEventArgs);
+            expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
+            expect(li[0].querySelector('.e-input')).toBe(null);
+            keyboardEventArgs.action = 'f2';
+            keyboardEventArgs.target = null;
+            treeObj.keyActionHandler(keyboardEventArgs);
+            expect(li[0].querySelector('.e-list-text').childElementCount).toBe(1);
+            expect(li[0].querySelector('.e-input')).not.toBe(null);
+            expect(li[0].querySelector('.e-input').nodeName).toBe('INPUT');
+            expect((li[0].querySelector('.e-input') as HTMLInputElement).value).toBe('Music node');
+            (li[0].querySelector('.e-input') as HTMLInputElement).value = 'Music value';
+            keyboardEventArgs.action = 'escape';
+            keyboardEventArgs.target = li[0].querySelector('.e-input');
+            treeObj.keyActionHandler(keyboardEventArgs);
+            expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
+            expect(li[0].querySelector('.e-input')).toBe(null);
+        });
+        it('focus out testing', () => {
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            treeObj.focusOut();
+            expect(li[0].classList.contains('e-hover')).toBe(false);
+            expect(li[0].classList.contains('e-node-focus')).toBe(true);
+        });
+        it('CtrlA testing', () => {
+            let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            keyboardEventArgs.action = 'ctrlA';
+            keyboardEventArgs.target = li[1].querySelector('.e-list-text');
+            treeObj.keyActionHandler(keyboardEventArgs);
+            expect(li[1].classList.contains('e-active')).toBe(false);
+            treeObj.allowMultiSelection = true;
+            treeObj.dataBind();
+            keyboardEventArgs.action = 'ctrlA';
+            keyboardEventArgs.target = li[1].querySelector('.e-list-text');
+            treeObj.keyActionHandler(keyboardEventArgs);
+            expect(li[1].classList.contains('e-active')).toBe(true);
+        });
+      
     });
     describe('Load on demand by setmodel testing', () => {
         let treeObj: any;

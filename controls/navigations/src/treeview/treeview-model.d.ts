@@ -264,6 +264,12 @@ export interface TreeViewModel extends ComponentModel{
     loadOnDemand?: boolean;
 
     /**
+     * Overrides the global culture and localization value for this component. Default global culture is 'en-US'.
+     * @private
+     */
+    locale?: string;
+
+    /**
      * Specifies a template to render customized content for all the nodes. If the `nodeTemplate` property
      * is set, the template content overrides the displayed node text. The property accepts template string
      * [template string](http://ej2.syncfusion.com/documentation/base/template-engine.html)

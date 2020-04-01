@@ -5732,4 +5732,136 @@ describe('Change Event testing', () => {
             expect(document.getElementById('tsNumeric').parentElement.getAttribute("style")).toEqual("width: 50em;");
         });
     });
+    describe('EJ2-36604 - While giving the class name with empty space for HtmlAttributes, console error is produced.', function () {
+        let numericTextBox: any;
+        beforeEach(function () {
+            let inputElement: HTMLElement = createElement('input', { id: 'numerictextbox' });
+            document.body.appendChild(inputElement);
+        });
+        afterEach(function () {
+            if (numericTextBox) {
+                numericTextBox.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('Entering the class name without any empty space', function () {
+            numericTextBox = new NumericTextBox({
+                htmlAttributes: { class: 'custom-class' }
+            });
+            numericTextBox.appendTo('#numerictextbox');
+            expect(numericTextBox.container.classList.contains('custom-class')).toBe(true);
+        });
+        it('Giving empty space before and after the class name', function () {
+            numericTextBox = new NumericTextBox({
+                htmlAttributes: { class: ' custom-class ' }
+            });
+            numericTextBox.appendTo('#numerictextbox');
+            expect(numericTextBox.container.classList.contains('custom-class')).toBe(true);
+        });
+        it('Giving more than one empty space between two class names', function () {
+            numericTextBox = new NumericTextBox({
+                htmlAttributes: { class: 'custom-class-one      custom-class-two'}
+            });
+            numericTextBox.appendTo('#numerictextbox');
+            expect(numericTextBox.container.classList.contains('custom-class-one')).toBe(true);
+            expect(numericTextBox.container.classList.contains('custom-class-two')).toBe(true);
+        });
+        it('Giving more than one empty space between two class names as well before and after the class name', function () {
+            numericTextBox = new NumericTextBox({
+                htmlAttributes: {  class: ' custom-class-one       custom-class-two ' }
+            });
+            numericTextBox.appendTo('#numerictextbox');
+            expect(numericTextBox.container.classList.contains('custom-class-one')).toBe(true);
+            expect(numericTextBox.container.classList.contains('custom-class-two')).toBe(true);
+        });
+        it('Giving only empty space  without entering any class Name', function () {
+            numericTextBox = new NumericTextBox({
+            });
+            numericTextBox.appendTo('#numerictextbox');
+            let beforeAddClass = numericTextBox.container.classList.length;
+            numericTextBox.htmlAttributes = { class: '  ' };
+            numericTextBox.appendTo('#numerictextbox');
+            let AfterAddClass =numericTextBox.container.classList.length;
+            expect(beforeAddClass == AfterAddClass).toBe(true);
+        });
+        it('Keep input as empty without entering any class Name', function () {
+            numericTextBox = new NumericTextBox({
+            });
+            numericTextBox.appendTo('#numerictextbox');
+            let beforeAddClass = numericTextBox.container.classList.length;
+            numericTextBox.htmlAttributes = { class: '' };
+            numericTextBox.appendTo('#numerictextbox');
+            let AfterAddClass = numericTextBox.container.classList.length;
+            expect(beforeAddClass == AfterAddClass).toBe(true);
+        });
+    
+        it('Entering the class name without any empty space', function () {
+            numericTextBox = new NumericTextBox({
+                cssClass: 'custom-class' 
+            });
+            numericTextBox.appendTo('#numerictextbox');
+            expect(numericTextBox.container.classList.contains('custom-class')).toBe(true);
+        });
+        it('Giving empty space before and after the class name', function () {
+            numericTextBox = new NumericTextBox({
+                 cssClass: ' custom-class ' 
+            });
+            numericTextBox.appendTo('#numerictextbox');
+            expect(numericTextBox.container.classList.contains('custom-class')).toBe(true);
+        });
+        it('Giving more than one empty space between two class names', function () {
+            numericTextBox = new NumericTextBox({
+                 cssClass: 'custom-class-one      custom-class-two'
+            });
+            numericTextBox.appendTo('#numerictextbox');
+            expect(numericTextBox.container.classList.contains('custom-class-one')).toBe(true);
+            expect(numericTextBox.container.classList.contains('custom-class-two')).toBe(true);
+        });
+        it('Giving more than one empty space between two class names as well before and after the class name', function () {
+            numericTextBox = new NumericTextBox({
+                 cssClass: ' custom-class-one       custom-class-two ' 
+            });
+            numericTextBox.appendTo('#numerictextbox');
+            expect(numericTextBox.container.classList.contains('custom-class-one')).toBe(true);
+            expect(numericTextBox.container.classList.contains('custom-class-two')).toBe(true);
+        });
+        it('Giving only empty space  without entering any class Name', function () {
+            numericTextBox = new NumericTextBox({
+            });
+            numericTextBox.appendTo('#numerictextbox');
+            let beforeAddClass = numericTextBox.container.classList.length;
+            numericTextBox.cssClass =  '  ' ;
+            numericTextBox.appendTo('#numerictextbox');
+            let AfterAddClass = numericTextBox.container.classList.length;
+            expect(beforeAddClass == AfterAddClass).toBe(true);
+        });
+        it('Keep input as empty without entering any class Name', function () {
+            numericTextBox = new NumericTextBox({
+            });
+            numericTextBox.appendTo('#numerictextbox');
+            let beforeAddClass = numericTextBox.container.classList.length;
+            numericTextBox.cssClass =  '' ;
+            numericTextBox.appendTo('#numerictextbox');
+            let AfterAddClass =numericTextBox.container.classList.length;
+            expect(beforeAddClass == AfterAddClass).toBe(true);
+        });
+        it('Giving class name with underscore in the beginning', function () {
+            numericTextBox = new NumericTextBox({
+                htmlAttributes : { class : '  _custom-class-one  '},
+                cssClass : '   _custom-class-two  '
+            });
+            numericTextBox.appendTo('#numerictextbox');
+            expect(numericTextBox.container.classList.contains('_custom-class-one')).toBe(true);
+            expect(numericTextBox.container.classList.contains('_custom-class-two')).toBe(true);
+        });
+        it('Giving class name with empty space in both cases seperatly', function () {
+            numericTextBox = new NumericTextBox({
+                htmlAttributes : { class : '  custom-class-one  '},
+                cssClass : '   custom-class-two  '
+            });
+            numericTextBox.appendTo('#numerictextbox');
+            expect(numericTextBox.container.classList.contains('custom-class-one')).toBe(true);
+            expect(numericTextBox.container.classList.contains('custom-class-two')).toBe(true);
+        });   
+    });
 });

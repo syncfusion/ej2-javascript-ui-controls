@@ -12,6 +12,7 @@ import { ToolbarItems, ChartSeriesType } from '../base/enum';
 import { Deferred } from '@syncfusion/ej2-data';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
+import { PivotUtil } from '../../base/util';
 
 /**
  * Module for Toolbar
@@ -36,6 +37,8 @@ export class Toolbar {
     private formattingMenu: Menu;
     private dropArgs: ChangeEventArgs;
     private chartTypesDialog: Dialog;
+    private newArgs: ClickEventArgs;
+    private renameText: string;
 
     constructor(parent: PivotView) {
         this.parent = parent;
@@ -272,6 +275,10 @@ export class Toolbar {
             };
             this.parent.trigger(events.saveReport, saveArgs);
             this.parent.isModified = false;
+        } else if (this.currentReport === '' && (args.item.id === (this.parent.element.id + 'save') || args.item.id === (this.parent.element.id + 'saveas'))) {
+            this.parent.pivotCommon.errorDialog.createErrorDialog(
+                this.parent.localeObj.getConstant('error'), this.parent.localeObj.getConstant('emptyReport'));
+            return;
         } else {
             this.dialogShow(args, 'saveAs');
         }
@@ -295,28 +302,30 @@ export class Toolbar {
     }
 
     private dialogShow(args: ClickEventArgs, action?: string): void {
-        this.dialog.header = args.item.tooltipText;
-        let outerDiv: HTMLElement = createElement('div', {
-            className: cls.GRID_REPORT_OUTER
-        });
-        let label: HTMLElement = createElement('div', {
-            className: cls.GRID_REPORT_LABEL,
-            innerHTML: this.parent.localeObj.getConstant('reportName')
-        });
-        let input: HTMLElement = createElement('input', {
-            className: cls.GRID_REPORT_INPUT + ' ' + cls.INPUT,
-            innerHTML: (action && action === 'rename' ? this.currentReport : ''),
-            attrs: {
-                'placeholder': this.parent.localeObj.getConstant('emptyReportName'),
-                'value': (action && action === 'rename' ? this.currentReport : '')
-            },
-        });
-        (input as HTMLTextAreaElement).setSelectionRange(input.textContent.length, input.textContent.length);
-        outerDiv.appendChild(label);
-        outerDiv.appendChild(input);
-        this.dialog.content = outerDiv;
-        this.dialog.refresh();
-        this.dialog.show();
+        if (args) {
+            this.dialog.header = args.item.tooltipText;
+            let outerDiv: HTMLElement = createElement('div', {
+                className: cls.GRID_REPORT_OUTER
+            });
+            let label: HTMLElement = createElement('div', {
+                className: cls.GRID_REPORT_LABEL,
+                innerHTML: this.parent.localeObj.getConstant('reportName')
+            });
+            let input: HTMLElement = createElement('input', {
+                className: cls.GRID_REPORT_INPUT + ' ' + cls.INPUT,
+                innerHTML: (action && action === 'rename' ? this.currentReport : ''),
+                attrs: {
+                    'placeholder': this.parent.localeObj.getConstant('emptyReportName'),
+                    'value': (action && action === 'rename' ? this.currentReport : '')
+                },
+            });
+            (input as HTMLTextAreaElement).setSelectionRange(input.textContent.length, input.textContent.length);
+            outerDiv.appendChild(label);
+            outerDiv.appendChild(input);
+            this.dialog.content = outerDiv;
+            this.dialog.refresh();
+            this.dialog.show();
+        }
     }
 
     private renameReport(args: ClickEventArgs): void {
@@ -352,12 +361,13 @@ export class Toolbar {
                 break;
             case (this.parent.element.id + 'new'):
                 this.action = 'New';
-                if (this.parent.isModified) {
+                this.newArgs = args;
+                if (this.parent.isModified && this.currentReport && this.currentReport !== '') {
                     this.createConfirmDialog(
                         this.parent.localeObj.getConstant('alert'),
                         this.parent.localeObj.getConstant('newReportConfirm'));
                 } else {
-                    this.createNewReport();
+                    this.createNewReport(args);
                 }
                 break;
             case (this.parent.element.id + 'load'):
@@ -478,48 +488,115 @@ export class Toolbar {
             reportInput.focus();
             return;
         }
-        let isNew: boolean = false;
         if ((this.dialog.header === this.parent.localeObj.getConstant('save') ||
             this.dialog.header === this.parent.localeObj.getConstant('saveAs')) &&
             reportInput.value && reportInput.value !== '') {
-            if (this.action === 'New') {
-                isNew = true;
-            } else {
-                this.action = 'Save';
-            }
+            this.action = 'Save';
             this.currentReport = reportInput.value;
-            let saveArgs: SaveReportArgs = {
-                report: this.parent.getPersistData(),
-                reportName: reportInput.value
-            };
-            this.parent.trigger(events.saveReport, saveArgs);
-            this.parent.isModified = false;
+            let isExist: boolean = false;
+            /* tslint:disable */
+            let _this: any = this;
+            /* tslint:enable */
+            let reports: FetchReportArgs = { reportName: [] };
+            this.parent.trigger(events.fetchReport, reports, (observedArgs: FetchReportArgs) => {
+                for (let i: number = 0; i < observedArgs.reportName.length; i++) {
+                    if (reportInput.value === observedArgs.reportName[i]) {
+                        isExist = true;
+                        break;
+                    }
+                }
+                if (isExist) {
+                    _this.createConfirmDialog(
+                        _this.parent.localeObj.getConstant('alert'),
+                        _this.parent.localeObj.getConstant('replaceConfirmBefore') + '"' + reportInput.value + '"' +
+                        _this.parent.localeObj.getConstant('replaceConfirmAfter'));
+                    return;
+                }
+                let saveArgs: SaveReportArgs = {
+                    report: _this.parent.getPersistData(),
+                    reportName: reportInput.value
+                };
+                _this.parent.trigger(events.saveReport, saveArgs);
+                _this.parent.isModified = false;
+                _this.updateReportList();
+                _this.dialog.hide();
+            });
+        } else if (this.dialog.header === this.parent.localeObj.getConstant('new') &&
+            reportInput.value && reportInput.value !== '') {
+            this.action = 'New';
+            this.currentReport = reportInput.value;
+            let isExist: boolean = false;
+            /* tslint:disable */
+            let _this: any = this;
+            /* tslint:enable */
+            let reports: FetchReportArgs = { reportName: [] };
+            this.parent.trigger(events.fetchReport, reports, (observedArgs: FetchReportArgs) => {
+                for (let i: number = 0; i < observedArgs.reportName.length; i++) {
+                    if (reportInput.value === reports.reportName[i]) {
+                        isExist = true;
+                        break;
+                    }
+                }
+                if (isExist) {
+                    _this.createConfirmDialog(
+                        _this.parent.localeObj.getConstant('alert'),
+                        _this.parent.localeObj.getConstant('replaceConfirmBefore') + '"' + reportInput.value + '"' +
+                        _this.parent.localeObj.getConstant('replaceConfirmAfter'));
+                    return;
+                }
+                _this.parent.trigger(events.newReport);
+                if (isBlazor()) {
+                    _this.parent.setProperties({ dataSourceSettings: { columns: [], rows: [], values: [], filters: [] } }, false);
+                }
+                let saveArgs: SaveReportArgs = {
+                    report: _this.parent.getPersistData(),
+                    reportName: reportInput.value
+                };
+                _this.parent.trigger(events.saveReport, saveArgs);
+                _this.parent.isModified = false;
+                _this.updateReportList();
+                _this.dialog.hide();
+            });
         } else if (this.dialog.header === this.parent.localeObj.getConstant('rename') && reportInput.value && reportInput.value !== '') {
+            if (this.currentReport === reportInput.value) {
+                this.dialog.hide();
+                return;
+            }
             this.action = 'Rename';
-            let renameArgs: RenameReportArgs = {
-                reportName: this.currentReport,
-                rename: reportInput.value
-            };
-            this.parent.trigger(events.renameReport, renameArgs);
-            this.currentReport = reportInput.value;
-        }
-        this.updateReportList();
-        this.dialog.hide();
-        if (isNew) {
-            this.createNewReport();
+            let isExist: boolean = false;
+            /* tslint:disable */
+            let _this: any = this;
+            /* tslint:enable */
+            let reports: FetchReportArgs = { reportName: [] };
+            this.parent.trigger(events.fetchReport, reports, (observedArgs: FetchReportArgs) => {
+                _this.renameText = reportInput.value;
+                for (let i: number = 0; i < observedArgs.reportName.length; i++) {
+                    if (reportInput.value === observedArgs.reportName[i]) {
+                        isExist = true;
+                        break;
+                    }
+                }
+                if (isExist) {
+                    _this.createConfirmDialog(
+                        _this.parent.localeObj.getConstant('alert'),
+                        _this.parent.localeObj.getConstant('replaceConfirmBefore') + '"' + reportInput.value + '"' +
+                        _this.parent.localeObj.getConstant('replaceConfirmAfter'));
+                    return;
+                }
+                let renameArgs: RenameReportArgs = {
+                    reportName: _this.currentReport,
+                    rename: reportInput.value
+                };
+                _this.parent.trigger(events.renameReport, renameArgs);
+                _this.currentReport = reportInput.value;
+                _this.updateReportList();
+                _this.dialog.hide();
+            });
         }
     }
 
-    private createNewReport(): void {
-        this.currentReport = '';
-        this.reportList.value = '';
-        this.reportList.text = '';
-        this.reportList.refresh();
-        this.parent.trigger(events.newReport);
-        if (isBlazor()) {
-            this.parent.setProperties({ dataSourceSettings: { columns: [], rows: [], values: [], filters: [] } }, false);
-        }
-        this.parent.isModified = false;
+    private createNewReport(args?: ClickEventArgs): void {
+        this.dialogShow(args);
     }
 
     private cancelBtnClick(): void {
@@ -577,12 +654,24 @@ export class Toolbar {
                 reportName: this.currentReport
             };
             this.parent.trigger(events.removeReport, removeArgs);
-            this.currentReport = '';
-            this.parent.isModified = false;
-            this.action = '';
+            let reports: FetchReportArgs = this.fetchReports();
+            if (reports.reportName && reports.reportName.length > 0) {
+                let loadArgs: LoadReportArgs = {
+                    reportName: reports.reportName[reports.reportName.length - 1]
+                };
+                this.parent.trigger(events.loadReport, loadArgs, (observedArgs: LoadReportArgs) => {
+                    this.currentReport = observedArgs.reportName;
+                    this.parent.isModified = false;
+                });
+                this.currentReport = reports.reportName[reports.reportName.length - 1];
+            } else {
+                this.currentReport = '';
+                this.parent.isModified = false;
+                this.action = '';
+            }
             this.updateReportList();
         } else if (this.action === 'New' || (this.action !== 'Save' && this.action !== 'Rename' && this.action !== 'New')) {
-            if (this.currentReport && this.currentReport !== '') {
+            if (this.currentReport && this.currentReport !== '' && this.parent.isModified) {
                 let saveArgs: SaveReportArgs = {
                     report: this.parent.getPersistData(),
                     reportName: this.currentReport
@@ -590,20 +679,60 @@ export class Toolbar {
                 this.parent.trigger(events.saveReport, saveArgs);
                 this.parent.isModified = false;
                 if (this.action === 'New') {
-                    this.createNewReport();
+                    this.createNewReport(this.newArgs);
                 } else {
                     this.reportLoad(this.dropArgs);
                 }
-            } else {
-                this.dialogShow({ item: { tooltipText: this.parent.localeObj.getConstant('save') } } as ClickEventArgs);
+            } else if (this.action === 'New') {
+                this.parent.trigger(events.newReport);
+                if (isBlazor()) {
+                    this.parent.setProperties({ dataSourceSettings: { columns: [], rows: [], values: [], filters: [] } }, false);
+                }
+                let saveArgs: SaveReportArgs = {
+                    report: this.parent.getPersistData(),
+                    reportName: this.currentReport
+                };
+                this.parent.trigger(events.saveReport, saveArgs);
+                this.parent.isModified = false;
+                this.updateReportList();
+                this.dialog.hide();
             }
+        } else if (this.action === 'Save') {
+            let saveArgs: SaveReportArgs = {
+                report: this.parent.getPersistData(),
+                reportName: this.currentReport
+            };
+            this.parent.trigger(events.saveReport, saveArgs);
+            this.parent.isModified = false;
+            this.updateReportList();
+            this.dialog.hide();
+        } else if (this.action === 'Rename') {
+            let renameArgs: RenameReportArgs = {
+                reportName: this.currentReport,
+                rename: this.renameText,
+                isReportExists: true
+            };
+            this.parent.trigger(events.renameReport, renameArgs);
+            this.currentReport = this.renameText;
+            this.parent.isModified = false;
+            this.updateReportList();
+            this.dialog.hide();
         }
         this.confirmPopUp.hide();
     }
 
     private cancelButtonClick(): void {
         if (this.action === 'New') {
-            this.createNewReport();
+            if (this.parent.isModified) {
+                this.createNewReport(this.newArgs);
+            } else {
+                this.dialog.hide();
+            }
+        } else if (this.action === 'Save') {
+            this.currentReport = this.reportList.value as string;
+            this.dialog.hide();
+        } else if (this.action === 'Rename') {
+            this.dialog.hide();
         } else if (this.dropArgs && this.action !== 'Remove') {
             this.reportLoad(this.dropArgs);
         }
@@ -802,6 +931,11 @@ export class Toolbar {
                 report: this.parent.getPersistData(),
                 reportName: this.parent.localeObj.getConstant('defaultReport')
             };
+            if (isBlazor()) {
+                let pivotData: PivotView = JSON.parse(saveArgs.report);
+                pivotData.dataSourceSettings = PivotUtil.getClonedDataSourceSettings(this.parent.dataSourceSettings);
+                saveArgs.report = JSON.stringify(pivotData);
+            }
             this.currentReport = this.parent.localeObj.getConstant('defaultReport');
             this.parent.trigger(events.saveReport, saveArgs);
             let reports: FetchReportArgs = this.fetchReports();

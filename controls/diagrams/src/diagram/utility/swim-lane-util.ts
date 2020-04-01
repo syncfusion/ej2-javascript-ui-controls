@@ -20,6 +20,7 @@ import { SelectorModel } from '../objects/node-model';
 import { checkParentAsContainer, findBounds } from '../interaction/container-interaction';
 import { IElement } from '../objects/interface/IElement';
 import { ClipBoardObject } from '../interaction/command-manager';
+import { canSelect } from './constraints-util';
 
 /**
  * SwimLane modules are used to rendering and interaction.
@@ -111,17 +112,19 @@ export function headerDefine(grid: GridPanel, diagram: Diagram, object: NodeMode
     for (let i: number = 0; i < columns.length; i++) {
         maxWidth += columns[i].width;
     }
+    shape.header.id = shape.header.id || randomId();
     let node: NodeModel = {
-        annotations: [{
-            content: shape.header.annotation.content,
-            style: shape.header.annotation.style ? shape.header.annotation.style : undefined,
-        }],
+        id: object.id + shape.header.id,
+        annotations: [cloneObject(shape.header.annotation)],
         style: shape.header.style ? shape.header.style : undefined,
         offsetX: object.offsetX, offsetY: object.offsetY,
         rowIndex: 0, columnIndex: 0,
         maxWidth: maxWidth,
         container: { type: 'Canvas', orientation: 'Horizontal' }
     } as NodeModel;
+    if (!canSelect(object)) {
+        node.constraints &= ~NodeConstraints.Select;
+    }
     let wrapper: Container = addObjectToGrid(diagram, grid, object, node, true);
     grid.addObject(wrapper, 0, 0, 1, grid.columnDefinitions().length);
 }
@@ -138,17 +141,18 @@ export function phaseDefine(
         rowValue = shape.header && (shape as SwimLane).hasHeader ? phaseIndex + 1 : phaseIndex;
     }
     let phaseObject: NodeModel = {
-        annotations: [{
-            content: shape.phases[phaseIndex].header.annotation.content,
-            rotateAngle: orientation ? 0 : 270,
-            style: shape.phases[phaseIndex].header.annotation.style
-        }], maxWidth: maxWidth,
+        annotations: [cloneObject(shape.phases[phaseIndex].header.annotation)],
+        maxWidth: maxWidth,
         id: object.id + shape.phases[phaseIndex].id + '_header',
         offsetX: object.offsetX, offsetY: object.offsetY,
         style: shape.phases[phaseIndex].style,
         rowIndex: rowValue, columnIndex: colValue,
         container: { type: 'Canvas', orientation: orientation ? 'Horizontal' : 'Vertical' }
     };
+    phaseObject.annotations[0].rotateAngle = orientation ? 0 : 270;
+    if (!canSelect(object)) {
+        phaseObject.constraints &= ~NodeConstraints.Select;
+    }
     shape.phases[phaseIndex].header.id = phaseObject.id;
     let wrapper: Container = addObjectToGrid(
         diagram, grid, object, phaseObject, false, true, false, shape.phases[phaseIndex].id);
@@ -176,27 +180,27 @@ export function laneCollection(
             constraints: NodeConstraints.Default | NodeConstraints.ReadOnly | NodeConstraints.AllowDrop,
             container: { type: 'Canvas', orientation: orientation ? 'Horizontal' : 'Vertical' }
         };
+        if (!canSelect(object)) {
+            canvas.constraints &= ~NodeConstraints.Select;
+        }
         parentWrapper = addObjectToGrid(diagram, grid, object, canvas, false, false, true);
         parentWrapper.children[0].isCalculateDesiredSize = false;
         if (l === 0) {
             laneNode = {
                 id: object.id + shape.lanes[laneIndex].id + '_' + l + '_header',
                 style: shape.lanes[laneIndex].header.style,
-                annotations: [
-                    {
-                        id: shape.lanes[laneIndex].header.annotation.id,
-                        content: shape.lanes[laneIndex].header.annotation.content,
-                        rotateAngle: orientation ? 270 : 0,
-                        style: shape.lanes[laneIndex].header.annotation.style,
-                    }
-                ],
+                annotations: [cloneObject(shape.lanes[laneIndex].header.annotation)],
                 offsetX: object.offsetX, offsetY: object.offsetY,
                 rowIndex: rowValue, columnIndex: colValue,
                 container: { type: 'Canvas', orientation: orientation ? 'Horizontal' : 'Vertical' }
             };
+            laneNode.annotations[0].rotateAngle = orientation ? 270 : 0;
             shape.lanes[laneIndex].header.id = laneNode.id;
             (orientation) ? laneNode.width = shape.lanes[laneIndex].header.width :
                 laneNode.height = shape.lanes[laneIndex].header.height;
+            if (!canSelect(object)) {
+                laneNode.constraints &= ~NodeConstraints.Select;
+            }
             childWrapper = addObjectToGrid(
                 diagram, grid, object, laneNode, false, false, true, shape.lanes[laneIndex].id);
             parentWrapper.children.push(childWrapper);
@@ -303,7 +307,7 @@ export function initGridColumns(columns: ColumnDefinition[], orientation: boolea
             }
             columns.push(cols);
         }
-        if ((shape.phases.length === 0 || shape.lanes.length === 0)) {
+        if ((shape.phases.length === 0 && shape.lanes.length === 0)) {
             cols = createColumn(object.width);
             columns.push(cols);
         }
@@ -529,7 +533,7 @@ export function checkLaneSize(obj: NodeModel): void {
         let laneIndex: number = findStartLaneIndex(obj);
         let rows: RowDefinition[] = (obj.wrapper.children[0] as GridPanel).rowDefinitions();
 
-        for (i = 0; i < lanes.length; i++ , laneIndex++) {
+        for (i = 0; i < lanes.length; i++, laneIndex++) {
             lane = lanes[i];
             if ((obj.shape as SwimLaneModel).orientation === 'Horizontal') {
                 size = rows[laneIndex].height;
@@ -656,10 +660,11 @@ export function laneInterChanged(diagram: Diagram, obj: NodeModel, target: NodeM
                     }
                 }
                 if (sourceIndex !== targetIndex) {
-                    if (shape.phaseSize === 0 && targetIndex === 0) {
+                    if ((shape.phaseSize === 0 || shape.phases.length === 0) && (targetIndex === 0 || sourceIndex === 0)) {
                         if (shape.header && (shape as SwimLane).hasHeader) {
-                            grid.rows[0].cells[sourceIndex].children = grid.rows[0].cells[0].children;
-                            grid.rows[0].cells[sourceIndex].columnSpan = grid.rows[0].cells[0].columnSpan;
+                            let changeHeaderIndex: number = (targetIndex === 0) ? sourceIndex : targetIndex;
+                            grid.rows[0].cells[changeHeaderIndex].children = grid.rows[0].cells[0].children;
+                            grid.rows[0].cells[changeHeaderIndex].columnSpan = grid.rows[0].cells[0].columnSpan;
                             grid.rows[0].cells[0].children = [];
                         }
                     }

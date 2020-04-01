@@ -1,55 +1,43 @@
 /**
- * Defines position of the axis ticks / labels. They are
- * * inside
- * * outside
- * * cross
+ * Defines the position of the axis ticks and labels.
  * @private
  */
 export type Position =
-    /**  Inside position of the tick line / axis label / Range. */
+    /** Specifies the position of the tick line and axis label inside the axis. */
     'Inside' |
-    /**  Outside position of the tick line / axis label / Range. */
+    /** Specifies the position of the tick line and axis label outside the axis. */
     'Outside' |
-    /**  Specifies the position type as range cross / Range. */
+    /** Specifies the position of the tick line and axis label on the axis. */
     'Cross' ;
 
 /**
- * Defines position of the axis range / pointers. They are
- * * inside
- * * outside
- * * Cross
- * * Auto
+ * Defines the position of the axis range and pointers.
  * @private
  */
 export type PointerRangePosition =
-    /**  Inside position of the pointer. */
+    /** Specifies the position of the range and pointer inside the axis. */
     'Inside' |
-    /**  Outside position of the pointer. */
+    /** Specifies the position of the range and pointer outside the axis. */
     'Outside' |
-    /**  Cross position of the pointer. */
+    /** Specifies the position of the range and pointer on the axis. */
     'Cross' |
-    /**  Auto position of the pointer. */
+    /** Specifies the default position of the range and pointer in the axis. */
     'Auto';
 
 /**
- * Defines Pointer type of the axis. They are
- * * needle
- * * marker
- * * rangeBar
+ * Defines the type of pointer in the axis.
  * @private
  */
 export type PointerType =
-    /**  Specifies the pointer type as needle. */
+    /** Specifies the pointer type as needle. */
     'Needle' |
-    /**  Specifies the pointer type as marker. */
+    /** Specifies the pointer type as marker. */
     'Marker' |
-    /**  Specifies the pointer type as range bar. */
+    /** Specifies the pointer type as range bar. */
     'RangeBar';
 
 /**
- * Defines Direction of the gauge. They are
- * * ClockWise
- * * AntiClockWise
+ * Specifies the direction of the circular gauge.
  * @private
  */
 export type GaugeDirection =
@@ -59,107 +47,98 @@ export type GaugeDirection =
     'AntiClockWise';
 
 /**
- * Defines Theme of the gauge. They are
- * * Material
- * * Fabric
+ * Defines the theme style of the circular gauge.
  * @private
  */
 export type GaugeTheme =
-    /**  Render a gauge with Material theme. */
+    /** Render a gauge with material theme. */
     'Material' |
-    /**  Render a gauge with Bootstrap theme. */
+    /** Render a gauge with bootstrap theme. */
     'Bootstrap' |
-    /**  Render a gauge with Highcontrast light theme. */
+    /** Render a gauge with highcontrast light theme. */
     'HighContrastLight'|
-    /**  Render a gauge with Fabric theme. */
+    /** Render a gauge with fabric theme. */
     'Fabric'|
-    /**  Render a chart with Material Dark theme. */
+    /** Render a gauge with material dark theme. */
     'MaterialDark'|
-    /**  Render a chart with Fabric Dark theme. */
+    /** Render a gauge with fabric dark theme. */
     'FabricDark'|
-    /**  Render a chart with Highcontrast Dark theme. */
+    /** Render a gauge with highcontrast Dark theme. */
     'HighContrast'|
-    /**  Render a chart with Bootstrap Dark theme. */
+    /** Render a gauge with bootstrap Dark theme. */
     'BootstrapDark'|
-    /** Render a chart with Bootstrap 4 theme. */
+    /** Render a gauge with bootstrap 4 theme. */
     'Bootstrap4';
 
 
 /**
- * Defines Hidden label of the axis. They are
- * * First
- * * Last
+ * Specifies the axis label to be hidden in the axis of circular gauge.
  * @private
  */
 export type HiddenLabel =
-    /**  Hides the 1st label on intersect. */
+    /** Specifies the first label to be hidden in circular gauge. */
     'First' |
-    /**  Hides the last label on intersect. */
+    /** Specifies the last label to be hidden in circular gauge. */
     'Last' |
-    /**  Places both the labels. */
+    /** No labels will be hidden in circular gauge. */
     'None';
 
 /**
- * Defines the shape of marker. They are
- * * circle - Renders a circle.
- * * rectangle - Renders a rectangle.
- * * triangle - Renders a triangle.
- * * diamond - Renders a diamond.
- * * cross - Renders a cross.
- * * horizontalLine - Renders a horizontalLine.
- * * verticalLine - Renders a verticalLine.
- * * pentagon- Renders a pentagon.
- * * invertedTriangle - Renders a invertedTriangle.
- * * image - Renders a image.
- * * Text- Renders a text.
+ * Specifies the shape of a marker in circular gauge.
  */
 export type GaugeShape =
-    /** Render a circle. */
+    /** Renders a marker shape as circle. */
     'Circle' |
-    /** Render a Rectangle. */
+    /** Renders the marker shape as rectangle. */
     'Rectangle' |
-    /** Render a Triangle. */
+    /** Renders the marker shape as triangle. */
     'Triangle' |
-    /** Render a Diamond. */
+    /** Renders the marker shape as diamond. */
     'Diamond' |
-    /** Render a InvertedTriangle. */
+    /** Renders the marker shape as inverted triangle. */
     'InvertedTriangle' |
-    /** Render a Image. */
+    /** Renders the marker shape as an image. */
     'Image' |
-    /** Render a Text. */
+    /** Renders the marker as text. */
     'Text';
 
+/**
+ * Specifies the position of legend for ranges in circular gauge component.
+ */
 export type LegendPosition =
-    /** Places the legend on the top of circular gauge. */
+    /** Specifies the legend to be placed at the top of the circular gauge. */
     'Top' |
-    /** Places the legend on the left of circular gauge. */
+    /** Specifies the legend to be placed at the left of the circular gauge. */
     'Left' |
-    /** Places the legend on the bottom of circular gauge. */
+    /** Specifies the legend to be placed at the bottom of the circular gauge. */
     'Bottom' |
-    /** Places the legend on the right of circular gauge. */
+    /** Specifies the legend to be placed at the right of the circular gauge. */
     'Right' |
-    /** Places the legend on the custom x and y location */
+    /** Specifies the legend to be placed based on the custom x and y location. */
     'Custom' |
-    /** Places the legend based on the available space */
+    /** Specifies the legend to be placed based on the available space. */
     'Auto';
 
+/**
+ * Specifies the alignment of the legend in circular gauge component.
+ */
 export type Alignment =
-     /** Places the legend on the near of the circular gauge */
+     /** Places the legend near the circular gauge with respect to the position of legend. */
      'Near' |
-     /** Places the legend on the center of the circular gauge */
+     /** Places the legend at the center of the circular gauge with respect to the position of legend. */
      'Center' |
-     /** Places the legend on the far on the circular gauge */
+     /** Places the legend far from the circular gauge with respect to the position of legend. */
      'Far';
 
 /**
- * Export Type
+ * Specifies the export type of circular gauge component.
  */
 export type ExportType =
-    /** Used to export a image as png format */
+    /** Specifies the rendered circular gauge to be exported in the png format. */
     'PNG' |
-    /** Used to export a image as jpeg format */
+    /** Specifies the rendered cicular gauge to be exported in the jpeg format. */
     'JPEG' |
-    /** Used to export a file as svg format */
+    /** Specifies the rendered circular gauge to be exported in the svg format. */
     'SVG' |
-    /** Used to export a file as pdf format */
+    /** Specifies the rendered circular gauge to be exported in the pdf format. */
     'PDF';

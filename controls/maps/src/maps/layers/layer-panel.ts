@@ -97,6 +97,9 @@ export class LayerPanel {
     // tslint:disable-next-line:max-func-body-length
     public renderTileLayer(panel: LayerPanel, layer: LayerSettings, layerIndex: number, bing?: BingMap): void {
         panel.currentFactor = panel.calculateFactor(layer);
+        panel.mapObject.defaultState = ((panel.mapObject.zoomSettings.zoomFactor !== 1) &&
+        (!isNullOrUndefined(panel.mapObject.tileZoomLevel) && panel.mapObject.tileZoomLevel !== 1 )) ?
+        false : true;
         if (isNullOrUndefined(panel.mapObject.previousCenterLatitude) &&
             isNullOrUndefined(panel.mapObject.previousCenterLongitude)) {
             panel.mapObject.previousCenterLatitude = panel.mapObject.centerPosition.latitude;
@@ -141,14 +144,17 @@ export class LayerPanel {
         }  else if (this.mapObject.isReset && panel.mapObject.tileZoomLevel === 1 && !panel.mapObject.zoomSettings.shouldZoomInitially) {
             panel.mapObject.tileZoomLevel = panel.mapObject.tileZoomLevel;
         } else if (panel.mapObject.zoomSettings.zoomFactor !== 1 || panel.mapObject.zoomSettings.shouldZoomInitially) {
-            panel.mapObject.tileZoomLevel = panel.mapObject.defaultState ?
+            panel.mapObject.tileZoomLevel = panel.mapObject.defaultState && panel.mapObject.zoomSettings.enable ?
                 panel.mapObject.tileZoomLevel : !panel.mapObject.zoomSettings.shouldZoomInitially
                 && !panel.mapObject.centerPositionChanged ?
                 panel.mapObject.previousZoomFactor !== panel.mapObject.zoomSettings.zoomFactor ?
                     panel.mapObject.zoomSettings.zoomFactor : panel.mapObject.tileZoomLevel : zoomFactorValue;
             if (!isNullOrUndefined(panel.mapObject.tileTranslatePoint) &&
-                panel.mapObject.markerZoomFactor !== panel.mapObject.mapScaleValue
-                && panel.mapObject.zoomSettings.zoomFactor <= 1) {
+                    (panel.mapObject.markerZoomFactor !== panel.mapObject.mapScaleValue
+                        || (isNullOrUndefined(panel.mapObject.markerZoomFactor)
+                        && isNullOrUndefined(panel.mapObject.mapScaleValue)))
+                    && (panel.mapObject.zoomSettings.zoomFactor <= 1 || panel.mapObject.previousZoomFactor !==
+                        panel.mapObject.zoomSettings.zoomFactor)) {
                 panel.mapObject.tileTranslatePoint.x = 0;
                 panel.mapObject.tileTranslatePoint.y = 0;
             }
@@ -177,6 +183,10 @@ export class LayerPanel {
         this.mapObject.initialTileTranslate.y = (this.mapObject.availableSize.height / 2) - (totalSize / 2) + padding;
         }
         panel.generateTiles(panel.mapObject.tileZoomLevel, panel.mapObject.tileTranslatePoint, null, bing);
+        if (!isNullOrUndefined(panel.mapObject.previousZoomFactor)
+            && panel.mapObject.previousZoomFactor !== panel.mapObject.zoomSettings.zoomFactor) {
+                panel.mapObject.previousZoomFactor = panel.mapObject.zoomSettings.zoomFactor;
+        }
         if (panel.mapObject.navigationLineModule) {
             panel.layerObject.appendChild(
                 panel.mapObject.navigationLineModule.renderNavigation(panel.currentLayer, panel.mapObject.tileZoomLevel, layerIndex)

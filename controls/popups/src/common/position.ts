@@ -131,6 +131,9 @@ function getElementHCenter(): number {
     return getElementLeft() + (elementRect.width / 2);
 }
 
+/**
+ * Provides information about a OffsetPosition.
+ */
 export interface OffsetPosition {
     left: number;
     top: number;

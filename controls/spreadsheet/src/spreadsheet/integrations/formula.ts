@@ -407,7 +407,7 @@ export class Formula {
         let name: string = definedName.name;
         let isAdded: boolean = false;
         if (!definedName.refersTo) {
-            let sheet: SheetModel = getSheet(this.parent, this.parent.activeSheetTab - 1);
+            let sheet: SheetModel = getSheet(this.parent, this.parent.activeSheetIndex);
             let sheetName: string = getSheetName(this.parent);
             sheetName = sheetName.indexOf(' ') !== -1 ? '\'' + sheetName + '\'' : sheetName;
             let selectRange: string = sheet.selectedRange;

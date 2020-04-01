@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 18.1.42 (2020-04-01)
+
+### ListView
+
+#### Bug Fixes
+
+- #269547 - The issue with `ListView move backwards during text selection` has been resolved.
+
+- #266788 - The issue with `Checkbox is not displayed while enabling the virtualization property in ListView` has been resolved.
+
 ## 18.1.36-beta (2020-03-19)
 
 ### ListView
@@ -24,7 +34,7 @@
 
 #### Bug Fixes
 
-- Issue with Drag and Drop in Empty area of List Box has been fixed
+- Issue with Drag and Drop in Empty area of List Box has been fixed.
 
 ## 17.3.21 (2019-10-30)
 

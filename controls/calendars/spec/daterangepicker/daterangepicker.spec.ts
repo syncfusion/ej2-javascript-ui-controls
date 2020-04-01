@@ -8927,6 +8927,137 @@ describe('DateRangePicker', () => {
             expect(document.querySelector('.e-end-date').children[0].textContent).toBe('28');
         });
     });
+    describe('EJ2-36604 - While giving the class name with empty space for HtmlAttributes, console error is produced.', function () {
+        let daterangepicker: any;
+        beforeEach(function () {
+            let inputElement: HTMLElement = createElement('input', { id: 'daterangepicker' });
+            document.body.appendChild(inputElement);
+        });
+        afterEach(function () {
+            if (daterangepicker) {
+                daterangepicker.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('Entering the class name without any empty space', function () {
+            daterangepicker = new DateRangePicker({
+                htmlAttributes: { class: 'custom-class' }
+            });
+            daterangepicker.appendTo('#daterangepicker');
+            expect(daterangepicker.inputWrapper.container.classList.contains('custom-class')).toBe(true);
+        });
+        it('Giving empty space before and after the class name', function () {
+            daterangepicker = new DateRangePicker({
+                htmlAttributes: { class: ' custom-class ' }
+            });
+            daterangepicker.appendTo('#daterangepicker');
+            expect(daterangepicker.inputWrapper.container.classList.contains('custom-class')).toBe(true);
+        });
+        it('Giving more than one empty space between two class names', function () {
+            daterangepicker = new DateRangePicker({
+                htmlAttributes: { class: 'custom-class-one     custom-class-two' }
+            });
+            daterangepicker.appendTo('#daterangepicker');
+            expect(daterangepicker.inputWrapper.container.classList.contains('custom-class-one')).toBe(true);
+            expect(daterangepicker.inputWrapper.container.classList.contains('custom-class-two')).toBe(true);
+        });
+        it('Giving more than one empty space between two class names as well before and after the class name', function () {
+            daterangepicker = new DateRangePicker({
+                htmlAttributes: { class: '  custom-class-one     custom-class-two  ' }
+            });
+            daterangepicker.appendTo('#daterangepicker');
+            expect(daterangepicker.inputWrapper.container.classList.contains('custom-class-one')).toBe(true);
+            expect(daterangepicker.inputWrapper.container.classList.contains('custom-class-one')).toBe(true);
+        });
+        it('Giving only empty space  without entering any class Name', function () {
+            daterangepicker = new DateRangePicker({
+            });
+            daterangepicker.appendTo('#daterangepicker');
+            let beforeAddClass = daterangepicker.inputWrapper.container.classList.length;
+            daterangepicker.htmlAttributes = { class: '  ' };
+            daterangepicker.appendTo('#daterangepicker');
+            let AfterAddClass = daterangepicker.inputWrapper.container.classList.length;
+            expect(beforeAddClass == AfterAddClass).toBe(true);
+        });
+        it('Keep input as empty without entering any class Name', function () {
+            daterangepicker = new DateRangePicker({
+            });
+            daterangepicker.appendTo('#daterangepicker');
+            let beforeAddClass = daterangepicker.inputWrapper.container.classList.length;
+            daterangepicker.htmlAttributes = { class: '' };
+            daterangepicker.appendTo('#daterangepicker');
+            let AfterAddClass = daterangepicker.inputWrapper.container.classList.length;
+            expect(beforeAddClass == AfterAddClass).toBe(true);
+        });
+        it('Entering class name without any empty space', function () {
+            daterangepicker = new DateRangePicker({
+                cssClass: 'custom-class'
+            });
+            daterangepicker.appendTo('#daterangepicker');
+            expect(daterangepicker.inputWrapper.container.classList.contains('custom-class')).toBe(true);
+        });
+        it('Giving empty space before and after the class name', function () {
+            daterangepicker = new DateRangePicker({
+                cssClass: ' custom-class '
+            });
+            daterangepicker.appendTo('#daterangepicker');
+            expect(daterangepicker.inputWrapper.container.classList.contains('custom-class')).toBe(true);
+        });
+        it('Giving more than one empty space between two class names', function () {
+            daterangepicker = new DateRangePicker({
+                cssClass: 'custom-class-one   custom-class-two'
+            });
+            daterangepicker.appendTo('#daterangepicker');
+            expect(daterangepicker.inputWrapper.container.classList.contains('custom-class-one')).toBe(true);
+            expect(daterangepicker.inputWrapper.container.classList.contains('custom-class-two')).toBe(true);
+        });
+        it('Giving more than one empty space between two class names as well as before and after the class names', function () {
+            daterangepicker = new DateRangePicker({
+                cssClass: '  custom-class-one   custom-class-two  '
+            });
+            daterangepicker.appendTo('#daterangepicker');
+            expect(daterangepicker.inputWrapper.container.classList.contains('custom-class-one')).toBe(true);
+            expect(daterangepicker.inputWrapper.container.classList.contains('custom-class-two')).toBe(true);
+        });
+        it('Giving only empty space  without entering any class Name', function () {
+            daterangepicker = new DateRangePicker({
+            });
+            daterangepicker.appendTo('#daterangepicker');
+            let beforeAddClass = daterangepicker.inputWrapper.container.classList.length;
+            daterangepicker.cssClass = '  ';
+            daterangepicker.appendTo('#daterangepicker');
+            let AfterAddClass = daterangepicker.inputWrapper.container.classList.length;
+            expect(beforeAddClass == AfterAddClass).toBe(true);
+        }); 
+        it('Keep input as empty without entering any class Name', function () {
+            daterangepicker = new DateRangePicker({
+            });
+            daterangepicker.appendTo('#daterangepicker');
+            let beforeAddClass = daterangepicker.inputWrapper.container.classList.length;
+            daterangepicker.cssClass = '';
+            daterangepicker.appendTo('#daterangepicker');
+            let AfterAddClass = daterangepicker.inputWrapper.container.classList.length;
+            expect(beforeAddClass == AfterAddClass).toBe(true);
+        });
+        it('Giving class name with underscore in the beginning', function () {
+            daterangepicker = new DateRangePicker({
+                htmlAttributes : { class : '  _custom-class-one  '},
+                cssClass : '   _custom-class-two  '
+            });
+            daterangepicker.appendTo('#daterangepicker');
+            expect(daterangepicker.inputWrapper.container.classList.contains('_custom-class-one')).toBe(true);
+            expect(daterangepicker.inputWrapper.container.classList.contains('_custom-class-two')).toBe(true);
+        });
+        it('Giving class name with empty space in both cases seperatly', function () {
+            daterangepicker = new DateRangePicker({
+                htmlAttributes : { class : '  custom-class-one  '},
+                cssClass : '   custom-class-two  '
+            });
+            daterangepicker.appendTo('#daterangepicker');
+            expect(daterangepicker.inputWrapper.container.classList.contains('custom-class-one')).toBe(true);
+            expect(daterangepicker.inputWrapper.container.classList.contains('custom-class-two')).toBe(true);
+        });   
+    });
 });
 interface CalendarElement {
     leftCalTitle: HTMLElement;

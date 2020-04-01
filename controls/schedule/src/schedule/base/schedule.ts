@@ -2,6 +2,7 @@ import { Component, ModuleDeclaration, Property, Event, Animation, Collection, i
 import { EventHandler, EmitType, Browser, Internationalization, getDefaultDateObject, cldrData, L10n } from '@syncfusion/ej2-base';
 import { getValue, compile, extend, isNullOrUndefined, NotifyPropertyChanges, INotifyPropertyChanged, Complex } from '@syncfusion/ej2-base';
 import { getElement, removeClass, addClass, classList, remove, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
+import { IntlBase } from '@syncfusion/ej2-base';
 import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { ScheduleModel } from './schedule-model';
 import { HeaderRenderer } from '../renderer/header-renderer';
@@ -138,6 +139,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public uiStateValues: UIStateArgs;
     public timeFormat: string;
     public calendarUtil: CalendarUtil;
+    public allowExcelExport: boolean;
 
     // Schedule Options
     /**
@@ -251,6 +253,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * {% codeBlock src='schedule/calendarMode/index.md' %}{% endcodeBlock %}
      * To change the mode, you can set either `Gregorian` or `Islamic` as a value to this `calendarMode` property. 
      * @default 'Gregorian'
+     * @deprecated
      */
     @Property('Gregorian')
     public calendarMode: CalendarType;
@@ -383,8 +386,15 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     @Property(true)
     public showQuickInfo: boolean;
     /**
+     * This property helps user to allow/prevent the selection of multiple cells.
+     * By default, it is set to `true`.
+     * @default true
+     */
+    @Property(true)
+    public allowMultiCellSelection: boolean;
+    /**
      * This property helps user to allow/prevent the selection of multiple days(rows).
-     *  By default, it is set to `true`.
+     * By default, it is set to `true`.
      * @default true
      */
     @Property(true)
@@ -580,7 +590,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers on beginning of every scheduler action.
      * @event
      * @blazorproperty 'OnActionBegin'
-     * @blazorType Syncfusion.EJ2.Blazor.Schedule.ActionEventArgs<TValue>
+     * @blazorType Syncfusion.Blazor.Schedule.ActionEventArgs<TValue>
      */
     @Event()
     public actionBegin: EmitType<ActionEventArgs>;
@@ -588,7 +598,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers on successful completion of the scheduler actions.
      * @event
      * @blazorproperty 'ActionCompleted'
-     * @blazorType Syncfusion.EJ2.Blazor.Schedule.ActionEventArgs<TValue>
+     * @blazorType Syncfusion.Blazor.Schedule.ActionEventArgs<TValue>
      */
     @Event()
     public actionComplete: EmitType<ActionEventArgs>;
@@ -596,7 +606,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers when a scheduler action gets failed or interrupted and an error information will be returned.
      * @event
      * @blazorproperty 'OnActionFailure'
-     * @blazorType Syncfusion.EJ2.Blazor.Schedule.ActionEventArgs<TValue>
+     * @blazorType Syncfusion.Blazor.Schedule.ActionEventArgs<TValue>
      */
     @Event()
     public actionFailure: EmitType<ActionEventArgs>;
@@ -618,7 +628,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers when the events are single clicked or on single tapping the events on the mobile devices.
      * @event
      * @blazorproperty 'OnEventClick'
-     * @blazorType Syncfusion.EJ2.Blazor.Schedule.EventClickArgs<TValue>
+     * @blazorType Syncfusion.Blazor.Schedule.EventClickArgs<TValue>
      */
     @Event()
     public eventClick: EmitType<EventClickArgs>;
@@ -626,7 +636,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers before each of the event getting rendered on the scheduler user interface.
      * @event
      * @blazorproperty 'EventRendered'
-     * @blazorType Syncfusion.EJ2.Blazor.Schedule.EventRenderedArgs<TValue>
+     * @blazorType Syncfusion.Blazor.Schedule.EventRenderedArgs<TValue>
      */
     @Event()
     public eventRendered: EmitType<EventRenderedArgs>;
@@ -634,7 +644,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers before the data binds to the scheduler.
      * @event
      * @blazorproperty 'DataBinding'
-     * @blazorType Syncfusion.EJ2.Blazor.Schedule.DataBindingEventArgs<TValue>
+     * @blazorType Syncfusion.Blazor.Schedule.DataBindingEventArgs<TValue>
      */
     @Event()
     public dataBinding: EmitType<ReturnType>;
@@ -642,7 +652,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers before any of the scheduler popups opens on the page.
      * @event
      * @blazorproperty 'OnPopupOpen'
-     * @blazorType Syncfusion.EJ2.Blazor.Schedule.PopupOpenEventArgs<TValue>
+     * @blazorType Syncfusion.Blazor.Schedule.PopupOpenEventArgs<TValue>
      */
     @Event()
     public popupOpen: EmitType<PopupOpenEventArgs>;
@@ -650,7 +660,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers before any of the scheduler popups close on the page.
      * @event
      * @blazorproperty 'OnPopupClose'
-     * @blazorType Syncfusion.EJ2.Blazor.Schedule.PopupCloseEventArgs<TValue>
+     * @blazorType Syncfusion.Blazor.Schedule.PopupCloseEventArgs<TValue>
      */
     @Event()
     public popupClose: EmitType<PopupCloseEventArgs>;
@@ -702,7 +712,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Triggers once the event data is bound to the scheduler.
      * @event
      * @blazorproperty 'DataBound'
-     * @blazorType Syncfusion.EJ2.Blazor.Schedule.DataBoundEventArgs<TValue>
+     * @blazorType Syncfusion.Blazor.Schedule.DataBoundEventArgs<TValue>
      */
     @Event()
     public dataBound: EmitType<ReturnType>;
@@ -1139,13 +1149,20 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /** @hidden */
     public getDayNames(type: string): string[] {
+        if (isBlazor() && type === 'narrow') {
+            type = 'short';
+        }
         let culShortNames: string[] = [];
         let cldrObj: string[];
+        let nameSpace: string = '';
         if (this.locale === 'en' || this.locale === 'en-US') {
-            cldrObj = <string[]>(getValue('days.stand-alone.' + type, getDefaultDateObject(this.getCalendarMode())));
+            nameSpace = isBlazor() ? 'days.' : 'days.stand-alone.' ;
+            cldrObj = <string[]>(getValue(nameSpace + type, getDefaultDateObject(this.getCalendarMode())));
         } else {
+            nameSpace = isBlazor() ? '' + this.locale + '.dates.days.' + type :
+            'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.days.format.' + type;
             cldrObj = <string[]>(
-                getValue('main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.days.format.' + type, cldrData));
+                getValue(nameSpace, cldrData));
         }
         for (let obj of Object.keys(cldrObj)) {
             culShortNames.push(getValue(obj, cldrObj));
@@ -1153,6 +1170,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         return culShortNames;
     }
     private setCldrTimeFormat(): void {
+        if (isBlazor()) {
+            this.timeFormat = IntlBase.compareBlazorDateFormats({ skeleton: 't' }, this.locale).format;
+            return;
+        }
         if (this.locale === 'en' || this.locale === 'en-US') {
             this.timeFormat = <string>(getValue('timeFormats.short', getDefaultDateObject(this.getCalendarMode())));
         } else {
@@ -1304,7 +1325,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         if (this.allowResizing) {
             modules.push({ member: 'resize', args: [this] });
         }
-        modules.push({ member: 'excelExport', args: [this] });
+        if (!isBlazor() || isBlazor() && this.isServerRendered && this.allowExcelExport) {
+            modules.push({ member: 'excelExport', args: [this] });
+        }
         modules.push({ member: 'iCalendarExport', args: [this] });
         modules.push({ member: 'iCalendarImport', args: [this] });
         modules.push({ member: 'print', args: [this] });
@@ -1592,7 +1615,9 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public getCssProperties(): ScrollCss {
         let cssProps: ScrollCss = {
             border: this.enableRtl ? 'borderLeftWidth' : 'borderRightWidth',
-            padding: this.enableRtl ? 'paddingLeft' : 'paddingRight'
+            padding: this.enableRtl ? 'paddingLeft' : 'paddingRight',
+            rtlBorder: this.enableRtl ? 'borderRightWidth' : 'borderLeftWidth',
+            rtlPadding: this.enableRtl ? 'paddingRight' : 'paddingLeft'
         };
         return cssProps;
     }
@@ -1648,13 +1673,12 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /** @hidden */
     public getAnnocementString(event: { [key: string]: Object }, subject?: string): string {
         let recordSubject: string = (subject || (event[this.eventFields.subject] || this.eventSettings.fields.subject.default)) as string;
+        let skeleton: string = isBlazor() ? 'R' : 'full';
         let startDateText: string = this.globalize.formatDate(event[this.eventFields.startTime] as Date, {
-            type: 'dateTime',
-            skeleton: 'full', calendar: this.getCalendarMode()
+            type: 'dateTime', skeleton: skeleton, calendar: this.getCalendarMode()
         });
         let endDateText: string = this.globalize.formatDate(event[this.eventFields.endTime] as Date, {
-            type: 'dateTime',
-            skeleton: 'full', calendar: this.getCalendarMode()
+            type: 'dateTime', skeleton: skeleton, calendar: this.getCalendarMode()
         });
         let annocementString: string = recordSubject + ' ' + this.localeObj.getConstant('beginFrom') + ' '
             + startDateText + ' ' + this.localeObj.getConstant('endAt') + ' ' + endDateText;
@@ -1929,6 +1953,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             this.destroyHeaderModule();
             if (this.showHeaderBar) {
                 this.headerModule = new HeaderRenderer(this);
+                this.renderModule.updateHeader();
             }
             this.notify(events.scrollUiUpdate, { cssProperties: this.getCssProperties() });
             this.notify(events.dataReady, {});
@@ -2217,20 +2242,49 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             }
             let data: TdData = this.resourceBase.lastResourceLevel[index];
             let groupData: { [key: string]: Object } = {};
-            this.resourceBase.setResourceValues(groupData, false, index);
+            this.resourceBase.setResourceValues(groupData, index);
             return { resource: data.resource, resourceData: data.resourceData, groupData: groupData };
         }
         return undefined;
     }
 
     /**
+     * This method allows to expand the resource that available on the scheduler.
+     * @method expandResource
+     * @param {string} resourceId Accepts the resource id in string type
+     * @param {number} resourceId Accepts the resource id in number type
+     * @param {string} name Accepts the name of the resource collection
+     */
+    public expandResource(resourceId: string | number, name: string): void {
+        if (this.activeView.isTimelineView() && this.resourceBase && this.resourceCollection.length > 1) {
+            this.resourceBase.resourceExpand(resourceId, name, false);
+        }
+    }
+
+    /**
+     * This method allows to collapse the resource that available on the scheduler.
+     * @method collapseResource
+     * @param {string} resourceId Accepts the resource id in string type
+     * @param {number} resourceId Accepts the resource id in number type
+     * @param {string} name Accepts the name of the resource collection
+     */
+    public collapseResource(resourceId: string | number, name: string): void {
+        if (this.activeView.isTimelineView() && this.resourceBase && this.resourceCollection.length > 1) {
+            this.resourceBase.resourceExpand(resourceId, name, true);
+        }
+    }
+
+    /**
      * Scrolls the Schedule content area to the specified time.
      * @method scrollTo
      * @param {string} hour Accepts the time value in the skeleton format of 'Hm'.
+     * @param {Date} scrollDate Accepts the date object value.
      * @returns {void}
      */
     public scrollTo(hour: string, scrollDate?: Date): void {
-        if (this.activeView.scrollToHour) {
+        if (this.activeView.scrollToDate && isNullOrUndefined(hour) && scrollDate) {
+            this.activeView.scrollToDate(scrollDate);
+        } else if (this.activeView.scrollToHour) {
             this.activeView.scrollToHour(hour, scrollDate);
         }
     }

@@ -6,13 +6,13 @@ import { CircularGauge } from '../circular-gauge';import { appendPath, textEleme
 export interface LocationModel {
 
     /**
-     * X coordinate of the legend in pixels.
+     * Sets and gets the X coordinate of the legend in the circular gauge.
      * @default 0
      */
     x?: number;
 
     /**
-     * Y coordinate of the legend in pixels.
+     * Sets and gets the Y coordinate of the legend in the circular gauge.
      * @default 0
      */
     y?: number;
@@ -25,103 +25,95 @@ export interface LocationModel {
 export interface LegendSettingsModel {
 
     /**
-     * If set to true, legend will be visible.
+     * Enable and disables the visibility of the legend in circular gauge.
      * @default false
      */
     visible?: boolean;
 
     /**
-     * If set to true, series' visibility collapses based on the legend visibility.
+     * Enables and disables the ranges visibility collapses based on the legend visibility.
      * @default true
      */
     toggleVisibility?: boolean;
 
     /**
-     * Legend in chart can be aligned as follows:
-     * * Near: Aligns the legend to the left of the chart.
-     * * Center: Aligns the legend to the center of the chart.
-     * * Far: Aligns the legend to the right of the chart.
+     * Sets and gets the alignment of the legend in the circular gauge.
      * @default 'Center'
      */
     alignment?: Alignment;
 
     /**
-     * Options to customize the border of the legend.
+     * Sets and gets the options to customize the border settings of the legend.
      */
     border?: BorderModel;
 
     /**
-     * Options to customize the border of the legend.
+     * Sets and gets the options to customize the border for the shape of the legend in the circular gauge.
      */
     shapeBorder?: BorderModel;
 
     /**
-     * Option to customize the padding between legend items.
+     * Sets and gets the options to customize the padding between legend items.
      * @default 8
      */
     padding?: number;
 
     /**
-     * Opacity of the legend.
+     * Sets and gets the opacity of the legend.
      * @default 1
      */
     opacity?: number;
 
     /**
-     * Position of the legend in the circular gauge are,
-     * * Auto: Displays the legend based on the avail space of the circular this.gauge.
-     * * Top: Displays the legend at the top of the circular this.gauge.
-     * * Left: Displays the legend at the left of the circular this.gauge.
-     * * Bottom: Displays the legend at the bottom of the circular this.gauge.
-     * * Right: Displays the legend at the right of the circular this.gauge.
+     * Sets and gets the position of the legend in the circular gauge.
      * @default 'Auto'
      */
     position?: LegendPosition;
 
     /**
-     * Customize the legend shape of the maps.
+     * Sets and gets the shape of the legend in circular gauge.
      * @default Circle
      */
     shape?: GaugeShape;
 
     /**
-     * The height of the legend in pixels.
+     * Sets and gets the height of the legend in the circular gauge.
      * @default null
      */
     height?: string;
 
     /**
-     * The width of the legend in pixels.
+     * Sets and gets the width of the legend in the circular gauge.
      * @default null
      */
     width?: string;
 
     /**
-     * Options to customize the legend text.
+     * Sets and gets the options to customize the text of the legend.
      */
     textStyle?: FontModel;
 
     /**
-     * Height of the shape
+     * Sets and gets the height of the legend shape in circular gauge.
      * @default 10
      */
     shapeHeight?: number;
 
     /**
-     * Width of the shape
+     * Sets and gets the width of the legend shape in circular gauge.
      * @default 10
      */
     shapeWidth?: number;
 
     /**
-     * Padding for the shape
+     * Sets and gets the padding for the legend shape in circular gauge.
      * @default 5
      */
     shapePadding?: number;
 
     /**
-     * Specifies the location of the legend, relative to the chart.
-     * If x is 20, legend moves by 20 pixels to the right of the chart. It requires the `position` to be `Custom`.
+     * Sets and gets the location of the legend, relative to the circular gauge.
+     * If x is 20, legend moves by 20 pixels to the right of the gauge. It requires the `position` to be `Custom`.
      * ```html
      * <div id='Gauge'></div>
      * ```
@@ -141,13 +133,13 @@ export interface LegendSettingsModel {
     location?: LocationModel;
 
     /**
-     * Options to customize the legend background
+     * Sets and gets the background color of the legend in circular gauge.
      * @default 'transparent'
      */
     background?: string;
 
     /**
-     * Options to customize the legend margin
+     * Sets and gets the options to customize the legend margin.
      */
     margin?: MarginModel;
 

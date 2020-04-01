@@ -19,7 +19,7 @@ export class Render {
     }
 
     public render(): void {
-        this.parent.activeSheetTab = this.parent.skipHiddenSheets(this.parent.activeSheetTab - 1) + 1;
+        this.parent.activeSheetIndex = this.parent.skipHiddenSheets(this.parent.activeSheetIndex);
         if (!this.parent.isMobileView()) {
             this.parent.notify(ribbon, null);
             this.parent.notify(formulaBar, null);
@@ -32,7 +32,7 @@ export class Render {
         if (this.parent.showSheetTabs) {
             this.parent.notify(sheetTabs, null);
         } else { // for formula calculation
-            let sheetName: string = getSheetName(this.parent, 1);
+            let sheetName: string = getSheetName(this.parent, 0);
             let arg: { [key: string]: Object } = { action: 'addSheet', sheetName: 'Sheet1', index: 1, visibleName: sheetName };
             this.parent.notify(workbookFormulaOperation, arg);
             this.parent.notify(workbookFormulaOperation, { action: 'initiateDefinedNames' });

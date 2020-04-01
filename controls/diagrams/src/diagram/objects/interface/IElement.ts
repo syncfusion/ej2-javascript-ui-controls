@@ -1,7 +1,7 @@
 import { Container } from '../../core/containers/container';
 import { Diagram } from '../../diagram';
 import { ConnectorModel } from '../connector-model';
-import { NodeModel } from '../node-model';
+import { NodeModel, TextModel } from '../node-model';
 import { PointModel } from '../../primitives/point-model';
 import { EventState, ChangeType, State, DiagramAction, HistoryChangeAction, KeyModifiers } from '../../enum/enum';
 import { SelectorModel } from '../../objects/node-model';
@@ -14,6 +14,7 @@ import { PointPortModel } from '../../objects/port-model';
 import { KeyGestureModel } from '../../diagram/keyboard-commands-model';
 import { Node } from '../../objects/node';
 import { Size } from '../../primitives/size';
+import { ShapeAnnotationModel, PathAnnotationModel } from '../annotation-model';
 
 /**
  * IElement interface defines the base of the diagram objects (node/connector)
@@ -675,12 +676,52 @@ export interface IDragOverEventArgs {
  * ITextEditEventArgs notifies when the label of an element under goes editing
  */
 export interface ITextEditEventArgs {
-    /** returns the old text value of the element */
+    /** Returns the old text value of the element */
     oldValue: string;
-    /** returns the new text value of the element that is being changed */
+    /** Returns the new text value of the element that is being changed */
     newValue: string;
-    /** returns whether or not to cancel the event */
+    /** Returns a node or connector in which annotation is being edited */
+    element: NodeModel | ConnectorModel;
+    /** Returns a annotation which is being edited */
+    annotation: ShapeAnnotationModel | PathAnnotationModel | TextModel;
+    /** Returns whether or not to cancel the event */
     cancel: boolean;
+}
+
+/**
+ * IBlazorTextEditEventArgs notifies when the label of an element under goes editing
+ */
+export interface IBlazorTextEditEventArgs {
+    /** Returns the old text value of the element */
+    oldValue: string;
+    /** Returns the new text value of the element that is being changed */
+    newValue: string;
+    /** Returns a node or connector in which annotation is being edited */
+    element: DiagramEventObject;
+    /** Returns a annotation which is being edited */
+    annotation: DiagramEventAnnotation;
+    /** Returns whether or not to cancel the event */
+    cancel: boolean;
+}
+
+/**
+ * DiagramObject is the interface for the diagram object
+ * 
+ */
+
+export interface DiagramEventAnnotation {
+    /** returns the  node annotation
+     * @blazorType DiagramNodeAnnotation
+     */
+     nodeAnnotation?: ShapeAnnotationModel;
+    /** returns the  connector annotation 
+     * @blazorType DiagramConnectorAnnotation
+     */
+    connectorAnnotation?: PathAnnotationModel;
+    /** returns the  text node
+     * @blazorType DiagramNode
+     */
+    textNode?: TextModel;
 }
 /**
  * IBlazorHistoryChangeArgs notifies while the node/connector are added or removed
@@ -889,7 +930,9 @@ export interface IImageLoadEventArgs {
  * 
  */
 export interface IKeyEventArgs {
-    /** Returns the selected element of the diagram */
+    /** Returns the selected element of the diagram
+     * @blazorType DiagramSelectedItems
+     */
     element?: SelectorModel;
     /** Returns the text content of the label currently editing */
     text?: string;

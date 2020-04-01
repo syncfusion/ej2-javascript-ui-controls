@@ -877,6 +877,10 @@ var classNames = {
 var LISTVIEW_TEMPLATE_PROPERTY = 'Template';
 var LISTVIEW_GROUPTEMPLATE_PROPERTY = 'GroupTemplate';
 var LISTVIEW_HEADERTEMPLATE_PROPERTY = 'HeaderTemplate';
+var swipeVelocity = 0.5;
+/**
+ * Represents the field settings of the ListView.
+ */
 var FieldSettings = /** @__PURE__ @class */ (function (_super) {
     __extends(FieldSettings, _super);
     function FieldSettings() {
@@ -932,8 +936,8 @@ var FieldSettings = /** @__PURE__ @class */ (function (_super) {
  * </div>
  * ```
  * ```typescript
- *   var lvObj = new ListView({});
- *   lvObj.appendTo("#listview");
+ *   var listviewObject = new ListView({});
+ *   listviewObject.appendTo("#listview");
  * ```
  */
 var ListView = /** @__PURE__ @class */ (function (_super) {
@@ -1260,6 +1264,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
                 args.item.firstElementChild.appendChild(checkboxElement);
             }
             this.currentLiElements.push(args.item);
+            this.checkBoxPosition == "Left" ? this.virtualCheckBox = args.item.firstElementChild.children[0] : this.virtualCheckBox = args.item.firstElementChild.lastElementChild;
         }
     };
     ListView.prototype.checkInternally = function (args, checkboxElement) {
@@ -1269,7 +1274,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         checkboxElement.setAttribute('aria-checked', 'true');
     };
     /**
-     * It is used to check the checkbox of an item.
+     * Checks the specific list item by passing the unchecked fields as an argument to this method.
      * @param  {Fields | HTMLElement | Element} item - It accepts Fields or HTML list element as an argument.
      */
     ListView.prototype.checkItem = function (item) {
@@ -1292,20 +1297,20 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * It is used to uncheck the checkbox of an item.
+     * Uncheck the specific list item by passing the checked fields as an argument to this method.
      * @param  {Fields | HTMLElement | Element} item - It accepts Fields or HTML list element as an argument.
      */
     ListView.prototype.uncheckItem = function (item) {
         this.toggleCheckBase(item, false);
     };
     /**
-     * It is used to check all the items in ListView.
+     * Checks all the unchecked items in the ListView.
      */
     ListView.prototype.checkAllItems = function () {
         this.toggleAllCheckBase(true);
     };
     /**
-     * It is used to un-check all the items in ListView.
+     * Uncheck all the checked items in ListView.
      */
     ListView.prototype.uncheckAllItems = function () {
         this.toggleAllCheckBase(false);
@@ -1366,7 +1371,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * It is used to refresh the UI list item height
+     * Refresh the height of the list item.
      */
     ListView.prototype.refreshItemHeight = function () {
         this.virtualizationModule.refreshItemHeight();
@@ -1624,7 +1629,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     ListView.prototype.swipeActionHandler = function (e) {
-        if (e.swipeDirection === 'Right') {
+        if (e.swipeDirection === 'Right' && e.velocity > swipeVelocity && e.originalEvent.type == "touchend") {
             if (this.showCheckBox && this.curDSLevel[this.curDSLevel.length - 1]) {
                 this.uncheckAllItems();
             }
@@ -2105,7 +2110,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         return fields;
     };
     /**
-     * It is used to Initialize the control rendering.
+     * Initializes the ListView component rendering.
      */
     ListView.prototype.render = function () {
         if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
@@ -2150,12 +2155,14 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         removeClass([this.element], classAr);
         this.element.removeAttribute('role');
         this.element.removeAttribute('tabindex');
-        this.element.innerHTML = '';
         this.curUL = this.ulElement = this.liCollection = this.headerEle = undefined;
-        _super.prototype.destroy.call(this);
+        if (!(isBlazor() && this.isServerRendered)) {
+            this.element.innerHTML = '';
+            _super.prototype.destroy.call(this);
+        }
     };
     /**
-     * It helps to switch back from navigated sub list.
+     * Switches back from the navigated sub list item.
      */
     ListView.prototype.back = function () {
         var pID = this.curDSLevel[this.curDSLevel.length - 1];
@@ -2195,18 +2202,18 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         this.header((this.curDSLevel.length ? text : this.headerTitle), (this.curDSLevel.length ? true : false));
     };
     /**
-     * It is used to select the list item from the ListView.
-     * @param  {Fields | HTMLElement | Element} obj - We can pass element Object or Fields as Object with ID and Text fields.
+     * Selects the list item from the ListView by passing the elements or field object.
+     * @param  {Fields | HTMLElement | Element} item - We can pass element Object or Fields as Object with ID and Text fields.
      */
-    ListView.prototype.selectItem = function (obj) {
+    ListView.prototype.selectItem = function (item) {
         if (this.enableVirtualization) {
-            this.virtualizationModule.selectItem(obj);
+            this.virtualizationModule.selectItem(item);
         }
         else if (this.showCheckBox) {
-            this.setCheckboxLI(this.getLiFromObjOrElement(obj));
+            this.setCheckboxLI(this.getLiFromObjOrElement(item));
         }
         else {
-            isNullOrUndefined(obj) ? this.removeSelect() : this.setSelectLI(this.getLiFromObjOrElement(obj));
+            isNullOrUndefined(item) ? this.removeSelect() : this.setSelectLI(this.getLiFromObjOrElement(item));
         }
     };
     ListView.prototype.getLiFromObjOrElement = function (obj) {
@@ -2256,14 +2263,15 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         return li;
     };
     /**
-     * It is used to select multiple list item from the ListView.
-     * @param  {Fields[] | HTMLElement[] | Element[]} obj - We can pass array of elements or array of field Object with ID and Text fields.
+     * Selects multiple list items from the ListView.
+     * @param  {Fields[] | HTMLElement[] | Element[]} item - We can pass array of
+     *  elements or array of fields Object with ID and Text fields.
      */
-    ListView.prototype.selectMultipleItems = function (obj) {
-        if (!isNullOrUndefined(obj)) {
-            for (var i = 0; i < obj.length; i++) {
-                if (!isNullOrUndefined(obj[i])) {
-                    this.selectItem(obj[i]);
+    ListView.prototype.selectMultipleItems = function (item) {
+        if (!isNullOrUndefined(item)) {
+            for (var i = 0; i < item.length; i++) {
+                if (!isNullOrUndefined(item[i])) {
+                    this.selectItem(item[i]);
                 }
             }
         }
@@ -2278,8 +2286,7 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         return parentId;
     };
     /**
-     * It is used to get the currently [here](./selectedItem)
-     *  item details from the list items.
+     * Gets the details of the currently selected item from the list items.
      * @blazorType ListSelectedItem<TValue>
      */
     ListView.prototype.getSelectedItems = function () {
@@ -2410,36 +2417,36 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         return Array.isArray(items) ? items.slice() : [items];
     };
     /**
-     * It is used to find out an item details from the current list.
-     * @param  {Fields | HTMLElement | Element} obj - We can pass element Object or Fields as Object with ID and Text fields.
+     * Finds out an item details from the current list.
+     * @param  {Fields | HTMLElement | Element} item - We can pass element Object or Fields as Object with ID and Text fields.
      * @blazorType TValue
      */
-    ListView.prototype.findItem = function (obj) {
-        return this.getItemData(obj);
+    ListView.prototype.findItem = function (item) {
+        return this.getItemData(item);
     };
     /**
-     * A function that used to enable the disabled list items based on passed element.
-     * @param  {Fields | HTMLElement | Element} obj - We can pass element Object or Fields as Object with ID and Text fields.
+     * Enables the disabled list items by passing the Id and text fields.
+     * @param  {Fields | HTMLElement | Element} item - We can pass element Object or Fields as Object with ID and Text fields.
      */
-    ListView.prototype.enableItem = function (obj) {
-        this.setItemState(obj, true);
+    ListView.prototype.enableItem = function (item) {
+        this.setItemState(item, true);
         if (this.enableVirtualization) {
-            this.virtualizationModule.enableItem(obj);
+            this.virtualizationModule.enableItem(item);
         }
     };
     /**
-     * It is used to disable the list items based on passed element.
-     * @param  {Fields | HTMLElement | Element} obj - We can pass element Object or Fields as Object with ID and Text fields.
+     * Disables the list items by passing the Id and text fields.
+     * @param  {Fields | HTMLElement | Element} item - We can pass element Object or Fields as Object with ID and Text fields.
      */
-    ListView.prototype.disableItem = function (obj) {
-        this.setItemState(obj, false);
+    ListView.prototype.disableItem = function (item) {
+        this.setItemState(item, false);
         if (this.enableVirtualization) {
-            this.virtualizationModule.disableItem(obj);
+            this.virtualizationModule.disableItem(item);
         }
     };
     //A function that used to set state of the list item like enable, disable.
-    ListView.prototype.setItemState = function (obj, isEnable) {
-        var resultJSON = this.getItemData(obj);
+    ListView.prototype.setItemState = function (item, isEnable) {
+        var resultJSON = this.getItemData(item);
         var fieldData = getFieldValues(resultJSON, this.listBaseOption.fields);
         if (resultJSON) {
             var li = this.element.querySelector('[data-uid="' + fieldData[this.fields.id] + '"]');
@@ -2458,23 +2465,23 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * It is used to show an list item from the ListView.
-     * @param  {Fields | HTMLElement | Element} obj - We can pass element Object or Fields as Object with ID and Text fields.
+     * Shows the hide list item from the ListView.
+     * @param  {Fields | HTMLElement | Element} item - We can pass element Object or Fields as Object with ID and Text fields.
      */
-    ListView.prototype.showItem = function (obj) {
-        this.showHideItem(obj, false, '');
+    ListView.prototype.showItem = function (item) {
+        this.showHideItem(item, false, '');
         if (this.enableVirtualization) {
-            this.virtualizationModule.showItem(obj);
+            this.virtualizationModule.showItem(item);
         }
     };
     /**
-     * It is used to hide an item from the ListView.
-     * @param  {Fields | HTMLElement | Element} obj - We can pass element Object or Fields as Object with ID and Text fields.
+     * Hides an list item from the ListView.
+     * @param  {Fields | HTMLElement | Element} item - We can pass element Object or Fields as Object with ID and Text fields.
      */
-    ListView.prototype.hideItem = function (obj) {
-        this.showHideItem(obj, true, 'none');
+    ListView.prototype.hideItem = function (item) {
+        this.showHideItem(item, true, 'none');
         if (this.enableVirtualization) {
-            this.virtualizationModule.hideItem(obj);
+            this.virtualizationModule.hideItem(item);
         }
     };
     ListView.prototype.showHideItem = function (obj, isHide, display) {
@@ -2494,8 +2501,8 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * It adds new item(s) to current ListView.
-     * To add a new item(s) in the listview, we need to pass `data` as array of items that needs
+     * Adds the new list item(s) to the current ListView.
+     * To add a new list item(s) in the ListView, we need to pass the `data` as an array of items that need
      * to be added and `fields` as the target item to which we need to add the given item(s) as its children.
      * For example fields: { text: 'Name', tooltip: 'Name', id:'id'}
      * @param  {{[key:string]:Object}[]} data - JSON Array Data that need to add.
@@ -2608,17 +2615,18 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         ulElement.insertBefore(li[0], target);
     };
     /**
-     * A function that removes the item from data source based on passed element like fields: { text: 'Name', tooltip: 'Name', id:'id'}
-     * @param  {Fields | HTMLElement | Element} obj - We can pass element Object or Fields as Object with ID and Text fields.
+     * Removes the list item from the data source based on a passed
+     *  element like fields: { text: 'Name', tooltip: 'Name', id:'id'}
+     * @param  {Fields | HTMLElement | Element} item - We can pass element Object or Fields as Object with ID and Text fields.
      */
-    ListView.prototype.removeItem = function (obj) {
+    ListView.prototype.removeItem = function (item) {
         var listDataSource = this.dataSource instanceof DataManager
             ? this.localData : this.dataSource;
         if (this.enableVirtualization) {
-            this.virtualizationModule.removeItem(obj);
+            this.virtualizationModule.removeItem(item);
         }
         else {
-            this.removeItemFromList(obj, listDataSource);
+            this.removeItemFromList(item, listDataSource);
             this.updateBlazorTemplates(true);
         }
     };
@@ -2684,13 +2692,13 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * A function that removes multiple item from list view based on given input.
-     * @param  {Fields[] | HTMLElement[] | Element[]} obj - We can pass array of elements or array of field Object with ID and Text fields.
+     * Removes multiple items from the ListView by passing the array of elements or array of field objects.
+     * @param  {Fields[] | HTMLElement[] | Element[]} item - We can pass array of elements or array of field Object with ID and Text fields.
      */
-    ListView.prototype.removeMultipleItems = function (obj) {
-        if (obj.length) {
-            for (var i = 0; i < obj.length; i++) {
-                this.removeItem(obj[i]);
+    ListView.prototype.removeMultipleItems = function (item) {
+        if (item.length) {
+            for (var i = 0; i < item.length; i++) {
+                this.removeItem(item[i]);
             }
             this.updateBlazorTemplates(true);
         }
@@ -2785,6 +2793,9 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property('')
     ], ListView.prototype, "width", void 0);
+    __decorate([
+        Property('')
+    ], ListView.prototype, "virtualCheckBox", void 0);
     __decorate([
         Property(null)
     ], ListView.prototype, "template", void 0);
@@ -3504,10 +3515,34 @@ var Virtualization = /** @__PURE__ @class */ (function () {
         this.refreshItemHeight();
     };
     Virtualization.prototype.createUIItem = function (args) {
+        var virtualTemplate = this.listViewInstance.template;
         var template = this.listViewInstance.createElement('div');
         var commonTemplate = '<div class="e-text-content" role="presentation"> ' +
             '<span class="e-list-text"> ${' + this.listViewInstance.fields.text + '} </span></div>';
-        template.innerHTML = this.listViewInstance.template || commonTemplate;
+        if (this.listViewInstance.showCheckBox) {
+            // tslint:disable-next-line:no-any
+            this.listViewInstance.renderCheckbox(args);
+            // tslint:enable-next-line:no-any
+            if (!isNullOrUndefined(this.listViewInstance.virtualCheckBox.outerHTML)) {
+                var div = document.createElement('div');
+                div.innerHTML = this.listViewInstance.template || commonTemplate;
+                div.children[0].classList.add('e-checkbox');
+                this.listViewInstance.checkBoxPosition === 'Left' ? div.children[0].classList.add('e-checkbox-left') :
+                    div.children[0].classList.add('e-checkbox-right');
+                if (this.listViewInstance.checkBoxPosition === 'Left') {
+                    div.children[0].insertBefore(this.listViewInstance.virtualCheckBox, div.childNodes[0].children[0]);
+                }
+                else {
+                    div.children[0].appendChild(this.listViewInstance.virtualCheckBox);
+                }
+                this.listViewInstance.template = div.innerHTML;
+            }
+            template.innerHTML = this.listViewInstance.template;
+            this.listViewInstance.template = virtualTemplate;
+        }
+        else {
+            template.innerHTML = this.listViewInstance.template || commonTemplate;
+        }
         // tslint:disable-next-line:no-any
         var templateElements = template.getElementsByTagName('*');
         var groupTemplate = this.listViewInstance.createElement('div');

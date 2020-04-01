@@ -80,3 +80,55 @@ describe('Open restrict document with para mark at end of table cell', () => {
         expect(editor.selection.start.currentWidget.children.length).not.toBe(currentLineLength);
     });
 });
+
+//Character formatting for multiple inline validation
+
+describe('Apply character format validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableLocalPaste: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Bold property', () => {
+        editor.editor.insertText('Sample hello world');
+        editor.selection.handleControlLeftKey();
+        editor.selection.handleControlLeftKey();
+        editor.selection.selectCurrentWord();
+        editor.selection.characterFormat.bold=true;
+        expect(editor.selection.characterFormat.bold).toBe(true);
+    });
+    it('Bold property for multiple different inline', () => {
+        editor.selection.handleLeftKey();
+        editor.selection.handleLeftKey();
+        editor.selection.handleLeftKey();
+        editor.selection.handleShiftEndKey();
+        editor.selection.handleShiftLeftKey();
+        editor.selection.characterFormat.bold=true;
+        expect(editor.selection.characterFormat.bold).toBe(true);
+    });
+    it('Undo after bold', () => {
+        editor.editorHistory.undo();
+        expect(editor.selection.characterFormat.bold).toBeUndefined();
+    });
+    it('Redo after bold', () => {
+        editor.editorHistory.redo();
+        expect(editor.selection.characterFormat.bold).toBe(true);
+    });
+});

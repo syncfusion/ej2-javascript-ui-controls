@@ -33,6 +33,11 @@
           }
         }
 
+        .e-show-add-button {
+          .e-show-add-icon {
+            color: $kanban-dropped-clone-border-color;
+          }
+        }
       }
 
       .e-card {

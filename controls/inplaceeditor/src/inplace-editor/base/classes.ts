@@ -1,5 +1,5 @@
 /**
- * InPlace-Editor classes defined here.
+ * In-place Editor classes defined here.
  */
 
 /** @hidden */

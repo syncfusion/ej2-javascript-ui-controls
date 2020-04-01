@@ -3,8 +3,8 @@ import { PathOption } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
 import { Series, Points } from './chart-series';
 import { SplineBase } from './spline-base';
-import { MarkerSettingsModel } from '../series/chart-series-model';
 import { Axis } from '../../chart/axis/axis';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 
 /**
@@ -19,23 +19,22 @@ export class SplineSeries extends SplineBase {
      * @private
      */
     public render(series: Series, xAxis: Axis, yAxis: Axis, isInverted: boolean): void {
-        let chart: Chart = series.chart;
-        let marker: MarkerSettingsModel = series.marker;
-        let ySpline: number[];
         let options: PathOption;
         let firstPoint: Points = null;
-        let secondPoint: Points = null;
         let direction: string = '';
-        let pt1: ChartLocation;
-        let pt2: ChartLocation;
-        let bpt1: ChartLocation;
-        let bpt2: ChartLocation;
-        let data: ControlPoints;
-        let controlPointCount: number = 0;
-        let controlPoint1: ChartLocation;
-        let controlPoint2: ChartLocation;
         let startPoint: string = 'M';
-        let points: Points[] = this.filterEmptyPoints(series);
+        let tempPoints: Points[] = []; let points: Points[] = [];
+        let point: Points; let pointIndex: number = 0;
+        tempPoints = this.filterEmptyPoints(series);
+        for (let i: number = 0; i < tempPoints.length; i++) {
+            point = tempPoints[i];
+            if (isNullOrUndefined(point.x) || point.x === '') {
+                continue;
+            } else {
+                point.index = pointIndex++;
+                points.push(point);
+            }
+        }
         let previous: number;
         let getCoordinate: Function = series.chart.chartAreaType === 'PolarRadar' ? TransformToVisible : getPoint;
         for (let point of points) {
@@ -57,10 +56,10 @@ export class SplineSeries extends SplineBase {
             }
         }
         if ((points.length > 0 && series.drawPoints.length > 0) && series.chart.chartAreaType === 'PolarRadar' && series.isClosed) {
-            let connectPoints: {first: Points, last: Points} = this.getFirstLastVisiblePoint(points);
+            let connectPoints: { first: Points, last: Points } = this.getFirstLastVisiblePoint(points);
             direction = this.getSplineDirection(
                 series.drawPoints[series.drawPoints.length - 1], connectPoints.last,
-                {xValue: connectPoints.first.xValue, yValue: connectPoints.first.yValue } as Points,
+                { xValue: connectPoints.first.xValue, yValue: connectPoints.first.yValue } as Points,
                 xAxis, yAxis, isInverted,
                 series, startPoint,
                 getCoordinate, direction);
@@ -92,7 +91,7 @@ export class SplineSeries extends SplineBase {
     private getSplineDirection(
         data: ControlPoints, firstPoint: Points, point: Points, xAxis: Axis, yAxis: Axis, isInverted: boolean, series: Series,
         startPoint: string, getCoordinate: Function, direction: string
-         ): string {
+    ): string {
         let controlPoint1: ChartLocation = data.controlPoint1;
         let controlPoint2: ChartLocation = data.controlPoint2;
         let pt1: ChartLocation = getCoordinate(firstPoint.xValue, firstPoint.yValue, xAxis, yAxis, isInverted, series);

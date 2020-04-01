@@ -143,6 +143,9 @@ export class BaseTooltip extends ChartData {
                          extraPoints: PointData[] = null, templatePoint : Points | AccPoints = null, customTemplate?: string): void {
         let series: Series = <Series>this.currentPoints[0].series;
         let module : AccumulationTooltip | Tooltip = (<Chart>chart).tooltipModule || (<AccumulationChart>chart).accumulationTooltipModule;
+        if (!module) { // For the tooltip enable is false.
+            return;
+        }
         if (isFirst) {
             this.svgTooltip = new SVGTooltip(
                 {

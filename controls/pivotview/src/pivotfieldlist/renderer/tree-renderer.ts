@@ -888,7 +888,6 @@ export class TreeViewRenderer implements IAction {
      * @return {void}
      * @hidden
      */
-
     public destroy(): void {
         this.removeEventListener();
     }

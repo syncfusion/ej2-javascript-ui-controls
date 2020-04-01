@@ -1,6 +1,6 @@
 
 import { TreeMap } from '../treemap';
-import { Browser } from '@syncfusion/ej2-base';
+import { Browser, isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
 import { IItemHighlightEventArgs, IItemSelectedEventArgs } from '../model/interface';
 import { itemHighlight, itemSelected } from '../model/constants';
 import { HighlightSettingsModel, SelectionSettingsModel } from '../model/base-model';
@@ -231,9 +231,9 @@ export class TreeMapSelection {
     public mouseDown(e: PointerEvent): void {
         let targetEle: Element = <Element>e.target;
         let eventArgs: IItemSelectedEventArgs;
-        let eventBlazorArgs: IItemSelectedEventArgs;
+        let eventBlazorArgs: Object;
         let treemap: TreeMap = this.treemap;
-        let items: Object[] = []; let targetId: string = targetEle.id;
+        let items: Object[] = []; let targetId: string = targetEle.id; let labelText : string = targetEle.innerHTML;
         let item: Object; let selectionElements: Element[] = []; let opacity: string;
         let treeMapElement: Element; let element: Element; let orders: string[];
         let selection: SelectionSettingsModel = treemap.selectionSettings;
@@ -294,15 +294,43 @@ export class TreeMapSelection {
                             element.classList.add('treeMapSelection');
                         }
                     } else {
+                        selection.fill = selection.fill === 'null' ?
+                                    treemap.layout.renderItems[parseInt(element.id.split('Item_Index_')[1], 10)]['options']['fill']
+                                            : selection.fill;
                         applyOptions(
                             element.childNodes[0] as SVGPathElement,
                             { border: selection.border, fill: selection.fill, opacity: selection.opacity }
                         );
                         element.classList.add('treeMapSelection');
                     }
-                    eventArgs = { cancel: false, name: itemSelected, treemap: treemap, items: items, elements: selectionElements };
-                    eventBlazorArgs = { cancel: false, name: itemSelected, items: items, elements: selectionElements };
-                    treemap.trigger(itemSelected, treemap.isBlazor ? eventBlazorArgs : eventArgs);
+                    eventArgs = { cancel: false, name: itemSelected, treemap: treemap, items: items, elements: selectionElements,
+                        text : labelText, contentItemTemplate : labelText };
+                    eventBlazorArgs = { cancel: false, name: itemSelected, text: labelText, contentItemTemplate: labelText };
+                    if (treemap.isBlazor) {
+                        const { treemap, items, elements, ...blazorEventArgs }: IItemSelectedEventArgs = eventArgs;
+                        eventBlazorArgs = blazorEventArgs;
+                    }
+                    treemap.trigger(itemSelected, treemap.isBlazor ? eventBlazorArgs : eventArgs, (observedArgs: IItemSelectedEventArgs) => {
+                        if (observedArgs.contentItemTemplate !== labelText) {
+                            let itemSelect: string = targetId.split('_RectPath')[0];
+                            let itemTemplate: Element;
+                            if (targetId.indexOf('_LabelTemplate') > -1) {
+                                itemTemplate = targetEle;
+                            } else {
+                                itemTemplate = document.querySelector('#' + itemSelect + '_LabelTemplate');
+                            }
+                            if (!isNullOrUndefined(itemTemplate)) {
+                                if (treemap.isBlazor) {
+                                    let templateCreated : Element = createElement('div');
+                                    templateCreated.innerHTML = observedArgs.contentItemTemplate;
+                                    let templateElement: Element = templateCreated.children[0].firstElementChild;
+                                    itemTemplate['style']['left'] = Number(itemTemplate['style']['left'].split('px')[0]) - (templateElement['style']['width'].split('px')[0] / 2) + 'px';
+                                    itemTemplate['style']['top'] = Number(itemTemplate['style']['top'].split('px')[0]) - (templateElement['style']['height'].split('px')[0] / 2) + 'px';
+                                }
+                                itemTemplate.innerHTML = observedArgs.contentItemTemplate;
+                            }
+                        }
+                    });
                 }
             } else {
                 removeShape(this.shapeSelectionCollection, 'selection');

@@ -257,6 +257,7 @@ export interface AxisModel {
     /**
      * It specifies the type of format to be used in dateTime format process.
      * @default 'DateTime'
+     * @deprecated
      */
 
     skeletonType?: SkeletonType;

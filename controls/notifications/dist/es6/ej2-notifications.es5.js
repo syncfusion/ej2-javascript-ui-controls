@@ -148,7 +148,9 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
             detach(this.refElement);
             this.refElement = undefined;
         }
-        _super.prototype.destroy.call(this);
+        if (!this.isBlazorServer()) {
+            _super.prototype.destroy.call(this);
+        }
     };
     /**
      * Initialize the event handler
@@ -636,26 +638,6 @@ var Toast = /** @__PURE__ @class */ (function (_super) {
         });
         if (actionBtnContainer.childElementCount > 0) {
             this.appendMessageContainer(actionBtnContainer);
-        }
-    };
-    /* istanbul ignore next */
-    Toast.prototype.wireClientSideEvent = function (toastObj) {
-        var _this = this;
-        if (this.isBlazorServer()) {
-            this.toastEle = this.element.lastElementChild;
-            EventHandler.add(this.toastEle, 'click', this.clickHandler, this);
-            EventHandler.add(this.toastEle, 'keydown', this.keyDownHandler, this);
-            var count_1 = 0;
-            [].slice.call(this.buttons).forEach(function (actionBtn) {
-                if (isNullOrUndefined(actionBtn.model)) {
-                    return;
-                }
-                var btnDom = _this.toastEle.querySelectorAll('.e-toast-actions button')[count_1];
-                if (!isNullOrUndefined(actionBtn.click) && typeof (actionBtn.click) === 'function') {
-                    EventHandler.add(btnDom, 'click', actionBtn.click);
-                }
-                count_1++;
-            });
         }
     };
     Toast.prototype.appendToTarget = function (toastObj) {

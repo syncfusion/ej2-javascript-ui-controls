@@ -99,6 +99,19 @@ export class Render {
             this.parent.virtualScrollModule = new VirtualScroll(this.parent);
             this.parent.uiStateValues.top = 0;
         }
+        this.updateHeader();
+        this.parent.activeView.renderLayout(cls.CURRENT_PANEL_CLASS);
+        if (this.parent.eventTooltip) {
+            this.parent.eventTooltip.destroy();
+            this.parent.eventTooltip = null;
+        }
+        if (this.parent.eventSettings.enableTooltip || (this.parent.activeViewOptions.group.resources.length > 0
+            && this.parent.activeViewOptions.group.headerTooltipTemplate)) {
+            this.parent.eventTooltip = new EventTooltip(this.parent);
+        }
+    }
+
+    public updateHeader(): void {
         if (this.parent.headerModule) {
             this.parent.headerModule.setDayOfWeek(this.parent.activeViewOptions.firstDayOfWeek);
             if (this.parent.activeViewOptions.readonly) {
@@ -108,15 +121,6 @@ export class Render {
             }
             this.parent.headerModule.updateDateRange(this.parent.activeView.getDateRangeText());
             this.parent.headerModule.updateHeaderItems('remove');
-        }
-        this.parent.activeView.renderLayout(cls.CURRENT_PANEL_CLASS);
-        if (this.parent.eventTooltip) {
-            this.parent.eventTooltip.destroy();
-            this.parent.eventTooltip = null;
-        }
-        if (this.parent.eventSettings.enableTooltip || (this.parent.activeViewOptions.group.resources.length > 0
-            && this.parent.activeViewOptions.group.headerTooltipTemplate)) {
-            this.parent.eventTooltip = new EventTooltip(this.parent);
         }
     }
 

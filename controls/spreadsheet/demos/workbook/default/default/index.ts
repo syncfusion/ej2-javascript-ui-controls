@@ -96,7 +96,7 @@ import { DataManager, WebApiAdaptor } from '@syncfusion/ej2-data';
         }]
     });
     let jsonDataBinding: Workbook = new Workbook({
-        sheets: [{ rangeSettings: [{ dataSource: defaultData, startCell: 'A10' }] }]
+        sheets: [{ range: [{ dataSource: defaultData, startCell: 'A10' }] }]
     });
     cellDataBinding.getData('Sheet1!A1:B2').then((value: Map<string, CellModel>) => {
         debugger
@@ -116,7 +116,7 @@ import { DataManager, WebApiAdaptor } from '@syncfusion/ej2-data';
     });
 
     let remoteDataBinding: Workbook = new Workbook({
-        sheets: [{ rangeSettings: [{ dataSource: remoteData, startCell: 'A1' }] }]
+        sheets: [{ range: [{ dataSource: remoteData, startCell: 'A1' }] }]
     });
     remoteDataBinding.getData('Sheet1!A1:B2').then((value: Map<string, CellModel>) => {
         debugger

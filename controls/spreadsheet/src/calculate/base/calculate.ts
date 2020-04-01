@@ -2028,10 +2028,10 @@ export class Calculate extends Base<HTMLElement> implements INotifyPropertyChang
         let cValue: number | string;
         /* tslint:disable-next-line */
         if ((this.parentObject as any).getValueRowCol === undefined) {
-            cValue = this.getValueRowCol(this.getSheetID(grd) + 1, row, col);
+            cValue = this.getValueRowCol(this.getSheetID(grd), row, col);
         } else {
             /* tslint:disable-next-line */
-            cValue = (this.parentObject as any).getValueRowCol(this.getSheetID(grd) + 1, row, col);
+            cValue = (this.parentObject as any).getValueRowCol(this.getSheetID(grd), row, col);
             return isNullOrUndefined(cValue) ? this.emptyString : cValue.toString();
         }
         if (cValue === '' || cValue === undefined) {

@@ -2304,6 +2304,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             InvalidFilterMessage: 'Invalid Filter Data',
             GroupDropArea: 'Drag a column header here to group its column',
             UnGroup: 'Click here to ungroup',
+            UnGroupButton: 'Click here to ungroup',
             GroupDisable: 'Grouping is disabled for this column',
             FilterbarTitle: '\'s filter bar cell',
             EmptyDataSourceError:
@@ -2356,6 +2357,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             Ungroup: 'Ungroup by this column',
             autoFitAll: 'Autofit all columns',
             autoFit: 'Autofit this column',
+            AutoFitAll: 'Autofit all columns',
+            AutoFit: 'Autofit this column',
             Export: 'Export',
             FirstPage: 'First Page',
             LastPage: 'Last Page',
@@ -3209,6 +3212,12 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             && isNullOrUndefined(parentsUntil(ele, 'e-recordplusexpand'))) && !this.isEdit) {
             let cell: Element = closest(ele, '.e-rowcell');
             if (!cell) {
+                let row: Element = closest(ele, '.e-row');
+                if (!isNullOrUndefined(row)) {
+                    let rowObj: Row<Column> = this.getRowObjectFromUID(row.getAttribute('data-uid'));
+                    let rowIndex: number = parseInt(row.getAttribute('aria-rowindex'), 10);
+                    args = { row: row, rowData: rowObj.data, rowIndex: rowIndex };
+                }
                 return args;
             }
             let cellIndex: number = parseInt(cell.getAttribute('aria-colindex'), 10);
@@ -4371,7 +4380,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                     }
                 }
                 if (!flag) {
-                    sCols.push({ field: gCols[i], direction: 'Ascending' });
+                    sCols.push({ field: gCols[i], direction: 'Ascending', isFromGroup: true });
                 } else {
                     if (this.allowSorting) {
                         this.sortedColumns.push(sCols[j].field);

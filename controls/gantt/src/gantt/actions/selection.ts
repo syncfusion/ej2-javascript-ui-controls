@@ -109,7 +109,7 @@ export class Selection {
         }
         this.prevRowIndex = args.rowIndex;
         if (!isNullOrUndefined(this.parent.toolbarModule)) {
-            this.parent.toolbarModule.refreshToolbarItems();
+            this.parent.toolbarModule.refreshToolbarItems(args);
         }
         this.parent.trigger('rowSelected', args);
     }
@@ -183,12 +183,16 @@ export class Selection {
      * @param  {boolean} isToggle - If set to true, then it toggles the selection.
      * @return {void}
      */
-    public selectRow(index: number, isToggle?: boolean): void {
+    public selectRow(index: number, isToggle?: boolean, isPreventFocus?: boolean): void {
         let selectedRow: HTMLElement = this.parent.getRowByIndex(index);
         if (index === -1 || isNullOrUndefined(selectedRow) || this.parent.selectionSettings.mode === 'Cell') {
             return;
         }
-        this.parent.treeGrid.grid.selectionModule.preventFocus = true;
+        if (this.parent.showActiveElement && !isPreventFocus) {
+            this.parent.treeGrid.grid.selectionModule.preventFocus = true;
+        } else {
+            this.parent.treeGrid.grid.selectionModule.preventFocus = false;
+        }
         this.parent.treeGrid.selectRow(index, isToggle);
         this.parent.treeGrid.grid.selectionModule.preventFocus = this.parent.treeGrid.grid.selectionModule.preventFocus === true ?
             false : this.parent.treeGrid.grid.selectionModule.preventFocus;

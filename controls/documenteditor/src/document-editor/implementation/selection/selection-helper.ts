@@ -1278,7 +1278,8 @@ export class TextPosition {
         textPosition.setPositionForCurrentIndex(currentIndex);
         textPosition.isUpdateLocation = false;
         let isPositionMoved: boolean = false;
-        if (this.selection.start.paragraph !== this.selection.end.paragraph) {
+        if (this.selection.start.paragraph !== this.selection.end.paragraph
+            || this.selection.start.offset === this.selection.getStartOffset(this.selection.start.paragraph)) {
             // To select Paragraph mark similar to MS WORD
             if (this.selection.end.offset === this.selection.end.currentWidget.getEndOffset()
                 && this.selection.isParagraphLastLine(this.selection.end.currentWidget)) {
@@ -1343,15 +1344,19 @@ export class TextPosition {
         let textPosition: TextPosition = new TextPosition(this.owner);
         textPosition.setPositionForCurrentIndex(currentIndex);
         textPosition.isUpdateLocation = false;
-
-        if (this.selection.start.paragraph !== this.selection.end.paragraph) {
-            // To select Paragraph mark similar to MS WORD
-            if (this.selection.start.offset !== this.selection.getStartOffset(this.selection.start.paragraph)
-                && this.selection.start.offset === this.selection.start.currentWidget.getEndOffset()
-                && this.selection.isParagraphLastLine(this.selection.start.currentWidget)) {
-                this.selection.start.setPositionParagraph(this.selection.start.currentWidget, this.selection.start.offset + 1);
-            }
+        let isSelectParaMark: boolean = false;
+        if ((this.selection.start.paragraph !== this.selection.end.paragraph
+            && this.selection.end.offset !== this.selection.getStartOffset(this.selection.start.paragraph)) ||
+            (this.documentHelper.isSelectionChangedOnMouseMoved && this.selection.isParagraphFirstLine(this.selection.end.currentWidget)
+                && this.selection.end.offset === this.selection.getStartOffset(this.selection.start.paragraph))) {
+            isSelectParaMark = true;
         }
+        // To select Paragraph mark similar to MS WORD
+        if (isSelectParaMark && this.selection.start.offset === this.selection.start.currentWidget.getEndOffset()
+            && this.selection.isParagraphLastLine(this.selection.start.currentWidget)) {
+            this.selection.start.setPositionParagraph(this.selection.start.currentWidget, this.selection.start.offset + 1);
+        }
+
         let selectionStartIndex: string = this.selection.start.getHierarchicalIndexInternal();
         while (currentIndex !== selectionEndIndex && TextPosition.isForwardSelection(selectionEndIndex, currentIndex)) {
             let indexInInline: number = 0;
@@ -1618,6 +1623,7 @@ export class TextPosition {
             let indexInInline: number = 0;
             this.currentWidget = firstElement.line;
             this.offset = this.currentWidget.getOffset(firstElement, indexInInline);
+
             indexInInline = 0;
             let inlineObj: ElementInfo = this.currentWidget.getInline(this.offset, indexInInline);
             let inline: ElementBox = inlineObj.element;

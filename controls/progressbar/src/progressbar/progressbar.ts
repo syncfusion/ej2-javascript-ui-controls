@@ -1,19 +1,22 @@
-import { Component, Property, NotifyPropertyChanges, Browser, Complex, Event, Collection } from '@syncfusion/ej2-base';
+import { Component, Property, NotifyPropertyChanges, Browser, Complex, Event, Collection, EventHandler } from '@syncfusion/ej2-base';
 import { EmitType, INotifyPropertyChanged, createElement, remove, ModuleDeclaration } from '@syncfusion/ej2-base';
 import { ProgressBarModel } from './progressbar-model';
-import { Rect, Size, getPathArc, RectOption, stringToNumber } from './utils/helper';
-import { doLinearAnimation, doCircularAnimation, doCircularIndeterminate, doAnnotationAnimation } from './utils/progress-animation';
+import { Rect, Size, RectOption, stringToNumber } from './utils/helper';
 import { MarginModel, AnimationModel, FontModel } from './model/progress-base-model';
 import { Margin, Animation, Font } from './model/progress-base';
 import { ILoadedEventArgs, IProgressStyle, IProgressValueEventArgs } from './model/progress-interface';
-import { ITextRenderEventArgs, IProgressResizeEventArgs } from './model/progress-interface';
+import { ITextRenderEventArgs, IProgressResizeEventArgs, IMouseEventArgs } from './model/progress-interface';
 import { SvgRenderer, PathOption, getElement, measureText } from '@syncfusion/ej2-svg-base';
 import { ProgressType, CornerType, ProgressTheme } from './utils/enum';
 import { getProgressThemeColor } from './utils/theme';
 import { lineCapRadius, completeAngle, valueChanged, progressCompleted } from './model/constant';
+import { mouseClick, mouseDown, mouseLeave, mouseMove, mouseUp } from './model/constant';
 import { ProgressAnnotation } from './model/index';
 import { ProgressAnnotationSettingsModel } from './model/index';
 import { ProgressAnnotationSettings } from './model/index';
+import { Linear } from './types/linear-progress';
+import { Circular } from './types/circular-progress';
+import { ProgressAnimation } from './utils/progress-animation';
 
 /**
  *  progress bar control
@@ -149,6 +152,12 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
      */
     @Property(0)
     public progressThickness: number;
+    /** 
+     * pie view
+     * @default false
+     */
+    @Property(false)
+    public enablePieProgress: boolean;
     /**
      * theme style
      * @default Fabric
@@ -222,6 +231,36 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     @Event()
     public animationComplete: EmitType<IProgressValueEventArgs>;
     /**
+     * Trigger after mouse click
+     * @event
+     */
+    @Event()
+    public mouseClick: EmitType<IMouseEventArgs>;
+    /**
+     * Trigger after mouse move
+     * @event
+     */
+    @Event()
+    public mouseMove: EmitType<IMouseEventArgs>;
+    /**
+     * Trigger after mouse up
+     * @event
+     */
+    @Event()
+    public mouseUp: EmitType<IMouseEventArgs>;
+    /**
+     * Trigger after mouse down
+     * @event
+     */
+    @Event()
+    public mouseDown: EmitType<IMouseEventArgs>;
+    /**
+     * Trigger after mouse down
+     * @event
+     */
+    @Event()
+    public mouseLeave: EmitType<IMouseEventArgs>;
+    /**
      * The configuration for annotation in Progressbar.
      */
     @Collection<ProgressAnnotationSettingsModel>([{}], ProgressAnnotationSettings)
@@ -255,11 +294,11 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     /** @private */
     private resizeTo: number;
     /** @private */
-    private progressStartAngle: number;
+    public progressStartAngle: number;
     /** @private */
-    private progressPreviousWidth: number;
+    public progressPreviousWidth: number;
     /** @private */
-    private progressEndAngle: number;
+    public progressEndAngle: number;
     /** @private */
     public redraw: boolean;
     /** @private */
@@ -270,6 +309,12 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     public secElement: HTMLElement;
     /** @private */
     public labelElement: Element;
+    /** @private */
+    public linear: Linear = new Linear(this);
+    /** @private */
+    public circular: Circular = new Circular(this);
+    /** @private */
+    public annotateAnimation: ProgressAnimation = new ProgressAnimation();
     /** ProgressAnnotation module to use annotations */
     public progressAnnotationModule: ProgressAnnotation;
     /** @private */
@@ -287,45 +332,26 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
 
     protected preRender(): void {
         this.unWireEvents();
+        this.initPrivateVariable();
+        this.wireEvents();
+    }
+
+    private initPrivateVariable(): void {
         this.progressRect = new Rect(0, 0, 0, 0);
         this.progressSize = new Size(0, 0);
-        this.wireEvents();
     }
 
     protected render(): void {
         this.trigger('load', { progressBar: this });
+        this.element.style.display = 'block';
+        this.element.style.position = 'relative';
         this.calculateProgressBarSize();
-        this.calculateProgressBarBounds();
-        this.SetThemeValues();
-        this.renderAnnotations();
+        this.setTheme();
+        this.createSVG();
         this.renderElements();
         this.trigger('loaded', { progressBar: this });
         this.renderComplete();
         this.controlRenderedTimeStamp = new Date().getTime();
-    }
-    /**
-     * Set theme values
-     */
-    private SetThemeValues(): void {
-        switch (this.theme) {
-            case 'Bootstrap':
-            case 'Bootstrap4':
-                this.gapWidth = (!this.gapWidth) ? 4 : this.gapWidth;
-                this.cornerRadius = this.cornerRadius === 'Auto' ? 'Round' : this.cornerRadius;
-                break;
-            default:
-                this.cornerRadius = this.cornerRadius === 'Auto' ? 'Square' : this.cornerRadius;
-        }
-    }
-    /**
-     * calculate Initial Bounds
-     */
-    private calculateProgressBarBounds(): void {
-        this.progressRect.x = this.margin.left;
-        this.progressRect.y = this.margin.top;
-        this.progressRect.width -= this.margin.left + this.margin.right;
-        this.progressRect.height -= this.margin.top + this.margin.bottom;
-
     }
 
     /**
@@ -341,33 +367,29 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
         height = (this.type === 'Linear' && thickness > (height - padding)) ? thickness + padding : height;
         this.progressSize.width = stringToNumber(this.width, containerWidth) || containerWidth || width;
         this.progressSize.height = stringToNumber(this.height, containerHeight) || containerHeight || height;
-        this.progressRect.width = this.progressSize.width;
-        this.progressRect.height = this.progressSize.height;
+        this.progressRect.x = this.margin.left;
+        this.progressRect.y = this.margin.top;
+        this.progressRect.width = this.progressSize.width - (this.margin.left + this.margin.right);
+        this.progressRect.height = this.progressSize.height - (this.margin.top + this.margin.bottom);
     }
+
     /**
      * Render Annotation
      */
     private renderAnnotations(): void {
         this.createSecElement();
         this.renderAnnotation();
+        this.setSecondaryElementPosition();
     }
 
     /**
      * Render SVG Element
      */
     private renderElements(): void {
-        this.element.style.display = 'block';
-        this.element.style.position = 'relative';
-        this.removeSvg();
-        this.setTheme();
-        this.createSVG();
-        this.clipPathElement();
-        this.createTrack();
-        this.createLinearProgress();
-        this.createCircularProgress();
-        this.createLabel();
-        this.element.appendChild(this.svgObject);
-        this.setSecondaryElementPosition();
+        this.renderTrack();
+        this.renderProgress();
+        this.renderAnnotations();
+        this.renderLabel();
     }
 
     private createSecElement(): void {
@@ -383,6 +405,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
         });
         this.element.appendChild(this.secElement);
     }
+
     /**
      * To set the left and top position for annotation for center aligned
      */
@@ -395,6 +418,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     }
 
     private createSVG(): void {
+        this.removeSvg();
         this.renderer = new SvgRenderer(this.element.id);
         this.svgObject = this.renderer.createSvg({
             id: this.element.id + 'SVG',
@@ -408,19 +432,8 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
         this.clipPath = this.renderer.createClipPath({ 'id': this.element.id + '_clippath' });
         this.bufferClipPath = this.renderer.createClipPath({ 'id': this.element.id + '_clippathBuffer' });
     }
-    private createTrack(): void {
-        let linearTrack: Element;
-        let linearTrackWidth: number;
-        let centerX: number;
-        let centerY: number;
-        let size: number;
-        let radius: number;
-        let startAngle: number;
-        let endAngle: number;
-        let circularTrack: Element;
-        let circularPath: string;
-        let option: PathOption;
-        let trackThickness: number;
+
+    private renderTrack(): void {
         this.argsData = {
             value: this.value,
             progressColor: this.progressColor,
@@ -432,293 +445,24 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
             this.trigger(valueChanged, this.argsData);
         }
         if (this.type === 'Linear') {
-            linearTrackWidth = this.progressRect.width;
-            option = new PathOption(
-                this.element.id + '_Lineartrack', 'none', (this.trackThickness || this.themeStyle.linearTrackThickness),
-                (this.argsData.trackColor || this.themeStyle.linearTrackColor), this.themeStyle.trackOpacity,
-                '0', this.getPathLine(this.progressRect.x, linearTrackWidth, (this.trackThickness || this.themeStyle.linearTrackThickness))
-            );
-            linearTrack = this.renderer.drawPath(option);
-            if (this.segmentCount > 1) {
-                this.segmentSize = this.calculateSegmentSize(
-                    linearTrackWidth, (this.trackThickness || this.themeStyle.linearTrackThickness)
-                );
-                linearTrack.setAttribute('stroke-dasharray', this.segmentSize);
-            }
-            if (this.cornerRadius === 'Round') {
-                linearTrack.setAttribute('stroke-linecap', 'round');
-            }
-            this.svgObject.appendChild(linearTrack);
+            this.linear.renderLinearTrack();
         } else if (this.type === 'Circular') {
-            startAngle = this.startAngle;
-            this.totalAngle = (this.endAngle - this.startAngle) % 360;
-            this.totalAngle = (this.totalAngle <= 0 ? (360 + this.totalAngle) : this.totalAngle);
-            this.totalAngle -= (this.totalAngle === 360) ? 0.01 : 0;
-            endAngle = (this.startAngle + ((this.enableRtl) ? -this.totalAngle : +this.totalAngle)) % 360;
-            centerX = this.progressRect.x + (this.progressRect.width / 2);
-            centerY = this.progressRect.y + (this.progressRect.height / 2);
-            trackThickness = Math.max(this.trackThickness, this.progressThickness) ||
-                Math.max(this.themeStyle.circularProgressThickness, this.themeStyle.circularTrackThickness);
-            size = (Math.min(this.progressRect.height, this.progressRect.width) / 2) - trackThickness / 2;
-            radius = stringToNumber(this.radius, size);
-            radius = (radius === null) ? 0 : radius;
-            circularPath = getPathArc(centerX, centerY, radius, startAngle, endAngle, this.enableRtl);
-            option = new PathOption(
-                this.element.id + '_Circulartrack', 'none', (this.trackThickness || this.themeStyle.circularTrackThickness),
-                (this.argsData.trackColor || this.themeStyle.circularTrackColor), this.themeStyle.trackOpacity, '0', circularPath
-            );
-            circularTrack = this.renderer.drawPath(option);
-            this.svgObject.appendChild(circularTrack);
-            this.trackwidth = (<SVGPathElement>circularTrack).getTotalLength();
-            if (this.segmentCount > 1) {
-                this.segmentSize = this.calculateSegmentSize(
-                    this.trackwidth, (this.trackThickness || this.themeStyle.linearTrackThickness)
-                );
-                circularTrack.setAttribute('stroke-dasharray', this.segmentSize);
-            }
-            if (this.cornerRadius === 'Round') {
-                circularTrack.setAttribute('stroke-linecap', 'round');
-            }
+            this.circular.renderCircularTrack();
         }
     }
-    private createLinearProgress(refresh?: boolean, prevWidth: number = 0): void {
-        let linearBuffer: Element;
-        let secondaryProgressWidth: number;
-        let linearBufferWidth: number;
-        let option: PathOption;
-        let linearProgress: Element;
-        let progressWidth: number;
-        let linearProgressWidth: number;
-        let clipPathBuffer: Element;
-        let clipPathLinear: Element;
+
+
+    private renderProgress(): void {
+        this.clipPathElement();
         if (this.type === 'Linear') {
-            if (this.secondaryProgress !== null && !this.isIndeterminate) {
-                secondaryProgressWidth = this.calculateProgressRange(this.minimum, this.maximum, this.secondaryProgress);
-                linearBufferWidth = this.progressRect.width * secondaryProgressWidth;
-                if (this.segmentColor.length !== 0 && !this.isIndeterminate) {
-                    linearBuffer = this.createLinearSegment(
-                        '_LinearBuffer', linearBufferWidth, this.themeStyle.bufferOpacity,
-                        (this.progressThickness || this.themeStyle.linearProgressThickness)
-                    );
-                } else {
-                    option = new PathOption(
-                        this.element.id + '_Linearbuffer', 'none', (this.progressThickness || this.themeStyle.linearProgressThickness),
-                        (this.argsData.progressColor || this.themeStyle.linearProgressColor), this.themeStyle.bufferOpacity, '0',
-                        this.getPathLine(
-                            this.progressRect.x, linearBufferWidth, (this.progressThickness || this.themeStyle.linearProgressThickness)
-                        )
-                    );
-                    linearBuffer = this.renderer.drawPath(option);
-                    if (this.segmentCount > 1) {
-                        linearBuffer.setAttribute('stroke-dasharray', this.segmentSize);
-                    }
-                    if (this.cornerRadius === 'Round') {
-                        linearBuffer.setAttribute('stroke-linecap', 'round');
-                    }
-                }
-                this.svgObject.appendChild(linearBuffer);
-                if (this.animation.enable) {
-                    clipPathBuffer = this.createClipPath(
-                        this.bufferClipPath, secondaryProgressWidth, null, this.progressRect.x, false,
-                        (this.progressThickness || this.themeStyle.linearProgressThickness)
-                    );
-                    linearBuffer.setAttribute('style', 'clip-path:url(#' + this.element.id + '_clippathBuffer)');
-                    doLinearAnimation(clipPathBuffer, this, this.animation.delay, 0);
-                }
-                this.svgObject.appendChild(this.bufferClipPath);
-            }
-            if (this.argsData.value !== null) {
-                progressWidth = this.calculateProgressRange(this.minimum, this.maximum, this.argsData.value);
-                this.progressPreviousWidth = linearProgressWidth = this.progressRect.width * ((this.isIndeterminate) ? 1 : progressWidth);
-                if (this.segmentColor.length !== 0 && !this.isIndeterminate) {
-                    linearProgress = this.createLinearSegment(
-                        '_LinearProgress', linearProgressWidth, this.themeStyle.progressOpacity,
-                        (this.progressThickness || this.themeStyle.linearProgressThickness)
-                    );
-                } else {
-                    if (!refresh) {
-                        option = new PathOption(
-                            this.element.id + '_Linearprogress', 'none',
-                            (this.progressThickness || this.themeStyle.linearProgressThickness),
-                            (this.argsData.progressColor || this.themeStyle.linearProgressColor), this.themeStyle.progressOpacity, '0',
-                            this.getPathLine(
-                                this.progressRect.x, linearProgressWidth,
-                                (this.progressThickness || this.themeStyle.linearProgressThickness)
-                            )
-                        );
-                        linearProgress = this.renderer.drawPath(option);
-                    } else {
-                        linearProgress = getElement(this.element.id + '_Linearprogress');
-                        linearProgress.setAttribute(
-                            'd', this.getPathLine(
-                                this.progressRect.x, linearProgressWidth,
-                                (this.progressThickness || this.themeStyle.linearProgressThickness)
-                            ));
-                        linearProgress.setAttribute('stroke', this.argsData.progressColor || this.themeStyle.circularProgressColor);
-                    }
-
-                    if (this.segmentCount > 1) {
-                        linearProgress.setAttribute('stroke-dasharray', this.segmentSize);
-                    }
-                    if (this.cornerRadius === 'Round') {
-                        linearProgress.setAttribute('stroke-linecap', 'round');
-                    }
-                }
-                this.svgObject.appendChild(linearProgress);
-                if (this.animation.enable || this.isIndeterminate) {
-                    let animationdelay: number = this.animation.delay + (
-                        (this.secondaryProgress !== null) ? (linearBufferWidth - linearProgressWidth) : 0
-                    );
-                    clipPathLinear = this.createClipPath(
-                        this.clipPath, progressWidth, null, refresh ? prevWidth : this.progressRect.x, refresh,
-                        (this.progressThickness || this.themeStyle.linearProgressThickness)
-                    );
-                    linearProgress.setAttribute('style', 'clip-path:url(#' + this.element.id + '_clippath)');
-                    doLinearAnimation(clipPathLinear, this, animationdelay, refresh ? prevWidth : 0);
-                }
-                this.svgObject.appendChild(this.clipPath);
-            }
-
+            this.linear.renderLinearProgress();
+        } else if (this.type === 'Circular') {
+            this.circular.renderCircularProgress();
         }
-    }
-    // tslint:disable-next-line:max-func-body-length
-    private createCircularProgress(previousStart?: number, previousEnd?: number, refresh?: boolean): void {
-        let centerX: number; let centerY: number; let size: number; let endAngle: number;
-        let radius: number; let startAngle: number = this.startAngle; let previousPath: string;
-        this.progressStartAngle = startAngle; let circularPath: string; let bufferClipPath: Element;
-        let progressEnd: number; let circularProgress: Element; let circularBuffer: Element;
-        let option: PathOption; let radiusDiff: number; let progressThickness: number; let linearClipPath: Element;
-        let rDiff: number; let progressSegment: number;
-        if (this.type === 'Circular') {
-            centerX = this.progressRect.x + (this.progressRect.width / 2);
-            centerY = this.progressRect.y + (this.progressRect.height / 2);
-            progressThickness = Math.max(this.trackThickness, this.progressThickness) ||
-                Math.max(this.themeStyle.circularProgressThickness, this.themeStyle.circularTrackThickness);
-            size = (Math.min(this.progressRect.height, this.progressRect.width) / 2) - progressThickness / 2;
-            radius = stringToNumber(this.innerRadius, size);
-            radius = (radius === null) ? 0 : radius;
-            if (this.secondaryProgress !== null && !this.isIndeterminate) {
-                if (this.segmentColor.length !== 0 && !this.isIndeterminate) {
-                    circularBuffer = this.createCircularSegment(
-                        '_CircularBuffer', centerX, centerY, radius,
-                        this.secondaryProgress, this.themeStyle.bufferOpacity,
-                        (this.progressThickness || this.themeStyle.circularProgressThickness)
-                    );
-                } else {
-                    endAngle = this.calculateProgressRange(this.minimum, this.maximum, this.secondaryProgress);
-                    circularPath = getPathArc(centerX, centerY, radius, startAngle, endAngle, this.enableRtl);
-                    option = new PathOption(
-                        this.element.id + '_Circularbuffer', 'none', (this.progressThickness || this.themeStyle.circularProgressThickness),
-                        (this.argsData.progressColor || this.themeStyle.circularProgressColor),
-                        this.themeStyle.bufferOpacity, '0', circularPath
-                    );
-                    circularBuffer = this.renderer.drawPath(option);
-                    if (this.segmentCount > 1) {
-                        radiusDiff = parseInt(this.radius, 10) - parseInt(this.innerRadius, 10);
-                        if (radiusDiff !== 0) {
-                            progressSegment = this.trackwidth + (
-                                (radiusDiff < 0) ? (this.trackwidth * Math.abs(radiusDiff)) / parseInt(this.radius, 10) :
-                                    -(this.trackwidth * Math.abs(radiusDiff)) / parseInt(this.radius, 10)
-                            );
-                            this.segmentSize = this.calculateSegmentSize(
-                                progressSegment, (this.progressThickness || this.themeStyle.circularProgressThickness)
-                            );
-                        }
-                        circularBuffer.setAttribute('stroke-dasharray', this.segmentSize);
-                    }
-                    if (this.cornerRadius === 'Round') {
-                        circularBuffer.setAttribute('stroke-linecap', 'round');
-                    }
-                }
-                this.svgObject.appendChild(circularBuffer);
-                if (this.animation.enable) {
-                    bufferClipPath = this.createClipPath(this.bufferClipPath, null, '', null, false);
-                    circularBuffer.setAttribute('style', 'clip-path:url(#' + this.element.id + '_clippathBuffer)');
-                    doCircularAnimation(
-                        centerX, centerY, radius, startAngle, 0, bufferClipPath, this,
-                        (this.progressThickness || this.themeStyle.circularProgressThickness), this.animation.delay, null
-                    );
-                }
-                this.svgObject.appendChild(this.bufferClipPath);
-            }
-            if (this.argsData.value !== null) {
-                if (this.segmentColor.length !== 0 && !this.isIndeterminate) {
-                    circularProgress = this.createCircularSegment(
-                        '_CircularProgress', centerX, centerY, radius, this.argsData.value, this.themeStyle.progressOpacity,
-                        (this.progressThickness || this.themeStyle.circularProgressThickness)
-                    );
-                } else {
-                    progressEnd = this.calculateProgressRange(this.minimum, this.maximum, this.argsData.value);
-                    this.annotationEnd = progressEnd;
-                    endAngle = ((this.isIndeterminate) ? (this.startAngle + (
-                        (this.enableRtl) ? -this.totalAngle : +this.totalAngle)) % 360 : progressEnd
-                    );
-                    circularPath = getPathArc(centerX, centerY, radius, startAngle, endAngle, this.enableRtl);
-                    option = new PathOption(
-                        this.element.id + '_Circularprogress', 'none',
-                        (this.progressThickness || this.themeStyle.circularProgressThickness),
-                        (this.argsData.progressColor || this.themeStyle.circularProgressColor),
-                        this.themeStyle.progressOpacity, '0', circularPath
-                    );
-                    if (!refresh) {
-                        circularProgress = this.renderer.drawPath(option);
-                    } else {
-                        circularProgress = getElement(this.element.id + '_Circularprogress');
-                        previousPath = circularProgress.getAttribute('d');
-                        circularProgress.setAttribute('d', circularPath);
-                        circularProgress.setAttribute('stroke', this.argsData.progressColor || this.themeStyle.circularProgressColor);
-                    }
-                    if (this.segmentCount > 1) {
-                        rDiff = parseInt(this.radius, 10) - parseInt(this.innerRadius, 10);
-                        if (rDiff !== 0) {
-                            progressSegment = this.trackwidth + (
-                                (rDiff < 0) ? (this.trackwidth * Math.abs(rDiff)) / parseInt(this.radius, 10) :
-                                    -(this.trackwidth * Math.abs(rDiff)) / parseInt(this.radius, 10)
-                            );
-                            this.segmentSize = this.calculateSegmentSize(
-                                progressSegment, (this.progressThickness || this.themeStyle.circularProgressThickness)
-                            );
-                        }
-                        circularProgress.setAttribute('stroke-dasharray', this.segmentSize);
-                    }
-                    if (this.cornerRadius === 'Round') {
-                        circularProgress.setAttribute('stroke-linecap', 'round');
-                    }
-                }
-                this.progressEndAngle = endAngle;
-                if (!refresh) {
-                    this.svgObject.appendChild(circularProgress);
-                }
-                if (this.animation.enable && !this.isIndeterminate) {
-                    let circulardelay: number = (this.secondaryProgress !== null) ? 300 : this.animation.delay;
-                    linearClipPath = this.createClipPath(this.clipPath, null, refresh ? previousPath : '', null, refresh);
-                    circularProgress.setAttribute('style', 'clip-path:url(#' + this.element.id + '_clippath)');
-                    doCircularAnimation(
-                        centerX, centerY, radius, startAngle, progressEnd, linearClipPath, this,
-                        (this.progressThickness || this.themeStyle.circularProgressThickness), circulardelay, refresh ? previousEnd : null
-                    );
-                }
-                if (this.isIndeterminate) {
-                    let circularPathRadius: number = 2 * radius * 0.75;
-                    let circularPath: string = getPathArc(
-                        centerX, centerY, circularPathRadius, startAngle, progressEnd, this.enableRtl, true
-                    );
-                    let option: PathOption = new PathOption(
-                        this.element.id + '_clippathcircle', 'transparent', 10,
-                        'transparent', 1, '0', circularPath
-                    );
-                    let path: Element = this.renderer.drawPath(option);
-                    this.clipPath.appendChild(path);
-                    circularProgress.setAttribute('style', 'clip-path:url(#' + this.element.id + '_clippath)');
-                    doCircularIndeterminate(<HTMLElement>(path), this, startAngle, progressEnd, centerX, centerY, circularPathRadius);
-                }
-                this.svgObject.appendChild(this.clipPath);
-            }
-
-        }
+        this.element.appendChild(this.svgObject);
     }
 
-    private createLabel(): void {
+    private renderLabel(): void {
         //let fontsize: string; let fontstyle: string; let fillcolor: string;
         let textSize: Size;
         let isAnimation: boolean = this.animation.enable;
@@ -804,7 +548,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     }
 
 
-    private getPathLine(x: number, width: number, thickness: number): string {
+    public getPathLine(x: number, width: number, thickness: number): string {
         let moveTo: number = (this.enableRtl) ? ((this.cornerRadius === 'Round') ?
             (x + this.progressRect.width) - ((lineCapRadius / 2) * thickness) : (x + this.progressRect.width)) :
             ((this.cornerRadius === 'Round') ? (x + (lineCapRadius / 2) * thickness) : x);
@@ -815,7 +559,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
             'L' + lineTo + ' ' + (this.progressRect.y + (this.progressRect.height / 2));
     }
 
-    private calculateProgressRange(min: number, max: number, value: number): number {
+    public calculateProgressRange(min: number, max: number, value: number): number {
         let result: number;
         let endValue: number;
         if (this.type === 'Linear') {
@@ -830,7 +574,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
         }
     }
 
-    private calculateSegmentSize(width: number, thickness: number): string {
+    public calculateSegmentSize(width: number, thickness: number): string {
         let count: number = (this.type === 'Circular' && this.totalAngle === completeAngle) ? this.segmentCount : this.segmentCount - 1;
         let cornerCount: number = (this.totalAngle === completeAngle || this.type === 'Linear') ? this.segmentCount : this.segmentCount - 1;
         let gap: number = this.gapWidth || ((this.type === 'Linear') ? this.themeStyle.linearGapWidth : this.themeStyle.circularGapWidth);
@@ -840,19 +584,24 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
         return ' ' + size + ' ' + gap;
     }
 
-    private createClipPath(clipPath?: Element, width?: number, d?: string, x?: number, refresh?: boolean, thickness?: number): Element {
+    public createClipPath(clipPath?: Element, width?: number, d?: string, x?: number, refresh?: boolean, thickness?: number): Element {
         let path: Element;
         let rect: RectOption;
         let option: PathOption;
+        let posx: number;
+        let posy: number;
+        let pathWidth: number;
         if (this.type === 'Linear') {
             if (!refresh) {
+                posx = (this.enableRtl) ? (x + this.progressRect.width) : x;
+                posx += (this.cornerRadius === 'Round') ?
+                    ((this.enableRtl) ? (lineCapRadius / 2) * thickness : -(lineCapRadius / 2) * thickness) : 0;
+                posy = (this.progressRect.y + (this.progressRect.height / 2)) - (thickness / 2);
+                pathWidth = this.progressRect.width * width;
+                pathWidth += (this.cornerRadius === 'Round') ? (lineCapRadius * thickness) : 0;
                 rect = new RectOption(
                     this.element.id + '_clippathrect', 'transparent', 1, 'transparent', 1,
-                    new Rect(
-                        (this.cornerRadius === 'Round') ? (this.progressRect.x - (lineCapRadius / 2 * thickness)) : x,
-                        0, this.progressSize.height, (this.isIndeterminate) ? this.progressRect.width * width :
-                            (this.cornerRadius === 'Round') ? (this.progressRect.width * width + lineCapRadius * thickness) :
-                                this.progressRect.width * width)
+                    new Rect(posx, posy, thickness, pathWidth)
                 );
                 path = this.renderer.drawRectangle(rect);
                 clipPath.appendChild(path);
@@ -875,126 +624,21 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
         return path;
     }
 
-    private createLinearSegment(id: string, width: number, opacity: number, thickness: number): Element {
-        let locX: number = (this.enableRtl) ? ((this.cornerRadius === 'Round') ?
-            (this.progressRect.x + this.progressRect.width) - ((lineCapRadius / 2) * thickness) :
-            (this.progressRect.x + this.progressRect.width)) :
-            ((this.cornerRadius === 'Round') ? (this.progressRect.x + (lineCapRadius / 2) * thickness) : this.progressRect.x);
-        let locY: number = (this.progressRect.y + (this.progressRect.height / 2));
-        let gapWidth: number = (this.gapWidth || this.themeStyle.linearGapWidth);
-        let avlWidth: number = this.progressRect.width / this.segmentCount;
-        let avlSegWidth: number = (this.progressRect.width - ((this.segmentCount - 1) * gapWidth));
-        avlSegWidth = (avlSegWidth -
-            ((this.cornerRadius === 'Round') ? this.segmentCount * (lineCapRadius * thickness) : 0)) / this.segmentCount;
-        let gap: number = (this.cornerRadius === 'Round') ? (gapWidth + (lineCapRadius * thickness)) : gapWidth;
-        let segmentGroup: Element = this.renderer.createGroup({ 'id': this.element.id + id + 'Group' });
-        let count: number = Math.ceil(width / avlWidth);
-        let segWidth: number;
-        let color: string;
-        let j: number = 0;
-        let option: PathOption;
-        let segmentPath: Element;
-        let tolWidth: number = (this.cornerRadius === 'Round') ? (width - (lineCapRadius * thickness)) : width;
-        let linearThickness: number = this.progressThickness || this.themeStyle.linearProgressThickness;
-        for (let i: number = 0; i < count; i++) {
-            segWidth = (tolWidth < avlSegWidth) ? tolWidth : avlSegWidth;
-            if (j < this.segmentColor.length) {
-                color = this.segmentColor[j];
-                j++;
-            } else {
-                j = 0;
-                color = this.segmentColor[j];
-                j++;
-            }
-            option = new PathOption(
-                this.element.id + id + i, 'none', linearThickness, color, opacity,
-                '0', this.getLinearSegmentPath(locX, locY, segWidth)
-            );
-            segmentPath = this.renderer.drawPath(option);
-            if (this.cornerRadius === 'Round') {
-                segmentPath.setAttribute('stroke-linecap', 'round');
-            }
-            segmentGroup.appendChild(segmentPath);
-            locX += (this.enableRtl) ? -avlSegWidth - gap : avlSegWidth + gap;
-            tolWidth -= avlSegWidth + gap;
-            tolWidth = (tolWidth < 0) ? 0 : tolWidth;
-        }
-        return segmentGroup;
-    }
-
-    private getLinearSegmentPath(x: number, y: number, width: number): string {
-        return 'M' + ' ' + x + ' ' + y + ' ' + 'L' + (x + ((this.enableRtl) ? -width : width)) + ' ' + y;
-    }
-
-    private createCircularSegment(id: string, x: number, y: number, r: number, value: number, opacity: number, thickness: number): Element {
-        let start: number = this.startAngle;
-        let end: number = this.widthToAngle(this.minimum, this.maximum, value);
-        end -= (this.cornerRadius === 'Round' && this.totalAngle === completeAngle) ?
-            this.widthToAngle(0, this.trackwidth, ((lineCapRadius / 2) * thickness)) : 0;
-        let size: number = (this.trackwidth - (
-            (this.totalAngle === completeAngle) ? this.segmentCount :
-                this.segmentCount - 1) * (this.gapWidth || this.themeStyle.circularGapWidth)
-        );
-        size = (size -
-            ((this.cornerRadius === 'Round') ?
-                (((this.totalAngle === completeAngle) ?
-                    this.segmentCount : this.segmentCount - 1) * lineCapRadius * thickness) : 0)) / this.segmentCount;
-        let avlTolEnd: number = this.widthToAngle(0, this.trackwidth, (this.trackwidth / this.segmentCount));
-        avlTolEnd -= (this.cornerRadius === 'Round' && this.totalAngle === completeAngle) ?
-            this.widthToAngle(0, this.trackwidth, ((lineCapRadius / 2) * thickness)) : 0;
-        let avlEnd: number = this.widthToAngle(0, this.trackwidth, size);
-        let gap: number = this.widthToAngle(0, this.trackwidth, (this.gapWidth || this.themeStyle.circularGapWidth));
-        gap += (this.cornerRadius === 'Round') ? this.widthToAngle(0, this.trackwidth, (lineCapRadius * thickness)) : 0;
-        let segmentGroup: Element = this.renderer.createGroup({ 'id': this.element.id + id + 'Group' });
-        let gapCount: number = Math.floor(end / avlTolEnd);
-        let count: number = Math.ceil((end - gap * gapCount) / avlEnd);
-        let segmentPath: string;
-        let circularSegment: Element;
-        let segmentEnd: number;
-        let avlSegEnd: number = (start + ((this.enableRtl) ? -avlEnd : avlEnd)) % 360;
-        let color: string;
-        let j: number = 0;
-        let option: PathOption;
-        let circularThickness: number = this.progressThickness || this.themeStyle.circularProgressThickness;
-        for (let i: number = 0; i < count; i++) {
-            segmentEnd = (this.enableRtl) ? ((this.startAngle - end > avlSegEnd) ? this.startAngle - end : avlSegEnd) :
-                ((this.startAngle + end < avlSegEnd) ? this.startAngle + end : avlSegEnd
-                );
-            segmentPath = getPathArc(x, y, r, start, segmentEnd, this.enableRtl);
-            if (j < this.segmentColor.length) {
-                color = this.segmentColor[j];
-                j++;
-            } else {
-                j = 0;
-                color = this.segmentColor[j];
-                j++;
-            }
-            option = new PathOption(
-                this.element.id + id + i, 'none', circularThickness, color,
-                opacity, '0', segmentPath
-            );
-            circularSegment = this.renderer.drawPath(option);
-            if (this.cornerRadius === 'Round') {
-                circularSegment.setAttribute('stroke-linecap', 'round');
-            }
-            segmentGroup.appendChild(circularSegment);
-            start = segmentEnd + ((this.enableRtl) ? -gap : gap);
-            avlSegEnd += (this.enableRtl) ? -avlEnd - gap : avlEnd + gap;
-        }
-        return segmentGroup;
-    }
-
-    private widthToAngle(min: number, max: number, value: number): number {
-        let angle: number = ((value - min) / (max - min)) * this.totalAngle;
-        return angle;
-    }
-
     /**
      * Theming for progress bar
      */
     private setTheme(): void {
         this.themeStyle = getProgressThemeColor(this.theme);
+        switch (this.theme) {
+            case 'Bootstrap':
+            case 'Bootstrap4':
+                this.cornerRadius = this.cornerRadius === 'Auto' ? 'Round' : this.cornerRadius;
+                break;
+            default:
+                this.cornerRadius = this.cornerRadius === 'Auto' ? 'Square' : this.cornerRadius;
+        }
     }
+
     /**
      * Annotation for progress bar
      */
@@ -1034,21 +678,54 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
                 }
                 arg.currentSize = this.progressSize;
                 this.trigger('resized', arg);
-                this.calculateProgressBarSize();
-                this.calculateProgressBarBounds();
                 this.secElement.innerHTML = '';
-                this.renderAnnotation();
+                this.calculateProgressBarSize();
+                this.createSVG();
                 this.renderElements();
             },
             500);
         return false;
     }
 
+    private progressMouseClick(e: PointerEvent): void {
+        this.mouseEvent(mouseClick, e);
+    }
+
+    private progressMouseDown(e: PointerEvent): void {
+        this.mouseEvent(mouseDown, e);
+    }
+
+    private progressMouseMove(e: PointerEvent): void {
+        this.mouseEvent(mouseMove, e);
+    }
+
+    private progressMouseUp(e: PointerEvent): void {
+        this.mouseEvent(mouseUp, e);
+    }
+
+    private progressMouseLeave(e: PointerEvent): void {
+        this.mouseEvent(mouseLeave, e);
+    }
+
+    private mouseEvent(eventName: string, e: PointerEvent): void {
+        let element: Element = <Element>e.target;
+        this.trigger(eventName, { target: element.id });
+    }
     /**
      * Method to un-bind events for progress bar
      */
     private unWireEvents(): void {
-
+        let startEvent: string = Browser.touchStartEvent;
+        let moveEvent: string = Browser.touchMoveEvent;
+        let stopEvent: string = Browser.touchEndEvent;
+        /*! Find the Events type */
+        let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
+        /*! UnBind the Event handler */
+        EventHandler.remove(this.element, 'click', this.progressMouseClick);
+        EventHandler.remove(this.element, startEvent, this.progressMouseDown);
+        EventHandler.remove(this.element, moveEvent, this.progressMouseMove);
+        EventHandler.remove(this.element, stopEvent, this.progressMouseUp);
+        EventHandler.remove(this.element, cancelEvent, this.progressMouseLeave);
         window.removeEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
             this.resizeBounds
@@ -1060,6 +737,17 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
      * Method to bind events for bullet chart
      */
     private wireEvents(): void {
+        let startEvent: string = Browser.touchStartEvent;
+        let moveEvent: string = Browser.touchMoveEvent;
+        let stopEvent: string = Browser.touchEndEvent;
+        /*! Find the Events type */
+        let cancelEvent: string = Browser.isPointer ? 'pointerleave' : 'mouseleave';
+        /*! Bind the Event handler */
+        EventHandler.add(this.element, 'click', this.progressMouseClick, this);
+        EventHandler.add(this.element, startEvent, this.progressMouseDown, this);
+        EventHandler.add(this.element, moveEvent, this.progressMouseMove, this);
+        EventHandler.add(this.element, stopEvent, this.progressMouseUp, this);
+        EventHandler.add(this.element, cancelEvent, this.progressMouseLeave, this);
         this.resizeBounds = this.progressResize.bind(this);
         window.addEventListener(
             (Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize',
@@ -1081,8 +769,10 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
                 case 'annotations':
                     this.secElement.innerHTML = '';
                     this.renderAnnotation();
-                    let annotationElement: Element = document.getElementById(this.element.id + 'Annotation0').children[0];
-                    doAnnotationAnimation(annotationElement, this, this.startAngle, this.annotationEnd);
+                    if (this.animation.enable && !this.isIndeterminate) {
+                        let annotationElement: Element = document.getElementById(this.element.id + 'Annotation0').children[0];
+                        this.annotateAnimation.doAnnotationAnimation(annotationElement, this, this.startAngle, this.annotationEnd);
+                    }
                     break;
                 case 'value':
                     this.argsData = {
@@ -1096,9 +786,9 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
                         this.trigger(valueChanged, this.argsData);
                     }
                     if (this.type === 'Circular') {
-                        this.createCircularProgress(this.progressStartAngle, this.progressEndAngle, true);
+                        this.circular.renderCircularProgress(this.progressStartAngle, this.progressEndAngle, true);
                     } else {
-                        this.createLinearProgress(true, this.progressPreviousWidth);
+                        this.linear.renderLinearProgress(true, this.progressPreviousWidth);
                     }
                     break;
             }

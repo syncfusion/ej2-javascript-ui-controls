@@ -1,7 +1,7 @@
 import { IRenderer, IRichTextEditor } from '../base/interface';
 
 /**
- * Markdown module is used to render RichTextEditor as Markdown editor content
+ * Markdown module is used to render Rich Text Editor as Markdown editor content
  * @hidden
  * @deprecated
  */
@@ -18,7 +18,7 @@ export class MarkdownRender implements IRenderer {
     }
 
     /**
-     * The function is used to render RichTextEditor content div
+     * The function is used to render Rich Text Editor content div
      * @hidden
      * @deprecated  
      */

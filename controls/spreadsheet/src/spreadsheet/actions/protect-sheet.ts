@@ -1,12 +1,13 @@
 import { Spreadsheet } from '../index';
 import { applyProtect, protectSheet, protectCellFormat, editAlert, enableFormulaInput } from '../common/event';
-import { clearCopy, protectSelection } from '../common/index';
+import { clearCopy, protectSelection, clearUndoRedoCollection } from '../common/index';
 import { Dialog } from '../services/dialog';
 import { ListView, SelectedCollection} from '@syncfusion/ej2-lists';
 import { L10n, EventHandler } from '@syncfusion/ej2-base';
 import { locale, updateToggleItem, dialog} from '../common/index';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { SheetModel } from '../../workbook';
+import { applyLockCells, CellModel, getCell } from '../../workbook/index';
 /**
  * The `Protect-sheet` module is used to handle the Protecting functionalities in Spreadsheet.
  */
@@ -41,12 +42,14 @@ export class ProtectSheet {
         this.parent.on(applyProtect, this.protect, this);
         this.parent.on(protectSheet, this.protectSheetHandler, this);
         this.parent.on(editAlert, this.editProtectedAlert, this);
+        this.parent.on(applyLockCells, this.lockCellsHandler, this);
     }
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
             this.parent.off(applyProtect, this.protect);
             this.parent.off(protectSheet, this.protectSheetHandler);
             this.parent.off(editAlert, this.editProtectedAlert);
+            this.parent.off(applyLockCells, this.lockCellsHandler);
         }
     }
     private protect(args: { isActive: boolean }): void {
@@ -138,8 +141,9 @@ export class ProtectSheet {
              formatRows: selectedItems.text.indexOf(l10n.getConstant('FormatRows')) > -1,
              formatColumns: selectedItems.text.indexOf(l10n.getConstant('FormatColumns')) > -1,
              insertLink: selectedItems.text.indexOf(l10n.getConstant('InsertLinks')) > -1 };
-        this.parent.protectSheet(protectSettings);
+        this.parent.protectSheet(null, protectSettings);
         this.parent.notify(protectSelection, null);
+        this.parent.notify(clearUndoRedoCollection, null);
         this.dialog.hide();
     }
     private protectSheetHandler(args: {[key: string]: boolean}): void {
@@ -147,7 +151,7 @@ export class ProtectSheet {
         let id: string = this.parent.element.id;
         let disableHomeBtnId: string[] = [id + '_undo', id + '_redo', id + '_cut', id + '_copy', id + '_paste', id + '_number_format',
             id + '_font_name', id + '_font_size', id + '_bold', id + '_italic', id + '_line-through', id + '_underline',
-            id + '_font_color_picker', id + '_fill_color_picker', id + '_borders', id + '_text_align',
+            id + '_font_color_picker', id + '_fill_color_picker', id + '_borders', id + '_merge_cells', id + '_text_align',
             id + '_vertical_align', id + '_wrap', id + '_sorting'];
         let enableHomeBtnId: string[] = [id + '_cut', id + '_copy', id + '_number_format', id + '_font_name', id + '_font_size',
             id + '_bold', id + '_italic', id + '_line-through', id + '_underline', id + '_font_color_picker', id + '_fill_color_picker',
@@ -191,6 +195,16 @@ export class ProtectSheet {
             close: (): void => this.parent.element.focus()
         });
     }
+    }
+
+    private lockCellsHandler(args: {rowIdx: number, colIdx: number, isLocked?: boolean }): void {
+        let sheet: SheetModel = this.parent.getActiveSheet();
+        let cell: CellModel = getCell(args.rowIdx, args.colIdx, sheet);
+        if (cell) {
+            if (args.isLocked) {
+                cell.isLocked = args.isLocked;
+            } else {cell.isLocked = false; }
+        }
     }
 
     /**

@@ -1,7 +1,7 @@
 /**
  * Spreadsheet default sample
  */
-import { Spreadsheet, SheetModel, ColumnModel, CellSaveEventArgs, CellRenderEventArgs, RangeSetting, CellEditEventArgs, ValueChangedArgs, getData, CellModel, BeforeSelectEventArgs, getRangeIndexes } from '../../../../src/index';
+import { Spreadsheet, SheetModel, ColumnModel, CellSaveEventArgs, CellRenderEventArgs, Range, CellEditEventArgs, ValueChangedArgs, getData, CellModel, BeforeSelectEventArgs, getRangeIndexes } from '../../../../src/index';
 import { enableRipple } from '@syncfusion/ej2-base';
 import { switchTheme } from '../../../common/switch-theme';
 import { defaultData as dataSource } from '../../../common/data-source';
@@ -30,55 +30,55 @@ let columns: ColumnModel[] = [
 ];
 
 let sheet: SheetModel[] = [{
-    rangeSettings: [{
+    range: [{
         dataSource: dataSource,
         startCell: 'A2',
         template: '<button class="e-button-template">BUTTON</button>',
-        range: 'A3:D100'
+        address: 'A3:D100'
     }],
     name: 'Button',
     columns: columns
 }, {
-    rangeSettings: [{
+    range: [{
         dataSource: dataSource,
         startCell: 'A2',
         template: '<input type="text" class="e-ddb-template" tabindex="1" />',
-        range: 'A3:D100'
+        address: 'A3:D100'
     }], name: 'Dropdown', columns: columns
 }, {
-    rangeSettings: [{
+    range: [{
         dataSource: dataSource,
         startCell: 'A2',
         template: '<input type="check" class="e-checkbox-template" />',
-        range: 'A3:D100'
+        address: 'A3:D100'
     }], name: 'Checkbox', columns: columns
 }, {
-    rangeSettings: [{
+    range: [{
         dataSource: dataSource,
         startCell: 'A2',
         template: '<input type="text" class="e-datepicker-template" />',
-        range: 'A3:D100'
+        address: 'A3:D100'
     }], name: 'Datepicker', columns: columns
 }, {
-    rangeSettings: [{
+    range: [{
         dataSource: dataSource,
         startCell: 'A2',
         template: '<input type="text" class="e-autocomplete-template" tabindex="1" />',
-        range: 'A3:D100'
+        address: 'A3:D100'
     }], name: 'Auto Complete', columns: columns
 }, {
-    rangeSettings: [{
+    range: [{
         dataSource: dataSource,
         startCell: 'A1',
         template: '<input type="text" class="e-textbox-template" />',
-        range: 'A3:D100'
+        address: 'A3:D100'
     }], name: 'TextBox', columns: columns
 }];
 
 let spreadsheet: Spreadsheet = new Spreadsheet({
     sheets: sheet,
     beforeDataBound: (): void => {
-        if (spreadsheet.sheets[spreadsheet.activeSheetTab - 1].name === 'Sheet1') {
+        if (spreadsheet.sheets[spreadsheet.activeSheetIndex].name === 'Sheet1') {
             spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1');
         }
     },
@@ -86,11 +86,11 @@ let spreadsheet: Spreadsheet = new Spreadsheet({
     saveUrl: 'https://ej2services.syncfusion.com/production/web-services/api/spreadsheet/save',
     cellSave: (evt: CellSaveEventArgs) => {
         if (evt.address == "Button!K1") {
-            spreadsheet.sheets[0].rangeSettings = [{
+            spreadsheet.sheets[0].range = [{
                 dataSource: dataSource,
                 startCell: 'A2',
                 template: '<input type="check" class="e-checkbox-template" />',
-                range: 'A3:D100'
+                address: 'A3:D100'
             }];
             spreadsheet.dataBind();
         }
@@ -127,7 +127,7 @@ let spreadsheet: Spreadsheet = new Spreadsheet({
                                 evt.cell.value = args.value.toString();
                             } else {
                                 let range: number[] = getRangeIndexes(evt.address)
-                                spreadsheet.sheets[spreadsheet.activeSheetTab - 1].rows[range[0]].cells[range[1]] = { value: args.value.toString() };
+                                spreadsheet.sheets[spreadsheet.activeSheetIndex].rows[range[0]].cells[range[1]] = { value: args.value.toString() };
                             }
                         }
                     }, evt.element.children[0] as HTMLElement);

@@ -4504,6 +4504,7 @@ class Render {
                 gObj.notify('closebatch', {});
             }
         }
+        let tempPreventUpdate = this.parent[preventUpdate];
         gObj.trigger(actionBegin, e, (args = { requestType: 'refresh' }) => {
             if (args.requestType === 'delete' && isBlazor() && !gObj.isJsComponent) {
                 let data = 'data';
@@ -4527,7 +4528,9 @@ class Render {
                 }
             }
             if (isBlazor() && this.parent.isServerRendered) {
-                if (this.parent[preventUpdate]) {
+                if (tempPreventUpdate) {
+                    let bulkChanges = 'bulkChanges';
+                    gObj[bulkChanges] = {};
                     return;
                 }
                 if (e.requestType === 'refresh') {
@@ -4551,6 +4554,9 @@ class Render {
             }
         });
     }
+    /**
+     * @hidden
+     */
     resetTemplates() {
         let gObj = this.parent;
         let gridColumns = gObj.getColumns();
@@ -10079,7 +10085,7 @@ class BlazorAction {
         this.parent.on(modelChanged, this.modelChanged, this);
         this.parent.on('group-expand-collapse', this.onGroupClick, this);
         this.parent.on('setcolumnstyles', this.setColVTableWidthAndTranslate, this);
-        this.parent.on('refresh-virtual-indices', this.editSuccess, this);
+        this.parent.on('refresh-virtual-indices', this.invokeServerDataBind, this);
         this.parent.on('contentcolgroup', this.contentColGroup, this);
         this.parent.on(dataSourceModified, this.dataSourceModified, this);
     }
@@ -10096,7 +10102,7 @@ class BlazorAction {
         this.parent.off(modelChanged, this.modelChanged);
         this.parent.off('group-expand-collapse', this.onGroupClick);
         this.parent.off('setcolumnstyles', this.setColVTableWidthAndTranslate);
-        this.parent.off('refresh-virtual-indices', this.editSuccess);
+        this.parent.off('refresh-virtual-indices', this.invokeServerDataBind);
         this.parent.off('contentcolgroup', this.contentColGroup);
         this.parent.off(dataSourceModified, this.dataSourceModified);
     }
@@ -10108,13 +10114,17 @@ class BlazorAction {
     }
     addDeleteSuccess(args) {
         let editArgs;
-        let action = 'name';
+        let action = 'action';
         let data = 'data';
+        let index = 'index';
         editArgs = {
             requestType: args.requestType,
             data: args[data],
             action: args[action]
         };
+        if (!isNullOrUndefined(args[index])) {
+            editArgs[index] = args[index];
+        }
         args.promise.then((e) => this.editSuccess(editArgs)).catch((e) => {
             if (isBlazor() && this.parent.isServerRendered) {
                 let error = 'error';
@@ -10129,6 +10139,10 @@ class BlazorAction {
         });
     }
     editSuccess(args) {
+        this.parent.renderModule.resetTemplates();
+        this.invokeServerDataBind(args);
+    }
+    invokeServerDataBind(args) {
         this.actionArgs = args;
         this.parent.currentAction = args;
         this.parent.allowServerDataBinding = true;
@@ -10946,6 +10960,7 @@ let Grid = Grid_1 = class Grid extends Component {
             InvalidFilterMessage: 'Invalid Filter Data',
             GroupDropArea: 'Drag a column header here to group its column',
             UnGroup: 'Click here to ungroup',
+            UnGroupButton: 'Click here to ungroup',
             GroupDisable: 'Grouping is disabled for this column',
             FilterbarTitle: '\'s filter bar cell',
             EmptyDataSourceError: 'DataSource must not be empty at initial load since columns are generated from dataSource in AutoGenerate Column Grid',
@@ -10997,6 +11012,8 @@ let Grid = Grid_1 = class Grid extends Component {
             Ungroup: 'Ungroup by this column',
             autoFitAll: 'Autofit all columns',
             autoFit: 'Autofit this column',
+            AutoFitAll: 'Autofit all columns',
+            AutoFit: 'Autofit this column',
             Export: 'Export',
             FirstPage: 'First Page',
             LastPage: 'Last Page',
@@ -11852,6 +11869,12 @@ let Grid = Grid_1 = class Grid extends Component {
             && isNullOrUndefined(parentsUntil(ele, 'e-recordplusexpand'))) && !this.isEdit) {
             let cell = closest(ele, '.e-rowcell');
             if (!cell) {
+                let row = closest(ele, '.e-row');
+                if (!isNullOrUndefined(row)) {
+                    let rowObj = this.getRowObjectFromUID(row.getAttribute('data-uid'));
+                    let rowIndex = parseInt(row.getAttribute('aria-rowindex'), 10);
+                    args = { row: row, rowData: rowObj.data, rowIndex: rowIndex };
+                }
                 return args;
             }
             let cellIndex = parseInt(cell.getAttribute('aria-colindex'), 10);
@@ -12913,7 +12936,7 @@ let Grid = Grid_1 = class Grid extends Component {
                     }
                 }
                 if (!flag) {
-                    sCols.push({ field: gCols[i], direction: 'Ascending' });
+                    sCols.push({ field: gCols[i], direction: 'Ascending', isFromGroup: true });
                 }
                 else {
                     if (this.allowSorting) {
@@ -17881,16 +17904,20 @@ class NumericContainer {
         this.first = createElement('div', {
             className: 'e-first e-icons e-icon-first',
             attrs: {
-                title: this.pagerModule.getLocalizedLabel('firstPageTooltip'),
-                'aria-label': this.pagerModule.getLocalizedLabel('firstPageTooltip'),
+                title: isBlazor() ? this.pagerModule.getLocalizedLabel('FirstPageTooltip') :
+                    this.pagerModule.getLocalizedLabel('firstPageTooltip'),
+                'aria-label': isBlazor() ? this.pagerModule.getLocalizedLabel('FirstPageTooltip') :
+                    this.pagerModule.getLocalizedLabel('firstPageTooltip'),
                 tabindex: '-1'
             }
         });
         this.prev = createElement('div', {
             className: 'e-prev e-icons e-icon-prev',
             attrs: {
-                title: this.pagerModule.getLocalizedLabel('previousPageTooltip'),
-                'aria-label': this.pagerModule.getLocalizedLabel('previousPageTooltip'),
+                title: isBlazor() ? this.pagerModule.getLocalizedLabel('PreviousPageTooltip') :
+                    this.pagerModule.getLocalizedLabel('previousPageTooltip'),
+                'aria-label': isBlazor() ? this.pagerModule.getLocalizedLabel('PreviousPageTooltip') :
+                    this.pagerModule.getLocalizedLabel('previousPageTooltip'),
                 tabindex: '-1'
             }
         });
@@ -17901,10 +17928,13 @@ class NumericContainer {
         this.PP = createElement('a', {
             className: 'e-link e-pp e-spacing', innerHTML: '...',
             attrs: {
-                title: this.pagerModule.getLocalizedLabel('previousPagerTooltip'), role: 'link',
-                'aria-label': this.pagerModule.getLocalizedLabel('previousPagerTooltip'),
+                title: isBlazor() ? this.pagerModule.getLocalizedLabel('PreviousPagerTooltip') :
+                    this.pagerModule.getLocalizedLabel('previousPagerTooltip'), role: 'link',
+                'aria-label': isBlazor() ? this.pagerModule.getLocalizedLabel('PreviousPagerTooltip') :
+                    this.pagerModule.getLocalizedLabel('previousPagerTooltip'),
                 tabindex: '-1',
-                name: this.pagerModule.getLocalizedLabel('previousPagerTooltip'),
+                name: isBlazor() ? this.pagerModule.getLocalizedLabel('PreviousPagerTooltip') :
+                    this.pagerModule.getLocalizedLabel('previousPagerTooltip'),
                 href: 'javascript:void(0);'
             }
         });
@@ -17916,10 +17946,13 @@ class NumericContainer {
         this.NP = createElement('a', {
             className: 'e-link e-np e-spacing',
             innerHTML: '...', attrs: {
-                title: this.pagerModule.getLocalizedLabel('nextPagerTooltip'), role: 'link',
-                'aria-label': this.pagerModule.getLocalizedLabel('nextPagerTooltip'),
+                title: isBlazor() ? this.pagerModule.getLocalizedLabel('NextPagerTooltip') :
+                    this.pagerModule.getLocalizedLabel('nextPagerTooltip'), role: 'link',
+                'aria-label': isBlazor() ? this.pagerModule.getLocalizedLabel('NextPagerTooltip') :
+                    this.pagerModule.getLocalizedLabel('nextPagerTooltip'),
                 tabindex: '-1',
-                name: this.pagerModule.getLocalizedLabel('nextPagerTooltip'),
+                name: isBlazor() ? this.pagerModule.getLocalizedLabel('NextPagerTooltip') :
+                    this.pagerModule.getLocalizedLabel('nextPagerTooltip'),
                 href: 'javascript:void(0);'
             }
         });
@@ -17930,16 +17963,20 @@ class NumericContainer {
         this.next = createElement('div', {
             className: 'e-next e-icons e-icon-next',
             attrs: {
-                title: this.pagerModule.getLocalizedLabel('nextPageTooltip'),
-                'aria-label': this.pagerModule.getLocalizedLabel('nextPageTooltip'),
+                title: isBlazor() ? this.pagerModule.getLocalizedLabel('NextPageTooltip') :
+                    this.pagerModule.getLocalizedLabel('nextPageTooltip'),
+                'aria-label': isBlazor() ? this.pagerModule.getLocalizedLabel('NextPageTooltip') :
+                    this.pagerModule.getLocalizedLabel('nextPageTooltip'),
                 tabindex: '-1'
             }
         });
         this.last = createElement('div', {
             className: 'e-last e-icons e-icon-last',
             attrs: {
-                title: this.pagerModule.getLocalizedLabel('lastPageTooltip'),
-                'aria-label': this.pagerModule.getLocalizedLabel('lastPageTooltip'),
+                title: isBlazor() ? this.pagerModule.getLocalizedLabel('LastPageTooltip') :
+                    this.pagerModule.getLocalizedLabel('lastPageTooltip'),
+                'aria-label': isBlazor() ? this.pagerModule.getLocalizedLabel('LastPageTooltip') :
+                    this.pagerModule.getLocalizedLabel('lastPageTooltip'),
                 tabindex: '-1'
             }
         });
@@ -18091,9 +18128,16 @@ class PagerMessage {
      */
     refresh() {
         let pagerObj = this.pagerModule;
-        this.pageNoMsgElem.textContent = this.format(pagerObj.getLocalizedLabel('currentPageInfo'), [pagerObj.totalRecordsCount === 0 ? 0 :
-                pagerObj.currentPage, pagerObj.totalPages || 0]) + ' ';
-        this.pageCountMsgElem.textContent = this.format(pagerObj.getLocalizedLabel('totalItemsInfo'), [pagerObj.totalRecordsCount || 0]);
+        if (isBlazor()) {
+            this.pageNoMsgElem.textContent = this.format(pagerObj.getLocalizedLabel('CurrentPageInfo'), [pagerObj.totalRecordsCount === 0 ? 0 :
+                    pagerObj.currentPage, pagerObj.totalPages || 0]) + ' ';
+            this.pageCountMsgElem.textContent = this.format(pagerObj.getLocalizedLabel('TotalItemsInfo'), [pagerObj.totalRecordsCount || 0]);
+        }
+        else {
+            this.pageNoMsgElem.textContent = this.format(pagerObj.getLocalizedLabel('currentPageInfo'), [pagerObj.totalRecordsCount === 0 ? 0 :
+                    pagerObj.currentPage, pagerObj.totalPages || 0]) + ' ';
+            this.pageCountMsgElem.textContent = this.format(pagerObj.getLocalizedLabel('totalItemsInfo'), [pagerObj.totalRecordsCount || 0]);
+        }
         this.pageNoMsgElem.parentElement.setAttribute('aria-label', this.pageNoMsgElem.textContent + this.pageCountMsgElem.textContent);
     }
     /**
@@ -18199,6 +18243,16 @@ let Pager = class Pager extends Component {
             previousPagerTooltip: 'Go to previous pager',
             pagerDropDown: 'Items per page',
             pagerAllDropDown: 'Items',
+            CurrentPageInfo: '{0} of {1} pages',
+            TotalItemsInfo: '({0} items)',
+            FirstPageTooltip: 'Go to first page',
+            LastPageTooltip: 'Go to last page',
+            NextPageTooltip: 'Go to next page',
+            PreviousPageTooltip: 'Go to previous page',
+            NextPagerTooltip: 'Go to next pager',
+            PreviousPagerTooltip: 'Go to previous pager',
+            PagerDropDown: 'Items per page',
+            PagerAllDropDown: 'Items',
             All: 'All'
         };
         this.containerModule = new NumericContainer(this);
@@ -18480,21 +18534,25 @@ let Pager = class Pager extends Component {
     renderFirstPrevDivForDevice() {
         this.element.appendChild(createElement('div', {
             className: 'e-mfirst e-icons e-icon-first',
-            attrs: { title: this.getLocalizedLabel('firstPageTooltip'), tabindex: '-1' }
+            attrs: { title: isBlazor() ? this.getLocalizedLabel('FirstPageTooltip') : this.getLocalizedLabel('firstPageTooltip'),
+                tabindex: '-1' }
         }));
         this.element.appendChild(createElement('div', {
             className: 'e-mprev e-icons e-icon-prev',
-            attrs: { title: this.getLocalizedLabel('previousPageTooltip'), tabindex: '-1' }
+            attrs: { title: isBlazor() ? this.getLocalizedLabel('PreviousPageTooltip') :
+                    this.getLocalizedLabel('previousPageTooltip'), tabindex: '-1' }
         }));
     }
     renderNextLastDivForDevice() {
         this.element.appendChild(createElement('div', {
             className: 'e-mnext e-icons e-icon-next',
-            attrs: { title: this.getLocalizedLabel('nextPageTooltip'), tabindex: '-1' }
+            attrs: { title: isBlazor() ? this.getLocalizedLabel('NextPageTooltip') :
+                    this.getLocalizedLabel('nextPageTooltip'), tabindex: '-1' }
         }));
         this.element.appendChild(createElement('div', {
             className: 'e-mlast e-icons e-icon-last',
-            attrs: { title: this.getLocalizedLabel('lastPageTooltip'), tabindex: '-1' }
+            attrs: { title: isBlazor() ? this.getLocalizedLabel('LastPageTooltip') :
+                    this.getLocalizedLabel('lastPageTooltip'), tabindex: '-1' }
         }));
     }
     addAriaLabel() {
@@ -18582,7 +18640,9 @@ class PagerDropDown {
         let dropDownDiv = createElement('div', { className: 'e-pagerdropdown' });
         let defaultTextDiv = createElement('div', { className: 'e-pagerconstant' });
         let input = createElement('input', { attrs: { type: 'text', tabindex: '1' } });
-        this.pagerCons = createElement('span', { className: 'e-constant', innerHTML: this.pagerModule.getLocalizedLabel('pagerDropDown') });
+        this.pagerCons = createElement('span', { className: 'e-constant', innerHTML: isBlazor() ?
+                this.pagerModule.getLocalizedLabel('PagerDropDown') :
+                this.pagerModule.getLocalizedLabel('pagerDropDown') });
         dropDownDiv.appendChild(input);
         defaultTextDiv.appendChild(this.pagerCons);
         this.pagerDropDownDiv.appendChild(dropDownDiv);
@@ -18615,7 +18675,8 @@ class PagerDropDown {
     onChange(e) {
         if (this.dropDownListObject.value === this.pagerModule.getLocalizedLabel('All')) {
             this.pagerModule.pageSize = this.pagerModule.totalRecordsCount;
-            this.pagerCons.innerHTML = this.pagerModule.getLocalizedLabel('pagerAllDropDown');
+            this.pagerCons.innerHTML = isBlazor() ? this.pagerModule.getLocalizedLabel('PagerAllDropDown') :
+                this.pagerModule.getLocalizedLabel('pagerAllDropDown');
             e.value = this.pagerModule.pageSize;
             if (document.getElementsByClassName('e-popup-open e-alldrop').length) {
                 document.getElementsByClassName('e-popup-open e-alldrop')[0].style.display = 'none';
@@ -18624,7 +18685,8 @@ class PagerDropDown {
         else {
             this.pagerModule.pageSize = parseInt(this.dropDownListObject.value, 10);
             if (this.pagerCons.innerHTML !== this.pagerModule.getLocalizedLabel('pagerDropDown')) {
-                this.pagerCons.innerHTML = this.pagerModule.getLocalizedLabel('pagerDropDown');
+                this.pagerCons.innerHTML = isBlazor() ? this.pagerModule.getLocalizedLabel('PagerDropDown') :
+                    this.pagerModule.getLocalizedLabel('pagerDropDown');
             }
         }
         this.pagerModule.dataBind();
@@ -19615,9 +19677,10 @@ class FilterMenuRenderer {
                 }
                 else {
                     let eControl = element.querySelector('.e-control');
-                    fltrValue = !isNullOrUndefined(eControl.ej2_instances) ? eControl.ej2_instances[0].value : (col.type === 'boolean') ?
-                        (element.querySelector('.e-control').checked) :
-                        eControl.value;
+                    fltrValue = col.type === 'boolean' ? eControl.checked :
+                        !isNullOrUndefined(eControl.ej2_instances) ?
+                            eControl.ej2_instances[0].value :
+                            eControl.value;
                 }
             }
             this.filterObj.filterByColumn(col.field, flOptrValue, fltrValue);
@@ -23339,7 +23402,8 @@ class Group {
         }));
         childDiv.appendChild(this.parent.createElement('span', {
             className: 'e-ungroupbutton e-icons e-icon-hide', innerHTML: '&nbsp;',
-            attrs: { title: this.l10n.getConstant('UnGroup'), tabindex: '-1', 'aria-label': 'ungroup the grouped column' },
+            attrs: { title: isBlazor() ? this.l10n.getConstant('UnGroupButton') : this.l10n.getConstant('UnGroup'),
+                tabindex: '-1', 'aria-label': 'ungroup the grouped column' },
             styles: this.groupSettings.showUngroupButton ? '' : 'display:none'
         }));
         groupedColumn.appendChild(childDiv);
@@ -23377,7 +23441,7 @@ class Group {
     }
     refreshToggleBtn(isRemove) {
         if (this.groupSettings.showToggleButton) {
-            let headers = [].slice.call(this.parent.element.getElementsByClassName('e-headercelldiv'));
+            let headers = [].slice.call(this.parent.getHeaderTable().getElementsByClassName('e-headercelldiv'));
             for (let i = 0, len = headers.length; i < len; i++) {
                 if (!((headers[i].classList.contains('e-emptycell')) || (headers[i].classList.contains('e-headerchkcelldiv')))) {
                     let column = this.parent.getColumnByUid(headers[i].getAttribute('e-mappinguid'));
@@ -26157,7 +26221,7 @@ class VirtualScroll {
         let size = this.parent.pageSettings.pageSize;
         this.parent.setProperties({ pageSettings: { pageSize: size < height ? height : size } }, true);
         if (isBlazor() && this.parent.isServerRendered) {
-            this.parent.notify('editsuccess', {});
+            this.parent.notify('refresh-virtual-indices', {});
         }
     }
     addEventListener() {
@@ -28647,7 +28711,7 @@ class BatchEdit {
     refreshTD(td, column, rowObj, value) {
         let cell = new CellRenderer(this.parent, this.serviceLocator);
         let rowcell;
-        value = column.type === 'number' ? parseFloat(value) : value;
+        value = column.type === 'number' && !isNullOrUndefined(value) ? parseFloat(value) : value;
         this.setChanges(rowObj, column.field, value, td);
         let frzCols = this.parent.getFrozenColumns();
         refreshForeignData(rowObj, this.parent.getForeignKeyColumns(), rowObj.changes);
@@ -28808,6 +28872,7 @@ class BatchEdit {
                     this.parent.notify(groupAggregates, {});
                 }
             }
+            this.preventSaveCell = false;
             if (this.editNext) {
                 this.editNext = false;
                 if (this.cellDetails.rowIndex === this.index && this.cellDetails.column.field === this.field) {
@@ -28815,7 +28880,6 @@ class BatchEdit {
                 }
                 this.editCellExtend(this.index, this.field, this.isAdd);
             }
-            this.preventSaveCell = false;
         };
     }
     getDataByIndex(index) {
@@ -29472,7 +29536,9 @@ class Edit {
         return editedData;
     }
     getValue(col, input, editedData) {
-        let value = input.ej2_instances ?
+        let value = input.ej2_instances &&
+            !(isBlazor() && input.ej2_instances[0].isServerRendered
+                && (col.type === 'date' || col.type === 'datetime')) ?
             input.ej2_instances[0].value : input.value;
         let gObj = this.parent;
         let temp = col.edit.read;
@@ -30176,7 +30242,8 @@ class ColumnChooser {
     confirmDlgBtnClick(args) {
         this.parent.notify(columnChooserOpened, { event: args, dialog: this.dlgObj });
         this.stateChangeColumns = [];
-        let uncheckedLength = this.ulElement.querySelectorAll('.e-uncheck:not(.e-selectall)').length;
+        let uncheckedLength = this.ulElement.querySelector('.e-uncheck') &&
+            this.ulElement.querySelectorAll('.e-uncheck:not(.e-selectall)').length;
         if (!isNullOrUndefined(args)) {
             if (uncheckedLength < this.parent.getColumns().length) {
                 this.parent.trigger(actionBegin, { requestType: 'columnstate' });
@@ -30241,7 +30308,8 @@ class ColumnChooser {
         let fltrCol;
         let okButton;
         let buttonEle = this.dlgDiv.querySelector('.e-footer-content');
-        let selectedCbox = this.ulElement.querySelectorAll('.e-check:not(.e-selectall)').length;
+        let selectedCbox = this.ulElement.querySelector('.e-check') &&
+            this.ulElement.querySelectorAll('.e-check:not(.e-selectall)').length;
         this.isInitialOpen = true;
         if (buttonEle) {
             okButton = buttonEle.querySelector('.e-btn').ej2_instances[0];
@@ -33770,7 +33838,7 @@ class ContextMenu$1 {
             'FirstPage', 'PrevPage', 'LastPage', 'NextPage'];
     }
     setLocaleKey() {
-        return {
+        let localeKeys = {
             'AutoFitAll': 'autoFitAll',
             'AutoFit': 'autoFit',
             'Copy': 'Copy',
@@ -33791,6 +33859,13 @@ class ContextMenu$1 {
             'PrevPage': 'PreviousPage',
             'NextPage': 'NextPage'
         };
+        if (isBlazor()) {
+            let autoFitAll = 'AutoFitAll';
+            localeKeys[autoFitAll] = 'AutoFitAll';
+            let autoFit = 'AutoFit';
+            localeKeys[autoFit] = 'AutoFit';
+        }
+        return localeKeys;
     }
     getColumn(e) {
         let cell = closest(e.target, 'th.e-headercell');
@@ -34804,7 +34879,7 @@ class ColumnMenu {
         return 'columnMenu';
     }
     setLocaleKey() {
-        return {
+        let localeKeys = {
             'AutoFitAll': 'autoFitAll',
             'AutoFit': 'autoFit',
             'Group': 'Group',
@@ -34814,6 +34889,13 @@ class ColumnMenu {
             'ColumnChooser': 'Columnchooser',
             'Filter': 'FilterMenu'
         };
+        if (isBlazor()) {
+            let autoFitAll = 'AutoFitAll';
+            localeKeys[autoFitAll] = 'AutoFitAll';
+            let autoFit = 'AutoFit';
+            localeKeys[autoFit] = 'AutoFit';
+        }
+        return localeKeys;
     }
     getHeaderCell(e) {
         return closest(e.target, 'th.e-headercell');

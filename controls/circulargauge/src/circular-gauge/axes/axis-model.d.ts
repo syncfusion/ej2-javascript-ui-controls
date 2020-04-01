@@ -6,21 +6,22 @@ import { Property, Complex, ChildProperty, Collection } from '@syncfusion/ej2-ba
 export interface LineModel {
 
     /**
-     * The width of the line in pixels.
+     * Sets and gets the width of the line in circular gauge component.
      * @default 2
      */
 
     width?: number;
 
     /**
-     * The dash array of the axis line.
+     * Sets and gets the dash-array of the axis line in circular gauge component.
      * @default ''
      */
 
     dashArray?: string;
 
     /**
-     * The color of the axis line, which accepts value in hex, rgba as a valid CSS color string.
+     * Sets and gets the color of the axis line in the circular gauge component. This property accepts the value in hex code,
+     * rgba string as a valid CSS color string.
      */
 
     color?: string;
@@ -33,13 +34,13 @@ export interface LineModel {
 export interface LabelModel {
 
     /**
-     * The font of the axis labels
+     * Sets and gets the options to customize the style of the text in axis labels in circular gauge component.
      */
 
     font?: FontModel;
 
     /**
-     * To format the axis label, which accepts any global string format like 'C', 'n1', 'P' etc.
+     * Sets and gets the format for the axis label. This property accepts any global string format like 'C', 'n1', 'P' etc.
      * Also accepts placeholder like '{value}°C' in which value represent the axis label e.g. 20°C.
      * @default ''
      */
@@ -47,46 +48,41 @@ export interface LabelModel {
     format?: string;
 
     /**
-     * Specifies the position of the labels. They are,
-     * * inside -  Places the labels inside the axis.
-     * * outside - Places the labels outside of the axis.
+     * Sets and gets the position type to place the labels in the axis in the circular gauge component.
      * @default Inside
      */
 
     position?: Position;
 
     /**
-     * Specifies the label of an axis, which must get hide when an axis makes a complete circle. They are
-     * * first -  Hides the 1st label on intersect.
-     * * last - Hides the last label on intersect.
-     * * none - Places both the labels.
+     * Sets and gets the label of an axis, which gets hidden when an axis makes a complete circle.
      * @default None
      */
 
     hiddenLabel?: HiddenLabel;
 
     /**
-     * if set true, the labels will get rotated along the axis.
+     * Enables and disables the labels get rotated along the axis in the circular gauge component.
      * @default false
      */
     autoAngle?: boolean;
 
     /**
-     * If set true, labels takes the range color.
+     * Enables and disables the axis labels to use the range color of the axis.
      * @default false
      */
 
     useRangeColor?: boolean;
 
     /**
-     * Distance of the labels from axis in pixel.
+     * Sets and gets the value to place the labels from the axis in circular gauge.
      * @default 0
      */
 
     offset?: number;
 
     /**
-     * To apply default padding value
+     * Enables and disables the default padding value of axis labels in circular gauge component.
      * @default true
      */
 
@@ -100,7 +96,7 @@ export interface LabelModel {
 export interface RangeModel {
 
     /**
-     * Specifies the minimum value of the range.
+     * Sets and gets the start value of the range in circular gauge component.
      * @aspDefaultValueIgnore
      * @default 0
      */
@@ -108,7 +104,7 @@ export interface RangeModel {
     start?: number;
 
     /**
-     * Specifies the maximum value of the range.
+     * Sets and gets the end value of the range in circular gauge component.
      * @aspDefaultValueIgnore
      * @default 0
      */
@@ -116,28 +112,28 @@ export interface RangeModel {
     end?: number;
 
     /**
-     * The radius of the range in pixels or in percentage.
+     * Sets and gets the radius of the range for circular gauge component.
      * @default null
      */
 
     radius?: string;
 
     /**
-     * Specifies the start width of the ranges
+     *  Sets and gets the width for the start of the range in the circular gauge component.
      * @default '10'
      */
 
     startWidth?: number | string;
 
     /**
-     * Specifies the end width of the ranges
+     *   Sets and gets the width for the end of the range in the circular gauge component.
      * @default '10'
      */
 
     endWidth?: number | string;
 
     /**
-     * Specifies the color of the ranges
+     * Sets and gets the color of the ranges in circular gauge component.
      * @aspDefaultValueIgnore
      * @default null
      */
@@ -145,38 +141,34 @@ export interface RangeModel {
     color?: string;
 
     /**
-     * Specifies the rounded corner radius for ranges.
+     * Sets and gets the corner radius for ranges in circular gauge component.
      * @default 0
      */
 
     roundedCornerRadius?: number;
 
     /**
-     * Specifies the opacity for ranges.
+     * Sets and gets the opacity for the ranges in circular gauge component.
      * @default 1
      */
 
     opacity?: number;
 
     /**
-     * Specifies the text for legend.
+     * Sets and gets the text for the legend in the circular gauge component.
      * @default ''
      */
     legendText?: string;
 
     /**
-     * Specifies the position of range for an axis.
-     * * inside -  Renders inside axis.
-     * * outside - Renders outside axis.
-     * * cross - Renders on the axis.
-     * * auto - Renders based on radius. 
+     * Sets and gets the position of the range and pointer for an axis in circular gauge component.
      * @default Auto
      */
 
     position?: PointerRangePosition;
 
     /**
-     * Specifies the offset value of range.
+     * Sets and gets the offset value of range in circular gauge component.
      * @default '0'
      */
     offset?: number | string;
@@ -189,7 +181,7 @@ export interface RangeModel {
 export interface TickModel {
 
     /**
-     * The width of the ticks in pixels.
+     * Sets and gets the width of the ticks in circular gauge component.
      * @aspDefaultValueIgnore
      * @default 2
      */
@@ -197,7 +189,7 @@ export interface TickModel {
     width?: number;
 
     /**
-     * The height of the line in pixels.
+     * Sets and gets the height of the ticks in circular gauge component.
      * @aspDefaultValueIgnore
      * @default null
      */
@@ -205,7 +197,7 @@ export interface TickModel {
     height?: number;
 
     /**
-     * Specifies the interval of the tick line.
+     * Sets and gets the interval between the tick lines in circular gauge component.
      * @aspDefaultValueIgnore
      * @default null
      */
@@ -213,14 +205,14 @@ export interface TickModel {
     interval?: number;
 
     /**
-     * Distance of the ticks from axis in pixel.
+     * Sets and gets the distance of the ticks from axis in circular gauge component.
      * @default 0
      */
 
     offset?: number;
 
     /**
-     * The color of the tick line, which accepts value in hex, rgba as a valid CSS color string.
+     * Sets and gets the color of the tick line. This property accepts value in hex code, rgba string as a valid CSS color string.
      * @aspDefaultValueIgnore
      * @default null
      */
@@ -228,23 +220,21 @@ export interface TickModel {
     color?: string;
 
     /**
-     * Specifies the position of the ticks. They are
-     * * inside -  Places the ticks inside the axis.
-     * * outside - Places the ticks outside of the axis.
+     * Sets and gets the position of the ticks in circular gauge component.
      * @default Inside
      */
 
     position?: Position;
 
     /**
-     * If set true, major ticks takes the range color.
+     * Enables and disables the tick lines to take the range color.
      * @default false
      */
 
     useRangeColor?: boolean;
 
     /**
-     * Sets or gets the dash array for the ticks
+     * Sets and gets the dash-array for the ticks in circular gauge component.
      * @default '0'
      */
 
@@ -258,20 +248,20 @@ export interface TickModel {
 export interface CapModel {
 
     /**
-     * The color of the cap.
+     * Sets and gets the color for the pointer cap in the circular gauge component.
      * @default null
      */
 
     color?: string;
 
     /**
-     * Options for customizing the border of the cap.
+     * Sets and gets the border of the pointer cap in the circular gauge component.
      */
 
     border?: BorderModel;
 
     /**
-     * Radius of the cap in pixels.
+     * Sets and gets the radius of pointer cap in the circular gauge component.
      * @default 8
      */
 
@@ -285,7 +275,7 @@ export interface CapModel {
 export interface NeedleTailModel {
 
     /**
-     * The color of the back needle.
+     * Sets and gets the color for the needle pointer in the circular gauge component.
      * @aspDefaultValueIgnore
      * @default null
      */
@@ -293,13 +283,13 @@ export interface NeedleTailModel {
     color?: string;
 
     /**
-     * Options for customizing the border of the back needle.
+     * Sets and gets options to customize the color and width of the border for the pointer needle in the circular gauge component.
      */
 
     border?: BorderModel;
 
     /**
-     * The radius of the back needle in pixels or in percentage.
+     * Sets and gets the length of the needle in pixels or in percentage in circular gauge component.
      * @default '0%'
      */
 
@@ -313,14 +303,14 @@ export interface NeedleTailModel {
 export interface AnimationModel {
 
     /**
-     * If set true, pointers get animate on initial loading.
+     * Enables and disables the pointer animation during initial rendering in circular gauge component.
      * @default true
      */
 
     enable?: boolean;
 
     /**
-     * Duration of animation in milliseconds.
+     * Sets and gets the duration of animation in milliseconds in circular gauge component.
      * @default 1000
      */
 
@@ -334,43 +324,43 @@ export interface AnimationModel {
 export interface AnnotationModel {
 
     /**
-     * Content of the annotation, which accepts the id of the custom element.
+     * Sets and gets the content of the annotation. This property accepts the id of the custom element.
      * @default null
      */
     content?: string;
 
     /**
-     * Angle for annotation with respect to axis.
+     * Sets and gets the angle for annotation with respect to axis in circular gauge component.
      * @default 90
      */
     angle?: number;
 
     /**
-     * Radius for annotation with respect to axis.
+     * Sets and gets the radius for annotation with respect to axis in circular gauge component.
      * @default '50%'
      */
     radius?: string;
 
     /**
-     * Order of an annotation in an axis.
+     * Sets and gets the z-index of an annotation in an axis in the circular gauge component.
      * @default '-1'
      */
     zIndex?: string;
 
     /**
-     * Rotates the annotation along the axis.
+     * Enables and disables the annotation rotation along the axis.
      * @default false
      */
     autoAngle?: boolean;
 
     /**
-     * Options for customizing the annotation text.
+     * Sets and gets the style of the text in annotation.
      */
 
     textStyle?: FontModel;
 
     /**
-     * Information about annotation for assistive technology.
+     * Sets and gets the information about annotation for assistive technology.
      * @default null
      */
     description?: string;
@@ -383,7 +373,7 @@ export interface AnnotationModel {
 export interface PointerModel {
 
     /**
-     * Specifies the value of the pointer.
+     * Sets and gets the value of the pointer in circular gauge component.
      * @aspDefaultValueIgnore
      * @default null
      */
@@ -391,144 +381,130 @@ export interface PointerModel {
     value?: number;
 
     /**
-     * Specifies the type of pointer for an axis.
-     * * needle -  Renders a needle.
-     * * marker - Renders a marker.
-     * * rangeBar - Renders a rangeBar.
+     * Sets and gets the type of pointer for an axis in Circular gauge component.
      * @default Needle
      */
 
     type?: PointerType;
 
     /**
-     * Specifies the position of pointer for an axis.
-     * * inside -  Renders a Inside.
-     * * outside - Renders a Outside.
-     * * cross - Renders a Cross.
-     * * Auto - Renders a based on radius
+     * Sets and gets the position of pointer for an axis.
      * @default Auto
      */
 
     position?: PointerRangePosition;
 
     /**
-     * Specifies the rounded corner radius for pointer.
+     * Sets and gets the corner radius for pointer in axis.
      * @default 0
      */
 
     roundedCornerRadius?: number;
 
     /**
-     * The URL for the Image that is to be displayed as pointer.
+     * Sets and gets the url for the image that is to be displayed as pointer.
      * It requires marker shape value to be Image.
      * @default null
      */
     imageUrl?: string;
 
     /**
-     * Length of the pointer in pixels or in percentage.
+     * Sets and gets the radius of pointer for marker and range type pointer and fix length of pointer for needle pointer.
      * @default null
      */
     radius?: string;
 
     /**
-     * Width of the pointer in pixels.
+     * Sets and gets the width of the pointer in axis.
      * @default 20
      */
     pointerWidth?: number;
 
     /**
-     * Options for customizing the cap
+     * Sets and gets the cap of pointer in an axis.
      */
 
     cap?: CapModel;
 
     /**
-     * Options for customizing the font
+     * Sets and gets the style of text in pointer of an axis.
      */
 
     textStyle?: FontModel;
 
     /**
-     * Options for customizing the back needle.
+     * Sets and gets the tail of needle pointer in an axis.
      */
 
     needleTail?: NeedleTailModel;
 
     /**
-     * The color of the pointer.
+     * Sets and gets the color of the pointer in an axis.
      */
 
     color?: string;
 
     /**
-     * Options for customizing the border of the needle.
+     * Sets and gets the options to customize the color and width of the border for the needle pointer in an axis.
      */
 
     border?: BorderModel;
 
     /**
-     * Configures the animation of pointers.
+     * Sets and gets the animation of pointers while rendering the axis in circular gauge.
      */
 
     animation?: AnimationModel;
 
     /**
-     * Specifies the shape of the marker. They are
-     * * circle - Renders a circle.
-     * * rectangle - Renders a rectangle.
-     * * triangle - Renders a triangle.
-     * * diamond - Renders a diamond.
-     * * invertedTriangle - Renders a invertedTriangle.
-     * * image - Renders a image.
-     * * Text - Renders a Text.
+     * Sets and gets the shape of the marker type pointer in an axis.
      * @default Circle
      */
 
     markerShape?: GaugeShape;
 
     /**
-     * The height of the marker in pixels.
+     * Sets and gets the height of the marker pointer in an axis.
      * @default 5
      */
 
     markerHeight?: number;
 
     /**
-     * text of the pointer.
+     * Sets and gets the text in pointer.
      * @default ''
      */
     text?: string;
 
     /**
-     * Information about pointer for assistive technology.
+     * Sets and gets the information about pointer for assistive technology.
      * @default null
      */
     description?: string;
 
     /**
-     * The width of the marker in pixels.
+     * Sets and gets the width of the marker pointer in an axis.
      * @default 5
      */
 
     markerWidth?: number;
 
     /**
-     * The offset value of pointer from scale.
+     * Sets and gets the offset value of pointer from scale.
      * @default '0'
      */
 
     offset?: number | string;
 
     /**
-     * Sets or gets the start width of the needle pointer
+     * Sets or gets the start width of the needle pointer in an axis.
      * @default null
      */
 
     needleStartWidth?: number;
 
     /**
-     * Sets or gets the end width of the needle pointer
+     * Sets or gets the end width of the needle pointer in an axis.
      * @default null
      */
 
@@ -542,7 +518,7 @@ export interface PointerModel {
 export interface AxisModel {
 
     /**
-     * Specifies the minimum value of an axis.
+     * Sets and gets the minimum value of an axis in the circular gauge component.
      * @aspDefaultValueIgnore
      * @default null
      */
@@ -550,7 +526,7 @@ export interface AxisModel {
     minimum?: number;
 
     /**
-     * Specifies the maximum value of an axis.
+     * Sets and gets the maximum value of an axis in the circular gauge component.
      * @aspDefaultValueIgnore
      * @default null
      */
@@ -558,114 +534,112 @@ export interface AxisModel {
     maximum?: number;
 
     /**
-     * Specifies the last label to be shown
+     * Enables and disables the last label of axis when it is hidden in circular gauge component.
      * @default false
      */
 
     showLastLabel?: boolean;
 
     /**
-     * Specifies to hide the intersecting axis labels
+     * Enables and disables the intersecting labels to be hidden in axis.
      * @default false
      */
 
     hideIntersectingLabel?: boolean;
 
     /**
-     * Specifies the rounding Off value in the label
+     * Sets and gets the rounding Off value in the label in an axis.
      * @default null
      */
 
     roundingPlaces?: number;
 
     /**
-     * Radius of an axis in pixels or in percentage.
+     * Sets and gets the radius of an axis in circular gauge.
      * @default null
      */
 
     radius?: string;
 
     /**
-     * Options for customizing the axis lines.
+     * Sets and gets the style of the line in axis of circular gauge component.
      */
 
     lineStyle?: LineModel;
 
     /**
-     * Options for customizing the ranges of an axis
+     * Sets and gets the ranges of an axis in circular gauge component.
      */
 
     ranges?: RangeModel[];
 
     /**
-     * Options for customizing the pointers of an axis
+     * Sets and gets the pointers of an axis in circular gauge component.
      */
 
     pointers?: PointerModel[];
 
     /**
-     * ‘Annotation’ module is used to handle annotation action for an axis.
+     * Sets and gets the annotation element for an axis in circular gauge component.
      */
 
     annotations?: AnnotationModel[];
 
     /**
-     * Options for customizing the major tick lines.
+     * Sets and gets the major tick lines of an axis in circular gauge component.
      * @default { width: 2, height: 10 }
      */
 
     majorTicks?: TickModel;
 
     /**
-     * Options for customizing the minor tick lines.
+     * Sets and gets the minor tick lines of an axis in circular gauge component.
      * @default { width: 2, height: 5 }
      */
 
     minorTicks?: TickModel;
 
     /**
-     * The start angle of an axis
+     * Sets and gets the start angle of an axis in circular gauge component.
      * @default 200
      */
 
     startAngle?: number;
 
     /**
-     * The end angle of an axis
+     * Sets and gets the end angle of an axis in circular gauge component.
      * @default 160
      */
 
     endAngle?: number;
 
     /**
-     * Specifies the direction of an axis. They are
-     * * clockWise -  Renders the axis in clock wise direction.
-     * * antiClockWise - Renders the axis in anti-clock wise direction.
+     * Sets and gets the direction of an axis.
      * @default ClockWise
      */
 
     direction?: GaugeDirection;
 
     /**
-     * The background color of the axis, which accepts value in hex, rgba as a valid CSS color string.
+     * Sets and gets the background color of an axis. This property accepts value in hex code, rgba string as a valid CSS color string.
      * @default null
      */
     background?: string;
 
     /**
-     * Specifies the range gap property by pixel value.
+     * Sets and gets the gap between the ranges by specified value in circular gauge component.
      * @default null
      */
     rangeGap?: number;
 
     /**
-     * Specifies the start and end range gap.
+     * Enables and disables the start and end gap between the ranges and axis in circular gauge.
      * @default false
      */
     startAndEndRangeGap?: boolean;
 
     /**
-     * Options to customize the axis label.
+     * Sets and gets the style of the axis label in circular gauge component.
      */
 
     labelStyle?: LabelModel;

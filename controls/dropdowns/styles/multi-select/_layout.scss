@@ -63,6 +63,10 @@
   word-wrap: initial;
 }
 
+.e-multiselect.e-input-group .e-searcher .e-label-top {
+  top: $ddl-multiselect-label-position;
+}
+
 .e-bigger .e-multi-select-wrapper {
   min-height: $ddl-control-bigger-height;
 }

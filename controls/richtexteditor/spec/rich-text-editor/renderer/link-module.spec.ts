@@ -341,7 +341,7 @@ describe('insert Link', () => {
             (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkText').value = 'Provides <IFRAME> and <DIV> modes Value';        
             evnArg.target = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
             (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click(evnArg);
-            expect((<any>rteObj).contentModule.getEditPanel().innerText === `Provides <IFRAME> and <DIV> modes Value\n`).toBe(true);
+            expect((<any>rteObj).contentModule.getEditPanel().innerText === `Provides <IFRAME> and <DIV> modes Value`).toBe(true);
         });
     });
 

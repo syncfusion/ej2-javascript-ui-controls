@@ -9,8 +9,14 @@ import { PositionDataModel } from '../popup/popup-model';
 import { ButtonPropsModel, DialogModel, AnimationSettingsModel } from './dialog-model';
 import { createResize, removeResize, setMinHeight } from '../common/resize';
 
+/**
+ * Defines the types of a button in the dialog.
+ */
 export type ButtonType = 'Button' | 'Submit' | 'Reset';
 
+/**
+ * Provides information about a SanitizeSelectors.
+ */
 export interface SanitizeSelectors {
     /** Returns the tags. */
     tags?: string[];
@@ -18,6 +24,9 @@ export interface SanitizeSelectors {
     attributes?: SanitizeRemoveAttrs[];
 }
 
+/**
+ * Provides information about a BeforeSanitizeHtml event.
+ */
 export interface BeforeSanitizeHtmlArgs {
     /** Illustrates whether the current action needs to be prevented or not. */
     cancel?: boolean;
@@ -33,6 +42,9 @@ export interface BeforeSanitizeHtmlArgs {
     selectors?: SanitizeSelectors;
 }
 
+/**
+ * Provides information about a SanitizeRemoveAttributes.
+ */
 export interface SanitizeRemoveAttrs {
     /** Defines the attribute name to sanitize */
     attribute?: string;
@@ -146,6 +158,9 @@ const DLG_RESTRICT_LEFT_VALUE: string = 'e-restrict-left';
 const DLG_RESTRICT_WIDTH_VALUE: string = 'e-resize-viewport';
 const DLG_REF_ELEMENT: string = 'e-dlg-ref-element';
 
+/**
+ * Provides information about a BeforeOpen event.
+ */
 export interface BeforeOpenEventArgs {
     /**
      * Specify the value to override max-height value of dialog.
@@ -172,6 +187,9 @@ export interface BeforeOpenEventArgs {
     target?: HTMLElement | String;
 }
 
+/**
+ * Provides information about a BeforeClose event.
+ */
 export interface BeforeCloseEventArgs {
     /**
      * Defines whether the current action can be prevented.
@@ -206,6 +224,9 @@ export interface BeforeCloseEventArgs {
     event: Event;
 }
 
+/**
+ * Provides information about a DialogOpen event.
+ */
 export interface OpenEventArgs {
     /**
      * Defines whether the focus action can be prevented in dialog.
@@ -229,6 +250,9 @@ export interface OpenEventArgs {
     name: string;
 }
 
+/**
+ * Provides information about a Close event.
+ */
 export interface CloseEventArgs {
     /**
      * Defines whether the current action can be prevented.
@@ -260,6 +284,9 @@ export interface CloseEventArgs {
     name: string;
 }
 
+/**
+ * Provides information about a DragStart event.
+ */
 export interface DragStartEventArgs {
     /**
      * Returns the original event arguments.
@@ -279,6 +306,9 @@ export interface DragStartEventArgs {
     name: String;
 }
 
+/**
+ * Provides information about a DragStop event.
+ */
 export interface DragStopEventArgs {
     /**
      * Returns the original event arguments.
@@ -302,6 +332,9 @@ export interface DragStopEventArgs {
     name: String;
 }
 
+/**
+ * Provides information about a Drag event.
+ */
 export interface DragEventArgs {
     /**
      * Returns the original event arguments.
@@ -1541,7 +1574,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         for (let i: number = 0; i < attrs.length; i++) {
             this.element.removeAttribute(attrs[i]);
         }
-        super.destroy();
+        if (!this.isBlazorServerRender()) { super.destroy(); }
     }
 
     /**
@@ -1939,6 +1972,9 @@ export namespace DialogUtility {
     }
 }
 
+/**
+ * Provides information about a Button event.
+ */
 export interface ButtonArgs {
     icon?: string;
     cssClass?: string;
@@ -1946,6 +1982,9 @@ export interface ButtonArgs {
     text?: string;
 }
 
+/**
+ * Provides information about a AlertDialog.
+ */
 export interface AlertDialogArgs {
     title?: string;
     content?: string | HTMLElement;
@@ -1962,6 +2001,9 @@ export interface AlertDialogArgs {
     close?: EmitType<Object>;
 }
 
+/**
+ * Provides information about a ConfirmDialog.
+ */
 export interface ConfirmDialogArgs {
     title?: string;
     content?: string | HTMLElement;

@@ -37,13 +37,13 @@
       &:hover {
         background-color: $field-list-toggle-hover-color;
       }
+    }
+  }
 
-      &.e-rtl {
+  &.e-rtl {
 
-        .e-select-table {
-          padding: 8px 5px;
-        }
-      }
+    .e-select-table {
+      padding: 8px 5px;
     }
   }
 
@@ -1044,14 +1044,16 @@
                 font-size: 12px;
                 height: 36px;
                 min-height: 36px;
-                min-width: 24px;
+                min-width: 28px;
                 padding: 0;
                 position: absolute;
                 right: 16px;
                 top: 0;
 
                 .e-list-icon {
+                  cursor: pointer;
                   display: table-cell;
+                  padding-right: 6px;
                   text-align: center;
                   vertical-align: middle;
                 }

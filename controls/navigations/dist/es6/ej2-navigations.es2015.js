@@ -308,7 +308,7 @@ let HScroll = class HScroll extends Component {
                 else if (e.swipeDirection === 'Right') {
                     swipeEle.scrollLeft -= distance * step;
                 }
-                start -= 0.02;
+                start -= 0.5;
                 window.requestAnimationFrame(animate);
             }
         };
@@ -1301,7 +1301,7 @@ let MenuBase = class MenuBase extends Component {
                 this.navIdx.push(fliIdx);
                 this.keyType = 'right';
                 this.action = e.action;
-                this.openMenu(fli, item, null, null, e);
+                this.openMenu(fli, item, -1, -1, e);
             }
             else {
                 if (e.action === ENTER) {
@@ -1496,6 +1496,12 @@ let MenuBase = class MenuBase extends Component {
         this.lItem = li;
         let elemId = this.element.id !== '' ? this.element.id : 'menu';
         this.isMenusClosed = false;
+        if (isNullOrUndefined(top)) {
+            top = -1;
+        }
+        if (isNullOrUndefined(left)) {
+            left = -1;
+        }
         if (li) {
             this.uList = this.createItems(item[this.getField('children', this.navIdx.length - 1)]);
             if (!this.isMenu && Browser.isDevice) {
@@ -1783,7 +1789,7 @@ let MenuBase = class MenuBase extends Component {
     setPosition(li, ul, top, left) {
         let px = 'px';
         this.toggleVisiblity(ul);
-        if (ul === this.element || (!isNullOrUndefined(left) && !isNullOrUndefined(top))) {
+        if (ul === this.element || (left > -1 && top > -1)) {
             let collide = isCollide(ul, null, left, top);
             if (collide.indexOf('right') > -1) {
                 left = left - ul.offsetWidth;
@@ -3005,12 +3011,24 @@ let Toolbar = class Toolbar extends Component {
     wireEvents() {
         EventHandler.add(this.element, 'click', this.clickHandler, this);
         window.addEventListener('resize', this.resizeContext);
+        if (this.allowKeyboard) {
+            this.wireKeyboardEvent();
+        }
+    }
+    wireKeyboardEvent() {
         this.keyModule = new KeyboardEvents(this.element, {
             keyAction: this.keyActionHandler.bind(this),
             keyConfigs: this.keyConfigs
         });
         EventHandler.add(this.element, 'keydown', this.docKeyDown, this);
         this.element.setAttribute('tabIndex', '0');
+    }
+    unwireKeyboardEvent() {
+        if (this.keyModule) {
+            EventHandler.remove(this.element, 'keydown', this.docKeyDown);
+            this.keyModule.destroy();
+            this.keyModule = null;
+        }
     }
     docKeyDown(e) {
         if (e.target.tagName === 'INPUT') {
@@ -3028,10 +3046,9 @@ let Toolbar = class Toolbar extends Component {
     unwireEvents() {
         EventHandler.remove(this.element, 'click', this.clickHandler);
         this.destroyScroll();
-        this.keyModule.destroy();
+        this.unwireKeyboardEvent();
         window.removeEventListener('resize', this.resizeContext);
         EventHandler.remove(document, 'scroll', this.docEvent);
-        EventHandler.remove(this.element, 'keydown', this.docKeyDown);
         EventHandler.remove(document, 'click', this.docEvent);
     }
     clearProperty() {
@@ -3330,7 +3347,31 @@ let Toolbar = class Toolbar extends Component {
             return;
         }
         if (clst) {
-            itemObj = this.items[this.tbarEle.indexOf(clst)];
+            let tempItem = this.items[this.tbarEle.indexOf(clst)];
+            if (tempItem && isBlazor() && this.isServerRendered) {
+                itemObj = {
+                    id: tempItem.id,
+                    text: tempItem.text,
+                    width: tempItem.width,
+                    cssClass: tempItem.cssClass,
+                    showAlwaysInPopup: tempItem.showAlwaysInPopup,
+                    disabled: tempItem.disabled,
+                    prefixIcon: tempItem.prefixIcon,
+                    suffixIcon: tempItem.suffixIcon,
+                    visible: tempItem.visible,
+                    overflow: tempItem.overflow,
+                    template: tempItem.template,
+                    type: tempItem.type,
+                    showTextOn: tempItem.showTextOn,
+                    htmlAttributes: tempItem.htmlAttributes,
+                    tooltipText: tempItem.tooltipText,
+                    align: tempItem.align,
+                    click: tempItem.click
+                };
+            }
+            else {
+                itemObj = tempItem;
+            }
         }
         let eventArgs = { originalEvent: e, item: itemObj };
         if (itemObj && !isNullOrUndefined(itemObj.click)) {
@@ -4807,6 +4848,12 @@ let Toolbar = class Toolbar extends Component {
                         addClass([this.element], newProp.cssClass.split(' '));
                     }
                     break;
+                case 'allowKeyboard':
+                    this.unwireKeyboardEvent();
+                    if (newProp.allowKeyboard) {
+                        this.wireKeyboardEvent();
+                    }
+                    break;
             }
         }
     }
@@ -4906,6 +4953,9 @@ __decorate$3([
     Property(true)
 ], Toolbar.prototype, "enableHtmlSanitizer", void 0);
 __decorate$3([
+    Property(true)
+], Toolbar.prototype, "allowKeyboard", void 0);
+__decorate$3([
     Event()
 ], Toolbar.prototype, "clicked", void 0);
 __decorate$3([
@@ -4955,6 +5005,9 @@ const CLS_TOGANIMATE = 'e-toggle-animation';
 const CLS_NEST = 'e-nested';
 const CLS_EXPANDSTATE = 'e-expand-state';
 const CLS_CONTAINER = 'e-accordion-container';
+/**
+ * Objects used for configuring the Accordion expanding item action properties.
+ */
 class AccordionActionSettings extends ChildProperty {
 }
 __decorate$4([
@@ -4966,6 +5019,9 @@ __decorate$4([
 __decorate$4([
     Property('linear')
 ], AccordionActionSettings.prototype, "easing", void 0);
+/**
+ * Objects used for configuring the Accordion animation properties.
+ */
 class AccordionAnimationSettings extends ChildProperty {
 }
 __decorate$4([
@@ -6591,6 +6647,9 @@ const CLS_VLEFT = 'e-vertical-left';
 const CLS_VRIGHT = 'e-vertical-right';
 const CLS_HBOTTOM = 'e-horizontal-bottom';
 const CLS_FILL = 'e-fill-mode';
+/**
+ * Objects used for configuring the Tab selecting item action properties.
+ */
 class TabActionSettings extends ChildProperty {
 }
 __decorate$7([
@@ -6602,6 +6661,9 @@ __decorate$7([
 __decorate$7([
     Property('ease')
 ], TabActionSettings.prototype, "easing", void 0);
+/**
+ * Objects used for configuring the Tab animation properties.
+ */
 class TabAnimationSettings extends ChildProperty {
 }
 __decorate$7([
@@ -8523,10 +8585,10 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         this.preventExpand = false;
         this.checkedElement = [];
         this.disableNode = [];
-        this.parentNodeCheck = [];
         this.validArr = [];
         this.expandChildren = [];
         this.isFieldChange = false;
+        this.changeDataSource = false;
         this.mouseDownStatus = false;
     }
     /**
@@ -8543,6 +8605,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
     preRender() {
         this.isBlazorPlatform = (isBlazor() && this.isServerRendered);
         this.checkActionNodes = [];
+        this.parentNodeCheck = [];
         this.dragStartAction = false;
         this.isAnimate = false;
         this.keyConfigs = {
@@ -8623,7 +8686,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         this.initialRender = true;
         this.blazorInitialRender = false;
         this.initialize();
-        this.setDataBinding();
+        this.setDataBinding(false);
         this.setDisabledMode();
         this.setExpandOnType();
         if (!this.disabled) {
@@ -8699,7 +8762,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         }
         return undefined;
     }
-    setDataBinding() {
+    setDataBinding(changeDataSource) {
         this.treeList.push('false');
         if (this.fields.dataSource instanceof DataManager) {
             if (this.fields.dataSource.ready) {
@@ -8724,7 +8787,11 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                     this.treeData = e.result;
                     this.isNumberTypeId = this.getType();
                     this.setRootData();
+                    if (changeDataSource) {
+                        this.changeDataSource = true;
+                    }
                     this.renderItems(true);
+                    this.changeDataSource = false;
                     if (this.treeList.length === 0 && !this.isLoaded) {
                         this.finalize();
                     }
@@ -8796,20 +8863,21 @@ let TreeView = TreeView_1 = class TreeView extends Component {
     }
     renderItems(isSorted) {
         // tslint:disable
-        if (!this.isBlazorPlatform || (this.isBlazorPlatform && this.fields.dataSource instanceof DataManager && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor'))) {
+        if (!this.isBlazorPlatform || (this.isBlazorPlatform && this.fields.dataSource instanceof DataManager && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) || this.changeDataSource) {
             this.listBaseOption.ariaAttributes.level = 1;
             let sortedData = this.getSortedData(this.rootData);
             this.ulElement = ListBase.createList(this.createElement, isSorted ? this.rootData : sortedData, this.listBaseOption);
             this.element.appendChild(this.ulElement);
+            let rootNodes = this.ulElement.querySelectorAll('.e-list-item');
             if (this.loadOnDemand === false) {
-                let rootNodes = this.ulElement.querySelectorAll('.e-list-item');
                 let i = 0;
                 while (i < rootNodes.length) {
                     this.renderChildNodes(rootNodes[i], true, null, true);
                     i++;
                 }
             }
-            else {
+            let parentEle = selectAll('.' + PARENTITEM, this.element);
+            if ((parentEle.length === 1 && (rootNodes && rootNodes.length !== 0)) || this.loadOnDemand) {
                 this.finalizeNode(this.element);
             }
         }
@@ -9078,7 +9146,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         }
     }
     getDataType(ds, mapper) {
-        if (this.fields.dataSource instanceof DataManager) {
+        if (this.fields.dataSource instanceof DataManager && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) {
             for (let i = 0; i < ds.length; i++) {
                 if ((typeof mapper.child === 'string') && isNullOrUndefined(getValue(mapper.child, ds[i]))) {
                     return 1;
@@ -9214,15 +9282,20 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                 let expandState = childElement.parentElement.getAttribute('aria-expanded');
                 let checkedState;
                 for (let index = 0; index < checkBoxes.length; index++) {
+                    let childId = childCheck[index].getAttribute('data-uid');
                     if (!isNullOrUndefined(this.currentLoadData) && !isNullOrUndefined(getValue(this.fields.isChecked, this.currentLoadData[index]))) {
                         checkedState = getValue(this.fields.isChecked, this.currentLoadData[index]) ? 'check' : 'uncheck';
                         if (this.ele !== -1) {
                             checkedState = isChecked ? 'check' : 'uncheck';
                         }
+                        if ((checkedState === 'uncheck') && (!isUndefined(this.parentNodeCheck) && this.autoCheck
+                            && this.parentNodeCheck.indexOf(childId) !== -1)) {
+                            this.parentNodeCheck.splice(this.parentNodeCheck.indexOf(childId), 1);
+                            checkedState = 'indeterminate';
+                        }
                     }
                     else {
                         let isNodeChecked = checkBoxes[index].getElementsByClassName(CHECKBOXFRAME)[0].classList.contains(CHECK);
-                        let childId = childCheck[index].getAttribute('data-uid');
                         if (isChecked) {
                             checkedState = 'check';
                         }
@@ -9560,7 +9633,9 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         if (!isPrevent) {
             if (!isNullOrUndefined(ariaState)) {
                 wrapper.setAttribute('aria-checked', ariaState);
+                this.allowServerDataBinding = true;
                 this.updateServerProperties("check");
+                this.allowServerDataBinding = false;
                 eventArgs.data[0].checked = ariaState;
                 this.trigger('nodeChecked', eventArgs);
                 this.checkActionNodes = [];
@@ -9586,15 +9661,17 @@ let TreeView = TreeView_1 = class TreeView extends Component {
     }
     finalize() {
         let firstUl = select('.' + PARENTITEM, this.element);
-        firstUl.setAttribute('role', treeAriaAttr.treeRole);
-        this.setMultiSelect(this.allowMultiSelection);
-        let firstNode = select('.' + LISTITEM, this.element);
-        if (firstNode) {
-            addClass([firstNode], FOCUS);
-            this.updateIdAttr(null, firstNode);
+        if (!isNullOrUndefined(firstUl)) {
+            firstUl.setAttribute('role', treeAriaAttr.treeRole);
+            this.setMultiSelect(this.allowMultiSelection);
+            let firstNode = select('.' + LISTITEM, this.element);
+            if (firstNode) {
+                addClass([firstNode], FOCUS);
+                this.updateIdAttr(null, firstNode);
+            }
+            this.hasPid = this.rootData[0] ? this.rootData[0].hasOwnProperty(this.fields.parentID) : false;
+            this.doExpandAction();
         }
-        this.hasPid = this.rootData[0] ? this.rootData[0].hasOwnProperty(this.fields.parentID) : false;
-        this.doExpandAction();
     }
     doExpandAction() {
         let eUids = this.expandedNodes;
@@ -9842,7 +9919,9 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         currLi.style.height = '';
         removeClass([icon], PROCESS);
         this.addExpand(currLi);
+        this.allowServerDataBinding = true;
         this.updateServerProperties("expand");
+        this.allowServerDataBinding = false;
         if (this.isLoaded && this.expandArgs && !this.isRefreshed) {
             this.expandArgs = this.getExpandEvent(currLi, null);
             this.trigger('nodeExpanded', this.expandArgs);
@@ -10218,7 +10297,9 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         }
         this.setFocusElement(li);
         if (this.isLoaded) {
+            this.allowServerDataBinding = true;
             this.updateServerProperties("select");
+            this.allowServerDataBinding = false;
             eventArgs.nodeData = this.getNodeData(li);
             this.trigger('nodeSelected', eventArgs);
         }
@@ -10229,6 +10310,9 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             eventArgs = this.getSelectEvent(li, 'un-select', e);
             this.trigger('nodeSelecting', eventArgs, (observedArgs) => {
                 if (!observedArgs.cancel) {
+                    this.allowServerDataBinding = true;
+                    this.updateServerProperties("select");
+                    this.allowServerDataBinding = false;
                     this.nodeUnselectAction(li, observedArgs);
                 }
             });
@@ -10241,7 +10325,9 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         this.removeSelect(li);
         this.setFocusElement(li);
         if (this.isLoaded) {
+            this.allowServerDataBinding = true;
             this.updateServerProperties("select");
+            this.allowServerDataBinding = false;
             eventArgs.nodeData = this.getNodeData(li);
             this.trigger('nodeSelected', eventArgs);
         }
@@ -10537,7 +10623,9 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             }
             this.ensureStateChange(li, doCheck);
         }
+        this.allowServerDataBinding = true;
         this.updateServerProperties("check");
+        this.allowServerDataBinding = false;
         this.nodeCheckedEvent(checkWrap, isCheck, e);
     }
     /**
@@ -10912,7 +11000,8 @@ let TreeView = TreeView_1 = class TreeView extends Component {
     }
     reRenderNodes() {
         resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate');
-        if (this.isBlazorPlatform && this.ulElement && this.ulElement.parentElement) {
+        if (this.isBlazorPlatform) {
+            this.ulElement = this.element.querySelector('.e-list-parent.e-ul');
             this.ulElement.parentElement.removeChild(this.ulElement);
         }
         else {
@@ -10925,7 +11014,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         this.setProperties({ selectedNodes: [], checkedNodes: [], expandedNodes: [] }, true);
         this.checkedElement = [];
         this.isLoaded = false;
-        this.setDataBinding();
+        this.setDataBinding(true);
     }
     setCssClass(oldClass, newClass) {
         if (!isNullOrUndefined(oldClass) && oldClass !== '') {
@@ -11782,13 +11871,14 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         this.updateList();
         this.updateSelectedNodes();
         this.updateExpandedNodes();
+        this.allowServerDataBinding = false;
         this.updateServerProperties("expand");
         this.updateServerProperties("check");
         this.updateServerProperties("select");
+        this.allowServerDataBinding = true;
     }
     updateServerProperties(action) {
         if (this.isBlazorPlatform) {
-            this.allowServerDataBinding = true;
             if (action == "expand") {
                 this.setProperties({ expandedNodes: [] }, true);
             }
@@ -11798,8 +11888,6 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             else {
                 this.setProperties({ selectedNodes: this.selectedNodes }, true);
             }
-            this.serverDataBind();
-            this.allowServerDataBinding = false;
         }
     }
     updateList() {
@@ -11976,6 +12064,9 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                     (this.fields.dataSource instanceof DataManager && obj[i].hasOwnProperty('child'))) {
                     let key = (typeof mapper.child === 'string') ? mapper.child : 'child';
                     let childData = getValue(key, obj[i]);
+                    if (isNullOrUndefined(childData)) {
+                        childData = [];
+                    }
                     index = isNullOrUndefined(index) ? childData.length : index;
                     for (let k = 0, len = data.length; k < len; k++) {
                         childData.splice(index, 0, data[k]);
@@ -13144,6 +13235,9 @@ __decorate$8([
 __decorate$8([
     Property(true)
 ], TreeView.prototype, "loadOnDemand", void 0);
+__decorate$8([
+    Property()
+], TreeView.prototype, "locale", void 0);
 __decorate$8([
     Property()
 ], TreeView.prototype, "nodeTemplate", void 0);

@@ -54,8 +54,6 @@ export class TextLayer {
                 // tslint:disable-next-line:max-line-length
                 let textDiv: HTMLElement = createElement('div', { id: this.pdfViewer.element.id + '_text_' + pageNumber + '_' + i, className: 'e-pv-text', attrs: { 'tabindex': '0' } });
                 let textContent: string = textContents[i];
-                textContent = textContent.replace(/</g, '&lt;');
-                textContent = textContent.replace(/>/g, '&gt;');
                 textDiv.textContent = textContent.replace(/&nbsp;/g, ' ');
                 // tslint:disable-next-line
                 let newLine: string = textContents[i].replace(/  +/g, ' ');
@@ -478,7 +476,11 @@ export class TextLayer {
                 beforeClose: (): void => {
                     this.notifyDialog.destroy();
                     if (this.pdfViewer.element) {
-                        this.pdfViewer.element.removeChild(popupElement);
+                        try {
+                            this.pdfViewer.element.removeChild(popupElement);
+                        } catch (error) {
+                            popupElement.parentElement.removeChild(popupElement);
+                        }
                     }
                     if (this.pdfViewer.textSearchModule) {
                         this.pdfViewer.textSearch.isMessagePopupOpened = false;

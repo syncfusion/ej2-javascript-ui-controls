@@ -28,7 +28,7 @@ let columns: ColumnModel[] = [
 
 let sheet: SheetModel[] = [
     {
-        rangeSettings: [{
+        range: [{
             dataSource: dataSource,
             startCell: 'A1'
         }],
@@ -36,7 +36,7 @@ let sheet: SheetModel[] = [
         columns: columns
     },
     {
-        rangeSettings: [{
+        range: [{
             dataSource: new DataManager(getTradeData(30)),
             startCell: 'A1'
         }],
@@ -47,10 +47,10 @@ let sheet: SheetModel[] = [
 let spreadsheet: Spreadsheet = new Spreadsheet({
     sheets: sheet,
     beforeDataBound: (): void => {
-        if (spreadsheet.sheets[spreadsheet.activeSheetTab - 1].name === 'Sheet1') {
+        if (spreadsheet.sheets[spreadsheet.activeSheetIndex].name === 'Sheet1') {
             spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1');
         }
-        if (spreadsheet.sheets[spreadsheet.activeSheetTab - 1].name === 'Sheet2') {
+        if (spreadsheet.sheets[spreadsheet.activeSheetIndex].name === 'Sheet2') {
             spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:K1');
         }
     },

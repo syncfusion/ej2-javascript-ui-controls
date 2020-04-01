@@ -76,7 +76,7 @@ export class WorkbookEdit {
     private updateCellValue(
         address: string | number[], value: string, sheetIdx?: number, isValueOnly: boolean = false): void {
         if (!sheetIdx) {
-            sheetIdx = this.parent.activeSheetTab;
+            sheetIdx = this.parent.activeSheetIndex;
         }
         let range: number[];
         if (typeof address === 'string') {
@@ -84,7 +84,7 @@ export class WorkbookEdit {
         } else {
             range = address;
         }
-        let sheet: SheetModel = getSheet(this.parent, sheetIdx - 1);
+        let sheet: SheetModel = getSheet(this.parent, sheetIdx);
         if (!sheet.rows[range[0]]) {
             sheet.rows[range[0]] = {};
             sheet.rows[range[0]].cells = [];

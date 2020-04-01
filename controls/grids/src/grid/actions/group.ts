@@ -769,7 +769,8 @@ export class Group implements IAction {
         childDiv.appendChild(this.parent.createElement(
             'span', {
             className: 'e-ungroupbutton e-icons e-icon-hide', innerHTML: '&nbsp;',
-            attrs: { title: this.l10n.getConstant('UnGroup'), tabindex: '-1', 'aria-label': 'ungroup the grouped column' },
+            attrs: { title: isBlazor() ? this.l10n.getConstant('UnGroupButton') : this.l10n.getConstant('UnGroup'),
+            tabindex: '-1', 'aria-label': 'ungroup the grouped column' },
             styles: this.groupSettings.showUngroupButton ? '' : 'display:none'
         }));
 
@@ -809,7 +810,7 @@ export class Group implements IAction {
     }
     private refreshToggleBtn(isRemove?: boolean): void {
         if (this.groupSettings.showToggleButton) {
-            let headers: Element[] = [].slice.call(this.parent.element.getElementsByClassName('e-headercelldiv'));
+            let headers: Element[] = [].slice.call(this.parent.getHeaderTable().getElementsByClassName('e-headercelldiv'));
             for (let i: number = 0, len: number = headers.length; i < len; i++) {
                 if (!((headers[i].classList.contains('e-emptycell')) || (headers[i].classList.contains('e-headerchkcelldiv')))) {
                     let column: Column = this.parent.getColumnByUid(headers[i].getAttribute('e-mappinguid'));

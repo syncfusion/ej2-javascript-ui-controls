@@ -21,11 +21,11 @@ export class WorkbookNumberFormat {
     }
 
     private numberFormatting(args: { format?: string, range?: string, cancel?: boolean }): void {
-        let activeSheetTab: number = this.parent.activeSheetTab;
+        let activeSheetIndex: number = this.parent.activeSheetIndex;
         if (args.range && args.range.indexOf('!') > -1) {
-            activeSheetTab = getSheetIndex(this.parent, args.range.split('!')[0]) + 1;
+            activeSheetIndex = getSheetIndex(this.parent, args.range.split('!')[0]);
         }
-        let sheet: SheetModel = this.parent.sheets[activeSheetTab - 1];
+        let sheet: SheetModel = this.parent.sheets[activeSheetIndex];
         let formatRange: string = args.range ? ((args.range.indexOf('!') > -1) ?
             args.range.split('!')[1] : args.range) : sheet.selectedRange;
         let selectedRange: number[] = getRangeIndexes(formatRange);
@@ -37,7 +37,7 @@ export class WorkbookNumberFormat {
                 this.getFormattedCell({
                     type: getTypeFromFormat(cell.format), value: cell.value,
                     format: cell.format, rowIndex: i, colIndex: j,
-                    sheetIndex: activeSheetTab, cell: cell
+                    sheetIndex: activeSheetIndex, cell: cell
                 });
             }
         }
@@ -48,16 +48,17 @@ export class WorkbookNumberFormat {
      */
     public getFormattedCell(args: { [key: string]: string | number | boolean | CellModel }): string {
         let fResult: string = isNullOrUndefined(args.value as string) ? '' : args.value as string;
-        let sheet: SheetModel = args.sheetIndex ? this.parent.sheets[(args.sheetIndex as number) - 1] : this.parent.getActiveSheet();
+        let sheet: SheetModel = this.parent.sheets[isNullOrUndefined(args.sheetIndex) ? this.parent.activeSheetIndex :
+            <number>args.sheetIndex];
         let range: number[] = getRangeIndexes(sheet.activeCell);
-        let sheetIdx: number = Number(args.sheetIndex) ? Number(args.sheetIndex) : this.parent.activeSheetTab;
+        let sheetIdx: number = Number(args.sheetIndex) ? Number(args.sheetIndex) : this.parent.activeSheetIndex;
         let cell: CellModel = args.cell as CellModel ? args.cell as CellModel : getCell(range[0], range[1], sheet);
         let rightAlign: boolean = false;
         let currencySymbol: string = getNumberDependable(this.parent.locale, 'USD');
         if (args.format === '' || args.format === 'General') {
             cell = cell ? cell : {};
             let dateEventArgs: { [key: string]: string | number | boolean } = {
-                value: <string>args.value, rowIndex: range[0], colIndex: range[1], sheetIndex: this.parent.activeSheetTab,
+                value: <string>args.value, rowIndex: range[0], colIndex: range[1], sheetIndex: this.parent.activeSheetIndex,
                 updatedVal: <string>args.value, isDate: false, isTime: false
             };
             this.checkDateFormat(dateEventArgs);
@@ -73,7 +74,7 @@ export class WorkbookNumberFormat {
         }
         args.type = args.format ? getTypeFromFormat(args.format as string) : 'General';
         let result: { [key: string]: string | boolean } = this.processFormats(args, fResult, rightAlign, cell);
-        if ((this.parent.getActiveSheet().id - 1 === sheetIdx - 1)) {
+        if ((this.parent.getActiveSheet().id - 1 === sheetIdx)) {
             this.parent.notify(refreshCellElement, {
                 isRightAlign: result.rightAlign, result: result.fResult || args.value as string,
                 rowIndex: args.rowIndex, colIndex: args.colIndex, sheetIndex: args.sheetIndex,
@@ -361,7 +362,7 @@ export class WorkbookNumberFormat {
         let value: string = !isNullOrUndefined(args.value) ? args.value.toString() : '';
         let cell: CellModel = getCell(
             <number>args.rowIndex, <number>args.colIndex,
-            getSheet(this.parent, (<number>args.sheetIndex || this.parent.activeSheetTab) - 1));
+            getSheet(this.parent, isNullOrUndefined(<number>args.sheetIndex) ? this.parent.activeSheetIndex : <number>args.sheetIndex));
         if (value && value.indexOf('/') > -1 || value.indexOf('-') > 0 || value.indexOf(':') > -1) {
             dateObj = toDate(value, intl);
             if (!isNullOrUndefined(dateObj.dateObj) && dateObj.dateObj.toString() !== 'Invalid Date') {

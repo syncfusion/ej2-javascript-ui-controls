@@ -64,7 +64,7 @@ export class EventHandler {
                 listener: listener,
                 debounce: debounceListener
             });
-            element.addEventListener(event[i], <EventListener>debounceListener);
+            element.addEventListener(event[i], <EventListener>debounceListener, { passive: false });
         }
         return debounceListener;
     }

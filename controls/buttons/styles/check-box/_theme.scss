@@ -105,13 +105,23 @@
 
           &.e-check {
             background-color: $cbox-checkmark-disabled-bgcolor;
-            border-color: $cbox-checkmark-disabled-border-color;
+            @if $skin-name == 'bootstrap4' {
+              border-color: transparent;
+            }
+            @else {
+              border-color: $cbox-checkmark-disabled-border-color;
+            }
             color: $cbox-checkmark-disabled-color;
           }
 
           &.e-stop {
             background-color: $cbox-indeterminate-disabled-bgcolor;
-            border-color: $cbox-indeterminate-disabled-border-color;
+            @if $skin-name == 'bootstrap4' {
+              border-color: transparent;
+            }
+            @else {
+              border-color: $cbox-indeterminate-disabled-border-color;
+            }
             color: $cbox-indeterminate-disabled-color;
           }
         }

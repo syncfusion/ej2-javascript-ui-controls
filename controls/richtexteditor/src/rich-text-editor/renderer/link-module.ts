@@ -420,7 +420,7 @@ export class Link {
             !closest(target, '#' + this.dialogObj.element.id) && this.parent.toolbarSettings.enable &&
             this.parent.getToolbarElement() && !this.parent.getToolbarElement().contains(e.target as Node)) ||
             (((this.parent.getToolbarElement() && this.parent.getToolbarElement().contains(e.target as Node)) ||
-            this.parent.inlineMode.enable && !closest(target, '#' + this.parent.getID() + '_rtelink')) &&
+            this.parent.inlineMode.enable && !closest(target, '#' + this.dialogObj.element.id)) &&
              !closest(target, '#' + this.parent.getID() + '_toolbar_CreateLink') &&
                 !target.querySelector('#' + this.parent.getID() + '_toolbar_CreateLink')))
         ) {

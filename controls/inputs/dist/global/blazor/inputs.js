@@ -1,0 +1,13526 @@
+window.sf = window.sf || {};
+window.sf.inputs = (function (exports) {
+'use strict';
+
+var CLASSNAMES = {
+    RTL: 'e-rtl',
+    DISABLE: 'e-disabled',
+    INPUT: 'e-input',
+    TEXTAREA: 'e-multi-line-input',
+    INPUTGROUP: 'e-input-group',
+    FLOATINPUT: 'e-float-input',
+    FLOATLINE: 'e-float-line',
+    FLOATTEXT: 'e-float-text',
+    CLEARICON: 'e-clear-icon',
+    CLEARICONHIDE: 'e-clear-icon-hide',
+    LABELTOP: 'e-label-top',
+    LABELBOTTOM: 'e-label-bottom',
+    NOFLOATLABEL: 'e-no-float-label',
+    INPUTCUSTOMTAG: 'e-input-custom-tag',
+    FLOATCUSTOMTAG: 'e-float-custom-tag'
+};
+/**
+ * Base for Input creation through util methods.
+ */
+
+(function (Input) {
+    var floatType;
+    /**
+     * Create a wrapper to input element with multiple span elements and set the basic properties to input based components.
+     * ```
+     * E.g : Input.createInput({ element: element, floatLabelType : "Auto", properties: { placeholder: 'Search' } });
+     * ```
+     * @param args
+     */
+    function createInput(args, internalCreateElement) {
+        var makeElement = !sf.base.isNullOrUndefined(internalCreateElement) ? internalCreateElement : sf.base.createElement;
+        var inputObject = { container: null, buttons: [], clearButton: null };
+        floatType = args.floatLabelType;
+        if (sf.base.isNullOrUndefined(args.floatLabelType) || args.floatLabelType === 'Never') {
+            inputObject.container = createInputContainer(args, CLASSNAMES.INPUTGROUP, CLASSNAMES.INPUTCUSTOMTAG, 'span', makeElement);
+            args.element.parentNode.insertBefore(inputObject.container, args.element);
+            sf.base.addClass([args.element], CLASSNAMES.INPUT);
+            inputObject.container.appendChild(args.element);
+        }
+        else {
+            createFloatingInput(args, inputObject, makeElement);
+        }
+        bindInitialEvent(args);
+        if (!sf.base.isNullOrUndefined(args.properties) && !sf.base.isNullOrUndefined(args.properties.showClearButton) &&
+            args.properties.showClearButton && args.element.tagName !== 'TEXTAREA') {
+            setClearButton(args.properties.showClearButton, args.element, inputObject, true, makeElement);
+            inputObject.clearButton.setAttribute('role', 'button');
+            if (inputObject.container.classList.contains(CLASSNAMES.FLOATINPUT)) {
+                sf.base.addClass([inputObject.container], CLASSNAMES.INPUTGROUP);
+            }
+        }
+        if (!sf.base.isNullOrUndefined(args.buttons) && args.element.tagName !== 'TEXTAREA') {
+            for (var i = 0; i < args.buttons.length; i++) {
+                inputObject.buttons.push(appendSpan(args.buttons[i], inputObject.container, makeElement));
+            }
+        }
+        if (!sf.base.isNullOrUndefined(args.element) && args.element.tagName === 'TEXTAREA') {
+            sf.base.addClass([inputObject.container], CLASSNAMES.TEXTAREA);
+        }
+        inputObject = setPropertyValue(args, inputObject);
+        return inputObject;
+    }
+    Input.createInput = createInput;
+    function bindInitialEvent(args) {
+        checkInputValue(args.floatLabelType, args.element);
+        args.element.addEventListener('focus', function () {
+            var parent = getParentNode(this);
+            if (parent.classList.contains('e-input-group') || parent.classList.contains('e-outline')
+                || parent.classList.contains('e-filled')) {
+                parent.classList.add('e-input-focus');
+            }
+        });
+        args.element.addEventListener('blur', function () {
+            var parent = getParentNode(this);
+            if (parent.classList.contains('e-input-group') || parent.classList.contains('e-outline')
+                || parent.classList.contains('e-filled')) {
+                parent.classList.remove('e-input-focus');
+            }
+        });
+        args.element.addEventListener('input', function () {
+            checkInputValue(floatType, args.element);
+        });
+    }
+    Input.bindInitialEvent = bindInitialEvent;
+    function checkInputValue(floatLabelType, inputElement) {
+        var inputValue = inputElement.value;
+        if (inputValue !== '' && !sf.base.isNullOrUndefined(inputValue)) {
+            inputElement.parentElement.classList.add('e-valid-input');
+        }
+        else if (floatLabelType !== 'Always') {
+            inputElement.parentElement.classList.remove('e-valid-input');
+        }
+    }
+    function _focusFn() {
+        var label = getParentNode(this).getElementsByClassName('e-float-text')[0];
+        if (!sf.base.isNullOrUndefined(label)) {
+            sf.base.addClass([label], CLASSNAMES.LABELTOP);
+            if (label.classList.contains(CLASSNAMES.LABELBOTTOM)) {
+                sf.base.removeClass([label], CLASSNAMES.LABELBOTTOM);
+            }
+        }
+    }
+    function _blurFn() {
+        var parent = getParentNode(this);
+        if ((parent.getElementsByTagName('textarea')[0]) ? parent.getElementsByTagName('textarea')[0].value === '' :
+            parent.getElementsByTagName('input')[0].value === '') {
+            var label = parent.getElementsByClassName('e-float-text')[0];
+            if (!sf.base.isNullOrUndefined(label)) {
+                if (label.classList.contains(CLASSNAMES.LABELTOP)) {
+                    sf.base.removeClass([label], CLASSNAMES.LABELTOP);
+                }
+                sf.base.addClass([label], CLASSNAMES.LABELBOTTOM);
+            }
+        }
+    }
+    function wireFloatingEvents(element) {
+        element.addEventListener('focus', _focusFn);
+        element.addEventListener('blur', _blurFn);
+    }
+    Input.wireFloatingEvents = wireFloatingEvents;
+    function unwireFloatingEvents(element) {
+        element.removeEventListener('focus', _focusFn);
+        element.removeEventListener('blur', _blurFn);
+    }
+    function createFloatingInput(args, inputObject, internalCreateElement) {
+        var makeElement = !sf.base.isNullOrUndefined(internalCreateElement) ? internalCreateElement : sf.base.createElement;
+        var floatLinelement;
+        var floatLabelElement;
+        if (args.floatLabelType === 'Auto') {
+            wireFloatingEvents(args.element);
+        }
+        if (sf.base.isNullOrUndefined(inputObject.container)) {
+            inputObject.container = createInputContainer(args, CLASSNAMES.FLOATINPUT, CLASSNAMES.FLOATCUSTOMTAG, 'div', makeElement);
+            args.element.parentNode.insertBefore(inputObject.container, args.element);
+        }
+        else {
+            if (!sf.base.isNullOrUndefined(args.customTag)) {
+                inputObject.container.classList.add(CLASSNAMES.FLOATCUSTOMTAG);
+            }
+            inputObject.container.classList.add(CLASSNAMES.FLOATINPUT);
+        }
+        floatLinelement = makeElement('span', { className: CLASSNAMES.FLOATLINE });
+        floatLabelElement = makeElement('label', { className: CLASSNAMES.FLOATTEXT });
+        if (!sf.base.isNullOrUndefined(args.element.id) && args.element.id !== '') {
+            floatLabelElement.id = 'label_' + args.element.id.replace(/ /g, '_');
+            sf.base.attributes(args.element, { 'aria-labelledby': floatLabelElement.id });
+        }
+        if (!sf.base.isNullOrUndefined(args.element.placeholder) && args.element.placeholder !== '') {
+            floatLabelElement.innerHTML = args.element.placeholder;
+            args.element.removeAttribute('placeholder');
+        }
+        if (!sf.base.isNullOrUndefined(args.properties) && !sf.base.isNullOrUndefined(args.properties.placeholder) &&
+            args.properties.placeholder !== '') {
+            floatLabelElement.innerHTML = args.properties.placeholder;
+        }
+        if (!floatLabelElement.innerHTML) {
+            inputObject.container.classList.add(CLASSNAMES.NOFLOATLABEL);
+        }
+        if (inputObject.container.classList.contains('e-float-icon-left')) {
+            var inputWrap = inputObject.container.querySelector('.e-input-in-wrap');
+            inputWrap.appendChild(args.element);
+            inputWrap.appendChild(floatLinelement);
+            inputWrap.appendChild(floatLabelElement);
+        }
+        else {
+            inputObject.container.appendChild(args.element);
+            inputObject.container.appendChild(floatLinelement);
+            inputObject.container.appendChild(floatLabelElement);
+        }
+        updateLabelState(args.element.value, floatLabelElement);
+        if (args.floatLabelType === 'Always') {
+            if (floatLabelElement.classList.contains(CLASSNAMES.LABELBOTTOM)) {
+                sf.base.removeClass([floatLabelElement], CLASSNAMES.LABELBOTTOM);
+            }
+            sf.base.addClass([floatLabelElement], CLASSNAMES.LABELTOP);
+        }
+        if (args.floatLabelType === 'Auto') {
+            args.element.addEventListener('input', function (event) {
+                updateLabelState(args.element.value, floatLabelElement);
+            });
+            args.element.addEventListener('blur', function (event) {
+                updateLabelState(args.element.value, floatLabelElement);
+            });
+        }
+        if (!sf.base.isNullOrUndefined(args.element.getAttribute('id'))) {
+            floatLabelElement.setAttribute('for', args.element.getAttribute('id'));
+        }
+    }
+    function checkFloatLabelType(type, container) {
+        if (type === 'Always' && container.classList.contains('e-outline')) {
+            container.classList.add('e-valid-input');
+        }
+    }
+    function setPropertyValue(args, inputObject) {
+        if (!sf.base.isNullOrUndefined(args.properties)) {
+            for (var _i = 0, _a = Object.keys(args.properties); _i < _a.length; _i++) {
+                var prop = _a[_i];
+                switch (prop) {
+                    case 'cssClass':
+                        setCssClass(args.properties.cssClass, [inputObject.container]);
+                        checkFloatLabelType(args.floatLabelType, inputObject.container);
+                        break;
+                    case 'enabled':
+                        setEnabled(args.properties.enabled, args.element, args.floatLabelType, inputObject.container);
+                        break;
+                    case 'enableRtl':
+                        setEnableRtl(args.properties.enableRtl, [inputObject.container]);
+                        break;
+                    case 'placeholder':
+                        setPlaceholder(args.properties.placeholder, args.element);
+                        break;
+                    case 'readonly':
+                        setReadonly(args.properties.readonly, args.element);
+                        break;
+                }
+            }
+        }
+        return inputObject;
+    }
+    function updateIconState(value, button) {
+        if (value) {
+            sf.base.removeClass([button], CLASSNAMES.CLEARICONHIDE);
+        }
+        else {
+            sf.base.addClass([button], CLASSNAMES.CLEARICONHIDE);
+        }
+    }
+    function updateLabelState(value, label) {
+        if (value) {
+            sf.base.addClass([label], CLASSNAMES.LABELTOP);
+            if (label.classList.contains(CLASSNAMES.LABELBOTTOM)) {
+                sf.base.removeClass([label], CLASSNAMES.LABELBOTTOM);
+            }
+        }
+        else {
+            if (label.classList.contains(CLASSNAMES.LABELTOP)) {
+                sf.base.removeClass([label], CLASSNAMES.LABELTOP);
+            }
+            sf.base.addClass([label], CLASSNAMES.LABELBOTTOM);
+        }
+    }
+    function getParentNode(element) {
+        var parentNode = sf.base.isNullOrUndefined(element.parentNode) ? element
+            : element.parentNode;
+        if (parentNode && parentNode.classList.contains('e-input-in-wrap')) {
+            parentNode = parentNode.parentNode;
+        }
+        return parentNode;
+    }
+    /**
+     * To create clear button.
+     */
+    function createClearButton(element, inputObject, initial, internalCreateElement) {
+        var makeElement = !sf.base.isNullOrUndefined(internalCreateElement) ? internalCreateElement : sf.base.createElement;
+        var button = makeElement('span', { className: CLASSNAMES.CLEARICON });
+        var container = inputObject.container;
+        if (!sf.base.isNullOrUndefined(initial)) {
+            container.appendChild(button);
+        }
+        else {
+            var baseElement = inputObject.container.classList.contains(CLASSNAMES.FLOATINPUT) ?
+                inputObject.container.querySelector('.' + CLASSNAMES.FLOATTEXT) : element;
+            baseElement.insertAdjacentElement('afterend', button);
+        }
+        if (!sf.base.isNullOrUndefined(container) &&
+            container.classList.contains(CLASSNAMES.FLOATINPUT)) {
+            sf.base.addClass([container], CLASSNAMES.INPUTGROUP);
+        }
+        sf.base.addClass([button], CLASSNAMES.CLEARICONHIDE);
+        wireClearBtnEvents(element, button, container);
+        button.setAttribute('aria-label', 'close');
+        return button;
+    }
+    function wireClearBtnEvents(element, button, container) {
+        button.addEventListener('click', function (event) {
+            if (!(element.classList.contains(CLASSNAMES.DISABLE) || element.readOnly)) {
+                event.preventDefault();
+                if (element !== document.activeElement) {
+                    element.focus();
+                }
+                element.value = '';
+                sf.base.addClass([button], CLASSNAMES.CLEARICONHIDE);
+            }
+        });
+        element.addEventListener('input', function (event) {
+            updateIconState(element.value, button);
+        });
+        element.addEventListener('focus', function (event) {
+            updateIconState(element.value, button);
+        });
+        element.addEventListener('blur', function (event) {
+            setTimeout(function () { sf.base.addClass([button], CLASSNAMES.CLEARICONHIDE); }, 200);
+        });
+    }
+    Input.wireClearBtnEvents = wireClearBtnEvents;
+    function validateLabel(element, floatLabelType) {
+        var parent = getParentNode(element);
+        if (parent.classList.contains(CLASSNAMES.FLOATINPUT) && floatLabelType === 'Auto') {
+            var label = getParentNode(element).getElementsByClassName('e-float-text')[0];
+            updateLabelState(element.value, label);
+        }
+    }
+    /**
+     * To create input box contianer.
+     */
+    function createInputContainer(args, className, tagClass, tag, internalCreateElement) {
+        var makeElement = !sf.base.isNullOrUndefined(internalCreateElement) ? internalCreateElement : sf.base.createElement;
+        var container;
+        if (!sf.base.isNullOrUndefined(args.customTag)) {
+            container = makeElement(args.customTag, { className: className });
+            container.classList.add(tagClass);
+        }
+        else {
+            container = makeElement(tag, { className: className });
+        }
+        container.classList.add('e-control-wrapper');
+        return container;
+    }
+    function encodePlaceHolder(placeholder) {
+        var result = '';
+        if (!sf.base.isNullOrUndefined(placeholder) && placeholder !== '') {
+            var spanEle = document.createElement('span');
+            spanEle.innerHTML = '<input  placeholder="' + placeholder + '"/>';
+            var hiddenInput = (spanEle.children[0]);
+            result = hiddenInput.placeholder;
+        }
+        return result;
+    }
+    /**
+     * Sets the value to the input element.
+     * ```
+     * E.g : Input.setValue('content', element, "Auto", true );
+     * ```
+     * @param value - Specify the value of the input element.
+     * @param element - The element on which the specified value is updated.
+     * @param floatLabelType - Specify the float label type of the input element.
+     * @param clearButton - Boolean value to specify whether the clear icon is enabled / disabled on the input.
+     */
+    function setValue$$1(value, element, floatLabelType, clearButton) {
+        element.value = value;
+        if ((!sf.base.isNullOrUndefined(floatLabelType)) && floatLabelType === 'Auto') {
+            validateLabel(element, floatLabelType);
+        }
+        if (!sf.base.isNullOrUndefined(clearButton) && clearButton) {
+            var parentElement = getParentNode(element);
+            if (!sf.base.isNullOrUndefined(parentElement)) {
+                var button = parentElement.getElementsByClassName(CLASSNAMES.CLEARICON)[0];
+                if (element.value && parentElement.classList.contains('e-input-focus')) {
+                    sf.base.removeClass([button], CLASSNAMES.CLEARICONHIDE);
+                }
+                else {
+                    sf.base.addClass([button], CLASSNAMES.CLEARICONHIDE);
+                }
+            }
+        }
+        checkInputValue(floatLabelType, element);
+    }
+    Input.setValue = setValue$$1;
+    /**
+     * Sets the single or multiple cssClass to wrapper of input element.
+     * ```
+     * E.g : Input.setCssClass('e-custom-class', [element]);
+     * ```
+     * @param cssClass - Css class names which are needed to add.
+     * @param elements - The elements which are needed to add / remove classes.
+     * @param oldClass - Css class names which are needed to remove. If old classes are need to remove, can give this optional parameter.
+     */
+    function setCssClass(cssClass, elements, oldClass) {
+        if (!sf.base.isNullOrUndefined(oldClass) && oldClass !== '') {
+            sf.base.removeClass(elements, oldClass.split(' '));
+        }
+        if (!sf.base.isNullOrUndefined(cssClass) && cssClass !== '') {
+            sf.base.addClass(elements, cssClass.split(' '));
+        }
+    }
+    Input.setCssClass = setCssClass;
+    /**
+     * Set the width to the wrapper of input element.
+     * ```
+     * E.g : Input.setWidth('200px', container);
+     * ```
+     * @param width - Width value which is need to add.
+     * @param container - The element on which the width is need to add.
+     */
+    function setWidth(width, container) {
+        if (typeof width === 'number') {
+            container.style.width = sf.base.formatUnit(width);
+        }
+        else if (typeof width === 'string') {
+            container.style.width = (width.match(/px|%|em/)) ? (width) : (sf.base.formatUnit(width));
+        }
+    }
+    Input.setWidth = setWidth;
+    /**
+     * Set the placeholder attribute to the input element.
+     * ```
+     * E.g : Input.setPlaceholder('Search here', element);
+     * ```
+     * @param placeholder - Placeholder value which is need to add.
+     * @param element - The element on which the placeholder is need to add.
+     */
+    function setPlaceholder(placeholder, element) {
+        var parentElement;
+        placeholder = encodePlaceHolder(placeholder);
+        parentElement = getParentNode(element);
+        if (parentElement.classList.contains(CLASSNAMES.FLOATINPUT)) {
+            if (!sf.base.isNullOrUndefined(placeholder) && placeholder !== '') {
+                parentElement.getElementsByClassName(CLASSNAMES.FLOATTEXT)[0].textContent = placeholder;
+                parentElement.classList.remove(CLASSNAMES.NOFLOATLABEL);
+                element.removeAttribute('placeholder');
+            }
+            else {
+                parentElement.classList.add(CLASSNAMES.NOFLOATLABEL);
+                parentElement.getElementsByClassName(CLASSNAMES.FLOATTEXT)[0].textContent = '';
+            }
+        }
+        else {
+            if (!sf.base.isNullOrUndefined(placeholder) && placeholder !== '') {
+                sf.base.attributes(element, { 'placeholder': placeholder, 'aria-placeholder': placeholder });
+            }
+            else {
+                element.removeAttribute('placeholder');
+                element.removeAttribute('aria-placeholder');
+            }
+        }
+    }
+    Input.setPlaceholder = setPlaceholder;
+    /**
+     * Set the read only attribute to the input element
+     * ```
+     * E.g : Input.setReadonly(true, element);
+     * ```
+     * @param isReadonly
+     * - Boolean value to specify whether to set read only. Setting "True" value enables read only.
+     * @param element
+     * - The element which is need to enable read only.
+     */
+    function setReadonly(isReadonly, element, floatLabelType) {
+        if (isReadonly) {
+            sf.base.attributes(element, { readonly: '' });
+        }
+        else {
+            element.removeAttribute('readonly');
+        }
+        if (!sf.base.isNullOrUndefined(floatLabelType)) {
+            validateLabel(element, floatLabelType);
+        }
+    }
+    Input.setReadonly = setReadonly;
+    /**
+     * Displays the element direction from right to left when its enabled.
+     * ```
+     * E.g : Input.setEnableRtl(true, [inputObj.container]);
+     * ```
+     * @param isRtl
+     * - Boolean value to specify whether to set RTL. Setting "True" value enables the RTL mode.
+     * @param elements
+     * - The elements that are needed to enable/disable RTL.
+     */
+    function setEnableRtl(isRtl, elements) {
+        if (isRtl) {
+            sf.base.addClass(elements, CLASSNAMES.RTL);
+        }
+        else {
+            sf.base.removeClass(elements, CLASSNAMES.RTL);
+        }
+    }
+    Input.setEnableRtl = setEnableRtl;
+    /**
+     * Enables or disables the given input element.
+     * ```
+     * E.g : Input.setEnabled(false, element);
+     * ```
+     * @param isEnable
+     * - Boolean value to specify whether to enable or disable.
+     * @param element
+     * - Element to be enabled or disabled.
+     */
+    function setEnabled(isEnable, element, floatLabelType, inputContainer) {
+        var disabledAttrs = { 'disabled': 'disabled', 'aria-disabled': 'true' };
+        var considerWrapper = sf.base.isNullOrUndefined(inputContainer) ? false : true;
+        if (isEnable) {
+            element.classList.remove(CLASSNAMES.DISABLE);
+            removeAttributes(disabledAttrs, element);
+            if (considerWrapper) {
+                sf.base.removeClass([inputContainer], CLASSNAMES.DISABLE);
+            }
+        }
+        else {
+            element.classList.add(CLASSNAMES.DISABLE);
+            addAttributes(disabledAttrs, element);
+            if (considerWrapper) {
+                sf.base.addClass([inputContainer], CLASSNAMES.DISABLE);
+            }
+        }
+        if (!sf.base.isNullOrUndefined(floatLabelType)) {
+            validateLabel(element, floatLabelType);
+        }
+    }
+    Input.setEnabled = setEnabled;
+    function setClearButton(isClear, element, inputObject, initial, internalCreateElement) {
+        var makeElement = !sf.base.isNullOrUndefined(internalCreateElement) ? internalCreateElement : sf.base.createElement;
+        if (isClear) {
+            inputObject.clearButton = createClearButton(element, inputObject, initial, makeElement);
+        }
+        else {
+            inputObject.clearButton.remove();
+            inputObject.clearButton = null;
+        }
+    }
+    Input.setClearButton = setClearButton;
+    /**
+     * Removing the multiple attributes from the given element such as "disabled","id" , etc.
+     * ```
+     * E.g : Input.removeAttributes({ 'disabled': 'disabled', 'aria-disabled': 'true' }, element);
+     * ```
+     * @param attrs
+     *  - Array of attributes which are need to removed from the element.
+     * @param element
+     *  - Element on which the attributes are needed to be removed.
+     */
+    function removeAttributes(attrs, element) {
+        for (var _i = 0, _a = Object.keys(attrs); _i < _a.length; _i++) {
+            var key = _a[_i];
+            var parentElement = void 0;
+            parentElement = getParentNode(element);
+            if (key === 'disabled') {
+                element.classList.remove(CLASSNAMES.DISABLE);
+            }
+            if (key === 'disabled' && parentElement.classList.contains(CLASSNAMES.INPUTGROUP)) {
+                parentElement.classList.remove(CLASSNAMES.DISABLE);
+            }
+            if (key === 'placeholder' && parentElement.classList.contains(CLASSNAMES.FLOATINPUT)) {
+                parentElement.getElementsByClassName(CLASSNAMES.FLOATTEXT)[0].textContent = '';
+            }
+            else {
+                element.removeAttribute(key);
+            }
+        }
+    }
+    Input.removeAttributes = removeAttributes;
+    /**
+     * Adding the multiple attributes to the given element such as "disabled","id" , etc.
+     * ```
+     * E.g : Input.addAttributes({ 'id': 'inputpopup' }, element);
+     * ```
+     * @param attrs
+     * - Array of attributes which is added to element.
+     * @param element
+     * - Element on which the attributes are needed to be added.
+     */
+    function addAttributes(attrs, element) {
+        for (var _i = 0, _a = Object.keys(attrs); _i < _a.length; _i++) {
+            var key = _a[_i];
+            var parentElement = void 0;
+            parentElement = getParentNode(element);
+            if (key === 'disabled') {
+                element.classList.add(CLASSNAMES.DISABLE);
+            }
+            if (key === 'disabled' && parentElement.classList.contains(CLASSNAMES.INPUTGROUP)) {
+                parentElement.classList.add(CLASSNAMES.DISABLE);
+            }
+            if (key === 'placeholder' && parentElement.classList.contains(CLASSNAMES.FLOATINPUT)) {
+                parentElement.getElementsByClassName(CLASSNAMES.FLOATTEXT)[0].textContent = attrs[key];
+            }
+            else {
+                element.setAttribute(key, attrs[key]);
+            }
+        }
+    }
+    Input.addAttributes = addAttributes;
+    function removeFloating(input) {
+        var container = input.container;
+        if (!sf.base.isNullOrUndefined(container) && container.classList.contains(CLASSNAMES.FLOATINPUT)) {
+            var inputEle = container.querySelector('textarea') ? container.querySelector('textarea') :
+                container.querySelector('input');
+            var placeholder = container.querySelector('.' + CLASSNAMES.FLOATTEXT).textContent;
+            var clearButton = container.querySelector('.e-clear-icon') !== null;
+            sf.base.detach(container.querySelector('.' + CLASSNAMES.FLOATLINE));
+            sf.base.detach(container.querySelector('.' + CLASSNAMES.FLOATTEXT));
+            sf.base.classList(container, [CLASSNAMES.INPUTGROUP], [CLASSNAMES.FLOATINPUT]);
+            unwireFloatingEvents(inputEle);
+            sf.base.attributes(inputEle, { 'placeholder': placeholder });
+            inputEle.classList.add(CLASSNAMES.INPUT);
+            if (!clearButton && inputEle.tagName === 'INPUT') {
+                inputEle.removeAttribute('required');
+            }
+        }
+    }
+    Input.removeFloating = removeFloating;
+    function addFloating(input, type, placeholder, internalCreateElement) {
+        var makeElement = !sf.base.isNullOrUndefined(internalCreateElement) ? internalCreateElement : sf.base.createElement;
+        var container = sf.base.closest(input, '.' + CLASSNAMES.INPUTGROUP);
+        floatType = type;
+        if (type !== 'Never') {
+            var customTag = container.tagName;
+            customTag = customTag !== 'DIV' && customTag !== 'SPAN' ? customTag : null;
+            var args = { element: input, floatLabelType: type, customTag: customTag, properties: { placeholder: placeholder } };
+            var iconEle = container.querySelector('.e-clear-icon');
+            var inputObj = { container: container };
+            input.classList.remove(CLASSNAMES.INPUT);
+            createFloatingInput(args, inputObj, makeElement);
+            var isPrependIcon = container.classList.contains('e-float-icon-left');
+            if (sf.base.isNullOrUndefined(iconEle)) {
+                if (isPrependIcon) {
+                    var inputWrap = container.querySelector('.e-input-in-wrap');
+                    iconEle = inputWrap.querySelector('.e-input-group-icon');
+                }
+                else {
+                    iconEle = container.querySelector('.e-input-group-icon');
+                }
+            }
+            if (sf.base.isNullOrUndefined(iconEle)) {
+                if (isPrependIcon) {
+                    iconEle = container.querySelector('.e-input-group-icon');
+                }
+                if (sf.base.isNullOrUndefined(iconEle)) {
+                    container.classList.remove(CLASSNAMES.INPUTGROUP);
+                }
+            }
+            else {
+                var floatLine = container.querySelector('.' + CLASSNAMES.FLOATLINE);
+                var floatText = container.querySelector('.' + CLASSNAMES.FLOATTEXT);
+                var wrapper = isPrependIcon ? container.querySelector('.e-input-in-wrap') : container;
+                wrapper.insertBefore(input, iconEle);
+                wrapper.insertBefore(floatLine, iconEle);
+                wrapper.insertBefore(floatText, iconEle);
+            }
+        }
+        checkFloatLabelType(type, input.parentElement);
+    }
+    Input.addFloating = addFloating;
+    /**
+     * Enable or Disable the ripple effect on the icons inside the Input. Ripple effect is only applicable for material theme.
+     * ```
+     * E.g : Input.setRipple(true, [inputObjects]);
+     * ```
+     * @param isRipple
+     * - Boolean value to specify whether to enable the ripple effect.
+     * @param inputObject
+     * - Specify the collection of input objects.
+     */
+    function setRipple(isRipple, inputObj) {
+        for (var i = 0; i < inputObj.length; i++) {
+            _internalRipple(isRipple, inputObj[i].container);
+        }
+    }
+    Input.setRipple = setRipple;
+    function _internalRipple(isRipple, container, button) {
+        var argsButton = [];
+        argsButton.push(button);
+        var buttons = sf.base.isNullOrUndefined(button) ?
+            container.querySelectorAll('.e-input-group-icon') : argsButton;
+        if (isRipple && buttons.length > 0) {
+            for (var index = 0; index < buttons.length; index++) {
+                buttons[index].addEventListener('mousedown', _onMouseDownRipple, false);
+                buttons[index].addEventListener('mouseup', _onMouseUpRipple, false);
+            }
+        }
+        else if (buttons.length > 0) {
+            for (var index = 0; index < buttons.length; index++) {
+                buttons[index].removeEventListener('mousedown', _onMouseDownRipple, this);
+                buttons[index].removeEventListener('mouseup', _onMouseUpRipple, this);
+            }
+        }
+    }
+    function _onMouseRipple(container, button) {
+        if (!container.classList.contains('e-disabled') && !container.querySelector('input').readOnly) {
+            button.classList.add('e-input-btn-ripple');
+        }
+    }
+    function _onMouseDownRipple() {
+        var ele = this;
+        var parentEle = this.parentElement;
+        while (!parentEle.classList.contains('e-input-group')) {
+            parentEle = parentEle.parentElement;
+        }
+        _onMouseRipple(parentEle, ele);
+    }
+    function _onMouseUpRipple() {
+        var ele = this;
+        setTimeout(function () { ele.classList.remove('e-input-btn-ripple'); }, 500);
+    }
+    function createIconEle(iconClass, makeElement) {
+        var button = makeElement('span', { className: iconClass });
+        button.classList.add('e-input-group-icon');
+        return button;
+    }
+    /**
+     * Creates a new span element with the given icons added and append it in container element.
+     * ```
+     * E.g : Input.addIcon('append', 'e-icon-spin', inputObj.container, inputElement);
+     * ```
+     * @param position - Specify the icon placement on the input.Possible values are append and prepend.
+     * @param iconClass - Icon classes which are need to add to the span element which is going to created.
+     * Span element acts as icon or button element for input.
+     * @param container - The container on which created span element is going to append.
+     * @param inputElement - The inputElement on which created span element is going to prepend.
+     */
+    // tslint:disable
+    function addIcon(position, icons, container, input, internalCreate) {
+        // tslint:enable
+        var result = typeof (icons) === 'string' ? icons.split(',')
+            : icons;
+        if (position.toLowerCase() === 'append') {
+            for (var _i = 0, result_1 = result; _i < result_1.length; _i++) {
+                var icon = result_1[_i];
+                appendSpan(icon, container, internalCreate);
+            }
+        }
+        else {
+            for (var _a = 0, result_2 = result; _a < result_2.length; _a++) {
+                var icon = result_2[_a];
+                prependSpan(icon, container, input, internalCreate);
+            }
+        }
+    }
+    Input.addIcon = addIcon;
+    /**
+     * Creates a new span element with the given icons added and prepend it in input element.
+     * ```
+     * E.g : Input.prependSpan('e-icon-spin', inputObj.container, inputElement);
+     * ```
+     * @param iconClass - Icon classes which are need to add to the span element which is going to created.
+     * Span element acts as icon or button element for input.
+     * @param container - The container on which created span element is going to append.
+     * @param inputElement - The inputElement on which created span element is going to prepend.
+     */
+    // tslint:disable
+    function prependSpan(iconClass, container, inputElement, internalCreateElement) {
+        // tslint:enable
+        var makeElement = !sf.base.isNullOrUndefined(internalCreateElement) ? internalCreateElement : sf.base.createElement;
+        var button = createIconEle(iconClass, makeElement);
+        container.classList.add('e-float-icon-left');
+        var innerWrapper = container.querySelector('.e-input-in-wrap');
+        if (sf.base.isNullOrUndefined(innerWrapper)) {
+            innerWrapper = makeElement('span', { className: 'e-input-in-wrap' });
+            inputElement.parentNode.insertBefore(innerWrapper, inputElement);
+            var result = container.querySelectorAll(inputElement.tagName + ' ~ *');
+            innerWrapper.appendChild(inputElement);
+            for (var i = 0; i < result.length; i++) {
+                innerWrapper.appendChild(result[i]);
+            }
+        }
+        innerWrapper.parentNode.insertBefore(button, innerWrapper);
+        if (!container.classList.contains(CLASSNAMES.INPUTGROUP)) {
+            container.classList.add(CLASSNAMES.INPUTGROUP);
+        }
+        _internalRipple(true, container, button);
+        return button;
+    }
+    Input.prependSpan = prependSpan;
+    /**
+     * Creates a new span element with the given icons added and append it in container element.
+     * ```
+     * E.g : Input.appendSpan('e-icon-spin', inputObj.container);
+     * ```
+     * @param iconClass - Icon classes which are need to add to the span element which is going to created.
+     * Span element acts as icon or button element for input.
+     * @param container - The container on which created span element is going to append.
+     */
+    function appendSpan(iconClass, container, internalCreateElement) {
+        var makeElement = !sf.base.isNullOrUndefined(internalCreateElement) ? internalCreateElement : sf.base.createElement;
+        var button = createIconEle(iconClass, makeElement);
+        if (!container.classList.contains(CLASSNAMES.INPUTGROUP)) {
+            container.classList.add(CLASSNAMES.INPUTGROUP);
+        }
+        var wrap = (container.classList.contains('e-float-icon-left')) ? container.querySelector('.e-input-in-wrap') :
+            container;
+        wrap.appendChild(button);
+        _internalRipple(true, container, button);
+        return button;
+    }
+    Input.appendSpan = appendSpan;
+})(exports.Input || (exports.Input = {}));
+
+var __extends = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var ROOT = 'e-control-wrapper e-numeric';
+var SPINICON = 'e-input-group-icon';
+var SPINUP = 'e-spin-up';
+var SPINDOWN = 'e-spin-down';
+var ERROR = 'e-error';
+var INCREMENT = 'increment';
+var DECREMENT = 'decrement';
+var INTREGEXP = new RegExp('^(-)?(\\d*)$');
+var DECIMALSEPARATOR = '.';
+var COMPONENT = 'e-numerictextbox';
+var CONTROL = 'e-control';
+var NUMERIC_FOCUS = 'e-input-focus';
+var HIDDENELEMENT = 'e-numeric-hidden';
+var wrapperAttributes = ['title', 'style', 'class'];
+/**
+ * Represents the NumericTextBox component that allows the user to enter only numeric values.
+ * ```html
+ * <input type='text' id="numeric"/>
+ * ```
+ * ```typescript
+ * <script>
+ *   var numericObj = new NumericTextBox({ value: 10 });
+ *   numericObj.appendTo("#numeric");
+ * </script>
+ * ```
+ */
+var NumericTextBox = /** @class */ (function (_super) {
+    __extends(NumericTextBox, _super);
+    function NumericTextBox(options, element) {
+        var _this = _super.call(this, options, element) || this;
+        _this.numericOptions = options;
+        return _this;
+    }
+    NumericTextBox.prototype.preRender = function () {
+        this.isPrevFocused = false;
+        this.decimalSeparator = '.';
+        this.intRegExp = new RegExp('/^(-)?(\d*)$/');
+        this.isCalled = false;
+        var ejInstance = sf.base.getValue('ej2_instances', this.element);
+        this.cloneElement = this.element.cloneNode(true);
+        sf.base.removeClass([this.cloneElement], [CONTROL, COMPONENT, 'e-lib']);
+        this.angularTagName = null;
+        this.formEle = sf.base.closest(this.element, 'form');
+        if (this.element.tagName === 'EJS-NUMERICTEXTBOX') {
+            this.angularTagName = this.element.tagName;
+            var input = this.createElement('input');
+            var index = 0;
+            for (index; index < this.element.attributes.length; index++) {
+                var attributeName = this.element.attributes[index].nodeName;
+                if (attributeName !== 'id') {
+                    input.setAttribute(this.element.attributes[index].nodeName, this.element.attributes[index].nodeValue);
+                    input.innerHTML = this.element.innerHTML;
+                }
+            }
+            if (this.element.hasAttribute('name')) {
+                this.element.removeAttribute('name');
+            }
+            this.element.classList.remove('e-control', 'e-numerictextbox');
+            this.element.appendChild(input);
+            this.element = input;
+            sf.base.setValue('ej2_instances', ejInstance, this.element);
+        }
+        if (!(sf.base.isBlazor() && this.isServerRendered)) {
+            sf.base.attributes(this.element, { 'role': 'spinbutton', 'tabindex': '0', 'autocomplete': 'off', 'aria-live': 'assertive' });
+            var localeText = {
+                incrementTitle: 'Increment value', decrementTitle: 'Decrement value', placeholder: this.placeholder
+            };
+            this.l10n = new sf.base.L10n('numerictextbox', localeText, this.locale);
+            if (this.l10n.getConstant('placeholder') !== '') {
+                this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
+            }
+        }
+        this.isValidState = true;
+        this.inputStyle = null;
+        this.inputName = null;
+        this.cultureInfo = {};
+        this.initCultureInfo();
+        this.initCultureFunc();
+        this.prevValue = this.value;
+        if (!(sf.base.isBlazor() && this.isServerRendered)) {
+            this.updateHTMLAttrToElement();
+            this.checkAttributes(false);
+            if (this.formEle) {
+                this.inputEleValue = this.value;
+            }
+        }
+        this.validateMinMax();
+        this.validateStep();
+        if (this.placeholder === null && !(sf.base.isBlazor() && this.isServerRendered)) {
+            this.updatePlaceholder();
+        }
+    };
+    /**
+     * To Initialize the control rendering
+     * @private
+     */
+    NumericTextBox.prototype.render = function () {
+        if (this.element.tagName.toLowerCase() === 'input') {
+            if (!(sf.base.isBlazor() && this.isServerRendered)) {
+                this.createWrapper();
+                if (this.showSpinButton) {
+                    this.spinBtnCreation();
+                }
+                this.setElementWidth(this.width);
+                if (!this.container.classList.contains('e-input-group')) {
+                    this.container.classList.add('e-input-group');
+                }
+                this.changeValue(this.value === null || isNaN(this.value) ?
+                    null : this.strictMode ? this.trimValue(this.value) : this.value);
+            }
+            else {
+                this.container = this.element.parentElement;
+                this.inputWrapper = { container: this.container };
+                this.hiddenInput = this.container.querySelector('input[type="hidden"]');
+                if (this.showClearButton) {
+                    this.inputWrapper.clearButton = this.container.querySelector('.e-clear-icon');
+                    exports.Input.wireClearBtnEvents(this.element, this.inputWrapper.clearButton, this.inputWrapper.container);
+                }
+                if (this.showSpinButton) {
+                    this.spinDown = this.container.querySelector('.' + SPINDOWN);
+                    this.spinUp = this.container.querySelector('.' + SPINUP);
+                    this.wireSpinBtnEvents();
+                }
+                exports.Input.bindInitialEvent({
+                    element: this.element, buttons: null, customTag: null, floatLabelType: this.floatLabelType, properties: this.properties
+                });
+            }
+            this.wireEvents();
+            if (!(sf.base.isBlazor() && this.isServerRendered)) {
+                if (this.value !== null && !isNaN(this.value)) {
+                    if (this.decimals) {
+                        this.setProperties({ value: this.roundNumber(this.value, this.decimals) }, true);
+                    }
+                }
+                if (this.element.getAttribute('value') || this.value) {
+                    this.element.setAttribute('value', this.element.value);
+                }
+            }
+            this.renderComplete();
+        }
+    };
+    NumericTextBox.prototype.checkAttributes = function (isDynamic) {
+        var attributes$$1 = isDynamic ? sf.base.isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
+            ['value', 'min', 'max', 'step', 'disabled', 'readonly', 'style', 'name', 'placeholder'];
+        for (var _i = 0, attributes_1 = attributes$$1; _i < attributes_1.length; _i++) {
+            var prop = attributes_1[_i];
+            if (!sf.base.isNullOrUndefined(this.element.getAttribute(prop))) {
+                switch (prop) {
+                    case 'disabled':
+                        // tslint:disable-next-line
+                        if ((sf.base.isNullOrUndefined(this.numericOptions) || (this.numericOptions['enabled'] === undefined)) || isDynamic) {
+                            var enabled = this.element.getAttribute(prop) === 'disabled' || this.element.getAttribute(prop) === ''
+                                || this.element.getAttribute(prop) === 'true' ? false : true;
+                            this.setProperties({ enabled: enabled }, !isDynamic);
+                        }
+                        break;
+                    case 'readonly':
+                        // tslint:disable-next-line
+                        if ((sf.base.isNullOrUndefined(this.numericOptions) || (this.numericOptions['readonly'] === undefined)) || isDynamic) {
+                            var readonly = this.element.getAttribute(prop) === 'readonly' || this.element.getAttribute(prop) === ''
+                                || this.element.getAttribute(prop) === 'true' ? true : false;
+                            this.setProperties({ readonly: readonly }, !isDynamic);
+                        }
+                        break;
+                    case 'placeholder':
+                        // tslint:disable-next-line
+                        if ((sf.base.isNullOrUndefined(this.numericOptions) || (this.numericOptions['placeholder'] === undefined)) || isDynamic) {
+                            this.setProperties({ placeholder: this.element.placeholder }, !isDynamic);
+                        }
+                        break;
+                    case 'value':
+                        // tslint:disable-next-line
+                        if ((sf.base.isNullOrUndefined(this.numericOptions) || (this.numericOptions['value'] === undefined)) || isDynamic) {
+                            var setNumber = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
+                            this.setProperties(sf.base.setValue(prop, setNumber, {}), !isDynamic);
+                        }
+                        break;
+                    case 'min':
+                        // tslint:disable-next-line
+                        if ((sf.base.isNullOrUndefined(this.numericOptions) || (this.numericOptions['min'] === undefined)) || isDynamic) {
+                            var minValue = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
+                            if (minValue !== null && !isNaN(minValue)) {
+                                this.setProperties(sf.base.setValue(prop, minValue, {}), !isDynamic);
+                            }
+                        }
+                        break;
+                    case 'max':
+                        // tslint:disable-next-line
+                        if ((sf.base.isNullOrUndefined(this.numericOptions) || (this.numericOptions['max'] === undefined)) || isDynamic) {
+                            var maxValue = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
+                            if (maxValue !== null && !isNaN(maxValue)) {
+                                this.setProperties(sf.base.setValue(prop, maxValue, {}), !isDynamic);
+                            }
+                        }
+                        break;
+                    case 'step':
+                        // tslint:disable-next-line
+                        if ((sf.base.isNullOrUndefined(this.numericOptions) || (this.numericOptions['step'] === undefined)) || isDynamic) {
+                            var stepValue = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
+                            if (stepValue !== null && !isNaN(stepValue)) {
+                                this.setProperties(sf.base.setValue(prop, stepValue, {}), !isDynamic);
+                            }
+                        }
+                        break;
+                    case 'style':
+                        this.inputStyle = this.element.getAttribute(prop);
+                        break;
+                    case 'name':
+                        this.inputName = this.element.getAttribute(prop);
+                        break;
+                    default:
+                        var value = this.instance.getNumberParser({ format: 'n' })(this.element.getAttribute(prop));
+                        if ((value !== null && !isNaN(value)) || (prop === 'value')) {
+                            this.setProperties(sf.base.setValue(prop, value, {}), true);
+                        }
+                        break;
+                }
+            }
+        }
+    };
+    NumericTextBox.prototype.updatePlaceholder = function () {
+        this.setProperties({ placeholder: this.l10n.getConstant('placeholder') }, true);
+    };
+    NumericTextBox.prototype.initCultureFunc = function () {
+        this.instance = new sf.base.Internationalization(this.locale);
+    };
+    NumericTextBox.prototype.initCultureInfo = function () {
+        this.cultureInfo.format = this.format;
+        if (sf.base.getValue('currency', this) !== null) {
+            sf.base.setValue('currency', this.currency, this.cultureInfo);
+            this.setProperties({ currencyCode: this.currency }, true);
+        }
+    };
+    /* Wrapper creation */
+    NumericTextBox.prototype.createWrapper = function () {
+        var updatedCssClassValue = this.cssClass;
+        if (!sf.base.isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+            updatedCssClassValue = this.getNumericValidClassList(this.cssClass);
+        }
+        var inputObj = exports.Input.createInput({
+            element: this.element,
+            floatLabelType: this.floatLabelType,
+            properties: {
+                readonly: this.readonly,
+                placeholder: this.placeholder,
+                cssClass: updatedCssClassValue,
+                enableRtl: this.enableRtl,
+                showClearButton: this.showClearButton,
+                enabled: this.enabled
+            }
+        }, this.createElement);
+        this.inputWrapper = inputObj;
+        this.container = inputObj.container;
+        this.container.setAttribute('class', ROOT + ' ' + this.container.getAttribute('class'));
+        this.updateHTMLAttrToWrapper();
+        if (this.readonly) {
+            sf.base.attributes(this.element, { 'aria-readonly': 'true' });
+        }
+        this.hiddenInput = (this.createElement('input', { attrs: { type: 'text',
+                'validateHidden': 'true', 'class': HIDDENELEMENT } }));
+        this.inputName = this.inputName !== null ? this.inputName : this.element.id;
+        this.element.removeAttribute('name');
+        sf.base.attributes(this.hiddenInput, { 'name': this.inputName });
+        this.container.insertBefore(this.hiddenInput, this.container.childNodes[1]);
+        this.updateDataAttribute(false);
+        if (this.inputStyle !== null) {
+            sf.base.attributes(this.container, { 'style': this.inputStyle });
+        }
+    };
+    NumericTextBox.prototype.updateDataAttribute = function (isDynamic) {
+        var attr = {};
+        if (!isDynamic) {
+            for (var a = 0; a < this.element.attributes.length; a++) {
+                attr[this.element.attributes[a].name] = this.element.getAttribute(this.element.attributes[a].name);
+            }
+        }
+        else {
+            attr = this.htmlAttributes;
+        }
+        for (var _i = 0, _a = Object.keys(attr); _i < _a.length; _i++) {
+            var key = _a[_i];
+            if (key.indexOf('data') === 0) {
+                this.hiddenInput.setAttribute(key, attr[key]);
+            }
+        }
+    };
+    NumericTextBox.prototype.updateHTMLAttrToElement = function () {
+        if (!sf.base.isNullOrUndefined(this.htmlAttributes)) {
+            for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+                var pro = _a[_i];
+                if (wrapperAttributes.indexOf(pro) < 0) {
+                    this.element.setAttribute(pro, this.htmlAttributes[pro]);
+                }
+            }
+        }
+    };
+    NumericTextBox.prototype.updateCssClass = function (newClass, oldClass) {
+        exports.Input.setCssClass(this.getNumericValidClassList(newClass), [this.container], this.getNumericValidClassList(oldClass));
+    };
+    NumericTextBox.prototype.getNumericValidClassList = function (numericClassName) {
+        var result = numericClassName;
+        if (!sf.base.isNullOrUndefined(numericClassName) && numericClassName !== '') {
+            result = (numericClassName.replace(/\s+/g, ' ')).trim();
+        }
+        return result;
+    };
+    NumericTextBox.prototype.updateHTMLAttrToWrapper = function () {
+        if (!sf.base.isNullOrUndefined(this.htmlAttributes)) {
+            for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+                var pro = _a[_i];
+                if (wrapperAttributes.indexOf(pro) > -1) {
+                    if (pro === 'class') {
+                        var updatedClassValue = this.getNumericValidClassList(this.htmlAttributes[pro]);
+                        if (updatedClassValue !== '') {
+                            sf.base.addClass([this.container], updatedClassValue.split(' '));
+                        }
+                    }
+                    else if (pro === 'style') {
+                        var numericStyle = this.container.getAttribute(pro);
+                        numericStyle = !sf.base.isNullOrUndefined(numericStyle) ? (numericStyle + this.htmlAttributes[pro]) :
+                            this.htmlAttributes[pro];
+                        this.container.setAttribute(pro, numericStyle);
+                    }
+                    else {
+                        this.container.setAttribute(pro, this.htmlAttributes[pro]);
+                    }
+                }
+            }
+        }
+    };
+    NumericTextBox.prototype.setElementWidth = function (width) {
+        if (!sf.base.isNullOrUndefined(width)) {
+            if (typeof width === 'number') {
+                this.container.style.width = sf.base.formatUnit(width);
+            }
+            else if (typeof width === 'string') {
+                this.container.style.width = (width.match(/px|%|em/)) ? (width) : (sf.base.formatUnit(width));
+            }
+        }
+    };
+    /* Spinner creation */
+    NumericTextBox.prototype.spinBtnCreation = function () {
+        this.spinDown = exports.Input.appendSpan(SPINICON + ' ' + SPINDOWN, this.container, this.createElement);
+        sf.base.attributes(this.spinDown, {
+            'title': this.l10n.getConstant('decrementTitle'),
+            'aria-label': this.l10n.getConstant('decrementTitle')
+        });
+        this.spinUp = exports.Input.appendSpan(SPINICON + ' ' + SPINUP, this.container, this.createElement);
+        sf.base.attributes(this.spinUp, {
+            'title': this.l10n.getConstant('incrementTitle'),
+            'aria-label': this.l10n.getConstant('incrementTitle')
+        });
+        this.wireSpinBtnEvents();
+    };
+    NumericTextBox.prototype.validateMinMax = function () {
+        if (!(typeof (this.min) === 'number' && !isNaN(this.min))) {
+            this.setProperties({ min: -(Number.MAX_VALUE) }, true);
+        }
+        if (!(typeof (this.max) === 'number' && !isNaN(this.max))) {
+            this.setProperties({ max: Number.MAX_VALUE }, true);
+        }
+        if (this.decimals !== null) {
+            if (this.min !== -(Number.MAX_VALUE)) {
+                this.setProperties({ min: this.instance.getNumberParser({ format: 'n' })(this.formattedValue(this.decimals, this.min)) }, true);
+            }
+            if (this.max !== (Number.MAX_VALUE)) {
+                this.setProperties({ max: this.instance.getNumberParser({ format: 'n' })(this.formattedValue(this.decimals, this.max)) }, true);
+            }
+        }
+        this.setProperties({ min: this.min > this.max ? this.max : this.min }, true);
+        sf.base.attributes(this.element, { 'aria-valuemin': this.min.toString(), 'aria-valuemax': this.max.toString() });
+    };
+    NumericTextBox.prototype.formattedValue = function (decimals, value) {
+        return this.instance.getNumberFormat({
+            maximumFractionDigits: decimals,
+            minimumFractionDigits: decimals, useGrouping: false
+        })(value);
+    };
+    NumericTextBox.prototype.validateStep = function () {
+        if (this.decimals !== null) {
+            this.setProperties({ step: this.instance.getNumberParser({ format: 'n' })(this.formattedValue(this.decimals, this.step)) }, true);
+        }
+    };
+    NumericTextBox.prototype.action = function (operation, event) {
+        this.isInteract = true;
+        var value = this.isFocused ? this.instance.getNumberParser({ format: 'n' })(this.element.value) : this.value;
+        this.changeValue(this.performAction(value, this.step, operation));
+        this.raiseChangeEvent(event);
+    };
+    NumericTextBox.prototype.checkErrorClass = function () {
+        if (this.isValidState) {
+            sf.base.removeClass([this.container], ERROR);
+        }
+        else {
+            sf.base.addClass([this.container], ERROR);
+        }
+        sf.base.attributes(this.element, { 'aria-invalid': this.isValidState ? 'false' : 'true' });
+    };
+    NumericTextBox.prototype.bindClearEvent = function () {
+        if (this.showClearButton) {
+            sf.base.EventHandler.add(this.inputWrapper.clearButton, 'mousedown touchstart', this.resetHandler, this);
+        }
+    };
+    NumericTextBox.prototype.resetHandler = function (e) {
+        e.preventDefault();
+        if (!(this.inputWrapper.clearButton.classList.contains('e-clear-icon-hide'))) {
+            this.clear(e);
+        }
+        this.isInteract = true;
+        this.raiseChangeEvent(e);
+    };
+    NumericTextBox.prototype.clear = function (event) {
+        this.setProperties({ value: null }, true);
+        this.setElementValue('');
+        this.hiddenInput.value = '';
+        var formElement = sf.base.closest(this.element, 'form');
+        if (formElement) {
+            var element = this.element.nextElementSibling;
+            var keyupEvent = document.createEvent('KeyboardEvent');
+            keyupEvent.initEvent('keyup', false, true);
+            element.dispatchEvent(keyupEvent);
+        }
+    };
+    NumericTextBox.prototype.resetFormHandler = function () {
+        if (this.element.tagName === 'EJS-NUMERICTEXTBOX') {
+            this.updateValue(null);
+        }
+        else {
+            this.updateValue(this.inputEleValue);
+        }
+    };
+    NumericTextBox.prototype.setSpinButton = function () {
+        if (!sf.base.isNullOrUndefined(this.spinDown)) {
+            sf.base.attributes(this.spinDown, {
+                'title': this.l10n.getConstant('decrementTitle'),
+                'aria-label': this.l10n.getConstant('decrementTitle')
+            });
+        }
+        if (!sf.base.isNullOrUndefined(this.spinUp)) {
+            sf.base.attributes(this.spinUp, {
+                'title': this.l10n.getConstant('incrementTitle'),
+                'aria-label': this.l10n.getConstant('incrementTitle')
+            });
+        }
+    };
+    NumericTextBox.prototype.wireEvents = function () {
+        sf.base.EventHandler.add(this.element, 'focus', this.focusHandler, this);
+        sf.base.EventHandler.add(this.element, 'blur', this.focusOutHandler, this);
+        sf.base.EventHandler.add(this.element, 'keydown', this.keyDownHandler, this);
+        sf.base.EventHandler.add(this.element, 'keyup', this.keyUpHandler, this);
+        sf.base.EventHandler.add(this.element, 'input', this.inputHandler, this);
+        sf.base.EventHandler.add(this.element, 'keypress', this.keyPressHandler, this);
+        sf.base.EventHandler.add(this.element, 'change', this.changeHandler, this);
+        sf.base.EventHandler.add(this.element, 'paste', this.pasteHandler, this);
+        if (this.enabled) {
+            this.bindClearEvent();
+            if (this.formEle) {
+                sf.base.EventHandler.add(this.formEle, 'reset', this.resetFormHandler, this);
+            }
+        }
+    };
+    NumericTextBox.prototype.wireSpinBtnEvents = function () {
+        /* bind spin button events */
+        sf.base.EventHandler.add(this.spinUp, sf.base.Browser.touchStartEvent, this.mouseDownOnSpinner, this);
+        sf.base.EventHandler.add(this.spinDown, sf.base.Browser.touchStartEvent, this.mouseDownOnSpinner, this);
+        sf.base.EventHandler.add(this.spinUp, sf.base.Browser.touchEndEvent, this.mouseUpOnSpinner, this);
+        sf.base.EventHandler.add(this.spinDown, sf.base.Browser.touchEndEvent, this.mouseUpOnSpinner, this);
+        sf.base.EventHandler.add(this.spinUp, sf.base.Browser.touchMoveEvent, this.touchMoveOnSpinner, this);
+        sf.base.EventHandler.add(this.spinDown, sf.base.Browser.touchMoveEvent, this.touchMoveOnSpinner, this);
+    };
+    NumericTextBox.prototype.unwireEvents = function () {
+        sf.base.EventHandler.remove(this.element, 'focus', this.focusHandler);
+        sf.base.EventHandler.remove(this.element, 'blur', this.focusOutHandler);
+        sf.base.EventHandler.remove(this.element, 'keyup', this.keyUpHandler);
+        sf.base.EventHandler.remove(this.element, 'input', this.inputHandler);
+        sf.base.EventHandler.remove(this.element, 'keydown', this.keyDownHandler);
+        sf.base.EventHandler.remove(this.element, 'keypress', this.keyPressHandler);
+        sf.base.EventHandler.remove(this.element, 'change', this.changeHandler);
+        sf.base.EventHandler.remove(this.element, 'paste', this.pasteHandler);
+        if (this.formEle) {
+            sf.base.EventHandler.remove(this.formEle, 'reset', this.resetFormHandler);
+        }
+    };
+    NumericTextBox.prototype.unwireSpinBtnEvents = function () {
+        /* unbind spin button events */
+        sf.base.EventHandler.remove(this.spinUp, sf.base.Browser.touchStartEvent, this.mouseDownOnSpinner);
+        sf.base.EventHandler.remove(this.spinDown, sf.base.Browser.touchStartEvent, this.mouseDownOnSpinner);
+        sf.base.EventHandler.remove(this.spinUp, sf.base.Browser.touchEndEvent, this.mouseUpOnSpinner);
+        sf.base.EventHandler.remove(this.spinDown, sf.base.Browser.touchEndEvent, this.mouseUpOnSpinner);
+        sf.base.EventHandler.remove(this.spinUp, sf.base.Browser.touchMoveEvent, this.touchMoveOnSpinner);
+        sf.base.EventHandler.remove(this.spinDown, sf.base.Browser.touchMoveEvent, this.touchMoveOnSpinner);
+    };
+    NumericTextBox.prototype.changeHandler = function (event) {
+        event.stopPropagation();
+        if (!this.element.value.length) {
+            this.setProperties({ value: null }, true);
+        }
+        var parsedInput = this.instance.getNumberParser({ format: 'n' })(this.element.value);
+        this.updateValue(parsedInput, event);
+    };
+    NumericTextBox.prototype.raiseChangeEvent = function (event) {
+        if (this.prevValue !== this.value) {
+            var eventArgs = {};
+            this.changeEventArgs = { value: this.value, previousValue: this.prevValue, isInteracted: this.isInteract,
+                isInteraction: this.isInteract, event: event };
+            if (event) {
+                this.changeEventArgs.event = event;
+            }
+            if (this.changeEventArgs.event === undefined) {
+                this.changeEventArgs.isInteracted = false;
+                this.changeEventArgs.isInteraction = false;
+            }
+            sf.base.merge(eventArgs, this.changeEventArgs);
+            this.prevValue = this.value;
+            this.isInteract = false;
+            this.trigger('change', eventArgs);
+        }
+    };
+    NumericTextBox.prototype.pasteHandler = function () {
+        var _this = this;
+        if (!this.enabled || this.readonly) {
+            return;
+        }
+        var beforeUpdate = this.element.value;
+        setTimeout(function () {
+            if (!_this.numericRegex().test(_this.element.value)) {
+                _this.setElementValue(beforeUpdate);
+            }
+        });
+    };
+    NumericTextBox.prototype.preventHandler = function () {
+        var _this = this;
+        var iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
+        setTimeout(function () {
+            if (_this.element.selectionStart > 0) {
+                var currentPos = _this.element.selectionStart;
+                var prevPos = _this.element.selectionStart - 1;
+                var start = 0;
+                var ignoreKeyCode = void 0;
+                var valArray = _this.element.value.split('');
+                var numericObject = sf.base.getNumericObject(_this.locale);
+                var decimalSeparator = sf.base.getValue('decimal', numericObject);
+                ignoreKeyCode = decimalSeparator.charCodeAt(0);
+                if (_this.element.value[prevPos] === ' ' && _this.element.selectionStart > 0 && !iOS) {
+                    if (sf.base.isNullOrUndefined(_this.prevVal)) {
+                        _this.element.value = _this.element.value.trim();
+                    }
+                    else if (prevPos !== 0) {
+                        _this.element.value = _this.prevVal;
+                    }
+                    else if (prevPos === 0) {
+                        _this.element.value = _this.element.value.trim();
+                    }
+                    _this.element.setSelectionRange(prevPos, prevPos);
+                }
+                else if (isNaN(parseFloat(_this.element.value[_this.element.selectionStart - 1])) &&
+                    _this.element.value[_this.element.selectionStart - 1].charCodeAt(0) !== 45) {
+                    if ((valArray.indexOf(_this.element.value[_this.element.selectionStart - 1]) !==
+                        valArray.lastIndexOf(_this.element.value[_this.element.selectionStart - 1]) &&
+                        _this.element.value[_this.element.selectionStart - 1].charCodeAt(0) === ignoreKeyCode) ||
+                        _this.element.value[_this.element.selectionStart - 1].charCodeAt(0) !== ignoreKeyCode) {
+                        _this.element.value = _this.element.value.substring(0, prevPos) +
+                            _this.element.value.substring(currentPos, _this.element.value.length);
+                        _this.element.setSelectionRange(prevPos, prevPos);
+                        if (isNaN(parseFloat(_this.element.value[_this.element.selectionStart - 1])) && _this.element.selectionStart > 0
+                            && _this.element.value.length) {
+                            _this.preventHandler();
+                        }
+                    }
+                }
+                else if (isNaN(parseFloat(_this.element.value[_this.element.selectionStart - 2])) && _this.element.selectionStart > 1 &&
+                    _this.element.value[_this.element.selectionStart - 2].charCodeAt(0) !== 45) {
+                    if ((valArray.indexOf(_this.element.value[_this.element.selectionStart - 2]) !==
+                        valArray.lastIndexOf(_this.element.value[_this.element.selectionStart - 2]) &&
+                        _this.element.value[_this.element.selectionStart - 2].charCodeAt(0) === ignoreKeyCode) ||
+                        _this.element.value[_this.element.selectionStart - 2].charCodeAt(0) !== ignoreKeyCode) {
+                        _this.element.setSelectionRange(prevPos, prevPos);
+                        _this.nextEle = _this.element.value[_this.element.selectionStart];
+                        _this.cursorPosChanged = true;
+                        _this.preventHandler();
+                    }
+                }
+                if (_this.cursorPosChanged === true && _this.element.value[_this.element.selectionStart] === _this.nextEle &&
+                    isNaN(parseFloat(_this.element.value[_this.element.selectionStart - 1]))) {
+                    _this.element.setSelectionRange(_this.element.selectionStart + 1, _this.element.selectionStart + 1);
+                    _this.cursorPosChanged = false;
+                    _this.nextEle = null;
+                }
+                if (_this.element.value.trim() === '') {
+                    _this.element.setSelectionRange(start, start);
+                }
+                if (_this.element.selectionStart > 0) {
+                    if ((_this.element.value[_this.element.selectionStart - 1].charCodeAt(0) === 45) && _this.element.selectionStart > 1) {
+                        if (sf.base.isNullOrUndefined(_this.prevVal)) {
+                            _this.element.value = _this.element.value;
+                        }
+                        else {
+                            _this.element.value = _this.prevVal;
+                        }
+                        _this.element.setSelectionRange(_this.element.selectionStart, _this.element.selectionStart);
+                    }
+                }
+                _this.prevVal = _this.element.value;
+            }
+        });
+    };
+    NumericTextBox.prototype.keyUpHandler = function (event) {
+        if (!this.enabled || this.readonly) {
+            return;
+        }
+        var iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
+        if (!iOS && sf.base.Browser.isDevice) {
+            this.preventHandler();
+        }
+        var parseValue = this.instance.getNumberParser({ format: 'n' })(this.element.value);
+        parseValue = parseValue === null || isNaN(parseValue) ? null : parseValue;
+        this.hiddenInput.value = parseValue || parseValue === 0 ? parseValue.toString() : null;
+        var formElement = sf.base.closest(this.element, 'form');
+        if (formElement) {
+            var element = this.element.nextElementSibling;
+            var keyupEvent = document.createEvent('KeyboardEvent');
+            keyupEvent.initEvent('keyup', false, true);
+            element.dispatchEvent(keyupEvent);
+        }
+    };
+    
+    NumericTextBox.prototype.inputHandler = function (event) {
+        if (!this.enabled || this.readonly) {
+            return;
+        }
+        var iOS = !!navigator.platform && /iPad|iPhone|iPod/.test(navigator.platform);
+        var fireFox = navigator.userAgent.toLowerCase().indexOf('firefox') > -1;
+        if ((fireFox || iOS) && sf.base.Browser.isDevice) {
+            this.preventHandler();
+        }
+    };
+    
+    NumericTextBox.prototype.keyDownHandler = function (event) {
+        if (!this.readonly) {
+            switch (event.keyCode) {
+                case 38:
+                    event.preventDefault();
+                    this.action(INCREMENT, event);
+                    break;
+                case 40:
+                    event.preventDefault();
+                    this.action(DECREMENT, event);
+                    break;
+                default: break;
+            }
+        }
+    };
+    
+    NumericTextBox.prototype.performAction = function (value, step, operation) {
+        if (value === null || isNaN(value)) {
+            value = 0;
+        }
+        var updatedValue = operation === INCREMENT ? value + step : value - step;
+        updatedValue = this.correctRounding(value, step, updatedValue);
+        return this.strictMode ? this.trimValue(updatedValue) : updatedValue;
+    };
+    
+    NumericTextBox.prototype.correctRounding = function (value, step, result) {
+        var floatExp = new RegExp('[,.](.*)');
+        var valueText = value.toString();
+        var stepText = step.toString();
+        var floatValue = floatExp.test(value.toString());
+        var floatStep = floatExp.test(step.toString());
+        if (floatValue || floatStep) {
+            var valueCount = floatValue ? floatExp.exec(value.toString())[0].length : 0;
+            var stepCount = floatStep ? floatExp.exec(step.toString())[0].length : 0;
+            var max = Math.max(valueCount, stepCount);
+            return value = this.roundValue(result, max);
+        }
+        return result;
+    };
+    
+    NumericTextBox.prototype.roundValue = function (result, precision) {
+        precision = precision || 0;
+        var divide = Math.pow(10, precision);
+        return result *= divide, result = Math.round(result) / divide;
+    };
+    
+    NumericTextBox.prototype.updateValue = function (value, event) {
+        if (event) {
+            this.isInteract = true;
+        }
+        if (value !== null && !isNaN(value)) {
+            if (this.decimals) {
+                value = this.roundNumber(value, this.decimals);
+            }
+        }
+        this.changeValue(value === null || isNaN(value) ? null : this.strictMode ? this.trimValue(value) : value);
+        this.raiseChangeEvent(event);
+    };
+    NumericTextBox.prototype.updateCurrency = function (prop, propVal) {
+        sf.base.setValue(prop, propVal, this.cultureInfo);
+        this.updateValue(this.value);
+    };
+    NumericTextBox.prototype.changeValue = function (value) {
+        if (!(value || value === 0)) {
+            value = null;
+            this.setProperties({ value: value }, true);
+        }
+        else {
+            var numberOfDecimals = void 0;
+            numberOfDecimals = this.getNumberOfDecimals(value);
+            this.setProperties({ value: this.roundNumber(value, numberOfDecimals) }, true);
+        }
+        this.modifyText();
+        if (!this.strictMode) {
+            this.validateState();
+        }
+    };
+    
+    NumericTextBox.prototype.modifyText = function () {
+        if (this.value || this.value === 0) {
+            var value = this.formatNumber();
+            var elementValue = this.isFocused ? value : this.instance.getNumberFormat(this.cultureInfo)(this.value);
+            this.setElementValue(elementValue);
+            sf.base.attributes(this.element, { 'aria-valuenow': value });
+            this.hiddenInput.value = this.value.toString();
+            if (this.value !== null && this.serverDecimalSeparator) {
+                this.hiddenInput.value = this.hiddenInput.value.replace('.', this.serverDecimalSeparator);
+            }
+        }
+        else {
+            this.setElementValue('');
+            this.element.removeAttribute('aria-valuenow');
+            this.hiddenInput.value = null;
+        }
+    };
+    
+    NumericTextBox.prototype.setElementValue = function (val, element) {
+        exports.Input.setValue(val, (element ? element : this.element), this.floatLabelType, this.showClearButton);
+    };
+    NumericTextBox.prototype.validateState = function () {
+        this.isValidState = true;
+        if (this.value || this.value === 0) {
+            this.isValidState = !(this.value > this.max || this.value < this.min);
+        }
+        this.checkErrorClass();
+    };
+    NumericTextBox.prototype.getNumberOfDecimals = function (value) {
+        var numberOfDecimals;
+        var EXPREGEXP = new RegExp('[eE][\-+]?([0-9]+)');
+        var valueString = value.toString();
+        if (EXPREGEXP.test(valueString)) {
+            var result = EXPREGEXP.exec(valueString);
+            if (!sf.base.isNullOrUndefined(result)) {
+                valueString = value.toFixed(Math.min(parseInt(result[1], 10), 20));
+            }
+        }
+        var decimalPart = valueString.split('.')[1];
+        numberOfDecimals = !decimalPart || !decimalPart.length ? 0 : decimalPart.length;
+        if (this.decimals !== null) {
+            numberOfDecimals = numberOfDecimals < this.decimals ? numberOfDecimals : this.decimals;
+        }
+        return numberOfDecimals;
+    };
+    NumericTextBox.prototype.formatNumber = function () {
+        var numberOfDecimals;
+        numberOfDecimals = this.getNumberOfDecimals(this.value);
+        return this.instance.getNumberFormat({
+            maximumFractionDigits: numberOfDecimals,
+            minimumFractionDigits: numberOfDecimals, useGrouping: false
+        })(this.value);
+    };
+    
+    NumericTextBox.prototype.trimValue = function (value) {
+        if (value > this.max) {
+            return this.max;
+        }
+        if (value < this.min) {
+            return this.min;
+        }
+        return value;
+    };
+    
+    NumericTextBox.prototype.roundNumber = function (value, precision) {
+        var result = value;
+        var decimals = precision || 0;
+        var result1 = result.toString().split('e');
+        result = Math.round(Number(result1[0] + 'e' + (result1[1] ? (Number(result1[1]) + decimals) : decimals)));
+        var result2 = result.toString().split('e');
+        result = Number(result2[0] + 'e' + (result2[1] ? (Number(result2[1]) - decimals) : -decimals));
+        return Number(result.toFixed(decimals));
+    };
+    
+    NumericTextBox.prototype.cancelEvent = function (event) {
+        event.preventDefault();
+        return false;
+    };
+    NumericTextBox.prototype.keyPressHandler = function (event) {
+        if (!this.enabled || this.readonly) {
+            return true;
+        }
+        if (!sf.base.Browser.isDevice && sf.base.Browser.info.version === '11.0' && event.keyCode === 13) {
+            var parsedInput = this.instance.getNumberParser({ format: 'n' })(this.element.value);
+            this.updateValue(parsedInput, event);
+            return true;
+        }
+        if (event.which === 0 || event.metaKey || event.ctrlKey || event.keyCode === 8 || event.keyCode === 13) {
+            return true;
+        }
+        var currentChar = String.fromCharCode(event.which);
+        var text = this.element.value;
+        text = text.substring(0, this.element.selectionStart) + currentChar + text.substring(this.element.selectionEnd);
+        if (!this.numericRegex().test(text)) {
+            event.preventDefault();
+            event.stopPropagation();
+            return false;
+        }
+        else {
+            return true;
+        }
+    };
+    
+    NumericTextBox.prototype.numericRegex = function () {
+        var numericObject = sf.base.getNumericObject(this.locale);
+        var decimalSeparator = sf.base.getValue('decimal', numericObject);
+        var fractionRule = '*';
+        if (decimalSeparator === DECIMALSEPARATOR) {
+            decimalSeparator = '\\' + decimalSeparator;
+        }
+        if (this.decimals === 0 && this.validateDecimalOnType) {
+            return INTREGEXP;
+        }
+        if (this.decimals && this.validateDecimalOnType) {
+            fractionRule = '{0,' + this.decimals + '}';
+        }
+        return new RegExp('^(-)?(((\\d+(' + decimalSeparator + '\\d' + fractionRule +
+            ')?)|(' + decimalSeparator + '\\d' + fractionRule + ')))?$');
+    };
+    
+    NumericTextBox.prototype.mouseWheel = function (event) {
+        event.preventDefault();
+        var delta;
+        var rawEvent = event;
+        if (rawEvent.wheelDelta) {
+            delta = rawEvent.wheelDelta / 120;
+        }
+        else if (rawEvent.detail) {
+            delta = -rawEvent.detail / 3;
+        }
+        if (delta > 0) {
+            this.action(INCREMENT, event);
+        }
+        else if (delta < 0) {
+            this.action(DECREMENT, event);
+        }
+        this.cancelEvent(event);
+    };
+    NumericTextBox.prototype.focusHandler = function (event) {
+        var _this = this;
+        this.focusEventArgs = { event: event, value: this.value, container: this.container };
+        this.trigger('focus', this.focusEventArgs);
+        if (!this.enabled || this.readonly) {
+            return;
+        }
+        this.isFocused = true;
+        sf.base.removeClass([this.container], ERROR);
+        this.prevValue = this.value;
+        if ((this.value || this.value === 0)) {
+            var formatValue_1 = this.formatNumber();
+            this.setElementValue(formatValue_1);
+            if (!this.isPrevFocused) {
+                if (!sf.base.Browser.isDevice && sf.base.Browser.info.version === '11.0') {
+                    this.element.setSelectionRange(0, formatValue_1.length);
+                }
+                else {
+                    var delay = (sf.base.Browser.isDevice && sf.base.Browser.isIos) ? 600 : 0;
+                    setTimeout(function () {
+                        _this.element.setSelectionRange(0, formatValue_1.length);
+                    }, delay);
+                }
+            }
+        }
+        if (!sf.base.Browser.isDevice) {
+            sf.base.EventHandler.add(this.element, 'mousewheel DOMMouseScroll', this.mouseWheel, this);
+        }
+    };
+    
+    NumericTextBox.prototype.focusOutHandler = function (event) {
+        var _this = this;
+        this.blurEventArgs = { event: event, value: this.value, container: this.container };
+        this.trigger('blur', this.blurEventArgs);
+        if (!this.enabled || this.readonly) {
+            return;
+        }
+        if (this.isPrevFocused) {
+            event.preventDefault();
+            if (sf.base.Browser.isDevice) {
+                var value_1 = this.element.value;
+                this.element.focus();
+                this.isPrevFocused = false;
+                var ele_1 = this.element;
+                setTimeout(function () {
+                    _this.setElementValue(value_1, ele_1);
+                }, 200);
+            }
+        }
+        else {
+            this.isFocused = false;
+            if (!this.element.value.length) {
+                this.setProperties({ value: null }, true);
+            }
+            var parsedInput = this.instance.getNumberParser({ format: 'n' })(this.element.value);
+            this.updateValue(parsedInput);
+            if (!sf.base.Browser.isDevice) {
+                sf.base.EventHandler.remove(this.element, 'mousewheel DOMMouseScroll', this.mouseWheel);
+            }
+        }
+        var formElement = sf.base.closest(this.element, 'form');
+        if (formElement) {
+            var element = this.element.nextElementSibling;
+            var focusEvent = document.createEvent('FocusEvent');
+            focusEvent.initEvent('focusout', false, true);
+            element.dispatchEvent(focusEvent);
+        }
+    };
+    
+    NumericTextBox.prototype.mouseDownOnSpinner = function (event) {
+        var _this = this;
+        if (this.isFocused) {
+            this.isPrevFocused = true;
+            event.preventDefault();
+        }
+        if (!this.getElementData(event)) {
+            return;
+        }
+        var result = this.getElementData(event);
+        var target = event.currentTarget;
+        var action = (target.classList.contains(SPINUP)) ? INCREMENT : DECREMENT;
+        sf.base.EventHandler.add(target, 'mouseleave', this.mouseUpClick, this);
+        this.timeOut = setInterval(function () { _this.isCalled = true; _this.action(action, event); }, 150);
+        sf.base.EventHandler.add(document, 'mouseup', this.mouseUpClick, this);
+    };
+    NumericTextBox.prototype.touchMoveOnSpinner = function (event) {
+        var target = document.elementFromPoint(event.clientX, event.clientY);
+        if (!(target.classList.contains(SPINICON))) {
+            clearInterval(this.timeOut);
+        }
+    };
+    NumericTextBox.prototype.mouseUpOnSpinner = function (event) {
+        if (this.isPrevFocused) {
+            this.element.focus();
+            if (!sf.base.Browser.isDevice) {
+                this.isPrevFocused = false;
+            }
+        }
+        if (!sf.base.Browser.isDevice) {
+            event.preventDefault();
+        }
+        if (!this.getElementData(event)) {
+            return;
+        }
+        var target = event.currentTarget;
+        var action = (target.classList.contains(SPINUP)) ? INCREMENT : DECREMENT;
+        sf.base.EventHandler.remove(target, 'mouseleave', this.mouseUpClick);
+        if (!this.isCalled) {
+            this.action(action, event);
+        }
+        this.isCalled = false;
+        sf.base.EventHandler.remove(document, 'mouseup', this.mouseUpClick);
+        var formElement = sf.base.closest(this.element, 'form');
+        if (formElement) {
+            var element = this.element.nextElementSibling;
+            var keyupEvent = document.createEvent('KeyboardEvent');
+            keyupEvent.initEvent('keyup', false, true);
+            element.dispatchEvent(keyupEvent);
+        }
+    };
+    NumericTextBox.prototype.getElementData = function (event) {
+        if ((event.which && event.which === 3) || (event.button && event.button === 2)
+            || !this.enabled || this.readonly) {
+            return false;
+        }
+        clearInterval(this.timeOut);
+        return true;
+    };
+    NumericTextBox.prototype.floatLabelTypeUpdate = function () {
+        exports.Input.removeFloating(this.inputWrapper);
+        var hiddenInput = this.hiddenInput;
+        this.hiddenInput.remove();
+        exports.Input.addFloating(this.element, this.floatLabelType, this.placeholder, this.createElement);
+        this.container.insertBefore(hiddenInput, this.container.childNodes[1]);
+    };
+    NumericTextBox.prototype.mouseUpClick = function (event) {
+        event.stopPropagation();
+        clearInterval(this.timeOut);
+        this.isCalled = false;
+        sf.base.EventHandler.remove(this.spinUp, 'mouseleave', this.mouseUpClick);
+        sf.base.EventHandler.remove(this.spinDown, 'mouseleave', this.mouseUpClick);
+    };
+    /**
+     * Increments the NumericTextBox value with the specified step value.
+     * @param  {number} step - Specifies the value used to increment the NumericTextBox value.
+     * if its not given then numeric value will be incremented based on the step property value.
+     */
+    NumericTextBox.prototype.increment = function (step) {
+        if (step === void 0) { step = this.step; }
+        this.isInteract = false;
+        this.changeValue(this.performAction(this.value, step, INCREMENT));
+        this.raiseChangeEvent();
+    };
+    /**
+     * Decrements the NumericTextBox value with specified step value.
+     * @param  {number} step - Specifies the value used to decrement the NumericTextBox value.
+     * if its not given then numeric value will be decremented based on the step property value.
+     */
+    NumericTextBox.prototype.decrement = function (step) {
+        if (step === void 0) { step = this.step; }
+        this.isInteract = false;
+        this.changeValue(this.performAction(this.value, step, DECREMENT));
+        this.raiseChangeEvent();
+    };
+    /**
+     * Removes the component from the DOM and detaches all its related event handlers.
+     * Also it maintains the initial input element from the DOM.
+     * @method destroy
+     * @return {void}
+     */
+    NumericTextBox.prototype.destroy = function () {
+        this.unwireEvents();
+        if (!(sf.base.isBlazor() && this.isServerRendered)) {
+            sf.base.detach(this.hiddenInput);
+            if (this.showSpinButton) {
+                this.unwireSpinBtnEvents();
+                sf.base.detach(this.spinUp);
+                sf.base.detach(this.spinDown);
+            }
+            var attrArray = ['aria-labelledby', 'role', 'autocomplete', 'aria-readonly',
+                'autocorrect', 'aria-disabled', 'aria-placeholder', 'autocapitalize',
+                'spellcheck', 'aria-autocomplete', 'tabindex', 'aria-valuemin',
+                'aria-valuemax', 'aria-live', 'aria-valuenow', 'aria-invalid'];
+            for (var i = 0; i < attrArray.length; i++) {
+                this.element.removeAttribute(attrArray[i]);
+            }
+            this.element.classList.remove('e-input');
+            this.container.insertAdjacentElement('afterend', this.element);
+            sf.base.detach(this.container);
+            _super.prototype.destroy.call(this);
+        }
+    };
+    /**
+     * Returns the value of NumericTextBox with the format applied to the NumericTextBox.
+     */
+    NumericTextBox.prototype.getText = function () {
+        return this.element.value;
+    };
+    /**
+     * Sets the focus to widget for interaction.
+     * @returns void
+     */
+    NumericTextBox.prototype.focusIn = function () {
+        if (document.activeElement !== this.element && this.enabled) {
+            this.element.focus();
+            sf.base.addClass([this.container], [NUMERIC_FOCUS]);
+        }
+    };
+    /**
+     * Remove the focus from widget, if the widget is in focus state.
+     * @returns void
+     */
+    NumericTextBox.prototype.focusOut = function () {
+        if (document.activeElement === this.element && this.enabled) {
+            this.element.blur();
+            sf.base.removeClass([this.container], [NUMERIC_FOCUS]);
+        }
+    };
+    /**
+     * Gets the properties to be maintained in the persisted state.
+     * @return {string}
+     */
+    NumericTextBox.prototype.getPersistData = function () {
+        var keyEntity = ['value'];
+        return this.addOnPersist(keyEntity);
+    };
+    /**
+     * Calls internally if any of the property value is changed.
+     * @private
+     */
+    NumericTextBox.prototype.onPropertyChanged = function (newProp, oldProp) {
+        for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
+            var prop = _a[_i];
+            switch (prop) {
+                case 'width':
+                    this.setElementWidth(newProp.width);
+                    break;
+                case 'cssClass':
+                    this.updateCssClass(newProp.cssClass, oldProp.cssClass);
+                    break;
+                case 'enabled':
+                    exports.Input.setEnabled(newProp.enabled, this.element);
+                    break;
+                case 'enableRtl':
+                    exports.Input.setEnableRtl(newProp.enableRtl, [this.container]);
+                    break;
+                case 'readonly':
+                    exports.Input.setReadonly(newProp.readonly, this.element);
+                    if (this.readonly) {
+                        sf.base.attributes(this.element, { 'aria-readonly': 'true' });
+                    }
+                    else {
+                        this.element.removeAttribute('aria-readonly');
+                    }
+                    break;
+                case 'htmlAttributes':
+                    this.updateHTMLAttrToElement();
+                    this.updateHTMLAttrToWrapper();
+                    this.updateDataAttribute(true);
+                    this.checkAttributes(true);
+                    break;
+                case 'placeholder':
+                    exports.Input.setPlaceholder(newProp.placeholder, this.element);
+                    break;
+                case 'step':
+                    this.step = newProp.step;
+                    this.validateStep();
+                    break;
+                case 'showSpinButton':
+                    if (newProp.showSpinButton) {
+                        this.spinBtnCreation();
+                    }
+                    else {
+                        sf.base.detach(this.spinUp);
+                        sf.base.detach(this.spinDown);
+                    }
+                    break;
+                case 'showClearButton':
+                    exports.Input.setClearButton(newProp.showClearButton, this.element, this.inputWrapper, undefined, this.createElement);
+                    this.bindClearEvent();
+                    break;
+                case 'floatLabelType':
+                    this.floatLabelType = newProp.floatLabelType;
+                    this.floatLabelTypeUpdate();
+                    break;
+                case 'value':
+                    this.updateValue(newProp.value);
+                    break;
+                case 'min':
+                case 'max':
+                    sf.base.setValue(prop, sf.base.getValue(prop, newProp), this);
+                    this.validateMinMax();
+                    this.updateValue(this.value);
+                    break;
+                case 'strictMode':
+                    this.strictMode = newProp.strictMode;
+                    this.updateValue(this.value);
+                    this.validateState();
+                    break;
+                case 'locale':
+                    this.initCultureFunc();
+                    this.l10n.setLocale(this.locale);
+                    this.setSpinButton();
+                    this.updatePlaceholder();
+                    exports.Input.setPlaceholder(this.placeholder, this.element);
+                    this.updateValue(this.value);
+                    break;
+                case 'currency':
+                    var propVal = sf.base.getValue(prop, newProp);
+                    this.setProperties({ currencyCode: propVal }, true);
+                    this.updateCurrency(prop, propVal);
+                    break;
+                case 'currencyCode':
+                    var propValue = sf.base.getValue(prop, newProp);
+                    this.setProperties({ currency: propValue }, true);
+                    this.updateCurrency('currency', propValue);
+                    break;
+                case 'format':
+                    sf.base.setValue(prop, sf.base.getValue(prop, newProp), this);
+                    this.initCultureInfo();
+                    this.updateValue(this.value);
+                    break;
+                case 'decimals':
+                    this.decimals = newProp.decimals;
+                    this.updateValue(this.value);
+            }
+        }
+    };
+    /**
+     * Gets the component name
+     * @private
+     */
+    NumericTextBox.prototype.getModuleName = function () {
+        return 'numerictextbox';
+    };
+    __decorate([
+        sf.base.Property('')
+    ], NumericTextBox.prototype, "cssClass", void 0);
+    __decorate([
+        sf.base.Property(null)
+    ], NumericTextBox.prototype, "value", void 0);
+    __decorate([
+        sf.base.Property(-(Number.MAX_VALUE))
+    ], NumericTextBox.prototype, "min", void 0);
+    __decorate([
+        sf.base.Property(Number.MAX_VALUE)
+    ], NumericTextBox.prototype, "max", void 0);
+    __decorate([
+        sf.base.Property(1)
+    ], NumericTextBox.prototype, "step", void 0);
+    __decorate([
+        sf.base.Property(null)
+    ], NumericTextBox.prototype, "width", void 0);
+    __decorate([
+        sf.base.Property(null)
+    ], NumericTextBox.prototype, "placeholder", void 0);
+    __decorate([
+        sf.base.Property({})
+    ], NumericTextBox.prototype, "htmlAttributes", void 0);
+    __decorate([
+        sf.base.Property(true)
+    ], NumericTextBox.prototype, "showSpinButton", void 0);
+    __decorate([
+        sf.base.Property(false)
+    ], NumericTextBox.prototype, "readonly", void 0);
+    __decorate([
+        sf.base.Property(true)
+    ], NumericTextBox.prototype, "enabled", void 0);
+    __decorate([
+        sf.base.Property(false)
+    ], NumericTextBox.prototype, "showClearButton", void 0);
+    __decorate([
+        sf.base.Property(false)
+    ], NumericTextBox.prototype, "enablePersistence", void 0);
+    __decorate([
+        sf.base.Property('n2')
+    ], NumericTextBox.prototype, "format", void 0);
+    __decorate([
+        sf.base.Property(null)
+    ], NumericTextBox.prototype, "decimals", void 0);
+    __decorate([
+        sf.base.Property(null)
+    ], NumericTextBox.prototype, "currency", void 0);
+    __decorate([
+        sf.base.Property(null)
+    ], NumericTextBox.prototype, "currencyCode", void 0);
+    __decorate([
+        sf.base.Property(true)
+    ], NumericTextBox.prototype, "strictMode", void 0);
+    __decorate([
+        sf.base.Property(false)
+    ], NumericTextBox.prototype, "validateDecimalOnType", void 0);
+    __decorate([
+        sf.base.Property('Never')
+    ], NumericTextBox.prototype, "floatLabelType", void 0);
+    __decorate([
+        sf.base.Event()
+    ], NumericTextBox.prototype, "created", void 0);
+    __decorate([
+        sf.base.Event()
+    ], NumericTextBox.prototype, "destroyed", void 0);
+    __decorate([
+        sf.base.Event()
+    ], NumericTextBox.prototype, "change", void 0);
+    __decorate([
+        sf.base.Event()
+    ], NumericTextBox.prototype, "focus", void 0);
+    __decorate([
+        sf.base.Event()
+    ], NumericTextBox.prototype, "blur", void 0);
+    NumericTextBox = __decorate([
+        sf.base.NotifyPropertyChanges
+    ], NumericTextBox);
+    return NumericTextBox;
+}(sf.base.Component));
+
+/**
+ * NumericTextBox modules
+ */
+
+/**
+ * MaskedTextBox base module
+ */
+var ERROR$1 = 'e-error';
+var INPUTGROUP = 'e-input-group';
+var FLOATINPUT = 'e-float-input';
+var UTILMASK = 'e-utility-mask';
+var TOPLABEL = 'e-label-top';
+var BOTTOMLABEL = 'e-label-bottom';
+/**
+ * @hidden
+ * Built-in masking elements collection.
+ */
+var regularExpressions = {
+    '0': '[0-9]',
+    '9': '[0-9 ]',
+    '#': '[0-9 +-]',
+    'L': '[A-Za-z]',
+    '?': '[A-Za-z ]',
+    '&': '[^\x7f ]+',
+    'C': '[^\x7f]+',
+    'A': '[A-Za-z0-9]',
+    'a': '[A-Za-z0-9 ]',
+};
+/**
+ * @hidden
+ * Generate required masking elements to the MaskedTextBox from user mask input.
+ */
+function createMask() {
+    sf.base.attributes(this.element, {
+        'role': 'textbox', 'autocomplete': 'off', 'autocorrect': 'off', 'autocapitalize': 'off',
+        'spellcheck': 'false', 'aria-live': 'assertive', 'aria-valuenow': ''
+    });
+    if (this.mask) {
+        var splitMask = this.mask.split(']');
+        for (var i = 0; i < splitMask.length; i++) {
+            if (splitMask[i][splitMask[i].length - 1] === '\\') {
+                splitMask[i] = splitMask[i] + ']';
+                var splitInnerMask = splitMask[i].split('[');
+                for (var j = 0; j < splitInnerMask.length; j++) {
+                    if (splitInnerMask[j][splitInnerMask[j].length - 1] === '\\') {
+                        splitInnerMask[j] = splitInnerMask[j] + '[';
+                    }
+                    pushIntoRegExpCollec.call(this, splitInnerMask[j]);
+                }
+            }
+            else {
+                var splitInnerMask = splitMask[i].split('[');
+                if (splitInnerMask.length > 1) {
+                    var chkSpace = false;
+                    for (var j = 0; j < splitInnerMask.length; j++) {
+                        if (splitInnerMask[j] === '\\') {
+                            this.customRegExpCollec.push('[');
+                            this.hiddenMask += splitInnerMask[j] + '[';
+                        }
+                        else if (splitInnerMask[j] === '') {
+                            chkSpace = true;
+                        }
+                        else if ((splitInnerMask[j] !== '' && chkSpace) || j === splitInnerMask.length - 1) {
+                            this.customRegExpCollec.push('[' + splitInnerMask[j] + ']');
+                            this.hiddenMask += this.promptChar;
+                            chkSpace = false;
+                        }
+                        else {
+                            pushIntoRegExpCollec.call(this, splitInnerMask[j]);
+                        }
+                    }
+                }
+                else {
+                    pushIntoRegExpCollec.call(this, splitInnerMask[0]);
+                }
+            }
+        }
+        this.escapeMaskValue = this.hiddenMask;
+        this.promptMask = this.hiddenMask.replace(/[09?LCAa#&]/g, this.promptChar);
+        if (!sf.base.isNullOrUndefined(this.customCharacters)) {
+            for (var i = 0; i < this.promptMask.length; i++) {
+                if (!sf.base.isNullOrUndefined(this.customCharacters[this.promptMask[i]])) {
+                    this.promptMask = this.promptMask.replace(new RegExp(this.promptMask[i], 'g'), this.promptChar);
+                }
+            }
+        }
+        var escapeNumber = 0;
+        if (this.hiddenMask.match(new RegExp(/\\/))) {
+            for (var i = 0; i < this.hiddenMask.length; i++) {
+                var j = 0;
+                if (i >= 1) {
+                    j = i;
+                }
+                escapeNumber = this.hiddenMask.length - this.promptMask.length;
+                j = j - escapeNumber;
+                if ((i > 0 && this.hiddenMask[i - 1] !== '\\') && (this.hiddenMask[i] === '>' ||
+                    this.hiddenMask[i] === '<' || this.hiddenMask[i] === '|')) {
+                    this.promptMask = this.promptMask.substring(0, j) +
+                        this.promptMask.substring((i + 1) - escapeNumber, this.promptMask.length);
+                    this.escapeMaskValue = this.escapeMaskValue.substring(0, j) +
+                        this.escapeMaskValue.substring((i + 1) - escapeNumber, this.escapeMaskValue.length);
+                }
+                if (this.hiddenMask[i] === '\\') {
+                    this.promptMask = this.promptMask.substring(0, j) + this.hiddenMask[i + 1] +
+                        this.promptMask.substring((i + 2) - escapeNumber, this.promptMask.length);
+                    this.escapeMaskValue = this.escapeMaskValue.substring(0, j) + this.escapeMaskValue[i + 1] +
+                        this.escapeMaskValue.substring((i + 2) - escapeNumber, this.escapeMaskValue.length);
+                }
+            }
+        }
+        else {
+            this.promptMask = this.promptMask.replace(/[>|<]/g, '');
+            this.escapeMaskValue = this.hiddenMask.replace(/[>|<]/g, '');
+        }
+        sf.base.attributes(this.element, { 'aria-invalid': 'false' });
+    }
+}
+/**
+ * @hidden
+ * Apply mask ability with masking elements to the MaskedTextBox.
+ */
+function applyMask() {
+    setElementValue.call(this, this.promptMask);
+    setMaskValue.call(this, this.value);
+}
+/**
+ * @hidden
+ * To wire required events to the MaskedTextBox.
+ */
+function wireEvents() {
+    sf.base.EventHandler.add(this.element, 'keydown', maskInputKeyDownHandler, this);
+    sf.base.EventHandler.add(this.element, 'keypress', maskInputKeyPressHandler, this);
+    sf.base.EventHandler.add(this.element, 'keyup', maskInputKeyUpHandler, this);
+    sf.base.EventHandler.add(this.element, 'input', maskInputHandler, this);
+    sf.base.EventHandler.add(this.element, 'focus', maskInputFocusHandler, this);
+    sf.base.EventHandler.add(this.element, 'blur', maskInputBlurHandler, this);
+    sf.base.EventHandler.add(this.element, 'paste', maskInputPasteHandler, this);
+    sf.base.EventHandler.add(this.element, 'cut', maskInputCutHandler, this);
+    sf.base.EventHandler.add(this.element, 'drop', maskInputDropHandler, this);
+    if (this.enabled) {
+        bindClearEvent.call(this);
+        if (this.formElement) {
+            sf.base.EventHandler.add(this.formElement, 'reset', resetFormHandler, this);
+        }
+    }
+}
+/**
+ * @hidden
+ * To unwire events attached to the MaskedTextBox.
+ */
+function unwireEvents() {
+    sf.base.EventHandler.remove(this.element, 'keydown', maskInputKeyDownHandler);
+    sf.base.EventHandler.remove(this.element, 'keypress', maskInputKeyPressHandler);
+    sf.base.EventHandler.remove(this.element, 'keyup', maskInputKeyUpHandler);
+    sf.base.EventHandler.remove(this.element, 'input', maskInputHandler);
+    sf.base.EventHandler.remove(this.element, 'focus', maskInputFocusHandler);
+    sf.base.EventHandler.remove(this.element, 'blur', maskInputBlurHandler);
+    sf.base.EventHandler.remove(this.element, 'paste', maskInputPasteHandler);
+    sf.base.EventHandler.remove(this.element, 'cut', maskInputCutHandler);
+    if (this.formElement) {
+        sf.base.EventHandler.remove(this.formElement, 'reset', resetFormHandler);
+    }
+}
+/**
+ * @hidden
+ * To bind required events to the MaskedTextBox clearButton.
+ */
+function bindClearEvent() {
+    if (this.showClearButton) {
+        sf.base.EventHandler.add(this.inputObj.clearButton, 'mousedown touchstart', resetHandler, this);
+    }
+}
+function resetHandler(e) {
+    e.preventDefault();
+    if (!this.inputObj.clearButton.classList.contains('e-clear-icon-hide')) {
+        clear.call(this, e);
+        this.value = '';
+    }
+}
+function clear(event) {
+    var value = this.element.value;
+    setElementValue.call(this, this.promptMask);
+    this.redoCollec.unshift({
+        value: this.promptMask, startIndex: this.element.selectionStart, endIndex: this.element.selectionEnd
+    });
+    triggerMaskChangeEvent.call(this, event, value);
+    this.element.setSelectionRange(0, 0);
+}
+function resetFormHandler() {
+    if (this.element.tagName === 'EJS-MASKEDTEXTBOX') {
+        setElementValue.call(this, this.promptMask);
+    }
+    else {
+        this.value = this.initInputValue;
+    }
+}
+/**
+ * @hidden
+ * To get masked value from the MaskedTextBox.
+ */
+function unstrippedValue(element) {
+    return element.value;
+}
+/**
+ * @hidden
+ * To extract raw value from the MaskedTextBox.
+ */
+function strippedValue(element, maskValues) {
+    var value = '';
+    var k = 0;
+    var checkMask = false;
+    var maskValue = (!sf.base.isNullOrUndefined(maskValues)) ? maskValues : (!sf.base.isNullOrUndefined(element) &&
+        !sf.base.isNullOrUndefined(this)) ? element.value : maskValues;
+    if (maskValue !== this.promptMask) {
+        for (var i = 0; i < this.customRegExpCollec.length; i++) {
+            if (checkMask) {
+                checkMask = false;
+            }
+            if (this.customRegExpCollec[k] === '>' || this.customRegExpCollec[k] === '<' ||
+                this.customRegExpCollec[k] === '|' || this.customRegExpCollec[k] === '\\') {
+                --i;
+                checkMask = true;
+            }
+            if (!checkMask) {
+                if ((maskValue[i] !== this.promptChar) && (!sf.base.isNullOrUndefined(this.customRegExpCollec[k]) &&
+                    ((!sf.base.isNullOrUndefined(this.regExpCollec[this.customRegExpCollec[k]])) ||
+                        (this.customRegExpCollec[k].length > 2 && this.customRegExpCollec[k][0] === '[' &&
+                            this.customRegExpCollec[k][this.customRegExpCollec[k].length - 1] === ']') ||
+                        (!sf.base.isNullOrUndefined(this.customCharacters) &&
+                            (!sf.base.isNullOrUndefined(this.customCharacters[this.customRegExpCollec[k]]))))) && (maskValue !== '')) {
+                    value += maskValue[i];
+                }
+            }
+            ++k;
+        }
+    }
+    if (this.mask === null || this.mask === '' && this.value !== undefined) {
+        value = maskValue;
+    }
+    return value;
+}
+function pushIntoRegExpCollec(value) {
+    for (var k = 0; k < value.length; k++) {
+        this.hiddenMask += value[k];
+        if (value[k] !== '\\') {
+            this.customRegExpCollec.push(value[k]);
+        }
+    }
+}
+function maskInputFocusHandler(event) {
+    var _this = this;
+    var eventArgs = {
+        selectionStart: 0,
+        event: event,
+        value: this.value,
+        maskedValue: this.element.value,
+        container: this.inputObj.container,
+        selectionEnd: (this.promptMask.length > 0) ? this.promptMask.length : this.element.value.length,
+    };
+    this.trigger('focus', eventArgs, function (eventArgs) {
+        if (_this.mask) {
+            _this.isFocus = true;
+            if (_this.element.value === '') {
+                setElementValue.call(_this, _this.promptMask);
+            }
+            else {
+                setElementValue.call(_this, _this.element.value);
+            }
+            if (!sf.base.Browser.isDevice && sf.base.Browser.info.version === '11.0') {
+                _this.element.setSelectionRange(eventArgs.selectionStart, eventArgs.selectionEnd);
+            }
+            else {
+                var delay = (sf.base.Browser.isDevice && sf.base.Browser.isIos) ? 450 : 0;
+                setTimeout(function () {
+                    _this.element.setSelectionRange(eventArgs.selectionStart, eventArgs.selectionEnd);
+                }, delay);
+            }
+        }
+    });
+}
+function maskInputBlurHandler(event) {
+    this.blurEventArgs = {
+        event: event,
+        value: this.value,
+        maskedValue: this.element.value,
+        container: this.inputObj.container
+    };
+    this.trigger('blur', this.blurEventArgs);
+    if (this.mask) {
+        this.isFocus = false;
+        if (this.placeholder && this.element.value === this.promptMask && this.floatLabelType !== 'Always') {
+            setElementValue.call(this, '');
+            var labelElement = this.element.parentNode.querySelector('.e-float-text');
+            if (this.floatLabelType === 'Auto' && !sf.base.isNullOrUndefined(labelElement) && labelElement.classList.contains(TOPLABEL)) {
+                sf.base.removeClass([labelElement], TOPLABEL);
+            }
+        }
+    }
+}
+function maskInputPasteHandler(event) {
+    var _this = this;
+    if (this.mask && !this.readonly) {
+        var sIndex_1 = this.element.selectionStart;
+        var eIndex_1 = this.element.selectionEnd;
+        var oldValue_1 = this.element.value;
+        setElementValue.call(this, '');
+        this._callPasteHandler = true;
+        setTimeout(function () {
+            var value = _this.element.value.replace(/ /g, '');
+            if (_this.redoCollec.length > 0 && _this.redoCollec[0].value === _this.element.value) {
+                value = strippedValue.call(_this, _this.element);
+            }
+            setElementValue.call(_this, oldValue_1);
+            _this.element.selectionStart = sIndex_1;
+            _this.element.selectionEnd = eIndex_1;
+            var i = 0;
+            _this.maskKeyPress = true;
+            do {
+                validateValue.call(_this, value[i], false, null);
+                ++i;
+            } while (i < value.length);
+            _this.maskKeyPress = false;
+            _this._callPasteHandler = false;
+            if (_this.element.value === oldValue_1) {
+                var i_1 = 0;
+                _this.maskKeyPress = true;
+                do {
+                    validateValue.call(_this, value[i_1], false, null);
+                    ++i_1;
+                } while (i_1 < value.length);
+                _this.maskKeyPress = false;
+            }
+            else {
+                triggerMaskChangeEvent.call(_this, event, oldValue_1);
+            }
+        }, 1);
+    }
+}
+function maskInputCutHandler(event) {
+    var _this = this;
+    if (this.mask && !this.readonly) {
+        var preValue_1 = this.element.value;
+        var sIndex_2 = this.element.selectionStart;
+        var eIndex = this.element.selectionEnd;
+        this.undoCollec.push({ value: this.element.value, startIndex: this.element.selectionStart, endIndex: this.element.selectionEnd });
+        var value_1 = this.element.value.substring(0, sIndex_2) + this.promptMask.substring(sIndex_2, eIndex) +
+            this.element.value.substring(eIndex);
+        setTimeout(function () {
+            setElementValue.call(_this, value_1);
+            _this.element.selectionStart = _this.element.selectionEnd = sIndex_2;
+            if (_this.element.value !== preValue_1) {
+                triggerMaskChangeEvent.call(_this, event, null);
+            }
+        }, 0);
+    }
+}
+function maskInputDropHandler(event) {
+    event.preventDefault();
+}
+function maskInputHandler(event) {
+    if (sf.base.Browser.isIE === true && this.element.value === '' && this.floatLabelType === 'Never') {
+        return;
+    }
+    var eventArgs = { ctrlKey: false, keyCode: 229 };
+    // tslint:disable-next-line
+    sf.base.extend(event, eventArgs);
+    if (this.mask) {
+        if (this.element.value === '') {
+            this.redoCollec.unshift({
+                value: this.promptMask, startIndex: this.element.selectionStart, endIndex: this.element.selectionEnd
+            });
+        }
+        if (this.element.value.length === 1) {
+            this.element.value = this.element.value + this.promptMask;
+            this.element.setSelectionRange(1, 1);
+        }
+        if (!this._callPasteHandler) {
+            removeMaskInputValues.call(this, event);
+        }
+        if (this.element.value.length > this.promptMask.length) {
+            var startIndex = this.element.selectionStart;
+            var addedValues = this.element.value.length - this.promptMask.length;
+            var value = this.element.value.substring(startIndex - addedValues, startIndex);
+            this.maskKeyPress = false;
+            var i = 0;
+            do {
+                validateValue.call(this, value[i], event.ctrlKey, event);
+                ++i;
+            } while (i < value.length);
+            if (this.element.value !== this.preEleVal) {
+                triggerMaskChangeEvent.call(this, event, null);
+            }
+        }
+        var val = strippedValue.call(this, this.element);
+        this.prevValue = val;
+        this.value = val;
+        if (val === '') {
+            setElementValue.call(this, this.promptMask);
+            this.element.setSelectionRange(0, 0);
+        }
+    }
+}
+function maskInputKeyDownHandler(event) {
+    if (this.mask && !this.readonly) {
+        if (event.keyCode !== 229) {
+            if (event.ctrlKey && (event.keyCode === 89 || event.keyCode === 90)) {
+                event.preventDefault();
+            }
+            removeMaskInputValues.call(this, event);
+        }
+        var startValue = this.element.value;
+        if (event.ctrlKey && (event.keyCode === 89 || event.keyCode === 90)) {
+            var collec = void 0;
+            if (event.keyCode === 90 && this.undoCollec.length > 0 && startValue !== this.undoCollec[this.undoCollec.length - 1].value) {
+                collec = this.undoCollec[this.undoCollec.length - 1];
+                this.redoCollec.unshift({
+                    value: this.element.value, startIndex: this.element.selectionStart,
+                    endIndex: this.element.selectionEnd
+                });
+                setElementValue.call(this, collec.value);
+                this.element.selectionStart = collec.startIndex;
+                this.element.selectionEnd = collec.endIndex;
+                this.undoCollec.splice(this.undoCollec.length - 1, 1);
+            }
+            else if (event.keyCode === 89 && this.redoCollec.length > 0 && startValue !== this.redoCollec[0].value) {
+                collec = this.redoCollec[0];
+                this.undoCollec.push({
+                    value: this.element.value, startIndex: this.element.selectionStart,
+                    endIndex: this.element.selectionEnd
+                });
+                setElementValue.call(this, collec.value);
+                this.element.selectionStart = collec.startIndex;
+                this.element.selectionEnd = collec.endIndex;
+                this.redoCollec.splice(0, 1);
+            }
+        }
+    }
+}
+function mobileRemoveFunction() {
+    var collec;
+    var sIndex = this.element.selectionStart;
+    var eIndex = this.element.selectionEnd;
+    if (this.redoCollec.length > 0) {
+        collec = this.redoCollec[0];
+        setElementValue.call(this, collec.value);
+        if ((collec.startIndex - sIndex) === 1) {
+            this.element.selectionStart = collec.startIndex;
+            this.element.selectionEnd = collec.endIndex;
+        }
+        else {
+            this.element.selectionStart = sIndex + 1;
+            this.element.selectionEnd = eIndex + 1;
+        }
+    }
+    else {
+        setElementValue.call(this, this.promptMask);
+        this.element.selectionStart = this.element.selectionEnd = sIndex;
+    }
+}
+function autoFillMaskInputValues(isRemove, oldEventVal, event) {
+    if (event.type === 'input') {
+        isRemove = false;
+        oldEventVal = this.element.value;
+        setElementValue.call(this, this.promptMask);
+        setMaskValue.call(this, oldEventVal);
+    }
+    return isRemove;
+}
+function removeMaskInputValues(event) {
+    var isRemove = false;
+    var oldEventVal;
+    var isDeleted = false;
+    if (this.element.value.length < this.promptMask.length) {
+        isRemove = true;
+        oldEventVal = this.element.value;
+        isRemove = autoFillMaskInputValues.call(this, isRemove, oldEventVal, event);
+        mobileRemoveFunction.call(this);
+    }
+    if (this.element.value.length >= this.promptMask.length && event.type === 'input') {
+        isRemove = autoFillMaskInputValues.call(this, isRemove, oldEventVal, event);
+    }
+    var initStartIndex = this.element.selectionStart;
+    var initEndIndex = this.element.selectionEnd;
+    var startIndex = this.element.selectionStart;
+    var endIndex = this.element.selectionEnd;
+    var maskValue = this.hiddenMask.replace(/[>|\\<]/g, '');
+    var curMask = maskValue[startIndex - 1];
+    var parentElement = this.element.parentNode;
+    if (isRemove || event.keyCode === 8 || event.keyCode === 46) {
+        this.undoCollec.push({ value: this.element.value, startIndex: this.element.selectionStart, endIndex: endIndex });
+        var multipleDel = false;
+        var preValue = this.element.value;
+        if (startIndex > 0 || ((event.keyCode === 8 || event.keyCode === 46) && startIndex < this.element.value.length
+            && ((this.element.selectionEnd - startIndex) !== this.element.value.length))) {
+            var index = startIndex;
+            if (startIndex !== endIndex) {
+                startIndex = endIndex;
+                if (event.keyCode === 46) {
+                    multipleDel = true;
+                }
+            }
+            else if (event.keyCode === 46) {
+                ++index;
+            }
+            else {
+                --index;
+            }
+            for (var k = startIndex; (event.keyCode === 8 || isRemove || multipleDel) ? k > index : k < index; (event.keyCode === 8 || isRemove || multipleDel) ? k-- : k++) {
+                for (var i = startIndex; (event.keyCode === 8 || isRemove || multipleDel) ? i > 0 : i < this.element.value.length; (event.keyCode === 8 || isRemove || multipleDel) ? i-- : i++) {
+                    var sIndex = void 0;
+                    if (((event.keyCode === 8 || multipleDel) && ((initStartIndex !== initEndIndex && initStartIndex !== startIndex) ||
+                        (initStartIndex === initEndIndex))) || isRemove) {
+                        curMask = maskValue[i - 1];
+                        sIndex = startIndex - 1;
+                    }
+                    else {
+                        curMask = maskValue[i];
+                        sIndex = startIndex;
+                        ++startIndex;
+                    }
+                    var oldValue = this.element.value[sIndex];
+                    if ((sf.base.isNullOrUndefined(this.regExpCollec[curMask]) && (!sf.base.isNullOrUndefined(this.customCharacters)
+                        && sf.base.isNullOrUndefined(this.customCharacters[curMask]))
+                        && ((this.hiddenMask[sIndex] !== this.promptChar && this.customRegExpCollec[sIndex][0] !== '['
+                            && this.customRegExpCollec[sIndex][this.customRegExpCollec[sIndex].length - 1] !== ']')))
+                        || (this.promptMask[sIndex] !== this.promptChar && sf.base.isNullOrUndefined(this.customCharacters))) {
+                        this.element.selectionStart = this.element.selectionEnd = sIndex;
+                        event.preventDefault();
+                        if (event.keyCode === 46 && !multipleDel) {
+                            ++this.element.selectionStart;
+                        }
+                    }
+                    else {
+                        var value = this.element.value;
+                        var prompt_1 = this.promptChar;
+                        var elementValue = value.substring(0, sIndex) + prompt_1 + value.substring(startIndex, value.length);
+                        setElementValue.call(this, elementValue);
+                        event.preventDefault();
+                        this.element.selectionStart = this.element.selectionEnd = sIndex;
+                        isDeleted = true;
+                    }
+                    startIndex = this.element.selectionStart;
+                    if ((!isDeleted && event.keyCode === 8) || multipleDel || (!isDeleted && !(event.keyCode === 46))) {
+                        sIndex = startIndex - 1;
+                    }
+                    else {
+                        sIndex = startIndex;
+                        isDeleted = false;
+                    }
+                    oldValue = this.element.value[sIndex];
+                    if (((initStartIndex !== initEndIndex) && (this.element.selectionStart === initStartIndex))
+                        || (this.promptMask[sIndex] === this.promptChar) || ((oldValue !== this.promptMask[sIndex]) &&
+                        (this.promptMask[sIndex] !== this.promptChar) && !sf.base.isNullOrUndefined(this.customCharacters))) {
+                        break;
+                    }
+                }
+            }
+        }
+        if (this.element.selectionStart === 0 && (this.element.selectionEnd === this.element.value.length)) {
+            setElementValue.call(this, this.promptMask);
+            event.preventDefault();
+            this.element.selectionStart = this.element.selectionEnd = startIndex;
+        }
+        this.redoCollec.unshift({
+            value: this.element.value, startIndex: this.element.selectionStart,
+            endIndex: this.element.selectionEnd
+        });
+        if (this.element.value !== preValue) {
+            triggerMaskChangeEvent.call(this, event, oldEventVal);
+        }
+    }
+}
+function maskInputKeyPressHandler(event) {
+    if (this.mask && !this.readonly) {
+        var oldValue = this.element.value;
+        if ((!event.ctrlKey) || (event.ctrlKey && event.code !== 'KeyA' && event.code !== 'KeyY'
+            && event.code !== 'KeyZ' && event.code !== 'KeyX' && event.code !== 'KeyC' && event.code !== 'KeyV')) {
+            this.maskKeyPress = true;
+            var key = event.key;
+            if (key === 'Spacebar') {
+                key = String.fromCharCode(event.keyCode);
+            }
+            if (!key) {
+                this.isIosInvalid = true;
+                validateValue.call(this, String.fromCharCode(event.keyCode), event.ctrlKey, event);
+                event.preventDefault();
+                this.isIosInvalid = false;
+            }
+            else if (key && key.length === 1) {
+                validateValue.call(this, key, event.ctrlKey, event);
+                event.preventDefault();
+            }
+            if (event.keyCode === 32 && key === ' ' && this.promptChar === ' ') {
+                this.element.selectionStart = this.element.selectionEnd = this.element.selectionStart - key.length;
+            }
+        }
+        if (this.element.value !== oldValue) {
+            triggerMaskChangeEvent.call(this, event, oldValue);
+        }
+    }
+}
+function triggerMaskChangeEvent(event, oldValue) {
+    var prevOnChange = this.isProtectedOnChange;
+    if (!sf.base.isNullOrUndefined(this.changeEventArgs) && !this.isInitial) {
+        var eventArgs = {};
+        this.changeEventArgs = { value: this.element.value, maskedValue: this.element.value, isInteraction: false, isInteracted: false };
+        if (this.mask) {
+            this.changeEventArgs.value = strippedValue.call(this, this.element);
+        }
+        if (!sf.base.isNullOrUndefined(event)) {
+            this.changeEventArgs.isInteracted = true;
+            this.changeEventArgs.isInteraction = true;
+            this.changeEventArgs.event = event;
+        }
+        this.isProtectedOnChange = true;
+        this.value = this.changeEventArgs.value;
+        this.isProtectedOnChange = prevOnChange;
+        sf.base.merge(eventArgs, this.changeEventArgs);
+        this.trigger('change', eventArgs);
+    }
+    this.preEleVal = this.element.value;
+    this.prevValue = strippedValue.call(this, this.element);
+    sf.base.attributes(this.element, { 'aria-valuenow': this.element.value });
+}
+function maskInputKeyUpHandler(event) {
+    if (this.mask && !this.readonly) {
+        var collec = void 0;
+        if (!this.maskKeyPress && event.keyCode === 229) {
+            var oldEventVal = void 0;
+            if (this.element.value.length === 1) {
+                this.element.value = this.element.value + this.promptMask;
+                this.element.setSelectionRange(1, 1);
+            }
+            if (this.element.value.length > this.promptMask.length) {
+                var startIndex = this.element.selectionStart;
+                var addedValues = this.element.value.length - this.promptMask.length;
+                var val_1 = this.element.value.substring(startIndex - addedValues, startIndex);
+                if (this.undoCollec.length > 0) {
+                    collec = this.undoCollec[this.undoCollec.length - 1];
+                    var startIndex_1 = this.element.selectionStart;
+                    oldEventVal = collec.value;
+                    var oldVal = collec.value.substring(startIndex_1 - addedValues, startIndex_1);
+                    collec = this.redoCollec[0];
+                    val_1 = val_1.trim();
+                    var isSpace = sf.base.Browser.isAndroid && val_1 === '';
+                    if (!isSpace && oldVal !== val_1 && collec.value.substring(startIndex_1 - addedValues, startIndex_1) !== val_1) {
+                        validateValue.call(this, val_1, event.ctrlKey, event);
+                    }
+                    else if (isSpace) {
+                        preventUnsupportedValues.call(this, event, startIndex_1 - 1, this.element.selectionEnd - 1, val_1, event.ctrlKey, false);
+                    }
+                }
+                else {
+                    oldEventVal = this.promptMask;
+                    validateValue.call(this, val_1, event.ctrlKey, event);
+                }
+                this.maskKeyPress = false;
+                triggerMaskChangeEvent.call(this, event, oldEventVal);
+            }
+        }
+        else {
+            removeMaskError.call(this);
+        }
+        var val = strippedValue.call(this, this.element);
+        if (!((this.element.selectionStart === 0) && (this.promptMask === this.element.value) && val === '')
+            || (val === '' && this.value !== val)) {
+            this.prevValue = val;
+            this.value = val;
+        }
+    }
+    else {
+        triggerMaskChangeEvent.call(this, event);
+    }
+    if (this.element.selectionStart === 0 && this.element.selectionEnd === 0) {
+        // tslint:disable-next-line
+        var temp_1 = this.element;
+        setTimeout(function () {
+            temp_1.setSelectionRange(0, 0);
+        }, 0);
+    }
+}
+function mobileSwipeCheck(key) {
+    if (key.length > 1 && ((this.promptMask.length + key.length) < this.element.value.length)) {
+        var elementValue = this.redoCollec[0].value.substring(0, this.redoCollec[0].startIndex) + key +
+            this.redoCollec[0].value.substring(this.redoCollec[0].startIndex, this.redoCollec[0].value.length);
+        setElementValue.call(this, elementValue);
+        this.element.selectionStart = this.element.selectionEnd = this.redoCollec[0].startIndex + key.length;
+    }
+    this.element.selectionStart = this.element.selectionStart - key.length;
+    this.element.selectionEnd = this.element.selectionEnd - key.length;
+}
+function mobileValidation(key) {
+    if (!this.maskKeyPress) {
+        mobileSwipeCheck.call(this, key);
+    }
+}
+function validateValue(key, isCtrlKey, event) {
+    mobileValidation.call(this, key);
+    if (sf.base.isNullOrUndefined(this) || sf.base.isNullOrUndefined(key)) {
+        return;
+    }
+    var startIndex = this.element.selectionStart;
+    var initStartIndex = startIndex;
+    var endIndex = this.element.selectionEnd;
+    var curMask;
+    var allowText = false;
+    var value = this.element.value;
+    var eventOldVal;
+    var prevSupport = false;
+    var isEqualVal = false;
+    for (var k = 0; k < key.length; k++) {
+        var keyValue = key[k];
+        startIndex = this.element.selectionStart;
+        endIndex = this.element.selectionEnd;
+        if (!this.maskKeyPress && initStartIndex === startIndex) {
+            startIndex = startIndex + k;
+        }
+        if ((!this.maskKeyPress || startIndex < this.promptMask.length)) {
+            for (var i = startIndex; i < this.promptMask.length; i++) {
+                var maskValue = this.escapeMaskValue;
+                curMask = maskValue[startIndex];
+                if (this.hiddenMask[startIndex] === '\\' && this.hiddenMask[startIndex + 1] === key) {
+                    isEqualVal = true;
+                }
+                if ((sf.base.isNullOrUndefined(this.regExpCollec[curMask]) && (sf.base.isNullOrUndefined(this.customCharacters)
+                    || (!sf.base.isNullOrUndefined(this.customCharacters) && sf.base.isNullOrUndefined(this.customCharacters[curMask])))
+                    && ((this.hiddenMask[startIndex] !== this.promptChar && this.customRegExpCollec[startIndex][0] !== '['
+                        && this.customRegExpCollec[startIndex][this.customRegExpCollec[startIndex].length - 1] !== ']')))
+                    || ((this.promptMask[startIndex] !== this.promptChar) && sf.base.isNullOrUndefined(this.customCharacters))
+                    || (this.promptChar === curMask && this.escapeMaskValue === this.mask)) {
+                    this.element.selectionStart = this.element.selectionEnd = startIndex + 1;
+                    startIndex = this.element.selectionStart;
+                    curMask = this.hiddenMask[startIndex];
+                }
+            }
+            if (!sf.base.isNullOrUndefined(this.customCharacters) && !sf.base.isNullOrUndefined(this.customCharacters[curMask])) {
+                var customValStr = this.customCharacters[curMask];
+                var customValArr = customValStr.split(',');
+                for (var i = 0; i < customValArr.length; i++) {
+                    if (keyValue.match(new RegExp('[' + customValArr[i] + ']'))) {
+                        allowText = true;
+                        break;
+                    }
+                }
+            }
+            else if (!sf.base.isNullOrUndefined(this.regExpCollec[curMask]) && keyValue.match(new RegExp(this.regExpCollec[curMask]))
+                && this.promptMask[startIndex] === this.promptChar) {
+                allowText = true;
+            }
+            else if (this.promptMask[startIndex] === this.promptChar && this.customRegExpCollec[startIndex][0] === '['
+                && this.customRegExpCollec[startIndex][this.customRegExpCollec[startIndex].length - 1] === ']'
+                && keyValue.match(new RegExp(this.customRegExpCollec[startIndex]))) {
+                allowText = true;
+            }
+            if ((!this.maskKeyPress || startIndex < this.hiddenMask.length) && allowText) {
+                if (k === 0) {
+                    if (this.maskKeyPress) {
+                        this.undoCollec.push({ value: value, startIndex: startIndex, endIndex: startIndex });
+                    }
+                    else {
+                        var sIndex = this.element.selectionStart;
+                        var eIndex = this.element.selectionEnd;
+                        if (this.redoCollec.length > 0) {
+                            eventOldVal = this.redoCollec[0].value;
+                            setElementValue.call(this, eventOldVal);
+                            this.undoCollec.push(this.redoCollec[0]);
+                        }
+                        else {
+                            this.undoCollec.push({ value: this.promptMask, startIndex: startIndex, endIndex: startIndex });
+                            eventOldVal = this.promptMask;
+                            setElementValue.call(this, eventOldVal);
+                        }
+                        this.element.selectionStart = sIndex;
+                        this.element.selectionEnd = eIndex;
+                    }
+                }
+                startIndex = this.element.selectionStart;
+                applySupportedValues.call(this, event, startIndex, keyValue, eventOldVal, isEqualVal);
+                prevSupport = true;
+                if (k === key.length - 1) {
+                    this.redoCollec.unshift({
+                        value: this.element.value, startIndex: this.element.selectionStart, endIndex: this.element.selectionEnd
+                    });
+                }
+                allowText = false;
+            }
+            else {
+                startIndex = this.element.selectionStart;
+                preventUnsupportedValues.call(this, event, startIndex, initStartIndex, key, isCtrlKey, prevSupport);
+            }
+            if (k === key.length - 1 && !allowText) {
+                if (!sf.base.Browser.isAndroid || (sf.base.Browser.isAndroid && startIndex < this.promptMask.length)) {
+                    this.redoCollec.unshift({
+                        value: this.element.value, startIndex: this.element.selectionStart, endIndex: this.element.selectionEnd
+                    });
+                }
+            }
+        }
+        else {
+            if (key.length === 1 && !isCtrlKey && !sf.base.isNullOrUndefined(event)) {
+                addMaskErrorClass.call(this);
+            }
+        }
+    }
+}
+function applySupportedValues(event, startIndex, keyValue, eventOldVal, isEqualVal) {
+    if (this.hiddenMask.length > this.promptMask.length) {
+        keyValue = changeToLowerUpperCase.call(this, keyValue, this.element.value);
+    }
+    if (!isEqualVal) {
+        var value = this.element.value;
+        var elementValue = value.substring(0, startIndex) + keyValue + value.substring(startIndex + 1, value.length);
+        setElementValue.call(this, elementValue);
+        this.element.selectionStart = this.element.selectionEnd = startIndex + 1;
+    }
+}
+function preventUnsupportedValues(event, sIdx, idx, key, ctrl, chkSupport) {
+    if (!this.maskKeyPress) {
+        var eventOldVal = void 0;
+        var value = this.element.value;
+        if (sIdx >= this.promptMask.length) {
+            setElementValue.call(this, value.substring(0, sIdx));
+        }
+        else {
+            if (idx === sIdx) {
+                setElementValue.call(this, value.substring(0, sIdx) + value.substring(sIdx + 1, value.length));
+            }
+            else {
+                if (this.promptMask.length === this.element.value.length) {
+                    setElementValue.call(this, value.substring(0, sIdx) + value.substring(sIdx, value.length));
+                }
+                else {
+                    setElementValue.call(this, value.substring(0, idx) + value.substring(idx + 1, value.length));
+                }
+            }
+            this.element.selectionStart = this.element.selectionEnd = (chkSupport ||
+                this.element.value[idx] !== this.promptChar) ? sIdx : idx;
+        }
+        eventOldVal = this.element.value;
+        addMaskErrorClass.call(this);
+    }
+    if (key.length === 1 && !ctrl && !sf.base.isNullOrUndefined(event)) {
+        addMaskErrorClass.call(this);
+    }
+}
+function addMaskErrorClass() {
+    var _this = this;
+    var parentElement = this.element.parentNode;
+    var timer = 200;
+    if (parentElement.classList.contains(INPUTGROUP) || parentElement.classList.contains(FLOATINPUT)) {
+        sf.base.addClass([parentElement], ERROR$1);
+    }
+    else {
+        sf.base.addClass([this.element], ERROR$1);
+    }
+    if (this.isIosInvalid === true) {
+        timer = 400;
+    }
+    sf.base.attributes(this.element, { 'aria-invalid': 'true' });
+    setTimeout(function () {
+        if (!_this.maskKeyPress) {
+            removeMaskError.call(_this);
+        }
+    }, timer);
+}
+function removeMaskError() {
+    var parentElement = this.element.parentNode;
+    if (!sf.base.isNullOrUndefined(parentElement)) {
+        sf.base.removeClass([parentElement], ERROR$1);
+    }
+    sf.base.removeClass([this.element], ERROR$1);
+    sf.base.attributes(this.element, { 'aria-invalid': 'false' });
+}
+/**
+ * @hidden
+ * Validates user input using masking elements '<' , '>' and '|'.
+ */
+function changeToLowerUpperCase(key, value) {
+    var promptMask;
+    var i;
+    var curVal = value;
+    var caseCount = 0;
+    for (i = 0; i < this.hiddenMask.length; i++) {
+        if (this.hiddenMask[i] === '\\') {
+            promptMask = curVal.substring(0, i) + '\\' + curVal.substring(i, curVal.length);
+        }
+        if (this.hiddenMask[i] === '>' || this.hiddenMask[i] === '<' || this.hiddenMask[i] === '|') {
+            if (this.hiddenMask[i] !== curVal[i]) {
+                promptMask = curVal.substring(0, i) + this.hiddenMask[i] + curVal.substring(i, curVal.length);
+            }
+            ++caseCount;
+        }
+        if (promptMask) {
+            if (((promptMask[i] === this.promptChar) && (i > this.element.selectionStart)) ||
+                (this.element.value.indexOf(this.promptChar) < 0 && (this.element.selectionStart + caseCount) === i)) {
+                caseCount = 0;
+                break;
+            }
+            curVal = promptMask;
+        }
+    }
+    while (i >= 0 && promptMask) {
+        if (i === 0 || promptMask[i - 1] !== '\\') {
+            var val = this.element.value;
+            if (promptMask[i] === '>') {
+                key = key.toUpperCase();
+                break;
+            }
+            else if (promptMask[i] === '<') {
+                key = key.toLowerCase();
+                break;
+            }
+            else if (promptMask[i] === '|') {
+                break;
+            }
+        }
+        --i;
+    }
+    return key;
+}
+/**
+ * @hidden
+ * To set updated values in the MaskedTextBox.
+ */
+function setMaskValue(val) {
+    if (this.mask && val !== undefined && (this.prevValue === undefined || this.prevValue !== val)) {
+        this.maskKeyPress = true;
+        setElementValue.call(this, this.promptMask);
+        if (val !== '' && !(val === null && this.floatLabelType === 'Never' && this.placeholder)) {
+            this.element.selectionStart = 0;
+            this.element.selectionEnd = 0;
+        }
+        if (val !== null) {
+            for (var i = 0; i < val.length; i++) {
+                validateValue.call(this, val[i], false, null);
+            }
+        }
+        var newVal = strippedValue.call(this, this.element);
+        this.prevValue = newVal;
+        this.value = newVal;
+        triggerMaskChangeEvent.call(this, null, null);
+        this.maskKeyPress = false;
+        var labelElement = this.element.parentNode.querySelector('.e-float-text');
+        if (this.element.value === this.promptMask && this.floatLabelType === 'Auto' && this.placeholder &&
+            !sf.base.isNullOrUndefined(labelElement) && labelElement.classList.contains(TOPLABEL) && !this.isFocus) {
+            sf.base.removeClass([labelElement], TOPLABEL);
+            sf.base.addClass([labelElement], BOTTOMLABEL);
+            setElementValue.call(this, '');
+        }
+    }
+    if (this.mask === null || this.mask === '' && this.value !== undefined) {
+        setElementValue.call(this, this.value);
+    }
+}
+/**
+ * @hidden
+ * To set updated values in the input element.
+ */
+function setElementValue(val, element) {
+    if (!this.isFocus && this.floatLabelType === 'Auto' && this.placeholder && sf.base.isNullOrUndefined(this.value)) {
+        val = '';
+    }
+    var value = strippedValue.call(this, (element ? element : this.element), val);
+    if (value === null || value === '') {
+        exports.Input.setValue(val, (element ? element : this.element), this.floatLabelType, false);
+        if (this.showClearButton) {
+            this.inputObj.clearButton.classList.add('e-clear-icon-hide');
+        }
+    }
+    else {
+        exports.Input.setValue(val, (element ? element : this.element), this.floatLabelType, this.showClearButton);
+    }
+}
+/**
+ * @hidden
+ * Provide mask support to input textbox through utility method.
+ */
+function maskInput(args) {
+    var inputEle = getMaskInput(args);
+    applyMask.call(inputEle);
+    var val = strippedValue.call(this, this.element);
+    this.prevValue = val;
+    this.value = val;
+    if (args.mask) {
+        unwireEvents.call(inputEle);
+        wireEvents.call(inputEle);
+    }
+}
+function getMaskInput(args) {
+    sf.base.addClass([args.element], UTILMASK);
+    var inputEle = {
+        element: args.element,
+        mask: args.mask,
+        promptMask: '',
+        hiddenMask: '',
+        escapeMaskValue: '',
+        promptChar: args.promptChar ? (args.promptChar.length > 1) ? args.promptChar = args.promptChar[0]
+            : args.promptChar : '_',
+        value: args.value ? args.value : null,
+        regExpCollec: regularExpressions,
+        customRegExpCollec: [],
+        customCharacters: args.customCharacters,
+        undoCollec: [],
+        redoCollec: [],
+        maskKeyPress: false,
+        prevValue: ''
+    };
+    createMask.call(inputEle);
+    return inputEle;
+}
+/**
+ * @hidden
+ * Gets raw value of the textbox which has been masked through utility method.
+ */
+function getVal(args) {
+    return strippedValue.call(getUtilMaskEle(args), args.element);
+}
+/**
+ * @hidden
+ * Gets masked value of the textbox which has been masked through utility method.
+ */
+function getMaskedVal(args) {
+    return unstrippedValue.call(getUtilMaskEle(args), args.element);
+}
+function getUtilMaskEle(args) {
+    var inputEle;
+    if (!sf.base.isNullOrUndefined(args) && args.element.classList.contains(UTILMASK)) {
+        inputEle = getMaskInput(args);
+    }
+    return inputEle;
+}
+/**
+ * @hidden
+ * Arguments to perform undo and redo functionalities.
+ */
+var MaskUndo = /** @class */ (function () {
+    function MaskUndo() {
+    }
+    return MaskUndo;
+}());
+
+/**
+ * MaskedTextbox base modules
+ */
+
+var __extends$1 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var ROOT$1 = 'e-control-wrapper e-mask';
+var INPUT = 'e-input';
+var COMPONENT$1 = 'e-maskedtextbox';
+var CONTROL$1 = 'e-control';
+var MASKINPUT_FOCUS = 'e-input-focus';
+var wrapperAttr = ['title', 'style', 'class'];
+/**
+ * The MaskedTextBox allows the user to enter the valid input only based on the provided mask.
+ * ```html
+ * <input id="mask" type="text" />
+ * ```
+ * ```typescript
+ * <script>
+ * var maskObj = new MaskedTextBox({ mask: "(999) 9999-999" });
+ * maskObj.appendTo('#mask');
+ * </script>
+ * ```
+ */
+var MaskedTextBox = /** @class */ (function (_super) {
+    __extends$1(MaskedTextBox, _super);
+    function MaskedTextBox(options, element) {
+        var _this = _super.call(this, options, element) || this;
+        _this.initInputValue = '';
+        _this.maskOptions = options;
+        return _this;
+    }
+    /**
+     * Gets the component name
+     * @private
+     */
+    MaskedTextBox.prototype.getModuleName = function () {
+        return 'maskedtextbox';
+    };
+    /**
+     * Initializes the event handler
+     * @private
+     */
+    MaskedTextBox.prototype.preRender = function () {
+        this.promptMask = '';
+        this.hiddenMask = '';
+        this.escapeMaskValue = '';
+        this.regExpCollec = regularExpressions;
+        this.customRegExpCollec = [];
+        this.undoCollec = [];
+        this.redoCollec = [];
+        this.changeEventArgs = {};
+        this.focusEventArgs = {};
+        this.blurEventArgs = {};
+        this.maskKeyPress = false;
+        this.isFocus = false;
+        this.isInitial = false;
+        this.isIosInvalid = false;
+        var ejInstance = sf.base.getValue('ej2_instances', this.element);
+        this.cloneElement = this.element.cloneNode(true);
+        sf.base.removeClass([this.cloneElement], [CONTROL$1, COMPONENT$1, 'e-lib']);
+        this.angularTagName = null;
+        this.formElement = sf.base.closest(this.element, 'form');
+        if (this.element.tagName === 'EJS-MASKEDTEXTBOX') {
+            this.angularTagName = this.element.tagName;
+            var input = this.createElement('input');
+            for (var i = 0; i < this.element.attributes.length; i++) {
+                input.setAttribute(this.element.attributes[i].nodeName, this.element.attributes[i].nodeValue);
+                input.innerHTML = this.element.innerHTML;
+            }
+            if (this.element.hasAttribute('id')) {
+                this.element.removeAttribute('id');
+            }
+            this.element.classList.remove('e-control', 'e-maskedtextbox');
+            this.element.classList.add('e-mask-container');
+            this.element.appendChild(input);
+            this.element = input;
+            sf.base.setValue('ej2_instances', ejInstance, this.element);
+        }
+        this.updateHTMLAttrToElement();
+        this.checkHtmlAttributes(false);
+        if (this.formElement) {
+            this.initInputValue = this.value;
+        }
+    };
+    /**
+     * Gets the properties to be maintained in the persisted state.
+     * @return {string}
+     */
+    MaskedTextBox.prototype.getPersistData = function () {
+        var keyEntity = ['value'];
+        return this.addOnPersist(keyEntity);
+    };
+    /**
+     * Initializes the component rendering.
+     * @private
+     */
+    MaskedTextBox.prototype.render = function () {
+        if (this.element.tagName.toLowerCase() === 'input') {
+            if (this.floatLabelType === 'Never') {
+                sf.base.addClass([this.element], INPUT);
+            }
+            this.createWrapper();
+            this.updateHTMLAttrToWrapper();
+            if (this.element.name === '') {
+                this.element.setAttribute('name', this.element.id);
+            }
+            this.isInitial = true;
+            this.resetMaskedTextBox();
+            this.isInitial = false;
+            this.setMaskPlaceholder(true, false);
+            this.setWidth(this.width);
+            this.preEleVal = this.element.value;
+            if (!sf.base.Browser.isDevice && (sf.base.Browser.info.version === '11.0' || sf.base.Browser.info.name === 'edge')) {
+                this.element.blur();
+            }
+            if (sf.base.Browser.isDevice && sf.base.Browser.isIos) {
+                this.element.blur();
+            }
+            if (this.element.getAttribute('value') || this.value) {
+                this.element.setAttribute('value', this.element.value);
+            }
+            this.renderComplete();
+        }
+    };
+    MaskedTextBox.prototype.updateHTMLAttrToElement = function () {
+        if (!sf.base.isNullOrUndefined(this.htmlAttributes)) {
+            for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+                var key = _a[_i];
+                if (wrapperAttr.indexOf(key) < 0) {
+                    this.element.setAttribute(key, this.htmlAttributes[key]);
+                }
+            }
+        }
+    };
+    MaskedTextBox.prototype.updateCssClass = function (newClass, oldClass) {
+        exports.Input.setCssClass(this.getValidClassList(newClass), [this.inputObj.container], this.getValidClassList(oldClass));
+    };
+    MaskedTextBox.prototype.getValidClassList = function (maskClassName) {
+        var result = maskClassName;
+        if (!sf.base.isNullOrUndefined(maskClassName) && maskClassName !== '') {
+            result = (maskClassName.replace(/\s+/g, ' ')).trim();
+        }
+        return result;
+    };
+    MaskedTextBox.prototype.updateHTMLAttrToWrapper = function () {
+        if (!sf.base.isNullOrUndefined(this.htmlAttributes)) {
+            for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+                var key = _a[_i];
+                if (wrapperAttr.indexOf(key) > -1) {
+                    if (key === 'class') {
+                        var updatedClassValues = (this.htmlAttributes[key].replace(/\s+/g, ' ')).trim();
+                        if (updatedClassValues !== '') {
+                            sf.base.addClass([this.inputObj.container], updatedClassValues.split(' '));
+                        }
+                    }
+                    else if (key === 'style') {
+                        var maskStyle = this.inputObj.container.getAttribute(key);
+                        maskStyle = !sf.base.isNullOrUndefined(maskStyle) ? (maskStyle + this.htmlAttributes[key]) :
+                            this.htmlAttributes[key];
+                        this.inputObj.container.setAttribute(key, maskStyle);
+                    }
+                    else {
+                        this.inputObj.container.setAttribute(key, this.htmlAttributes[key]);
+                    }
+                }
+            }
+        }
+    };
+    MaskedTextBox.prototype.resetMaskedTextBox = function () {
+        this.promptMask = '';
+        this.hiddenMask = '';
+        this.escapeMaskValue = '';
+        this.customRegExpCollec = [];
+        this.undoCollec = [];
+        this.redoCollec = [];
+        if (this.promptChar.length > 1) {
+            this.promptChar = this.promptChar[0];
+        }
+        createMask.call(this);
+        applyMask.call(this);
+        if (this.mask === null || this.mask === '' && this.value !== undefined) {
+            setElementValue.call(this, this.value);
+        }
+        var val = strippedValue.call(this, this.element);
+        this.prevValue = val;
+        this.value = val;
+        if (!this.isInitial) {
+            unwireEvents.call(this);
+        }
+        wireEvents.call(this);
+    };
+    MaskedTextBox.prototype.setMaskPlaceholder = function (setVal, dynamicPlaceholder) {
+        if (dynamicPlaceholder || this.placeholder) {
+            exports.Input.setPlaceholder(this.placeholder, this.element);
+            if (this.element.value === this.promptMask && setVal && this.floatLabelType !== 'Always') {
+                setElementValue.call(this, '');
+            }
+            if (this.floatLabelType === 'Never') {
+                maskInputBlurHandler.call(this);
+            }
+        }
+    };
+    MaskedTextBox.prototype.setWidth = function (width) {
+        if (!sf.base.isNullOrUndefined(width)) {
+            if (typeof width === 'number') {
+                this.inputObj.container.style.width = sf.base.formatUnit(width);
+                this.element.style.width = sf.base.formatUnit(width);
+            }
+            else if (typeof width === 'string') {
+                var elementWidth = (width.match(/px|%|em/)) ? (width) : (sf.base.formatUnit(width));
+                this.inputObj.container.style.width = elementWidth;
+                this.element.style.width = elementWidth;
+            }
+        }
+    };
+    MaskedTextBox.prototype.checkHtmlAttributes = function (isDynamic) {
+        var attributes$$1 = isDynamic ? sf.base.isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes)
+            : ['placeholder', 'disabled', 'value', 'readonly'];
+        for (var _i = 0, attributes_1 = attributes$$1; _i < attributes_1.length; _i++) {
+            var key = attributes_1[_i];
+            if (!sf.base.isNullOrUndefined(this.element.getAttribute(key))) {
+                switch (key) {
+                    case 'placeholder':
+                        // tslint:disable-next-line
+                        if ((sf.base.isNullOrUndefined(this.maskOptions) || (this.maskOptions['placeholder'] === undefined)) || isDynamic) {
+                            this.setProperties({ placeholder: this.element.placeholder }, !isDynamic);
+                        }
+                        break;
+                    case 'disabled':
+                        // tslint:disable-next-line
+                        if ((sf.base.isNullOrUndefined(this.maskOptions) || (this.maskOptions['enabled'] === undefined)) || isDynamic) {
+                            var enabled = this.element.getAttribute(key) === 'disabled' || this.element.getAttribute(key) === '' ||
+                                this.element.getAttribute(key) === 'true' ? false : true;
+                            this.setProperties({ enabled: enabled }, !isDynamic);
+                        }
+                        break;
+                    case 'value':
+                        // tslint:disable-next-line
+                        if ((sf.base.isNullOrUndefined(this.maskOptions) || (this.maskOptions['value'] === undefined)) || isDynamic) {
+                            this.setProperties({ value: this.element.value }, !isDynamic);
+                        }
+                        break;
+                    case 'readonly':
+                        // tslint:disable-next-line
+                        if ((sf.base.isNullOrUndefined(this.maskOptions) || (this.maskOptions['readonly'] === undefined)) || isDynamic) {
+                            var readonly = this.element.getAttribute(key) === 'readonly' || this.element.getAttribute(key) === ''
+                                || this.element.getAttribute(key) === 'true' ? true : false;
+                            this.setProperties({ readonly: readonly }, !isDynamic);
+                        }
+                        break;
+                }
+            }
+        }
+    };
+    MaskedTextBox.prototype.createWrapper = function () {
+        var updatedCssClassValues = this.cssClass;
+        if (!sf.base.isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+            updatedCssClassValues = this.getValidClassList(this.cssClass);
+        }
+        this.inputObj = exports.Input.createInput({
+            element: this.element,
+            floatLabelType: this.floatLabelType,
+            properties: {
+                enableRtl: this.enableRtl,
+                cssClass: updatedCssClassValues,
+                enabled: this.enabled,
+                readonly: this.readonly,
+                placeholder: this.placeholder,
+                showClearButton: this.showClearButton
+            }
+        }, this.createElement);
+        this.inputObj.container.setAttribute('class', ROOT$1 + ' ' + this.inputObj.container.getAttribute('class'));
+    };
+    /**
+     * Calls internally if any of the property value is changed.
+     * @hidden
+     */
+    MaskedTextBox.prototype.onPropertyChanged = function (newProp, oldProp) {
+        for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
+            var prop = _a[_i];
+            switch (prop) {
+                case 'value':
+                    setMaskValue.call(this, this.value);
+                    if (this.placeholder) {
+                        this.setMaskPlaceholder(false, false);
+                    }
+                    break;
+                case 'placeholder':
+                    this.setMaskPlaceholder(true, true);
+                    break;
+                case 'width':
+                    this.setWidth(newProp.width);
+                    break;
+                case 'cssClass':
+                    this.updateCssClass(newProp.cssClass, oldProp.cssClass);
+                    break;
+                case 'enabled':
+                    exports.Input.setEnabled(newProp.enabled, this.element, this.floatLabelType, this.inputObj.container);
+                    break;
+                case 'readonly':
+                    exports.Input.setReadonly(newProp.readonly, this.element);
+                    break;
+                case 'enableRtl':
+                    exports.Input.setEnableRtl(newProp.enableRtl, [this.inputObj.container]);
+                    break;
+                case 'customCharacters':
+                    this.customCharacters = newProp.customCharacters;
+                    this.resetMaskedTextBox();
+                    break;
+                case 'showClearButton':
+                    exports.Input.setClearButton(newProp.showClearButton, this.element, this.inputObj, undefined, this.createElement);
+                    bindClearEvent.call(this);
+                    break;
+                case 'floatLabelType':
+                    this.floatLabelType = newProp.floatLabelType;
+                    exports.Input.removeFloating(this.inputObj);
+                    exports.Input.addFloating(this.element, this.floatLabelType, this.placeholder, this.createElement);
+                    break;
+                case 'htmlAttributes':
+                    this.updateHTMLAttrToElement();
+                    this.updateHTMLAttrToWrapper();
+                    this.checkHtmlAttributes(true);
+                    break;
+                case 'mask':
+                    var strippedValue_1 = this.value;
+                    this.mask = newProp.mask;
+                    this.updateValue(strippedValue_1);
+                    break;
+                case 'promptChar':
+                    if (newProp.promptChar.length > 1) {
+                        newProp.promptChar = newProp.promptChar[0];
+                    }
+                    if (newProp.promptChar) {
+                        this.promptChar = newProp.promptChar;
+                    }
+                    else {
+                        this.promptChar = '_';
+                    }
+                    var value = this.element.value.replace(new RegExp('[' + oldProp.promptChar + ']', 'g'), this.promptChar);
+                    if (this.promptMask === this.element.value) {
+                        value = this.promptMask.replace(new RegExp('[' + oldProp.promptChar + ']', 'g'), this.promptChar);
+                    }
+                    this.promptMask = this.promptMask.replace(new RegExp('[' + oldProp.promptChar + ']', 'g'), this.promptChar);
+                    this.undoCollec = this.redoCollec = [];
+                    setElementValue.call(this, value);
+                    break;
+            }
+        }
+    };
+    MaskedTextBox.prototype.updateValue = function (strippedVal) {
+        this.resetMaskedTextBox();
+        setMaskValue.call(this, strippedVal);
+    };
+    /**
+     * Gets the value of the MaskedTextBox with the masked format.
+     * By using `value` property, you can get the raw value of maskedtextbox without literals and prompt characters.
+     * @return {string}
+     */
+    MaskedTextBox.prototype.getMaskedValue = function () {
+        return unstrippedValue.call(this, this.element);
+    };
+    /**
+     * Sets the focus to widget for interaction.
+     * @returns void
+     */
+    MaskedTextBox.prototype.focusIn = function () {
+        if (document.activeElement !== this.element && this.enabled) {
+            this.element.focus();
+            sf.base.addClass([this.inputObj.container], [MASKINPUT_FOCUS]);
+        }
+    };
+    /**
+     * Remove the focus from widget, if the widget is in focus state.
+     * @returns void
+     */
+    MaskedTextBox.prototype.focusOut = function () {
+        if (document.activeElement === this.element && this.enabled) {
+            this.element.blur();
+            sf.base.removeClass([this.inputObj.container], [MASKINPUT_FOCUS]);
+        }
+    };
+    /**
+     * Removes the component from the DOM and detaches all its related event handlers.
+     * Also it maintains the initial input element from the DOM.
+     * @method destroy
+     * @return {void}
+     */
+    MaskedTextBox.prototype.destroy = function () {
+        unwireEvents.call(this);
+        var attrArray = ['aria-labelledby', 'role', 'autocomplete', 'aria-readonly',
+            'autocorrect', 'aria-disabled', 'aria-placeholder', 'autocapitalize',
+            'spellcheck', 'aria-autocomplete',
+            'aria-live', 'aria-valuenow', 'aria-invalid'];
+        for (var i = 0; i < attrArray.length; i++) {
+            this.element.removeAttribute(attrArray[i]);
+        }
+        this.element.classList.remove('e-input');
+        this.inputObj.container.insertAdjacentElement('afterend', this.element);
+        sf.base.detach(this.inputObj.container);
+        _super.prototype.destroy.call(this);
+    };
+    __decorate$1([
+        sf.base.Property(null)
+    ], MaskedTextBox.prototype, "cssClass", void 0);
+    __decorate$1([
+        sf.base.Property(null)
+    ], MaskedTextBox.prototype, "width", void 0);
+    __decorate$1([
+        sf.base.Property(null)
+    ], MaskedTextBox.prototype, "placeholder", void 0);
+    __decorate$1([
+        sf.base.Property('Never')
+    ], MaskedTextBox.prototype, "floatLabelType", void 0);
+    __decorate$1([
+        sf.base.Property({})
+    ], MaskedTextBox.prototype, "htmlAttributes", void 0);
+    __decorate$1([
+        sf.base.Property(true)
+    ], MaskedTextBox.prototype, "enabled", void 0);
+    __decorate$1([
+        sf.base.Property(false)
+    ], MaskedTextBox.prototype, "readonly", void 0);
+    __decorate$1([
+        sf.base.Property(false)
+    ], MaskedTextBox.prototype, "showClearButton", void 0);
+    __decorate$1([
+        sf.base.Property(false)
+    ], MaskedTextBox.prototype, "enablePersistence", void 0);
+    __decorate$1([
+        sf.base.Property(null)
+    ], MaskedTextBox.prototype, "mask", void 0);
+    __decorate$1([
+        sf.base.Property('_')
+    ], MaskedTextBox.prototype, "promptChar", void 0);
+    __decorate$1([
+        sf.base.Property(null)
+    ], MaskedTextBox.prototype, "value", void 0);
+    __decorate$1([
+        sf.base.Property(null)
+    ], MaskedTextBox.prototype, "customCharacters", void 0);
+    __decorate$1([
+        sf.base.Event()
+    ], MaskedTextBox.prototype, "created", void 0);
+    __decorate$1([
+        sf.base.Event()
+    ], MaskedTextBox.prototype, "destroyed", void 0);
+    __decorate$1([
+        sf.base.Event()
+    ], MaskedTextBox.prototype, "change", void 0);
+    __decorate$1([
+        sf.base.Event()
+    ], MaskedTextBox.prototype, "focus", void 0);
+    __decorate$1([
+        sf.base.Event()
+    ], MaskedTextBox.prototype, "blur", void 0);
+    MaskedTextBox = __decorate$1([
+        sf.base.NotifyPropertyChanges
+    ], MaskedTextBox);
+    return MaskedTextBox;
+}(sf.base.Component));
+
+/**
+ * MaskedTextbox modules
+ */
+
+/**
+ * MaskedTextbox modules
+ */
+
+/**
+ * Input box Component
+ */
+
+var __extends$2 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Configures the ticks data of the Slider.
+ */
+var TicksData = /** @class */ (function (_super) {
+    __extends$2(TicksData, _super);
+    function TicksData() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$2([
+        sf.base.Property('None')
+    ], TicksData.prototype, "placement", void 0);
+    __decorate$2([
+        sf.base.Property(10)
+    ], TicksData.prototype, "largeStep", void 0);
+    __decorate$2([
+        sf.base.Property(1)
+    ], TicksData.prototype, "smallStep", void 0);
+    __decorate$2([
+        sf.base.Property(false)
+    ], TicksData.prototype, "showSmallTicks", void 0);
+    __decorate$2([
+        sf.base.Property(null)
+    ], TicksData.prototype, "format", void 0);
+    return TicksData;
+}(sf.base.ChildProperty));
+/**
+ * It illustrates the color track data in slider.
+ * {% codeBlock src='slider/colorrange/index.md' %}{% endcodeBlock %}
+ */
+var ColorRangeData = /** @class */ (function (_super) {
+    __extends$2(ColorRangeData, _super);
+    function ColorRangeData() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$2([
+        sf.base.Property(null)
+    ], ColorRangeData.prototype, "color", void 0);
+    __decorate$2([
+        sf.base.Property(null)
+    ], ColorRangeData.prototype, "start", void 0);
+    __decorate$2([
+        sf.base.Property(null)
+    ], ColorRangeData.prototype, "end", void 0);
+    return ColorRangeData;
+}(sf.base.ChildProperty));
+/**
+ * It illustrates the limit data in slider.
+ * {% codeBlock src='slider/limits/index.md' %}{% endcodeBlock %}
+ */
+var LimitData = /** @class */ (function (_super) {
+    __extends$2(LimitData, _super);
+    function LimitData() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$2([
+        sf.base.Property(false)
+    ], LimitData.prototype, "enabled", void 0);
+    __decorate$2([
+        sf.base.Property(null)
+    ], LimitData.prototype, "minStart", void 0);
+    __decorate$2([
+        sf.base.Property(null)
+    ], LimitData.prototype, "minEnd", void 0);
+    __decorate$2([
+        sf.base.Property(null)
+    ], LimitData.prototype, "maxStart", void 0);
+    __decorate$2([
+        sf.base.Property(null)
+    ], LimitData.prototype, "maxEnd", void 0);
+    __decorate$2([
+        sf.base.Property(false)
+    ], LimitData.prototype, "startHandleFixed", void 0);
+    __decorate$2([
+        sf.base.Property(false)
+    ], LimitData.prototype, "endHandleFixed", void 0);
+    return LimitData;
+}(sf.base.ChildProperty));
+/**
+ * It illustrates the tooltip data in slider.
+ */
+var TooltipData = /** @class */ (function (_super) {
+    __extends$2(TooltipData, _super);
+    function TooltipData() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$2([
+        sf.base.Property('')
+    ], TooltipData.prototype, "cssClass", void 0);
+    __decorate$2([
+        sf.base.Property('Before')
+    ], TooltipData.prototype, "placement", void 0);
+    __decorate$2([
+        sf.base.Property('Focus')
+    ], TooltipData.prototype, "showOn", void 0);
+    __decorate$2([
+        sf.base.Property(false)
+    ], TooltipData.prototype, "isVisible", void 0);
+    __decorate$2([
+        sf.base.Property(null)
+    ], TooltipData.prototype, "format", void 0);
+    return TooltipData;
+}(sf.base.ChildProperty));
+var bootstrapTooltipOffset = 6;
+var bootstrap4TooltipOffset = 3;
+var classNames = {
+    root: 'e-slider',
+    rtl: 'e-rtl',
+    sliderHiddenInput: 'e-slider-input',
+    controlWrapper: 'e-control-wrapper',
+    sliderHandle: 'e-handle',
+    rangeBar: 'e-range',
+    sliderButton: 'e-slider-button',
+    firstButton: 'e-first-button',
+    secondButton: 'e-second-button',
+    scale: 'e-scale',
+    tick: 'e-tick',
+    large: 'e-large',
+    tickValue: 'e-tick-value',
+    sliderTooltip: 'e-slider-tooltip',
+    sliderHover: 'e-slider-hover',
+    sliderFirstHandle: 'e-handle-first',
+    sliderSecondHandle: 'e-handle-second',
+    sliderDisabled: 'e-disabled',
+    sliderContainer: 'e-slider-container',
+    horizontalTooltipBefore: 'e-slider-horizontal-before',
+    horizontalTooltipAfter: 'e-slider-horizontal-after',
+    verticalTooltipBefore: 'e-slider-vertical-before',
+    verticalTooltipAfter: 'e-slider-vertical-after',
+    materialTooltip: 'e-material-tooltip',
+    materialTooltipOpen: 'e-material-tooltip-open',
+    materialTooltipActive: 'e-tooltip-active',
+    materialSlider: 'e-material-slider',
+    sliderTrack: 'e-slider-track',
+    sliderHorizantalColor: 'e-slider-horizantal-color',
+    sliderVerticalColor: 'e-slider-vertical-color',
+    sliderHandleFocused: 'e-handle-focused',
+    verticalSlider: 'e-vertical',
+    horizontalSlider: 'e-horizontal',
+    sliderHandleStart: 'e-handle-start',
+    sliderTooltipStart: 'e-material-tooltip-start',
+    sliderTabHandle: 'e-tab-handle',
+    sliderButtonIcon: 'e-button-icon',
+    sliderSmallSize: 'e-small-size',
+    sliderTickPosition: 'e-tick-pos',
+    sliderFirstTick: 'e-first-tick',
+    sliderLastTick: 'e-last-tick',
+    sliderButtonClass: 'e-slider-btn',
+    sliderTooltipWrapper: 'e-tooltip-wrap',
+    sliderTabTrack: 'e-tab-track',
+    sliderTabRange: 'e-tab-range',
+    sliderActiveHandle: 'e-handle-active',
+    sliderMaterialHandle: 'e-material-handle',
+    sliderMaterialRange: 'e-material-range',
+    sliderMaterialDefault: 'e-material-default',
+    materialTooltipShow: 'e-material-tooltip-show',
+    materialTooltipHide: 'e-material-tooltip-hide',
+    readonly: 'e-read-only',
+    limits: 'e-limits',
+    limitBarDefault: 'e-limit-bar',
+    limitBarFirst: 'e-limit-first',
+    limitBarSecond: 'e-limit-second',
+    dragHorizontal: 'e-drag-horizontal',
+    dragVertical: 'e-drag-vertical'
+};
+/**
+ * The Slider component allows the user to select a value or range
+ * of values in-between a min and max range, by dragging the handle over the slider bar.
+ * ```html
+ * <div id='slider'></div>
+ * ```
+ * ```typescript
+ * <script>
+ *   var sliderObj = new Slider({ value: 10 });
+ *   sliderObj.appendTo('#slider');
+ * </script>
+ * ```
+ */
+var Slider = /** @class */ (function (_super) {
+    __extends$2(Slider, _super);
+    function Slider(options, element) {
+        var _this = _super.call(this, options, element) || this;
+        _this.horDir = 'left';
+        _this.verDir = 'bottom';
+        _this.transition = {
+            handle: 'left .4s cubic-bezier(.25, .8, .25, 1), right .4s cubic-bezier(.25, .8, .25, 1), ' +
+                'top .4s cubic-bezier(.25, .8, .25, 1) , bottom .4s cubic-bezier(.25, .8, .25, 1)',
+            rangeBar: 'all .4s cubic-bezier(.25, .8, .25, 1)'
+        };
+        _this.transitionOnMaterialTooltip = {
+            handle: 'left 1ms ease-out, right 1ms ease-out, bottom 1ms ease-out, top 1ms ease-out',
+            rangeBar: 'left 1ms ease-out, right 1ms ease-out, bottom 1ms ease-out, width 1ms ease-out, height 1ms ease-out'
+        };
+        _this.scaleTransform = 'transform .4s cubic-bezier(.25, .8, .25, 1)';
+        _this.customAriaText = null;
+        _this.drag = true;
+        return _this;
+    }
+    Slider.prototype.preRender = function () {
+        var localeText = { incrementTitle: 'Increase', decrementTitle: 'Decrease' };
+        this.l10n = new sf.base.L10n('slider', localeText, this.locale);
+        this.isElementFocused = false;
+        this.tickElementCollection = [];
+        this.tooltipFormatInfo = {};
+        this.ticksFormatInfo = {};
+        this.initCultureInfo();
+        this.initCultureFunc();
+        this.formChecker();
+    };
+    Slider.prototype.formChecker = function () {
+        var formElement = sf.base.closest(this.element, 'form');
+        if (formElement) {
+            this.isForm = true;
+            // this condition needs to be checked, if the slider is going to be refreshed by `refresh()`
+            // then we need to revert the slider `value` back to `formResetValue` to preserve the initial value
+            if (!sf.base.isNullOrUndefined(this.formResetValue)) {
+                this.setProperties({ 'value': this.formResetValue }, true);
+            }
+            this.formResetValue = this.value;
+            if (this.type === 'Range' &&
+                (sf.base.isNullOrUndefined(this.formResetValue) || typeof (this.formResetValue) !== 'object')) {
+                this.formResetValue = [parseFloat(sf.base.formatUnit(this.min)), parseFloat(sf.base.formatUnit(this.max))];
+            }
+            else if (sf.base.isNullOrUndefined(this.formResetValue)) {
+                this.formResetValue = parseFloat(sf.base.formatUnit(this.min));
+            }
+            this.formElement = formElement;
+        }
+        else {
+            this.isForm = false;
+        }
+    };
+    Slider.prototype.initCultureFunc = function () {
+        this.internationalization = new sf.base.Internationalization(this.locale);
+    };
+    Slider.prototype.initCultureInfo = function () {
+        this.tooltipFormatInfo.format = (!sf.base.isNullOrUndefined(this.tooltip.format)) ? this.tooltip.format : null;
+        this.ticksFormatInfo.format = (!sf.base.isNullOrUndefined(this.ticks.format)) ? this.ticks.format : null;
+    };
+    Slider.prototype.formatString = function (value, formatInfo) {
+        var formatValue = null;
+        var formatString = null;
+        if ((value || value === 0)) {
+            formatValue = this.formatNumber(value);
+            var numberOfDecimals = this.numberOfDecimals(value);
+            formatString = this.internationalization.getNumberFormat(formatInfo)(this.makeRoundNumber(value, numberOfDecimals));
+        }
+        return { elementVal: formatValue, formatString: formatString };
+    };
+    
+    Slider.prototype.formatNumber = function (value) {
+        var numberOfDecimals = this.numberOfDecimals(value);
+        return this.internationalization.getNumberFormat({
+            maximumFractionDigits: numberOfDecimals,
+            minimumFractionDigits: numberOfDecimals, useGrouping: false
+        })(value);
+    };
+    
+    Slider.prototype.numberOfDecimals = function (value) {
+        var decimalPart = value.toString().split('.')[1];
+        var numberOfDecimals = !decimalPart || !decimalPart.length ? 0 : decimalPart.length;
+        return numberOfDecimals;
+    };
+    Slider.prototype.makeRoundNumber = function (value, precision) {
+        var decimals = precision || 0;
+        return Number(value.toFixed(decimals));
+    };
+    
+    Slider.prototype.fractionalToInteger = function (value) {
+        value = (this.numberOfDecimals(value) === 0) ? Number(value).toFixed(this.noOfDecimals) : value;
+        var tens = 1;
+        for (var i = 0; i < this.noOfDecimals; i++) {
+            tens *= 10;
+        }
+        value = Number((value * tens).toFixed(0));
+        return value;
+    };
+    /**
+     * To Initialize the control rendering
+     * @private
+     */
+    Slider.prototype.render = function () {
+        if (!sf.base.isBlazor() || !this.isServerRendered) {
+            this.initialize();
+        }
+        this.initRender();
+        this.wireEvents();
+        this.setZindex();
+        this.renderComplete();
+    };
+    Slider.prototype.initialize = function () {
+        sf.base.addClass([this.element], classNames.root);
+        this.setCSSClass();
+    };
+    Slider.prototype.setCSSClass = function (oldCSSClass) {
+        if (oldCSSClass) {
+            sf.base.removeClass([this.element], oldCSSClass.split(' '));
+        }
+        if (this.cssClass) {
+            sf.base.addClass([this.element], this.cssClass.split(' '));
+        }
+    };
+    Slider.prototype.setEnabled = function () {
+        if (!this.enabled) {
+            sf.base.addClass([this.sliderContainer], [classNames.sliderDisabled]);
+            if (this.tooltip.isVisible && this.tooltipElement && this.tooltip.showOn === 'Always') {
+                this.tooltipElement.classList.add(classNames.sliderDisabled);
+            }
+            this.unwireEvents();
+        }
+        else {
+            sf.base.removeClass([this.sliderContainer], [classNames.sliderDisabled]);
+            if (this.tooltip.isVisible && this.tooltipElement && this.tooltip.showOn === 'Always') {
+                this.tooltipElement.classList.remove(classNames.sliderDisabled);
+            }
+            this.wireEvents();
+        }
+    };
+    Slider.prototype.getTheme = function (container) {
+        var theme = window.getComputedStyle(container, ':after').getPropertyValue('content');
+        return theme.replace(/['"]+/g, '');
+    };
+    /**
+     * Initialize the rendering
+     * @private
+     */
+    Slider.prototype.initRender = function () {
+        if (sf.base.isBlazor() && this.isServerRendered) {
+            this.sliderContainer = this.element.parentElement;
+            this.sliderTrack = this.element.querySelector('.e-slider-track');
+            this.hiddenInput = this.element.parentElement.querySelector('.e-slider-input');
+        }
+        else {
+            this.sliderContainer = this.createElement('div', { className: classNames.sliderContainer + ' ' + classNames.controlWrapper });
+            this.element.parentNode.insertBefore(this.sliderContainer, this.element);
+            this.sliderContainer.appendChild(this.element);
+            this.sliderTrack = this.createElement('div', { className: classNames.sliderTrack });
+            this.element.appendChild(this.sliderTrack);
+        }
+        this.element.tabIndex = -1;
+        this.getThemeInitialization();
+        this.setHandler();
+        this.createRangeBar();
+        if (this.limits.enabled) {
+            this.createLimitBar();
+        }
+        if (!sf.base.isBlazor() || !this.isServerRendered) {
+            this.setOrientClass();
+            this.hiddenInput = (this.createElement('input', {
+                attrs: {
+                    type: 'hidden', value: (sf.base.isNullOrUndefined(this.value) ? this.min.toString() : this.value.toString()),
+                    name: this.element.getAttribute('name') || this.element.getAttribute('id') ||
+                        '_' + (Math.random() * 1000).toFixed(0) + 'slider', class: classNames.sliderHiddenInput
+                }
+            }));
+            this.hiddenInput.tabIndex = -1;
+            this.sliderContainer.appendChild(this.hiddenInput);
+        }
+        if (this.showButtons) {
+            this.setButtons();
+        }
+        this.setEnableRTL();
+        if (this.type === 'Range') {
+            this.rangeValueUpdate();
+        }
+        else {
+            this.value = sf.base.isNullOrUndefined(this.value) ? parseFloat(sf.base.formatUnit(this.min.toString())) : this.value;
+        }
+        this.previousVal = this.type !== 'Range' ? this.checkHandleValue(parseFloat(sf.base.formatUnit(this.value.toString()))) :
+            [this.checkHandleValue(parseFloat(sf.base.formatUnit(this.value[0].toString()))),
+                this.checkHandleValue(parseFloat(sf.base.formatUnit(this.value[1].toString())))];
+        this.previousChanged = this.previousVal;
+        if (!sf.base.isNullOrUndefined(this.element.hasAttribute('name'))) {
+            this.element.removeAttribute('name');
+        }
+        this.setValue();
+        if (this.limits.enabled) {
+            this.setLimitBar();
+        }
+        if (this.ticks.placement !== 'None') {
+            this.renderScale();
+        }
+        if (this.tooltip.isVisible) {
+            this.renderTooltip();
+        }
+        if (!sf.base.isBlazor() || !this.isServerRendered) {
+            if (!this.enabled) {
+                sf.base.addClass([this.sliderContainer], [classNames.sliderDisabled]);
+            }
+            else {
+                sf.base.removeClass([this.sliderContainer], [classNames.sliderDisabled]);
+            }
+            if (this.readonly) {
+                sf.base.addClass([this.sliderContainer], [classNames.readonly]);
+            }
+            else {
+                sf.base.removeClass([this.sliderContainer], [classNames.readonly]);
+            }
+        }
+    };
+    Slider.prototype.getThemeInitialization = function () {
+        this.isMaterial = this.getTheme(this.sliderContainer) === 'material'
+            || this.getTheme(this.sliderContainer) === 'material-dark';
+        this.isBootstrap = this.getTheme(this.sliderContainer) === 'bootstrap'
+            || this.getTheme(this.sliderContainer) === 'bootstrap-dark';
+        this.isBootstrap4 = this.getTheme(this.sliderContainer) === 'bootstrap4';
+        this.isMaterialTooltip = this.isMaterial && this.type !== 'Range' && this.tooltip.isVisible;
+    };
+    Slider.prototype.createRangeBar = function () {
+        if (this.type !== 'Default') {
+            this.rangeBar = (this.createElement('div', { attrs: { class: classNames.rangeBar } }));
+            this.element.appendChild(this.rangeBar);
+            if (this.drag && this.type === 'Range') {
+                if (this.orientation === 'Horizontal') {
+                    this.rangeBar.classList.add(classNames.dragHorizontal);
+                }
+                else {
+                    this.rangeBar.classList.add(classNames.dragVertical);
+                }
+            }
+        }
+    };
+    Slider.prototype.createLimitBar = function () {
+        if (sf.base.isBlazor() && this.isServerRendered) {
+            this.limitBarFirst = this.element.querySelectorAll('.e-limits')[0];
+            if (this.type === 'Range') {
+                this.limitBarSecond = this.element.querySelectorAll('.e-limit-second')[0];
+            }
+        }
+        else {
+            var firstElementClassName = this.type !== 'Range' ? classNames.limitBarDefault :
+                classNames.limitBarFirst;
+            firstElementClassName += ' ' + classNames.limits;
+            this.limitBarFirst = (this.createElement('div', {
+                attrs: { class: firstElementClassName }
+            }));
+            this.element.appendChild(this.limitBarFirst);
+            if (this.type === 'Range') {
+                this.limitBarSecond = (this.createElement('div', {
+                    attrs: {
+                        class: classNames.limitBarSecond + ' ' + classNames.limits
+                    }
+                }));
+                this.element.appendChild(this.limitBarSecond);
+            }
+        }
+    };
+    Slider.prototype.setOrientClass = function () {
+        if (this.orientation !== 'Vertical') {
+            this.sliderContainer.classList.remove(classNames.verticalSlider);
+            this.sliderContainer.classList.add(classNames.horizontalSlider);
+            this.firstHandle.setAttribute('aria-orientation', 'horizontal');
+            if (this.type === 'Range') {
+                this.secondHandle.setAttribute('aria-orientation', 'horizontal');
+            }
+        }
+        else {
+            this.sliderContainer.classList.remove(classNames.horizontalSlider);
+            this.sliderContainer.classList.add(classNames.verticalSlider);
+            this.firstHandle.setAttribute('aria-orientation', 'vertical');
+            if (this.type === 'Range') {
+                this.secondHandle.setAttribute('aria-orientation', 'vertical');
+            }
+        }
+    };
+    Slider.prototype.setAriaAttributes = function (element) {
+        var _this = this;
+        var min = this.min;
+        var max = this.max;
+        if (!sf.base.isNullOrUndefined(this.customValues) && this.customValues.length > 0) {
+            min = this.customValues[0];
+            max = this.customValues[this.customValues.length - 1];
+        }
+        if (this.type !== 'Range') {
+            sf.base.attributes(element, {
+                'aria-valuemin': min.toString(), 'aria-valuemax': max.toString()
+            });
+        }
+        else {
+            var range = !sf.base.isNullOrUndefined(this.customValues) && this.customValues.length > 0 ?
+                [[min.toString(), (this.customValues[this.value[1]]).toString()],
+                    [(this.customValues[this.value[0]]).toString(), max.toString()]] :
+                [[min.toString(), this.value[1].toString()], [this.value[0].toString(), max.toString()]];
+            range.forEach(function (range, index) {
+                var element = index === 0 ? _this.firstHandle : _this.secondHandle;
+                if (element) {
+                    sf.base.attributes(element, {
+                        'aria-valuemin': range[0], 'aria-valuemax': range[1]
+                    });
+                }
+            });
+        }
+    };
+    Slider.prototype.createSecondHandle = function () {
+        if (sf.base.isBlazor() && this.isServerRendered) {
+            this.secondHandle = this.element.querySelector('.e-handle-second');
+        }
+        else {
+            this.secondHandle = this.createElement('div', {
+                attrs: {
+                    class: classNames.sliderHandle, 'role': 'slider', tabIndex: '0'
+                }
+            });
+            this.secondHandle.classList.add(classNames.sliderSecondHandle);
+            this.element.appendChild(this.secondHandle);
+        }
+    };
+    Slider.prototype.createFirstHandle = function () {
+        if (sf.base.isBlazor() && this.isServerRendered) {
+            this.firstHandle = this.element.querySelector('.e-handle-first');
+        }
+        else {
+            this.firstHandle = this.createElement('div', {
+                attrs: {
+                    class: classNames.sliderHandle, 'role': 'slider', tabIndex: '0'
+                }
+            });
+            this.firstHandle.classList.add(classNames.sliderFirstHandle);
+            this.element.appendChild(this.firstHandle);
+        }
+        if (this.isMaterialTooltip) {
+            this.materialHandle = this.createElement('div', {
+                attrs: {
+                    class: classNames.sliderHandle + ' ' +
+                        classNames.sliderMaterialHandle
+                }
+            });
+            this.element.appendChild(this.materialHandle);
+        }
+    };
+    Slider.prototype.wireFirstHandleEvt = function (destroy) {
+        if (!destroy) {
+            sf.base.EventHandler.add(this.firstHandle, 'mousedown touchstart', this.handleFocus, this);
+            sf.base.EventHandler.add(this.firstHandle, 'transitionend', this.transitionEnd, this);
+            sf.base.EventHandler.add(this.firstHandle, 'mouseenter touchenter', this.handleOver, this);
+            sf.base.EventHandler.add(this.firstHandle, 'mouseleave touchend', this.handleLeave, this);
+        }
+        else {
+            sf.base.EventHandler.remove(this.firstHandle, 'mousedown touchstart', this.handleFocus);
+            sf.base.EventHandler.remove(this.firstHandle, 'transitionend', this.transitionEnd);
+            sf.base.EventHandler.remove(this.firstHandle, 'mouseenter touchenter', this.handleOver);
+            sf.base.EventHandler.remove(this.firstHandle, 'mouseleave touchend', this.handleLeave);
+        }
+    };
+    Slider.prototype.wireSecondHandleEvt = function (destroy) {
+        if (!destroy) {
+            sf.base.EventHandler.add(this.secondHandle, 'mousedown touchstart', this.handleFocus, this);
+            sf.base.EventHandler.add(this.secondHandle, 'transitionend', this.transitionEnd, this);
+            sf.base.EventHandler.add(this.secondHandle, 'mouseenter touchenter', this.handleOver, this);
+            sf.base.EventHandler.add(this.secondHandle, 'mouseleave touchend', this.handleLeave, this);
+        }
+        else {
+            sf.base.EventHandler.remove(this.secondHandle, 'mousedown touchstart', this.handleFocus);
+            sf.base.EventHandler.remove(this.secondHandle, 'transitionend', this.transitionEnd);
+            sf.base.EventHandler.remove(this.secondHandle, 'mouseenter touchenter', this.handleOver);
+            sf.base.EventHandler.remove(this.secondHandle, 'mouseleave touchend', this.handleLeave);
+        }
+    };
+    Slider.prototype.handleStart = function () {
+        if (this.type !== 'Range') {
+            this.firstHandle.classList[this.handlePos1 === 0 ? 'add' : 'remove'](classNames.sliderHandleStart);
+            if (this.isMaterialTooltip) {
+                this.materialHandle.classList[this.handlePos1 === 0 ? 'add' : 'remove'](classNames.sliderHandleStart);
+                if (this.tooltipElement) {
+                    this.tooltipElement.classList[this.handlePos1 === 0 ? 'add' : 'remove'](classNames.sliderTooltipStart);
+                }
+            }
+        }
+    };
+    Slider.prototype.transitionEnd = function (e) {
+        if (e.propertyName !== 'transform') {
+            this.handleStart();
+            this.getHandle().style.transition = 'none';
+            if (this.type !== 'Default') {
+                this.rangeBar.style.transition = 'none';
+            }
+            if (this.isMaterial && this.tooltip.isVisible && this.type === 'Default') {
+                this.tooltipElement.style.transition = this.transition.handle;
+            }
+            this.tooltipToggle(this.getHandle());
+            this.closeTooltip();
+        }
+    };
+    Slider.prototype.handleFocusOut = function () {
+        if (this.firstHandle.classList.contains(classNames.sliderHandleFocused)) {
+            this.firstHandle.classList.remove(classNames.sliderHandleFocused);
+        }
+        if (this.type === 'Range') {
+            if (this.secondHandle.classList.contains(classNames.sliderHandleFocused)) {
+                this.secondHandle.classList.remove(classNames.sliderHandleFocused);
+            }
+        }
+    };
+    Slider.prototype.handleFocus = function (e) {
+        if (e.currentTarget === this.firstHandle) {
+            this.firstHandle.classList.add(classNames.sliderHandleFocused);
+        }
+        else {
+            this.secondHandle.classList.add(classNames.sliderHandleFocused);
+        }
+    };
+    Slider.prototype.handleOver = function (e) {
+        if (this.tooltip.isVisible && this.tooltip.showOn === 'Hover') {
+            this.tooltipToggle(e.currentTarget);
+        }
+    };
+    Slider.prototype.handleLeave = function (e) {
+        if (this.tooltip.isVisible && this.tooltip.showOn === 'Hover' &&
+            !e.currentTarget.classList.contains(classNames.sliderHandleFocused) &&
+            !e.currentTarget.classList.contains(classNames.sliderTabHandle)) {
+            this.closeTooltip();
+        }
+    };
+    Slider.prototype.setHandler = function () {
+        if (this.min > this.max) {
+            this.min = this.max;
+        }
+        this.createFirstHandle();
+        if (this.type === 'Range') {
+            this.createSecondHandle();
+        }
+    };
+    Slider.prototype.setEnableRTL = function () {
+        if (!sf.base.isBlazor() || !this.isServerRendered) {
+            this.enableRtl && this.orientation !== 'Vertical' ? sf.base.addClass([this.sliderContainer], classNames.rtl) :
+                sf.base.removeClass([this.sliderContainer], classNames.rtl);
+            var preDir = (this.orientation !== 'Vertical') ? this.horDir : this.verDir;
+            if (this.enableRtl) {
+                this.horDir = 'right';
+                this.verDir = 'bottom';
+            }
+            else {
+                this.horDir = 'left';
+                this.verDir = 'bottom';
+            }
+            var currDir = (this.orientation !== 'Vertical') ? this.horDir : this.verDir;
+            if (preDir !== currDir) {
+                if (this.orientation === 'Horizontal') {
+                    sf.base.setStyleAttribute(this.firstHandle, { 'right': '', 'left': 'auto' });
+                    if (this.type === 'Range') {
+                        sf.base.setStyleAttribute(this.secondHandle, { 'top': '', 'left': 'auto' });
+                    }
+                }
+            }
+        }
+        this.setBarColor();
+    };
+    Slider.prototype.tooltipValue = function () {
+        var _this = this;
+        var text;
+        var args = {
+            value: this.value,
+            text: ''
+        };
+        if (sf.base.isBlazor() && this.isServerRendered) {
+            args.text = this.formatContent(this.tooltipFormatInfo, false);
+        }
+        else {
+            this.setTooltipContent();
+            args.text = text = this.tooltipObj.content;
+        }
+        this.trigger('tooltipChange', args, function (observedArgs) {
+            _this.addTooltipClass(observedArgs.text);
+            if (text !== observedArgs.text) {
+                _this.customAriaText = observedArgs.text;
+                _this.tooltipObj.content = observedArgs.text;
+                _this.setAriaAttrValue(_this.firstHandle);
+                if (_this.type === 'Range') {
+                    _this.setAriaAttrValue(_this.secondHandle);
+                }
+            }
+        });
+    };
+    Slider.prototype.setTooltipContent = function () {
+        var content;
+        content = this.formatContent(this.tooltipFormatInfo, false);
+        this.tooltipObj.content = content;
+    };
+    Slider.prototype.formatContent = function (formatInfo, ariaContent) {
+        var content = '';
+        var handle1 = this.handleVal1;
+        var handle2 = this.handleVal2;
+        if (!sf.base.isNullOrUndefined(this.customValues) && this.customValues.length > 0) {
+            handle1 = this.customValues[this.handleVal1];
+            handle2 = this.customValues[this.handleVal2];
+        }
+        if (!ariaContent) {
+            if (this.type === 'Range') {
+                if (this.enableRtl && this.orientation !== 'Vertical') {
+                    content = (!sf.base.isNullOrUndefined(formatInfo.format)) ? (this.formatString(handle2, formatInfo)
+                        .formatString + ' - ' + this.formatString(handle1, formatInfo).formatString) :
+                        (handle2.toString() + ' - ' + handle1.toString());
+                }
+                else {
+                    content = (!sf.base.isNullOrUndefined(formatInfo.format)) ? (this.formatString(handle1, formatInfo)
+                        .formatString + ' - ' + this.formatString(handle2, formatInfo).formatString) :
+                        (handle1.toString() + ' - ' + handle2.toString());
+                }
+            }
+            else {
+                if (!sf.base.isNullOrUndefined(handle1)) {
+                    content = (!sf.base.isNullOrUndefined(formatInfo.format)) ?
+                        this.formatString(handle1, formatInfo).formatString : handle1.toString();
+                }
+            }
+            return content;
+        }
+        else {
+            if (this.type === 'Range') {
+                if (this.enableRtl && this.orientation !== 'Vertical') {
+                    content = (!sf.base.isNullOrUndefined(this.tooltip) && !sf.base.isNullOrUndefined(this.tooltip.format)) ?
+                        (this.formatString(handle2, formatInfo).elementVal + ' - ' +
+                            this.formatString(handle1, formatInfo).elementVal) :
+                        (handle2.toString() + ' - ' + handle1.toString());
+                }
+                else {
+                    content = (!sf.base.isNullOrUndefined(this.tooltip) && !sf.base.isNullOrUndefined(this.tooltip.format)) ?
+                        (this.formatString(handle1, formatInfo).elementVal + ' - ' +
+                            this.formatString(handle2, formatInfo).elementVal) :
+                        (handle1.toString() + ' - ' + handle2.toString());
+                }
+            }
+            else {
+                if (!sf.base.isNullOrUndefined(handle1)) {
+                    content = (!sf.base.isNullOrUndefined(this.tooltip) && !sf.base.isNullOrUndefined(this.tooltip.format)) ?
+                        this.formatString(handle1, formatInfo).elementVal : handle1.toString();
+                }
+            }
+            return content;
+        }
+    };
+    Slider.prototype.addTooltipClass = function (content) {
+        if (this.isMaterialTooltip) {
+            var count = content.toString().length;
+            if (!this.tooltipElement) {
+                var cssClass = count > 4 ? classNames.sliderMaterialRange : classNames.sliderMaterialDefault;
+                this.tooltipObj.cssClass = classNames.sliderTooltip + ' ' + cssClass;
+            }
+            else {
+                var cssClass = count > 4 ?
+                    { oldCss: classNames.sliderMaterialDefault, newCss: classNames.sliderMaterialRange } :
+                    { oldCss: classNames.sliderMaterialRange, newCss: classNames.sliderMaterialDefault };
+                this.tooltipElement.classList.remove(cssClass.oldCss);
+                if (!this.tooltipElement.classList.contains(cssClass.newCss)) {
+                    this.tooltipElement.classList.add(cssClass.newCss);
+                    this.tooltipElement.style.transform = count > 4 ? 'scale(1)' :
+                        this.getTooltipTransformProperties(this.previousTooltipClass).rotate;
+                }
+            }
+        }
+    };
+    Slider.prototype.tooltipPlacement = function () {
+        return this.orientation === 'Horizontal' ? (this.tooltip.placement === 'Before' ? 'TopCenter' : 'BottomCenter') :
+            (this.tooltip.placement === 'Before' ? 'LeftCenter' : 'RightCenter');
+    };
+    Slider.prototype.tooltipBeforeOpen = function (args) {
+        this.tooltipElement = args.element;
+        if (this.tooltip.cssClass) {
+            sf.base.addClass([this.tooltipElement], this.tooltip.cssClass.split(' ').filter(function (css) { return css; }));
+        }
+        args.target.removeAttribute('aria-describedby');
+        if (this.isMaterialTooltip) {
+            this.tooltipElement.firstElementChild.classList.add(classNames.materialTooltipHide);
+            this.handleStart();
+            this.setTooltipTransform();
+        }
+    };
+    Slider.prototype.tooltipCollision = function (position) {
+        if (this.isBootstrap || this.isBootstrap4 || (this.isMaterial && !this.isMaterialTooltip)) {
+            var tooltipOffsetValue = this.isBootstrap4 ? bootstrap4TooltipOffset : bootstrapTooltipOffset;
+            switch (position) {
+                case 'TopCenter':
+                    this.tooltipObj.setProperties({ 'offsetY': -(tooltipOffsetValue) }, false);
+                    break;
+                case 'BottomCenter':
+                    this.tooltipObj.setProperties({ 'offsetY': tooltipOffsetValue }, false);
+                    break;
+                case 'LeftCenter':
+                    this.tooltipObj.setProperties({ 'offsetX': -(tooltipOffsetValue) }, false);
+                    break;
+                case 'RightCenter':
+                    this.tooltipObj.setProperties({ 'offsetX': tooltipOffsetValue }, false);
+                    break;
+            }
+        }
+    };
+    Slider.prototype.wireMaterialTooltipEvent = function (destroy) {
+        if (this.isMaterialTooltip) {
+            if (!destroy) {
+                sf.base.EventHandler.add(this.tooltipElement, 'mousedown touchstart', this.sliderDown, this);
+            }
+            else {
+                sf.base.EventHandler.remove(this.tooltipElement, 'mousedown touchstart', this.sliderDown);
+            }
+        }
+    };
+    Slider.prototype.tooltipPositionCalculation = function (position) {
+        var cssClass;
+        switch (position) {
+            case 'TopCenter':
+                cssClass = classNames.horizontalTooltipBefore;
+                break;
+            case 'BottomCenter':
+                cssClass = classNames.horizontalTooltipAfter;
+                break;
+            case 'LeftCenter':
+                cssClass = classNames.verticalTooltipBefore;
+                break;
+            case 'RightCenter':
+                cssClass = classNames.verticalTooltipAfter;
+                break;
+        }
+        return cssClass;
+    };
+    Slider.prototype.getTooltipTransformProperties = function (className) {
+        var transformProperties;
+        if (this.tooltipElement) {
+            var position = this.orientation === 'Horizontal' ?
+                ((this.tooltipElement.clientHeight + 14) - (this.tooltipElement.clientHeight / 2)) :
+                ((this.tooltipElement.clientWidth + 14) - (this.tooltipElement.clientWidth / 2));
+            transformProperties = this.orientation === 'Horizontal' ?
+                (className === classNames.horizontalTooltipBefore ? { rotate: 'rotate(45deg)', translate: "translateY(" + position + "px)" } :
+                    { rotate: 'rotate(225deg)', translate: "translateY(" + -(position) + "px)" }) :
+                (className === classNames.verticalTooltipBefore ? { rotate: 'rotate(-45deg)', translate: "translateX(" + position + "px)" } :
+                    { rotate: 'rotate(-225deg)', translate: "translateX(" + (-position) + "px)" });
+        }
+        return transformProperties;
+    };
+    Slider.prototype.openMaterialTooltip = function () {
+        var _this = this;
+        if (this.isMaterialTooltip) {
+            this.refreshTooltip(this.firstHandle);
+            var tooltipContentElement = this.tooltipElement.firstElementChild;
+            tooltipContentElement.classList.remove(classNames.materialTooltipHide);
+            tooltipContentElement.classList.add(classNames.materialTooltipShow);
+            this.firstHandle.style.cursor = 'default';
+            this.tooltipElement.style.transition = this.scaleTransform;
+            this.tooltipElement.classList.add(classNames.materialTooltipOpen);
+            this.materialHandle.style.transform = 'scale(0)';
+            if (tooltipContentElement.innerText.length > 4) {
+                this.tooltipElement.style.transform = 'scale(1)';
+            }
+            else {
+                this.tooltipElement.style.transform = this.getTooltipTransformProperties(this.previousTooltipClass).rotate;
+            }
+            if (this.type === 'Default') {
+                setTimeout(function () { _this.tooltipElement.style.transition = _this.transition.handle; }, 2500);
+            }
+            else {
+                setTimeout(function () { _this.tooltipElement.style.transition = 'none'; }, 2500);
+            }
+        }
+    };
+    Slider.prototype.closeMaterialTooltip = function () {
+        var _this = this;
+        if (this.isMaterialTooltip) {
+            var tooltipContentElement = this.tooltipElement.firstElementChild;
+            this.tooltipElement.style.transition = this.scaleTransform;
+            tooltipContentElement.classList.remove(classNames.materialTooltipShow);
+            tooltipContentElement.classList.add(classNames.materialTooltipHide);
+            this.firstHandle.style.cursor = '-webkit-grab';
+            this.firstHandle.style.cursor = 'grab';
+            if (this.materialHandle) {
+                this.materialHandle.style.transform = 'scale(1)';
+            }
+            this.tooltipElement.classList.remove(classNames.materialTooltipOpen);
+            this.setTooltipTransform();
+            this.tooltipTarget = undefined;
+            setTimeout(function () { _this.tooltipElement.style.transition = 'none'; }, 2500);
+        }
+    };
+    Slider.prototype.checkTooltipPosition = function (args) {
+        if (this.tooltipCollidedPosition === undefined ||
+            this.tooltipCollidedPosition !== args.collidedPosition) {
+            if (this.isMaterialTooltip) {
+                var tooltipClass = this.tooltipPositionCalculation(args.collidedPosition);
+                if (tooltipClass !== undefined) {
+                    args.element.classList.remove(this.previousTooltipClass);
+                    args.element.classList.add(tooltipClass);
+                    this.previousTooltipClass = tooltipClass;
+                }
+                if (args.element.style.transform && args.element.classList.contains(classNames.materialTooltipOpen) &&
+                    args.element.firstElementChild.innerText.length <= 4) {
+                    args.element.style.transform = this.getTooltipTransformProperties(this.previousTooltipClass).rotate;
+                }
+            }
+            this.tooltipCollidedPosition = args.collidedPosition;
+        }
+        if (this.isMaterialTooltip && this.tooltipElement && this.tooltipElement.style.transform.indexOf('translate') !== -1) {
+            this.setTooltipTransform();
+        }
+    };
+    Slider.prototype.setTooltipTransform = function () {
+        var transformProperties = this.getTooltipTransformProperties(this.previousTooltipClass);
+        if (this.tooltipElement.firstElementChild.innerText.length > 4) {
+            this.tooltipElement.style.transform = transformProperties.translate + " scale(0.01)";
+        }
+        else {
+            this.tooltipElement.style.transform = transformProperties.translate + " " + transformProperties.rotate + " scale(0.01)";
+        }
+    };
+    Slider.prototype.renderTooltip = function () {
+        this.tooltipObj = new sf.popups.Tooltip({
+            showTipPointer: this.isBootstrap || this.isMaterial || this.isBootstrap4,
+            cssClass: classNames.sliderTooltip,
+            height: this.isMaterial ? 30 : 'auto',
+            animation: { open: { effect: 'None' }, close: { effect: 'FadeOut', duration: 500 } },
+            opensOn: 'Custom',
+            beforeOpen: this.tooltipBeforeOpen.bind(this),
+            beforeCollision: this.checkTooltipPosition.bind(this),
+            beforeClose: this.tooltipBeforeClose.bind(this),
+            enableHtmlSanitizer: this.enableHtmlSanitizer
+        });
+        this.tooltipObj.appendTo(this.firstHandle);
+        this.initializeTooltipProps();
+    };
+    Slider.prototype.initializeTooltipProps = function () {
+        var tooltipShowOn = this.isMaterialTooltip ? 'Always' : (this.tooltip.showOn === 'Auto' ? 'Hover' : this.tooltip.showOn);
+        this.setProperties({ tooltip: { showOn: tooltipShowOn } }, true);
+        this.tooltipObj.position = this.tooltipPlacement();
+        this.tooltipCollision(this.tooltipObj.position);
+        [this.firstHandle, this.rangeBar, this.secondHandle].forEach(function (handle) {
+            if (!sf.base.isNullOrUndefined(handle)) {
+                handle.style.transition = 'none';
+            }
+        });
+        if (this.isMaterialTooltip) {
+            this.sliderContainer.classList.add(classNames.materialSlider);
+            if (!sf.base.isBlazor()) {
+                this.tooltipValue();
+            }
+            this.tooltipObj.animation.close.effect = 'None';
+            this.tooltipObj.open(this.firstHandle);
+        }
+    };
+    Slider.prototype.tooltipBeforeClose = function () {
+        this.tooltipElement = undefined;
+        this.tooltipCollidedPosition = undefined;
+    };
+    Slider.prototype.setButtons = function () {
+        if (sf.base.isBlazor() && this.isServerRendered) {
+            this.firstBtn = this.element.parentElement.querySelector('.e-slider-button.e-first-button');
+            this.secondBtn = this.element.parentElement.querySelector('.e-slider-button.e-second-button');
+        }
+        else {
+            this.firstBtn = this.createElement('div', { className: classNames.sliderButton + ' ' + classNames.firstButton });
+            this.firstBtn.appendChild(this.createElement('span', { className: classNames.sliderButtonIcon }));
+            this.firstBtn.tabIndex = -1;
+            this.secondBtn = this.createElement('div', { className: classNames.sliderButton + ' ' + classNames.secondButton });
+            this.secondBtn.appendChild(this.createElement('span', { className: classNames.sliderButtonIcon }));
+            this.secondBtn.tabIndex = -1;
+            this.sliderContainer.classList.add(classNames.sliderButtonClass);
+            this.sliderContainer.appendChild(this.firstBtn);
+            this.sliderContainer.appendChild(this.secondBtn);
+            this.sliderContainer.appendChild(this.element);
+            this.buttonTitle();
+        }
+    };
+    Slider.prototype.buttonTitle = function () {
+        var enabledRTL = this.enableRtl && this.orientation !== 'Vertical';
+        this.l10n.setLocale(this.locale);
+        var decrementTitle = this.l10n.getConstant('decrementTitle');
+        var incrementTitle = this.l10n.getConstant('incrementTitle');
+        sf.base.attributes(enabledRTL ? this.secondBtn : this.firstBtn, { 'aria-label': decrementTitle, title: decrementTitle });
+        sf.base.attributes(enabledRTL ? this.firstBtn : this.secondBtn, { 'aria-label': incrementTitle, title: incrementTitle });
+    };
+    Slider.prototype.buttonFocusOut = function () {
+        if (this.isMaterial) {
+            this.getHandle().classList.remove('e-large-thumb-size');
+        }
+    };
+    Slider.prototype.repeatButton = function (args) {
+        var hVal = this.handleValueUpdate();
+        var enabledRTL = this.enableRtl && this.orientation !== 'Vertical';
+        var value;
+        if (args.target.parentElement.classList.contains(classNames.firstButton)
+            || args.target.classList.contains(classNames.firstButton)) {
+            enabledRTL ? (value = this.add(hVal, parseFloat(this.step.toString()), true)) :
+                (value = this.add(hVal, parseFloat(this.step.toString()), false));
+        }
+        else if (args.target.parentElement.classList.contains(classNames.secondButton)
+            || (args.target.classList.contains(classNames.secondButton))) {
+            enabledRTL ? (value = this.add(hVal, parseFloat(this.step.toString()), false)) :
+                (value = this.add(hVal, parseFloat(this.step.toString()), true));
+        }
+        if (this.limits.enabled) {
+            value = this.getLimitCorrectedValues(value);
+        }
+        if (value >= this.min && value <= this.max) {
+            this.changeHandleValue(value);
+            this.tooltipToggle(this.getHandle());
+        }
+    };
+    Slider.prototype.repeatHandlerMouse = function (args) {
+        args.preventDefault();
+        if (args.type === ('mousedown') || args.type === ('touchstart')) {
+            this.buttonClick(args);
+            this.repeatInterval = setInterval(this.repeatButton.bind(this), 180, args);
+        }
+    };
+    Slider.prototype.materialChange = function () {
+        if (!this.getHandle().classList.contains('e-large-thumb-size')) {
+            this.getHandle().classList.add('e-large-thumb-size');
+        }
+    };
+    Slider.prototype.repeatHandlerUp = function (e) {
+        this.changeEvent('changed', e);
+        this.closeTooltip();
+        clearInterval(this.repeatInterval);
+        this.getHandle().focus();
+    };
+    Slider.prototype.customTickCounter = function (bigNum) {
+        var tickCount = 4;
+        if (!sf.base.isNullOrUndefined(this.customValues) && this.customValues.length > 0) {
+            if (bigNum > 4) {
+                tickCount = 3;
+            }
+            if (bigNum > 7) {
+                tickCount = 2;
+            }
+            if (bigNum > 14) {
+                tickCount = 1;
+            }
+            if (bigNum > 28) {
+                tickCount = 0;
+            }
+        }
+        return tickCount;
+    };
+    // tslint:disable-next-line:max-func-body-length
+    Slider.prototype.renderScale = function () {
+        var liElementPosition = 0;
+        var orien = this.orientation === 'Vertical' ? 'v' : 'h';
+        this.noOfDecimals = this.numberOfDecimals(this.step);
+        if (sf.base.isBlazor() && this.isServerRendered) {
+            this.ul = this.element.querySelector('ul');
+        }
+        else {
+            this.ul = this.createElement('ul', {
+                className: classNames.scale + ' ' + 'e-' + orien + '-scale ' + classNames.tick + '-' + this.ticks.placement.toLowerCase(),
+                attrs: { role: 'presentation', tabIndex: '-1', 'aria-hidden': 'true' }
+            });
+        }
+        this.ul.style.zIndex = '-1';
+        if (sf.base.Browser.isAndroid && orien === 'h') {
+            this.ul.classList.add(classNames.sliderTickPosition);
+        }
+        var smallStep = this.ticks.smallStep;
+        if (!this.ticks.showSmallTicks) {
+            this.ticks.largeStep > 0 ? (smallStep = this.ticks.largeStep) :
+                (smallStep = (parseFloat(sf.base.formatUnit(this.max))) - (parseFloat(sf.base.formatUnit(this.min))));
+        }
+        else if (smallStep <= 0) {
+            smallStep = parseFloat(sf.base.formatUnit(this.step));
+        }
+        var min = this.fractionalToInteger(this.min);
+        var max = this.fractionalToInteger(this.max);
+        var steps = this.fractionalToInteger(smallStep);
+        var bigNum = !sf.base.isNullOrUndefined(this.customValues) && this.customValues.length > 0 && this.customValues.length - 1;
+        var customStep = this.customTickCounter(bigNum);
+        var count = !sf.base.isNullOrUndefined(this.customValues) && this.customValues.length > 0 ?
+            (bigNum * customStep) + bigNum : Math.abs((max - min) / steps);
+        if (!sf.base.isBlazor() || !this.isServerRendered) {
+            this.element.appendChild(this.ul);
+        }
+        var li;
+        var start = parseFloat(this.min.toString());
+        if (orien === 'v') {
+            start = parseFloat(this.max.toString());
+        }
+        var left = 0;
+        var islargeTick;
+        var tickWidth = 100 / count;
+        if (tickWidth === Infinity) {
+            tickWidth = 5;
+        }
+        for (var i = 0, y = !sf.base.isNullOrUndefined(this.customValues) && this.customValues.length > 0 ?
+            this.customValues.length - 1 : 0, k = 0; i <= count; i++) {
+            li = (this.createElement('li', {
+                attrs: {
+                    class: classNames.tick, role: 'presentation', tabIndex: '-1',
+                    'aria-hidden': 'true'
+                }
+            }));
+            if (!sf.base.isNullOrUndefined(this.customValues) && this.customValues.length > 0) {
+                islargeTick = i % (customStep + 1) === 0;
+                if (islargeTick) {
+                    if (orien === 'h') {
+                        start = this.customValues[k];
+                        k++;
+                    }
+                    else {
+                        start = this.customValues[y];
+                        y--;
+                    }
+                    li.setAttribute('title', start.toString());
+                }
+            }
+            else {
+                li.setAttribute('title', start.toString());
+                if (this.numberOfDecimals(this.max) === 0 && this.numberOfDecimals(this.min) === 0 &&
+                    this.numberOfDecimals(this.step) === 0) {
+                    if (orien === 'h') {
+                        islargeTick = ((start - parseFloat(this.min.toString())) % this.ticks.largeStep === 0) ? true : false;
+                    }
+                    else {
+                        islargeTick = (Math.abs(start - parseFloat(this.max.toString())) % this.ticks.largeStep === 0) ? true : false;
+                    }
+                }
+                else {
+                    var largestep = this.fractionalToInteger(this.ticks.largeStep);
+                    var startValue = this.fractionalToInteger(start);
+                    if (orien === 'h') {
+                        islargeTick = ((startValue - min) % largestep === 0) ? true : false;
+                    }
+                    else {
+                        islargeTick = (Math.abs(startValue - parseFloat(max.toString())) % largestep === 0) ? true : false;
+                    }
+                }
+            }
+            if (islargeTick) {
+                li.classList.add(classNames.large);
+            }
+            (orien === 'h') ? (li.style.width = tickWidth + '%') : (li.style.height = tickWidth + '%');
+            var repeat = islargeTick ? (this.ticks.placement === 'Both' ? 2 : 1) : 0;
+            if (islargeTick) {
+                for (var j = 0; j < repeat; j++) {
+                    this.createTick(li, start, tickWidth);
+                }
+                if (sf.base.isBlazor() && this.isServerRendered && sf.base.isNullOrUndefined(this.customValues)) {
+                    this.updateTicksValues(start, this.ul.children[liElementPosition]);
+                    liElementPosition++;
+                }
+            }
+            else if (sf.base.isNullOrUndefined(this.customValues)) {
+                this.formatTicksValue(li, start);
+                if (sf.base.isBlazor() && this.isServerRendered && sf.base.isNullOrUndefined(this.customValues)) {
+                    this.updateTicksValues(start, this.ul.children[liElementPosition]);
+                    liElementPosition++;
+                }
+            }
+            if (!sf.base.isBlazor() || !this.isServerRendered) {
+                this.ul.appendChild(li);
+            }
+            this.tickElementCollection.push(li);
+            var decimalPoints = void 0;
+            if (sf.base.isNullOrUndefined(this.customValues)) {
+                if (this.numberOfDecimals(smallStep) > this.numberOfDecimals(start)) {
+                    decimalPoints = this.numberOfDecimals(smallStep);
+                }
+                else {
+                    decimalPoints = this.numberOfDecimals(start);
+                }
+                if (orien === 'h') {
+                    start = this.makeRoundNumber(start + smallStep, decimalPoints);
+                }
+                else {
+                    start = this.makeRoundNumber(start - smallStep, decimalPoints);
+                }
+                left = this.makeRoundNumber(left + smallStep, decimalPoints);
+            }
+        }
+        this.ticksAlignment(orien, tickWidth);
+    };
+    Slider.prototype.updateTicksValues = function (start, liElement) {
+        if (liElement.childElementCount > 0) {
+            for (var i = 0; i < liElement.childElementCount; i++) {
+                this.blazortTicksValue(liElement, start, liElement.children[i]);
+            }
+        }
+        else {
+            this.blazortTicksValue(liElement, start, null);
+        }
+    };
+    Slider.prototype.blazortTicksValue = function (li, start, span) {
+        var _this = this;
+        var tickText = this.formatNumber(start);
+        var text = !sf.base.isNullOrUndefined(this.ticks) && !sf.base.isNullOrUndefined(this.ticks.format) ?
+            this.formatString(start, this.ticksFormatInfo).formatString : tickText;
+        var eventArgs = { value: start, text: text, tickElement: li };
+        this.trigger('renderingTicks', eventArgs, function (observedArgs) {
+            li.setAttribute('title', observedArgs.text.toString());
+            if (span) {
+                if (_this.enableHtmlSanitizer) {
+                    span.innerHTML = sf.base.SanitizeHtmlHelper.sanitize(observedArgs.text.toString());
+                }
+                else {
+                    span.innerHTML = observedArgs.text.toString();
+                }
+            }
+        });
+    };
+    Slider.prototype.ticksAlignment = function (orien, tickWidth, triggerEvent) {
+        if (triggerEvent === void 0) { triggerEvent = true; }
+        this.firstChild = this.ul.firstElementChild;
+        this.lastChild = this.ul.lastElementChild;
+        this.firstChild.classList.add(classNames.sliderFirstTick);
+        this.lastChild.classList.add(classNames.sliderLastTick);
+        this.sliderContainer.classList.add(classNames.scale + '-' + this.ticks.placement.toLowerCase());
+        if (orien === 'h') {
+            this.firstChild.style.width = tickWidth / 2 + '%';
+            this.lastChild.style.width = tickWidth / 2 + '%';
+        }
+        else {
+            this.firstChild.style.height = tickWidth / 2 + '%';
+            this.lastChild.style.height = tickWidth / 2 + '%';
+        }
+        var eventArgs = { ticksWrapper: this.ul, tickElements: this.tickElementCollection };
+        if (triggerEvent) {
+            this.trigger('renderedTicks', eventArgs);
+        }
+        this.scaleAlignment();
+    };
+    Slider.prototype.createTick = function (li, start, tickWidth) {
+        var span = this.createElement('span', {
+            className: classNames.tickValue + ' ' + classNames.tick + '-' + this.ticks.placement.toLowerCase(),
+            attrs: { role: 'presentation', tabIndex: '-1', 'aria-hidden': 'true' }
+        });
+        li.appendChild(span);
+        if (sf.base.isNullOrUndefined(this.customValues)) {
+            this.formatTicksValue(li, start, span, tickWidth);
+        }
+        else {
+            if (this.enableHtmlSanitizer) {
+                span.innerHTML = sf.base.SanitizeHtmlHelper.sanitize(start.toString());
+            }
+            else {
+                span.innerHTML = start.toString();
+            }
+        }
+    };
+    Slider.prototype.formatTicksValue = function (li, start, spanElement, tickWidth) {
+        var _this = this;
+        var tickText = this.formatNumber(start);
+        var text = !sf.base.isNullOrUndefined(this.ticks) && !sf.base.isNullOrUndefined(this.ticks.format) ?
+            this.formatString(start, this.ticksFormatInfo).formatString : tickText;
+        var eventArgs = { value: start, text: text, tickElement: li };
+        this.trigger('renderingTicks', eventArgs, function (observedArgs) {
+            li.setAttribute('title', observedArgs.text.toString());
+            if (spanElement) {
+                if (_this.enableHtmlSanitizer) {
+                    spanElement.innerHTML = sf.base.SanitizeHtmlHelper.sanitize(observedArgs.text.toString());
+                }
+                else {
+                    spanElement.innerHTML = observedArgs.text.toString();
+                }
+            }
+            if (!sf.base.isNullOrUndefined(_this.renderingTicks) && sf.base.isBlazor()) {
+                var orien = _this.orientation === 'Horizontal' ? 'h' : 'v';
+                _this.ticksAlignment(orien, tickWidth, false);
+            }
+        });
+    };
+    Slider.prototype.scaleAlignment = function () {
+        this.tickValuePosition();
+        var orien = this.orientation === 'Vertical' ? 'v' : 'h';
+        if (this.orientation === 'Vertical') {
+            (this.element.getBoundingClientRect().width <= 15) ?
+                this.sliderContainer.classList.add(classNames.sliderSmallSize) :
+                this.sliderContainer.classList.remove(classNames.sliderSmallSize);
+        }
+        else {
+            (this.element.getBoundingClientRect().height <= 15) ?
+                this.sliderContainer.classList.add(classNames.sliderSmallSize) :
+                this.sliderContainer.classList.remove(classNames.sliderSmallSize);
+        }
+    };
+    Slider.prototype.tickValuePosition = function () {
+        this.firstChild = this.element.querySelector('ul').children[0];
+        var first = this.firstChild.getBoundingClientRect();
+        var firstChild;
+        var otherChild;
+        var smallStep = this.ticks.smallStep;
+        var count = Math.abs((parseFloat(sf.base.formatUnit(this.max))) - (parseFloat(sf.base.formatUnit(this.min)))) / smallStep;
+        if (this.firstChild.children.length > 0) {
+            firstChild = this.firstChild.children[0].getBoundingClientRect();
+        }
+        var tickElements = [this.sliderContainer.querySelectorAll('.' + classNames.tick + '.' +
+                classNames.large + ' .' + classNames.tickValue)];
+        var other;
+        if (this.ticks.placement === 'Both') {
+            other = [].slice.call(tickElements[0], 2);
+        }
+        else {
+            other = [].slice.call(tickElements[0], 1);
+        }
+        var tickWidth = this.orientation === 'Vertical' ?
+            (first.height * 2) : (first.width * 2);
+        for (var i = 0; i < this.firstChild.children.length; i++) {
+            if (this.orientation === 'Vertical') {
+                if (!sf.base.isBlazor() || !this.isServerRendered) {
+                    this.firstChild.children[i].style.top = -(firstChild.height / 2) + 'px';
+                }
+            }
+            else {
+                if (!this.enableRtl) {
+                    this.firstChild.children[i].style.left = -(firstChild.width / 2) + 'px';
+                }
+                else {
+                    this.firstChild.children[i].style.left = (tickWidth -
+                        this.firstChild.children[i].getBoundingClientRect().width) / 2 + 'px';
+                }
+            }
+        }
+        for (var i = 0; i < other.length; i++) {
+            otherChild = other[i].getBoundingClientRect();
+            if (this.orientation === 'Vertical') {
+                if (!sf.base.isBlazor() || !this.isServerRendered) {
+                    sf.base.setStyleAttribute(other[i], { top: (tickWidth - otherChild.height) / 2 + 'px' });
+                }
+            }
+            else {
+                sf.base.setStyleAttribute(other[i], { left: (tickWidth - otherChild.width) / 2 + 'px' });
+            }
+        }
+        if (this.enableRtl && this.lastChild.children.length && count !== 0) {
+            this.lastChild.children[0].style.left = -(this.lastChild.getBoundingClientRect().width / 2) + 'px';
+            if (this.ticks.placement === 'Both') {
+                if (!sf.base.isBlazor()) {
+                    this.lastChild.children[1].style.left = -(this.lastChild.getBoundingClientRect().width / 2) + 'px';
+                }
+            }
+        }
+        if (count === 0) {
+            if (this.orientation === 'Horizontal') {
+                if (!this.enableRtl) {
+                    this.firstChild.classList.remove(classNames.sliderLastTick);
+                    if (!sf.base.isBlazor()) {
+                        this.firstChild.style.left = this.firstHandle.style.left;
+                    }
+                }
+                else {
+                    this.firstChild.classList.remove(classNames.sliderLastTick);
+                    this.firstChild.style.right = this.firstHandle.style.right;
+                    if (!sf.base.isBlazor()) {
+                        this.firstChild.children[0].style.left =
+                            (this.firstChild.getBoundingClientRect().width / 2) + 2 + 'px';
+                        if (this.ticks.placement === 'Both') {
+                            this.firstChild.children[1].style.left =
+                                (this.firstChild.getBoundingClientRect().width / 2) + 2 + 'px';
+                        }
+                    }
+                }
+            }
+            if (!sf.base.isBlazor() || !this.isServerRendered) {
+                if (this.orientation === 'Vertical') {
+                    this.firstChild.classList.remove(classNames.sliderLastTick);
+                }
+            }
+        }
+        if (sf.base.isBlazor() && this.isServerRendered) {
+            var args = void 0;
+            if (this.firstChild != null) {
+                if (this.orientation === 'Horizontal') {
+                    args = { firstTickPostion: this.firstChild.children[0].style.left };
+                }
+                else {
+                    args = { firstTickPostion: -(firstChild.height / 2) + 'px' };
+                }
+            }
+            if (other[0] != null) {
+                if (this.orientation === 'Horizontal') {
+                    args = { otherTicksPosition: other[0].style.left };
+                }
+                else {
+                    args = { otherTicksPosition: (tickWidth - otherChild.height) / 2 + 'px' };
+                }
+            }
+            if (this.firstChild != null && other[0] != null) {
+                if (this.orientation === 'Horizontal') {
+                    args = {
+                        firstTickPostion: this.firstChild.children[0].style.left,
+                        otherTicksPosition: other[0].style.left
+                    };
+                }
+                else {
+                    args = {
+                        firstTickPostion: -(firstChild.height / 2) + 'px',
+                        otherTicksPosition: (tickWidth - otherChild.height) / 2 + 'px'
+                    };
+                }
+            }
+            // tslint:disable
+            this.interopAdaptor.invokeMethodAsync('SliderTicksData', args);
+            // tslint:enable
+        }
+    };
+    Slider.prototype.setAriaAttrValue = function (element) {
+        var ariaValueText;
+        var isTickFormatted = ((!sf.base.isNullOrUndefined(this.ticks) && !sf.base.isNullOrUndefined(this.ticks.format))) ? true : false;
+        var text = !isTickFormatted ?
+            this.formatContent(this.ticksFormatInfo, false) : this.formatContent(this.tooltipFormatInfo, false);
+        var valuenow = isTickFormatted ? this.formatContent(this.ticksFormatInfo, true) :
+            this.formatContent(this.tooltipFormatInfo, true);
+        text = (!this.customAriaText) ? (text) : (this.customAriaText);
+        if (text.split(' - ').length === 2) {
+            ariaValueText = text.split(' - ');
+        }
+        else {
+            ariaValueText = [text, text];
+        }
+        this.setAriaAttributes(element);
+        if (this.type !== 'Range') {
+            sf.base.attributes(element, { 'aria-valuenow': valuenow, 'aria-valuetext': text });
+        }
+        else {
+            (!this.enableRtl) ? ((element === this.firstHandle) ?
+                sf.base.attributes(element, { 'aria-valuenow': valuenow.split(' - ')[0], 'aria-valuetext': ariaValueText[0] }) :
+                sf.base.attributes(element, { 'aria-valuenow': valuenow.split(' - ')[1], 'aria-valuetext': ariaValueText[1] })) :
+                ((element === this.firstHandle) ?
+                    sf.base.attributes(element, { 'aria-valuenow': valuenow.split(' - ')[1], 'aria-valuetext': ariaValueText[1] }) :
+                    sf.base.attributes(element, { 'aria-valuenow': valuenow.split(' - ')[0], 'aria-valuetext': ariaValueText[0] }));
+        }
+    };
+    Slider.prototype.handleValueUpdate = function () {
+        var hVal;
+        if (this.type === 'Range') {
+            if (this.activeHandle === 1) {
+                hVal = this.handleVal1;
+            }
+            else {
+                hVal = this.handleVal2;
+            }
+        }
+        else {
+            hVal = this.handleVal1;
+        }
+        return hVal;
+    };
+    Slider.prototype.getLimitCorrectedValues = function (value) {
+        if (this.type === 'MinRange' || this.type === 'Default') {
+            value = (this.getLimitValueAndPosition(value, this.limits.minStart, this.limits.minEnd))[0];
+        }
+        else {
+            if (this.activeHandle === 1) {
+                value = (this.getLimitValueAndPosition(value, this.limits.minStart, this.limits.minEnd))[0];
+            }
+            else {
+                value = (this.getLimitValueAndPosition(value, this.limits.maxStart, this.limits.maxEnd))[0];
+            }
+        }
+        return value;
+    };
+    Slider.prototype.focusSliderElement = function () {
+        if (!this.isElementFocused) {
+            this.element.focus();
+            this.isElementFocused = true;
+        }
+    };
+    Slider.prototype.buttonClick = function (args) {
+        this.focusSliderElement();
+        var value;
+        var enabledRTL = this.enableRtl && this.orientation !== 'Vertical';
+        var hVal = this.handleValueUpdate();
+        if ((args.keyCode === 40) || (args.keyCode === 37)
+            || args.currentTarget.classList.contains(classNames.firstButton)) {
+            enabledRTL ? (value = this.add(hVal, parseFloat(this.step.toString()), true)) :
+                (value = this.add(hVal, parseFloat(this.step.toString()), false));
+        }
+        else if ((args.keyCode === 38) || (args.keyCode === 39) ||
+            args.currentTarget.classList.contains(classNames.secondButton)) {
+            enabledRTL ? (value = this.add(hVal, parseFloat(this.step.toString()), false)) :
+                (value = this.add(hVal, parseFloat(this.step.toString()), true));
+        }
+        else if ((args.keyCode === 33
+            || args.currentTarget.classList.contains(classNames.firstButton))) {
+            enabledRTL ? (value = this.add(hVal, parseFloat(this.ticks.largeStep.toString()), false)) :
+                (value = this.add(hVal, parseFloat(this.ticks.largeStep.toString()), true));
+        }
+        else if ((args.keyCode === 34) ||
+            args.currentTarget.classList.contains(classNames.secondButton)) {
+            enabledRTL ? (value = this.add(hVal, parseFloat(this.ticks.largeStep.toString()), true)) :
+                (value = this.add(hVal, parseFloat(this.ticks.largeStep.toString()), false));
+        }
+        else if ((args.keyCode === 36)) {
+            value = parseFloat(this.min.toString());
+        }
+        else if ((args.keyCode === 35)) {
+            value = parseFloat(this.max.toString());
+        }
+        if (this.limits.enabled) {
+            value = this.getLimitCorrectedValues(value);
+        }
+        this.changeHandleValue(value);
+        if (this.isMaterial && !this.tooltip.isVisible &&
+            !this.getHandle().classList.contains(classNames.sliderTabHandle)) {
+            this.materialChange();
+        }
+        this.tooltipToggle(this.getHandle());
+        this.getHandle().focus();
+        if (args.currentTarget.classList.contains(classNames.firstButton)) {
+            sf.base.EventHandler.add(this.firstBtn, 'mouseup touchend', this.buttonUp, this);
+        }
+        if (args.currentTarget.classList.contains(classNames.secondButton)) {
+            sf.base.EventHandler.add(this.secondBtn, 'mouseup touchend', this.buttonUp, this);
+        }
+    };
+    Slider.prototype.tooltipToggle = function (target) {
+        if (this.isMaterialTooltip) {
+            !this.tooltipElement.classList.contains(classNames.materialTooltipOpen) ?
+                this.openMaterialTooltip() : this.refreshTooltip(this.firstHandle);
+        }
+        else {
+            !this.tooltipElement ? this.openTooltip(target) : this.refreshTooltip(target);
+        }
+    };
+    Slider.prototype.buttonUp = function (args) {
+        if (args.currentTarget.classList.contains(classNames.firstButton)) {
+            sf.base.EventHandler.remove(this.firstBtn, 'mouseup touchend', this.buttonUp);
+        }
+        if (args.currentTarget.classList.contains(classNames.secondButton)) {
+            sf.base.EventHandler.remove(this.secondBtn, 'mouseup touchend', this.buttonUp);
+        }
+    };
+    Slider.prototype.setRangeBar = function () {
+        if (this.orientation === 'Horizontal') {
+            if (this.type === 'MinRange') {
+                this.enableRtl ? (this.rangeBar.style.right = '0px') : (this.rangeBar.style.left = '0px');
+                sf.base.setStyleAttribute(this.rangeBar, { 'width': sf.base.isNullOrUndefined(this.handlePos1) ? 0 : this.handlePos1 + 'px' });
+            }
+            else {
+                this.enableRtl ? (this.rangeBar.style.right =
+                    this.handlePos1 + 'px') : (this.rangeBar.style.left = this.handlePos1 + 'px');
+                sf.base.setStyleAttribute(this.rangeBar, { 'width': this.handlePos2 - this.handlePos1 + 'px' });
+            }
+        }
+        else {
+            if (this.type === 'MinRange') {
+                this.rangeBar.style.bottom = '0px';
+                sf.base.setStyleAttribute(this.rangeBar, { 'height': sf.base.isNullOrUndefined(this.handlePos1) ? 0 : this.handlePos1 + 'px' });
+            }
+            else {
+                this.rangeBar.style.bottom = this.handlePos1 + 'px';
+                sf.base.setStyleAttribute(this.rangeBar, { 'height': this.handlePos2 - this.handlePos1 + 'px' });
+            }
+        }
+    };
+    Slider.prototype.checkValidValueAndPos = function (value) {
+        value = this.checkHandleValue(value);
+        value = this.checkHandlePosition(value);
+        return value;
+    };
+    Slider.prototype.setLimitBarPositions = function (fromMinPostion, fromMaxpostion, toMinPostion, toMaxpostion) {
+        if (this.orientation === 'Horizontal') {
+            if (!this.enableRtl) {
+                this.limitBarFirst.style.left = fromMinPostion + 'px';
+                this.limitBarFirst.style.width = (fromMaxpostion - fromMinPostion) + 'px';
+            }
+            else {
+                this.limitBarFirst.style.right = fromMinPostion + 'px';
+                this.limitBarFirst.style.width = (fromMaxpostion - fromMinPostion) + 'px';
+            }
+        }
+        else {
+            this.limitBarFirst.style.bottom = fromMinPostion + 'px';
+            this.limitBarFirst.style.height = (fromMaxpostion - fromMinPostion) + 'px';
+        }
+        if (this.type === 'Range') {
+            if (this.orientation === 'Horizontal') {
+                if (!this.enableRtl) {
+                    this.limitBarSecond.style.left = toMinPostion + 'px';
+                    this.limitBarSecond.style.width = (toMaxpostion - toMinPostion) + 'px';
+                }
+                else {
+                    this.limitBarSecond.style.right = toMinPostion + 'px';
+                    this.limitBarSecond.style.width = (toMaxpostion - toMinPostion) + 'px';
+                }
+            }
+            else {
+                this.limitBarSecond.style.bottom = toMinPostion + 'px';
+                this.limitBarSecond.style.height = (toMaxpostion - toMinPostion) + 'px';
+            }
+        }
+    };
+    Slider.prototype.setLimitBar = function () {
+        if (this.type === 'Default' || this.type === 'MinRange') {
+            var fromPosition = (this.getLimitValueAndPosition(this.limits.minStart, this.limits.minStart, this.limits.minEnd, true))[0];
+            fromPosition = this.checkValidValueAndPos(fromPosition);
+            var toPosition = (this.getLimitValueAndPosition(this.limits.minEnd, this.limits.minStart, this.limits.minEnd, true))[0];
+            toPosition = this.checkValidValueAndPos(toPosition);
+            this.setLimitBarPositions(fromPosition, toPosition);
+        }
+        else if (this.type === 'Range') {
+            var fromMinPostion = (this.getLimitValueAndPosition(this.limits.minStart, this.limits.minStart, this.limits.minEnd, true))[0];
+            fromMinPostion = this.checkValidValueAndPos(fromMinPostion);
+            var fromMaxpostion = (this.getLimitValueAndPosition(this.limits.minEnd, this.limits.minStart, this.limits.minEnd, true))[0];
+            fromMaxpostion = this.checkValidValueAndPos(fromMaxpostion);
+            var toMinPostion = (this.getLimitValueAndPosition(this.limits.maxStart, this.limits.maxStart, this.limits.maxEnd, true))[0];
+            toMinPostion = this.checkValidValueAndPos(toMinPostion);
+            var toMaxpostion = (this.getLimitValueAndPosition(this.limits.maxEnd, this.limits.maxStart, this.limits.maxEnd, true))[0];
+            toMaxpostion = this.checkValidValueAndPos(toMaxpostion);
+            this.setLimitBarPositions(fromMinPostion, fromMaxpostion, toMinPostion, toMaxpostion);
+        }
+    };
+    Slider.prototype.getLimitValueAndPosition = function (currentValue, minValue, maxValue, limitBar) {
+        if (sf.base.isNullOrUndefined(minValue)) {
+            minValue = this.min;
+            if (sf.base.isNullOrUndefined(currentValue) && limitBar) {
+                currentValue = minValue;
+            }
+        }
+        if (sf.base.isNullOrUndefined(maxValue)) {
+            maxValue = this.max;
+            if (sf.base.isNullOrUndefined(currentValue) && limitBar) {
+                currentValue = maxValue;
+            }
+        }
+        if (currentValue < minValue) {
+            currentValue = minValue;
+        }
+        if (currentValue > maxValue) {
+            currentValue = maxValue;
+        }
+        return [currentValue, this.checkHandlePosition(currentValue)];
+    };
+    Slider.prototype.setValue = function () {
+        if (!sf.base.isNullOrUndefined(this.customValues) && this.customValues.length > 0) {
+            this.min = 0;
+            this.max = this.customValues.length - 1;
+            this.setBarColor();
+        }
+        this.setAriaAttributes(this.firstHandle);
+        this.handleVal1 = sf.base.isNullOrUndefined(this.value) ? this.checkHandleValue(parseFloat(this.min.toString())) :
+            this.checkHandleValue(parseFloat(this.value.toString()));
+        this.handlePos1 = this.checkHandlePosition(this.handleVal1);
+        this.preHandlePos1 = this.handlePos1;
+        sf.base.isNullOrUndefined(this.activeHandle) ? (this.type === 'Range' ? this.activeHandle = 2 : this.activeHandle = 1) :
+            this.activeHandle = this.activeHandle;
+        if (this.type === 'Default' || this.type === 'MinRange') {
+            if (this.limits.enabled) {
+                var values = this.getLimitValueAndPosition(this.handleVal1, this.limits.minStart, this.limits.minEnd);
+                this.handleVal1 = values[0];
+                this.handlePos1 = values[1];
+                this.preHandlePos1 = this.handlePos1;
+            }
+            this.setHandlePosition(null);
+            this.handleStart();
+            this.value = this.handleVal1;
+            this.setAriaAttrValue(this.firstHandle);
+            this.changeEvent('changed', null);
+        }
+        else {
+            this.validateRangeValue();
+        }
+        if (this.type !== 'Default') {
+            this.setRangeBar();
+        }
+        if (this.limits.enabled) {
+            this.setLimitBar();
+        }
+    };
+    Slider.prototype.rangeValueUpdate = function () {
+        if (this.value === null || typeof (this.value) !== 'object') {
+            this.value = [parseFloat(sf.base.formatUnit(this.min)), parseFloat(sf.base.formatUnit(this.max))];
+        }
+    };
+    Slider.prototype.validateRangeValue = function () {
+        this.rangeValueUpdate();
+        this.setRangeValue();
+    };
+    Slider.prototype.modifyZindex = function () {
+        if (this.type === 'Range') {
+            if (this.activeHandle === 1) {
+                this.firstHandle.style.zIndex = (this.zIndex + 4) + '';
+                this.secondHandle.style.zIndex = (this.zIndex + 3) + '';
+            }
+            else {
+                this.firstHandle.style.zIndex = (this.zIndex + 3) + '';
+                this.secondHandle.style.zIndex = (this.zIndex + 4) + '';
+            }
+        }
+        else if (this.isMaterialTooltip && this.tooltipElement) {
+            this.tooltipElement.style.zIndex = sf.popups.getZindexPartial(this.element) + '';
+        }
+    };
+    Slider.prototype.setHandlePosition = function (event) {
+        var _this = this;
+        var handle;
+        var pos = (this.activeHandle === 1) ? this.handlePos1 : this.handlePos2;
+        if (this.isMaterialTooltip) {
+            handle = [this.firstHandle, this.materialHandle];
+        }
+        else {
+            handle = [this.getHandle()];
+        }
+        this.handleStart();
+        handle.forEach(function (handle) {
+            if (_this.orientation === 'Horizontal') {
+                _this.enableRtl ? (handle.style.right =
+                    pos + "px") : (handle.style.left = pos + "px");
+            }
+            else {
+                handle.style.bottom = pos + "px";
+            }
+            if (sf.base.isBlazor() && _this.isServerRendered) {
+                handle.style.removeProperty('visibility');
+            }
+        });
+        this.changeEvent('change', event);
+    };
+    Slider.prototype.getHandle = function () {
+        return (this.activeHandle === 1) ? this.firstHandle : this.secondHandle;
+    };
+    Slider.prototype.setRangeValue = function () {
+        this.updateRangeValue();
+        this.activeHandle = 1;
+        this.setHandlePosition(null);
+        this.activeHandle = 2;
+        this.setHandlePosition(null);
+        this.activeHandle = 1;
+    };
+    Slider.prototype.changeEvent = function (eventName, e) {
+        var previous = eventName === 'change' ? this.previousVal : this.previousChanged;
+        if (this.type !== 'Range') {
+            this.setProperties({ 'value': this.handleVal1 }, true);
+            if (previous !== this.value) {
+                this.trigger(eventName, this.changeEventArgs(eventName, e));
+                this.setPreviousVal(eventName, this.value);
+            }
+            this.setAriaAttrValue(this.firstHandle);
+        }
+        else {
+            var value = this.value = [this.handleVal1, this.handleVal2];
+            this.setProperties({ 'value': value }, true);
+            if (previous.length === this.value.length
+                && this.value[0] !== previous[0] || this.value[1] !== previous[1]) {
+                this.trigger(eventName, this.changeEventArgs(eventName, e));
+                this.setPreviousVal(eventName, this.value);
+            }
+            this.setAriaAttrValue(this.getHandle());
+        }
+        this.hiddenInput.value = this.value.toString();
+    };
+    Slider.prototype.changeEventArgs = function (eventName, e) {
+        var eventArgs;
+        if (this.tooltip.isVisible && this.tooltipObj) {
+            if (!sf.base.isBlazor() || !this.isServerRendered) {
+                this.tooltipValue();
+            }
+            eventArgs = {
+                value: this.value,
+                previousValue: eventName === 'change' ? this.previousVal : this.previousChanged,
+                action: eventName, text: this.tooltipObj.content, isInteracted: sf.base.isNullOrUndefined(e) ? false : true
+            };
+        }
+        else {
+            eventArgs = {
+                value: this.value,
+                previousValue: eventName === 'change' ? this.previousVal : this.previousChanged,
+                action: eventName, text: sf.base.isNullOrUndefined(this.ticksFormatInfo.format) ? this.value.toString() :
+                    (this.type !== 'Range' ? this.formatString(this.value, this.ticksFormatInfo).formatString :
+                        (this.formatString(this.value[0], this.ticksFormatInfo).formatString + ' - ' +
+                            this.formatString(this.value[1], this.ticksFormatInfo).formatString)),
+                isInteracted: sf.base.isNullOrUndefined(e) ? false : true
+            };
+        }
+        return eventArgs;
+    };
+    Slider.prototype.setPreviousVal = function (eventName, value) {
+        if (eventName === 'change') {
+            this.previousVal = value;
+        }
+        else {
+            this.previousChanged = value;
+        }
+    };
+    Slider.prototype.updateRangeValue = function () {
+        var values = this.value.toString().split(',').map(Number);
+        if ((this.enableRtl && this.orientation !== 'Vertical') || this.rtl) {
+            this.value = [values[1], values[0]];
+        }
+        else {
+            this.value = [values[0], values[1]];
+        }
+        if (this.enableRtl && this.orientation !== 'Vertical') {
+            this.handleVal1 = this.checkHandleValue(this.value[1]);
+            this.handleVal2 = this.checkHandleValue(this.value[0]);
+        }
+        else {
+            this.handleVal1 = this.checkHandleValue(this.value[0]);
+            this.handleVal2 = this.checkHandleValue(this.value[1]);
+        }
+        this.handlePos1 = this.checkHandlePosition(this.handleVal1);
+        this.handlePos2 = this.checkHandlePosition(this.handleVal2);
+        if (this.handlePos1 > this.handlePos2) {
+            this.handlePos1 = this.handlePos2;
+            this.handleVal1 = this.handleVal2;
+        }
+        this.preHandlePos1 = this.handlePos1;
+        this.preHandlePos2 = this.handlePos2;
+        if (this.limits.enabled) {
+            this.activeHandle = 1;
+            var values_1 = this.getLimitValueAndPosition(this.handleVal1, this.limits.minStart, this.limits.minEnd);
+            this.handleVal1 = values_1[0];
+            this.handlePos1 = values_1[1];
+            this.preHandlePos1 = this.handlePos1;
+            this.activeHandle = 2;
+            values_1 = this.getLimitValueAndPosition(this.handleVal2, this.limits.maxStart, this.limits.maxEnd);
+            this.handleVal2 = values_1[0];
+            this.handlePos2 = values_1[1];
+            this.preHandlePos2 = this.handlePos2;
+        }
+    };
+    Slider.prototype.checkHandlePosition = function (value) {
+        var pos;
+        value = (100 *
+            (value - (parseFloat(sf.base.formatUnit(this.min))))) / ((parseFloat(sf.base.formatUnit(this.max))) - (parseFloat(sf.base.formatUnit(this.min))));
+        if (this.orientation === 'Horizontal') {
+            pos = this.element.getBoundingClientRect().width * (value / 100);
+        }
+        else {
+            pos = this.element.getBoundingClientRect().height * (value / 100);
+        }
+        if (((parseFloat(sf.base.formatUnit(this.max))) === (parseFloat(sf.base.formatUnit(this.min))))) {
+            if (this.orientation === 'Horizontal') {
+                pos = this.element.getBoundingClientRect().width;
+            }
+            else {
+                pos = this.element.getBoundingClientRect().height;
+            }
+        }
+        return pos;
+    };
+    Slider.prototype.checkHandleValue = function (value) {
+        if (this.min > this.max) {
+            this.min = this.max;
+        }
+        if (this.min === this.max) {
+            return (parseFloat(sf.base.formatUnit(this.max)));
+        }
+        var handle = this.tempStartEnd();
+        if (value < handle.start) {
+            value = handle.start;
+        }
+        else if (value > handle.end) {
+            value = handle.end;
+        }
+        return value;
+    };
+    /**
+     * It is used to reposition slider.
+     * @returns void
+     */
+    Slider.prototype.reposition = function () {
+        var _this = this;
+        this.firstHandle.style.transition = 'none';
+        if (this.type !== 'Default') {
+            this.rangeBar.style.transition = 'none';
+        }
+        if (this.type === 'Range') {
+            this.secondHandle.style.transition = 'none';
+        }
+        this.handlePos1 = this.checkHandlePosition(this.handleVal1);
+        if (this.handleVal2) {
+            this.handlePos2 = this.checkHandlePosition(this.handleVal2);
+        }
+        if (this.orientation === 'Horizontal') {
+            this.enableRtl ? this.firstHandle.style.right =
+                this.handlePos1 + "px" : this.firstHandle.style.left = this.handlePos1 + "px";
+            if (this.isMaterialTooltip) {
+                this.enableRtl ? this.materialHandle.style.right =
+                    this.handlePos1 + "px" : this.materialHandle.style.left = this.handlePos1 + "px";
+            }
+            if (this.type === 'MinRange') {
+                this.enableRtl ? (this.rangeBar.style.right = '0px') : (this.rangeBar.style.left = '0px');
+                sf.base.setStyleAttribute(this.rangeBar, { 'width': sf.base.isNullOrUndefined(this.handlePos1) ? 0 : this.handlePos1 + 'px' });
+            }
+            else if (this.type === 'Range') {
+                this.enableRtl ? this.secondHandle.style.right =
+                    this.handlePos2 + "px" : this.secondHandle.style.left = this.handlePos2 + "px";
+                this.enableRtl ? (this.rangeBar.style.right =
+                    this.handlePos1 + 'px') : (this.rangeBar.style.left = this.handlePos1 + 'px');
+                sf.base.setStyleAttribute(this.rangeBar, { 'width': this.handlePos2 - this.handlePos1 + 'px' });
+            }
+        }
+        else {
+            this.firstHandle.style.bottom = this.handlePos1 + "px";
+            if (this.isMaterialTooltip) {
+                this.materialHandle.style.bottom = this.handlePos1 + "px";
+            }
+            if (this.type === 'MinRange') {
+                this.rangeBar.style.bottom = '0px';
+                sf.base.setStyleAttribute(this.rangeBar, { 'height': sf.base.isNullOrUndefined(this.handlePos1) ? 0 : this.handlePos1 + 'px' });
+            }
+            else if (this.type === 'Range') {
+                this.secondHandle.style.bottom = this.handlePos2 + "px";
+                this.rangeBar.style.bottom = this.handlePos1 + 'px';
+                sf.base.setStyleAttribute(this.rangeBar, { 'height': this.handlePos2 - this.handlePos1 + 'px' });
+            }
+        }
+        if (this.limits.enabled) {
+            this.setLimitBar();
+        }
+        if (this.ticks.placement !== 'None' && this.ul) {
+            if (!sf.base.isBlazor()) {
+                this.removeElement(this.ul);
+                this.ul = undefined;
+            }
+            this.renderScale();
+            if (sf.base.isBlazor()) {
+                this.tickValuePosition();
+            }
+        }
+        this.handleStart();
+        if (!this.tooltip.isVisible) {
+            setTimeout(function () {
+                _this.firstHandle.style.transition = _this.scaleTransform;
+                if (_this.type === 'Range') {
+                    _this.secondHandle.style.transition = _this.scaleTransform;
+                }
+            });
+        }
+        if (!sf.base.isBlazor() || !this.isServerRendered) {
+            this.refreshTooltip(this.tooltipTarget);
+        }
+        this.setBarColor();
+    };
+    Slider.prototype.changeHandleValue = function (value) {
+        var position = null;
+        if (this.activeHandle === 1) {
+            if (!(this.limits.enabled && this.limits.startHandleFixed)) {
+                this.handleVal1 = this.checkHandleValue(value);
+                this.handlePos1 = this.checkHandlePosition(this.handleVal1);
+                if (this.type === 'Range' && this.handlePos1 > this.handlePos2) {
+                    this.handlePos1 = this.handlePos2;
+                    this.handleVal1 = this.handleVal2;
+                }
+                if (this.handlePos1 !== this.preHandlePos1) {
+                    position = this.preHandlePos1 = this.handlePos1;
+                }
+            }
+            this.modifyZindex();
+        }
+        else {
+            if (!(this.limits.enabled && this.limits.endHandleFixed)) {
+                this.handleVal2 = this.checkHandleValue(value);
+                this.handlePos2 = this.checkHandlePosition(this.handleVal2);
+                if (this.type === 'Range' && this.handlePos2 < this.handlePos1) {
+                    this.handlePos2 = this.handlePos1;
+                    this.handleVal2 = this.handleVal1;
+                }
+                if (this.handlePos2 !== this.preHandlePos2) {
+                    position = this.preHandlePos2 = this.handlePos2;
+                }
+            }
+            this.modifyZindex();
+        }
+        if (position !== null) {
+            if (this.type !== 'Default') {
+                this.setRangeBar();
+            }
+            this.setHandlePosition(null);
+        }
+    };
+    Slider.prototype.tempStartEnd = function () {
+        if (this.min > this.max) {
+            return {
+                start: this.max,
+                end: this.min
+            };
+        }
+        else {
+            return {
+                start: this.min,
+                end: this.max
+            };
+        }
+    };
+    Slider.prototype.xyToPosition = function (position) {
+        var pos;
+        if (this.min === this.max) {
+            return 100;
+        }
+        if (this.orientation === 'Horizontal') {
+            var left = position.x - this.element.getBoundingClientRect().left;
+            var num = this.element.offsetWidth / 100;
+            this.val = (left / num);
+        }
+        else {
+            var top_1 = position.y - this.element.getBoundingClientRect().top;
+            var num = this.element.offsetHeight / 100;
+            this.val = 100 - (top_1 / num);
+        }
+        var val = this.stepValueCalculation(this.val);
+        if (val < 0) {
+            val = 0;
+        }
+        else if (val > 100) {
+            val = 100;
+        }
+        if (this.enableRtl && this.orientation !== 'Vertical') {
+            val = 100 - val;
+        }
+        if (this.orientation === 'Horizontal') {
+            pos = this.element.getBoundingClientRect().width * (val / 100);
+        }
+        else {
+            pos = this.element.getBoundingClientRect().height * (val / 100);
+        }
+        return pos;
+    };
+    Slider.prototype.stepValueCalculation = function (value) {
+        if (this.step === 0) {
+            this.step = 1;
+        }
+        var percentStep = (parseFloat(sf.base.formatUnit(this.step))) / ((parseFloat(sf.base.formatUnit(this.max)) - parseFloat(sf.base.formatUnit(this.min))) / 100);
+        var remain = value % Math.abs(percentStep);
+        if (remain !== 0) {
+            if ((percentStep / 2) > remain) {
+                value -= remain;
+            }
+            else {
+                value += Math.abs(percentStep) - remain;
+            }
+        }
+        return value;
+    };
+    Slider.prototype.add = function (a, b, addition) {
+        var precision;
+        var x = Math.pow(10, precision || 3);
+        var val;
+        if (addition) {
+            val = (Math.round(a * x) + Math.round(b * x)) / x;
+        }
+        else {
+            val = (Math.round(a * x) - Math.round(b * x)) / x;
+        }
+        return val;
+    };
+    Slider.prototype.positionToValue = function (pos) {
+        var val;
+        var diff = parseFloat(sf.base.formatUnit(this.max)) - parseFloat(sf.base.formatUnit(this.min));
+        if (this.orientation === 'Horizontal') {
+            val = (pos / this.element.getBoundingClientRect().width) * diff;
+        }
+        else {
+            val = (pos / this.element.getBoundingClientRect().height) * diff;
+        }
+        var total = this.add(val, parseFloat(this.min.toString()), true);
+        return (total);
+    };
+    Slider.prototype.sliderBarClick = function (evt) {
+        evt.preventDefault();
+        var pos;
+        if (evt.type === 'mousedown' || evt.type === 'click') {
+            pos = { x: evt.clientX, y: evt.clientY };
+        }
+        else if (evt.type === 'touchstart') {
+            pos = { x: evt.changedTouches[0].clientX, y: evt.changedTouches[0].clientY };
+        }
+        var handlepos = this.xyToPosition(pos);
+        var handleVal = this.positionToValue(handlepos);
+        if (this.type === 'Range' && (this.handlePos2 - handlepos) < (handlepos - this.handlePos1)) {
+            this.activeHandle = 2;
+            if (!(this.limits.enabled && this.limits.endHandleFixed)) {
+                if (this.limits.enabled) {
+                    var value = this.getLimitValueAndPosition(handleVal, this.limits.maxStart, this.limits.maxEnd);
+                    handleVal = value[0];
+                    handlepos = value[1];
+                }
+                this.secondHandle.classList.add(classNames.sliderActiveHandle);
+                this.handlePos2 = this.preHandlePos2 = handlepos;
+                this.handleVal2 = handleVal;
+            }
+            this.modifyZindex();
+            this.secondHandle.focus();
+        }
+        else {
+            this.activeHandle = 1;
+            if (!(this.limits.enabled && this.limits.startHandleFixed)) {
+                if (this.limits.enabled) {
+                    var value = this.getLimitValueAndPosition(handleVal, this.limits.minStart, this.limits.minEnd);
+                    handleVal = value[0];
+                    handlepos = value[1];
+                }
+                this.firstHandle.classList.add(classNames.sliderActiveHandle);
+                this.handlePos1 = this.preHandlePos1 = handlepos;
+                this.handleVal1 = handleVal;
+            }
+            this.modifyZindex();
+            this.firstHandle.focus();
+        }
+        if (this.isMaterialTooltip) {
+            this.tooltipElement.classList.add(classNames.materialTooltipActive);
+        }
+        var focusedElement = this.element.querySelector('.' + classNames.sliderTabHandle);
+        if (focusedElement && this.getHandle() !== focusedElement) {
+            focusedElement.classList.remove(classNames.sliderTabHandle);
+        }
+        var handle = this.activeHandle === 1 ? this.firstHandle : this.secondHandle;
+        if (evt.target === handle) {
+            if (this.isMaterial && !this.tooltip.isVisible &&
+                !this.getHandle().classList.contains(classNames.sliderTabHandle)) {
+                this.materialChange();
+            }
+            this.tooltipToggle(this.getHandle());
+            return;
+        }
+        if (!this.checkRepeatedValue(handleVal)) {
+            return;
+        }
+        var transition = this.isMaterial && this.tooltip.isVisible ?
+            this.transitionOnMaterialTooltip : this.transition;
+        this.getHandle().style.transition = transition.handle;
+        if (this.type !== 'Default') {
+            this.rangeBar.style.transition = transition.rangeBar;
+        }
+        this.setHandlePosition(evt);
+        if (this.type !== 'Default') {
+            this.setRangeBar();
+        }
+    };
+    Slider.prototype.sliderDown = function (event) {
+        var _a, _b;
+        event.preventDefault();
+        this.focusSliderElement();
+        if (this.type === 'Range' && this.drag && event.target === this.rangeBar) {
+            var xPostion = void 0;
+            var yPostion = void 0;
+            if (event.type === 'mousedown') {
+                _a = [event.clientX, event.clientY], xPostion = _a[0], yPostion = _a[1];
+            }
+            else if (event.type === 'touchstart') {
+                _b = [event.changedTouches[0].clientX, event.changedTouches[0].clientY], xPostion = _b[0], yPostion = _b[1];
+            }
+            if (this.orientation === 'Horizontal') {
+                this.firstPartRemain = xPostion - this.rangeBar.getBoundingClientRect().left;
+                this.secondPartRemain = this.rangeBar.getBoundingClientRect().right - xPostion;
+            }
+            else {
+                this.firstPartRemain = yPostion - this.rangeBar.getBoundingClientRect().top;
+                this.secondPartRemain = this.rangeBar.getBoundingClientRect().bottom - yPostion;
+            }
+            this.minDiff = this.handleVal2 - this.handleVal1;
+            this.tooltipToggle(this.rangeBar);
+            var focusedElement = this.element.querySelector('.' + classNames.sliderTabHandle);
+            if (focusedElement) {
+                focusedElement.classList.remove(classNames.sliderTabHandle);
+            }
+            sf.base.EventHandler.add(document, 'mousemove touchmove', this.dragRangeBarMove, this);
+            sf.base.EventHandler.add(document, 'mouseup touchend', this.dragRangeBarUp, this);
+        }
+        else {
+            this.sliderBarClick(event);
+            sf.base.EventHandler.add(document, 'mousemove touchmove', this.sliderBarMove, this);
+            sf.base.EventHandler.add(document, 'mouseup touchend', this.sliderBarUp, this);
+        }
+    };
+    Slider.prototype.handleValueAdjust = function (handleValue, assignValue, handleNumber) {
+        if (handleNumber === 1) {
+            this.handleVal1 = assignValue;
+            this.handleVal2 = this.handleVal1 + this.minDiff;
+        }
+        else if (handleNumber === 2) {
+            this.handleVal2 = assignValue;
+            this.handleVal1 = this.handleVal2 - this.minDiff;
+        }
+        this.handlePos1 = this.checkHandlePosition(this.handleVal1);
+        this.handlePos2 = this.checkHandlePosition(this.handleVal2);
+    };
+    Slider.prototype.dragRangeBarMove = function (event) {
+        var _a, _b;
+        if (event.type !== 'touchmove') {
+            event.preventDefault();
+        }
+        var pos;
+        this.rangeBar.style.transition = 'none';
+        this.firstHandle.style.transition = 'none';
+        this.secondHandle.style.transition = 'none';
+        var xPostion;
+        var yPostion;
+        if (event.type === 'mousemove') {
+            _a = [event.clientX, event.clientY], xPostion = _a[0], yPostion = _a[1];
+        }
+        else {
+            _b = [event.changedTouches[0].clientX, event.changedTouches[0].clientY], xPostion = _b[0], yPostion = _b[1];
+        }
+        if (!(this.limits.enabled && this.limits.startHandleFixed) && !(this.limits.enabled && this.limits.endHandleFixed)) {
+            if (!this.enableRtl) {
+                pos = { x: xPostion - this.firstPartRemain, y: yPostion + this.secondPartRemain };
+            }
+            else {
+                pos = { x: xPostion + this.secondPartRemain, y: yPostion + this.secondPartRemain };
+            }
+            this.handlePos1 = this.xyToPosition(pos);
+            this.handleVal1 = this.positionToValue(this.handlePos1);
+            if (!this.enableRtl) {
+                pos = { x: xPostion + this.secondPartRemain, y: yPostion - this.firstPartRemain };
+            }
+            else {
+                pos = { x: xPostion - this.firstPartRemain, y: yPostion - this.firstPartRemain };
+            }
+            this.handlePos2 = this.xyToPosition(pos);
+            this.handleVal2 = this.positionToValue(this.handlePos2);
+            if (this.limits.enabled) {
+                var value = this.getLimitValueAndPosition(this.handleVal1, this.limits.minStart, this.limits.minEnd);
+                this.handleVal1 = value[0];
+                this.handlePos1 = value[1];
+                if (this.handleVal1 === this.limits.minEnd) {
+                    this.handleValueAdjust(this.handleVal1, this.limits.minEnd, 1);
+                }
+                if (this.handleVal1 === this.limits.minStart) {
+                    this.handleValueAdjust(this.handleVal1, this.limits.minStart, 1);
+                }
+                value = this.getLimitValueAndPosition(this.handleVal2, this.limits.maxStart, this.limits.maxEnd);
+                this.handleVal2 = value[0];
+                this.handlePos2 = value[1];
+                if (this.handleVal2 === this.limits.maxStart) {
+                    this.handleValueAdjust(this.handleVal2, this.limits.maxStart, 2);
+                }
+                if (this.handleVal2 === this.limits.maxEnd) {
+                    this.handleValueAdjust(this.handleVal2, this.limits.maxEnd, 2);
+                }
+            }
+            if (this.handleVal2 === this.max) {
+                this.handleValueAdjust(this.handleVal2, this.max, 2);
+            }
+            if (this.handleVal1 === this.min) {
+                this.handleValueAdjust(this.handleVal1, this.min, 1);
+            }
+        }
+        this.activeHandle = 1;
+        this.setHandlePosition(event);
+        this.activeHandle = 2;
+        this.setHandlePosition(event);
+        this.tooltipToggle(this.rangeBar);
+        this.setRangeBar();
+    };
+    Slider.prototype.sliderBarUp = function (event) {
+        this.changeEvent('changed', event);
+        this.handleFocusOut();
+        this.firstHandle.classList.remove(classNames.sliderActiveHandle);
+        if (this.type === 'Range') {
+            this.secondHandle.classList.remove(classNames.sliderActiveHandle);
+        }
+        this.closeTooltip();
+        if (this.isMaterial) {
+            this.getHandle().classList.remove('e-large-thumb-size');
+            if (this.isMaterialTooltip) {
+                this.tooltipElement.classList.remove(classNames.materialTooltipActive);
+            }
+        }
+        sf.base.EventHandler.remove(document, 'mousemove touchmove', this.sliderBarMove);
+        sf.base.EventHandler.remove(document, 'mouseup touchend', this.sliderBarUp);
+    };
+    Slider.prototype.sliderBarMove = function (evt) {
+        if (evt.type !== 'touchmove') {
+            evt.preventDefault();
+        }
+        var pos;
+        if (evt.type === 'mousemove') {
+            pos = { x: evt.clientX, y: evt.clientY };
+        }
+        else {
+            pos = { x: evt.changedTouches[0].clientX, y: evt.changedTouches[0].clientY };
+        }
+        var handlepos = this.xyToPosition(pos);
+        var handleVal = this.positionToValue(handlepos);
+        handlepos = Math.round(handlepos);
+        if (this.type !== 'Range' && this.activeHandle === 1) {
+            if (!(this.limits.enabled && this.limits.startHandleFixed)) {
+                if (this.limits.enabled) {
+                    var valueAndPostion = this.getLimitValueAndPosition(handleVal, this.limits.minStart, this.limits.minEnd);
+                    handlepos = valueAndPostion[1];
+                    handleVal = valueAndPostion[0];
+                }
+                this.handlePos1 = handlepos;
+                this.handleVal1 = handleVal;
+            }
+            this.firstHandle.classList.add(classNames.sliderActiveHandle);
+        }
+        if (this.type === 'Range') {
+            if (this.activeHandle === 1) {
+                this.firstHandle.classList.add(classNames.sliderActiveHandle);
+                if (!(this.limits.enabled && this.limits.startHandleFixed)) {
+                    if (handlepos > this.handlePos2) {
+                        handlepos = this.handlePos2;
+                        handleVal = this.handleVal2;
+                    }
+                    if (handlepos !== this.preHandlePos1) {
+                        if (this.limits.enabled) {
+                            var value = this.getLimitValueAndPosition(handleVal, this.limits.minStart, this.limits.minEnd);
+                            handleVal = value[0];
+                            handlepos = value[1];
+                        }
+                        this.handlePos1 = this.preHandlePos1 = handlepos;
+                        this.handleVal1 = handleVal;
+                        this.activeHandle = 1;
+                    }
+                }
+            }
+            else if (this.activeHandle === 2) {
+                this.secondHandle.classList.add(classNames.sliderActiveHandle);
+                if (!(this.limits.enabled && this.limits.endHandleFixed)) {
+                    if (handlepos < this.handlePos1) {
+                        handlepos = this.handlePos1;
+                        handleVal = this.handleVal1;
+                    }
+                    if (handlepos !== this.preHandlePos2) {
+                        if (this.limits.enabled) {
+                            var value = this.getLimitValueAndPosition(handleVal, this.limits.maxStart, this.limits.maxEnd);
+                            handleVal = value[0];
+                            handlepos = value[1];
+                        }
+                        this.handlePos2 = this.preHandlePos2 = handlepos;
+                        this.handleVal2 = handleVal;
+                        this.activeHandle = 2;
+                    }
+                }
+            }
+        }
+        if (!this.checkRepeatedValue(handleVal)) {
+            return;
+        }
+        this.getHandle().style.transition = this.scaleTransform;
+        if (this.type !== 'Default') {
+            this.rangeBar.style.transition = 'none';
+        }
+        this.setHandlePosition(evt);
+        if (this.isMaterial && !this.tooltip.isVisible &&
+            !this.getHandle().classList.contains(classNames.sliderTabHandle)) {
+            this.materialChange();
+        }
+        this.tooltipToggle(this.getHandle());
+        if (this.type !== 'Default') {
+            this.setRangeBar();
+        }
+    };
+    Slider.prototype.dragRangeBarUp = function (event) {
+        this.changeEvent('changed', event);
+        this.closeTooltip();
+        sf.base.EventHandler.remove(document, 'mousemove touchmove', this.dragRangeBarMove);
+        sf.base.EventHandler.remove(document, 'mouseup touchend', this.dragRangeBarUp);
+    };
+    Slider.prototype.checkRepeatedValue = function (currentValue) {
+        if (this.type === 'Range') {
+            var previousVal = this.enableRtl && this.orientation !== 'Vertical' ? (this.activeHandle === 1 ?
+                this.previousVal[1] : this.previousVal[0]) :
+                (this.activeHandle === 1 ? this.previousVal[0] : this.previousVal[1]);
+            if (currentValue === previousVal) {
+                return 0;
+            }
+        }
+        else {
+            if (currentValue === this.previousVal) {
+                return 0;
+            }
+        }
+        return 1;
+    };
+    Slider.prototype.refreshTooltip = function (target) {
+        if (this.tooltip.isVisible && this.tooltipObj) {
+            this.tooltipValue();
+            if (target) {
+                this.tooltipObj.refresh(target);
+                this.tooltipTarget = target;
+            }
+        }
+    };
+    Slider.prototype.openTooltip = function (target) {
+        if (this.tooltip.isVisible && this.tooltipObj && !this.isMaterialTooltip) {
+            this.tooltipValue();
+            this.tooltipObj.open(target);
+            this.tooltipTarget = target;
+        }
+    };
+    Slider.prototype.closeTooltip = function () {
+        if (this.tooltip.isVisible && this.tooltipObj && this.tooltip.showOn !== 'Always' && !this.isMaterialTooltip) {
+            this.tooltipValue();
+            this.tooltipObj.close();
+            this.tooltipTarget = undefined;
+        }
+    };
+    Slider.prototype.keyDown = function (event) {
+        switch (event.keyCode) {
+            case 37:
+            case 38:
+            case 39:
+            case 40:
+            case 33:
+            case 34:
+            case 36:
+            case 35:
+                event.preventDefault();
+                this.buttonClick(event);
+                break;
+        }
+    };
+    Slider.prototype.wireButtonEvt = function (destroy) {
+        if (!destroy) {
+            sf.base.EventHandler.add(this.firstBtn, 'mouseleave touchleave', this.buttonFocusOut, this);
+            sf.base.EventHandler.add(this.secondBtn, 'mouseleave touchleave', this.buttonFocusOut, this);
+            sf.base.EventHandler.add(this.firstBtn, 'mousedown touchstart', this.repeatHandlerMouse, this);
+            sf.base.EventHandler.add(this.firstBtn, 'mouseup mouseleave touchup touchend', this.repeatHandlerUp, this);
+            sf.base.EventHandler.add(this.secondBtn, 'mousedown touchstart', this.repeatHandlerMouse, this);
+            sf.base.EventHandler.add(this.secondBtn, 'mouseup mouseleave touchup touchend', this.repeatHandlerUp, this);
+            sf.base.EventHandler.add(this.firstBtn, 'focusout', this.sliderFocusOut, this);
+            sf.base.EventHandler.add(this.secondBtn, 'focusout', this.sliderFocusOut, this);
+        }
+        else {
+            sf.base.EventHandler.remove(this.firstBtn, 'mouseleave touchleave', this.buttonFocusOut);
+            sf.base.EventHandler.remove(this.secondBtn, 'mouseleave touchleave', this.buttonFocusOut);
+            sf.base.EventHandler.remove(this.firstBtn, 'mousedown touchstart', this.repeatHandlerMouse);
+            sf.base.EventHandler.remove(this.firstBtn, 'mouseup mouseleave touchup touchend', this.repeatHandlerUp);
+            sf.base.EventHandler.remove(this.secondBtn, 'mousedown touchstart', this.repeatHandlerMouse);
+            sf.base.EventHandler.remove(this.secondBtn, 'mouseup mouseleave touchup touchend', this.repeatHandlerUp);
+            sf.base.EventHandler.remove(this.firstBtn, 'focusout', this.sliderFocusOut);
+            sf.base.EventHandler.remove(this.secondBtn, 'focusout', this.sliderFocusOut);
+        }
+    };
+    Slider.prototype.wireEvents = function () {
+        this.onresize = this.reposition.bind(this);
+        window.addEventListener('resize', this.onresize);
+        if (this.enabled && !this.readonly) {
+            sf.base.EventHandler.add(this.element, 'mousedown touchstart', this.sliderDown, this);
+            sf.base.EventHandler.add(this.sliderContainer, 'keydown', this.keyDown, this);
+            sf.base.EventHandler.add(this.sliderContainer, 'keyup', this.keyUp, this);
+            sf.base.EventHandler.add(this.element, 'focusout', this.sliderFocusOut, this);
+            sf.base.EventHandler.add(this.sliderContainer, 'mouseover mouseout touchstart touchend', this.hover, this);
+            this.wireFirstHandleEvt(false);
+            if (this.type === 'Range') {
+                this.wireSecondHandleEvt(false);
+            }
+            if (this.showButtons) {
+                this.wireButtonEvt(false);
+            }
+            this.wireMaterialTooltipEvent(false);
+            if (this.isForm) {
+                sf.base.EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
+            }
+        }
+    };
+    Slider.prototype.unwireEvents = function () {
+        sf.base.EventHandler.remove(this.element, 'mousedown touchstart', this.sliderDown);
+        sf.base.EventHandler.remove(this.sliderContainer, 'keydown', this.keyDown);
+        sf.base.EventHandler.remove(this.sliderContainer, 'keyup', this.keyUp);
+        sf.base.EventHandler.remove(this.element, 'focusout', this.sliderFocusOut);
+        sf.base.EventHandler.remove(this.sliderContainer, 'mouseover mouseout touchstart touchend', this.hover);
+        this.wireFirstHandleEvt(true);
+        if (this.type === 'Range') {
+            this.wireSecondHandleEvt(true);
+        }
+        if (this.showButtons) {
+            this.wireButtonEvt(true);
+        }
+        this.wireMaterialTooltipEvent(true);
+        sf.base.EventHandler.remove(this.element, 'reset', this.formResetHandler);
+    };
+    Slider.prototype.formResetHandler = function () {
+        this.setProperties({ 'value': this.formResetValue }, true);
+        this.setValue();
+    };
+    Slider.prototype.keyUp = function (event) {
+        if (event.keyCode === 9 && event.target.classList.contains(classNames.sliderHandle)) {
+            this.focusSliderElement();
+            if (!event.target.classList.contains(classNames.sliderTabHandle)) {
+                if (this.element.querySelector('.' + classNames.sliderTabHandle)) {
+                    this.element.querySelector('.' + classNames.sliderTabHandle).classList.remove(classNames.sliderTabHandle);
+                }
+                event.target.classList.add(classNames.sliderTabHandle);
+                var parentElement = event.target.parentElement;
+                if (parentElement === this.element) {
+                    parentElement.querySelector('.' + classNames.sliderTrack).classList.add(classNames.sliderTabTrack);
+                    if (this.type === 'Range' || this.type === 'MinRange') {
+                        parentElement.querySelector('.' + classNames.rangeBar).classList.add(classNames.sliderTabRange);
+                    }
+                }
+                if (this.type === 'Range') {
+                    (event.target.previousSibling).classList.contains(classNames.sliderHandle) ?
+                        this.activeHandle = 2 : this.activeHandle = 1;
+                }
+                this.getHandle().focus();
+                this.tooltipToggle(this.getHandle());
+            }
+        }
+        this.closeTooltip();
+        this.changeEvent('changed', event);
+    };
+    Slider.prototype.hover = function (event) {
+        if (!sf.base.isNullOrUndefined(event)) {
+            if (event.type === 'mouseover' || event.type === 'touchmove' || event.type === 'mousemove' ||
+                event.type === 'pointermove' || event.type === 'touchstart') {
+                this.sliderContainer.classList.add(classNames.sliderHover);
+            }
+            else {
+                this.sliderContainer.classList.remove(classNames.sliderHover);
+            }
+        }
+    };
+    Slider.prototype.sliderFocusOut = function (event) {
+        if (event.relatedTarget !== this.secondHandle && event.relatedTarget !== this.firstHandle &&
+            event.relatedTarget !== this.element && event.relatedTarget !== this.firstBtn && event.relatedTarget !== this.secondBtn) {
+            this.closeMaterialTooltip();
+            if (this.element.querySelector('.' + classNames.sliderTabHandle)) {
+                this.element.querySelector('.' + classNames.sliderTabHandle).classList.remove(classNames.sliderTabHandle);
+            }
+            if (this.element.querySelector('.' + classNames.sliderTabTrack)) {
+                this.element.querySelector('.' + classNames.sliderTabTrack).classList.remove(classNames.sliderTabTrack);
+                if ((this.type === 'Range' || this.type === 'MinRange') &&
+                    this.element.querySelector('.' + classNames.sliderTabRange)) {
+                    this.element.querySelector('.' + classNames.sliderTabRange).classList.remove(classNames.sliderTabRange);
+                }
+            }
+            this.hiddenInput.focus();
+            this.hiddenInput.blur();
+            this.isElementFocused = false;
+        }
+    };
+    Slider.prototype.removeElement = function (element) {
+        if (element.parentNode) {
+            element.parentNode.removeChild(element);
+        }
+    };
+    Slider.prototype.changeSliderType = function (type, args) {
+        if (this.isMaterialTooltip && this.materialHandle) {
+            this.sliderContainer.classList.remove(classNames.materialSlider);
+            this.removeElement(this.materialHandle);
+            this.materialHandle = undefined;
+        }
+        this.removeElement(this.firstHandle);
+        this.firstHandle = undefined;
+        if (type !== 'Default') {
+            if (type === 'Range') {
+                this.removeElement(this.secondHandle);
+                this.secondHandle = undefined;
+            }
+            this.removeElement(this.rangeBar);
+            this.rangeBar = undefined;
+        }
+        if (this.tooltip.isVisible && !sf.base.isNullOrUndefined(this.tooltipObj)) {
+            this.tooltipObj.destroy();
+            this.tooltipElement = undefined;
+            this.tooltipCollidedPosition = undefined;
+        }
+        if (this.limits.enabled) {
+            if (type === 'MinRange' || type === 'Default') {
+                if (!sf.base.isNullOrUndefined(this.limitBarFirst)) {
+                    this.removeElement(this.limitBarFirst);
+                    this.limitBarFirst = undefined;
+                }
+            }
+            else {
+                if (!sf.base.isNullOrUndefined(this.limitBarSecond)) {
+                    this.removeElement(this.limitBarSecond);
+                    this.limitBarSecond = undefined;
+                }
+            }
+        }
+        this.activeHandle = 1;
+        this.getThemeInitialization();
+        if (this.type === 'Range') {
+            this.rangeValueUpdate();
+        }
+        this.createRangeBar();
+        if (this.limits.enabled) {
+            this.createLimitBar();
+        }
+        this.setHandler();
+        this.setOrientClass();
+        this.wireFirstHandleEvt(false);
+        if (this.type === 'Range') {
+            this.wireSecondHandleEvt(false);
+        }
+        this.setValue();
+        if (this.tooltip.isVisible) {
+            this.renderTooltip();
+            this.wireMaterialTooltipEvent(false);
+        }
+        this.setBarColor();
+        if ((!sf.base.isBlazor() && !this.isServerRendered) || args !== 'tooltip') {
+            this.updateConfig();
+        }
+    };
+    Slider.prototype.changeRtl = function () {
+        if (!this.enableRtl && this.type === 'Range') {
+            this.value = [this.handleVal2, this.handleVal1];
+        }
+        this.updateConfig();
+        if (this.tooltip.isVisible) {
+            this.tooltipObj.refresh(this.firstHandle);
+        }
+        if (this.showButtons) {
+            var enabledRTL = this.enableRtl && this.orientation !== 'Vertical';
+            sf.base.attributes(enabledRTL ? this.secondBtn : this.firstBtn, { 'aria-label': 'Decrease', title: 'Decrease' });
+            sf.base.attributes(enabledRTL ? this.firstBtn : this.secondBtn, { 'aria-label': 'Increase', title: 'Increase' });
+        }
+    };
+    Slider.prototype.changeOrientation = function () {
+        this.changeSliderType(this.type, 'null');
+    };
+    Slider.prototype.updateConfig = function () {
+        this.setEnableRTL();
+        this.setValue();
+        if (this.tooltip.isVisible) {
+            if (!sf.base.isBlazor()) {
+                this.refreshTooltip(this.tooltipTarget);
+            }
+        }
+        if (this.ticks.placement !== 'None') {
+            if (this.ul) {
+                this.removeElement(this.ul);
+                this.ul = undefined;
+                this.renderScale();
+            }
+        }
+        this.limitsPropertyChange();
+    };
+    Slider.prototype.limitsPropertyChange = function () {
+        if (this.limits.enabled) {
+            if (sf.base.isNullOrUndefined(this.limitBarFirst) && this.type !== 'Range') {
+                this.createLimitBar();
+            }
+            if (sf.base.isNullOrUndefined(this.limitBarFirst) && sf.base.isNullOrUndefined(this.limitBarSecond) && this.type === 'Range') {
+                this.createLimitBar();
+            }
+            this.setLimitBar();
+            this.setValue();
+        }
+        else {
+            if (!sf.base.isNullOrUndefined(this.limitBarFirst)) {
+                sf.base.detach(this.limitBarFirst);
+            }
+            if (!sf.base.isNullOrUndefined(this.limitBarSecond)) {
+                sf.base.detach(this.limitBarSecond);
+            }
+        }
+    };
+    /**
+     * Get the properties to be maintained in the persisted state.
+     * @private
+     */
+    Slider.prototype.getPersistData = function () {
+        var keyEntity = ['value'];
+        return this.addOnPersist(keyEntity);
+    };
+    /**
+     * Removes the component from the DOM and detaches all its related event handlers.
+     * Also it removes the attributes and classes.
+     * @method destroy
+     * @return {void}
+     */
+    Slider.prototype.destroy = function () {
+        _super.prototype.destroy.call(this);
+        this.unwireEvents();
+        window.removeEventListener('resize', this.onresize);
+        sf.base.removeClass([this.sliderContainer], [classNames.sliderDisabled]);
+        this.firstHandle.removeAttribute('aria-orientation');
+        if (this.type === 'Range') {
+            this.secondHandle.removeAttribute('aria-orientation');
+        }
+        if (!sf.base.isBlazor() && !this.isServerRendered) {
+            this.sliderContainer.parentNode.insertBefore(this.element, this.sliderContainer);
+            sf.base.detach(this.sliderContainer);
+        }
+        if (this.tooltip.isVisible) {
+            this.tooltipObj.destroy();
+        }
+        if (!sf.base.isBlazor() && !this.isServerRendered) {
+            this.element.innerHTML = '';
+        }
+    };
+    /**
+     * Calls internally if any of the property value is changed.
+     * @private
+     */
+    // tslint:disable-next-line
+    Slider.prototype.onPropertyChanged = function (newProp, oldProp) {
+        var _this = this;
+        for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
+            var prop = _a[_i];
+            switch (prop) {
+                case 'cssClass':
+                    this.setCSSClass(oldProp.cssClass);
+                    break;
+                case 'value':
+                    if (newProp && oldProp) {
+                        var value = sf.base.isNullOrUndefined(newProp.value) ?
+                            (this.type === 'Range' ? [this.min, this.max] : this.min) : newProp.value;
+                        this.setProperties({ 'value': value }, true);
+                        if (!sf.base.isNullOrUndefined(oldProp.value) && oldProp.value.toString() !== value.toString()) {
+                            this.setValue();
+                            if (!sf.base.isBlazor() || !this.isServerRendered) {
+                                this.refreshTooltip(this.tooltipTarget);
+                            }
+                            if (this.type === 'Range') {
+                                if (sf.base.isNullOrUndefined(newProp.value) || oldProp.value[1] === value[1]) {
+                                    this.activeHandle = 1;
+                                }
+                                else {
+                                    this.activeHandle = 2;
+                                }
+                            }
+                        }
+                    }
+                    break;
+                case 'min':
+                case 'step':
+                case 'max':
+                    if (sf.base.isBlazor() && this.isServerRendered) {
+                        this.isServerRendered = false;
+                    }
+                    this.setMinMaxValue();
+                    if (sf.base.isBlazor() && !this.isServerRendered) {
+                        this.isServerRendered = true;
+                    }
+                    break;
+                case 'tooltip':
+                    if (sf.base.isBlazor() && this.isServerRendered) {
+                        this.isServerRendered = false;
+                    }
+                    if (!sf.base.isNullOrUndefined(newProp.tooltip) && !sf.base.isNullOrUndefined(oldProp.tooltip)) {
+                        this.setTooltip(prop);
+                    }
+                    if (sf.base.isBlazor() && !this.isServerRendered) {
+                        this.isServerRendered = true;
+                    }
+                    break;
+                case 'type':
+                    if (sf.base.isBlazor() && this.isServerRendered) {
+                        this.isServerRendered = false;
+                    }
+                    if (!sf.base.isNullOrUndefined(oldProp) && Object.keys(oldProp).length
+                        && !sf.base.isNullOrUndefined(oldProp.type)) {
+                        this.changeSliderType(oldProp.type, prop);
+                        this.setZindex();
+                    }
+                    if (sf.base.isBlazor() && !this.isServerRendered) {
+                        this.isServerRendered = true;
+                    }
+                    break;
+                case 'enableRtl':
+                    if (sf.base.isBlazor() && this.isServerRendered) {
+                        if (this.isMaterialTooltip) {
+                            this.sliderContainer.classList.add(classNames.materialSlider);
+                        }
+                        this.isServerRendered = false;
+                    }
+                    if (oldProp.enableRtl !== newProp.enableRtl && this.orientation !== 'Vertical') {
+                        this.rtl = oldProp.enableRtl;
+                        this.changeRtl();
+                    }
+                    if (sf.base.isBlazor() && !this.isServerRendered) {
+                        this.isServerRendered = true;
+                    }
+                    break;
+                case 'limits':
+                    this.limitsPropertyChange();
+                    break;
+                case 'orientation':
+                    if (sf.base.isBlazor() && this.isServerRendered) {
+                        this.isServerRendered = false;
+                    }
+                    this.changeOrientation();
+                    if (sf.base.isBlazor() && !this.isServerRendered) {
+                        this.isServerRendered = true;
+                    }
+                    break;
+                case 'ticks':
+                    if (!sf.base.isNullOrUndefined(this.sliderContainer.querySelector('.' + classNames.scale))) {
+                        if (!sf.base.isBlazor() || !this.isServerRendered) {
+                            sf.base.detach(this.ul);
+                        }
+                        Array.prototype.forEach.call(this.sliderContainer.classList, function (className) {
+                            if (className.match(/e-scale-/)) {
+                                _this.sliderContainer.classList.remove(className);
+                            }
+                        });
+                    }
+                    if (this.ticks.placement !== 'None') {
+                        this.renderScale();
+                        this.setZindex();
+                    }
+                    break;
+                case 'locale':
+                    if (this.showButtons) {
+                        this.buttonTitle();
+                    }
+                    break;
+                case 'showButtons':
+                    if (newProp.showButtons) {
+                        this.setButtons();
+                        this.reposition();
+                        if (this.enabled && !this.readonly) {
+                            this.wireButtonEvt(false);
+                        }
+                    }
+                    else {
+                        if (!sf.base.isBlazor() || !this.isServerRendered) {
+                            if (this.firstBtn && this.secondBtn) {
+                                this.sliderContainer.removeChild(this.firstBtn);
+                                this.sliderContainer.removeChild(this.secondBtn);
+                                this.sliderContainer.classList.remove(classNames.sliderButtonClass);
+                                this.firstBtn = undefined;
+                                this.secondBtn = undefined;
+                                this.reposition();
+                            }
+                        }
+                    }
+                    if (sf.base.isBlazor() && this.isServerRendered) {
+                        if (this.isMaterialTooltip) {
+                            this.sliderContainer.classList.add(classNames.materialSlider);
+                        }
+                    }
+                    break;
+                case 'enabled':
+                    this.setEnabled();
+                    if (sf.base.isBlazor() && this.isServerRendered) {
+                        if (this.isMaterialTooltip) {
+                            this.sliderContainer.classList.add(classNames.materialSlider);
+                        }
+                    }
+                    break;
+                case 'readonly':
+                    this.setReadOnly();
+                    if (sf.base.isBlazor() && this.isServerRendered) {
+                        if (this.isMaterialTooltip) {
+                            this.sliderContainer.classList.add(classNames.materialSlider);
+                        }
+                    }
+                    break;
+                case 'customValues':
+                    if (sf.base.isBlazor() && this.isServerRendered) {
+                        this.isServerRendered = false;
+                    }
+                    this.setValue();
+                    this.reposition();
+                    if (sf.base.isBlazor() && !this.isServerRendered) {
+                        this.isServerRendered = true;
+                    }
+                    break;
+                case 'colorRange':
+                    if (sf.base.isBlazor() && this.isServerRendered) {
+                        this.isServerRendered = false;
+                    }
+                    this.reposition();
+                    if (sf.base.isBlazor() && !this.isServerRendered) {
+                        this.isServerRendered = true;
+                    }
+                    break;
+            }
+        }
+    };
+    Slider.prototype.setReadOnly = function () {
+        if (this.readonly) {
+            this.unwireEvents();
+            this.sliderContainer.classList.add(classNames.readonly);
+        }
+        else {
+            this.wireEvents();
+            this.sliderContainer.classList.remove(classNames.readonly);
+        }
+    };
+    Slider.prototype.setMinMaxValue = function () {
+        var _this = this;
+        this.setValue();
+        if (!sf.base.isBlazor()) {
+            this.refreshTooltip(this.tooltipTarget);
+        }
+        if (!sf.base.isNullOrUndefined(this.sliderContainer.querySelector('.' + classNames.scale))) {
+            if (this.ul) {
+                sf.base.detach(this.ul);
+                Array.prototype.forEach.call(this.sliderContainer.classList, function (className) {
+                    if (className.match(/e-scale-/)) {
+                        _this.sliderContainer.classList.remove(className);
+                    }
+                });
+            }
+        }
+        if (this.ticks.placement !== 'None') {
+            this.renderScale();
+            this.setZindex();
+        }
+    };
+    Slider.prototype.setZindex = function () {
+        this.zIndex = 6;
+        if (!sf.base.isNullOrUndefined(this.ticks) && this.ticks.placement !== 'None') {
+            this.ul.style.zIndex = (this.zIndex + -7) + '';
+            this.element.style.zIndex = (this.zIndex + 2) + '';
+        }
+        if (!this.isMaterial && !sf.base.isNullOrUndefined(this.ticks) && this.ticks.placement === 'Both') {
+            this.element.style.zIndex = (this.zIndex + 2) + '';
+        }
+        this.firstHandle.style.zIndex = (this.zIndex + 3) + '';
+        if (this.type === 'Range') {
+            this.secondHandle.style.zIndex = (this.zIndex + 4) + '';
+        }
+    };
+    Slider.prototype.setTooltip = function (args) {
+        this.changeSliderType(this.type, args);
+    };
+    Slider.prototype.setBarColor = function () {
+        var trackPosition;
+        var trackClassName;
+        var child = this.sliderTrack.lastElementChild;
+        while (child) {
+            this.sliderTrack.removeChild(child);
+            child = this.sliderTrack.lastElementChild;
+        }
+        for (var i = 0; i < this.colorRange.length; i++) {
+            if (!sf.base.isNullOrUndefined(this.colorRange[i].start) && !sf.base.isNullOrUndefined(this.colorRange[i].end)) {
+                if (this.colorRange[i].end > this.colorRange[i].start) {
+                    if (this.colorRange[i].start < this.min) {
+                        this.colorRange[i].start = this.min;
+                    }
+                    if (this.colorRange[i].end > this.max) {
+                        this.colorRange[i].end = this.max;
+                    }
+                    var startingPosition = this.checkHandlePosition(this.colorRange[i].start);
+                    var endPosition = this.checkHandlePosition(this.colorRange[i].end);
+                    var trackContainer = this.createElement('div');
+                    trackContainer.style.backgroundColor = this.colorRange[i].color;
+                    trackContainer.style.border = '1px solid ' + this.colorRange[i].color;
+                    if (this.orientation === 'Horizontal') {
+                        trackClassName = classNames.sliderHorizantalColor;
+                        if (this.enableRtl) {
+                            if (sf.base.isNullOrUndefined(this.customValues)) {
+                                trackPosition = this.checkHandlePosition(this.max) - this.checkHandlePosition(this.colorRange[i].end);
+                            }
+                            else {
+                                trackPosition = this.checkHandlePosition(this.customValues.length - this.colorRange[i].end - 1);
+                            }
+                        }
+                        else {
+                            trackPosition = this.checkHandlePosition(this.colorRange[i].start);
+                        }
+                        trackContainer.style.width = endPosition - startingPosition + 'px';
+                        trackContainer.style.left = trackPosition + 'px';
+                    }
+                    else {
+                        trackClassName = classNames.sliderVerticalColor;
+                        trackPosition = this.checkHandlePosition(this.colorRange[i].start);
+                        trackContainer.style.height = endPosition - startingPosition + 'px';
+                        trackContainer.style.bottom = trackPosition + 'px';
+                    }
+                    trackContainer.classList.add(trackClassName);
+                    this.sliderTrack.appendChild(trackContainer);
+                }
+            }
+        }
+    };
+    /**
+     * Gets the component name
+     * @private
+     */
+    Slider.prototype.getModuleName = function () {
+        return 'slider';
+    };
+    __decorate$2([
+        sf.base.Property(null)
+    ], Slider.prototype, "value", void 0);
+    __decorate$2([
+        sf.base.Property(null)
+    ], Slider.prototype, "customValues", void 0);
+    __decorate$2([
+        sf.base.Property(1)
+    ], Slider.prototype, "step", void 0);
+    __decorate$2([
+        sf.base.Property(0)
+    ], Slider.prototype, "min", void 0);
+    __decorate$2([
+        sf.base.Property(100)
+    ], Slider.prototype, "max", void 0);
+    __decorate$2([
+        sf.base.Property(false)
+    ], Slider.prototype, "readonly", void 0);
+    __decorate$2([
+        sf.base.Property('Default')
+    ], Slider.prototype, "type", void 0);
+    __decorate$2([
+        sf.base.Collection([{}], ColorRangeData)
+    ], Slider.prototype, "colorRange", void 0);
+    __decorate$2([
+        sf.base.Complex({}, TicksData)
+    ], Slider.prototype, "ticks", void 0);
+    __decorate$2([
+        sf.base.Complex({}, LimitData)
+    ], Slider.prototype, "limits", void 0);
+    __decorate$2([
+        sf.base.Property(true)
+    ], Slider.prototype, "enabled", void 0);
+    __decorate$2([
+        sf.base.Complex({}, TooltipData)
+    ], Slider.prototype, "tooltip", void 0);
+    __decorate$2([
+        sf.base.Property(false)
+    ], Slider.prototype, "showButtons", void 0);
+    __decorate$2([
+        sf.base.Property(true)
+    ], Slider.prototype, "enableAnimation", void 0);
+    __decorate$2([
+        sf.base.Property('Horizontal')
+    ], Slider.prototype, "orientation", void 0);
+    __decorate$2([
+        sf.base.Property('')
+    ], Slider.prototype, "cssClass", void 0);
+    __decorate$2([
+        sf.base.Property(false)
+    ], Slider.prototype, "enableHtmlSanitizer", void 0);
+    __decorate$2([
+        sf.base.Event()
+    ], Slider.prototype, "created", void 0);
+    __decorate$2([
+        sf.base.Event()
+    ], Slider.prototype, "change", void 0);
+    __decorate$2([
+        sf.base.Event()
+    ], Slider.prototype, "changed", void 0);
+    __decorate$2([
+        sf.base.Event()
+    ], Slider.prototype, "renderingTicks", void 0);
+    __decorate$2([
+        sf.base.Event()
+    ], Slider.prototype, "renderedTicks", void 0);
+    __decorate$2([
+        sf.base.Event()
+    ], Slider.prototype, "tooltipChange", void 0);
+    Slider = __decorate$2([
+        sf.base.NotifyPropertyChanges
+    ], Slider);
+    return Slider;
+}(sf.base.Component));
+
+/**
+ * Slider modules
+ */
+
+var __extends$3 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$3 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * global declarations
+ */
+// tslint:disable-next-line:no-any
+var regex = {
+    EMAIL: new RegExp('^[A-Za-z0-9._%+-]{1,}@[A-Za-z0-9._%+-]{1,}([.]{1}[a-zA-Z0-9]{2,}' +
+        '|[.]{1}[a-zA-Z0-9]{2,4}[.]{1}[a-zA-Z0-9]{2,4})$'),
+    URL: /^(?:http(s)?:\/\/)?[\w.-]+(?:\.[\w\.-]+)+[\w\-\._~:/?#[\]@!\$&'\(\)\*\+,;=.]+$/m,
+    DATE_ISO: new RegExp('^([0-9]{4})-(0[1-9]|1[0-2])-(0[1-9]|[1-2][0-9]|3[0-1])$'),
+    DIGITS: new RegExp('^[0-9]*$'),
+    PHONE: new RegExp('^[+]?[0-9]{9,13}$'),
+    CREDITCARD: new RegExp('^\\d{13,16}$')
+};
+/**
+ * ErrorOption values
+ * @private
+ */
+
+(function (ErrorOption) {
+    /**
+     * Defines the error message.
+     */
+    ErrorOption[ErrorOption["Message"] = 0] = "Message";
+    /**
+     * Defines the error element type.
+     */
+    ErrorOption[ErrorOption["Label"] = 1] = "Label";
+})(exports.ErrorOption || (exports.ErrorOption = {}));
+/**
+ * FormValidator class enables you to validate the form fields based on your defined rules
+ * ```html
+ * <form id='formId'>
+ *  <input type='text' name='Name' />
+ *  <input type='text' name='Age' />
+ * </form>
+ * <script>
+ *   let formObject = new FormValidator('#formId', {
+ *      rules: { Name: { required: true }, Age: { range: [18, 30] } };
+ *   });
+ *   formObject.validate();
+ * </script>
+ * ```
+ */
+var FormValidator = /** @class */ (function (_super) {
+    __extends$3(FormValidator, _super);
+    // Initializes the FormValidator 
+    function FormValidator(element, options) {
+        var _this = _super.call(this, options, element) || this;
+        _this.validated = [];
+        _this.errorRules = [];
+        _this.allowSubmit = false;
+        _this.required = 'required';
+        _this.infoElement = null;
+        _this.inputElement = null;
+        _this.selectQuery = 'input:not([type=reset]):not([type=button]), select, textarea';
+        // tslint:disable-next-line:no-any
+        _this.localyMessage = {};
+        /**
+         * Specifies the default messages for validation rules.
+         * @default { List of validation message }
+         */
+        _this.defaultMessages = {
+            required: 'This field is required.',
+            email: 'Please enter a valid email address.',
+            url: 'Please enter a valid URL.',
+            date: 'Please enter a valid date.',
+            dateIso: 'Please enter a valid date ( ISO ).',
+            creditcard: 'Please enter valid card number',
+            number: 'Please enter a valid number.',
+            digits: 'Please enter only digits.',
+            maxLength: 'Please enter no more than {0} characters.',
+            minLength: 'Please enter at least {0} characters.',
+            rangeLength: 'Please enter a value between {0} and {1} characters long.',
+            range: 'Please enter a value between {0} and {1}.',
+            max: 'Please enter a value less than or equal to {0}.',
+            min: 'Please enter a value greater than or equal to {0}.',
+            regex: 'Please enter a correct value.',
+            tel: 'Please enter a valid phone number.',
+            pattern: 'Please enter a correct pattern value.',
+            equalTo: 'Please enter the valid match text',
+        };
+        if (typeof _this.rules === 'undefined') {
+            _this.rules = {};
+        }
+        _this.l10n = new sf.base.L10n('formValidator', _this.defaultMessages, _this.locale);
+        if (_this.locale) {
+            _this.localeFunc();
+        }
+        sf.base.onIntlChange.on('notifyExternalChange', _this.afterLocalization, _this);
+        element = typeof element === 'string' ? sf.base.select(element, document) : element;
+        // Set novalidate to prevent default HTML5 form validation
+        if (_this.element != null) {
+            _this.element.setAttribute('novalidate', '');
+            _this.inputElements = sf.base.selectAll(_this.selectQuery, _this.element);
+            _this.createHTML5Rules();
+            _this.wireEvents();
+        }
+        else {
+            return undefined;
+        }
+        return _this;
+    }
+    FormValidator_1 = FormValidator;
+    // tslint:enable
+    /**
+     * Add validation rules to the corresponding input element based on `name` attribute.
+     * @param {string} name `name` of form field.
+     * @param {Object} rules Validation rules for the corresponding element.
+     * @return {void}
+     */
+    FormValidator.prototype.addRules = function (name, rules) {
+        if (name) {
+            if (this.rules.hasOwnProperty(name)) {
+                sf.base.extend(this.rules[name], rules, {});
+            }
+            else {
+                this.rules[name] = rules;
+            }
+        }
+    };
+    /**
+     * Remove validation to the corresponding field based on name attribute.
+     * When no parameter is passed, remove all the validations in the form.
+     * @param {string} name Input name attribute value.
+     * @param {string[]} rules List of validation rules need to be remove from the corresponding element.
+     * @return {void}
+     */
+    FormValidator.prototype.removeRules = function (name, rules) {
+        if (!name && !rules) {
+            this.rules = {};
+        }
+        else if (this.rules[name] && !rules) {
+            delete this.rules[name];
+        }
+        else if (!sf.base.isNullOrUndefined(this.rules[name] && rules)) {
+            for (var i = 0; i < rules.length; i++) {
+                delete this.rules[name][rules[i]];
+            }
+        }
+        else {
+            return;
+        }
+    };
+    /**
+     * Validate the current form values using defined rules.
+     * Returns `true` when the form is valid otherwise `false`
+     * @param {string} selected - Optional parameter to validate specified element.
+     * @return {boolean}
+     */
+    FormValidator.prototype.validate = function (selected) {
+        var rules = Object.keys(this.rules);
+        if (selected && rules.length) {
+            this.validateRules(selected);
+            //filter the selected element it don't have any valid input element
+            return rules.indexOf(selected) !== -1 && this.errorRules.filter(function (data) {
+                return data.name === selected;
+            }).length === 0;
+        }
+        else {
+            this.errorRules = [];
+            for (var _i = 0, rules_1 = rules; _i < rules_1.length; _i++) {
+                var name_1 = rules_1[_i];
+                this.validateRules(name_1);
+            }
+            return this.errorRules.length === 0;
+        }
+    };
+    /**
+     * Reset the value of all the fields in form.
+     * @return {void}
+     */
+    FormValidator.prototype.reset = function () {
+        this.element.reset();
+        this.clearForm();
+    };
+    /**
+     * Get input element by name.
+     * @param {string} name - Input element name attribute value.
+     * @return {HTMLInputElement}
+     */
+    FormValidator.prototype.getInputElement = function (name) {
+        this.inputElement = (sf.base.select('[name="' + name + '"]', this.element));
+        return this.inputElement;
+    };
+    /**
+     * Destroy the form validator object and error elements.
+     * @return {void}
+     */
+    FormValidator.prototype.destroy = function () {
+        this.reset();
+        this.unwireEvents();
+        this.rules = {};
+        var elements = sf.base.selectAll('.' + this.errorClass + ', .' + this.validClass, this.element);
+        for (var _i = 0, elements_1 = elements; _i < elements_1.length; _i++) {
+            var element = elements_1[_i];
+            sf.base.detach(element);
+        }
+        _super.prototype.destroy.call(this);
+        sf.base.onIntlChange.off('notifyExternalChange', this.afterLocalization);
+    };
+    /**
+     * @private
+     */
+    FormValidator.prototype.onPropertyChanged = function (newProp, oldProp) {
+        for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
+            var prop = _a[_i];
+            switch (prop) {
+                case 'locale':
+                    this.localeFunc();
+                    break;
+            }
+        }
+    };
+    
+    /**
+     * @private
+     */
+    FormValidator.prototype.localeFunc = function () {
+        for (var _i = 0, _a = Object.keys(this.defaultMessages); _i < _a.length; _i++) {
+            var key = _a[_i];
+            this.l10n.setLocale(this.locale);
+            var value = this.l10n.getConstant(key);
+            this.localyMessage[key] = value;
+        }
+    };
+    /**
+     * @private
+     */
+    FormValidator.prototype.getModuleName = function () {
+        return 'formValidator';
+    };
+    /**
+     * @private
+     */
+    // tslint:disable-next-line:no-any
+    FormValidator.prototype.afterLocalization = function (args) {
+        this.locale = args.locale;
+        this.localeFunc();
+    };
+    /**
+     * Allows you to refresh the form validator base events to the elements inside the form.
+     * @return {void}
+     */
+    FormValidator.prototype.refresh = function () {
+        this.unwireEvents();
+        this.inputElements = sf.base.selectAll(this.selectQuery, this.element);
+        this.wireEvents();
+    };
+    FormValidator.prototype.clearForm = function () {
+        this.errorRules = [];
+        this.validated = [];
+        var elements = sf.base.selectAll(this.selectQuery, this.element);
+        for (var _i = 0, elements_2 = elements; _i < elements_2.length; _i++) {
+            var element = elements_2[_i];
+            var input = element;
+            input.removeAttribute('aria-invalid');
+            input.classList.remove(this.errorClass);
+            if (input.name.length > 0) {
+                this.getInputElement(input.name);
+                this.getErrorElement(input.name);
+                this.hideMessage(input.name);
+            }
+            input.classList.remove(this.validClass);
+        }
+    };
+    FormValidator.prototype.createHTML5Rules = function () {
+        var defRules = ['required', 'validateHidden', 'regex', 'rangeLength', 'maxLength', 'minLength', 'dateIso', 'digits',
+            'pattern', 'data-val-required', 'type', 'data-validation', 'min', 'max', 'range', 'equalTo', 'data-val-minlength-min',
+            'data-val-equalto-other', 'data-val-maxlength-max', 'data-val-range-min', 'data-val-regex-pattern', 'data-val-length-max',
+            'data-val-creditcard', 'data-val-phone'];
+        var acceptedTypes = ['hidden', 'email', 'url', 'date', 'number', 'tel'];
+        for (var _i = 0, _a = (this.inputElements); _i < _a.length; _i++) {
+            var input = _a[_i];
+            // Default attribute rules 
+            var allRule = {};
+            for (var _b = 0, defRules_1 = defRules; _b < defRules_1.length; _b++) {
+                var rule = defRules_1[_b];
+                if (input.getAttribute(rule) !== null) {
+                    switch (rule) {
+                        case 'required':
+                            this.defRule(input, allRule, rule, input.required);
+                            break;
+                        case 'data-validation':
+                            rule = input.getAttribute(rule);
+                            this.defRule(input, allRule, rule, true);
+                            break;
+                        case 'type':
+                            if (acceptedTypes.indexOf(input.type) !== -1) {
+                                this.defRule(input, allRule, input.type, true);
+                            }
+                            break;
+                        case 'rangeLength':
+                        case 'range':
+                            this.defRule(input, allRule, rule, JSON.parse(input.getAttribute(rule)));
+                            break;
+                        case 'equalTo':
+                            var id = input.getAttribute(rule);
+                            this.defRule(input, allRule, rule, id);
+                            break;
+                        default:
+                            if (input.getAttribute('data-val') === 'true') {
+                                this.annotationRule(input, allRule, rule, input.getAttribute(rule));
+                            }
+                            else {
+                                this.defRule(input, allRule, rule, input.getAttribute(rule));
+                            }
+                    }
+                }
+            }
+            //adding pattern type validation
+            if (Object.keys(allRule).length !== 0) {
+                this.addRules(input.name, allRule);
+            }
+        }
+    };
+    FormValidator.prototype.annotationRule = function (input, ruleCon, ruleName, value) {
+        var annotationRule = ruleName.split('-');
+        var rulesList = ['required', 'creditcard', 'phone', 'maxlength', 'minlength', 'range', 'regex', 'equalto'];
+        var ruleFirstName = annotationRule[annotationRule.length - 1];
+        var ruleSecondName = annotationRule[annotationRule.length - 2];
+        if (rulesList.indexOf(ruleFirstName) !== -1) {
+            switch (ruleFirstName) {
+                case 'required':
+                    this.defRule(input, ruleCon, 'required', value);
+                    break;
+                case 'creditcard':
+                    this.defRule(input, ruleCon, 'creditcard', value);
+                    break;
+                case 'phone':
+                    this.defRule(input, ruleCon, 'tel', value);
+                    break;
+            }
+        }
+        else if (rulesList.indexOf(ruleSecondName) !== -1) {
+            switch (ruleSecondName) {
+                case 'maxlength':
+                    this.defRule(input, ruleCon, 'maxLength', value);
+                    break;
+                case 'minlength':
+                    this.defRule(input, ruleCon, 'minLength', value);
+                    break;
+                case 'range':
+                    var minvalue = input.getAttribute('data-val-range-min');
+                    var maxvalue = input.getAttribute('data-val-range-max');
+                    this.defRule(input, ruleCon, 'range', [minvalue, maxvalue]);
+                    break;
+                case 'equalto':
+                    var id = input.getAttribute(ruleName).split('.');
+                    this.defRule(input, ruleCon, 'equalTo', id[id.length - 1]);
+                    break;
+                case 'regex':
+                    this.defRule(input, ruleCon, 'regex', value);
+                    break;
+            }
+        }
+    };
+    FormValidator.prototype.defRule = function (input, ruleCon, ruleName, value) {
+        var message = input.getAttribute('data-' + ruleName + '-message');
+        var annotationMessage = input.getAttribute('data-val-' + ruleName);
+        var customMessage;
+        if (this.rules[input.name] && ruleName !== 'validateHidden' && ruleName !== 'hidden') {
+            this.getInputElement(input.name);
+            customMessage = this.getErrorMessage(this.rules[input.name][ruleName], ruleName);
+        }
+        if (message) {
+            value = [value, message];
+        }
+        else if (annotationMessage) {
+            value = [value, annotationMessage];
+        }
+        else if (customMessage) {
+            value = [value, customMessage];
+        }
+        ruleCon[ruleName] = value;
+    };
+    // Wire events to the form elements
+    FormValidator.prototype.wireEvents = function () {
+        for (var _i = 0, _a = (this.inputElements); _i < _a.length; _i++) {
+            var input = _a[_i];
+            if (FormValidator_1.isCheckable(input)) {
+                sf.base.EventHandler.add(input, 'click', this.clickHandler, this);
+            }
+            else if (input.tagName === 'SELECT') {
+                sf.base.EventHandler.add(input, 'change', this.changeHandler, this);
+            }
+            else {
+                sf.base.EventHandler.add(input, 'focusout', this.focusOutHandler, this);
+                sf.base.EventHandler.add(input, 'keyup', this.keyUpHandler, this);
+            }
+        }
+        sf.base.EventHandler.add(this.element, 'submit', this.submitHandler, this);
+        sf.base.EventHandler.add(this.element, 'reset', this.resetHandler, this);
+    };
+    // UnWire events to the form elements
+    FormValidator.prototype.unwireEvents = function () {
+        for (var _i = 0, _a = (this.inputElements); _i < _a.length; _i++) {
+            var input = _a[_i];
+            sf.base.EventHandler.clearEvents(input);
+        }
+        sf.base.EventHandler.remove(this.element, 'submit', this.submitHandler);
+        sf.base.EventHandler.remove(this.element, 'reset', this.resetHandler);
+    };
+    // Handle input element focusout event
+    FormValidator.prototype.focusOutHandler = function (e) {
+        this.trigger('focusout', e);
+        //FormValidator.triggerCallback(this.focusout, e);
+        var element = e.target;
+        if (this.rules[element.name]) {
+            if (this.rules[element.name][this.required] || element.value.length > 0) {
+                this.validate(element.name);
+            }
+            else if (this.validated.indexOf(element.name) === -1) {
+                this.validated.push(element.name);
+            }
+        }
+    };
+    // Handle input element keyup event
+    FormValidator.prototype.keyUpHandler = function (e) {
+        this.trigger('keyup', e);
+        var element = e.target;
+        // List of keys need to prevent while validation
+        var excludeKeys = [16, 17, 18, 20, 35, 36, 37, 38, 39, 40, 45, 144, 225];
+        if (e.which === 9 && (!this.rules[element.name] || (this.rules[element.name] && !this.rules[element.name][this.required]))) {
+            return;
+        }
+        if (this.validated.indexOf(element.name) !== -1 && this.rules[element.name] && excludeKeys.indexOf(e.which) === -1) {
+            this.validate(element.name);
+        }
+    };
+    // Handle input click event
+    FormValidator.prototype.clickHandler = function (e) {
+        this.trigger('click', e);
+        var element = e.target;
+        // If element type is not submit allow validation
+        if (element.type !== 'submit') {
+            this.validate(element.name);
+        }
+        else if (element.getAttribute('formnovalidate') !== null) {
+            // Prevent form validation, if submit button has formnovalidate attribute
+            this.allowSubmit = true;
+        }
+    };
+    // Handle input change event
+    FormValidator.prototype.changeHandler = function (e) {
+        this.trigger('change', e);
+        var element = e.target;
+        this.validate(element.name);
+    };
+    // Handle form submit event
+    FormValidator.prototype.submitHandler = function (e) {
+        this.trigger('submit', e);
+        //FormValidator.triggerCallback(this.submit, e);
+        // Prevent form submit if validation failed
+        if (!this.allowSubmit && !this.validate()) {
+            e.preventDefault();
+        }
+        else {
+            this.allowSubmit = false;
+        }
+    };
+    // Handle form reset
+    FormValidator.prototype.resetHandler = function () {
+        this.clearForm();
+    };
+    // Validate each rule based on input element name
+    FormValidator.prototype.validateRules = function (name) {
+        if (!this.rules[name]) {
+            return;
+        }
+        var rules = Object.keys(this.rules[name]);
+        var hiddenType = false;
+        var validateHiddenType = false;
+        var vhPos = rules.indexOf('validateHidden');
+        var hPos = rules.indexOf('hidden');
+        this.getInputElement(name);
+        if (hPos !== -1) {
+            hiddenType = true;
+        }
+        if (vhPos !== -1) {
+            validateHiddenType = true;
+        }
+        if (!hiddenType || (hiddenType && validateHiddenType)) {
+            if (vhPos !== -1) {
+                rules.splice(vhPos, 1);
+            }
+            if (hPos !== -1) {
+                rules.splice((hPos - 1), 1);
+            }
+            this.getErrorElement(name);
+            for (var _i = 0, rules_2 = rules; _i < rules_2.length; _i++) {
+                var rule = rules_2[_i];
+                var errorMessage = this.getErrorMessage(this.rules[name][rule], rule);
+                var errorRule = { name: name, message: errorMessage };
+                var eventArgs = {
+                    inputName: name,
+                    element: this.inputElement,
+                    message: errorMessage
+                };
+                if (!this.isValid(name, rule) && !this.inputElement.classList.contains(this.ignore)) {
+                    this.removeErrorRules(name);
+                    this.errorRules.push(errorRule);
+                    // Set aria attributes to invalid elements
+                    this.inputElement.setAttribute('aria-invalid', 'true');
+                    this.inputElement.setAttribute('aria-describedby', this.inputElement.id + '-info');
+                    this.inputElement.classList.add(this.errorClass);
+                    this.inputElement.classList.remove(this.validClass);
+                    if (!this.infoElement) {
+                        this.createErrorElement(name, errorRule.message, this.inputElement);
+                    }
+                    else {
+                        this.showMessage(errorRule);
+                    }
+                    eventArgs.errorElement = this.infoElement;
+                    eventArgs.status = 'failure';
+                    this.inputElement.classList.add(this.errorClass);
+                    this.inputElement.classList.remove(this.validClass);
+                    this.optionalValidationStatus(name, eventArgs);
+                    this.trigger('validationComplete', eventArgs);
+                    // Set aria-required to required rule elements
+                    if (rule === 'required') {
+                        this.inputElement.setAttribute('aria-required', 'true');
+                    }
+                    break;
+                }
+                else {
+                    this.hideMessage(name);
+                    eventArgs.status = 'success';
+                    this.trigger('validationComplete', eventArgs);
+                }
+            }
+        }
+        else {
+            return;
+        }
+    };
+    // Update the optional validation status
+    FormValidator.prototype.optionalValidationStatus = function (name, refer) {
+        if (!this.rules[name][this.required] && !this.inputElement.value.length && !sf.base.isNullOrUndefined(this.infoElement)) {
+            this.infoElement.innerHTML = this.inputElement.value;
+            this.infoElement.setAttribute('aria-invalid', 'false');
+            refer.status = '';
+            this.hideMessage(name);
+        }
+    };
+    // Check the input element whether it's value satisfy the validation rule or not
+    FormValidator.prototype.isValid = function (name, rule) {
+        var params = this.rules[name][rule];
+        var param = (params instanceof Array && typeof params[1] === 'string') ? params[0] : params;
+        var currentRule = this.rules[name][rule];
+        var args = { value: this.inputElement.value, param: param, element: this.inputElement, formElement: this.element };
+        this.trigger('validationBegin', args);
+        if (currentRule && typeof currentRule[0] === 'function') {
+            var fn = currentRule[0];
+            return fn.call(this, { element: this.inputElement, value: this.inputElement.value });
+        }
+        else if (FormValidator_1.isCheckable(this.inputElement)) {
+            if (rule !== 'required') {
+                return true;
+            }
+            return sf.base.selectAll('input[name=' + name + ']:checked', this.element).length > 0;
+        }
+        else {
+            return FormValidator_1.checkValidator[rule](args);
+        }
+    };
+    // Return default error message or custom error message 
+    FormValidator.prototype.getErrorMessage = function (ruleValue, rule) {
+        var message = this.inputElement.getAttribute('data-' + rule + '-message') ?
+            this.inputElement.getAttribute('data-' + rule + '-message') :
+            (ruleValue instanceof Array && typeof ruleValue[1] === 'string') ? ruleValue[1] :
+                (Object.keys(this.localyMessage).length !== 0) ? this.localyMessage[rule] : this.defaultMessages[rule];
+        var formats = message.match(/{(\d)}/g);
+        if (!sf.base.isNullOrUndefined(formats)) {
+            for (var i = 0; i < formats.length; i++) {
+                var value = ruleValue instanceof Array ? ruleValue[i] : ruleValue;
+                message = message.replace(formats[i], value);
+            }
+        }
+        return message;
+    };
+    // Create error element based on name and error message
+    FormValidator.prototype.createErrorElement = function (name, message, input) {
+        var errorElement = sf.base.createElement(this.errorElement, {
+            className: this.errorClass,
+            innerHTML: message,
+            attrs: { for: name }
+        });
+        // Create message design if errorOption is message
+        if (this.errorOption === exports.ErrorOption.Message) {
+            errorElement.classList.remove(this.errorClass);
+            errorElement.classList.add('e-message');
+            errorElement = sf.base.createElement(this.errorContainer, { className: this.errorClass, innerHTML: errorElement.outerHTML });
+        }
+        errorElement.id = this.inputElement.name + '-info';
+        // Append error message into MVC error message element
+        if (this.element.querySelector('[data-valmsg-for="' + input.id + '"]')) {
+            this.element.querySelector('[data-valmsg-for="' + input.id + '"]').appendChild(errorElement);
+        }
+        else if (input.hasAttribute('data-msg-containerid') === true) {
+            // Append error message into custom div element
+            var containerId = input.getAttribute('data-msg-containerid');
+            var divElement = this.element.querySelector('#' + containerId);
+            divElement.appendChild(errorElement);
+        }
+        else if (this.customPlacement != null) {
+            // Call custom placement function if customPlacement is not null
+            this.customPlacement.call(this, this.inputElement, errorElement);
+        }
+        else {
+            this.inputElement.parentNode.insertBefore(errorElement, this.inputElement.nextSibling);
+        }
+        errorElement.style.display = 'block';
+        this.getErrorElement(name);
+        this.validated.push(name);
+        this.checkRequired(name);
+    };
+    // Get error element by name
+    FormValidator.prototype.getErrorElement = function (name) {
+        this.infoElement = sf.base.select(this.errorElement + '.' + this.errorClass, this.inputElement.parentElement);
+        if (!this.infoElement) {
+            this.infoElement = sf.base.select(this.errorElement + '.' + this.errorClass + '[for="' + name + '"]', this.element);
+        }
+        return this.infoElement;
+    };
+    // Remove existing rule from errorRules object
+    FormValidator.prototype.removeErrorRules = function (name) {
+        for (var i = 0; i < this.errorRules.length; i++) {
+            var rule = this.errorRules[i];
+            if (rule.name === name) {
+                this.errorRules.splice(i, 1);
+            }
+        }
+    };
+    // Show error message to the input element
+    FormValidator.prototype.showMessage = function (errorRule) {
+        this.infoElement.style.display = 'block';
+        this.infoElement.innerHTML = errorRule.message;
+        this.checkRequired(errorRule.name);
+    };
+    // Hide error message based on input name
+    FormValidator.prototype.hideMessage = function (name) {
+        if (this.infoElement) {
+            this.infoElement.style.display = 'none';
+            this.removeErrorRules(name);
+            this.inputElement.classList.add(this.validClass);
+            this.inputElement.classList.remove(this.errorClass);
+            this.inputElement.setAttribute('aria-invalid', 'false');
+        }
+    };
+    // Check whether the input element have required rule and its value is not empty
+    FormValidator.prototype.checkRequired = function (name) {
+        if (!this.rules[name][this.required] && !this.inputElement.value.length && !sf.base.isNullOrUndefined(this.infoElement)) {
+            this.infoElement.innerHTML = this.inputElement.value;
+            this.infoElement.setAttribute('aria-invalid', 'false');
+            this.hideMessage(name);
+        }
+    };
+    // Return boolean result if the input have chekcable or submit types
+    FormValidator.isCheckable = function (input) {
+        var inputType = input.getAttribute('type');
+        return inputType && (inputType === 'checkbox' || inputType === 'radio' || inputType === 'submit');
+    };
+    var FormValidator_1;
+    // List of function to validate the rules
+    FormValidator.checkValidator = {
+        required: function (option) {
+            return option.value.length > 0;
+        },
+        email: function (option) {
+            return regex.EMAIL.test(option.value);
+        },
+        url: function (option) {
+            return regex.URL.test(option.value);
+        },
+        dateIso: function (option) {
+            return regex.DATE_ISO.test(option.value);
+        },
+        tel: function (option) {
+            return regex.PHONE.test(option.value);
+        },
+        creditcard: function (option) {
+            return regex.CREDITCARD.test(option.value);
+        },
+        number: function (option) {
+            return !isNaN(Number(option.value)) && option.value.indexOf(' ') === -1;
+        },
+        digits: function (option) {
+            return regex.DIGITS.test(option.value);
+        },
+        maxLength: function (option) {
+            return option.value.length <= option.param;
+        },
+        minLength: function (option) {
+            return option.value.length >= option.param;
+        },
+        rangeLength: function (option) {
+            var param = option.param;
+            return option.value.length >= param[0] && option.value.length <= param[1];
+        },
+        range: function (option) {
+            var param = option.param;
+            return !isNaN(Number(option.value)) && Number(option.value) >= param[0] && Number(option.value) <= param[1];
+        },
+        date: function (option) {
+            return !isNaN(new Date(option.value).getTime());
+        },
+        max: function (option) {
+            if (!isNaN(Number(option.value))) {
+                // Maximum rule validation for number
+                return +option.value <= option.param;
+            }
+            // Maximum rule validation for date
+            return new Date(option.value).getTime() <= new Date(JSON.parse(JSON.stringify(option.param))).getTime();
+        },
+        min: function (option) {
+            if (!isNaN(Number(option.value))) {
+                // Minimum rule validation for number
+                return +option.value >= option.param;
+            }
+            else if ((option.value).indexOf(',') !== -1) {
+                var uNum = (option.value).replace(/,/g, '');
+                return parseFloat(uNum) >= option.param;
+            }
+            else {
+                // Minimum rule validation for date
+                return new Date(option.value).getTime() >= new Date(JSON.parse(JSON.stringify(option.param))).getTime();
+            }
+        },
+        regex: function (option) {
+            return new RegExp(option.param).test(option.value);
+        },
+        equalTo: function (option) {
+            var compareTo = option.formElement.querySelector('#' + option.param);
+            option.param = compareTo.value;
+            return option.param === option.value;
+        },
+    };
+    __decorate$3([
+        sf.base.Property('')
+    ], FormValidator.prototype, "locale", void 0);
+    __decorate$3([
+        sf.base.Property('e-hidden')
+    ], FormValidator.prototype, "ignore", void 0);
+    __decorate$3([
+        sf.base.Property()
+    ], FormValidator.prototype, "rules", void 0);
+    __decorate$3([
+        sf.base.Property('e-error')
+    ], FormValidator.prototype, "errorClass", void 0);
+    __decorate$3([
+        sf.base.Property('e-valid')
+    ], FormValidator.prototype, "validClass", void 0);
+    __decorate$3([
+        sf.base.Property('label')
+    ], FormValidator.prototype, "errorElement", void 0);
+    __decorate$3([
+        sf.base.Property('div')
+    ], FormValidator.prototype, "errorContainer", void 0);
+    __decorate$3([
+        sf.base.Property(exports.ErrorOption.Label)
+    ], FormValidator.prototype, "errorOption", void 0);
+    __decorate$3([
+        sf.base.Event()
+    ], FormValidator.prototype, "focusout", void 0);
+    __decorate$3([
+        sf.base.Event()
+    ], FormValidator.prototype, "keyup", void 0);
+    __decorate$3([
+        sf.base.Event()
+    ], FormValidator.prototype, "click", void 0);
+    __decorate$3([
+        sf.base.Event()
+    ], FormValidator.prototype, "change", void 0);
+    __decorate$3([
+        sf.base.Event()
+    ], FormValidator.prototype, "submit", void 0);
+    __decorate$3([
+        sf.base.Event()
+    ], FormValidator.prototype, "validationBegin", void 0);
+    __decorate$3([
+        sf.base.Event()
+    ], FormValidator.prototype, "validationComplete", void 0);
+    __decorate$3([
+        sf.base.Event()
+    ], FormValidator.prototype, "customPlacement", void 0);
+    FormValidator = FormValidator_1 = __decorate$3([
+        sf.base.NotifyPropertyChanges
+    ], FormValidator);
+    return FormValidator;
+}(sf.base.Base));
+
+/**
+ * Input box Component
+ */
+
+var __extends$4 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var CONTROL_WRAPPER = 'e-upload e-control-wrapper';
+var INPUT_WRAPPER = 'e-file-select';
+var DROP_AREA = 'e-file-drop';
+var DROP_WRAPPER = 'e-file-select-wrap';
+var LIST_PARENT = 'e-upload-files';
+var FILE = 'e-upload-file-list';
+var STATUS = 'e-file-status';
+var ACTION_BUTTONS = 'e-upload-actions';
+var UPLOAD_BUTTONS = 'e-file-upload-btn e-css e-btn e-flat e-primary';
+var CLEAR_BUTTONS = 'e-file-clear-btn e-css e-btn e-flat';
+var FILE_NAME = 'e-file-name';
+var FILE_TYPE = 'e-file-type';
+var FILE_SIZE = 'e-file-size';
+var REMOVE_ICON = 'e-file-remove-btn';
+var DELETE_ICON = 'e-file-delete-btn';
+var SPINNER_PANE = 'e-spinner-pane';
+var ABORT_ICON = 'e-file-abort-btn';
+var RETRY_ICON = 'e-file-reload-btn';
+var DRAG_HOVER = 'e-upload-drag-hover';
+var PROGRESS_WRAPPER = 'e-upload-progress-wrap';
+var PROGRESSBAR = 'e-upload-progress-bar';
+var PROGRESSBAR_TEXT = 'e-progress-bar-text';
+var UPLOAD_INPROGRESS = 'e-upload-progress';
+var UPLOAD_SUCCESS = 'e-upload-success';
+var UPLOAD_FAILED = 'e-upload-fails';
+var TEXT_CONTAINER = 'e-file-container';
+var VALIDATION_FAILS = 'e-validation-fails';
+var RTL = 'e-rtl';
+var DISABLED = 'e-disabled';
+var RTL_CONTAINER = 'e-rtl-container';
+var ICON_FOCUSED = 'e-clear-icon-focus';
+var PROGRESS_INNER_WRAPPER = 'e-progress-inner-wrap';
+var PAUSE_UPLOAD = 'e-file-pause-btn';
+var RESUME_UPLOAD = 'e-file-play-btn';
+var RESTRICT_RETRY = 'e-restrict-retry';
+var wrapperAttr$1 = ['title', 'style', 'class'];
+var FORM_UPLOAD = 'e-form-upload';
+var HIDDEN_INPUT = 'e-hidden-file-input';
+var INVALID_FILE = 'e-file-invalid';
+var INFORMATION = 'e-file-information';
+var FilesProp = /** @class */ (function (_super) {
+    __extends$4(FilesProp, _super);
+    function FilesProp() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$4([
+        sf.base.Property('')
+    ], FilesProp.prototype, "name", void 0);
+    __decorate$4([
+        sf.base.Property(null)
+    ], FilesProp.prototype, "size", void 0);
+    __decorate$4([
+        sf.base.Property('')
+    ], FilesProp.prototype, "type", void 0);
+    return FilesProp;
+}(sf.base.ChildProperty));
+var ButtonsProps = /** @class */ (function (_super) {
+    __extends$4(ButtonsProps, _super);
+    function ButtonsProps() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$4([
+        sf.base.Property('Browse...')
+    ], ButtonsProps.prototype, "browse", void 0);
+    __decorate$4([
+        sf.base.Property('Upload')
+    ], ButtonsProps.prototype, "upload", void 0);
+    __decorate$4([
+        sf.base.Property('Clear')
+    ], ButtonsProps.prototype, "clear", void 0);
+    return ButtonsProps;
+}(sf.base.ChildProperty));
+var AsyncSettings = /** @class */ (function (_super) {
+    __extends$4(AsyncSettings, _super);
+    function AsyncSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$4([
+        sf.base.Property('')
+    ], AsyncSettings.prototype, "saveUrl", void 0);
+    __decorate$4([
+        sf.base.Property('')
+    ], AsyncSettings.prototype, "removeUrl", void 0);
+    __decorate$4([
+        sf.base.Property(0)
+    ], AsyncSettings.prototype, "chunkSize", void 0);
+    __decorate$4([
+        sf.base.Property(3)
+    ], AsyncSettings.prototype, "retryCount", void 0);
+    __decorate$4([
+        sf.base.Property(500)
+    ], AsyncSettings.prototype, "retryAfterDelay", void 0);
+    return AsyncSettings;
+}(sf.base.ChildProperty));
+/**
+ * The uploader component allows to upload images, documents, and other files from local to server.
+ * ```html
+ * <input type='file' name='images[]' id='upload'/>
+ * ```
+ * ```typescript
+ * <script>
+ *   var uploadObj = new Uploader();
+ *   uploadObj.appendTo('#upload');
+ * </script>
+ * ```
+ */
+var Uploader = /** @class */ (function (_super) {
+    __extends$4(Uploader, _super);
+    /**
+     * Triggers when change the Uploader value.
+     */
+    function Uploader(options, element) {
+        var _this = _super.call(this, options, element) || this;
+        _this.initialAttr = { accept: null, multiple: false, disabled: false };
+        _this.uploadedFilesData = [];
+        _this.base64String = [];
+        _this.isForm = false;
+        _this.allTypes = false;
+        _this.pausedData = [];
+        _this.uploadMetaData = [];
+        _this.tabIndex = '0';
+        _this.btnTabIndex = '0';
+        _this.disableKeyboardNavigation = false;
+        _this.count = -1;
+        _this.actionCompleteCount = 0;
+        _this.flag = true;
+        _this.selectedFiles = [];
+        _this.uploaderName = 'UploadFiles';
+        _this.fileStreams = [];
+        _this.newFileRef = 0;
+        /**
+         * Get the file item(li) which are shown in file list.
+         * @private
+         */
+        _this.fileList = [];
+        /**
+         * Get the data of files which are shown in file list.
+         * @private
+         */
+        _this.filesData = [];
+        _this.uploaderOptions = options;
+        return _this;
+    }
+    /**
+     * Calls internally if any of the property value is changed.
+     * @private
+     */
+    Uploader.prototype.onPropertyChanged = function (newProp, oldProp) {
+        for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
+            var prop = _a[_i];
+            switch (prop) {
+                case 'allowedExtensions':
+                    this.setExtensions(this.allowedExtensions);
+                    this.clearAll();
+                    break;
+                case 'enabled':
+                    this.setControlStatus();
+                    break;
+                case 'multiple':
+                    this.setMultipleSelection();
+                    break;
+                case 'enableRtl':
+                    this.setRTL();
+                    this.reRenderFileList();
+                    break;
+                case 'buttons':
+                    this.buttons.browse = sf.base.isNullOrUndefined(this.buttons.browse) ? '' : this.buttons.browse;
+                    this.buttons.clear = sf.base.isNullOrUndefined(this.buttons.clear) ? '' : this.buttons.clear;
+                    this.buttons.upload = sf.base.isNullOrUndefined(this.buttons.upload) ? '' : this.buttons.upload;
+                    this.renderButtonTemplates();
+                    break;
+                case 'dropArea':
+                    this.unBindDropEvents();
+                    this.setDropArea();
+                    break;
+                case 'htmlAttributes':
+                    this.updateHTMLAttrToElement();
+                    this.updateHTMLAttrToWrapper();
+                    this.checkHTMLAttributes(true);
+                    break;
+                case 'files':
+                    this.renderPreLoadFiles();
+                    break;
+                case 'directoryUpload':
+                    this.updateDirectoryAttributes();
+                    break;
+                case 'template':
+                    if (!this.isServerBlazor) {
+                        this.clearAll();
+                    }
+                    break;
+                case 'minFileSize':
+                case 'maxFileSize':
+                case 'autoUpload':
+                    this.clearAll();
+                    break;
+                case 'sequentialUpload':
+                    this.clearAll();
+                    break;
+                case 'locale':
+                    this.l10n.setLocale(this.locale);
+                    this.setLocalizedTexts();
+                    this.preLocaleObj = sf.base.getValue('currentLocale', this.l10n);
+                    break;
+                case 'cssClass':
+                    this.setCSSClass(oldProp.cssClass);
+                    break;
+            }
+        }
+    };
+    Uploader.prototype.setLocalizedTexts = function () {
+        if (sf.base.isNullOrUndefined(this.template)) {
+            if (typeof (this.buttons.browse) === 'string') {
+                this.browseButton.innerText = (this.buttons.browse === 'Browse...') ?
+                    this.localizedTexts('Browse') : this.buttons.browse;
+                this.browseButton.setAttribute('title', this.browseButton.innerText);
+                if (this.uploadWrapper) {
+                    this.uploadWrapper.querySelector('.' + DROP_AREA).innerHTML = this.localizedTexts('dropFilesHint');
+                }
+            }
+            this.updateFileList();
+        }
+    };
+    Uploader.prototype.getKeyValue = function (val) {
+        var keyValue;
+        for (var _i = 0, _a = Object.keys(this.preLocaleObj); _i < _a.length; _i++) {
+            var key = _a[_i];
+            if (this.preLocaleObj[key] === val) {
+                keyValue = key;
+            }
+        }
+        return keyValue;
+    };
+    Uploader.prototype.updateFileList = function () {
+        var element;
+        /* istanbul ignore next */
+        if (this.fileList.length > 0 && !sf.base.isNullOrUndefined(this.uploadWrapper.querySelector('.' + LIST_PARENT))) {
+            for (var i = 0; i < this.fileList.length; i++) {
+                element = this.fileList[i].querySelector('.e-file-status');
+                element.innerHTML = this.localizedTexts(this.getKeyValue(this.filesData[i].status));
+                this.filesData[i].status = this.localizedTexts(this.getKeyValue(this.filesData[i].status));
+                if (this.fileList[i].classList.contains(UPLOAD_SUCCESS)) {
+                    this.fileList[i].querySelector('.e-icons').setAttribute('title', this.localizedTexts('delete'));
+                }
+                if (this.fileList[i].querySelector('.e-file-play-btn')) {
+                    this.fileList[i].querySelector('.e-icons').setAttribute('title', this.localizedTexts('resume'));
+                }
+                if (this.fileList[i].querySelector('.e-file-remove-btn')) {
+                    this.fileList[i].querySelector('.e-icons').setAttribute('title', this.localizedTexts('remove'));
+                }
+                if (this.fileList[i].querySelector('.e-file-reload-btn')) {
+                    this.fileList[i].querySelector('.e-icons').setAttribute('title', this.localizedTexts('retry'));
+                }
+                if (!this.autoUpload) {
+                    this.uploadButton.innerText = (this.buttons.upload === 'Upload') ?
+                        this.localizedTexts('Upload') : this.buttons.upload;
+                    this.uploadButton.setAttribute('title', this.localizedTexts('Upload'));
+                    this.clearButton.innerText = (this.buttons.clear === 'Clear') ?
+                        this.localizedTexts('Clear') : this.buttons.clear;
+                    this.clearButton.setAttribute('title', this.localizedTexts('Clear'));
+                }
+            }
+        }
+    };
+    Uploader.prototype.reRenderFileList = function () {
+        if (this.listParent) {
+            sf.base.detach(this.listParent);
+            this.listParent = null;
+            this.fileList = [];
+            this.createFileList(this.filesData);
+            if (this.actionButtons) {
+                this.removeActionButtons();
+                this.renderActionButtons();
+                this.checkActionButtonStatus();
+            }
+        }
+    };
+    Uploader.prototype.preRender = function () {
+        this.localeText = { Browse: 'Browse...', Clear: 'Clear', Upload: 'Upload',
+            dropFilesHint: 'Or drop files here', invalidMaxFileSize: 'File size is too large',
+            invalidMinFileSize: 'File size is too small', invalidFileType: 'File type is not allowed',
+            uploadFailedMessage: 'File failed to upload', uploadSuccessMessage: 'File uploaded successfully',
+            removedSuccessMessage: 'File removed successfully', removedFailedMessage: 'Unable to remove file', inProgress: 'Uploading',
+            readyToUploadMessage: 'Ready to upload', abort: 'Abort', remove: 'Remove', cancel: 'Cancel', delete: 'Delete file',
+            pauseUpload: 'File upload paused', pause: 'Pause', resume: 'Resume', retry: 'Retry',
+            fileUploadCancel: 'File upload canceled', invalidFileSelection: 'Invalid files selected', totalFiles: 'Total files',
+            size: 'Size'
+        };
+        this.l10n = new sf.base.L10n('uploader', this.localeText, this.locale);
+        this.preLocaleObj = sf.base.getValue('currentLocale', this.l10n);
+        this.isServerBlazor = (sf.base.isBlazor() && this.isServerRendered) ? true : false;
+        this.isBlazorTemplate = this.isServerBlazor && this.template !== '' && !sf.base.isNullOrUndefined(this.template) ? true : false;
+        this.isBlazorSaveUrl = (this.isServerRendered &&
+            (this.asyncSettings.saveUrl === '' || sf.base.isNullOrUndefined(this.asyncSettings.saveUrl))) ? true : false;
+        if (this.isBlazorSaveUrl && this.sequentialUpload) {
+            this.sequentialUpload = false;
+        }
+        this.formRendered();
+        if (!this.isServerBlazor) {
+            this.updateHTMLAttrToElement();
+            this.checkHTMLAttributes(false);
+            // tslint:disable-next-line
+            var ejInstance = sf.base.getValue('ej2_instances', this.element);
+            /* istanbul ignore next */
+            if (this.element.tagName === 'EJS-UPLOADER') {
+                var inputElement = this.createElement('input', { attrs: { type: 'file' } });
+                var index = 0;
+                for (index; index < this.element.attributes.length; index++) {
+                    inputElement.setAttribute(this.element.attributes[index].nodeName, this.element.attributes[index].nodeValue);
+                    inputElement.innerHTML = this.element.innerHTML;
+                }
+                if (!inputElement.hasAttribute('name')) {
+                    inputElement.setAttribute('name', 'UploadFiles');
+                }
+                this.element.appendChild(inputElement);
+                this.element = inputElement;
+                sf.base.setValue('ej2_instances', ejInstance, this.element);
+            }
+            /* istanbul ignore next */
+            if (ejInstance[0].isPureReactComponent) {
+                if (!sf.base.isNullOrUndefined(ejInstance[0].props.name)) {
+                    this.element.setAttribute('name', ejInstance[0].props.name);
+                }
+                else if (!sf.base.isNullOrUndefined(ejInstance[0].props.id) && sf.base.isNullOrUndefined(ejInstance[0].props.name)) {
+                    this.element.setAttribute('name', ejInstance[0].props.id);
+                }
+                else {
+                    this.element.setAttribute('name', 'UploadFiles');
+                }
+            }
+            if (sf.base.isNullOrUndefined(this.element.getAttribute('name'))) {
+                this.element.setAttribute('name', this.element.getAttribute('id'));
+            }
+            if (!this.element.hasAttribute('type')) {
+                this.element.setAttribute('type', 'file');
+            }
+            this.updateDirectoryAttributes();
+        }
+        this.keyConfigs = {
+            enter: 'enter'
+        };
+        if (this.element.hasAttribute('tabindex')) {
+            this.tabIndex = this.element.getAttribute('tabindex');
+        }
+        this.browserName = sf.base.Browser.info.name;
+        this.uploaderName = this.element.getAttribute('name');
+    };
+    Uploader.prototype.formRendered = function () {
+        var parentEle = sf.base.closest(this.element, 'form');
+        if (!sf.base.isNullOrUndefined(parentEle)) {
+            for (; parentEle && parentEle !== document.documentElement; parentEle = parentEle.parentElement) {
+                if (parentEle.tagName === 'FORM') {
+                    this.isForm = true;
+                    this.formElement = parentEle;
+                    parentEle.setAttribute('enctype', 'multipart/form-data');
+                    parentEle.setAttribute('encoding', 'multipart/form-data');
+                }
+            }
+        }
+    };
+    Uploader.prototype.getPersistData = function () {
+        return this.addOnPersist([]);
+    };
+    /**
+     * Return the module name of the component.
+     */
+    Uploader.prototype.getModuleName = function () {
+        return 'uploader';
+    };
+    Uploader.prototype.updateDirectoryAttributes = function () {
+        if (this.directoryUpload) {
+            this.element.setAttribute('directory', 'true');
+            this.element.setAttribute('webkitdirectory', 'true');
+        }
+        else {
+            this.element.removeAttribute('directory');
+            this.element.removeAttribute('webkitdirectory');
+        }
+    };
+    /**
+     * To Initialize the control rendering
+     * @private
+     */
+    Uploader.prototype.render = function () {
+        if (!this.isServerBlazor) {
+            this.renderBrowseButton();
+            this.initializeUpload();
+            this.updateHTMLAttrToWrapper();
+            this.wireEvents();
+            this.setMultipleSelection();
+            this.setExtensions(this.allowedExtensions);
+            this.setRTL();
+            this.renderPreLoadFiles();
+            this.setControlStatus();
+            this.setCSSClass();
+        }
+        else {
+            this.dropAreaWrapper = sf.base.closest(this.element, '.' + DROP_WRAPPER);
+            this.uploadWrapper = sf.base.closest(this.element, '.e-upload.e-control-wrapper');
+            this.browseButton = this.dropAreaWrapper.querySelector('button.e-upload-browse-btn');
+            this.setDropArea();
+            this.renderPreLoadFiles();
+            this.wireEvents();
+        }
+        this.renderComplete();
+    };
+    Uploader.prototype.renderBrowseButton = function () {
+        this.browseButton = this.createElement('button', { className: 'e-css e-btn', attrs: { 'type': 'button' } });
+        this.browseButton.setAttribute('tabindex', this.tabIndex);
+        if (typeof (this.buttons.browse) === 'string') {
+            this.browseButton.textContent = (this.buttons.browse === 'Browse...') ?
+                this.localizedTexts('Browse') : this.buttons.browse;
+            this.browseButton.setAttribute('title', this.browseButton.innerText);
+        }
+        else {
+            this.browseButton.appendChild(this.buttons.browse);
+        }
+        this.element.setAttribute('aria-label', 'Uploader');
+    };
+    Uploader.prototype.renderActionButtons = function () {
+        this.element.setAttribute('tabindex', '-1');
+        if (!(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
+            this.actionButtons = this.createElement('div', { className: ACTION_BUTTONS });
+            this.uploadButton = this.createElement('button', { className: UPLOAD_BUTTONS,
+                attrs: { 'type': 'button', 'tabindex': this.btnTabIndex } });
+            this.clearButton = this.createElement('button', { className: CLEAR_BUTTONS,
+                attrs: { 'type': 'button', 'tabindex': this.btnTabIndex } });
+            this.actionButtons.appendChild(this.clearButton);
+            this.actionButtons.appendChild(this.uploadButton);
+            this.renderButtonTemplates();
+            this.uploadWrapper.appendChild(this.actionButtons);
+            this.browseButton.blur();
+            this.uploadButton.focus();
+            this.wireActionButtonEvents();
+        }
+    };
+    /* istanbul ignore next */
+    Uploader.prototype.serverActionButtonsEventBind = function (element) {
+        if (element && !this.isForm) {
+            this.browseButton.blur();
+            this.actionButtons = element;
+            this.uploadButton = this.actionButtons.querySelector('.e-file-upload-btn');
+            this.clearButton = this.actionButtons.querySelector('.e-file-clear-btn');
+            this.uploadButton.focus();
+            this.unwireActionButtonEvents();
+            this.wireActionButtonEvents();
+            this.checkActionButtonStatus();
+        }
+    };
+    /* istanbul ignore next */
+    Uploader.prototype.serverUlElement = function (element) {
+        if (element) {
+            if (this.isBlazorSaveUrl || this.isBlazorTemplate) {
+                this.listParent = element;
+                this.fileList = [].slice.call(this.listParent.querySelectorAll('li'));
+                this.serverRemoveIconBindEvent();
+                if (!this.isForm) {
+                    this.checkAutoUpload(this.filesData);
+                }
+            }
+        }
+    };
+    Uploader.prototype.wireActionButtonEvents = function () {
+        sf.base.EventHandler.add(this.uploadButton, 'click', this.uploadButtonClick, this);
+        sf.base.EventHandler.add(this.clearButton, 'click', this.clearButtonClick, this);
+    };
+    Uploader.prototype.unwireActionButtonEvents = function () {
+        sf.base.EventHandler.remove(this.uploadButton, 'click', this.uploadButtonClick);
+        sf.base.EventHandler.remove(this.clearButton, 'click', this.clearButtonClick);
+    };
+    Uploader.prototype.removeActionButtons = function () {
+        if (this.actionButtons) {
+            this.unwireActionButtonEvents();
+            if (!(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
+                sf.base.detach(this.actionButtons);
+            }
+            this.actionButtons = null;
+        }
+    };
+    Uploader.prototype.renderButtonTemplates = function () {
+        if (typeof (this.buttons.browse) === 'string') {
+            this.browseButton.textContent = (this.buttons.browse === 'Browse...') ?
+                this.localizedTexts('Browse') : this.buttons.browse;
+            this.browseButton.setAttribute('title', this.browseButton.textContent);
+        }
+        else {
+            this.browseButton.innerHTML = '';
+            this.browseButton.appendChild(this.buttons.browse);
+        }
+        if (this.uploadButton) {
+            var uploadText = void 0;
+            uploadText = sf.base.isNullOrUndefined(this.buttons.upload) ? 'Upload' : this.buttons.upload;
+            this.buttons.upload = uploadText;
+            if (typeof (this.buttons.upload) === 'string') {
+                this.uploadButton.textContent = (this.buttons.upload === 'Upload') ?
+                    this.localizedTexts('Upload') : this.buttons.upload;
+                this.uploadButton.setAttribute('title', this.uploadButton.textContent);
+            }
+            else {
+                this.uploadButton.innerHTML = '';
+                this.uploadButton.appendChild(this.buttons.upload);
+            }
+        }
+        if (this.clearButton) {
+            var clearText = void 0;
+            clearText = sf.base.isNullOrUndefined(this.buttons.clear) ? 'Clear' : this.buttons.clear;
+            this.buttons.clear = clearText;
+            if (typeof (this.buttons.clear) === 'string') {
+                this.clearButton.textContent = (this.buttons.clear === 'Clear') ?
+                    this.localizedTexts('Clear') : this.buttons.clear;
+                this.clearButton.setAttribute('title', this.clearButton.textContent);
+            }
+            else {
+                this.clearButton.innerHTML = '';
+                this.clearButton.appendChild(this.buttons.clear);
+            }
+        }
+    };
+    Uploader.prototype.initializeUpload = function () {
+        this.element.setAttribute('tabindex', '-1');
+        var inputWrapper = this.createElement('span', { className: INPUT_WRAPPER });
+        this.element.parentElement.insertBefore(inputWrapper, this.element);
+        this.dropAreaWrapper = this.createElement('div', { className: DROP_WRAPPER });
+        this.element.parentElement.insertBefore(this.dropAreaWrapper, this.element);
+        inputWrapper.appendChild(this.element);
+        this.dropAreaWrapper.appendChild(this.browseButton);
+        this.dropAreaWrapper.appendChild(inputWrapper);
+        var fileDropArea = this.createElement('span', { className: DROP_AREA });
+        fileDropArea.innerHTML = this.localizedTexts('dropFilesHint');
+        this.dropAreaWrapper.appendChild(fileDropArea);
+        this.uploadWrapper = this.createElement('div', { className: CONTROL_WRAPPER });
+        this.dropAreaWrapper.parentElement.insertBefore(this.uploadWrapper, this.dropAreaWrapper);
+        this.uploadWrapper.appendChild(this.dropAreaWrapper);
+        this.setDropArea();
+    };
+    Uploader.prototype.renderPreLoadFiles = function () {
+        if (this.files.length) {
+            if (sf.base.isNullOrUndefined(this.files[0].size)) {
+                return;
+            }
+            var files = [].slice.call(this.files);
+            var filesData = [];
+            if (!this.multiple) {
+                this.clearData();
+                files = [files[0]];
+            }
+            for (var _i = 0, files_1 = files; _i < files_1.length; _i++) {
+                var data = files_1[_i];
+                var fileData = {
+                    name: data.name + '.' + data.type.split('.')[data.type.split('.').length - 1],
+                    rawFile: '',
+                    size: data.size,
+                    status: this.localizedTexts('uploadSuccessMessage'),
+                    type: data.type,
+                    validationMessages: { minSize: '', maxSize: '' },
+                    statusCode: '2'
+                };
+                filesData.push(fileData);
+                this.filesData.push(fileData);
+            }
+            this.createFileList(filesData);
+            if (!this.autoUpload && this.listParent && !this.actionButtons && (!this.isForm || this.allowUpload()) && this.showFileList) {
+                this.renderActionButtons();
+            }
+            this.checkActionButtonStatus();
+        }
+    };
+    Uploader.prototype.checkActionButtonStatus = function () {
+        if (this.actionButtons) {
+            var length_1 = this.uploadWrapper.querySelectorAll('.' + VALIDATION_FAILS).length +
+                this.uploadWrapper.querySelectorAll('.e-upload-fails:not(.e-upload-progress)').length +
+                this.uploadWrapper.querySelectorAll('span.' + UPLOAD_SUCCESS).length +
+                this.uploadWrapper.querySelectorAll('span.' + UPLOAD_INPROGRESS).length;
+            if (length_1 > 0 && length_1 === this.uploadWrapper.querySelectorAll('li').length) {
+                this.uploadButton.setAttribute('disabled', 'disabled');
+            }
+            else {
+                this.uploadButton.removeAttribute('disabled');
+            }
+        }
+    };
+    Uploader.prototype.setDropArea = function () {
+        var dropTextArea = this.dropAreaWrapper.querySelector('.e-file-drop');
+        if (this.dropArea) {
+            this.dropZoneElement = (typeof (this.dropArea) !== 'string') ? this.dropArea :
+                document.querySelector(this.dropArea);
+            var element = this.element;
+            var enableDropText = false;
+            while (element.parentNode) {
+                element = element.parentNode;
+                if (element === this.dropZoneElement) {
+                    enableDropText = true;
+                    dropTextArea.textContent = this.localizedTexts('dropFilesHint');
+                }
+            }
+            if (!enableDropText) {
+                dropTextArea.textContent = '';
+            }
+        }
+        else {
+            this.dropZoneElement = this.uploadWrapper;
+            dropTextArea.textContent = this.localizedTexts('dropFilesHint');
+        }
+        this.bindDropEvents();
+    };
+    Uploader.prototype.updateHTMLAttrToElement = function () {
+        if (!sf.base.isNullOrUndefined(this.htmlAttributes)) {
+            for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+                var pro = _a[_i];
+                if (wrapperAttr$1.indexOf(pro) < 0) {
+                    this.element.setAttribute(pro, this.htmlAttributes[pro]);
+                }
+            }
+        }
+    };
+    Uploader.prototype.updateHTMLAttrToWrapper = function () {
+        if (!sf.base.isNullOrUndefined(this.htmlAttributes)) {
+            for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+                var pro = _a[_i];
+                if (wrapperAttr$1.indexOf(pro) > -1) {
+                    if (pro === 'class') {
+                        var updatedClassValues = (this.htmlAttributes[pro].replace(/\s+/g, ' ')).trim();
+                        if (updatedClassValues !== '') {
+                            sf.base.addClass([this.uploadWrapper], updatedClassValues.split(' '));
+                        }
+                    }
+                    else if (pro === 'style') {
+                        var uploadStyle = this.uploadWrapper.getAttribute(pro);
+                        uploadStyle = !sf.base.isNullOrUndefined(uploadStyle) ? (uploadStyle + this.htmlAttributes[pro]) :
+                            this.htmlAttributes[pro];
+                        this.uploadWrapper.setAttribute(pro, uploadStyle);
+                    }
+                    else {
+                        this.uploadWrapper.setAttribute(pro, this.htmlAttributes[pro]);
+                    }
+                }
+            }
+        }
+    };
+    Uploader.prototype.setMultipleSelection = function () {
+        if (this.multiple && !this.element.hasAttribute('multiple')) {
+            var newAttr = document.createAttribute('multiple');
+            newAttr.value = 'multiple';
+            this.element.setAttributeNode(newAttr);
+        }
+        else if (!this.multiple) {
+            this.element.removeAttribute('multiple');
+        }
+    };
+    Uploader.prototype.checkAutoUpload = function (fileData) {
+        if (this.autoUpload) {
+            if (this.sequentialUpload) {
+                /* istanbul ignore next */
+                this.sequenceUpload(fileData);
+            }
+            else {
+                this.upload(fileData);
+            }
+            this.removeActionButtons();
+        }
+        else if (!this.actionButtons) {
+            this.renderActionButtons();
+        }
+        this.checkActionButtonStatus();
+    };
+    Uploader.prototype.sequenceUpload = function (fileData) {
+        if (this.filesData.length - fileData.length === 0 ||
+            this.filesData[(this.filesData.length - fileData.length - 1)].statusCode !== '1') {
+            ++this.count;
+            var isFileListCreated = this.showFileList ? false : true;
+            if (typeof this.filesData[this.count] === 'object') {
+                this.upload(this.filesData[this.count], isFileListCreated);
+                if (this.filesData[this.count].statusCode === '0') {
+                    this.sequenceUpload(fileData);
+                }
+            }
+            else {
+                --this.count;
+            }
+        }
+    };
+    Uploader.prototype.setCSSClass = function (oldCSSClass) {
+        var updatedCssClassValue = this.cssClass;
+        if (!sf.base.isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+            updatedCssClassValue = (this.cssClass.replace(/\s+/g, ' ')).trim();
+        }
+        if (!sf.base.isNullOrUndefined(this.cssClass) && updatedCssClassValue !== '') {
+            sf.base.addClass([this.uploadWrapper], updatedCssClassValue.split(updatedCssClassValue.indexOf(',') > -1 ? ',' : ' '));
+        }
+        var updatedOldCssClass = oldCSSClass;
+        if (!sf.base.isNullOrUndefined(oldCSSClass)) {
+            updatedOldCssClass = (oldCSSClass.replace(/\s+/g, ' ')).trim();
+        }
+        if (!sf.base.isNullOrUndefined(oldCSSClass) && updatedOldCssClass !== '') {
+            sf.base.removeClass([this.uploadWrapper], updatedOldCssClass.split(' '));
+        }
+    };
+    Uploader.prototype.wireEvents = function () {
+        sf.base.EventHandler.add(this.browseButton, 'click', this.browseButtonClick, this);
+        sf.base.EventHandler.add(this.element, 'change', this.onSelectFiles, this);
+        sf.base.EventHandler.add(document, 'click', this.removeFocus, this);
+        this.keyboardModule = new sf.base.KeyboardEvents(this.uploadWrapper, {
+            keyAction: this.keyActionHandler.bind(this),
+            keyConfigs: this.keyConfigs,
+            eventName: 'keydown',
+        });
+        if (this.isForm) {
+            sf.base.EventHandler.add(this.formElement, 'reset', this.resetForm, this);
+        }
+    };
+    Uploader.prototype.unWireEvents = function () {
+        sf.base.EventHandler.remove(this.browseButton, 'click', this.browseButtonClick);
+        sf.base.EventHandler.remove(this.element, 'change', this.onSelectFiles);
+        sf.base.EventHandler.remove(document, 'click', this.removeFocus);
+        if (this.isForm) {
+            sf.base.EventHandler.remove(this.formElement, 'reset', this.resetForm);
+        }
+        this.keyboardModule.destroy();
+    };
+    Uploader.prototype.resetForm = function () {
+        this.clearAll();
+    };
+    Uploader.prototype.keyActionHandler = function (e) {
+        var targetElement = e.target;
+        switch (e.action) {
+            case 'enter':
+                if (e.target === this.clearButton) {
+                    this.clearButtonClick();
+                }
+                else if (e.target === this.uploadButton) {
+                    this.uploadButtonClick();
+                }
+                else if (e.target === this.browseButton) {
+                    this.browseButtonClick();
+                }
+                else if (targetElement.classList.contains(PAUSE_UPLOAD)) {
+                    var metaData = this.getCurrentMetaData(null, e);
+                    metaData.file.statusCode = '4';
+                    metaData.file.status = this.localizedTexts('pauseUpload');
+                    this.abortUpload(metaData, false);
+                }
+                else if (targetElement.classList.contains(RESUME_UPLOAD)) {
+                    this.resumeUpload(this.getCurrentMetaData(null, e), e);
+                }
+                else if (targetElement.classList.contains(RETRY_ICON)) {
+                    var metaData = this.getCurrentMetaData(null, e);
+                    if (!sf.base.isNullOrUndefined(metaData)) {
+                        metaData.file.statusCode = '1';
+                        metaData.file.status = this.localizedTexts('readyToUploadMessage');
+                        this.chunkUpload(metaData.file);
+                    }
+                    else {
+                        var target = e.target.parentElement;
+                        var fileData = this.filesData[this.fileList.indexOf(target)];
+                        this.retry(fileData);
+                    }
+                }
+                else {
+                    this.removeFiles(e);
+                    if (!targetElement.classList.contains(ABORT_ICON)) {
+                        this.browseButton.focus();
+                    }
+                }
+                e.preventDefault();
+                e.stopPropagation();
+                break;
+        }
+    };
+    Uploader.prototype.getCurrentMetaData = function (fileInfo, e) {
+        var fileData;
+        var targetMetaData;
+        if (sf.base.isNullOrUndefined(fileInfo)) {
+            var target = e.target.parentElement;
+            fileData = this.filesData[this.fileList.indexOf(target)];
+        }
+        else {
+            fileData = fileInfo;
+        }
+        for (var i = 0; i < this.uploadMetaData.length; i++) {
+            if (this.uploadMetaData[i].file.name === fileData.name) {
+                targetMetaData = this.uploadMetaData[i];
+            }
+        }
+        return targetMetaData;
+    };
+    Uploader.prototype.removeFocus = function () {
+        if (this.uploadWrapper && this.listParent && this.listParent.querySelector('.' + ICON_FOCUSED)) {
+            document.activeElement.blur();
+            this.listParent.querySelector('.' + ICON_FOCUSED).classList.remove(ICON_FOCUSED);
+        }
+    };
+    Uploader.prototype.browseButtonClick = function () {
+        this.element.click();
+    };
+    Uploader.prototype.uploadButtonClick = function () {
+        if (this.sequentialUpload) {
+            this.sequenceUpload(this.filesData);
+        }
+        else {
+            this.upload(this.filesData);
+        }
+    };
+    Uploader.prototype.clearButtonClick = function () {
+        this.clearAll();
+        /* istanbul ignore next */
+        if (this.sequentialUpload) {
+            this.count = -1;
+        }
+        this.actionCompleteCount = 0;
+    };
+    Uploader.prototype.bindDropEvents = function () {
+        if (this.dropZoneElement) {
+            sf.base.EventHandler.add(this.dropZoneElement, 'drop', this.dropElement, this);
+            sf.base.EventHandler.add(this.dropZoneElement, 'dragover', this.dragHover, this);
+            sf.base.EventHandler.add(this.dropZoneElement, 'dragleave', this.onDragLeave, this);
+            sf.base.EventHandler.add(this.dropZoneElement, 'paste', this.onPasteFile, this);
+        }
+    };
+    Uploader.prototype.unBindDropEvents = function () {
+        if (this.dropZoneElement) {
+            sf.base.EventHandler.remove(this.dropZoneElement, 'drop', this.dropElement);
+            sf.base.EventHandler.remove(this.dropZoneElement, 'dragover', this.dragHover);
+            sf.base.EventHandler.remove(this.dropZoneElement, 'dragleave', this.onDragLeave);
+        }
+    };
+    Uploader.prototype.onDragLeave = function (e) {
+        this.dropZoneElement.classList.remove(DRAG_HOVER);
+    };
+    Uploader.prototype.dragHover = function (e) {
+        if (!this.enabled) {
+            return;
+        }
+        this.dropZoneElement.classList.add(DRAG_HOVER);
+        e.preventDefault();
+        e.stopPropagation();
+    };
+    /* istanbul ignore next */
+    Uploader.prototype.dropElement = function (e) {
+        this.dropZoneElement.classList.remove(DRAG_HOVER);
+        this.onSelectFiles(e);
+        e.preventDefault();
+        e.stopPropagation();
+    };
+    /* istanbul ignore next */
+    Uploader.prototype.onPasteFile = function (event) {
+        var item = event.clipboardData.items;
+        if (item.length !== 1) {
+            return;
+        }
+        var pasteFile = [].slice.call(item)[0];
+        if ((pasteFile.kind === 'file') && pasteFile.type.match('^image/')) {
+            this.renderSelectedFiles(event, [pasteFile.getAsFile()], false, true);
+        }
+    };
+    Uploader.prototype.getSelectedFiles = function (index) {
+        var data = [];
+        var liElement = this.fileList[index];
+        var allFiles = this.getFilesData();
+        var nameElements = +liElement.getAttribute('data-files-count');
+        var startIndex = 0;
+        for (var i = 0; i < index; i++) {
+            startIndex += (+this.fileList[i].getAttribute('data-files-count'));
+        }
+        for (var j = startIndex; j < (startIndex + nameElements); j++) {
+            data.push(allFiles[j]);
+        }
+        return data;
+    };
+    Uploader.prototype.removeFiles = function (args) {
+        if (!this.enabled) {
+            return;
+        }
+        var selectedElement = args.target.parentElement;
+        if (this.isBlazorSaveUrl) {
+            this.fileList = [].slice.call(this.uploadWrapper.querySelectorAll('li'));
+        }
+        var index = this.fileList.indexOf(selectedElement);
+        var liElement = this.fileList[index];
+        var formUpload = this.isFormUpload();
+        var fileData = formUpload ? this.getSelectedFiles(index) : this.getFilesInArray(this.filesData[index]);
+        if (sf.base.isNullOrUndefined(fileData)) {
+            return;
+        }
+        if (args.target.classList.contains(ABORT_ICON) && !formUpload) {
+            fileData[0].statusCode = '5';
+            if (!sf.base.isNullOrUndefined(liElement)) {
+                var spinnerTarget = liElement.querySelector('.' + ABORT_ICON);
+                sf.popups.createSpinner({ target: spinnerTarget, width: '20px' });
+                sf.popups.showSpinner(spinnerTarget);
+            }
+            if (this.sequentialUpload) {
+                /* istanbul ignore next */
+                this.uploadSequential();
+            }
+            if (!(liElement.classList.contains(RESTRICT_RETRY))) {
+                this.checkActionComplete(true);
+            }
+        }
+        else {
+            this.remove(fileData, false, false, true, args);
+        }
+        this.element.value = '';
+        this.checkActionButtonStatus();
+    };
+    Uploader.prototype.removeFilesData = function (file, customTemplate) {
+        var index;
+        if (customTemplate) {
+            if (!this.showFileList) {
+                index = this.filesData.indexOf(file);
+                this.filesData.splice(index, 1);
+            }
+            return;
+        }
+        var selectedElement = this.getLiElement(file);
+        if (sf.base.isNullOrUndefined(selectedElement)) {
+            return;
+        }
+        if (!this.isBlazorSaveUrl) {
+            sf.base.detach(selectedElement);
+        }
+        index = this.fileList.indexOf(selectedElement);
+        this.fileList.splice(index, 1);
+        this.filesData.splice(index, 1);
+        if (!this.isBlazorSaveUrl) {
+            if (this.fileList.length === 0 && !sf.base.isNullOrUndefined(this.listParent)) {
+                sf.base.detach(this.listParent);
+                this.listParent = null;
+                this.removeActionButtons();
+            }
+            if (this.sequentialUpload) {
+                /* istanbul ignore next */
+                if (index <= this.count) {
+                    --this.count;
+                }
+            }
+        }
+        else {
+            // tslint:disable-next-line
+            this.interopAdaptor.invokeMethodAsync('removeFileData', index);
+        }
+    };
+    Uploader.prototype.removeUploadedFile = function (file, eventArgs, removeDirectly, custom) {
+        var _this = this;
+        var selectedFiles = file;
+        var ajax = new sf.base.Ajax(this.asyncSettings.removeUrl, 'POST', true, null);
+        ajax.emitError = false;
+        var formData = new FormData();
+        ajax.beforeSend = function (e) {
+            eventArgs.currentRequest = ajax.httpRequest;
+            if (_this.isServerBlazor) {
+                if (_this.currentRequestHeader) {
+                    _this.updateCustomheader(ajax.httpRequest, _this.currentRequestHeader);
+                }
+                if (_this.customFormDatas) {
+                    _this.updateFormData(formData, _this.customFormDatas);
+                }
+            }
+            if (!removeDirectly) {
+                _this.trigger('removing', eventArgs, function (eventArgs) {
+                    if (eventArgs.cancel) {
+                        e.cancel = true;
+                    }
+                    else {
+                        _this.removingEventCallback(eventArgs, formData, selectedFiles, file);
+                    }
+                });
+            }
+            else {
+                _this.removingEventCallback(eventArgs, formData, selectedFiles, file);
+            }
+        };
+        if (this.isServerBlazor) {
+            var name_1 = this.element.getAttribute('name');
+            if (!sf.base.isNullOrUndefined(selectedFiles.rawFile) && selectedFiles.rawFile !== '') {
+                formData.append(name_1, selectedFiles.rawFile, selectedFiles.name);
+            }
+            else {
+                formData.append(name_1, selectedFiles.name);
+            }
+        }
+        ajax.onLoad = function (e) { _this.removeCompleted(e, selectedFiles, custom); return {}; };
+        /* istanbul ignore next */
+        ajax.onError = function (e) { _this.removeFailed(e, selectedFiles, custom); return {}; };
+        ajax.send(formData);
+    };
+    Uploader.prototype.removingEventCallback = function (eventArgs, formData, selectedFiles, file) {
+        /* istanbul ignore next */
+        var name = this.element.getAttribute('name');
+        var liElement = this.getLiElement(file);
+        if (!sf.base.isNullOrUndefined(liElement) && (!sf.base.isNullOrUndefined(liElement.querySelector('.' + DELETE_ICON)) ||
+            !sf.base.isNullOrUndefined(liElement.querySelector('.' + REMOVE_ICON)))) {
+            var spinnerTarget = void 0;
+            spinnerTarget = liElement.querySelector('.' + DELETE_ICON) ? liElement.querySelector('.' + DELETE_ICON) :
+                liElement.querySelector('.' + REMOVE_ICON);
+            sf.popups.createSpinner({ target: spinnerTarget, width: '20px' });
+            sf.popups.showSpinner(spinnerTarget);
+        }
+        if (!this.isServerBlazor) {
+            if (eventArgs.postRawFile && !sf.base.isNullOrUndefined(selectedFiles.rawFile) && selectedFiles.rawFile !== '') {
+                formData.append(name, selectedFiles.rawFile, selectedFiles.name);
+            }
+            else {
+                formData.append(name, selectedFiles.name);
+            }
+            this.updateFormData(formData, eventArgs.customFormData);
+        }
+    };
+    /* istanbul ignore next */
+    Uploader.prototype.updateFormData = function (formData, customData) {
+        if (customData.length > 0 && customData[0]) {
+            var _loop_1 = function (i) {
+                var data = customData[i];
+                // tslint:disable-next-line
+                var value = Object.keys(data).map(function (e) {
+                    return data[e];
+                });
+                formData.append(Object.keys(data)[0], value);
+            };
+            for (var i = 0; i < customData.length; i++) {
+                _loop_1(i);
+            }
+        }
+    };
+    /* istanbul ignore next */
+    Uploader.prototype.updateCustomheader = function (request, currentRequest) {
+        if (currentRequest.length > 0 && currentRequest[0]) {
+            var _loop_2 = function (i) {
+                var data = currentRequest[i];
+                // tslint:disable-next-line
+                var value = Object.keys(data).map(function (e) {
+                    return data[e];
+                });
+                request.setRequestHeader(Object.keys(data)[0], value);
+            };
+            for (var i = 0; i < currentRequest.length; i++) {
+                _loop_2(i);
+            }
+        }
+    };
+    Uploader.prototype.removeCompleted = function (e, files, customTemplate) {
+        var response = e && e.currentTarget ? this.getResponse(e) : null;
+        var args = {
+            e: e, response: response, operation: 'remove', file: this.updateStatus(files, this.localizedTexts('removedSuccessMessage'), '2')
+        };
+        this.trigger('success', args);
+        this.removeFilesData(files, customTemplate);
+        var index = this.uploadedFilesData.indexOf(files);
+        this.uploadedFilesData.splice(index, 1);
+        this.trigger('change', { files: this.uploadedFilesData });
+    };
+    Uploader.prototype.removeFailed = function (e, files, customTemplate) {
+        var response = e && e.currentTarget ? this.getResponse(e) : null;
+        var args = {
+            e: e, response: response, operation: 'remove', file: this.updateStatus(files, this.localizedTexts('removedFailedMessage'), '0')
+        };
+        if (!customTemplate) {
+            var index = this.filesData.indexOf(files);
+            var rootElement = this.fileList[index];
+            if (rootElement) {
+                var statusElement = rootElement.querySelector('.' + STATUS);
+                rootElement.classList.remove(UPLOAD_SUCCESS);
+                statusElement.classList.remove(UPLOAD_SUCCESS);
+                rootElement.classList.add(UPLOAD_FAILED);
+                statusElement.classList.add(UPLOAD_FAILED);
+            }
+            this.checkActionButtonStatus();
+        }
+        this.trigger('failure', args);
+        var liElement = this.getLiElement(files);
+        /* istanbul ignore next */
+        if (!sf.base.isNullOrUndefined(liElement) && !sf.base.isNullOrUndefined(liElement.querySelector('.' + DELETE_ICON))) {
+            var spinnerTarget = liElement.querySelector('.' + DELETE_ICON);
+            sf.popups.hideSpinner(spinnerTarget);
+            sf.base.detach(liElement.querySelector('.e-spinner-pane'));
+        }
+    };
+    /* istanbul ignore next */
+    Uploader.prototype.getFilesFromFolder = function (event) {
+        this.filesEntries = [];
+        var items;
+        items = this.multiple ? event.dataTransfer.items : [event.dataTransfer.items[0]];
+        var validDirectoryUpload = this.checkDirectoryUpload(items);
+        if (!validDirectoryUpload) {
+            return;
+        }
+        var _loop_3 = function (i) {
+            // tslint:disable-next-line
+            var item = items[i].webkitGetAsEntry();
+            if (item.isFile) {
+                var files_2 = [];
+                // tslint:disable-next-line
+                (item).file(function (fileObj) {
+                    var path = item.fullPath;
+                    files_2.push({ 'path': path, 'file': fileObj });
+                });
+                this_1.renderSelectedFiles(event, files_2, true);
+            }
+            else if (item.isDirectory) {
+                this_1.traverseFileTree(item, event);
+            }
+        };
+        var this_1 = this;
+        for (var i = 0; i < items.length; i++) {
+            _loop_3(i);
+        }
+    };
+    /* istanbul ignore next */
+    Uploader.prototype.checkDirectoryUpload = function (items) {
+        for (var i = 0; items && i < items.length; i++) {
+            // tslint:disable-next-line
+            var item = items[i].webkitGetAsEntry();
+            if (item.isDirectory) {
+                return true;
+            }
+        }
+        return false;
+    };
+    // tslint:disable
+    /* istanbul ignore next */
+    Uploader.prototype.traverseFileTree = function (item, event) {
+        if (item.isFile) {
+            this.filesEntries.push(item);
+        }
+        else if (item.isDirectory) {
+            // tslint:disable-next-line
+            var directoryReader = item.createReader();
+            // tslint:disable-next-line
+            this.readFileFromDirectory(directoryReader, event);
+        }
+    };
+    // tslint:disable
+    /* istanbul ignore next */
+    Uploader.prototype.readFileFromDirectory = function (directoryReader, event) {
+        var _this = this;
+        // tslint:disable-next-line
+        directoryReader.readEntries(function (entries) {
+            for (var i = 0; i < entries.length; i++) {
+                _this.traverseFileTree(entries[i]);
+                // tslint:disable-next-line
+            }
+            
+            _this.pushFilesEntries(event);
+            if (entries.length) {
+                _this.readFileFromDirectory(directoryReader);
+            }
+        });
+    };
+    Uploader.prototype.pushFilesEntries = function (event) {
+        var _this = this;
+        var files = [];
+        var _loop_4 = function (i) {
+            // tslint:disable-next-line
+            this_2.filesEntries[i].file(function (fileObj) {
+                var path = _this.filesEntries[i].fullPath;
+                files.push({ 'path': path, 'file': fileObj });
+                if (i === _this.filesEntries.length - 1) {
+                    _this.filesEntries = [];
+                    _this.renderSelectedFiles(event, files, true);
+                }
+            });
+        };
+        var this_2 = this;
+        for (var i = 0; i < this.filesEntries.length; i++) {
+            _loop_4(i);
+        }
+    };
+    // tslint:enable
+    Uploader.prototype.onSelectFiles = function (args) {
+        if (!this.enabled) {
+            return;
+        }
+        var targetFiles;
+        /* istanbul ignore next */
+        if (args.type === 'drop') {
+            if (this.directoryUpload) {
+                this.getFilesFromFolder(args);
+            }
+            else {
+                var files = this.sortFilesList = args.dataTransfer.files;
+                if (this.browserName !== 'msie' && this.browserName !== 'edge') {
+                    this.element.files = files;
+                }
+                targetFiles = this.multiple ? this.sortFileList(files) : [files[0]];
+                this.renderSelectedFiles(args, targetFiles);
+            }
+        }
+        else {
+            targetFiles = [].slice.call(args.target.files);
+            this.renderSelectedFiles(args, targetFiles);
+        }
+    };
+    /* istanbul ignore next */
+    Uploader.prototype.getBase64 = function (file) {
+        return new Promise(function (resolve, reject) {
+            var fileReader = new FileReader();
+            fileReader.readAsDataURL(file);
+            fileReader.onload = function () { return resolve(fileReader.result); };
+            fileReader.onerror = function (error) { return reject(error); };
+        });
+    };
+    /* istanbul ignore next */
+    /* tslint:ignore */
+    Uploader.prototype.renderSelectedFiles = function (args, 
+    // tslint:disable-next-line
+    targetFiles, directory, paste) {
+        var _this = this;
+        this.base64String = [];
+        // tslint:disable-next-line
+        var eventArgs = {
+            event: args,
+            cancel: false,
+            filesData: [],
+            isModified: false,
+            modifiedFilesData: [],
+            progressInterval: '',
+            isCanceled: false,
+            currentRequest: null,
+            customFormData: null
+        };
+        /* istanbul ignore next */
+        if (targetFiles.length < 1) {
+            eventArgs.isCanceled = true;
+            this.trigger('selected', eventArgs);
+            return;
+        }
+        this.flag = true;
+        var fileData = [];
+        if (!this.multiple) {
+            this.clearData(true);
+            targetFiles = [targetFiles[0]];
+        }
+        for (var i = 0; i < targetFiles.length; i++) {
+            var file = directory ? targetFiles[i].file : targetFiles[i];
+            this.updateInitialFileDetails(args, targetFiles, file, i, fileData, directory, paste);
+        }
+        eventArgs.filesData = fileData;
+        if (this.allowedExtensions.indexOf('*') > -1) {
+            this.allTypes = true;
+        }
+        if (!this.allTypes) {
+            fileData = this.checkExtension(fileData);
+        }
+        this.trigger('selected', eventArgs, function (eventArgs) {
+            _this._internalRenderSelect(eventArgs, fileData);
+        });
+    };
+    Uploader.prototype.updateInitialFileDetails = function (args, 
+    // tslint:disable-next-line
+    targetFiles, file, i, fileData, directory, paste) {
+        var fileName = directory ? targetFiles[i].path.substring(1, targetFiles[i].path.length) : paste ?
+            sf.base.getUniqueID(file.name.substring(0, file.name.lastIndexOf('.'))) + '.' + this.getFileType(file.name) :
+            this.directoryUpload ? targetFiles[i].webkitRelativePath : file.name;
+        var fileDetails = {
+            name: fileName,
+            rawFile: file,
+            size: file.size,
+            status: this.localizedTexts('readyToUploadMessage'),
+            type: this.getFileType(file.name),
+            validationMessages: this.validatedFileSize(file.size),
+            statusCode: '1',
+            id: sf.base.getUniqueID(file.name.substring(0, file.name.lastIndexOf('.'))) + '.' + this.getFileType(file.name)
+        };
+        /* istanbul ignore next */
+        if (paste) {
+            fileDetails.fileSource = 'paste';
+        }
+        fileDetails.status = fileDetails.validationMessages.minSize !== '' ? this.localizedTexts('invalidMinFileSize') :
+            fileDetails.validationMessages.maxSize !== '' ? this.localizedTexts('invalidMaxFileSize') : fileDetails.status;
+        if (fileDetails.validationMessages.minSize !== '' || fileDetails.validationMessages.maxSize !== '') {
+            fileDetails.statusCode = '0';
+            this.checkActionComplete(true);
+        }
+        fileData.push(fileDetails);
+    };
+    Uploader.prototype._internalRenderSelect = function (eventArgs, fileData) {
+        if (!eventArgs.cancel) {
+            /* istanbul ignore next */
+            if (this.isServerBlazor) {
+                this.currentRequestHeader = eventArgs.currentRequest;
+                this.customFormDatas = eventArgs.customFormData;
+            }
+            this.selectedFiles = fileData;
+            this.btnTabIndex = this.disableKeyboardNavigation ? '-1' : '0';
+            if (this.showFileList) {
+                if (eventArgs.isModified && eventArgs.modifiedFilesData.length > 0) {
+                    for (var j = 0; j < eventArgs.modifiedFilesData.length; j++) {
+                        for (var k = 0; k < fileData.length; k++) {
+                            if (eventArgs.modifiedFilesData[j].id === fileData[k].id) {
+                                eventArgs.modifiedFilesData[j].rawFile = fileData[k].rawFile;
+                            }
+                        }
+                    }
+                    var dataFiles = this.allTypes ? eventArgs.modifiedFilesData :
+                        this.checkExtension(eventArgs.modifiedFilesData);
+                    this.updateSortedFileList(dataFiles);
+                    this.filesData = dataFiles;
+                    if (!this.isForm || this.allowUpload()) {
+                        this.checkAutoUpload(dataFiles);
+                    }
+                }
+                else {
+                    this.createFileList(fileData, true);
+                    if (!(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
+                        this.filesData = this.filesData.concat(fileData);
+                    }
+                    if (!this.isForm || this.allowUpload()) {
+                        if (!(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
+                            this.checkAutoUpload(fileData);
+                        }
+                    }
+                }
+                if (!sf.base.isNullOrUndefined(eventArgs.progressInterval) && eventArgs.progressInterval !== '') {
+                    this.progressInterval = eventArgs.progressInterval;
+                }
+            }
+            else {
+                this.filesData = this.filesData.concat(fileData);
+                if (this.isBlazorSaveUrl) {
+                    // tslint:disable-next-line
+                    this.interopAdaptor.invokeMethodAsync('updateServerFileData', this.filesData, this.isForm);
+                }
+                if (this.autoUpload) {
+                    this.upload(this.filesData, true);
+                }
+            }
+            this.raiseActionComplete();
+        }
+    };
+    Uploader.prototype.allowUpload = function () {
+        var allowFormUpload = false;
+        if (this.isForm && (!sf.base.isNullOrUndefined(this.asyncSettings.saveUrl) && this.asyncSettings.saveUrl !== '')) {
+            allowFormUpload = true;
+        }
+        return allowFormUpload;
+    };
+    Uploader.prototype.isFormUpload = function () {
+        var isFormUpload = false;
+        if (this.isForm && ((sf.base.isNullOrUndefined(this.asyncSettings.saveUrl) || this.asyncSettings.saveUrl === '')
+            && (sf.base.isNullOrUndefined(this.asyncSettings.removeUrl) || this.asyncSettings.removeUrl === ''))) {
+            isFormUpload = true;
+        }
+        return isFormUpload;
+    };
+    Uploader.prototype.clearData = function (singleUpload) {
+        if (!sf.base.isNullOrUndefined(this.listParent) && !(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
+            sf.base.detach(this.listParent);
+            this.listParent = null;
+        }
+        if (this.browserName !== 'msie' && !singleUpload) {
+            this.element.value = '';
+        }
+        this.fileList = [];
+        this.filesData = [];
+        if (this.isBlazorSaveUrl || this.isBlazorTemplate) {
+            // tslint:disable-next-line
+            this.interopAdaptor.invokeMethodAsync('clearAll');
+        }
+        else {
+            this.removeActionButtons();
+        }
+    };
+    Uploader.prototype.updateSortedFileList = function (filesData) {
+        var previousListClone = this.createElement('div', { id: 'clonewrapper' });
+        var added = -1;
+        var removedList;
+        if (this.listParent) {
+            for (var i = 0; i < this.listParent.querySelectorAll('li').length; i++) {
+                var liElement = this.listParent.querySelectorAll('li')[i];
+                previousListClone.appendChild(liElement.cloneNode(true));
+            }
+            removedList = this.listParent.querySelectorAll('li');
+            for (var _i = 0, removedList_1 = removedList; _i < removedList_1.length; _i++) {
+                var item = removedList_1[_i];
+                sf.base.detach(item);
+            }
+            this.removeActionButtons();
+            var oldList = [].slice.call(previousListClone.childNodes);
+            sf.base.detach(this.listParent);
+            this.listParent = null;
+            this.fileList = [];
+            this.createParentUL();
+            for (var index = 0; index < filesData.length; index++) {
+                for (var j = 0; j < this.filesData.length; j++) {
+                    if (this.filesData[j].name === filesData[index].name) {
+                        this.listParent.appendChild(oldList[j]);
+                        sf.base.EventHandler.add(oldList[j].querySelector('.e-icons'), 'click', this.removeFiles, this);
+                        this.fileList.push(oldList[j]);
+                        added = index;
+                    }
+                }
+                if (added !== index) {
+                    this.createFileList([filesData[index]]);
+                }
+            }
+        }
+        else {
+            this.createFileList(filesData);
+        }
+    };
+    Uploader.prototype.isBlank = function (str) {
+        return (!str || /^\s*$/.test(str));
+    };
+    Uploader.prototype.checkExtension = function (files) {
+        var dropFiles = files;
+        if (!this.isBlank(this.allowedExtensions)) {
+            var allowedExtensions = [];
+            var extensions = this.allowedExtensions.split(',');
+            for (var _i = 0, extensions_1 = extensions; _i < extensions_1.length; _i++) {
+                var extension = extensions_1[_i];
+                allowedExtensions.push(extension.trim().toLocaleLowerCase());
+            }
+            for (var i = 0; i < files.length; i++) {
+                if (allowedExtensions.indexOf(('.' + files[i].type).toLocaleLowerCase()) === -1) {
+                    files[i].status = this.localizedTexts('invalidFileType');
+                    files[i].statusCode = '0';
+                }
+            }
+        }
+        return dropFiles;
+    };
+    Uploader.prototype.validatedFileSize = function (fileSize) {
+        var minSizeError = '';
+        var maxSizeError = '';
+        if (fileSize < this.minFileSize) {
+            minSizeError = this.localizedTexts('invalidMinFileSize');
+        }
+        else if (fileSize > this.maxFileSize) {
+            maxSizeError = this.localizedTexts('invalidMaxFileSize');
+        }
+        else {
+            minSizeError = '';
+            maxSizeError = '';
+        }
+        var errorMessage = { minSize: minSizeError, maxSize: maxSizeError };
+        return errorMessage;
+    };
+    Uploader.prototype.isPreLoadFile = function (fileData) {
+        var isPreload = false;
+        for (var i = 0; i < this.files.length; i++) {
+            if (this.files[i].name === fileData.name.slice(0, fileData.name.lastIndexOf('.')) && this.files[i].type === fileData.type) {
+                isPreload = true;
+            }
+        }
+        return isPreload;
+    };
+    Uploader.prototype.createCustomfileList = function (fileData) {
+        this.createParentUL();
+        sf.base.resetBlazorTemplate(this.element.id + 'Template', 'Template');
+        for (var _i = 0, fileData_1 = fileData; _i < fileData_1.length; _i++) {
+            var listItem = fileData_1[_i];
+            var liElement = this.createElement('li', { className: FILE, attrs: { 'data-file-name': listItem.name } });
+            this.uploadTemplateFn = this.templateComplier(this.template);
+            var fromElements = [].slice.call(this.uploadTemplateFn(listItem, null, null, this.element.id + 'Template', this.isStringTemplate));
+            var index = fileData.indexOf(listItem);
+            sf.base.append(fromElements, liElement);
+            var eventArgs = {
+                element: liElement,
+                fileInfo: listItem,
+                index: index,
+                isPreload: this.isPreLoadFile(listItem)
+            };
+            var eventsArgs = {
+                element: liElement,
+                fileInfo: listItem,
+                index: index,
+                isPreload: this.isPreLoadFile(listItem)
+            };
+            this.trigger('rendering', eventArgs);
+            this.trigger('fileListRendering', eventsArgs);
+            this.listParent.appendChild(liElement);
+            this.fileList.push(liElement);
+        }
+        sf.base.updateBlazorTemplate(this.element.id + 'Template', 'Template', this, false);
+    };
+    Uploader.prototype.createParentUL = function () {
+        if (sf.base.isNullOrUndefined(this.listParent)) {
+            this.listParent = this.createElement('ul', { className: LIST_PARENT });
+            this.uploadWrapper.appendChild(this.listParent);
+        }
+    };
+    Uploader.prototype.formFileList = function (fileData, files) {
+        var fileList = this.createElement('li', { className: FILE });
+        fileList.setAttribute('data-files-count', fileData.length + '');
+        var fileContainer = this.createElement('span', { className: TEXT_CONTAINER });
+        var statusMessage;
+        for (var _i = 0, fileData_2 = fileData; _i < fileData_2.length; _i++) {
+            var listItem = fileData_2[_i];
+            var fileNameEle = this.createElement('span', { className: FILE_NAME });
+            fileNameEle.innerHTML = this.getFileNameOnly(listItem.name);
+            var fileTypeEle = this.createElement('span', { className: FILE_TYPE });
+            fileTypeEle.innerHTML = '.' + this.getFileType(listItem.name);
+            if (!this.enableRtl) {
+                fileContainer.appendChild(fileNameEle);
+                fileContainer.appendChild(fileTypeEle);
+            }
+            else {
+                var rtlContainer = this.createElement('span', { className: RTL_CONTAINER });
+                rtlContainer.appendChild(fileTypeEle);
+                rtlContainer.appendChild(fileNameEle);
+                fileContainer.appendChild(rtlContainer);
+            }
+            this.truncateName(fileNameEle);
+            statusMessage = this.formValidateFileInfo(listItem, fileList);
+        }
+        fileList.appendChild(fileContainer);
+        this.setListToFileInfo(fileData, fileList);
+        var index = this.listParent.querySelectorAll('li').length;
+        var infoEle = this.createElement('span');
+        if (fileList.classList.contains(INVALID_FILE)) {
+            infoEle.classList.add(STATUS);
+            infoEle.classList.add(INVALID_FILE);
+            infoEle.innerText = fileData.length > 1 ? this.localizedTexts('invalidFileSelection') : statusMessage;
+        }
+        else {
+            infoEle.classList.add(fileData.length > 1 ? INFORMATION : FILE_SIZE);
+            infoEle.innerText = fileData.length > 1 ? this.localizedTexts('totalFiles') + ': ' + fileData.length + ' , '
+                + this.localizedTexts('size') + ': ' +
+                this.bytesToSize(this.getFileSize(fileData)) : this.bytesToSize(fileData[0].size);
+            this.createFormInput(fileData);
+        }
+        fileContainer.appendChild(infoEle);
+        if (sf.base.isNullOrUndefined(fileList.querySelector('.e-icons'))) {
+            var iconElement = this.createElement('span', { className: 'e-icons', attrs: { 'tabindex': this.btnTabIndex } });
+            /* istanbul ignore next */
+            if (this.browserName === 'msie') {
+                iconElement.classList.add('e-msie');
+            }
+            iconElement.setAttribute('title', this.localizedTexts('remove'));
+            fileList.appendChild(fileContainer);
+            fileList.appendChild(iconElement);
+            sf.base.EventHandler.add(iconElement, 'click', this.removeFiles, this);
+            iconElement.classList.add(REMOVE_ICON);
+        }
+        var eventArgs = {
+            element: fileList,
+            fileInfo: this.mergeFileInfo(fileData, fileList),
+            index: index,
+            isPreload: this.isPreLoadFile(this.mergeFileInfo(fileData, fileList))
+        };
+        var eventsArgs = {
+            element: fileList,
+            fileInfo: this.mergeFileInfo(fileData, fileList),
+            index: index,
+            isPreload: this.isPreLoadFile(this.mergeFileInfo(fileData, fileList))
+        };
+        this.trigger('rendering', eventArgs);
+        this.trigger('fileListRendering', eventsArgs);
+        this.listParent.appendChild(fileList);
+        this.fileList.push(fileList);
+    };
+    Uploader.prototype.formValidateFileInfo = function (listItem, fileList) {
+        var statusMessage = listItem.status;
+        var validationMessages = this.validatedFileSize(listItem.size);
+        if (validationMessages.minSize !== '' || validationMessages.maxSize !== '') {
+            this.addInvalidClass(fileList);
+            statusMessage = validationMessages.minSize !== '' ? this.localizedTexts('invalidMinFileSize') :
+                validationMessages.maxSize !== '' ? this.localizedTexts('invalidMaxFileSize') : statusMessage;
+        }
+        var typeValidationMessage = this.checkExtension(this.getFilesInArray(listItem))[0].status;
+        if (typeValidationMessage === this.localizedTexts('invalidFileType')) {
+            this.addInvalidClass(fileList);
+            statusMessage = typeValidationMessage;
+        }
+        return statusMessage;
+    };
+    Uploader.prototype.addInvalidClass = function (fileList) {
+        fileList.classList.add(INVALID_FILE);
+    };
+    Uploader.prototype.createFormInput = function (fileData) {
+        var inputElement = this.element.cloneNode(true);
+        inputElement.classList.add(HIDDEN_INPUT);
+        for (var _i = 0, fileData_3 = fileData; _i < fileData_3.length; _i++) {
+            var listItem = fileData_3[_i];
+            listItem.input = inputElement;
+        }
+        inputElement.setAttribute('name', this.uploaderName);
+        this.uploadWrapper.querySelector('.' + INPUT_WRAPPER).appendChild(inputElement);
+        if (this.browserName !== 'msie' && this.browserName !== 'edge') {
+            this.element.value = '';
+        }
+    };
+    Uploader.prototype.getFileSize = function (fileData) {
+        var fileSize = 0;
+        for (var _i = 0, fileData_4 = fileData; _i < fileData_4.length; _i++) {
+            var file = fileData_4[_i];
+            fileSize += file.size;
+        }
+        return fileSize;
+    };
+    Uploader.prototype.mergeFileInfo = function (fileData, fileList) {
+        var result = {
+            name: '',
+            rawFile: '',
+            size: 0,
+            status: '',
+            type: '',
+            validationMessages: { minSize: '', maxSize: '' },
+            statusCode: '1',
+            list: fileList
+        };
+        var fileNames = [];
+        var type = '';
+        for (var _i = 0, fileData_5 = fileData; _i < fileData_5.length; _i++) {
+            var listItem = fileData_5[_i];
+            fileNames.push(listItem.name);
+            type = listItem.type;
+        }
+        result.name = fileNames.join(', ');
+        result.size = this.getFileSize(fileData);
+        result.type = type;
+        result.status = this.statusForFormUpload(fileData, fileList);
+        return result;
+    };
+    Uploader.prototype.statusForFormUpload = function (fileData, fileList) {
+        var isValid = true;
+        var statusMessage;
+        for (var _i = 0, fileData_6 = fileData; _i < fileData_6.length; _i++) {
+            var listItem = fileData_6[_i];
+            statusMessage = listItem.status;
+            var validationMessages = this.validatedFileSize(listItem.size);
+            if (validationMessages.minSize !== '' || validationMessages.maxSize !== '') {
+                isValid = false;
+                statusMessage = validationMessages.minSize !== '' ? this.localizedTexts('invalidMinFileSize') :
+                    validationMessages.maxSize !== '' ? this.localizedTexts('invalidMaxFileSize') : statusMessage;
+            }
+            var typeValidationMessage = this.checkExtension(this.getFilesInArray(listItem))[0].status;
+            if (typeValidationMessage === this.localizedTexts('invalidFileType')) {
+                isValid = false;
+                statusMessage = typeValidationMessage;
+            }
+        }
+        if (!isValid) {
+            fileList.classList.add(INVALID_FILE);
+            statusMessage = fileData.length > 1 ? this.localizedTexts('invalidFileSelection') : statusMessage;
+        }
+        else {
+            statusMessage = this.localizedTexts('totalFiles') + ': ' + fileData.length + ' , '
+                + this.localizedTexts('size') + ': ' +
+                this.bytesToSize(this.getFileSize(fileData));
+        }
+        return statusMessage;
+    };
+    Uploader.prototype.formCustomFileList = function (fileData, files) {
+        this.createParentUL();
+        sf.base.resetBlazorTemplate(this.element.id + 'Template', 'Template');
+        var fileList = this.createElement('li', { className: FILE });
+        fileList.setAttribute('data-files-count', fileData.length + '');
+        this.setListToFileInfo(fileData, fileList);
+        var result = this.mergeFileInfo(fileData, fileList);
+        fileList.setAttribute('data-file-name', result.name);
+        this.uploadTemplateFn = this.templateComplier(this.template);
+        var fromElements = [].slice.call(this.uploadTemplateFn(result, null, null, this.element.id + 'Template', this.isStringTemplate));
+        var index = this.listParent.querySelectorAll('li').length;
+        sf.base.append(fromElements, fileList);
+        if (!fileList.classList.contains(INVALID_FILE)) {
+            this.createFormInput(fileData);
+        }
+        var eventArgs = {
+            element: fileList,
+            fileInfo: result,
+            index: index,
+            isPreload: this.isPreLoadFile(result)
+        };
+        var eventsArgs = {
+            element: fileList,
+            fileInfo: result,
+            index: index,
+            isPreload: this.isPreLoadFile(result)
+        };
+        this.trigger('rendering', eventArgs);
+        this.trigger('fileListRendering', eventsArgs);
+        this.listParent.appendChild(fileList);
+        this.fileList.push(fileList);
+        sf.base.updateBlazorTemplate(this.element.id + 'Template', 'Template', this, false);
+    };
+    /**
+     * Create the file list for specified files data.
+     * @param { FileInfo[] } fileData - specifies the files data for file list creation.
+     * @returns void
+     */
+    Uploader.prototype.createFileList = function (fileData, isSelectedFile) {
+        if (this.isBlazorSaveUrl || this.isBlazorTemplate) {
+            var fileListData = (isSelectedFile) ? this.filesData = this.filesData.concat(fileData) : fileData;
+            // tslint:disable-next-line
+            this.interopAdaptor.invokeMethodAsync('createFileList', fileListData, this.isForm);
+        }
+        else {
+            this.createParentUL();
+            if (this.template !== '' && !sf.base.isNullOrUndefined(this.template)) {
+                if (this.isFormUpload()) {
+                    this.uploadWrapper.classList.add(FORM_UPLOAD);
+                    this.formCustomFileList(fileData, this.element.files);
+                }
+                else {
+                    this.createCustomfileList(fileData);
+                }
+            }
+            else if (this.isFormUpload()) {
+                this.uploadWrapper.classList.add(FORM_UPLOAD);
+                this.formFileList(fileData, this.element.files);
+            }
+            else {
+                for (var _i = 0, fileData_7 = fileData; _i < fileData_7.length; _i++) {
+                    var listItem = fileData_7[_i];
+                    var liElement = this.createElement('li', {
+                        className: FILE,
+                        attrs: { 'data-file-name': listItem.name, 'data-files-count': '1' }
+                    });
+                    var textContainer = this.createElement('span', { className: TEXT_CONTAINER });
+                    var textElement = this.createElement('span', { className: FILE_NAME, attrs: { 'title': listItem.name } });
+                    textElement.innerHTML = this.getFileNameOnly(listItem.name);
+                    var fileExtension = this.createElement('span', { className: FILE_TYPE });
+                    fileExtension.innerHTML = '.' + this.getFileType(listItem.name);
+                    if (!this.enableRtl) {
+                        textContainer.appendChild(textElement);
+                        textContainer.appendChild(fileExtension);
+                    }
+                    else {
+                        var rtlContainer = this.createElement('span', { className: RTL_CONTAINER });
+                        rtlContainer.appendChild(fileExtension);
+                        rtlContainer.appendChild(textElement);
+                        textContainer.appendChild(rtlContainer);
+                    }
+                    var fileSize = this.createElement('span', { className: FILE_SIZE });
+                    fileSize.innerHTML = this.bytesToSize(listItem.size);
+                    textContainer.appendChild(fileSize);
+                    var statusElement = this.createElement('span', { className: STATUS });
+                    textContainer.appendChild(statusElement);
+                    statusElement.innerHTML = listItem.status;
+                    liElement.appendChild(textContainer);
+                    var iconElement = this.createElement('span', { className: ' e-icons',
+                        attrs: { 'tabindex': this.btnTabIndex } });
+                    /* istanbul ignore next */
+                    if (this.browserName === 'msie') {
+                        iconElement.classList.add('e-msie');
+                    }
+                    iconElement.setAttribute('title', this.localizedTexts('remove'));
+                    liElement.appendChild(iconElement);
+                    sf.base.EventHandler.add(iconElement, 'click', this.removeFiles, this);
+                    if (listItem.statusCode === '2') {
+                        statusElement.classList.add(UPLOAD_SUCCESS);
+                        iconElement.classList.add(DELETE_ICON);
+                        iconElement.setAttribute('title', this.localizedTexts('delete'));
+                    }
+                    else if (listItem.statusCode !== '1') {
+                        statusElement.classList.remove(UPLOAD_SUCCESS);
+                        statusElement.classList.add(VALIDATION_FAILS);
+                    }
+                    if (this.autoUpload && listItem.statusCode === '1' && this.asyncSettings.saveUrl !== '') {
+                        statusElement.innerHTML = '';
+                    }
+                    if (!iconElement.classList.contains(DELETE_ICON)) {
+                        iconElement.classList.add(REMOVE_ICON);
+                    }
+                    var index = fileData.indexOf(listItem);
+                    var eventArgs = {
+                        element: liElement,
+                        fileInfo: listItem,
+                        index: index,
+                        isPreload: this.isPreLoadFile(listItem)
+                    };
+                    var eventsArgs = {
+                        element: liElement,
+                        fileInfo: listItem,
+                        index: index,
+                        isPreload: this.isPreLoadFile(listItem)
+                    };
+                    this.trigger('rendering', eventArgs);
+                    this.trigger('fileListRendering', eventsArgs);
+                    this.listParent.appendChild(liElement);
+                    this.fileList.push(liElement);
+                    this.truncateName(textElement);
+                }
+            }
+        }
+    };
+    Uploader.prototype.getSlicedName = function (nameElement) {
+        var text;
+        text = nameElement.textContent;
+        nameElement.dataset.tail = text.slice(text.length - 10);
+    };
+    Uploader.prototype.setListToFileInfo = function (fileData, fileList) {
+        for (var _i = 0, fileData_8 = fileData; _i < fileData_8.length; _i++) {
+            var listItem = fileData_8[_i];
+            listItem.list = fileList;
+        }
+    };
+    Uploader.prototype.truncateName = function (name) {
+        var nameElement = name;
+        if (this.browserName !== 'edge' && nameElement.offsetWidth < nameElement.scrollWidth) {
+            this.getSlicedName(nameElement);
+            /* istanbul ignore next */
+        }
+        else if (nameElement.offsetWidth + 1 < nameElement.scrollWidth) {
+            this.getSlicedName(nameElement);
+        }
+    };
+    Uploader.prototype.getFileType = function (name) {
+        var extension;
+        var index = name.lastIndexOf('.');
+        if (index >= 0) {
+            extension = name.substring(index + 1);
+        }
+        return extension ? extension : '';
+    };
+    Uploader.prototype.getFileNameOnly = function (name) {
+        var type = this.getFileType(name);
+        var names = name.split('.' + type);
+        return type = names[0];
+    };
+    Uploader.prototype.setInitialAttributes = function () {
+        if (this.initialAttr.accept) {
+            this.element.setAttribute('accept', this.initialAttr.accept);
+        }
+        if (this.initialAttr.disabled) {
+            this.element.setAttribute('disabled', 'disabled');
+        }
+        if (this.initialAttr.multiple) {
+            var newAttr = document.createAttribute('multiple');
+            this.element.setAttributeNode(newAttr);
+        }
+    };
+    Uploader.prototype.filterfileList = function (files) {
+        var filterFiles = [];
+        var li;
+        for (var i = 0; i < files.length; i++) {
+            li = this.getLiElement(files[i]);
+            if (!li.classList.contains(UPLOAD_SUCCESS)) {
+                filterFiles.push(files[i]);
+            }
+        }
+        return filterFiles;
+    };
+    Uploader.prototype.updateStatus = function (files, status, statusCode, updateLiStatus) {
+        if (updateLiStatus === void 0) { updateLiStatus = true; }
+        if (!(status === '' || sf.base.isNullOrUndefined(status)) && !(statusCode === '' || sf.base.isNullOrUndefined(statusCode))) {
+            if (this.isBlazorSaveUrl) {
+                for (var i = 0; i < this.filesData.length; i++) {
+                    if (this.filesData[i].name === files.name) {
+                        this.filesData[i].status = status;
+                        this.filesData[i].statusCode = statusCode;
+                    }
+                }
+            }
+            else {
+                files.status = status;
+                files.statusCode = statusCode;
+            }
+        }
+        if (updateLiStatus) {
+            var li = this.getLiElement(files);
+            if (!sf.base.isNullOrUndefined(li)) {
+                if (!sf.base.isNullOrUndefined(li.querySelector('.' + STATUS)) && !((status === '' || sf.base.isNullOrUndefined(status)))) {
+                    li.querySelector('.' + STATUS).textContent = status;
+                }
+            }
+        }
+        return files;
+    };
+    Uploader.prototype.getLiElement = function (files) {
+        var index;
+        for (var i = 0; i < this.filesData.length; i++) {
+            if (this.filesData[i].name === files.name) {
+                index = i;
+            }
+        }
+        return this.fileList[index];
+    };
+    Uploader.prototype.createProgressBar = function (liElement) {
+        var progressbarWrapper = this.createElement('span', { className: PROGRESS_WRAPPER });
+        var progressBar = this.createElement('progressbar', { className: PROGRESSBAR, attrs: { value: '0', max: '100' } });
+        var progressbarInnerWrapper = this.createElement('span', { className: PROGRESS_INNER_WRAPPER });
+        progressBar.setAttribute('style', 'width: 0%');
+        var progressbarText = this.createElement('span', { className: PROGRESSBAR_TEXT });
+        progressbarText.textContent = '0%';
+        progressbarInnerWrapper.appendChild(progressBar);
+        progressbarWrapper.appendChild(progressbarInnerWrapper);
+        progressbarWrapper.appendChild(progressbarText);
+        liElement.querySelector('.' + TEXT_CONTAINER).appendChild(progressbarWrapper);
+    };
+    /* istanbul ignore next */
+    Uploader.prototype.updateProgressbar = function (e, li) {
+        if (!isNaN(Math.round((e.loaded / e.total) * 100)) && !sf.base.isNullOrUndefined(li.querySelector('.' + PROGRESSBAR))) {
+            if (!sf.base.isNullOrUndefined(this.progressInterval) && this.progressInterval !== '') {
+                var value = (Math.round((e.loaded / e.total) * 100)) % parseInt(this.progressInterval, 10);
+                if (value === 0 || value === 100) {
+                    this.changeProgressValue(li, Math.round((e.loaded / e.total) * 100).toString() + '%');
+                }
+            }
+            else {
+                this.changeProgressValue(li, Math.round((e.loaded / e.total) * 100).toString() + '%');
+            }
+        }
+    };
+    Uploader.prototype.changeProgressValue = function (li, progressValue) {
+        li.querySelector('.' + PROGRESSBAR).setAttribute('style', 'width:' + progressValue);
+        li.querySelector('.' + PROGRESSBAR_TEXT).textContent = progressValue;
+    };
+    Uploader.prototype.uploadInProgress = function (e, files, customUI, request) {
+        var li = this.getLiElement(files);
+        if (sf.base.isNullOrUndefined(li) && (!customUI)) {
+            return;
+        }
+        if (!sf.base.isNullOrUndefined(li)) {
+            /* istanbul ignore next */
+            if (files.statusCode === '5') {
+                this.cancelUploadingFile(files, e, request, li);
+            }
+            if (!(li.querySelectorAll('.' + PROGRESS_WRAPPER).length > 0) && li.querySelector('.' + STATUS)) {
+                li.querySelector('.' + STATUS).classList.add(UPLOAD_INPROGRESS);
+                this.createProgressBar(li);
+                this.updateProgressBarClasses(li, UPLOAD_INPROGRESS);
+                li.querySelector('.' + STATUS).classList.remove(UPLOAD_FAILED);
+            }
+            this.updateProgressbar(e, li);
+            var iconEle = li.querySelector('.' + REMOVE_ICON);
+            if (!sf.base.isNullOrUndefined(iconEle)) {
+                iconEle.classList.add(ABORT_ICON, UPLOAD_INPROGRESS);
+                iconEle.setAttribute('title', this.localizedTexts('abort'));
+                iconEle.classList.remove(REMOVE_ICON);
+            }
+        }
+        else {
+            this.cancelUploadingFile(files, e, request);
+        }
+        var args = { e: e, operation: 'upload', file: this.updateStatus(files, this.localizedTexts('inProgress'), '3') };
+        this.trigger('progress', args);
+    };
+    /* istanbul ignore next */
+    Uploader.prototype.cancelUploadingFile = function (files, e, request, li) {
+        var _this = this;
+        if (files.statusCode === '5') {
+            var eventArgs = {
+                event: e,
+                fileData: files,
+                cancel: false
+            };
+            this.trigger('canceling', eventArgs, function (eventArgs) {
+                if (eventArgs.cancel) {
+                    files.statusCode = '3';
+                    if (!sf.base.isNullOrUndefined(li)) {
+                        var spinnerTarget = li.querySelector('.' + ABORT_ICON);
+                        if (!sf.base.isNullOrUndefined(spinnerTarget)) {
+                            sf.popups.hideSpinner(spinnerTarget);
+                            sf.base.detach(li.querySelector('.e-spinner-pane'));
+                        }
+                    }
+                }
+                else {
+                    request.emitError = false;
+                    request.httpRequest.abort();
+                    var formData = new FormData();
+                    if (files.statusCode === '5') {
+                        var name_2 = _this.element.getAttribute('name');
+                        formData.append(name_2, files.name);
+                        formData.append('cancel-uploading', files.name);
+                        var ajax = new sf.base.Ajax(_this.asyncSettings.removeUrl, 'POST', true, null);
+                        ajax.emitError = false;
+                        ajax.onLoad = function (e) { _this.removecanceledFile(e, files); return {}; };
+                        ajax.send(formData);
+                    }
+                }
+            });
+        }
+    };
+    Uploader.prototype.removecanceledFile = function (e, file) {
+        var liElement = this.getLiElement(file);
+        if (liElement.querySelector('.' + RETRY_ICON) || sf.base.isNullOrUndefined(liElement.querySelector('.' + ABORT_ICON))) {
+            return;
+        }
+        this.updateStatus(file, this.localizedTexts('fileUploadCancel'), '5');
+        this.renderFailureState(e, file, liElement);
+        var spinnerTarget = liElement.querySelector('.' + REMOVE_ICON);
+        if (!sf.base.isNullOrUndefined(liElement)) {
+            sf.popups.hideSpinner(spinnerTarget);
+            sf.base.detach(liElement.querySelector('.e-spinner-pane'));
+        }
+        var requestResponse = e && e.currentTarget ? this.getResponse(e) : null;
+        var args = { event: e, response: requestResponse, operation: 'cancel', file: file };
+        this.trigger('success', args);
+    };
+    Uploader.prototype.renderFailureState = function (e, file, liElement) {
+        var _this = this;
+        this.updateProgressBarClasses(liElement, UPLOAD_FAILED);
+        this.removeProgressbar(liElement, 'failure');
+        if (!sf.base.isNullOrUndefined(liElement.querySelector('.e-file-status'))) {
+            liElement.querySelector('.e-file-status').classList.add(UPLOAD_FAILED);
+        }
+        var deleteIcon = liElement.querySelector('.' + ABORT_ICON);
+        if (sf.base.isNullOrUndefined(deleteIcon)) {
+            return;
+        }
+        deleteIcon.classList.remove(ABORT_ICON, UPLOAD_INPROGRESS);
+        deleteIcon.classList.add(REMOVE_ICON);
+        deleteIcon.setAttribute('title', this.localizedTexts('remove'));
+        this.pauseButton = this.createElement('span', { className: 'e-icons e-file-reload-btn', attrs: { 'tabindex': this.btnTabIndex } });
+        deleteIcon.parentElement.insertBefore(this.pauseButton, deleteIcon);
+        this.pauseButton.setAttribute('title', this.localizedTexts('retry'));
+        var retryElement = liElement.querySelector('.' + RETRY_ICON);
+        /* istanbul ignore next */
+        retryElement.addEventListener('click', function (e) { _this.reloadcanceledFile(e, file, liElement, false); }, false);
+    };
+    Uploader.prototype.reloadcanceledFile = function (e, file, liElement, custom) {
+        file.statusCode = '1';
+        file.status = this.localizedTexts('readyToUploadMessage');
+        if (!custom) {
+            liElement.querySelector('.' + STATUS).classList.remove(UPLOAD_FAILED);
+            if (!sf.base.isNullOrUndefined(liElement.querySelector('.' + RETRY_ICON))) {
+                sf.base.detach(liElement.querySelector('.' + RETRY_ICON));
+            }
+            this.pauseButton = null;
+        }
+        /* istanbul ignore next */
+        liElement.classList.add(RESTRICT_RETRY);
+        this.upload([file]);
+    };
+    /* istanbul ignore next */
+    Uploader.prototype.uploadComplete = function (e, file, customUI) {
+        var status = e.target;
+        if (status.readyState === 4 && status.status >= 200 && status.status <= 299) {
+            var li = this.getLiElement(file);
+            if (sf.base.isNullOrUndefined(li) && (!customUI || sf.base.isNullOrUndefined(customUI))) {
+                return;
+            }
+            if (!sf.base.isNullOrUndefined(li)) {
+                this.updateProgressBarClasses(li, UPLOAD_SUCCESS);
+                this.removeProgressbar(li, 'success');
+                var iconEle = li.querySelector('.' + ABORT_ICON);
+                if (!sf.base.isNullOrUndefined(iconEle)) {
+                    iconEle.classList.add(DELETE_ICON);
+                    iconEle.setAttribute('title', this.localizedTexts('delete'));
+                    iconEle.classList.remove(ABORT_ICON);
+                    iconEle.classList.remove(UPLOAD_INPROGRESS);
+                }
+            }
+            this.raiseSuccessEvent(e, file);
+        }
+        else {
+            this.uploadFailed(e, file);
+        }
+    };
+    Uploader.prototype.getResponse = function (e) {
+        // tslint:disable-next-line
+        var target = e.currentTarget;
+        var response = {
+            readyState: target.readyState,
+            statusCode: target.status,
+            statusText: target.statusText,
+            headers: target.getAllResponseHeaders(),
+            withCredentials: target.withCredentials
+        };
+        return response;
+    };
+    /* istanbul ignore next */
+    Uploader.prototype.serverRemoveIconBindEvent = function () {
+        if (this.uploadWrapper && this.isBlazorSaveUrl) {
+            var iconElement = [].slice.call(this.uploadWrapper.querySelectorAll('ul li'));
+            for (var i = 0; i < iconElement.length; i++) {
+                var removeIconEle = (iconElement[i]) ? iconElement[i].querySelector('.e-icons') : null;
+                if (removeIconEle) {
+                    sf.base.EventHandler.remove(removeIconEle, 'click', this.removeFiles);
+                    sf.base.EventHandler.add(removeIconEle, 'click', this.removeFiles, this);
+                }
+            }
+        }
+    };
+    Uploader.prototype.raiseSuccessEvent = function (e, file) {
+        var _this = this;
+        var response = e && e.currentTarget ? this.getResponse(e) : null;
+        var statusMessage = this.localizedTexts('uploadSuccessMessage');
+        var args = {
+            e: e, response: response, operation: 'upload', file: this.updateStatus(file, statusMessage, '2', false), statusText: statusMessage
+        };
+        if (!this.isBlazorSaveUrl) {
+            var liElement = this.getLiElement(file);
+            if (!sf.base.isNullOrUndefined(liElement)) {
+                var spinnerEle = liElement.querySelector('.' + SPINNER_PANE);
+                if (!sf.base.isNullOrUndefined(spinnerEle)) {
+                    sf.popups.hideSpinner(liElement);
+                    sf.base.detach(spinnerEle);
+                }
+            }
+        }
+        this.trigger('success', args, function (args) {
+            // tslint:disable-next-line
+            _this.updateStatus(file, args.statusText, '2');
+            _this.uploadedFilesData.push(file);
+            if (!_this.isBlazorSaveUrl) {
+                _this.trigger('change', { file: _this.uploadedFilesData });
+            }
+            _this.checkActionButtonStatus();
+            if (_this.fileList.length > 0) {
+                if ((!(_this.getLiElement(file)).classList.contains(RESTRICT_RETRY))) {
+                    _this.uploadSequential();
+                    _this.checkActionComplete(true);
+                }
+                else {
+                    /* istanbul ignore next */
+                    (_this.getLiElement(file)).classList.remove(RESTRICT_RETRY);
+                }
+            }
+        });
+    };
+    Uploader.prototype.uploadFailed = function (e, file) {
+        var _this = this;
+        var li = this.getLiElement(file);
+        var response = e && e.currentTarget ? this.getResponse(e) : null;
+        var statusMessage = this.localizedTexts('uploadFailedMessage');
+        var args = {
+            e: e, response: response, operation: 'upload', file: this.updateStatus(file, statusMessage, '0', false), statusText: statusMessage
+        };
+        if (!sf.base.isNullOrUndefined(li)) {
+            this.renderFailureState(e, file, li);
+        }
+        this.trigger('failure', args, function (args) {
+            // tslint:disable-next-line
+            _this.updateStatus(file, args.statusText, '0');
+            _this.checkActionButtonStatus();
+            _this.uploadSequential();
+            _this.checkActionComplete(true);
+        });
+    };
+    Uploader.prototype.uploadSequential = function () {
+        if (this.sequentialUpload) {
+            if (this.autoUpload) {
+                /* istanbul ignore next */
+                this.checkAutoUpload(this.filesData);
+            }
+            else {
+                this.uploadButtonClick();
+            }
+        }
+    };
+    Uploader.prototype.checkActionComplete = function (increment) {
+        increment ? ++this.actionCompleteCount : --this.actionCompleteCount;
+        this.raiseActionComplete();
+    };
+    Uploader.prototype.raiseActionComplete = function () {
+        if ((this.filesData.length === this.actionCompleteCount) && this.flag) {
+            this.flag = false;
+            var eventArgs = {
+                fileData: []
+            };
+            eventArgs.fileData = this.getSelectedFileStatus(this.selectedFiles);
+            this.trigger('actionComplete', eventArgs);
+        }
+    };
+    Uploader.prototype.getSelectedFileStatus = function (selectedFiles) {
+        var matchFiles = [];
+        var matchFilesIndex = 0;
+        for (var selectFileIndex = 0; selectFileIndex < selectedFiles.length; selectFileIndex++) {
+            var selectedFileData = selectedFiles[selectFileIndex];
+            for (var fileDataIndex = 0; fileDataIndex < this.filesData.length; fileDataIndex++) {
+                if (this.filesData[fileDataIndex].name === selectedFileData.name) {
+                    matchFiles[matchFilesIndex] = this.filesData[fileDataIndex];
+                    ++matchFilesIndex;
+                }
+            }
+        }
+        return matchFiles;
+    };
+    Uploader.prototype.updateProgressBarClasses = function (li, className) {
+        var progressBar = li.querySelector('.' + PROGRESSBAR);
+        if (!sf.base.isNullOrUndefined(progressBar)) {
+            progressBar.classList.add(className);
+        }
+    };
+    Uploader.prototype.removeProgressbar = function (li, callType) {
+        var _this = this;
+        if (!sf.base.isNullOrUndefined(li.querySelector('.' + PROGRESS_WRAPPER))) {
+            this.progressAnimation = new sf.base.Animation({ duration: 1250 });
+            this.progressAnimation.animate(li.querySelector('.' + PROGRESS_WRAPPER), { name: 'FadeOut' });
+            this.progressAnimation.animate(li.querySelector('.' + PROGRESSBAR_TEXT), { name: 'FadeOut' });
+            setTimeout(function () { _this.animateProgressBar(li, callType); }, 750);
+        }
+    };
+    /* istanbul ignore next */
+    Uploader.prototype.animateProgressBar = function (li, callType) {
+        if (callType === 'success') {
+            li.classList.add(UPLOAD_SUCCESS);
+            if (!sf.base.isNullOrUndefined(li.querySelector('.' + STATUS))) {
+                li.querySelector('.' + STATUS).classList.remove(UPLOAD_INPROGRESS);
+                this.progressAnimation.animate(li.querySelector('.' + STATUS), { name: 'FadeIn' });
+                li.querySelector('.' + STATUS).classList.add(UPLOAD_SUCCESS);
+            }
+        }
+        else {
+            if (!sf.base.isNullOrUndefined(li.querySelector('.' + STATUS))) {
+                li.querySelector('.' + STATUS).classList.remove(UPLOAD_INPROGRESS);
+                this.progressAnimation.animate(li.querySelector('.' + STATUS), { name: 'FadeIn' });
+                li.querySelector('.' + STATUS).classList.add(UPLOAD_FAILED);
+            }
+        }
+        if (li.querySelector('.' + PROGRESS_WRAPPER)) {
+            sf.base.detach(li.querySelector('.' + PROGRESS_WRAPPER));
+        }
+    };
+    Uploader.prototype.setExtensions = function (extensions) {
+        if (extensions !== '' && !sf.base.isNullOrUndefined(extensions)) {
+            this.element.setAttribute('accept', extensions);
+        }
+        else {
+            this.element.removeAttribute('accept');
+        }
+    };
+    Uploader.prototype.templateComplier = function (uploadTemplate) {
+        if (uploadTemplate) {
+            try {
+                if (document.querySelectorAll(uploadTemplate).length) {
+                    return sf.base.compile(document.querySelector(uploadTemplate).innerHTML.trim());
+                }
+            }
+            catch (exception) {
+                return sf.base.compile(uploadTemplate);
+            }
+        }
+        return undefined;
+    };
+    Uploader.prototype.setRTL = function () {
+        this.enableRtl ? sf.base.addClass([this.uploadWrapper], RTL) : sf.base.removeClass([this.uploadWrapper], RTL);
+    };
+    Uploader.prototype.localizedTexts = function (localeText) {
+        this.l10n.setLocale(this.locale);
+        return this.l10n.getConstant(localeText);
+    };
+    Uploader.prototype.setControlStatus = function () {
+        if (!this.enabled) {
+            this.uploadWrapper.classList.add(DISABLED);
+            this.element.setAttribute('disabled', 'disabled');
+            this.browseButton.setAttribute('disabled', 'disabled');
+            if (!sf.base.isNullOrUndefined(this.clearButton)) {
+                this.clearButton.setAttribute('disabled', 'disabled');
+            }
+            if (!sf.base.isNullOrUndefined(this.uploadButton)) {
+                this.uploadButton.setAttribute('disabled', 'disabled');
+            }
+        }
+        else {
+            if (this.uploadWrapper.classList.contains(DISABLED)) {
+                this.uploadWrapper.classList.remove(DISABLED);
+            }
+            if (!sf.base.isNullOrUndefined(this.browseButton) && this.element.hasAttribute('disabled')) {
+                this.element.removeAttribute('disabled');
+                this.browseButton.removeAttribute('disabled');
+            }
+            if (!sf.base.isNullOrUndefined(this.clearButton) && this.clearButton.hasAttribute('disabled')) {
+                this.clearButton.removeAttribute('disabled');
+            }
+            if (!sf.base.isNullOrUndefined(this.uploadButton) && this.uploadButton.hasAttribute('disabled')) {
+                this.uploadButton.hasAttribute('disabled');
+            }
+        }
+    };
+    Uploader.prototype.checkHTMLAttributes = function (isDynamic) {
+        var attributes$$1 = isDynamic ? sf.base.isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
+            ['accept', 'multiple', 'disabled'];
+        for (var _i = 0, attributes_1 = attributes$$1; _i < attributes_1.length; _i++) {
+            var prop = attributes_1[_i];
+            if (!sf.base.isNullOrUndefined(this.element.getAttribute(prop))) {
+                switch (prop) {
+                    case 'accept':
+                        // tslint:disable-next-line
+                        if ((sf.base.isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['allowedExtensions'] === undefined))
+                            || isDynamic) {
+                            this.setProperties({ allowedExtensions: this.element.getAttribute('accept') }, !isDynamic);
+                            this.initialAttr.accept = this.allowedExtensions;
+                        }
+                        break;
+                    case 'multiple':
+                        // tslint:disable-next-line
+                        if ((sf.base.isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['multiple'] === undefined)) || isDynamic) {
+                            var isMutiple = this.element.getAttribute(prop) === 'multiple' ||
+                                this.element.getAttribute(prop) === '' || this.element.getAttribute(prop) === 'true' ? true : false;
+                            this.setProperties({ multiple: isMutiple }, !isDynamic);
+                            this.initialAttr.multiple = true;
+                        }
+                        break;
+                    case 'disabled':
+                        // tslint:disable-next-line
+                        if ((sf.base.isNullOrUndefined(this.uploaderOptions) || (this.uploaderOptions['enabled'] === undefined)) || isDynamic) {
+                            var isDisabled = this.element.getAttribute(prop) === 'disabled' ||
+                                this.element.getAttribute(prop) === '' || this.element.getAttribute(prop) === 'true' ? false : true;
+                            this.setProperties({ enabled: isDisabled }, !isDynamic);
+                            this.initialAttr.disabled = true;
+                        }
+                }
+            }
+        }
+    };
+    Uploader.prototype.chunkUpload = function (file, custom, fileIndex) {
+        var start = 0;
+        var end = Math.min(this.asyncSettings.chunkSize, file.size);
+        var index = 0;
+        var blob = file.rawFile.slice(start, end);
+        var metaData = { chunkIndex: index, blob: blob, file: file, start: start, end: end, retryCount: 0, request: null };
+        this.sendRequest(file, metaData, custom, fileIndex);
+    };
+    Uploader.prototype.sendRequest = function (file, metaData, custom, fileIndex) {
+        var _this = this;
+        var formData = new FormData();
+        var blob = file.rawFile.slice(metaData.start, metaData.end);
+        formData.append('chunkFile', blob, file.name);
+        formData.append('chunk-index', metaData.chunkIndex.toString());
+        formData.append('chunkIndex', metaData.chunkIndex.toString());
+        var totalChunk = Math.max(Math.ceil(file.size / this.asyncSettings.chunkSize), 1);
+        formData.append('total-chunk', totalChunk.toString());
+        formData.append('totalChunk', totalChunk.toString());
+        var ajax = new sf.base.Ajax({ url: this.asyncSettings.saveUrl, type: 'POST', async: true, contentType: null });
+        ajax.emitError = false;
+        ajax.onLoad = function (e) { _this.chunkUploadComplete(e, metaData, custom); return {}; };
+        ajax.onUploadProgress = function (e) {
+            _this.chunkUploadInProgress(e, metaData, custom);
+            return {};
+        };
+        var eventArgs = {
+            fileData: file,
+            customFormData: [],
+            cancel: false,
+            chunkSize: this.asyncSettings.chunkSize === 0 ? null : this.asyncSettings.chunkSize
+        };
+        ajax.beforeSend = function (e) {
+            eventArgs.currentRequest = ajax.httpRequest;
+            eventArgs.currentChunkIndex = metaData.chunkIndex;
+            /* istanbul ignore next */
+            if (_this.isServerBlazor) {
+                if (_this.currentRequestHeader) {
+                    _this.updateCustomheader(ajax.httpRequest, _this.currentRequestHeader);
+                }
+                if (_this.customFormDatas) {
+                    _this.updateFormData(formData, _this.customFormDatas);
+                }
+            }
+            if (eventArgs.currentChunkIndex === 0) {
+                // This event is currently not required but to avoid breaking changes for previous customer, we have included.
+                _this.trigger('uploading', eventArgs, function (eventArgs) {
+                    _this.uploadingEventCallback(formData, eventArgs, e, file);
+                });
+            }
+            else {
+                _this.trigger('chunkUploading', eventArgs, function (eventArgs) {
+                    _this.uploadingEventCallback(formData, eventArgs, e, file);
+                });
+            }
+        };
+        /* istanbul ignore next */
+        ajax.onError = function (e) { _this.chunkUploadFailed(e, metaData, custom); return {}; };
+        ajax.send(formData);
+        metaData.request = ajax;
+    };
+    Uploader.prototype.uploadingEventCallback = function (formData, eventArgs, e, file) {
+        if (eventArgs.cancel) {
+            this.eventCancelByArgs(e, eventArgs, file);
+        }
+        else {
+            this.updateFormData(formData, eventArgs.customFormData);
+        }
+    };
+    Uploader.prototype.eventCancelByArgs = function (e, eventArgs, file) {
+        var _this = this;
+        e.cancel = true;
+        if (eventArgs.fileData.statusCode === '5') {
+            return;
+        }
+        var liElement = this.getLiElement(eventArgs.fileData);
+        liElement.querySelector('.' + STATUS).innerHTML = this.localizedTexts('fileUploadCancel');
+        liElement.querySelector('.' + STATUS).classList.add(UPLOAD_FAILED);
+        eventArgs.fileData.statusCode = '5';
+        eventArgs.fileData.status = this.localizedTexts('fileUploadCancel');
+        this.pauseButton = this.createElement('span', { className: 'e-icons e-file-reload-btn', attrs: { 'tabindex': this.btnTabIndex } });
+        var removeIcon = liElement.querySelector('.' + REMOVE_ICON);
+        removeIcon.parentElement.insertBefore(this.pauseButton, removeIcon);
+        this.pauseButton.setAttribute('title', this.localizedTexts('retry'));
+        /* istanbul ignore next */
+        this.pauseButton.addEventListener('click', function (e) { _this.reloadcanceledFile(e, file, liElement); }, false);
+        this.checkActionButtonStatus();
+    };
+    Uploader.prototype.checkChunkUpload = function () {
+        return (this.asyncSettings.chunkSize <= 0 || sf.base.isNullOrUndefined(this.asyncSettings.chunkSize)) ? false : true;
+    };
+    Uploader.prototype.chunkUploadComplete = function (e, metaData, custom) {
+        var _this = this;
+        var response = e.target;
+        var liElement;
+        if (response.readyState === 4 && response.status >= 200 && response.status < 300) {
+            var requestResponse = e && e.currentTarget ? this.getResponse(e) : null;
+            var totalChunk = Math.max(Math.ceil(metaData.file.size / this.asyncSettings.chunkSize), 1);
+            var eventArgs = {
+                event: e,
+                file: metaData.file,
+                chunkIndex: metaData.chunkIndex,
+                totalChunk: totalChunk,
+                chunkSize: this.asyncSettings.chunkSize,
+                response: requestResponse
+            };
+            this.trigger('chunkSuccess', eventArgs);
+            if (sf.base.isNullOrUndefined(custom) || !custom) {
+                liElement = this.getLiElement(metaData.file);
+            }
+            this.updateMetaData(metaData);
+            if (metaData.end === metaData.file.size) {
+                metaData.file.statusCode = '3';
+            }
+            if (metaData.file.statusCode === '5') {
+                var eventArgs_1 = { event: e, fileData: metaData.file, cancel: false };
+                this.trigger('canceling', eventArgs_1, function (eventArgs) {
+                    /* istanbul ignore next */
+                    if (eventArgs.cancel) {
+                        metaData.file.statusCode = '3';
+                        var spinnerTarget = liElement.querySelector('.' + ABORT_ICON);
+                        if (!sf.base.isNullOrUndefined(liElement) && !sf.base.isNullOrUndefined(spinnerTarget)) {
+                            sf.popups.hideSpinner(spinnerTarget);
+                            sf.base.detach(liElement.querySelector('.e-spinner-pane'));
+                        }
+                        _this.sendNextRequest(metaData);
+                    }
+                    else {
+                        metaData.request.emitError = false;
+                        response.abort();
+                        var formData = new FormData();
+                        var name_3 = _this.element.getAttribute('name');
+                        formData.append(name_3, metaData.file.name);
+                        formData.append('cancel-uploading', metaData.file.name);
+                        formData.append('cancelUploading', metaData.file.name);
+                        var ajax = new sf.base.Ajax(_this.asyncSettings.removeUrl, 'POST', true, null);
+                        ajax.emitError = false;
+                        ajax.onLoad = function (e) { _this.removeChunkFile(e, metaData, custom); return {}; };
+                        ajax.send(formData);
+                    }
+                });
+            }
+            else {
+                if ((totalChunk - 1) === metaData.chunkIndex && totalChunk > metaData.chunkIndex) {
+                    var index = this.pausedData.indexOf(metaData);
+                    if (index >= 0) {
+                        this.pausedData.splice(index, 1);
+                    }
+                    if (sf.base.isNullOrUndefined(this.template) && (sf.base.isNullOrUndefined(custom) || !custom) && liElement) {
+                        if (liElement) {
+                            sf.base.detach(liElement.querySelector('.' + PAUSE_UPLOAD));
+                        }
+                        this.removeChunkProgressBar(metaData);
+                    }
+                    this.raiseSuccessEvent(e, metaData.file);
+                    return;
+                }
+                this.sendNextRequest(metaData);
+            }
+        }
+        else {
+            this.chunkUploadFailed(e, metaData);
+        }
+    };
+    Uploader.prototype.sendNextRequest = function (metaData) {
+        metaData.start = metaData.end;
+        metaData.end += this.asyncSettings.chunkSize;
+        metaData.end = Math.min(metaData.end, metaData.file.size);
+        metaData.chunkIndex += 1;
+        this.sendRequest(metaData.file, metaData);
+    };
+    Uploader.prototype.removeChunkFile = function (e, metaData, custom) {
+        if (sf.base.isNullOrUndefined(this.template) && (sf.base.isNullOrUndefined(custom) && !custom)) {
+            var liElement = this.getLiElement(metaData.file);
+            var deleteIcon = liElement.querySelector('.' + ABORT_ICON);
+            var spinnerTarget = deleteIcon;
+            this.updateStatus(metaData.file, this.localizedTexts('fileUploadCancel'), '5');
+            this.updateProgressBarClasses(liElement, UPLOAD_FAILED);
+            this.removeProgressbar(liElement, 'failure');
+            deleteIcon.classList.remove(ABORT_ICON);
+            deleteIcon.classList.add(REMOVE_ICON);
+            deleteIcon.setAttribute('title', this.localizedTexts('remove'));
+            var pauseIcon = liElement.querySelector('.' + PAUSE_UPLOAD);
+            pauseIcon.classList.add(RETRY_ICON);
+            pauseIcon.classList.remove(PAUSE_UPLOAD);
+            pauseIcon.setAttribute('title', this.localizedTexts('retry'));
+            if (!sf.base.isNullOrUndefined(liElement) && !sf.base.isNullOrUndefined(deleteIcon)) {
+                sf.popups.hideSpinner(spinnerTarget);
+                sf.base.detach(liElement.querySelector('.e-spinner-pane'));
+            }
+        }
+    };
+    Uploader.prototype.pauseUpload = function (metaData, e, custom) {
+        metaData.file.statusCode = '4';
+        metaData.file.status = this.localizedTexts('pause');
+        this.updateMetaData(metaData);
+        var eventArgs = {
+            event: e ? e : null,
+            file: metaData.file,
+            chunkIndex: metaData.chunkIndex,
+            chunkCount: Math.round(metaData.file.size / this.asyncSettings.chunkSize),
+            chunkSize: this.asyncSettings.chunkSize
+        };
+        this.abortUpload(metaData, custom, eventArgs);
+    };
+    Uploader.prototype.abortUpload = function (metaData, custom, eventArgs) {
+        metaData.request.emitError = false;
+        metaData.request.httpRequest.abort();
+        var liElement = this.getLiElement(metaData.file);
+        if (sf.base.isNullOrUndefined(this.template) && (sf.base.isNullOrUndefined(custom) || !custom)) {
+            var targetElement = liElement.querySelector('.' + PAUSE_UPLOAD);
+            targetElement.classList.remove(PAUSE_UPLOAD);
+            targetElement.classList.add(RESUME_UPLOAD);
+            targetElement.setAttribute('title', this.localizedTexts('resume'));
+            targetElement.nextElementSibling.classList.add(REMOVE_ICON);
+            targetElement.nextElementSibling.classList.remove(ABORT_ICON);
+            targetElement.nextElementSibling.setAttribute('title', this.localizedTexts('remove'));
+        }
+        for (var i = 0; i < this.pausedData.length; i++) {
+            if (this.pausedData[i].file.name === metaData.file.name) {
+                this.pausedData.splice(i, 1);
+            }
+        }
+        this.pausedData.push(metaData);
+        this.trigger('pausing', eventArgs);
+    };
+    Uploader.prototype.resumeUpload = function (metaData, e, custom) {
+        var liElement = this.getLiElement(metaData.file);
+        var targetElement;
+        if (!sf.base.isNullOrUndefined(liElement)) {
+            targetElement = liElement.querySelector('.' + RESUME_UPLOAD);
+        }
+        if (!sf.base.isNullOrUndefined(targetElement) && (sf.base.isNullOrUndefined(custom) || !custom)) {
+            targetElement.classList.remove(RESUME_UPLOAD);
+            targetElement.classList.add(PAUSE_UPLOAD);
+            targetElement.setAttribute('title', this.localizedTexts('pause'));
+            targetElement.nextElementSibling.classList.remove(REMOVE_ICON);
+            targetElement.nextElementSibling.classList.add(ABORT_ICON);
+            targetElement.nextElementSibling.setAttribute('title', this.localizedTexts('abort'));
+        }
+        metaData.file.status = this.localizedTexts('inProgress');
+        metaData.file.statusCode = '3';
+        this.updateMetaData(metaData);
+        var eventArgs = {
+            event: e ? e : null,
+            file: metaData.file,
+            chunkIndex: metaData.chunkIndex,
+            chunkCount: Math.round(metaData.file.size / this.asyncSettings.chunkSize),
+            chunkSize: this.asyncSettings.chunkSize
+        };
+        this.trigger('resuming', eventArgs);
+        for (var i = 0; i < this.pausedData.length; i++) {
+            if (this.pausedData[i].end === this.pausedData[i].file.size) {
+                this.chunkUploadComplete(e, metaData, custom);
+            }
+            else {
+                if (this.pausedData[i].file.name === metaData.file.name) {
+                    this.pausedData[i].start = this.pausedData[i].end;
+                    this.pausedData[i].end = this.pausedData[i].end + this.asyncSettings.chunkSize;
+                    this.pausedData[i].end = Math.min(this.pausedData[i].end, this.pausedData[i].file.size);
+                    this.pausedData[i].chunkIndex = this.pausedData[i].chunkIndex + 1;
+                    this.sendRequest(this.pausedData[i].file, this.pausedData[i], custom);
+                }
+            }
+        }
+    };
+    Uploader.prototype.updateMetaData = function (metaData) {
+        if (this.uploadMetaData.indexOf(metaData) === -1) {
+            this.uploadMetaData.push(metaData);
+        }
+        else {
+            this.uploadMetaData.splice(this.uploadMetaData.indexOf(metaData), 1);
+            this.uploadMetaData.push(metaData);
+        }
+    };
+    Uploader.prototype.removeChunkProgressBar = function (metaData) {
+        var liElement = this.getLiElement(metaData.file);
+        if (!sf.base.isNullOrUndefined(liElement)) {
+            this.updateProgressBarClasses(liElement, UPLOAD_SUCCESS);
+            this.removeProgressbar(liElement, 'success');
+            var cancelButton = liElement.querySelector('.' + ABORT_ICON);
+            if (!sf.base.isNullOrUndefined(cancelButton)) {
+                cancelButton.classList.add(DELETE_ICON);
+                cancelButton.setAttribute('title', this.localizedTexts('delete'));
+                cancelButton.classList.remove(ABORT_ICON, UPLOAD_INPROGRESS);
+            }
+        }
+    };
+    Uploader.prototype.chunkUploadFailed = function (e, metaData, custom) {
+        var _this = this;
+        var chunkCount = Math.max(Math.ceil(metaData.file.size / this.asyncSettings.chunkSize), 1);
+        var liElement;
+        if (sf.base.isNullOrUndefined(this.template) && (sf.base.isNullOrUndefined(custom) || !custom)) {
+            liElement = this.getLiElement(metaData.file);
+        }
+        var requestResponse = e && e.currentTarget ? this.getResponse(e) : null;
+        var eventArgs = {
+            event: e,
+            file: metaData.file,
+            chunkIndex: metaData.chunkIndex,
+            totalChunk: chunkCount,
+            chunkSize: this.asyncSettings.chunkSize,
+            cancel: false,
+            response: requestResponse
+        };
+        this.trigger('chunkFailure', eventArgs, function (eventArgs) {
+            // To prevent triggering of failure event
+            // tslint:disable-next-line
+            if (!eventArgs.cancel) {
+                if (metaData.retryCount < _this.asyncSettings.retryCount) {
+                    setTimeout(function () { _this.retryRequest(liElement, metaData, custom); }, _this.asyncSettings.retryAfterDelay);
+                }
+                else {
+                    if (!sf.base.isNullOrUndefined(liElement)) {
+                        var pauseButton = liElement.querySelector('.' + PAUSE_UPLOAD) ?
+                            liElement.querySelector('.' + PAUSE_UPLOAD) : liElement.querySelector('.' + RESUME_UPLOAD);
+                        if (!sf.base.isNullOrUndefined(pauseButton)) {
+                            pauseButton.classList.add(RETRY_ICON);
+                            pauseButton.classList.remove(PAUSE_UPLOAD, RESUME_UPLOAD);
+                        }
+                        _this.updateProgressBarClasses(liElement, UPLOAD_FAILED);
+                        _this.removeProgressbar(liElement, 'failure');
+                        liElement.querySelector('.e-icons').classList.remove(UPLOAD_INPROGRESS);
+                        var iconElement = liElement.querySelector('.' + ABORT_ICON) ?
+                            liElement.querySelector('.' + ABORT_ICON) : liElement.querySelector('.' + REMOVE_ICON);
+                        iconElement.classList.remove(ABORT_ICON);
+                        if (!sf.base.isNullOrUndefined(liElement.querySelector('.' + PAUSE_UPLOAD))) {
+                            sf.base.detach(liElement.querySelector('.' + PAUSE_UPLOAD));
+                        }
+                        if (metaData.start > 0) {
+                            iconElement.classList.add(DELETE_ICON);
+                            iconElement.setAttribute('title', _this.localizedTexts('delete'));
+                        }
+                        else {
+                            iconElement.classList.add(REMOVE_ICON);
+                            iconElement.setAttribute('title', _this.localizedTexts('remove'));
+                        }
+                    }
+                    metaData.retryCount = 0;
+                    var file_1 = metaData.file;
+                    var failureMessage = _this.localizedTexts('uploadFailedMessage');
+                    var args = {
+                        e: e, response: requestResponse,
+                        operation: 'upload',
+                        file: _this.updateStatus(file_1, failureMessage, '0', false),
+                        statusText: failureMessage
+                    };
+                    _this.trigger('failure', args, function (args) {
+                        // tslint:disable-next-line
+                        _this.updateStatus(file_1, args.statusText, '0');
+                        _this.uploadSequential();
+                        _this.checkActionComplete(true);
+                    });
+                }
+            }
+        });
+    };
+    Uploader.prototype.retryRequest = function (liElement, metaData, custom) {
+        if (sf.base.isNullOrUndefined(this.template) && (sf.base.isNullOrUndefined(custom) || !custom) && liElement) {
+            this.updateProgressBarClasses(liElement, UPLOAD_FAILED);
+        }
+        metaData.retryCount += 1;
+        this.sendRequest(metaData.file, metaData);
+    };
+    Uploader.prototype.checkPausePlayAction = function (e) {
+        var targetElement = e.target;
+        var selectedElement = e.target.parentElement;
+        var index = this.fileList.indexOf(selectedElement);
+        var fileData = this.filesData[index];
+        var metaData = this.getCurrentMetaData(fileData);
+        if (targetElement.classList.contains(PAUSE_UPLOAD)) {
+            /* istanbul ignore next */
+            this.pauseUpload(metaData, e);
+        }
+        else if (targetElement.classList.contains(RESUME_UPLOAD)) {
+            /* istanbul ignore next */
+            this.resumeUpload(metaData, e);
+        }
+        else if (targetElement.classList.contains(RETRY_ICON)) {
+            if (metaData.file.status === this.localizedTexts('fileUploadCancel')) {
+                this.retryUpload(metaData, false);
+            }
+            else {
+                this.retryUpload(metaData, true);
+            }
+        }
+    };
+    Uploader.prototype.retryUpload = function (metaData, fromcanceledStage) {
+        if (fromcanceledStage) {
+            metaData.end = metaData.end + this.asyncSettings.chunkSize;
+            metaData.start = metaData.start + this.asyncSettings.chunkSize;
+            this.sendRequest(metaData.file, metaData);
+        }
+        else {
+            metaData.file.statusCode = '1';
+            metaData.file.status = this.localizedTexts('readyToUploadMessage');
+            this.chunkUpload(metaData.file);
+        }
+        /* istanbul ignore next */
+        (this.getLiElement(metaData.file)).classList.add(RESTRICT_RETRY);
+    };
+    Uploader.prototype.chunkUploadInProgress = function (e, metaData, custom) {
+        var _this = this;
+        if (metaData.file.statusCode === '4') {
+            return;
+        }
+        if (metaData.file.statusCode !== '4' && metaData.file.statusCode !== '5') {
+            metaData.file.statusCode = '3';
+            metaData.file.status = this.localizedTexts('inProgress');
+        }
+        this.updateMetaData(metaData);
+        var liElement = this.getLiElement(metaData.file);
+        if (sf.base.isNullOrUndefined(liElement)) {
+            return;
+        }
+        var retryElement = liElement.querySelector('.' + RETRY_ICON);
+        if (!sf.base.isNullOrUndefined(retryElement)) {
+            retryElement.classList.add(PAUSE_UPLOAD);
+            retryElement.setAttribute('title', this.localizedTexts('pause'));
+            retryElement.classList.remove(RETRY_ICON);
+        }
+        if (!sf.base.isNullOrUndefined(liElement)) {
+            if (!(liElement.querySelectorAll('.' + PROGRESS_WRAPPER).length > 0)) {
+                var statusElement = liElement.querySelector('.' + STATUS);
+                if (sf.base.isNullOrUndefined(this.template)) {
+                    statusElement.classList.add(UPLOAD_INPROGRESS);
+                    statusElement.classList.remove(UPLOAD_FAILED);
+                    this.createProgressBar(liElement);
+                    this.updateProgressBarClasses(liElement, UPLOAD_INPROGRESS);
+                }
+                var clearIcon = liElement.querySelector('.' + REMOVE_ICON) ? liElement.querySelector('.' + REMOVE_ICON) :
+                    liElement.querySelector('.' + DELETE_ICON);
+                if (!sf.base.isNullOrUndefined(clearIcon)) {
+                    clearIcon.classList.add(ABORT_ICON);
+                    clearIcon.setAttribute('title', this.localizedTexts('abort'));
+                    clearIcon.classList.remove(REMOVE_ICON);
+                }
+            }
+            if (!isNaN(Math.round((e.loaded / e.total) * 100)) && sf.base.isNullOrUndefined(this.template) && metaData.file.statusCode !== '4') {
+                var loadedSize = (metaData.chunkIndex * this.asyncSettings.chunkSize);
+                var value = Math.min((((loadedSize + e.loaded) / metaData.file.size) * 100), 100);
+                this.changeProgressValue(liElement, Math.round(value).toString() + '%');
+            }
+            if (metaData.chunkIndex === 0) {
+                this.checkActionButtonStatus();
+            }
+        }
+        if (sf.base.isNullOrUndefined(liElement.querySelector('.' + PAUSE_UPLOAD)) && sf.base.isNullOrUndefined(this.template)) {
+            this.pauseButton = this.createElement('span', { className: 'e-icons e-file-pause-btn', attrs: { 'tabindex': this.btnTabIndex } });
+            if (this.browserName === 'msie') {
+                this.pauseButton.classList.add('e-msie');
+            }
+            var abortIcon = liElement.querySelector('.' + ABORT_ICON);
+            abortIcon.parentElement.insertBefore(this.pauseButton, abortIcon);
+            this.pauseButton.setAttribute('title', this.localizedTexts('pause'));
+            this.pauseButton.addEventListener('click', function (e) { _this.checkPausePlayAction(e); }, false);
+        }
+    };
+    /**
+     * It is used to convert bytes value into kilobytes or megabytes depending on the size based
+     * on [binary prefix](https://en.wikipedia.org/wiki/Binary_prefix).
+     * @param { number } bytes - specifies the file size in bytes.
+     * @returns string
+     */
+    Uploader.prototype.bytesToSize = function (bytes) {
+        var i = -1;
+        if (!bytes) {
+            return '0.0 KB';
+        }
+        do {
+            bytes = bytes / 1024;
+            i++;
+        } while (bytes > 99);
+        if (i >= 2) {
+            bytes = bytes * 1024;
+            i = 1;
+        }
+        return Math.max(bytes, 0).toFixed(1) + ' ' + ['KB', 'MB'][i];
+    };
+    /**
+     * Allows you to sort the file data alphabetically based on its file name clearly.
+     * @param { FileList } filesData - specifies the files data for upload.
+     * @returns File[]
+     */
+    /* istanbul ignore next */
+    Uploader.prototype.sortFileList = function (filesData) {
+        filesData = filesData ? filesData : this.sortFilesList;
+        var files = filesData;
+        var fileNames = [];
+        for (var i = 0; i < files.length; i++) {
+            fileNames.push(files[i].name);
+        }
+        var sortedFileNames = fileNames.sort();
+        var sortedFilesData = [];
+        for (var _i = 0, sortedFileNames_1 = sortedFileNames; _i < sortedFileNames_1.length; _i++) {
+            var name_4 = sortedFileNames_1[_i];
+            for (var i = 0; i < files.length; i++) {
+                if (name_4 === files[i].name) {
+                    sortedFilesData.push(files[i]);
+                }
+            }
+        }
+        return sortedFilesData;
+    };
+    /**
+     * Removes the component from the DOM and detaches all its related event handlers. Also it removes the attributes and classes.
+     * @method destroy
+     * @return {void}.
+     */
+    Uploader.prototype.destroy = function () {
+        this.element.value = null;
+        if (!(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
+            this.clearAll();
+        }
+        this.unWireEvents();
+        this.unBindDropEvents();
+        if (this.multiple) {
+            this.element.removeAttribute('multiple');
+        }
+        if (!this.enabled) {
+            this.element.removeAttribute('disabled');
+        }
+        this.element.removeAttribute('accept');
+        this.setInitialAttributes();
+        var attributes$$1 = ['aria-label', 'directory', 'webkitdirectory', 'tabindex'];
+        for (var _i = 0, attributes_2 = attributes$$1; _i < attributes_2.length; _i++) {
+            var key = attributes_2[_i];
+            this.element.removeAttribute(key);
+        }
+        if (!this.isServerBlazor) {
+            if (!sf.base.isNullOrUndefined(this.uploadWrapper)) {
+                this.uploadWrapper.parentElement.appendChild(this.element);
+                sf.base.detach(this.uploadWrapper);
+            }
+            this.uploadWrapper = null;
+            _super.prototype.destroy.call(this);
+        }
+        else {
+            this.uploadWrapper = null;
+        }
+    };
+    /**
+     * Allows you to call the upload process manually by calling save URL action.
+     * To process the selected files (added in upload queue), pass an empty argument otherwise
+     * upload the specific file based on its argument.
+     * @param { FileInfo | FileInfo[] } files - specifies the files data for upload.
+     * @returns void
+     */
+    Uploader.prototype.upload = function (files, custom) {
+        var _this = this;
+        files = files ? files : this.filesData;
+        var uploadFiles = this.getFilesInArray(files);
+        var eventArgs = {
+            customFormData: [],
+            currentRequest: null
+        };
+        this.trigger('beforeUpload', eventArgs, function (eventArgs) {
+            if (_this.isServerBlazor) {
+                _this.currentRequestHeader = eventArgs.currentRequest ? eventArgs.currentRequest : _this.currentRequestHeader;
+                _this.customFormDatas = (eventArgs.customFormData && eventArgs.customFormData.length > 0) ?
+                    eventArgs.customFormData : _this.customFormDatas;
+            }
+            _this.uploadFiles(uploadFiles, custom);
+        });
+    };
+    Uploader.prototype.getFilesInArray = function (files) {
+        var uploadFiles = [];
+        if (files instanceof Array) {
+            uploadFiles = files;
+        }
+        else {
+            uploadFiles.push(files);
+        }
+        return uploadFiles;
+    };
+    /* istanbul ignore next */
+    Uploader.prototype.serverReadFileBase64 = function (fileIndex, position, totalCount) {
+        var _this = this;
+        return new Promise(function (resolve, reject) {
+            var file = _this.fileStreams[fileIndex].rawFile;
+            try {
+                var reader = new FileReader();
+                // tslint:disable-next-line
+                reader.onload = (function (args) {
+                    return function () {
+                        try {
+                            var contents = args.result;
+                            var data = contents ? contents.split(';base64,')[1] : null;
+                            resolve(data);
+                        }
+                        catch (e) {
+                            reject(e);
+                        }
+                    };
+                })(reader);
+                reader.readAsDataURL(file.slice(position, position + totalCount));
+            }
+            catch (e) {
+                reject(e);
+            }
+        });
+    };
+    /* istanbul ignore next */
+    Uploader.prototype.uploadFileCount = function (ele) {
+        var files = this.filesData;
+        if (!files || files.length === 0) {
+            return -1;
+        }
+        var result = files.length;
+        return result;
+    };
+    /* istanbul ignore next */
+    Uploader.prototype.getFileRead = function (index, ele) {
+        var files = this.filesData;
+        if (!files || files.length === 0) {
+            return -1;
+        }
+        var file = files[index];
+        var fileCount = this.newFileRef++;
+        this.fileStreams[fileCount] = file;
+        return fileCount;
+    };
+    /* istanbul ignore next */
+    Uploader.prototype.getFileInfo = function (index, ele) {
+        var files = this.filesData;
+        if (!files || files.length === 0) {
+            return null;
+        }
+        var file = files[index];
+        if (!file) {
+            return null;
+        }
+        return this.filesData[index];
+    };
+    Uploader.prototype.uploadFiles = function (files, custom) {
+        var _this = this;
+        var selectedFiles = [];
+        if (this.asyncSettings.saveUrl === '' || sf.base.isNullOrUndefined(this.asyncSettings.saveUrl)) {
+            if (this.isServerBlazor) {
+                // tslint:disable-next-line
+                this.interopAdaptor.invokeMethodAsync('GetFileDetails', files);
+            }
+            return;
+        }
+        if (!custom || sf.base.isNullOrUndefined(custom)) {
+            if (!this.multiple) {
+                var file = [];
+                file.push(files[0]);
+                selectedFiles = this.filterfileList(file);
+            }
+            else {
+                selectedFiles = this.filterfileList(files);
+            }
+        }
+        else {
+            selectedFiles = files;
+        }
+        var _loop_5 = function (i) {
+            if (this_3.isServerBlazor && !this_3.checkChunkUpload()) {
+                /* istanbul ignore next */
+                /* tslint:disable */
+                if (selectedFiles[i] && selectedFiles[i].rawFile instanceof File) {
+                    this_3.getBase64(selectedFiles[i].rawFile).then(function (data) {
+                        _this.base64String.push(data);
+                        _this.uploadFilesRequest(selectedFiles, i, custom);
+                    });
+                }
+                /* tslint:disable */
+            }
+            else {
+                this_3.uploadFilesRequest(selectedFiles, i, custom);
+            }
+        };
+        var this_3 = this;
+        for (var i = 0; i < selectedFiles.length; i++) {
+            _loop_5(i);
+        }
+    };
+    Uploader.prototype.uploadFilesRequest = function (selectedFiles, i, custom) {
+        var _this = this;
+        var cloneFiles = [];
+        var chunkEnabled = this.checkChunkUpload();
+        var ajax = new sf.base.Ajax(this.asyncSettings.saveUrl, 'POST', true, null);
+        ajax.emitError = false;
+        var getFileData;
+        /* istanbul ignore next */
+        if (this.isServerBlazor) {
+            getFileData = selectedFiles.slice(0);
+            cloneFiles.push(getFileData[i].rawFile);
+        }
+        var eventArgs = {
+            fileData: (this.isServerBlazor) ? getFileData[i] : selectedFiles[i],
+            customFormData: [],
+            cancel: false
+        };
+        var formData = new FormData();
+        ajax.beforeSend = function (e) {
+            eventArgs.currentRequest = ajax.httpRequest;
+            /* istanbul ignore next */
+            if (_this.isServerBlazor) {
+                eventArgs.fileData.rawFile = !chunkEnabled ? _this.base64String[i] : eventArgs.fileData.rawFile;
+                if (_this.currentRequestHeader) {
+                    _this.updateCustomheader(ajax.httpRequest, _this.currentRequestHeader);
+                }
+                if (_this.customFormDatas) {
+                    _this.updateFormData(formData, _this.customFormDatas);
+                }
+            }
+            _this.trigger('uploading', eventArgs, function (eventArgs) {
+                /* istanbul ignore next */
+                if (_this.isServerBlazor && !chunkEnabled) {
+                    selectedFiles[i].rawFile = eventArgs.fileData.rawFile = cloneFiles[i];
+                }
+                if (eventArgs.cancel) {
+                    _this.eventCancelByArgs(e, eventArgs, selectedFiles[i]);
+                }
+                _this.updateFormData(formData, eventArgs.customFormData);
+            });
+        };
+        if (selectedFiles[i].statusCode === '1') {
+            var name_5 = this.element.getAttribute('name');
+            formData.append(name_5, selectedFiles[i].rawFile, selectedFiles[i].name);
+            if (chunkEnabled && selectedFiles[i].size > this.asyncSettings.chunkSize) {
+                this.chunkUpload(selectedFiles[i], custom, i);
+            }
+            else {
+                ajax.onLoad = function (e) {
+                    if (eventArgs.cancel && _this.isServerBlazor) {
+                        return {};
+                    }
+                    else {
+                        _this.uploadComplete(e, selectedFiles[i], custom);
+                        return {};
+                    }
+                };
+                ajax.onUploadProgress = function (e) {
+                    if (eventArgs.cancel && _this.isServerBlazor) {
+                        return {};
+                    }
+                    else {
+                        _this.uploadInProgress(e, selectedFiles[i], custom, ajax);
+                        return {};
+                    }
+                };
+                /* istanbul ignore next */
+                ajax.onError = function (e) { _this.uploadFailed(e, selectedFiles[i]); return {}; };
+                ajax.send(formData);
+            }
+        }
+    };
+    Uploader.prototype.spliceFiles = function (liIndex) {
+        var liElement = this.fileList[liIndex];
+        var allFiles = this.getFilesData();
+        var nameElements = +liElement.getAttribute('data-files-count');
+        var startIndex = 0;
+        for (var i = 0; i < liIndex; i++) {
+            startIndex += (+this.fileList[i].getAttribute('data-files-count'));
+        }
+        var endIndex = (startIndex + nameElements) - 1;
+        for (var j = endIndex; j >= startIndex; j--) {
+            allFiles.splice(j, 1);
+        }
+    };
+    /**
+     * Remove the uploaded file from server manually by calling the remove URL action.
+     * If you pass an empty argument to this method, the complete file list can be cleared,
+     * otherwise remove the specific file based on its argument (“file_data”).
+     * @param { FileInfo | FileInfo[] } fileData - specifies the files data to remove from file list/server.
+     * @param { boolean } customTemplate - Set true if the component rendering with customize template.
+     * @param { boolean } removeDirectly - Set true if files remove without removing event.
+     * @param { boolean } postRawFile - Set false, to post file name only to the remove action.
+     * @returns void
+     */
+    Uploader.prototype.remove = function (fileData, customTemplate, removeDirectly, postRawFile, args) {
+        var _this = this;
+        if (sf.base.isNullOrUndefined(postRawFile)) {
+            postRawFile = true;
+        }
+        var eventArgs = {
+            event: args,
+            cancel: false,
+            filesData: [],
+            customFormData: [],
+            postRawFile: postRawFile,
+            currentRequest: null
+        };
+        var beforeEventArgs = {
+            cancel: false,
+            customFormData: [],
+            currentRequest: null
+        };
+        this.trigger('beforeRemove', beforeEventArgs, function (beforeEventArgs) {
+            if (!beforeEventArgs.cancel) {
+                if (_this.isServerBlazor) {
+                    _this.currentRequestHeader = beforeEventArgs.currentRequest;
+                    _this.customFormDatas = beforeEventArgs.customFormData;
+                }
+                var index = void 0;
+                if (_this.isFormUpload() && !_this.isBlazorSaveUrl) {
+                    eventArgs.filesData = fileData;
+                    _this.trigger('removing', eventArgs, function (eventArgs) {
+                        if (!eventArgs.cancel) {
+                            var removingFiles = _this.getFilesInArray(fileData);
+                            var isLiRemoved = false;
+                            var liIndex = void 0;
+                            for (var _i = 0, removingFiles_1 = removingFiles; _i < removingFiles_1.length; _i++) {
+                                var data = removingFiles_1[_i];
+                                if (!isLiRemoved) {
+                                    liIndex = _this.fileList.indexOf(data.list);
+                                }
+                                if (liIndex > -1) {
+                                    var inputElement = !sf.base.isNullOrUndefined(data.input) ? data.input : null;
+                                    if (inputElement) {
+                                        sf.base.detach(inputElement);
+                                    }
+                                    _this.spliceFiles(liIndex);
+                                    sf.base.detach(_this.fileList[liIndex]);
+                                    _this.fileList.splice(liIndex, 1);
+                                    isLiRemoved = true;
+                                    liIndex = -1;
+                                }
+                            }
+                        }
+                    });
+                }
+                else if (_this.isForm && (sf.base.isNullOrUndefined(_this.asyncSettings.removeUrl) || _this.asyncSettings.removeUrl === '')
+                    && !_this.isBlazorSaveUrl) {
+                    eventArgs.filesData = _this.getFilesData();
+                    _this.trigger('removing', eventArgs, function (eventArgs) {
+                        if (!eventArgs.cancel) {
+                            _this.clearAll();
+                        }
+                    });
+                }
+                else {
+                    var removeFiles = [];
+                    fileData = !sf.base.isNullOrUndefined(fileData) ? fileData : _this.filesData;
+                    if (fileData instanceof Array) {
+                        removeFiles = fileData;
+                    }
+                    else {
+                        removeFiles.push(fileData);
+                    }
+                    eventArgs.filesData = removeFiles;
+                    var removeUrl = _this.asyncSettings.removeUrl;
+                    var validUrl = (removeUrl === '' || sf.base.isNullOrUndefined(removeUrl)) ? false : true;
+                    var _loop_6 = function (files) {
+                        index = _this.filesData.indexOf(files);
+                        if ((files.statusCode === '2' || files.statusCode === '4') && validUrl) {
+                            _this.removeUploadedFile(files, eventArgs, removeDirectly, customTemplate);
+                        }
+                        else {
+                            if (!removeDirectly) {
+                                _this.trigger('removing', eventArgs, function (eventArgs) {
+                                    if (!eventArgs.cancel) {
+                                        _this.removeFilesData(files, customTemplate);
+                                    }
+                                });
+                            }
+                            else {
+                                _this.removeFilesData(files, customTemplate);
+                            }
+                        }
+                        if (_this.sequentialUpload) {
+                            /* istanbul ignore next */
+                            if (index <= _this.actionCompleteCount) {
+                                _this.checkActionComplete(false);
+                            }
+                        }
+                        else {
+                            _this.checkActionComplete(false);
+                        }
+                    };
+                    for (var _i = 0, removeFiles_1 = removeFiles; _i < removeFiles_1.length; _i++) {
+                        var files = removeFiles_1[_i];
+                        _loop_6(files);
+                    }
+                }
+            }
+        });
+    };
+    /**
+     * Clear all the file entries from list that can be uploaded files or added in upload queue.
+     * @returns void
+     */
+    Uploader.prototype.clearAll = function () {
+        var _this = this;
+        if (sf.base.isNullOrUndefined(this.listParent) && !(this.isBlazorSaveUrl || this.isBlazorTemplate)) {
+            if (this.browserName !== 'msie') {
+                this.element.value = '';
+            }
+            this.filesData = [];
+            return;
+        }
+        var eventArgs = {
+            cancel: false,
+            filesData: this.filesData
+        };
+        this.trigger('clearing', eventArgs, function (eventArgs) {
+            if (!eventArgs.cancel) {
+                _this.clearData();
+                _this.actionCompleteCount = 0;
+                _this.count = -1;
+            }
+        });
+    };
+    /**
+     * Get the data of files which are shown in file list.
+     * @param { number } index - specifies the file list item(li) index.
+     * @returns FileInfo[]
+     */
+    Uploader.prototype.getFilesData = function (index) {
+        if (!this.isServerBlazor) {
+            if (sf.base.isNullOrUndefined(index)) {
+                return this.filesData;
+            }
+            else {
+                return this.getSelectedFiles(index);
+            }
+        }
+        else {
+            for (var i = 0; i < this.filesData.length; i++) {
+                this.filesData[i].rawFile = this.base64String[i];
+            }
+            return this.filesData;
+        }
+    };
+    /**
+     * Pauses the in-progress chunked upload based on the file data.
+     * @param { FileInfo | FileInfo[] } fileData - specifies the files data to pause from uploading.
+     * @param { boolean } custom - Set true if used custom UI.
+     * @returns void
+     */
+    Uploader.prototype.pause = function (fileData, custom) {
+        fileData = fileData ? fileData : this.filesData;
+        var fileDataFiles = this.getFilesInArray(fileData);
+        this.pauseUploading(fileDataFiles, custom);
+    };
+    Uploader.prototype.pauseUploading = function (fileData, custom) {
+        var files = this.getFiles(fileData);
+        for (var i = 0; i < files.length; i++) {
+            if (files[i].statusCode === '3') {
+                this.pauseUpload(this.getCurrentMetaData(files[i], null), null, custom);
+            }
+        }
+    };
+    Uploader.prototype.getFiles = function (fileData) {
+        var files = [];
+        if (!sf.base.isNullOrUndefined(fileData) && !(fileData instanceof Array)) {
+            files.push(fileData);
+        }
+        else {
+            files = fileData;
+        }
+        return files;
+    };
+    /**
+     * Resumes the chunked upload that is previously paused based on the file data.
+     * @param { FileInfo | FileInfo[] } fileData - specifies the files data to resume the paused file.
+     * @param { boolean } custom - Set true if used custom UI.
+     * @returns void
+     */
+    Uploader.prototype.resume = function (fileData, custom) {
+        fileData = fileData ? fileData : this.filesData;
+        var fileDataFiles = this.getFilesInArray(fileData);
+        this.resumeFiles(fileDataFiles, custom);
+    };
+    Uploader.prototype.resumeFiles = function (fileData, custom) {
+        var files = this.getFiles(fileData);
+        for (var i = 0; i < files.length; i++) {
+            if (files[i].statusCode === '4') {
+                this.resumeUpload(this.getCurrentMetaData(files[i], null), null, custom);
+            }
+        }
+    };
+    /**
+     * Retries the canceled or failed file upload based on the file data.
+     * @param { FileInfo | FileInfo[] } fileData - specifies the files data to retry the canceled or failed file.
+     * @param { boolean } fromcanceledStage - Set true to retry from canceled stage and set false to retry from initial stage.
+     * @returns void
+     */
+    Uploader.prototype.retry = function (fileData, fromcanceledStage, custom) {
+        fileData = fileData ? fileData : this.filesData;
+        var fileDataFiles = this.getFilesInArray(fileData);
+        this.retryFailedFiles(fileDataFiles, fromcanceledStage, custom);
+    };
+    Uploader.prototype.retryFailedFiles = function (fileData, fromcanceledStage, custom) {
+        var files = this.getFiles(fileData);
+        for (var i = 0; i < files.length; i++) {
+            if (files[i].statusCode === '5' || files[i].statusCode === '0') {
+                if (this.asyncSettings.chunkSize > 0) {
+                    this.retryUpload(this.getCurrentMetaData(files[i], null), fromcanceledStage);
+                }
+                else {
+                    var liElement = void 0;
+                    if (!custom) {
+                        liElement = this.fileList[this.filesData.indexOf(files[i])];
+                    }
+                    this.reloadcanceledFile(null, files[i], liElement, custom);
+                }
+            }
+        }
+    };
+    /**
+     * Stops the in-progress chunked upload based on the file data.
+     * When the file upload is canceled, the partially uploaded file is removed from server.
+     * @param { FileInfo | FileInfo[] } fileData - specifies the files data to cancel the progressing file.
+     * @returns void
+     */
+    Uploader.prototype.cancel = function (fileData) {
+        fileData = fileData ? fileData : this.filesData;
+        var cancelingFiles = this.getFilesInArray(fileData);
+        this.cancelUpload(cancelingFiles);
+    };
+    Uploader.prototype.cancelUpload = function (fileData) {
+        var files = this.getFiles(fileData);
+        if (this.asyncSettings.chunkSize > 0) {
+            for (var i = 0; i < files.length; i++) {
+                if (files[i].statusCode === '3') {
+                    var metaData = this.getCurrentMetaData(files[i], null);
+                    metaData.file.statusCode = '5';
+                    metaData.file.status = this.localizedTexts('fileUploadCancel');
+                    this.updateMetaData(metaData);
+                    this.showHideUploadSpinner(files[i]);
+                }
+            }
+        }
+        else {
+            for (var i = 0; i < files.length; i++) {
+                if (files[i].statusCode === '3') {
+                    files[i].statusCode = '5';
+                    files[i].status = this.localizedTexts('fileUploadCancel');
+                    this.showHideUploadSpinner(files[i]);
+                }
+            }
+        }
+    };
+    Uploader.prototype.showHideUploadSpinner = function (files) {
+        var liElement = this.getLiElement(files);
+        if (!sf.base.isNullOrUndefined(liElement) && sf.base.isNullOrUndefined(this.template)) {
+            var spinnerTarget = liElement.querySelector('.' + ABORT_ICON);
+            sf.popups.createSpinner({ target: spinnerTarget, width: '20px' });
+            sf.popups.showSpinner(spinnerTarget);
+        }
+    };
+    __decorate$4([
+        sf.base.Complex({ saveUrl: '', removeUrl: '' }, AsyncSettings)
+    ], Uploader.prototype, "asyncSettings", void 0);
+    __decorate$4([
+        sf.base.Property(false)
+    ], Uploader.prototype, "sequentialUpload", void 0);
+    __decorate$4([
+        sf.base.Property({})
+    ], Uploader.prototype, "htmlAttributes", void 0);
+    __decorate$4([
+        sf.base.Property('')
+    ], Uploader.prototype, "cssClass", void 0);
+    __decorate$4([
+        sf.base.Property(true)
+    ], Uploader.prototype, "enabled", void 0);
+    __decorate$4([
+        sf.base.Property(null)
+    ], Uploader.prototype, "template", void 0);
+    __decorate$4([
+        sf.base.Property(true)
+    ], Uploader.prototype, "multiple", void 0);
+    __decorate$4([
+        sf.base.Property(true)
+    ], Uploader.prototype, "autoUpload", void 0);
+    __decorate$4([
+        sf.base.Complex({}, ButtonsProps)
+    ], Uploader.prototype, "buttons", void 0);
+    __decorate$4([
+        sf.base.Property('')
+    ], Uploader.prototype, "allowedExtensions", void 0);
+    __decorate$4([
+        sf.base.Property(0)
+    ], Uploader.prototype, "minFileSize", void 0);
+    __decorate$4([
+        sf.base.Property(30000000)
+    ], Uploader.prototype, "maxFileSize", void 0);
+    __decorate$4([
+        sf.base.Property(null)
+    ], Uploader.prototype, "dropArea", void 0);
+    __decorate$4([
+        sf.base.Collection([{}], FilesProp)
+    ], Uploader.prototype, "files", void 0);
+    __decorate$4([
+        sf.base.Property(true)
+    ], Uploader.prototype, "showFileList", void 0);
+    __decorate$4([
+        sf.base.Property(false)
+    ], Uploader.prototype, "directoryUpload", void 0);
+    __decorate$4([
+        sf.base.Event()
+    ], Uploader.prototype, "created", void 0);
+    __decorate$4([
+        sf.base.Event()
+    ], Uploader.prototype, "actionComplete", void 0);
+    __decorate$4([
+        sf.base.Event()
+    ], Uploader.prototype, "rendering", void 0);
+    __decorate$4([
+        sf.base.Event()
+    ], Uploader.prototype, "beforeUpload", void 0);
+    __decorate$4([
+        sf.base.Event()
+    ], Uploader.prototype, "fileListRendering", void 0);
+    __decorate$4([
+        sf.base.Event()
+    ], Uploader.prototype, "selected", void 0);
+    __decorate$4([
+        sf.base.Event()
+    ], Uploader.prototype, "uploading", void 0);
+    __decorate$4([
+        sf.base.Event()
+    ], Uploader.prototype, "success", void 0);
+    __decorate$4([
+        sf.base.Event()
+    ], Uploader.prototype, "failure", void 0);
+    __decorate$4([
+        sf.base.Event()
+    ], Uploader.prototype, "removing", void 0);
+    __decorate$4([
+        sf.base.Event()
+    ], Uploader.prototype, "beforeRemove", void 0);
+    __decorate$4([
+        sf.base.Event()
+    ], Uploader.prototype, "clearing", void 0);
+    __decorate$4([
+        sf.base.Event()
+    ], Uploader.prototype, "progress", void 0);
+    __decorate$4([
+        sf.base.Event()
+    ], Uploader.prototype, "change", void 0);
+    __decorate$4([
+        sf.base.Event()
+    ], Uploader.prototype, "chunkSuccess", void 0);
+    __decorate$4([
+        sf.base.Event()
+    ], Uploader.prototype, "chunkFailure", void 0);
+    __decorate$4([
+        sf.base.Event()
+    ], Uploader.prototype, "chunkUploading", void 0);
+    __decorate$4([
+        sf.base.Event()
+    ], Uploader.prototype, "canceling", void 0);
+    __decorate$4([
+        sf.base.Event()
+    ], Uploader.prototype, "pausing", void 0);
+    __decorate$4([
+        sf.base.Event()
+    ], Uploader.prototype, "resuming", void 0);
+    Uploader = __decorate$4([
+        sf.base.NotifyPropertyChanges
+    ], Uploader);
+    return Uploader;
+}(sf.base.Component));
+
+/**
+ * Uploader modules
+ */
+
+var __extends$5 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var APPLY = 'e-apply';
+var CANCEL = 'e-cancel';
+var CURRENT = 'e-current';
+var CONTAINER = 'e-container';
+var CTRLBTN = 'e-ctrl-btn';
+var CTRLSWITCH = 'e-switch-ctrl-btn';
+var DISABLED$1 = 'e-disabled';
+var FORMATSWITCH = 'e-value-switch-btn';
+var HANDLER = 'e-handler';
+var HEX = 'e-hex';
+var HIDEHEX = 'e-hide-hex-value';
+var HIDEOPACITY = 'e-hide-opacity';
+var HIDERGBA = 'e-hide-switchable-value';
+var HIDEVALUE = 'e-hide-value';
+var HIDEVALUESWITCH = 'e-hide-valueswitcher';
+var HSVAREA = 'e-hsv-color';
+var HSVCONTAINER = 'e-hsv-container';
+var INPUTWRAPPER = 'e-selected-value';
+var MODESWITCH = 'e-mode-switch-btn';
+var NOCOLOR = 'e-nocolor-item';
+var OPACITY = 'e-opacity-value';
+var PALETTES = 'e-palette';
+var PALETTECONTENT = 'e-color-palette';
+var PICKERCONTENT = 'e-color-picker';
+var PREVIEW = 'e-preview-container';
+var PREVIOUS = 'e-previous';
+var RTL$1 = 'e-rtl';
+var SHOWVALUE = 'e-show-value';
+var SELECT = 'e-selected';
+var SPLITPREVIEW = 'e-split-preview';
+var TILE = 'e-tile';
+var presets = {
+    default: ['#000000', '#f44336', '#e91e63', '#9c27b0', '#673ab7', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#ffeb3b',
+        '#ffffff', '#ffebee', '#fce4ec', '#f3e5f5', '#ede7f6', '#e3f2fd', '#e1f5fe', '#e0f7fa', '#e0f2f1', '#fffde7',
+        '#f2f2f2', '#ffcdd2', '#f8bbd0', '#e1bee7', '#d1c4e9', '#bbdefb', '#b3e5fc', '#b2ebf2', '#b2dfdb', '#fff9c4',
+        '#e6e6e6', '#ef9a9a', '#f48fb1', '#ce93d8', '#b39ddb', '#90caf9', '#81d4fa', '#80deea', '#80cbc4', '#fff59d',
+        '#cccccc', '#e57373', '#f06292', '#ba68c8', '#9575cd', '#64b5f6', '#4fc3f7', '#4dd0e1', '#4db6ac', '#fff176',
+        '#b3b3b3', '#ef5350', '#ec407a', '#ab47bc', '#7e57c2', '#42a5f5', '#29b6f6', '#26c6da', '#26a69a', '#ffee58',
+        '#999999', '#e53935', '#d81b60', '#8e24aa', '#5e35b1', '#1e88e5', '#039be5', '#00acc1', '#00897b', '#fdd835',
+        '#808080', '#d32f2f', '#c2185b', '#7b1fa2', '#512da8', '#1976d2', '#0288d1', '#0097a7', '#00796b', '#fbc02d',
+        '#666666', '#c62828', '#ad1457', '#6a1b9a', '#4527a0', '#1565c0', '#0277bd', '#00838f', '#00695c', '#f9a825',
+        '#4d4d4d', '#b71c1c', '#880e4f', '#4a148c', '#311b92', '#0d47a1', '#01579b', '#006064', '#004d40', '#f57f17']
+};
+/**
+ * ColorPicker component is a user interface to select and adjust color values. It provides supports for various
+ * color specification like Red Green Blue, Hue Saturation Value and Hex codes.
+ * ```html
+ * <input type="color" id="color-picker">
+ * ```
+ * ```typescript
+ * <script>
+ *   let colorPickerObj: ColorPicker = new ColorPicker(null , "#color-picker");
+ * </script>
+ * ```
+ */
+var ColorPicker = /** @class */ (function (_super) {
+    __extends$5(ColorPicker, _super);
+    function ColorPicker(options, element) {
+        return _super.call(this, options, element) || this;
+    }
+    ColorPicker.prototype.preRender = function () {
+        var ele = this.element;
+        this.formElement = sf.base.closest(this.element, 'form');
+        if (this.formElement) {
+            sf.base.EventHandler.add(this.formElement, 'reset', this.formResetHandler, this);
+        }
+        var localeText = { Apply: 'Apply', Cancel: 'Cancel', ModeSwitcher: 'Switch Mode' };
+        this.l10n = new sf.base.L10n('colorpicker', localeText, this.locale);
+        if (ele.getAttribute('ejs-for') && !ele.getAttribute('name')) {
+            ele.setAttribute('name', ele.id);
+        }
+    };
+    /**
+     * To Initialize the component rendering
+     * @private
+     */
+    ColorPicker.prototype.render = function () {
+        this.initWrapper();
+        if (this.inline) {
+            this.createWidget();
+        }
+        else {
+            this.createSplitBtn();
+        }
+        if (!this.enableOpacity) {
+            sf.base.addClass([this.container.parentElement], HIDEOPACITY);
+        }
+        this.renderComplete();
+    };
+    ColorPicker.prototype.initWrapper = function () {
+        var wrapper = this.createElement('div', { className: 'e-' + this.getModuleName() + '-wrapper' });
+        this.element.parentNode.insertBefore(wrapper, this.element);
+        wrapper.appendChild(this.element);
+        sf.base.attributes(this.element, { 'tabindex': '-1', 'spellcheck': 'false' });
+        this.container = this.createElement('div', { className: CONTAINER });
+        this.getWrapper().appendChild(this.container);
+        var value = this.value ? this.roundValue(this.value).toLowerCase() : '#008000ff';
+        if (this.noColor && this.mode === 'Palette' && this.value === '') {
+            value = '';
+        }
+        var slicedValue = value.slice(0, 7);
+        if (sf.base.isNullOrUndefined(this.initialInputValue)) {
+            this.initialInputValue = slicedValue;
+        }
+        this.element.value = slicedValue;
+        if (this.enableOpacity) {
+            this.setProperties({ 'value': value }, true);
+        }
+        else {
+            this.setProperties({ 'value': slicedValue }, true);
+        }
+        if (this.enableRtl) {
+            wrapper.classList.add(RTL$1);
+        }
+        if (this.cssClass) {
+            sf.base.addClass([wrapper], this.cssClass.split(' '));
+        }
+        this.tileRipple = sf.base.rippleEffect(this.container, { selector: '.' + TILE });
+        this.ctrlBtnRipple = sf.base.rippleEffect(this.container, { selector: '.e-btn' });
+    };
+    ColorPicker.prototype.getWrapper = function () {
+        return this.element.parentElement;
+    };
+    ColorPicker.prototype.createWidget = function () {
+        if (this.mode === 'Palette') {
+            this.createPalette();
+            if (!this.inline) {
+                this.firstPaletteFocus();
+            }
+        }
+        else {
+            this.createPicker();
+            if (!this.inline) {
+                this.getDragHandler().focus();
+            }
+        }
+        this.isRgb = true;
+        this.createInput();
+        this.createCtrlBtn();
+        if (!this.disabled) {
+            this.wireEvents();
+        }
+        if (this.inline && this.disabled) {
+            this.toggleDisabled(true);
+        }
+        if (sf.base.Browser.isDevice) {
+            this.refreshPopupPos();
+        }
+    };
+    ColorPicker.prototype.createSplitBtn = function () {
+        var _this = this;
+        var splitButton = this.createElement('button', { className: 'e-split-colorpicker' });
+        this.getWrapper().appendChild(splitButton);
+        this.splitBtn = new sf.splitbuttons.SplitButton({
+            iconCss: 'e-selected-color',
+            target: this.container,
+            disabled: this.disabled,
+            enableRtl: this.enableRtl,
+            open: this.onOpen.bind(this),
+            click: function (args) {
+                _this.trigger('change', {
+                    currentValue: { hex: _this.value.slice(0, 7), rgba: _this.convertToRgbString(_this.hexToRgb(_this.value)) },
+                    previousValue: { hex: null, rgba: null }, value: _this.value
+                });
+            }
+        });
+        this.splitBtn.createElement = this.createElement;
+        this.splitBtn.appendTo(splitButton);
+        var preview = this.createElement('span', { className: SPLITPREVIEW });
+        sf.base.select('.e-selected-color', splitButton).appendChild(preview);
+        preview.style.backgroundColor = this.convertToRgbString(this.hexToRgb(this.value));
+        var popupEle = this.getPopupEle();
+        sf.base.addClass([popupEle], 'e-colorpicker-popup');
+        if (this.cssClass) {
+            sf.base.addClass([popupEle], this.cssClass.split(' '));
+        }
+        if (sf.base.Browser.isDevice) {
+            var popupInst = this.getPopupInst();
+            popupInst.relateTo = document.body;
+            popupInst.position = { X: 'center', Y: 'center' };
+            popupInst.targetType = 'container';
+            popupInst.collision = { X: 'fit', Y: 'fit' };
+            popupInst.offsetY = 4;
+            popupEle.style.zIndex = sf.popups.getZindexPartial(this.splitBtn.element).toString();
+        }
+        this.bindCallBackEvent();
+    };
+    ColorPicker.prototype.onOpen = function (args) {
+        this.trigger('open', { element: this.container });
+    };
+    ColorPicker.prototype.getPopupInst = function () {
+        return sf.base.getInstance(this.getPopupEle(), sf.popups.Popup);
+    };
+    ColorPicker.prototype.bindCallBackEvent = function () {
+        var _this = this;
+        this.splitBtn.beforeOpen = function (args) {
+            var callBackPromise = new sf.splitbuttons.Deferred();
+            _this.trigger('beforeOpen', args, function (observeOpenArgs) {
+                if (!observeOpenArgs.cancel) {
+                    var popupEle = _this.getPopupEle();
+                    popupEle.style.top = sf.base.formatUnit(0 + pageYOffset);
+                    popupEle.style.left = sf.base.formatUnit(0 + pageXOffset);
+                    popupEle.style.display = 'block';
+                    _this.createWidget();
+                    popupEle.style.display = '';
+                    if (sf.base.Browser.isDevice) {
+                        _this.modal = _this.createElement('div');
+                        _this.modal.className = 'e-' + _this.getModuleName() + ' e-modal';
+                        _this.modal.style.display = 'none';
+                        document.body.insertBefore(_this.modal, popupEle);
+                        document.body.className += ' e-colorpicker-overflow';
+                        _this.modal.style.display = 'block';
+                        _this.modal.style.zIndex = (Number(popupEle.style.zIndex) - 1).toString();
+                    }
+                }
+                args.cancel = observeOpenArgs.cancel;
+                callBackPromise.resolve(observeOpenArgs);
+            });
+            return callBackPromise;
+        };
+        this.splitBtn.beforeClose = function (args) {
+            var callBackPromise = new sf.splitbuttons.Deferred();
+            if (!sf.base.isNullOrUndefined(args.event)) {
+                var beforeCloseArgs = { element: _this.container, event: args.event, cancel: false };
+                _this.trigger('beforeClose', beforeCloseArgs, function (observedCloseArgs) {
+                    if (sf.base.Browser.isDevice && args.event.target === _this.modal) {
+                        observedCloseArgs.cancel = true;
+                    }
+                    if (!observedCloseArgs.cancel) {
+                        _this.onPopupClose();
+                    }
+                    args.cancel = observedCloseArgs.cancel;
+                    callBackPromise.resolve(observedCloseArgs);
+                });
+            }
+            else {
+                callBackPromise.resolve(args);
+            }
+            return callBackPromise;
+        };
+    };
+    ColorPicker.prototype.onPopupClose = function () {
+        this.unWireEvents();
+        this.destroyOtherComp();
+        this.container.style.width = '';
+        sf.base.select('.' + SPLITPREVIEW, this.splitBtn.element).style.backgroundColor
+            = this.convertToRgbString(this.hexToRgb(this.value));
+        this.container.innerHTML = '';
+        sf.base.removeClass([this.container], [PICKERCONTENT, PALETTECONTENT]);
+        if (sf.base.Browser.isDevice && this.modal) {
+            sf.base.removeClass([document.body], 'e-colorpicker-overflow');
+            this.modal.style.display = 'none';
+            this.modal.outerHTML = '';
+            this.modal = null;
+        }
+    };
+    ColorPicker.prototype.createPalette = function () {
+        sf.base.classList(this.container, [PALETTECONTENT], [PICKERCONTENT]);
+        if (this.presetColors) {
+            var paletteGroup = this.createElement('div', { className: 'e-custom-palette' });
+            this.appendElement(paletteGroup);
+            var keys = Object.keys(this.presetColors);
+            if (keys.length === 1) {
+                this.appendPalette(this.presetColors[keys[0]], keys[0], paletteGroup);
+            }
+            else {
+                for (var i = 0, len = keys.length; i < len; i++) {
+                    this.appendPalette(this.presetColors[keys[i]], keys[i], paletteGroup);
+                }
+            }
+            if (sf.base.selectAll('.e-row', paletteGroup).length > 10) {
+                sf.base.addClass([paletteGroup], 'e-palette-group');
+            }
+        }
+        else {
+            this.appendPalette(presets.default, 'default');
+        }
+        if (this.mode === 'Palette' && !this.modeSwitcher && this.noColor) {
+            this.setNoColor();
+        }
+        var width = parseInt(getComputedStyle(this.container).borderBottomWidth, 10);
+        this.container.style.width = sf.base.formatUnit(this.container.children[0].offsetWidth + width + width);
+        this.rgb = this.hexToRgb(this.roundValue(this.value));
+        this.hsv = this.rgbToHsv.apply(this, this.rgb);
+    };
+    ColorPicker.prototype.firstPaletteFocus = function () {
+        if (!sf.base.select('.' + SELECT, this.container.children[0])) {
+            sf.base.selectAll('.' + PALETTES, this.container)[0].focus();
+        }
+    };
+    ColorPicker.prototype.appendPalette = function (colors, key, refEle) {
+        var palette = this.createElement('div', { className: PALETTES, attrs: { 'tabindex': '0' } });
+        if (refEle) {
+            refEle.appendChild(palette);
+        }
+        else {
+            this.appendElement(palette);
+        }
+        var row;
+        var tile;
+        var roundedColor;
+        for (var i = 0, len = colors.length; i < len; i++) {
+            if (i === 0 || i % this.columns === 0) {
+                row = this.createElement('div', {
+                    className: 'e-row', attrs: { 'role': 'row' }
+                });
+                palette.appendChild(row);
+            }
+            roundedColor = this.roundValue(colors[i]).toLowerCase();
+            tile = this.createElement('span', {
+                className: TILE, attrs: { 'role': 'gridcell', 'aria-label': roundedColor, 'aria-selected': 'false' }
+            });
+            this.trigger('beforeTileRender', { element: tile, presetName: key, value: colors[i] });
+            row.appendChild(tile);
+            if (this.value === roundedColor) {
+                this.addTileSelection(tile);
+                palette.focus();
+            }
+            tile.style.backgroundColor = this.convertToRgbString(this.hexToRgb(roundedColor));
+        }
+    };
+    ColorPicker.prototype.setNoColor = function () {
+        var noColorEle = this.container.querySelector('.e-row').children[0];
+        noColorEle.classList.add(NOCOLOR);
+        if (!this.value) {
+            noColorEle.classList.add(SELECT);
+            sf.base.closest(noColorEle, '.' + PALETTES).focus();
+        }
+        ['aria-selected', 'aria-label'].forEach(function (attr) { noColorEle.removeAttribute(attr); });
+        noColorEle.style.backgroundColor = '';
+    };
+    ColorPicker.prototype.appendElement = function (ele, insertPos) {
+        if (insertPos === void 0) { insertPos = 0; }
+        var refEle = this.container.children[insertPos];
+        refEle ? this.container.insertBefore(ele, refEle) : this.container.appendChild(ele);
+    };
+    ColorPicker.prototype.addTileSelection = function (ele) {
+        ele.classList.add(SELECT);
+        ele.setAttribute('aria-selected', 'true');
+    };
+    ColorPicker.prototype.createPicker = function () {
+        sf.base.classList(this.container, [PICKERCONTENT], [PALETTECONTENT]);
+        var hsvContainer = this.createElement('div', { className: HSVCONTAINER });
+        this.appendElement(hsvContainer);
+        hsvContainer.appendChild(this.createElement('div', { className: HSVAREA }));
+        var dragHandler = this.createElement('span', { className: HANDLER, attrs: { 'tabindex': '0' } });
+        hsvContainer.appendChild(dragHandler);
+        this.rgb = this.hexToRgb(this.value);
+        this.hsv = this.rgbToHsv.apply(this, this.rgb);
+        this.setHsvContainerBg();
+        this.setHandlerPosition();
+        this.createSlider();
+        this.createDragTooltip();
+    };
+    ColorPicker.prototype.setHsvContainerBg = function (h) {
+        if (h === void 0) { h = this.hsv[0]; }
+        this.getHsvContainer().style.backgroundColor = this.convertToRgbString(this.hsvToRgb(h, 100, 100, 1));
+    };
+    ColorPicker.prototype.getHsvContainer = function () {
+        return sf.base.select('.' + HSVCONTAINER, this.container);
+    };
+    ColorPicker.prototype.setHandlerPosition = function () {
+        var dragHandler = this.getDragHandler();
+        var hsvArea = sf.base.select('.' + HSVAREA, this.container);
+        if (this.enableRtl) {
+            dragHandler.style.left = sf.base.formatUnit(hsvArea.offsetWidth * Math.abs(100 - this.hsv[1]) / 100);
+        }
+        else {
+            dragHandler.style.left = sf.base.formatUnit(hsvArea.offsetWidth * this.hsv[1] / 100);
+        }
+        dragHandler.style.top = sf.base.formatUnit(hsvArea.offsetHeight * (100 - this.hsv[2]) / 100);
+    };
+    ColorPicker.prototype.createSlider = function () {
+        var sliderPreviewWrapper = this.createElement('div', { className: 'e-slider-preview' });
+        this.appendElement(sliderPreviewWrapper, 1);
+        this.createPreview(sliderPreviewWrapper);
+        var sliderWrapper = this.createElement('div', { className: 'e-colorpicker-slider' });
+        sliderPreviewWrapper.insertBefore(sliderWrapper, sliderPreviewWrapper.children[0]);
+        var slider = this.createElement('div', { className: 'e-hue-slider' });
+        sliderWrapper.appendChild(slider);
+        this.hueSlider = new Slider({
+            value: this.hsv[0],
+            min: 0,
+            max: 359,
+            enableRtl: this.enableRtl,
+            enabled: !this.disabled,
+            change: this.hueChange.bind(this)
+        });
+        this.hueSlider.createElement = this.createElement;
+        this.hueSlider.appendTo(slider);
+        if (this.enableOpacity) {
+            slider = this.createElement('div', { className: 'e-opacity-slider' });
+            sliderWrapper.appendChild(slider);
+            this.createOpacitySlider(slider);
+        }
+    };
+    ColorPicker.prototype.createOpacitySlider = function (slider) {
+        this.opacitySlider = new Slider({
+            value: this.rgb[3] * 100,
+            min: 0,
+            max: 100,
+            enableRtl: this.enableRtl,
+            enabled: !this.disabled,
+            change: this.opacityChange.bind(this)
+        });
+        this.opacitySlider.createElement = this.createElement;
+        this.opacitySlider.appendTo(slider);
+        var opacityBgTrack = this.createElement('div', { className: 'e-opacity-empty-track' });
+        slider.appendChild(opacityBgTrack);
+        this.updateOpacitySliderBg();
+    };
+    ColorPicker.prototype.updateOpacitySliderBg = function () {
+        var direction = this.enableRtl ? 'to left' : 'to right';
+        sf.base.select('.e-slider-track', this.opacitySlider.element).style.background =
+            'linear-gradient(' + direction + ', rgba(' + this.rgb.slice(0, 3) + ', 0) 0%, ' +
+                this.convertToRgbString(this.rgb.slice(0, 3)) + ' 100%)';
+    };
+    ColorPicker.prototype.hueChange = function (args) {
+        this.hsv[0] = args.value;
+        this.setHsvContainerBg();
+        this.convertToOtherFormat();
+    };
+    ColorPicker.prototype.opacityChange = function (args) {
+        var value = args.value;
+        var pValue = this.rgbToHex(this.rgb);
+        this.hsv[3] = value / 100;
+        this.rgb[3] = value / 100;
+        var cValue = this.rgbToHex(this.rgb);
+        this.updateOpacityInput(value);
+        var rgb = this.convertToRgbString(this.rgb);
+        this.updatePreview(rgb);
+        this.triggerEvent(cValue, pValue, rgb);
+    };
+    ColorPicker.prototype.updateOpacityInput = function (value) {
+        if (!this.getWrapper().classList.contains(HIDEVALUE)) {
+            var opacityTextBoxInst = sf.base.getInstance(sf.base.select('.' + OPACITY, this.container), NumericTextBox);
+            opacityTextBoxInst.value = value;
+            opacityTextBoxInst.dataBind();
+        }
+    };
+    ColorPicker.prototype.createPreview = function (parentEle) {
+        var previewContainer = this.createElement('div', { className: PREVIEW });
+        parentEle.appendChild(previewContainer);
+        var preview = this.createElement('span', { className: 'e-preview ' + CURRENT });
+        previewContainer.appendChild(preview);
+        var colorValue = this.convertToRgbString(this.rgb);
+        preview.style.backgroundColor = colorValue;
+        preview = this.createElement('span', { className: 'e-preview ' + PREVIOUS });
+        previewContainer.appendChild(preview);
+        preview.style.backgroundColor = colorValue;
+    };
+    ColorPicker.prototype.isPicker = function () {
+        return !this.container.classList.contains(PALETTECONTENT);
+    };
+    ColorPicker.prototype.getPopupEle = function () {
+        return this.container.parentElement;
+    };
+    ColorPicker.prototype.createNumericInput = function (element, value, label, max) {
+        var _this = this;
+        var numericInput = new NumericTextBox({
+            value: value,
+            placeholder: label,
+            min: 0,
+            max: max,
+            format: '###.##',
+            showSpinButton: false,
+            floatLabelType: 'Always',
+            enableRtl: this.enableRtl,
+            enabled: !this.disabled,
+            readonly: this.isPicker() ? false : true,
+            change: function (args) {
+                if (args.event) {
+                    _this.inputHandler(args.event);
+                }
+            }
+        });
+        numericInput.createElement = this.createElement;
+        numericInput.appendTo(element);
+    };
+    ColorPicker.prototype.createInput = function () {
+        var isPicker = this.isPicker();
+        var wrapper = this.getWrapper();
+        if ((isPicker && !wrapper.classList.contains(HIDEVALUE)) || (!isPicker && wrapper.classList.contains(SHOWVALUE))) {
+            var inputWrap = this.createElement('div', { className: INPUTWRAPPER });
+            isPicker ? this.appendElement(inputWrap, 2) : this.appendElement(inputWrap, 1);
+            var container = this.createElement('div', { className: 'e-input-container' });
+            inputWrap.appendChild(container);
+            if (!wrapper.classList.contains(HIDEVALUESWITCH)) {
+                this.appendValueSwitchBtn(inputWrap);
+            }
+            if (!wrapper.classList.contains(HIDEHEX)) {
+                var hexInput = this.createElement('input', {
+                    className: HEX,
+                    attrs: { 'maxlength': '7', 'spellcheck': 'false' }
+                });
+                container.appendChild(hexInput);
+                exports.Input.createInput({
+                    element: hexInput,
+                    floatLabelType: 'Always',
+                    properties: {
+                        placeholder: 'HEX',
+                        enableRtl: this.enableRtl,
+                        enabled: !this.disabled,
+                        readonly: this.isPicker() ? false : true
+                    }
+                }, this.createElement);
+                exports.Input.setValue(this.value.slice(0, 7), hexInput);
+                hexInput.addEventListener('input', this.inputHandler.bind(this));
+            }
+            if (!wrapper.classList.contains(HIDERGBA)) {
+                var label = void 0;
+                var value = void 0;
+                if (this.isRgb) {
+                    label = 'RGB';
+                    value = this.rgb;
+                }
+                else {
+                    label = 'HSV';
+                    value = this.hsv;
+                }
+                var clsName = ['rh', 'gs', 'bv'];
+                for (var i = 0; i < 3; i++) {
+                    this.createNumericInput(container.appendChild(this.createElement('input', { className: 'e-' + clsName[i] + '-value' })), value[i], label[i], 255);
+                }
+                if (this.enableOpacity) {
+                    this.appendOpacityValue(container);
+                }
+            }
+        }
+    };
+    ColorPicker.prototype.appendOpacityValue = function (container) {
+        this.createNumericInput(container.appendChild(this.createElement('input', { className: OPACITY })), this.rgb[3] * 100, 'A', 100);
+    };
+    ColorPicker.prototype.appendValueSwitchBtn = function (targetEle) {
+        var valueSwitchBtn = this.createElement('button', {
+            className: 'e-icons e-css e-btn e-flat e-icon-btn ' + FORMATSWITCH
+        });
+        targetEle.appendChild(valueSwitchBtn);
+        if (this.isPicker() && !this.getWrapper().classList.contains(HIDERGBA)) {
+            valueSwitchBtn.addEventListener('click', this.formatSwitchHandler.bind(this));
+        }
+    };
+    ColorPicker.prototype.createCtrlBtn = function () {
+        if (this.modeSwitcher || this.showButtons) {
+            this.l10n.setLocale(this.locale);
+            var btnWrapper = this.createElement('div', { className: CTRLSWITCH });
+            this.container.appendChild(btnWrapper);
+            if (this.showButtons) {
+                var controlBtnWrapper = this.createElement('div', { className: CTRLBTN });
+                btnWrapper.appendChild(controlBtnWrapper);
+                var apply = this.l10n.getConstant('Apply');
+                controlBtnWrapper.appendChild(this.createElement('button', {
+                    innerHTML: apply,
+                    className: 'e-btn e-css e-flat e-primary e-small ' + APPLY,
+                    attrs: { 'title': apply }
+                }));
+                var cancel = this.l10n.getConstant('Cancel');
+                controlBtnWrapper.appendChild(this.createElement('button', {
+                    innerHTML: cancel,
+                    className: 'e-btn e-css e-flat e-small ' + CANCEL,
+                    attrs: { 'title': cancel }
+                }));
+            }
+            if (this.modeSwitcher) {
+                this.appendModeSwitchBtn();
+            }
+        }
+    };
+    ColorPicker.prototype.appendModeSwitchBtn = function () {
+        var modeSwitcher = this.createElement('button', {
+            className: 'e-icons e-btn e-flat e-icon-btn ' + MODESWITCH, attrs: { title: this.l10n.getConstant('ModeSwitcher') }
+        });
+        sf.base.select('.' + CTRLSWITCH, this.container).insertBefore(modeSwitcher, sf.base.select('.' + CTRLBTN, this.container));
+    };
+    ColorPicker.prototype.createDragTooltip = function () {
+        var _this = this;
+        var tooltip = new sf.popups.Tooltip({
+            opensOn: 'Custom',
+            showTipPointer: false,
+            cssClass: 'e-color-picker-tooltip',
+            beforeOpen: function (args) {
+                _this.tooltipEle = args.element;
+            },
+            animation: { open: { effect: 'None' }, close: { effect: 'None' } }
+        });
+        tooltip.createElement = this.createElement;
+        tooltip.appendTo(this.container);
+        tooltip.open(this.container);
+        this.tooltipEle.style.zIndex = sf.popups.getZindexPartial(this.tooltipEle).toString();
+        sf.base.select('.e-tip-content', this.tooltipEle).appendChild(this.createElement('div', { className: 'e-tip-transparent' }));
+    };
+    ColorPicker.prototype.getTooltipInst = function () {
+        return sf.base.getInstance(this.container, sf.popups.Tooltip);
+    };
+    ColorPicker.prototype.setTooltipOffset = function (value) {
+        this.getTooltipInst().offsetY = value;
+    };
+    ColorPicker.prototype.toggleDisabled = function (enable) {
+        enable ? this.getWrapper().classList.add(DISABLED$1) : this.getWrapper().classList.remove(DISABLED$1);
+        if (this.showButtons) {
+            ([].slice.call(sf.base.selectAll('.e-btn', this.container))).forEach(function (ele) {
+                enable ? sf.base.attributes(ele, { 'disabled': '' }) : ele.removeAttribute('disabled');
+            });
+        }
+    };
+    ColorPicker.prototype.convertToRgbString = function (rgb) {
+        return rgb.length ? rgb.length === 4 ? 'rgba(' + rgb.join() + ')' : 'rgb(' + rgb.join() + ')' : '';
+    };
+    ColorPicker.prototype.convertToHsvString = function (hsv) {
+        return hsv.length === 4 ? 'hsva(' + hsv.join() + ')' : 'hsv(' + hsv.join() + ')';
+    };
+    ColorPicker.prototype.updateHsv = function () {
+        this.hsv[1] = this.hsv[1] > 100 ? 100 : this.hsv[1];
+        this.hsv[2] = this.hsv[2] > 100 ? 100 : this.hsv[2];
+        this.setHandlerPosition();
+    };
+    ColorPicker.prototype.convertToOtherFormat = function (isKey) {
+        if (isKey === void 0) { isKey = false; }
+        var pValue = this.rgbToHex(this.rgb);
+        this.rgb = this.hsvToRgb.apply(this, this.hsv);
+        var cValue = this.rgbToHex(this.rgb);
+        var rgba = this.convertToRgbString(this.rgb);
+        this.updatePreview(rgba);
+        this.updateInput(cValue);
+        this.triggerEvent(cValue, pValue, rgba, isKey);
+    };
+    ColorPicker.prototype.updateInput = function (value) {
+        var wrapper = this.getWrapper();
+        if (!wrapper.classList.contains(HIDEVALUE)) {
+            if (!wrapper.classList.contains(HIDEHEX)) {
+                exports.Input.setValue(value.substr(0, 7), sf.base.select('.' + HEX, this.container));
+            }
+            if (!wrapper.classList.contains(HIDERGBA)) {
+                if (this.isRgb) {
+                    this.updateValue(this.rgb, false);
+                }
+                else {
+                    this.updateValue(this.hsv, false);
+                }
+            }
+        }
+    };
+    ColorPicker.prototype.updatePreview = function (value) {
+        if (this.enableOpacity) {
+            this.updateOpacitySliderBg();
+        }
+        sf.base.select('.e-tip-transparent', this.tooltipEle).style.backgroundColor = value;
+        sf.base.select('.' + PREVIEW + ' .' + CURRENT, this.container).style.backgroundColor = value;
+        sf.base.select('.' + PREVIEW + ' .' + PREVIOUS, this.container).style.backgroundColor
+            = this.convertToRgbString(this.hexToRgb(this.value));
+    };
+    ColorPicker.prototype.getDragHandler = function () {
+        return sf.base.select('.' + HANDLER, this.container);
+    };
+    ColorPicker.prototype.removeTileSelection = function () {
+        var selectedEle = [].slice.call(sf.base.selectAll('.' + SELECT, this.container.children[0]));
+        selectedEle.forEach(function (ele) {
+            ele.classList.remove(SELECT);
+            ele.setAttribute('aria-selected', 'false');
+        });
+    };
+    ColorPicker.prototype.convertRgbToNumberArray = function (value) {
+        return (value.slice(value.indexOf('(') + 1, value.indexOf(')'))).split(',').map(function (n, i) {
+            return (i !== 3) ? parseInt(n, 10) : parseFloat(n);
+        });
+    };
+    /**
+     * To get color value in specified type.
+     * @param value - Specify the color value.
+     * @param type - Specify the type to which the specified color needs to be converted.
+     * @method getValue
+     * @return {string}
+     */
+    ColorPicker.prototype.getValue = function (value, type) {
+        if (!value) {
+            value = this.value;
+        }
+        type = !type ? 'hex' : type.toLowerCase();
+        if (value[0] === 'r') {
+            var cValue = this.convertRgbToNumberArray(value);
+            if (type === 'hex' || type === 'hexa') {
+                var hex = this.rgbToHex(cValue);
+                return type === 'hex' ? hex.slice(0, 7) : hex;
+            }
+            else {
+                if (type === 'hsv') {
+                    return this.convertToHsvString(this.rgbToHsv.apply(this, cValue.slice(0, 3)));
+                }
+                else {
+                    if (type === 'hsva') {
+                        return this.convertToHsvString(this.rgbToHsv.apply(this, cValue));
+                    }
+                    else {
+                        return 'null';
+                    }
+                }
+            }
+        }
+        else {
+            if (value[0] === 'h') {
+                var cValue = this.hsvToRgb.apply(this, this.convertRgbToNumberArray(value));
+                if (type === 'rgba') {
+                    return this.convertToRgbString(cValue);
+                }
+                else {
+                    if (type === 'hex' || type === 'hexa') {
+                        var hex = this.rgbToHex(cValue);
+                        return type === 'hex' ? hex.slice(0, 7) : hex;
+                    }
+                    else {
+                        if (type === 'rgb') {
+                            return this.convertToRgbString(cValue.slice(0, 3));
+                        }
+                        else {
+                            return 'null';
+                        }
+                    }
+                }
+            }
+            else {
+                value = this.roundValue(value);
+                var rgb = this.hexToRgb(value);
+                if (type === 'rgb' || type === 'hsv') {
+                    rgb = rgb.slice(0, 3);
+                }
+                if (type === 'rgba' || type === 'rgb') {
+                    return this.convertToRgbString(rgb);
+                }
+                else {
+                    if (type === 'hsva' || type === 'hsv') {
+                        return this.convertToHsvString(this.rgbToHsv.apply(this, rgb));
+                    }
+                    else {
+                        if (type === 'hex') {
+                            return value.slice(0, 7);
+                        }
+                        else {
+                            if (type === 'a') {
+                                return rgb[3].toString();
+                            }
+                            else {
+                                return 'null';
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    };
+    /**
+     * To show/hide ColorPicker popup based on current state of the SplitButton.
+     * @method toggle
+     * @return {void}
+     */
+    ColorPicker.prototype.toggle = function () {
+        this.container.parentElement.classList.contains('e-popup-close') ? this.splitBtn.toggle() : this.closePopup(null);
+    };
+    /**
+     * Get component name.
+     * @returns string
+     * @private
+     */
+    ColorPicker.prototype.getModuleName = function () {
+        return 'colorpicker';
+    };
+    /**
+     * Gets the properties to be maintained in the persisted state.
+     * @return {string}
+     */
+    ColorPicker.prototype.getPersistData = function () {
+        return this.addOnPersist(['value']);
+    };
+    ColorPicker.prototype.wireEvents = function () {
+        if (this.isPicker()) {
+            var dragHandler = this.getDragHandler();
+            sf.base.EventHandler.add(dragHandler, 'keydown', this.pickerKeyDown, this);
+            sf.base.EventHandler.add(this.getHsvContainer(), 'mousedown touchstart', this.handlerDown, this);
+            if (this.modeSwitcher || this.showButtons) {
+                this.addCtrlSwitchEvent();
+            }
+            sf.base.EventHandler.add(sf.base.select('.' + PREVIOUS, this.container), 'click', this.previewHandler, this);
+        }
+        else {
+            sf.base.EventHandler.add(this.container, 'click', this.paletteClickHandler, this);
+            sf.base.EventHandler.add(this.container, 'keydown', this.paletteKeyDown, this);
+        }
+    };
+    ColorPicker.prototype.formResetHandler = function () {
+        this.value = this.initialInputValue;
+        sf.base.attributes(this.element, { 'value': this.initialInputValue });
+    };
+    ColorPicker.prototype.addCtrlSwitchEvent = function () {
+        sf.base.EventHandler.add(sf.base.select('.' + CTRLSWITCH, this.container), 'click', this.btnClickHandler, this);
+    };
+    ColorPicker.prototype.pickerKeyDown = function (e) {
+        switch (e.keyCode) {
+            case 39:
+                this.handlerDragPosition(1, this.enableRtl ? -1 : 1, e);
+                break;
+            case 37:
+                this.handlerDragPosition(1, this.enableRtl ? 1 : -1, e);
+                break;
+            case 38:
+                this.handlerDragPosition(2, 1, e);
+                break;
+            case 40:
+                this.handlerDragPosition(2, -1, e);
+                break;
+            case 13:
+                e.preventDefault();
+                var cValue = this.rgbToHex(this.rgb);
+                this.enterKeyHandler(cValue, e);
+        }
+    };
+    ColorPicker.prototype.enterKeyHandler = function (value, e) {
+        this.triggerChangeEvent(value);
+        if (!this.inline) {
+            this.closePopup(e);
+            this.splitBtn.element.focus();
+        }
+    };
+    ColorPicker.prototype.closePopup = function (e) {
+        var _this = this;
+        var beforeCloseArgs = { element: this.container, event: e, cancel: false };
+        this.trigger('beforeClose', beforeCloseArgs, function (observedcloseArgs) {
+            if (!observedcloseArgs.cancel) {
+                _this.splitBtn.toggle();
+                _this.onPopupClose();
+            }
+        });
+    };
+    ColorPicker.prototype.triggerChangeEvent = function (value) {
+        var hex = value.slice(0, 7);
+        this.trigger('change', {
+            currentValue: { hex: hex, rgba: this.convertToRgbString(this.rgb) },
+            previousValue: { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) },
+            value: this.enableOpacity ? value : hex
+        });
+        if (this.enableOpacity) {
+            this.setProperties({ 'value': value }, true);
+        }
+        else {
+            this.setProperties({ 'value': hex }, true);
+        }
+        this.element.value = hex ? hex : '#000000';
+    };
+    ColorPicker.prototype.handlerDragPosition = function (prob, value, e) {
+        e.preventDefault();
+        this.hsv[prob] += value * (e.ctrlKey ? 1 : 3);
+        if (this.hsv[prob] < 0) {
+            this.hsv[prob] = 0;
+        }
+        this.updateHsv();
+        this.convertToOtherFormat(true);
+    };
+    ColorPicker.prototype.handlerDown = function (e) {
+        e.preventDefault();
+        if (e.type === 'mousedown') {
+            this.clientX = Math.abs(e.pageX - pageXOffset);
+            this.clientY = Math.abs(e.pageY - pageYOffset);
+            this.setTooltipOffset(8);
+        }
+        else {
+            this.clientX = Math.abs(e.changedTouches[0].pageX - pageXOffset);
+            this.clientY = Math.abs(e.changedTouches[0].pageY - pageYOffset);
+            this.setTooltipOffset(-8);
+        }
+        this.setHsv(this.clientX, this.clientY);
+        this.getDragHandler().style.transition = 'left .4s cubic-bezier(.25, .8, .25, 1), top .4s cubic-bezier(.25, .8, .25, 1)';
+        this.updateHsv();
+        this.convertToOtherFormat();
+        this.getDragHandler().focus();
+        sf.base.EventHandler.add(document, 'mousemove touchmove', this.handlerMove, this);
+        sf.base.EventHandler.add(document, 'mouseup touchend', this.handlerEnd, this);
+    };
+    ColorPicker.prototype.handlerMove = function (e) {
+        if (e.type !== 'touchmove') {
+            e.preventDefault();
+        }
+        var x;
+        var y;
+        if (e.type === 'mousemove') {
+            x = Math.abs(e.pageX - pageXOffset);
+            y = Math.abs(e.pageY - pageYOffset);
+        }
+        else {
+            x = Math.abs(e.changedTouches[0].pageX - pageXOffset);
+            y = Math.abs(e.changedTouches[0].pageY - pageYOffset);
+        }
+        this.setHsv(x, y);
+        var dragHandler = this.getDragHandler();
+        var left = parseInt(dragHandler.style.left, 10);
+        var top = parseInt(dragHandler.style.top, 10);
+        this.updateHsv();
+        this.convertToOtherFormat();
+        this.getTooltipInst().refresh(dragHandler);
+        if (!this.tooltipEle.style.transform) {
+            if (Math.abs(this.clientX - x) > 8 || Math.abs(this.clientY - y) > 8) {
+                sf.base.select('.' + HSVAREA, this.container).style.cursor = 'pointer';
+                dragHandler.style.transition = 'none';
+                if (!this.inline) {
+                    this.tooltipEle.style.zIndex = (parseInt(this.getPopupEle().style.zIndex, 10) + 1).toString();
+                }
+                this.tooltipEle.style.transform = 'rotate(45deg)';
+                dragHandler.classList.add('e-hide-handler');
+            }
+        }
+    };
+    ColorPicker.prototype.setHsv = function (clientX, clientY) {
+        var ele = sf.base.select('.' + HSVAREA, this.container);
+        var position = ele.getBoundingClientRect();
+        if (this.enableRtl) {
+            clientX = clientX > position.right ? 0 : Math.abs(clientX - position.right);
+        }
+        else {
+            clientX = clientX > position.left ? Math.abs(clientX - position.left) : 0;
+        }
+        clientY = clientY > position.top ? Math.abs(clientY - position.top) : 0;
+        this.hsv[2] = Math.round(Number(100 * (ele.offsetHeight -
+            Math.max(0, Math.min(ele.offsetHeight, (clientY - ele.offsetTop)))) / ele.offsetHeight) * 10) / 10;
+        this.hsv[1] =
+            Math.round(Number(100 * (Math.max(0, Math.min(ele.offsetWidth, (clientX - ele.offsetLeft)))) / ele.offsetWidth) * 10) / 10;
+    };
+    ColorPicker.prototype.handlerEnd = function (e) {
+        if (e.type !== 'touchend') {
+            e.preventDefault();
+        }
+        sf.base.EventHandler.remove(document, 'mousemove touchmove', this.handlerMove);
+        sf.base.EventHandler.remove(document, 'mouseup touchend', this.handlerEnd);
+        var dragHandler = this.getDragHandler();
+        sf.base.select('.' + HSVAREA, this.container).style.cursor = '';
+        if (this.tooltipEle.style.transform) {
+            this.tooltipEle.style.transform = '';
+            dragHandler.classList.remove('e-hide-handler');
+        }
+        if (!this.inline && !this.showButtons) {
+            this.closePopup(e);
+        }
+    };
+    ColorPicker.prototype.btnClickHandler = function (e) {
+        var target = e.target;
+        if (sf.base.closest(target, '.' + MODESWITCH)) {
+            e.stopPropagation();
+            this.switchToPalette();
+        }
+        else {
+            if (target.classList.contains(APPLY) || target.classList.contains(CANCEL)) {
+                this.ctrlBtnClick(target, e);
+            }
+        }
+    };
+    ColorPicker.prototype.switchToPalette = function () {
+        this.trigger('beforeModeSwitch', { element: this.container, mode: 'Palette' });
+        this.unWireEvents();
+        this.destroyOtherComp();
+        sf.base.detach(sf.base.select('.e-slider-preview', this.container));
+        if (!this.getWrapper().classList.contains(HIDEVALUE)) {
+            sf.base.remove(sf.base.select('.' + INPUTWRAPPER, this.container));
+        }
+        sf.base.detach(this.getHsvContainer());
+        this.createPalette();
+        this.firstPaletteFocus();
+        this.createInput();
+        this.refreshPopupPos();
+        this.wireEvents();
+        this.trigger('onModeSwitch', { element: this.container, mode: 'Palette' });
+    };
+    ColorPicker.prototype.refreshPopupPos = function () {
+        if (!this.inline) {
+            var popupEle = this.getPopupEle();
+            popupEle.style.left = sf.base.formatUnit(0 + pageXOffset);
+            popupEle.style.top = sf.base.formatUnit(0 + pageYOffset);
+            this.getPopupInst().refreshPosition(this.splitBtn.element.parentElement);
+        }
+    };
+    ColorPicker.prototype.formatSwitchHandler = function (e) {
+        var target = e.target.parentElement;
+        if (this.isRgb) {
+            this.updateValue(this.hsv, true, 3, [360, 100, 100]);
+            this.isRgb = false;
+        }
+        else {
+            this.updateValue(this.rgb, true, 2);
+            this.isRgb = true;
+        }
+    };
+    ColorPicker.prototype.updateValue = function (value, format, idx, max) {
+        var clsName = ['e-rh-value', 'e-gs-value', 'e-bv-value'];
+        var inst;
+        for (var i = 0, len = clsName.length; i < len; i++) {
+            inst = sf.base.getInstance(sf.base.select('.' + clsName[i], this.container), NumericTextBox);
+            inst.value = Math.round(value[i]);
+            if (format) {
+                inst.placeholder = clsName[i].substr(idx, 1).toUpperCase();
+                inst.max = max ? max[i] : 255;
+            }
+            inst.dataBind();
+        }
+    };
+    ColorPicker.prototype.previewHandler = function (e) {
+        var target = e.target;
+        var pValue = this.rgbToHex(this.rgb);
+        this.rgb = this.convertRgbToNumberArray(target.style.backgroundColor);
+        if (!this.rgb[3]) {
+            this.rgb[3] = 1;
+        }
+        var cValue = this.rgbToHex(this.rgb);
+        var hsv = this.rgbToHsv.apply(this, this.rgb);
+        if (hsv[0] !== this.hsv[0]) {
+            this.hueSlider.setProperties({ 'value': hsv[0] }, true);
+            this.hueSlider.refresh();
+        }
+        this.setHsvContainerBg(hsv[0]);
+        if (this.enableOpacity && hsv[3] !== this.hsv[3]) {
+            this.opacitySlider.setProperties({ 'value': hsv[3] * 100 }, true);
+            this.opacitySlider.refresh();
+            this.updateOpacitySliderBg();
+        }
+        this.hsv = hsv;
+        this.setHandlerPosition();
+        this.updateInput(cValue);
+        sf.base.select('.' + PREVIEW + ' .' + CURRENT, this.container).style.backgroundColor = this.convertToRgbString(this.rgb);
+        this.triggerEvent(cValue, pValue, this.convertToRgbString(this.rgb));
+    };
+    ColorPicker.prototype.paletteClickHandler = function (e) {
+        e.preventDefault();
+        var target = e.target;
+        if (target.classList.contains(TILE)) {
+            this.removeTileSelection();
+            this.addTileSelection(target);
+            if (target.classList.contains(NOCOLOR)) {
+                this.noColorTile();
+            }
+            else {
+                var cValue = target.getAttribute('aria-label');
+                var pValue = this.rgbToHex(this.rgb);
+                this.rgb = this.hexToRgb(this.roundValue(cValue));
+                this.hsv = this.rgbToHsv.apply(this, this.rgb);
+                if (this.getWrapper().classList.contains(SHOWVALUE)) {
+                    this.updateInput(cValue);
+                }
+                this.triggerEvent(cValue, pValue, this.convertToRgbString(this.rgb));
+            }
+            if (!this.inline && !this.showButtons) {
+                this.closePopup(e);
+            }
+        }
+        else {
+            if (sf.base.closest(target, '.' + MODESWITCH)) {
+                this.switchToPicker();
+            }
+            else {
+                if (target.classList.contains(APPLY) || target.classList.contains(CANCEL)) {
+                    this.ctrlBtnClick(target, e);
+                }
+                else {
+                    if (this.getWrapper().classList.contains(SHOWVALUE) && sf.base.closest(target, '.' + FORMATSWITCH)) {
+                        this.formatSwitchHandler(e);
+                    }
+                }
+            }
+        }
+    };
+    ColorPicker.prototype.noColorTile = function (isKey) {
+        if (isKey === void 0) { isKey = false; }
+        var pValue = this.rgbToHex(this.rgb);
+        this.rgb = [];
+        this.hsv = [];
+        this.triggerEvent('', pValue, '', isKey);
+    };
+    ColorPicker.prototype.switchToPicker = function () {
+        var wrapper = this.getWrapper();
+        this.trigger('beforeModeSwitch', { element: this.container, mode: 'Picker' });
+        this.unWireEvents();
+        ([].slice.call(sf.base.selectAll('.' + PALETTES, this.container))).forEach(function (ele) {
+            sf.base.detach(ele);
+        });
+        if (wrapper.classList.contains(SHOWVALUE)) {
+            sf.base.detach(sf.base.select('.' + INPUTWRAPPER, this.container));
+        }
+        this.container.style.width = '';
+        var grpEle = sf.base.select('.e-custom-palette', this.container);
+        if (this.presetColors) {
+            sf.base.remove(grpEle);
+        }
+        this.createPicker();
+        this.getDragHandler().focus();
+        this.createInput();
+        this.refreshPopupPos();
+        this.wireEvents();
+        this.trigger('onModeSwitch', { element: this.container, mode: 'Picker' });
+    };
+    ColorPicker.prototype.ctrlBtnClick = function (ele, e) {
+        if (ele.classList.contains(APPLY)) {
+            var cValue = this.rgbToHex(this.rgb);
+            this.triggerChangeEvent(cValue);
+        }
+        if (!this.inline) {
+            this.closePopup(e);
+            this.splitBtn.element.focus();
+        }
+    };
+    ColorPicker.prototype.paletteKeyDown = function (e) {
+        var target = e.target;
+        if (!target.classList.contains(PALETTES)) {
+            return;
+        }
+        var selectedEle;
+        var idx;
+        var tiles = [].slice.call(sf.base.selectAll('.' + TILE, target));
+        var prevSelectedEle = (tiles.filter(function (tile) { return tile.classList.contains('e-selected'); })).pop();
+        switch (!e.altKey && e.keyCode) {
+            case 39:
+                e.preventDefault();
+                selectedEle = prevSelectedEle ? tiles[this.tilePosition(tiles, prevSelectedEle, this.enableRtl ? -1 : 1)]
+                    : tiles[this.enableRtl ? tiles.length - 1 : 0];
+                this.keySelectionChanges(selectedEle);
+                break;
+            case 37:
+                e.preventDefault();
+                selectedEle = prevSelectedEle ? tiles[this.tilePosition(tiles, prevSelectedEle, this.enableRtl ? 1 : -1)]
+                    : tiles[this.enableRtl ? 0 : tiles.length - 1];
+                this.keySelectionChanges(selectedEle);
+                break;
+            case 38:
+                e.preventDefault();
+                idx = prevSelectedEle ? this.tilePosition(tiles, prevSelectedEle, -this.columns) : 0;
+                selectedEle = tiles[idx] ? tiles[idx] : tiles[idx - this.columns];
+                this.keySelectionChanges(selectedEle);
+                break;
+            case 40:
+                e.preventDefault();
+                idx = prevSelectedEle ? this.tilePosition(tiles, prevSelectedEle, this.columns) : tiles.length - 1;
+                if (tiles[idx]) {
+                    selectedEle = tiles[idx];
+                }
+                else {
+                    idx %= tiles.length;
+                    idx += tiles[tiles.length - 1].parentElement.childElementCount;
+                    selectedEle = tiles[idx];
+                }
+                this.keySelectionChanges(selectedEle);
+                break;
+            case 13:
+                e.preventDefault();
+                if (prevSelectedEle) {
+                    var cValue = prevSelectedEle.getAttribute('aria-label');
+                    this.enterKeyHandler(cValue ? cValue : '', e);
+                }
+        }
+    };
+    ColorPicker.prototype.keySelectionChanges = function (newEle) {
+        this.removeTileSelection();
+        this.addTileSelection(newEle);
+        if (newEle.classList.contains(NOCOLOR)) {
+            this.noColorTile(true);
+        }
+        else {
+            var cValue = newEle.getAttribute('aria-label');
+            var pValue = this.rgbToHex(this.rgb);
+            this.rgb = this.hexToRgb(cValue);
+            this.hsv = this.rgbToHsv.apply(this, this.rgb);
+            if (this.getWrapper().classList.contains(SHOWVALUE)) {
+                this.updateInput(cValue);
+            }
+            this.triggerEvent(cValue, pValue, this.convertToRgbString(this.rgb), true);
+        }
+    };
+    ColorPicker.prototype.tilePosition = function (items, element, cIdx) {
+        items = Array.prototype.slice.call(items);
+        var n = items.length;
+        var emptyCount = this.columns - items[n - 1].parentElement.childElementCount;
+        var idx = items.indexOf(element);
+        idx += cIdx;
+        idx < 0 ? idx += n + emptyCount : idx %= n + emptyCount;
+        return idx;
+    };
+    ColorPicker.prototype.inputHandler = function (e) {
+        var target = e.target;
+        if (!target.value.length) {
+            return;
+        }
+        var hsv;
+        var pValue;
+        var label = sf.base.select('.e-float-text', target.parentElement).textContent;
+        switch (label) {
+            case 'HEX':
+                var value = '';
+                if ((target.value[0] === '#' && target.value.length !== 5) || (target.value[0] !== '#' && target.value.length !== 4)) {
+                    value = this.roundValue(target.value);
+                }
+                if (value.length === 9) {
+                    pValue = this.rgbToHex(this.rgb);
+                    this.rgb = this.hexToRgb(value + value.substr(-2));
+                    this.inputValueChange(this.rgbToHsv.apply(this, this.rgb), pValue, target.value);
+                }
+                else {
+                    return;
+                }
+                break;
+            case 'R':
+                if (this.rgb[0] !== Number(target.value)) {
+                    pValue = this.rgbToHex(this.rgb);
+                    this.rgb[0] = Number(target.value);
+                    hsv = this.rgbToHsv.apply(this, this.rgb);
+                    this.inputValueChange(hsv, pValue);
+                }
+                break;
+            case 'G':
+                if (this.rgb[1] !== Number(target.value)) {
+                    pValue = this.rgbToHex(this.rgb);
+                    this.rgb[1] = Number(target.value);
+                    hsv = this.rgbToHsv.apply(this, this.rgb);
+                    this.inputValueChange(hsv, pValue);
+                }
+                break;
+            case 'B':
+                if (this.rgb[2] !== Number(target.value)) {
+                    pValue = this.rgbToHex(this.rgb);
+                    this.rgb[2] = Number(target.value);
+                    hsv = this.rgbToHsv.apply(this, this.rgb);
+                    this.inputValueChange(hsv, pValue);
+                }
+                break;
+            case 'H':
+                this.hueSlider.value = Number(target.value);
+                break;
+            case 'S':
+                if (this.hsv[1] !== Number(target.value)) {
+                    this.hsv[1] = Number(target.value);
+                    this.updateHsv();
+                    this.convertToOtherFormat();
+                }
+                break;
+            case 'V':
+                if (this.hsv[2] !== Number(target.value)) {
+                    this.hsv[2] = Number(target.value);
+                    this.updateHsv();
+                    this.convertToOtherFormat();
+                }
+                break;
+            case 'A':
+                this.opacitySlider.value = Number(target.value);
+                break;
+        }
+    };
+    ColorPicker.prototype.inputValueChange = function (hsv, pValue, value) {
+        if (hsv[0] !== this.hsv[0]) {
+            this.hueSlider.setProperties({ 'value': hsv[0] }, true);
+            this.hueSlider.refresh();
+            this.setHsvContainerBg(hsv[0]);
+        }
+        this.hsv = hsv;
+        var cValue = this.rgbToHex(this.rgb);
+        this.setHandlerPosition();
+        this.updateInput(value ? value : cValue);
+        var rgba = this.convertToRgbString(this.rgb);
+        this.updatePreview(rgba);
+        this.triggerEvent(cValue, pValue, rgba);
+    };
+    ColorPicker.prototype.triggerEvent = function (cValue, pValue, rgba, isKey) {
+        if (isKey === void 0) { isKey = false; }
+        var hex = cValue.slice(0, 7);
+        if (!this.showButtons && !isKey) {
+            this.trigger('change', { currentValue: { hex: hex, rgba: rgba },
+                previousValue: { hex: this.value.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(this.value)) }, value: cValue });
+            this.setProperties({ 'value': cValue }, true);
+            this.element.value = hex ? hex : '#000000';
+        }
+        else {
+            this.trigger('select', {
+                currentValue: { hex: hex, rgba: rgba },
+                previousValue: { hex: pValue.slice(0, 7), rgba: this.convertToRgbString(this.hexToRgb(pValue)) }
+            });
+        }
+    };
+    /**
+     * Removes the component from the DOM and detaches all its related event handlers.
+     * Also it maintains the initial input element from the DOM.
+     * @method destroy
+     * @return {void}
+     */
+    ColorPicker.prototype.destroy = function () {
+        var _this = this;
+        var wrapper = this.getWrapper();
+        _super.prototype.destroy.call(this);
+        ['tabindex', 'spellcheck'].forEach(function (attr) { _this.element.removeAttribute(attr); });
+        if (this.inline) {
+            this.unWireEvents();
+            this.destroyOtherComp();
+        }
+        else {
+            if (this.isPopupOpen()) {
+                this.unWireEvents();
+                this.destroyOtherComp();
+            }
+            this.splitBtn.destroy();
+            this.splitBtn = null;
+        }
+        this.tileRipple();
+        this.tileRipple = null;
+        this.ctrlBtnRipple();
+        this.ctrlBtnRipple = null;
+        if (this.element.nextElementSibling) {
+            sf.base.detach(this.element.nextElementSibling);
+        }
+        if (wrapper) {
+            wrapper.parentElement.insertBefore(this.element, wrapper);
+            sf.base.detach(wrapper);
+        }
+        this.container = null;
+        if (this.formElement) {
+            sf.base.EventHandler.remove(this.formElement, 'reset', this.formResetHandler);
+        }
+    };
+    ColorPicker.prototype.destroyOtherComp = function () {
+        if (this.isPicker()) {
+            this.hueSlider.destroy();
+            if (this.enableOpacity) {
+                this.opacitySlider.destroy();
+                this.opacitySlider = null;
+            }
+            this.hueSlider = null;
+            var tooltipInst = this.getTooltipInst();
+            tooltipInst.close();
+            tooltipInst.destroy();
+            this.tooltipEle = null;
+        }
+    };
+    ColorPicker.prototype.isPopupOpen = function () {
+        return this.getPopupEle().classList.contains('e-popup-open');
+    };
+    ColorPicker.prototype.unWireEvents = function () {
+        if (this.isPicker()) {
+            var wrapper = this.getWrapper();
+            var dragHandler = this.getDragHandler();
+            sf.base.EventHandler.remove(dragHandler, 'keydown', this.pickerKeyDown);
+            sf.base.EventHandler.remove(this.getHsvContainer(), 'mousedown touchstart', this.handlerDown);
+            if (this.modeSwitcher || this.showButtons) {
+                sf.base.EventHandler.remove(sf.base.select('.' + CTRLSWITCH, this.container), 'click', this.btnClickHandler);
+            }
+            sf.base.EventHandler.remove(sf.base.select('.' + PREVIOUS, this.container), 'click', this.previewHandler);
+        }
+        else {
+            sf.base.EventHandler.remove(this.container, 'click', this.paletteClickHandler);
+            sf.base.EventHandler.remove(this.container, 'keydown', this.paletteKeyDown);
+        }
+    };
+    ColorPicker.prototype.roundValue = function (value) {
+        if (!value) {
+            return '';
+        }
+        if (value[0] !== '#') {
+            value = '#' + value;
+        }
+        var len = value.length;
+        if (len === 4) {
+            value += 'f';
+            len = 5;
+        }
+        if (len === 5) {
+            var tempValue = '';
+            for (var i = 1, len_1 = value.length; i < len_1; i++) {
+                tempValue += (value.charAt(i) + value.charAt(i));
+            }
+            value = '#' + tempValue;
+            len = 9;
+        }
+        if (len === 7) {
+            value += 'ff';
+        }
+        return value;
+    };
+    ColorPicker.prototype.hexToRgb = function (hex) {
+        if (!hex) {
+            return [];
+        }
+        hex = hex.trim();
+        if (hex.length !== 9) {
+            hex = this.roundValue(hex);
+        }
+        var opacity = Number((parseInt(hex.slice(-2), 16) / 255).toFixed(2));
+        hex = hex.slice(1, 7);
+        var bigInt = parseInt(hex, 16);
+        var h = [];
+        h.push((bigInt >> 16) & 255);
+        h.push((bigInt >> 8) & 255);
+        h.push(bigInt & 255);
+        h.push(opacity);
+        return h;
+    };
+    ColorPicker.prototype.rgbToHsv = function (r, g, b, opacity) {
+        if (this.rgb && !this.rgb.length) {
+            return [];
+        }
+        r /= 255;
+        g /= 255;
+        b /= 255;
+        var max = Math.max(r, g, b);
+        var min = Math.min(r, g, b);
+        var h;
+        var s;
+        var v = max;
+        var d = max - min;
+        s = max === 0 ? 0 : d / max;
+        if (max === min) {
+            h = 0;
+        }
+        else {
+            switch (max) {
+                case r:
+                    h = (g - b) / d + (g < b ? 6 : 0);
+                    break;
+                case g:
+                    h = (b - r) / d + 2;
+                    break;
+                case b:
+                    h = (r - g) / d + 4;
+                    break;
+            }
+            h /= 6;
+        }
+        var hsv = [Math.round(h * 360), Math.round(s * 1000) / 10, Math.round(v * 1000) / 10];
+        if (!sf.base.isNullOrUndefined(opacity)) {
+            hsv.push(opacity);
+        }
+        return hsv;
+    };
+    ColorPicker.prototype.hsvToRgb = function (h, s, v, opacity) {
+        var r;
+        var g;
+        var b;
+        var i;
+        var f;
+        var p;
+        var q;
+        var t;
+        s /= 100;
+        v /= 100;
+        if (s === 0) {
+            r = g = b = v;
+            return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255), opacity];
+        }
+        h /= 60;
+        i = Math.floor(h);
+        f = h - i;
+        p = v * (1 - s);
+        q = v * (1 - s * f);
+        t = v * (1 - s * (1 - f));
+        switch (i) {
+            case 0:
+                r = v;
+                g = t;
+                b = p;
+                break;
+            case 1:
+                r = q;
+                g = v;
+                b = p;
+                break;
+            case 2:
+                r = p;
+                g = v;
+                b = t;
+                break;
+            case 3:
+                r = p;
+                g = q;
+                b = v;
+                break;
+            case 4:
+                r = t;
+                g = p;
+                b = v;
+                break;
+            default:
+                r = v;
+                g = p;
+                b = q;
+        }
+        var rgb = [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+        if (!sf.base.isNullOrUndefined(opacity)) {
+            rgb.push(opacity);
+        }
+        return rgb;
+    };
+    ColorPicker.prototype.rgbToHex = function (rgb) {
+        return rgb.length ? ('#' + this.hex(rgb[0]) + this.hex(rgb[1]) + this.hex(rgb[2]) +
+            (!sf.base.isNullOrUndefined(rgb[3]) ? (rgb[3] !== 0 ? (Math.round(rgb[3] * 255) + 0x10000).toString(16).substr(-2) : '00') : '')) : '';
+    };
+    ColorPicker.prototype.hex = function (x) {
+        return ('0' + x.toString(16)).slice(-2);
+    };
+    ColorPicker.prototype.changeModeSwitcherProp = function (prop) {
+        var ctrlSwitchWrapper = sf.base.select('.' + CTRLSWITCH, this.container);
+        if (prop) {
+            if (ctrlSwitchWrapper) {
+                this.appendModeSwitchBtn();
+            }
+            else {
+                this.createCtrlBtn();
+                if (this.isPicker() && !this.disabled) {
+                    this.addCtrlSwitchEvent();
+                }
+            }
+        }
+        else {
+            if (ctrlSwitchWrapper) {
+                if (this.showButtons) {
+                    sf.base.detach(sf.base.select('.' + MODESWITCH, ctrlSwitchWrapper));
+                }
+                else {
+                    sf.base.remove(ctrlSwitchWrapper);
+                }
+            }
+        }
+    };
+    ColorPicker.prototype.changeShowBtnProps = function (prop) {
+        var ctrlBtnWrapper = sf.base.select('.' + CTRLSWITCH, this.container);
+        if (prop) {
+            if (ctrlBtnWrapper) {
+                sf.base.remove(ctrlBtnWrapper);
+            }
+            this.createCtrlBtn();
+            if (this.isPicker() && !this.disabled) {
+                this.addCtrlSwitchEvent();
+            }
+        }
+        else {
+            if (this.modeSwitcher) {
+                sf.base.detach(sf.base.select('.' + CTRLBTN, ctrlBtnWrapper));
+            }
+            else {
+                sf.base.remove(ctrlBtnWrapper);
+            }
+        }
+    };
+    ColorPicker.prototype.changeValueProp = function (newProp) {
+        if (this.isPicker()) {
+            this.rgb = this.hexToRgb(newProp);
+            this.hsv = this.rgbToHsv.apply(this, this.rgb);
+            this.setHandlerPosition();
+            sf.base.detach(sf.base.closest(this.hueSlider.element, '.e-slider-preview'));
+            this.createSlider();
+            this.setHsvContainerBg();
+            this.updateInput(newProp);
+            if (this.rgb.length === 4) {
+                this.updateOpacityInput(this.rgb[3] * 100);
+            }
+        }
+        else {
+            this.removeTileSelection();
+            var ele = sf.base.select('span[aria-label="' + this.roundValue(newProp) + '"]', this.container);
+            if (ele) {
+                this.addTileSelection(ele);
+            }
+        }
+    };
+    ColorPicker.prototype.setInputEleProps = function (prop) {
+        sf.base.remove(sf.base.select('.' + INPUTWRAPPER, this.container));
+        this.createInput();
+    };
+    ColorPicker.prototype.changeDisabledProp = function (newProp) {
+        if (this.isPicker()) {
+            this.hueSlider.enabled = !newProp;
+            this.opacitySlider.enabled = !newProp;
+            this.setInputEleProps(newProp);
+        }
+        if (newProp) {
+            this.toggleDisabled(true);
+            this.unWireEvents();
+        }
+        else {
+            this.toggleDisabled(false);
+            this.wireEvents();
+        }
+    };
+    ColorPicker.prototype.changeCssClassProps = function (newProp, oldProp) {
+        var wrapper = this.getWrapper();
+        var popupWrapper = this.getPopupEle();
+        if (oldProp) {
+            sf.base.removeClass([wrapper, popupWrapper], oldProp.split(' '));
+        }
+        if (newProp) {
+            sf.base.addClass([wrapper, popupWrapper], newProp.split(' '));
+        }
+    };
+    ColorPicker.prototype.changeRtlProps = function (newProp) {
+        if (newProp) {
+            sf.base.addClass([this.getWrapper()], 'e-rtl');
+        }
+        else {
+            sf.base.removeClass([this.getWrapper()], 'e-rtl');
+        }
+    };
+    ColorPicker.prototype.changePaletteProps = function () {
+        sf.base.detach(this.container.children[0]);
+        this.container.style.width = '';
+        this.createPalette();
+    };
+    ColorPicker.prototype.changeOpacityProps = function (newProp) {
+        var wrapper = this.getWrapper();
+        if (newProp) {
+            sf.base.removeClass([this.container.parentElement], HIDEOPACITY);
+            this.createOpacitySlider(sf.base.select('.e-colorpicker-slider', this.container).appendChild(this.createElement('div', { className: 'e-opacity-slider' })));
+            if (!wrapper.classList.contains(HIDEVALUE) && !wrapper.classList.contains(HIDERGBA)) {
+                this.appendOpacityValue(sf.base.select('.e-input-container', this.container));
+            }
+        }
+        else {
+            sf.base.addClass([this.container.parentElement], HIDEOPACITY);
+            this.opacitySlider.destroy();
+            sf.base.remove(this.opacitySlider.element);
+            this.opacitySlider = null;
+            if (!wrapper.classList.contains(HIDEVALUE) && !wrapper.classList.contains(HIDERGBA)) {
+                sf.base.remove(sf.base.select('.' + OPACITY, this.container).parentElement);
+            }
+        }
+    };
+    /**
+     * Called internally if any of the property value changed.
+     * @param  {ColorPickerModel} newProp
+     * @param  {ColorPickerModel} oldProp
+     * @returns void
+     * @private
+     */
+    ColorPicker.prototype.onPropertyChanged = function (newProp, oldProp) {
+        var _this = this;
+        if (!sf.base.isNullOrUndefined(newProp.value)) {
+            var value = this.roundValue(newProp.value);
+            if (value.length === 9) {
+                this.element.value = this.roundValue(value).slice(0, 7);
+                var preview = this.splitBtn && sf.base.select('.' + SPLITPREVIEW, this.splitBtn.element);
+                if (preview) {
+                    preview.style.backgroundColor = this.convertToRgbString(this.hexToRgb(newProp.value));
+                }
+            }
+            else {
+                this.value = oldProp.value;
+            }
+        }
+        if (!this.inline && sf.base.isNullOrUndefined(newProp.inline)) {
+            var otherCompModel = ['disabled', 'enableRtl'];
+            this.splitBtn.setProperties(sf.splitbuttons.getModel(newProp, otherCompModel));
+            if (!this.isPopupOpen()) {
+                this.changeCssClassProps(newProp.cssClass, oldProp.cssClass);
+                this.changeRtlProps(newProp.enableRtl);
+                return;
+            }
+        }
+        var _loop_1 = function (prop) {
+            switch (prop) {
+                case 'inline':
+                    if (newProp.inline) {
+                        this_1.getWrapper().appendChild(this_1.container);
+                        this_1.splitBtn.destroy();
+                        sf.base.detach(this_1.element.nextElementSibling);
+                        if (!this_1.container.children.length) {
+                            this_1.createWidget();
+                        }
+                    }
+                    else {
+                        this_1.destroyOtherComp();
+                        this_1.unWireEvents();
+                        this_1.container.innerHTML = '';
+                        this_1.createSplitBtn();
+                    }
+                    break;
+                case 'cssClass':
+                    this_1.changeCssClassProps(newProp.cssClass, oldProp.cssClass);
+                    var props = newProp.cssClass.split(' ').concat(oldProp.cssClass.split(' '));
+                    props = props.reduce(function (a, b) { if (a.indexOf(b) < 0) {
+                        a.push(b);
+                    } return a; }, []);
+                    var count_1 = 0;
+                    props.forEach(function (cls) {
+                        if (count_1 === 0 &&
+                            (cls === HIDEVALUE || cls === HIDEVALUESWITCH || cls === SHOWVALUE || cls === HIDEHEX || cls === HIDERGBA)) {
+                            var inputWrap = sf.base.select('.' + INPUTWRAPPER, _this.container);
+                            if (inputWrap) {
+                                sf.base.remove(sf.base.select('.' + INPUTWRAPPER, _this.container));
+                            }
+                            _this.createInput();
+                            count_1++;
+                        }
+                    });
+                    break;
+                case 'enableRtl':
+                    if (this_1.isPicker()) {
+                        this_1.hueSlider.enableRtl = newProp.enableRtl;
+                        if (this_1.enableOpacity) {
+                            this_1.opacitySlider.enableRtl = newProp.enableRtl;
+                        }
+                        this_1.setInputEleProps(newProp.enableRtl);
+                    }
+                    this_1.changeRtlProps(newProp.enableRtl);
+                    break;
+                case 'disabled':
+                    this_1.changeDisabledProp(newProp.disabled);
+                    break;
+                case 'value':
+                    if (this_1.value !== oldProp.value) {
+                        this_1.changeValueProp(newProp.value);
+                    }
+                    break;
+                case 'showButtons':
+                    this_1.changeShowBtnProps(newProp.showButtons);
+                    break;
+                case 'mode':
+                    if (newProp.mode === 'Picker') {
+                        this_1.switchToPicker();
+                    }
+                    else {
+                        this_1.switchToPalette();
+                    }
+                    break;
+                case 'modeSwitcher':
+                    this_1.changeModeSwitcherProp(newProp.modeSwitcher);
+                    break;
+                case 'columns':
+                case 'presetColors':
+                    if (!this_1.isPicker()) {
+                        this_1.changePaletteProps();
+                    }
+                    break;
+                case 'noColor':
+                    if (newProp.noColor) {
+                        if (this_1.mode === 'Palette' && !this_1.modeSwitcher) {
+                            this_1.setNoColor();
+                        }
+                    }
+                    else {
+                        this_1.changePaletteProps();
+                    }
+                    break;
+                case 'enableOpacity':
+                    this_1.changeOpacityProps(newProp.enableOpacity);
+                    break;
+            }
+        };
+        var this_1 = this;
+        for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
+            var prop = _a[_i];
+            _loop_1(prop);
+        }
+    };
+    /**
+     * Sets the focus to Colorpicker
+     * its native method
+     * @public
+     */
+    ColorPicker.prototype.focusIn = function () {
+        this.element.parentElement.focus();
+    };
+    __decorate$5([
+        sf.base.Property('#008000ff')
+    ], ColorPicker.prototype, "value", void 0);
+    __decorate$5([
+        sf.base.Property('')
+    ], ColorPicker.prototype, "cssClass", void 0);
+    __decorate$5([
+        sf.base.Property(false)
+    ], ColorPicker.prototype, "disabled", void 0);
+    __decorate$5([
+        sf.base.Property('Picker')
+    ], ColorPicker.prototype, "mode", void 0);
+    __decorate$5([
+        sf.base.Property(true)
+    ], ColorPicker.prototype, "modeSwitcher", void 0);
+    __decorate$5([
+        sf.base.Property(null)
+    ], ColorPicker.prototype, "presetColors", void 0);
+    __decorate$5([
+        sf.base.Property(true)
+    ], ColorPicker.prototype, "showButtons", void 0);
+    __decorate$5([
+        sf.base.Property(10)
+    ], ColorPicker.prototype, "columns", void 0);
+    __decorate$5([
+        sf.base.Property(false)
+    ], ColorPicker.prototype, "inline", void 0);
+    __decorate$5([
+        sf.base.Property(false)
+    ], ColorPicker.prototype, "noColor", void 0);
+    __decorate$5([
+        sf.base.Property(false)
+    ], ColorPicker.prototype, "enablePersistence", void 0);
+    __decorate$5([
+        sf.base.Property(true)
+    ], ColorPicker.prototype, "enableOpacity", void 0);
+    __decorate$5([
+        sf.base.Event()
+    ], ColorPicker.prototype, "select", void 0);
+    __decorate$5([
+        sf.base.Event()
+    ], ColorPicker.prototype, "change", void 0);
+    __decorate$5([
+        sf.base.Event()
+    ], ColorPicker.prototype, "beforeTileRender", void 0);
+    __decorate$5([
+        sf.base.Event()
+    ], ColorPicker.prototype, "beforeOpen", void 0);
+    __decorate$5([
+        sf.base.Event()
+    ], ColorPicker.prototype, "open", void 0);
+    __decorate$5([
+        sf.base.Event()
+    ], ColorPicker.prototype, "beforeClose", void 0);
+    __decorate$5([
+        sf.base.Event()
+    ], ColorPicker.prototype, "beforeModeSwitch", void 0);
+    __decorate$5([
+        sf.base.Event()
+    ], ColorPicker.prototype, "onModeSwitch", void 0);
+    __decorate$5([
+        sf.base.Event()
+    ], ColorPicker.prototype, "created", void 0);
+    ColorPicker = __decorate$5([
+        sf.base.NotifyPropertyChanges
+    ], ColorPicker);
+    return ColorPicker;
+}(sf.base.Component));
+
+/**
+ * ColorPicker modules
+ */
+
+var __extends$6 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+var HIDE_CLEAR = 'e-clear-icon-hide';
+var TEXTBOX_FOCUS = 'e-input-focus';
+var containerAttr = ['title', 'style', 'class'];
+/**
+ * Represents the TextBox component that allows the user to enter the values based on it's type.
+ * ```html
+ * <input name='images' id='textbox'/>
+ * ```
+ * ```typescript
+ * <script>
+ *   var textboxObj = new TextBox();
+ *   textboxObj.appendTo('#textbox');
+ * </script>
+ * ```
+ */
+var TextBox = /** @class */ (function (_super) {
+    __extends$6(TextBox, _super);
+    function TextBox(options, element) {
+        var _this = _super.call(this, options, element) || this;
+        _this.previousValue = null;
+        _this.isAngular = false;
+        _this.isHiddenInput = false;
+        _this.isForm = false;
+        _this.inputPreviousValue = null;
+        _this.isVue = false;
+        _this.textboxOptions = options;
+        return _this;
+    }
+    /**
+     * Calls internally if any of the property value is changed.
+     * @private
+     */
+    TextBox.prototype.onPropertyChanged = function (newProp, oldProp) {
+        for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
+            var prop = _a[_i];
+            switch (prop) {
+                case 'floatLabelType':
+                    exports.Input.removeFloating(this.textboxWrapper);
+                    exports.Input.addFloating(this.respectiveElement, this.floatLabelType, this.placeholder);
+                    break;
+                case 'enabled':
+                    exports.Input.setEnabled(this.enabled, this.respectiveElement, this.floatLabelType, this.textboxWrapper.container);
+                    this.bindClearEvent();
+                    break;
+                case 'width':
+                    exports.Input.setWidth(newProp.width, this.textboxWrapper.container);
+                    break;
+                case 'value':
+                    var prevOnChange = this.isProtectedOnChange;
+                    this.isProtectedOnChange = true;
+                    if (!this.isBlank(this.value)) {
+                        this.value = this.value.toString();
+                    }
+                    this.isProtectedOnChange = prevOnChange;
+                    exports.Input.setValue(this.value, this.respectiveElement, this.floatLabelType, this.showClearButton);
+                    if (this.isHiddenInput) {
+                        this.element.value = this.respectiveElement.value;
+                    }
+                    this.inputPreviousValue = this.respectiveElement.value;
+                    /* istanbul ignore next */
+                    if ((this.isAngular || this.isVue) && this.preventChange === true) {
+                        this.previousValue = this.isAngular ? this.value : this.previousValue;
+                        this.preventChange = false;
+                    }
+                    else if (sf.base.isNullOrUndefined(this.isAngular) || !this.isAngular
+                        || (this.isAngular && !this.preventChange) || (this.isAngular && sf.base.isNullOrUndefined(this.preventChange))) {
+                        this.raiseChangeEvent();
+                    }
+                    break;
+                case 'htmlAttributes':
+                    this.updateHTMLAttrToElement();
+                    this.updateHTMLAttrToWrapper();
+                    var attributes$$1 = this.element.attributes;
+                    this.checkAttributes(true);
+                    break;
+                case 'readonly':
+                    exports.Input.setReadonly(this.readonly, this.respectiveElement);
+                    break;
+                case 'type':
+                    if (this.respectiveElement.tagName !== 'TEXTAREA') {
+                        this.respectiveElement.setAttribute('type', this.type);
+                        this.raiseChangeEvent();
+                    }
+                    break;
+                case 'showClearButton':
+                    if (this.respectiveElement.tagName !== 'TEXTAREA') {
+                        exports.Input.setClearButton(this.showClearButton, this.respectiveElement, this.textboxWrapper);
+                        this.bindClearEvent();
+                    }
+                    break;
+                case 'enableRtl':
+                    exports.Input.setEnableRtl(this.enableRtl, [this.textboxWrapper.container]);
+                    break;
+                case 'placeholder':
+                    exports.Input.setPlaceholder(this.placeholder, this.respectiveElement);
+                    break;
+                case 'autocomplete':
+                    if (this.autocomplete !== 'on' && this.autocomplete !== '') {
+                        this.respectiveElement.autocomplete = this.autocomplete;
+                    }
+                    else {
+                        this.removeAttributes(['autocomplete']);
+                    }
+                    break;
+                case 'cssClass':
+                    this.updateCssClass(newProp.cssClass, oldProp.cssClass);
+                    break;
+                case 'locale':
+                    this.globalize = new sf.base.Internationalization(this.locale);
+                    this.l10n.setLocale(this.locale);
+                    this.setProperties({ placeholder: this.l10n.getConstant('placeholder') }, true);
+                    exports.Input.setPlaceholder(this.placeholder, this.respectiveElement);
+                    break;
+            }
+        }
+    };
+    /**
+     * Gets the component name
+     * @private
+     */
+    TextBox.prototype.getModuleName = function () {
+        return 'textbox';
+    };
+    TextBox.prototype.isBlank = function (str) {
+        return (!str || /^\s*$/.test(str));
+    };
+    TextBox.prototype.preRender = function () {
+        if (!(sf.base.isBlazor() && this.isServerRendered)) {
+            this.cloneElement = this.element.cloneNode(true);
+            this.formElement = sf.base.closest(this.element, 'form');
+            if (!sf.base.isNullOrUndefined(this.formElement)) {
+                this.isForm = true;
+            }
+            /* istanbul ignore next */
+            if (this.element.tagName === 'EJS-TEXTBOX') {
+                var ejInstance = sf.base.getValue('ej2_instances', this.element);
+                var inputElement = this.multiline ?
+                    this.createElement('textarea') :
+                    this.createElement('input');
+                var index = 0;
+                for (index; index < this.element.attributes.length; index++) {
+                    var attributeName = this.element.attributes[index].nodeName;
+                    if (attributeName !== 'id') {
+                        inputElement.setAttribute(attributeName, this.element.attributes[index].nodeValue);
+                        inputElement.innerHTML = this.element.innerHTML;
+                        if (attributeName === 'name') {
+                            this.element.removeAttribute('name');
+                        }
+                    }
+                }
+                this.element.appendChild(inputElement);
+                this.element = inputElement;
+                sf.base.setValue('ej2_instances', ejInstance, this.element);
+            }
+            this.updateHTMLAttrToElement();
+            this.checkAttributes(false);
+            if (this.element.tagName !== 'TEXTAREA') {
+                this.element.setAttribute('type', this.type);
+            }
+            this.element.setAttribute('role', 'textbox');
+            this.globalize = new sf.base.Internationalization(this.locale);
+            var localeText = { placeholder: this.placeholder };
+            this.l10n = new sf.base.L10n('textbox', localeText, this.locale);
+            if (this.l10n.getConstant('placeholder') !== '') {
+                this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
+            }
+            if (!this.element.hasAttribute('id')) {
+                this.element.setAttribute('id', sf.base.getUniqueID('textbox'));
+            }
+            if (!this.element.hasAttribute('name')) {
+                this.element.setAttribute('name', this.element.getAttribute('id'));
+            }
+            if (this.element.tagName === 'INPUT' && this.multiline) {
+                this.isHiddenInput = true;
+                this.textarea = this.createElement('textarea');
+                this.element.parentNode.insertBefore(this.textarea, this.element);
+                this.element.setAttribute('type', 'hidden');
+                this.textarea.setAttribute('name', this.element.getAttribute('name'));
+                this.element.removeAttribute('name');
+                this.textarea.setAttribute('role', this.element.getAttribute('role'));
+                this.element.removeAttribute('role');
+                var attribute = ['required', 'minlength', 'maxlength'];
+                for (var i = 0; i < attribute.length; i++) {
+                    if (this.element.hasAttribute(attribute[i])) {
+                        var attr = this.element.getAttribute(attribute[i]);
+                        this.textarea.setAttribute(attribute[i], attr);
+                        this.element.removeAttribute(attribute[i]);
+                    }
+                }
+            }
+        }
+    };
+    TextBox.prototype.checkAttributes = function (isDynamic) {
+        var attrs = isDynamic ? sf.base.isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
+            ['placeholder', 'disabled', 'value', 'readonly', 'type', 'autocomplete'];
+        for (var _i = 0, attrs_1 = attrs; _i < attrs_1.length; _i++) {
+            var key = attrs_1[_i];
+            if (!sf.base.isNullOrUndefined(this.element.getAttribute(key))) {
+                switch (key) {
+                    case 'disabled':
+                        // tslint:disable-next-line
+                        if ((sf.base.isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['enabled'] === undefined)) || isDynamic) {
+                            var enabled = this.element.getAttribute(key) === 'disabled' || this.element.getAttribute(key) === '' ||
+                                this.element.getAttribute(key) === 'true' ? false : true;
+                            this.setProperties({ enabled: enabled }, !isDynamic);
+                        }
+                        break;
+                    case 'readonly':
+                        // tslint:disable-next-line
+                        if ((sf.base.isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['readonly'] === undefined)) || isDynamic) {
+                            var readonly = this.element.getAttribute(key) === 'readonly' || this.element.getAttribute(key) === ''
+                                || this.element.getAttribute(key) === 'true' ? true : false;
+                            this.setProperties({ readonly: readonly }, !isDynamic);
+                        }
+                        break;
+                    case 'placeholder':
+                        // tslint:disable-next-line
+                        if ((sf.base.isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['placeholder'] === undefined)) || isDynamic) {
+                            this.setProperties({ placeholder: this.element.placeholder }, !isDynamic);
+                        }
+                        break;
+                    case 'autocomplete':
+                        // tslint:disable-next-line
+                        if ((sf.base.isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['autocomplete'] === undefined)) || isDynamic) {
+                            var autoCompleteTxt = this.element.autocomplete === 'off' ? 'off' : 'on';
+                            this.setProperties({ autocomplete: autoCompleteTxt }, !isDynamic);
+                        }
+                        break;
+                    case 'value':
+                        // tslint:disable-next-line
+                        if ((sf.base.isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['value'] === undefined)) || isDynamic) {
+                            this.setProperties({ value: this.element.value }, !isDynamic);
+                        }
+                        break;
+                    case 'type':
+                        // tslint:disable-next-line
+                        if ((sf.base.isNullOrUndefined(this.textboxOptions) || (this.textboxOptions['type'] === undefined)) || isDynamic) {
+                            this.setProperties({ type: this.element.type }, !isDynamic);
+                        }
+                        break;
+                }
+            }
+        }
+    };
+    /**
+     * To Initialize the control rendering
+     * @private
+     */
+    TextBox.prototype.render = function () {
+        var updatedCssClassValue = this.cssClass;
+        if (!sf.base.isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+            updatedCssClassValue = this.getInputValidClassList(this.cssClass);
+        }
+        if (!(sf.base.isBlazor() && this.isServerRendered)) {
+            this.respectiveElement = (this.isHiddenInput) ? this.textarea : this.element;
+            this.textboxWrapper = exports.Input.createInput({
+                element: this.respectiveElement,
+                floatLabelType: this.floatLabelType,
+                properties: {
+                    enabled: this.enabled,
+                    enableRtl: this.enableRtl,
+                    cssClass: updatedCssClassValue,
+                    readonly: this.readonly,
+                    placeholder: this.placeholder,
+                    showClearButton: this.showClearButton
+                }
+            });
+            this.updateHTMLAttrToWrapper();
+            if (this.isHiddenInput) {
+                this.respectiveElement.parentNode.insertBefore(this.element, this.respectiveElement);
+            }
+        }
+        else {
+            this.respectiveElement = this.element;
+            this.textboxWrapper = { container: this.element.parentElement };
+            if (this.showClearButton && !this.multiline) {
+                this.textboxWrapper.clearButton = this.textboxWrapper.container.querySelector('.e-clear-icon');
+                exports.Input.wireClearBtnEvents(this.respectiveElement, this.textboxWrapper.clearButton, this.textboxWrapper.container);
+            }
+            if (this.floatLabelType === 'Auto') {
+                exports.Input.wireFloatingEvents(this.respectiveElement);
+            }
+            // tslint:disable-next-line
+            exports.Input.bindInitialEvent({ element: this.respectiveElement, buttons: null, customTag: null, floatLabelType: this.floatLabelType, properties: this.properties });
+        }
+        this.wireEvents();
+        if (!sf.base.isNullOrUndefined(this.value)) {
+            exports.Input.setValue(this.value, this.respectiveElement, this.floatLabelType, this.showClearButton);
+            if (this.isHiddenInput) {
+                this.element.value = this.respectiveElement.value;
+            }
+        }
+        if (!sf.base.isNullOrUndefined(this.value)) {
+            this.initialValue = this.value;
+            this.setInitialValue();
+        }
+        if (this.autocomplete !== 'on' && this.autocomplete !== '') {
+            this.respectiveElement.autocomplete = this.autocomplete;
+            // tslint:disable-next-line
+        }
+        else if (!sf.base.isNullOrUndefined(this.textboxOptions) && (this.textboxOptions['autocomplete'] !== undefined)) {
+            this.removeAttributes(['autocomplete']);
+        }
+        this.previousValue = this.value;
+        this.inputPreviousValue = this.value;
+        exports.Input.setWidth(this.width, this.textboxWrapper.container);
+        this.renderComplete();
+    };
+    TextBox.prototype.updateHTMLAttrToWrapper = function () {
+        if (!sf.base.isNullOrUndefined(this.htmlAttributes)) {
+            for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+                var key = _a[_i];
+                if (containerAttr.indexOf(key) > -1) {
+                    if (key === 'class') {
+                        var updatedClassValues = this.getInputValidClassList(this.htmlAttributes[key]);
+                        if (updatedClassValues !== '') {
+                            sf.base.addClass([this.textboxWrapper.container], updatedClassValues.split(' '));
+                        }
+                    }
+                    else if (key === 'style') {
+                        var setStyle = this.textboxWrapper.container.getAttribute(key);
+                        setStyle = !sf.base.isNullOrUndefined(setStyle) ? (setStyle + this.htmlAttributes[key]) :
+                            this.htmlAttributes[key];
+                        this.textboxWrapper.container.setAttribute(key, setStyle);
+                    }
+                    else {
+                        this.textboxWrapper.container.setAttribute(key, this.htmlAttributes[key]);
+                    }
+                }
+            }
+        }
+    };
+    TextBox.prototype.updateHTMLAttrToElement = function () {
+        if (!sf.base.isNullOrUndefined(this.htmlAttributes)) {
+            for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
+                var key = _a[_i];
+                if (containerAttr.indexOf(key) < 0) {
+                    this.element.setAttribute(key, this.htmlAttributes[key]);
+                }
+            }
+        }
+    };
+    TextBox.prototype.updateCssClass = function (newClass, oldClass) {
+        exports.Input.setCssClass(this.getInputValidClassList(newClass), [this.textboxWrapper.container], this.getInputValidClassList(oldClass));
+    };
+    TextBox.prototype.getInputValidClassList = function (inputClassName) {
+        var result = inputClassName;
+        if (!sf.base.isNullOrUndefined(inputClassName) && inputClassName !== '') {
+            result = (inputClassName.replace(/\s+/g, ' ')).trim();
+        }
+        return result;
+    };
+    TextBox.prototype.setInitialValue = function () {
+        if (!this.isAngular) {
+            this.respectiveElement.setAttribute('value', this.initialValue);
+        }
+    };
+    TextBox.prototype.wireEvents = function () {
+        sf.base.EventHandler.add(this.respectiveElement, 'focus', this.focusHandler, this);
+        sf.base.EventHandler.add(this.respectiveElement, 'blur', this.focusOutHandler, this);
+        sf.base.EventHandler.add(this.respectiveElement, 'input', this.inputHandler, this);
+        sf.base.EventHandler.add(this.respectiveElement, 'change', this.changeHandler, this);
+        if (this.isForm) {
+            sf.base.EventHandler.add(this.formElement, 'reset', this.resetForm, this);
+        }
+        this.bindClearEvent();
+    };
+    TextBox.prototype.resetValue = function (value) {
+        var prevOnChange = this.isProtectedOnChange;
+        this.isProtectedOnChange = true;
+        this.value = value;
+        this.isProtectedOnChange = prevOnChange;
+    };
+    TextBox.prototype.resetForm = function () {
+        if (this.isAngular) {
+            this.resetValue('');
+        }
+        else {
+            this.resetValue(this.initialValue);
+        }
+        if (!sf.base.isNullOrUndefined(this.textboxWrapper)) {
+            var label = this.textboxWrapper.container.querySelector('.e-float-text');
+            if (!sf.base.isNullOrUndefined(label)) {
+                if ((sf.base.isNullOrUndefined(this.initialValue) || this.initialValue === '')) {
+                    label.classList.add('e-label-bottom');
+                    label.classList.remove('e-label-top');
+                }
+                else if (this.initialValue !== '') {
+                    label.classList.add('e-label-top');
+                    label.classList.remove('e-label-bottom');
+                }
+            }
+        }
+    };
+    TextBox.prototype.focusHandler = function (args) {
+        var eventArgs = {
+            container: this.textboxWrapper.container,
+            event: args,
+            value: this.value
+        };
+        this.trigger('focus', eventArgs);
+    };
+    TextBox.prototype.focusOutHandler = function (args) {
+        if (!(this.previousValue === null && this.value === null && this.respectiveElement.value === '') &&
+            (this.previousValue !== this.respectiveElement.value)) {
+            this.raiseChangeEvent(args, true);
+        }
+        var eventArgs = {
+            container: this.textboxWrapper.container,
+            event: args,
+            value: this.value
+        };
+        this.trigger('blur', eventArgs);
+    };
+    TextBox.prototype.inputHandler = function (args) {
+        // tslint:disable-next-line
+        var textboxObj = this;
+        var eventArgs = {
+            event: args,
+            value: this.respectiveElement.value,
+            previousValue: this.inputPreviousValue,
+            container: this.textboxWrapper.container
+        };
+        this.inputPreviousValue = this.respectiveElement.value;
+        /* istanbul ignore next */
+        if (this.isAngular) {
+            textboxObj.localChange({ value: this.respectiveElement.value });
+            this.preventChange = true;
+        }
+        if (this.isVue) {
+            this.preventChange = true;
+        }
+        this.trigger('input', eventArgs);
+        args.stopPropagation();
+    };
+    TextBox.prototype.changeHandler = function (args) {
+        this.setProperties({ value: this.respectiveElement.value }, true);
+        this.raiseChangeEvent(args, true);
+        args.stopPropagation();
+    };
+    TextBox.prototype.raiseChangeEvent = function (event, interaction) {
+        var eventArgs = {
+            event: event,
+            value: this.value,
+            previousValue: this.previousValue,
+            container: this.textboxWrapper.container,
+            isInteraction: interaction ? interaction : false,
+            isInteracted: interaction ? interaction : false
+        };
+        this.preventChange = false;
+        this.trigger('change', eventArgs);
+        this.previousValue = this.value;
+    };
+    TextBox.prototype.bindClearEvent = function () {
+        if (this.showClearButton && this.respectiveElement.tagName !== 'TEXTAREA') {
+            if (this.enabled) {
+                sf.base.EventHandler.add(this.textboxWrapper.clearButton, 'mousedown touchstart', this.resetInputHandler, this);
+            }
+            else {
+                sf.base.EventHandler.remove(this.textboxWrapper.clearButton, 'mousedown touchstart', this.resetInputHandler);
+            }
+        }
+    };
+    TextBox.prototype.resetInputHandler = function (event) {
+        event.preventDefault();
+        if (!(this.textboxWrapper.clearButton.classList.contains(HIDE_CLEAR))) {
+            var previousValue = this.value;
+            exports.Input.setValue('', this.respectiveElement, this.floatLabelType, this.showClearButton);
+            if (this.isHiddenInput) {
+                this.element.value = this.respectiveElement.value;
+            }
+            this.setProperties({ value: this.respectiveElement.value }, true);
+            var eventArgs = {
+                event: event,
+                value: this.respectiveElement.value,
+                previousValue: this.inputPreviousValue,
+                container: this.textboxWrapper.container
+            };
+            this.trigger('input', eventArgs);
+            this.inputPreviousValue = this.respectiveElement.value;
+            this.raiseChangeEvent(event, true);
+        }
+    };
+    TextBox.prototype.unWireEvents = function () {
+        sf.base.EventHandler.remove(this.respectiveElement, 'focus', this.focusHandler);
+        sf.base.EventHandler.remove(this.respectiveElement, 'blur', this.focusOutHandler);
+        sf.base.EventHandler.remove(this.respectiveElement, 'input', this.inputHandler);
+        sf.base.EventHandler.remove(this.respectiveElement, 'change', this.changeHandler);
+        if (this.isForm) {
+            sf.base.EventHandler.remove(this.formElement, 'reset', this.resetForm);
+        }
+    };
+    /**
+     * Removes the component from the DOM and detaches all its related event handlers.
+     * Also, it maintains the initial TextBox element from the DOM.
+     * @method destroy
+     * @return {void}
+     */
+    TextBox.prototype.destroy = function () {
+        this.unWireEvents();
+        if (!(sf.base.isBlazor() && this.isServerRendered)) {
+            if (this.element.tagName === 'INPUT' && this.multiline) {
+                sf.base.detach(this.textboxWrapper.container.getElementsByTagName('textarea')[0]);
+                this.respectiveElement = this.element;
+                this.element.removeAttribute('type');
+            }
+            this.respectiveElement.classList.remove('e-input');
+            this.removeAttributes(['aria-placeholder', 'aria-disabled', 'aria-readonly', 'aria-labelledby']);
+            if (!sf.base.isNullOrUndefined(this.textboxWrapper)) {
+                this.textboxWrapper.container.insertAdjacentElement('afterend', this.respectiveElement);
+                sf.base.detach(this.textboxWrapper.container);
+            }
+            this.textboxWrapper = null;
+            _super.prototype.destroy.call(this);
+        }
+        else {
+            this.textboxWrapper = null;
+        }
+    };
+    /**
+     * Adding the icons to the TextBox component.
+     * @param { string } position - Specify the icon placement on the TextBox. Possible values are append and prepend.
+     * @param { string | string[] } iconClass - Icon classes which are need to add to the span element which is going to created.
+     * Span element acts as icon or button element for TextBox.
+     * @return {void}
+     */
+    TextBox.prototype.addIcon = function (position, icons) {
+        exports.Input.addIcon(position, icons, this.textboxWrapper.container, this.respectiveElement, this.createElement);
+    };
+    /**
+     * Gets the properties to be maintained in the persisted state.
+     * @return {string}
+     */
+    TextBox.prototype.getPersistData = function () {
+        var keyEntity = ['value'];
+        return this.addOnPersist(keyEntity);
+    };
+    /**
+     * Adding the multiple attributes as key-value pair to the TextBox element.
+     * @param { { [key: string]: string } } attributes - Specifies the attributes to be add to TextBox element.
+     * @return {void}
+     */
+    TextBox.prototype.addAttributes = function (attributes$$1) {
+        for (var _i = 0, _a = Object.keys(attributes$$1); _i < _a.length; _i++) {
+            var key = _a[_i];
+            if (key === 'disabled') {
+                this.setProperties({ enabled: false }, true);
+                exports.Input.setEnabled(this.enabled, this.respectiveElement, this.floatLabelType, this.textboxWrapper.container);
+            }
+            else if (key === 'readonly') {
+                this.setProperties({ readonly: true }, true);
+                exports.Input.setReadonly(this.readonly, this.respectiveElement);
+            }
+            else if (key === 'class') {
+                this.respectiveElement.classList.add(attributes$$1[key]);
+            }
+            else if (key === 'placeholder') {
+                this.setProperties({ placeholder: attributes$$1[key] }, true);
+                exports.Input.setPlaceholder(this.placeholder, this.respectiveElement);
+            }
+            else if (key === 'rows' && this.respectiveElement.tagName === 'TEXTAREA') {
+                this.respectiveElement.setAttribute(key, attributes$$1[key]);
+            }
+            else {
+                this.respectiveElement.setAttribute(key, attributes$$1[key]);
+            }
+        }
+    };
+    /**
+     * Removing the multiple attributes as key-value pair to the TextBox element.
+     * @param { string[] } attributes - Specifies the attributes name to be removed from TextBox element.
+     * @return {void}
+     */
+    TextBox.prototype.removeAttributes = function (attributes$$1) {
+        for (var _i = 0, attributes_1 = attributes$$1; _i < attributes_1.length; _i++) {
+            var key = attributes_1[_i];
+            if (key === 'disabled') {
+                this.setProperties({ enabled: true }, true);
+                exports.Input.setEnabled(this.enabled, this.respectiveElement, this.floatLabelType, this.textboxWrapper.container);
+            }
+            else if (key === 'readonly') {
+                this.setProperties({ readonly: false }, true);
+                exports.Input.setReadonly(this.readonly, this.respectiveElement);
+            }
+            else if (key === 'placeholder') {
+                this.setProperties({ placeholder: null }, true);
+                exports.Input.setPlaceholder(this.placeholder, this.respectiveElement);
+            }
+            else {
+                this.respectiveElement.removeAttribute(key);
+            }
+        }
+    };
+    /**
+     * Sets the focus to widget for interaction.
+     * @returns void
+     */
+    TextBox.prototype.focusIn = function () {
+        if (document.activeElement !== this.respectiveElement && this.enabled) {
+            this.respectiveElement.focus();
+            if (this.textboxWrapper.container.classList.contains('e-input-group')
+                || this.textboxWrapper.container.classList.contains('e-outline')
+                || this.textboxWrapper.container.classList.contains('e-filled')) {
+                sf.base.addClass([this.textboxWrapper.container], [TEXTBOX_FOCUS]);
+            }
+        }
+    };
+    /**
+     * Remove the focus from widget, if the widget is in focus state.
+     * @returns void
+     */
+    TextBox.prototype.focusOut = function () {
+        if (document.activeElement === this.respectiveElement && this.enabled) {
+            this.respectiveElement.blur();
+            if (this.textboxWrapper.container.classList.contains('e-input-group')
+                || this.textboxWrapper.container.classList.contains('e-outline')
+                || this.textboxWrapper.container.classList.contains('e-filled')) {
+                sf.base.removeClass([this.textboxWrapper.container], [TEXTBOX_FOCUS]);
+            }
+        }
+    };
+    __decorate$6([
+        sf.base.Property('text')
+    ], TextBox.prototype, "type", void 0);
+    __decorate$6([
+        sf.base.Property(false)
+    ], TextBox.prototype, "readonly", void 0);
+    __decorate$6([
+        sf.base.Property(null)
+    ], TextBox.prototype, "value", void 0);
+    __decorate$6([
+        sf.base.Property('Never')
+    ], TextBox.prototype, "floatLabelType", void 0);
+    __decorate$6([
+        sf.base.Property('')
+    ], TextBox.prototype, "cssClass", void 0);
+    __decorate$6([
+        sf.base.Property(null)
+    ], TextBox.prototype, "placeholder", void 0);
+    __decorate$6([
+        sf.base.Property('on')
+    ], TextBox.prototype, "autocomplete", void 0);
+    __decorate$6([
+        sf.base.Property({})
+    ], TextBox.prototype, "htmlAttributes", void 0);
+    __decorate$6([
+        sf.base.Property(false)
+    ], TextBox.prototype, "multiline", void 0);
+    __decorate$6([
+        sf.base.Property(true)
+    ], TextBox.prototype, "enabled", void 0);
+    __decorate$6([
+        sf.base.Property(false)
+    ], TextBox.prototype, "showClearButton", void 0);
+    __decorate$6([
+        sf.base.Property(false)
+    ], TextBox.prototype, "enablePersistence", void 0);
+    __decorate$6([
+        sf.base.Property(null)
+    ], TextBox.prototype, "width", void 0);
+    __decorate$6([
+        sf.base.Event()
+    ], TextBox.prototype, "created", void 0);
+    __decorate$6([
+        sf.base.Event()
+    ], TextBox.prototype, "destroyed", void 0);
+    __decorate$6([
+        sf.base.Event()
+    ], TextBox.prototype, "change", void 0);
+    __decorate$6([
+        sf.base.Event()
+    ], TextBox.prototype, "blur", void 0);
+    __decorate$6([
+        sf.base.Event()
+    ], TextBox.prototype, "focus", void 0);
+    __decorate$6([
+        sf.base.Event()
+    ], TextBox.prototype, "input", void 0);
+    TextBox = __decorate$6([
+        sf.base.NotifyPropertyChanges
+    ], TextBox);
+    return TextBox;
+}(sf.base.Component));
+
+/**
+ * Uploader modules
+ */
+
+/**
+ * NumericTextBox all modules
+ */
+
+exports.NumericTextBox = NumericTextBox;
+exports.regularExpressions = regularExpressions;
+exports.createMask = createMask;
+exports.applyMask = applyMask;
+exports.wireEvents = wireEvents;
+exports.unwireEvents = unwireEvents;
+exports.bindClearEvent = bindClearEvent;
+exports.unstrippedValue = unstrippedValue;
+exports.strippedValue = strippedValue;
+exports.maskInputFocusHandler = maskInputFocusHandler;
+exports.maskInputBlurHandler = maskInputBlurHandler;
+exports.maskInputDropHandler = maskInputDropHandler;
+exports.mobileRemoveFunction = mobileRemoveFunction;
+exports.setMaskValue = setMaskValue;
+exports.setElementValue = setElementValue;
+exports.maskInput = maskInput;
+exports.getVal = getVal;
+exports.getMaskedVal = getMaskedVal;
+exports.MaskUndo = MaskUndo;
+exports.MaskedTextBox = MaskedTextBox;
+exports.TicksData = TicksData;
+exports.ColorRangeData = ColorRangeData;
+exports.LimitData = LimitData;
+exports.TooltipData = TooltipData;
+exports.Slider = Slider;
+exports.regex = regex;
+exports.FormValidator = FormValidator;
+exports.FilesProp = FilesProp;
+exports.ButtonsProps = ButtonsProps;
+exports.AsyncSettings = AsyncSettings;
+exports.Uploader = Uploader;
+exports.ColorPicker = ColorPicker;
+exports.TextBox = TextBox;
+
+return exports;
+
+});
+sfBlazor.loadDependencies(sfBlazor.dependencyJson.inputs, () => {
+    sf.inputs = sf.inputs({});
+});

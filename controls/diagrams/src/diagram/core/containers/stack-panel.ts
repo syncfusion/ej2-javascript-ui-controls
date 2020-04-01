@@ -23,7 +23,7 @@ export class StackPanel extends Container {
     public measureChildren: boolean = undefined;
     /**
      * Measures the minimum space that the panel needs
-     * @param availableSize 
+     * @param {Size} availableSize 
      */
     public measure(availableSize: Size): Size {
         let updateSize: Function = this.orientation === 'Horizontal' ? this.updateHorizontalStack : this.updateVerticalStack;
@@ -33,7 +33,7 @@ export class StackPanel extends Container {
 
     /**
      * Arranges the child elements of the stack panel
-     * @param desiredSize 
+     * @param {Size} desiredSize 
      */
     public arrange(desiredSize: Size): Size {
         let updateSize: Function = this.orientation === 'Horizontal' ? this.arrangeHorizontalStack : this.arrangeVerticalStack;
@@ -44,7 +44,7 @@ export class StackPanel extends Container {
 
     /**
      * Measures the minimum space that the panel needs
-     * @param availableSize 
+     * @param {Size} availableSize 
      */
     private measureStackPanel(availableSize: Size, updateSize: Function): Size {
         let desired: Size = undefined;

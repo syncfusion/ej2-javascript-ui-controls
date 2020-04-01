@@ -1547,6 +1547,9 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
             }
         }
         this.parent.setRecordValue('work', work, ganttData.ganttProperties, true);
+        if (!isNullOrUndefined(this.parent.taskFields.work)) {
+            this.parent.dataOperation.updateMappingData(ganttData, 'work');
+        }
     };
     /**
      *
@@ -2175,7 +2178,13 @@ var TaskProcessor = /** @__PURE__ @class */ (function (_super) {
             return resourceIdCollection;
         }
         resourceIdCollection = data[this.parent.taskFields.resourceInfo];
-        var resourceData = this.parent.resources;
+        var resourceData;
+        if (!isNullOrUndefined(this.parent.editModule) && this.parent.editModule.dialogModule.isAddNewResource) {
+            resourceData = this.parent.editModule.dialogModule.ganttResources;
+        }
+        else {
+            resourceData = this.parent.resources;
+        }
         var resourceIDMapping = this.parent.resourceFields.id;
         var resourceUnitMapping = this.parent.resourceFields.unit;
         var resourceGroup = this.parent.resourceFields.group;
@@ -3420,7 +3429,8 @@ var GanttChart = /** @__PURE__ @class */ (function () {
      * @private
      */
     GanttChart.prototype.onTabAction = function (e) {
-        var isInEditedState = this.parent.editModule.cellEditModule.isCellEdit;
+        var isInEditedState = this.parent.editModule && this.parent.editModule.cellEditModule &&
+            this.parent.editModule.cellEditModule.isCellEdit;
         if (!this.parent.showActiveElement && !isInEditedState) {
             return;
         }
@@ -3465,6 +3475,12 @@ var GanttChart = /** @__PURE__ @class */ (function () {
      */
     GanttChart.prototype.getNextElement = function ($target, isTab) {
         var nextElement = isTab ? $target.nextElementSibling : $target.previousElementSibling;
+        while (nextElement && nextElement.parentElement.classList.contains('e-row')) {
+            if (!nextElement.matches('.e-hide')) {
+                return nextElement;
+            }
+            nextElement = isTab ? nextElement.nextElementSibling : nextElement.previousElementSibling;
+        }
         if (this.validateNextElement(nextElement)) {
             return nextElement;
         }
@@ -3500,15 +3516,26 @@ var GanttChart = /** @__PURE__ @class */ (function () {
                 }
             }
             else if ($target.parentElement.classList.contains('e-chart-row-cell')) {
+                var childElement = void 0;
                 /* tslint:disable-next-line:no-any */
                 rowIndex = closest($target, '.e-chart-row').rowIndex;
                 if (isTab) {
                     rowElement = this.getNextRowElement(rowIndex, isTab, true);
-                    return rowElement ? (rowElement.children[0]) : null;
                 }
                 else {
                     rowElement = this.parent.treeGrid.grid.getRowByIndex(rowIndex);
-                    return rowElement ? (rowElement.children[this.parent.ganttColumns.length - 1]) : null;
+                }
+                if (rowElement) {
+                    childElement = isTab ? rowElement.children[0] : rowElement.children[rowElement.children.length - 1];
+                    while (childElement) {
+                        if (!childElement.matches('.e-hide')) {
+                            return childElement;
+                        }
+                        childElement = isTab ? childElement.nextElementSibling : childElement.previousElementSibling;
+                    }
+                }
+                else {
+                    return null;
                 }
             }
         }
@@ -3734,11 +3761,14 @@ var Timeline = /** @__PURE__ @class */ (function () {
         var newTimeline = this.parent.zoomingLevels[currentLevel];
         var args = {
             requestType: isZoomIn ? 'beforeZoomIn' : 'beforeZoomOut',
-            timeline: newTimeline
+            timeline: newTimeline,
+            cancel: false
         };
         this.parent.trigger('actionBegin', args);
-        newTimeline = args.timeline;
-        this.changeTimelineSettings(newTimeline);
+        if (!args.cancel) {
+            newTimeline = args.timeline;
+            this.changeTimelineSettings(newTimeline);
+        }
     };
     /**
      * To change the timeline settings property values based upon the Zooming levels.
@@ -9242,10 +9272,11 @@ var Tooltip$1 = /** @__PURE__ @class */ (function () {
         }
         switch (elementType) {
             case 'milestone':
-                content$$1 = '<table class = "e-gantt-tooltiptable"><tbody>' +
-                    taskName + '<tr><td class = "e-gantt-tooltip-label"> Date</td><td>:</td>' +
+                var sDate = !isNullOrUndefined(data.startDate) ? '<tr><td class = "e-gantt-tooltip-label"> Date</td><td>:</td>' +
                     '<td class = "e-gantt-tooltip-value">' +
-                    this.parent.getFormatedDate(data.startDate, this.parent.dateFormat) + '</tr></tbody></table>';
+                    this.parent.getFormatedDate(data.startDate, this.parent.dateFormat) + '</td></tr>' : '';
+                content$$1 = '<table class = "e-gantt-tooltiptable"><tbody>' +
+                    taskName + sDate + '</tbody></table>';
                 break;
             case 'taskbar':
                 var scheduledTask = !ganttData.hasChildRecords || data.isAutoSchedule ? true : false;
@@ -9490,7 +9521,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
                     if (this.selectedRowIndex === 0) {
                         return;
                     }
-                    this.selectionModule.selectRow(0);
+                    this.selectionModule.selectRow(0, false, true);
                 }
                 break;
             case 'end':
@@ -9499,7 +9530,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
                     if (this.selectedRowIndex === this.currentViewData.indexOf(currentSelectingRecord)) {
                         return;
                     }
-                    this.selectionModule.selectRow(this.currentViewData.indexOf(currentSelectingRecord));
+                    this.selectionModule.selectRow(this.currentViewData.indexOf(currentSelectingRecord), false, true);
                 }
                 break;
             case 'downArrow':
@@ -9636,7 +9667,7 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
                 var selectingRowIndex = expandedRecords.indexOf(selectedItem);
                 var currentSelectingRecord = e.action === 'downArrow' ? expandedRecords[selectingRowIndex + 1] :
                     expandedRecords[selectingRowIndex - 1];
-                this.selectionModule.selectRow(this.currentViewData.indexOf(currentSelectingRecord));
+                this.selectionModule.selectRow(this.currentViewData.indexOf(currentSelectingRecord), false, true);
             }
             else if (this.selectionSettings.mode === 'Cell' && this.selectionModule.getSelectedRowCellIndexes().length > 0) {
                 var selectCellIndex = this.selectionModule.getSelectedRowCellIndexes();
@@ -9663,8 +9694,8 @@ var Gantt = /** @__PURE__ @class */ (function (_super) {
     };
     Gantt.prototype.initProperties = function () {
         this.globalize = new Internationalization(this.locale);
-        this.dateFormat = !isNullOrUndefined(this.dateFormat) ? this.dateFormat :
-            this.globalize.getDatePattern({ skeleton: 'yMd' });
+        this.dateFormat = !isNullOrUndefined(this.dateFormat) ? this.dateFormat : isBlazor() ?
+            this.globalize.getDatePattern({ skeleton: 'd' }) : this.globalize.getDatePattern({ skeleton: 'yMd' });
         this.isAdaptive = Browser.isDevice;
         this.flatData = [];
         this.currentViewData = [];
@@ -12694,7 +12725,7 @@ var EditTooltip = /** @__PURE__ @class */ (function () {
      * @private
      */
     EditTooltip.prototype.showHideTaskbarEditTooltip = function (bool) {
-        if (bool) {
+        if (bool && this.parent.tooltipSettings.showTooltip) {
             this.createTooltip('Custom', false);
             this.parent.tooltipModule.toolTipObj.close();
             this.updateTooltip();
@@ -14478,6 +14509,7 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
     };
     DialogEdit.prototype.resetValues = function () {
         this.isEdit = false;
+        this.isAddNewResource = false;
         this.editedRecord = {};
         this.rowData = {};
         this.rowIndex = -1;
@@ -15130,7 +15162,7 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
             allowSelection: true,
             rowHeight: this.parent.isAdaptive ? 48 : null,
             filterSettings: { type: 'Menu' },
-            selectionSettings: { checkboxOnly: true, checkboxMode: 'ResetOnRowClick', persistSelection: true, type: 'Multiple' }
+            selectionSettings: { checkboxOnly: true, checkboxMode: 'Default', persistSelection: true, type: 'Multiple' }
         };
         var columns = [
             { type: 'checkbox', allowEditing: false, allowSorting: false, allowFiltering: false, width: 60 },
@@ -15809,6 +15841,7 @@ var DialogEdit = /** @__PURE__ @class */ (function () {
         else {
             for (var i = 0; i < selectedItems.length; i++) {
                 idArray.push(selectedItems[i][this.parent.resourceFields.id]);
+                this.isAddNewResource = true;
             }
             this.addedRecord[this.parent.taskFields.resourceInfo] = idArray;
         }
@@ -17146,15 +17179,16 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
         var ganttProp = currentData.ganttProperties;
         var taskType = ganttProp.taskType;
         var isEffectDriven;
+        var isAutoSchedule = ganttProp.isAutoSchedule;
         if (!isNullOrUndefined(ganttProp.resourceInfo)) {
             if (ganttProp.work > 0 || column === 'work') {
                 switch (taskType) {
                     case 'FixedUnit':
-                        if (ganttProp.resourceInfo.length &&
-                            (column === 'work' || ((column === 'resource') && isEffectDriven))) {
+                        if (isAutoSchedule && ganttProp.resourceInfo.length &&
+                            (column === 'work' || ((column === 'resource')))) {
                             this.parent.dataOperation.updateDurationWithWork(currentData);
                         }
-                        else if (column === 'work') {
+                        else if (!isAutoSchedule && column === 'work') {
                             this.parent.dataOperation.updateUnitWithWork(currentData);
                         }
                         else {
@@ -17165,7 +17199,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                         if (ganttProp.resourceInfo.length === 0) {
                             return;
                         }
-                        else {
+                        else if (isAutoSchedule) {
                             if (column === 'duration' || column === 'endDate') {
                                 this.parent.dataOperation.updateUnitWithWork(currentData);
                                 if (ganttProp.duration === 0) {
@@ -17179,9 +17213,18 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                                 this.parent.dataOperation.updateDurationWithWork(currentData);
                             }
                         }
+                        else {
+                            if (column === 'work') {
+                                this.parent.dataOperation.updateUnitWithWork(currentData);
+                            }
+                            else {
+                                this.parent.dataOperation.updateWorkWithDuration(currentData);
+                            }
+                        }
                         break;
                     case 'FixedDuration':
-                        if (ganttProp.resourceInfo.length && (column === 'work' || (isEffectDriven && (column === 'resource')))) {
+                        if (ganttProp.resourceInfo.length && (column === 'work' || (isAutoSchedule &&
+                            isEffectDriven && (column === 'resource')))) {
                             this.parent.dataOperation.updateUnitWithWork(currentData);
                         }
                         else {
@@ -19361,7 +19404,7 @@ var Selection$1 = /** @__PURE__ @class */ (function () {
         }
         this.prevRowIndex = args.rowIndex;
         if (!isNullOrUndefined(this.parent.toolbarModule)) {
-            this.parent.toolbarModule.refreshToolbarItems();
+            this.parent.toolbarModule.refreshToolbarItems(args);
         }
         this.parent.trigger('rowSelected', args);
     };
@@ -19433,12 +19476,17 @@ var Selection$1 = /** @__PURE__ @class */ (function () {
      * @param  {boolean} isToggle - If set to true, then it toggles the selection.
      * @return {void}
      */
-    Selection$$1.prototype.selectRow = function (index, isToggle) {
+    Selection$$1.prototype.selectRow = function (index, isToggle, isPreventFocus) {
         var selectedRow = this.parent.getRowByIndex(index);
         if (index === -1 || isNullOrUndefined(selectedRow) || this.parent.selectionSettings.mode === 'Cell') {
             return;
         }
-        this.parent.treeGrid.grid.selectionModule.preventFocus = true;
+        if (this.parent.showActiveElement && !isPreventFocus) {
+            this.parent.treeGrid.grid.selectionModule.preventFocus = true;
+        }
+        else {
+            this.parent.treeGrid.grid.selectionModule.preventFocus = false;
+        }
         this.parent.treeGrid.selectRow(index, isToggle);
         this.parent.treeGrid.grid.selectionModule.preventFocus = this.parent.treeGrid.grid.selectionModule.preventFocus === true ?
             false : this.parent.treeGrid.grid.selectionModule.preventFocus;
@@ -20016,7 +20064,7 @@ var Toolbar$3 = /** @__PURE__ @class */ (function () {
     /**
      * To refresh toolbar items bases current state of tasks
      */
-    Toolbar$$1.prototype.refreshToolbarItems = function () {
+    Toolbar$$1.prototype.refreshToolbarItems = function (args) {
         var gObj = this.parent;
         var enableItems = [];
         var disableItems = [];
@@ -20027,16 +20075,18 @@ var Toolbar$3 = /** @__PURE__ @class */ (function () {
         var toolbarItems = this.toolbar ? this.toolbar.items : [];
         var toolbarDefaultItems = [gID + '_add', gID + '_edit', gID + '_delete',
             gID + '_update', gID + '_cancel'];
+        var isResouceParent = ((this.parent.viewType === 'ResourceView' && getValue('data.level', args) !== 0
+            || this.parent.viewType === 'ProjectView'));
         if (!isNullOrUndefined(this.parent.editModule)) {
             var touchEdit = gObj.editModule.taskbarEditModule ?
                 gObj.editModule.taskbarEditModule.touchEdit : false;
             var hasData = gObj.currentViewData && gObj.currentViewData.length;
-            edit.allowAdding && !touchEdit ? enableItems.push(gID + '_add') : disableItems.push(gID + '_add');
-            edit.allowEditing && hasData && isSelected && !touchEdit ?
+            edit.allowAdding && isResouceParent && !touchEdit ? enableItems.push(gID + '_add') : disableItems.push(gID + '_add');
+            edit.allowEditing && isResouceParent && hasData && isSelected && !touchEdit ?
                 enableItems.push(gID + '_edit') : disableItems.push(gID + '_edit');
             var isDeleteSelected = gObj.selectionModule ? gObj.selectionModule.selectedRowIndexes.length > 0 ||
                 gObj.selectionModule.getSelectedRowCellIndexes().length > 0 ? true : false : false;
-            edit.allowDeleting && hasData && isDeleteSelected && !touchEdit ?
+            edit.allowDeleting && isResouceParent && hasData && isDeleteSelected && !touchEdit ?
                 enableItems.push(gID + '_delete') : disableItems.push(gID + '_delete');
             if (gObj.editSettings.mode === 'Auto' && !isNullOrUndefined(gObj.editModule.cellEditModule)
                 && gObj.editModule.cellEditModule.isCellEdit) {
@@ -23839,6 +23889,9 @@ var ExportHelper = /** @__PURE__ @class */ (function () {
         else if (column.field === taskFields.resourceInfo) {
             cell.value = ganttProps.resourceNames;
         }
+        else if (column.field === taskFields.work) {
+            cell.value = this.parent.getWorkString(ganttProps.work, ganttProps.workUnit);
+        }
         else {
             cell.value = !isNullOrUndefined(data[column.field]) ? data[column.field].toString() : '';
         }
@@ -23910,7 +23963,8 @@ var ExportHelper = /** @__PURE__ @class */ (function () {
             if (data[_this.parent.labelSettings.rightLabel]) {
                 taskbar.rightTaskLabel.value = data[_this.parent.labelSettings.rightLabel].toString();
             }
-            var reduceLeft = ganttProp.isMilestone ? Math.floor(_this.parent.chartRowsModule.taskBarHeight / 2) + 30 : 30;
+            /* tslint:disable-next-line */
+            var reduceLeft = ganttProp.isMilestone ? Math.floor(_this.parent.chartRowsModule.taskBarHeight / 2) + 33 : 33; // 33 indicates default timeline cell width
             taskbar.rightTaskLabel.left = ganttProp.left + ganttProp.width + reduceLeft; // right label left value
             taskbar.fontFamily = _this.ganttStyle.fontFamily;
             taskbar.progressWidth = ganttProp.progressWidth;
@@ -23940,6 +23994,11 @@ var ExportHelper = /** @__PURE__ @class */ (function () {
             };
             if (_this.parent.pdfQueryTaskbarInfo) {
                 _this.parent.trigger('pdfQueryTaskbarInfo', args);
+                taskbar.progressFontColor = args.taskbar.progressFontColor;
+                taskbar.taskColor = args.taskbar.taskColor;
+                taskbar.taskBorderColor = args.taskbar.taskBorderColor;
+                taskbar.progressColor = args.taskbar.progressColor;
+                taskbar.milestoneColor = args.taskbar.milestoneColor;
             }
         });
     };
@@ -24047,7 +24106,17 @@ var ExportHelper = /** @__PURE__ @class */ (function () {
         cell.style.borders = new PdfBorders();
         cell.style.borders.all = new PdfPen(cell.style.borderColor);
         cell.style.padding = new PdfPaddings();
-        cell.style.padding.all = 10;
+        var padding = 0;
+        if (cell.isHeaderCell) {
+            padding = this.parent.timelineModule.isSingleTier ? 45 / 2 : 60 / 2;
+        }
+        else {
+            padding = this.parent.rowHeight / 2;
+        }
+        cell.style.padding.top = padding - style.fontSize;
+        cell.style.padding.bottom = padding - style.fontSize;
+        cell.style.padding.left = 10;
+        cell.style.padding.right = 10;
     };
     /**
      * @return {void}
@@ -24414,7 +24483,8 @@ var PdfGanttTaskbarCollection = /** @__PURE__ @class */ (function () {
             labelLeft = this.left;
             if (!this.leftTaskLabel.isLeftCalculated) {
                 var result = this.getWidth(this.leftTaskLabel.value, Number.MAX_VALUE, 15);
-                var reduceLeft = this.isMilestone ? Math.floor(this.parent.chartRowsModule.taskBarHeight / 2) + 30 : 30;
+                /* tslint:disable-next-line */
+                var reduceLeft = this.isMilestone ? Math.floor(this.parent.chartRowsModule.taskBarHeight / 2) + 33 : 33; // 33 indicates default timeline cell width
                 left = pixelToPoint(labelLeft - reduceLeft) - result.actualSize.width;
                 this.leftTaskLabel.left = left;
                 this.leftTaskLabel.isLeftCalculated = true;
@@ -24426,7 +24496,7 @@ var PdfGanttTaskbarCollection = /** @__PURE__ @class */ (function () {
             if (detail.startPoint <= left && left < detail.endPoint && !isNullOrUndefined(this.leftTaskLabel.value)
                 && !this.leftTaskLabel.isCompleted) {
                 var result = this.getWidth(this.leftTaskLabel.value, detail.endPoint - left, 15);
-                var font = new PdfStandardFont(this.fontFamily, 10);
+                var font = new PdfStandardFont(this.fontFamily, 9);
                 var adjustHeight = (pixelToPoint(this.parent.rowHeight) - result.actualSize.height) / 2;
                 var rightLabelpoint = new PointF(actualLeft, startPoint.y + adjustHeight);
                 var rightLabelSize = new SizeF(result.actualSize.width, result.actualSize.height);
@@ -24454,7 +24524,7 @@ var PdfGanttTaskbarCollection = /** @__PURE__ @class */ (function () {
         }
     };
     PdfGanttTaskbarCollection.prototype.getWidth = function (value, width, height) {
-        var font = new PdfStandardFont(this.fontFamily, 10);
+        var font = new PdfStandardFont(this.fontFamily, 9);
         var layouter = new PdfStringLayouter();
         var progressFormat = new PdfStringFormat();
         progressFormat.alignment = PdfTextAlignment.Left;

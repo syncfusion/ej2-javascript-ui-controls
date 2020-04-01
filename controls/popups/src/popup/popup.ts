@@ -26,6 +26,10 @@ export class PositionData extends ChildProperty<PositionData> {
     public Y: string | number;
 
 }
+
+/**
+ * Provides information about a CollisionAxis.
+ */
 export interface CollisionAxis {
     /**
      * specify the collision handler for a X-Axis.

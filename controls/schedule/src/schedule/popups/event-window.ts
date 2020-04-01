@@ -1,6 +1,6 @@
 import { createElement, L10n, isNullOrUndefined, addClass, remove, EventHandler, extend, append, EmitType } from '@syncfusion/ej2-base';
 import { cldrData, removeClass, getValue, getDefaultDateObject, closest, getElement, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
-import { updateBlazorTemplate, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
+import { updateBlazorTemplate, resetBlazorTemplate, isBlazor, IntlBase } from '@syncfusion/ej2-base';
 import { Query, Deferred } from '@syncfusion/ej2-data';
 import { CheckBox, ChangeEventArgs, Button } from '@syncfusion/ej2-buttons';
 import { Dialog, DialogModel, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';
@@ -444,7 +444,7 @@ export class EventWindow {
             } else {
                 duration = (<Date>this.eventData[this.fields.endTime]).getTime() - (<Date>this.eventData[this.fields.startTime]).getTime();
             }
-            let endDate: Date = new Date(startObj.value.getTime() + duration);
+            let endDate: Date = (isNullOrUndefined(startObj.value)) ? null : new Date(startObj.value.getTime() + duration);
             if (this.cellClickAction) {
                 this.eventWindowTime.endTime = endDate;
             }
@@ -853,7 +853,7 @@ export class EventWindow {
             eventObj[this.fields.recurrenceRule] = cellsData.RecurrenceRule;
         }
         if (this.parent.resourceCollection.length > 0 || this.parent.activeViewOptions.group.resources.length > 0) {
-            this.parent.resourceBase.setResourceValues(eventObj, false);
+            this.parent.resourceBase.setResourceValues(eventObj);
         }
     }
 
@@ -956,6 +956,9 @@ export class EventWindow {
         if (this.cellClickAction) { this.updateDateTime(allDayStatus, startObj, endObj); }
         startObj.dataBind();
         endObj.dataBind();
+        if (!isNullOrUndefined(this.recurrenceEditor)) {
+            this.recurrenceEditor.updateRuleUntilDate(startObj.value);
+        }
     }
 
     private updateDateTime(allDayStatus: boolean, startObj: DateTimePicker, endObj: DateTimePicker): void {
@@ -990,6 +993,12 @@ export class EventWindow {
     }
 
     private getFormat(formatType: string): string {
+        if (isBlazor()) {
+            if (formatType === 'dateFormats') {
+                return IntlBase.compareBlazorDateFormats({ skeleton: 'd' }, this.parent.locale).format;
+            }
+            return IntlBase.compareBlazorDateFormats({ skeleton: 't' }, this.parent.locale).format;
+        }
         let format: string;
         if (this.parent.locale === 'en' || this.parent.locale === 'en-US') {
             format = getValue(formatType + '.short', getDefaultDateObject(this.parent.getCalendarMode()));
@@ -1177,8 +1186,10 @@ export class EventWindow {
         eventObj[this.fields.recurrenceRule] = this.recurrenceEditor ? this.recurrenceEditor.getRecurrenceRule() || null : undefined;
         let tempObj: { [key: string]: Object } = extend({}, eventObj, null, true) as { [key: string]: Object };
         if (eventObj[this.fields.isAllDay]) {
-            eventObj[this.fields.startTime] = util.resetTime(new Date((<Date>eventObj[this.fields.startTime]).getTime()));
-            eventObj[this.fields.endTime] = util.addDays(util.resetTime(new Date((<Date>eventObj[this.fields.endTime]).getTime())), 1);
+            eventObj[this.fields.startTime] = (isNullOrUndefined(eventObj[this.fields.startTime])) ? null
+            : util.resetTime(new Date((<Date>eventObj[this.fields.startTime]).getTime()));
+            eventObj[this.fields.endTime] = (isNullOrUndefined(eventObj[this.fields.endTime])) ? null
+            : util.addDays(util.resetTime(new Date((<Date>eventObj[this.fields.endTime]).getTime())), 1);
         }
         return { eventData: eventObj, tempData: tempObj };
     }

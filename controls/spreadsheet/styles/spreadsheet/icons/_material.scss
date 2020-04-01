@@ -91,6 +91,12 @@
           content: '\e290';
         }
       }
+
+      & .e-merge-icon {
+        &::before {
+          content: '\eb93';
+        }
+      }
     }
 
     & .e-insert-function .e-btn-icon {

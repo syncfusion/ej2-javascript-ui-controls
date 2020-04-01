@@ -728,6 +728,29 @@ export class Render {
         this.parent.trigger(events.contextMenuClick, args);
     }
 
+    private validateColumnTotalcell(columnIndex: number): boolean {
+        let headerPosKeys: string[] = Object.keys(this.engine.headerContent);
+        let keysLength: number = headerPosKeys.length;
+        let sumLock: boolean = false;
+        let fieldName: string = "";
+        for (let pos: number = keysLength - 1; pos >= 0; pos--) {
+            let cell: IAxisSet = this.engine.headerContent[headerPosKeys[pos] as any][columnIndex];
+            if (cell) {
+                sumLock = sumLock && fieldName !== '' ? fieldName === cell.valueSort.axis : false;
+                fieldName = cell.valueSort.axis ? cell.valueSort.axis.toString() : '';
+                if (cell.type === 'sum') {
+                    sumLock = true;
+                }
+                if (sumLock && cell.members && cell.members.length > 0) {
+                    return true;
+                }
+            } else {
+                return false;
+            }
+        }
+        return false;
+    }
+
     private validateField(target: HTMLElement): boolean {
         let isValueField: boolean = false;
         if (target.classList.contains('e-stot') || target.classList.contains('e-gtot') || target.classList.contains('e-valuescontent') || target.classList.contains('e-valuesheader')) {
@@ -1034,6 +1057,8 @@ export class Render {
                 }
                 if (cell.isGrandSum) {
                     tCell.classList.add('e-gtot');
+                } else if (this.parent.dataType === 'olap' ? cell.isSum : this.validateColumnTotalcell(!isNullOrUndefined(cell.value) ? cell.colIndex : cell.colIndex - 1)) {
+                    tCell.classList.add('e-colstot');
                 }
                 if (cell.cssClass) {
                     tCell.classList.add(cell.cssClass);
@@ -1221,11 +1246,17 @@ export class Render {
                             this.parent.dataSourceSettings.columns[level].name : '';
                         tCell.setAttribute('fieldname', fieldName);
                     }
+                    if (this.validateColumnTotalcell(cell.colIndex)) {
+                        tCell.classList.add('e-colstot');
+                    }
                 } else {
                     tCell = this.onOlapColumnCellBoundEvent(tCell, cell);
                 }
                 if (cell.type) {
                     tCell.classList.add(cell.type === 'grand sum' ? 'e-gtot' : 'e-stot');
+                    if (cell.type !== 'grand sum') {
+                        tCell.classList.add('e-colstot');
+                    }
                     let localizedText: string = cell.type === 'grand sum' ? this.parent.localeObj.getConstant('grandTotal') :
                         cell.formattedText.split('Total')[0] + this.parent.localeObj.getConstant('total');
                     if ((tCell.querySelector('.e-headertext') as HTMLElement) !== null) {
@@ -1457,7 +1488,7 @@ export class Render {
         let gridHeight: number | string = this.parent.height;
         let parHeight: number = this.parent.getHeightAsNumber();
         if (isNaN(parHeight)) {
-            parHeight = this.parent.element.offsetHeight > 0 ? this.parent.element.offsetHeight : 1;
+            parHeight = parHeight > 300 ? parHeight : 300;
         }
         if (this.parent.currentView !== 'Chart') {
             if (this.gridSettings.height === 'auto' && parHeight && this.parent.element.querySelector('.' + cls.GRID_HEADER)) {

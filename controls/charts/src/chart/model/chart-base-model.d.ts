@@ -304,7 +304,6 @@ export interface StripLineSettingsModel {
      * * Middle: Places the strip line text in the middle.
      * * End: Places the strip line text at the end.
      * @default 'Middle'
-     * @deprecated
      */
     horizontalAlignment?: Anchor;
 
@@ -314,7 +313,6 @@ export interface StripLineSettingsModel {
      * * Middle: Places the strip line text in the middle.
      * * End: Places the strip line text at the end.
      * @default 'Middle'
-     * @deprecated
      */
     verticalAlignment?: Anchor;
 

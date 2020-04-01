@@ -138,7 +138,13 @@ export function addAction(details: { value: ITreeData, action: string }, treeDat
                 value = extend({}, addRowRecord);
                 value = getPlainData(value);
             } else {
-                value = extend({}, currentViewRecords[addRowIndex]);
+                let primaryKeys: string = control.grid.getPrimaryKeyFieldNames()[0];
+                let currentdata: Object = currentViewRecords[addRowIndex];
+                if (!isNullOrUndefined(currentdata) && currentdata[primaryKeys] === details.value[primaryKeys] || selectedIndex !== -1) {
+                    value = extend({}, currentdata);
+                } else {
+                    value = extend({}, details.value);
+                }
                 value = getPlainData(value);
             }
             if (selectedIndex === -1) {

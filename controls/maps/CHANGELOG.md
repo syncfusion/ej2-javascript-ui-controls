@@ -8,6 +8,19 @@
 
 ## [Unreleased]
 
+## 18.1.42 (2020-04-01)
+
+### Maps
+
+#### New Features
+
+- `#264809` - Latitude and longitude values are exposed in the arguments of panning event of the Maps control.
+
+#### Bug Fixes
+
+- `#268354` - `shapeDataPath` property will now work properly in the Maps control.
+- `#263976` - Data label template will render properly now in the sublayers.
+
 ## 18.1.36-beta (2020-03-19)
 
 ### Maps

@@ -374,7 +374,11 @@ export class Splitter extends Component<HTMLElement> {
 
     public onPropertyChanged(newProp: SplitterModel, oldProp: SplitterModel): void {
 
-        if (!this.element.classList.contains(ROOT) || !this.isModalChange) { return; }
+        if (!this.element.classList.contains(ROOT)) { return; }
+        if (!this.isModalChange)  {
+            this.isModalChange = true;
+            return;
+        }
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'height':
@@ -586,8 +590,9 @@ export class Splitter extends Component<HTMLElement> {
             if (((this.orientation !== 'Horizontal' && event.keyCode === 38) || (this.orientation === 'Horizontal' &&
             event.keyCode === 39) ||
             (this.orientation === 'Horizontal' && event.keyCode === 37) || (this.orientation !== 'Horizontal' && event.keyCode === 40))
-            && (!isPrevpaneExpanded && !isNextpaneCollapsed && !isPrevpaneCollapsed || (isPrevpaneExpanded) && !isNextpaneCollapsed)
-            && (this.paneSettings[index].resizable && this.paneSettings[index + 1].resizable)) {
+            && (!isPrevpaneExpanded && !isNextpaneCollapsed && !isPrevpaneCollapsed || (isPrevpaneExpanded) && !isNextpaneCollapsed) &&
+            document.activeElement.classList.contains(SPLIT_BAR) && (this.paneSettings[index].resizable &&
+                 this.paneSettings[index + 1].resizable)) {
             this.checkPaneSize(event);
             this.triggerResizing(event);
             } else if (event.keyCode === 13 && this.paneSettings[index].collapsible &&
@@ -1267,17 +1272,13 @@ export class Splitter extends Component<HTMLElement> {
             addClass([this.previousPane], EXPAND_PANE);
             addClass([this.nextPane], collapseClass);
             if (this.expandFlag) {
-                this.isModalChange = false;
-                this.paneSettings[this.nextPaneIndex].collapsed = true;
-                this.isModalChange = true;
+                this.updatePaneSettings(this.nextPaneIndex, true);
             }
         } else {
             removeClass([this.previousPane], collapseClass);
             removeClass([this.nextPane], EXPAND_PANE);
             if (this.expandFlag) {
-                this.isModalChange = false;
-                this.paneSettings[this.prevPaneIndex].collapsed = false;
-                this.isModalChange = true;
+                this.updatePaneSettings(this.prevPaneIndex, false);
             }
         }
         this.updateIconsOnExpand(e);
@@ -1420,9 +1421,7 @@ export class Splitter extends Component<HTMLElement> {
             removeClass([this.previousPane], EXPAND_PANE);
             removeClass([this.nextPane], collapseClass);
             if (!this.collapseFlag) {
-                this.isModalChange = false;
-                this.paneSettings[this.nextPaneIndex].collapsed = false;
-                this.isModalChange = true;
+                this.updatePaneSettings(this.nextPaneIndex, false);
             }
         } else {
             removeClass([this.previousPane], EXPAND_PANE);
@@ -1430,9 +1429,7 @@ export class Splitter extends Component<HTMLElement> {
             addClass([this.nextPane], EXPAND_PANE);
             addClass([this.previousPane], collapseClass);
             if (!this.collapseFlag) {
-                this.isModalChange = false;
-                this.paneSettings[this.prevPaneIndex].collapsed = true;
-                this.isModalChange = true;
+                this.updatePaneSettings(this.prevPaneIndex, true);
             }
         }
         this.updateIconsOnCollapse(e);
@@ -1463,6 +1460,12 @@ export class Splitter extends Component<HTMLElement> {
         return eventArgs;
     }
 
+    private updatePaneSettings(index : number , collapsed : boolean) : void {
+        if (!this.checkBlazor()) {
+                this.isModalChange = false ;
+                this.paneSettings[index].collapsed = collapsed;
+        }
+    }
     private splitterProperty(): void {
         this.splitInstance = {
             currentBarIndex: this.currentBarIndex,
@@ -2179,9 +2182,7 @@ export class Splitter extends Component<HTMLElement> {
      */
     public expand(index: number): void {
         this.collapsedOnchange(index);
-        this.isModalChange = false;
-        this.paneSettings[index].collapsed = false;
-        this.isModalChange = true;
+        this.updatePaneSettings(index, false);
     }
 
     /**
@@ -2191,9 +2192,7 @@ export class Splitter extends Component<HTMLElement> {
      */
     public collapse(index: number): void {
         this.isCollapsed(index);
-        this.isModalChange = false;
-        this.paneSettings[index].collapsed = true;
-        this.isModalChange = true;
+        this.updatePaneSettings(index , true);
     }
 
     /**

@@ -11,7 +11,7 @@ export class AnnotationBase {
     private control: ProgressBar;
     private annotation: ProgressAnnotationSettings;
     /**
-     * Constructor for chart and accumulation annotation
+     * Constructor for progress annotation
      * @param control
      */
     constructor(control: ProgressBar) {

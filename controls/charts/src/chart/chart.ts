@@ -84,11 +84,11 @@ import { ILegendRenderEventArgs, IAxisLabelRenderEventArgs, ITextRenderEventArgs
 import { IAnnotationRenderEventArgs, IAxisMultiLabelRenderEventArgs, IThemeStyle, IScrollEventArgs } from '../chart/model/chart-interface';
 import { IPointRenderEventArgs, ISeriesRenderEventArgs, ISelectionCompleteEventArgs } from '../chart/model/chart-interface';
 import { IDragCompleteEventArgs, ITooltipRenderEventArgs, IExportEventArgs, IAfterExportEventArgs } from '../chart/model/chart-interface';
-import { IZoomCompleteEventArgs, ILoadedEventArgs } from '../chart/model/chart-interface';
+import { IZoomCompleteEventArgs, ILoadedEventArgs, IZoomingEventArgs } from '../chart/model/chart-interface';
 import { IMultiLevelLabelClickEventArgs, ILegendClickEventArgs } from '../chart/model/chart-interface';
 import { IAnimationCompleteEventArgs, IMouseEventArgs, IPointEventArgs } from '../chart/model/chart-interface';
-import { chartMouseClick, pointClick, pointMove, chartMouseLeave, resized } from '../common/model/constants';
-import { chartMouseDown, chartMouseMove, chartMouseUp, load } from '../common/model/constants';
+import { chartMouseClick, pointClick, pointDoubleClick,  } from '../common/model/constants';
+import { chartMouseDown, chartMouseMove, chartMouseUp, load, pointMove, chartMouseLeave, resized } from '../common/model/constants';
 import { IPrintEventArgs, IAxisRangeCalculatedEventArgs, IDataEditingEventArgs } from '../chart/model/chart-interface';
 import { ChartAnnotationSettingsModel } from './model/chart-base-model';
 import { ChartAnnotationSettings } from './model/chart-base';
@@ -1046,6 +1046,15 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public pointClick: EmitType<IPointEventArgs>;
 
     /**
+     * Triggers on point double click.
+     * @event
+     * @blazorProperty 'OnPointDoubleClick'
+     */
+
+    @Event()
+    public pointDoubleClick: EmitType<IPointEventArgs>;
+
+    /**
      * Triggers on point move.
      * @event
      * @blazorProperty 'PointMoved'
@@ -1108,6 +1117,14 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
 
     @Event()
     public zoomComplete: EmitType<IZoomCompleteEventArgs>;
+
+    /**
+     * Triggers after the zoom selection is triggered.
+     * @event
+     */
+    @Event()
+    public onZooming: EmitType<IZoomingEventArgs>;
+
 
     /**
      * Triggers when start the scroll.
@@ -1281,6 +1298,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public radius: number;
     /** @private */
     public visible: number = 0;
+    /** @private */
+    public clickCount: number = 0;
+    /** @private */
+    public singleClickTimer: number = 0;
     /** @private */
     public chartAreaType: string = 'Cartesian';
     /**
@@ -2566,8 +2587,18 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public chartOnMouseClick(e: PointerEvent | TouchEvent): boolean {
         let element: Element = <Element>e.target;
         this.trigger(chartMouseClick, { target: element.id, x: this.mouseX, y: this.mouseY });
-        if (this.pointClick) {
-            this.triggerPointEvent(pointClick);
+        this.clickCount++;
+        if (this.clickCount === 1 && this.pointClick) {
+            this.singleClickTimer = +setTimeout(
+                (): void => {
+                    this.clickCount = 0;
+                    this.triggerPointEvent(pointClick);
+                },
+                400);
+        } else if (this.clickCount === 2 && this.pointDoubleClick) {
+            clearTimeout(this.singleClickTimer);
+            this.clickCount = 0;
+            this.triggerPointEvent(pointDoubleClick);
         }
         this.notify('click', e);
         return false;
@@ -3347,7 +3378,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                     case 'currencyCode':
                         super.refresh(); break;
                     case 'tooltip':
-                        this.tooltipModule.previousPoints = []; break;
+                        if (this.tooltipModule) { // To check the tooltip enable is true.
+                            this.tooltipModule.previousPoints = [];
+                        }
+                        break;
                 }
             }
             if (!refreshBounds && renderer) {

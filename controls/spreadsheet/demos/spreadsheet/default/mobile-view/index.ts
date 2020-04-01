@@ -22,7 +22,7 @@ let columns: ColumnModel[] = [
 ];
 
 let sheet: SheetModel[] = [{
-    rangeSettings: [{
+    range: [{
         dataSource: dataSource,
         startCell: 'A1'
     }],

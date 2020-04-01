@@ -163,3 +163,7 @@ export const CLOSE_ICON_CLASS: string = 'e-close-icon';
 export const POPUP_OPEN_CLASS: string = 'e-popup-open';
 /** @hidden */
 export const DIALOG_CONTENT_CONTAINER: string = 'e-kanban-dialog-content';
+/** @hidden */
+export const SHOW_ADD_BUTTON: string = 'e-show-add-button';
+/** @hidden */
+export const SHOW_ADD_ICON: string = 'e-show-add-icon';

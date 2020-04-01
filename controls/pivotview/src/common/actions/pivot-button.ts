@@ -114,7 +114,9 @@ export class PivotButton implements IAction {
                             let buttonElement: HTMLElement = createElement('div', {
                                 id: field[i].name, className: cls.PIVOT_BUTTON_CLASS + ' ' + field[i].name.replace(/[^A-Z0-9]/ig, ''),
                                 attrs: {
-                                    'data-uid': field[i].name, 'tabindex': '0', 'isvalue': (i === valuePos || isMeasureAvail && !isMeasureFieldsAvail) ? 'true' : 'false',
+                                    'data-uid': field[i].name,
+                                    'tabindex': this.parent.getModuleName() === 'pivotview' && (this.parent as PivotView).grid && axis === 'rows' ? '-1' : '0',
+                                    'isvalue': (i === valuePos || isMeasureAvail && !isMeasureFieldsAvail) ? 'true' : 'false',
                                     'aria-disabled': 'false', 'aria-label': field[i].caption ? field[i].caption : field[i].name,
                                     'data-type': (this.parent.dataType === 'olap' ? isMeasureFieldsAvail ? 'isMeasureFieldsAvail' : isMeasureAvail ? 'isMeasureAvail' : field[i].type : field[i].type),
                                     'data-caption': field[i].caption ? field[i].caption : field[i].name,
@@ -822,12 +824,6 @@ export class PivotButton implements IAction {
     private buttonModel(): ButtonPropsModel[] {
         return [
             {
-                buttonModel: {
-                    cssClass: cls.OK_BUTTON_CLASS, content: this.parent.localeObj.getConstant('ok'), isPrimary: true
-                },
-                click: (this.index === 0 ? this.updateFilterState.bind(this, this.fieldName) : this.updateCustomFilter.bind(this))
-            },
-            {
                 /* tslint:disable:max-line-length */
                 buttonModel: {
                     cssClass: 'e-clear-filter-button' + (this.parent.pivotCommon.filterDialog.allowExcelLikeFilter ? '' : ' ' + cls.ICON_DISABLE),
@@ -836,6 +832,12 @@ export class PivotButton implements IAction {
                 },
                 click: this.ClearFilter.bind(this)
                 /* tslint:enable:max-line-length */
+            },
+            {
+                buttonModel: {
+                    cssClass: cls.OK_BUTTON_CLASS, content: this.parent.localeObj.getConstant('ok'), isPrimary: true
+                },
+                click: (this.index === 0 ? this.updateFilterState.bind(this, this.fieldName) : this.updateCustomFilter.bind(this))
             },
             {
                 click: this.parent.pivotCommon.filterDialog.closeFilterDialog.bind(this),

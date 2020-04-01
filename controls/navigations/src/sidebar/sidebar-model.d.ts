@@ -156,7 +156,7 @@ export interface SidebarModel extends ComponentModel{
      * Triggers when component is closed.
      * @event 
      * @blazorproperty 'OnClose'
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.EventArgs
+     * @blazorType Syncfusion.Blazor.Navigations.EventArgs
      */
     close?: EmitType<EventArgs>;
 
@@ -164,7 +164,7 @@ export interface SidebarModel extends ComponentModel{
      * Triggers when component is opened.
      * @event 
      * @blazorproperty 'OnOpen'
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.EventArgs
+     * @blazorType Syncfusion.Blazor.Navigations.EventArgs
      */
     open?: EmitType<EventArgs>;
 

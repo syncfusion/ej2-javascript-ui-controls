@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 18.1.42 (2020-04-01)
+
+### ContextMenu
+
+#### Bug Fixes
+
+- `F152308` - Context menu popup position misaligned while using `beforeOpen` event has been resolved.
+
+### Menu
+
+#### Bug Fixes
+
+- Menu not working properly when collapsing the sub menu in hamburger mode has been resolved.
+
 ## 18.1.36-beta (2020-03-19)
 
 ### TreeView

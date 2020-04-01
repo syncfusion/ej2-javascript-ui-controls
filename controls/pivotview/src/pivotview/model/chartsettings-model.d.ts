@@ -1,4 +1,4 @@
-import { Property, ChildProperty, EmitType, Event, Complex, Collection } from '@syncfusion/ej2-base';import { BorderModel as PivotChartBorderModel, ErrorBarSettingsModel as PivotChartErrorBarSettingsModel } from '@syncfusion/ej2-charts';import { ChartDrawType, ChartShape, DataLabelSettingsModel as PivotChartDataLabelSettingsModel, ZoomMode } from '@syncfusion/ej2-charts';import { ErrorBarType, ErrorBarDirection, ErrorBarMode, TrendlineTypes, ToolbarItems, IScrollEventArgs } from '@syncfusion/ej2-charts';import { EmptyPointMode, TextOverflow, Alignment, ZIndex, Anchor, SizeType, BorderType, LineType } from '@syncfusion/ej2-charts';import { TrendlineModel as PivotChartTrendlineModel, LegendShape, SplineType, ILegendRenderEventArgs } from '@syncfusion/ej2-charts';import { AnimationModel as PivotChartAnimationModel, ChartSegmentModel as PivotChartSegmentModel } from '@syncfusion/ej2-charts';import { EdgeLabelPlacement, LabelPlacement, MajorTickLinesModel as PivotChartMajorTickLinesModel } from '@syncfusion/ej2-charts';import { MinorGridLinesModel as PivotChartMinorGridLinesModel, AxisLineModel as PivotChartAxisLineModel } from '@syncfusion/ej2-charts';import { ChartAreaModel as PivotChartAreaModel, IndexesModel as PivotChartIndexesModel } from '@syncfusion/ej2-charts';import { IResizeEventArgs, IPrintEventArgs, FontModel as PivotChartFontModel, LegendPosition } from '@syncfusion/ej2-charts';import { ITextRenderEventArgs, IPointRenderEventArgs, ISeriesRenderEventArgs, ITooltipRenderEventArgs } from '@syncfusion/ej2-charts';import { IMouseEventArgs, IPointEventArgs, EmptyPointSettingsModel as PivotChartEmptyPointSettingsModel } from '@syncfusion/ej2-charts';import { LabelIntersectAction, ErrorBarCapSettingsModel as PivotChartErrorBarCapSettingsModel, ChartTheme } from '@syncfusion/ej2-charts';import { CornerRadiusModel as PivotChartCornerRadiusModel } from '@syncfusion/ej2-charts';import { MajorGridLinesModel as PivotChartMajorGridLinesModel } from '@syncfusion/ej2-charts';import { IAnimationCompleteEventArgs, StripLineSettingsModel as PivotChartStripLineSettingsModel } from '@syncfusion/ej2-charts';import { CrosshairTooltipModel as PivotChartCrosshairTooltipModel, IZoomCompleteEventArgs } from '@syncfusion/ej2-charts';import { LocationModel, AccEmptyPointMode, MarkerSettingsModel as PivotChartMarkerSettingsModel } from '@syncfusion/ej2-charts';import { CrosshairSettingsModel as PivotChartCrosshairSettingsModel, IDragCompleteEventArgs } from '@syncfusion/ej2-charts';import { LabelBorderModel as PivotChartLabelBorderModel, MarginModel as PivotChartMarginModel } from '@syncfusion/ej2-charts';import { MinorTickLinesModel as PivotChartMinorTickLinesModel, IAxisLabelRenderEventArgs } from '@syncfusion/ej2-charts';import { Segment, AxisPosition, LegendSettingsModel, ILoadedEventArgs, ChartLocation } from '@syncfusion/ej2-charts';import { ChartSeriesType, ChartSelectionMode } from '../../common';import { Theme } from '../../common/base/themes';import { OffsetModel as PivotChartOffsetModel } from '../../common/base/interface';import { LabelPosition } from '../../common/base/enum';
+import { Property, ChildProperty, EmitType, Event, Complex, Collection } from '@syncfusion/ej2-base';import { BorderModel as PivotChartBorderModel, ErrorBarSettingsModel as PivotChartErrorBarSettingsModel } from '@syncfusion/ej2-charts';import { ChartDrawType, ChartShape, DataLabelSettingsModel as PivotChartDataLabelSettingsModel, ZoomMode } from '@syncfusion/ej2-charts';import { ErrorBarType, ErrorBarDirection, ErrorBarMode, TrendlineTypes, ToolbarItems, IScrollEventArgs } from '@syncfusion/ej2-charts';import { EmptyPointMode, TextOverflow, Alignment, ZIndex, Anchor, SizeType, BorderType, LineType } from '@syncfusion/ej2-charts';import { TrendlineModel as PivotChartTrendlineModel, LegendShape, SplineType, ILegendRenderEventArgs } from '@syncfusion/ej2-charts';import { AnimationModel as PivotChartAnimationModel, ChartSegmentModel as PivotChartSegmentModel } from '@syncfusion/ej2-charts';import { EdgeLabelPlacement, LabelPlacement, MajorTickLinesModel as PivotChartMajorTickLinesModel } from '@syncfusion/ej2-charts';import { MinorGridLinesModel as PivotChartMinorGridLinesModel, AxisLineModel as PivotChartAxisLineModel } from '@syncfusion/ej2-charts';import { ChartAreaModel as PivotChartAreaModel, IndexesModel as PivotChartIndexesModel } from '@syncfusion/ej2-charts';import { IResizeEventArgs, IPrintEventArgs, FontModel as PivotChartFontModel, LegendPosition } from '@syncfusion/ej2-charts';import { ITextRenderEventArgs, IPointRenderEventArgs, ISeriesRenderEventArgs, ITooltipRenderEventArgs } from '@syncfusion/ej2-charts';import { IMouseEventArgs, IPointEventArgs, EmptyPointSettingsModel as PivotChartEmptyPointSettingsModel } from '@syncfusion/ej2-charts';import { LabelIntersectAction, ErrorBarCapSettingsModel as PivotChartErrorBarCapSettingsModel, ChartTheme } from '@syncfusion/ej2-charts';import { CornerRadiusModel as PivotChartCornerRadiusModel } from '@syncfusion/ej2-charts';import { MajorGridLinesModel as PivotChartMajorGridLinesModel } from '@syncfusion/ej2-charts';import { IAnimationCompleteEventArgs, StripLineSettingsModel as PivotChartStripLineSettingsModel } from '@syncfusion/ej2-charts';import { CrosshairTooltipModel as PivotChartCrosshairTooltipModel, IZoomCompleteEventArgs } from '@syncfusion/ej2-charts';import { LocationModel, AccEmptyPointMode, MarkerSettingsModel as PivotChartMarkerSettingsModel } from '@syncfusion/ej2-charts';import { CrosshairSettingsModel as PivotChartCrosshairSettingsModel, IDragCompleteEventArgs, ChartLocation } from '@syncfusion/ej2-charts';import { LabelBorderModel as PivotChartLabelBorderModel, MarginModel as PivotChartMarginModel } from '@syncfusion/ej2-charts';import { MinorTickLinesModel as PivotChartMinorTickLinesModel, IAxisLabelRenderEventArgs } from '@syncfusion/ej2-charts';import { Segment, AxisPosition, LegendSettingsModel, ILoadedEventArgs } from '@syncfusion/ej2-charts';import { ChartSeriesType, ChartSelectionMode } from '../../common';import { Theme } from '../../common/base/themes';import { OffsetModel as PivotChartOffsetModel } from '../../common/base/interface';import { LabelPosition } from '../../common/base/enum';
 
 /**
  * Interface for a class Animation
@@ -6,21 +6,21 @@ import { Property, ChildProperty, EmitType, Event, Complex, Collection } from '@
 export interface AnimationModel {
 
     /**
-      * If set to true, series gets animated on initial loading.
+      * Allow the chart series gets animated on initial loading.
       * @default true
       */
 
     enable?: boolean;
 
     /**
-      * The duration of animation in milliseconds.
+      * Allows to set the duration of animation in milliseconds.
       * @default 1000
       */
 
     duration?: number;
 
     /**
-      * The option to delay animation of the series.
+      * Allows to delay the animation of the chart series.
       * @default 0
       */
 
@@ -34,21 +34,21 @@ export interface AnimationModel {
 export interface ChartSegmentModel {
 
     /**
-      * Defines the starting point of region.
+      * Allows to set the starting point of region.
       * @default null
       */
 
     value?: Object;
 
     /**
-      * Defines the color of a region.
+      * Allows to set the color of a region.
       * @default null
       */
 
     color?: string;
 
     /**
-      * Defines the pattern of dashes and gaps to stroke.
+      * Allows to set the pattern of dashes and gaps to stroke.
       * @default '0'
       */
 
@@ -62,31 +62,31 @@ export interface ChartSegmentModel {
 export interface FontModel {
 
     /**
-      * FontStyle for the text.
+      * Allows to set the font style to the text in the chart.
       * @default 'Normal'
       */
     fontStyle?: string;
 
     /**
-      * Font size for the text.
+      * Allows to set the font size to the text in the chart.
       * @default '16px'
       */
     size?: string;
 
     /**
-      * FontWeight for the text.
+      * Allows to set the font weight to the text in the chart.
       * @default 'Normal'
       */
     fontWeight?: string;
 
     /**
-      * Color for the text.
+      * Allows to set color to the text in the chart.
       * @default ''
       */
     color?: string;
 
     /**
-      * text alignment
+      * Allows to set text alignment in the chart
       * @default 'Center'
       * @blazorType PivotChartAlignment
       * @blazorDefaultValue PivotChartAlignment.Center
@@ -94,18 +94,18 @@ export interface FontModel {
     textAlignment?: Alignment;
 
     /**
-      * FontFamily for the text.
+      * Allows to set font family to the text in the chart.
       */
     fontFamily?: string;
 
     /**
-      * Opacity for the text.
+      * Allows to set opacity to the text in the chart.
       * @default 1
       */
     opacity?: number;
 
     /**
-      * Specifies the chart title text overflow
+      * Allows to specify the chart title text overflow
       * @default 'Trim'
       */
     textOverflow?: TextOverflow;
@@ -118,27 +118,27 @@ export interface FontModel {
 export interface MarginModel {
 
     /**
-      * Left margin in pixels.
+      * Allows to set the left margin in pixels.
       * @default 10
       * @blazorType int
       */
     left?: number;
 
     /**
-      * Right margin in pixels.
+      * Allows to set the right margin in pixels.
       * @default 10
       * @blazorType int
       */
     right?: number;
 
     /**
-      * Top margin in pixels.
+      * Allows to set the top margin in pixels.
       * @default 10
       */
     top?: number;
 
     /**
-      * Bottom margin in pixels.
+      * Allows to set the bottom margin in pixels.
       * @default 10
       */
     bottom?: number;
@@ -151,13 +151,13 @@ export interface MarginModel {
 export interface BorderModel {
 
     /**
-      * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+      * Allows to set the color of the border that accepts value in hex and rgba as a valid CSS color string.
       * @default ''
       */
     color?: string;
 
     /**
-      * The width of the border in pixels.
+      * Allows to set the width of the border in pixels.
       * @default 1
       * @blazorType int
       */
@@ -171,14 +171,14 @@ export interface BorderModel {
 export interface OffsetModel {
 
     /**
-      * x value of the marker position
+      * Allows to set the x(left) value of the marker position
       * @default 0
       * @blazorType int
       */
     x?: number;
 
     /**
-      * y value of the marker position
+      * Allows to set the y(top) value of the marker position
       * @default 0
       * @blazorType int
       */
@@ -192,7 +192,7 @@ export interface OffsetModel {
 export interface IndexesModel {
 
     /**
-      * Specifies the series index
+      * Allows to specify the series index
       * @default 0
       * @aspType int
       * @blazorType int
@@ -200,7 +200,7 @@ export interface IndexesModel {
     series?: number;
 
     /**
-      * Specifies the point index
+      * Allows to specify the point index
       * @default 0
       * @aspType int
       * @blazorType int
@@ -215,25 +215,25 @@ export interface IndexesModel {
 export interface ChartAreaModel {
 
     /**
-      * Options to customize the border of the chart area.
+      * Allows options to customize the border of the chart area.
       */
     border?: PivotChartBorderModel;
 
     /**
-      * The background of the chart area that accepts value in hex and rgba as a valid CSS color string..
+      * Allows to set the background of the chart area that accepts value in hex and rgba as a valid CSS color string..
       * @default 'transparent'
       */
     background?: string;
 
     /**
-      * The opacity for background.
+      * Allows to set the opacity to the background of the chart area.
       * @default 1
       * @blazorType int
       */
     opacity?: number;
 
     /**
-      * The background image of the chart area that accepts value in string as url link or location of an image.
+      * Allows to set the background image of the chart area that accepts value in string as url link or location of an image.
       * @default null
       */
     backgroundImage?: string;
@@ -246,24 +246,24 @@ export interface ChartAreaModel {
 export interface CrosshairSettingsModel {
 
     /**
-      * If set to true, crosshair line becomes visible.
+      * Allows to show the crosshair lines in the chart.
       * @default false
       */
     enable?: boolean;
 
     /**
-      * DashArray for crosshair.
+      * Allows to set the pattern of dashes and gaps to crosshair.
       * @default ''
       */
     dashArray?: string;
 
     /**
-      * Options to customize the crosshair line.
+      * Allow options to customize the border of the crosshair line such as color and border size in the pivot chart.
       */
     line?: PivotChartBorderModel;
 
     /**
-      * Specifies the line type. Horizontal mode enables the horizontal line and Vertical mode enables the vertical line. They are,
+      * Allows to specify the line type of the crosshair. Horizontal mode enables the horizontal line and Vertical mode enables the vertical line. They are,
       * * None: Hides both vertical and horizontal crosshair lines.
       * * Both: Shows both vertical and horizontal crosshair lines.
       * * Vertical: Shows the vertical line.
@@ -282,35 +282,35 @@ export interface CrosshairSettingsModel {
 export interface DataLabelSettingsModel {
 
     /**
-      * If set true, data label for series renders.
+      * Allows to set the visibility of data label to the series renders.
       * @default false
       */
 
     visible?: boolean;
 
     /**
-      * The DataSource field that contains the data label value.
+      * Allows to set the data source field that contains the data label value.
       * @default null
       */
 
     name?: string;
 
     /**
-      * The background color of the data label accepts value in hex and rgba as a valid CSS color string.
+      * Allows to set the background color of the data label accepts value in hex and rgba as a valid CSS color string.
       * @default 'transparent'
       */
 
     fill?: string;
 
     /**
-      * The opacity for the background.
+      * Allows to set the opacity to the background.
       * @default 1
       */
 
     opacity?: number;
 
     /**
-      * Specifies angle for data label.
+      * Allows to specify the rotation angle to data label.
       * @default 0
       * @blazorType int
       */
@@ -318,14 +318,14 @@ export interface DataLabelSettingsModel {
     angle?: number;
 
     /**
-      * Enables rotation for data label.
+      * Allows to set whether rotation to data label is enable or not.
       * @default false
       */
 
     enableRotation?: boolean;
 
     /**
-      * Specifies the position of the data label. They are,
+      * Allows to specify the position of the data label. They are,
       * * Outer: Positions the label outside the point.
       * * top: Positions the label on top of the point.
       * * Bottom: Positions the label at the bottom of the point.
@@ -337,21 +337,21 @@ export interface DataLabelSettingsModel {
     position?: LabelPosition;
 
     /**
-      * The roundedCornerX for the data label. It requires `border` values not to be null.
+      * Allows to set the roundedCornerX for the data label. It requires `border` values not to be null.
       * @default 5
       * @blazorType int
       */
     rx?: number;
 
     /**
-      * The roundedCornerY for the data label. It requires `border` values not to be null.
+      * Allows to set the roundedCornerY for the data label. It requires `border` values not to be null.
       * @default 5
       * @blazorType int
       */
     ry?: number;
 
     /**
-      * Specifies the alignment for data Label. They are,
+      * Allows to set the alignment for data Label. They are,
       * * Near: Aligns the label to the left of the point.
       * * Center: Aligns the label to the center of the point.
       * * Far: Aligns the label to the right of the point.
@@ -360,29 +360,25 @@ export interface DataLabelSettingsModel {
     alignment?: Alignment;
 
     /**
-      * Option for customizing the border lines.
+      * Allows option for customizing the border lines.
       */
-
     border?: PivotChartBorderModel;
 
     /**
-      * Margin configuration for the data label.
+      * Allows customize the margin to the data label.
       */
-
     margin?: PivotChartMarginModel;
 
     /**
-      * Option for customizing the data label text.
+      * Allows option for customizing the data label text.
       */
-
     font?: PivotChartFontModel;
 
     /**
-      * Custom template to show the data label. Use ${point.x} and ${point.y} as a placeholder
+      * Allows custom template to show the data label. Use ${point.x} and ${point.y} as a placeholder
       * text to display the corresponding data point.
       * @default null
       */
-
     template?: string;
 
 }
@@ -393,82 +389,74 @@ export interface DataLabelSettingsModel {
 export interface MarkerSettingsModel {
 
     /**
-      * If set to true the marker for series is rendered. This is applicable only for line and area type series.
+      * Allows the visibility of the marker for chart series. 
+      * > This is applicable only for line and area type series.
       * @default false
       */
-
     visible?: boolean;
 
     /**
-      * The different shape of a marker:
-      * * Circle
-      * * Rectangle
-      * * Triangle
-      * * Diamond
-      * * HorizontalLine
-      * * VerticalLine
-      * * Pentagon
-      * * InvertedTriangle
-      * * Image
+      * Allows to spcify the shape of a marker.They are
+      * * Circle - Renders a circle.
+      * * Rectangle - Renders a rectangle.
+      * * Triangle - Renders a triangle.
+      * * Diamond - Renders a diamond.
+      * * Cross - Renders a cross.
+      * * HorizontalLine - Renders a horizontalLine.
+      * * VerticalLine - Renders a verticalLine.
+      * * Pentagon- Renders a pentagon.
+      * * InvertedTriangle - Renders a invertedTriangle.
+      * * Image - Renders a image.
       * @default 'Circle'
       */
-
     shape?: ChartShape;
 
     /**
-      * The URL for the Image that is to be displayed as a marker.  It requires marker `shape` value to be an `Image`.
+      * Allows to set the URL for the Image that is to be displayed as a marker.  It requires marker `shape` value to be an `Image`.
       * @default ''
       */
-
     imageUrl?: string;
 
     /**
-      * The width of the marker in pixels.
+      * Allows to set the width of the marker in pixels.
       * @default 5
       * @blazorType int
       */
-
     width?: number;
 
     /**
-      * The height of the marker in pixels.
+      * Allows to set the height of the marker in pixels.
       * @default 5
       * @blazorType int
       */
-
     height?: number;
 
     /**
-      * Options for customizing the border of a marker.
+      * Allows options for customizing the border of a marker.
       */
-
     border?: PivotChartBorderModel;
 
     /**
-      * Options for customizing the marker position.
+      * Allows options for customizing the marker position.
       */
-
     offset?: PivotChartOffsetModel;
 
     /**
-      *  The fill color of the marker that accepts value in hex and rgba as a valid CSS color string.
+      *  Allows to set the fill color of the marker that accepts value in hex and rgba as a valid CSS color string.
       *  By default, it will take series' color.
       * @default null
       */
-
     fill?: string;
 
     /**
-      * The opacity of the marker.
+      * Allows to set the opacity of the marker.
       * @default 1
       */
-
     opacity?: number;
 
     /**
-      * The data label for the series.
+      * Allows to set the data label for the series.
       */
-
     dataLabel?: PivotChartDataLabelSettingsModel;
 
 }
@@ -479,34 +467,30 @@ export interface MarkerSettingsModel {
 export interface ErrorBarCapSettingsModel {
 
     /**
-      * The width of the error bar in pixels.
+      * Allows to set the width of the error bar in pixels.
       * @default 1
       * @blazorType int
       */
-
     width?: number;
 
     /**
-      * The length of the error bar in pixels.
+      * Allows to set the length of the error bar in pixels.
       * @default 10
       * @blazorType int
       */
-
     length?: number;
 
     /**
-      *  The stroke color of the cap, which accepts value in hex, rgba as a valid CSS color string.
+      *  Allows to set the stroke color of the cap, which accepts value in hex, rgba as a valid CSS color string.
       * @default null
       */
-
     color?: string;
 
     /**
-      * The opacity of the cap.
+      * Allows to set the opacity of the cap.
       * @default 1
       * @blazorType int
       */
-
     opacity?: number;
 
 }
@@ -517,14 +501,13 @@ export interface ErrorBarCapSettingsModel {
 export interface ErrorBarSettingsModel {
 
     /**
-      * If set true, error bar for data gets rendered.
+      * Allows to set the visibility of the error bar gets rendered.
       * @default false
       */
-
     visible?: boolean;
 
     /**
-      * The type of the error bar . They are
+      * Allows to set the type of the error bar . They are
       * * Fixed -  Renders a fixed type error bar.
       * * Percentage - Renders a percentage type error bar.
       * * StandardDeviation - Renders a standard deviation type error bar.
@@ -532,94 +515,83 @@ export interface ErrorBarSettingsModel {
       * * Custom -Renders a custom type error bar.
       * @default 'Fixed'
       */
-
     type?: ErrorBarType;
 
     /**
-      * The direction of the error bar . They are
+      * Allows to set the direction of the error bar . They are
       * * both -  Renders both direction of error bar.
       * * minus - Renders minus direction of error bar.
       * * plus - Renders plus direction error bar.
       * @default 'Both'
       */
-
     direction?: ErrorBarDirection;
 
     /**
-      * The mode of the error bar . They are
+      * Allows to set the mode of the error bar . They are
       * * Vertical -  Renders a vertical error bar.
       * * Horizontal - Renders a horizontal error bar.
       * * Both - Renders both side error bar.
       * @default 'Vertical'
       */
-
     mode?: ErrorBarMode;
 
     /**
-      * The vertical error of the error bar.
+      * Allows to set the vertical error of the error bar.
       * @default 1
       * @blazorType int
       */
-
     verticalError?: number;
 
     /**
-      *  The color for stroke of the error bar, which accepts value in hex, rgba as a valid CSS color string.
+      *  Allows to set the color for stroke of the error bar, which accepts value in hex, rgba as a valid CSS color string.
       * @default null
       */
-
     color?: string;
 
     /**
-      * The stroke width of the error bar..
+      * Allows to set the stroke width of the error bar..
       * @default 1
       * @blazorType int
       */
-
     width?: number;
 
     /**
-      * The horizontal error of the error bar.
+      * Allows to set the horizontal error of the error bar.
       * @default 1
       * @blazorType int
       */
-
     horizontalError?: number;
 
     /**
-      * The vertical negative error of the error bar.
+      * Allows to set the vertical negative error of the error bar.
       * @default 3
       * @blazorType int
       */
-
     verticalNegativeError?: number;
 
     /**
-      * The vertical positive error of the error bar.
+      * Allows to set the vertical positive error of the error bar.
       * @default 3
       * @blazorType int
       */
-
     verticalPositiveError?: number;
 
     /**
-      * The horizontal negative error of the error bar.
+      * Allows to set the horizontal negative error of the error bar.
       * @default 1
       * @blazorType int
       */
-
     horizontalNegativeError?: number;
 
     /**
-      * The horizontal positive error of the error bar.
+      * Allows to set the horizontal positive error of the error bar.
       * @default 1
       * @blazorType int
       */
-
     horizontalPositiveError?: number;
 
     /**
-      * Options for customizing the cap of the error bar.
+      * Allows options for customizing the cap of the error bar.
       */
     errorBarCap?: PivotChartErrorBarCapSettingsModel;
 
@@ -631,91 +603,89 @@ export interface ErrorBarSettingsModel {
 export interface TrendlineModel {
 
     /**
-      * Defines the name of trendline
+      * Allows to set the name of trendline
       * @default ''
       */
     name?: string;
 
     /**
-      * Defines the pattern of dashes and gaps to stroke.
+      * Allows to set the pattern of dashes and gaps to stroke.
       * @default '0'
       */
-
     dashArray?: string;
 
     /**
-      * Specifies the visibility of trendline.
+      * Allows to specify the visibility of trendline.
       * @default true
       */
-
     visible?: boolean;
 
     /**
-      * Defines the period, the price changes over which will be considered to predict moving average trend line
+      * Allows to set the period, the price changes over which will be considered to predict moving average trend line
       * @default 2
       * @blazorType int
       */
     period?: number;
 
     /**
-      * Defines the type of the trendline
+      * Allows to set the type of the trendline
       * @default 'Linear'
       */
     type?: TrendlineTypes;
 
     /**
-      * Defines the period, by which the trend has to backward forecast
+      * Allows to set the period, by which the trend has to backward forecast
       * @default 0
       * @blazorType int
       */
     backwardForecast?: number;
 
     /**
-      * Defines the period, by which the trend has to forward forecast
+      * Allows to set the period, by which the trend has to forward forecast
       * @default 0
       * @blazorType int
       */
     forwardForecast?: number;
 
     /**
-      * Defines the polynomial order of the polynomial trendline
+      * Allows to set the polynomial order of the polynomial trendline
       * @default 2
       * @blazorType int
       */
     polynomialOrder?: number;
 
     /**
-      * Options to customize the marker for trendlines
+      * Allows options to customize the marker for trendlines
       * @deprecated
       */
     marker?: PivotChartMarkerSettingsModel;
 
     /**
-      * Enables/disables tooltip for trendlines
+      * Allows to set the visibility of the tooltip for trendlines
       * @default true
       */
     enableTooltip?: boolean;
 
     /**
-      * Options to customize the animation for trendlines
+      * Allows options to customize the animation for trendlines
       */
     animation?: PivotChartAnimationModel;
 
     /**
-      * Defines the fill color of trendline
+      * Allows to set the fill color of trendline
       * @default ''
       */
     fill?: string;
 
     /**
-      * Defines the width of the trendline
+      * Allows to set the width of the trendline
       * @default 1
       * @blazorType int
       */
     width?: number;
 
     /**
-      * Defines the intercept of the trendline
+      * Allows to set the intercept of the trendline
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -724,7 +694,7 @@ export interface TrendlineModel {
     intercept?: number;
 
     /**
-      * Sets the legend shape of the trendline
+      * Allows to set the legend shape of the trendline
       * @default 'SeriesType'
       */
     legendShape?: LegendShape;
@@ -737,19 +707,19 @@ export interface TrendlineModel {
 export interface EmptyPointSettingsModel {
 
     /**
-      * To customize the fill color of empty points.
+      * Allows you to customize the fill color of empty points.
       * @default null
       */
     fill?: string;
 
     /**
-      * Options to customize the border of empty points.
+      * Allows options to customize the border of empty points.
       * @default "{color: 'transparent', width: 0}"
       */
     border?: PivotChartBorderModel;
 
     /**
-      * To customize the mode of empty points.
+      * Allows you To customize the mode of empty points.
       * @default Gap
       */
     mode?: EmptyPointMode | AccEmptyPointMode;
@@ -762,28 +732,28 @@ export interface EmptyPointSettingsModel {
 export interface CornerRadiusModel {
 
     /**
-      * Specifies the top left corner radius value
+      * Allows to set the top left corner radius value
       * @default 0
       * @blazorType int
       */
     topLeft?: number;
 
     /**
-      * Specifies the top right corner radius value
+      * Allows to set the top right corner radius value
       * @default 0
       * @blazorType int
       */
     topRight?: number;
 
     /**
-      * Specifies the bottom left corner radius value
+      * Allows to set the bottom left corner radius value
       * @default 0
       * @blazorType int
       */
     bottomLeft?: number;
 
     /**
-      * Specifies the bottom right corner radius value
+      * Allows to set the bottom right corner radius value
       * @default 0
       * @blazorType int
       */
@@ -797,23 +767,20 @@ export interface CornerRadiusModel {
 export interface CrosshairTooltipModel {
 
     /**
-      * If set to true, crosshair ToolTip will be visible.
+      * Allows to set the visibility of the crosshair tooltip.
       *  @default false
       */
-
     enable?: Boolean;
 
     /**
-      * The fill color of the ToolTip accepts value in hex and rgba as a valid CSS color string.
+      * Allows to set the fill color of the ToolTip accepts value in hex and rgba as a valid CSS color string.
       * @default null
       */
-
     fill?: string;
 
     /**
-      * Options to customize the crosshair ToolTip text.
+      * Allows options to customize the crosshair ToolTip text.
       */
-
     textStyle?: PivotChartFontModel;
 
 }
@@ -824,19 +791,19 @@ export interface CrosshairTooltipModel {
 export interface StripLineSettingsModel {
 
     /**
-      * If set true, strip line for axis renders.
+      * Allows to set the visibility of the strip line for axis to be rendered.
       * @default true
       */
     visible?: boolean;
 
     /**
-      *  If set true, strip line get render from axis origin.
+      *  Allows the strip line to be rendered from axis origin.
       *  @default false
       */
     startFromAxis?: boolean;
 
     /**
-      * Start value of the strip line.
+      * Allows to set the start value of the strip line.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -844,7 +811,7 @@ export interface StripLineSettingsModel {
     start?: number | Date;
 
     /**
-      * End value of the strip line.
+      * Allows to set the end value of the strip line.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -852,7 +819,7 @@ export interface StripLineSettingsModel {
     end?: number | Date;
 
     /**
-      * Size of the strip line, when it starts from the origin.
+      * Allows to set the size of the strip line, when it starts from the origin.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -861,13 +828,13 @@ export interface StripLineSettingsModel {
     size?: number;
 
     /**
-      * Color of the strip line.
+      * Allows to set the color of the strip line.
       * @default '#808080'
       */
     color?: string;
 
     /**
-      * Dash Array of the strip line.
+      * Allows to set the dash array of the strip line.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -875,20 +842,20 @@ export interface StripLineSettingsModel {
     dashArray?: string;
 
     /**
-      * Size type of the strip line
+      * Allows to set the size type of the strip line
       * @default Auto
       */
     sizeType?: SizeType;
 
     /**
-      * isRepeat value of the strip line.
+      * Allows to set repeated value of the strip line.
       * @default false
       * @aspDefaultValueIgnore
       */
     isRepeat?: boolean;
 
     /**
-      * repeatEvery value of the strip line.
+      * Allows to set the repeatEvery value of the strip line.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -896,7 +863,7 @@ export interface StripLineSettingsModel {
     repeatEvery?: number | Date;
 
     /**
-      * repeatUntil value of the strip line.
+      * Allows to set the repeatUntil value of the strip line.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -904,7 +871,7 @@ export interface StripLineSettingsModel {
     repeatUntil?: number | Date;
 
     /**
-      * isSegmented value of the strip line
+      * Allows to set the isSegmented value of the strip line
       * @default false
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -912,7 +879,7 @@ export interface StripLineSettingsModel {
     isSegmented?: boolean;
 
     /**
-      * segmentStart value of the strip line.
+      * Allows to set the segmentStart value of the strip line.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -920,7 +887,7 @@ export interface StripLineSettingsModel {
     segmentStart?: number | Date;
 
     /**
-      * segmentEnd value of the strip line.
+      * Allows to set the segmentEnd value of the strip line.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -928,7 +895,7 @@ export interface StripLineSettingsModel {
     segmentEnd?: number | Date;
 
     /**
-      * segmentAxisName of the strip line.
+      * Allows to set the segmentAxisName of the strip line.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -936,18 +903,18 @@ export interface StripLineSettingsModel {
     segmentAxisName?: string;
 
     /**
-      * Border of the strip line.
+      * Allows to customize the border of the strip line with different settings such as text, rotation, line alignment, text style and opacity in the chart.
       */
     border?: PivotChartBorderModel;
 
     /**
-      * Strip line text.
+      * Allows to set the strip line text.
       * @default ''
       */
     text?: string;
 
     /**
-      * The angle to which the strip line text gets rotated.
+      * Allows to set the angle to which the strip line text gets rotated.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -956,7 +923,7 @@ export interface StripLineSettingsModel {
     rotation?: number;
 
     /**
-      * Defines the position of the strip line text horizontally. They are,
+      * Allows to set the position of the strip line text horizontally. They are,
       * * Start: Places the strip line text at the start.
       * * Middle: Places the strip line text in the middle.
       * * End: Places the strip line text at the end.
@@ -965,7 +932,7 @@ export interface StripLineSettingsModel {
     horizontalAlignment?: Anchor;
 
     /**
-      * Defines the position of the strip line text vertically. They are,
+      * Allows to set the position of the strip line text vertically. They are,
       * * Start: Places the strip line text at the start.
       * * Middle: Places the strip line text in the middle.
       * * End: Places the strip line text at the end.
@@ -974,12 +941,12 @@ export interface StripLineSettingsModel {
     verticalAlignment?: Anchor;
 
     /**
-      * Options to customize the strip line text.
+      * Allows options to customize the strip line text.
       */
     textStyle?: PivotChartFontModel;
 
     /**
-      * Specifies the order of the strip line. They are,
+      * Allows to set the order of the strip line. They are,
       * * Behind: Places the strip line behind the series elements.
       * * Over: Places the strip line over the series elements.
       * @default 'Behind'
@@ -987,7 +954,7 @@ export interface StripLineSettingsModel {
     zIndex?: ZIndex;
 
     /**
-      * Strip line Opacity
+      * Allows to set the opacity of the strip line
       * @default 1
       */
     opacity?: number;
@@ -1000,20 +967,20 @@ export interface StripLineSettingsModel {
 export interface LabelBorderModel {
 
     /**
-      * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+      * Allows to set the color of the border that accepts value in hex and rgba as a valid CSS color string.
       * @default ''
       */
     color?: string;
 
     /**
-      * The width of the border in pixels.
+      * Allows to set the width of the border in pixels.
       * @default 1
       * @blazorType int
       */
     width?: number;
 
     /**
-      * Border type for labels
+      * Allows to set the border type for labels
       * * Rectangle
       * * Without Top Border
       * * Without Top and BottomBorder
@@ -1032,7 +999,7 @@ export interface LabelBorderModel {
 export interface MajorGridLinesModel {
 
     /**
-      * The width of the line in pixels.
+      * Allows to set the width of the line in pixels.
       * @default 1
       * @blazorType int
       */
@@ -1040,14 +1007,14 @@ export interface MajorGridLinesModel {
     width?: number;
 
     /**
-      * The dash array of the grid lines.
+      * Allows to set the dash array of the grid lines.
       * @default ''
       */
 
     dashArray?: string;
 
     /**
-      * The color of the major grid line that accepts value in hex and rgba as a valid CSS color string.
+      * Allows to set the color of the major grid line that accepts value in hex and rgba as a valid CSS color string.
       * @default null
       */
 
@@ -1061,21 +1028,21 @@ export interface MajorGridLinesModel {
 export interface MinorGridLinesModel {
 
     /**
-      * The width of the line in pixels.
+      * Allows to set the width of the line in pixels.
       * @default 0.7
       */
 
     width?: number;
 
     /**
-      * The dash array of grid lines.
+      * Allows to set the dash array of grid lines.
       * @default ''
       */
 
     dashArray?: string;
 
     /**
-      * The color of the minor grid line that accepts value in hex and rgba as a valid CSS color string.
+      * Allows to set the color of the minor grid line that accepts value in hex and rgba as a valid CSS color string.
       * @default null
       */
 
@@ -1089,7 +1056,7 @@ export interface MinorGridLinesModel {
 export interface AxisLineModel {
 
     /**
-      * The width of the line in pixels.
+      * Allows to set the width of the line in pixels.
       * @default 1
       * @blazorType int
       */
@@ -1097,14 +1064,14 @@ export interface AxisLineModel {
     width?: number;
 
     /**
-      * The dash array of the axis line.
+      * Allows to set the dash array of the axis line.
       * @default ''
       */
 
     dashArray?: string;
 
     /**
-      * The color of the axis line that accepts value in hex and rgba as a valid CSS color string.
+      * Allows to set the color of the axis line that accepts value in hex and rgba as a valid CSS color string.
       * @default null
       */
 
@@ -1118,7 +1085,7 @@ export interface AxisLineModel {
 export interface MajorTickLinesModel {
 
     /**
-      * The width of the tick lines in pixels.
+      * Allows to set the width of the tick lines in pixels.
       * @default 1
       * @blazorType int
       */
@@ -1126,7 +1093,7 @@ export interface MajorTickLinesModel {
     width?: number;
 
     /**
-      * The height of the ticks in pixels.
+      * Allows to set the height of the ticks in pixels.
       * @default 5
       * @blazorType int
       */
@@ -1134,7 +1101,7 @@ export interface MajorTickLinesModel {
     height?: number;
 
     /**
-      * The color of the major tick line that accepts value in hex and rgba as a valid CSS color string.
+      * Allows to set the color of the major tick line that accepts value in hex and rgba as a valid CSS color string.
       * @default null
       */
 
@@ -1148,14 +1115,14 @@ export interface MajorTickLinesModel {
 export interface MinorTickLinesModel {
 
     /**
-      * The width of the tick line in pixels.
+      * Allows to set the width of the tick line in pixels.
       * @default 0.7
       */
 
     width?: number;
 
     /**
-      * The height of the ticks in pixels.
+      * Allows to set the height of the ticks in pixels.
       * @default 5
       * @blazorType int
       */
@@ -1163,7 +1130,7 @@ export interface MinorTickLinesModel {
     height?: number;
 
     /**
-      * The color of the minor tick line that accepts value in hex and rgba as a valid CSS color string.
+      * Allows to set the color of the minor tick line that accepts value in hex and rgba as a valid CSS color string.
       * @default null
       */
 
@@ -1177,13 +1144,13 @@ export interface MinorTickLinesModel {
 export interface PivotChartSeriesBorderModel {
 
     /**
-      * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+      * Allows to set the color of the border that accepts value in hex and rgba as a valid CSS color string.
       * @default ''
       */
     color?: string;
 
     /**
-      * The width of the border in pixels.
+      * Allows to set the width of the border in pixels.
       * @default 1
       * @blazorType int
       */
@@ -1197,20 +1164,20 @@ export interface PivotChartSeriesBorderModel {
 export interface PivotChartSeriesAnimationModel {
 
     /**
-      * If set to true, series gets animated on initial loading.
+      * Allows to set the visibility of the series to be animated on initial loading.
       * @default true
       */
     enable?: boolean;
 
     /**
-      * The duration of animation in milliseconds.
+      * Allows to set the duration of animation in milliseconds.
       * @default 1000
       * @blazorType int
       */
     duration?: number;
 
     /**
-      * The option to delay animation of the series.
+      * Allows to set the option to delay animation of the series.
       * @default 0
       * @blazorType int
       */
@@ -1224,19 +1191,19 @@ export interface PivotChartSeriesAnimationModel {
 export interface PivotChartSeriesSegmentModel {
 
     /**
-      * Defines the starting point of region.
+      * Allows to set the starting point of region.
       * @default null
       */
     value?: Object;
 
     /**
-      * Defines the color of a region.
+      * Allows to set the color of a region.
       * @default null
       */
     color?: string;
 
     /**
-      * Defines the pattern of dashes and gaps to stroke.
+      * Allows to set the pattern of dashes and gaps to stroke.
       * @default '0'
       */
     dashArray?: string;
@@ -1245,7 +1212,6 @@ export interface PivotChartSeriesSegmentModel {
 
 /**
  * Interface for a class PivotChartSeriesMarkerSettings
- * @private
  */
 export interface PivotChartSeriesMarkerSettingsModel {
 
@@ -1256,16 +1222,17 @@ export interface PivotChartSeriesMarkerSettingsModel {
     visible?: boolean;
 
     /**
-      * The different shape of a marker:
-      * * Circle
-      * * Rectangle
-      * * Triangle
-      * * Diamond
-      * * HorizontalLine
-      * * VerticalLine
-      * * Pentagon
-      * * InvertedTriangle
-      * * Image
+      * Allows to set the different shape of a marker:
+      * * circle - Renders the marker shaper as circle.
+      * * rectangle - Renders the marker shaper as rectangle.
+      * * triangle - Renders the marker shaper as triangle.
+      * * diamond - Renders the marker shaper as diamond.
+      * * cross - Renders the marker shaper as cross.
+      * * horizontalLine - Renders the marker shaper as horizontalLine.
+      * * verticalLine - Renders the marker shaper as verticalLine.
+      * * pentagon- Renders the marker shaper as pentagon.
+      * * invertedTriangle - Renders the marker shaper as invertedTriangle.
+      * * image - Renders the marker shaper as image.
       * @blazorType PivotChartShape
       * @default 'Circle'
       * @blazorDefaultValue PivotChartShape.Circle
@@ -1273,45 +1240,45 @@ export interface PivotChartSeriesMarkerSettingsModel {
     shape?: ChartShape;
 
     /**
-      * The URL for the Image that is to be displayed as a marker.  It requires marker `shape` value to be an `Image`.
+      * Allows to set the URL for the Image that is to be displayed as a marker.  It requires marker `shape` value to be an `Image`.
       * @default ''
       */
     imageUrl?: string;
 
     /**
-      * The height of the marker in pixels.
+      * Allows to set the height of the marker in pixels.
       * @default 5
       * @blazorType int
       */
     height?: number;
 
     /**
-      * The width of the marker in pixels.
+      * Allows to set the width of the marker in pixels.
       * @default 5
       * @blazorType int
       */
     width?: number;
 
     /**
-      * Options for customizing the border of a marker.
+      * Allows options for customizing the border of a marker.
       */
     border?: PivotChartBorderModel;
 
     /**
-      * The fill color of the marker that accepts value in hex and rgba as a valid CSS color string. 
+      * Allows to set the fill color of the marker that accepts value in hex and rgba as a valid CSS color string. 
       * By default, it will take series' color.
       * @default null
       */
     fill?: string;
 
     /**
-      * The opacity of the marker.
+      * Allows to set the opacity of the marker.
       * @default 1
       */
     opacity?: number;
 
     /**
-      * The data label for the series.
+      * Allows to set the data label for the series.
       */
     dataLabel?: PivotChartDataLabelSettingsModel;
 
@@ -1329,7 +1296,7 @@ export interface PivotChartSeriesErrorSettingsModel {
     visible?: boolean;
 
     /**
-      * The type of the error bar . They are
+      * Allows to set the type of the error bar . They are
       * * Fixed -  Renders a fixed type error bar.
       * * Percentage - Renders a percentage type error bar.
       * * StandardDeviation - Renders a standard deviation type error bar.
@@ -1342,7 +1309,7 @@ export interface PivotChartSeriesErrorSettingsModel {
     type?: ErrorBarType;
 
     /**
-      * The direction of the error bar . They are
+      * Allows to set the direction of the error bar . They are
       * * both -  Renders both direction of error bar.
       * * minus - Renders minus direction of error bar.
       * * plus - Renders plus direction error bar.
@@ -1353,7 +1320,7 @@ export interface PivotChartSeriesErrorSettingsModel {
     direction?: ErrorBarDirection;
 
     /**
-      * The mode of the error bar . They are
+      * Allows to set the mode of the error bar . They are
       * * Vertical -  Renders a vertical error bar.
       * * Horizontal - Renders a horizontal error bar.
       * * Both - Renders both side error bar.
@@ -1364,62 +1331,62 @@ export interface PivotChartSeriesErrorSettingsModel {
     mode?: ErrorBarMode;
 
     /**
-      *  The color for stroke of the error bar, which accepts value in hex, rgba as a valid CSS color string.
+      *  Allows to set the color for stroke of the error bar, which accepts value in hex, rgba as a valid CSS color string.
       * @default null
       */
     color?: string;
 
     /**
-      * The vertical error of the error bar.
+      * Allows to set the vertical error of the error bar.
       * @default 1
       * @blazorType int
       */
     verticalError?: number;
 
     /**
-      * The stroke width of the error bar..
+      * Allows to set the stroke width of the error bar..
       * @default 1
       * @blazorType int
       */
     width?: number;
 
     /**
-      * The horizontal error of the error bar.
+      * Allows to set the horizontal error of the error bar.
       * @default 1
       * @blazorType int
       */
     horizontalError?: number;
 
     /**
-      * The vertical positive error of the error bar.
+      * Allows to set the vertical positive error of the error bar.
       * @default 3
       * @blazorType int
       */
     verticalPositiveError?: number;
 
     /**
-      * The vertical negative error of the error bar.
+      * Allows to set the vertical negative error of the error bar.
       * @default 3
       * @blazorType int
       */
     verticalNegativeError?: number;
 
     /**
-      * The horizontal positive error of the error bar.
+      * Allows to set the horizontal positive error of the error bar.
       * @default 1
       * @blazorType int
       */
     horizontalPositiveError?: number;
 
     /**
-      * The horizontal negative error of the error bar.
+      * Allows to set the horizontal negative error of the error bar.
       * @default 1
       * @blazorType int
       */
     horizontalNegativeError?: number;
 
     /**
-      * Options for customizing the cap of the error bar.
+      * Allows options for customizing the cap of the error bar.
       */
     errorBarCap?: PivotChartErrorBarCapSettingsModel;
 
@@ -1431,13 +1398,13 @@ export interface PivotChartSeriesErrorSettingsModel {
 export interface PivotChartSeriesTrendlineModel {
 
     /**
-      * Defines the name of trendline
+      * Allows to set the name of trendline
       * @default ''
       */
     name?: string;
 
     /**
-      * Defines the type of the trendline
+      * Allows to set the type of the trendline
       * @blazorType PivotChartTrendlineTypes
       * @default 'Linear'
       * @blazorDefaultValue PivotChartTrendlineTypes.Linear
@@ -1445,40 +1412,40 @@ export interface PivotChartSeriesTrendlineModel {
     type?: TrendlineTypes;
 
     /**
-      * Defines the period, the price changes over which will be considered to predict moving average trend line
+      * Allows to set the period, the price changes over which will be considered to predict moving average trend line
       * @default 2
       * @blazorType int
       */
     period?: number;
 
     /**
-      * Defines the polynomial order of the polynomial trendline
+      * Allows to set the polynomial order of the polynomial trendline
       * @default 2
       * @blazorType int
       */
     polynomialOrder?: number;
 
     /**
-      * Defines the period, by which the trend has to backward forecast
+      * Allows to set the period, by which the trend has to backward forecast
       * @default 0
       * @blazorType int
       */
     backwardForecast?: number;
 
     /**
-      * Defines the period, by which the trend has to forward forecast
+      * Allows to set the period, by which the trend has to forward forecast
       * @default 0
       * @blazorType int
       */
     forwardForecast?: number;
 
     /**
-      * Options to customize the animation for trendlines
+      * Allows options to customize the animation for trendlines
       */
     animation?: PivotChartAnimationModel;
 
     /**
-      * Options to customize the marker for trendlines
+      * Allows options to customize the marker for trendlines
       */
     marker?: PivotChartMarkerSettingsModel;
 
@@ -1489,7 +1456,7 @@ export interface PivotChartSeriesTrendlineModel {
     enableTooltip?: boolean;
 
     /**
-      * Defines the intercept of the trendline
+      * Allows to set the intercept of the trendline
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -1498,20 +1465,20 @@ export interface PivotChartSeriesTrendlineModel {
     intercept?: number;
 
     /**
-      * Defines the fill color of trendline
+      * Allows to set the fill color of trendline
       * @default ''
       */
     fill?: string;
 
     /**
-      * Defines the width of the trendline
+      * Allows to set the width of the trendline
       * @default 1
       * @blazorType int
       */
     width?: number;
 
     /**
-      * Sets the legend shape of the trendline
+      * Allows to set the legend shape of the trendline
       * @blazorType PivotChartLegendShape
       * @default 'SeriesType'
       * @blazorDefaultValue PivotChartLegendShape.SeriesType
@@ -1526,13 +1493,13 @@ export interface PivotChartSeriesTrendlineModel {
 export interface PivotChartSeriesEmptyPointSettingsModel {
 
     /**
-      * To customize the fill color of empty points.
+      * Allows to customize the fill color of empty points.
       * @default null
       */
     fill?: string;
 
     /**
-      * Options to customize the border of empty points.
+      * Allows options to customize the border of empty points.
       * @default "{color: 'transparent', width: 0}"
       */
     border?: PivotChartBorderModel;
@@ -1553,28 +1520,28 @@ export interface PivotChartSeriesEmptyPointSettingsModel {
 export interface PivotChartSeriesCornerRadiusModel {
 
     /**
-      * Specifies the top left corner radius value
+      * Allows to set the top left corner radius value
       * @default 0
       * @blazorType int
       */
     topLeft?: number;
 
     /**
-      * Specifies the top right corner radius value
+      * Allows to set the top right corner radius value
       * @default 0
       * @blazorType int
       */
     topRight?: number;
 
     /**
-      * Specifies the bottom left corner radius value
+      * Allows to set the bottom left corner radius value
       * @default 0
       * @blazorType int
       */
     bottomLeft?: number;
 
     /**
-      * Specifies the bottom right corner radius value
+      * Allows to set the bottom right corner radius value
       * @default 0
       * @blazorType int
       */
@@ -1588,31 +1555,31 @@ export interface PivotChartSeriesCornerRadiusModel {
 export interface PivotChartAxisFontModel {
 
     /**
-      * FontStyle for the text.
+      * Allows to set the font style for the text.
       * @default 'Normal'
       */
     fontStyle?: string;
 
     /**
-      * Font size for the text.
+      * Allows to set the font size for the text.
       * @default '16px'
       */
     size?: string;
 
     /**
-      * FontWeight for the text.
+      * Allows to set the font weight for the text.
       * @default 'Normal'
       */
     fontWeight?: string;
 
     /**
-      * Color for the text.
+      * Allows to set the color for the text.
       * @default ''
       */
     color?: string;
 
     /**
-      * text alignment
+      * Allows to set the text alignment
       * @blazorType PivotChartAlignment
       * @default 'Center'
       * @blazorDefaultValue PivotChartAlignment.Center
@@ -1620,19 +1587,19 @@ export interface PivotChartAxisFontModel {
     textAlignment?: Alignment;
 
     /**
-      * FontFamily for the text.
+      * Allows to set the font family for the text.
       */
     fontFamily?: string;
 
     /**
-      * Opacity for the text.
+      * Allows to set the opacity for the text.
       * @default 1
       * @blazorType int
       */
     opacity?: number;
 
     /**
-      * Specifies the chart title text overflow
+      * Allows to set the chart title text overflow
       * @blazorType PivotChartTextOverflow
       * @default 'Trim'
       * @blazorDefaultValue PivotChartTextOverflow.Trim
@@ -1653,13 +1620,13 @@ export interface PivotChartAxisCrosshairTooltipModel {
     enable?: Boolean;
 
     /**
-      * The fill color of the ToolTip accepts value in hex and rgba as a valid CSS color string.
+      * Allows to set the fill color of the ToolTip accepts value in hex and rgba as a valid CSS color string.
       * @default null
       */
     fill?: string;
 
     /**
-      * Options to customize the crosshair ToolTip text.
+      * Allows options to customize the crosshair ToolTip text.
       */
     textStyle?: PivotChartFontModel;
 
@@ -1671,21 +1638,21 @@ export interface PivotChartAxisCrosshairTooltipModel {
 export interface PivotChartAxisMajorTickLinesModel {
 
     /**
-      * The width of the tick lines in pixels.
+      * Allows to set the width of the tick lines in pixels.
       * @default 1
       * @blazorType int
       */
     width?: number;
 
     /**
-      * The height of the ticks in pixels.
+      * Allows to set the height of the ticks in pixels.
       * @default 5
       * @blazorType int
       */
     height?: number;
 
     /**
-      * The color of the major tick line that accepts value in hex and rgba as a valid CSS color string.
+      * Allows to set the color of the major tick line that accepts value in hex and rgba as a valid CSS color string.
       * @default null
       */
     color?: string;
@@ -1698,20 +1665,20 @@ export interface PivotChartAxisMajorTickLinesModel {
 export interface PivotChartAxisMajorGridLinesModel {
 
     /**
-      * The width of the line in pixels.
+      * Allows to set the width of the line in pixels.
       * @default 1
       * @blazorType int
       */
     width?: number;
 
     /**
-      * The dash array of the grid lines.
+      * Allows to set the dash array of the grid lines.
       * @default ''
       */
     dashArray?: string;
 
     /**
-      * The color of the major grid line that accepts value in hex and rgba as a valid CSS color string.
+      * Allows to set the color of the major grid line that accepts value in hex and rgba as a valid CSS color string.
       * @default null
       */
     color?: string;
@@ -1724,20 +1691,20 @@ export interface PivotChartAxisMajorGridLinesModel {
 export interface PivotChartAxisMinorTickLinesModel {
 
     /**
-      * The width of the tick line in pixels.
+      * Allows to set the width of the tick line in pixels.
       * @default 0.7
       */
     width?: number;
 
     /**
-      * The height of the ticks in pixels.
+      * Allows to set the height of the ticks in pixels.
       * @default 5
       * @blazorType int
       */
     height?: number;
 
     /**
-      * The color of the minor tick line that accepts value in hex and rgba as a valid CSS color string.
+      * Allows to set the color of the minor tick line that accepts value in hex and rgba as a valid CSS color string.
       * @default null
       */
     color?: string;
@@ -1750,19 +1717,19 @@ export interface PivotChartAxisMinorTickLinesModel {
 export interface PivotChartAxisMinorGridLinesModel {
 
     /**
-      * The width of the line in pixels.
+      * Allows to set the width of the line in pixels.
       * @default 0.7
       */
     width?: number;
 
     /**
-      * The dash array of grid lines.
+      * Allows to set the dash array of grid lines.
       * @default ''
       */
     dashArray?: string;
 
     /**
-      * The color of the minor grid line that accepts value in hex and rgba as a valid CSS color string.
+      * Allows to set the color of the minor grid line that accepts value in hex and rgba as a valid CSS color string.
       * @default null
       */
     color?: string;
@@ -1775,20 +1742,20 @@ export interface PivotChartAxisMinorGridLinesModel {
 export interface PivotChartAxisAxisLineModel {
 
     /**
-      * The width of the line in pixels.
+      * Allows to set the width of the line in pixels.
       * @default 1
       * @blazorType int
       */
     width?: number;
 
     /**
-      * The dash array of the axis line.
+      * Allows to set the dash array of the axis line.
       * @default ''
       */
     dashArray?: string;
 
     /**
-      * The color of the axis line that accepts value in hex and rgba as a valid CSS color string.
+      * Allows to set the color of the axis line that accepts value in hex and rgba as a valid CSS color string.
       * @default null
       */
     color?: string;
@@ -1813,7 +1780,7 @@ export interface PivotChartAxisStripLineSettingsModel {
     startFromAxis?: boolean;
 
     /**
-      * Start value of the  pivot chart strip line.
+      * Allows to set the start value of the pivot chart strip line.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -1821,7 +1788,7 @@ export interface PivotChartAxisStripLineSettingsModel {
     start?: number | Date;
 
     /**
-      * End value of the pivot chart strip line.
+      * Allows to set the end value of the pivot chart strip line.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -1829,7 +1796,7 @@ export interface PivotChartAxisStripLineSettingsModel {
     end?: number | Date;
 
     /**
-      * Size of the pivot chart strip line, when it starts from the origin.
+      * Allows to set the size of the pivot chart strip line, when it starts from the origin.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -1838,13 +1805,13 @@ export interface PivotChartAxisStripLineSettingsModel {
     size?: number;
 
     /**
-      * Color of the pivot chart strip line.
+      * Allows to set the color of the pivot chart strip line.
       * @default '#808080'
       */
     color?: string;
 
     /**
-      * Dash Array of the pivot chart strip line.
+      * Allows to set the dash Array of the pivot chart strip line.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -1852,7 +1819,7 @@ export interface PivotChartAxisStripLineSettingsModel {
     dashArray?: string;
 
     /**
-      * Size type of the pivot chart strip line
+      * Allows to set the size type of the pivot chart strip line
       * @blazorType PivotChartSizeType
       * @default Auto
       * @blazorDefaultValue PivotChartSizeType.Auto
@@ -1860,7 +1827,7 @@ export interface PivotChartAxisStripLineSettingsModel {
     sizeType?: SizeType;
 
     /**
-      * isRepeat value of the  pivot chart strip line.
+      * Allows to set the isRepeat value of the pivot chart strip line.
       * @default false
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -1868,7 +1835,7 @@ export interface PivotChartAxisStripLineSettingsModel {
     isRepeat?: boolean;
 
     /**
-      * repeatEvery value of the pivot chart strip line.
+      * Allows to set the repeatEvery value of the pivot chart strip line.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -1876,7 +1843,7 @@ export interface PivotChartAxisStripLineSettingsModel {
     repeatEvery?: number | Date;
 
     /**
-      * repeatUntil value of the pivot chart strip line.
+      * Allows to set the repeatUntil value of the pivot chart strip line.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -1884,7 +1851,7 @@ export interface PivotChartAxisStripLineSettingsModel {
     repeatUntil?: number | Date;
 
     /**
-      * isSegmented value of the pivot chart strip line
+      * Allows to set the isSegmented value of the pivot chart strip line
       * @default false
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -1892,7 +1859,7 @@ export interface PivotChartAxisStripLineSettingsModel {
     isSegmented?: boolean;
 
     /**
-      * segmentStart value of the pivot chart strip line.
+      * Allows to set the segmentStart value of the pivot chart strip line.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -1900,7 +1867,7 @@ export interface PivotChartAxisStripLineSettingsModel {
     segmentStart?: number | Date;
 
     /**
-      * segmentEnd value of the pivot chart strip line.
+      * Allows to set the segmentEnd value of the pivot chart strip line.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -1908,7 +1875,7 @@ export interface PivotChartAxisStripLineSettingsModel {
     segmentEnd?: number | Date;
 
     /**
-      * segmentAxisName of the pivot chart strip line.
+      * Allows to set the segmentAxisName of the pivot chart strip line.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -1916,18 +1883,18 @@ export interface PivotChartAxisStripLineSettingsModel {
     segmentAxisName?: string;
 
     /**
-      * Border of the  pivot chart strip line.
+      * Allows to set the border of the pivot chart strip line.
       */
     border?: PivotChartBorderModel;
 
     /**
-      * Strip line text.
+      * Allows to set the strip line text.
       * @default ''
       */
     text?: string;
 
     /**
-      * The angle to which the strip line text gets rotated.
+      * Allows to set the angle to which the strip line text gets rotated.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -1935,7 +1902,7 @@ export interface PivotChartAxisStripLineSettingsModel {
     rotation?: number;
 
     /**
-      * Defines the position of the strip line text horizontally. They are,
+      * Allows to set the position of the strip line text horizontally. They are,
       * * Start: Places the strip line text at the start.
       * * Middle: Places the strip line text in the middle.
       * * End: Places the strip line text at the end.
@@ -1946,7 +1913,7 @@ export interface PivotChartAxisStripLineSettingsModel {
     horizontalAlignment?: Anchor;
 
     /**
-      * Defines the position of the strip line text vertically. They are,
+      * Allows to set the position of the strip line text vertically. They are,
       * * Start: Places the strip line text at the start.
       * * Middle: Places the strip line text in the middle.
       * * End: Places the strip line text at the end.
@@ -1957,12 +1924,12 @@ export interface PivotChartAxisStripLineSettingsModel {
     verticalAlignment?: Anchor;
 
     /**
-      * Options to customize the strip line text.
+      * Allows options to customize the strip line text.
       */
     textStyle?: PivotChartFontModel;
 
     /**
-      * Specifies the order of the strip line. They are,
+      * Allows to set the order of the strip line. They are,
       * * Behind: Places the strip line behind the series elements.
       * * Over: Places the strip line over the series elements.
       * @blazorType PivotChartZIndex
@@ -1985,20 +1952,20 @@ export interface PivotChartAxisStripLineSettingsModel {
 export interface PivotChartAxisLabelBorderModel {
 
     /**
-      * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+      * Allows to set the color of the border that accepts value in hex and rgba as a valid CSS color string.
       * @default ''
       */
     color?: string;
 
     /**
-      * The width of the border in pixels.
+      * Allows to set the width of the border in pixels.
       * @default 1
       * @blazorType int
       */
     width?: number;
 
     /**
-      * Border type for labels
+      * Allows to set the border type for labels
       * * Rectangle
       * * Without Top Border
       * * Without Top and BottomBorder
@@ -2019,18 +1986,18 @@ export interface PivotChartAxisLabelBorderModel {
 export interface PivotChartSettingsChartAreaModel {
 
     /**
-      * Options to customize the border of the chart area.
+      * Allows options to customize the border of the chart area.
       */
     border?: PivotChartBorderModel;
 
     /**
-      * The background of the chart area that accepts value in hex and rgba as a valid CSS color string..
+      * Allows to set the background of the chart area that accepts value in hex and rgba as a valid CSS color string..
       * @default 'transparent'
       */
     background?: string;
 
     /**
-      * The opacity for background.
+      * Allows to set the opacity for background.
       * @default 1
       */
     opacity?: number;
@@ -2049,18 +2016,18 @@ export interface PivotChartSettingsCrosshairSettingsModel {
     enable?: boolean;
 
     /**
-      * DashArray for crosshair.
+      * Allows to set the DashArray for crosshair.
       * @default ''
       */
     dashArray?: string;
 
     /**
-      * Options to customize the crosshair line.
+      * Allows options to customize the crosshair line.
       */
     line?: PivotChartBorderModel;
 
     /**
-      * Specifies the line type. Horizontal mode enables the horizontal line and Vertical mode enables the vertical line. They are,
+      * Allows to set the line type. Horizontal mode enables the horizontal line and Vertical mode enables the vertical line. They are,
       * * None: Hides both vertical and horizontal crosshair lines.
       * * Both: Shows both vertical and horizontal crosshair lines.
       * * Vertical: Shows the vertical line.
@@ -2085,19 +2052,19 @@ export interface PivotChartSettingsLegendSettingsModel {
     visible?: boolean;
 
     /**
-      * The height of the legend in pixels.
+      * Allows to set the height of the legend in pixels.
       * @default null
       */
     height?: string;
 
     /**
-      * The width of the legend in pixels.
+      * Allows to set the width of the legend in pixels.
       * @default null
       */
     width?: string;
 
     /**
-      * Specifies the location of the legend, relative to the chart.
+      * Allows to set the location of the legend, relative to the chart.
       * If x is 20, legend moves by 20 pixels to the right of the chart. It requires the `position` to be `Custom`.
       * ```html
       * <div id='Chart'></div>
@@ -2118,7 +2085,7 @@ export interface PivotChartSettingsLegendSettingsModel {
     location?: LocationModel;
 
     /**
-      * Position of the legend in the chart are,
+      * Allows to set the position of the legend in the chart are,
       * * Auto: Places the legend based on area type.
       * * Top: Displays the legend at the top of the chart.
       * * Left: Displays the legend at the left of the chart.
@@ -2132,14 +2099,14 @@ export interface PivotChartSettingsLegendSettingsModel {
     position?: LegendPosition;
 
     /**
-      * Option to customize the padding between legend items.
+      * Allows option to customize the padding between legend items.
       * @default 8
       * @blazorType int
       */
     padding?: number;
 
     /**
-      * Legend in chart can be aligned as follows:
+      * Allows to set the legend in chart can be aligned as follows:
       * * Near: Aligns the legend to the left of the chart.
       * * Center: Aligns the legend to the center of the chart.
       * * Far: Aligns the legend to the right of the chart.
@@ -2150,49 +2117,49 @@ export interface PivotChartSettingsLegendSettingsModel {
     alignment?: Alignment;
 
     /**
-      * Options to customize the legend text.
+      * Allows options to customize the legend text.
       */
     textStyle?: PivotChartFontModel;
 
     /**
-      * Shape height of the legend in pixels.
+      * Allows to set the shape height of the legend in pixels.
       * @default 10
       * @blazorType int
       */
     shapeHeight?: number;
 
     /**
-      * Shape width of the legend in pixels.
+      * Allows to set the shape width of the legend in pixels.
       * @default 10
       * @blazorType int
       */
     shapeWidth?: number;
 
     /**
-      * Options to customize the border of the legend.
+      * Allows options to customize the border of the legend.
       */
     border?: PivotChartBorderModel;
 
     /**
-      *  Options to customize left, right, top and bottom margins of the chart.
+      * Allows options to customize left, right, top and bottom margins of the chart.
       */
     margin?: PivotChartMarginModel;
 
     /**
-      * Padding between the legend shape and text.
+      * Allows to set the padding between the legend shape and text.
       * @default 5
       * @blazorType int
       */
     shapePadding?: number;
 
     /**
-      * The background color of the legend that accepts value in hex and rgba as a valid CSS color string.
+      * Allows to set the background color of the legend that accepts value in hex and rgba as a valid CSS color string.
       * @default 'transparent'
       */
     background?: string;
 
     /**
-      * Opacity of the legend.
+      * Allows to set the opacity of the legend.
       * @default 1
       */
     opacity?: number;
@@ -2204,13 +2171,13 @@ export interface PivotChartSettingsLegendSettingsModel {
     toggleVisibility?: boolean;
 
     /**
-      * Description for legends.
+      * Allows to set the description for legends.
       * @default null
       */
     description?: string;
 
     /**
-      * TabIndex value for the legend.
+      * Allows to set the tabindex value for the legend.
       * @default 3
       * @blazorType int
       */
@@ -2224,7 +2191,7 @@ export interface PivotChartSettingsLegendSettingsModel {
 export interface PivotChartSettingsIndexesModel {
 
     /**
-      * Specifies the series index
+      * Allows to set the series index
       * @default 0
       * @aspType int
       * @blazorType int
@@ -2232,7 +2199,7 @@ export interface PivotChartSettingsIndexesModel {
     series?: number;
 
     /**
-      * Specifies the point index
+      * Allows to set the point index
       * @default 0
       * @aspType int
       * @blazorType int
@@ -2247,25 +2214,25 @@ export interface PivotChartSettingsIndexesModel {
 export interface PivotChartSettingsMarginModel {
 
     /**
-      * Left margin in pixels.
+      * Allows to set the left margin in pixels.
       * @default 10
       */
     left?: number;
 
     /**
-      * Right margin in pixels.
+      * Allows to set the right margin in pixels.
       * @default 10
       */
     right?: number;
 
     /**
-      * Top margin in pixels.
+      * Allows to set the top margin in pixels.
       * @default 10
       */
     top?: number;
 
     /**
-      * Bottom margin in pixels.
+      * Allows to set the bottom margin in pixels.
       * @default 10
       */
     bottom?: number;
@@ -2278,36 +2245,36 @@ export interface PivotChartSettingsMarginModel {
 export interface PivotSeriesModel {
 
     /**
-      * The fill color for the series that accepts value in hex and rgba as a valid CSS color string.
+      * Allows to set the fill color for the series that accepts value in hex and rgba as a valid CSS color string.
       * @default null
       */
     fill?: string;
 
     /**
-      * Options to customizing animation for the series.
+      * Allows options to customizing animation for the series.
       * @default null
       */
     animation?: PivotChartAnimationModel;
 
     /**
-      * Defines the pattern of dashes and gaps to stroke the lines in `Line` type series.
+      * Allows to set the pattern of dashes and gaps to stroke the lines in `Line` type series.
       * @default '0'
       */
     dashArray?: string;
 
     /**
-      * The stroke width for the series that is applicable only for `Line` type series.
+      * Allows to set the stroke width for the series that is applicable only for `Line` type series.
       * @default 1
       */
     width?: number;
 
     /**
-      * Defines the axis, based on which the line series will be split.
+      * Allows to set the axis, based on which the line series will be split.
       */
     segmentAxis?: Segment;
 
     /**
-      * Type of series to be drawn in radar or polar series. They are
+      * Allows to set the type of series to be drawn in radar or polar series. They are
       *  'Line'
       *  'Column'
       *  'Area'
@@ -2330,12 +2297,12 @@ export interface PivotSeriesModel {
     isClosed?: boolean;
 
     /**
-      * Defines the collection of regions that helps to differentiate a line series.
+      * Allows to set the collection of regions that helps to differentiate a line series.
       */
     segments?: PivotChartSegmentModel[];
 
     /**
-      * This property allows grouping series in `stacked column / bar` charts.
+      * This allows grouping the chart series in `stacked column / bar` charts.
       * Any string value can be provided to the stackingGroup property.
       * If any two or above series have the same value, those series will be grouped together.
       * @default ''
@@ -2343,24 +2310,24 @@ export interface PivotSeriesModel {
     stackingGroup?: string;
 
     /**
-      * Options to customizing the border of the series. This is applicable only for `Column` and `Bar` type series.
+      * Allows options to customizing the border of the series. This is applicable only for `Column` and `Bar` type series.
       */
     border?: PivotChartBorderModel;
 
     /**
-      * Specifies the visibility of series.
+      * Allows to set the visibility of series.
       * @default true
       */
     visible?: boolean;
 
     /**
-      * The opacity of the series.
+      * Allows to set the opacity of the series.
       * @default 1
       */
     opacity?: number;
 
     /**
-      * The type of the series are
+      * Allows to set the type of the series are
       * * StackingColumn
       * * StackingArea
       * * StackingBar
@@ -2386,12 +2353,12 @@ export interface PivotSeriesModel {
     type?: ChartSeriesType;
 
     /**
-      * Options for displaying and customizing markers for individual points in a series.
+      * Allows options for displaying and customizing markers for individual points in a series.
       */
     marker?: PivotChartMarkerSettingsModel;
 
     /**
-      * Options for displaying and customizing error bar for individual point in a series.
+      * Allows options for displaying and customizing error bar for individual point in a series.
       */
     errorBar?: PivotChartErrorBarSettingsModel;
 
@@ -2402,18 +2369,18 @@ export interface PivotSeriesModel {
     enableTooltip?: boolean;
 
     /**
-      * Defines the collection of trendlines that are used to predict the trend
+      * Allows to set the collection of trendlines that are used to predict the trend
       */
     trendlines?: PivotChartTrendlineModel[];
 
     /**
-      * The provided value will be considered as a Tooltip name 
+      * Allows to set the provided value will be considered as a Tooltip name 
       * @default ''
       */
     tooltipMappingName?: string;
 
     /**
-      * The shape of the legend. Each series has its own legend shape. They are,
+      * Allows to set the shape of the legend. Each series has its own legend shape. They are,
       * * Circle
       * * Rectangle
       * * VerticalLine
@@ -2432,19 +2399,19 @@ export interface PivotSeriesModel {
     legendShape?: LegendShape;
 
     /**
-      * Minimum radius
+      * Allows to set the minimum radius.
       * @default 1
       */
     minRadius?: number;
 
     /**
-      * Custom style for the selected series or points.
+      * Allows to set the custom style for the selected series or points.
       * @default null
       */
     selectionStyle?: string;
 
     /**
-      * Defines type of spline to be rendered.
+      * Allows to set the type of spline to be rendered.
       * @blazorType PivotChartSplineType
       * @default 'Natural'
       * @blazorDefaultValue PivotChartSplineType.Natural
@@ -2452,19 +2419,19 @@ export interface PivotSeriesModel {
     splineType?: SplineType;
 
     /**
-      * Maximum radius
+      * Allows to set the maximum radius.
       * @default 3
       */
     maxRadius?: number;
 
     /**
-      * It defines tension of cardinal spline types
+      * Allows to set the tension of cardinal spline types
       * @default 0.5
       */
     cardinalSplineTension?: number;
 
     /**
-      * To render the column series points with particular column width.
+      * Allows to render the column series points with particular column width.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -2472,17 +2439,17 @@ export interface PivotSeriesModel {
     columnWidth?: number;
 
     /**
-      * options to customize the empty points in series
+      * Allows options to customize the empty points in series
       */
     emptyPointSettings?: PivotChartEmptyPointSettingsModel;
 
     /**
-      * To render the column series points with particular rounded corner.
+      * Allows to render the column series points with particular rounded corner.
       */
     cornerRadius?: PivotChartCornerRadiusModel;
 
     /**
-      * To render the column series points with particular column spacing. It takes value from 0 - 1.
+      * Allows to render the column series points with particular column spacing. It takes value from 0 - 1.
       * @default 0
       * @blazorType int
       */
@@ -2496,7 +2463,7 @@ export interface PivotSeriesModel {
 export interface PivotAxisModel {
 
     /**
-      * Specifies the actions like `Hide`, `Rotate45`, and `Rotate90` when the axis labels intersect with each other.They are,
+      * Allows to set the actions like `Hide`, `Rotate45`, and `Rotate90` when the axis labels intersect with each other.They are,
       * * Rotate45: Rotates the label to 45 degree when it intersects.
       * * Rotate90: Rotates the label to 90 degree when it intersects.     
       * * None: Shows all the labels.
@@ -2508,48 +2475,48 @@ export interface PivotAxisModel {
     labelIntersectAction?: LabelIntersectAction;
 
     /**
-      * Options to customize the axis label.
+      * Allows options to customize the axis label.
       */
     labelStyle?: PivotChartFontModel;
 
     /**
-      * Specifies the title of an axis.
+      * Allows to set the title of an axis.
       * @default ''
       */
     title?: string;
 
     /**
-      * Options to customize the crosshair ToolTip.
+      * Allows options to customize the crosshair ToolTip.
       */
     crosshairTooltip?: PivotChartCrosshairTooltipModel;
 
     /**
-      * Used to format the axis label that accepts any global string format like 'C', 'n1', 'P' etc.
+      * It used to format the axis label that accepts any global string format like 'C', 'n1', 'P' etc.
       * It also accepts placeholder like '{value}°C' in which value represent the axis label, e.g, 20°C.
       * @default ''
       */
     labelFormat?: string;
 
     /**
-      * Options for customizing the axis title.
+      * Allows options for customizing the axis title.
       */
     titleStyle?: PivotChartFontModel;
 
     /**
-      * Specifies indexed category  axis.
+      * Allows to specify the indexed category to the axis.
       * @default false
       */
     isIndexed?: boolean;
 
     /**
-      * Left and right padding for the plot area in pixels.
+      * Allows to set the left and right padding for the plot area in pixels.
       * @default 0
       * @blazorType int
       */
     plotOffset?: number;
 
     /**
-      * Specifies the position of labels at the edge of the axis.They are,
+      * Allows to set the position of labels at the edge of the axis.They are,
       * * Shift: Shifts the edge labels.
       * * None: No action will be performed.
       * * Hide: Edge label will be hidden.     
@@ -2560,7 +2527,7 @@ export interface PivotAxisModel {
     edgeLabelPlacement?: EdgeLabelPlacement;
 
     /**
-      * Specifies the placement of a label for category axis. They are,
+      * Allows to set the placement of a label for category axis. They are,
       * * onTicks: Renders the label on the ticks.     
       * * betweenTicks: Renders the label between the ticks.
       * @blazorType PivotChartLabelPlacement
@@ -2570,7 +2537,7 @@ export interface PivotAxisModel {
     labelPlacement?: LabelPlacement;
 
     /**
-      * Specifies the placement of a ticks to the axis line. They are,
+      * Allows to set the placement of a ticks to the axis line. They are,
       * * outside: Renders the ticks outside to the axis line.     
       * * inside: Renders the ticks inside to the axis line.
       * @blazorType PivotChartAxisPosition
@@ -2592,7 +2559,7 @@ export interface PivotAxisModel {
     visible?: boolean;
 
     /**
-      * Specifies the placement of a labels to the axis line. They are,
+      * Allows to set the placement of a labels to the axis line. They are,
       * * outside: Renders the labels outside to the axis line.     
       * * inside: Renders the labels inside to the axis line.
       * @blazorType PivotChartAxisPosition
@@ -2602,40 +2569,40 @@ export interface PivotAxisModel {
     labelPosition?: AxisPosition;
 
     /**
-      * The angle to which the axis label gets rotated.
+      * Allows to set the angle to which the axis label gets rotated.
       * @default 0
       * @blazorType int
       */
     labelRotation?: number;
 
     /**
-      * Specifies the number of minor ticks per interval.
+      * Allows to set the number of minor ticks per interval.
       * @default 0
       * @blazorType int
       */
     minorTicksPerInterval?: number;
 
     /**
-      * Specifies the maximum range of an axis.
+      * Allows to set the maximum range of an axis.
       * @default null
       */
     maximum?: Object;
 
     /**
-      * Specifies the minimum range of an axis.
+      * Allows to set the minimum range of an axis.
       * @default null
       */
     minimum?: Object;
 
     /**
-      * Specifies the maximum width of an axis label.
+      * Allows to set the maximum width of an axis label.
       * @default 34.
       * @blazorType int
       */
     maximumLabelWidth?: number;
 
     /**
-      * Specifies the interval for an axis.
+      * Allows to set the interval for an axis.
       * @default null
       * @aspDefaultValueIgnore
       * @blazorDefaultValueIgnore
@@ -2644,76 +2611,76 @@ export interface PivotAxisModel {
     interval?: number;
 
     /**
-      * Options for customizing major tick lines.
+      * Allows options for customizing major tick lines.
       */
     majorTickLines?: PivotChartMajorTickLinesModel;
 
     /**
-      * Specifies the Trim property for an axis.
+      * Allows to set the Trim property for an axis.
       * @default false
       */
     enableTrim?: boolean;
 
     /**
-      * Options for customizing major grid lines.
+      * Allows options for customizing major grid lines.
       */
     majorGridLines?: PivotChartMajorGridLinesModel;
 
     /**
-      * Options for customizing minor tick lines.
+      * Allows options for customizing minor tick lines.
       */
     minorTickLines?: PivotChartMinorTickLinesModel;
 
     /**
-      * Options for customizing axis lines.
+      * Allows options for customizing axis lines.
       */
     lineStyle?: PivotChartAxisLineModel;
 
     /**
-      * Options for customizing minor grid lines.
+      * Allows options for customizing minor grid lines.
       */
     minorGridLines?: PivotChartMinorGridLinesModel;
 
     /**
-      * It specifies whether the axis to be rendered in inversed manner or not.
+      * Allows to specify whether the axis to be rendered in inversed manner or not.
       * @default false
       */
     isInversed?: boolean;
 
     /**
-      * Description for axis and its element.
+      * Allows to set the description for axis and its element.
       * @default null
       */
     description?: string;
 
     /**
-      * The start angle for the series.
+      * Allows to set the start angle for the series.
       * @default 0
       * @blazorType int
       */
     startAngle?: number;
 
     /**
-      * The polar radar radius position.
+      * Allows to set the polar radar radius position.
       * @default 100
       * @blazorType int
       */
     coefficient?: number;
 
     /**
-      * Specifies the stripLine collection for the axis
+      * Allows to set the stripLine collection for the axis
       */
     stripLines?: PivotChartStripLineSettingsModel[];
 
     /**
-      * TabIndex value for the axis.
+      * Allows to set the tabindex value for the axis.
       * @default 2
       * @blazorType int
       */
     tabIndex?: number;
 
     /**
-      * Border of the multi level labels.
+      * Allows to set the border of the multi level labels.
       */
     border?: PivotChartLabelBorderModel;
 
@@ -2725,19 +2692,19 @@ export interface PivotAxisModel {
 export interface PivotTooltipSettingsModel {
 
     /**
-      * Enables / Disables the visibility of the marker.
+      * Allows to set the visibility of the marker.
       * @default false.
       */
     enableMarker?: boolean;
 
     /**
-      * Enables / Disables the visibility of the tooltip.
+      * Allows to set the visibility of the tooltip.
       * @default true.
       */
     enable?: boolean;
 
     /**
-      * The fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string.
+      * Allows to set the fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string.
       * @default null 
       */
 
@@ -2750,36 +2717,36 @@ export interface PivotTooltipSettingsModel {
     shared?: boolean;
 
     /**
-      * The fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string. 
+      * Allows to set the fill color of the tooltip that accepts value in hex and rgba as a valid CSS color string. 
       * @default 0.75
       */
     opacity?: number;
 
     /**
-      * Header for tooltip. 
+      * Allows to set the header for tooltip. 
       * @default null
       */
     header?: string;
 
     /**
-      * Format the ToolTip content.
+      * Allows to set the format the ToolTip content.
       * @default null.
       */
     format?: string;
 
     /**
-      * Options to customize the ToolTip text.
+      * Allows options to customize the ToolTip text.
       */
     textStyle?: PivotChartFontModel;
 
     /**
-      * Custom template to format the ToolTip content. Use ${x} and ${y} as the placeholder text to display the corresponding data point.
+      * Allows to set the custom template to format the ToolTip content. Use ${x} and ${y} as the placeholder text to display the corresponding data point.
       * @default null.
       */
     template?: string;
 
     /**
-      * Options to customize tooltip borders.
+      * Allows options to customize tooltip borders.
       */
     border?: PivotChartBorderModel;
 
@@ -2828,7 +2795,7 @@ export interface PivotZoomSettingsModel {
     enableMouseWheelZooming?: boolean;
 
     /**
-      * Specifies whether to allow zooming vertically or horizontally or in both ways. They are,
+      * Allows to specify whether to allow zooming vertically or horizontally or in both ways. They are,
       * * x: Chart can be zoomed horizontally.
       * * y: Chart can be zoomed  vertically.     
       * * x,y: Chart can be zoomed both vertically and horizontally.
@@ -2847,7 +2814,7 @@ export interface PivotZoomSettingsModel {
     mode?: ZoomMode;
 
     /**
-      * Specifies the toolkit options for the zooming as follows:
+      * Allows to set the toolkit options for the zooming as follows:
       * * ZoomIn
       * * ZoomOut
       * * Pan     
@@ -2879,28 +2846,34 @@ export interface PivotZoomSettingsModel {
 export interface ChartSettingsModel {
 
     /**
-      * Options to configures the series of chart.
+      * Allow options to customize the chart series with different settings such as fill color, animation of the series, 
+      * series width, border, visibility of the series, opacity, chart series types, marker, tooltip, trendlines, etc., in the pivot chart. 
+      * For example, to display the line type pivot chart, set the property `type` to **Line**.
       */
     chartSeries?: PivotSeriesModel;
 
     /**
-      * Options to configure the horizontal axis of chart.
+      * Allow options to customize the horzontal(row) axis with different properties such as labelIntersectAction, labelStyle, title, 
+      * description, crosshairTooltip, labelFormat, titleStyle, plotOffset, edgeLabelPlacement, labelPlacement, tickPosition, opposedPosition, minor and 
+      * major grid lines, minor and major tick lines, border, etc. in the pivot chart.
       */
     primaryXAxis?: PivotAxisModel;
 
     /**
-      * Options to configure the vertical axis of chart.
+      * Allow options to customize the vertical(value) axis with different properties such as labelIntersectAction, labelStyle, 
+      * title, description, crosshairTooltip, labelFormat, titleStyle, plotOffset, edgeLabelPlacement, labelPlacement, tickPosition, opposedPosition, minor and 
+      * major grid lines, minor and major tick lines, border, etc. in the pivot chart.
       */
     primaryYAxis?: PivotAxisModel;
 
     /**
-      * Defines the measure to load in chart
+      * Allows you to draw a pivot chart with a specific value field during initial loading.
       * @default ''
       */
     value?: string;
 
     /**
-      * Defines the measure to load in chart
+      * Allows you to draw the pivot chart with multiple value fields as separate chart area.
       * @default false
       */
     enableMultiAxis?: boolean;
@@ -2912,50 +2885,53 @@ export interface ChartSettingsModel {
     enableScrollOnMultiAxis?: boolean;
 
     /**
-      * Options for customizing the title of the Chart.
+      * Allow options to customize the title in the pivot chart with different properties such as fontStyle, font size, fontWeight, font color, testAlignment, fontFamily, opacity, textOverflow.
       */
     titleStyle?: PivotChartFontModel;
 
     /**
-      * Title of the chart
+      * Allows you to add title to the pivot chart.
       * @default ''
       */
     title?: string;
 
     /**
-      * Options for customizing the Subtitle of the Chart.
+      * Allow options to customize the subtitle in the pivot chart with different properties such as fontStyle, font size, fontWeight, font color, testAlignment, fontFamily, opacity, textOverflow.
       */
     subTitleStyle?: PivotChartFontModel;
 
     /**
-      * SubTitle of the chart
+      * Allows you to add the subtitle to the pivot chart.
       * @default ''
       */
     subTitle?: string;
 
     /**
-      * Options for customizing the color and width of the chart border.
+      * Allow options to customize the border of the chart series such as color and border size in the pivot chart. 
+      * For example, to display the chart series border color as red, set the properties `color` to either **"red"** or **"#FF0000"** or **"rgba(255,0,0,1.0)"** and `width` to **0.5**.
       */
     border?: PivotChartBorderModel;
 
     /**
-      *  Options to customize left, right, top and bottom margins of the chart.
+      *  Allow options to customize the left, right, top and bottom margins of the pivot chart.
       */
     margin?: PivotChartMarginModel;
 
     /**
-      * Options for configuring the border and background of the chart area.
+      * Allow options to customize the chart area with a variety of settings such as background color, border, opacity and background image in the pivot chart. 
+      * For example, to change the of the pivot chart's background, set the property `opacity` to **0.5**.
       */
     chartArea?: PivotChartAreaModel;
 
     /**
-      * The background color of the chart that accepts value in hex and rgba as a valid CSS color string.
+      * Allows you to change the background color of the chart series in the pivot chart. 
+      * For example, to display the chart series with background color as red, set the property `background` to either **"red"** or **"#FF0000"** or **"rgba(255,0,0,1.0)"**.
       * @default null
       */
     background?: string;
 
     /**
-      * Specifies the theme for the chart.
+      * Allows you to draw a pivot chart with either material, fabric, bootstrap, highcontrast light, material dark, fabric dark, highcontrast, bootstrap dark, bootstrap4 theme.
       * @blazorType PivotChartTheme
       * @default 'Material'
       * @blazorDefaultValue PivotChartTheme.Material
@@ -2963,33 +2939,38 @@ export interface ChartSettingsModel {
     theme?: ChartTheme;
 
     /**
-      * Palette for the chart series.
+      * Allows you to draw the chart series points with custom color in the pivot chart.
       * @default []
       */
     palettes?: string[];
 
     /**
-      * Options for customizing the crosshair of the chart.
+      * Allow options to customize the crosshair line with different settings such as color and width of the line, 
+      * line types that are shown horizontally and vertically to indicate the value of the axis at the mouse hover or touch position in the pivot chart.
       */
     crosshair?: PivotChartCrosshairSettingsModel;
 
     /**
-      * Options for customizing the tooltip of the chart.
+      * Allow options to customize the tooltip of the pivot chart with different properties such as visibility of the tooltip, enableMarker, fill color, opacity, header for tooltip, 
+      * format, textStyle, template, border, enableAnimation.
       */
     tooltip?: PivotTooltipSettingsModel;
 
     /**
-      * Options to enable the zooming feature in the chart.
+      * Allow options to customize the pivot chart zooming with different properties such as enablePinchZooming, enableSelectionZooming, 
+      * enableDeferredZooming, enableMouseWheelZooming, zoom modes, toolbarItems, enableScrollbar and enablePan.
       */
     zoomSettings?: PivotZoomSettingsModel;
 
     /**
-      * Options for customizing the legend of the chart.
+      * Allow options for customizing legends with different properties such as legend visibility, 
+      * height, width, position, legend padding, alignment, textStyle, border, margin, background, opacity, description, tabIndex in the pivot chart.
       */
     legendSettings?: LegendSettingsModel;
 
     /**
-      * Specifies whether series or data point has to be selected. They are,
+      * Allow options for customizing the selection mode to be done either by a specific series or point or cluster or by dragging it to the pivot chart. 
+      * For example, to highlight a specific point in a specific series of the pivot chart, set the property `selectionMode` to **Point**. The available modes are,
       * * none: Disables the selection.
       * * series: selects a series.
       * * dragXY: selects points by dragging with respect to both horizontal and vertical axes
@@ -3002,104 +2983,99 @@ export interface ChartSettingsModel {
     selectionMode?: ChartSelectionMode;
 
     /**
-      * To enable export feature in chart.
+      * Allows the pivot chart to be exported to either **PDF** or **PNG** or **JPEG** or **SVG** filter formats.
       * @default true
       */
     enableExport?: boolean;
 
     /**
-      * If set true, enables the multi selection in chart. It requires `selectionMode` to be `Point` | `Series` | or `Cluster`.
+      * Allows you to perform multiple selection in the pivot chart. To enable this option, it requires the property `selectionMode` to be **Point** or **Series** or **Cluster**.
       * @default false
       */
     isMultiSelect?: boolean;
 
     /**
-      * Specifies the point indexes to be selected while loading a chart.
-      * It requires `selectionMode` to be `Point` | `Series`.
-      * ...
-      *   selectionMode: 'Point',
-      *   selectedDataIndexes: [ { series: 0, point: 1},
-      *                          { series: 2, point: 3} ],
-      * ...
+      * Allows you to highlight a specific point of the series while rendering the pivot chart. 
+      * For example, to highlight first point in the first series, set the properties series to 0 and points to 1. To use this option, it requires the property `selectionMode` to be **Point** or **Series**.
       * @default []
       * @blazorType List<PivotChartIndexes>
       */
     selectedDataIndexes?: PivotChartIndexesModel[];
 
     /**
-      * If set true, Animation process will be executed.
+      * Allows you to enable/disable the tooltip animation while performing the mouse move from one point to another in the pivot chart.
       * @default true
       */
     enableAnimation?: boolean;
 
     /**
-      * Specifies whether a grouping separator should be used for a number.
+      * Allows the group separator to be shown to the values in the pivot chart.
       * @default true
       */
     useGroupingSeparator?: boolean;
 
     /**
-      * It specifies whether the chart should be render in transposed manner or not.
+      * Allows you to render the pivot chart in a transposed manner or not.
       * @default false
       */
     isTransposed?: boolean;
 
     /**
-      * TabIndex value for the chart.
+      * Allows you to highlight specific legends by clicking the mouse or by interacting with the keyboard in the pivot chart.
       * @default 1
       * @blazorType int
       */
     tabIndex?: number;
 
     /**
-      * Description for chart.
+      * Allows you to add a description of the pivot chart.
       * @default null
       */
     description?: string;
 
     /**
-      * Triggers after resizing of chart
+      * It triggers after the pivot chart resized.
       * @event
       * @deprecated
       */
     resized?: EmitType<IResizeEventArgs>;
 
     /**
-      * To enable the side by side placing the points for column type series.
+      * Allows you to draw points of the column type pivot chart series as side by side.
       * @default true
       */
     enableSideBySidePlacement?: boolean;
 
     /**
-      * Triggers after chart load.
+      * It triggers after the pivot chart loaded.
       * @event
       * @deprecated
       */
     loaded?: EmitType<ILoadedEventArgs>;
 
     /**
-      * Triggers before the prints gets started.
+      * It triggers before the pivot chart prints.
       * @event
       * @deprecated
       */
     beforePrint?: EmitType<IPrintEventArgs>;
 
     /**
-      * Triggers after animation is completed for the series.
+      * It triggers after the pivot chart series animation is completed.
       * @event
       * @deprecated
       */
     animationComplete?: EmitType<IAnimationCompleteEventArgs>;
 
     /**
-      * Triggers before chart load.
+      * It triggers before chart loads.
       * @event
       * @deprecated
       */
     load?: EmitType<ILoadedEventArgs>;
 
     /**
-      * Triggers before the data label for series is rendered.
+      * It triggers before the data label for series renders in the pivot chart.
       * @event
       * @deprecated
       */
@@ -3107,126 +3083,126 @@ export interface ChartSettingsModel {
     textRender?: EmitType<ITextRenderEventArgs>;
 
     /**
-      * Triggers before the legend is rendered.
+      * It triggers before the legend renders in the pivot chart.
       * @event
       * @deprecated
       */
     legendRender?: EmitType<ILegendRenderEventArgs>;
 
     /**
-      * Triggers before the series is rendered.
+      * It triggers before the series is rendered in the pivot chart.
       * @event
       * @deprecated
       */
     seriesRender?: EmitType<ISeriesRenderEventArgs>;
 
     /**
-      * Triggers before each points for the series is rendered.
+      * It triggers before each points for the series is rendered.
       * @event
       * @deprecated
       */
     pointRender?: EmitType<IPointRenderEventArgs>;
 
     /**
-      * Triggers before the tooltip for series is rendered.
+      * It triggers before the tooltip for series is rendered.
       * @event
       * @deprecated
       */
     tooltipRender?: EmitType<ITooltipRenderEventArgs>;
 
     /**
-      * Triggers before each axis label is rendered.
+      * It triggers before each axis label is rendered.
       * @event
       * @deprecated
       */
     axisLabelRender?: EmitType<IAxisLabelRenderEventArgs>;
 
     /**
-      * Triggers on clicking the chart.
+      * It triggers on clicking the pivot chart.
       * @event
       * @deprecated
       */
     chartMouseClick?: EmitType<IMouseEventArgs>;
 
     /**
-      * Triggers on hovering the chart.
+      * It triggers on hovering the pivot chart.
       * @event
       * @deprecated
       */
     chartMouseMove?: EmitType<IMouseEventArgs>;
 
     /**
-      * Triggers on point move.
+      * It triggers on series point move.
       * @event
       * @deprecated
       */
     pointMove?: EmitType<IPointEventArgs>;
 
     /**
-      * Triggers on point click.
+      * It triggers on series point click.
       * @event
       * @deprecated
       */
     pointClick?: EmitType<IPointEventArgs>;
 
     /**
-      * Triggers on mouse down.
+      * It triggers when mouse down on chart series.
       * @event
       * @deprecated
       */
     chartMouseDown?: EmitType<IMouseEventArgs>;
 
     /**
-      * Triggers when cursor leaves the chart.
+      * It triggers when cursor leaves the chart.
       * @event
       * @deprecated
       */
     chartMouseLeave?: EmitType<IMouseEventArgs>;
 
     /**
-      * Triggers after the drag selection is completed.
+      * It triggers after the drag selection is completed on chart series.
       * @event
       * @deprecated
       */
     dragComplete?: EmitType<IDragCompleteEventArgs>;
 
     /**
-      * Triggers on mouse up.
+      * It triggers when mouse up on chart series.
       * @event
       * @deprecated
       */
     chartMouseUp?: EmitType<IMouseEventArgs>;
 
     /**
-      * Triggers when start the scroll.
+      * It triggers when start scroll the chart series.
       * @event
       * @deprecated
       */
     scrollStart?: EmitType<IScrollEventArgs>;
 
     /**
-      * Triggers after the zoom selection is completed.
+      * It triggers after the zoom selection is completed.
       * @event
       * @deprecated
       */
     zoomComplete?: EmitType<IZoomCompleteEventArgs>;
 
     /**
-      * Triggers when change the scroll.
+      * It triggers when change the scroll of the chart seires.
       * @event
       * @deprecated
       */
     scrollChanged?: EmitType<IScrollEventArgs>;
 
     /**
-      * Triggers after the scroll end.
+      * It triggers after the scroll end.
       * @event
       * @deprecated
       */
     scrollEnd?: EmitType<IScrollEventArgs>;
 
     /**
-      * Specifies whether to show multilevel labels in chart.
+      * Allows you to display the multi-level label feature in the pivot chart. This multi-level labels used to perform drill operation in the pivot chart.
       * @default true
       */
     showMultiLevelLabels?: boolean;

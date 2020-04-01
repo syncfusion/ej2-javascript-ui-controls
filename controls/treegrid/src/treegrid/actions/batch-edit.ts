@@ -162,7 +162,7 @@ export class BatchEdit {
                       }
                   } else if (this.parent.editSettings.newRowPosition === 'Above' || this.parent.editSettings.newRowPosition === 'Below') {
                     added.level = this.batchRecords[this.addRowIndex][level];
-                    if (added.level) {
+                    if (added.level && this.selectedIndex > -1) {
                       added.parentItem = parentRecord;
                       added.parentUniqueID = parentUniqueID;
                       delete added.parentItem.childRecords; delete added.parentItem[this.parent.childMapping];

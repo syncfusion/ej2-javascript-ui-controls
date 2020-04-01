@@ -1,5 +1,5 @@
 import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Event, EmitType, ChildProperty } from '@syncfusion/ej2-base';
-import { getComponent, closest, EventHandler, getUniqueID } from '@syncfusion/ej2-base';
+import { getComponent, closest, EventHandler, getUniqueID, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Collection, Complex } from '@syncfusion/ej2-base';
 import { Tab, Toolbar, ItemModel, SelectingEventArgs, MenuItemModel, ClickEventArgs, TabItemModel } from '@syncfusion/ej2-navigations';
 import { Menu, MenuEventArgs, BeforeOpenCloseMenuEventArgs, Item, MenuItem } from '@syncfusion/ej2-navigations';
@@ -512,7 +512,7 @@ export class Ribbon extends Component<HTMLDivElement> implements INotifyProperty
      */
     public addToolbarItems(tab: string, items: ItemModel[], index?: number): void {
         let tabIdx: number = this.getTabIndex(tab);
-        if (!index) { index = this.items[tabIdx].content.length; }
+        if (isNullOrUndefined(index)) { index = this.items[tabIdx].content.length; }
         items.forEach((item: ItemModel): void => {
             item = new Item(<Item>this.items[tabIdx].content[0], 'content', item, true);
             this.items[tabIdx].content.splice(index, 0, item); index++;

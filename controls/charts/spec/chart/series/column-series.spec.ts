@@ -228,8 +228,8 @@ describe('Column Series', () => {
 
         it('with empty point(x Value)', (done: Function) => {
             loaded = (args: Object): void => {
-                let seriesElements: HTMLElement = document.getElementById('container_Series_0_Point_3');
-                expect(seriesElements == null).toBe(true);
+                let seriesElements: HTMLElement = document.getElementById('containerSeriesGroup0');
+                expect(seriesElements.childElementCount == 6).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -246,10 +246,10 @@ describe('Column Series', () => {
 
         it('with empty point(x and y Value)', (done: Function) => {
             loaded = (args: Object): void => {
-                let seriesElements: HTMLElement = document.getElementById('container_Series_0_Point_3');
-                let seriesElements1: HTMLElement = document.getElementById('container_Series_0_Point_5');
-                expect(seriesElements == null).toBe(true);
-                expect(seriesElements1 == null).toBe(true);
+                let seriesElements: HTMLElement = document.getElementById('containerSeriesGroup0');
+                //let seriesElements1: HTMLElement = document.getElementById('container_Series_0_Point_5');
+                expect(seriesElements.childElementCount == 5).toBe(true);
+                //expect(seriesElements1 == null).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

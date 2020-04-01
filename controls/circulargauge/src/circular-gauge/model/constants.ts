@@ -2,68 +2,134 @@
  * Specifies the gauge constant value
  */
 
-/** @private */
+/**
+ * Sets and gets loaded event name in the circular gauge component.
+ *  @private 
+ */
 export const loaded: string = 'loaded';
 
-/** @private */
+/** 
+ * Sets and gets load event name in the circular gauge component.
+ * @private 
+ */
 export const load: string = 'load';
 
-/** @private */
+/** 
+ * Sets and gets animation complete event name in the circular gauge component.
+ * @private
+ */
 export const animationComplete: string = 'animationComplete';
 
-/** @private */
+/** 
+ * Sets and gets axis label render event name in the circular gauge component.
+ * @private 
+ */
 export const axisLabelRender: string = 'axisLabelRender';
 
-/** @private */
+/**
+ * Sets and gets radius calculate event name in the circular gauge component.
+ *  @private
+ */
 export const radiusCalculate: string = 'radiusCalculate';
 
-/** @private */
+/** 
+ * Sets and gets tooltip render event name in the circular gauge component.
+ * @private
+ */
 export const tooltipRender : string = 'tooltipRender';
 
-/** @private */
+/** 
+ * Sets and gets annotation render event name in the circular gauge component.
+ * @private
+ */
 export const annotationRender : string = 'annotationRender';
 
-/** @private */
+/** 
+ * Sets and gets gauge mouse move event name in the circular gauge component.
+ * @private 
+ */
 export const gaugeMouseMove : string = 'gaugeMouseMove';
 
-/** @private */
+/** 
+ * Sets and gets gauge mouse leave event name in the circular gauge component.
+ * @private
+ */
 export const gaugeMouseLeave : string = 'gaugeMouseLeave';
 
-/** @private */
+/** 
+ * Sets and gets gauge mouse down event name in the circular gauge component.
+ * @private
+ */
 export const gaugeMouseDown : string = 'gaugeMouseDown';
 
-/** @private */
+/** 
+ * Sets and gets gauge mouse up event name in circular gauge component.
+ * @private
+ */
 export const gaugeMouseUp : string = 'gaugeMouseUp';
 
-/** @private */
+/** 
+ * Sets and gets drag start event name in the circular gauge component.
+ * @private
+ */
 export const dragStart : string = 'dragStart';
 
-/** @private */
+/** 
+ * Sets and gets drag move event name in the circular gauge component.
+ * @private
+ */
 export const dragMove : string = 'dragMove';
 
-/** @private */
+/** 
+ * Sets and gets drag end event name in the circular gauge component.
+ * @private
+ */
 export const dragEnd : string = 'dragEnd';
 
-/** @private */
+/** 
+ * Sets and gets resize event name in the circular gauge component.
+ * @private
+ */
 export const resized : string = 'resized';
 
-/** @private */
+/** 
+ * Sets and gets before print event name in the circular gauge component.
+ * @private
+ */
 export const beforePrint: string = 'beforePrint';
 
-/** @private */
+/** 
+ * Sets and gets pointer start event name in the circular gauge component.
+ * @private
+ */
 export const pointerStart : string = 'pointerStart';
 
-/** @private */
+/** 
+ * Sets and gets pointer move event name in the circular gauge component.
+ * @private
+ */
 export const pointerMove : string = 'pointerMove';
 
-/** @private */
+/**
+ * Sets and gets pointer end event name in the circular gauge component. 
+ * @private 
+ */
 export const pointerEnd : string = 'pointerEnd';
 
-/** @private */
+/** 
+ * Sets and gets range start event name in the circular gauge component.
+ * @private
+ */
 export const rangeStart : string = 'rangeStart';
 
-/** @private */
+/** 
+ * Sets and gets range move event name in the circular gauge component.
+ * @private
+ */
 export const rangeMove : string = 'rangeMove';
 
-/** @private */
+/**
+ * Sets and gets range end event name in the circular gauge component.
+ * @private
+ */
 export const rangeEnd : string = 'rangeEnd';

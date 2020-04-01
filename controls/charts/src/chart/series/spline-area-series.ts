@@ -27,15 +27,28 @@ export class SplineAreaSeries extends SplineBase {
         let bpt2: ChartLocation;
         let controlPt1: ChartLocation;
         let controlPt2: ChartLocation;
-        let points: Points[] = this.filterEmptyPoints(series);
-        let pointsLength: number = series.points.length;
+        let realPoints: Points[] = [];
+        let points: Points[] = [];
         let point: Points;
+        let pointIndex: number = 0;
+        realPoints = this.filterEmptyPoints(series);
+        for (let i: number = 0; i < realPoints.length; i++) {
+            point = realPoints[i];
+            if (point.x === null || point.x === '') {
+                continue;
+            } else {
+                point.index = pointIndex;
+                pointIndex++;
+                points.push(point);
+            }
+        }
+        let pointsLength: number = points.length;
         let previous: number;
         let getCoordinate: Function = series.chart.chartAreaType === 'PolarRadar' ? TransformToVisible : getPoint;
         let origin: number = series.chart.chartAreaType === 'PolarRadar' ? series.points[0].yValue :
             Math.max(<number>series.yAxis.visibleRange.min, 0);
         for (let i: number = 0; i < pointsLength; i++) {
-            point = series.points[i];
+            point = points[i];
             point.symbolLocations = [];
             point.regions = [];
             previous = this.getPreviousIndex(points, point.index - 1, series);
@@ -64,7 +77,7 @@ export class SplineAreaSeries extends SplineBase {
                 firstPoint = null;
                 point.symbolLocations = [];
             }
-            if (((i + 1 < pointsLength && !series.points[i + 1].visible) || i === pointsLength - 1)
+            if (((i + 1 < pointsLength && !points[i + 1].visible) || i === pointsLength - 1)
                 && pt2 && startPoint) {
                 startPoint = getCoordinate(point.xValue, origin, xAxis, yAxis, isInverted, series);
                 direction = direction.concat('L ' + (startPoint.x) + ' ' + (startPoint.y));

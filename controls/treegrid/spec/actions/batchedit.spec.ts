@@ -66,6 +66,52 @@ describe('Batch Edit module', () => {
     });
   });
 
+  describe('Hierarchy - Batch Add for next page', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          allowPaging: true,
+          pageSettings: { pageSize: 2},
+          editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, mode: "Batch", newRowPosition:'Below' },
+          treeColumnIndex: 1,
+          toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+          columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, validationRules: { required: true }, textAlign: 'Right', width: 80 },
+            { field: 'taskName', headerText: 'Task Name', validationRules: { required: true }, width: 200 },
+            { field: 'progress', headerText: 'Progress', textAlign: 'Right',  width: 90 },
+            { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', type: 'date', editType:'datepickeredit', width: 100, format: { skeleton: 'yMd', type: 'date' }, validationRules: { date: true } }
+          ],
+        },
+        done
+      );
+    });
+    it('Add - Batch Editing for next page', (done: Function) => {
+      actionComplete = (args?: Object): void => {
+        if (args['requestType'] == "batchSave" ) {
+          expect(gridObj.dataSource[0].taskID === 41).toBe(true);
+        }
+         done();
+      }
+      let addedRecords = 'addedRecords';
+      gridObj.grid.actionComplete = actionComplete;
+      gridObj.goToPage(2);
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+      expect(gridObj.getRowByIndex(0).classList.contains('e-insertedrow')).toBe(true);
+      (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 41;
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+      (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = "Planning Progress";
+      expect(gridObj.getBatchChanges()[addedRecords].length === 1).toBe(true);
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+      gridObj.element.querySelector('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm').querySelectorAll('button')[0].click();
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
   describe('Hierarchy - Batch Add NewRowPosition Below', () => {
     let gridObj: TreeGrid;
     let actionComplete: () => void;

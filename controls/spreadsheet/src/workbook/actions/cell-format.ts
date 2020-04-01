@@ -2,7 +2,6 @@ import { CellStyleModel, getRangeIndexes, setCellFormat, applyCellFormat, active
 import { CellFormatArgs, getSwapRange, TextDecoration, textDecorationUpdate, BorderType, BeforeCellFormatArgs } from '../common/index';
 import { CellStyleExtendedModel } from '../common/index';
 import { SheetModel, Workbook, getSheetIndex, isHiddenRow } from '../base/index';
-import { completeAction, beginAction } from '../../spreadsheet/common/event';
 
 /**
  * Workbook Cell format.
@@ -24,7 +23,8 @@ export class WorkbookCellFormat {
         let triggerEvent: boolean = typeof (rng) !== 'object' && args.onActionUpdate;
         eventArgs = { range: <string>rng, style: args.style, requestType: 'CellFormat' };
         if (triggerEvent) {
-            this.parent.trigger('beforeCellFormat', eventArgs); this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'format' });
+            this.parent.trigger('beforeCellFormat', eventArgs);
+            this.parent.notify('actionBegin', { eventArgs: eventArgs, action: 'format' });
             if (eventArgs.cancel) { args.cancel = true; return; }
         }
         let indexes: number[] = typeof (eventArgs.range) === 'object' ? <number[]>eventArgs.range :
@@ -92,7 +92,7 @@ export class WorkbookCellFormat {
         if (isFullBorder) { eventArgs.style.border = border; } this.parent.setUsedRange(indexes[2], indexes[3]);
         if (args.refreshRibbon) { this.parent.notify(activeCellChanged, null); }
         if (triggerEvent) {
-            eventArgs.range = `${sheet.name}!${rng}`; this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'format' });
+            eventArgs.range = `${sheet.name}!${rng}`; this.parent.notify('actionComplete', { eventArgs: eventArgs, action: 'format' });
         }
     }
     private setBottomBorderPriority(sheet: SheetModel, rowIdx: number, colIdx: number): void {
@@ -145,7 +145,7 @@ export class WorkbookCellFormat {
         let sheet: SheetModel = this.parent.getActiveSheet();
         let eventArgs: BeforeCellFormatArgs = { range: sheet.selectedRange, style: args.style, requestType: 'CellFormat' };
         this.parent.trigger('beforeCellFormat', eventArgs);
-        this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'format' });
+        this.parent.notify('actionBegin', { eventArgs: eventArgs, action: 'format' });
         if (eventArgs.cancel) { args.cancel = true; return; }
         let indexes: number[] = getSwapRange(getRangeIndexes(sheet.selectedRange));
         let value: TextDecoration = args.style.textDecoration; let changedValue: TextDecoration = value;
@@ -197,7 +197,7 @@ export class WorkbookCellFormat {
             }
         }
         eventArgs.range = sheet.name + '!' + <string>eventArgs.range;
-        this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'format' });
+        this.parent.notify('actionComplete', { eventArgs: eventArgs, action: 'format' });
     }
     private setTypedBorder(sheet: SheetModel, border: string, range: number[], type: BorderType, actionUpdate: boolean): void {
         let prevBorder: string;

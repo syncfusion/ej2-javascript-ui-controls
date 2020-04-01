@@ -94,14 +94,14 @@ export class FilterDialog {
             buttons: [
                 {
                     buttonModel: {
-                        cssClass: cls.OK_BUTTON_CLASS, content: this.parent.localeObj.getConstant('ok'), isPrimary: true
+                        cssClass: 'e-clear-filter-button' + (this.allowExcelLikeFilter ? '' : ' ' + cls.ICON_DISABLE),
+                        iconCss: 'e-icons e-clear-filter-icon', enableRtl: this.parent.enableRtl,
+                        content: this.parent.localeObj.getConstant('clearFilter'), disabled: (this.filterObject ? false : true)
                     }
                 },
                 {
                     buttonModel: {
-                        cssClass: 'e-clear-filter-button' + (this.allowExcelLikeFilter ? '' : ' ' + cls.ICON_DISABLE),
-                        iconCss: 'e-icons e-clear-filter-icon', enableRtl: this.parent.enableRtl,
-                        content: this.parent.localeObj.getConstant('clearFilter'), disabled: (this.filterObject ? false : true)
+                        cssClass: cls.OK_BUTTON_CLASS, content: this.parent.localeObj.getConstant('ok'), isPrimary: true
                     }
                 },
                 {
@@ -403,6 +403,9 @@ export class FilterDialog {
             } else {
                 memberObj.checkAll(checkedNode);
             }
+        } else if ((args.event as any).keyCode === 38 && !isAllMember) {
+            removeClass(this.memberTreeView.element.querySelectorAll('li.e-prev-active-node'), 'e-prev-active-node');
+            addClass(checkedNode, 'e-prev-active-node');
         }
     }
     /* tslint:enable:no-any */

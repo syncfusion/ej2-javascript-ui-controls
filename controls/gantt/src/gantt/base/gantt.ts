@@ -1278,7 +1278,7 @@ export class Gantt extends Component<HTMLElement>
                     if (this.selectedRowIndex === 0) {
                         return;
                     }
-                    this.selectionModule.selectRow(0);
+                    this.selectionModule.selectRow(0, false, true);
                 }
                 break;
             case 'end':
@@ -1287,7 +1287,7 @@ export class Gantt extends Component<HTMLElement>
                     if (this.selectedRowIndex === this.currentViewData.indexOf(currentSelectingRecord)) {
                         return;
                     }
-                    this.selectionModule.selectRow(this.currentViewData.indexOf(currentSelectingRecord));
+                    this.selectionModule.selectRow(this.currentViewData.indexOf(currentSelectingRecord), false, true);
                 }
                 break;
             case 'downArrow':
@@ -1422,7 +1422,7 @@ export class Gantt extends Component<HTMLElement>
                 let selectingRowIndex: number = expandedRecords.indexOf(selectedItem);
                 let currentSelectingRecord: IGanttData = e.action === 'downArrow' ? expandedRecords[selectingRowIndex + 1] :
                     expandedRecords[selectingRowIndex - 1];
-                this.selectionModule.selectRow(this.currentViewData.indexOf(currentSelectingRecord));
+                this.selectionModule.selectRow(this.currentViewData.indexOf(currentSelectingRecord), false, true);
             } else if (this.selectionSettings.mode === 'Cell' && this.selectionModule.getSelectedRowCellIndexes().length > 0) {
                 let selectCellIndex: ISelectedCell[] = this.selectionModule.getSelectedRowCellIndexes();
                 let selectedCellItem: ISelectedCell = selectCellIndex[selectCellIndex.length - 1];
@@ -1448,8 +1448,8 @@ export class Gantt extends Component<HTMLElement>
     }
     private initProperties(): void {
         this.globalize = new Internationalization(this.locale);
-        this.dateFormat = !isNullOrUndefined(this.dateFormat) ? this.dateFormat :
-            this.globalize.getDatePattern({ skeleton: 'yMd' });
+        this.dateFormat = !isNullOrUndefined(this.dateFormat) ? this.dateFormat : isBlazor() ?
+            this.globalize.getDatePattern({ skeleton: 'd' }) : this.globalize.getDatePattern({ skeleton: 'yMd' });
         this.isAdaptive = Browser.isDevice;
         this.flatData = [];
         this.currentViewData = [];

@@ -1,6 +1,7 @@
 import { createElement, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
-import { PdfViewer, PdfViewerBase, AjaxHandler } from '../index';
+import { PdfViewer, PdfViewerBase, AjaxHandler, TileRenderingSettingsModel } from '../index';
+import { DocumentTextCollectionSettingsModel } from '../pdfviewer-model';
 
 /**
  * TextSearch module
@@ -53,7 +54,7 @@ export class TextSearch {
      * @private
      */
     // tslint:disable-next-line
-    public documentTextCollection: any = [];
+    public documentTextCollection: DocumentTextCollectionSettingsModel[][];
     /**
      * @private
      */
@@ -286,9 +287,12 @@ export class TextSearch {
         let characterBounds: any[] = null;
         if (isCount) {
             if (this.documentTextCollection.length !== 0) {
-                if (this.documentTextCollection[pageIndex] && this.documentTextCollection[pageIndex][pageIndex]) {
+                // tslint:disable-next-line
+                let documentIndex: any = this.documentTextCollection[pageIndex][pageIndex];
+                let pageTextData: string = documentIndex.pageText ? documentIndex.pageText : documentIndex.PageText;
+                if (this.documentTextCollection[pageIndex] && documentIndex) {
                     // tslint:disable-next-line:max-line-length
-                    this.getSearchTextContent(pageIndex, this.searchString, this.documentTextCollection[pageIndex][pageIndex].PageText, textContents, isSinglePageSearch, this.documentTextCollection[pageIndex]);
+                    this.getSearchTextContent(pageIndex, this.searchString, pageTextData, textContents, isSinglePageSearch, this.documentTextCollection[pageIndex]);
                 }
             }
         } else {
@@ -771,18 +775,24 @@ export class TextSearch {
 
     private createRequestForSearch(pageIndex: number): void {
         let proxy: TextSearch = this;
-        let viewportWidth: number = 816;
-        let viewportHeight: number = this.pdfViewer.element.clientHeight;
+        let viewPortWidth: number = 816;
+        let viewPortHeight: number = this.pdfViewer.element.clientHeight;
         let pageWidth: number = this.pdfViewerBase.pageSize[pageIndex].width;
         let pageHeight: number = this.pdfViewerBase.pageSize[pageIndex].height;
         let tileCount: number = this.pdfViewerBase.getTileCount(pageWidth);
-        let noTileX: number = viewportWidth >= pageWidth ? 1 : tileCount;
-        let noTileY: number = viewportWidth >= pageWidth ? 1 : tileCount;
+        let noTileX: number = viewPortWidth >= pageWidth ? 1 : tileCount;
+        let noTileY: number = viewPortWidth >= pageWidth ? 1 : tileCount;
+        let tileSettings: TileRenderingSettingsModel = this.pdfViewer.tileRenderingSettings;
+        if (tileSettings.enableTileRendering && tileSettings.x > 0 && tileSettings.y > 0) {
+            noTileX = viewPortWidth >= pageWidth ? 1 : tileSettings.x;
+            noTileY = viewPortWidth >= pageWidth ? 1 : tileSettings.y;
+        }
         for (let x: number = 0; x < noTileX; x++) {
             for (let y: number = 0; y < noTileY; y++) {
                 let jsonObject: object;
                 // tslint:disable-next-line:max-line-length
-                jsonObject = { xCoordinate: 0, yCoordinate: 0, pageNumber: pageIndex, viwePortWidth: viewportWidth, viewportHeight: viewportHeight, documentId: proxy.pdfViewerBase.getDocumentId(), hashId: proxy.pdfViewerBase.hashId, zoomFactor: proxy.pdfViewerBase.getZoomFactor(), tilecount: tileCount, action: 'RenderPdfPages', elementId: proxy.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId };
+                jsonObject = { xCoordinate: 0, yCoordinate: 0, pageNumber: pageIndex, viewPortWidth: viewPortWidth, viewPortHeight: viewPortHeight, documentId: proxy.pdfViewerBase.getDocumentId(), hashId: proxy.pdfViewerBase.hashId, zoomFactor: proxy.pdfViewerBase.getZoomFactor(), tilecount: tileCount, action: 'RenderPdfPages', elementId: proxy.pdfViewer.element.id, uniqueId: proxy.pdfViewerBase.documentId
+                , tileXCount: noTileX, tileYCount: noTileY };
                 if (this.pdfViewerBase.jsonDocumentId) {
                     // tslint:disable-next-line
                     (jsonObject as any).documentId = this.pdfViewerBase.jsonDocumentId;
@@ -807,7 +817,7 @@ export class TextSearch {
                         if (data) {
                             if (data.pageText && data.uniqueId === proxy.pdfViewerBase.documentId) {
                                 let pageNumber: number = (data.pageNumber !== undefined) ? data.pageNumber : pageIndex;
-                                if (viewportWidth >= pageWidth) {
+                                if (viewPortWidth >= pageWidth) {
                                     proxy.pdfViewerBase.storeWinData(data, pageNumber);
                                 } else {
                                     proxy.pdfViewerBase.storeWinData(data, pageNumber, data.tileX, data.tileY);

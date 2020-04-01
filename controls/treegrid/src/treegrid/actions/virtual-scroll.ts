@@ -24,6 +24,15 @@ export class VirtualScroll {
      */
     constructor(parent?: TreeGrid) {
        this.parent = parent;
+       let name: string = 'name';
+       let injectedModules: string = 'injectedModules';
+       let modules: Function[] = Grid.prototype[injectedModules];
+       for (let i: number = 0; i < modules.length; i++) {
+        if (modules[i] === GridVirtualScroll) {
+          modules.splice(i, 1);
+          break;
+        }
+       }
        Grid.Inject(TreeVirtual);
        this.addEventListener();
     }

@@ -129,8 +129,8 @@ export class Overview extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Updates the overview control when the objects are changed
-     * @param newProp Lists the new values of the changed properties
-     * @param oldProp Lists the old values of the changed properties
+     * @param {OverviewModel} newProp - Lists the new values of the changed properties
+     * @param {OverviewModel} oldProp - Lists the old values of the changed properties
      */
 
     public onPropertyChanged(newProp: OverviewModel, oldProp: OverviewModel): void {

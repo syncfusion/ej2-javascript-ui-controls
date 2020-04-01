@@ -69,6 +69,7 @@ const CLS_VRIGHT: string = 'e-vertical-right';
 const CLS_HBOTTOM: string = 'e-horizontal-bottom';
 const CLS_FILL: string = 'e-fill-mode';
 
+/** An interface that holds options to control the selected item action. */
 export interface SelectEventArgs extends BaseEventArgs {
     /** Defines the previous Tab item element. */
     previousItem: HTMLElement;
@@ -85,6 +86,7 @@ export interface SelectEventArgs extends BaseEventArgs {
     /** Defines the selected content. */
     selectedContent: HTMLElement;
 }
+/** An interface that holds options to control the selecting item action. */
 export interface SelectingEventArgs extends SelectEventArgs {
     /** Defines the selecting Tab item element. */
     selectingItem: HTMLElement;
@@ -93,6 +95,7 @@ export interface SelectingEventArgs extends SelectEventArgs {
     /** Defines the selecting Tab item content. */
     selectingContent: HTMLElement;
 }
+/** An interface that holds options to control the removing and removed item action. */
 export interface RemoveEventArgs extends BaseEventArgs {
     /** Defines the removed Tab item element. */
     removedItem: HTMLElement;
@@ -101,12 +104,16 @@ export interface RemoveEventArgs extends BaseEventArgs {
     /** Defines the prevent action. */
     cancel?: boolean;
 }
+/** An interface that holds options to control the adding and added item action. */
 export interface AddEventArgs extends BaseEventArgs {
     /** Defines the added Tab item element */
     addedItems: TabItemModel[];
     /** Defines the prevent action. */
     cancel?: boolean;
 }
+/**
+ * Objects used for configuring the Tab selecting item action properties.
+ */
 export class TabActionSettings extends ChildProperty<TabActionSettings> {
     /**
      * Specifies the animation effect for displaying Tab content.
@@ -129,6 +136,9 @@ export class TabActionSettings extends ChildProperty<TabActionSettings> {
     @Property('ease')
     public easing: string;
 }
+/**
+ * Objects used for configuring the Tab animation properties.
+ */
 export class TabAnimationSettings extends ChildProperty<TabAnimationSettings> {
     /**
      * Specifies the animation to appear while moving to previous Tab content.

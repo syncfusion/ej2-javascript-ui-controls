@@ -83,13 +83,13 @@ const IFRAMEHEADER: string = `
 /* tslint:enable */
 
 /**
- * Content module is used to render RichTextEditor content
+ * Content module is used to render Rich Text Editor content
  * @hidden
  * @deprecated
  */
 export class IframeContentRender extends ContentRender {
     /**
-     * The function is used to render RichTextEditor iframe
+     * The function is used to render Rich Text Editor iframe
      * @hidden
      * @deprecated    
      */

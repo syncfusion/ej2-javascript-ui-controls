@@ -341,7 +341,6 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
      * * Middle: Places the strip line text in the middle.
      * * End: Places the strip line text at the end.
      * @default 'Middle'
-     * @deprecated
      */
     @Property('Middle')
     public horizontalAlignment: Anchor;
@@ -352,7 +351,6 @@ export class StripLineSettings extends ChildProperty<StripLineSettings> {
      * * Middle: Places the strip line text in the middle.
      * * End: Places the strip line text at the end.
      * @default 'Middle'
-     * @deprecated
      */
     @Property('Middle')
     public verticalAlignment: Anchor;

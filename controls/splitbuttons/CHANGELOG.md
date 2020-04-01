@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.42 (2020-04-01)
+
+### SplitButton
+
+#### Bug Fixes
+
+- Keyboard navigation not working in `bootstrap4` has been resolved.
+
 ## 17.4.49 (2020-02-11)
 
 ### Button Group

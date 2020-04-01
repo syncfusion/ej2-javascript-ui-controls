@@ -7,7 +7,7 @@ import { Event, remove, L10n, Collection, Internationalization, Complex, isBlazo
 import { ModuleDeclaration, updateBlazorTemplate, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Size, createSvg, Point, removeElement, triggerShapeEvent, showTooltip, checkShapeDataFields } from './utils/helper';
-import { getElement, removeClass, getTranslate, triggerItemSelectionEvent, mergeSeparateCluster } from './utils/helper';
+import { getElement, removeClass, getTranslate, triggerItemSelectionEvent, mergeSeparateCluster, customizeStyle } from './utils/helper';
 import { ZoomSettings, LegendSettings, Tile } from './model/base';
 import { LayerSettings, TitleSettings, Border, Margin, MapsAreaSettings, Annotation, CenterPosition } from './model/base';
 import { ZoomSettingsModel, LegendSettingsModel, LayerSettingsModel, BubbleSettingsModel } from './model/base-model';
@@ -59,43 +59,43 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     //Module Declaration of Maps.
     /**
-     * `bubbleModule` is used to add bubble to the maps.
+     * Sets and gets the module to add bubbles in the maps component.
      */
     public bubbleModule: Bubble;
     /**
-     * `markerModule` is used to add marker to the maps.
+     * Sets and get the module to add the marker in the maps component.
      */
     public markerModule: Marker;
     /**
-     * `dataLabelModule` is used to add datalabel to the maps.
+     * Sets and gets the module to add the data-label in the maps component.
      */
     public dataLabelModule: DataLabel;
     /**
-     * `highlightModule` is used to add highlight to the maps.
+     * Sets and gets the module to highlight the element when mouse has hovered on it in maps.
      */
     public highlightModule: Highlight;
     /**
-     * `navigationLineModule` is used to add navigationLine to the maps.
+     * Sets and gets the module to add the navigation lines in the maps component.
      */
     public navigationLineModule: NavigationLine;
     /**
-     * `legendModule` is used to add legend to the maps.
+     * Sets and gets the module to add the legend in maps.
      */
     public legendModule: Legend;
     /**
-     * `selectionModule` is used to add selection to the maps.
+     * Sets and gets the module to select the geometric shapes when clicking in maps.
      */
     public selectionModule: Selection;
     /**
-     * `mapsTooltipModule` is used to add tooltip to the maps.
+     * Sets and gets the module to add the tooltip when mouse has hovered on an element in maps.
      */
     public mapsTooltipModule: MapsTooltip;
     /**
-     * `zoomModule` is used to add zoom to the maps.
+     * Sets and gets the module to add the zooming operations in maps.
      */
     public zoomModule: Zoom;
     /**
-     *  annotationModule is used to place the any text or images into the maps.
+     * Sets and gets the module to add annotation elements in maps.
      */
     public annotationsModule: Annotations;
 
@@ -103,180 +103,181 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     // Maps pblic API Declaration
 
     /**
-     * To configure the background of the maps container.
+     * Sets and gets the background color of the maps container.
      * @default null
      */
     @Property(null)
     public background: string;
     /**
-     * To enable the separator
+     * Enables or disables the visibility state of the separator for grouping.
      * @default false
      */
     @Property(false)
     public useGroupingSeparator: boolean;
     /**
-     * To apply internationalization for maps
+     * Sets and gets the format in which the text in the maps are to be rendered.
      * @default null
      */
     @Property(null)
     public format: string;
     /**
-     * To configure width of maps.
+     * Sets and gets the width in which the maps is to be rendered.
      * @default null
      */
     @Property(null)
     public width: string;
     /**
-     * To configure height of maps.
+     * Sets and gets the height in which the maps is to be rendered.
      * @default null
      */
     @Property(null)
     public height: string;
     /**
-     * To configure the tooltip gesture
+     * Sets and gets the mode in which the tooltip is to be displayed.
+     * The tooltip can be rendered on mouse move, click or double clicking on the
+     * element on the map.
      * @default 'MouseMove'
      */
     @Property('MouseMove')
     public tooltipDisplayMode: TooltipGesture;
     /**
-     * To configure the title settings of the maps.
+     * Sets and gets the title to be displayed for maps.
      */
     @Complex<TitleSettingsModel>({}, TitleSettings)
     public titleSettings: TitleSettingsModel;
     /**
-     * To configure the zoom settings of the maps.
+     * Sets and gets the options to customize the zooming operations in maps.
      */
     @Complex<ZoomSettingsModel>({}, ZoomSettings)
     public zoomSettings: ZoomSettingsModel;
     /**
-     * To configure the legend settings of the maps.
+     * Sets and gets the options to customize the legend of the maps.
      */
     @Complex<LegendSettingsModel>({}, LegendSettings)
     public legendSettings: LegendSettingsModel;
     /**
-     * To configure the layers settings of the maps.
+     * Sets and gets the options to customize the layers of the maps.
      */
     @Collection<LayerSettingsModel>([], LayerSettings)
     public layers: LayerSettingsModel[];
     /**
-     *  Options for customizing the annotation of maps.
+     *  Sets and gets the options for customizing the annotation of maps.
      */
     @Collection<AnnotationModel>([], Annotation)
     public annotations: AnnotationModel[];
 
     /**
-     *  Options to customize left, right, top and bottom margins of the maps.
+     *  Sets and gets the options to customize the margins of the maps.
      */
     @Complex<MarginModel>({}, Margin)
     public margin: MarginModel;
 
     /**
-     * Options for customizing the color and width of the maps border.
+     * Sets and gets the options for customizing the color and width of the maps border.
      */
     @Complex<BorderModel>({ color: '#DDDDDD', width: 0 }, Border)
     public border: BorderModel;
 
     /**
-     * Specifies the theme for the maps.
+     * Set and gets the theme supported for the maps.
      * @default Material
      */
     @Property('Material')
     public theme: MapsTheme;
     /**
-     * Specifies the ProjectionType for the maps.
+     * Sets and gets the projection type for the maps.
      * @default Mercator
      */
     @Property('Mercator')
     public projectionType: ProjectionType;
     /**
-     * To configure baseMapIndex of maps. Option to select which layer to be visible.
+     * Sets and gets the base map index of maps. It provides the option to select which layer to be visible in the maps.
      * @default 0
      */
     @Property(0)
     public baseLayerIndex: number;
 
     /**
-     * Description for maps.
+     * Sets and gets the description for maps.
      * @default null
      */
     @Property(null)
     public description: string;
 
     /**
-     * TabIndex value for the maps.
+     * Sets and gets the tab index value for the maps.
      * @default 1
      */
     @Property(1)
     public tabIndex: number;
     /**
-     * To configure the zoom level of maps.
+     * Sets and gets the center position of the maps.
      */
     @Complex<CenterPositionModel>({ latitude: null, longitude: null }, CenterPosition)
     public centerPosition: CenterPositionModel;
     /**
-     * To customization Maps area
+     * Sets and gets the options to customize the area around the map.
      */
     @Complex<MapsAreaSettingsModel>({}, MapsAreaSettings)
     public mapsArea: MapsAreaSettingsModel;
     /**
-     * Triggers before maps rendered.
+     * Triggers when the map is on load.
      * @event
      * @blazorProperty 'OnLoad'
      */
     @Event()
     public load: EmitType<ILoadEventArgs>;
     /**
-     * Triggers before the prints gets started.
+     * Triggers before the print gets started.
      * @event
      * @blazorProperty 'OnPrint'
      */
     @Event()
     public beforePrint: EmitType<IPrintEventArgs>;
     /**
-     * Triggers after maps rendered.
+     * Triggers after the maps gets rendered.
      * @event
      * @blazorProperty 'Loaded'
      */
     @Event()
     public loaded: EmitType<ILoadedEventArgs>;
     /**
-     * Triggers on clicking the maps.
+     * Triggers when clicking an element in maps.
      * @event
      * @blazorProperty 'OnClick'
      */
     @Event()
     public click: EmitType<IMouseEventArgs>;
     /**
-     * Triggers on double clicking the maps.
+     * Triggers when performing the double click operation on an element in maps.
      * @event
      * @blazorProperty 'OnDoubleClick'
      */
     @Event()
     public doubleClick: EmitType<IMouseEventArgs>;
     /**
-     * Triggers on right clicking the maps.
+     * Triggers when performing the right click operation on an element in maps.
      * @event
      * @blazorProperty 'OnRightClick'
      */
     @Event()
     public rightClick: EmitType<IMouseEventArgs>;
     /**
-     * Triggers on resizing the maps.
+     * Triggers when resizing the maps.
      * @event
      * @blazorProperty 'Resizing'
      */
     @Event()
     public resize: EmitType<IResizeEventArgs>;
     /**
-     * Triggers before the maps tooltip rendered.
-     * @deprecated
+     * Triggers before the maps tooltip gets rendered.
      * @event
      * @blazorProperty 'TooltipRendering'
      */
     @Event()
     public tooltipRender: EmitType<ITooltipRenderEventArgs>;
     /**
-     * Triggers the legend rendering event.
+     * Triggers before the legend gets rendered.
      * @event
      * @deprecated
      * @blazorProperty 'LegendRendering'
@@ -284,7 +285,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     @Event()
     public legendRendering: EmitType<ILegendRenderingEventArgs>;
     /**
-     * Triggers after the maps tooltip rendered.
+     * Triggers after the maps tooltip gets rendered.
      * @deprecated
      * @event
      * @blazorProperty 'TooltipRenderComplete'
@@ -292,35 +293,35 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     @Event()
     public tooltipRenderComplete: EmitType<ITooltipRenderCompleteEventArgs>;
     /**
-     * Triggers while clicking the shape
+     * Triggers when clicking a shape in maps.
      * @event
      * @blazorProperty 'ShapeSelected'
      */
     @Event()
     public shapeSelected: EmitType<IShapeSelectedEventArgs>;
     /**
-     * Triggers before selection applied
+     * Triggers when clicking the shape on maps and before the selection is applied.
      * @event
      * @blazorProperty 'OnItemSelect'
      */
     @Event()
     public itemSelection: EmitType<ISelectionEventArgs>;
     /**
-     * Trigger before highlight applied
+     * Trigger when mouse move on the shape in maps and before the shape gets highlighted.
      * @event
      * @blazorProperty 'OnItemHighlight'
      */
     @Event()
     public itemHighlight: EmitType<ISelectionEventArgs>;
     /**
-     * Triggers before highlight applied for shape
+     * Triggers when mouse move on the shape in maps and before the shape gets highlighted.
      * @event
      * @blazorProperty 'ShapeHighlighted'
      */
     @Event()
     public shapeHighlight: EmitType<IShapeSelectedEventArgs>;
     /**
-     * Triggers before the maps layer rendered.
+     * Triggers before the maps layer gets rendered.
      * @event
      * @blazorProperty 'LayerRendering'
      */
@@ -328,7 +329,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public layerRendering: EmitType<ILayerRenderingEventArgs>;
 
     /**
-     * Triggers before the maps shape rendered.
+     * Triggers before the maps shape gets rendered.
      * @event
      * @blazorProperty 'ShapeRendering'
      */
@@ -336,21 +337,21 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public shapeRendering: EmitType<IShapeRenderingEventArgs>;
 
     /**
-     * Triggers before the maps marker rendered.
+     * Triggers before the maps marker gets rendered.
      * @event
      * @blazorProperty 'MarkerRendering'
      */
     @Event()
     public markerRendering: EmitType<IMarkerRenderingEventArgs>;
     /**
-     * Triggers before the maps marker cluster rendered.
+     * Triggers before the maps marker cluster gets rendered.
      * @event
      */
     @Event()
     public markerClusterRendering: EmitType<IMarkerClusterRenderingEventArgs>;
 
     /**
-     * Triggers event mouse clicking on the maps marker element.
+     * Triggers when clicking on the maps marker element.
      * @event
      * @blazorProperty 'OnMarkerClick'
      */
@@ -358,21 +359,21 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public markerClick: EmitType<IMarkerClickEventArgs>;
 
     /**
-     * Triggers event mouse clicking on the maps Cluster element.
+     * Triggers when clicking the marker cluster in maps.
      * @event
      */
     @Event()
     public markerClusterClick: EmitType<IMarkerClusterClickEventArgs>;
 
     /**
-     * Triggers event mouse moving on the maps cluster element.
+     * Triggers when moving the mouse over the marker cluster element in maps.
      * @event
      */
     @Event()
     public markerClusterMouseMove: EmitType<IMarkerClusterMoveEventArgs>;
 
     /**
-     * Triggers event mouse moving on the maps marker element.
+     * Triggers when moving the mouse over the marker element in maps.
      * @event
      * @blazorProperty 'OnMarkerMouseMove'
      */
@@ -380,7 +381,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public markerMouseMove: EmitType<IMarkerMoveEventArgs>;
 
     /**
-     * Triggers before the data label get rendered.
+     * Triggers before the data-label gets rendered.
      * @event
      * @blazorProperty 'DataLabelRendering'
      */
@@ -388,7 +389,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public dataLabelRendering: EmitType<ILabelRenderingEventArgs>;
 
     /**
-     * Triggers before the maps bubble rendered.
+     * Triggers before the bubble element gets rendered on the map.
      * @event
      * @blazorProperty 'BubbleRendering'
      */
@@ -396,7 +397,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public bubbleRendering: EmitType<IBubbleRenderingEventArgs>;
 
     /**
-     * Triggers event mouse clicking on the maps bubble element.
+     * Triggers when performing the click operation on the bubble element in maps.
      * @event
      * @blazorProperty 'OnBubbleClick'
      */
@@ -404,7 +405,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public bubbleClick: EmitType<IBubbleClickEventArgs>;
 
     /**
-     * Triggers event mouse moving on the maps bubble element.
+     * Triggers when hovering the mouse on the bubble element in maps.
      * @event
      * @blazorProperty 'OnBubbleMouseMove'
      */
@@ -412,7 +413,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public bubbleMouseMove: EmitType<IBubbleMoveEventArgs>;
 
     /**
-     * Triggers after the bubble animation completed.
+     * Triggers after the animation completed in the maps component.
      * @event
      * @blazorProperty 'AnimationCompleted'
      */
@@ -420,7 +421,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public animationComplete: EmitType<IAnimationCompleteEventArgs>;
 
     /**
-     * Triggers before annotation rendering.
+     * Triggers before rendering the annotation in maps.
      * @event
      * @blazorProperty 'AnnotationRendering'
      */
@@ -428,7 +429,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public annotationRendering: EmitType<IAnnotationRenderingEventArgs>;
 
     /**
-     * Triggers before zoom in or zoom out.
+     * Triggers before the zoom operations in the maps such as zoom in and zoom out.
      * @event
      * @blazorProperty 'OnZoom'
      */
@@ -436,7 +437,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public zoom: EmitType<IMapZoomEventArgs>;
 
     /**
-     * Triggers before panning.
+     * Triggers before performing the panning operation.
      * @event
      * @blazorProperty 'OnPan'
      */
@@ -445,35 +446,35 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     // Internal properties declaration area.
     /**
-     * Format method
+     * Specifies the function to format the text contents in the maps.
      * @private
      */
     public formatFunction: Function;
     /**
-     * svg renderer object.
+     * Specifies the svg renderer object.
      * @private
      */
     public renderer: SvgRenderer;
     /**
-     * maps svg element's object
+     * Specifies the svg element's object of maps.
      * @private
      */
     public svgObject: Element;
     /** @public */
     public mapScaleValue: number;
     /**
-     * Maps available height, width
+     * Specifies the available height and width of maps.
      * @private
      */
     public availableSize: Size;
 
     /**
-     * localization object
+     * Specifies the localization object.
      * @private
      */
     public localeObject: L10n;
     /**
-     * It contains default values of localization values
+     * Specifies the default values of localization values.
      */
     private defaultLocalConstants: Object;
 
@@ -484,7 +485,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public intl: Internationalization;
 
     /**
-     * Check layer whether is normal or tile
+     * Check layer whether is geometry or tile
      * @private
      */
     public isTileMap: boolean = false;
@@ -509,7 +510,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
     /**
      * @private
-     * Calculate the axes bounds for map.
+     * Calculates the axes bounds for map.
      * @hidden
      */
     public mapLayerPanel: LayerPanel;
@@ -524,12 +525,12 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public themeStyle: IThemeStyle;
     /**
      * @private
-     * Stores the reset
+     * Enables or disables the reset
      */
     public isReset: boolean;
     /**
      * @private
-     * Stores the legend bounds
+     * Sets and gets the legend bounds
      */
     public totalRect: Rect;
     public dataLabel: DataLabel;
@@ -786,7 +787,13 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         };
         ajaxModule.send(localAjax.sendData);
     }
-
+    /**
+     * This method is used to process the JSON data to render the maps.
+     * @param processType - Specifies the process type in maps.
+     * @param data - Specifies the data for maps.
+     * @param layer - Specifies the layer for the maps.
+     * @param dataType - Specifies the data type for maps.
+     */
     /* tslint:disable:no-eval */
     public processResponseJsonData(processType: string, data?: object | string, layer?: LayerSettings, dataType?: string): void {
         this.serverProcess['response']++;
@@ -922,18 +929,17 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @private
      */
     public blazorTemplates(): void {
-        let layerLength: number = this.layers.length - 1;
-        let markerLength: number = this.layers[layerLength].markerSettings.length - 1;
+        for (let i: number = 0; i < this.layers.length; i++) {
+        let markerLength: number = this.layers[i].markerSettings.length - 1;
         if (markerLength >= 0) {
-            if (this.layers[layerLength].dataLabelSettings.visible || this.layers[layerLength].markerSettings[markerLength].template) {
-                updateBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate', this.layers[layerLength].dataLabelSettings);
-                for (let i: number = 0; i < this.layers.length; i++) {
-                    for (let j: number = 0; j < this.layers[i].markerSettings.length; j++) {
-                        updateBlazorTemplate(this.element.id + '_MarkerTemplate' + j, 'MarkerTemplate', this.layers[i].markerSettings[j]);
-                    }
-                }
+            if (this.layers[i].dataLabelSettings.visible || this.layers[i].markerSettings[markerLength].template) {
+              updateBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate', this.layers[i].dataLabelSettings);
+              for (let j: number = 0; j < this.layers[i].markerSettings.length; j++) {
+                updateBlazorTemplate(this.element.id + '_MarkerTemplate' + j, 'MarkerTemplate', this.layers[i].markerSettings[j]);
+              }
             }
         }
+      }
     }
 
     /**
@@ -1254,7 +1260,10 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             this.mapsOnResize
         );
     }
-
+    /**
+     * This method is used to perform operations when mouse pointer leave from maps.
+     * @param e - Specifies the pointer event on maps.
+     */
     public mouseLeaveOnMap(e: PointerEvent): void {
         if (document.getElementsByClassName('highlightMapStyle').length > 0 && this.legendModule) {
             this.legendModule.removeShapeHighlightCollection();
@@ -1263,7 +1272,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * To handle the click event for the maps.
+     * This method is used to perform the operations when a click operation is performed on maps.
+     * @param e - Specifies the pointer event on maps.
      * @blazorProperty 'PerformClick'
      */
     /* tslint:disable:no-string-literal */
@@ -1290,10 +1300,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 latitude: latitude, longitude: longitude
             };
             this.trigger('click', eventArgs, (mouseArgs: IMouseEventArgs) => {
-                if (targetEle.id.indexOf('shapeIndex') !== -1) {
-                    let layerIndex: number = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
-                    triggerShapeEvent(targetId, this.layers[layerIndex].selectionSettings, this, shapeSelected);
-                }
                 if (targetEle.id.indexOf('shapeIndex') > -1 || targetEle.id.indexOf('Tile') > -1) {
                     if (this.markerModule && this.markerModule.sameMarkerData.length > 0 &&
                         (this.zoomModule ? this.zoomModule.isSingleClick : true)) {
@@ -1315,12 +1321,24 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 if (!eventArgs.cancel) {
                     this.notify(click, targetEle);
                 }
+                if (!eventArgs.cancel && targetEle.id.indexOf('shapeIndex') !== -1) {
+                    let layerIndex: number = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
+                    let shapeSelectedEventArgs : IShapeSelectedEventArgs = triggerShapeEvent
+                    (
+                        targetId, this.layers[layerIndex].selectionSettings, this, shapeSelected
+                    );
+                    if (!shapeSelectedEventArgs.cancel && this.selectionModule && !isNullOrUndefined(this.shapeSelected)) {
+                        customizeStyle(this.selectionModule.selectionType + 'selectionMap',
+                                       this.selectionModule.selectionType + 'selectionMapStyle', shapeSelectedEventArgs);
+                    }
+                }
             });
         }
     }
 
     /**
-     *
+     * This method is used to perform operations when mouse click on maps.
+     * @param e - Specifies the pointer event on maps.
      */
     public mouseEndOnMap(e: PointerEvent): boolean {
         let targetEle: Element = <Element>e.target;
@@ -1351,7 +1369,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         return false;
     }
     /**
-     *
+     * This method is used to perform operations when mouse is clicked down on maps.
+     * @param e - Specifies the pointer event on maps.
      */
     public mouseDownOnMap(e: PointerEvent): void {
         let pageX: number;
@@ -1382,7 +1401,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * To handle the double click event for the maps.
+     * This method is used to perform operations when performing the double click operation on maps.
+     * @param e - Specifies the pointer event.
      * @blazorProperty 'PerformDoubleClick'
      */
     public mapsOnDoubleClick(e: PointerEvent): void {
@@ -1390,7 +1410,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     *
+     * This method is used to perform operations while performing mouse over on maps.
+     * @param e - Specifies the pointer event on maps.
      */
     /* tslint:disable:no-string-literal */
     public mouseMoveOnMap(e: PointerEvent): void {
@@ -1414,6 +1435,10 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         this.onMouseMove(e);
         this.notify(Browser.touchMoveEvent, e);
     }
+    /**
+     * This method is used to perform operations when mouse move event is performed on maps.
+     * @param e - Specifies the pointer event on maps.
+     */
     public onMouseMove(e: PointerEvent): boolean {
         let element: Element = <Element>e.target;
         let pageX: number;
@@ -1439,7 +1464,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /*
 
     /**
-     * To handle the window resize event on maps.
+     * This method is used to perform operations while resizing the window.
+     * @param e - Specifies the arguments of window resize event.
      */
     public mapsOnResize(e: Event): boolean {
         let args: IResizeEventArgs = {
@@ -1469,9 +1495,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * To zoom the map by specifies the center position
-     * @param centerPosition
-     * @param zoomFactor
+     * This method is used to zoom the map by specifying the center position.
+     * @param centerPosition - Specifies the center position for maps.
+     * @param zoomFactor - Specifies the zoom factor for maps.
      */
     public zoomByPosition(centerPosition: { latitude: number, longitude: number }, zoomFactor: number): void {
         let factor: number = this.mapLayerPanel.calculateFactor(this.layersCollection[0]);
@@ -1505,10 +1531,11 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * To pan the map by specifies the direction
-     * @param direction
+     * This method is used to perform panning by specifying the direction.    
+     * @param direction - Specifies the direction in which the panning is performed.
+     * @param mouseLocation - Specifies the location of the mouse pointer in maps.
      */
-    public panByDirection(direction: PanDirection): void {
+    public panByDirection(direction: PanDirection, mouseLocation?: PointerEvent | TouchEvent): void {
         let xDiff: number = 0; let yDiff: number = 0;
         switch (direction) {
             case 'Left':
@@ -1525,30 +1552,32 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 break;
         }
         if (this.zoomModule) {
-            this.zoomModule.panning(direction, xDiff, yDiff);
+            this.zoomModule.panning(direction, xDiff, yDiff, mouseLocation);
         }
     }
 
     /**
-     * To add layer
-     * @param layer
+     * This method is used to add the layers dynamically to the maps.
+     * @param layer - Specifies the layer for the maps.
      */
     public addLayer(layer: Object): void {
         this.layers.push(new LayerSettings(this.layers[0] as LayerSettings, 'layers', layer));
         this.refresh();
     }
     /**
-     * To remove layer
-     * @param index
+     * This method is used to remove a layer from map.
+     * @param index - Specifies the index number of the layer to be removed.
      */
     public removeLayer(index: number): void {
         this.layers.splice(index, 1);
         this.refresh();
     }
     /**
-     * To add marker
-     * @param layerIndex
-     * @param marker
+     * This method is used to add markers dynamically in the maps.
+     * If we provide the index value of the layer in which the marker to be added and the coordinates
+     * of the marker as parameters, the marker will be added in the location.
+     * @param layerIndex - Specifies the index number of the layer.
+     * @param marker - Specifes the settings of the marker to be added.
      */
     public addMarker(layerIndex: number, markerCollection: MarkerSettingsModel[]): void {
         let layerEle: Element = document.getElementById(this.element.id + '_LayerIndex_' + layerIndex);
@@ -1562,11 +1591,11 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         }
     }
     /**
-     * Public method for selection
-     * @param layerIndex
-     * @param propertyName
-     * @param name
-     * @param enable
+     * This method is used to select the geometric shape element in the maps component.
+     * @param layerIndex - Specifies the index of the layer in maps.
+     * @param propertyName - Specifies the property name from the data source.
+     * @param name - Specifies the name of the shape that is selected.
+     * @param enable - Specifies the shape selection to be enabled.
      */
     public shapeSelection(layerIndex: number, propertyName: string, name: string, enable?: boolean): void {
         let targetEle: Element;
@@ -1643,11 +1672,11 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * To add marker
-     * @param minLatitude
-     * @param minLongitude
-     * @param maxLatitude
-     * @param maxLongitude
+     * This method is used to zoom the maps component based on the provided coordinates.
+     * @param minLatitude - Specifies the minimum latitude to be zoomed.
+     * @param minLongitude - Specifies the minimum latitude to be zoomed.
+     * @param maxLatitude - Specifies the maximum latitude to be zoomed.
+     * @param maxLongitude - Specifies the maximum longitude to be zoomed.
      */
     public zoomToCoordinates(minLatitude: number, minLongitude: number, maxLatitude: number, maxLongitude: number): void {
         let centerLatitude: number;
@@ -1696,7 +1725,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * Method to romove multiple selected shapes maps
+     * This method is used to remove multiple selected shapes in the maps.
      */
     private removeShapeSelection(): void {
         let selectedElements: number = this.selectedElementId.length;
@@ -1707,7 +1736,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * Method to set culture for maps
+     * This method is used to set culture for maps component.
      */
     private setCulture(): void {
         this.intl = new Internationalization();
@@ -1716,7 +1745,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * Method to set locale constants
+     * This method to set locale constants to the maps component.
      */
     private setLocaleConstants(): void {
         // Need to modify after the api confirm
@@ -1730,7 +1759,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * To destroy maps control.
+     * This method disposes the maps component.
      */
     public destroy(): void {
         this.unWireEVents();
@@ -1738,14 +1767,14 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * Get component name
+     * Gets component name
      */
     public getModuleName(): string {
         return 'maps';
     }
 
     /**
-     * Get the properties to be maintained in the persisted state.
+     * Gets the properties to be maintained in the persisted state.
      * @private
      */
     public getPersistData(): string {
@@ -1979,16 +2008,19 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         return isVisible;
     }
     /**
-     * Handles the print method for chart control.
+     * This method handles the printing functionality for the maps component.
+     * @param id - Specifies the element to be printed.
      */
     public print(id?: string[] | string | Element): void {
         let exportChart: ExportUtils = new ExportUtils(this);
         exportChart.print(id);
     }
     /**
-     * Handles the export method for chart control.
-     * @param type
-     * @param fileName
+     * This method handles the export functionality for the maps component.
+     * @param type - Specifies the type of the exported file.
+     * @param fileName - Specifies the name of the file with which the rendered maps need to be exported.
+     * @param orientation - Specifies the orientation of the pdf document in exporting.
+     * @param isDownload - Specifies whether to download as a file or get as base64 string for the file
      */
     public export(type: ExportType, fileName: string, orientation?: PdfPageOrientation, isDownload?: boolean): Promise<string> {
         let exportMap: ExportUtils = new ExportUtils(this);
@@ -2053,15 +2085,15 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         };
     }
     /**
-     * To get the geo location
-     * @param {number} layerIndex
-     * @param {PointerEvent} location
+     * This method is used to get the geo location points.
+     * @param {number} layerIndex - Specifies the index number of the layer of the map.
+     * @param {PointerEvent} location - Specifies the location in point format.
      * @return GeoPosition
      */
     public getGeoLocation(layerIndex: number, location: PointerEvent): GeoPosition {
         let container: HTMLElement = document.getElementById(this.element.id);
-        let pageX: number = location.layerX - container.offsetLeft;
-        let pageY: number = location.layerY - container.offsetTop;
+        let pageX: number = location['layerX'] - container.offsetLeft;
+        let pageY: number = location['layerY'] - container.offsetTop;
         let currentLayer: LayerSettings = <LayerSettings>this.layersCollection[layerIndex];
         let translate: Object = getTranslate(this, currentLayer, false);
         let translatePoint: Point = translate['location'] as Point;
@@ -2081,8 +2113,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     }
 
     /**
-     * To get the geo location
-     * @param {PointerEvent}
+     * This method is used to get the geo location points when tile maps is rendered in the maps component.
+     * @param {PointerEvent} - Specifies the location in point format.
      * @return GeoPosition
      */
     public getTileGeoLocation(location: PointerEvent): GeoPosition {
@@ -2090,11 +2122,15 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         let latLong: Object;
         let ele: HTMLElement = document.getElementById(this.element.id + '_tile_parent');
         latLong = this.pointToLatLong(
-            location.layerX + this.mapAreaRect.x - (ele.offsetLeft - container.offsetLeft),
-            location.layerY + this.mapAreaRect.y - (ele.offsetTop - container.offsetTop));
+            location['layerX'] + this.mapAreaRect.x - (ele.offsetLeft - container.offsetLeft),
+            location['layerY'] + this.mapAreaRect.y - (ele.offsetTop - container.offsetTop));
         return { latitude: latLong['latitude'], longitude: latLong['longitude'] };
     }
-
+    /**
+     * This method is used to convert the point to latitude and longitude in maps.
+     * @param pageX - Specifies the x value for the page.
+     * @param pageY - Specifies the y value for the page.
+     */
     public pointToLatLong(pageX: number, pageY: number): Object {
         let padding: number = this.layers[this.layers.length - 1].layerType === 'GoogleStaticMap' ? 0 : 10;
         pageY = (this.zoomSettings.enable) ? pageY + padding : pageY;

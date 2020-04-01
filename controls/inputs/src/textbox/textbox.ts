@@ -301,7 +301,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                     }
                     break;
                 case 'cssClass':
-                        Input.setCssClass(newProp.cssClass, [this.textboxWrapper.container], oldProp.cssClass);
+                    this.updateCssClass(newProp.cssClass, oldProp.cssClass);
                     break;
                 case 'locale':
                     this.globalize = new Internationalization(this.locale);
@@ -449,6 +449,10 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
      * @private
      */
     public render(): void {
+        let updatedCssClassValue: string = this.cssClass;
+        if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+            updatedCssClassValue = this.getInputValidClassList(this.cssClass);
+        }
         if (!(isBlazor() && this.isServerRendered)) {
             this.respectiveElement = (this.isHiddenInput) ? this.textarea : this.element;
             this.textboxWrapper = Input.createInput({
@@ -457,7 +461,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                 properties: {
                     enabled: this.enabled,
                     enableRtl: this.enableRtl,
-                    cssClass: this.cssClass,
+                    cssClass: updatedCssClassValue,
                     readonly: this.readonly,
                     placeholder: this.placeholder,
                     showClearButton: this.showClearButton
@@ -508,7 +512,10 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             for (let key of Object.keys(this.htmlAttributes)) {
                 if (containerAttr.indexOf(key) > -1 ) {
                     if (key === 'class') {
-                        addClass([this.textboxWrapper.container], this.htmlAttributes[key].split(' '));
+                        let updatedClassValues : string = this.getInputValidClassList(this.htmlAttributes[key]);
+                        if (updatedClassValues !== '') {
+                            addClass([this.textboxWrapper.container], updatedClassValues.split(' '));
+                        }
                     } else if (key === 'style') {
                         let setStyle: string = this.textboxWrapper.container.getAttribute(key);
                         setStyle = !isNullOrUndefined(setStyle) ? (setStyle + this.htmlAttributes[key]) :
@@ -531,7 +538,16 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
             }
         }
     }
-
+    private updateCssClass(newClass : string, oldClass : string) : void {
+        Input.setCssClass(this.getInputValidClassList(newClass), [this.textboxWrapper.container], this.getInputValidClassList(oldClass));
+    }
+    private getInputValidClassList(inputClassName: string): string {
+        let result: string = inputClassName;
+        if (!isNullOrUndefined(inputClassName) && inputClassName !== '') {
+            result = (inputClassName.replace(/\s+/g, ' ')).trim();
+        }
+        return result;
+    }
     private setInitialValue() : void {
         if (!this.isAngular) {
             this.respectiveElement.setAttribute('value', this.initialValue);

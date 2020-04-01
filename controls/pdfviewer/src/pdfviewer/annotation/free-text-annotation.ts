@@ -151,11 +151,26 @@ export class FreeTextAnnotation {
     public isTextSelected: boolean = false;
     private selectionStart: number = 0;
     private selectionEnd: number = 0;
-    private isBold: boolean = false;
-    private isItalic: boolean = false;
-    private isUnderline: boolean = false;
-    private isStrikethrough: boolean = false;
-    private textAlign: string;
+    /**
+     * @private
+     */
+    public isBold: boolean = false;
+    /**
+     * @private
+     */
+    public isItalic: boolean = false;
+    /**
+     * @private
+     */
+    public isUnderline: boolean = false;
+    /**
+     * @private
+     */
+    public isStrikethrough: boolean = false;
+    /**
+     * @private
+     */
+    public textAlign: string;
     private defaultText: string;
 
 
@@ -190,7 +205,10 @@ export class FreeTextAnnotation {
         this.freeTextPageNumbers = [];
     }
 
-    private updateTextProperties(): void {
+    /**
+     * @private
+     */
+    public updateTextProperties(): void {
         this.defautWidth = this.pdfViewer.freeTextSettings.width ? this.pdfViewer.freeTextSettings.width : 151;
         this.defaultHeight = this.pdfViewer.freeTextSettings.height ? this.pdfViewer.freeTextSettings.height : 24.6;
         this.borderColor = this.pdfViewer.freeTextSettings.borderColor ? this.pdfViewer.freeTextSettings.borderColor : '#ffffff00';
@@ -574,7 +592,7 @@ export class FreeTextAnnotation {
                         y: inputEleTop / zoomFactor, width: this.defautWidth, height: this.defaultHeight,
                     }, annotName: annotationName,
                     shapeAnnotationType: 'FreeText', pageIndex: pageIndex, fontColor: this.fontColor, fontSize: this.fontSize,
-                    fontFamily: this.fontFamily, opacity: this.opacity, comments: [], textAlign: 'Left',
+                    fontFamily: this.fontFamily, opacity: this.opacity, comments: [], textAlign: this.textAlign,
                     // tslint:disable-next-line:max-line-length
                     font: { isBold: this.isBold, isItalic: this.isItalic, isStrikeout: this.isStrikethrough, isUnderline: this.isUnderline },
                     review: { state: 'Unmarked', stateModel: 'None', modifiedDate: currentDateString, author: this.author },

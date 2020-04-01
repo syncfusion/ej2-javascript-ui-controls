@@ -4,6 +4,7 @@ import { ReplaceEventArgs, completeAction, ReplaceAllEventArgs } from '../common
 import { L10n, getComponent, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { ToolbarFind, goto, FindOptions, showDialog, findUndoRedo, count, replaceAllDialog, findKeyUp } from '../../workbook/index';
+import { ReplaceAllArgs } from '../../workbook/index';
 import { CheckBox, Button } from '@syncfusion/ej2-buttons';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { TextBox } from '@syncfusion/ej2-inputs';
@@ -49,7 +50,7 @@ export class FindAndReplace {
             this.parent.off(findKeyUp, this.findKeyUp);
         }
     }
-    private findUndoRedo(options: { [key: string]: string }): void {
+    private findUndoRedo(options: ReplaceAllArgs): void {
         let eventArgs: BeforeReplaceEventArgs = { address: options.address, compareVal: options.compareVal, cancel: false };
         if (options.undoRedoOpt === 'before') {
             this.parent.notify(beginAction, { action: 'beforeReplace', eventArgs: eventArgs });
@@ -60,94 +61,124 @@ export class FindAndReplace {
             }
         } else if (options.undoRedoOpt === 'beforeReplaceAll') {
             if (!eventArgs.cancel) {
-                let eventArgs: ReplaceAllEventArgs = { replace: options.replace, replaceFor: options.replaceFor };
+                let eventArgs: ReplaceAllEventArgs = { replaceValue: options.replaceValue, addressCollection: options.Collection};
                 this.parent.notify(beginAction, { action: 'beforeReplaceAll', eventArgs });
             }
         } else if (options.undoRedoOpt === 'afterReplaceAll') {
             if (!eventArgs.cancel) {
-                let eventArgs: ReplaceAllEventArgs = { replace: options.replace, replaceFor: options.replaceFor };
-                this.parent.notify(completeAction, { action: 'undoRedo', eventArgs });
+                let eventArgs: ReplaceAllEventArgs = { replaceValue: options.replaceValue, addressCollection: options.Collection };
+                this.parent.notify(completeAction, { action: 'replaceAll', eventArgs });
             }
         }
     }
     private renderFindDlg(): void {
         let l10n: L10n = this.parent.serviceLocator.getService(locale);
-        let findOpt: string;
         let dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
-        let cancelBtn: boolean = false;
-        let dlg: DialogModel = {
-            isModal: false, showCloseIcon: true, cssClass: 'e-find-dlg', allowDragging: true,
-            header: l10n.getConstant('FindAndReplace'), closeOnEscape: true,
-            beforeOpen: (): void => {
-                dialogInst.dialogInstance.content = this.findandreplaceContent(); dialogInst.dialogInstance.dataBind();
-                this.parent.element.focus();
-            },
-            buttons: [{
-                buttonModel: {
-                    content: l10n.getConstant('FindPreviousBtn'), isPrimary: true, cssClass: 'e-btn-findPrevious', disabled: true
+        let cancelButton: boolean = false;
+        if (isNullOrUndefined(this.parent.element.querySelector('.e-find-dlg'))) {
+            let dlg: DialogModel = {
+                isModal: false, showCloseIcon: true, cssClass: 'e-find-dlg', allowDragging: true,
+                header: l10n.getConstant('FindAndReplace'), closeOnEscape: false,
+                beforeOpen: (): void => {
+                    dialogInst.dialogInstance.content = this.findandreplaceContent(); dialogInst.dialogInstance.dataBind();
+                    this.parent.element.focus();
                 },
-                click: (): void => {
-                    findOpt = 'prev';
-                    this.findDlgClick(findOpt);
-                }
-            }, {
-                buttonModel: {
-                    content: l10n.getConstant('FindNextBtn'), isPrimary: true, cssClass: 'e-btn-findNext', disabled: true
+                buttons: [{
+                    buttonModel: {
+                        content: l10n.getConstant('FindPreviousBtn'), isPrimary: true, cssClass: 'e-btn-findPrevious', disabled: true
+                    },
+                    click: (): void => {
+                        this.dialogMessage();
+                        this.findDlgClick('prev');
+                    }
+                }, {
+                    buttonModel: {
+                        content: l10n.getConstant('FindNextBtn'), isPrimary: true, cssClass: 'e-btn-findNext', disabled: true
 
-                },
-                click: (): void => {
-                    findOpt = 'next';
-                    this.findDlgClick(findOpt);
+                    },
+                    click: (): void => {
+                        this.dialogMessage();
+                        this.findDlgClick('next');
+                    }
+                }, {
+                    buttonModel: {
+                        content: l10n.getConstant('ReplaceBtn'), isPrimary: true, cssClass: 'e-btn-replace', disabled: true
+                    },
+                    click: (): void => {
+                        this.dialogMessage();
+                        this.findDlgClick('replace');
+                    }
+                }, {
+                    buttonModel: {
+                        content: l10n.getConstant('ReplaceAllBtn'), isPrimary: true, cssClass: 'e-btn-replaceAll', disabled: true
+                    },
+                    click: (): void => {
+                        this.dialogMessage();
+                        this.findDlgClick('replaceAll');
+                    }
+                }], open: (): void => {
+                    let findInput: string = (this.parent.element.querySelector('.e-text-findNext') as HTMLInputElement).value;
+                    if (findInput) {
+                        let prevButton: HTMLElement = this.parent.element.querySelector('.e-btn-findPrevious') as HTMLElement;
+                        let prevButtonObj: Button = getComponent(prevButton, 'btn') as Button;
+                        prevButtonObj.disabled = false;
+                        (getComponent(
+                            this.parent.element.querySelector('.e-btn-findNext') as HTMLElement, 'btn') as Button).disabled = false;
+                    }
+                }, close: (): void => {
+                    dialogInst.hide();
                 }
-            }, {
-                buttonModel: {
-                    content: l10n.getConstant('ReplaceBtn'), isPrimary: true, cssClass: 'e-btn-replace', disabled: true
-                },
-                click: (): void => {
-                    let replace: string = 'replace';
-                    this.findDlgClick(replace);
-                }
-            }, {
-                buttonModel: {
-                    content: l10n.getConstant('ReplaceAllBtn'), isPrimary: true, cssClass: 'e-btn-replaceAll', disabled: true
-                },
-                click: (): void => {
-                    let replace: string = 'replaceAll';
-                    this.findDlgClick(replace);
-                }
-            }], open: (): void => {
-                let findInput: string = (this.parent.element.querySelector('.e-text-findNext') as HTMLInputElement).value;
-                if (findInput) {
-                    let prevButton: HTMLElement = this.parent.element.querySelector('.e-btn-findPrevious') as HTMLElement;
-                    let prevButtonObj: Button = getComponent(prevButton, 'btn') as Button;
-                    prevButtonObj.disabled = false;
-                    (getComponent(this.parent.element.querySelector('.e-btn-findNext') as HTMLElement, 'btn') as Button).disabled = false;
-                }
-            },
-        };
-        dialogInst.show(dlg, cancelBtn);
+            };
+            dialogInst.show(dlg, cancelButton);
+        } else {
+            dialogInst.hide();
+        }
+    }
+    private dialogMessage(): void {
+        if (this.parent.element.querySelector('.e-replace-alert-span')) {
+            this.parent.element.querySelector('.e-replace-alert-span').remove();
+        } else if (this.parent.element.querySelector('.e-find-alert-span')) {
+            this.parent.element.querySelector('.e-find-alert-span').remove();
+        }
     }
     private renderGotoDlg(): void {
         let l10n: L10n = this.parent.serviceLocator.getService(locale);
         let dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
         let cancelBtn: boolean = false;
-        let dlg: DialogModel = {
-            width: 300, isModal: false, showCloseIcon: true, cssClass: 'e-goto-dlg', allowDragging: true,
-            header: l10n.getConstant('GotoHeader'),
-            beforeOpen: (): void => {
-                dialogInst.dialogInstance.content = this.GotoContent(); dialogInst.dialogInstance.dataBind();
-                this.parent.element.focus();
-            },
-            buttons: [{
-                buttonModel: {
-                    content: l10n.getConstant('Ok'), isPrimary: true, cssClass: 'e-btn-goto-ok'
+        if (isNullOrUndefined(this.parent.element.querySelector('.e-find-dlg'))) {
+            let dlg: DialogModel = {
+                width: 300, isModal: false, showCloseIcon: true, cssClass: 'e-goto-dlg', allowDragging: true,
+                header: l10n.getConstant('GotoHeader'),
+                beforeOpen: (): void => {
+                    dialogInst.dialogInstance.content = this.GotoContent(); dialogInst.dialogInstance.dataBind();
+                    this.parent.element.focus();
                 },
-                click: (): void => {
-                    this.gotoHandler();
-                }
-            }]
-        };
-        dialogInst.show(dlg, cancelBtn);
+                buttons: [{
+                    buttonModel: {
+                        content: l10n.getConstant('Ok'), isPrimary: true, cssClass: 'e-btn-goto-ok'
+                    },
+                    click: (): void => {
+                        this.gotoHandler();
+                    },
+                }], close: (): void => {
+                    dialogInst.hide();
+                }, open: (): void => {
+                    this.textFocus();
+                },
+
+            };
+            dialogInst.show(dlg, cancelBtn);
+        } else {
+            dialogInst.hide();
+        }
+    }
+    private textFocus(): void {
+        let element: HTMLElement = this.parent.element.querySelector('.e-text-goto');
+        element.addEventListener('focus', (): void => {
+            if (this.parent.element.querySelector('.e-goto-alert-span')) {
+                this.parent.element.querySelector('.e-goto-alert-span').remove();
+            }
+        });
     }
     private findDlgClick(findDlgArgs: string): void {
         if (findDlgArgs === 'prev') {
@@ -161,14 +192,14 @@ export class FindAndReplace {
     private findHandler(findOpt?: ToolbarFind): void {
         let findInput: HTMLInputElement = (this.parent.element.querySelector('.e-text-findNext') as HTMLInputElement);
         if (!findInput) {
-            findInput = document.querySelector('.e-text-findNext-short') as HTMLInputElement;
+            findInput = this.parent.element.querySelector('.e-text-findNext-short') as HTMLInputElement;
             if (!findInput) {
                 this.gotoAlert();
             }
         }
         let value: string = findInput.value;
         if (findInput.value !== '') {
-        let sheetIndex: number = this.parent.activeSheetTab;
+        let sheetIndex: number = this.parent.activeSheetIndex;
         let checkCase: HTMLElement = this.parent.element.querySelector('.e-findnreplace-checkcase') as HTMLElement;
         let isCSen: boolean;
         if (!checkCase) {
@@ -214,7 +245,7 @@ export class FindAndReplace {
     }
     }
     private replaceHandler(replace: { [key: string]: string }): void {
-        let sheetIndex: number = this.parent.activeSheetTab;
+        let sheetIndex: number = this.parent.activeSheetIndex;
         let findInput: HTMLInputElement = this.parent.element.querySelector('.e-text-findNext') as HTMLInputElement;
         let replaceWith: HTMLInputElement = this.parent.element.querySelector('.e-text-replaceInp') as HTMLInputElement;
         let checkCase: HTMLElement = this.parent.element.querySelector('.e-findnreplace-checkcase') as HTMLElement;
@@ -253,34 +284,39 @@ export class FindAndReplace {
 
     private gotoAlert(): void {
         let l10n: L10n = this.parent.serviceLocator.getService(locale);
-        let dialogInst: Dialog = (this.parent.serviceLocator.getService(dialog) as Dialog);
-        let dlg: DialogModel = {
-            width: 300, isModal: true, showCloseIcon: true, cssClass: 'e-goto-alert-dlg',
-            beforeOpen: (): void => {
-                dialogInst.dialogInstance.content = l10n.getConstant('InsertingEmptyValue'); dialogInst.dialogInstance.dataBind();
-                this.parent.element.focus();
-            }
-        };
-        dialogInst.show(dlg);
+        let gotoSpan: Element = this.parent.createElement('span', {
+            className: 'e-goto-alert-span',
+            innerHTML: l10n.getConstant('InsertingEmptyValue')
+        });
+        (this.parent.element.querySelector('.e-goto-dlg').querySelector('.e-dlg-content')).appendChild(gotoSpan);
     }
 
     private showDialog(): void {
-        (this.parent.serviceLocator.getService(dialog) as Dialog).show({
-            width: 300, isModal: true, showCloseIcon: true, cssClass: 'e-find-alert-dlg',
-            content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('NoElements')
+        if (this.parent.element.querySelector('.e-replace-alert-span')) {
+            this.parent.element.querySelector('.e-replace-alert-span').remove();
+        }
+        let l10n: L10n = this.parent.serviceLocator.getService(locale);
+        let findSpan: Element = this.parent.createElement('span', {
+            className: 'e-find-alert-span',
+            innerHTML: l10n.getConstant('NoElements')
         });
+        (this.parent.element.querySelector('.e-find-dlg').querySelector('.e-dlg-content')).appendChild(findSpan);
     }
     private replaceAllDialog(options: { [key: string]: number | string }): void {
+        if (this.parent.element.querySelector('.e-find-alert-span')) {
+            this.parent.element.querySelector('.e-find-alert-span').remove();
+        }
         let l10n: L10n = (this.parent.serviceLocator.getService(locale));
-        (this.parent.serviceLocator.getService(dialog) as Dialog).show({
-            height: 160, width: 300, isModal: true, showCloseIcon: true,
-            content: options.count + l10n.getConstant('ReplaceAllEnd') + options.replaceValue
+        let replaceSpan: Element = this.parent.createElement('span', {
+            className: 'e-replace-alert-span',
+            innerHTML: options.count + l10n.getConstant('ReplaceAllEnd') + options.replaceValue
         });
+        (this.parent.element.querySelector('.e-find-dlg').querySelector('.e-dlg-content')).appendChild(replaceSpan);
     }
 
     private findKeyUp(e: KeyboardEvent): void {
         if (e.target as HTMLElement, 'e-text-findNext') {
-            let findValue: string = (document.querySelector('.e-text-findNext') as HTMLInputElement).value;
+            let findValue: string = (this.parent.element.querySelector('.e-text-findNext') as HTMLInputElement).value;
             if (!isNullOrUndefined(findValue) && findValue !== '') {
                 let prevButton: HTMLElement = this.parent.element.querySelector('.e-btn-findPrevious') as HTMLElement;
                 let prevButtonObj: Button = getComponent(prevButton, 'btn') as Button;
@@ -289,22 +325,26 @@ export class FindAndReplace {
             } else {
                 (getComponent(this.parent.element.querySelector('.e-btn-findPrevious') as HTMLElement, 'btn') as Button).disabled = true;
                 (getComponent(this.parent.element.querySelector('.e-btn-findNext') as HTMLElement, 'btn') as Button).disabled = true;
+                this.dialogMessage();
             }
         }
-        let findValue: string = (document.querySelector('.e-text-findNext') as HTMLInputElement).value;
-        let replaceValue: string = (document.querySelector('.e-text-replaceInp') as HTMLInputElement).value;
+        let findValue: string = (this.parent.element.querySelector('.e-text-findNext') as HTMLInputElement).value;
+        let replaceValue: string = (this.parent.element.querySelector('.e-text-replaceInp') as HTMLInputElement).value;
         if (!isNullOrUndefined(findValue) && !isNullOrUndefined(replaceValue) && (findValue !== '') && (replaceValue !== '')) {
-                (getComponent(this.parent.element.querySelector('.e-btn-replace') as HTMLElement, 'btn') as Button).disabled = false;
-                (getComponent(this.parent.element.querySelector('.e-btn-replaceAll') as HTMLElement, 'btn') as Button).disabled = false;
-            } else {
-                (getComponent(this.parent.element.querySelector('.e-btn-replace') as HTMLElement, 'btn') as Button).disabled = true;
-                (getComponent(this.parent.element.querySelector('.e-btn-replaceAll') as HTMLElement, 'btn') as Button).disabled = true;
+            if (this.parent.getActiveSheet().isProtected === false) {
+            (getComponent(this.parent.element.querySelector('.e-btn-replace') as HTMLElement, 'btn') as Button).disabled = false;
+            (getComponent(this.parent.element.querySelector('.e-btn-replaceAll') as HTMLElement, 'btn') as Button).disabled = false;
+            }
+        } else {
+            (getComponent(this.parent.element.querySelector('.e-btn-replace') as HTMLElement, 'btn') as Button).disabled = true;
+            (getComponent(this.parent.element.querySelector('.e-btn-replaceAll') as HTMLElement, 'btn') as Button).disabled = true;
+            this.dialogMessage();
         }
     }
 
     private findandreplaceContent(): HTMLElement {
-        if (document.querySelector('.e-text-findNext-short') as HTMLInputElement) {
-            this.shortValue = (document.querySelector('.e-text-findNext-short') as HTMLInputElement).value;
+        if (this.parent.element.querySelector('.e-text-findNext-short') as HTMLInputElement) {
+            this.shortValue = (this.parent.element.querySelector('.e-text-findNext-short') as HTMLInputElement).value;
         }
         let dialogElem: HTMLElement = this.parent.createElement('div', { className: 'e-link-dialog' });
         let findElem: HTMLElement = this.parent.createElement('div', { className: 'e-find' });

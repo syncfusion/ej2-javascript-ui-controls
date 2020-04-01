@@ -291,9 +291,9 @@ export class DateTime extends NiceInterval {
             labelStyle = <Font>(extend({}, getValue('properties', axis.labelStyle), null, true));
             previousValue = axisLabels.length ? axis.visibleLabels[axisLabels.length - 1].value : tempInterval;
             axis.format = chart.intl.getDateFormat({
-                format: this.findCustomFormats(axis, tempInterval, previousValue),
+                format: this.findCustomFormats(axis, tempInterval, previousValue) || this.blazorCustomFormat(axis),
                 type: firstToLowerCase(axis.skeletonType),
-                skeleton: this.getSkeleton(axis, tempInterval, previousValue)
+                skeleton: this.getSkeleton(axis, tempInterval, previousValue, chart.isBlazor)
             });
             axis.startLabel = axis.format(new Date(axis.visibleRange.min));
             axis.endLabel = axis.format(new Date(axis.visibleRange.max));
@@ -313,6 +313,15 @@ export class DateTime extends NiceInterval {
             axis.getMaxLabelWidth(this.chart);
         }
 
+    }
+
+    /** @private */
+    private blazorCustomFormat(axis: Axis): string {
+        if (this.chart.isBlazor && axis.actualIntervalType === 'Years') {
+            return 'yyyy';
+        } else {
+            return '';
+        }
     }
 
     /** @private */

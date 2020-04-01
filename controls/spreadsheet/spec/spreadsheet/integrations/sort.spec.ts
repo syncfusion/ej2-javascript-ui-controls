@@ -18,7 +18,7 @@ describe('Spreadsheet sorting module ->', () => {
             model = {
                 sheets: [
                     {
-                        rangeSettings: [
+                        range: [
                             { dataSource: defaultData }
                         ]
                     }

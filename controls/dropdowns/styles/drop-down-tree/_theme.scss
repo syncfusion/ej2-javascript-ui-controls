@@ -23,7 +23,21 @@
       }
     }
 
-    &.e-input-group.e-control-wrapper .e-input[readonly] {
+    &.e-input-group.e-control-wrapper,
+    &.e-float-input.e-control-wrapper {
+      .e-clear-icon {
+        background-color: $ddt-icon-bg-color;
+      }
+
+      .e-input-group-icon.e-ddt-icon {
+        @if $ddt-skin-name == 'material' or $ddt-skin-name == 'material-dark' {
+          background-color: $ddt-icon-bg-color;
+        }
+      }
+    }
+
+    &.e-input-group.e-control-wrapper .e-input[readonly],
+    &.e-float-input.e-control-wrapper input[readonly] {
       @if $ddt-skin-name == 'bootstrap4' {
         background: $ddt-readonly-input-bg-color;
       }

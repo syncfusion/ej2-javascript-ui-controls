@@ -111,6 +111,7 @@ export class Formats {
         pTag.innerHTML = '<br>';
         this.parent.domNode.insertAfter(pTag, referNode);
         this.parent.nodeSelection.setCursorPoint(this.parent.currentDocument, pTag, 0);
+        detach(referNode.lastChild);
     }
 
     private isNotEndCursor(preElem: Element, range: Range): void {

@@ -7,225 +7,237 @@ import { Size, GaugeLocation } from '../utils/helper';
 
 /**
  * @private
- * Specifies LienarGauge Events
+ * Specifies the event arguments of linear gauge.
  */
 /** @private */
 export interface ILinearGaugeEventArgs {
+    /**
+     * Specifies the name of the event.
+     */
     name: string;
+    /**
+     * Specifies the cancel state for the event. The default value is false. If set as true, the event progress will be stopped.
+     */
     cancel: boolean;
 }
 /**
- * specifies Print Events
+ * Specifies the event arguments for print event in linear gauge.
  */
 export interface IPrintEventArgs extends ILinearGaugeEventArgs {
+    /**
+     * Specifies the html content that is printed. The html content returned is usually the id string of the linear gauge.
+     */
     htmlContent: Element;
 }
 /**
- * Gauge Loaded event arguments
+ * Specifies the event arguments for loaded event in linear gauge.
  */
 export interface ILoadedEventArgs extends ILinearGaugeEventArgs {
     /**
-     * event argument gauge
+     * Specifies the instance of linear gauge.
      */
     gauge: LinearGauge;
 }
 /**
- * Gauge Load event arguments
+ * Specifies the event arguments for load event in linear gauge.
  */
 export interface ILoadEventArgs extends ILinearGaugeEventArgs {
     /**
-     * event argument gauge
+     * Specifies the instance of linear gauge.
      */
     gauge: LinearGauge;
 }
 /**
- * Gauge animation completed event arguments
+ * Specifies the event arguments for animation completed event in linear gauge.
  */
 export interface IAnimationCompleteEventArgs extends ILinearGaugeEventArgs {
     /**
-     * event argument axis
+     * Specifies the instance of axis in linear gauge.
      */
     axis: Axis;
     /**
-     * event argument pointer
+     * Specifies the instance of pointer in linear gauge.
      */
     pointer: Pointer;
 }
 /**
- * Gauge axis label rendering event arguments
+ * Specifies the event arguments for axis label rendering event in linear gauge.
  */
 export interface IAxisLabelRenderEventArgs extends ILinearGaugeEventArgs {
     /**
-     * event argument axis
+     * Specifies the instance of axis in linear gauge.
      */
     axis: Axis;
     /**
-     * event argument text
+     * Specifies the text for the axis label.
      */
     text: string;
     /**
-     * event argument value
+     * Specifies the value for the axis label.
      */
     value: number;
 }
 
 /**
- * Gauge tooltip event arguments
+ * Specifies the event arguments for tooltip event in linear gauge.
  */
 export interface ITooltipRenderEventArgs extends ILinearGaugeEventArgs {
     /**
-     * Instance of linear gauge component.
+     * Specifies the instance of linear gauge component.
      */
     gauge: LinearGauge;
     /**
-     * Tooltip event
+     * Specifies the mouse pointer event.
      */
     event: PointerEvent;
     /**
-     * Render the tooltip content
+     * Specifies the content for the tooltip.
      */
     content?: string;
     /**
-     * Tooltip configuration
+     * Specifies the options to customize the tooltip.
      */
     tooltip?: TooltipSettings;
     /**
-     * Render the tooltip location
+     * Specifies the location of the tooltip in linear gauge.
      */
     location?: GaugeLocation;
     /**
-     * event argument axis
+     * Specifies the instance of axis.
      */
     axis: Axis;
     /**
-     * event argument pointer
+     * Specifies the instance of pointer.
      */
     pointer: Pointer;
 }
 /**
- * Gauge annotation render event arguments
+ * Specifies the event arguments for annotation render event in linear gauge.
  */
 export interface IAnnotationRenderEventArgs extends ILinearGaugeEventArgs {
     /**
-     * event argument content
+     * Specifies the content for the annotation.
      */
     content?: string;
     /**
-     * event argument text style
+     * Specifies the options to customize the text in annotation.
      */
     textStyle?: FontModel;
     /**
-     * event argument annotation
+     * Specifies the instance of annotation.
      */
     annotation: Annotation;
 }
 /**
- * Gauge mouse events args
+ * Specifies the event arguments for mouse events in linear gauge.
  */
 export interface IMouseEventArgs extends ILinearGaugeEventArgs {
     /**
-     * event argument linear gauge model
+     * Specifies the instance of linear gauge.
      */
     model?: LinearGauge;
     /**
-     * event argument target
+     * Specifies the target element on which the mouse operation is performed.
      */
     target: Element;
     /**
-     * event argument x position
+     * Specifies the x position of the mouse event.
      */
     x: number;
     /**
-     * event argument y position
+     * Specifies the y position of the mouse event.
      */
     y: number;
 }
+/**
+ * Specifies the event arguments for pointer drag event in linear gauge.
+ */
 export interface IPointerDragEventArgs {
     /**
-     * name event argument 
+     * Specifies the name of the event.
      */
     name: string;
     /**
-     * axis event argument 
+     * Specifies the axis instance in linear gauge.
      */
     axis?: Axis;
     /**
-     * pointer event argument 
+     * Specifies the pointers instance in linear gauge 
      */
     pointer?: Pointer;
     /**
-     * currentValue event argument 
+     * Specifies the value of the pointer after dragging the pointer.
      */
     currentValue: number;
     /**
-     * previousValue event argument 
+     * Specifies the value of the pointer before dragging the pointer.
      */
     previousValue?: number;
     /**
-     * index of the current pointer argument 
+     * Specifies the index value of the pointer that is dragged in linear gauge.
      */
     pointerIndex: number;
     /**
-     * index of the current pointer`s axis argument 
+     * Specifies the index value of the axis on which the pointer is dragged.
      */
     axisIndex: number;
 
 }
 /**
- * Gauge resize event arguments
+ * Specifies the event arguments for resize event in linear gauge.
  */
 export interface IResizeEventArgs {
     /**
-     * event name
+     * Specifies the name of the event.
      */
     name: string;
     /**
-     * event argument previous size
+     * Specifies the size of the linear gauge before resizing.
      */
     previousSize: Size;
     /**
-     * event argument current size
+     * Specifies the size of the linear gauge after resizing.
      */
     currentSize: Size;
     /**
-     * event argument gauge
+     * Specifies the instance of linear gauge.
      */
     gauge: LinearGauge;
 }
 /**
- * Gauge value change event arguments
+ * Specifies the event arguments for value change event in linear gauge.
  */
 export interface IValueChangeEventArgs {
     /**
-     * event name
+     * Specifies the name of the event.
      */
     name: string;
     /**
-     * event argument gauge
+     * Specifies the instance of the linear gauge.
      */
     gauge?: LinearGauge;
     /**
-     * event argument element
+     * Specifies the element of the linear gauge.
      */
     element: Element;
     /**
-     * event argument axis index
+     * specifies the index value of the current axis.
      */
     axisIndex: number;
     /**
-     * event argument axis
+     * Specifies the axis instance of linear gauge.
      */
     axis?: Axis;
     /**
-     * event argument pointer index
+     * Specifies the current pointer index in linear gauge.
      */
     pointerIndex: number;
     /**
-     * event argument pointer
+     * Specifies the pointer instance of linear gauge.
      */
     pointer?: Pointer;
     /**
-     * event argument value
+     * Specifies the current value.
      */
     value: number;
 }
@@ -252,35 +264,68 @@ export interface IMoveCursor {
 
 }
 
+/**
+ * Specifies the theme style for linear gauge.
+ */
 export interface IThemeStyle {
-
+    /**
+     * Specifies the background color of linear gauge.
+     */
     backgroundColor: string;
-
+    /**
+     * Specifies the text color for the title in  the linear gauge.
+     */
     titleFontColor: string;
-
+    /**
+     * Specifies the fill color for the tooltip in the linear gauge.
+     */
     tooltipFillColor: string;
-
+    /**
+     * Specifies the font color for the tooltip in the linear gauge.
+     */
     tooltipFontColor: string;
-
+    /**
+     * Specifies the color of the axis line in the linear gauge.
+     */
     lineColor: string;
-
+    /**
+     * Specifies the color of the label in the linear gage.
+     */
     labelColor: string;
-
+    /**
+     * Specifies the color for major ticks in the linear gauge.
+     */
     majorTickColor: string;
-
+    /**
+     * Specifies the color for minor ticks in the linear gauge.
+     */
     minorTickColor: string;
-
+    /**
+     * Specifies the color for the linear gauge pointer.
+     */
     pointerColor: string;
-
+    /**
+     * Specifies the font family of the text contents in linear gauge.
+     */
     fontFamily?: string;
-
+    /**
+     * Specifies the font size of the text contents in linear gauge.
+     */
     fontSize?: string;
-
+    /**
+     * Specifies the font family of the labels.
+     */
     labelFontFamily?: string;
-
+    /**
+     * Specifies the opacity of the tooltip.
+     */
     tooltipFillOpacity?: number;
-
+    /**
+     * Specifies the opacity of text content of the tooltip.
+     */
     tooltipTextOpacity?: number;
-
+    /**
+     * Specifies the background color of the container.
+     */
     containerBackground?: string;
 }

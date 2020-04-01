@@ -247,9 +247,9 @@ export class DiagramElement {
     // }
     /**
      * Sets the offset of the element with respect to its parent
-     * @param x 
-     * @param y 
-     * @param mode 
+     * @param {number} x 
+     * @param {number} y 
+     * @param {UnitMode} mode 
      */
     public setOffsetWithRespectToBounds(x: number, y: number, mode: UnitMode): void {
         this.unitMode = mode;
@@ -258,7 +258,7 @@ export class DiagramElement {
 
     /**
      * Gets the position of the element with respect to its parent
-     * @param size 
+     * @param {Size} size 
      */
     public getAbsolutePosition(size: Size): PointModel {
         if (this.position !== undefined) {
@@ -294,7 +294,7 @@ export class DiagramElement {
 
     /**
      * Measures the minimum space that the element requires
-     * @param availableSize 
+     * @param {Size} availableSize 
      */
     public measure(availableSize: Size, obj?: Object, callback?: Function): Size {
         let width: number = this.width !== undefined ? this.width : (availableSize.width || 0) - this.margin.left - this.margin.right;
@@ -308,7 +308,7 @@ export class DiagramElement {
 
     /**
      * Arranges the element
-     * @param desiredSize 
+     * @param {Size} desiredSize 
      */
     public arrange(desiredSize: Size): Size {
         this.actualSize = desiredSize;
@@ -325,8 +325,8 @@ export class DiagramElement {
 
     /**
      * Validates the size of the element with respect to its minimum and maximum size
-     * @param desiredSize 
-     * @param availableSize 
+     * @param {Size} desiredSize 
+     * @param {Size} availableSize 
      */
     protected validateDesiredSize(desiredSize: Size, availableSize: Size): Size {
         //Empty canvas

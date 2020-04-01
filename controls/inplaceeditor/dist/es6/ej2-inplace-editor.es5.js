@@ -81,7 +81,7 @@ function getCompValue(type, val) {
 }
 
 /**
- * InPlace-Editor events defined here.
+ * In-place Editor events defined here.
  */
 /** @hidden */
 var render = 'render';
@@ -156,7 +156,7 @@ var localeConstant = {
 };
 
 /**
- * InPlace-Editor classes defined here.
+ * In-place Editor classes defined here.
  */
 /** @hidden */
 var ROOT = 'e-inplaceeditor';
@@ -1310,7 +1310,9 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         while (this.element.firstElementChild) {
             this.element.removeChild(this.element.firstElementChild);
         }
-        _super.prototype.destroy.call(this);
+        if (!(isBlazor() && this.isServerRendered)) {
+            _super.prototype.destroy.call(this);
+        }
     };
     /**
      * Get the properties to be maintained in the persisted state.

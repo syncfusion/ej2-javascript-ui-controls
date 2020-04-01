@@ -484,6 +484,8 @@ export interface ZoomEventArgs {
     action?: string;
     /** Defines Zoom timeline settings.  */
     timeline?: ZoomTimelineSettings;
+    /** Defines the cancel option value. */
+    cancel?: boolean;
 }
 
 export interface ZoomTimelineSettings {

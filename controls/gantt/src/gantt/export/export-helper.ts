@@ -192,6 +192,8 @@ export class ExportHelper {
             cell.value = this.parent.getDurationString(ganttProps.duration, ganttProps.durationUnit);
         } else if (column.field === taskFields.resourceInfo) {
             cell.value = ganttProps.resourceNames;
+        } else if (column.field === taskFields.work) {
+            cell.value = this.parent.getWorkString(ganttProps.work, ganttProps.workUnit);
         } else {
             cell.value = !isNullOrUndefined(data[column.field]) ? data[column.field].toString() : '';
         }
@@ -258,7 +260,8 @@ export class ExportHelper {
             if (data[this.parent.labelSettings.rightLabel]) {
                 taskbar.rightTaskLabel.value = data[this.parent.labelSettings.rightLabel].toString();
             }
-            let reduceLeft: number = ganttProp.isMilestone ? Math.floor(this.parent.chartRowsModule.taskBarHeight / 2) + 30 : 30;
+            /* tslint:disable-next-line */
+            let reduceLeft: number = ganttProp.isMilestone ? Math.floor(this.parent.chartRowsModule.taskBarHeight / 2) + 33 : 33; // 33 indicates default timeline cell width
             taskbar.rightTaskLabel.left = ganttProp.left + ganttProp.width + reduceLeft; // right label left value
             taskbar.fontFamily = this.ganttStyle.fontFamily;
             taskbar.progressWidth = ganttProp.progressWidth;
@@ -287,6 +290,11 @@ export class ExportHelper {
             };
             if (this.parent.pdfQueryTaskbarInfo) {
                 this.parent.trigger('pdfQueryTaskbarInfo', args);
+                taskbar.progressFontColor = args.taskbar.progressFontColor;
+                taskbar.taskColor = args.taskbar.taskColor;
+                taskbar.taskBorderColor = args.taskbar.taskBorderColor;
+                taskbar.progressColor = args.taskbar.progressColor;
+                taskbar.milestoneColor = args.taskbar.milestoneColor;
             }
         });
     }
@@ -402,7 +410,16 @@ export class ExportHelper {
         cell.style.borders = new PdfBorders();
         cell.style.borders.all = new PdfPen(cell.style.borderColor);
         cell.style.padding = new PdfPaddings();
-        cell.style.padding.all = 10;
+        let padding: number = 0;
+        if (cell.isHeaderCell) {
+            padding = this.parent.timelineModule.isSingleTier ? 45 / 2 : 60 / 2;
+        } else {
+            padding = this.parent.rowHeight / 2;
+        }
+        cell.style.padding.top = padding - style.fontSize;
+        cell.style.padding.bottom = padding - style.fontSize;
+        cell.style.padding.left = 10;
+        cell.style.padding.right = 10;
     }
 
     /**

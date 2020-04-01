@@ -1255,8 +1255,9 @@ function calculateValues() {
 function onTouchStart(e) {
     targetElement = e.target.parentElement;
     calculateValues();
-    originalMouseX = e.touches[0].pageX;
-    originalMouseY = e.touches[0].pageY;
+    let coordinates = e.touches ? e.changedTouches[0] : e;
+    originalMouseX = coordinates.pageX;
+    originalMouseY = coordinates.pageY;
     if (!isNullOrUndefined(resizeStart)) {
         if (resizeStart(e) === true) {
             return;
@@ -1329,7 +1330,8 @@ function resizeSouth(e) {
     let documentHeight = document.documentElement.clientHeight;
     let calculateValue = false;
     let containerRectValues;
-    let currentpageY = (getEventType(e.type) === 'mouse') ? e.pageY : e.touches[0].pageY;
+    let coordinates = e.touches ? e.changedTouches[0] : e;
+    let currentpageY = coordinates.pageY;
     let targetRectValues = getClientRectValues(targetElement);
     if (!isNullOrUndefined(containerElement)) {
         containerRectValues = getClientRectValues(containerElement);
@@ -1477,7 +1479,8 @@ function resizeEast(e) {
     if (!isNullOrUndefined(containerElement)) {
         containerRectValues = getClientRectValues(containerElement);
     }
-    let pageX = (getEventType(e.type) === 'mouse') ? e.pageX : e.touches[0].pageX;
+    let coordinates = e.touches ? e.changedTouches[0] : e;
+    let pageX = coordinates.pageX;
     let targetRectValues = getClientRectValues(targetElement);
     if (!isNullOrUndefined(containerElement) && (((targetRectValues.left - containerRectValues.left) + targetRectValues.width) < maxWidth
         || (targetRectValues.right - containerRectValues.left) > targetRectValues.width)) {
@@ -2568,7 +2571,9 @@ let Dialog = class Dialog extends Component {
         for (let i = 0; i < attrs.length; i++) {
             this.element.removeAttribute(attrs[i]);
         }
-        super.destroy();
+        if (!this.isBlazorServerRender()) {
+            super.destroy();
+        }
     }
     /**
      * Binding event to the element while widget creation
@@ -3715,6 +3720,7 @@ let Tooltip = class Tooltip extends Component {
         //if (isNullOrUndefined(target)) { return; }
         this.trigger('beforeClose', this.tooltipEventArgs, (observedArgs) => {
             if (!observedArgs.cancel) {
+                this.clearTemplate();
                 if (target) {
                     this.restoreElement(target);
                 }
@@ -3790,7 +3796,9 @@ let Tooltip = class Tooltip extends Component {
             }
             else {
                 this.hideTooltip(this.animation.close, e);
-                this.clear();
+                if (this.closeDelay === 0) {
+                    this.clear();
+                }
             }
         }
         else {

@@ -6,6 +6,8 @@ import { ResourcesModel, ViewsModel } from '../models/models';
 /**
  * Interface
  */
+
+ /** An interface that holds options to control the actions of scheduler such as editing, navigation, and more. */
 export interface ActionEventArgs extends BaseEventArgs {
     /** Returns the request type of the current action. */
     requestType: string;
@@ -45,6 +47,7 @@ export interface ToolbarActionArgs extends BaseEventArgs {
     items: ItemModel[];
 }
 
+/** An interface that holds options to control the cell click action. */
 export interface CellClickEventArgs extends BaseEventArgs {
     /** Returns the start time of the cell. */
     startTime: Date;
@@ -67,6 +70,7 @@ export interface CellClickEventArgs extends BaseEventArgs {
     groupIndex?: number;
 }
 
+/** An interface that holds options to control the actions on clicking the more event indicator. */
 export interface MoreEventsClickArgs extends BaseEventArgs {
     /** Returns the start time of the cell. */
     startTime: Date;
@@ -115,6 +119,7 @@ export interface SelectEventArgs extends BaseEventArgs {
     groupIndex?: number;
 }
 
+/** An interface that holds options to control the event click action. */
 export interface EventClickArgs extends BaseEventArgs {
     /**
      * Returns the date of the event.
@@ -140,6 +145,7 @@ export interface HoverEventArgs extends BaseEventArgs {
     element: HTMLElement;
 }
 
+/** An interface that holds options to control the events (appointments) rendering in Scheduler. */
 export interface EventRenderedArgs extends BaseEventArgs {
     /**
      * Returns the event data.
@@ -154,6 +160,7 @@ export interface EventRenderedArgs extends BaseEventArgs {
     type?: string;
 }
 
+/** An interface that holds options to control the popup open action. */
 export interface PopupOpenEventArgs extends BaseEventArgs {
     /** Returns the type of the popup which is currently being opted to open. */
     type: PopupType;
@@ -175,6 +182,7 @@ export interface PopupOpenEventArgs extends BaseEventArgs {
     duration?: number;
 }
 
+/** An interface that holds options to control the popup close action. */
 export interface PopupCloseEventArgs extends BaseEventArgs {
     /** Returns the type of the popup which is currently being opted to open. */
     type: PopupType;
@@ -191,6 +199,7 @@ export interface PopupCloseEventArgs extends BaseEventArgs {
     cancel: boolean;
 }
 
+/**  An interface that holds options to control the date and view navigations. */
 export interface NavigatingEventArgs extends BaseEventArgs {
     /** Returns the action type either as `date` or `view` due to which the navigation takes place. */
     action: string;
@@ -206,6 +215,7 @@ export interface NavigatingEventArgs extends BaseEventArgs {
     currentView?: string;
 }
 
+/** An interface that holds options to control the rendering of all cells (work, time, resource, header, and more). */
 export interface RenderCellEventArgs extends BaseEventArgs {
     /** Returns the type of the elements which is currently being rendered on the UI. 
      * @blazorDefaultValue new ElementType()
@@ -224,6 +234,7 @@ export interface RenderCellEventArgs extends BaseEventArgs {
     groupIndex?: number;
 }
 
+/** An interface that holds options to control resize action on appointments. */
 export interface ResizeEventArgs extends BaseEventArgs {
     /** Returns the resize element. */
     element: HTMLElement;
@@ -251,6 +262,7 @@ export interface ResizeEventArgs extends BaseEventArgs {
     scroll?: ScrollOptions;
 }
 
+/** An interface that holds options to control drag action on appointments. */
 export interface DragEventArgs extends BaseEventArgs {
     /** Returns the drag element. */
     element: HTMLElement;
@@ -342,6 +354,7 @@ export interface CellTemplateArgs {
     groupIndex?: number;
 }
 
+/** An interface that holds the details of a resource. */
 export interface ResourceDetails {
     /** Returns the resource model data such as the field mapping options used within it. */
     resource: ResourcesModel;
@@ -376,6 +389,7 @@ export interface IRenderer {
     startDate(): Date;
     endDate(): Date;
     scrollToHour?(hour: string, scrollDate?: Date): void;
+    scrollToDate?(scrollDate?: Date): void;
     highlightCurrentTime?(): void;
     getStartHour(): Date;
     getEndHour(): Date;
@@ -414,6 +428,8 @@ export interface EJ2Instance extends HTMLElement {
 export interface ScrollCss {
     padding?: string;
     border?: string;
+    rtlPadding?: string;
+    rtlBorder?: string;
 }
 
 /** @hidden */
@@ -551,6 +567,7 @@ export interface StateArgs {
     isDataManager: boolean;
 }
 
+/** An interface that holds export options. */
 export interface ExportOptions {
     /** The fileName denotes the name to be given for the exported file. */
     fileName?: string;
@@ -583,6 +600,7 @@ export interface ViewsData extends ViewsModel {
     eventTemplateName?: string;
 }
 
+/** An interface that holds options of events once it bound to scheduler. */
 export interface DataBoundEventArgs extends BaseEventArgs {
     /**
      * Returns the result data.
@@ -593,6 +611,7 @@ export interface DataBoundEventArgs extends BaseEventArgs {
     aggregates?: Object;
 }
 
+/** An interface that holds options of events before it binds to scheduler. */
 export interface DataBindingEventArgs extends BaseEventArgs {
     /**
      * Returns the result data.

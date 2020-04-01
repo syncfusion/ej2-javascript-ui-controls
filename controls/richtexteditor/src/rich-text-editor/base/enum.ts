@@ -22,15 +22,26 @@ export enum RenderType {
     TableToolbar
 }
 
+/**
+ * Defines types of action to be done on a quick toolbar scroll.
+ */
 export type ActionOnScroll = 'hide' | 'none';
 
+/**
+ * Defines types to be used as Toolbar.
+ */
 export enum ToolbarType {
     /**  Defines ToolbarType as Standard */
     Expand = 'Expand',
     /**  Defines ToolbarType as MultiRow */
-    MultiRow = 'MultiRow'
+    MultiRow = 'MultiRow',
+    /**  Defines ToolbarType as Scrollable */
+    Scrollable = 'Scrollable'
 }
 
+/**
+ * Defines types to be used to configure the toolbar items.
+ */
 export type ToolbarItems = 'alignments' | 'justifyLeft' | 'justifyCenter' | 'justifyRight'
     | 'justifyFull' | 'fontName' | 'fontSize' | 'fontColor' | 'backgroundColor'
     | 'bold' | 'italic' | 'underline' | 'strikeThrough' | 'clearFormat' | 'clearAll'

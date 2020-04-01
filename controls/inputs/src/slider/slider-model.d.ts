@@ -14,19 +14,21 @@ export interface TicksDataModel {
      *  * after - Ticks are placed in the bottom of the horizontal slider bar or at the right of the vertical slider bar.
      *  * both - Ticks are placed on the both side of the Slider bar.
      *  * none - Ticks are not shown.
-     *
+     * {% codeBlock src='slider/placement/index.md' %}{% endcodeBlock %}
      * @default 'None'
      */
     placement?: Placement;
 
     /**
      * It is used to denote the distance between two major (large) ticks from the scale of the Slider.
+     * {% codeBlock src='slider/largestep/index.md' %}{% endcodeBlock %}
      * @default 10
      */
     largeStep?: number;
 
     /**
      * It is used to denote the distance between two minor (small) ticks from the scale of the Slider.
+     * {% codeBlock src='slider/smallstep/index.md' %}{% endcodeBlock %}
      * @default 1
      */
     smallStep?: number;
@@ -39,6 +41,7 @@ export interface TicksDataModel {
 
     /**
      * It is used to customize the Slider scale value to the desired format using Internationalization or events(custom formatting).
+     * {% codeBlock src='slider/format/index.md' %}{% endcodeBlock %}
      */
     format?: string;
 
@@ -106,12 +109,14 @@ export interface LimitDataModel {
 
     /**
      * It is used to lock the first handle.
+     * {% codeBlock src='slider/limitStartHandleFixed/index.md' %}{% endcodeBlock %}
      * @default false
      */
     startHandleFixed?: boolean;
 
     /**
      * It is used to lock the second handle.
+     * {% codeBlock src='slider/limitEndHandleFixed/index.md' %}{% endcodeBlock %}
      * @default false
      */
     endHandleFixed?: boolean;
@@ -132,7 +137,7 @@ export interface TooltipDataModel {
 
     /**
      * It is used to denote the position for the tooltip element in the Slider. The available options are:
-     *
+     * {% codeBlock src='slider/tooltipplacement/index.md' %}{% endcodeBlock %}
      *  * Before - Tooltip is shown in the top of the horizontal slider bar or at the left of the vertical slider bar.
      *  * After - Tooltip is shown in the bottom of the horizontal slider bar or at the right of the vertical slider bar.
      */
@@ -142,12 +147,14 @@ export interface TooltipDataModel {
      * It is used to determine the device mode to show the Tooltip.
      * If it is in desktop, it will show the Tooltip content when hovering on the target element.
      * If it is in touch device. It will show the Tooltip content when tap and holding on the target element.
+     * {% codeBlock src='slider/tooltipShowOn/index.md' %}{% endcodeBlock %}
      * @default 'Auto'
      */
     showOn?: TooltipShowOn;
 
     /**
      * It is used to show or hide the Tooltip of Slider Component.
+     * {% codeBlock src='slider/tooltipIsVisible/index.md' %}{% endcodeBlock %}
      */
     isVisible?: boolean;
 
@@ -175,17 +182,17 @@ export interface SliderModel extends ComponentModel{
     value?: number | number[];
 
     /**
-     * It is used to denote own array of slider values.
-     * The value should be specified in array of number or string.The min,max and step value is not considered
+     * Specifies an array of slider values in number or string type.
+     * The min and max step values are not considered.
      * @default null
      */
     customValues?: string[] | number[];
 
     /**
-     * It is used to denote the step value of Slider component which is the amount of Slider value change
-     *  when increase / decrease button is clicked or press arrow keys or drag the thumb.
+     * Specifies the step value for each value change when the increase / decrease
+     *  button is clicked or on arrow keys press or on dragging the thumb. 
      *  Refer the documentation [here](../../slider/ticks#step)
-     *  to know more about this property with demo.
+     *  to know more about this property.
      *
      * {% codeBlock src="slider/step-api/index.ts" %}{% endcodeBlock %}
      * @default 1
@@ -193,7 +200,7 @@ export interface SliderModel extends ComponentModel{
     step?: number;
 
     /**
-     * It sets the minimum value of Slider Component
+     * Gets/Sets the minimum value of the slider.
      *
      * {% codeBlock src="slider/min-max-api/index.ts" %}{% endcodeBlock %}
      * @default 0
@@ -201,7 +208,7 @@ export interface SliderModel extends ComponentModel{
     min?: number;
 
     /**
-     * It sets the maximum value of Slider Component
+     * Gets/Sets the maximum value of the slider.
      *
      * {% codeBlock src="slider/min-max-api/index.ts" %}{% endcodeBlock %}
      * @default 100
@@ -209,22 +216,23 @@ export interface SliderModel extends ComponentModel{
     max?: number;
 
     /**
-     * It is used to render the Slider component in read-only mode.
+     * Specifies whether the render the slider in read-only mode to restrict any user interaction.
      * The slider rendered with user defined values and can’t be interacted with user actions.
      * @default false
      */
     readonly?: boolean;
 
     /**
-     * It is used to denote the type of the Slider. The available options are:
-     *  * default - Used to select a single value in the Slider.
-     *  * minRange - Used to select a single value in the Slider. It displays shadow from the start value to the current value.
-     *  * range - Used to select a range of values in the Slider. It displays shadow in-between the selection range.
+     * Defines the type of the Slider. The available options are:
+     *  * default - Allows to a single value in the Slider.
+     *  * minRange - Allows to select a single value in the Slider. It display’s a shadow from the start to the current value.
+     *  * range - Allows to select a range of values in the Slider. It displays shadow in-between the selection range.
+     * {% codeBlock src='slider/types/index.md' %}{% endcodeBlock %}
      */
     type?: SliderType;
 
     /**
-     * It is used to render the color to the slider based on the given  value
+     * Specifies the color to the slider based on given value.
      */
     colorRange?: ColorRangeDataModel[];
 
@@ -232,16 +240,16 @@ export interface SliderModel extends ComponentModel{
      * It is used to render the slider ticks options such as placement and step values.
      * Refer the documentation [here](../../slider/ticks)
      *  to know more about this property with demo.
-     *
+     * {% codeBlock src='slider/ticks/index.md' %}{% endcodeBlock %}
      * {% codeBlock src="slider/ticks-api/index.ts" %}{% endcodeBlock %}
      * @default { placement: 'before' }
      */
     ticks?: TicksDataModel;
 
     /**
-     * It is used to limit the slider movement within certain limits.
+     * Specified the limit within which the slider to be moved.
      * Refer the documentation [here](../../slider/limits)
-     *  to know more about this property with demo
+     *  to know more about this property.
      *
      * {% codeBlock src="slider/limits-api/index.ts" %}{% endcodeBlock %}
      * @default { enabled: false }
@@ -249,13 +257,13 @@ export interface SliderModel extends ComponentModel{
     limits?: LimitDataModel;
 
     /**
-     * It is used to enable or disable the slider.
+     * Enables or Disables the slider.
      * @default true
      */
     enabled?: boolean;
 
     /**
-     * It is used to denote the slider tooltip and it's position.
+     * Specifies the visibility, position of the tooltip over the slider element.
      *
      * {% codeBlock src="slider/tooltip-api/index.ts" %}{% endcodeBlock %}
      * @default { placement: 'Before', isVisible: false, showOn: 'Focus', format: null }
@@ -263,10 +271,10 @@ export interface SliderModel extends ComponentModel{
     tooltip?: TooltipDataModel;
 
     /**
-     * It is used to show or hide the increase and decrease button of Slider Component,
-     *  which is used to change the slider value.
+     * Specifies whether to show or hide the increase/decrease buttons 
+     * of Slider to change the slider value.
      * Refer the documentation [here](../../slider/getting-started#buttons)
-     *  to know more about this property with demo.
+     *  to know more about this property.
      *
      * {% codeBlock src="slider/showButtons-api/index.ts" %}{% endcodeBlock %}
      * @default false
@@ -274,22 +282,22 @@ export interface SliderModel extends ComponentModel{
     showButtons?: boolean;
 
     /**
-     * It is used to enable or disable the Slider handle moving animation.
+     * Enables/Disables the animation for slider movement.
      * @default true
      */
     enableAnimation?: boolean;
 
     /**
-     * It is used to render Slider in either horizontal or vertical orientation.
+     *  Specifies whether to render the slider in vertical or horizontal orientation.
      *  Refer the documentation [here](../../slider/getting-started#orientation)
-     *  to know more about this property with demo.
+     *  to know more about this property.
      * @default 'Horizontal'
      */
     orientation?: SliderOrientation;
 
     /**
-     * This property sets the CSS classes to root element of the Slider
-     *  which helps to customize the UI styles.
+     * Specifies the custom classes to be added to the element used to customize the slider.
+     * {% codeBlock src='slider/cssClass/index.md' %}{% endcodeBlock %}
      * @default ''
      */
     cssClass?: string;
@@ -301,7 +309,7 @@ export interface SliderModel extends ComponentModel{
     enableHtmlSanitizer?: boolean;
 
     /**
-     * We can trigger created event when the Slider is created.
+     * Triggers when the Slider is successfully created.
      * @event
      * @blazorProperty 'Created'
      */
@@ -310,36 +318,40 @@ export interface SliderModel extends ComponentModel{
     /**
      * We can trigger change event whenever Slider value is changed.
      *  In other term, this event will be triggered while drag the slider thumb.
+     * {% codeBlock src='slider/changeEvent/index.md' %}{% endcodeBlock %}
      * @event
      * @blazorProperty 'OnChange'
      */
     change?: EmitType<SliderChangeEventArgs>;
 
     /**
-     * We can trigger changed event when Slider component action is completed while we change the Slider value.
-     *  In other term, this event will be triggered, while drag the slider thumb completed.
+     * Fires whenever the Slider value is changed.
+     * In other term, this event will be triggered, while drag the slider thumb completed.
      * @event
      * @blazorProperty 'ValueChange'
      */
     changed?: EmitType<SliderChangeEventArgs>;
 
     /**
-     * We can trigger renderingTicks event when the ticks rendered on Slider,
-     *  which is used to customize the ticks labels dynamically.
+     * Triggers on rendering the ticks element in the Slider, 
+     * which is used to customize the ticks labels dynamically.
+     * {% codeBlock src='slider/renderingticksEvent/index.md' %}{% endcodeBlock %}
      * @event
      * @blazorProperty 'TicksRendering'
      */
     renderingTicks?: EmitType<SliderTickEventArgs>;
 
     /**
-     * We can trigger renderedTicks event when the ticks are rendered on the Slider.
+     * Triggers when the ticks are rendered on the Slider.
+     * {% codeBlock src='slider/renderedticksEvent/index.md' %}{% endcodeBlock %}
      * @event
      * @blazorProperty 'TicksRendered'
      */
     renderedTicks?: EmitType<SliderTickRenderedEventArgs>;
 
     /**
-     * We can trigger tooltipChange event when we change the Sider tooltip value.
+     * Triggers when the Sider tooltip value is changed.
+     * {% codeBlock src='slider/tooltipChangeEvent/index.md' %}{% endcodeBlock %}
      * @event
      * @blazorProperty 'OnTooltipChange'
      */

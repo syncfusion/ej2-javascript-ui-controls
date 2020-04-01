@@ -7569,7 +7569,8 @@ class Layout {
      */
     getBeforeSpacing(paragraph) {
         let beforeSpacing = 0;
-        if (paragraph.previousWidget instanceof ParagraphWidget) {
+        if (paragraph.previousWidget instanceof ParagraphWidget
+            && !this.documentHelper.dontUseHtmlParagraphAutoSpacing) {
             let afterSpacing = this.getAfterSpacing(paragraph.previousWidget);
             if (afterSpacing < paragraph.paragraphFormat.beforeSpacing) {
                 // tslint:disable-next-line:max-line-length
@@ -13109,6 +13110,10 @@ class DocumentHelper {
          * @private
          */
         this.defaultTabWidth = 36;
+        /**
+         * @private
+         */
+        this.dontUseHtmlParagraphAutoSpacing = false;
         /**
          * @private
          */
@@ -18972,14 +18977,16 @@ class TableCellWidget extends BlockWidget {
         let ownerTable = this.ownerTable;
         let containerWidth = ownerTable ? ownerTable.getTableClientWidth(ownerTable.getOwnerWidth(true)) : 0;
         let cellWidth = containerWidth;
+        let leftMargin = !isNullOrUndefined(this.leftMargin) ? this.leftMargin : 0;
+        let rightMargin = !isNullOrUndefined(this.rightMargin) ? this.rightMargin : 0;
         if (ownerTable && ownerTable.tableFormat.preferredWidthType === 'Auto' && ownerTable.tableFormat.allowAutoFit) {
             cellWidth = containerWidth;
         }
         else if (this.cellFormat.preferredWidthType === 'Percent') {
-            cellWidth = (this.cellFormat.preferredWidth * containerWidth) / 100 - this.leftMargin - this.rightMargin;
+            cellWidth = (this.cellFormat.preferredWidth * containerWidth) / 100 - leftMargin - rightMargin;
         }
         else if (this.cellFormat.preferredWidthType === 'Point') {
-            cellWidth = this.cellFormat.preferredWidth - this.leftMargin - this.rightMargin;
+            cellWidth = this.cellFormat.preferredWidth - leftMargin - rightMargin;
         }
         // For grid before and grid after with auto width, no need to calculate minimum preferred width.
         return cellWidth;
@@ -19125,6 +19132,12 @@ class TableCellWidget extends BlockWidget {
         let defaultWidth = 0;
         if (this.cellFormat.preferredWidth > 0) {
             return this.cellFormat.preferredWidth;
+            //if table has preferred width value and cell preferred width is auto, considered cell width.
+        }
+        else if (this.cellFormat.preferredWidth === 0 && this.cellFormat.preferredWidthType === 'Auto'
+            && this.cellFormat.cellWidth !== 0 && this.ownerTable &&
+            this.ownerTable.tableFormat.preferredWidthType !== 'Auto') {
+            return this.cellFormat.cellWidth;
         }
         defaultWidth = this.leftMargin + this.rightMargin + this.getLeftBorderWidth() + this.getRightBorderWidth() + this.getCellSpacing();
         return defaultWidth;
@@ -22653,7 +22666,7 @@ class WTableHolder {
         // If totalColumnWidth < TableWidth, all grid columns are enlarged. Otherwise shrinked.
         if (totalColumnWidth !== this.tableWidth) {
             let factor = this.tableWidth / totalColumnWidth;
-            factor = isNaN(factor) ? 1 : factor;
+            factor = isNaN(factor) || factor === Infinity ? 1 : factor;
             for (let i = 0; i < this.columns.length; i++) {
                 let column = this.columns[i];
                 //column.PreferredWidth = factor * column.PreferredWidth;
@@ -22810,6 +22823,7 @@ class WTableHolder {
         // If totalColumnWidth < TableWidth, all grid columns are enlarged. Otherwise shrinked.
         if (totalColumnWidth !== this.tableWidth) {
             let factor = this.tableWidth / totalColumnWidth;
+            factor = isNaN(factor) || factor === Infinity ? 1 : factor;
             for (let i = 0; i < this.columns.length; i++) {
                 let column = this.columns[i];
                 column.preferredWidth = factor * column.preferredWidth;
@@ -23805,6 +23819,9 @@ class SfdtReader {
         this.parseDocumentProtection(jsonObject);
         if (!isNullOrUndefined(jsonObject.defaultTabWidth)) {
             this.documentHelper.defaultTabWidth = jsonObject.defaultTabWidth;
+        }
+        if (!isNullOrUndefined(jsonObject.dontUseHTMLParagraphAutoSpacing)) {
+            this.documentHelper.dontUseHtmlParagraphAutoSpacing = jsonObject.dontUseHTMLParagraphAutoSpacing;
         }
         if (!isNullOrUndefined(jsonObject.background)) {
             this.documentHelper.backgroundColor = this.getColor(jsonObject.background.color);
@@ -29482,7 +29499,8 @@ class TextPosition {
         textPosition.setPositionForCurrentIndex(currentIndex);
         textPosition.isUpdateLocation = false;
         let isPositionMoved = false;
-        if (this.selection.start.paragraph !== this.selection.end.paragraph) {
+        if (this.selection.start.paragraph !== this.selection.end.paragraph
+            || this.selection.start.offset === this.selection.getStartOffset(this.selection.start.paragraph)) {
             // To select Paragraph mark similar to MS WORD
             if (this.selection.end.offset === this.selection.end.currentWidget.getEndOffset()
                 && this.selection.isParagraphLastLine(this.selection.end.currentWidget)) {
@@ -29547,13 +29565,17 @@ class TextPosition {
         let textPosition = new TextPosition(this.owner);
         textPosition.setPositionForCurrentIndex(currentIndex);
         textPosition.isUpdateLocation = false;
-        if (this.selection.start.paragraph !== this.selection.end.paragraph) {
-            // To select Paragraph mark similar to MS WORD
-            if (this.selection.start.offset !== this.selection.getStartOffset(this.selection.start.paragraph)
-                && this.selection.start.offset === this.selection.start.currentWidget.getEndOffset()
-                && this.selection.isParagraphLastLine(this.selection.start.currentWidget)) {
-                this.selection.start.setPositionParagraph(this.selection.start.currentWidget, this.selection.start.offset + 1);
-            }
+        let isSelectParaMark = false;
+        if ((this.selection.start.paragraph !== this.selection.end.paragraph
+            && this.selection.end.offset !== this.selection.getStartOffset(this.selection.start.paragraph)) ||
+            (this.documentHelper.isSelectionChangedOnMouseMoved && this.selection.isParagraphFirstLine(this.selection.end.currentWidget)
+                && this.selection.end.offset === this.selection.getStartOffset(this.selection.start.paragraph))) {
+            isSelectParaMark = true;
+        }
+        // To select Paragraph mark similar to MS WORD
+        if (isSelectParaMark && this.selection.start.offset === this.selection.start.currentWidget.getEndOffset()
+            && this.selection.isParagraphLastLine(this.selection.start.currentWidget)) {
+            this.selection.start.setPositionParagraph(this.selection.start.currentWidget, this.selection.start.offset + 1);
         }
         let selectionStartIndex = this.selection.start.getHierarchicalIndexInternal();
         while (currentIndex !== selectionEndIndex && TextPosition.isForwardSelection(selectionEndIndex, currentIndex)) {
@@ -31676,6 +31698,11 @@ class Selection {
         }
         this.end.moveToLineStartInternal(this, true);
         this.upDownSelectionLength = this.end.location.x;
+        // To select Paragraph mark similar to MS WORD
+        if (this.start.paragraph === this.end.paragraph && this.start.offset === this.start.currentWidget.getEndOffset()
+            && this.isParagraphLastLine(this.start.currentWidget) && this.isParagraphFirstLine(this.end.currentWidget)) {
+            this.start.setPositionParagraph(this.start.currentWidget, this.start.offset + 1);
+        }
         this.fireSelectionChanged(true);
     }
     /**
@@ -37795,12 +37822,15 @@ class Selection {
     copyToClipboard(htmlContent) {
         window.getSelection().removeAllRanges();
         let div = document.createElement('div');
-        div.tabIndex = 0;
         div.style.left = '-10000px';
         div.style.top = '-10000px';
+        div.style.position = 'relative';
         div.innerHTML = htmlContent;
         document.body.appendChild(div);
-        div.focus();
+        if (navigator.userAgent.indexOf('Firefox') !== -1) {
+            div.tabIndex = 0;
+            div.focus();
+        }
         let range = document.createRange();
         range.selectNodeContents(div);
         window.getSelection().addRange(range);
@@ -44763,6 +44793,10 @@ class Editor {
                 let result = new XMLSerializer().serializeToString(doc);
                 result = result.replace(/<!--StartFragment-->/gi, '');
                 result = result.replace(/<!--EndFragment-->/gi, '');
+                // Removed namesapce which is added when using XMLSerializer.
+                // When copy content from MS Word, the clipboard html content already have same namespace which cause duplicate namespace
+                // Here, removed the duplicate namespace.
+                result = result.replace('xmlns="http://www.w3.org/1999/xhtml"', '');
                 this.pasteAjax(result, '.html');
             }
             else if (textContent !== null && textContent !== '') {
@@ -45089,6 +45123,7 @@ class Editor {
                         lineWidget.children[k].characterFormat = insertFormat;
                     }
                     else {
+                        lineWidget.children[k].characterFormat.uniqueCharacterFormat = undefined;
                         lineWidget.children[k].characterFormat.copyFormat(insertFormat);
                     }
                     if (characterFormat.bold) {
@@ -47502,12 +47537,12 @@ class Editor {
             let count = 0;
             let isBidi = line.paragraph.paragraphFormat.bidi;
             let isContainsRtl = this.documentHelper.layout.isContainsRtl(line);
-            let childLength = line.children.length;
             let isStarted = true;
             let endElement = undefined;
             let indexOf = -1;
             let isIncrease = true;
-            for (let j = !isBidi ? 0 : childLength - 1; !isBidi ? j < childLength : j >= 0; isBidi ? j-- : isIncrease ? j++ : j--) {
+            // tslint:disable-next-line:max-line-length
+            for (let j = !isBidi ? 0 : line.children.length - 1; !isBidi ? j < line.children.length : j >= 0; isBidi ? j-- : isIncrease ? j++ : j--) {
                 let inlineObj = line.children[j];
                 if (!isBidi && isContainsRtl) {
                     while ((isStarted || isNullOrUndefined(endElement)) && inlineObj instanceof TextElementBox
@@ -57823,6 +57858,7 @@ class WordExport {
         this.defCharacterFormat = document.characterFormat;
         this.defParagraphFormat = document.paragraphFormat;
         this.defaultTabWidthValue = document.defaultTabWidth;
+        this.dontUseHtmlParagraphAutoSpacing = document.dontUseHTMLParagraphAutoSpacing;
         this.mStyles = document.styles;
         this.formatting = document.formatting;
         this.enforcement = document.enforcement;
@@ -61870,6 +61906,9 @@ class WordExport {
         // SerializeFootnoteSettings();
         //w:compat - Compatibility Settings
         writer.writeStartElement(undefined, 'compat', this.wNamespace);
+        if (this.dontUseHtmlParagraphAutoSpacing) {
+            this.serializeBoolProperty(writer, 'doNotUseHTMLParagraphAutoSpacing', this.dontUseHtmlParagraphAutoSpacing);
+        }
         writer.writeStartElement(undefined, 'compatSetting', this.wNamespace);
         writer.writeAttributeString(undefined, 'name', this.wNamespace, 'compatibilityMode');
         writer.writeAttributeString(undefined, 'uri', this.wNamespace, 'http://schemas.microsoft.com/office/word');
@@ -62733,6 +62772,7 @@ class SfdtExport {
         this.document.saltValue = this.documentHelper.saltValue;
         this.document.formatting = this.documentHelper.restrictFormatting;
         this.document.protectionType = this.documentHelper.protectionType;
+        this.document.dontUseHTMLParagraphAutoSpacing = this.documentHelper.dontUseHtmlParagraphAutoSpacing;
     }
     /**
      * @private
@@ -72098,6 +72138,7 @@ class SpellCheckDialog {
  * Export dialogs
  */
 
+// tslint:disable-next-line:max-line-length
 /**
  * The spell checker module
  */
@@ -72127,6 +72168,7 @@ class SpellChecker {
         this.errorSuggestions = new Dictionary();
         this.ignoreAllItems = [];
         this.uniqueSpelledWords = [];
+        this.textSearchResults = new TextSearchResults(this.documentHelper.owner);
         this.uniqueKey = this.documentHelper.owner.element.id + '_' + this.createGuid();
     }
     /**
@@ -73047,9 +73089,8 @@ class SpellChecker {
         let line = errorElement.line;
         // tslint:disable-next-line:max-line-length
         let pattern = this.documentHelper.owner.searchModule.textSearch.stringToRegex((isNullOrUndefined(currentText)) ? errorElement.text : currentText, 'CaseSensitive');
-        this.documentHelper.owner.searchModule.textSearchResults.clearResults();
-        // tslint:disable-next-line:max-line-length
-        let results = this.documentHelper.owner.searchModule.textSearchResults;
+        this.textSearchResults.clearResults();
+        let results = this.textSearchResults;
         let textLineInfo = this.documentHelper.owner.searchModule.textSearch.getElementInfo(line.children[0], 0, false);
         let text = textLineInfo.fullText;
         let matches = [];
@@ -73265,6 +73306,7 @@ class SpellChecker {
         this.ignoreAllItems = undefined;
         this.errorSuggestions = undefined;
         this.uniqueSpelledWords = [];
+        this.textSearchResults = undefined;
         if (!isNullOrUndefined(localStorage.getItem(this.uniqueKey))) {
             localStorage.removeItem(this.uniqueKey);
         }
@@ -76617,6 +76659,13 @@ class Toolbar$1 {
             this.toolbar.destroy();
             this.toolbar = undefined;
             toolbarElement.parentElement.removeChild(toolbarElement);
+        }
+        if (this.container.toolbarContainer) {
+            this.container.containerTarget.removeChild(this.container.toolbarContainer);
+            this.container.toolbarContainer = undefined;
+        }
+        if (this.container.toolbarModule) {
+            this.container.toolbarModule = undefined;
         }
         this.container = undefined;
     }
@@ -80072,6 +80121,16 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
                         this.documentEditor.layoutType = newModel.layoutType;
                     }
                     break;
+                case 'enableToolbar':
+                    this.createToolbarContainer(this.enableRtl, true);
+                    if (newModel.enableToolbar && this.toolbarModule) {
+                        this.toolbarModule.initToolBar(this.toolbarItems);
+                        this.toolbarModule.enableDisableInsertComment(this.enableComment);
+                    }
+                    if (this.documentEditor) {
+                        this.documentEditor.resize();
+                    }
+                    break;
             }
         }
     }
@@ -80161,15 +80220,7 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
         // Toolbar container
         let isRtl = this.enableRtl;
         this.containerTarget = this.createElement('div', { className: 'e-de-ctn' });
-        if (this.enableToolbar) {
-            this.toolbarContainer = this.createElement('div', { className: 'e-de-ctnr-toolbar' + (isRtl ? ' e-de-ctnr-rtl' : '') });
-            this.containerTarget.appendChild(this.toolbarContainer);
-            // tslint:disable-next-line:max-line-length
-            this.editorContainer = this.createElement('div', { className: 'e-de-tool-ctnr-properties-pane' + (isRtl ? ' e-de-ctnr-rtl' : '') });
-        }
-        else {
-            this.editorContainer = this.createElement('div', { className: 'e-de-ctnr-properties-pane' + (isRtl ? ' e-de-ctnr-rtl' : '') });
-        }
+        this.createToolbarContainer(isRtl);
         let propertiesPaneContainerBorder;
         if (!isRtl) {
             propertiesPaneContainerBorder = 'e-de-pane';
@@ -80186,6 +80237,27 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
         }
         this.containerTarget.appendChild(this.statusBarElement);
         this.element.appendChild(this.containerTarget);
+    }
+    createToolbarContainer(isRtl, isCustom) {
+        if (isNullOrUndefined((this.editorContainer))) {
+            // tslint:disable-next-line:max-line-length
+            this.editorContainer = this.createElement('div', { className: 'e-de-tool-ctnr-properties-pane' + (isRtl ? ' e-de-ctnr-rtl' : '') });
+        }
+        if (this.enableToolbar) {
+            this.toolbarContainer = this.createElement('div', { className: 'e-de-ctnr-toolbar' + (isRtl ? ' e-de-ctnr-rtl' : '') });
+            if (isCustom) {
+                this.containerTarget.insertBefore(this.toolbarContainer, this.containerTarget.firstChild);
+            }
+            else {
+                this.containerTarget.appendChild(this.toolbarContainer);
+            }
+            this.editorContainer.classList.remove('e-de-ctnr-properties-pane');
+            this.editorContainer.classList.add('e-de-tool-ctnr-properties-pane');
+        }
+        else {
+            this.editorContainer.classList.remove('e-de-tool-ctnr-properties-pane');
+            this.editorContainer.classList.add('e-de-ctnr-properties-pane');
+        }
     }
     initializeDocumentEditor() {
         let id = this.element.id + '_editor';

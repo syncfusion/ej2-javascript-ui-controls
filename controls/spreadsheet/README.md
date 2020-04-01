@@ -60,6 +60,7 @@ Spreadsheet component is also offered in the following list of frameworks.
 - **Borders:** Provides the option to customize cell gridlines such as color and its style for enhanced UI.
 - **Show/Hide:** Provides the option to show/hide the rows, columns and sheets.
 - **Insert/delete:** Provides the option to insert/delete the rows, columns and sheets.
+- **Merge cells:** Provides option to can combine two or more cells located in the same row or column into a single cell.
 - **RTL:** Provides right-to-left mode which aligns content in the spreadsheet component from right to left.
 - **Localization:** Provides inherent support to localize the UI.
 - **Accessibility:** Provides with built-in accessibility support which helps to access all the spreadsheet component features through the keyboard, screen readers, or other assistive technology devices.

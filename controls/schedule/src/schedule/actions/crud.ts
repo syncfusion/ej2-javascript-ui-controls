@@ -61,7 +61,8 @@ export class Crud {
 
     public addEvent(eventData: Object | Object[]): void {
         if (this.parent.eventSettings.allowAdding) {
-            if (this.parent.eventBase.isBlockRange(eventData)) {
+            if (!this.isBlockEvent(eventData as { [key: string]: Object } | { [key: string]: Object }[]) &&
+                this.parent.eventBase.isBlockRange(eventData)) {
                 this.parent.quickPopup.openValidationError('blockAlert', (eventData instanceof Array) ? [eventData] : eventData);
                 return;
             }
@@ -101,7 +102,8 @@ export class Crud {
 
     public saveEvent(eventData: { [key: string]: Object } | { [key: string]: Object }[], action: CurrentAction): void {
         if (this.parent.eventSettings.allowEditing) {
-            if (this.parent.currentAction !== 'EditFollowingEvents' && this.parent.eventBase.isBlockRange(eventData)) {
+            if (this.parent.currentAction !== 'EditFollowingEvents' && !this.isBlockEvent(eventData)
+                && this.parent.eventBase.isBlockRange(eventData)) {
                 this.parent.quickPopup.openValidationError('blockAlert', (eventData instanceof Array) ? [eventData] : eventData);
                 return;
             }
@@ -552,5 +554,12 @@ export class Crud {
         }
         return updatedRule;
     }
-
+    private isBlockEvent(eventData: { [key: string]: Object } | { [key: string]: Object }[]): boolean {
+        let eventCollection: Object[] = (eventData instanceof Array) ? eventData : [eventData];
+        let value: boolean = false;
+        eventCollection.forEach((event: { [key: string]: Object }) => {
+            value = event[this.parent.eventFields.isBlock] as boolean || false;
+        });
+        return value;
+    }
 }

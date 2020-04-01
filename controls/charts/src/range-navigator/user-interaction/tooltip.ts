@@ -165,7 +165,7 @@ export class RangeTooltip {
             text = (control.intl.getDateFormat({
                 format: format || 'MM/dd/yyyy',
                 type: firstToLowerCase(control.skeletonType),
-                skeleton: control.dateTimeModule.getSkeleton(xAxis, null, null)
+                skeleton: control.dateTimeModule.getSkeleton(xAxis, null, null, control.isBlazor)
             }))(new Date(value));
         } else {
             xAxis.format = control.intl.getNumberFormat({

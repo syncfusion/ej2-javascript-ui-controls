@@ -386,6 +386,10 @@ export class StampAnnotation {
                 let state: any = existingAnnotation['State'];
                 annotation.State = state;
                 // tslint:disable-next-line
+                let annotationSettings: any = existingAnnotation["AnnotationSettings"];
+                // tslint:disable-next-line:max-line-length
+                annotation.AnnotationSettings = annotationSettings ? annotationSettings : this.pdfViewer.annotationModule.updateAnnotationSettings(annotation);
+                // tslint:disable-next-line
                 let annotationSelectorSettings: any = existingAnnotation['AnnotationSelectorSettings'];
                 // tslint:disable-next-line:max-line-length
                 annotation.AnnotationSelectorSettings = annotationSelectorSettings ? annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
@@ -441,7 +445,7 @@ export class StampAnnotation {
                 // tslint:disable-next-line:max-line-length
                 shapeAnnotationType: 'Stamp', strokeColor: annotation.strokeColor, fillColor: annotation.fillColor, opacity: annotation.Opacity, stampFillColor: annotation.stampFillColor, stampStrokeColor: annotation.stampStrokeColor, rotateAngle: annotation.RotateAngle, isDynamicStamp: this.pdfViewerBase.isDynamicStamp, dynamicText: this.dynamicText, annotName: annotation.AnnotName, notes: annotation.Note,
                 comments: annotation.Comments, review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author }, subject: annotation.iconName,
-                annotationSelectorSettings: annotation.AnnotationSelectorSettings
+                annotationSelectorSettings: annotation.AnnotationSelectorSettings,  annotationSettings: annotation.AnnotationSettings
             };
             annotationObject = {
                 // tslint:disable-next-line:max-line-length
@@ -625,7 +629,9 @@ export class StampAnnotation {
         annot = {
             // tslint:disable-next-line:max-line-length
             id: 'stamp' + this.pdfViewerBase.customStampCount, bounds: { x: position.left, y: position.top, width: position.width, height: position.height }, pageIndex: pageIndex, data: image.src, modifiedDate: modifiedDate,
-            shapeAnnotationType: 'Image', opacity: opacity, rotateAngle: RotationAngle, annotName: annotationName, comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: author }
+            shapeAnnotationType: 'Image', opacity: opacity, rotateAngle: RotationAngle, annotName: annotationName, comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: author },
+            annotationSettings: annotationSettings
+
         };
         this.currentStampAnnotation = annot;
         // tslint:disable-next-line

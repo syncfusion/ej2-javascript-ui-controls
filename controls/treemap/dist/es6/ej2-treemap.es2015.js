@@ -7,97 +7,97 @@ import { DataManager, Query } from '@syncfusion/ej2-data';
  * TreeMap constants doc
  */
 /**
- * Specifies TreeMap load event name.
+ * Triggers when the treemap is on load.
  * @private
  */
 const load = 'load';
 /**
- * Specifies TreeMap loaded event name.
+ * Triggers after treemap rendered.
  * @private
  */
 const loaded = 'loaded';
 /**
- * Specifies TreeMap beforePrint event name.
+ * Trigger before call the print method.
  * @private
  */
 const beforePrint = 'beforePrint';
 /**
- * Specifies the itemRendering event name.
+ * Trigger before each treemap item rendered.
  * @private
  */
 const itemRendering = 'itemRendering';
 /**
- * Specifies the drilldown start event name.
+ * Trigger after click on treemap item.
  * @private
  */
 const drillStart = 'drillStart';
 /**
- * Specifies the drilldown end event name.
+ * Trigger after drill start event completed.
  * @private
  */
 const drillEnd = 'drillEnd';
 /**
- * Specifies the item selected event name.
+ * Trigger after select the treemap item.
  * @private
  */
 const itemSelected = 'itemSelected';
 /**
- * Specifies the item highlight event name.
+ * Trigger after hover on the treemap item.
  * @private
  */
 const itemHighlight = 'itemHighlight';
 /**
- * Specifies the tooltip rendering event name.
+ * Trigger after mouse hover on the treemap item.
  * @private
  */
 const tooltipRendering = 'tooltipRendering';
 /**
- * Specifies the item click event name.
+ * Trigger after click on the treemap item.
  * @private
  */
 const itemClick = 'itemClick';
 /**
- * Specifies the item move event name.
+ * Trigger after mouse hover on the treemap item.
  * @private
  */
 const itemMove = 'itemMove';
 /**
- * Specifies the mouse click event name.
+ * Trigger after click on the treemap item.
  * @private
  */
 const click = 'click';
 /**
- * Specifies maps double click event name.
+ * Trigger after double click on the treemap item.
  * @private
  */
 const doubleClick = 'doubleClick';
 /**
- * Specifies maps right click event name.
+ * Trigger after right click on the treemap item.
  * @private
  */
 const rightClick = 'rightClick';
 /**
- * Specifies the mouse move event name.
+ * Trigger after mouse hover on the treemap item.
  * @private
  */
 const mouseMove = 'mouseMove';
 /**
- * Specifies legend item rendering event name.
+ * Trigger before each treemap item.
  * @private
  */
 const legendItemRendering = 'legendItemRendering';
 /**
- * Specifies legend rendering event name.
+ * Trigger before legend items.
  * @private
  */
 const legendRendering = 'legendRendering';
 /**
- * Specifies treemap resize event name.
+ * Trigger after resize the treemap.
  * @private
  */
 const resize = 'resize';
 /**
- * Specifies the font family
+ * Define the font family in treemap component.
  * @private
  */
 const defaultFont = 'Roboto, Segoe UI, Noto, Sans-serif';
@@ -111,6 +111,9 @@ var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, 
 /**
  * Maps base doc
  */
+/**
+ * Sets and gets the options for customizing the color and width of the border in treemap component.
+ */
 class Border extends ChildProperty {
 }
 __decorate$1([
@@ -120,7 +123,7 @@ __decorate$1([
     Property(0)
 ], Border.prototype, "width", void 0);
 /**
- * Configures the treemap margin.
+ * Sets and gets the margin for the treemap component.
  */
 class Margin extends ChildProperty {
 }
@@ -137,7 +140,7 @@ __decorate$1([
     Property(10)
 ], Margin.prototype, "bottom", void 0);
 /**
- * Configures the fonts in treemap.
+ * Sets and gets the options to customize the style of the text contents in the treemap component.
  */
 class Font extends ChildProperty {
 }
@@ -160,7 +163,7 @@ __decorate$1([
     Property(1)
 ], Font.prototype, "opacity", void 0);
 /**
- * To configure title of the maps.
+ * Sets and gets the options for customizing the common title of the treemap component.
  */
 class CommonTitleSettings extends ChildProperty {
 }
@@ -171,7 +174,7 @@ __decorate$1([
     Property('')
 ], CommonTitleSettings.prototype, "description", void 0);
 /**
- * To configure subtitle of the maps.
+ * Sets and gets the options for customizing the subtitle of the treemap component.
  */
 class SubTitleSettings extends CommonTitleSettings {
 }
@@ -182,7 +185,7 @@ __decorate$1([
     Property('Center')
 ], SubTitleSettings.prototype, "alignment", void 0);
 /**
- * To configure title of the maps.
+ * Sets and gets the options for customizing the title of the treemap component.
  */
 class TitleSettings extends CommonTitleSettings {
 }
@@ -195,6 +198,9 @@ __decorate$1([
 __decorate$1([
     Complex({}, SubTitleSettings)
 ], TitleSettings.prototype, "subtitleSettings", void 0);
+/**
+ * Sets and gets the options to customize the color-mapping in treemap component.
+ */
 class ColorMapping extends ChildProperty {
 }
 __decorate$1([
@@ -222,7 +228,7 @@ __decorate$1([
     Property(true)
 ], ColorMapping.prototype, "showLegend", void 0);
 /**
- * Configures the legend settings.
+ * Sets and gets the options for customizing the legend of the treemap component.
  */
 class LegendSettings extends ChildProperty {
 }
@@ -307,6 +313,9 @@ __decorate$1([
 __decorate$1([
     Property(false)
 ], LegendSettings.prototype, "removeDuplicateLegend", void 0);
+/**
+ * Sets and gets the settings for drill to visualize the treemap rendered in the initial state.
+ */
 class InitialDrillSettings extends ChildProperty {
 }
 __decorate$1([
@@ -315,6 +324,9 @@ __decorate$1([
 __decorate$1([
     Property(null)
 ], InitialDrillSettings.prototype, "groupName", void 0);
+/**
+ * Sets and gets the options for customizing the leaf item of the treemap component.
+ */
 class LeafItemSettings extends ChildProperty {
 }
 __decorate$1([
@@ -362,6 +374,9 @@ __decorate$1([
 __decorate$1([
     Collection([], ColorMapping)
 ], LeafItemSettings.prototype, "colorMapping", void 0);
+/**
+ * Sets and gets the options for customizing the tooltip of the treemap component.
+ */
 class TooltipSettings extends ChildProperty {
 }
 __decorate$1([
@@ -388,13 +403,16 @@ __decorate$1([
 __decorate$1([
     Complex({ fontFamily: defaultFont, size: '13px' }, Font)
 ], TooltipSettings.prototype, "textStyle", void 0);
+/**
+ * Sets and gets the options for customizing the selection of the leaf items in treemap component.
+ */
 class SelectionSettings extends ChildProperty {
 }
 __decorate$1([
     Property(false)
 ], SelectionSettings.prototype, "enable", void 0);
 __decorate$1([
-    Property('#808080')
+    Property('null')
 ], SelectionSettings.prototype, "fill", void 0);
 __decorate$1([
     Property('0.5')
@@ -405,6 +423,10 @@ __decorate$1([
 __decorate$1([
     Property('Item')
 ], SelectionSettings.prototype, "mode", void 0);
+/**
+ * Sets and gets the options for customizing the highlighting of the treemap item,
+ * when the mouse hover is performed in it.
+ */
 class HighlightSettings extends ChildProperty {
 }
 __decorate$1([
@@ -423,7 +445,7 @@ __decorate$1([
     Property('Item')
 ], HighlightSettings.prototype, "mode", void 0);
 /**
- * Options for customizing the tree map levels.
+ * Sets and gets the options for customizing the levels of the treemap component.
  */
 class LevelSettings extends ChildProperty {
 }
@@ -2052,7 +2074,7 @@ class ExportUtils {
         this.control = control;
     }
     /**
-     * To print the Maps
+     * This method is used to perform the print functionality in treemap.
      * @param elements
      */
     print(elements) {
@@ -2094,7 +2116,7 @@ class ExportUtils {
         return div;
     }
     /**
-     * To export the file as image/svg format
+     * This method is used to perform the export functionality for the rendered treemap.
      * @param type
      * @param fileName
      */
@@ -2271,7 +2293,7 @@ var __rest = (undefined && undefined.__rest) || function (s, e) {
     return t;
 };
 /**
- * Represents the TreeMap control.
+ * Represents the treemap component.
  * ```html
  * <div id="container"/>
  * <script>
@@ -2596,16 +2618,18 @@ let TreeMap = class TreeMap extends Component {
         }
     }
     /**
-     * Handles the print method for chart control.
+     * This method is used to perform the print functionality in treemap.
+     * @param id - Specifies the element to print the treemap.
      */
     print(id) {
         let exportChart = new ExportUtils(this);
         exportChart.print(id);
     }
     /**
-     * Handles the export method for chart control.
-     * @param type
-     * @param fileName
+     * This method is used to perform the export functionality for the rendered treemap.
+     * @param type - Specifies the index of the axis.
+     * @param fileName - Specifies file name for exporting the rendered treemap.
+     * @param orientation - Specifies the orientation of the pdf document.
      */
     export(type, fileName, orientation) {
         let exportMap = new ExportUtils(this);
@@ -2648,6 +2672,10 @@ let TreeMap = class TreeMap extends Component {
             }
         }
     }
+    /**
+     * This method orders the treemap level data.
+     * @param start - Specifies the start value of the treemap level.
+     */
     reOrderLevelData(start) {
         let currentName;
         let currentPath = this.levels[start] ? this.levels[start].groupPath : this.leafItemSettings.labelPath;
@@ -2673,6 +2701,11 @@ let TreeMap = class TreeMap extends Component {
             this.reOrderLevelData(start - 1);
         }
     }
+    /**
+     * This method finds the weight value of the treemap level.
+     * @param processData - Specifies the treemap data.
+     * @param type - Specifies the type of the data.
+     */
     findTotalWeight(processData, type) {
         let totalWeight;
         let split;
@@ -2734,7 +2767,8 @@ let TreeMap = class TreeMap extends Component {
         this.element.setAttribute('tabindex', this.tabIndex.toString());
     }
     /**
-     * To handle the window resize event on treemap.
+     * This method handles the window resize event on treemap.
+     * @param e - Specifies the pointer event.
      */
     resizeOnTreeMap(e) {
         let args = {
@@ -2764,6 +2798,10 @@ let TreeMap = class TreeMap extends Component {
             }, 500);
         }
     }
+    /**
+     * This method handles the click event on the treemap.
+     * @param e - Specifies the mouse click event in the treemap.
+     */
     clickOnTreeMap(e) {
         let targetEle = e.target;
         let targetId = targetEle.id;
@@ -2779,7 +2817,7 @@ let TreeMap = class TreeMap extends Component {
             eventArgs = {
                 cancel: false, name: itemClick, treemap: this, item: this.layout.renderItems[itemIndex], mouseEvent: e,
                 groupIndex: this.layout.renderItems[itemIndex]['groupIndex'], groupName: this.layout.renderItems[itemIndex]['name'],
-                text: labelText
+                text: labelText, contentItemTemplate: labelText
             };
             if (this.isBlazor) {
                 let data = {
@@ -2797,11 +2835,36 @@ let TreeMap = class TreeMap extends Component {
                 const { treemap } = eventArgs, blazorEventArgs = __rest(eventArgs, ["treemap"]);
                 eventArgs = blazorEventArgs;
             }
-            this.trigger(itemClick, eventArgs);
-            if (eventArgs.text !== labelText) {
-                eventArgs.text = textFormatter(eventArgs.text, eventArgs.item['data'], eventArgs.treemap);
-                targetEle.innerHTML = eventArgs.text;
-            }
+            this.trigger(itemClick, eventArgs, (observedArgs) => {
+                if (observedArgs.text !== labelText || observedArgs.contentItemTemplate !== labelText) {
+                    if (isNullOrUndefined(this.leafItemSettings.labelTemplate)) {
+                        observedArgs.text = textFormatter(observedArgs.text, observedArgs['item']['data'], observedArgs.treemap);
+                        targetEle.innerHTML = observedArgs.text;
+                    }
+                    else {
+                        let itemSelect = targetId.split('_RectPath')[0];
+                        let itemTemplate;
+                        if (targetId.indexOf('_LabelTemplate') > -1) {
+                            itemTemplate = targetEle;
+                        }
+                        else {
+                            itemTemplate = document.querySelector('#' + itemSelect + '_LabelTemplate');
+                        }
+                        if (!isNullOrUndefined(itemTemplate)) {
+                            if (this.isBlazor) {
+                                let templateElement = createElement('div');
+                                templateElement.innerHTML = observedArgs.contentItemTemplate;
+                                let currentTemplateElement = templateElement.children[0].firstElementChild;
+                                itemTemplate['style']['left'] = Number(itemTemplate['style']['left'].split('px')[0])
+                                    - (currentTemplateElement['style']['width'].split('px')[0] / 2) + 'px';
+                                itemTemplate['style']['top'] = Number(itemTemplate['style']['top'].split('px')[0])
+                                    - (currentTemplateElement['style']['height'].split('px')[0] / 2) + 'px';
+                            }
+                            itemTemplate.innerHTML = observedArgs.contentItemTemplate;
+                        }
+                    }
+                }
+            });
         }
         let end = new Date().getMilliseconds();
         let doubleTapTimer1;
@@ -2812,17 +2875,29 @@ let TreeMap = class TreeMap extends Component {
             doubleTapTimer1 = end;
         }
     }
+    /**
+     * This method handles the double click event in the treemap.
+     * @param e - Specifies the pointer event of mouse click.
+     */
     doubleClickOnTreeMap(e) {
         let doubleClickArgs = { cancel: false, name: doubleClick, treemap: this, mouseEvent: e };
         let doubleClickBlazorArgs = { cancel: false, name: doubleClick, mouseEvent: e };
         this.trigger(doubleClick, this.isBlazor ? doubleClickBlazorArgs : doubleClickArgs);
         //this.notify('dblclick', e);
     }
+    /**
+     * This method handles the right click event in the treemap.
+     * @param e - Specifies the pointer event of mouse click.
+     */
     rightClickOnTreeMap(e) {
         let rightClickArgs = { cancel: false, name: rightClick, treemap: this, mouseEvent: e };
         let rightClickBlazorArgs = { cancel: false, name: rightClick, mouseEvent: e };
         this.trigger(rightClick, this.isBlazor ? rightClickBlazorArgs : rightClickArgs);
     }
+    /**
+     * This method handles the mouse down event in the treemap.
+     * @param e - Specifies the pointer event of mouse click.
+     */
     /* tslint:disable-next-line:max-func-body-length */
     mouseDownOnTreeMap(e) {
         if (e.target.id.indexOf('_Item_Index') > -1) {
@@ -2830,6 +2905,10 @@ let TreeMap = class TreeMap extends Component {
         }
         this.notify(Browser.touchStartEvent, e);
     }
+    /**
+     * This method handles the mouse move event in the treemap.
+     * @param e - Specifies the pointer event of mouse click.
+     */
     mouseMoveOnTreeMap(e) {
         let targetEle = e.target;
         let targetId = targetEle.id;
@@ -2865,6 +2944,11 @@ let TreeMap = class TreeMap extends Component {
         }
         this.notify(Browser.touchMoveEvent, e);
     }
+    /**
+     * This method calculates the selected treemap levels.
+     * @param labelText - Specifies the label text.
+     * @param item - Specifies the treemap item.
+     */
     calculateSelectedTextLevels(labelText, item) {
         //to find the levels by clicking the particular text both for drillDownView as true / false.
         let drillLevel;
@@ -2880,6 +2964,13 @@ let TreeMap = class TreeMap extends Component {
         }
         return { drillLevel: drillLevel, currentLevelLabel: text, levelText: levelText };
     }
+    /**
+     * This method calculates the previous level of child items in treemap.
+     * @param labelText - Specifies the label text in treemap
+     * @param drillLevelValues - Specifies the values of drill level.
+     * @param item - Specifies the treemap item.
+     * @param directLevel - Specifies the current level.
+     */
     calculatePreviousLevelChildItems(labelText, drillLevelValues, item, directLevel) {
         //By clicking any child items drilldown to the particular level.
         //At the time store all the previous drilled level items in drilledItems
@@ -2911,6 +3002,12 @@ let TreeMap = class TreeMap extends Component {
         }
         return directLevel;
     }
+    /**
+     * This method compares the selected labels with the drill down items.
+     * @param drillLevelValues - Specifies the values of drill level.
+     * @param item - Specifies the treemap item.
+     * @param i - Specifies the treemap item.
+     */
     compareSelectedLabelWithDrillDownItems(drillLevelValues, item, i) {
         let drillLevelChild;
         let newDrillItem = new Object();
@@ -2929,6 +3026,10 @@ let TreeMap = class TreeMap extends Component {
         }
         return newDrillItem;
     }
+    /**
+     * This method handles mouse end event in treemap.
+     * @param e - Specifies the pointer event of mouse.
+     */
     /* tslint:disable-next-line:max-func-body-length */
     mouseEndOnTreeMap(e) {
         let targetEle = e.target;
@@ -3068,6 +3169,10 @@ let TreeMap = class TreeMap extends Component {
         this.mouseDown = false;
         this.notify(Browser.touchEndEvent, e);
     }
+    /**
+     * This method handles mouse leave event in treemap.
+     * @param e - Specifies the pointer event of mouse.
+     */
     mouseLeaveOnTreeMap(e) {
         if (this.treeMapTooltipModule) {
             this.treeMapTooltipModule.removeTooltip();
@@ -3144,13 +3249,13 @@ let TreeMap = class TreeMap extends Component {
         }
     }
     /**
-     * Get component name
+     * Gets component name.
      */
     getModuleName() {
         return 'treemap';
     }
     /**
-     * To destroy the treemap control.
+     * This method is used to dispose the treemap component.
      */
     destroy() {
         this.unWireEVents();
@@ -4288,6 +4393,15 @@ class TreeMapLegend {
     }
 }
 
+var __rest$3 = (undefined && undefined.__rest) || function (s, e) {
+    var t = {};
+    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
+        t[p] = s[p];
+    if (s != null && typeof Object.getOwnPropertySymbols === "function")
+        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
+            t[p[i]] = s[p[i]];
+    return t;
+};
 /**
  * Performing treemap highlight
  */
@@ -4503,6 +4617,7 @@ class TreeMapSelection {
         let treemap = this.treemap;
         let items = [];
         let targetId = targetEle.id;
+        let labelText = targetEle.innerHTML;
         let item;
         let selectionElements = [];
         let treeMapElement;
@@ -4562,12 +4677,41 @@ class TreeMapSelection {
                         }
                     }
                     else {
+                        selection.fill = selection.fill === 'null' ?
+                            treemap.layout.renderItems[parseInt(element.id.split('Item_Index_')[1], 10)]['options']['fill']
+                            : selection.fill;
                         applyOptions(element.childNodes[0], { border: selection.border, fill: selection.fill, opacity: selection.opacity });
                         element.classList.add('treeMapSelection');
                     }
-                    eventArgs = { cancel: false, name: itemSelected, treemap: treemap, items: items, elements: selectionElements };
-                    eventBlazorArgs = { cancel: false, name: itemSelected, items: items, elements: selectionElements };
-                    treemap.trigger(itemSelected, treemap.isBlazor ? eventBlazorArgs : eventArgs);
+                    eventArgs = { cancel: false, name: itemSelected, treemap: treemap, items: items, elements: selectionElements,
+                        text: labelText, contentItemTemplate: labelText };
+                    eventBlazorArgs = { cancel: false, name: itemSelected, text: labelText, contentItemTemplate: labelText };
+                    if (treemap.isBlazor) {
+                        const { treemap, items, elements } = eventArgs, blazorEventArgs = __rest$3(eventArgs, ["treemap", "items", "elements"]);
+                        eventBlazorArgs = blazorEventArgs;
+                    }
+                    treemap.trigger(itemSelected, treemap.isBlazor ? eventBlazorArgs : eventArgs, (observedArgs) => {
+                        if (observedArgs.contentItemTemplate !== labelText) {
+                            let itemSelect = targetId.split('_RectPath')[0];
+                            let itemTemplate;
+                            if (targetId.indexOf('_LabelTemplate') > -1) {
+                                itemTemplate = targetEle;
+                            }
+                            else {
+                                itemTemplate = document.querySelector('#' + itemSelect + '_LabelTemplate');
+                            }
+                            if (!isNullOrUndefined(itemTemplate)) {
+                                if (treemap.isBlazor) {
+                                    let templateCreated = createElement('div');
+                                    templateCreated.innerHTML = observedArgs.contentItemTemplate;
+                                    let templateElement = templateCreated.children[0].firstElementChild;
+                                    itemTemplate['style']['left'] = Number(itemTemplate['style']['left'].split('px')[0]) - (templateElement['style']['width'].split('px')[0] / 2) + 'px';
+                                    itemTemplate['style']['top'] = Number(itemTemplate['style']['top'].split('px')[0]) - (templateElement['style']['height'].split('px')[0] / 2) + 'px';
+                                }
+                                itemTemplate.innerHTML = observedArgs.contentItemTemplate;
+                            }
+                        }
+                    });
                 }
             }
             else {
@@ -4659,7 +4803,7 @@ class TreeMapSelection {
     }
 }
 
-var __rest$3 = (undefined && undefined.__rest) || function (s, e) {
+var __rest$4 = (undefined && undefined.__rest) || function (s, e) {
     var t = {};
     for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
         t[p] = s[p];
@@ -4755,7 +4899,7 @@ class TreeMapTooltip {
                         location: tootipArgs.options['location'],
                         text: tootipArgs.options['text'],
                         textStyle: tootipArgs.options['textStyle'],
-                        data: this.treemap.isBlazor ? null : tootipArgs.options['data'],
+                        data: tootipArgs.options['data'],
                         template: tootipArgs.options['template'],
                         name: tooltipRendering
                     };
@@ -4778,7 +4922,7 @@ class TreeMapTooltip {
         let cancel;
         let args;
         if (!isNullOrUndefined(tootipArgs)) {
-            let { cancel: c } = tootipArgs, otherArgs = __rest$3(tootipArgs, ["cancel"]);
+            let { cancel: c } = tootipArgs, otherArgs = __rest$4(tootipArgs, ["cancel"]);
             cancel = c;
             args = otherArgs.options;
         }

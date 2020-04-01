@@ -217,7 +217,9 @@ export const setUndoRedo: string = 'setUndoRedo';
 export const enableFormulaInput: string = 'enableFormulaInput';
 /** @hidden */
 export const protectSelection: string = 'protectSelection';
-
-
-
-
+/** @hidden */
+export const hiddenMerge: string = 'hiddenMerge';
+/** @hidden */
+export const checkPrevMerge: string = 'checkPrevMerge';
+/** @hidden */
+export const removeDataValidation: string = 'removeDataValidation';

@@ -1,220 +1,210 @@
-/**
- * Specifies the enum values for tree map components.
- */
 
 /**
- * Specifies the types of label position.
+ * Defines the position of the label in treemap leaf node.
  */
 export type LabelPosition =
-    /** Specifies the top left */
+    /** To show the position of the label based on the top and left of the treemap leaf nodes.  */
     'TopLeft' |
-    /** Specifies the top center */
+    /** To show the position of the label based on the top and center of the treemap leaf nodes. */
     'TopCenter' |
-    /** Specifies the top right */
+    /** To show the position of the label based on the top and right of the treemap leaf nodes. */
     'TopRight' |
-    /** Specifies the center left */
+    /** To show the position of the label based on the center and left of the treemap leaf nodes. */
     'CenterLeft' |
-    /** Specifies the center */
+    /** To show the position of the label based on the center of the treemap leaf nodes. */
     'Center' |
-    /** Specifies the center right */
+    /** To show the position of the label based on the center and right of the treemap leaf nodes. */
     'CenterRight' |
-    /** Specifies the bottom left */
+    /** To show the position of the label based on the bottom and left of the treemap leaf nodes. */
     'BottomLeft' |
-    /** Specifies the bottom center */
+    /** To show the position of the label based on the bottom and center of the treemap leaf nodes. */
     'BottomCenter' |
-    /** Specifies the bottom right */
+    /** To show the position of the label based on the bottom and right of the treemap leaf nodes. */
     'BottomRight';
 
 /**
- * Specifies the types of layout rendering modes.
+ * Specifies the layout rendering mode of the treemap.
  */
 export type LayoutMode =
-    /** Specifies the squarified */
+    /** This visualizes the treemap as the nested rectangles having size proportionate to weight value */
     'Squarified' |
-    /** Specifies the horizontal */
+    /** This visualizes the treemap as the horizontal rectangles having size proportionate to weight value */
     'SliceAndDiceHorizontal' |
-    /** Specifies the vertical */
+    /** This visualizes the treemap as the vertical rectangles having size proportionate to weight value */
     'SliceAndDiceVertical' |
-    /** Specifies the auto */
+    /** This visualizes the treemap as the auto rectangles having size proportionate to weight value */
     'SliceAndDiceAuto';
 
 /** 
- * Defines the Alignment.
+ * Specifies the alignment of the elements in the treemap.
  */
 export type Alignment =
-    /** Define the left alignment. */
+    /** Defines the alignment is near the treemap with respect the element position. */
     'Near' |
-    /** Define the center alignment. */
+    /** Defines the alignment is at center of the treemap with respect the element position. */
     'Center' |
-    /** Define the right alignment. */
+    /** Defines the alignment is far from the treemap with respect the element position. */
     'Far';
 /**
- * Defines the highlight mode.
+ * Specifies the element which must be highlighted when mouse over is performed in treemap.
  */
 export type HighLightMode =
-    /** Define the item. */
+    /** Highlights the treemap item when the mouse over is done on the treemap item. */
     'Item' |
-    /** Define the child. */
+    /** Highlights the treemap item and level when the mouse over is done on the treemap item. */
     'Child' |
-    /** Define the parent. */
+    /** Highlights the treemap item and parent level when the mouse over is done on the treemap item. */
     'Parent' |
-    /** Define the all. */
+    /** Highlights all the related nodes when the mouse over is done on the treemap item. */
     'All';
 /**
- * Defines the highlight mode.
+ * Specifies the element which must be selected when click event is performed in treemap.
  */
 export type SelectionMode =
-    /** Define the item. */
+    /** Selects the treemap item when the click operation is done on the treemap item. */
     'Item' |
-    /** Define the child. */
+    /** Selects the treemap item and level when the click operation is done on the treemap item. */
     'Child' |
-    /** Define the parent. */
+    /** Selects the treemap item and parent level when the click operation is done on the treemap item.. */
     'Parent' |
-    /** Define the all. */
+    /** Selects all the related nodes when the click operation is done on the treemap item. */
     'All';
+/**
+ * Specifies the export type for the treemap
+ */
 export type ExportType =
-    /** Used to export a image as png format */
+    /** Specifies the rendered treemap to be exported in the png format. */
     'PNG' |
-    /** Used to export a image as jpeg format */
+    /** Specifies the rendered treemap to be exported in the jpeg format. */
     'JPEG' |
-    /** Used to export a file as svg format */
+    /** Specifies the rendered treemap to be exported in the svg format. */
     'SVG' |
-    /** Used to export a file as pdf format */
+    /** Specifies the rendered treemap to be exported in the pdf format. */
     'PDF';
 /**
- * labelAlignment
+ * Defines the text to be placed within the defined margins.
  */
 export type LabelAlignment =
-    /** Trim */
+    /** Specifies that the data label will trim if exceeded the defined margins. */
     'Trim' |
-    /** Hide */
+    /** Specifies that the data label will hide if exceeded the defined margins. */
     'Hide' |
-    /** WordByWrap */
+    /** Specifies the word to force all text to fit within the defined margins. */
     'WrapByWord' |
-    /** WordByText */
+    /** Specifies to wrap the data label if exceed the defined margins. */
     'Wrap';
 
 /** 
- * Defines the shape of legend.
+ * Defines the shape of legend in the treemap component.
  */
 export type LegendShape =
-    /** Render a circle. */
+    /** Defines the legend shape as circle. */
     'Circle' |
-    /** Render a Rectangle. */
+    /**  Defines the legend shape as rectangle. */
     'Rectangle' |
-    /** Render a Triangle. */
+    /**  Defines the legend shape as triangle. */
     'Triangle' |
-    /** Render a Diamond. */
+    /**  Defines the legend shape as diamond. */
     'Diamond' |
-    /** Render a Cross. */
+    /**  Defines the legend shape as cross. */
     'Cross' |
-    /** Render a Star. */
+    /**  Defines the legend shape as star. */
     'Star' |
-    /** Render a HorizontalLine. */
+    /**  Defines the legend shape as horizontal line. */
     'HorizontalLine' |
-    /** Render a VerticalLine. */
+    /**  Defines the legend shape as vertical line. */
     'VerticalLine' |
-    /** Render a Pentagon. */
+    /**  Defines the legend shape as pentagon. */
     'Pentagon' |
-    /** Render a InvertedTriangle. */
+    /**  Defines the legend shape as inverted triangle. */
     'InvertedTriangle' |
-    /** Render a image */
+    /**  Defines the legend shape as image. */
     'Image';
 /** 
- * Defines the position of the legend. They are
- * * top - Displays the legend on the top.
- * * left - Displays the legend on the left.
- * * bottom - Displays the legend on the bottom.
- * * right - Displays the legend on the right.
- * * float - Displays the legend  based on given x and y value.
+ * Defines the position of the legend in the treemap component.
  */
 export type LegendPosition =
-    /** Places the legend on the top. */
+    /** Specifies to place the legend at the top of the treemap. */
     'Top' |
-    /** Places the legend on the left. */
+    /** Specifies to place the legend on the left of the treemap. */
     'Left' |
-    /** Places the legend on the bottom. */
+    /** Specifies to place the legend at the bottom of the treemap. */
     'Bottom' |
-    /** Places the legend on the right. */
+    /** Specifies to place the legend on the right of the treemap. */
     'Right' |
-    /** Places the legend based on given x and y. */
+    /** Specifies to place the legend based on given x and y positions. */
     'Float' |
-     /** Places the legend based on width and height. */
+     /** Specifies to place the legend based on width and height. */
      'Auto';
 /** 
- * Defines the Legend modes. They are
- * * Default - Specifies the Default mode.
- * * interactive - specifies the Interactive mode.
+ * Defines the legend rendering modes. The modes are default and interactive modes.
  */
 export type LegendMode =
-    /** Legend remains static */
+    /** Specifies the legend as static. */
     'Default' |
-    /** Legend remains interactively */
+    /** Specifies the legend as interactive. */
     'Interactive';
 /**
- * Defines the legend arrangement
+ * Specifies the orientation of the legend in the treemap.
  */
 export type LegendOrientation =
-    /** Legend item placed default based on legend orientation */
+    /** Defines the legend renders with default behavior. */
     'None' |
-    /** Legend items placed in row wise */
+    /** Defines the legend renders with items places horizontally. */
     'Horizontal' |
-    /** Legend items place in column wise */
+    /** Defines the legend renders with items places vertically. */
     'Vertical';
 /**
- * Defines the label intersect action types
+ * Defines the label intersect action in treemap component.
  */
 export type LabelIntersectAction =
-    /** Specifies the intersect action as None */
+    /** Specifies that no action will be taken when the label contents intersect. */
     'None' |
-    /** Specifies the intersect action as Trim  */
+    /** Specifies the data label to be trimmed when it intersects. */
     'Trim' |
-    /**  Specifies the intersect action as Hide */
+    /**  Specifies the data label to be hidden when it intersects. */
     'Hide';
 
 /**
- * Defines the label placement type
+ * Defines the placement type of the label.
  */
 export type LabelPlacement =
-    /** Specifies the label placement as Before */
+    /** Specifies the label placement as before. */
     'Before' |
-    /** Specifies the label plcement as After */
+    /** Specifies the label placement as after */
     'After';
 
 /** 
- * Defines Theme. They are
- * * Material - Render a treemap with Material theme.
- * * Fabric - Render a treemap with Fabric theme
- * * Bootstrap - Render a treemap with Bootstrap theme
+ * Defines the theme supported for treemap.
  */
 export type TreeMapTheme =
-    /**  Render a treemap with Material theme. */
+    /**  Render a treemap with material theme. */
     'Material' |
-    /**  Render a treemap with Fabric theme. */
+    /**  Render a treemap with fabric theme. */
     'Fabric' |
-    /**  Render a treemap with HighContrast ligh theme. */
+    /**  Render a treemap with highcontrast light theme. */
     'HighContrastLight' |
-    /**  Render a treemap with Bootstrap theme. */
+    /**  Render a treemap with bootstrap theme. */
     'Bootstrap' |
-    /**  Render a treemap with Material Dark theme. */
+    /**  Render a treemap with material dark theme. */
     'MaterialDark' |
-    /**  Render a treemap with Fabric Dark theme. */
+    /**  Render a treemap with fabric dark theme. */
     'FabricDark' |
-    /**  Render a treemap with HighContrast Dark theme. */
+    /**  Render a treemap with highcontrast dark theme. */
     'HighContrast' |
-    /**  Render a treemap with Bootstrap Dark theme. */
+    /**  Render a treemap with bootstrap dark theme. */
     'BootstrapDark'|
-    /** Render a treemap with Bootstrap4 theme. */
+    /** Render a treemap with bootstrap4 theme. */
     'Bootstrap4';
 /**
- * Defines the Rtl Directions
+ * Defines the rendering directions to render the treemap items in the treemap.
  */
 export type RenderingMode =
-    /** Render treemap item from top right to bottom left direction */
+    /** Renders the treemap items from top right to bottom left direction */
     'TopRightBottomLeft' |
-    /** Render treemap item from bottom left to top right direction */
+    /** Renders the treemap items from bottom left to top right direction */
     'BottomLeftTopRight' |
-    /** Render treemap item from bottom right to top left direction */
+    /** Renders the treemap items from bottom right to top left direction */
     'BottomRightTopLeft' |
-    /** Render treemap item from top left to bottom right direction */
+    /** Renders the treemap items from top left to bottom right direction */
     'TopLeftBottomRight';

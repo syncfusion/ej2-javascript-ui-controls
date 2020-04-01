@@ -22,6 +22,8 @@ export const refreshCellElement: string = 'refreshCellElem';
 /** @hidden */
 export const setCellFormat: string = 'setCellFormat';
 /** @hidden */
+export const findAllValues: string = 'findAllValues';
+/** @hidden */
 export const textDecorationUpdate: string = 'textDecorationUpdate';
 /** @hidden */
 export const applyCellFormat: string = 'applyCellFormat';
@@ -137,3 +139,19 @@ export const protectsheetHandler: string = 'protectsheetHandler';
 export const replaceAllDialog: string = 'replaceAllDialog';
 /** @hidden */
 export const workBookeditAlert: string = 'editAlert';
+/** @hidden */
+export const setLockCells: string = 'setLockCells';
+/** @hidden */
+export const applyLockCells: string = 'applyLockCells';
+/** @hidden */
+export const setMerge: string = 'setMerge';
+/** @hidden */
+export const applyMerge: string = 'applyMerge';
+/** @hidden */
+export const mergedRange: string = 'mergedRange';
+/** @hidden */
+export const activeCellMergedRange: string = 'activeCellMergedRange';
+/** @hidden */
+export const insertMerge: string = 'insertMerge';
+/** @hidden */
+export const pasteMerge: string = 'pasteMerge';

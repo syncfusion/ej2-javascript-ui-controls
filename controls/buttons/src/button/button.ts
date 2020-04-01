@@ -3,6 +3,9 @@ import { addClass, Event, EmitType, detach, removeClass } from '@syncfusion/ej2-
 import { rippleEffect, EventHandler, Observer, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { ButtonModel } from './button-model';
 import { getTextNode } from '../common/common';
+/**
+ * Defines the icon position of button.
+ */
 export type IconPosition = 'Left' | 'Right' | 'Top' | 'Bottom';
 export const buttonObserver: Observer = new Observer();
 

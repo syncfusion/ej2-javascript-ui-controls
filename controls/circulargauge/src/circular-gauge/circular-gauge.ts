@@ -35,7 +35,7 @@ import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { ExportType } from '../circular-gauge/utils/enum';
 
 /**
- * Represents the Circular gauge control.
+ * Represents the circular gauge control.
  * ```html
  * <div id="gauge"/>
  * <script>
@@ -50,20 +50,22 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     //Module Declaration of circular gauge
 
     /**
-     * annotationModule is used to add annotation in gauge.
+     * Sets and gets the module that is used to add annotation in the circular gauge.
      */
     public annotationsModule: Annotations;
 
     /**
-     * `tooltipModule` is used to show the tooltip to the circular gauge..
+     * Sets and gets the module that is used to show the tooltip in the circular gauge.
      */
     public tooltipModule: GaugeTooltip;
+
     /**
-     * `legendModule` is used to manipulate and add legend to the chart.
+     * Sets and gets the module that is used to manipulate and add legend to the circular gauge.
      */
     public legendModule: Legend;
+
     /**
-     * The width of the circular gauge as a string in order to provide input as both like '100px' or '100%'.
+     * Sets and gets the width of the circular gauge as a string in order to provide input as both like '100px' or '100%'.
      * If specified as '100%, gauge will render to the full width of its parent element.
      * @default null
      */
@@ -72,7 +74,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     public width: string;
 
     /**
-     * The height of the circular gauge as a string in order to provide input as both like '100px' or '100%'.
+     * Sets and gets the height of the circular gauge as a string in order to provide input as both like '100px' or '100%'.
      * If specified as '100%, gauge will render to the full height of its parent element.
      * @default null
      */
@@ -81,9 +83,8 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     public height: string;
 
     /**
-     * Options for customizing the color and width of the gauge border.
+     * Sets and gets the options for customizing the color and width of the gauge border.
      */
-
     @Complex<BorderModel>({ color: 'transparent', width: 0 }, Border)
     public border: BorderModel;
 
@@ -92,64 +93,59 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      */
 
     /**
-     * The background color of the gauge, which accepts value in hex, rgba as a valid CSS color string.
+     * Sets and gets the background color of the gauge. This property accepts value in hex code, rgba string as a valid CSS color string.
      * @default null
      */
     @Property(null)
     public background: string;
 
     /**
-     * Title for gauge
+     * Sets and gets the title for circular gauge.
      * @default ''
      */
-
     @Property('')
     public title: string;
 
     /**
-     * Options for customizing the title of Gauge.
+     * Sets and gets the options for customizing the title for circular gauge.
      */
-
     @Complex<FontModel>({ size: '15px', color: null }, Font)
     public titleStyle: FontModel;
 
     /**
-     *  Options to customize the left, right, top and bottom margins of the gauge.
+     * Sets and gets the options to customize the left, right, top and bottom margins of the circular gauge.
      */
-
     @Complex<MarginModel>({}, Margin)
     public margin: MarginModel;
 
     /**
-     * Options for customizing the axes of gauge
+     * Sets and gets the options for customizing the axes of circular gauge.
      */
-
     @Collection<AxisModel>([{}], Axis)
     public axes: AxisModel[];
 
     /**
-     * Options for customizing the tooltip of gauge.
+     * Sets and gets the options for customizing the tooltip of gauge.
      */
-
     @Complex<TooltipSettingsModel>({}, TooltipSettings)
     public tooltip: TooltipSettingsModel;
 
     /**
-     * If set true, pointers can able to drag on interaction.
+     * Enables and disables drag movement of the pointer in the circular gauge.
      * @default false
      */
     @Property(false)
     public enablePointerDrag: boolean;
 
     /**
-     * Enables or disables the drag movement of the ranges in the circular gauge.
+     * Enables and disables the drag movement of the ranges in the circular gauge.
      * @default false
      */
     @Property(false)
     public enableRangeDrag: boolean;
 
     /**
-     * X coordinate of the circular gauge center point, which takes values either in pixels or in percentage.
+     * Sets and gets the X coordinate of the circular gauge.
      * @default null
      */
 
@@ -157,7 +153,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     public centerX: string;
 
     /**
-     * Y coordinate of the circular gauge center point, which takes values either in pixels or in percentage.
+     * Sets and gets the Y coordinate of the circular gauge.
      * @default null
      */
 
@@ -165,49 +161,48 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     public centerY: string;
 
     /**
-     * To place the half or quarter circle in center position, if values not specified for centerX and centerY.
+     * Enables and disables to place the half or quarter circle in center position, if values not specified for centerX and centerY.
      * @default false
      */
     @Property(false)
     public moveToCenter: boolean;
 
     /**
-     * Specifies the theme for circular gauge.
-     * * Material - Gauge render with material theme.
-     * * Fabric - Gauge render with fabric theme.
+     * Sets and gets the themes supported for circular gauge.
      * @default Material
      */
     @Property('Material')
     public theme: GaugeTheme;
 
     /**
-     * Specifies whether a grouping separator should be used for a number.
+     * Enables and disables the grouping separator should be used for a number.
      * @default false
      */
     @Property(false)
     public useGroupingSeparator: boolean;
 
     /**
-     * Information about gauge for assistive technology.
+     * Sets and gets the information about gauge for assistive technology.
      * @default null
      */
     @Property(null)
     public description: string;
 
     /**
-     * TabIndex value for the gauge.
+     * Sets and gets the tab index value for the circular gauge.
      * @default 1
      */
     @Property(1)
     public tabIndex: number;
+
     /**
-     * Options for customizing the legend of the chart.
+     * Sets and gets the options for customizing the legend of the circular gauge.
      */
     @Complex<LegendSettingsModel>({}, LegendSettings)
     public legendSettings: LegendSettingsModel;
 
     /**
-     * Triggers after gauge loaded.
+     * Triggers after the circular gauge gets loaded.
      * @event
      * @blazorProperty 'Loaded'
      */
@@ -215,7 +210,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     public loaded: EmitType<ILoadedEventArgs>;
 
     /**
-     * Triggers before gauge load.
+     * Triggers before the circular gauge gets loaded.
      * @event
      * @blazorProperty 'OnLoad'
      */
@@ -223,7 +218,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     public load: EmitType<ILoadedEventArgs>;
 
     /**
-     * Triggers after animation gets completed for pointers.
+     * Triggers after the animation gets completed for pointers.
      * @event
      * @blazorProperty 'AnimationCompleted'
      */
@@ -239,7 +234,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     public axisLabelRender: EmitType<IAxisLabelRenderEventArgs>;
 
     /**
-     * Triggers before the radius gets rendered
+     * Triggers before the radius for the circular gauge gets calculated.
      * @event
      * @blazorProperty 'OnRadiusCalculate'
      */
@@ -248,14 +243,15 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
 
 
     /**
-     * Triggers before each annotation gets rendered.
+     * Triggers before each annotation for the circular gauge gets rendered.
      * @event
      * @blazorProperty 'AnnotationRendering'
      */
     @Event()
     public annotationRender: EmitType<IAnnotationRenderEventArgs>;
+
     /**
-     * Triggers before each legend gets rendered.
+     * Triggers before each legend for the circular gauge gets rendered.
      * @event
      * @deprecated
      * @blazorProperty 'legendRender'
@@ -264,7 +260,7 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     public legendRender: EmitType<ILegendRenderEventArgs>;
 
     /**
-     * Triggers before the tooltip for pointer gets rendered.
+     * Triggers before the tooltip for pointer of the circular gauge gets rendered.
      * @event
      * @blazorProperty 'TooltipRendering'
      */
@@ -295,7 +291,6 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      * @event
      * @blazorProperty 'OnDragEnd'
      */
-
     @Event()
     public dragEnd: EmitType<IPointerDragEventArgs>;
 
@@ -1050,7 +1045,10 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     }
 
     /**
-     * Method to set the pointer value dynamically for circular gauge.
+     * This method is used to set the pointer value dynamically for circular gauge.
+     * @param axisIndex - Specifies the index value for the axis in circular gauge.
+     * @param pointerIndex - Specifies the index value for the pointer in circular gauge.
+     * @param value - Specifies the value for the pointer in circular gauge.
      */
     public setPointerValue(axisIndex: number, pointerIndex: number, value: number): void {
         let axis: Axis = <Axis>this.axes[axisIndex];
@@ -1097,7 +1095,10 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     }
 
     /**
-     * Method to set the annotation content dynamically for circular gauge.
+     * This method is used to set the annotation content dynamically for circular gauge.
+     * @param axisIndex - Specifies the index value for the axis in circular gauge.
+     * @param annotationIndex - Specifies the index value for the annotation in circular gauge.
+     * @param conetent - Specifies the content for the annotation in circular gauge.
      */
     public setAnnotationValue(axisIndex: number, annotationIndex: number, content: string): void {
         let isElementExist: boolean = getElement(this.element.id + '_Annotations_' + axisIndex) !== null;
@@ -1116,16 +1117,18 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         }
     }
     /**
-     * Handles the print method for gauge control.
+     * This method is used to print the rendered circular gauge.
+     * @param id - Specifies the element to print the circular gauge.
      */
     public print(id?: string[] | string | Element): void {
         let exportChart: ExportUtils = new ExportUtils(this);
         exportChart.print(id);
     }
     /**
-     * Handles the export method for gauge control.
-     * @param type
-     * @param fileName
+     * This method is used to perform the export functionality for the circular gauge.
+     * @param type - Specifies the type of the export.
+     * @param fileName - Specifies the file name for the exported file.
+     * @param orientation - Specified the orientation for the exported pdf document.
      */
     public export(type: ExportType, fileName: string, orientation?: PdfPageOrientation): void {
         let exportMap: ExportUtils = new ExportUtils(this);
@@ -1153,7 +1156,11 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
         this.mouseX = (pageX - rect.left) - Math.max(svgRect.left - rect.left, 0);
     }
     /**
-     * Method to set the range values dynamically for circular gauge.
+     * This method is used to set the range values dynamically for circular gauge.
+     * @param axisIndex - Specifies the index value for the axis in circular gauge.
+     * @param rangeIndex - Specifies the index value for the range in circular gauge.
+     * @param start - Specifies the start value for the current range in circular gauge.
+     * @param end - Specifies the end value for the current range i circular gauge.
      */
     public setRangeValue(axisIndex: number, rangeIndex: number, start: number, end: number): void {
         let element: Element = getElement(

@@ -60,6 +60,14 @@ export class KeyboardShortcut {
                 } else {
                     this.parent.notify(initiateHyperlink, null);
                 }
+            } else if (e.keyCode === 90) { /* Ctrl + Z */
+                if (!this.parent.isEdit) {
+                    e.preventDefault(); this.parent.notify(performUndoRedo, { isUndo: true });
+                }
+            } else if (e.keyCode === 89) { /* Ctrl + Y */
+                if (!this.parent.isEdit) {
+                    e.preventDefault(); this.parent.notify(performUndoRedo, { isUndo: false });
+                }
             }
             if (!this.parent.getActiveSheet().isProtected) {
                 if (e.keyCode === 70) {
@@ -94,14 +102,6 @@ export class KeyboardShortcut {
                 } else if (e.keyCode === 53) {
                     e.preventDefault();
                     this.parent.notify(textDecorationUpdate, { style: { textDecoration: 'line-through' }, refreshRibbon: true });
-                } else if (e.keyCode === 90) { /* Ctrl + Z */
-                    if (!this.parent.isEdit) {
-                        e.preventDefault(); this.parent.notify(performUndoRedo, { isUndo: true });
-                    }
-                } else if (e.keyCode === 89) { /* Ctrl + Y */
-                    if (!this.parent.isEdit) {
-                        e.preventDefault(); this.parent.notify(performUndoRedo, { isUndo: false });
-                    }
                 }
                 if (e.shiftKey) {
                     if (e.keyCode === 76) { /* Ctrl + Shift + L */

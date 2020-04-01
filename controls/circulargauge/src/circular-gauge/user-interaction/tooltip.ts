@@ -10,7 +10,7 @@ import { Browser, createElement, remove } from '@syncfusion/ej2-base';
 import { tooltipRender } from '../model/constants';
 
 /**
- * Tooltip Module handles the tooltip of the circular gauge
+ * Sets and gets the module that handles the tooltip of the circular gauge
  */
 
 export class GaugeTooltip {

@@ -1,5 +1,5 @@
 /**
- * RichTextEditor classes defined here.
+ * Rich Text Editor classes defined here.
  */
 
 /** 
@@ -502,3 +502,8 @@ export const CLS_NOCOLOR_ITEM: string = 'e-nocolor-item';
  * @deprecated
  */
 export const CLS_TABLE_BORDER: string = 'e-rte-table-border';
+/** 
+ * @hidden
+ * @deprecated
+ */
+export const CLS_RTE_TABLE_RESIZE: string = 'e-rte-table-resize';

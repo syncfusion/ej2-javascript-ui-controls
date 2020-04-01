@@ -161,3 +161,28 @@ describe('Clear Format commands', () => {
         expect(node1.childNodes[0].nodeName.toLocaleLowerCase()).toBe('p');
     });
 });
+
+describe('Clear Format commands', () => {
+    let innervalue: string = '<table class="e-rte-table" style="width: 100%; min-width: 0px;"><tbody><tr><td class="" style="width: 14.2857%;">egrege</td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%;" class="">ergerg</td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%;" class="">ergeg</td><td style="width: 14.2857%; background-color: rgb(0, 0, 128);" class=""><br></td></tr><tr><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%; background-color: rgb(255, 255, 0);" class="">erg</td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%;" class="">ergeg</td><td style="width: 14.2857%; background-color: rgb(255, 0, 0);" class="">ergege</td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%;"><br></td></tr><tr><td style="width: 14.2857%; background-color: rgb(255, 51, 51);" class="">ergeg</td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%; background-color: rgb(0, 255, 0);" class="">ergre</td><td style="width: 14.2857%;" class=""><br></td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%;"><br></td><td style="width: 14.2857%;" class="">erge</td></tr></tbody></table>'
+    let domSelection: NodeSelection = new NodeSelection();
+    let divElement: HTMLDivElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+
+    beforeAll(() => {
+        document.body.appendChild(divElement);
+    });
+    afterAll(() => {
+        detach(divElement);
+    });
+    
+    it('EJ2-37160 - Clear Fromat testing for Table element contents', () => {
+        new ClearFormat();
+        let node1: Node = document.getElementById('divElement');
+        let node2: HTMLElement = document.getElementById('paragraph10');
+        domSelection.setSelectionText(document, node1, node1, 0, 1);
+        ClearFormat.clear(document, divElement);
+        expect(document.querySelectorAll('table').length === 0).toBe(true);
+    });
+});

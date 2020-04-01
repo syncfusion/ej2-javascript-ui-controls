@@ -16,6 +16,10 @@
       content: '\e653';
     }
 
+    .e-show-add-icon::before {
+      content: '\e823';
+    }
+
     .e-swimlane-header-toolbar {
       & .e-icon-menu::before {
         content: '\e99a';

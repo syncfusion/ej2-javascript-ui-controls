@@ -34,6 +34,8 @@ Kanban component is also available in following list of frameworks.
 * **Key mapping**: Map one or multiple keys to single columns.
 * [**Toggle Columns**](https://ej2.syncfusion.com/demos/#/material/kanban/toggle-columns.html): The columns can be expanded and collapsed.
 * [**WIP Validation**](https://ej2.syncfusion.com/demos/#/material/kanban/wip-validation.html): Set a minimum and maximum number of cards in a column.
+* **Priority Support**: The features enable to render the cards based on the priority value. So, user can easily drag and drop the cards to particular place.
+* **Dialog Editing**: The dialog editing support is used to perform CRUD actions such as add new card, edit or delete existing cards.
 * **Drag and Drop**: Cards can be easily dragged and dropped from one column to another. You can also drag them from one swim lane to another.
 * **Stacked headers**: Additional column headers can be added in a stacked manner.
 * **Tooltip**: Display the card information with a default tooltip and templated tooltip.

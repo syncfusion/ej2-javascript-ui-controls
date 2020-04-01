@@ -510,11 +510,11 @@ export class SvgRenderer implements IRenderer {
     /**
      * used to crop the given native element into a rectangle of the given size
      * @private
-     * @param node
-     * @param group 
-     * @param height 
-     * @param width 
-     * @param parentSvg 
+     * @param {DiagramNativeElement} node
+     * @param {SVGElement} group
+     * @param {number} height
+     * @param {number} width
+     * @param {SVGSVGElement} parentSvg
      */
     public drawClipPath(
         node: DiagramNativeElement, group: SVGElement, height: number, width: number, parentSvg: SVGSVGElement

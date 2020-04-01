@@ -2670,6 +2670,10 @@ export class Editor {
                 let result: string = new XMLSerializer().serializeToString(doc);
                 result = result.replace(/<!--StartFragment-->/gi, '');
                 result = result.replace(/<!--EndFragment-->/gi, '');
+                // Removed namesapce which is added when using XMLSerializer.
+                // When copy content from MS Word, the clipboard html content already have same namespace which cause duplicate namespace
+                // Here, removed the duplicate namespace.
+                result = result.replace('xmlns="http://www.w3.org/1999/xhtml"', '');
                 this.pasteAjax(result, '.html');
             } else if (textContent !== null && textContent !== '') {
                 this.pasteContents(textContent);
@@ -2992,6 +2996,7 @@ export class Editor {
                     if (isNullOrUndefined(insertFormat.uniqueCharacterFormat)) {
                         lineWidget.children[k].characterFormat = insertFormat;
                     } else {
+                        lineWidget.children[k].characterFormat.uniqueCharacterFormat = undefined;
                         lineWidget.children[k].characterFormat.copyFormat(insertFormat);
                     }
                     if (characterFormat.bold) {
@@ -3171,7 +3176,7 @@ export class Editor {
         let insertIndex: number = table.getIndex();
         if (moveRows) {
             //Moves the rows to table.
-            for (let i: number = 0, index: number = 0; i < table.childWidgets.length; i++ , index++) {
+            for (let i: number = 0, index: number = 0; i < table.childWidgets.length; i++, index++) {
                 let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
                 newTable.childWidgets.splice(index, 0, row);
                 row.containerWidget = newTable;
@@ -5360,12 +5365,12 @@ export class Editor {
             let count: number = 0;
             let isBidi: boolean = line.paragraph.paragraphFormat.bidi;
             let isContainsRtl: boolean = this.documentHelper.layout.isContainsRtl(line);
-            let childLength: number = line.children.length;
             let isStarted: boolean = true;
             let endElement: ElementBox = undefined;
             let indexOf: number = -1;
             let isIncrease: boolean = true;
-            for (let j: number = !isBidi ? 0 : childLength - 1; !isBidi ? j < childLength : j >= 0; isBidi ? j-- : isIncrease ? j++ : j--) {
+            // tslint:disable-next-line:max-line-length
+            for (let j: number = !isBidi ? 0 : line.children.length - 1; !isBidi ? j < line.children.length : j >= 0; isBidi ? j-- : isIncrease ? j++ : j--) {
                 let inlineObj: ElementBox = line.children[j] as ElementBox;
                 if (!isBidi && isContainsRtl) {
                     while ((isStarted || isNullOrUndefined(endElement)) && inlineObj instanceof TextElementBox
@@ -10091,6 +10096,7 @@ export class Editor {
             }
         }
     }
+
     /**
      * Applies the borders based on given settings.
      * @param {BorderSettings} settings

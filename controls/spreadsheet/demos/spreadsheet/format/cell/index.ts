@@ -90,7 +90,7 @@ let spreadsheet: Spreadsheet = new Spreadsheet({
     sheets: sheet,
     cellStyle: { fontSize: '12pt' },
     dataBound: (): void => {
-        if (spreadsheet.sheets[spreadsheet.activeSheetTab - 1].name === 'Cell Format') {
+        if (spreadsheet.sheets[spreadsheet.activeSheetIndex].name === 'Cell Format') {
             spreadsheet.cellFormat({ color: '#2f5496', fontWeight: 'bold' }, 'A1:A13');
             spreadsheet.cellFormat({ fontFamily: 'Arial' }, 'B1:B13');
             spreadsheet.cellFormat({ fontFamily: 'Times New Roman' }, 'C1:C13');

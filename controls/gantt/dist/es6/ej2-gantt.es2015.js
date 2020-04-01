@@ -1524,6 +1524,9 @@ class TaskProcessor extends DateProcessor {
             }
         }
         this.parent.setRecordValue('work', work, ganttData.ganttProperties, true);
+        if (!isNullOrUndefined(this.parent.taskFields.work)) {
+            this.parent.dataOperation.updateMappingData(ganttData, 'work');
+        }
     }
     /**
      *
@@ -2152,7 +2155,13 @@ class TaskProcessor extends DateProcessor {
             return resourceIdCollection;
         }
         resourceIdCollection = data[this.parent.taskFields.resourceInfo];
-        let resourceData = this.parent.resources;
+        let resourceData;
+        if (!isNullOrUndefined(this.parent.editModule) && this.parent.editModule.dialogModule.isAddNewResource) {
+            resourceData = this.parent.editModule.dialogModule.ganttResources;
+        }
+        else {
+            resourceData = this.parent.resources;
+        }
         let resourceIDMapping = this.parent.resourceFields.id;
         let resourceUnitMapping = this.parent.resourceFields.unit;
         let resourceGroup = this.parent.resourceFields.group;
@@ -3390,7 +3399,8 @@ class GanttChart {
      * @private
      */
     onTabAction(e) {
-        let isInEditedState = this.parent.editModule.cellEditModule.isCellEdit;
+        let isInEditedState = this.parent.editModule && this.parent.editModule.cellEditModule &&
+            this.parent.editModule.cellEditModule.isCellEdit;
         if (!this.parent.showActiveElement && !isInEditedState) {
             return;
         }
@@ -3435,6 +3445,12 @@ class GanttChart {
      */
     getNextElement($target, isTab) {
         let nextElement = isTab ? $target.nextElementSibling : $target.previousElementSibling;
+        while (nextElement && nextElement.parentElement.classList.contains('e-row')) {
+            if (!nextElement.matches('.e-hide')) {
+                return nextElement;
+            }
+            nextElement = isTab ? nextElement.nextElementSibling : nextElement.previousElementSibling;
+        }
         if (this.validateNextElement(nextElement)) {
             return nextElement;
         }
@@ -3470,15 +3486,26 @@ class GanttChart {
                 }
             }
             else if ($target.parentElement.classList.contains('e-chart-row-cell')) {
+                let childElement;
                 /* tslint:disable-next-line:no-any */
                 rowIndex = closest($target, '.e-chart-row').rowIndex;
                 if (isTab) {
                     rowElement = this.getNextRowElement(rowIndex, isTab, true);
-                    return rowElement ? (rowElement.children[0]) : null;
                 }
                 else {
                     rowElement = this.parent.treeGrid.grid.getRowByIndex(rowIndex);
-                    return rowElement ? (rowElement.children[this.parent.ganttColumns.length - 1]) : null;
+                }
+                if (rowElement) {
+                    childElement = isTab ? rowElement.children[0] : rowElement.children[rowElement.children.length - 1];
+                    while (childElement) {
+                        if (!childElement.matches('.e-hide')) {
+                            return childElement;
+                        }
+                        childElement = isTab ? childElement.nextElementSibling : childElement.previousElementSibling;
+                    }
+                }
+                else {
+                    return null;
                 }
             }
         }
@@ -3692,11 +3719,14 @@ class Timeline {
         let newTimeline = this.parent.zoomingLevels[currentLevel];
         let args = {
             requestType: isZoomIn ? 'beforeZoomIn' : 'beforeZoomOut',
-            timeline: newTimeline
+            timeline: newTimeline,
+            cancel: false
         };
         this.parent.trigger('actionBegin', args);
-        newTimeline = args.timeline;
-        this.changeTimelineSettings(newTimeline);
+        if (!args.cancel) {
+            newTimeline = args.timeline;
+            this.changeTimelineSettings(newTimeline);
+        }
     }
     /**
      * To change the timeline settings property values based upon the Zooming levels.
@@ -8876,10 +8906,11 @@ class Tooltip$1 {
         }
         switch (elementType) {
             case 'milestone':
-                content$$1 = '<table class = "e-gantt-tooltiptable"><tbody>' +
-                    taskName + '<tr><td class = "e-gantt-tooltip-label"> Date</td><td>:</td>' +
+                let sDate = !isNullOrUndefined(data.startDate) ? '<tr><td class = "e-gantt-tooltip-label"> Date</td><td>:</td>' +
                     '<td class = "e-gantt-tooltip-value">' +
-                    this.parent.getFormatedDate(data.startDate, this.parent.dateFormat) + '</tr></tbody></table>';
+                    this.parent.getFormatedDate(data.startDate, this.parent.dateFormat) + '</td></tr>' : '';
+                content$$1 = '<table class = "e-gantt-tooltiptable"><tbody>' +
+                    taskName + sDate + '</tbody></table>';
                 break;
             case 'taskbar':
                 let scheduledTask = !ganttData.hasChildRecords || data.isAutoSchedule ? true : false;
@@ -9108,7 +9139,7 @@ let Gantt = class Gantt extends Component {
                     if (this.selectedRowIndex === 0) {
                         return;
                     }
-                    this.selectionModule.selectRow(0);
+                    this.selectionModule.selectRow(0, false, true);
                 }
                 break;
             case 'end':
@@ -9117,7 +9148,7 @@ let Gantt = class Gantt extends Component {
                     if (this.selectedRowIndex === this.currentViewData.indexOf(currentSelectingRecord)) {
                         return;
                     }
-                    this.selectionModule.selectRow(this.currentViewData.indexOf(currentSelectingRecord));
+                    this.selectionModule.selectRow(this.currentViewData.indexOf(currentSelectingRecord), false, true);
                 }
                 break;
             case 'downArrow':
@@ -9254,7 +9285,7 @@ let Gantt = class Gantt extends Component {
                 let selectingRowIndex = expandedRecords.indexOf(selectedItem);
                 let currentSelectingRecord = e.action === 'downArrow' ? expandedRecords[selectingRowIndex + 1] :
                     expandedRecords[selectingRowIndex - 1];
-                this.selectionModule.selectRow(this.currentViewData.indexOf(currentSelectingRecord));
+                this.selectionModule.selectRow(this.currentViewData.indexOf(currentSelectingRecord), false, true);
             }
             else if (this.selectionSettings.mode === 'Cell' && this.selectionModule.getSelectedRowCellIndexes().length > 0) {
                 let selectCellIndex = this.selectionModule.getSelectedRowCellIndexes();
@@ -9281,8 +9312,8 @@ let Gantt = class Gantt extends Component {
     }
     initProperties() {
         this.globalize = new Internationalization(this.locale);
-        this.dateFormat = !isNullOrUndefined(this.dateFormat) ? this.dateFormat :
-            this.globalize.getDatePattern({ skeleton: 'yMd' });
+        this.dateFormat = !isNullOrUndefined(this.dateFormat) ? this.dateFormat : isBlazor() ?
+            this.globalize.getDatePattern({ skeleton: 'd' }) : this.globalize.getDatePattern({ skeleton: 'yMd' });
         this.isAdaptive = Browser.isDevice;
         this.flatData = [];
         this.currentViewData = [];
@@ -12302,7 +12333,7 @@ class EditTooltip {
      * @private
      */
     showHideTaskbarEditTooltip(bool) {
-        if (bool) {
+        if (bool && this.parent.tooltipSettings.showTooltip) {
             this.createTooltip('Custom', false);
             this.parent.tooltipModule.toolTipObj.close();
             this.updateTooltip();
@@ -14069,6 +14100,7 @@ class DialogEdit {
     }
     resetValues() {
         this.isEdit = false;
+        this.isAddNewResource = false;
         this.editedRecord = {};
         this.rowData = {};
         this.rowIndex = -1;
@@ -14719,7 +14751,7 @@ class DialogEdit {
             allowSelection: true,
             rowHeight: this.parent.isAdaptive ? 48 : null,
             filterSettings: { type: 'Menu' },
-            selectionSettings: { checkboxOnly: true, checkboxMode: 'ResetOnRowClick', persistSelection: true, type: 'Multiple' }
+            selectionSettings: { checkboxOnly: true, checkboxMode: 'Default', persistSelection: true, type: 'Multiple' }
         };
         let columns = [
             { type: 'checkbox', allowEditing: false, allowSorting: false, allowFiltering: false, width: 60 },
@@ -15394,6 +15426,7 @@ class DialogEdit {
         else {
             for (let i = 0; i < selectedItems.length; i++) {
                 idArray.push(selectedItems[i][this.parent.resourceFields.id]);
+                this.isAddNewResource = true;
             }
             this.addedRecord[this.parent.taskFields.resourceInfo] = idArray;
         }
@@ -16689,15 +16722,16 @@ class Edit$2 {
         let ganttProp = currentData.ganttProperties;
         let taskType = ganttProp.taskType;
         let isEffectDriven;
+        let isAutoSchedule = ganttProp.isAutoSchedule;
         if (!isNullOrUndefined(ganttProp.resourceInfo)) {
             if (ganttProp.work > 0 || column === 'work') {
                 switch (taskType) {
                     case 'FixedUnit':
-                        if (ganttProp.resourceInfo.length &&
-                            (column === 'work' || ((column === 'resource') && isEffectDriven))) {
+                        if (isAutoSchedule && ganttProp.resourceInfo.length &&
+                            (column === 'work' || ((column === 'resource')))) {
                             this.parent.dataOperation.updateDurationWithWork(currentData);
                         }
-                        else if (column === 'work') {
+                        else if (!isAutoSchedule && column === 'work') {
                             this.parent.dataOperation.updateUnitWithWork(currentData);
                         }
                         else {
@@ -16708,7 +16742,7 @@ class Edit$2 {
                         if (ganttProp.resourceInfo.length === 0) {
                             return;
                         }
-                        else {
+                        else if (isAutoSchedule) {
                             if (column === 'duration' || column === 'endDate') {
                                 this.parent.dataOperation.updateUnitWithWork(currentData);
                                 if (ganttProp.duration === 0) {
@@ -16722,9 +16756,18 @@ class Edit$2 {
                                 this.parent.dataOperation.updateDurationWithWork(currentData);
                             }
                         }
+                        else {
+                            if (column === 'work') {
+                                this.parent.dataOperation.updateUnitWithWork(currentData);
+                            }
+                            else {
+                                this.parent.dataOperation.updateWorkWithDuration(currentData);
+                            }
+                        }
                         break;
                     case 'FixedDuration':
-                        if (ganttProp.resourceInfo.length && (column === 'work' || (isEffectDriven && (column === 'resource')))) {
+                        if (ganttProp.resourceInfo.length && (column === 'work' || (isAutoSchedule &&
+                            isEffectDriven && (column === 'resource')))) {
                             this.parent.dataOperation.updateUnitWithWork(currentData);
                         }
                         else {
@@ -18890,7 +18933,7 @@ class Selection$1 {
         }
         this.prevRowIndex = args.rowIndex;
         if (!isNullOrUndefined(this.parent.toolbarModule)) {
-            this.parent.toolbarModule.refreshToolbarItems();
+            this.parent.toolbarModule.refreshToolbarItems(args);
         }
         this.parent.trigger('rowSelected', args);
     }
@@ -18962,12 +19005,17 @@ class Selection$1 {
      * @param  {boolean} isToggle - If set to true, then it toggles the selection.
      * @return {void}
      */
-    selectRow(index, isToggle) {
+    selectRow(index, isToggle, isPreventFocus) {
         let selectedRow = this.parent.getRowByIndex(index);
         if (index === -1 || isNullOrUndefined(selectedRow) || this.parent.selectionSettings.mode === 'Cell') {
             return;
         }
-        this.parent.treeGrid.grid.selectionModule.preventFocus = true;
+        if (this.parent.showActiveElement && !isPreventFocus) {
+            this.parent.treeGrid.grid.selectionModule.preventFocus = true;
+        }
+        else {
+            this.parent.treeGrid.grid.selectionModule.preventFocus = false;
+        }
         this.parent.treeGrid.selectRow(index, isToggle);
         this.parent.treeGrid.grid.selectionModule.preventFocus = this.parent.treeGrid.grid.selectionModule.preventFocus === true ?
             false : this.parent.treeGrid.grid.selectionModule.preventFocus;
@@ -19540,7 +19588,7 @@ class Toolbar$3 {
     /**
      * To refresh toolbar items bases current state of tasks
      */
-    refreshToolbarItems() {
+    refreshToolbarItems(args) {
         let gObj = this.parent;
         let enableItems = [];
         let disableItems = [];
@@ -19551,16 +19599,18 @@ class Toolbar$3 {
         let toolbarItems = this.toolbar ? this.toolbar.items : [];
         let toolbarDefaultItems = [gID + '_add', gID + '_edit', gID + '_delete',
             gID + '_update', gID + '_cancel'];
+        let isResouceParent = ((this.parent.viewType === 'ResourceView' && getValue('data.level', args) !== 0
+            || this.parent.viewType === 'ProjectView'));
         if (!isNullOrUndefined(this.parent.editModule)) {
             let touchEdit = gObj.editModule.taskbarEditModule ?
                 gObj.editModule.taskbarEditModule.touchEdit : false;
             let hasData = gObj.currentViewData && gObj.currentViewData.length;
-            edit.allowAdding && !touchEdit ? enableItems.push(gID + '_add') : disableItems.push(gID + '_add');
-            edit.allowEditing && hasData && isSelected && !touchEdit ?
+            edit.allowAdding && isResouceParent && !touchEdit ? enableItems.push(gID + '_add') : disableItems.push(gID + '_add');
+            edit.allowEditing && isResouceParent && hasData && isSelected && !touchEdit ?
                 enableItems.push(gID + '_edit') : disableItems.push(gID + '_edit');
             let isDeleteSelected = gObj.selectionModule ? gObj.selectionModule.selectedRowIndexes.length > 0 ||
                 gObj.selectionModule.getSelectedRowCellIndexes().length > 0 ? true : false : false;
-            edit.allowDeleting && hasData && isDeleteSelected && !touchEdit ?
+            edit.allowDeleting && isResouceParent && hasData && isDeleteSelected && !touchEdit ?
                 enableItems.push(gID + '_delete') : disableItems.push(gID + '_delete');
             if (gObj.editSettings.mode === 'Auto' && !isNullOrUndefined(gObj.editModule.cellEditModule)
                 && gObj.editModule.cellEditModule.isCellEdit) {
@@ -23138,6 +23188,9 @@ class ExportHelper {
         else if (column.field === taskFields.resourceInfo) {
             cell.value = ganttProps.resourceNames;
         }
+        else if (column.field === taskFields.work) {
+            cell.value = this.parent.getWorkString(ganttProps.work, ganttProps.workUnit);
+        }
         else {
             cell.value = !isNullOrUndefined(data[column.field]) ? data[column.field].toString() : '';
         }
@@ -23208,7 +23261,8 @@ class ExportHelper {
             if (data[this.parent.labelSettings.rightLabel]) {
                 taskbar.rightTaskLabel.value = data[this.parent.labelSettings.rightLabel].toString();
             }
-            let reduceLeft = ganttProp.isMilestone ? Math.floor(this.parent.chartRowsModule.taskBarHeight / 2) + 30 : 30;
+            /* tslint:disable-next-line */
+            let reduceLeft = ganttProp.isMilestone ? Math.floor(this.parent.chartRowsModule.taskBarHeight / 2) + 33 : 33; // 33 indicates default timeline cell width
             taskbar.rightTaskLabel.left = ganttProp.left + ganttProp.width + reduceLeft; // right label left value
             taskbar.fontFamily = this.ganttStyle.fontFamily;
             taskbar.progressWidth = ganttProp.progressWidth;
@@ -23238,6 +23292,11 @@ class ExportHelper {
             };
             if (this.parent.pdfQueryTaskbarInfo) {
                 this.parent.trigger('pdfQueryTaskbarInfo', args);
+                taskbar.progressFontColor = args.taskbar.progressFontColor;
+                taskbar.taskColor = args.taskbar.taskColor;
+                taskbar.taskBorderColor = args.taskbar.taskBorderColor;
+                taskbar.progressColor = args.taskbar.progressColor;
+                taskbar.milestoneColor = args.taskbar.milestoneColor;
             }
         });
     }
@@ -23345,7 +23404,17 @@ class ExportHelper {
         cell.style.borders = new PdfBorders();
         cell.style.borders.all = new PdfPen(cell.style.borderColor);
         cell.style.padding = new PdfPaddings();
-        cell.style.padding.all = 10;
+        let padding = 0;
+        if (cell.isHeaderCell) {
+            padding = this.parent.timelineModule.isSingleTier ? 45 / 2 : 60 / 2;
+        }
+        else {
+            padding = this.parent.rowHeight / 2;
+        }
+        cell.style.padding.top = padding - style.fontSize;
+        cell.style.padding.bottom = padding - style.fontSize;
+        cell.style.padding.left = 10;
+        cell.style.padding.right = 10;
     }
     /**
      * @return {void}
@@ -23699,7 +23768,8 @@ class PdfGanttTaskbarCollection {
             labelLeft = this.left;
             if (!this.leftTaskLabel.isLeftCalculated) {
                 let result = this.getWidth(this.leftTaskLabel.value, Number.MAX_VALUE, 15);
-                let reduceLeft = this.isMilestone ? Math.floor(this.parent.chartRowsModule.taskBarHeight / 2) + 30 : 30;
+                /* tslint:disable-next-line */
+                let reduceLeft = this.isMilestone ? Math.floor(this.parent.chartRowsModule.taskBarHeight / 2) + 33 : 33; // 33 indicates default timeline cell width
                 left = pixelToPoint(labelLeft - reduceLeft) - result.actualSize.width;
                 this.leftTaskLabel.left = left;
                 this.leftTaskLabel.isLeftCalculated = true;
@@ -23711,7 +23781,7 @@ class PdfGanttTaskbarCollection {
             if (detail.startPoint <= left && left < detail.endPoint && !isNullOrUndefined(this.leftTaskLabel.value)
                 && !this.leftTaskLabel.isCompleted) {
                 let result = this.getWidth(this.leftTaskLabel.value, detail.endPoint - left, 15);
-                let font = new PdfStandardFont(this.fontFamily, 10);
+                let font = new PdfStandardFont(this.fontFamily, 9);
                 let adjustHeight = (pixelToPoint(this.parent.rowHeight) - result.actualSize.height) / 2;
                 let rightLabelpoint = new PointF(actualLeft, startPoint.y + adjustHeight);
                 let rightLabelSize = new SizeF(result.actualSize.width, result.actualSize.height);
@@ -23739,7 +23809,7 @@ class PdfGanttTaskbarCollection {
         }
     }
     getWidth(value, width, height) {
-        let font = new PdfStandardFont(this.fontFamily, 10);
+        let font = new PdfStandardFont(this.fontFamily, 9);
         let layouter = new PdfStringLayouter();
         let progressFormat = new PdfStringFormat();
         progressFormat.alignment = PdfTextAlignment.Left;

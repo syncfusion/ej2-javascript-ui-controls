@@ -360,7 +360,7 @@ export class LineRouting {
         let pointX: number; let pointY: number; let node: VirtualBoundaries; let points: PointModel[] = [];
         let direction: Direction; let length: number; let currentdirection: Direction; let prevDirection: Direction;
         let targetWrapper: DiagramElement = connector.targetWrapper; let sourceWrapper: DiagramElement = connector.sourceWrapper;
-        let sourcePoint: PointModel = this.findEndPoint(connector, true, true);
+        let sourcePoint: PointModel = this.findEndPoint(connector, true);
 
         if (connector.targetPortID !== '' || !connector.targetWrapper) {
             targetPoint = this.findEndPoint(connector, false, true);
@@ -381,7 +381,7 @@ export class LineRouting {
         }
         for (let j: number = 0; j < points.length - 1; j++) {
             if (points[j].x !== points[j + 1].x) {
-                if (j === 0 && sourceWrapper) {
+                if (j === 0 && connector.sourcePortID === '' && sourceWrapper) {
                     sourcePoint = (points[j].x > points[j + 1].x) ? sourceWrapper.bounds.middleLeft : sourceWrapper.bounds.middleRight;
                 }
                 if (j === points.length - 2 && connector.targetPortID === '' && targetWrapper) {

@@ -877,7 +877,7 @@ third line`;
       let pastedElm: any = (rteObj as any).inputElement.innerHTML;
       expect(rteObj.inputElement.children[0].children[0].tagName.toLowerCase() === 'img').toBe(true);
       let expected: boolean = false;
-      let expectedElem: string = `<p><img src="https://cdn.syncfusion.com/content/images/company-logos/Syncfusion_Logo_Image.png" alt="Image result for syncfusion" class="e-resize e-img-focus">21</p>`;
+      let expectedElem: string = `<p><img src="https://cdn.syncfusion.com/content/images/company-logos/Syncfusion_Logo_Image.png" alt="Image result for syncfusion" class="e-resize e-img-focus e-rte-image e-imginline"> 21</p>`;
       if (pastedElm === expectedElem) {
         expected = true;
       }

@@ -17,7 +17,7 @@
       }
     }
 
-    &:hover {
+    &:hover :not(e-active) {
       & .e-split-btn {
         border-right-color: $split-btn-hover-border-color;
 
@@ -64,7 +64,7 @@
       }
 
       &:hover {
-        & .e-split-btn {
+        & .e-split-btn :not(e-active) {
           border-left-color: $split-btn-hover-border-color;
           border-right-color: $split-btn-hover-vertical-border-color;
 

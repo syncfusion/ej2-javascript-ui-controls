@@ -567,8 +567,8 @@ describe('Chart Control Series', () => {
 
         it('with empty point(x Value)', (done: Function) => {
             loaded = (args: Object): void => {
-                let point: Element = document.getElementById('container_Series_0_Point_0');
-                expect(point == null).toBe(true);
+                let point: Element = document.getElementById('containerSeriesGroup0');
+                expect(point.childElementCount == 4).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -578,8 +578,8 @@ describe('Chart Control Series', () => {
 
         it('Checking with category(high and low) null points', (done: Function) => {
             loaded = (args: Object): void => {
-                let point: Element = document.getElementById('container_Series_0_Point_1');
-                expect(point == null).toBe(true);
+                let point: Element = document.getElementById('containerSeriesGroup0');
+                expect(point.childElementCount == 3).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -591,7 +591,7 @@ describe('Chart Control Series', () => {
 
         it('Checking with category (open and close) null points', (done: Function) => {
             loaded = (args: Object): void => {
-                let point: Element = document.getElementById('container_Series_0_Point_2');
+                let point: Element = document.getElementById('container_Series_0_Point_0');
                 expect(point == null).toBe(true);
                 done();
             };
@@ -603,7 +603,7 @@ describe('Chart Control Series', () => {
 
         it('with dash array', (done: Function) => {
             loaded = (args: Object): void => {
-                let seriesElements: HTMLElement = document.getElementById('container_Series_0_Point_3');
+                let seriesElements: HTMLElement = document.getElementById('container_Series_0_Point_2');
                 let stroke: string = seriesElements.getAttribute('stroke-dasharray');
                 expect(stroke == '4,3').toBe(true);
                 done();

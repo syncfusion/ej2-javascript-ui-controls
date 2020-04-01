@@ -177,7 +177,7 @@ describe('Gantt spec for tooltip', () => {
         it('Milestone Tooltip', () => {
             let milestone: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(7) > td > div.e-taskbar-main-container > div.e-gantt-milestone') as HTMLElement;
             triggerMouseEvent(milestone, 'mouseover', 50);
-            expect(ganttObj.tooltipModule.toolTipObj.content).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">Milestone</td></tr><tr><td class = "e-gantt-tooltip-label"> Date</td><td>:</td><td class = "e-gantt-tooltip-value">10/27/2017</tr></tbody></table>');
+            expect(ganttObj.tooltipModule.toolTipObj.content).toBe('<table class = "e-gantt-tooltiptable"><tbody><tr class = "e-gantt-tooltip-rowcell"><td colspan="3">Milestone</td></tr><tr><td class = "e-gantt-tooltip-label"> Date</td><td>:</td><td class = "e-gantt-tooltip-value">10/27/2017</td></tr></tbody></table>');
         });
         it('Taskbar Tooltip Template', () => {
             ganttObj.tooltipSettings.taskbar = '#tooltip';

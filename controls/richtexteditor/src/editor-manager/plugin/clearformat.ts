@@ -40,7 +40,13 @@ export class ClearFormat {
                 nodeSelection.setSelectionContents(docElement, preNode);
                 range = nodeSelection.getRange(docElement);
             } else {
-                let lasNode: Node = nodeCutter.GetSpliceNode(range, nodes[ nodes.length - 1 ] as HTMLElement);
+                let i: number = 1;
+                let lastText: Node = nodes[nodes.length - i];
+                while (nodes[nodes.length - i].nodeName === 'BR') {
+                    i++;
+                    lastText = nodes[nodes.length - i];
+                }
+                let lasNode: Node = nodeCutter.GetSpliceNode(range, lastText as HTMLElement);
                 nodeSelection.setSelectionText(docElement, preNode, lasNode, 0, (lasNode.nodeType === 3) ?
                 lasNode.textContent.length : lasNode.childNodes.length);
                 range = nodeSelection.getRange(docElement);

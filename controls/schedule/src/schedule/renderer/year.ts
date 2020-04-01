@@ -183,8 +183,8 @@ export class Year extends ViewBase implements IRenderer {
         this.parent.workHours.end): TdData[] {
         let dateCol: TdData[] = [{
             date: renderDates[0], type: 'dateHeader', className: [cls.HEADER_CELLS_CLASS], colSpan: 1, workDays: workDays,
-            startHour: new Date(+this.parent.globalize.parseDate(startHour, { skeleton: 'Hm' })),
-            endHour: new Date(+this.parent.globalize.parseDate(endHour, { skeleton: 'Hm' }))
+            startHour: new Date(+this.parent.globalize.parseDate(startHour, isBlazor() ? { skeleton: 't' } : { skeleton: 'Hm' })),
+            endHour: new Date(+this.parent.globalize.parseDate(endHour, isBlazor() ? { skeleton: 't' } : { skeleton: 'Hm' }))
         }];
         return dateCol;
     }
@@ -258,6 +258,8 @@ export class Year extends ViewBase implements IRenderer {
         if (!this.parent.isAdaptive && headerWrapper) {
             let scrollBarWidth: number = util.getScrollBarWidth();
             // tslint:disable:no-any
+            (headerWrapper.firstElementChild as HTMLElement).style[<any>args.cssProperties.rtlBorder] = '';
+            headerWrapper.style[<any>args.cssProperties.rtlPadding] = '';
             if (contentWrapper.offsetWidth - contentWrapper.clientWidth > 0) {
                 (headerWrapper.firstElementChild as HTMLElement).style[<any>args.cssProperties.border] = scrollBarWidth > 0 ? '1px' : '0px';
                 headerWrapper.style[<any>args.cssProperties.padding] = scrollBarWidth > 0 ? scrollBarWidth - 1 + 'px' : '0px';
@@ -288,7 +290,7 @@ export class Year extends ViewBase implements IRenderer {
     }
 
     public getDateRangeText(): string {
-        return this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'y' });
+        return this.parent.globalize.formatDate(this.parent.selectedDate, isBlazor() ? { format: 'yyyy' } : { skeleton: 'y' });
     }
 
     public addEventListener(): void {

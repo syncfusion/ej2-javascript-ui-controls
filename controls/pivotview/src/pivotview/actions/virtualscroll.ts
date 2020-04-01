@@ -414,7 +414,6 @@ export class VirtualScroll {
      * @return {void}
      * @hidden
      */
-
     public destroy(): void {
         this.removeInternalEvents();
     }

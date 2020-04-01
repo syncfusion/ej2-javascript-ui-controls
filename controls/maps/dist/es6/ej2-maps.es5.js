@@ -56,15 +56,9 @@ function calculateSize(maps) {
     var containerHeight = maps.element.clientHeight;
     var parentHeight = maps.element.parentElement.clientHeight;
     var parentWidth = maps.element.parentElement.clientWidth;
-    if (maps.isBlazor) {
-        parentHeight = (maps.element.parentElement.style.height) ? maps.element.parentElement.clientHeight : 450;
-        containerHeight = parentHeight !== 0 ? parentHeight : containerHeight !== 0 ?
-            containerHeight : 450;
-        containerWidth = parentWidth !== 0 ?
-            parentWidth : containerWidth !== 0 ?
-            containerWidth : 600;
-    }
-    maps.availableSize = new Size(stringToNumber(maps.width, containerWidth) || containerWidth || parseFloat(maps.element.style.width) || 600, stringToNumber(maps.height, containerHeight) || containerHeight || parseFloat(maps.element.style.height) || (maps.isDevice ?
+    var containerElementWidth = stringToNumber(maps.element.style.width, containerWidth);
+    var containerElementHeight = stringToNumber(maps.element.style.height, containerWidth);
+    maps.availableSize = new Size(stringToNumber(maps.width, containerWidth) || containerWidth || containerElementWidth || 600, stringToNumber(maps.height, containerHeight) || containerHeight || containerElementHeight || (maps.isDevice ?
         Math.min(window.innerWidth, window.innerHeight) : 450));
 }
 /**
@@ -735,11 +729,12 @@ function clusterTemplate(currentLayer, markerTemplate, maps, layerIndex, markerC
                     }
                     tempX = bounds1.left + bounds1.width / 2;
                     tempY = bounds1.top + bounds1.height;
+                    indexCollection.push(o_1);
                     if (colloideBounds.length > 0) {
                         indexCollection = indexCollection.filter(function (item, index, value) { return value.indexOf(item) === index; });
                         var container = maps.element.getBoundingClientRect();
-                        tempX = Math.abs(container['left'] - tempX);
-                        tempY = Math.abs(container['top'] - tempY);
+                        tempX = tempX - container['left'];
+                        tempY = tempY - container['top'];
                         var translate = (maps.isTileMap) ? new Object() : getTranslate(maps, currentLayer, false);
                         var transPoint = (maps.isTileMap) ? { x: 0, y: 0 } : (maps.translatePoint.x !== 0) ?
                             maps.translatePoint : translate['location'];
@@ -2811,7 +2806,7 @@ var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, 
  * Maps base document
  */
 /**
- * Options for customizing the annotation.
+ * Sets and gets the options for customizing the annotation element in maps.
  */
 var Annotation = /** @__PURE__ @class */ (function (_super) {
     __extends$2(Annotation, _super);
@@ -2861,7 +2856,7 @@ var Arrow = /** @__PURE__ @class */ (function (_super) {
     return Arrow;
 }(ChildProperty));
 /**
- * Configures the fonts in maps.
+ * Sets and gets the options to customize the style of the text in data label, legend and other texts.
  */
 var Font = /** @__PURE__ @class */ (function (_super) {
     __extends$2(Font, _super);
@@ -2889,7 +2884,7 @@ var Font = /** @__PURE__ @class */ (function (_super) {
     return Font;
 }(ChildProperty));
 /**
- * Configures the borders in the maps.
+ * Sets and gets the options to customize the border for the maps.
  */
 var Border = /** @__PURE__ @class */ (function (_super) {
     __extends$2(Border, _super);
@@ -2905,7 +2900,7 @@ var Border = /** @__PURE__ @class */ (function (_super) {
     return Border;
 }(ChildProperty));
 /**
- * Configures the center position in the maps.
+ * Sets and gets the center position in maps.
  */
 var CenterPosition = /** @__PURE__ @class */ (function (_super) {
     __extends$2(CenterPosition, _super);
@@ -2921,7 +2916,7 @@ var CenterPosition = /** @__PURE__ @class */ (function (_super) {
     return CenterPosition;
 }(ChildProperty));
 /**
- * To configure the tooltip settings of the maps.
+ * Sets and gets the options to customize the tooltip for layers, markers, and bubble in maps.
  */
 var TooltipSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$2(TooltipSettings, _super);
@@ -2952,7 +2947,7 @@ var TooltipSettings = /** @__PURE__ @class */ (function (_super) {
     return TooltipSettings;
 }(ChildProperty));
 /**
- * Configures the maps margins.
+ * Sets and gets the margin for the maps component.
  */
 var Margin = /** @__PURE__ @class */ (function (_super) {
     __extends$2(Margin, _super);
@@ -2974,7 +2969,7 @@ var Margin = /** @__PURE__ @class */ (function (_super) {
     return Margin;
 }(ChildProperty));
 /*
- * To configure cluster separate connector line style
+ * Sets and gets the options to customize the line that connects the markers in marker cluster in maps.
  */
 var ConnectorLineSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$2(ConnectorLineSettings, _super);
@@ -2993,7 +2988,7 @@ var ConnectorLineSettings = /** @__PURE__ @class */ (function (_super) {
     return ConnectorLineSettings;
 }(ChildProperty));
 /**
- * To configure cluster in marker
+ * Sets and gets the options to customize the cluster of markers in Maps.
  */
 var MarkerClusterSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$2(MarkerClusterSettings, _super);
@@ -3042,7 +3037,7 @@ var MarkerClusterSettings = /** @__PURE__ @class */ (function (_super) {
     return MarkerClusterSettings;
 }(ChildProperty));
 /**
- * To configure cluster separate collections.
+ * Sets and gets the data in the marker cluster.
  */
 var MarkerClusterData = /** @__PURE__ @class */ (function (_super) {
     __extends$2(MarkerClusterData, _super);
@@ -3052,7 +3047,7 @@ var MarkerClusterData = /** @__PURE__ @class */ (function (_super) {
     return MarkerClusterData;
 }(ChildProperty));
 /**
- * To configure ColorMapping in Maps
+ * Sets and gets the options to customize the color-mapping in maps.
  */
 var ColorMappingSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$2(ColorMappingSettings, _super);
@@ -3086,7 +3081,7 @@ var ColorMappingSettings = /** @__PURE__ @class */ (function (_super) {
     return ColorMappingSettings;
 }(ChildProperty));
 /**
- * To configure the initial shape selection settings
+ * Sets and gets the shapes that is selected initially on rendering the maps.
  */
 var InitialShapeSelectionSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$2(InitialShapeSelectionSettings, _super);
@@ -3102,7 +3097,7 @@ var InitialShapeSelectionSettings = /** @__PURE__ @class */ (function (_super) {
     return InitialShapeSelectionSettings;
 }(ChildProperty));
 /**
- * To configure the selection settings
+ * Sets and gets the options to customize the maps on selecting the shapes.
  */
 var SelectionSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$2(SelectionSettings, _super);
@@ -3127,7 +3122,7 @@ var SelectionSettings = /** @__PURE__ @class */ (function (_super) {
     return SelectionSettings;
 }(ChildProperty));
 /**
- * To configure the highlight settings
+ * Sets and gets the options to customize the shapes on which the mouse has hovered in maps.
  */
 var HighlightSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$2(HighlightSettings, _super);
@@ -3149,7 +3144,7 @@ var HighlightSettings = /** @__PURE__ @class */ (function (_super) {
     return HighlightSettings;
 }(ChildProperty));
 /**
- * NavigationSelectedLine
+ * Sets and gets the options to customize the navigation line in maps.
  */
 var NavigationLineSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$2(NavigationLineSettings, _super);
@@ -3189,7 +3184,7 @@ var NavigationLineSettings = /** @__PURE__ @class */ (function (_super) {
     return NavigationLineSettings;
 }(ChildProperty));
 /**
- * Bubble settings model class
+ * Sets and gets the options to customize the bubble elements in maps.
  */
 /*tslint:disable-next-line:max-line-length*/
 var BubbleSettings = /** @__PURE__ @class */ (function (_super) {
@@ -3248,7 +3243,7 @@ var BubbleSettings = /** @__PURE__ @class */ (function (_super) {
     return BubbleSettings;
 }(ChildProperty));
 /**
- * To configure title of the maps.
+ * Sets and gets the title for the maps.
  */
 var CommonTitleSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$2(CommonTitleSettings, _super);
@@ -3264,7 +3259,7 @@ var CommonTitleSettings = /** @__PURE__ @class */ (function (_super) {
     return CommonTitleSettings;
 }(ChildProperty));
 /**
- * To configure subtitle of the maps.
+ * Sets and gets the subtitle for maps.
  */
 var SubTitleSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$2(SubTitleSettings, _super);
@@ -3280,7 +3275,7 @@ var SubTitleSettings = /** @__PURE__ @class */ (function (_super) {
     return SubTitleSettings;
 }(CommonTitleSettings));
 /**
- * To configure title of the maps.
+ * Sets and gets the title for the maps.
  */
 var TitleSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$2(TitleSettings, _super);
@@ -3299,7 +3294,7 @@ var TitleSettings = /** @__PURE__ @class */ (function (_super) {
     return TitleSettings;
 }(CommonTitleSettings));
 /**
- * Options to configure maps Zooming Settings.
+ * Sets and gets the options to configure maps zooming operations.
  */
 var ZoomSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$2(ZoomSettings, _super);
@@ -3366,7 +3361,7 @@ var ZoomSettings = /** @__PURE__ @class */ (function (_super) {
     return ZoomSettings;
 }(ChildProperty));
 /**
- * To configure the toggle legend settings in the maps
+ * Sets and gets the settings to customize the color-mapping visibility based on the legend visibility.
  */
 var ToggleLegendSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$2(ToggleLegendSettings, _super);
@@ -3391,7 +3386,7 @@ var ToggleLegendSettings = /** @__PURE__ @class */ (function (_super) {
     return ToggleLegendSettings;
 }(ChildProperty));
 /**
- * Configures the legend settings.
+ * Sets and gets the options to customize the legend of the maps.
  */
 var LegendSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$2(LegendSettings, _super);
@@ -3488,7 +3483,7 @@ var LegendSettings = /** @__PURE__ @class */ (function (_super) {
     return LegendSettings;
 }(ChildProperty));
 /**
- * Customization for Data label settings.
+ * Sets and gets the options to customize the data-labels in maps.
  */
 var DataLabelSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$2(DataLabelSettings, _super);
@@ -3531,7 +3526,7 @@ var DataLabelSettings = /** @__PURE__ @class */ (function (_super) {
     return DataLabelSettings;
 }(ChildProperty));
 /**
- * To configure the shapeSettings in the maps.
+ * Sets and gets the options to customize the shapes in the maps.
  */
 var ShapeSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$2(ShapeSettings, _super);
@@ -3571,7 +3566,7 @@ var ShapeSettings = /** @__PURE__ @class */ (function (_super) {
     return ShapeSettings;
 }(ChildProperty));
 /**
- * To configure the marker settings for the maps.
+ * Sets and gets the options to customize the marker in the maps.
  */
 var MarkerBase = /** @__PURE__ @class */ (function (_super) {
     __extends$2(MarkerBase, _super);
@@ -3658,7 +3653,7 @@ var MarkerSettings = /** @__PURE__ @class */ (function (_super) {
     return MarkerSettings;
 }(MarkerBase));
 /**
- * To configure the layers of the maps.
+ * Sets and gets the options to customize the layers of the maps.
  */
 var LayerSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$2(LayerSettings, _super);
@@ -3768,7 +3763,7 @@ var Tile = /** @__PURE__ @class */ (function () {
     return Tile;
 }());
 /**
- * Maps area configuration
+ * Sets and gets the maps area settings
  */
 var MapsAreaSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$2(MapsAreaSettings, _super);
@@ -3858,6 +3853,10 @@ var Marker = /** @__PURE__ @class */ (function () {
                         var data1 = {};
                         var text = [];
                         var j = 0;
+                        if (data == {} || isNullOrUndefined(data['latitude']) || isNullOrUndefined(data['longitude'])) {
+                            lat = (data['latitude'] && !isNullOrUndefined(data['latitude'])) ? data['latitude'] : 0;
+                            lng = (data['longitude'] && !isNullOrUndefined(data['longitude'])) ? data['longitude'] : 0;
+                        }
                         for (var i = 0; i < Object.keys(data).length; i++) {
                             if (Object.keys(data)[i].toLowerCase() !== 'latitude' && Object.keys(data)[i].toLowerCase() !== 'longitude'
                                 && Object.keys(data)[i].toLowerCase() !== 'name' && Object.keys(data)[i].toLowerCase() !== 'blazortemplateid'
@@ -3949,7 +3948,8 @@ var Marker = /** @__PURE__ @class */ (function () {
             var maxZoomFact = 10;
             var mapWidth = this.maps.mapAreaRect.width;
             var mapHeight = this.maps.mapAreaRect.height;
-            this.maps.markerZoomedState = this.maps.markerZoomedState ? this.maps.markerZoomedState : isNullOrUndefined(this.maps.markerZoomFactor);
+            this.maps.markerZoomedState = this.maps.markerZoomedState ? this.maps.markerZoomedState : isNullOrUndefined(this.maps.markerZoomFactor) ?
+                !this.maps.markerZoomedState : this.maps.markerZoomFactor > 1 ? this.maps.markerZoomedState : !this.maps.markerZoomedState;
             this.maps.defaultState = this.maps.markerZoomedState ? !this.maps.markerZoomedState : this.maps.defaultState;
             Array.prototype.forEach.call(layersCollection, function (currentLayer, layerIndex) {
                 var isMarker = currentLayer.markerSettings.length !== 0;
@@ -4228,160 +4228,160 @@ var Marker = /** @__PURE__ @class */ (function () {
  * Maps constants doc
  */
 /**
- * Specifies maps load event name.
+ * Specifies the maps load event name.
  * @private
  */
 var load = 'load';
 /**
- * Specifies maps loaded event name.
+ * Specifies the maps loaded event name.
  * @private
  */
 var loaded = 'loaded';
 /**
- * Specifies maps click event name.
+ * Specifies the maps click event name.
  * @private
  */
 var click = 'click';
 /**
- * Specifies maps loaded event name.
+ * Specifies the maps right click event name.
  * @private
  */
 var rightClick = 'rightClick';
 /**
- * Specifies maps double click event name.
+ * Specifies the maps double click event name.
  * @private
  */
 var doubleClick = 'doubleClick';
 /**
- * Specifies maps resize event name.
+ * Specifies the maps resize event name.
  * @private
  */
 var resize = 'resize';
 /**
- * Specifies the map tooltip render event
+ * Specifies the maps tooltip event name.
  */
 var tooltipRender = 'tooltipRender';
 /**
- * Specifies the map shapeSelected event
+ * Specifies the map shape selected event.
  */
 var shapeSelected = 'shapeSelected';
 /**
- * Specifies the map shapeHighlight event
+ * Specifies the maps shape highlight event.
  */
 var shapeHighlight = 'shapeHighlight';
 /**
- * Specifies maps mousemove event name.
+ * Specifies the maps mouse move event name.
  * @private
  */
 var mousemove = 'mousemove';
 /**
- * Specifies maps mouseup event name.
+ * Specifies the maps mouse up event name.
  * @private
  */
 var mouseup = 'mouseup';
 /**
- * Specifies maps mousedown event name.
+ * Specifies the maps mouse down event name.
  * @private
  */
 var mousedown = 'mousedown';
 /**
- * Specifies maps layerRendering event name.
+ * Specifies the maps layer rendering event name.
  * @private
  */
 var layerRendering = 'layerRendering';
 /**
- * Specifies maps shapeRendering event name.
+ * Specifies the maps shape rendering event name.
  * @private
  */
 var shapeRendering = 'shapeRendering';
 /**
- * Specifies maps markerRendering event name.
+ * Specifies the maps marker rendering event name.
  * @private
  */
 var markerRendering = 'markerRendering';
 /**
- * Specifies maps clusterRendering event name.
+ * Specifies the maps cluster rendering event name.
  * @private
  */
 var markerClusterRendering = 'markerClusterRendering';
 /**
- * Specifies maps markerClick event name.
+ * Specifies the maps marker click event name.
  * @private
  */
 var markerClick = 'markerClick';
 /**
- * Specifies maps clusterClick event name.
+ * Specifies the maps cluster click event name.
  * @private
  */
 var markerClusterClick = 'markerClusterClick';
 /**
- * Specifies maps markerMouseMove event name.
+ * Specifies the maps marker mouse move event name.
  * @private
  */
 var markerMouseMove = 'markerMouseMove';
 /**
- * Specifies maps clusterMouseMove event name.
+ * Specifies the maps cluster mouse move event name.
  * @private
  */
 var markerClusterMouseMove = 'markerClusterMouseMove';
 /**
- * Specifies maps dataLabelRendering event name.
+ * Specifies the maps data label rendering event name.
  * @private
  */
 var dataLabelRendering = 'dataLabelRendering';
 /**
- * Specifies maps bubbleRendering event name.
+ * Specifies the maps bubbleRendering event name.
  * @private
  */
 var bubbleRendering = 'bubbleRendering';
 /**
- * Specifies maps bubbleClick event name.
+ * Specifies the maps bubble click event name.
  * @private
  */
 var bubbleClick = 'bubbleClick';
 /**
- * Specifies maps bubbleMouseMove event name.
+ * Specifies the maps bubble mouse move event name.
  * @private
  */
 var bubbleMouseMove = 'bubbleMouseMove';
 /**
- * Specifies maps animationComplete event name.
+ * Specifies the maps animation complete event name.
  * @private
  */
 var animationComplete = 'animationComplete';
 /**
- * Specifies maps legendRendering event name.
+ * Specifies the maps legend rendering event name.
  * @private
  */
 var legendRendering = 'legendRendering';
 /**
- * Specifies maps annotationRendering event name.
+ * Specifies the maps annotation rendering event name.
  * @private
  */
 var annotationRendering = 'annotationRendering';
 /**
- * Specifies maps itemSelection event name
+ * Specifies the maps item selection event name.
  * @private
  */
 var itemSelection = 'itemSelection';
 /**
- * Specifies maps itemHighlight event name
+ * Specifies the maps item highlight event name.
  */
 var itemHighlight = 'itemHighlight';
 /**
- * Specifies maps beforePrint event name
+ * Specifies the maps before print event name.
  */
 var beforePrint = 'beforePrint';
 /**
- * Specifies the map zoom in event name
+ * Specifies the maps zoom in event name.
  */
 var zoomIn = 'zoomIn';
 /**
- * Specifies the map zoom out event name
+ * Specifies the maps zoom out event name.
  */
 var zoomOut = 'zoomOut';
 /**
- * Specifies the map pan event name
+ * Specifies the maps pan event name.
  */
 var pan = 'pan';
 
@@ -4699,6 +4699,9 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
     // tslint:disable-next-line:max-func-body-length
     LayerPanel.prototype.renderTileLayer = function (panel, layer, layerIndex, bing) {
         panel.currentFactor = panel.calculateFactor(layer);
+        panel.mapObject.defaultState = ((panel.mapObject.zoomSettings.zoomFactor !== 1) &&
+            (!isNullOrUndefined(panel.mapObject.tileZoomLevel) && panel.mapObject.tileZoomLevel !== 1)) ?
+            false : true;
         if (isNullOrUndefined(panel.mapObject.previousCenterLatitude) &&
             isNullOrUndefined(panel.mapObject.previousCenterLongitude)) {
             panel.mapObject.previousCenterLatitude = panel.mapObject.centerPosition.latitude;
@@ -4749,14 +4752,17 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
             panel.mapObject.tileZoomLevel = panel.mapObject.tileZoomLevel;
         }
         else if (panel.mapObject.zoomSettings.zoomFactor !== 1 || panel.mapObject.zoomSettings.shouldZoomInitially) {
-            panel.mapObject.tileZoomLevel = panel.mapObject.defaultState ?
+            panel.mapObject.tileZoomLevel = panel.mapObject.defaultState && panel.mapObject.zoomSettings.enable ?
                 panel.mapObject.tileZoomLevel : !panel.mapObject.zoomSettings.shouldZoomInitially
                 && !panel.mapObject.centerPositionChanged ?
                 panel.mapObject.previousZoomFactor !== panel.mapObject.zoomSettings.zoomFactor ?
                     panel.mapObject.zoomSettings.zoomFactor : panel.mapObject.tileZoomLevel : zoomFactorValue;
             if (!isNullOrUndefined(panel.mapObject.tileTranslatePoint) &&
-                panel.mapObject.markerZoomFactor !== panel.mapObject.mapScaleValue
-                && panel.mapObject.zoomSettings.zoomFactor <= 1) {
+                (panel.mapObject.markerZoomFactor !== panel.mapObject.mapScaleValue
+                    || (isNullOrUndefined(panel.mapObject.markerZoomFactor)
+                        && isNullOrUndefined(panel.mapObject.mapScaleValue)))
+                && (panel.mapObject.zoomSettings.zoomFactor <= 1 || panel.mapObject.previousZoomFactor !==
+                    panel.mapObject.zoomSettings.zoomFactor)) {
                 panel.mapObject.tileTranslatePoint.x = 0;
                 panel.mapObject.tileTranslatePoint.y = 0;
             }
@@ -4783,6 +4789,10 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
             this.mapObject.initialTileTranslate.y = (this.mapObject.availableSize.height / 2) - (totalSize / 2) + padding;
         }
         panel.generateTiles(panel.mapObject.tileZoomLevel, panel.mapObject.tileTranslatePoint, null, bing);
+        if (!isNullOrUndefined(panel.mapObject.previousZoomFactor)
+            && panel.mapObject.previousZoomFactor !== panel.mapObject.zoomSettings.zoomFactor) {
+            panel.mapObject.previousZoomFactor = panel.mapObject.zoomSettings.zoomFactor;
+        }
         if (panel.mapObject.navigationLineModule) {
             panel.layerObject.appendChild(panel.mapObject.navigationLineModule.renderNavigation(panel.currentLayer, panel.mapObject.tileZoomLevel, layerIndex));
         }
@@ -5721,7 +5731,7 @@ var LayerPanel = /** @__PURE__ @class */ (function () {
 }());
 
 /**
- * Represent the annotation rendering for map
+ * Represents the annotation elements for map.
  */
 var Annotations = /** @__PURE__ @class */ (function () {
     function Annotations(map) {
@@ -6106,7 +6116,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
     function Maps(options, element) {
         var _this = _super.call(this, options, element) || this;
         /**
-         * Check layer whether is normal or tile
+         * Check layer whether is geometry or tile
          * @private
          */
         _this.isTileMap = false;
@@ -6278,6 +6288,13 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         };
         ajaxModule.send(localAjax.sendData);
     };
+    /**
+     * This method is used to process the JSON data to render the maps.
+     * @param processType - Specifies the process type in maps.
+     * @param data - Specifies the data for maps.
+     * @param layer - Specifies the layer for the maps.
+     * @param dataType - Specifies the data type for maps.
+     */
     /* tslint:disable:no-eval */
     Maps.prototype.processResponseJsonData = function (processType, data, layer, dataType) {
         this.serverProcess['response']++;
@@ -6405,12 +6422,11 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Maps.prototype.blazorTemplates = function () {
-        var layerLength = this.layers.length - 1;
-        var markerLength = this.layers[layerLength].markerSettings.length - 1;
-        if (markerLength >= 0) {
-            if (this.layers[layerLength].dataLabelSettings.visible || this.layers[layerLength].markerSettings[markerLength].template) {
-                updateBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate', this.layers[layerLength].dataLabelSettings);
-                for (var i = 0; i < this.layers.length; i++) {
+        for (var i = 0; i < this.layers.length; i++) {
+            var markerLength = this.layers[i].markerSettings.length - 1;
+            if (markerLength >= 0) {
+                if (this.layers[i].dataLabelSettings.visible || this.layers[i].markerSettings[markerLength].template) {
+                    updateBlazorTemplate(this.element.id + '_LabelTemplate', 'LabelTemplate', this.layers[i].dataLabelSettings);
                     for (var j = 0; j < this.layers[i].markerSettings.length; j++) {
                         updateBlazorTemplate(this.element.id + '_MarkerTemplate' + j, 'MarkerTemplate', this.layers[i].markerSettings[j]);
                     }
@@ -6713,6 +6729,10 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         //EventHandler.remove(this.element, cancelEvent, this.mouseLeaveOnMap);
         window.removeEventListener((Browser.isTouch && ('orientation' in window && 'onorientationchange' in window)) ? 'orientationchange' : 'resize', this.mapsOnResize);
     };
+    /**
+     * This method is used to perform operations when mouse pointer leave from maps.
+     * @param e - Specifies the pointer event on maps.
+     */
     Maps.prototype.mouseLeaveOnMap = function (e) {
         if (document.getElementsByClassName('highlightMapStyle').length > 0 && this.legendModule) {
             this.legendModule.removeShapeHighlightCollection();
@@ -6720,7 +6740,8 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * To handle the click event for the maps.
+     * This method is used to perform the operations when a click operation is performed on maps.
+     * @param e - Specifies the pointer event on maps.
      * @blazorProperty 'PerformClick'
      */
     /* tslint:disable:no-string-literal */
@@ -6752,10 +6773,6 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
                 latitude: latitude, longitude: longitude
             };
             this.trigger('click', eventArgs_1, function (mouseArgs) {
-                if (targetEle.id.indexOf('shapeIndex') !== -1) {
-                    var layerIndex_1 = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
-                    triggerShapeEvent(targetId, _this.layers[layerIndex_1].selectionSettings, _this, shapeSelected);
-                }
                 if (targetEle.id.indexOf('shapeIndex') > -1 || targetEle.id.indexOf('Tile') > -1) {
                     if (_this.markerModule && _this.markerModule.sameMarkerData.length > 0 &&
                         (_this.zoomModule ? _this.zoomModule.isSingleClick : true)) {
@@ -6777,11 +6794,19 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
                 if (!eventArgs_1.cancel) {
                     _this.notify(click, targetEle);
                 }
+                if (!eventArgs_1.cancel && targetEle.id.indexOf('shapeIndex') !== -1) {
+                    var layerIndex_1 = parseInt(targetEle.id.split('_LayerIndex_')[1].split('_')[0], 10);
+                    var shapeSelectedEventArgs = triggerShapeEvent(targetId, _this.layers[layerIndex_1].selectionSettings, _this, shapeSelected);
+                    if (!shapeSelectedEventArgs.cancel && _this.selectionModule && !isNullOrUndefined(_this.shapeSelected)) {
+                        customizeStyle(_this.selectionModule.selectionType + 'selectionMap', _this.selectionModule.selectionType + 'selectionMapStyle', shapeSelectedEventArgs);
+                    }
+                }
             });
         }
     };
     /**
-     *
+     * This method is used to perform operations when mouse click on maps.
+     * @param e - Specifies the pointer event on maps.
      */
     Maps.prototype.mouseEndOnMap = function (e) {
         var targetEle = e.target;
@@ -6813,7 +6838,8 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         return false;
     };
     /**
-     *
+     * This method is used to perform operations when mouse is clicked down on maps.
+     * @param e - Specifies the pointer event on maps.
      */
     Maps.prototype.mouseDownOnMap = function (e) {
         this.mouseDownEvent = { x: e.x, y: e.y };
@@ -6839,14 +6865,16 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         this.notify(Browser.touchStartEvent, e);
     };
     /**
-     * To handle the double click event for the maps.
+     * This method is used to perform operations when performing the double click operation on maps.
+     * @param e - Specifies the pointer event.
      * @blazorProperty 'PerformDoubleClick'
      */
     Maps.prototype.mapsOnDoubleClick = function (e) {
         this.notify('dblclick', e);
     };
     /**
-     *
+     * This method is used to perform operations while performing mouse over on maps.
+     * @param e - Specifies the pointer event on maps.
      */
     /* tslint:disable:no-string-literal */
     Maps.prototype.mouseMoveOnMap = function (e) {
@@ -6866,6 +6894,10 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         this.onMouseMove(e);
         this.notify(Browser.touchMoveEvent, e);
     };
+    /**
+     * This method is used to perform operations when mouse move event is performed on maps.
+     * @param e - Specifies the pointer event on maps.
+     */
     Maps.prototype.onMouseMove = function (e) {
         var element = e.target;
         if (!this.isTouch) {
@@ -6885,7 +6917,8 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
     /*
 
     /**
-     * To handle the window resize event on maps.
+     * This method is used to perform operations while resizing the window.
+     * @param e - Specifies the arguments of window resize event.
      */
     Maps.prototype.mapsOnResize = function (e) {
         var _this = this;
@@ -6912,9 +6945,9 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         return false;
     };
     /**
-     * To zoom the map by specifies the center position
-     * @param centerPosition
-     * @param zoomFactor
+     * This method is used to zoom the map by specifying the center position.
+     * @param centerPosition - Specifies the center position for maps.
+     * @param zoomFactor - Specifies the zoom factor for maps.
      */
     Maps.prototype.zoomByPosition = function (centerPosition, zoomFactor) {
         var factor = this.mapLayerPanel.calculateFactor(this.layersCollection[0]);
@@ -6946,10 +6979,11 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * To pan the map by specifies the direction
-     * @param direction
+     * This method is used to perform panning by specifying the direction.
+     * @param direction - Specifies the direction in which the panning is performed.
+     * @param mouseLocation - Specifies the location of the mouse pointer in maps.
      */
-    Maps.prototype.panByDirection = function (direction) {
+    Maps.prototype.panByDirection = function (direction, mouseLocation) {
         var xDiff = 0;
         var yDiff = 0;
         switch (direction) {
@@ -6967,29 +7001,31 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
                 break;
         }
         if (this.zoomModule) {
-            this.zoomModule.panning(direction, xDiff, yDiff);
+            this.zoomModule.panning(direction, xDiff, yDiff, mouseLocation);
         }
     };
     /**
-     * To add layer
-     * @param layer
+     * This method is used to add the layers dynamically to the maps.
+     * @param layer - Specifies the layer for the maps.
      */
     Maps.prototype.addLayer = function (layer) {
         this.layers.push(new LayerSettings(this.layers[0], 'layers', layer));
         this.refresh();
     };
     /**
-     * To remove layer
-     * @param index
+     * This method is used to remove a layer from map.
+     * @param index - Specifies the index number of the layer to be removed.
      */
     Maps.prototype.removeLayer = function (index) {
         this.layers.splice(index, 1);
         this.refresh();
     };
     /**
-     * To add marker
-     * @param layerIndex
-     * @param marker
+     * This method is used to add markers dynamically in the maps.
+     * If we provide the index value of the layer in which the marker to be added and the coordinates
+     * of the marker as parameters, the marker will be added in the location.
+     * @param layerIndex - Specifies the index number of the layer.
+     * @param marker - Specifes the settings of the marker to be added.
      */
     Maps.prototype.addMarker = function (layerIndex, markerCollection) {
         var layerEle = document.getElementById(this.element.id + '_LayerIndex_' + layerIndex);
@@ -7004,11 +7040,11 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * Public method for selection
-     * @param layerIndex
-     * @param propertyName
-     * @param name
-     * @param enable
+     * This method is used to select the geometric shape element in the maps component.
+     * @param layerIndex - Specifies the index of the layer in maps.
+     * @param propertyName - Specifies the property name from the data source.
+     * @param name - Specifies the name of the shape that is selected.
+     * @param enable - Specifies the shape selection to be enabled.
      */
     Maps.prototype.shapeSelection = function (layerIndex, propertyName, name, enable) {
         var targetEle;
@@ -7082,11 +7118,11 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * To add marker
-     * @param minLatitude
-     * @param minLongitude
-     * @param maxLatitude
-     * @param maxLongitude
+     * This method is used to zoom the maps component based on the provided coordinates.
+     * @param minLatitude - Specifies the minimum latitude to be zoomed.
+     * @param minLongitude - Specifies the minimum latitude to be zoomed.
+     * @param maxLatitude - Specifies the maximum latitude to be zoomed.
+     * @param maxLongitude - Specifies the maximum longitude to be zoomed.
      */
     Maps.prototype.zoomToCoordinates = function (minLatitude, minLongitude, maxLatitude, maxLongitude) {
         var _a, _b;
@@ -7135,7 +7171,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         this.refresh();
     };
     /**
-     * Method to romove multiple selected shapes maps
+     * This method is used to remove multiple selected shapes in the maps.
      */
     Maps.prototype.removeShapeSelection = function () {
         var selectedElements = this.selectedElementId.length;
@@ -7145,7 +7181,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
-     * Method to set culture for maps
+     * This method is used to set culture for maps component.
      */
     Maps.prototype.setCulture = function () {
         this.intl = new Internationalization();
@@ -7153,7 +7189,7 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         this.localeObject = new L10n(this.getModuleName(), this.defaultLocalConstants, this.locale);
     };
     /**
-     * Method to set locale constants
+     * This method to set locale constants to the maps component.
      */
     Maps.prototype.setLocaleConstants = function () {
         // Need to modify after the api confirm
@@ -7166,20 +7202,20 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         };
     };
     /**
-     * To destroy maps control.
+     * This method disposes the maps component.
      */
     Maps.prototype.destroy = function () {
         this.unWireEVents();
         _super.prototype.destroy.call(this);
     };
     /**
-     * Get component name
+     * Gets component name
      */
     Maps.prototype.getModuleName = function () {
         return 'maps';
     };
     /**
-     * Get the properties to be maintained in the persisted state.
+     * Gets the properties to be maintained in the persisted state.
      * @private
      */
     Maps.prototype.getPersistData = function () {
@@ -7406,16 +7442,19 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         return isVisible;
     };
     /**
-     * Handles the print method for chart control.
+     * This method handles the printing functionality for the maps component.
+     * @param id - Specifies the element to be printed.
      */
     Maps.prototype.print = function (id) {
         var exportChart = new ExportUtils(this);
         exportChart.print(id);
     };
     /**
-     * Handles the export method for chart control.
-     * @param type
-     * @param fileName
+     * This method handles the export functionality for the maps component.
+     * @param type - Specifies the type of the exported file.
+     * @param fileName - Specifies the name of the file with which the rendered maps need to be exported.
+     * @param orientation - Specifies the orientation of the pdf document in exporting.
+     * @param isDownload - Specifies whether to download as a file or get as base64 string for the file
      */
     Maps.prototype.export = function (type, fileName, orientation, isDownload) {
         var exportMap = new ExportUtils(this);
@@ -7492,15 +7531,15 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         };
     };
     /**
-     * To get the geo location
-     * @param {number} layerIndex
-     * @param {PointerEvent} location
+     * This method is used to get the geo location points.
+     * @param {number} layerIndex - Specifies the index number of the layer of the map.
+     * @param {PointerEvent} location - Specifies the location in point format.
      * @return GeoPosition
      */
     Maps.prototype.getGeoLocation = function (layerIndex, location) {
         var container = document.getElementById(this.element.id);
-        var pageX = location.layerX - container.offsetLeft;
-        var pageY = location.layerY - container.offsetTop;
+        var pageX = location['layerX'] - container.offsetLeft;
+        var pageY = location['layerY'] - container.offsetTop;
         var currentLayer = this.layersCollection[layerIndex];
         var translate = getTranslate(this, currentLayer, false);
         var translatePoint = translate['location'];
@@ -7518,17 +7557,22 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         return Math.min(Math.max(value, minVal), maxVal);
     };
     /**
-     * To get the geo location
-     * @param {PointerEvent}
+     * This method is used to get the geo location points when tile maps is rendered in the maps component.
+     * @param {PointerEvent} - Specifies the location in point format.
      * @return GeoPosition
      */
     Maps.prototype.getTileGeoLocation = function (location) {
         var container = document.getElementById(this.element.id);
         var latLong;
         var ele = document.getElementById(this.element.id + '_tile_parent');
-        latLong = this.pointToLatLong(location.layerX + this.mapAreaRect.x - (ele.offsetLeft - container.offsetLeft), location.layerY + this.mapAreaRect.y - (ele.offsetTop - container.offsetTop));
+        latLong = this.pointToLatLong(location['layerX'] + this.mapAreaRect.x - (ele.offsetLeft - container.offsetLeft), location['layerY'] + this.mapAreaRect.y - (ele.offsetTop - container.offsetTop));
         return { latitude: latLong['latitude'], longitude: latLong['longitude'] };
     };
+    /**
+     * This method is used to convert the point to latitude and longitude in maps.
+     * @param pageX - Specifies the x value for the page.
+     * @param pageY - Specifies the y value for the page.
+     */
     Maps.prototype.pointToLatLong = function (pageX, pageY) {
         var padding = this.layers[this.layers.length - 1].layerType === 'GoogleStaticMap' ? 0 : 10;
         pageY = (this.zoomSettings.enable) ? pageY + padding : pageY;
@@ -7754,7 +7798,11 @@ var Bubble = /** @__PURE__ @class */ (function () {
             var shape = layerData[i];
             shape = shape['property'];
             var shapePath = checkPropertyPath(shapeData[layer.shapeDataPath], layer.shapePropertyPath, shape);
-            if (shapeData[layer.shapeDataPath] === shape[shapePath]) {
+            var shapeDataLayerPathValue = !isNullOrUndefined(shapeData[layer.shapeDataPath]) &&
+                isNaN(shapeData[layer.shapeDataPath]) ? shapeData[layer.shapeDataPath].toLowerCase() : shapeData[layer.shapeDataPath];
+            var shapePathValue = !isNullOrUndefined(shape[shapePath]) && isNaN(shape[shapePath])
+                ? shape[shapePath].toLowerCase() : shape[shapePath];
+            if (shapeDataLayerPathValue === shapePathValue) {
                 if (layerData[i]['type'] === 'Point') {
                     shapePoints.push(this.getPoints(layerData[i], []));
                 }
@@ -7973,9 +8021,15 @@ var DataLabel = /** @__PURE__ @class */ (function () {
     //tslint:disable:max-func-body-length
     DataLabel.prototype.getDataLabel = function (dataSource, labelPath, shapeName, shapeDataPath) {
         var text;
+        var shapeNameValue;
         for (var i = 0; i < dataSource.length; i++) {
             var data = dataSource[i];
-            if ((data[shapeDataPath]) === shapeName) {
+            var dataShapePathValue = void 0;
+            dataShapePathValue = !isNullOrUndefined(data[shapeDataPath]) && isNaN(data[shapeDataPath]) ?
+                data[shapeDataPath].toLowerCase() : data[shapeDataPath];
+            shapeName = !isNullOrUndefined(shapeName) ? shapeName.toString() : shapeName;
+            shapeNameValue = !isNullOrUndefined(shapeName) ? shapeName.toLowerCase() : shapeName;
+            if ((dataShapePathValue) === shapeNameValue) {
                 text = data;
                 break;
             }
@@ -8096,7 +8150,7 @@ var DataLabel = /** @__PURE__ @class */ (function () {
         }
         var firstLevelMapLocation = location;
         if (!isNullOrUndefined(text) && !isNullOrUndefined(location)) {
-            if (zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied) {
+            if (zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied && dataLabel.template === '') {
                 if (layerIndex > 0) {
                     for (var k = 0; k < this.maps.zoomLabelPositions.length; k++) {
                         if (this.maps.zoomLabelPositions[k]['dataLabelText'] === text) {
@@ -8155,7 +8209,7 @@ var DataLabel = /** @__PURE__ @class */ (function () {
                 if (!isPoint && position.length > 5 && (shapeData['geometry']['type'] !== 'MultiPolygon') &&
                     (shapeData['type'] !== 'MultiPolygon')) {
                     var location1 = findMidPointOfPolygon(position, projectionType);
-                    if (zoomLabelsPosition && scaleZoomValue > 1 && !_this.maps.zoomNotApplied) {
+                    if (zoomLabelsPosition && scaleZoomValue > 1 && !_this.maps.zoomNotApplied && eventargs_1.template === '') {
                         location1['x'] = ((_this.maps.zoomLabelPositions[index]['location']['x'] + zoomTransPoint['x']) * scale);
                         location1['y'] = ((_this.maps.zoomLabelPositions[index]['location']['y'] + zoomTransPoint['y']) * scale);
                     }
@@ -10603,61 +10657,63 @@ var Selection = /** @__PURE__ @class */ (function () {
             eventArgs = blazorEventArgs;
         }
         this.maps.trigger('itemSelection', eventArgs, function (observedArgs) {
-            if (targetElement.getAttribute('class') === _this.selectionType + 'selectionMapStyle') {
-                removeClass(targetElement);
-                _this.removedSelectionList(targetElement);
-                if (targetElement.id.indexOf('NavigationIndex') > -1) {
-                    var index = parseInt(targetElement.id.split('_NavigationIndex_')[1].split('_')[0], 10);
-                    var layerIndex = parseInt(targetElement.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
-                    targetElement.setAttribute('stroke-width', _this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
-                    targetElement.setAttribute('stroke', _this.maps.layers[layerIndex].navigationLineSettings[index].color);
-                }
-            }
-            else {
-                var layetElement = getElementByID(_this.maps.element.id + '_Layer_Collections');
-                if (!_this.selectionsettings.enableMultiSelect &&
-                    layetElement.getElementsByClassName(_this.selectionType + 'selectionMapStyle').length > 0) {
-                    var ele = layetElement.getElementsByClassName(_this.selectionType + 'selectionMapStyle')[0];
-                    removeClass(ele);
-                    _this.removedSelectionList(ele);
-                    if (_this.selectionType === 'Shape') {
-                        var selectionLength = _this.maps.selectedElementId.length;
-                        for (var i = 0; i < selectionLength; i++) {
-                            ele = layetElement.getElementsByClassName(_this.selectionType + 'selectionMapStyle')[0];
-                            removeClass(ele);
-                            var selectedElementIdIndex = _this.maps.selectedElementId.indexOf(ele.getAttribute('id'));
-                            _this.maps.selectedElementId.splice(selectedElementIdIndex, 1);
-                        }
-                    }
-                    if (ele.id.indexOf('NavigationIndex') > -1) {
+            if (!eventArgs.cancel) {
+                if (targetElement.getAttribute('class') === _this.selectionType + 'selectionMapStyle') {
+                    removeClass(targetElement);
+                    _this.removedSelectionList(targetElement);
+                    if (targetElement.id.indexOf('NavigationIndex') > -1) {
                         var index = parseInt(targetElement.id.split('_NavigationIndex_')[1].split('_')[0], 10);
                         var layerIndex = parseInt(targetElement.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
-                        ele.setAttribute('stroke-width', _this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
-                        ele.setAttribute('stroke', _this.maps.layers[layerIndex].navigationLineSettings[index].color);
+                        targetElement.setAttribute('stroke-width', _this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
+                        targetElement.setAttribute('stroke', _this.maps.layers[layerIndex].navigationLineSettings[index].color);
                     }
                 }
-                if (!getElement(_this.selectionType + 'selectionMap')) {
-                    document.body.appendChild(createStyle(_this.selectionType + 'selectionMap', _this.selectionType + 'selectionMapStyle', eventArgs));
-                }
                 else {
-                    customizeStyle(_this.selectionType + 'selectionMap', _this.selectionType + 'selectionMapStyle', eventArgs);
-                }
-                targetElement.setAttribute('class', _this.selectionType + 'selectionMapStyle');
-                if (targetElement.getAttribute('class') === 'ShapeselectionMapStyle') {
-                    _this.maps.shapeSelectionClass = getElement(_this.selectionType + 'selectionMap');
-                    _this.maps.selectedElementId.push(targetElement.getAttribute('id'));
-                }
-                if (targetElement.getAttribute('class') === 'MarkerselectionMapStyle') {
-                    _this.maps.markerSelectionClass = getElement(_this.selectionType + 'selectionMap');
-                    _this.maps.selectedMarkerElementId.push(targetElement.getAttribute('id'));
-                }
-                if (targetElement.getAttribute('class') === 'BubbleselectionMapStyle') {
-                    _this.maps.bubbleSelectionClass = getElement(_this.selectionType + 'selectionMap');
-                    _this.maps.selectedBubbleElementId.push(targetElement.getAttribute('id'));
-                }
-                if (targetElement.getAttribute('class') === 'navigationlineselectionMapStyle') {
-                    _this.maps.navigationSelectionClass = getElement(_this.selectionType + 'selectionMap');
-                    _this.maps.selectedNavigationElementId.push(targetElement.getAttribute('id'));
+                    var layetElement = getElementByID(_this.maps.element.id + '_Layer_Collections');
+                    if (!_this.selectionsettings.enableMultiSelect &&
+                        layetElement.getElementsByClassName(_this.selectionType + 'selectionMapStyle').length > 0) {
+                        var ele = layetElement.getElementsByClassName(_this.selectionType + 'selectionMapStyle')[0];
+                        removeClass(ele);
+                        _this.removedSelectionList(ele);
+                        if (_this.selectionType === 'Shape') {
+                            var selectionLength = _this.maps.selectedElementId.length;
+                            for (var i = 0; i < selectionLength; i++) {
+                                ele = layetElement.getElementsByClassName(_this.selectionType + 'selectionMapStyle')[0];
+                                removeClass(ele);
+                                var selectedElementIdIndex = _this.maps.selectedElementId.indexOf(ele.getAttribute('id'));
+                                _this.maps.selectedElementId.splice(selectedElementIdIndex, 1);
+                            }
+                        }
+                        if (ele.id.indexOf('NavigationIndex') > -1) {
+                            var index = parseInt(targetElement.id.split('_NavigationIndex_')[1].split('_')[0], 10);
+                            var layerIndex = parseInt(targetElement.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
+                            ele.setAttribute('stroke-width', _this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
+                            ele.setAttribute('stroke', _this.maps.layers[layerIndex].navigationLineSettings[index].color);
+                        }
+                    }
+                    if (!getElement(_this.selectionType + 'selectionMap')) {
+                        document.body.appendChild(createStyle(_this.selectionType + 'selectionMap', _this.selectionType + 'selectionMapStyle', eventArgs));
+                    }
+                    else {
+                        customizeStyle(_this.selectionType + 'selectionMap', _this.selectionType + 'selectionMapStyle', eventArgs);
+                    }
+                    targetElement.setAttribute('class', _this.selectionType + 'selectionMapStyle');
+                    if (targetElement.getAttribute('class') === 'ShapeselectionMapStyle') {
+                        _this.maps.shapeSelectionClass = getElement(_this.selectionType + 'selectionMap');
+                        _this.maps.selectedElementId.push(targetElement.getAttribute('id'));
+                    }
+                    if (targetElement.getAttribute('class') === 'MarkerselectionMapStyle') {
+                        _this.maps.markerSelectionClass = getElement(_this.selectionType + 'selectionMap');
+                        _this.maps.selectedMarkerElementId.push(targetElement.getAttribute('id'));
+                    }
+                    if (targetElement.getAttribute('class') === 'BubbleselectionMapStyle') {
+                        _this.maps.bubbleSelectionClass = getElement(_this.selectionType + 'selectionMap');
+                        _this.maps.selectedBubbleElementId.push(targetElement.getAttribute('id'));
+                    }
+                    if (targetElement.getAttribute('class') === 'navigationlineselectionMapStyle') {
+                        _this.maps.navigationSelectionClass = getElement(_this.selectionType + 'selectionMap');
+                        _this.maps.selectedNavigationElementId.push(targetElement.getAttribute('id'));
+                    }
                 }
             }
         });
@@ -10714,15 +10770,6 @@ var Selection = /** @__PURE__ @class */ (function () {
     return Selection;
 }());
 
-var __rest$7 = (undefined && undefined.__rest) || function (s, e) {
-    var t = {};
-    for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
-        t[p] = s[p];
-    if (s != null && typeof Object.getOwnPropertySymbols === "function")
-        for (var i = 0, p = Object.getOwnPropertySymbols(s); i < p.length; i++) if (e.indexOf(p[i]) < 0)
-            t[p[i]] = s[p[i]];
-    return t;
-};
 /**
  * Map Tooltip
  */
@@ -10787,7 +10834,8 @@ var MapsTooltip = /** @__PURE__ @class */ (function () {
                             var data = layer.dataSource[i];
                             var dataPath = (layer.shapeDataPath.indexOf('.') > -1) ?
                                 (getValueFromObject(data, layer.shapeDataPath)) : data[layer.shapeDataPath];
-                            var dataPathValue = isNullOrUndefined(dataPath) ? dataPath.toLowerCase() : dataPath;
+                            var dataPathValue = isNullOrUndefined(dataPath) && isNaN(data[layer.shapeDataPath])
+                                ? dataPath.toLowerCase() : dataPath;
                             var propertyValue = isNullOrUndefined(value[properties[k]])
                                 && isNaN(value[properties[k]]) ? value[properties[k]].toLowerCase() :
                                 value[properties[k]];
@@ -10831,10 +10879,15 @@ var MapsTooltip = /** @__PURE__ @class */ (function () {
                         currentData = this.formatter(marker$$1.tooltipSettings.format, marker$$1.dataSource[dataIndex]);
                     }
                     else {
-                        currentData =
-                            formatValue(((marker$$1.tooltipSettings.valuePath.indexOf('.') > -1) ?
-                                (getValueFromObject(marker$$1.dataSource[dataIndex], marker$$1.tooltipSettings.valuePath)) :
-                                marker$$1.dataSource[dataIndex][marker$$1.tooltipSettings.valuePath]), this.maps);
+                        if (marker$$1.template && !marker$$1.tooltipSettings.valuePath) {
+                            currentData = marker$$1.template.split('>')[1].split('<')[0];
+                        }
+                        else {
+                            currentData =
+                                formatValue(((marker$$1.tooltipSettings.valuePath.indexOf('.') > -1) ?
+                                    (getValueFromObject(marker$$1.dataSource[dataIndex], marker$$1.tooltipSettings.valuePath)) :
+                                    marker$$1.dataSource[dataIndex][marker$$1.tooltipSettings.valuePath]), this.maps);
+                        }
                     }
                 }
                 //location.y = this.template(option, location);
@@ -10886,55 +10939,128 @@ var MapsTooltip = /** @__PURE__ @class */ (function () {
                 element: target, eventArgs: e
             };
             if (this.maps.isBlazor) {
-                var maps = tooltipArgs.maps, eventArgs = tooltipArgs.eventArgs, blazorEventArgs = __rest$7(tooltipArgs, ["maps", "eventArgs"]);
-                tooltipArgs = blazorEventArgs;
-            }
-            this.maps.trigger('tooltipRender', tooltipArgs, function (observedArgs) {
-                if (!tooltipArgs.cancel && option.visible && !isNullOrUndefined(currentData) &&
-                    (targetId.indexOf('_cluster_') === -1 && targetId.indexOf('_dataLabel_') === -1)) {
-                    var blazTooltipName = void 0;
-                    if (targetId.indexOf('MarkerIndex') > 0) {
-                        blazTooltipName = 'MarkerTooltipTemplate';
-                    }
-                    else if (targetId.indexOf('BubbleIndex') > 0) {
-                        blazTooltipName = 'BubbleTooltipTemplate';
+                var tootipOption_1 = {
+                    location: location
+                };
+                var blazorArgs_1 = {
+                    name: tooltipRender,
+                    cancel: false,
+                    options: tootipOption_1,
+                    data: templateData,
+                    textStyle: tooltipArgs.options['textStyle'],
+                    fill: tooltipArgs.fill,
+                    element: target, eventArgs: e
+                };
+                this.maps.trigger(tooltipRender, blazorArgs_1, function (args) {
+                    if (!blazorArgs_1.cancel && option.visible && !isNullOrUndefined(currentData) &&
+                        (targetId.indexOf('_cluster_') === -1 && targetId.indexOf('_dataLabel_') === -1)) {
+                        if (targetId.indexOf('MarkerIndex') > 0) {
+                            
+                        }
+                        else if (targetId.indexOf('BubbleIndex') > 0) {
+                            
+                        }
+                        else {
+                            
+                        }
+                        _this.maps['isProtectedOnChange'] = true;
+                        if (blazorArgs_1.cancel) {
+                            _this.svgTooltip = new Tooltip({
+                                enable: true,
+                                header: '',
+                                content: [currentData.toString()],
+                                shapes: [],
+                                location: tootipOption_1.location,
+                                palette: [markerFill],
+                                areaBounds: _this.maps.mapAreaRect,
+                                textStyle: tooltipArgs.options['textStyle'],
+                                availableSize: _this.maps.availableSize,
+                                fill: tooltipArgs.fill,
+                            });
+                        }
+                        else {
+                            _this.svgTooltip = new Tooltip({
+                                enable: true,
+                                header: '',
+                                content: [currentData.toString()],
+                                shapes: [],
+                                location: tootipOption_1.location,
+                                palette: [markerFill],
+                                areaBounds: _this.maps.mapAreaRect,
+                                textStyle: blazorArgs_1.textStyle,
+                                availableSize: _this.maps.availableSize,
+                                fill: blazorArgs_1.fill
+                            });
+                        }
+                        _this.svgTooltip.opacity = _this.maps.themeStyle.tooltipFillOpacity || _this.svgTooltip.opacity;
+                        _this.svgTooltip.appendTo(tooltipEle);
                     }
                     else {
-                        blazTooltipName = 'LayerTooltipTemplate';
+                        _this.removeTooltip();
                     }
-                    _this.maps['isProtectedOnChange'] = true;
-                    tooltipArgs.options['textStyle']['color'] = _this.maps.themeStyle.tooltipFontColor
-                        || tooltipArgs.options['textStyle']['color'];
-                    _this.svgTooltip = new Tooltip({
-                        enable: true,
-                        header: '',
-                        data: tooltipArgs.options['data'],
-                        template: tooltipArgs.options['template'],
-                        content: [currentData.toString()],
-                        shapes: [],
-                        location: tooltipArgs.options['location'],
-                        palette: [markerFill],
-                        areaBounds: _this.maps.mapAreaRect,
-                        textStyle: tooltipArgs.options['textStyle'],
-                        availableSize: _this.maps.availableSize,
-                        fill: tooltipArgs.fill || _this.maps.themeStyle.tooltipFillColor,
-                        blazorTemplate: { name: blazTooltipName, parent: option }
-                    });
-                    _this.svgTooltip.opacity = _this.maps.themeStyle.tooltipFillOpacity || _this.svgTooltip.opacity;
-                    _this.svgTooltip.appendTo(tooltipEle);
-                }
-                else {
-                    _this.removeTooltip();
-                }
-            });
+                });
+            }
+            else {
+                this.maps.trigger(tooltipRender, tooltipArgs, function (args) {
+                    if (!tooltipArgs.cancel && option.visible && !isNullOrUndefined(currentData) &&
+                        (targetId.indexOf('_cluster_') === -1 && targetId.indexOf('_dataLabel_') === -1)) {
+                        _this.maps['isProtectedOnChange'] = true;
+                        tooltipArgs.options['textStyle']['color'] = _this.maps.themeStyle.tooltipFontColor
+                            || tooltipArgs.options['textStyle']['color'];
+                        if (tooltipArgs.cancel) {
+                            _this.svgTooltip = new Tooltip({
+                                enable: true,
+                                header: '',
+                                data: option['data'],
+                                template: option['template'],
+                                content: [currentData.toString()],
+                                shapes: [],
+                                location: option['location'],
+                                palette: [markerFill],
+                                areaBounds: _this.maps.mapAreaRect,
+                                textStyle: option['textStyle'],
+                                availableSize: _this.maps.availableSize,
+                                fill: option.fill || _this.maps.themeStyle.tooltipFillColor,
+                            });
+                        }
+                        else {
+                            _this.svgTooltip = new Tooltip({
+                                enable: true,
+                                header: '',
+                                data: tooltipArgs.options['data'],
+                                template: tooltipArgs.options['template'],
+                                content: [currentData.toString()],
+                                shapes: [],
+                                location: tooltipArgs.options['location'],
+                                palette: [markerFill],
+                                areaBounds: _this.maps.mapAreaRect,
+                                textStyle: tooltipArgs.options['textStyle'],
+                                availableSize: _this.maps.availableSize,
+                                fill: tooltipArgs.fill || _this.maps.themeStyle.tooltipFillColor,
+                            });
+                        }
+                        _this.svgTooltip.opacity = _this.maps.themeStyle.tooltipFillOpacity || _this.svgTooltip.opacity;
+                        _this.svgTooltip.appendTo(tooltipEle);
+                    }
+                    else {
+                        _this.removeTooltip();
+                    }
+                });
+            }
+            if (this.svgTooltip) {
+                this.maps.trigger('tooltipRenderComplete', {
+                    cancel: false, name: 'tooltipRenderComplete', maps: this.maps, options: tooltipOption,
+                    element: this.svgTooltip.element
+                });
+            }
             if (this.svgTooltip) {
                 this.maps.trigger('tooltipRenderComplete', {
                     cancel: false, name: 'tooltipRenderComplete', maps: this.maps, options: tooltipOption, element: this.svgTooltip.element
                 });
             }
-        }
-        else {
-            this.removeTooltip();
+            else {
+                this.removeTooltip();
+            }
         }
     };
     /**
@@ -11026,7 +11152,7 @@ var MapsTooltip = /** @__PURE__ @class */ (function () {
     return MapsTooltip;
 }());
 
-var __rest$8 = (undefined && undefined.__rest) || function (s, e) {
+var __rest$7 = (undefined && undefined.__rest) || function (s, e) {
     var t = {};
     for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p) && e.indexOf(p) < 0)
         t[p] = s[p];
@@ -11374,7 +11500,8 @@ var Zoom = /** @__PURE__ @class */ (function () {
                                         removeElement(this.maps.element.id + '_mapsTooltip');
                                     }
                                 }
-                                if (document.getElementById(this.maps.element.id + '_mapsTooltip') && this.maps.mapsTooltipModule.tooltipTargetID.indexOf('_MarkerIndex_')) {
+                                if (document.getElementById(this.maps.element.id + '_mapsTooltip') && this.maps.mapsTooltipModule.tooltipTargetID.indexOf('_MarkerIndex_')
+                                    && !this.isPanning) {
                                     var mapsTooltip = this.maps.mapsTooltipModule;
                                     var tooltipElement = currentEle.querySelector('#' + mapsTooltip.tooltipTargetID);
                                     if (!isNullOrUndefined(tooltipElement)) {
@@ -11512,7 +11639,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
                 eventArgs = markerShapeChoose(eventArgs, data);
                 eventArgs = markerColorChoose(eventArgs, data);
                 if (_this.maps.isBlazor) {
-                    var maps = eventArgs.maps, marker_1 = eventArgs.marker, blazorEventArgs = __rest$8(eventArgs, ["maps", "marker"]);
+                    var maps = eventArgs.maps, marker_1 = eventArgs.marker, blazorEventArgs = __rest$7(eventArgs, ["maps", "marker"]);
                     eventArgs = blazorEventArgs;
                 }
                 _this.maps.trigger('markerRendering', eventArgs, function (MarkerArgs) {
@@ -11526,6 +11653,25 @@ var Zoom = /** @__PURE__ @class */ (function () {
                         Number(getValueFromObject(data, markerSettings.latitudeValuePath)) : parseFloat(data['latitude']);
                     var long = (!isNullOrUndefined(markerSettings.longitudeValuePath)) ?
                         Number(getValueFromObject(data, markerSettings.longitudeValuePath)) : parseFloat(data['longitude']);
+                    if (_this.maps.isBlazor) {
+                        var data1 = {};
+                        var j = 0;
+                        var text = [];
+                        for (var i = 0; i < Object.keys(data).length; i++) {
+                            if (Object.keys(data)[i].toLowerCase() !== 'text' && Object.keys(data)[i].toLowerCase() !== 'latitude'
+                                && Object.keys(data)[i].toLowerCase() !== 'blazortemplateid' && Object.keys(data)[i].toLowerCase() !== 'longitude'
+                                && Object.keys(data)[i].toLowerCase() !== 'name') {
+                                data1['text'] = text;
+                                text[j] = data[Object.keys(data)[i].toLowerCase()];
+                                j++;
+                            }
+                        }
+                        data['text'] = data1['text'];
+                        if (data == {} || isNullOrUndefined(data['latitude']) || isNullOrUndefined(data['longitude'])) {
+                            lati = (data['latitude'] && !isNullOrUndefined(data['latitude'])) ? data['latitude'] : 0;
+                            long = (data['longitude'] && !isNullOrUndefined(data['longitude'])) ? data['longitude'] : 0;
+                        }
+                    }
                     var offset = markerSettings.offset;
                     if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(long) && !isNullOrUndefined(lati)) {
                         var markerID = _this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
@@ -11742,6 +11888,25 @@ var Zoom = /** @__PURE__ @class */ (function () {
             var lat = (!isNullOrUndefined(marker$$1.latitudeValuePath)) ?
                 Number(getValueFromObject(marker$$1.dataSource[dataIndex], marker$$1.latitudeValuePath)) :
                 parseFloat(marker$$1.dataSource[dataIndex]['latitude']);
+            if (this.maps.isBlazor) {
+                var data1 = {};
+                var j = 0;
+                var text = [];
+                if (isNullOrUndefined(marker$$1.dataSource[dataIndex]['latitude']) || isNullOrUndefined(marker$$1.dataSource[dataIndex]['longitude'])) {
+                    lat = (marker$$1.dataSource[dataIndex]['latitude'] && !isNullOrUndefined(marker$$1.dataSource[dataIndex]['latitude'])) ? marker$$1.dataSource[dataIndex]['latitude'] : 0;
+                    lng = (marker$$1.dataSource[dataIndex]['longitude'] && !isNullOrUndefined(marker$$1.dataSource[dataIndex]['longitude'])) ? marker$$1.dataSource[dataIndex]['longitude'] : 0;
+                }
+                for (var i = 0; i < Object.keys(marker$$1.dataSource[dataIndex]).length; i++) {
+                    if (Object.keys(marker$$1.dataSource[dataIndex])[i].toLowerCase() !== 'text' && Object.keys(marker$$1.dataSource[dataIndex])[i].toLowerCase() !== 'longitude'
+                        && Object.keys(marker$$1.dataSource[dataIndex])[i].toLowerCase() !== 'latitude' && Object.keys(marker$$1.dataSource[dataIndex])[i].toLowerCase() !== 'blazortemplateid'
+                        && Object.keys(marker$$1.dataSource[dataIndex])[i].toLowerCase() !== 'name') {
+                        data1['text'] = text;
+                        text[j] = marker$$1.dataSource[dataIndex][Object.keys(marker$$1.dataSource[dataIndex])[i].toLowerCase()];
+                        j++;
+                    }
+                }
+                marker$$1.dataSource[dataIndex]['text'] = data1['text'];
+            }
             var duration = this.currentLayer.animationDuration;
             var location_2 = (this.maps.isTileMap) ? convertTileLatLongToPoint(new Point(lng, lat), this.maps.tileZoomLevel, this.maps.tileTranslatePoint, true) : convertGeoToPoint(lat, lng, factor, layer, this.maps);
             if (this.maps.isTileMap) {
@@ -11792,7 +11957,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
             }
         }
     };
-    Zoom.prototype.panning = function (direction, xDifference, yDifference) {
+    Zoom.prototype.panning = function (direction, xDifference, yDifference, mouseLocation) {
         var map = this.maps;
         var panArgs;
         var down = this.mouseDownPoints;
@@ -11817,10 +11982,11 @@ var Zoom = /** @__PURE__ @class */ (function () {
                 ((layerRect.left + layerRect.width) >= (elementRect.left + elementRect.width) + map.mapAreaRect.x + map.margin.left)));
             var panningYDirection = ((yDifference < 0 ? layerRect.top <= (elementRect.top + map.mapAreaRect.y) :
                 ((layerRect.top + layerRect.height + map.margin.top) >= (elementRect.top + elementRect.height))));
+            var location_3 = this.maps.getGeoLocation(this.maps.layersCollection.length - 1, mouseLocation);
             panArgs = {
                 cancel: false, name: pan, maps: !map.isBlazor ? map : null,
                 tileTranslatePoint: {}, translatePoint: { previous: translatePoint, current: new Point(x, y) },
-                scale: map.scale, tileZoomLevel: map.tileZoomLevel
+                scale: map.scale, tileZoomLevel: map.tileZoomLevel, latitude: location_3['latitude'], longitude: location_3['longitude']
             };
             map.trigger(pan, panArgs);
             if (panningXDirection && panningYDirection) {
@@ -11850,11 +12016,12 @@ var Zoom = /** @__PURE__ @class */ (function () {
             }
             map.translatePoint.x = (map.tileTranslatePoint.x - xDifference) / map.scale;
             map.translatePoint.y = (map.tileTranslatePoint.y - yDifference) / map.scale;
+            var location_4 = this.maps.getTileGeoLocation(mouseLocation);
             panArgs = {
                 cancel: false, name: pan, maps: !map.isBlazor ? map : null,
                 tileTranslatePoint: { previous: prevTilePoint, current: map.tileTranslatePoint },
                 translatePoint: { previous: translatePoint, current: map.translatePoint }, scale: map.scale,
-                tileZoomLevel: map.tileZoomLevel
+                tileZoomLevel: map.tileZoomLevel, latitude: location_4['latitude'], longitude: location_4['longitude']
             };
             map.trigger(pan, panArgs);
             map.mapLayerPanel.generateTiles(map.tileZoomLevel, map.tileTranslatePoint, 'Pan');
@@ -12381,7 +12548,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
             this.mouseMoveLatLong = { x: pageX, y: pageY };
             if ((this.mouseDownLatLong['x'] !== this.mouseMoveLatLong['x']) && (this.mouseDownLatLong['y'] !== this.mouseMoveLatLong['y'])) {
                 if (this.maps.zoomSettings.enablePanning) {
-                    this.panning('None', null, null);
+                    this.panning('None', null, null, e);
                 }
                 this.mouseDownLatLong['x'] = pageX;
                 this.mouseDownLatLong['y'] = pageY;
@@ -12460,7 +12627,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
         var clientLeft = map.element.ownerDocument.documentElement.clientLeft;
         var positionX = elementRect.left + pageXOffset - clientLeft;
         var positionY = elementRect.top + pageYOffset - clientTop;
-        return new Point((pageX - positionX), (pageY - positionY));
+        return new Point(Math.abs(pageX - positionX), Math.abs(pageY - positionY));
     };
     Zoom.prototype.addEventListener = function () {
         if (this.maps.isDestroyed) {

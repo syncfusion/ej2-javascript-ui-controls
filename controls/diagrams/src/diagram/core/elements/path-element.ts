@@ -73,7 +73,7 @@ export class PathElement extends DiagramElement {
 
     /**
      * Measures the minimum space that is required to render the element
-     * @param availableSize
+     * @param {Size} availableSize
      */
     public measure(availableSize: Size): Size {
         //Performance issue - Avoiding measuring the connector path
@@ -100,7 +100,7 @@ export class PathElement extends DiagramElement {
 
     /**
      * Arranges the path element
-     * @param desiredSize 
+     * @param {Size} desiredSize 
      */
     public arrange(desiredSize: Size): Size {
         if (this.isDirt || this.actualSize.width !== desiredSize.width || this.actualSize.height !== desiredSize.height) {
@@ -118,9 +118,9 @@ export class PathElement extends DiagramElement {
 
     /**
      * Translates the path to 0,0 and scales the path based on the actual size
-     * @param pathData 
-     * @param bounds 
-     * @param actualSize 
+     * @param {string} pathData 
+     * @param {Rect} bounds 
+     * @param {Size} actualSize 
      */
     public updatePath(pathData: string, bounds: Rect, actualSize: Size): string {
         let isScale: boolean = false;

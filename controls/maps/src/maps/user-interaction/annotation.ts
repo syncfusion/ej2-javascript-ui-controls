@@ -3,7 +3,7 @@ import { createElement, isNullOrUndefined, updateBlazorTemplate } from '@syncfus
 import { getTemplateFunction, Size, getElementOffset, getElementByID } from '../utils/helper';
 
 /**
- * Represent the annotation rendering for map
+ * Represents the annotation elements for map.
  */
 
 export class Annotations {

@@ -142,7 +142,11 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Splitter.prototype.onPropertyChanged = function (newProp, oldProp) {
-        if (!this.element.classList.contains(ROOT) || !this.isModalChange) {
+        if (!this.element.classList.contains(ROOT)) {
+            return;
+        }
+        if (!this.isModalChange) {
+            this.isModalChange = true;
             return;
         }
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
@@ -354,8 +358,9 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
             if (((this.orientation !== 'Horizontal' && event.keyCode === 38) || (this.orientation === 'Horizontal' &&
                 event.keyCode === 39) ||
                 (this.orientation === 'Horizontal' && event.keyCode === 37) || (this.orientation !== 'Horizontal' && event.keyCode === 40))
-                && (!isPrevpaneExpanded && !isNextpaneCollapsed && !isPrevpaneCollapsed || (isPrevpaneExpanded) && !isNextpaneCollapsed)
-                && (this.paneSettings[index].resizable && this.paneSettings[index + 1].resizable)) {
+                && (!isPrevpaneExpanded && !isNextpaneCollapsed && !isPrevpaneCollapsed || (isPrevpaneExpanded) && !isNextpaneCollapsed) &&
+                document.activeElement.classList.contains(SPLIT_BAR) && (this.paneSettings[index].resizable &&
+                this.paneSettings[index + 1].resizable)) {
                 this.checkPaneSize(event);
                 this.triggerResizing(event);
             }
@@ -1007,18 +1012,14 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
             addClass([this.previousPane], EXPAND_PANE);
             addClass([this.nextPane], collapseClass);
             if (this.expandFlag) {
-                this.isModalChange = false;
-                this.paneSettings[this.nextPaneIndex].collapsed = true;
-                this.isModalChange = true;
+                this.updatePaneSettings(this.nextPaneIndex, true);
             }
         }
         else {
             removeClass([this.previousPane], collapseClass);
             removeClass([this.nextPane], EXPAND_PANE);
             if (this.expandFlag) {
-                this.isModalChange = false;
-                this.paneSettings[this.prevPaneIndex].collapsed = false;
-                this.isModalChange = true;
+                this.updatePaneSettings(this.prevPaneIndex, false);
             }
         }
         this.updateIconsOnExpand(e);
@@ -1162,9 +1163,7 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
             removeClass([this.previousPane], EXPAND_PANE);
             removeClass([this.nextPane], collapseClass);
             if (!this.collapseFlag) {
-                this.isModalChange = false;
-                this.paneSettings[this.nextPaneIndex].collapsed = false;
-                this.isModalChange = true;
+                this.updatePaneSettings(this.nextPaneIndex, false);
             }
         }
         else {
@@ -1173,9 +1172,7 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
             addClass([this.nextPane], EXPAND_PANE);
             addClass([this.previousPane], collapseClass);
             if (!this.collapseFlag) {
-                this.isModalChange = false;
-                this.paneSettings[this.prevPaneIndex].collapsed = true;
-                this.isModalChange = true;
+                this.updatePaneSettings(this.prevPaneIndex, true);
             }
         }
         this.updateIconsOnCollapse(e);
@@ -1203,6 +1200,12 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
             cancel: false
         };
         return eventArgs;
+    };
+    Splitter.prototype.updatePaneSettings = function (index, collapsed) {
+        if (!this.checkBlazor()) {
+            this.isModalChange = false;
+            this.paneSettings[index].collapsed = collapsed;
+        }
     };
     Splitter.prototype.splitterProperty = function () {
         this.splitInstance = {
@@ -1913,9 +1916,7 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
      */
     Splitter.prototype.expand = function (index) {
         this.collapsedOnchange(index);
-        this.isModalChange = false;
-        this.paneSettings[index].collapsed = false;
-        this.isModalChange = true;
+        this.updatePaneSettings(index, false);
     };
     /**
      * collapses corresponding pane based on the index is passed.
@@ -1924,9 +1925,7 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
      */
     Splitter.prototype.collapse = function (index) {
         this.isCollapsed(index);
-        this.isModalChange = false;
-        this.paneSettings[index].collapsed = true;
-        this.isModalChange = true;
+        this.updatePaneSettings(index, true);
     };
     /**
      * Removes the control from the DOM and also removes all its related events.
@@ -4409,7 +4408,6 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         this.cloneObject[panelProp.id] = { row: panelProp.row, col: panelProp.col };
         this.updateOldRowColumn();
         this.element.insertAdjacentElement('afterbegin', cell);
-        var container = cell.querySelector('.e-panel-container');
         this.addPanelCalled = true;
         if (this.checkMediaQuery()) {
             this.checkMediaQuerySizing();
@@ -4430,15 +4428,11 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
             this.updatePanelLayout(cell, panelProp);
         }
         this.addPanelCalled = false;
-        if (this.allowResizing &&
-            this.mediaQuery ? !(this.checkMediaQuery()) : false) {
-            this.setResizingClass(cell, container);
-        }
         if (this.allowDragging &&
             this.mediaQuery ? !(this.checkMediaQuery()) : false) {
             this.enableDraggingContent([document.getElementById(panelProp.id)]);
-            this.setClasses(this.panelCollection);
         }
+        this.setClasses([cell]);
         if (this.allowFloating) {
             this.moveItemsUpwards();
         }

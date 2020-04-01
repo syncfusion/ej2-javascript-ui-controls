@@ -2600,7 +2600,6 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
         this.cloneObject[panelProp.id] = { row: panelProp.row, col: panelProp.col };
         this.updateOldRowColumn();
         this.element.insertAdjacentElement('afterbegin', cell);
-        let container: HTMLElement = cell.querySelector('.e-panel-container');
         this.addPanelCalled = true;
         if (this.checkMediaQuery()) {
             this.checkMediaQuerySizing();
@@ -2616,15 +2615,11 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             this.updatePanelLayout(cell, panelProp);
         }
         this.addPanelCalled = false;
-        if (this.allowResizing &&
-            this.mediaQuery ? !(this.checkMediaQuery()) : false) {
-            this.setResizingClass(cell, container);
-        }
         if (this.allowDragging &&
             this.mediaQuery ? !(this.checkMediaQuery()) : false) {
             this.enableDraggingContent([document.getElementById(panelProp.id)]);
-            this.setClasses(this.panelCollection);
         }
+        this.setClasses([cell]);
         if (this.allowFloating) {
             this.moveItemsUpwards();
         }

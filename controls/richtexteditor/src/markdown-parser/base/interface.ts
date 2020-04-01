@@ -33,6 +33,7 @@ export interface IMDTable {
 }
 
 /**
+ * Defines types to be used to customize the markdown syntax.
  * @deprecated
  */
 export type MarkdownTableFormat = 'Formats' | 'List';

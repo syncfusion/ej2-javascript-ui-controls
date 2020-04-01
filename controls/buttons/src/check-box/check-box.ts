@@ -3,7 +3,9 @@ import { EmitType, Event, EventHandler, KeyboardEvents, isNullOrUndefined, isBla
 import { addClass, detach, getUniqueID, isRippleEnabled, removeClass, rippleEffect, closest } from '@syncfusion/ej2-base';
 import { CheckBoxModel } from './check-box-model';
 import { wrapperInitialize, rippleMouseHandler, ChangeEventArgs, setHiddenInput } from './../common/common';
-
+/**
+ * Defines the label position of CheckBox.
+ */
 export type LabelPosition = 'After' | 'Before';
 
 const CHECK: string = 'e-check';

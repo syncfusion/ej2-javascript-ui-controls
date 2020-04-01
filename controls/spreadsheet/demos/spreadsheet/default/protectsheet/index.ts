@@ -27,7 +27,7 @@ let columns: ColumnModel[] = [
 
 let sheet: SheetModel[] = [{
     name: 'Price Details',
-    rangeSettings: [{
+    range: [{
         dataSource: dataSource,
         startCell: 'A1'
     }],
@@ -36,7 +36,7 @@ let sheet: SheetModel[] = [{
 
 },{
     name: 'Price Details',
-    rangeSettings: [{
+    range: [{
         dataSource: dataSource,
         startCell: 'A1'
     }]
@@ -48,5 +48,5 @@ let spreadsheet: Spreadsheet = new Spreadsheet({
 });
 
 spreadsheet.appendTo('#spreadsheet');
-    spreadsheet.protectSheet({selectCells: true, formatRows: true});
+    spreadsheet.protectSheet(null, {selectCells: true, formatRows: true});
 switchTheme('#select-theme', spreadsheet);

@@ -91,13 +91,13 @@ export class ConditionalFormatting {
                 animationSettings: { effect: 'Zoom' }, isModal: true, width: '100%', height: '100%',
                 showCloseIcon: false, closeOnEscape: false, enableRtl: this.parent.enableRtl,
                 position: { X: 'center', Y: 'center' }, allowDragging: true, buttons: buttonModel,
-                beforeOpen: this.beforeOpen.bind(this),
+                beforeOpen: this.beforeOpen.bind(this), close: this.removeDialog.bind(this),
                 cssClass: cls.FORMAT_DIALOG, header: this.parent.localeObj.getConstant('conditionalFormating'), target: document.body
             });
         } else {
             this.dialog = new Dialog({
                 allowDragging: true, position: { X: 'center', Y: this.parent.element.offsetTop }, buttons: buttonModel,
-                beforeOpen: this.beforeOpen.bind(this),
+                beforeOpen: this.beforeOpen.bind(this), close: this.removeDialog.bind(this),
                 cssClass: cls.FORMAT_DIALOG, isModal: false, closeOnEscape: true, enableRtl: this.parent.enableRtl,
                 showCloseIcon: true, header: this.parent.localeObj.getConstant('conditionalFormating'), target: this.parent.element
             });
@@ -124,9 +124,10 @@ export class ConditionalFormatting {
                 fontSize: '12px'
             }
         };
-        let conditionalFormating : ConditionalFormatting = this;
+        let conditionalFormating: ConditionalFormatting = this;
         this.parent.trigger(events.conditionalFormatting, format, (observedArgs: ConditionalFormatSettingsModel) => {
             conditionalFormating.refreshConditionValues();
+            this.destroyColorPickers();
             conditionalFormating.newFormat.push(observedArgs);
             conditionalFormating.addFormat();
         });
@@ -136,12 +137,12 @@ export class ConditionalFormatting {
         if (this.refreshConditionValues()) {
             this.parent.setProperties({ dataSourceSettings: { conditionalFormatSettings: this.newFormat } }, true);
             this.parent.renderPivotGrid();
-            this.destroy();
+            this.dialog.close();
         }
     }
 
     private cancelButtonClick(): void {
-        this.destroy();
+        this.dialog.close();
         this.newFormat = [];
     }
 
@@ -192,7 +193,7 @@ export class ConditionalFormatting {
             let format: ConditionalFormatSettingsModel = this.newFormat[i];
             let button: HTMLElement = createElement('button', {
                 id: this.parentID + 'removeButton' + i, className: cls.FORMAT_DELETE_BUTTON,
-                attrs: { 'title': this.parent.localeObj.getConstant('delete') }
+                attrs: { type: 'button', 'title': this.parent.localeObj.getConstant('delete') }
             });
             outerDiv.appendChild(button);
             let innerDiv: HTMLElement = createElement('div', { id: this.parentID + 'innerDiv', className: cls.FORMAT_INNER });
@@ -207,13 +208,13 @@ export class ConditionalFormatting {
             let measureDropdown: HTMLElement = createElement('div', { id: this.parentID + 'measure' + i });
             let measureInput: HTMLInputElement = createElement('input', {
                 id: this.parentID + 'measureinput' + i,
-                attrs: { 'type': 'text', 'tabindex': '1' }
+                attrs: { 'type': 'text', 'tabindex': '0' }
             }) as HTMLInputElement;
             measureDropdown.appendChild(measureInput); td.appendChild(measureDropdown); tRow.appendChild(td); td = createElement('td');
             let conditionDropdown: HTMLElement = createElement('div', { id: this.parentID + 'condition' });
             let conditionInput: HTMLInputElement = createElement('input', {
                 id: this.parentID + 'conditioninput' + i,
-                attrs: { 'type': 'text', 'tabindex': '1' }
+                attrs: { 'type': 'text', 'tabindex': '0' }
             }) as HTMLInputElement;
             conditionDropdown.appendChild(conditionInput); td.appendChild(conditionDropdown); tRow.appendChild(td);
             td = createElement('td');
@@ -221,7 +222,7 @@ export class ConditionalFormatting {
             let value1: HTMLInputElement = createElement('input', {
                 id: this.parentID + 'conditionvalue1' + i,
                 attrs: {
-                    'type': 'text', 'tabindex': '1', 'value': !isNaN(format.value1) ? format.value1.toString() : '0',
+                    'type': 'text', 'tabindex': '0', 'value': !isNaN(format.value1) ? format.value1.toString() : '0',
                     'placeholder': this.parent.localeObj.getConstant('emptyInput')
                 },
                 styles: this.parent.isAdaptive ? style === '' ? 'width: 35%' : 'width: 100%' : style === '' ? 'width: 45px' :
@@ -237,7 +238,7 @@ export class ConditionalFormatting {
             let value2: HTMLInputElement = createElement('input', {
                 id: this.parentID + 'conditionvalue2' + i,
                 attrs: {
-                    'type': 'text', 'tabindex': '1', 'value': !isNaN(format.value2) ? format.value2.toString() : '0',
+                    'type': 'text', 'tabindex': '0', 'value': !isNaN(format.value2) ? format.value2.toString() : '0',
                     'placeholder': this.parent.localeObj.getConstant('emptyInput')
                 },
                 styles: (this.parent.isAdaptive && style === '') ? 'width: 35%' : style === '' ? 'width: 45px' : style,
@@ -255,12 +256,12 @@ export class ConditionalFormatting {
             td.appendChild(formatlabel); tRow.appendChild(td); table.appendChild(tRow); tRow = createElement('tr');
             td = createElement('td'); let fontNameDropdown: HTMLElement = createElement('div', { id: this.parentID + 'fontname' });
             let fontNameInput: HTMLInputElement = createElement('input', {
-                id: this.parentID + 'fontnameinput' + i, attrs: { 'type': 'text', 'tabindex': '1' }
+                id: this.parentID + 'fontnameinput' + i, attrs: { 'type': 'text', 'tabindex': '0' }
             }) as HTMLInputElement;
             fontNameDropdown.appendChild(fontNameInput); td.appendChild(fontNameDropdown); tRow.appendChild(td); td = createElement('td');
             let fontSizeDropdown: HTMLElement = createElement('div', { id: this.parentID + 'fontsize' });
             let fontSizeInput: HTMLInputElement = createElement('input', {
-                id: this.parentID + 'fontsizeinput' + i, attrs: { 'type': 'text', 'tabindex': '1' }
+                id: this.parentID + 'fontsizeinput' + i, attrs: { 'type': 'text', 'tabindex': '0' }
             }) as HTMLInputElement;
             fontSizeDropdown.appendChild(fontSizeInput); td.appendChild(fontSizeDropdown); tRow.appendChild(td);
             if (this.parent.isAdaptive) {
@@ -268,11 +269,11 @@ export class ConditionalFormatting {
             }
             td = createElement('td');
             let colorPicker1: HTMLInputElement = createElement('input', {
-                id: this.parentID + 'fontcolor' + i, attrs: { 'type': 'color', 'tabindex': '1' }, className: cls.FORMAT_FONT_COLOR
+                id: this.parentID + 'fontcolor' + i, attrs: { 'type': 'color', 'tabindex': '0' }, className: cls.FORMAT_FONT_COLOR
             }) as HTMLInputElement;
             td.appendChild(colorPicker1);
             let colorPicker2: HTMLInputElement = createElement('input', {
-                id: this.parentID + 'backgroundcolor' + i, attrs: { 'type': 'color', 'tabindex': '1' }, className: cls.FORMAT_BACK_COLOR
+                id: this.parentID + 'backgroundcolor' + i, attrs: { 'type': 'color', 'tabindex': '0' }, className: cls.FORMAT_BACK_COLOR
             }) as HTMLInputElement;
             td.appendChild(colorPicker2); tRow.appendChild(td); td = createElement('td');
             let valuePreview: HTMLInputElement = createElement('div', {
@@ -437,6 +438,7 @@ export class ConditionalFormatting {
     }
 
     private toggleButtonClick(i: number): void {
+        this.destroyColorPickers();
         this.newFormat.splice(i, 1);
         this.addFormat();
     }
@@ -520,6 +522,23 @@ export class ConditionalFormatting {
         }
         return '#d5d5d5';
     }
+    private removeDialog(): void {
+        if (this.dialog && !this.dialog.isDestroyed) {
+            this.destroyColorPickers();
+            this.dialog.destroy();
+        }
+        if (document.querySelector('#' + this.parentID + 'conditionalformatting')) {
+            remove(document.querySelector('#' + this.parentID + 'conditionalformatting'));
+        }
+    }
+    private destroyColorPickers(): void {
+        for (let i: number = 0; i < (this.newFormat ? this.newFormat.length : 0); i++) {
+            if (this.fontColor && this.fontColor[i] && !this.fontColor[i].isDestroyed) { this.fontColor[i].destroy(); }
+            if (this.backgroundColor && this.backgroundColor[i] && !this.backgroundColor[i].isDestroyed) {
+                this.backgroundColor[i].destroy();
+            }
+        }
+    }
 
     /**
      * To create Conditional Formatting dialog.
@@ -546,15 +565,7 @@ export class ConditionalFormatting {
      */
     public destroy(): void {
         if (this.dialog && !this.dialog.isDestroyed) {
-            this.dialog.hide();
-            for (let i: number = 0; i < this.newFormat.length; i++) {
-                if (this.fontColor[i] && !this.fontColor[i].isDestroyed) { this.fontColor[i].destroy(); }
-                if (this.backgroundColor[i] && !this.backgroundColor[i].isDestroyed) { this.backgroundColor[i].destroy(); }
-            }
-            this.dialog.destroy();
-            if (document.querySelector('#' + this.parentID + 'conditionalformatting')) {
-                remove(document.querySelector('#' + this.parentID + 'conditionalformatting'));
-            }
+            this.dialog.close();
         } else {
             return;
         }

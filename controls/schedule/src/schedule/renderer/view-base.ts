@@ -8,6 +8,7 @@ import {
 } from '../base/util';
 import { TdData, ResourceDetails } from '../base/interface';
 import * as cls from '../base/css-constant';
+import * as util from '../base/util';
 
 /**
  * view base
@@ -25,12 +26,15 @@ export namespace ViewHelper {
             if (proxy.timeFormat === 'HH:mm' || proxy.timeFormat === 'HH.mm') {
                 return proxy.globalize.formatDate(date, { format: 'H', calendar: proxy.getCalendarMode() });
             }
-            return proxy.globalize.formatDate(date, { skeleton: 'h', calendar: proxy.getCalendarMode() });
+            return isBlazor() ?
+            proxy.globalize.formatDate(date, { format: 'h', calendar: proxy.getCalendarMode() }) :
+            proxy.globalize.formatDate(date, { skeleton: 'h', calendar: proxy.getCalendarMode() });
         }
         return proxy.getTimeString(date);
     };
     export const getTimelineDate: Function = (proxy: Schedule, date: Date) => {
-        let text: string = proxy.globalize.formatDate(date, { skeleton: 'MMMd', calendar: proxy.getCalendarMode() }) + ', ' +
+        let skeleton: string = isBlazor() ? 'M' : 'MMMd';
+        let text: string = proxy.globalize.formatDate(date, { skeleton: skeleton, calendar: proxy.getCalendarMode() }) + ', ' +
             proxy.getDayNames('wide')[date.getDay()];
         return capitalizeFirstWord(text, 'multiple');
     };
@@ -302,7 +306,10 @@ export class ViewBase {
         }
     }
     public getLabelText(view: string): string {
-        return this.parent.localeObj.getConstant(view) + ' of ' + capitalizeFirstWord(
+        let viewStr : string = view.charAt(0).toLowerCase() + view.substring(1);
+        return this.parent.localeObj.getConstant(viewStr) + ' of ' + capitalizeFirstWord(
+            isBlazor() ?
+            this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'D', calendar: this.parent.getCalendarMode() }) :
             this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'long', calendar: this.parent.getCalendarMode() }),
             'single');
     }
@@ -332,10 +339,14 @@ export class ViewBase {
         }
         let formattedStr: string;
         let longDateFormat: string;
-        if (this.parent.locale === 'en' || this.parent.locale === 'en-US') {
-            longDateFormat = getValue('dateFormats.long', getDefaultDateObject(mode));
+        if (isBlazor()) {
+            longDateFormat = 'MMMM d, y';
         } else {
-            longDateFormat = getValue('main.' + '' + this.parent.locale + '.dates.calendars.' + mode + '.dateFormats.long', cldrData);
+            if (this.parent.locale === 'en' || this.parent.locale === 'en-US') {
+                longDateFormat = getValue('dateFormats.long', getDefaultDateObject(mode));
+            } else {
+                longDateFormat = getValue('main.' + '' + this.parent.locale + '.dates.calendars.' + mode + '.dateFormats.long', cldrData);
+            }
         }
         if (!endDate) {
             return capitalizeFirstWord(globalize.formatDate(startDate, { format: longDateFormat, calendar: mode }), 'single');
@@ -456,4 +467,20 @@ export class ViewBase {
             });
         }
     }
+
+    public scrollToDate(scrollDate: Date): void {
+        if (['Month', 'TimelineMonth'].indexOf(this.parent.currentView) === -1 || isNullOrUndefined(scrollDate)) {
+            return;
+        }
+        let scrollWrap: HTMLElement = this.getContentAreaElement();
+        let elementSelector: string = `.${cls.WORK_CELLS_CLASS}[data-date="${util.resetTime(new Date(+scrollDate)).getTime()}"]`;
+        let dateElement: HTMLElement = scrollWrap.querySelector(elementSelector) as HTMLElement;
+        if (this.parent.currentView === 'Month' && dateElement) {
+            scrollWrap.scrollTop = dateElement.offsetTop;
+        }
+        if (this.parent.currentView === 'TimelineMonth' && dateElement) {
+            scrollWrap.scrollLeft = dateElement.offsetLeft;
+        }
+    }
+
 }

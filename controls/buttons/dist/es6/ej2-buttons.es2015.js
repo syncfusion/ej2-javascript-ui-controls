@@ -1914,7 +1914,7 @@ let ChipList = class ChipList extends Component {
         return chipData;
     }
     /**
-     * A function that adds chip items based on given input.
+     * Allows adding the chip item(s) by passing a single or array of string, number, or ChipModel values.
      * @param  {string[] | number[] | ChipModel[] | string | number | ChipModel} chipsData - We can pass array of string or
      *  array of number or array of chip model or string data or number data or chip model.
      * @deprecated
@@ -1928,7 +1928,7 @@ let ChipList = class ChipList extends Component {
         }
     }
     /**
-     * A function that selects chip items based on given input.
+     * Allows selecting the chip item(s) by passing a single or array of string, number, or ChipModel values.
      * @param  {number | number[] | HTMLElement | HTMLElement[]} fields - We can pass number or array of number
      *  or chip element or array of chip element.
      */
@@ -1973,7 +1973,7 @@ let ChipList = class ChipList extends Component {
         }
     }
     /**
-     * A function that removes chip items based on given input.
+     * Allows removing the chip item(s) by passing a single or array of string, number, or ChipModel values.
      * @param  {number | number[] | HTMLElement | HTMLElement[]} fields - We can pass number or array of number
      *  or chip element or array of chip element.
      */
@@ -1997,7 +1997,7 @@ let ChipList = class ChipList extends Component {
         }
     }
     /**
-     * A function that returns selected chips data.
+     * Returns the selected chip(s) data.
      */
     getSelectedChips() {
         let selectedChips;
@@ -2094,8 +2094,8 @@ let ChipList = class ChipList extends Component {
         if (this.type !== 'chip') {
             let chipData = this.find(chipWrapper);
             chipData.event = e;
-            let deleteElement = e.target.classList.contains(classNames.delete) ?
-                e.target : (del ? chipWrapper.querySelector('.' + classNames.delete) : undefined);
+            let deleteElement = e.target.classList.contains(classNames.deleteIcon) ?
+                e.target : (del ? chipWrapper.querySelector('.' + classNames.deleteIcon) : undefined);
             if (deleteElement && this.enableDelete) {
                 chipData.cancel = false;
                 let deletedItemArgs = chipData;
@@ -2181,7 +2181,7 @@ let ChipList = class ChipList extends Component {
         }
     }
     /**
-     * It is used to destroy the ChipList component.
+     * Removes the component from the DOM and detaches all its related event handlers. Also, it removes the attributes and classes.
      */
     destroy() {
         removeClass([this.element], [classNames.chipSet, classNames.chip, classNames.rtl,
@@ -2232,21 +2232,23 @@ let ChipList = class ChipList extends Component {
                 case 'selection':
                 case 'enableDelete':
                 case 'enabled':
-                    if (!(prop === 'chips' && (isBlazor() && this.isServerRendered))) {
+                    if (!(isBlazor() && this.isServerRendered)) {
                         this.isServerRendered = false;
                         this.refresh();
                         this.isServerRendered = true;
                     }
                     break;
                 case 'cssClass':
-                    if (this.type === 'chip') {
-                        removeClass([this.element], oldProp.cssClass.toString().split(' ').filter((css) => css));
-                        addClass([this.element], newProp.cssClass.toString().split(' ').filter((css) => css));
-                    }
-                    else {
-                        this.isServerRendered = false;
-                        this.refresh();
-                        this.isServerRendered = true;
+                    if (!(isBlazor() && this.isServerRendered)) {
+                        if (this.type === 'chip') {
+                            removeClass([this.element], oldProp.cssClass.toString().split(' ').filter((css) => css));
+                            addClass([this.element], newProp.cssClass.toString().split(' ').filter((css) => css));
+                        }
+                        else {
+                            this.isServerRendered = false;
+                            this.refresh();
+                            this.isServerRendered = true;
+                        }
                     }
                     break;
                 case 'selectedChips':

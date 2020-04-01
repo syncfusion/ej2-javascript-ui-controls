@@ -3,7 +3,7 @@ import { ParserBase as parser, NumberMapper } from './parser-base';
 import { IntlBase as base } from './intl-base';
 import { isUndefined, throwError, getValue, isBlazor } from '../util';
 import { HijriParser } from '../hijri-parser';
-import { isNullOrUndefined } from '../util';
+import { isNullOrUndefined, extend } from '../util';
 const abbreviateRegexGlobal: RegExp = /\/MMMMM|MMMM|MMM|a|LLL|EEEEE|EEEE|E|K|cccc|ccc|G+|z+/gi;
 const standalone: string = 'stand-alone';
 const weekdayKey: string[] = ['sun', 'mon', 'tue', 'wed', 'thu', 'fri', 'sat'];
@@ -68,17 +68,22 @@ export class DateFormat {
      */
     public static dateFormat(culture: string, option: DateFormatOptions, cldr: Object): Function {
         let dependable: base.Dependables = base.getDependables(cldr, culture, option.calendar);
+        let numObject: Object = getValue('parserObject.numbers', dependable);
+        let dateObject: Object = dependable.dateObject;
         let formatOptions: FormatOptions = { isIslamic: base.islamicRegex.test(option.calendar) };
         if (isBlazor() && option.isServerRendered) {
             option = base.compareBlazorDateFormats(option, culture);
         }
-        let resPattern: string = option.format || base.getResultantPattern(option.skeleton, dependable.dateObject, option.type);
-        formatOptions.dateSeperator = base.getDateSeparator(dependable.dateObject);
+        let resPattern: string = option.format ||
+            base.getResultantPattern(option.skeleton, dependable.dateObject, option.type, false, isBlazor() ? culture : '');
+        formatOptions.dateSeperator = isBlazor() ? getValue('dateSeperator', dateObject) : base.getDateSeparator(dependable.dateObject);
         if (isUndefined(resPattern)) {
             throwError('Format options or type given must be invalid');
         } else {
+            resPattern = base.ConvertDateToWeekFormat(resPattern);
             formatOptions.pattern = resPattern;
-            formatOptions.numMapper = parser.getNumberMapper(dependable.parserObject, parser.getNumberingSystem(cldr));
+            formatOptions.numMapper = isBlazor() ?
+                extend({}, numObject) : parser.getNumberMapper(dependable.parserObject, parser.getNumberingSystem(cldr));
             let patternMatch: string[] = resPattern.match(abbreviateRegexGlobal) || [];
             for (let str of patternMatch) {
                 let len: number = str.length;
@@ -91,18 +96,29 @@ export class DateFormat {
                 switch (char) {
                     case 'E':
                     case 'c':
-                        formatOptions.weekday = (<any>dependable.dateObject)[base.days][standalone][(<any>base).monthIndex[len]];
+                        if (isBlazor()) {
+                            formatOptions.weekday = getValue('days.' + (base as any).monthIndex[len], dateObject);
+                        } else {
+                            formatOptions.weekday = (<any>dependable.dateObject)[base.days][standalone][(<any>base).monthIndex[len]];
+                        }
+
                         break;
                     case 'M':
                     case 'L':
-                        formatOptions.month = (<any>dependable.dateObject)[base.month][standalone][(<any>base.monthIndex)[len]];
+                        if (isBlazor()) {
+                            formatOptions.month = getValue('months.' + (base as any).monthIndex[len], dateObject);
+                        } else {
+                            formatOptions.month = (<any>dependable.dateObject)[base.month][standalone][(<any>base.monthIndex)[len]];
+                        }
+
                         break;
                     case 'a':
-                        formatOptions.designator = getValue('dayPeriods.format.wide', dependable.dateObject);
+                        formatOptions.designator = isBlazor() ?
+                         getValue('dayPeriods', dateObject) : getValue('dayPeriods.format.wide', dateObject);
                         break;
                     case 'G':
                         let eText: string = (len <= 3) ? 'eraAbbr' : (len === 4) ? 'eraNames' : 'eraNarrow';
-                        formatOptions.era = getValue('eras.' + eText, dependable.dateObject);
+                        formatOptions.era = isBlazor() ? getValue('eras', dateObject) : getValue('eras.' + eText, dependable.dateObject);
                         break;
                     case 'z':
                         formatOptions.timeZone = getValue('dates.timeZoneNames', dependable.parserObject);

@@ -273,6 +273,11 @@ export class DocumentHelper {
      * @private
      */
     public defaultTabWidth: number = 36;
+
+    /**
+     * @private
+     */
+    public dontUseHtmlParagraphAutoSpacing: boolean = false;
     /**
      * @private
      */

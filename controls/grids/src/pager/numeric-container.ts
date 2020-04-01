@@ -1,4 +1,4 @@
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, isBlazor } from '@syncfusion/ej2-base';
 import { EventHandler } from '@syncfusion/ej2-base';
 import { createElement, remove, classList, append } from '@syncfusion/ej2-base';
 import { Pager, IRender } from './pager';
@@ -120,8 +120,10 @@ export class NumericContainer implements IRender {
             'div', {
                 className: 'e-first e-icons e-icon-first',
                 attrs: {
-                    title: this.pagerModule.getLocalizedLabel('firstPageTooltip'),
-                    'aria-label': this.pagerModule.getLocalizedLabel('firstPageTooltip'),
+                    title: isBlazor() ? this.pagerModule.getLocalizedLabel('FirstPageTooltip') :
+                    this.pagerModule.getLocalizedLabel('firstPageTooltip'),
+                    'aria-label': isBlazor() ? this.pagerModule.getLocalizedLabel('FirstPageTooltip') :
+                    this.pagerModule.getLocalizedLabel('firstPageTooltip'),
                     tabindex: '-1'
                 }
             });
@@ -129,8 +131,10 @@ export class NumericContainer implements IRender {
             'div', {
                 className: 'e-prev e-icons e-icon-prev',
                 attrs: {
-                    title: this.pagerModule.getLocalizedLabel('previousPageTooltip'),
-                    'aria-label': this.pagerModule.getLocalizedLabel('previousPageTooltip'),
+                    title: isBlazor() ? this.pagerModule.getLocalizedLabel('PreviousPageTooltip') :
+                    this.pagerModule.getLocalizedLabel('previousPageTooltip'),
+                    'aria-label': isBlazor() ? this.pagerModule.getLocalizedLabel('PreviousPageTooltip') :
+                    this.pagerModule.getLocalizedLabel('previousPageTooltip'),
                     tabindex: '-1'
                 }
             });
@@ -143,10 +147,13 @@ export class NumericContainer implements IRender {
             'a', {
                 className: 'e-link e-pp e-spacing', innerHTML: '...',
                 attrs: {
-                    title: this.pagerModule.getLocalizedLabel('previousPagerTooltip'), role: 'link',
-                    'aria-label': this.pagerModule.getLocalizedLabel('previousPagerTooltip'),
+                    title: isBlazor() ? this.pagerModule.getLocalizedLabel('PreviousPagerTooltip') :
+                    this.pagerModule.getLocalizedLabel('previousPagerTooltip'), role: 'link',
+                    'aria-label': isBlazor() ? this.pagerModule.getLocalizedLabel('PreviousPagerTooltip') :
+                    this.pagerModule.getLocalizedLabel('previousPagerTooltip'),
                     tabindex: '-1',
-                    name: this.pagerModule.getLocalizedLabel('previousPagerTooltip'),
+                    name: isBlazor() ? this.pagerModule.getLocalizedLabel('PreviousPagerTooltip') :
+                    this.pagerModule.getLocalizedLabel('previousPagerTooltip'),
                     href: 'javascript:void(0);'
                 }
             });
@@ -160,10 +167,13 @@ export class NumericContainer implements IRender {
             'a', {
                 className: 'e-link e-np e-spacing',
                 innerHTML: '...', attrs: {
-                    title: this.pagerModule.getLocalizedLabel('nextPagerTooltip'), role: 'link',
-                    'aria-label': this.pagerModule.getLocalizedLabel('nextPagerTooltip'),
+                    title: isBlazor() ? this.pagerModule.getLocalizedLabel('NextPagerTooltip') :
+                    this.pagerModule.getLocalizedLabel('nextPagerTooltip'), role: 'link',
+                    'aria-label': isBlazor() ? this.pagerModule.getLocalizedLabel('NextPagerTooltip') :
+                    this.pagerModule.getLocalizedLabel('nextPagerTooltip'),
                     tabindex: '-1',
-                    name: this.pagerModule.getLocalizedLabel('nextPagerTooltip'),
+                    name: isBlazor() ? this.pagerModule.getLocalizedLabel('NextPagerTooltip') :
+                    this.pagerModule.getLocalizedLabel('nextPagerTooltip'),
                     href: 'javascript:void(0);'
                 }
             });
@@ -176,8 +186,10 @@ export class NumericContainer implements IRender {
             'div', {
                 className: 'e-next e-icons e-icon-next',
                 attrs: {
-                    title: this.pagerModule.getLocalizedLabel('nextPageTooltip'),
-                    'aria-label': this.pagerModule.getLocalizedLabel('nextPageTooltip'),
+                    title: isBlazor() ? this.pagerModule.getLocalizedLabel('NextPageTooltip') :
+                    this.pagerModule.getLocalizedLabel('nextPageTooltip'),
+                    'aria-label': isBlazor() ? this.pagerModule.getLocalizedLabel('NextPageTooltip') :
+                    this.pagerModule.getLocalizedLabel('nextPageTooltip'),
                     tabindex: '-1'
                 }
             });
@@ -185,8 +197,10 @@ export class NumericContainer implements IRender {
             'div', {
                 className: 'e-last e-icons e-icon-last',
                 attrs: {
-                    title: this.pagerModule.getLocalizedLabel('lastPageTooltip'),
-                    'aria-label': this.pagerModule.getLocalizedLabel('lastPageTooltip'),
+                    title: isBlazor() ? this.pagerModule.getLocalizedLabel('LastPageTooltip') :
+                    this.pagerModule.getLocalizedLabel('lastPageTooltip'),
+                    'aria-label': isBlazor() ? this.pagerModule.getLocalizedLabel('LastPageTooltip') :
+                    this.pagerModule.getLocalizedLabel('lastPageTooltip'),
                     tabindex: '-1'
                 }
             });

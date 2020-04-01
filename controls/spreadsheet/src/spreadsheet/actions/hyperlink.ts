@@ -1,11 +1,11 @@
 import { Spreadsheet } from '../index';
-import { initiateHyperlink, locale, dialog, click, getUpdateUsingRaf, keyUp, createHyperlinkElement } from '../common/index';
+import { initiateHyperlink, locale, dialog, click, keyUp, createHyperlinkElement, getUpdateUsingRaf } from '../common/index';
 import { editHyperlink, removeHyperlink, openHyperlink, editAlert } from '../common/index';
 import { L10n, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
 import { Dialog } from '../services';
 import { SheetModel } from '../../workbook/base/sheet-model';
-import { getRangeIndexes, getRangeAddress, getCellIndexes, getCellAddress } from '../../workbook/common/address';
-import { CellModel, HyperlinkModel, BeforeHyperlinkArgs, AfterHyperlinkArgs, getTypeFromFormat } from '../../workbook/index';
+import { getRangeIndexes, getCellIndexes, getCellAddress, getRangeAddress } from '../../workbook/common/address';
+import { CellModel, HyperlinkModel, BeforeHyperlinkArgs, AfterHyperlinkArgs, getTypeFromFormat, getCell } from '../../workbook/index';
 import { beforeHyperlinkClick, afterHyperlinkClick } from '../../workbook/common/event';
 import { Tab, TreeView } from '@syncfusion/ej2-navigations';
 
@@ -273,7 +273,7 @@ export class SpreadsheetHyperlink {
                             this.parent.selectRange(getRangeAddress(rangeIndexes));
                         } else {
                             sheet.selectedRange = selRange;
-                            this.parent.activeSheetTab = sheetIdx + 1;
+                            this.parent.activeSheetIndex  = sheetIdx;
                             this.parent.dataBind();
                         }
                         if (this.parent.scrollSettings.enableVirtualization) {
@@ -400,6 +400,12 @@ export class SpreadsheetHyperlink {
                 td.innerText = '';
                 td.appendChild(hyperEle);
             }
+        } else if (td.querySelector('a') && cell.hyperlink) {
+            if (typeof (cell.hyperlink) === 'string') {
+                td.querySelector('a').setAttribute('href', cell.hyperlink);
+            } else {
+                td.querySelector('a').setAttribute('href', cell.hyperlink.address);
+            }
         }
     }
 
@@ -507,10 +513,9 @@ export class SpreadsheetHyperlink {
         let address: string;
         let indexes: number[] = getRangeIndexes(this.parent.getActiveSheet().activeCell);
         let sheet: SheetModel = this.parent.getActiveSheet();
-        let cell: CellModel = this.parent.sheets[this.parent.getActiveSheet().id - 1].rows[indexes[0]].cells[indexes[1]];
+        let cell: CellModel = getCell(indexes[0], indexes[1], sheet);
         let isEnable: boolean = true;
-        if (sheet.rows[indexes[0]] && sheet.rows[indexes[0]].cells[indexes[1]]) {
-            let cell: CellModel = sheet.rows[indexes[0]].cells[indexes[1]];
+        if (cell) {
             if ((cell.value && typeof (cell.value) === 'string' && cell.value.match('[A-Za-z]+') !== null) ||
                 cell.value === '' || isNullOrUndefined(cell.value)) {
                 isEnable = true;

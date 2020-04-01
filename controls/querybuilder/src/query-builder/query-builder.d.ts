@@ -6,6 +6,9 @@ import { ChildProperty } from '@syncfusion/ej2-base';
 import { QueryBuilderModel, ShowButtonsModel, ColumnsModel, RuleModel } from './query-builder-model';
 import { EmitType, BaseEventArgs } from '@syncfusion/ej2-base';
 import { Query, Predicate, DataManager } from '@syncfusion/ej2-data';
+/**
+ * Defines the Columns of Query Builder
+ */
 export declare class Columns extends ChildProperty<Columns> {
     /**
      * Specifies the fields in columns.
@@ -67,6 +70,9 @@ export declare class Columns extends ChildProperty<Columns> {
      */
     category: string;
 }
+/**
+ * Defines the rule of Query Builder
+ */
 export declare class Rule extends ChildProperty<Rule> {
     /**
      * Specifies the condition value in group.
@@ -109,6 +115,9 @@ export declare class Rule extends ChildProperty<Rule> {
      */
     not: boolean;
 }
+/**
+ * Defines the ruleDelete, groupInsert, and groupDelete options of Query Builder.
+ */
 export declare class ShowButtons extends ChildProperty<ShowButtons> {
     /**
      * Specifies the boolean value in ruleDelete that the enable/disable the buttons in rule.
@@ -393,7 +402,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      * return the valid rule or rules collection.
      * @returns RuleModel.
      */
-    getValidRules(currentRule: RuleModel): RuleModel;
+    getValidRules(currentRule?: RuleModel): RuleModel;
     private getRuleCollection;
     /**
      * Set the rule or rules collection.
@@ -463,7 +472,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      * Gets the sql query from rules.
      * @returns object.
      */
-    getSqlFromRules(rule: RuleModel, allowEscape?: boolean): string;
+    getSqlFromRules(rule?: RuleModel, allowEscape?: boolean): string;
     private sqlParser;
     private parseSqlStrings;
     private getOperator;
@@ -474,6 +483,9 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
 export interface Level {
     [key: string]: number[];
 }
+/**
+ * Creates the custom component of Query Builder
+ */
 export interface TemplateColumn {
     /**
      * Creates the custom component.
@@ -491,6 +503,9 @@ export interface TemplateColumn {
      */
     destroy?: Function | string;
 }
+/**
+ * Defines the validation of Query Builder.
+ */
 export interface Validation {
     /**
      * Specifies the minimum value in textbox validation.
@@ -521,6 +536,9 @@ export interface ChangeEventArgs extends BaseEventArgs {
     type?: string;
     not?: boolean;
 }
+/**
+ * Interface for rule change event arguments.
+ */
 export interface RuleChangeEventArgs extends BaseEventArgs {
     previousRule?: RuleModel;
     rule: RuleModel;

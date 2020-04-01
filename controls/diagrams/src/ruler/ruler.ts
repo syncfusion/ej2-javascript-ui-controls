@@ -336,7 +336,7 @@ export class Ruler extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * @private
-     * @param scale
+     * @param {number} scale
      */
     public updateSegmentWidth(scale: number): number {
         if (this.segmentWidth !== 100) {
@@ -378,8 +378,9 @@ export class Ruler extends Component<HTMLElement> implements INotifyPropertyChan
 
     /**
      * @private
-     * @param rulerObj
-     * @param currentPoint 
+     * @param {HTMLElement} rulerObj - Defines the ruler Object
+     * @param {PointModel} currentPoint - Defines the current point for ruler Object
+     * @param {number} offset - Defines the offset ruler Object
      */
     public drawRulerMarker(rulerObj: HTMLElement, currentPoint: PointModel, offset: number): void {
         let rulerSvg: SVGSVGElement;

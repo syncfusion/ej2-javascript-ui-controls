@@ -726,7 +726,7 @@ describe('Chart Control', () => {
                 pathElement = getElement('container_Series_0');
                 path = pathElement.getAttribute('d');
                 let pathLength: number = path.split('L').length;
-                expect(pathLength).toBe(5);
+                expect(pathLength).toBe(3);
                 done();
             };
             chartObj.series[0].emptyPointSettings = { mode: 'Drop' };

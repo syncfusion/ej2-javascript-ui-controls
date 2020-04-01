@@ -19,7 +19,7 @@ export class Canvas extends Container {
     public measureChildren: boolean = undefined;
     /**
      * Measures the minimum space that the canvas requires
-     * @param availableSize 
+     * @param {Size} availableSize
      */
     public measure(availableSize: Size, id?: string, callback?: Function): Size {
         let desired: Size = undefined;
@@ -146,11 +146,11 @@ export class Canvas extends Container {
 
     /**
      * Aligns the child element based on its parent
-     * @param child 
-     * @param childSize 
-     * @param parentSize 
-     * @param x 
-     * @param y 
+     * @param {DiagramElement} child 
+     * @param {Size} childSize 
+     * @param {Size} parentSize 
+     * @param {number} x 
+     * @param {number} y 
      */
     private alignChildBasedOnParent(child: DiagramElement, childSize: Size, parentSize: Size, x: number, y: number): PointModel {
         switch (child.horizontalAlignment) {
@@ -186,9 +186,9 @@ export class Canvas extends Container {
 
     /**
      * Aligns the child elements based on a point
-     * @param child 
-     * @param x 
-     * @param y 
+     * @param {DiagramElement} child 
+     * @param {number} x 
+     * @param {number} y 
      */
     private alignChildBasedOnaPoint(child: DiagramElement, x: number, y: number): PointModel {
         x += child.margin.left - child.margin.right;

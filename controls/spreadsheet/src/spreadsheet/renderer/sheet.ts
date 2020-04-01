@@ -85,7 +85,7 @@ export class SheetRender implements IRenderer {
             this.updateHideHeaders();
         }
         let content: HTMLElement = this.contentPanel.appendChild(
-            this.parent.createElement('div', { className: 'e-main-content', id: `${id}_main_content` }));
+            this.parent.createElement('div', { className: 'e-sheet-content', id: `${id}_main_content` }));
         if (!sheet.showGridLines) { content.classList.add('e-hide-gridlines'); }
         if (!this.parent.allowScrolling) { content.style.overflow = 'hidden'; }
     }
@@ -126,7 +126,7 @@ export class SheetRender implements IRenderer {
         let frag: DocumentFragment = document.createDocumentFragment();
         this.createTable();
         let colGrp: Element = this.parent.createElement('colgroup');
-        let cTBody: Element = this.contentPanel.querySelector('.e-main-content tbody');
+        let cTBody: Element = this.contentPanel.querySelector('.e-sheet-content tbody');
         let rHdrTBody: Element; let cHdrTHead: Element; let cHdrRow: Element;
         if (sheet.showHeaders) {
             frag.appendChild(this.headerPanel);
@@ -186,8 +186,8 @@ export class SheetRender implements IRenderer {
             if (args.initLoad) {
                 let triggerEvent: boolean = true;
                 if (this.parent.scrollSettings.enableVirtualization) {
-                    for (let i: number = 0; i < sheet.rangeSettings.length; i++) {
-                        if ((<ExtendedRange>sheet.rangeSettings[i]).info.count - 1 > this.parent.viewport.bottomIndex) {
+                    for (let i: number = 0; i < sheet.range.length; i++) {
+                        if ((<ExtendedRange>sheet.range[i]).info.count - 1 > this.parent.viewport.bottomIndex) {
                             triggerEvent = false; break;
                         }
                     }
@@ -212,9 +212,9 @@ export class SheetRender implements IRenderer {
         let indexes: number[]; let row: Element; let table: Element; let count: number = 0;
         let sheet: SheetModel = this.parent.getActiveSheet();
         let frag: DocumentFragment = document.createDocumentFragment(); let hFrag: DocumentFragment = document.createDocumentFragment();
-        let tBody: Element = this.parent.element.querySelector('.e-main-content tbody');
+        let tBody: Element = this.parent.element.querySelector('.e-sheet-content tbody');
         tBody = frag.appendChild(tBody.cloneNode(true) as Element);
-        let colGrp: Element = this.parent.element.querySelector('.e-main-content colgroup');
+        let colGrp: Element = this.parent.element.querySelector('.e-sheet-content colgroup');
         colGrp = colGrp.cloneNode() as Element;
         let hRow: Element; let tHead: Element;
         if (sheet.showHeaders) {
@@ -294,7 +294,7 @@ export class SheetRender implements IRenderer {
             detach(this.contentPanel.querySelector('.e-row-header tbody'));
             this.getRowHeaderTable().appendChild(hFrag);
         }
-        detach(this.contentPanel.querySelector('.e-main-content tbody'));
+        detach(this.contentPanel.querySelector('.e-sheet-content tbody'));
         this.getContentTable().appendChild(frag);
         this.parent.notify(virtualContentLoaded, { refresh: 'Row' });
         if (!this.parent.isOpen) {
@@ -317,9 +317,9 @@ export class SheetRender implements IRenderer {
                 hRow = this.parent.element.querySelector('.e-column-header .e-header-row');
                 hRefChild = hRow.firstElementChild;
             }
-            let colGrp: Element = this.parent.element.querySelector('.e-main-content colgroup');
+            let colGrp: Element = this.parent.element.querySelector('.e-sheet-content colgroup');
             let colRefChild: Element = colGrp.firstElementChild; let skipRender: boolean;
-            let tBody: Element = this.parent.element.querySelector('.e-main-content tbody');
+            let tBody: Element = this.parent.element.querySelector('.e-sheet-content tbody');
             (args.cells as Map<string, CellModel>).forEach((value: CellModel, key: string): void => {
                 if (skipRender) { return; }
                 indexes = getRangeIndexes(key);
@@ -555,7 +555,7 @@ export class SheetRender implements IRenderer {
      * @return {Element} 
      */
     public getContentPanel(): Element {
-        return this.contentPanel.getElementsByClassName('e-main-content')[0] as Element;
+        return this.contentPanel.getElementsByClassName('e-sheet-content')[0] as Element;
     }
 
     private addEventListener(): void {

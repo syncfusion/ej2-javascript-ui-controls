@@ -3,7 +3,9 @@ import { addClass, getInstance, getUniqueID, isRippleEnabled, removeClass, attri
 import { BaseEventArgs, detach, EmitType, Event, EventHandler, isBlazor, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
 import { wrapperInitialize, rippleMouseHandler } from './../common/common';
 import { RadioButtonModel } from './radio-button-model';
-
+/**
+ * Defines the label position of Radio Button.
+ */
 export type RadioLabelPosition = 'After' | 'Before';
 
 const LABEL: string = 'e-label';
@@ -454,7 +456,9 @@ export class RadioButton extends Component<HTMLInputElement> implements INotifyP
        this.element.focus();
   }
 }
-
+/**
+ * Interface for Radio Button change event arguments.
+ */
 export interface ChangeArgs extends BaseEventArgs {
     /** Returns the value of the RadioButton. */
     value?: string;

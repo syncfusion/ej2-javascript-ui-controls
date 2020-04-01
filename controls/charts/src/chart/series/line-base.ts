@@ -4,7 +4,7 @@ import { VisibleRangeModel, Axis } from '../axis/axis';
 import { Series, Points } from './chart-series';
 import { Chart } from '../chart';
 import { AnimationModel } from '../../common/model/base-model';
-import { Animation, AnimationOptions  } from '@syncfusion/ej2-base';
+import { Animation, AnimationOptions, isNullOrUndefined } from '@syncfusion/ej2-base';
 
 
 /**
@@ -25,6 +25,7 @@ export class LineBase {
      */
     public enableComplexProperty(series: Series): Points[] {
         let tempPoints: Points[] = [];
+        let tempPoints2: Points[] = [];
         let xVisibleRange: VisibleRangeModel = series.xAxis.visibleRange;
         let yVisibleRange: VisibleRangeModel = series.yAxis.visibleRange;
         let seriesPoints: Points[] = <Points[]>series.points;
@@ -45,7 +46,16 @@ export class LineBase {
                 prevYValue = yVal;
             }
         }
-        return tempPoints;
+        let tempPoint: Points;
+        for (let i: number = 0; i < tempPoints.length; i++) {
+            tempPoint = tempPoints[i];
+            if (isNullOrUndefined(tempPoint.x) || tempPoint.x === '') {
+                continue;
+            } else {
+                tempPoints2.push(tempPoint);
+            }
+        }
+        return tempPoints2;
     }
     /**
      * To generate the line path direction
@@ -85,7 +95,7 @@ export class LineBase {
         let chart: Chart = series.chart;
         let previousDirection: string = element ? element.getAttribute('d') : null;
         let htmlObject: HTMLElement =
-        series.chart.renderer.drawPath(options, new Int32Array([series.clipRect.x, series.clipRect.y])) as HTMLElement;
+            series.chart.renderer.drawPath(options, new Int32Array([series.clipRect.x, series.clipRect.y])) as HTMLElement;
         if (htmlObject) {
             htmlObject.setAttribute('clip-path', clipRect);
         }
@@ -174,9 +184,9 @@ export class LineBase {
      * To get first and last visible points
      * @private
      */
-    public getFirstLastVisiblePoint(points: Points[]): { first: Points, last: Points} {
+    public getFirstLastVisiblePoint(points: Points[]): { first: Points, last: Points } {
         let first: Points = null; let last: Points = null;
-        for (let point of  points) {
+        for (let point of points) {
             if (first === null && point.visible) {
                 first = last = point;
             }

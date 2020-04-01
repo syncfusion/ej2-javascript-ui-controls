@@ -160,7 +160,6 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Defines the dialog settings such as template and fields.
-     * @deprecated
      * @default {}
      */
     @Complex<DialogSettingsModel>({}, DialogSettings)
@@ -277,15 +276,14 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Triggers before the dialog opens.
-     * @deprecated
      * @event
      */
     @Event()
     public dialogOpen: EmitType<DialogEventArgs>;
     /**
      * Triggers before the dialog closes.
-     * @deprecated
      * @event
+     * @blazorType DialogCloseEventArgs
      */
     @Event()
     public dialogClose: EmitType<DialogEventArgs>;

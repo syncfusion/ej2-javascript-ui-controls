@@ -270,9 +270,42 @@
     .e-gridcontent .e-lastrow-border {
       background-color: $childborder-color;
       bottom: 0;
+      display: none;
       height: 1px;
       position: absolute;
       z-index: 1;
+    }
+
+    .e-grid .e-gridcontent {
+      tr.e-row:first-child {
+        td.e-rowcell.e-childborder ,
+        td.e-rowdragdrop.e-childborder {
+          border-bottom: $treegrid-rowdd-topbottom-border;
+          border-top: $treegrid-rowdd-topbottom-border;
+          box-shadow: 0 0 0 0 $treegrid-rowdd-boxshadow;
+        }
+
+        td.e-rowcell.e-droptop,
+        td.e-rowdragdrop.e-droptop {
+          border-top: $treegrid-rowdd-topbottom-border;
+        }
+       }
+
+      td.e-rowcell {
+        &.e-childborder,
+        &.e-dropbottom {
+          border-bottom: $treegrid-rowdd-topbottom-border;
+          box-shadow: 0 0 0 0 $treegrid-rowdd-boxshadow;
+        }
+      }
+
+      td.e-rowdragdrop {
+        &.e-childborder,
+        &.e-dropbottom {
+          border-bottom: $treegrid-rowdd-topbottom-border;
+          box-shadow: 0 0 0 0 $treegrid-rowdd-boxshadow;
+        }
+      }
     }
   }
 }

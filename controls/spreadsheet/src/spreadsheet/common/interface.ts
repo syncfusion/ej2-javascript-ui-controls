@@ -1,5 +1,5 @@
 import { CellModel, BeforeSortEventArgs, SheetModel, RowModel, ColumnModel, ModelType, CellInfoEventArgs } from './../../workbook/index';
-import { ValidationType, ValidationOperator } from './../../workbook/index';
+import { ValidationType, ValidationOperator, MergeArgs } from './../../workbook/index';
 import { RefreshType } from './index';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { BaseEventArgs, KeyboardEventArgs } from '@syncfusion/ej2-base';
@@ -65,9 +65,10 @@ export interface IViewport {
     width: number;
 }
 export interface ReplaceAllEventArgs  {
-    replace: string;
-    replaceFor: string;
+    replaceValue: string;
+    addressCollection: string[];
 }
+
 /**
  * @hidden
  */
@@ -102,6 +103,7 @@ export interface ICellRenderer {
     renderRowHeader(index: number): Element;
     render(args: CellRenderArgs): Element;
     refreshRange(range: number[]): void;
+    refresh(rowIdx: number, colIdx: number, lastCell?: boolean): void;
 }
 
 /**
@@ -189,8 +191,9 @@ export interface CellRenderArgs {
     checkNextBorder?: string;
     first?: string;
     isRefresh?: boolean;
-    td?: HTMLElement;
+    td?: HTMLTableCellElement;
     manualUpdate?: boolean;
+    isRow?: boolean;
 }
 /** @hidden */
 export interface IAriaOptions<T> {
@@ -253,6 +256,7 @@ export interface HideShowEventArgs {
     skipAppend?: boolean;
     isCol?: boolean;
     actionUpdate?: boolean;
+    mergeCollection?: MergeArgs[];
 }
 
 /** @hidden */
@@ -268,6 +272,8 @@ export interface UndoRedoEventArgs extends CellSaveEventArgs, BeforeSortEventArg
     index?: number;
     width?: string;
     height?: string;
+    merge?: boolean;
+    mergeCollection?: MergeArgs[];
 }
 export interface BeforeActionData {
     cellDetails: PreviousCellDetails[];
@@ -328,7 +334,7 @@ export interface InsertDeleteEventArgs {
     endIndex?: number;
     deletedModel?: RowModel[] | ColumnModel[] | CellModel[];
     deletedCellsModel?: RowModel[];
-    activeSheetTab?: number;
+    activeSheetIndex?: number;
     sheetCount?: number;
 }
 /**

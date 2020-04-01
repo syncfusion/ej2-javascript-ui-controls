@@ -9,81 +9,84 @@ import {
 } from '../index';
 import { ToolLocationModel, TextStyleModel } from '@syncfusion/ej2-svg-base';
 /**
- * Specifies Maps Events
+ * Specifies the event arguments for the maps component.
  * @private
  */
 export interface IMapsEventArgs {
-    /** Defines the name of the event */
+    /** Defines the name of the event. */
     name: string;
-    /** Defines the event cancel status */
+    /** Specifies the cancel state for the event. The default value is false. If set as true, the event progress will be stopped. */
     cancel: boolean;
 }
 /**
- * specifies Print Events
+ * Specifies the event arguments for print event in maps.
  */
 export interface IPrintEventArgs extends IMapsEventArgs {
+    /**
+     * Specifies the html content that is printed. The html content returned is usually the id string of the maps.
+     */
     htmlContent: Element;
 }
 /**
- * Specifies the Loaded Event arguments.
+ * Specifies the event arguments for load event in maps.
  */
 export interface ILoadedEventArgs extends IMapsEventArgs {
-    /** Defines the current Maps instance
+    /** Defines the current maps instance.
      * @deprecated
      */
     maps?: Maps;
 }
 /**
- * Specifies the Load Event arguments.
+ * Specifies the event argument load event in maps.
  */
 export interface ILoadEventArgs extends IMapsEventArgs {
-    /** Defines the current Maps instance
+    /** Defines the current maps instance.
      * @deprecated
      */
     maps?: Maps;
 }
 /**
- * Specifies the data label Event arguments.
+ * Specifies the event arguments for the data-label event in maps.
  */
 export interface IDataLabelArgs extends IMapsEventArgs {
-    /** Defines the current Maps instance
+    /** Defines the current maps instance.
      * @deprecated
      */
     maps: Maps;
     /**
-     * define event
+     * Defines the labels in maps.
      */
     dataLabel: DataLabelSettingsModel;
 }
 /**
- * Specifies the Chart Mouse Event arguments.
+ * Specifies the event arguments for mouse move event in maps.
  */
 export interface IMouseEventArgs extends IMapsEventArgs {
-    /** Defines current mouse event target id */
+    /** Defines the current mouse event target id */
     target: string;
-    /** Defines current mouse x location */
+    /** Defines the current mouse x location. */
     x: number;
-    /** Defines current mouse y location */
+    /** Defines the current mouse y location. */
     y: number;
-    /** Defines current latitude value of maps location */
+    /** Defines the current latitude value of maps location */
     latitude?: number;
-    /** Defines current longitude value of maps location */
+    /** Defines the current longitude value of maps location */
     longitude?: number;
 }
 /**
- * Specifies the geo location.
+ * Specifies the current position in maps.
  */
 export interface GeoPosition {
-    /** Defines current latitude value of maps location */
+    /** Specifies the current latitude value for the maps location. */
     latitude?: number;
-    /** Defines current longitude value of maps location */
+    /** Specifies the current longitude value for the maps location. */
     longitude?: number;
 }
 /**
- * Specifies TooltipRender event arguments for maps.
+ * Specifies the event arguments for tooltip render event in maps.
  */
 export interface ITooltipRenderCompleteEventArgs extends IMapsEventArgs {
-    /** Defines the current Map instance 
+    /** Defines the current map instance.
      * @deprecated 
      */
     maps?: Maps;
@@ -97,16 +100,16 @@ export interface ITooltipRenderCompleteEventArgs extends IMapsEventArgs {
     options: Object;
 }
 /**
- * Maps Resize event arguments.
+ * Specifies the event arguments for the resize event in maps.
  */
 export interface IResizeEventArgs {
-    /** Defines the name of the Event */
+    /** Defines the name of the event. */
     name: string;
-    /** Defines the previous size of the maps */
+    /** Defines the previous size of the maps before the resize event. */
     previousSize: Size;
-    /** Defines the current size of the maps */
+    /** Defines the current size of the maps after the resize event. */
     currentSize: Size;
-    /** Defines the current Maps instance
+    /** Defines the current maps instance.
      * @deprecated
      */
     maps: Maps;
@@ -123,111 +126,115 @@ export interface IFontMapping {
 
 /** @private */
 export interface MapsTooltipOption {
-    location : ToolLocationModel;
-    text:  string[];
-    data: Object;
-    textStyle: TextStyleModel;
-    template: string;
+    location ?: ToolLocationModel;
+    text ?:  string[];
+    data ?: Object;
+    textStyle ?: TextStyleModel;
+    template ?: string;
 }
 /**
- * Specifies TooltipRender event arguments for maps.
+ * Specifies the event arguments for tooltip render event in maps.
  */
 export interface ITooltipRenderEventArgs extends IMapsEventArgs {
-    /** Defines the current Maps instance
+    /** Defines the current maps instance.
      * @deprecated
      */
     maps?: Maps;
     /**
-     * Define the content
+     * Define the content of the tooltip.
      */
     content?: string | HTMLElement;
     /**
      * Define the tooltip options.
      */
-    options: Object;
+    options?: Object;
     /**
-     * textStyle event argument
+     * Defines the style of text for the tooltip in event argument.
      */
     textStyle?: FontModel;
     /**
-     * border event argument
+     * Defines the color and width of the border for the tooltip in event argument.
      */
     border?: BorderModel;
     /**
-     * fill color event argument
+     * Defines the color for the tooltip in event argument.
      */
     fill?: string;
     /**
-     * Define the current tooltip element.
+     * Defines the data in tooltip.
+     */
+    data?: Object;
+    /**
+     * Defines the current tooltip element.
      */
     element: Element;
     /**
-     * Define the mouse location.
+     * Defines the original event arguments.
      */
     eventArgs?: PointerEvent;
 }
 /**
- * Specifies itemSelection event arguments for maps.
+ * Specifies the event arguments for item selection event in maps.
  */
 export interface ISelectionEventArgs extends IMapsEventArgs {
-    /** Defines the current Maps instance
+    /** Defines the current maps instance.
      * @deprecated
      */
     maps?: Maps;
     /**
-     * fill event argument
+     * Defines the color while selecting the shape in maps.
      */
     fill?: string;
     /**
-     * opacity event argument
+     * Defines the opacity for the selected shape.
      */
     opacity?: number;
     /**
-     * border event argument
+     * Defines the color and width of the border for the selected shape in maps.
      */
     border?: BorderModel;
     /**
-     * Defines current mouse event target id
+     * Defines current mouse event target id.
      */
     target?: string;
     /**
-     * shape data event argument
+     * Defines the shape data for the maps.
      */
     shapeData?: Object;
     /**
-     * data from data source
+     * Defines the data from the data source.
      */
     data?: Object;
 }
 /**
- * Specifies shapeSelected event arguments for maps.
+ * Specifies the event arguments for shape selected event in maps.
  */
 export interface IShapeSelectedEventArgs extends IMapsEventArgs {
-    /** Defines the current Maps instance
+    /** Defines the current maps instance.
      * @deprecated
      */
     maps?: Maps;
     /**
-     * fill event argument
+     * Defines the color for the selected shape in maps.
      */
     fill?: string;
     /**
-     * opacity event argument
+     * Defines the opacity for the selected shape in maps.
      */
     opacity?: number;
     /**
-     * border event argument
+     * Defines the color and width of the border for the selected element in maps.
      */
     border?: BorderModel;
     /**
-     * shapeData for the currently clicked shape
+     * Defines the shapeData for the currently clicked shape.
      */
     shapeData?: Object;
     /**
-     * data source for the currently clicked shape
+     * Defines the data source for the currently clicked shape.
      */
     data?: Object;
-    /** Defines current mouse event target id */
+    /** Defines the id string of current mouse event target. */
     target?: string;
 }
 
@@ -244,449 +251,457 @@ export interface IShapes {
     functionName?: string;
 }
 /**
- * Specifies layerRendering event arguments for maps.
+ * Specifies the event arguments for layer rendering event in maps.
  */
 export interface ILayerRenderingEventArgs extends IMapsEventArgs {
     /**
-     * layer index event argument
+     * Defines the layer index in event argument.
      */
     index?: number;
     /**
-     * maps instance event argument
+     * Defines the maps instance in event argument.
      * @deprecated
      */
     maps?: Maps;
     /**
-     * layer options event argument
+     * Defines the options to customize the layers in event argument.
      * @deprecated
      */
     layer?: LayerSettingsModel;
     /**
-     * visibility of layer
+     * Enables or disables the visibility of layer in event argument.
      */
     visible?: boolean;
 }
 
 /**
- * Specifies shapeRendering event arguments for maps.
+ * Specifies the event arguments in shape rendering event in maps.
  */
 export interface IShapeRenderingEventArgs extends IMapsEventArgs {
     /**
-     * shape index event argument
+     * Defines the index value of shape rendering in the map.
      */
     index?: number;
     /**
-     * maps instance event argument
+     * Defines the maps instance in event argument.
      * @deprecated
      */
     maps?: Maps;
     /**
-     * current shape settings
+     * Defines the current shape settings in event argument.
      */
     shape?: ShapeSettingsModel;
     /**
-     * current shape fill
+     * Defines the color for the current shape in event argument.
      */
     fill?: string;
     /**
-     * current shape border
+     * Defines the color and width of the border for the current shape in event argument.
      */
     border?: BorderModel;
     /**
-     * shape data source event argument
+     * Defines the data for the shape from the data source in event argument.
      */
     data?: Object;
 }
 /**
- * Specifies markerRendering event arguments for maps.
+ * Specifies the event arguments in marker rendering event in maps.
  */
 export interface IMarkerRenderingEventArgs extends IMapsEventArgs {
     /**
-     * maps instance event argument
+     * Defines the maps instance in event argument.
      * @deprecated
      */
     maps?: Maps;
     /**
-     * marker instance. This is Read Only option.
+     * Defines the marker instance.
      */
     marker?: MarkerSettingsModel;
     /**
-     * Marker fill.
+     * Defines the color for the marker in event argument.
      */
     fill?: string;
 
     /**
-     * To customize the height of the marker.
+     * Defines the height of the marker in event argument.
      */
     height?: number;
 
     /**
-     * To customize the width of the marker.
+     * Defines the width of the marker.
      */
     width?: number;
 
     /**
-     * To customize the shape of the marker.
+     * Defines the shape of the marker.
      */
     shape?: MarkerType;
 
     /**
-     * To provide the image url for rendering marker image
+     * Defines the URL path for the marker when rendered as image.
      */
     imageUrl?: string;
 
     /**
-     * To customize the template of the marker.
+     * Defines the template of the marker.
      */
     template?: string;
     /**
-     * Configures the marker border
+     * Defines the color and width of the border for the marker.
      */
     border?: BorderModel;
     /**
-     * marker data event argument
+     * Defines the marker data from the marker data source in maps.
      */
     data?: Object;
     /**
-     * To get marker color from dataSource.
+     * Defines the value path of marker color from the marker data source.
      */
     colorValuePath?: string;
     /**
-     * To get marker shape from dataSource.
+     * Defines the value path of marker shape from the marker data source.
      */
     shapeValuePath?: string;
     /**
-     * To get marker image from dataSource.
+     * Defines the value path of marker image from the marker data source.
      */
     imageUrlValuePath?: string;
 }
 
 /**
- * Specifies markerClusterRendering event arguments for maps.
+ * Specifies the event arguments for marker cluster rendering event in maps.
  */
 export interface IMarkerClusterRenderingEventArgs extends IMapsEventArgs {
     /**
-     * maps instance event argument
+     * Defines the maps instance event argument.
      * @deprecated
      */
     maps?: Maps;
     /**
-     * marker instance. This is Read Only option.
+     * Defines the marker cluster instance.
      */
     cluster?: MarkerClusterSettingsModel;
     /**
-     * Marker fill.
+     * Defines the color for the marker cluster.
      */
     fill?: string;
 
     /**
-     * To customize the height of the marker.
+     * Defines the height for the marker cluster.
      */
     height?: number;
 
     /**
-     * To customize the width of the marker.
+     * Defines the width for the marker cluster.
      */
     width?: number;
 
     /**
-     * To customize the shape of the marker.
+     * Defines the shape for the marker cluster.
      */
     shape?: MarkerType;
 
     /**
-     * To provide the image url for rendering marker image
+     * Defines the URL path for rendering image as marker cluster.
      */
     imageUrl?: string;
     /**
-     * Configures the marker border
+     * Defines the color and width of the border for the marker cluster.
      */
     border?: BorderModel;
     /**
-     * marker data event argument
+     * Defines the data for the marker cluster in maps.
      */
     data?: Object;
 }
 
 /**
- * Specifies markerClick event arguments for maps.
+ * Specifies the event arguments for marker click event in maps.
  */
 export interface IMarkerClickEventArgs extends IMouseEventArgs {
     /**
-     * maps instance event argument
+     * Defines the maps instance event argument.
      * @deprecated
      */
     maps?: Maps;
     /**
-     * marker instance event argument
+     * Defines the marker instance in event argument.
      */
     marker?: MarkerSettingsModel;
     /**
-     * name of a marker
+     * Defines the name for a marker.
      */
     value: string;
     /**
-     * defines the currently clicked marker data
+     * Defines the marker data for the marker that is clicked.
      */
     data?: Object;
 }
 
 /**
- * Specifies markerMove event arguments for maps.
+ * Specifies the event arguments for marker move event in maps.
  */
 export interface IMarkerMoveEventArgs extends IMouseEventArgs {
     /**
-     * maps instance event argument
+     * Defines the maps instance event argument.
      * @deprecated
      */
     maps?: Maps;
     /**
-     * marker data event argument. This is Read Only option.
+     * Defines the data of the marker in event argument.
      */
     data?: Object;
 }
 
 /**
- * Specifies clusterClick event arguments for maps.
+ * Specifies the event arguments for the cluster click event in maps.
  */
 export interface IMarkerClusterClickEventArgs extends IMouseEventArgs {
     /**
-     * defines the currently clicked marker data
+     * Defines the currently clicked marker data.
      */
     data?: Object;
     /**
-     * maps instance event argument
+     * Defines the maps instance event argument.
      * @deprecated
      */
     maps?: Maps;
 }
 
 /**
- * Specifies markerClusterMove event arguments for maps.
+ * Specifies the event arguments for marker cluster move event in maps.
  */
 export interface IMarkerClusterMoveEventArgs extends IMouseEventArgs {
     /**
-     * maps instance event argument
+     * Defines the maps instance event argument.
      * @deprecated
      */
     maps?: Maps;
     /**
-     * marker data event argument. This is Read Only option.
+     * Defines the data of the cluster of marker in event argument.
      */
     data?: Object;
 }
 
 /**
- * Specifies labelRendering event arguments for maps.
+ * Specifies the event argument for label rendering event in maps.
  */
 export interface ILabelRenderingEventArgs extends IMapsEventArgs {
     /**
-     * maps instance event argument
+     * Defines the maps instance event argument.
      * @deprecated
      */
     maps?: Maps;
     /**
-     * data label text event argument
+     * Defines the text for the data-label in event argument.
      */
     text: string;
     /**
-     * Configures the label border
+     * Defines the color and width of the border for the data-label in event argument.
      */
     border: BorderModel;
     /**
-     * configure the fill
+     * Defines the color for the data-label in event argument.
      */
     fill: string;
     /**
-     * To customize the data label template.
+     * Defines the template for the data-label.
      */
     template: string;
     /**
-     * label instance event argument
+     * Defines the instance of the data-label in event argument.
      */
     datalabel?: DataLabelSettingsModel;
 }
 
 /**
- * Specifies bubbleRendering event arguments for maps.
+ * Specifies the event arguments for bubble rendering event in maps.
  */
 export interface IBubbleRenderingEventArgs extends IMapsEventArgs {
     /**
-     * maps instance event argument
+     * Defines the maps instance event argument.
      * @deprecated
      */
     maps?: Maps;
     /**
-     * bubble fill event argument
+     * Defines the color for the bubble in event argument.
      */
     fill?: string;
     /**
-     * bubble border event argument
+     * Defines the color and width of the border for the bubble in event argument.
      */
     border?: BorderModel;
     /**
-     * current bubble center x
+     * Defines the center x position for the current bubble.
      */
     cx?: number;
     /**
-     * current bubble center y
+     * Defines the center Y position for the current bubble.
      */
     cy?: number;
     /**
-     * current bubble radius
+     * Defines the radius for the current bubble.
      */
     radius?: number;
     /**
-     * current bubble data
+     * Defines the data for the current bubble.
      */
     data?: Object;
 }
 /**
- * Specifies bubbleClick event arguments for maps.
+ * Specifies the event argument for bubble click event in maps.
  */
 export interface IBubbleClickEventArgs extends IMouseEventArgs {
     /**
-     * maps instance event argument
+     * Defines the maps instance in event argument.
      * @deprecated
      */
     maps?: Maps;
     /**
-     * bubble current data event argument
+     * Defines the current data for the bubble in event argument.
      */
     data?: Object;
 }
 
 /**
- * Specifies bubbleMove event arguments for maps.
+ * Specifies the event argument for bubble mouse move event in maps.
  */
 export interface IBubbleMoveEventArgs extends IMouseEventArgs {
     /**
-     * maps instance event argument
+     * Defines the maps instance event argument.
      * @deprecated
      */
     maps?: Maps;
     /**
-     * bubble current data event argument
+     * Defines the data for the current bubble on which the mouse has hovered in event argument.
      */
     data?: Object;
 }
 /**
- * Specifies animationComplete event arguments for maps.
+ * Specifies the event arguments for animation complete event in maps.
  */
 export interface IAnimationCompleteEventArgs extends IMapsEventArgs {
     /**
-     * maps instance event argument
+     * Defines the maps instance event argument.
      * @deprecated
      */
     maps?: Maps;
     /**
-     * animation element type event argument
+     * Defines the type of animation element in event argument.
      */
     element: string;
 }
 
 /**
- * Specifies legendRendering event arguments for maps.
+ * Specifies the event arguments for the legend rendering event in maps.
  */
 export interface ILegendRenderingEventArgs extends IMapsEventArgs {
     /**
-     * maps instance event argument
+     * Defines the maps instance event argument.
      * @deprecated
      */
     maps?: Maps;
     /**
-     * Specifies the legend shape color
+     * Defines the color for the shape of legend in event argument.
      */
     fill?: string;
 
     /**
-     * Options for customizing the color and width of the shape border.
+     * Defines the options for customizing the color and width of the shape in legend.
      */
     shapeBorder?: BorderModel;
 
     /**
-     * Customize the legend shape of the maps.
+     * Defines the shape of the legend in maps.
      */
     shape?: LegendShape;
     /**
-     * Specifies the legend text 
+     * Defines the text for legend.
      */
     text?: string | string[];
 }
 
 /**
- * Specifies annotationRendering event arguments for maps.
+ * Specifies the event arguments for annotation rendering event in maps.
  */
 export interface IAnnotationRenderingEventArgs extends IMapsEventArgs {
     /**
-     * maps instance event argument
+     * Defines the maps instance in event argument.
      * @deprecated
      */
     maps?: Maps;
     /**
-     * Specifies the annotation content
+     * Defines the content for annotation in maps.
      */
     content?: string;
     /**
-     * Specifies the annotation instance
+     * Specifies the annotation instance.
      */
     annotation?: Annotation;
 }
 
 /**
- * Specifies pan event arguments for maps.
+ * Specifies the event arguments for the pan event in maps.
  */
 export interface IMapPanEventArgs extends IMapsEventArgs {
     /**
-     * maps instance event argument.
+     * Defines the maps instance in event argument.
      * @deprecated
      */
     maps?: Maps;
     /**
-     * tile translate point.
+     * Defines the tile map translate point.
      */
     tileTranslatePoint?: Object;
     /**
-     * Geometry translate point.
+     * Defines the translate point of the geometry map.
      */
     translatePoint?: Object;
     /**
-     * Tile zoom level.
+     * Defines the zoom level for the tile map.
      */
     tileZoomLevel?: number;
     /**
-     * geometry layer scale.
+     * Defines the scale value for the maps.
      */
     scale?: number;
+    /**
+     * Defines the latitude value of maps on pan event.
+     */
+    latitude: number;
+    /**
+     * Defines the longitude value of maps on pan event.
+     */
+    longitude: number;
 }
 
 /**
- * Specifies zoom event arguments for maps.
+ * Specifies the event arguments for zoom event in maps.
  */
 export interface IMapZoomEventArgs extends IMapsEventArgs {
     /**
-     * maps instance event argument.
+     * Defines the maps instance event argument.
      * @deprecated
      */
     maps?: Maps;
     /**
-     * Type of zoom interaction
+     * Defines the type of zoom interaction.
      */
     type: string;
     /**
-     * tile translate point.
+     * Defines the tile translate point.
      */
     tileTranslatePoint?: Object;
     /**
-     * Geometry translate point.
+     * Defines the translate point of geometry map.
      */
     translatePoint?: Object;
     /**
-     * Tile zoom level.
+     * Defines the zoom level for the tile maps.
      */
     tileZoomLevel?: Object;
     /**
-     * geometry layer scale.
+     * Defines the scale value for the maps.
      */
     scale?: Object;
 }
@@ -694,45 +709,61 @@ export interface IMapZoomEventArgs extends IMapsEventArgs {
 
 /** @private */
 /**
- * Specifies the Theme style for maps.
+ * Specifies the theme style for maps.
  */
 export interface IThemeStyle {
+    /** Specifies the background color for the maps based on theme style. */
     backgroundColor: string;
+    /** Specifies the area background color for the maps based on theme style */
     areaBackgroundColor: string;
+    /** Specifies the font color for the title of maps. */
     titleFontColor: string;
+    /** Specifies the font color for the sub title of the maps. */
     subTitleFontColor: string;
+    /** Specifies the font color for the title of legend in maps. */
     legendTitleFontColor: string;
+    /** Specifies the color for the legend text in maps. */
     legendTextColor: string;
+    /** Specifies the font color for the label in maps. */
     dataLabelFontColor: string;
+    /** Specifies the font color for the tooltip in maps. */
     tooltipFontColor: string;
+    /** Specifies the color of the tooltip in maps. */
     tooltipFillColor: string;
+    /** Specifies the color for the zoom in maps. */
     zoomFillColor: string;
+    /** Specifies the font-family for the maps. */
     fontFamily?: string;
+    /** Specifies the font size for the title in maps. */
     titleFontSize?: string;
+    /** Specifies the opacity for the tooltip in maps. */
     tooltipFillOpacity? : number;
+    /** Specifies the text opacity for the tooltip in maps. */
     tooltipTextOpacity?: number;
+    /** Specifies the font size for the legend in maps. */
     legendFontSize?: string;
+    /** Specifies the font-family for the data label in maps. */
     labelFontFamily?: string;
 }
 
 /**
- * It defines values of marker and datalabel datasource
+ * Defines the template for the marker.
  */
 export interface IDataTemplate {
-    /** latitude value */
+    /** Defines the latitude value for the template. */
     latitude?: number;
-    /** longitude value */
+    /** Defines the longitude value for the template. */
     longitude?: number;
-    /** name of a marker or datalabel */
+    /** Defines the name of a marker or data-label. */
     name?: string;
-    /** continent name for datalabel */
+    /** Defines the continent name for data-label. */
     continent?: string;
-    /** continent name for datalabel */
+    /** Defines the admin name for data-label. */
     admin?: string;
-    /** population of bubble */
+    /** Defines the population of bubble. */
     Population?: number;
-    /** name of country */
+    /** Defines the name of country. */
     Country?: string;
-    /** Text of any string */
+    /** Defines the Text of any string. */
     text?: string[];
 }

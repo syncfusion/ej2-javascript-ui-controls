@@ -26,6 +26,7 @@ export class PivotChart {
     private dataSourceSettings: IDataOptions;
     private chartSettings: ChartSettingsModel;
     private element: HTMLElement;
+    private templateFn: Function;
     private chartElement: HTMLElement;
     private measureList: string[];
     private headerColl: RowHeaderPositionGrouping = {};
@@ -695,7 +696,10 @@ export class PivotChart {
     private configTooltipSettings(): TooltipSettingsModel {
         let tooltip: TooltipSettingsModel = this.chartSettings.tooltip;
         tooltip.enable = tooltip.enable === undefined ? true : tooltip.enable;
-        if (this.parent.tooltipTemplate || tooltip.template) {
+        if (tooltip.enable && tooltip.template) {
+            this.templateFn = this.parent.templateParser(tooltip.template);
+        }
+        if (this.parent.tooltipTemplate) {
             tooltip.template = tooltip.template ? tooltip.template : this.parent.tooltipTemplate;
         }
         if (isBlazor()) {
@@ -746,8 +750,9 @@ export class PivotChart {
 
     private tooltipRender(args: ITooltipRenderEventArgs): void {
         let measure: string = (args.series as Series).yAxisName ? ((args.series as Series).yAxisName.split('_CumulativeAxis')[0]) :
-            (this.chartSettings.enableMultiAxis ? args.series.name.split(' | ')[1] : this.measuresNames[this.currentMeasure] ?
-                this.measuresNames[this.currentMeasure] : this.currentMeasure);
+            (this.chartSettings.enableMultiAxis ? args.series.name ? args.series.name.split(' | ')[1] : args.data.seriesName ?
+                args.data.seriesName.split(' | ')[1] : this.currentMeasure : this.measuresNames[this.currentMeasure] ?
+                    this.measuresNames[this.currentMeasure] : this.currentMeasure);
         /* tslint:disable:no-any */
         let rowIndex: number = args.series.dataSource ? (args.series.dataSource as any)[args.data.pointIndex].rIndex : undefined;
         let colIndex: number = args.series.dataSource ? (args.series.dataSource as any)[args.data.pointIndex].cIndex : undefined;
@@ -764,7 +769,7 @@ export class PivotChart {
             formattedText);
         let columnText: string = (args.series.name ? args.series.name.split(' | ')[0] : args.data.seriesName.split(' | ')[0]);
         let rowText: any = args.point.x;
-        if (this.parent.tooltipTemplate && this.parent.getTooltipTemplate() !== undefined) {
+        if (this.parent.tooltipTemplate && this.parent.getTooltipTemplate() !== undefined || this.chartSettings.tooltip.template) {
             let rowFields: string = args.series.dataSource ? this.parent.getHeaderField(rowIndex, colIndex, 'row') : '';
             let columnFields: string = args.series.dataSource ? this.parent.getHeaderField(rowIndex, colIndex, 'Column') : '';
             let templateVariable: any = {
@@ -776,9 +781,16 @@ export class PivotChart {
                 rowFields: rowFields,
                 columnFields: columnFields
             };
-            /* tslint:enable:no-any */
-            let template: string = this.parent.getTooltipTemplate()(
-                templateVariable, this, 'tooltipTemplate', this.element.id + 'tooltipTemplate')[0].outerHTML;
+            let template: string;
+            if (this.parent.chartSettings && this.parent.chartSettings.tooltip &&
+                this.parent.chartSettings.tooltip.enable && this.parent.chartSettings.tooltip.template) {
+                template = this.tooltipTemplateFn()(
+                    templateVariable, this, 'tooltipTemplate', this.element.id + '1tooltipTemplate')[0].outerHTML;
+            } else {
+                /* tslint:enable:no-any */
+                template = this.parent.getTooltipTemplate()(
+                    templateVariable, this, 'tooltipTemplate', this.element.id + 'tooltipTemplate')[0].outerHTML;
+            }
             args.template = template;
         } else {
             args.text = measureAggregatedName + ': ' + formattedValue +
@@ -790,6 +802,9 @@ export class PivotChart {
         }
     }
 
+    private tooltipTemplateFn() : Function {
+        return this.templateFn;
+    }
     private loaded(args: ILoadedEventArgs): void {
         this.parent.isChartLoaded = true;
         if (this.parent.chart && this.parent.showGroupingBar && this.parent.groupingBarModule &&

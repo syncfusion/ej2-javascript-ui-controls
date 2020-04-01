@@ -496,8 +496,8 @@ export class Selection extends BaseSelection {
      * @private.
      */
     public blurEffect(chartId: string, visibleSeries: Series[], legendClick: boolean = false): void {
-        let visibility: boolean = this.styleId.indexOf('highlight') > 0 ? this.checkVisibility(this.highlightDataIndexes) :
-        this.checkVisibility(this.selectedDataIndexes); // legend click scenario
+        let visibility: boolean = (this.checkVisibility(this.highlightDataIndexes) ||
+            this.checkVisibility(this.selectedDataIndexes)); // legend click scenario
         for (let series of visibleSeries) {
             if (series.visible) {
                 this.checkSelectionElements(

@@ -35,7 +35,7 @@ import { TreeMapLegend } from './layout/legend';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { getThemeStyle } from './model/theme';
 /**
- * Represents the TreeMap control.
+ * Represents the treemap component.
  * ```html
  * <div id="container"/>
  * <script>
@@ -49,65 +49,65 @@ import { getThemeStyle } from './model/theme';
 export class TreeMap extends Component<HTMLElement> implements INotifyPropertyChanged {
     //Module Declaration for treemap.
     /**
-     * `tooltipModule` is used to render the treemap tooltip.
+     * Sets and gets the module that is used to add tooltip in the treemap.
      */
     public treeMapTooltipModule: TreeMapTooltip;
     /**
-     * `highlightModule` is used for highlight the items.
+     * Sets and gets the module that is used to add highlight functionality in the treemap.
      */
     public treeMapHighlightModule: TreeMapHighlight;
     /**
-     * `selectionModule` is used for select the items.
+     * Sets and gets the module that is used to add selection functionality in the treemap.
      */
     public treeMapSelectionModule: TreeMapSelection;
     /**
-     * `legendModule` is used for render the legend items.
+     * Sets and gets the module that is used to add legend in the treemap.
      */
     public treeMapLegendModule: TreeMapLegend;
     /**
-     * Specifies the width by given pixel or percentage.
+     * Sets and gets the width of the treemap component.
      * @default null
      */
     @Property(null)
     public width: string;
     /**
-     * Specifies the height by given pixel or percentage.
+     * Sets and gets the height of the treemap component.
      * @default null
      */
     @Property(null)
     public height: string;
     /**
-     * Specifies the border of tree map.
+     * Sets and gets the options for customizing the color and width of the treemap border.
      */
     @Complex<BorderModel>({}, Border)
     public border: BorderModel;
     /**
-     * Specifies the margin to move the render area.
+     * Sets and gets the options for customizing the margin in the treemap component.
      */
     @Complex<MarginModel>({}, Margin)
     public margin: MarginModel;
     /**
-     * Specifies the background.
+     * Sets and gets the background color of the treemap.
      */
     @Property(null)
     public background: string;
     /**
-     * Specifies the theme.
+     * Sets and gets the options for customizing the theme of the treemap component.
      */
     @Property('Material')
     public theme: TreeMapTheme;
     /**
-     * Specifies the title for tree map.
+     * Sets and gets the options for customizing the title of the treemap component.
      */
     @Complex<TitleSettingsModel>({}, TitleSettings)
     public titleSettings: TitleSettingsModel;
     /**
-     * Specifies the rendering of layout type.
+     * Specifies the rendering type of layout of the treemap component.
      */
     @Property('Squarified')
     public layoutType: LayoutMode;
     /**
-     * Specifies the dataSource.
+     * Sets and gets the data source for the treemap component.
      * @isGenericType true
      * @isObservable true
      * @default null
@@ -115,124 +115,125 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     @Property(null)
     public dataSource: DataManager | TreeMapAjax | Object[];
     /**
-     * Specifies the query for filter the data.
+     * Sets and gets the query to select particular data from the shape data.
+     * This property is applicable only when the data source is created by data manager.
      * @default null
      */
     @Property(null)
     public query: Query;
     /**
-     * Specifies the weight value path
+     * Sets and gets the value path of the weight from the data source, based on which the map item is rendered.
      */
     @Property(null)
     public weightValuePath: string;
     /**
-     * Specifies the colorValuePath
+     * Sets and gets the value path from the data source, based on it color is filled in treemap.
      */
     @Property('')
     public rangeColorValuePath: string;
     /**
-     * Specifies the colorValuePath
+     * Sets and gets the value path from the data source, based on it color is filled in treemap.
      */
     @Property('')
     public equalColorValuePath: string;
     /**
-     * Specifies the colorValuePath from dataSource
+     * Sets and gets the value path from the data source, based on it color is filled in treemap.
      */
     @Property(null)
     public colorValuePath: string;
     /**
-     * Specifies the palette colors.
+     * Sets and gets the set of colors to apply in the treemap items.
      */
     @Property([])
     public palette: string[];
     /**
-     * Specifies the rendering of layout of the treemap items.
+     * Specifies the rendering direction of layout of the treemap items.
      * @default TopLeftBottomRight
      */
     @Property('TopLeftBottomRight')
     public renderDirection: RenderingMode;
     /**
-     * To enable or disable the drillDown.
+     * Enables or disables the drill down functionality in treemap.
      */
     @Property(false)
     public enableDrillDown: boolean;
     /**
-     * To render the text from right to left.
+     * Enables or disables the connection text in the header of the treemap.
      */
     @Property(false)
     public enableBreadcrumb: boolean;
     /**
-     * To add the breadCrumb connector.
+     * Specifies the connection between the two words.
      */
     @Property(' - ')
     public breadcrumbConnector: string;
     /**
-     * To control the drillDown view.
+     * Enables or disables the initial drill in the treemap.
      */
     @Property(false)
     public drillDownView: boolean;
     /**
-     * Specifies the initial drillDown.
+     * Specifies the options for customizing the initial drill down in treemap.
      */
     @Complex<InitialDrillSettingsModel>({}, InitialDrillSettings)
     public initialDrillDown: InitialDrillSettingsModel;
     /**
-     * Specifies to access all leaf items in levels.
+     * Sets and gets the options for customizing the leaf item of the treemap.
      */
     @Complex<LeafItemSettingsModel>({}, LeafItemSettings)
     public leafItemSettings: LeafItemSettingsModel;
     /**
-     * Specifies the item levels.
+     * Sets and gets the options for customizing the levels of the treemap.
      */
     @Collection<LevelSettingsModel>([], LevelSettings)
     public levels: LevelSettingsModel[];
     /**
-     * To specifies the highlight settings.
+     * Sets and gets the options for customizing the highlight of the treemap item on mouse over on the treemap component.
      */
     @Complex<HighlightSettingsModel>({}, HighlightSettings)
     public highlightSettings: HighlightSettingsModel;
     /**
-     * To specifies the selection settings.
+     * Sets and gets the options for customizing the selection of the treemap item on click event on the treemap component.
      */
     @Complex<SelectionSettingsModel>({}, SelectionSettings)
     public selectionSettings: SelectionSettingsModel;
     /**
-     * Specifies the tooltip settings.
+     * Sets and gets the options for customizing the tooltip of the treemap.
      */
     @Complex<TooltipSettingsModel>({}, TooltipSettings)
     public tooltipSettings: TooltipSettingsModel;
     /**
-     * Specifies the legend settings.
+     * Sets and gets the options for customizing the legend of the treemap.
      */
     @Complex<LegendSettingsModel>({}, LegendSettings)
     public legendSettings: LegendSettingsModel;
     /**
-     * To enable the separator
+     * Enables or disables the visibility state of the separator for grouping.
      * @default false
      */
     @Property(false)
     public useGroupingSeparator: boolean;
     /**
-     * Description for maps.
+     * Sets and gets the description for treemap.
      * @default null
      */
     @Property(null)
     public description: string;
 
     /**
-     * TabIndex value for treemap.
+     * Sets and gets the tab index value for treemap.
      * @default 1
      */
     @Property(1)
     public tabIndex: number;
     /**
-     * To apply internationalization for treemap
+     * Sets and gets format for the texts in the treemap.
      * @default null
      */
     @Property(null)
     public format: string;
     /**
-     * Triggers before treemap rendered.
+     * Triggers when the treemap is on load.
      * @event
      */
     @Event()
@@ -245,49 +246,49 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     @Event()
     public beforePrint: EmitType<IPrintEventArgs>;
     /**
-     * Triggers after treemap rendered.
+     * Triggers after treemap is rendered.
      * @event
      * @blazorProperty 'Loaded'
      */
     @Event()
     public loaded: EmitType<ILoadedEventArgs>;
     /**
-     * Triggers before item rendering.
+     * Triggers before item rendering in the treemap component.
      * @event
      * @blazorProperty 'ItemRendering'
      */
     @Event()
     public itemRendering: EmitType<IItemRenderingEventArgs>;
     /**
-     * Triggers the drillDown start.
+     * Triggers on performing drill down functionality in the treemap.
      * @event
      * @blazorProperty 'OnDrillStart'
      */
     @Event()
     public drillStart: EmitType<IDrillStartEventArgs>;
     /**
-     * Triggers the drillDown end.
+     * Triggers after drill down functionality gets completed in the treemap.
      * @event
      * @blazorProperty 'DrillCompleted'
      */
     @Event()
     public drillEnd: EmitType<IDrillEndEventArgs>;
     /**
-     * Triggers the item selected.
+     * Triggers after selecting a treemap item.
      * @event
      * @blazorProperty 'ItemSelected'
      */
     @Event()
     public itemSelected: EmitType<IItemSelectedEventArgs>;
     /**
-     * Triggers the item highlight.
+     * Triggers after highlighting on the treemap item.
      * @event
      * @blazorProperty 'ItemHighlighted'
      */
     @Event()
     public itemHighlight: EmitType<IItemHighlightEventArgs>;
     /**
-     * Triggers the tooltip rendering.
+     * Triggers on rendering of the tooltip in the treemap component.
      * @event
      * @blazorProperty 'TooltipRendering'
      * @blazorType ITreeMapTooltipArgs
@@ -295,63 +296,63 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     @Event()
     public tooltipRendering: EmitType<ITreeMapTooltipRenderEventArgs>;
     /**
-     * Triggers the item click.
+     * Triggers after clicking an item in the treemap.
      * @event
      * @blazorProperty 'OnItemClick'
      */
     @Event()
     public itemClick: EmitType<IItemClickEventArgs>;
     /**
-     * Triggers the item move.
+     * Triggers after mouse hover on the treemap item.
      * @event
      * @blazorProperty 'OnItemMove'
      */
     @Event()
     public itemMove: EmitType<IItemMoveEventArgs>;
     /**
-     * Triggers the click event.
+     * Triggers after clicking on the treemap.
      * @event
      * @blazorProperty 'OnClick'
      */
     @Event()
     public click: EmitType<IItemClickEventArgs>;
     /**
-     * Triggers on double clicking the maps.
+     * Triggers after double clicking on the treemap.
      * @event
      * @blazorProperty 'OnDoubleClick'
      */
     @Event()
     public doubleClick: EmitType<IDoubleClickEventArgs>;
     /**
-     * Triggers on right clicking the maps.
+     * Triggers after right clicking on the treemap.
      * @event
      * @blazorProperty 'OnRightClick'
      */
     @Event()
     public rightClick: EmitType<IMouseMoveEventArgs>;
     /**
-     * Triggers the mouse move event.
+     * Triggers after mouse hover on the treemap.
      * @event
      * @blazorProperty 'OnMouseMove'
      */
     @Event()
     public mouseMove: EmitType<IMouseMoveEventArgs>;
     /**
-     * Triggers the resize event.
+     * Triggers after resizing the treemap component.
      * @event
      * @blazorProperty 'Resizing'
      */
     @Event()
     public resize: EmitType<IResizeEventArgs>;
     /**
-     * Triggers the legend item rendering.
+     * Triggers before rendering each legend item in the treemap.
      * @event
      * @blazorProperty 'LegendItemRendering'
      */
     @Event()
     public legendItemRendering: EmitType<ILegendItemRenderingEventArgs>;
     /**
-     * Triggers the legend rendering event.
+     * Triggers before rendering the legend items in the treemap.
      * @event
      * @deprecated
      * @blazorProperty 'LegendRendering'
@@ -385,6 +386,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public areaRect: Rect;
     /**
+     * Define the theme style for treemap components
      * @private
      */
     public themeStyle: IThemeStyle;
@@ -753,16 +755,18 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
     /**
-     * Handles the print method for chart control.
+     * This method is used to perform the print functionality in treemap.
+     * @param id - Specifies the element to print the treemap.
      */
     public print(id?: string[] | string | Element): void {
         let exportChart: ExportUtils = new ExportUtils(this);
         exportChart.print(id);
     }
     /**
-     * Handles the export method for chart control.
-     * @param type
-     * @param fileName
+     * This method is used to perform the export functionality for the rendered treemap.
+     * @param type - Specifies the index of the axis.
+     * @param fileName - Specifies file name for exporting the rendered treemap. 
+     * @param orientation - Specifies the orientation of the pdf document.
      */
     public export(type: ExportType, fileName: string, orientation?: PdfPageOrientation): void {
         let exportMap: ExportUtils = new ExportUtils(this);
@@ -805,6 +809,10 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
+    /**
+     * This method orders the treemap level data.
+     * @param start - Specifies the start value of the treemap level.
+     */
     public reOrderLevelData(start: number): void {
         let currentName: string;
         let currentPath: string = this.levels[start] ? this.levels[start].groupPath : this.leafItemSettings.labelPath;
@@ -831,6 +839,11 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
+    /**
+     * This method finds the weight value of the treemap level.
+     * @param processData - Specifies the treemap data.
+     * @param type - Specifies the type of the data.
+     */
     public findTotalWeight(processData: Object[], type: string): void {
         let totalWeight: number; let childData: Object[];
         let levelName: string; let start: number = 0; let split: string[];
@@ -896,7 +909,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * To handle the window resize event on treemap.
+     * This method handles the window resize event on treemap.
+     * @param e - Specifies the pointer event.
      */
     public resizeOnTreeMap(e: Event): void {
         let args: IResizeEventArgs = {
@@ -929,6 +943,10 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         }
     }
 
+    /**
+     * This method handles the click event on the treemap.
+     * @param e - Specifies the mouse click event in the treemap.
+     */
     public clickOnTreeMap(e: PointerEvent): void {
         let targetEle: Element = <Element>e.target;
         let targetId: string = targetEle.id;
@@ -944,7 +962,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
             eventArgs = {
                 cancel: false, name: itemClick, treemap: this, item: this.layout.renderItems[itemIndex], mouseEvent: e,
                 groupIndex: this.layout.renderItems[itemIndex]['groupIndex'], groupName: this.layout.renderItems[itemIndex]['name'],
-                text: labelText
+                text: labelText, contentItemTemplate : labelText
             };
             if (this.isBlazor) {
                 let data: IItemDataEventArgs = {
@@ -962,11 +980,33 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                 const {treemap, ...blazorEventArgs} : IItemClickEventArgs = eventArgs;
                 eventArgs = blazorEventArgs;
             }
-            this.trigger(itemClick, eventArgs);
-            if (eventArgs.text !== labelText) {
-                eventArgs.text = textFormatter(eventArgs.text, eventArgs.item['data'], eventArgs.treemap);
-                targetEle.innerHTML = eventArgs.text;
-            }
+            this.trigger(itemClick, eventArgs, (observedArgs: IItemClickEventArgs) => {
+                if (observedArgs.text !== labelText || observedArgs.contentItemTemplate !== labelText) {
+                    if (isNullOrUndefined(this.leafItemSettings.labelTemplate)) {
+                        observedArgs.text = textFormatter(observedArgs.text, observedArgs['item']['data'], observedArgs.treemap);
+                        targetEle.innerHTML = observedArgs.text;
+                    } else {
+                        let itemSelect: string = targetId.split('_RectPath')[0]; let itemTemplate: Element;
+                        if (targetId.indexOf('_LabelTemplate') > -1) {
+                            itemTemplate = targetEle;
+                        } else {
+                            itemTemplate = document.querySelector('#' + itemSelect + '_LabelTemplate');
+                        }
+                        if (!isNullOrUndefined(itemTemplate)) {
+                            if (this.isBlazor) {
+                                let templateElement : Element = createElement('div');
+                                templateElement.innerHTML = observedArgs.contentItemTemplate;
+                                let currentTemplateElement: Element = templateElement.children[0].firstElementChild;
+                                itemTemplate['style']['left'] = Number(itemTemplate['style']['left'].split('px')[0])
+                                    - (currentTemplateElement['style']['width'].split('px')[0] / 2) + 'px';
+                                itemTemplate['style']['top'] = Number(itemTemplate['style']['top'].split('px')[0])
+                                    - (currentTemplateElement['style']['height'].split('px')[0] / 2) + 'px';
+                            }
+                            itemTemplate.innerHTML = observedArgs.contentItemTemplate;
+                        }
+                    }
+                }
+            });
         }
         let end: number = new Date().getMilliseconds();
         let doubleTapTimer1: number;
@@ -979,6 +1019,10 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     }
 
+    /**
+     * This method handles the double click event in the treemap.
+     * @param e - Specifies the pointer event of mouse click.
+     */
     public doubleClickOnTreeMap(e: PointerEvent): void {
         let doubleClickArgs: IDoubleClickEventArgs = { cancel: false, name: doubleClick, treemap: this, mouseEvent: e };
         let doubleClickBlazorArgs: IDoubleClickEventArgs = { cancel: false, name: doubleClick, mouseEvent: e };
@@ -986,6 +1030,10 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         //this.notify('dblclick', e);
     }
 
+    /**
+     * This method handles the right click event in the treemap.
+     * @param e - Specifies the pointer event of mouse click.
+     */
     public rightClickOnTreeMap(e: PointerEvent): void {
         let rightClickArgs: IRightClickEventArgs = { cancel: false, name: rightClick, treemap: this, mouseEvent: e };
         let rightClickBlazorArgs: IRightClickEventArgs = { cancel: false, name: rightClick, mouseEvent: e };
@@ -993,6 +1041,10 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
 
+    /**
+     * This method handles the mouse down event in the treemap.
+     * @param e - Specifies the pointer event of mouse click.
+     */
     /* tslint:disable-next-line:max-func-body-length */
     public mouseDownOnTreeMap(e: PointerEvent): void {
         if ((<Element>e.target).id.indexOf('_Item_Index') > -1) {
@@ -1001,6 +1053,10 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         this.notify(Browser.touchStartEvent, e);
     }
 
+    /**
+     * This method handles the mouse move event in the treemap.
+     * @param e - Specifies the pointer event of mouse click.
+     */
     public mouseMoveOnTreeMap(e: PointerEvent): void {
         let targetEle: Element = <Element>e.target;
         let targetId: string = targetEle.id;
@@ -1037,6 +1093,11 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         this.notify(Browser.touchMoveEvent, e);
     }
 
+    /**
+     * This method calculates the selected treemap levels.
+     * @param labelText - Specifies the label text.
+     * @param item - Specifies the treemap item.
+     */
     public calculateSelectedTextLevels(labelText: String, item: Object): Object {
         //to find the levels by clicking the particular text both for drillDownView as true / false.
         let drillLevel: number; let k: string; let text: String;
@@ -1051,6 +1112,13 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         return { drillLevel: drillLevel, currentLevelLabel: text, levelText: levelText };
     }
 
+    /**
+     * This method calculates the previous level of child items in treemap.
+     * @param labelText - Specifies the label text in treemap
+     * @param drillLevelValues - Specifies the values of drill level.
+     * @param item - Specifies the treemap item.
+     * @param directLevel - Specifies the current level.
+     */
     public calculatePreviousLevelChildItems(labelText: String, drillLevelValues: Object, item: Object, directLevel: boolean): boolean {
         //By clicking any child items drilldown to the particular level.
         //At the time store all the previous drilled level items in drilledItems
@@ -1080,6 +1148,12 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         return directLevel;
     }
 
+    /**
+     * This method compares the selected labels with the drill down items.
+     * @param drillLevelValues - Specifies the values of drill level.
+     * @param item - Specifies the treemap item.
+     * @param i - Specifies the treemap item.
+     */
     public compareSelectedLabelWithDrillDownItems(drillLevelValues: Object, item: Object, i: number): Object {
         let drillLevelChild: Object; let newDrillItem: Object = new Object();
         let b: number = drillLevelValues['drillLevel'] + 1;
@@ -1097,6 +1171,10 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         return newDrillItem;
     }
 
+    /**
+     * This method handles mouse end event in treemap.
+     * @param e - Specifies the pointer event of mouse.
+     */
     /* tslint:disable-next-line:max-func-body-length */
     public mouseEndOnTreeMap(e: PointerEvent): void {
         let targetEle: Element = <Element>e.target; let targetId: string = targetEle.id; let totalRect: Rect;
@@ -1214,6 +1292,10 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         this.notify(Browser.touchEndEvent, e);
     }
 
+    /**
+     * This method handles mouse leave event in treemap.
+     * @param e - Specifies the pointer event of mouse.
+     */
     public mouseLeaveOnTreeMap(e: PointerEvent): void {
         if (this.treeMapTooltipModule) {
             this.treeMapTooltipModule.removeTooltip();
@@ -1293,14 +1375,14 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     }
 
     /**
-     * Get component name
+     * Gets component name.
      */
     public getModuleName(): string {
         return 'treemap';
     }
 
     /**
-     * To destroy the treemap control.
+     * This method is used to dispose the treemap component.
      */
     public destroy(): void {
         this.unWireEVents();

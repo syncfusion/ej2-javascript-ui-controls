@@ -467,8 +467,9 @@ describe('Zoom feature tesing for map control', () => {
                 let element: Element = document.getElementById(map.element.id + '_svg');
                 let rect: ClientRect = element.getBoundingClientRect();
                 let delta: number = 130;
+                let wheelArgs: Object;
                 for (let i: number = 0; i < 10; i++) {
-                    let wheelArgs: Object = {
+                        wheelArgs = {
                         preventDefault: prevent,
                         wheelDelta: delta++,
                         detail: 3,
@@ -481,7 +482,7 @@ describe('Zoom feature tesing for map control', () => {
                 }
                 map.zoomModule.mouseDownPoints = { x: (rect.left + 100), y: (rect.top + 100) };
                 map.zoomModule.mouseMovePoints = { x: (rect.left + 200), y: (rect.top + 100) };
-                map.zoomModule.panning('None', null, null);
+                map.zoomModule.panning('None', null, null, <PointerEvent | TouchEvent>wheelArgs);
             };
             map.refresh();
         });
@@ -489,11 +490,21 @@ describe('Zoom feature tesing for map control', () => {
         it('Check - panning with bing map ', () => {
             map.loaded = (args: ILoadedEventArgs) => {
                 let rect: ClientRect = getElementByID(map.element.id + '_svg').getBoundingClientRect();
+                let wheelArgs: Object; let delta: number = 130;
+                wheelArgs = {
+                    preventDefault: prevent,
+                    wheelDelta: delta++,
+                    detail: 3,
+                    clientX: rect.left + map.mapAreaRect.x + (map.mapAreaRect.width / 2),
+                    clientY: rect.top + map.mapAreaRect.y + (map.mapAreaRect.height / 2),
+                    pageX: rect.left + map.mapAreaRect.x + (map.mapAreaRect.width / 2),
+                    pageY: rect.top + map.mapAreaRect.y + (map.mapAreaRect.height / 2),
+                };
                 map.zoomModule.mouseDownPoints = { x: (rect.left + 100), y: (rect.top + 100) };
                 map.zoomModule.mouseMovePoints = { x: (rect.left + 200), y: (rect.top + 100) };
                 map.scale = 2;
                 map.tileZoomLevel = 2;
-                map.zoomModule.panning('None', null, null);
+                map.zoomModule.panning('None', null, null, <PointerEvent | TouchEvent>wheelArgs);
             };
             map.load = (args: ILoadEventArgs) => {
                 let bing: BingMap = new BingMap(map);
@@ -961,15 +972,29 @@ describe('Zoom feature tesing for map control', () => {
         });
 
         it('To zoom the geometry layer with center position ', () => {
+            let element: Element = getElementByID(map.element.id + '_svg');
+            let rect: ClientRect = element.getBoundingClientRect();
+            let eventObj: Object = {
+                target: element,
+                pageX: element.getBoundingClientRect().left,
+                pageY: element.getBoundingClientRect().top
+            };
             map.zoomByPosition({ latitude: 21, longitude: 78 }, 5);
-            map.panByDirection('Left');
-            map.panByDirection('Right');
+            map.panByDirection('Left', <PointerEvent>eventObj);
+            map.panByDirection('Right', <PointerEvent>eventObj);
         });
 
         it('To zoom the geometry layer without center position ', () => {
+            let element: Element = getElementByID(map.element.id + '_svg');
+            let rect: ClientRect = element.getBoundingClientRect();
+            let eventObj: Object = {
+                target: element,
+                pageX: element.getBoundingClientRect().left,
+                pageY: element.getBoundingClientRect().top
+            };
             map.zoomByPosition(null, 2);
-            map.panByDirection('Top');
-            map.panByDirection('Bottom');
+            map.panByDirection('Top', <PointerEvent>eventObj);
+            map.panByDirection('Bottom', <PointerEvent>eventObj);
         });
         it('To zoom the OSM layer with center position ', () => {
             map.loaded = (args: ILoadedEventArgs) => {

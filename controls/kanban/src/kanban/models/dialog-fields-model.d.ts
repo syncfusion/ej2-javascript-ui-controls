@@ -25,6 +25,7 @@ export interface DialogFieldsModel {
 
     /**
      * Defines the validationRules for fields
+     * @deprecated
      * @default {}
      */
     validationRules?: Object;

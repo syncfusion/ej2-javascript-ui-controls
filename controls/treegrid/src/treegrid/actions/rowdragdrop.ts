@@ -821,16 +821,21 @@ export class RowDD {
                 if (deletedRow.hasChildRecords && deletedRow.childRecords.length > 0) {
                     this.removeChildItem(deletedRow);
                 }
-                let idx: number;
+                let idx: number; let idz: number;
                 let treeGridData: ITreeData[] = dataSource as ITreeData[];
                 for (let i: number = 0; i < treeGridData.length; i++) {
                     if (treeGridData[i][this.parent.idMapping] === deletedRow.taskData[this.parent.idMapping]) {
                         idx = i;
                     }
                 }
-                if (idx !== -1) {
+                for (let i: number = 0; i < this.treeGridData.length; i++) {
+                    if (this.treeGridData[i][this.parent.idMapping] === deletedRow.taskData[this.parent.idMapping]) {
+                        idz = i;
+                    }
+                }
+                if (idx !== -1 || idz !== -1) {
                     (dataSource as ITreeData[]).splice(idx, 1);
-                    this.treeGridData.splice(idx, 1);
+                    this.treeGridData.splice(idz, 1);
                 }
             }
             let recordIndex: number = this.treeGridData.indexOf(deletedRow);
@@ -864,6 +869,13 @@ export class RowDD {
         let tObj: TreeGrid = this.parent;
         let currentRecord: ITreeData;
         let idx: number;
+        let idz: number;
+        let dataSource: Object;
+        if (this.parent.dataSource instanceof DataManager && isOffline(this.parent)) {
+            dataSource = (<DataManager>this.parent.dataSource).dataSource.json;
+        } else {
+            dataSource = this.parent.dataSource;
+        }
         for (let i: number = 0; i < record.childRecords.length; i++) {
             currentRecord = record.childRecords[i];
             let treeGridData: Object;
@@ -877,9 +889,15 @@ export class RowDD {
                     idx = i;
                 }
             }
-            if (idx !== -1) {
-                this.treeData.splice(idx, 1);
-                this.treeGridData.splice(idx, 1);
+            for (let i: number = 0; i < this.treeGridData.length; i++) {
+                if (this.treeGridData[i][this.parent.idMapping] === currentRecord.taskData[this.parent.idMapping]) {
+                    idz = i;
+                    break;
+                }
+            }
+            if (idx !== -1 || idz !== -1) {
+                (dataSource as ITreeData[]).splice(idx, 1);
+                this.treeGridData.splice(idz, 1);
             }
             if (currentRecord.hasChildRecords) {
                 this.removeChildItem(currentRecord);

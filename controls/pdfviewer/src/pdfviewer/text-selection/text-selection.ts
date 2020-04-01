@@ -136,7 +136,7 @@ export class TextSelection {
             if (this.pdfViewer.enableTextMarkupResizer && this.pdfViewer.annotationModule && this.pdfViewer.annotation.textMarkupAnnotationModule) {
                 // tslint:disable-next-line
                 let leftDivElement: any = document.getElementById(this.pdfViewer.element.id + '_droplet_left');
-                if (this.pdfViewerBase.isSelection && selection) {
+                if (this.pdfViewerBase.isSelection && selection && selection.rangeCount > 0) {
                     // tslint:disable-next-line
                     let currentrange: any = selection.getRangeAt(0);
                     // tslint:disable-next-line

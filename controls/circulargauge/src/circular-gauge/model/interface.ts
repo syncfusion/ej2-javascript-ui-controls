@@ -9,357 +9,372 @@ import { TooltipSettings } from './base';
 import { GaugeShape } from '../utils/enum';
 
 /**
- * Specifies Circular-Gauge Events
+ * Specifies the event arguments of the circular gauge component.
  */
 export interface ICircularGaugeEventArgs {
     /**
-     * name of the event
+     * Specifies the name of the event.
      */
     name: string;
     /**
-     * to cancel the event
+     * Specifies the cancel state for the event. The default value is false. If set as true, the event progress will be stopped.
      */
     cancel: boolean;
 }
 
 /**
- * specifies Print Events
+ * Specifies the event arguments of the print event.
  */
 export interface IPrintEventArgs extends ICircularGaugeEventArgs {
+    /**
+     * Specifies the html content that is printed. The html content returned is usually the id string of the circular gauge.
+     */
     htmlContent: Element;
 }
 
 /**
- * Specifies Loaded event arguments for circular gauge.
+ * Specifies the event arguments of the loaded event in circular gauge.
  */
 export interface ILoadedEventArgs extends ICircularGaugeEventArgs {
     /**
-     * gauge event argument 
+     * Specifies the instance of the circular gauge. 
      */
     gauge: CircularGauge;
 }
 
 /**
- * Specifies AnimationComplete event arguments for circular gauge.
+ * Specifies the event arguments for the animation complete event in circular gauge.
  */
 export interface IAnimationCompleteEventArgs extends ICircularGaugeEventArgs {
     /**
-     * axis event argument 
+     * Specifies the instance of the axis in the circular gauge.
      */
     axis: Axis;
     /**
-     * pointer event argument 
+     * Specifies the instance of pointer in the circular gauge. 
      */
     pointer: Pointer;
 }
 
 /**
- * Specifies AxisLabelRender event arguments for circular gauge.
+ * Specifies the event arguments for the axis label render event in circular gauge.
  */
 export interface IAxisLabelRenderEventArgs extends ICircularGaugeEventArgs {
     /**
-     * axis event argument 
+     * Specifies the instance of the axis in circular gauge. 
      */
     axis?: Axis;
     /**
-     * text event argument 
+     * Specifies the text of the axis labels in the axis of the circular gauge.
      */
     text: string;
     /**
-     * value event argument 
+     * Specifies the value of the axis labels in the axis of the circular gauge.
      */
     value: number;
 }
 
 /**
- * Specifies radiusRender event arguments for circular gauge
+ * Specifies the event argument for the radius calculate event in circular gauge.
  */
 export interface IRadiusCalculateEventArgs extends ICircularGaugeEventArgs {
     /**
-     * Instance of Circular gauge component
+     * Specifies the instance of the circular gauge component.
      */
     gauge?: CircularGauge;
     /**
-     * current radius event argument
+     * Specifies the current radius of the circular gauge.
      */
     currentRadius: number;
     /**
-     * axis event argument
+     * Specifies the axis of the circular gauge.
      */
     axis?: Axis;
     /**
-     * midpoint event argument
+     * Specifies the location of the circular gauge.
      */
     midPoint: GaugeLocation;
 }
 
 /**
- * Specifies TooltipRender event arguments for circular gauge.
+ * Specifies the event arguments for the tooltip render event in circular gauge.
  */
 export interface ITooltipRenderEventArgs extends ICircularGaugeEventArgs {
     /**
-     * Instance of linear gauge component.
+     * Specifies the instance of circular gauge component.
      */
     gauge?: CircularGauge;
     /**
-     * Tooltip event
+     * Specifies the pointer event for the tooltip in circular gauge.
      */
     event: PointerEvent;
     /**
-     * Render the tooltip content
+     * Specifies the content for the tooltip in circular gauge.
      */
     content?: string;
     /**
-     * Tooltip configuration
+     * Specifies the options to customize the tooltip in circular gauge.
      */
     tooltip?: TooltipSettings;
     /**
-     * Render the tooltip location
+     * Specifies the location of the tooltip in circular gauge.
      */
     location?: GaugeLocation;
     /**
-     * event argument axis
+     * Specifies the axis of the circular gauge.
      */
     axis?: Axis;
     /**
-     * event argument pointer
+     * Specifies the pointer of the circular gauge.
      */
     pointer?: Pointer;
     /**
-     * event argument annotation
+     * Specifies the instance of annotation of the circular gauge.
      */
     annotation?: Annotation;
     /**
-     * event argument range
+     * Specifies the instance of ranges of the circular gauge.
      */
     range?: Range;
     /**
-     * event tooltip argument as append to body
+     * Enables and disables the tooltip element to append in body.
      */
     appendInBodyTag: Boolean;
     /**
-     * event tooltip argument type
+     * Specifies the element type in which the tooltip is rendered. The element types are
+     * range, annotation, and pointer of the circular gauge.
      */
     type: string;
 
 }
 
 /**
- * Specifies AnnotationRender event arguments for circular gauge.
+ * Specifies the event arguments for the annotation render event in circular gauge.
  */
 export interface IAnnotationRenderEventArgs extends ICircularGaugeEventArgs {
     /**
-     * content event argument 
+     * Specifies the content of the annotation in circular gauge.
      */
     content?: string;
     /**
-     * textStyle event argument 
+     * Specifies the style of the text in annotation of circular gauge. 
      */
     textStyle?: FontModel;
     /**
-     * axis event argument 
+     * Specifies the axis instance of the circular gauge.
      */
     axis?: Axis;
     /**
-     * annotation event argument 
+     * Specifies the annotation instance of the circular gauge. 
      */
     annotation: Annotation;
 }
 
 /**
- * Specifies DragStart, DragMove and DragEnd events arguments for circular gauge.
+ * Specifies the event arguments for the drag start, drag move and drag end events in circular gauge.
  */
 export interface IPointerDragEventArgs {
     /**
-     * name event argument 
+     * Specifies the name of the event.
      */
     name: string;
     /**
-     * axis event argument 
+     * Specifies the axis instance of the circular gauge.
      */
     axis?: Axis;
     /**
-     * pointer event argument 
+     * Specifies the pointer instance of the circular gauge. 
      */
     pointer?: Pointer;
     /**
-     * range event argument 
+     * Specifies the range instance of the circular gauge.
      */
     range?: Range;
     /**
-     * currentValue event argument 
+     * Specifies the value of the pointer before it gets dragged.
      */
     currentValue?: number;
     /**
-     * previousValue event argument 
+     * Specifies the value of the pointer after it gets dragged.
      */
     previousValue?: number;
     /**
-     * index of the current pointer argument 
+     * Specifies the index of the pointer in circular gauge.
      */
     pointerIndex?: number;
     /**
-     * index of the current pointer`s axis argument 
+     * Specifies the index of the axis in circular gauge.
      */
     axisIndex: number;
     /**
-     * index of the current range argument 
+     * Specifies the index of the range in circular gauge.
      */
     rangeIndex ?: number;
     /**
-     * type of the event.
+     * Specifies the type of the pointer in circular gauge.
      */
     type ?: string;
 }
 
 /**
- * Specifies Resize event arguments for circular gauge.
+ * Specifies the event arguments for the resize event in circular gauge.
  */
 export interface IResizeEventArgs {
     /**
-     * name event argument 
+     * Specifies the name of the event.
      */
     name: string;
     /**
-     * previousSize event argument 
+     * Specifies the size of the circular gauge before it gets resized.
      */
     previousSize: Size;
     /**
-     * currentSize event argument 
+     * Specifies the size of the circular gauge after it gets resized.
      */
     currentSize: Size;
     /**
-     * gauge event argument 
+     * Specifies the instance of the circular gauge.
      */
     gauge?: CircularGauge;
 }
 
 /**
- * Specifies Mouse events arguments for circular gauge.
+ * Specifies the event arguments for the mouse events in circular gauge.
  */
 export interface IMouseEventArgs extends ICircularGaugeEventArgs {
     /**
-     * target event argument 
+     * Specifies the element on which the mouse operation is performed.
      */
     target: Element;
     /**
-     * x event argument 
+     * Specifies the x position of the target element in circular gauge.
      */
     x: number;
     /**
-     * y event argument 
+     * Specifies the y position of the target element in circular gauge.
      */
     y: number;
 }
 
 /**
- * Specifies visible point
+ * Specifies the event arguments for the visible pointer.
  */
 export interface IVisiblePointer {
     /**
-     * axisIndex event argument 
+     * Specifies the index value of the axis in circular gauge. 
      */
     axisIndex?: number;
     /**
-     * pointerIndex event argument 
+     * Specifies the index value of the pointer in circular gauge.
      */
     pointerIndex?: number;
 
 }
 
 /**
- * Specifies visible range
+ * Specifies the visible range
  */
 export interface IVisibleRange {
     /**
-     * axisIndex event argument 
+     * Specifies the index value of the axis in circular gauge.
      */
     axisIndex?: number;
     /**
-     * rangeIndex event argument 
+     * Specifies the index value of the range in circular gauge.
      */
     rangeIndex?: number;
 
 }
 
 /**
- * Specifies font mapping
+ * Specifies the event arguments for the font settings of the axis label and legend in circular gauge.
  */
 export interface IFontMapping {
     /**
-     * size event argument 
+     * Specifies the size of the label and legend text in circular gauge.
      */
     size?: string;
     /**
-     * color event argument 
+     * Specifies the color of the label and legend text in circular gauge.
      */
     color?: string;
     /**
-     * fontWeight event argument 
+     * Specifies the font weight of the label and legend text in circular gauge.
      */
     fontWeight?: string;
     /**
-     * fontStyle event argument 
+     * Specifies the font style of the label and legend text in circular gauge.
      */
     fontStyle?: string;
     /**
-     * fontFamily event argument 
+     * Specifies the font family of the label and legend text in circular gauge.
      */
     fontFamily?: string;
 }
-
+/**
+ * Specifies the arguments for the theme style in circular gauge.
+ */
 export interface IThemeStyle {
-
+    /** Specifies the background color for the circular gauge. */
     backgroundColor: string;
-
+    /** Specifies the font color for the title of circular gauge. */
     titleFontColor: string;
-
+    /** Specifies the color for the tooltip in circular gauge. */
     tooltipFillColor: string;
-
+    /** Specifies the font color for tooltip of the circular gauge. */
     tooltipFontColor: string;
-
+    /** Specifies the color for the axis line in circular gauge. */
     lineColor: string;
-
+    /** Specifies the axis label in circular gauge. */
     labelColor: string;
-
+    /** Specifies the color for the major ticks in circular gauge. */
     majorTickColor: string;
-
+    /** Specifies the color for the minor ticks in circular gauge. */
     minorTickColor: string;
-
+    /** Specifies the color of the pointer in circular gauge. */
     pointerColor: string;
-
+    /** Specifies the color of the needle in circular gauge. */
     needleColor: string;
-
+    /** Specifies the color for the needle tail in circular gauge. */
     needleTailColor: string;
-
+    /** Specifies the color for the cap in circular gauge. */
     capColor: string;
-
+    /** Specifies the font-family for the text in circular gauge. */
     fontFamily?: string;
-
+    /** Specifies the font size for the text in circular gauge. */
     fontSize?: string;
-
+    /** Specifies the font-family for the axis label in circular gauge. */
     labelFontFamily?: string;
-
+    /** Specifies the opacity for the tooltip in circular gauge. */
     tooltipFillOpacity?: number;
-
+    /** Specifies the opacity for the text in tooltip in circular gauge. */
     tooltipTextOpacity?: number;
 
 }
 
 
 /**
- * Specifies LegendRender event arguments for circular gauge.
+ * Specifies the event arguments for rendering a legend in circular gauge.
  */
 export interface ILegendRenderEventArgs extends ICircularGaugeEventArgs {
-    /** Defines the current legend shape */
+    /** Specifies the shape of the legend in circular gauge. */
     shape: GaugeShape;
-    /** Defines the current legend fill color */
+    /** Specifies the fill color of the legend in circular gauge. */
     fill: string;
-    /** Defines the current legend text */
+    /** Specifies the text of the legend in circular gauge. */
     text: string;
 }
 
+/**
+ * Specifies the arguments for the legend regions in circular gauge.
+ */
 export interface ILegendRegions {
+    /**
+     * Specifies the bounds for the legend in circular gauge.
+     */
     rect: Rect;
+    /**
+     * Specifies the index value for the legend in circular gauge.
+     */
     index: number;
 }

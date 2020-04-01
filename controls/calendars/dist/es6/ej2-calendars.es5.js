@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Component, Event, EventHandler, HijriParser, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, cldrData, closest, createElement, detach, extend, formatUnit, getDefaultDateObject, getUniqueID, getValue, isBlazor, isNullOrUndefined, isUndefined, merge, prepend, remove, removeClass, rippleEffect, select, setStyleAttribute, setValue, throwError } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Component, Event, EventHandler, HijriParser, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, blazorCultureFormats, cldrData, closest, createElement, detach, extend, formatUnit, getDefaultDateObject, getUniqueID, getValue, isBlazor, isNullOrUndefined, isUndefined, merge, prepend, remove, removeClass, rippleEffect, select, setStyleAttribute, setValue, throwError } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Input } from '@syncfusion/ej2-inputs';
 import { Button } from '@syncfusion/ej2-buttons';
@@ -267,7 +267,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
     CalendarBase.prototype.getCultureValues = function () {
         var culShortNames = [];
         var cldrObj;
-        var dayFormat = 'days.stand-alone.' + this.dayHeaderFormat.toLowerCase();
+        var dayFormat = (isBlazor() ? 'days.' : 'days.stand-alone.') + this.dayHeaderFormat.toLowerCase();
         if (this.locale === 'en' || this.locale === 'en-US') {
             cldrObj = (getValue(dayFormat, getDefaultDateObject()));
         }
@@ -696,12 +696,12 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
             }
             minMaxDate = new Date(+localDate);
             localDate = this.minMaxDate(localDate);
-            var dateFormatOptions = { type: 'dateTime', skeleton: 'full' };
+            var dateFormatOptions = { type: 'dateTime', skeleton: isBlazor() ? 'D' : 'full' };
             var date = this.globalize.parseDate(this.globalize.formatDate(localDate, dateFormatOptions), dateFormatOptions);
             var tdEle = this.dayCell(localDate);
-            var title = this.globalize.formatDate(localDate, { type: 'date', skeleton: 'full' });
+            var title = this.globalize.formatDate(localDate, { type: 'date', skeleton: isBlazor() ? 'D' : 'full' });
             var dayLink = this.createElement('span');
-            dayLink.textContent = this.globalize.formatDate(localDate, { format: 'd', type: 'date', skeleton: 'yMd' });
+            dayLink.textContent = this.globalize.formatDate(localDate, { format: 'd', type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' });
             var disabled = (this.min > localDate) || (this.max < localDate);
             if (disabled) {
                 addClass([tdEle], DISABLED);
@@ -729,8 +729,8 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
                 if (multiSelection) {
                     if (!isNullOrUndefined(values) && values.length > 0) {
                         for (var index = 0; index < values.length; index++) {
-                            var localDateString = +new Date(this.globalize.formatDate(argument.date, { type: 'date', skeleton: 'yMd' }));
-                            var tempDateString = +new Date(this.globalize.formatDate(values[index], { type: 'date', skeleton: 'yMd' }));
+                            var localDateString = +new Date(this.globalize.formatDate(argument.date, { type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' }));
+                            var tempDateString = +new Date(this.globalize.formatDate(values[index], { type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' }));
                             if (localDateString === tempDateString) {
                                 values.splice(index, 1);
                                 index = -1;
@@ -761,7 +761,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
             if (multiSelection && !isNullOrUndefined(values) && !disabledCls) {
                 for (var tempValue = 0; tempValue < values.length; tempValue++) {
                     var type = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
-                    var formatOptions = { type: 'date', skeleton: 'short', calendar: type };
+                    var formatOptions = { format: this.getFromatStringValue(), type: 'date', skeleton: 'short', calendar: type };
                     var localDateString = this.globalize.formatDate(localDate, formatOptions);
                     var tempDateString = this.globalize.formatDate(values[tempValue], formatOptions);
                     if ((localDateString === tempDateString && this.getDateVal(localDate, values[tempValue]))
@@ -829,7 +829,9 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
             var dayLink = this.createElement('span');
             var localMonth = (value && (value).getMonth() === localDate.getMonth());
             var select$$1 = (value && (value).getFullYear() === yr && localMonth);
-            dayLink.textContent = this.toCapitalize(this.globalize.formatDate(localDate, { type: 'dateTime', skeleton: 'MMM' }));
+            dayLink.textContent = this.toCapitalize(this.globalize.formatDate(localDate, {
+                format: isBlazor() ? 'MMM' : null, type: 'dateTime', skeleton: 'MMM'
+            }));
             if ((this.min && (curYrs < minYr || (month < minMonth && curYrs === minYr))) || (this.max && (curYrs > maxYr || (month > maxMonth && curYrs >= maxYr)))) {
                 addClass([tdEle], DISABLED);
             }
@@ -864,8 +866,10 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         var endYr = new Date(localDate.setFullYear((localYr - localYr % 10 + (10 - 1))));
         var startFullYr = startYr.getFullYear();
         var endFullYr = endYr.getFullYear();
-        var startHdrYr = this.globalize.formatDate(startYr, { type: 'dateTime', skeleton: 'y' });
-        var endHdrYr = this.globalize.formatDate(endYr, { type: 'dateTime', skeleton: 'y' });
+        var startHdrYr = this.globalize.formatDate(startYr, {
+            format: isBlazor() ? 'yyyy' : null, type: 'dateTime', skeleton: 'y'
+        });
+        var endHdrYr = this.globalize.formatDate(endYr, { format: isBlazor() ? 'yyyy' : null, type: 'dateTime', skeleton: 'y' });
         this.headerTitleElement.textContent = startHdrYr + ' - ' + (endHdrYr);
         var start = new Date(localYr - (localYr % 10) - 1, 0, 1);
         var startYear = start.getFullYear();
@@ -875,7 +879,9 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
             var tdEle = this.dayCell(localDate);
             attributes(tdEle, { 'role': 'gridcell' });
             var dayLink = this.createElement('span');
-            dayLink.textContent = this.globalize.formatDate(localDate, { type: 'dateTime', skeleton: 'y' });
+            dayLink.textContent = this.globalize.formatDate(localDate, {
+                format: isBlazor() ? 'yyyy' : null, type: 'dateTime', skeleton: 'y'
+            });
             if ((year < startFullYr) || (year > endFullYr)) {
                 addClass([tdEle], OTHERDECADE);
                 if (!isNullOrUndefined(value) && localDate.getFullYear() === (value).getFullYear()) {
@@ -908,7 +914,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
     };
     CalendarBase.prototype.dayCell = function (localDate) {
         var type = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
-        var dateFormatOptions = { skeleton: 'full', type: 'dateTime', calendar: type };
+        var dateFormatOptions = { skeleton: isBlazor() ? 'F' : 'full', type: 'dateTime', calendar: type };
         var date = this.globalize.parseDate(this.globalize.formatDate(localDate, dateFormatOptions), dateFormatOptions);
         var value = date.valueOf();
         var attrs = {
@@ -1246,16 +1252,16 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
                 var tempValueString = void 0;
                 if (this.calendarMode === 'Gregorian') {
                     /* tslint:disable-next-line:max-line-length */
-                    tempValueString = this.globalize.formatDate(tempValue, { type: 'date', skeleton: 'yMd' });
+                    tempValueString = this.globalize.formatDate(tempValue, { type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' });
                 }
                 else {
                     /* tslint:disable-next-line:max-line-length */
                     tempValueString = this.globalize.formatDate(tempValue, { type: 'dateTime', skeleton: 'full', calendar: 'islamic' });
                 }
-                var minFormatOption = { type: 'date', skeleton: 'yMd', calendar: type };
+                var minFormatOption = { type: 'date', skeleton: isBlazor() ? 'd' : 'yMd', calendar: type };
                 var minStringValue = this.globalize.formatDate(this.min, minFormatOption);
                 var minString = minStringValue;
-                var maxFormatOption = { type: 'date', skeleton: 'yMd', calendar: type };
+                var maxFormatOption = { type: 'date', skeleton: isBlazor() ? 'd' : 'yMd', calendar: type };
                 var maxStringValue = this.globalize.formatDate(this.max, maxFormatOption);
                 var maxString = maxStringValue;
                 if (+new Date(tempValueString) < +new Date(minString) ||
@@ -1289,8 +1295,10 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         var monthFormatOptions;
         var type = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
         if (this.calendarMode === 'Gregorian') {
-            dayFormatOptions = globalize.formatDate(date, { type: 'dateTime', skeleton: 'yMMMM', calendar: type });
-            monthFormatOptions = globalize.formatDate(date, { type: 'dateTime', skeleton: 'y', calendar: type });
+            dayFormatOptions = globalize.formatDate(date, { type: 'dateTime', skeleton: isBlazor() ? 'y' : 'yMMMM', calendar: type });
+            monthFormatOptions = globalize.formatDate(date, {
+                format: isBlazor() ? 'yyyy' : null, type: 'dateTime', skeleton: 'y', calendar: type
+            });
         }
         else {
             dayFormatOptions = globalize.formatDate(date, { type: 'dateTime', format: 'MMMM y', calendar: type });
@@ -1312,18 +1320,20 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         var title;
         var view = this.currentView();
         if (view === 'Month') {
-            title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: 'full', calendar: type });
+            title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: isBlazor() ? 'D' : 'full', calendar: type });
         }
         else if (view === 'Year') {
             if (type !== 'islamic') {
-                title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: 'yMMMM', calendar: type });
+                title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: isBlazor() ? 'y' : 'yMMMM', calendar: type });
             }
             else {
                 title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: 'GyMMM', calendar: type });
             }
         }
         else {
-            title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: 'y', calendar: type });
+            title = this.globalize.formatDate(this.currentDate, {
+                format: isBlazor() ? 'yyyy' : null, type: 'date', skeleton: 'y', calendar: type
+            });
         }
         if (selectedEle || focusedEle) {
             if (!isNullOrUndefined(selectedEle)) {
@@ -1507,10 +1517,13 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
             && date.getMonth() === (value).getMonth() && date.getFullYear() === (value).getFullYear());
     };
     CalendarBase.prototype.getCultureObjects = function (ld, c) {
-        var gregorianFormat = '.dates.calendars.gregorian.days.format.' + this.dayHeaderFormat.toLowerCase();
-        var islamicFormat = '.dates.calendars.islamic.days.format.' + this.dayHeaderFormat.toLowerCase();
+        var gregorianFormat = (isBlazor() ? '.dates.days.' :
+            '.dates.calendars.gregorian.days.format.') + this.dayHeaderFormat.toLowerCase();
+        var islamicFormat = (isBlazor() ? '.dates.days.' :
+            '.dates.calendars.islamic.days.format.') + this.dayHeaderFormat.toLowerCase();
+        var mainVal = isBlazor() ? '' : 'main.';
         if (this.calendarMode === 'Gregorian') {
-            return getValue('main.' + '' + this.locale + gregorianFormat, ld);
+            return getValue(mainVal + '' + this.locale + gregorianFormat, ld);
         }
         else {
             return getValue('main.' + '' + this.locale + islamicFormat, ld);
@@ -1562,7 +1575,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
             eve = element;
         }
         var type = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
-        var dateFormatOptions = { type: 'dateTime', skeleton: 'full', calendar: type };
+        var dateFormatOptions = { type: 'dateTime', skeleton: isBlazor() ? 'F' : 'full', calendar: type };
         var dateString = this.globalize.formatDate(new Date(parseInt('' + eve.getAttribute('id'), 0)), dateFormatOptions);
         var date = this.globalize.parseDate(dateString, dateFormatOptions);
         var value = date.valueOf() - date.valueOf() % 1000;
@@ -1629,7 +1642,7 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
                 removeClass([element], SELECTED);
                 for (var i = 0; i < copyValues.length; i++) {
                     var type = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
-                    var formatOptions = { type: 'date', skeleton: 'short', calendar: type };
+                    var formatOptions = { format: this.getFromatStringValue(), type: 'date', skeleton: 'short', calendar: type };
                     var localDateString = this.globalize.formatDate(date, formatOptions);
                     var tempDateString = this.globalize.formatDate(copyValues[i], formatOptions);
                     if (localDateString === tempDateString) {
@@ -1649,15 +1662,25 @@ var CalendarBase = /** @__PURE__ @class */ (function (_super) {
         }
         this.isDateSelected = true;
     };
+    CalendarBase.prototype.getFromatStringValue = function () {
+        return isBlazor() ?
+            // tslint:disable-next-line
+            'M' + getDefaultDateObject().dateSeperator + 'd' + getDefaultDateObject().dateSeperator + 'yy'
+            : null;
+    };
     CalendarBase.prototype.checkPresentDate = function (dates, values) {
         var previousValue = false;
         if (!isNullOrUndefined(values)) {
             for (var checkPrevious = 0; checkPrevious < values.length; checkPrevious++) {
                 var type = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
                 /* tslint:disable-next-line:max-line-length */
-                var localDateString = this.globalize.formatDate(dates, { type: 'date', skeleton: 'short', calendar: type });
+                var localDateString = this.globalize.formatDate(dates, {
+                    format: this.getFromatStringValue(), type: 'date', skeleton: 'short', calendar: type
+                });
                 /* tslint:disable-next-line:max-line-length */
-                var tempDateString = this.globalize.formatDate(values[checkPrevious], { type: 'date', skeleton: 'short', calendar: type });
+                var tempDateString = this.globalize.formatDate(values[checkPrevious], {
+                    format: this.getFromatStringValue(), type: 'date', skeleton: 'short', calendar: type
+                });
                 if (localDateString === tempDateString) {
                     previousValue = true;
                 }
@@ -1983,7 +2006,7 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
         return (this.value.getTimezoneOffset() < Math.max(firstOffset, secondOffset));
     };
     Calendar.prototype.setTimeZone = function (offsetValue) {
-        if (this.serverTimezoneOffset && this.value) {
+        if (!isNullOrUndefined(this.serverTimezoneOffset) && this.value) {
             var serverTimezoneDiff = offsetValue;
             var clientTimeZoneDiff = new Date().getTimezoneOffset() / 60;
             var timeZoneDiff = serverTimezoneDiff + clientTimeZoneDiff;
@@ -2344,7 +2367,8 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
         this.changeHandler(e);
     };
     Calendar.prototype.changeEvent = function (e) {
-        if ((this.value && this.value.valueOf()) !== (this.previousDate && +this.previousDate.valueOf())) {
+        if ((this.value && this.value.valueOf()) !== (this.previousDate && +this.previousDate.valueOf())
+            || this.isMultiSelection) {
             this.trigger('change', this.changedArgs);
             this.previousDate = new Date(+this.value);
         }
@@ -2967,7 +2991,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         this.setTimeZone(this.serverTimezoneOffset);
     };
     DatePicker.prototype.setTimeZone = function (offsetValue) {
-        if (this.serverTimezoneOffset && this.value) {
+        if (!isNullOrUndefined(this.serverTimezoneOffset) && this.value) {
             var clientTimeZoneDiff = new Date().getTimezoneOffset() / 60;
             var serverTimezoneDiff = offsetValue;
             var timeZoneDiff = serverTimezoneDiff + clientTimeZoneDiff;
@@ -3030,7 +3054,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             this.setAllowEdit();
         }
         this.previousElementValue = this.inputElement.value;
-        this.previousDate = new Date(+this.value);
+        this.previousDate = !isNullOrUndefined(this.value) ? new Date(+this.value) : null;
         this.inputElement.setAttribute('value', this.inputElement.value);
         this.inputValueCopy = this.value;
     };
@@ -3047,13 +3071,17 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             this.l10n = new L10n('datepicker', l10nLocale, this.locale);
             this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
         }
+        var updatedCssClassValues = this.cssClass;
+        if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+            updatedCssClassValues = (this.cssClass.replace(/\s+/g, ' ')).trim();
+        }
         this.inputWrapper = Input.createInput({
             element: this.inputElement,
             floatLabelType: this.floatLabelType,
             properties: {
                 readonly: this.readonly,
                 placeholder: this.placeholder,
-                cssClass: this.cssClass,
+                cssClass: updatedCssClassValues,
                 enabled: this.enabled,
                 enableRtl: this.enableRtl,
                 showClearButton: this.showClearButton,
@@ -3102,7 +3130,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             if (this.getModuleName() === 'datetimepicker') {
                 if (this.calendarMode === 'Gregorian') {
                     dateString = this.globalize.formatDate(this.value, {
-                        format: tempFormat, type: 'dateTime', skeleton: 'yMd'
+                        format: tempFormat, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd'
                     });
                 }
                 else {
@@ -3113,7 +3141,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             }
             else {
                 if (this.calendarMode === 'Gregorian') {
-                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
+                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
                 }
                 else {
                     formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
@@ -3160,8 +3188,8 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         if (this.getModuleName() === 'datetimepicker') {
             var culture = new Internationalization(this.locale);
             if (this.calendarMode === 'Gregorian') {
-                formatOptions = { format: this.dateTimeFormat, type: 'dateTime', skeleton: 'yMd' };
-                formatDateTime = { format: culture.getDatePattern({ skeleton: 'yMd' }), type: 'dateTime' };
+                formatOptions = { format: this.dateTimeFormat, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
+                formatDateTime = { format: culture.getDatePattern({ skeleton: isBlazor() ? 'd' : 'yMd' }), type: 'dateTime' };
             }
             else {
                 formatOptions = { format: this.dateTimeFormat, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
@@ -3170,7 +3198,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             if (this.calendarMode === 'Gregorian') {
-                formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
+                formatOptions = { format: this.formatString, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
             }
             else {
                 formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
@@ -3194,8 +3222,8 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             if (this.getModuleName() === 'datetimepicker') {
                 var culture = new Internationalization(this.locale);
                 if (this.calendarMode === 'Gregorian') {
-                    formatOptions = { format: this.dateTimeFormat, type: 'dateTime', skeleton: 'yMd' };
-                    formatDateTime = { format: culture.getDatePattern({ skeleton: 'yMd' }), type: 'dateTime' };
+                    formatOptions = { format: this.dateTimeFormat, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
+                    formatDateTime = { format: culture.getDatePattern({ skeleton: isBlazor() ? 'd' : 'yMd' }), type: 'dateTime' };
                 }
                 else {
                     formatOptions = { format: this.dateTimeFormat, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
@@ -3204,7 +3232,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             }
             else {
                 if (this.calendarMode === 'Gregorian') {
-                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
+                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
                 }
                 else {
                     formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
@@ -3314,7 +3342,9 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         this.currentDate = this.value ? this.value : new Date();
         this.previousDate = this.value;
         this.previousElementValue = (isNullOrUndefined(this.inputValueCopy)) ? '' :
-            this.globalize.formatDate(this.inputValueCopy, { format: this.formatString, type: 'dateTime', skeleton: 'yMd' });
+            this.globalize.formatDate(this.inputValueCopy, {
+                format: this.formatString, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd'
+            });
     };
     DatePicker.prototype.inputChangeHandler = function (e) {
         e.stopPropagation();
@@ -3391,7 +3421,10 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                 if (!isNullOrUndefined(this.htmlAttributes[key])) {
                     if (containerAttr.indexOf(key) > -1) {
                         if (key === 'class') {
-                            addClass([this.inputWrapper.container], this.htmlAttributes[key].split(' '));
+                            var updatedClassValues = (this.htmlAttributes[key].replace(/\s+/g, ' ')).trim();
+                            if (updatedClassValues !== '') {
+                                addClass([this.inputWrapper.container], updatedClassValues.split(' '));
+                            }
                         }
                         else if (key === 'style') {
                             var setStyle = this.inputWrapper.container.getAttribute(key);
@@ -3424,6 +3457,18 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                     this.inputElement.setAttribute(key, this.htmlAttributes[key]);
                 }
             }
+        }
+    };
+    DatePicker.prototype.updateCssClass = function (newCssClass, oldCssClass) {
+        if (!isNullOrUndefined(oldCssClass)) {
+            oldCssClass = (oldCssClass.replace(/\s+/g, ' ')).trim();
+        }
+        if (!isNullOrUndefined(newCssClass)) {
+            newCssClass = (newCssClass.replace(/\s+/g, ' ')).trim();
+        }
+        Input.setCssClass(newCssClass, [this.inputWrapper.container], oldCssClass);
+        if (this.popupWrapper) {
+            Input.setCssClass(newCssClass, [this.popupWrapper], oldCssClass);
         }
     };
     DatePicker.prototype.CalendarKeyActionHandle = function (e) {
@@ -3655,7 +3700,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             if (this.calendarMode === 'Gregorian') {
                 dateOptions = {
                     format: !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat,
-                    type: 'dateTime', skeleton: 'yMd'
+                    type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd'
                 };
             }
             else {
@@ -3667,7 +3712,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             if (this.calendarMode === 'Gregorian') {
-                formatOptions = { format: format, type: 'dateTime', skeleton: 'yMd' };
+                formatOptions = { format: format, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
             }
             else {
                 formatOptions = { format: format, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
@@ -3684,7 +3729,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             }
             else {
                 if (this.calendarMode === 'Gregorian') {
-                    formatOptions = { type: 'dateTime', skeleton: 'yMd' };
+                    formatOptions = { type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
                 }
                 else {
                     formatOptions = { type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
@@ -3894,7 +3939,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         if (this.value) {
             if (this.getModuleName() === 'datetimepicker') {
                 if (this.calendarMode === 'Gregorian') {
-                    formatOptions = { format: tempFormat, type: 'dateTime', skeleton: 'yMd' };
+                    formatOptions = { format: tempFormat, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
                 }
                 else {
                     formatOptions = { format: tempFormat, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
@@ -3903,7 +3948,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             }
             else {
                 if (this.calendarMode === 'Gregorian') {
-                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
+                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
                 }
                 else {
                     formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
@@ -4251,8 +4296,8 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         this.defaultKeyConfigs = this.getDefaultKeyConfig();
         this.checkHtmlAttributes(false);
         this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
-        this.element.removeAttribute('tabindex');
         if (!this.isBlazorServer) {
+            this.element.removeAttribute('tabindex');
             _super.prototype.preRender.call(this);
         }
     };
@@ -4336,7 +4381,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             if (this.calendarMode === 'Gregorian') {
                 options = {
                     format: !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat,
-                    type: 'dateTime', skeleton: 'yMd'
+                    type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd'
                 };
             }
             else {
@@ -4348,7 +4393,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             if (this.calendarMode === 'Gregorian') {
-                options = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
+                options = { format: this.formatString, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
             }
             else {
                 options = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
@@ -4457,7 +4502,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
             if (this.calendarMode === 'Gregorian') {
                 globalize = this.globalize.formatDate(valueCopy, {
                     format: !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat,
-                    type: 'dateTime', skeleton: 'yMd'
+                    type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd'
                 });
             }
             else {
@@ -4470,7 +4515,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             if (this.calendarMode === 'Gregorian') {
-                formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
+                formatOptions = { format: this.formatString, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
             }
             else {
                 formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
@@ -4528,7 +4573,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
     DatePicker.prototype.onPropertyChanged = function (newProp, oldProp) {
         var options;
         if (this.calendarMode === 'Gregorian') {
-            options = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
+            options = { format: this.formatString, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
         }
         else {
             options = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
@@ -4605,10 +4650,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
                     this.setProperties({ zIndex: newProp.zIndex }, true);
                     break;
                 case 'cssClass':
-                    Input.setCssClass(newProp.cssClass, [this.inputWrapper.container], oldProp.cssClass);
-                    if (this.popupWrapper) {
-                        Input.setCssClass(newProp.cssClass, [this.popupWrapper], oldProp.cssClass);
-                    }
+                    this.updateCssClass(newProp.cssClass, oldProp.cssClass);
                     break;
                 case 'showClearButton':
                     Input.setClearButton(this.showClearButton, this.inputElement, this.inputWrapper);
@@ -4941,7 +4983,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
     };
     
     DateRangePicker.prototype.updateValue = function () {
-        var dateOptions = { format: this.formatString, type: 'date', skeleton: 'yMd' };
+        var dateOptions = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
         if (this.value && this.value.length > 0) {
             if (this.value[0] instanceof Date && !isNaN(+this.value[0])) {
                 this.setProperties({ startDate: this.value[0] }, true);
@@ -5126,7 +5168,10 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                 var key = _a[_i];
                 if (wrapperAttr.indexOf(key) > -1) {
                     if (key === 'class') {
-                        addClass([this.inputWrapper.container], this.htmlAttributes[key].split(' '));
+                        var updatedClassValue = (this.htmlAttributes[key].replace(/\s+/g, ' ')).trim();
+                        if (updatedClassValue !== '') {
+                            addClass([this.inputWrapper.container], updatedClassValue.split(' '));
+                        }
                     }
                     else if (key === 'style') {
                         var dateRangeStyle = this.inputWrapper.container.getAttribute(key);
@@ -5149,6 +5194,18 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                     this.inputElement.setAttribute(key, this.htmlAttributes[key]);
                 }
             }
+        }
+    };
+    DateRangePicker.prototype.updateCssClass = function (cssNewClass, cssOldClass) {
+        if (!isNullOrUndefined(cssOldClass)) {
+            cssOldClass = (cssOldClass.replace(/\s+/g, ' ')).trim();
+        }
+        if (!isNullOrUndefined(cssNewClass)) {
+            cssNewClass = (cssNewClass.replace(/\s+/g, ' ')).trim();
+        }
+        Input.setCssClass(cssNewClass, [this.inputWrapper.container], cssOldClass);
+        if (this.popupWrapper) {
+            Input.setCssClass(cssNewClass, [this.popupWrapper], cssOldClass);
         }
     };
     DateRangePicker.prototype.processPresets = function () {
@@ -5219,7 +5276,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
     };
     DateRangePicker.prototype.updateHiddenInput = function () {
         if (this.firstHiddenChild && this.secondHiddenChild) {
-            var format = { type: 'datetime', skeleton: 'yMd' };
+            var format = { type: 'datetime', skeleton: isBlazor() ? 'd' : 'yMd' };
             if (typeof this.startDate === 'string') {
                 this.startDate = this.globalize.parseDate(this.startDate, format);
             }
@@ -5347,7 +5404,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         var attributes$$1 = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
             ['startDate', 'endDate', 'minDays', 'maxDays', 'min', 'max', 'disabled', 'readonly', 'style', 'name', 'placeholder',
                 'type', 'value'];
-        var format = { format: this.formatString, type: 'date', skeleton: 'yMd' };
+        var format = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
         for (var _i = 0, attributes_1 = attributes$$1; _i < attributes_1.length; _i++) {
             var prop = attributes_1[_i];
             if (!isNullOrUndefined(this.inputElement.getAttribute(prop))) {
@@ -5625,7 +5682,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                 var range = value.split(' ' + this.separator + ' ');
                 if (range.length > 1) {
                     this.invalidValueString = null;
-                    var dateOptions = { format: this.formatString, type: 'date', skeleton: 'yMd' };
+                    var dateOptions = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
                     var startDate = this.globalize.parseDate(range[0].trim(), dateOptions);
                     var endDate = this.globalize.parseDate(range[1].trim(), dateOptions);
                     if (!isNullOrUndefined(startDate) && !isNaN(+startDate) && !isNullOrUndefined(endDate) && !isNaN(+endDate)) {
@@ -6218,9 +6275,13 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         var inputValue;
         var range;
         var startDate = !isNullOrUndefined(this.startValue) ?
-            this.globalize.formatDate(this.startValue, { format: this.formatString, type: 'date', skeleton: 'yMd' }) : null;
+            this.globalize.formatDate(this.startValue, {
+                format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd'
+            }) : null;
         var endDate = !isNullOrUndefined(this.endValue) ?
-            this.globalize.formatDate(this.endValue, { format: this.formatString, type: 'date', skeleton: 'yMd' }) : null;
+            this.globalize.formatDate(this.endValue, {
+                format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd'
+            }) : null;
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
             inputValue = startDate + ' ' + this.separator + ' ' + endDate;
             range = (Math.round(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
@@ -6576,7 +6637,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DateRangePicker.prototype.updateHeader = function () {
-        var format = { type: 'date', skeleton: 'yMMMd' };
+        var format = { type: 'date', skeleton: isBlazor() ? 'D' : 'yMMMd' };
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
             var range = (Math.round(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
             if (!isNullOrUndefined(this.disabledDayCnt)) {
@@ -6656,7 +6717,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
     };
     DateRangePicker.prototype.addSelectedAttributes = function (ele, date, isStartDate, sameDate) {
         if (ele) {
-            var title = this.globalize.formatDate(date, { type: 'date', skeleton: 'full' });
+            var title = this.globalize.formatDate(date, { type: 'date', skeleton: isBlazor() ? 'D' : 'full' });
             if (!isNullOrUndefined(sameDate) && sameDate) {
                 ele.setAttribute('aria-label', 'The current start and end date is ' + '' + title);
             }
@@ -7845,13 +7906,17 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         }
     };
     DateRangePicker.prototype.createInput = function () {
+        var updatedCssClassValue = this.cssClass;
+        if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+            updatedCssClassValue = (this.cssClass.replace(/\s+/g, ' ')).trim();
+        }
         this.inputWrapper = Input.createInput({
             floatLabelType: this.floatLabelType,
             element: this.inputElement,
             properties: {
                 readonly: this.readonly,
                 placeholder: this.placeholder,
-                cssClass: this.cssClass,
+                cssClass: updatedCssClassValue,
                 enabled: this.enabled,
                 enableRtl: this.enableRtl,
                 showClearButton: this.showClearButton,
@@ -7927,7 +7992,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
     };
     DateRangePicker.prototype.updateInput = function () {
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
-            var formatOption = { format: this.formatString, type: 'date', skeleton: 'yMd' };
+            var formatOption = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
             var startDate = this.globalize.formatDate(this.startValue, formatOption);
             var endDate = this.globalize.formatDate(this.endValue, formatOption);
             Input.setValue(startDate + ' ' + this.separator + ' ' + endDate, this.inputElement, this.floatLabelType, this.showClearButton);
@@ -8041,7 +8106,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         var valueString = value;
         var invalid = false;
         var formatOpt = null;
-        formatOpt = { format: this.formatString, type: 'date', skeleton: 'yMd' };
+        formatOpt = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
         if (typeof valueString !== 'string') {
             invalid = true;
         }
@@ -8586,7 +8651,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         attributes(this.secondHiddenChild, {
             'type': 'text', 'name': this.inputElement.getAttribute('data-name'), 'class': HIDDENELEMENT
         });
-        var format = { type: 'datetime', skeleton: 'yMd' };
+        var format = { type: 'datetime', skeleton: isBlazor() ? 'd' : 'yMd' };
         this.firstHiddenChild.value = this.startDate && this.globalize.formatDate(this.startDate, format);
         this.secondHiddenChild.value = this.endDate && this.globalize.formatDate(this.endDate, format);
         this.inputElement.parentElement.appendChild(this.firstHiddenChild);
@@ -8599,7 +8664,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
      */
     // tslint:disable-next-line:max-func-body-length
     DateRangePicker.prototype.onPropertyChanged = function (newProp, oldProp) {
-        var format = { format: this.formatString, type: 'date', skeleton: 'yMd' };
+        var format = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
             this.hide(null);
@@ -8623,10 +8688,7 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                     this.setRangeAllowEdit();
                     break;
                 case 'cssClass':
-                    Input.setCssClass(newProp.cssClass, [this.inputWrapper.container], oldProp.cssClass);
-                    if (this.popupWrapper) {
-                        Input.setCssClass(newProp.cssClass, [this.popupWrapper], oldProp.cssClass);
-                    }
+                    this.updateCssClass(newProp.cssClass, oldProp.cssClass);
                     break;
                 case 'enabled':
                     this.setProperties({ enabled: newProp.enabled }, true);
@@ -9207,13 +9269,17 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         return (!isNullOrUndefined(value) && value instanceof Date && !isNaN(+value)) ? value : null;
     };
     TimePicker.prototype.createInputElement = function () {
+        var updatedCssClassesValue = this.cssClass;
+        if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+            updatedCssClassesValue = (this.cssClass.replace(/\s+/g, ' ')).trim();
+        }
         this.inputWrapper = Input.createInput({
             element: this.inputElement,
             floatLabelType: this.floatLabelType,
             properties: {
                 readonly: this.readonly,
                 placeholder: this.placeholder,
-                cssClass: this.cssClass,
+                cssClass: updatedCssClassesValue,
                 enabled: this.enabled,
                 enableRtl: this.enableRtl,
                 showClearButton: this.showClearButton,
@@ -9234,7 +9300,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
     TimePicker.prototype.getCldrDateTimeFormat = function () {
         var culture = new Internationalization(this.locale);
         var cldrTime;
-        var dateFormat = culture.getDatePattern({ skeleton: 'yMd' });
+        var dateFormat = culture.getDatePattern({ skeleton: isBlazor() ? 'd' : 'yMd' });
         if (this.isNullOrEmpty(this.formatString)) {
             cldrTime = dateFormat + ' ' + this.CldrFormat('time');
         }
@@ -9264,7 +9330,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                         }));
                         if (isNullOrUndefined(valueExpression)) {
                             valueExpression = this.checkDateValue(this.globalize.parseDate(valueString, {
-                                format: this.formatString, type: 'dateTime', skeleton: 'yMd'
+                                format: this.formatString, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd'
                             }));
                         }
                     }
@@ -9305,7 +9371,8 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
     TimePicker.prototype.CldrFormat = function (type) {
         var cldrDateTimeString;
         if (this.locale === 'en' || this.locale === 'en-US') {
-            cldrDateTimeString = (getValue('timeFormats.short', getDefaultDateObject()));
+            cldrDateTimeString = isBlazor() ? this.getBlazorCultureFormat('t') :
+                (getValue('timeFormats.short', getDefaultDateObject()));
         }
         else {
             cldrDateTimeString = (this.getCultureTimeObject(cldrData, '' + this.locale));
@@ -9462,7 +9529,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
             return null;
         }
         else {
-            return this.globalize.formatDate(value, { skeleton: 'medium', type: 'time' });
+            return this.globalize.formatDate(value, { skeleton: isBlazor() ? 't' : 'medium', type: 'time' });
         }
     };
     TimePicker.prototype.getDateObject = function (text) {
@@ -9484,7 +9551,10 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                 var key = _a[_i];
                 if (wrapperAttributes.indexOf(key) > -1) {
                     if (key === 'class') {
-                        addClass([this.inputWrapper.container], this.htmlAttributes[key].split(' '));
+                        var updatedClassesValue = (this.htmlAttributes[key].replace(/\s+/g, ' ')).trim();
+                        if (updatedClassesValue !== '') {
+                            addClass([this.inputWrapper.container], updatedClassesValue.split(' '));
+                        }
                     }
                     else if (key === 'style') {
                         var timeStyle = this.inputWrapper.container.getAttribute(key);
@@ -9507,6 +9577,18 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                     this.inputElement.setAttribute(key, this.htmlAttributes[key]);
                 }
             }
+        }
+    };
+    TimePicker.prototype.updateCssClass = function (cssClassNew, cssClassOld) {
+        if (!isNullOrUndefined(cssClassOld)) {
+            cssClassOld = (cssClassOld.replace(/\s+/g, ' ')).trim();
+        }
+        if (!isNullOrUndefined(cssClassNew)) {
+            cssClassNew = (cssClassNew.replace(/\s+/g, ' ')).trim();
+        }
+        Input.setCssClass(cssClassNew, [this.inputWrapper.container], cssClassOld);
+        if (this.popupWrapper) {
+            Input.setCssClass(cssClassNew, [this.popupWrapper], cssClassOld);
         }
     };
     TimePicker.prototype.removeErrorClass = function () {
@@ -9550,10 +9632,13 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
     TimePicker.prototype.getMeridianText = function () {
         var meridian;
         if (this.locale === 'en' || this.locale === 'en-US') {
-            meridian = getValue('dayPeriods.format.wide', getDefaultDateObject());
+            meridian = getValue((isBlazor() ? 'dayPeriods.wide' : 'dayPeriods.format.wide'), getDefaultDateObject());
         }
         else {
-            meridian = getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.dayPeriods.format.abbreviated', cldrData);
+            var gregorianFormat = (isBlazor() ? '.dates.dayPeriods.abbreviated' :
+                '.dates.calendars.gregorian.dayPeriods.format.abbreviated');
+            var mainVal = isBlazor() ? '' : 'main.';
+            meridian = getValue(mainVal + '' + this.locale + gregorianFormat, cldrData);
         }
         return meridian;
     };
@@ -9660,18 +9745,23 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
     TimePicker.prototype.cldrDateFormat = function () {
         var cldrDate;
         if (this.locale === 'en' || this.locale === 'en-US') {
-            cldrDate = (getValue('dateFormats.short', getDefaultDateObject()));
+            cldrDate = isBlazor() ? (getValue('d', getValue(this.locale, blazorCultureFormats))) :
+                (getValue('dateFormats.short', getDefaultDateObject()));
         }
         else {
             cldrDate = (this.getCultureDateObject(cldrData, '' + this.locale));
         }
         return cldrDate;
     };
+    TimePicker.prototype.getBlazorCultureFormat = function (formatVal) {
+        return (getValue(formatVal, getValue(this.locale, blazorCultureFormats))).replace(/tt/, 'a');
+    };
     TimePicker.prototype.cldrTimeFormat = function () {
         var cldrTime;
         if (this.isNullOrEmpty(this.formatString)) {
             if (this.locale === 'en' || this.locale === 'en-US') {
-                cldrTime = (getValue('timeFormats.short', getDefaultDateObject()));
+                cldrTime = isBlazor() ? this.getBlazorCultureFormat('t') :
+                    (getValue('timeFormats.short', getDefaultDateObject()));
             }
             else {
                 cldrTime = (this.getCultureTimeObject(cldrData, '' + this.locale));
@@ -9685,10 +9775,12 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
     TimePicker.prototype.dateToNumeric = function () {
         var cldrTime;
         if (this.locale === 'en' || this.locale === 'en-US') {
-            cldrTime = (getValue('timeFormats.medium', getDefaultDateObject()));
+            cldrTime = isBlazor() ? this.getBlazorCultureFormat('T') :
+                (getValue('timeFormats.medium', getDefaultDateObject()));
         }
         else {
-            cldrTime = (getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.timeFormats.medium', cldrData));
+            cldrTime = isBlazor() ? this.getBlazorCultureFormat('T') :
+                (getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.timeFormats.medium', cldrData));
         }
         return cldrTime;
     };
@@ -10682,10 +10774,12 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         }
     };
     TimePicker.prototype.getCultureTimeObject = function (ld, c) {
-        return getValue('main.' + c + '.dates.calendars.gregorian.timeFormats.short', ld);
+        return isBlazor() ? (getValue('t', getValue(c, blazorCultureFormats))).replace(/tt/, 'a') :
+            getValue('main.' + c + '.dates.calendars.gregorian.timeFormats.short', ld);
     };
     TimePicker.prototype.getCultureDateObject = function (ld, c) {
-        return getValue('main.' + c + '.dates.calendars.gregorian.dateFormats.short', ld);
+        return isBlazor() ? (getValue('d', getValue(c, blazorCultureFormats))) :
+            getValue('main.' + c + '.dates.calendars.gregorian.dateFormats.short', ld);
     };
     TimePicker.prototype.wireListEvents = function () {
         EventHandler.add(this.listWrapper, 'click', this.onMouseClick, this);
@@ -10803,11 +10897,15 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         return (li && li.classList.contains(LISTCLASS$1) && !li.classList.contains(DISABLED$3));
     };
     TimePicker.prototype.createDateObj = function (val) {
-        var today = this.globalize.formatDate(new Date(), { skeleton: 'short', type: 'date' });
+        var formatStr = isBlazor() ?
+            // tslint:disable-next-line
+            'M' + getDefaultDateObject().dateSeperator + 'd' + getDefaultDateObject().dateSeperator + 'yy'
+            : null;
+        var today = this.globalize.formatDate(new Date(), { format: formatStr, skeleton: 'short', type: 'date' });
         var value = null;
         if (typeof val === 'string') {
             if (val.toUpperCase().indexOf('AM') > -1 || val.toUpperCase().indexOf('PM') > -1) {
-                today = this.defaultCulture.formatDate(new Date(), { skeleton: 'short', type: 'date' });
+                today = this.defaultCulture.formatDate(new Date(), { format: formatStr, skeleton: 'short', type: 'date' });
                 value = isNaN(+new Date(today + ' ' + val)) ? null : new Date(new Date(today + ' ' + val).setMilliseconds(0));
                 if (isNullOrUndefined(value)) {
                     value = this.TimeParse(today, val);
@@ -11202,10 +11300,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                     }
                     break;
                 case 'cssClass':
-                    Input.setCssClass(newProp.cssClass, [this.inputWrapper.container], oldProp.cssClass);
-                    if (this.popupWrapper) {
-                        Input.setCssClass(newProp.cssClass, [this.popupWrapper], oldProp.cssClass);
-                    }
+                    this.updateCssClass(newProp.cssClass, oldProp.cssClass);
                     break;
                 case 'zIndex':
                     this.setProperties({ zIndex: newProp.zIndex }, true);
@@ -11680,7 +11775,7 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
         var dateOptions;
         if (!isNullOrUndefined(value)) {
             if (this.calendarMode === 'Gregorian') {
-                dateOptions = { format: this.cldrDateTimeFormat(), type: 'dateTime', skeleton: 'yMd' };
+                dateOptions = { format: this.cldrDateTimeFormat(), type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
             }
             else {
                 dateOptions = { format: this.cldrDateTimeFormat(), type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
@@ -11731,7 +11826,8 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
         var cldrTime;
         if (this.isNullOrEmpty(this.timeFormat)) {
             if (this.locale === 'en' || this.locale === 'en-US') {
-                cldrTime = (getValue('timeFormats.short', getDefaultDateObject()));
+                cldrTime = isBlazor() ? (getValue('t', getValue(this.locale, blazorCultureFormats))).replace(/tt/, 'a') :
+                    (getValue('timeFormats.short', getDefaultDateObject()));
             }
             else {
                 cldrTime = (this.getCultureTimeObject(cldrData, '' + this.locale));
@@ -11745,7 +11841,7 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
     DateTimePicker.prototype.cldrDateTimeFormat = function () {
         var cldrTime;
         var culture = new Internationalization(this.locale);
-        var dateFormat = culture.getDatePattern({ skeleton: 'yMd' });
+        var dateFormat = culture.getDatePattern({ skeleton: isBlazor() ? 'd' : 'yMd' });
         if (this.isNullOrEmpty(this.formatString)) {
             cldrTime = dateFormat + ' ' + this.getCldrFormat('time');
         }
@@ -11757,7 +11853,8 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
     DateTimePicker.prototype.getCldrFormat = function (type) {
         var cldrDateTime;
         if (this.locale === 'en' || this.locale === 'en-US') {
-            cldrDateTime = (getValue('timeFormats.short', getDefaultDateObject()));
+            cldrDateTime = isBlazor() ? (getValue('t', getValue(this.locale, blazorCultureFormats))).replace(/tt/, 'a') :
+                (getValue('timeFormats.short', getDefaultDateObject()));
         }
         else {
             cldrDateTime = (this.getCultureTimeObject(cldrData, '' + this.locale));
@@ -11774,7 +11871,8 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
     };
     DateTimePicker.prototype.getCultureTimeObject = function (ld, c) {
         if (this.calendarMode === 'Gregorian') {
-            return getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.timeFormats.short', ld);
+            return isBlazor() ? (getValue('t', getValue(this.locale, blazorCultureFormats))).replace(/tt/, 'a') :
+                (getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.timeFormats.short', ld));
         }
         else {
             return getValue('main.' + '' + this.locale + '.dates.calendars.islamic.timeFormats.short', ld);
@@ -12551,7 +12649,7 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
         if (this.calendarMode === 'Gregorian') {
             dateString = this.globalize.formatDate(time, {
                 format: !isNullOrUndefined(this.formatString) ? this.formatString : this.cldrDateTimeFormat(),
-                type: 'dateTime', skeleton: 'yMd'
+                type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd'
             });
         }
         else {
@@ -12677,7 +12775,7 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
             var prop = _a[_i];
             switch (prop) {
                 case 'value':
-                    var options = { format: this.cldrDateTimeFormat(), type: 'dateTime', skeleton: 'yMd' };
+                    var options = { format: this.cldrDateTimeFormat(), type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
                     this.invalidValueString = null;
                     this.checkInvalidValue(newProp.value);
                     newProp.value = this.value;
@@ -12698,6 +12796,12 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
                     Input.setEnableRtl(this.enableRtl, [this.inputWrapper.container]);
                     break;
                 case 'cssClass':
+                    if (!isNullOrUndefined(oldProp.cssClass)) {
+                        oldProp.cssClass = (oldProp.cssClass.replace(/\s+/g, ' ')).trim();
+                    }
+                    if (!isNullOrUndefined(newProp.cssClass)) {
+                        newProp.cssClass = (newProp.cssClass.replace(/\s+/g, ' ')).trim();
+                    }
                     Input.setCssClass(newProp.cssClass, [this.inputWrapper.container], oldProp.cssClass);
                     if (this.dateTimeWrapper) {
                         Input.setCssClass(newProp.cssClass, [this.dateTimeWrapper], oldProp.cssClass);

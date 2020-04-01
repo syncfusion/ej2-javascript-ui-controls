@@ -3,7 +3,7 @@ import { EventHandler, Internationalization, Property, NotifyPropertyChanges, Br
 import { Animation, EmitType, Event, AnimationModel, cldrData, getDefaultDateObject, detach } from '@syncfusion/ej2-base';
 import { createElement, remove, addClass, L10n, removeClass, closest, classList, append, attributes } from '@syncfusion/ej2-base';
 import { KeyboardEvents, KeyboardEventArgs, isNullOrUndefined, formatUnit, getValue, rippleEffect } from '@syncfusion/ej2-base';
-import { ModuleDeclaration, extend, isBlazor } from '@syncfusion/ej2-base';
+import { ModuleDeclaration, extend, isBlazor, blazorCultureFormats } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Input } from '@syncfusion/ej2-inputs';
 import { BlurEventArgs, ClearedEventArgs, CalendarType, CalendarView, DayHeaderFormats } from '../calendar/calendar';
@@ -327,6 +327,7 @@ export class DateTimePicker extends DatePicker {
      * By default, the date value will be processed based on system time zone.
      * If you want to process the initial date value using server time zone 
      * then specify the time zone value to `serverTimezoneOffset` property.
+     * @default null
      */
     @Property(null)
     public serverTimezoneOffset: number;
@@ -691,7 +692,7 @@ export class DateTimePicker extends DatePicker {
         let dateOptions: object;
         if (!isNullOrUndefined(value)) {
             if (this.calendarMode === 'Gregorian') {
-                dateOptions = { format: this.cldrDateTimeFormat(), type: 'dateTime', skeleton: 'yMd' };
+                dateOptions = { format: this.cldrDateTimeFormat(), type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
             } else {
                 dateOptions = { format: this.cldrDateTimeFormat(), type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
             }
@@ -741,7 +742,8 @@ export class DateTimePicker extends DatePicker {
         let cldrTime: string;
         if (this.isNullOrEmpty(this.timeFormat)) {
             if (this.locale === 'en' || this.locale === 'en-US') {
-                cldrTime = <string>(getValue('timeFormats.short', getDefaultDateObject()));
+                cldrTime = isBlazor() ? (<string>(getValue('t', getValue(this.locale, blazorCultureFormats)))).replace(/tt/, 'a') :
+                <string>(getValue('timeFormats.short', getDefaultDateObject()));
             } else {
                 cldrTime = <string>(this.getCultureTimeObject(cldrData, '' + this.locale));
             }
@@ -753,7 +755,7 @@ export class DateTimePicker extends DatePicker {
     private cldrDateTimeFormat(): string {
         let cldrTime: string;
         let culture: Internationalization = new Internationalization(this.locale);
-        let dateFormat: string = culture.getDatePattern({ skeleton: 'yMd' });
+        let dateFormat: string = culture.getDatePattern({ skeleton: isBlazor() ? 'd' : 'yMd' });
         if (this.isNullOrEmpty(this.formatString)) {
             cldrTime = dateFormat + ' ' + this.getCldrFormat('time');
         } else {
@@ -764,7 +766,8 @@ export class DateTimePicker extends DatePicker {
     private getCldrFormat(type: string): string {
         let cldrDateTime: string;
         if (this.locale === 'en' || this.locale === 'en-US') {
-            cldrDateTime = <string>(getValue('timeFormats.short', getDefaultDateObject()));
+            cldrDateTime = isBlazor() ? (<string>(getValue('t', getValue(this.locale, blazorCultureFormats)))).replace(/tt/, 'a') :
+            <string>(getValue('timeFormats.short', getDefaultDateObject()));
         } else {
             cldrDateTime = <string>(this.getCultureTimeObject(cldrData, '' + this.locale));
         }
@@ -777,7 +780,8 @@ export class DateTimePicker extends DatePicker {
     }
     protected getCultureTimeObject(ld: Object, c: string): Object {
         if (this.calendarMode === 'Gregorian') {
-            return getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.timeFormats.short', ld);
+            return isBlazor() ? (<string>(getValue('t', getValue(this.locale, blazorCultureFormats)))).replace(/tt/, 'a') :
+            (getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.timeFormats.short', ld));
         } else {
             return getValue('main.' + '' + this.locale + '.dates.calendars.islamic.timeFormats.short', ld);
         }
@@ -1521,7 +1525,7 @@ export class DateTimePicker extends DatePicker {
         if (this.calendarMode === 'Gregorian') {
             dateString = this.globalize.formatDate(time, {
                 format: !isNullOrUndefined(this.formatString) ? this.formatString : this.cldrDateTimeFormat(),
-                type: 'dateTime', skeleton: 'yMd'
+                type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd'
             });
         } else {
             dateString = this.globalize.formatDate(time, {
@@ -1632,7 +1636,7 @@ export class DateTimePicker extends DatePicker {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'value':
-                    let options: object = { format: this.cldrDateTimeFormat(), type: 'dateTime', skeleton: 'yMd' };
+                    let options: object = { format: this.cldrDateTimeFormat(), type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
                     this.invalidValueString = null;
                     this.checkInvalidValue(newProp.value);
                     newProp.value = this.value;
@@ -1653,6 +1657,12 @@ export class DateTimePicker extends DatePicker {
                     Input.setEnableRtl(this.enableRtl, [this.inputWrapper.container]);
                     break;
                 case 'cssClass':
+                    if (!isNullOrUndefined(oldProp.cssClass)) {
+                        oldProp.cssClass = (oldProp.cssClass.replace(/\s+/g, ' ')).trim();
+                    }
+                    if (!isNullOrUndefined(newProp.cssClass)) {
+                        newProp.cssClass = (newProp.cssClass.replace(/\s+/g, ' ')).trim();
+                    }
                     Input.setCssClass(newProp.cssClass, [this.inputWrapper.container], oldProp.cssClass);
                     if (this.dateTimeWrapper) {
                         Input.setCssClass(newProp.cssClass, [this.dateTimeWrapper], oldProp.cssClass);

@@ -3,7 +3,7 @@ import { NumberFormat } from './intl/number-formatter';
 import { DateParser } from './intl/date-parser';
 import { NumberParser } from './intl/number-parser';
 import { IntlBase } from './intl/intl-base';
-import { extend, getValue } from './util';
+import { extend, getValue, isBlazor } from './util';
 import { Observer } from './observer';
 /**
  * Specifies the observer used for external change detection.
@@ -162,6 +162,9 @@ export class Internationalization {
         if (options && !options.currency) {
             options.currency = defaultCurrencyCode;
         }
+        if (isBlazor() && options && !options.format) {
+            options.minimumFractionDigits = 0;
+        }
         return NumberFormat.numberFormatter(this.getCulture(), options || {}, cldrData);
     }
     /**
@@ -178,6 +181,9 @@ export class Internationalization {
      * @returns {Function}
      */
     public getNumberParser(options?: NumberFormatOptions): Function {
+        if (isBlazor() && options && !options.format) {
+            options.minimumFractionDigits = 0;
+        }
         return NumberParser.numberParser(this.getCulture(), options || { format: 'N' }, cldrData);
     }
     /**
@@ -298,7 +304,7 @@ export function getNumericObject(locale: string, type?: string): Object {
     let numObject: Object = (<any>IntlBase.getDependables(cldrData, locale, '', true))[mapper[0]];
     let dateObject: Object = (<any>IntlBase.getDependables(cldrData, locale, ''))[mapper[1]];
     let numSystem: string = getValue('defaultNumberingSystem', numObject);
-    let symbPattern: Object = getValue('symbols-numberSystem-' + numSystem, numObject);
+    let symbPattern: Object = isBlazor() ?  getValue('numberSymbols', numObject) : getValue('symbols-numberSystem-' + numSystem, numObject);
     let pattern: string = IntlBase.getSymbolPattern(type || 'decimal', numSystem, numObject, false);
     return extend(symbPattern, IntlBase.getFormatData(pattern, true, '', true), { 'dateSeparator': IntlBase.getDateSeparator(dateObject) });
 }

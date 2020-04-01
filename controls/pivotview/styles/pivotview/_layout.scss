@@ -264,6 +264,9 @@
                 height: 14px;
                 min-width: 14px;
                 width: 14px;
+                @if ($pivotgrid-skin == 'bootstrap4') {
+                  height: auto;
+                }
 
                 &::before {
                   font-size: 14px;

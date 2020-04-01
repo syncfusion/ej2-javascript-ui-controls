@@ -91,6 +91,12 @@
           content: '\e72e';
         }
       }
+
+      & .e-merge-icon {
+        &::before {
+          content: '\e7b1';
+        }
+      }
     }
 
     & .e-insert-function .e-btn-icon {

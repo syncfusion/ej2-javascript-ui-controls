@@ -7025,4 +7025,46 @@ describe('Diagram Control', () => {
             done();
         });
     });
+
+    describe('EJ2-37668 -  Connector did not render properly for the port to port connection', () => {
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramLineRouting2' });
+            document.body.appendChild(ele);
+            
+            diagram = new Diagram({
+                width: "700px",
+                height: "800px",
+                nodes: [
+                    {
+                        id: "NewIdea", width: 100, height: 160,
+                        offsetX: 300, offsetY: 280,
+                        ports: [{ id: 'port1', offset: { x: 1, y: 0.7 } }]
+                    },
+                    {
+                        id: "Meeting", width: 100, height: 60, offsetX: 500, offsetY: 480,
+                        ports: [{ id: 'port1', offset: { x: 0, y: 0.7 } }]
+                    }
+                ],
+                connectors: [
+                    {
+                        id: 'connector', sourceID: 'NewIdea', targetID: 'Meeting', sourcePortID: 'port1', targetPortID: 'port1', type: 'Orthogonal'
+                    }
+                ],
+                constraints: DiagramConstraints.Default | DiagramConstraints.LineRouting,
+                getConnectorDefaults: function (connector: ConnectorModel) { connector.type = 'Orthogonal'; }
+            });
+            diagram.appendTo('#diagramLineRouting2');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('CR issue', (done: Function) => {
+            for (var i = 0; i < diagram.connectors.length; i++) { console.log(getIntermediatePoints((diagram.connectors[i] as Connector).intermediatePoints, '(diagram.connectors[' + i + '] as Connector)')); }
+            expect((diagram.connectors[0] as Connector).intermediatePoints[0].x ==350&&(diagram.connectors[0] as Connector).intermediatePoints[0].y ==312&&(diagram.connectors[0] as Connector).intermediatePoints[1].x ==370&&(diagram.connectors[0] as Connector).intermediatePoints[1].y ==312&&(diagram.connectors[0] as Connector).intermediatePoints[2].x ==370&&(diagram.connectors[0] as Connector).intermediatePoints[2].y ==492&&(diagram.connectors[0] as Connector).intermediatePoints[3].x ==450&&(diagram.connectors[0] as Connector).intermediatePoints[3].y ==492).toBe(true);
+            done();
+        });
+    });
 });

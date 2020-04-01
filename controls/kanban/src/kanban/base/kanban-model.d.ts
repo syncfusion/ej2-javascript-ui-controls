@@ -97,7 +97,6 @@ export interface KanbanModel extends ComponentModel{
 
     /**
      * Defines the dialog settings such as template and fields.
-     * @deprecated
      * @default {}
      */
     dialogSettings?: DialogSettingsModel;
@@ -208,15 +207,14 @@ export interface KanbanModel extends ComponentModel{
 
     /**
      * Triggers before the dialog opens.
-     * @deprecated
      * @event
      */
     dialogOpen?: EmitType<DialogEventArgs>;
 
     /**
      * Triggers before the dialog closes.
-     * @deprecated
      * @event
+     * @blazorType DialogCloseEventArgs
      */
     dialogClose?: EmitType<DialogEventArgs>;
 

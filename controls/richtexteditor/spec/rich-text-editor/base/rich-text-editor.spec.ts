@@ -3421,7 +3421,7 @@ describe('Tab key navigation with empty RTE content and enableTabKey is set true
         selectNode = editNode.querySelector('p');
         setCursorPoint(curDocument, selectNode, 0);
         (rteObj as any).keyDown(keyBoardEvent);
-        let expectedInnerHTML: string = `&nbsp;&nbsp;&nbsp;&nbsp;<br>`;
+        let expectedInnerHTML: string = `&nbsp;&nbsp;&nbsp;&nbsp;`;
         expect(selectNode.innerHTML === expectedInnerHTML).toBe(true);
     });
 });

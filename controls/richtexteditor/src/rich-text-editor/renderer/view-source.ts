@@ -11,7 +11,7 @@ import { KeyboardEvents } from '../actions/keyboard';
 import { ClickEventArgs } from '@syncfusion/ej2-navigations';
 
 /**
- * Content module is used to render RichTextEditor content
+ * Content module is used to render Rich Text Editor content
  * @hidden
  * @deprecated
  */

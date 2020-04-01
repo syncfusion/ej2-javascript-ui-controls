@@ -2221,20 +2221,20 @@ describe('Diagram Control', () => {
             mouseEvents.clickEvent(diagramCanvas, 10 + diagram.element.offsetLeft, 10 + diagram.element.offsetTop);
             diagram.select([diagram.connectors[0]]);
             mouseEvents.dragAndDropEvent(diagramCanvas, 200 + diagram.element.offsetLeft, 200 + diagram.element.offsetTop, 200 + diagram.element.offsetLeft, 100 + diagram.element.offsetTop);
-            expect(((diagram.connectors[0] as Connector).intermediatePoints[1].x == 200 || (diagram.connectors[0] as Connector).intermediatePoints[1].x == 208 ) && ((diagram.connectors[0] as Connector).intermediatePoints[1].y == 100 + diagram.element.offsetTop || (diagram.connectors[0] as Connector).intermediatePoints[1].y == 108 + diagram.element.offsetTop)).toBe(true);
+            expect(((diagram.connectors[0] as Connector).intermediatePoints[1].x == 200 || (diagram.connectors[0] as Connector).intermediatePoints[1].x == 208 ) && ((diagram.connectors[0] as Connector).intermediatePoints[1].y == 100 || (diagram.connectors[0] as Connector).intermediatePoints[1].y == 108 )).toBe(true);
             done();
         });
         it('Checking Straight - segment point editing when drag source end and drag target end constraints remove', function (done) {
             diagram.select([diagram.connectors[1]]);
             mouseEvents.dragAndDropEvent(diagramCanvas, 350 + diagram.element.offsetLeft, 250 + diagram.element.offsetTop, 350 + diagram.element.offsetLeft, 200 + diagram.element.offsetTop);
-            expect(((diagram.connectors[1] as Connector).intermediatePoints[1].x == 350 || (diagram.connectors[1] as Connector).intermediatePoints[1].x == 358 ) && ((diagram.connectors[1] as Connector).intermediatePoints[1].y == 200 + diagram.element.offsetTop || (diagram.connectors[1] as Connector).intermediatePoints[1].y == 208 + diagram.element.offsetTop)).toBe(true);
+            expect(((diagram.connectors[1] as Connector).intermediatePoints[1].x == 350 || (diagram.connectors[1] as Connector).intermediatePoints[1].x == 358 ) && ((diagram.connectors[1] as Connector).intermediatePoints[1].y == 250 || (diagram.connectors[1] as Connector).intermediatePoints[1].y == 258)).toBe(true);
             done();
         });
         it('Checking Orthogonal - segment point editing when drag source end and drag target end constraints remove', function (done) {
             diagram.select([diagram.connectors[2]]);
             mouseEvents.dragAndDropEvent(diagramCanvas, 550 + diagram.element.offsetLeft, 120 + diagram.element.offsetTop, 550 + diagram.element.offsetLeft, 300 + diagram.element.offsetTop);
-            expect((diagram.connectors[2] as Connector).intermediatePoints[1].x == 500 && (diagram.connectors[2] as Connector).intermediatePoints[1].y == 300 + diagram.element.offsetTop &&
-                (diagram.connectors[2] as Connector).intermediatePoints[2].x == 600 && (diagram.connectors[2] as Connector).intermediatePoints[2].y == 300 + diagram.element.offsetTop).toBe(true);
+            expect((diagram.connectors[2] as Connector).intermediatePoints[1].x == 500 && (diagram.connectors[2] as Connector).intermediatePoints[1].y == 308 &&
+                (diagram.connectors[2] as Connector).intermediatePoints[2].x == 600 && (diagram.connectors[2] as Connector).intermediatePoints[2].y == 308).toBe(true);
             done();
         });
     });

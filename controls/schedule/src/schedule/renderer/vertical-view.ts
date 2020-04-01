@@ -80,6 +80,8 @@ export class VerticalView extends ViewBase implements IRenderer {
         this.setContentHeight(content, timecells, scrollerHeight);
         let scrollBarWidth: number = util.getScrollBarWidth();
         // tslint:disable:no-any
+        (header.firstElementChild as HTMLElement).style[<any>args.cssProperties.rtlBorder] = '';
+        header.style[<any>args.cssProperties.rtlPadding] = '';
         if (content.offsetWidth - content.clientWidth > 0) {
             (header.firstElementChild as HTMLElement).style[<any>args.cssProperties.border] = scrollBarWidth > 0 ? '1px' : '0px';
             header.style[<any>args.cssProperties.padding] = scrollBarWidth > 0 ? scrollBarWidth - 1 + 'px' : '0px';

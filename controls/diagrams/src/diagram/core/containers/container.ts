@@ -42,7 +42,7 @@ export class Container extends DiagramElement {
     /**
      * Measures the minimum space that the container requires
      * 
-     * @param availableSize 
+     * @param {Size} availableSize 
      */
     public measure(availableSize: Size, id?: string, callback?: Function): Size {
         // measure the element and find the desired size
@@ -104,7 +104,7 @@ export class Container extends DiagramElement {
 
     /**
      * Arranges the container and its children
-     * @param desiredSize 
+     * @param {Size} desiredSize 
      */
     public arrange(desiredSize: Size): Size {
         let child: DiagramElement; let bounds: Rect;
@@ -153,7 +153,7 @@ export class Container extends DiagramElement {
 
     /**
      * Stretches the child elements based on the size of the container
-     * @param size 
+     * @param {Size} size 
      */
     protected stretchChildren(size: Size): void {
         if (this.hasChildren()) {
@@ -173,7 +173,7 @@ export class Container extends DiagramElement {
 
     /**
      * Considers the padding of the element when measuring its desired size
-     * @param size 
+     * @param {Size} size 
      */
     protected applyPadding(size: Size): void {
         size.width += this.padding.left + this.padding.right;
@@ -182,8 +182,8 @@ export class Container extends DiagramElement {
 
     /**
      * Finds the offset of the child element with respect to the container
-     * @param child 
-     * @param center 
+     * @param {DiagramElement} child
+     * @param {PointModel} center
      */
     protected findChildOffsetFromCenter(child: DiagramElement, center: PointModel): void {
         let topLeft: PointModel = { x: center.x - child.desiredSize.width / 2, y: center.y - child.desiredSize.height / 2 };

@@ -394,7 +394,8 @@ export class Zoom {
                                         removeElement(this.maps.element.id + '_mapsTooltip');
                                     }
                                 }
-                                if (document.getElementById(this.maps.element.id + '_mapsTooltip') && this.maps.mapsTooltipModule.tooltipTargetID.indexOf('_MarkerIndex_')) {
+                                if (document.getElementById(this.maps.element.id + '_mapsTooltip') && this.maps.mapsTooltipModule.tooltipTargetID.indexOf('_MarkerIndex_')
+                                    && !this.isPanning) {
                                     let mapsTooltip: MapsTooltip = this.maps.mapsTooltipModule;
                                     let tooltipElement: Element = currentEle.querySelector('#' + mapsTooltip.tooltipTargetID);
                                     if (!isNullOrUndefined(tooltipElement)) {
@@ -541,6 +542,25 @@ export class Zoom {
                             Number(getValueFromObject(data, markerSettings.latitudeValuePath)) : parseFloat(data['latitude']);
                         let long: number = (!isNullOrUndefined(markerSettings.longitudeValuePath)) ?
                          Number(getValueFromObject(data, markerSettings.longitudeValuePath)) : parseFloat(data['longitude']);
+                        if (this.maps.isBlazor) {
+                            let data1: Object = {};
+                            let j: number = 0;
+                            let text: string[] = [];
+                            for (let i: number = 0; i < Object.keys(data).length; i++) {
+                                if (Object.keys(data)[i].toLowerCase() !== 'text' && Object.keys(data)[i].toLowerCase() !== 'latitude'
+                                    && Object.keys(data)[i].toLowerCase() !== 'blazortemplateid' && Object.keys(data)[i].toLowerCase() !== 'longitude'
+                                    && Object.keys(data)[i].toLowerCase() !== 'name') {
+                                    data1['text'] = text;
+                                    text[j] = data[Object.keys(data)[i].toLowerCase()];                                    
+                                    j++;
+                                }
+                            }
+                            data['text'] = data1['text'];
+                            if (data == {} || isNullOrUndefined(data['latitude']) || isNullOrUndefined(data['longitude'])) {
+                                lati = (data['latitude'] && !isNullOrUndefined(data['latitude'])) ? data['latitude'] : 0;
+                                long = (data['longitude'] && !isNullOrUndefined(data['longitude'])) ? data['longitude'] : 0;
+                            }
+                        }
                         let offset: Point = markerSettings.offset;
                         if (!eventArgs.cancel && markerSettings.visible && !isNullOrUndefined(long) && !isNullOrUndefined(lati)) {
                             let markerID: string = this.maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_'
@@ -747,6 +767,25 @@ export class Zoom {
          let lat: number = (!isNullOrUndefined(marker.latitudeValuePath)) ?
           Number(getValueFromObject(marker.dataSource[dataIndex], marker.latitudeValuePath)) :
           parseFloat(marker.dataSource[dataIndex]['latitude']);
+          if (this.maps.isBlazor) {
+            let data1: Object = {};                           
+            let j: number = 0;
+            let text: string[] = [];
+            if (isNullOrUndefined(marker.dataSource[dataIndex]['latitude']) || isNullOrUndefined(marker.dataSource[dataIndex]['longitude'])) {
+                lat = (marker.dataSource[dataIndex]['latitude'] && !isNullOrUndefined(marker.dataSource[dataIndex]['latitude'])) ? marker.dataSource[dataIndex]['latitude'] : 0;
+                lng = (marker.dataSource[dataIndex]['longitude'] && !isNullOrUndefined(marker.dataSource[dataIndex]['longitude'])) ? marker.dataSource[dataIndex]['longitude'] : 0;
+            }
+            for (let i: number = 0; i < Object.keys(marker.dataSource[dataIndex]).length; i++) {
+                if (Object.keys(marker.dataSource[dataIndex])[i].toLowerCase() !== 'text' && Object.keys(marker.dataSource[dataIndex])[i].toLowerCase() !== 'longitude'
+                    && Object.keys(marker.dataSource[dataIndex])[i].toLowerCase() !== 'latitude' && Object.keys(marker.dataSource[dataIndex])[i].toLowerCase() !== 'blazortemplateid' 
+                    && Object.keys(marker.dataSource[dataIndex])[i].toLowerCase() !== 'name') {
+                    data1['text'] = text;
+                    text[j] = marker.dataSource[dataIndex][Object.keys(marker.dataSource[dataIndex])[i].toLowerCase()];                                    
+                    j++;
+                }
+            }
+            marker.dataSource[dataIndex]['text'] = data1['text'];            
+        }
             let duration: number = this.currentLayer.animationDuration;
             let location: Point = (this.maps.isTileMap) ? convertTileLatLongToPoint(
                 new Point(lng, lat), this.maps.tileZoomLevel, this.maps.tileTranslatePoint, true
@@ -797,7 +836,7 @@ export class Zoom {
         }
     }
 
-    public panning(direction: PanDirection, xDifference: number, yDifference: number): void {
+    public panning(direction: PanDirection, xDifference: number, yDifference: number, mouseLocation?: PointerEvent | TouchEvent): void {
         let map: Maps = this.maps; let panArgs: IMapPanEventArgs;
         let down: Point = this.mouseDownPoints;
         let move: Point = this.mouseMovePoints;
@@ -820,10 +859,11 @@ export class Zoom {
                 ((layerRect.left + layerRect.width) >= (elementRect.left + elementRect.width) + map.mapAreaRect.x + map.margin.left)));
             let panningYDirection: boolean = ((yDifference < 0 ? layerRect.top <= (elementRect.top + map.mapAreaRect.y) :
                 ((layerRect.top + layerRect.height + map.margin.top) >= (elementRect.top + elementRect.height))));
+            let location: Object = this.maps.getGeoLocation(this.maps.layersCollection.length - 1, mouseLocation as PointerEvent);
             panArgs = {
                 cancel: false, name: pan, maps: !map.isBlazor ? map : null,
                 tileTranslatePoint: {}, translatePoint: { previous: translatePoint, current: new Point(x, y) },
-                scale: map.scale, tileZoomLevel: map.tileZoomLevel
+                scale: map.scale, tileZoomLevel: map.tileZoomLevel, latitude: location['latitude'], longitude: location['longitude']
             };
             map.trigger(pan, panArgs);
             if (panningXDirection && panningYDirection) {
@@ -850,11 +890,12 @@ export class Zoom {
             }
             map.translatePoint.x = (map.tileTranslatePoint.x - xDifference) / map.scale;
             map.translatePoint.y = (map.tileTranslatePoint.y - yDifference) / map.scale;
+            let location: Object = this.maps.getTileGeoLocation(mouseLocation as PointerEvent);
             panArgs = {
                 cancel: false, name: pan, maps: !map.isBlazor ? map : null,
                 tileTranslatePoint: { previous: prevTilePoint, current: map.tileTranslatePoint },
                 translatePoint: { previous: translatePoint, current: map.translatePoint }, scale: map.scale,
-                tileZoomLevel: map.tileZoomLevel
+                tileZoomLevel: map.tileZoomLevel, latitude: location['latitude'], longitude: location['longitude']
             };
             map.trigger(pan, panArgs);
             map.mapLayerPanel.generateTiles(map.tileZoomLevel, map.tileTranslatePoint, 'Pan');
@@ -1405,7 +1446,7 @@ export class Zoom {
             this.mouseMoveLatLong = { x: pageX, y: pageY };
             if ((this.mouseDownLatLong['x'] !== this.mouseMoveLatLong['x']) && (this.mouseDownLatLong['y'] !== this.mouseMoveLatLong['y'])) {
                 if (this.maps.zoomSettings.enablePanning) {
-                    this.panning('None', null, null);
+                    this.panning('None', null, null, e);
                 }
                 this.mouseDownLatLong['x'] = pageX;
                 this.mouseDownLatLong['y'] = pageY;
@@ -1489,7 +1530,7 @@ export class Zoom {
         let clientLeft: number = map.element.ownerDocument.documentElement.clientLeft;
         let positionX: number = elementRect.left + pageXOffset - clientLeft;
         let positionY: number = elementRect.top + pageYOffset - clientTop;
-        return new Point((pageX - positionX), (pageY - positionY));
+        return new Point(Math.abs(pageX - positionX), Math.abs(pageY - positionY));
     }
 
     public addEventListener(): void {

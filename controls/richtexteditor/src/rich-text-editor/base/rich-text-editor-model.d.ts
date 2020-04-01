@@ -9,10 +9,10 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Specifies the group of items aligned horizontally in the toolbar as well as defined the toolbar rendering type.
      * By default, toolbar is float at the top of the RichTextEditor.
-     * When you scroll down, the toolbar will scroll along with the page on RichTextEditor with the specified offset value.
+     * When you scroll down, the toolbar will scroll along with the page on Rich Text Editor with the specified offset value.
      * * enable: set boolean value to show or hide the toolbar.
      * * enableFloating: Set Boolean value to enable or disable the floating toolbar. 
-     * Preserves the toolbar at top of the RichTextEditor on scrolling.
+     * Preserves the toolbar at top of the Rich Text Editor on scrolling.
      * * type: it has two possible options
      *      1. Expand: Hide the overflowing toolbar items in the next row. Click the expand arrow to view overflowing toolbar items
      *      2. MultiRow: The toolbar overflowing items wrapped in the next row.
@@ -62,7 +62,7 @@ export interface RichTextEditorModel extends ComponentModel{
     quickToolbarSettings?: QuickToolbarSettingsModel;
 
     /**
-     * Specifies the pasting options in RichTextEditor component and control with the following properties.
+     * Specifies the pasting options in Rich Text Editor component and control with the following properties.
      * * prompt - Set boolean value to enable or disable the prompt when pasting.
      * * deniedAttrs  -  Specifies the attributes to restrict when pasting in RTE.
      * * allowedStyleProps  -  Specifies the allowed style properties when pasting in RTE.
@@ -111,13 +111,15 @@ export interface RichTextEditorModel extends ComponentModel{
     iframeSettings?: IFrameSettingsModel;
 
     /**
-     * Specifies the image insert options in RichTextEditor component and control with the following properties.
+     * Specifies the image insert options in Rich Text Editor component and control with the following properties.
      * * allowedTypes - Specifies the extensions of the image types allowed to insert on bowering and 
      * passing the extensions with comma separators. For example, pass allowedTypes as .jpg and .png.
      * * display - Sets the default display for an image when it is inserted in to the RichTextEditor. 
      * Possible options are: 'inline' and 'block'.
      * * width - Sets the default width of the image when it is inserted in the RichTextEditor.
-     * * saveFormat - Specifies the format to store the image in the RichTextEditor (Base64 or Blob).
+     * * saveFormat - Specifies the format to store the image in the Rich Text Editor (Base64 or Blob).
+     * > If you want to insert a lot of tiny images in the editor and don't want a specific physical location for 
+     * saving images, you can opt to save format as Base64.
      * * height - Sets the default height of the image when it is inserted in the RichTextEditor.
      * * saveUrl - Specifies the service URL of save action that will receive the uploaded files and save them in the server.
      * * path - Specifies the path of the location to store the images and refer it to display the images.
@@ -138,7 +140,7 @@ export interface RichTextEditorModel extends ComponentModel{
     insertImageSettings?: ImageSettingsModel;
 
     /**
-     * Specifies the table insert options in RichTextEditor component and control with the following properties.
+     * Specifies the table insert options in Rich Text Editor component and control with the following properties.
      * * styles - Class name should be appended by default in table element.
      * It helps to design the table in specific CSS styles always when inserting in editor.
      * * width - Sets the default width of the table when it is inserted in the RichTextEditor.
@@ -161,7 +163,7 @@ export interface RichTextEditorModel extends ComponentModel{
     tableSettings?: TableSettingsModel;
 
     /**
-     * Preserves the toolbar at the top of the RichTextEditor on scrolling and 
+     * Preserves the toolbar at the top of the Rich Text Editor on scrolling and 
      * specifies the offset of the floating toolbar from documents top position
      * @default 0
      */
@@ -191,7 +193,7 @@ export interface RichTextEditorModel extends ComponentModel{
 
     /**
      * Enables or disables the persisting component's state between page reloads. 
-     * If enabled, the value of RichTextEditor is persisted
+     * If enabled, the value of Rich Text Editor is persisted
      * 
      * {% codeBlock src='rich-text-editor/enable-persistence/index.md' %}{% endcodeBlock %}
      * 
@@ -201,7 +203,7 @@ export interface RichTextEditorModel extends ComponentModel{
 
     /**
      * Enables or disables the resizing option in the editor. 
-     * If enabled, the RichTextEditor can be resized by dragging the resize icon in the bottom right corner.
+     * If enabled, the Rich Text Editor can be resized by dragging the resize icon in the bottom right corner.
      * 
      * {% codeBlock src='rich-text-editor/enable-resize/index.md' %}{% endcodeBlock %}
      * 
@@ -217,7 +219,7 @@ export interface RichTextEditorModel extends ComponentModel{
     htmlAttributes?: { [key: string]: string; };
 
     /**
-     * Specifies the placeholder for the RichTextEditor’s content used when the RichTextEditor body is empty.
+     * Specifies the placeholder for the RichTextEditor’s content used when the Rich Text Editor body is empty.
      * @default null.
      */
     placeholder?: string;
@@ -256,7 +258,7 @@ export interface RichTextEditorModel extends ComponentModel{
     enableXhtml?: boolean;
 
     /**
-     * Specifies the height of the RichTextEditor component.    
+     * Specifies the height of the Rich Text Editor component.    
      * @default "auto"    
      */
     height?: string | number;
@@ -270,7 +272,7 @@ export interface RichTextEditorModel extends ComponentModel{
 
     /**
      * Specifies the value displayed in the RichTextEditor's content area and it should be string. 
-     * The content of RichTextEditor can be loaded with dynamic data such as database, AJAX content, and more.
+     * The content of Rich Text Editor can be loaded with dynamic data such as database, AJAX content, and more.
      * 
      * {% codeBlock src='rich-text-editor/value/index.md' %}{% endcodeBlock %}
      * 
@@ -296,10 +298,10 @@ export interface RichTextEditorModel extends ComponentModel{
     /**
      * Specifies the editing mode of the RichTextEditor.
      * 
-     *   - `HTML` - Render RichTextEditor as HTML editor using &lt;IFRAME&gt; element or content editable &lt;div&gt; element
+     *   - `HTML` - Render Rich Text Editor as HTML editor using &lt;IFRAME&gt; element or content editable &lt;div&gt; element
      *     or &lt;textarea&gt; element.
      * 
-     *   - `Markdown` - Render RichTextEditor as markdown editor using &lt;textarea&gt;.
+     *   - `Markdown` - Render Rich Text Editor as markdown editor using &lt;textarea&gt;.
      * 
      * @default 'HTML'
      */
@@ -325,7 +327,7 @@ export interface RichTextEditorModel extends ComponentModel{
     showCharCount?: boolean;
 
     /**
-     * Allows the tab key action in the RichTextEditor content. 
+     * Allows the tab key action in the Rich Text Editor content. 
      * 
      * {% codeBlock src='rich-text-editor/enable-tab-key/index.md' %}{% endcodeBlock %}
      * 
@@ -344,7 +346,7 @@ export interface RichTextEditorModel extends ComponentModel{
     enableAutoUrl?: boolean;
 
     /**
-     * Specifies the maximum number of characters allowed in the RichTextEditor component.
+     * Specifies the maximum number of characters allowed in the Rich Text Editor component.
      * 
      * {% codeBlock src='rich-text-editor/max-length/index.md' %}{% endcodeBlock %}
      * 
@@ -594,14 +596,14 @@ export interface RichTextEditorModel extends ComponentModel{
     imageRemoving?: EmitType<RemovingEventArgs>;
 
     /**
-     * Triggers when the RichTextEditor is rendered.
+     * Triggers when the Rich Text Editor is rendered.
      * @event 
      * @blazorProperty 'Created'
      */
     created?: EmitType<Object>;
 
     /**
-     * Triggers when the RichTextEditor is destroyed.
+     * Triggers when the Rich Text Editor is destroyed.
      * @event 
      * @blazorProperty 'Destroyed'
      * @blazorType DestroyedEventArgs
@@ -616,14 +618,14 @@ export interface RichTextEditorModel extends ComponentModel{
     beforeSanitizeHtml?: EmitType<BeforeSanitizeHtmlArgs>;
 
     /**
-     * Triggers when RichTextEditor is focused out.
+     * Triggers when Rich Text Editor is focused out.
      * @event
      * @blazorType BlurEventArgs
      */
     blur?: EmitType<Object>;
 
     /**
-     * Triggers when RichTextEditor Toolbar items is clicked.
+     * Triggers when Rich Text Editor Toolbar items is clicked.
      * @event
      * @blazorProperty 'OnToolbarClick'
      * @blazorType ToolbarClickEventArgs
@@ -631,14 +633,14 @@ export interface RichTextEditorModel extends ComponentModel{
     toolbarClick?: EmitType<Object>;
 
     /**
-     * Triggers when RichTextEditor is focused in
+     * Triggers when Rich Text Editor is focused in
      * @event
      * @blazorType FocusEventArgs
      */
     focus?: EmitType<Object>;
 
     /**
-     * Triggers only when RichTextEditor is blurred and changes are done to the content.
+     * Triggers only when Rich Text Editor is blurred and changes are done to the content.
      * @event 
      * @blazorProperty 'ValueChange'
      */

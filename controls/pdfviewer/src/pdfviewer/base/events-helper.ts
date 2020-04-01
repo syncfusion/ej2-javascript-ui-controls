@@ -1,7 +1,7 @@
 
 import { BaseEventArgs } from '@syncfusion/ej2-base';
 import { AnnotationType } from './index';
-import { ShapeLabelSettingsModel } from '../pdfviewer-model';
+import { ShapeLabelSettingsModel, DocumentTextCollectionSettingsModel } from '../pdfviewer-model';
 /**
  * Exports types used by PDF viewer.
  */
@@ -608,7 +608,29 @@ export interface AnnotationMouseoverEventArgs extends BaseEventArgs {
      */
     // tslint:disable-next-line
     annotationBounds: any;
+    /**
+     * Defines the mouseover x position with respect to page container.
+     */
+    pageX: number;
+    /**
+     * Defines the mouseover y position with respect to page container.
+     */
+    pageY: number;
 }
+
+/**
+ * This event arguments provides the necessary information about page mouseovers event.
+ */
+export interface PageMouseoverEventArgs extends BaseEventArgs {
+    /**
+     * Mouseover x position with respect to page container.
+     */
+    pageX: number;
+    /**
+     * Mouseover y position with respect to page container.
+     */
+    pageY: number;
+    }
 
 /**
  * This event arguments provides the necessary information about annotation select event.
@@ -642,6 +664,7 @@ export interface AnnotationSelectEventArgs extends BaseEventArgs {
      * Defines the annotation selection by mouse.
      */
     isProgrammaticSelection?: boolean;
+
 }
 
 /**
@@ -788,7 +811,7 @@ export interface ExtractTextCompletedEventArgs extends BaseEventArgs {
      * Returns the extracted text collection
      */
     // tslint:disable-next-line
-    documentTextCollection: any;
+    documentTextCollection: DocumentTextCollectionSettingsModel[][];
 }
 /** 
  * This event arguments provides the necessary information about data.

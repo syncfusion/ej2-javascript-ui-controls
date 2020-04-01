@@ -351,6 +351,9 @@ export class TaskProcessor extends DateProcessor {
             }
         }
         this.parent.setRecordValue('work', work, ganttData.ganttProperties, true);
+        if (!isNullOrUndefined(this.parent.taskFields.work)) {
+            this.parent.dataOperation.updateMappingData(ganttData, 'work');
+        }
     }
 
     /**
@@ -961,7 +964,12 @@ export class TaskProcessor extends DateProcessor {
             return resourceIdCollection;
         }
         resourceIdCollection = data[this.parent.taskFields.resourceInfo];
-        let resourceData: Object[] = this.parent.resources;
+        let resourceData: Object[];
+        if (!isNullOrUndefined(this.parent.editModule) && this.parent.editModule.dialogModule.isAddNewResource) {
+            resourceData = this.parent.editModule.dialogModule.ganttResources;
+        } else {
+            resourceData = this.parent.resources;
+        }
         let resourceIDMapping: string = this.parent.resourceFields.id;
         let resourceUnitMapping: string = this.parent.resourceFields.unit;
         let resourceGroup: string = this.parent.resourceFields.group;

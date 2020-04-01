@@ -2598,12 +2598,14 @@ export class TableCellWidget extends BlockWidget {
         let ownerTable: TableWidget = this.ownerTable;
         let containerWidth: number = ownerTable ? ownerTable.getTableClientWidth(ownerTable.getOwnerWidth(true)) : 0;
         let cellWidth: number = containerWidth;
+        let leftMargin: number = !isNullOrUndefined(this.leftMargin) ? this.leftMargin : 0;
+        let rightMargin: number = !isNullOrUndefined(this.rightMargin) ? this.rightMargin : 0;
         if (ownerTable && ownerTable.tableFormat.preferredWidthType === 'Auto' && ownerTable.tableFormat.allowAutoFit) {
             cellWidth = containerWidth;
         } else if (this.cellFormat.preferredWidthType === 'Percent') {
-            cellWidth = (this.cellFormat.preferredWidth * containerWidth) / 100 - this.leftMargin - this.rightMargin;
+            cellWidth = (this.cellFormat.preferredWidth * containerWidth) / 100 - leftMargin - rightMargin;
         } else if (this.cellFormat.preferredWidthType === 'Point') {
-            cellWidth = this.cellFormat.preferredWidth - this.leftMargin - this.rightMargin;
+            cellWidth = this.cellFormat.preferredWidth - leftMargin - rightMargin;
         }
         // For grid before and grid after with auto width, no need to calculate minimum preferred width.
         return cellWidth;
@@ -2745,6 +2747,11 @@ export class TableCellWidget extends BlockWidget {
         let defaultWidth: number = 0;
         if (this.cellFormat.preferredWidth > 0) {
             return this.cellFormat.preferredWidth;
+            //if table has preferred width value and cell preferred width is auto, considered cell width.
+        } else if (this.cellFormat.preferredWidth === 0 && this.cellFormat.preferredWidthType === 'Auto'
+            && this.cellFormat.cellWidth !== 0 && this.ownerTable &&
+            this.ownerTable.tableFormat.preferredWidthType !== 'Auto') {
+            return this.cellFormat.cellWidth;
         }
         defaultWidth = this.leftMargin + this.rightMargin + this.getLeftBorderWidth() + this.getRightBorderWidth() + this.getCellSpacing();
 
@@ -6618,7 +6625,7 @@ export class WTableHolder {
         // If totalColumnWidth < TableWidth, all grid columns are enlarged. Otherwise shrinked.
         if (totalColumnWidth !== this.tableWidth) {
             let factor: number = this.tableWidth / totalColumnWidth;
-            factor = isNaN(factor) ? 1 : factor;
+            factor = isNaN(factor) || factor === Infinity ? 1 : factor;
             for (let i: number = 0; i < this.columns.length; i++) {
                 let column: WColumn = this.columns[i];
                 //column.PreferredWidth = factor * column.PreferredWidth;
@@ -6769,7 +6776,7 @@ export class WTableHolder {
         // If totalColumnWidth < TableWidth, all grid columns are enlarged. Otherwise shrinked.
         if (totalColumnWidth !== this.tableWidth) {
             let factor: number = this.tableWidth / totalColumnWidth;
-
+            factor = isNaN(factor) || factor === Infinity ? 1 : factor;
             for (let i: number = 0; i < this.columns.length; i++) {
                 let column: WColumn = this.columns[i];
                 column.preferredWidth = factor * column.preferredWidth;

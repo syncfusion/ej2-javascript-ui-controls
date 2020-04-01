@@ -21,13 +21,10 @@ export class StackingLineSeries extends LineBase {
         let polarType: boolean = series.chart.chartAreaType === 'PolarRadar';
         let getCoordinate: Function = polarType ? TransformToVisible : getPoint;
         let direction: string = '';
-        let visiblePts: Points[] = <Points[]>series.points;
+        let visiblePts: Points[] = this.enableComplexProperty(series);
         let pointsLength: number = visiblePts.length;
         let stackedvalue: StackValues = series.stackedValues;
         let startPoint: number = 0;
-        let origin: number = polarType ?
-            Math.max(series.yAxis.visibleRange.min, stackedvalue.endValues[0]) :
-            Math.max(series.yAxis.visibleRange.min, stackedvalue.startValues[0]);
         let options: PathOption;
         let point1: ChartLocation;
         let point2: ChartLocation;
@@ -64,7 +61,7 @@ export class StackingLineSeries extends LineBase {
             }
         }
         if (series.chart.chartAreaType === 'PolarRadar' && visiblePts.length > 1) {
-            point1 = { 'y': stackedvalue.endValues[0], 'x': series.points[0].xValue,  };
+            point1 = { 'y': stackedvalue.endValues[0], 'x': series.points[0].xValue, };
             point2 = getCoordinate(point1.x, point1.y, xAxis, yAxis, isInverted, series);
             direction += ('L' + ' ' + (point2.x) + ' ' + (point2.y) + ' ');
         }

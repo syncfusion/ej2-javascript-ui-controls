@@ -3,6 +3,8 @@ import { createElement } from '@syncfusion/ej2-base';
 import { ProgressAnnotationSettingsModel } from './progress-base-model';
 import { ProgressAnnotationSettings } from './progress-base';
 import { AnnotationBase } from './annotation';
+import { ProgressAnimation } from '../utils/progress-animation';
+
 /**
  * Class for progress annotation
  */
@@ -10,8 +12,9 @@ export class ProgressAnnotation extends AnnotationBase {
     private progress: ProgressBar;
     private annotations: ProgressAnnotationSettingsModel[];
     private parentElement: HTMLElement;
+    private animation: ProgressAnimation = new ProgressAnimation();
     /**
-     * Constructor for Progress annotation
+     * Constructor for ProgressBar annotation
      * @private
      */
     constructor(control: ProgressBar, annotations: ProgressAnnotationSettings[]) {
@@ -20,7 +23,7 @@ export class ProgressAnnotation extends AnnotationBase {
         this.annotations = annotations;
     }
     /**
-     * Method to render the annotation for chart
+     * Method to render the annotation for ProgressBar
      * @param element
      * @private
      */
@@ -36,6 +39,10 @@ export class ProgressAnnotation extends AnnotationBase {
         });
         if (!parentElement) {
             element.appendChild(this.parentElement);
+        }
+        if (this.progress.animation.enable && !this.progress.isIndeterminate) {
+            let annotationElement: Element = document.getElementById(this.progress.element.id + 'Annotation0').children[0];
+            this.animation.doAnnotationAnimation(annotationElement, this.progress, this.progress.startAngle, this.progress.annotationEnd);
         }
     }
     /**

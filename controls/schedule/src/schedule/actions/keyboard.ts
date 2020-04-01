@@ -322,6 +322,9 @@ export class KeyboardInteraction {
                     }
                     selectedCells = resourceSelectedCells;
                 }
+                if (!this.parent.allowMultiCellSelection) {
+                    selectedCells = [this.initialTarget];
+                }
                 this.selectedCells = selectedCells;
                 if (selectedCells.length > 2 && !target.classList.contains(cls.ALLDAY_CELLS_CLASS)) {
                     let allDayCells: HTMLTableCellElement[] = this.getAllDayCells(selectedCells);

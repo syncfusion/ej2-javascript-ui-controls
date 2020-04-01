@@ -11,17 +11,25 @@ import { SelectionSettingsModel, ListBoxModel, ToolbarSettingsModel } from './li
 import { Button } from '@syncfusion/ej2-buttons';
 import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { DataManager, Query } from '@syncfusion/ej2-data';
-
+/**
+ * Defines the selection mode of List Box.
+ */
 export type SelectionMode = 'Multiple' | 'Single';
-
+/**
+ * Defines the toolbar position of List Box.
+ */
 export type ToolBarPosition = 'Left' | 'Right';
-
+/**
+ * Defines the checkbox position of List Box.
+ */
 export type CheckBoxPosition = 'Left' | 'Right';
 
 type dataType = { [key: string]: object } | string | boolean | number;
 type obj = { [key: string]: object };
 const ITEMTEMPLATE_PROPERTY: string = 'ItemTemplate';
-
+/**
+ * Defines the Selection settings of List Box.
+ */
 export class SelectionSettings extends ChildProperty<SelectionSettings> {
     /**
      * Specifies the selection modes. The possible values are
@@ -53,7 +61,9 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
     @Property('Left')
     public checkboxPosition: CheckBoxPosition;
 }
-
+/**
+ * Defines the toolbar settings of List Box.
+ */
 export class ToolbarSettings extends ChildProperty<ToolbarSettings> {
     /** 
      * Specifies the list of tools for dual ListBox.
@@ -344,6 +354,7 @@ export class ListBox extends DropDownBase {
             this.list = this.element.parentElement;
             this.liCollections = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll('.' + cssClass.li);
             this.mainList = this.ulElement = this.list.querySelector('ul');
+            this.setSelection(this.value);
             if (this.allowFiltering) {
                 this.setFiltering();
             }
@@ -1468,8 +1479,10 @@ export class ListBox extends DropDownBase {
             if (elems.length === 1 && childCnt && !fListBox.selectionSettings.showCheckbox) {
                 liIdx = childCnt <= dataLiIdx[0] ? childCnt - 1 : dataLiIdx[0];
                 ele = fListBox.ulElement.querySelectorAll('.e-list-item')[liIdx];
-                fListBox.ulElement.querySelectorAll('.e-list-item')[fListBox.getValidIndex(ele, liIdx, childCnt === dataIdx[0]
-                    ? 38 : 40)].classList.add(cssClass.selected);
+                let validIdx: number = fListBox.getValidIndex(ele, liIdx, childCnt === dataIdx[0] ? 38 : 40);
+                if (validIdx > -1) {
+                    (fListBox.ulElement.querySelectorAll('.e-list-item')[validIdx].classList.add(cssClass.selected));
+                }
             }
             if (isKey) {
                 this.list.focus();
@@ -1850,9 +1863,6 @@ export class ListBox extends DropDownBase {
         if (this.tBListBox) {
             this.tBListBox.updateToolBarState();
         }
-        if (this.allowFiltering) {
-            (this.list.getElementsByClassName('e-input-filter')[0] as HTMLElement).focus();
-        }
     }
 
     private clearSelection(values: (string | number | boolean)[] = this.value): void {
@@ -2039,7 +2049,7 @@ export class ListBox extends DropDownBase {
         if (this.element.tagName === 'EJS-LISTBOX') {
             this.element.innerHTML = '';
         } else {
-            if (!isBlazor()) {
+            if (!isBlazor() || (isBlazor() && !this.isServerRendered)) {
                 this.element.style.display = 'inline-block';
                 if (this.toolbarSettings.items.length) {
                     this.list.parentElement.parentElement.insertBefore(this.list, this.list.parentElement);
@@ -2048,7 +2058,7 @@ export class ListBox extends DropDownBase {
                 this.list.parentElement.insertBefore(this.element, this.list);
             }
         }
-        if (!isBlazor()) {
+        if (!isBlazor() || (isBlazor() && !this.isServerRendered)) {
             super.destroy();
         }
     }

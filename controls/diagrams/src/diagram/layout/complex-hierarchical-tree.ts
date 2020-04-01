@@ -290,10 +290,52 @@ class HierarchicalLayoutUtil {
                 } else if (layout.orientation === 'RightToLeft') {
                     x = modelBounds.width - dx;
                 }
-                // x += trnsX;
                 dnode.offsetX += x - dnode.offsetX;
                 dnode.offsetY += y - dnode.offsetY;
             }
+        }
+        for (let i: number = 0; i < this.vertices.length; i++) {
+            this.isNodeOverLap(this.nameTable[this.vertices[i].name], layoutProp);
+        }
+    }
+
+    private calculateRectValue(dnode: INode): Rect {
+        let rect: Rect = { x: 0, y: 0, right: 0, bottom: 0, height: 0, width: 0 };
+        rect.x = dnode.offsetX - dnode.actualSize.width / 2;
+        rect.right = dnode.offsetX + dnode.actualSize.width / 2;
+        rect.y = dnode.offsetY - dnode.actualSize.height / 2;
+        rect.bottom = dnode.offsetY + dnode.actualSize.height / 2;
+        return rect;
+    }
+
+    private isNodeOverLap(dnode: INode, layoutProp: Layout): void {
+        let nodeRect: Rect = { x: 0, y: 0, right: 0, bottom: 0, height: 0, width: 0 };
+        for (let i: number = 0; i < this.vertices.length; i++) {
+            let rect: Rect = { x: 0, y: 0, width: 0, height: 0 };
+            let tempnode1: INode;
+            tempnode1 = this.nameTable[this.vertices[i].value];
+            if (dnode.id !== tempnode1.id && tempnode1.offsetX !== 0 && tempnode1.offsetY !== 0) {
+                nodeRect = this.calculateRectValue(dnode);
+                rect = this.calculateRectValue(tempnode1);
+                if (this.isIntersect(rect, nodeRect, layoutProp)) {
+                    if (layoutProp.orientation === 'TopToBottom' || layoutProp.orientation === 'BottomToTop') {
+                        dnode.offsetX += layoutProp.horizontalSpacing;
+                    } else {
+                        dnode.offsetY += layoutProp.verticalSpacing;
+                    }
+                    this.isNodeOverLap(dnode, layoutProp);
+                }
+            }
+        }
+    }
+
+    private isIntersect(rect: Rect, nodeRect: Rect, layoutProp: Layout): boolean {
+        if (!(rect.right + layoutProp.horizontalSpacing <= nodeRect.x || rect.x - layoutProp.horizontalSpacing >= nodeRect.right
+            || rect.y - layoutProp.verticalSpacing >= nodeRect.bottom
+            || rect.bottom + layoutProp.verticalSpacing <= nodeRect.y)) {
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -1400,7 +1442,7 @@ class CrossReduction {
     public nestedBestRanks: IVertex[][];
     /**
      * used to calculate the number of edges crossing the layout model
-     * @param model 
+     * @param {MultiParentModel} model 
      */
     private calculateCrossings(model: MultiParentModel): number {
         let numRanks: number = model.ranks.length;
@@ -1846,4 +1888,6 @@ interface Rect {
     y: number;
     width: number;
     height: number;
+    right?: number;
+    bottom?: number;
 }

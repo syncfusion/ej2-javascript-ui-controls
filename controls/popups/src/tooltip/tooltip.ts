@@ -930,6 +930,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         //if (isNullOrUndefined(target)) { return; }
         this.trigger('beforeClose', this.tooltipEventArgs, (observedArgs: TooltipEventArgs) => {
             if (!observedArgs.cancel) {
+                this.clearTemplate();
                 if (target) { this.restoreElement(target); }
                 this.isHidden = true;
                 let closeAnimation: Object = {
@@ -995,7 +996,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
                 this.unwireMouseEvents(e.target as Element);
             } else {
                 this.hideTooltip(this.animation.close, e);
-                this.clear();
+                if (this.closeDelay === 0) { this.clear(); }
             }
         } else {
             this.hideTooltip(this.animation.close, e);

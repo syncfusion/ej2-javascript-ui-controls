@@ -57,6 +57,7 @@ interface AcrdnElementComment {
   data?: string;
 }
 
+/** An interface that holds options to control the accordion click action. */
 export interface AccordionClickArgs extends BaseEventArgs {
   /** Defines the current Accordion Item Object. */
   item?: AccordionItemModel;
@@ -66,6 +67,7 @@ export interface AccordionClickArgs extends BaseEventArgs {
    */
   originalEvent?: Event;
 }
+/** An interface that holds options to control the expanding item action. */
 export interface ExpandEventArgs extends BaseEventArgs {
   /** Defines the current Accordion Item Object. */
   item?: AccordionItemModel;
@@ -81,6 +83,7 @@ export interface ExpandEventArgs extends BaseEventArgs {
   content?: HTMLElement;
 }
 
+/** An interface that holds options to control the expanded item action. */
 export interface ExpandedEventArgs extends BaseEventArgs {
   /** Defines the current Accordion Item Object. */
   item?: AccordionItemModel;
@@ -94,6 +97,9 @@ export interface ExpandedEventArgs extends BaseEventArgs {
   content?: HTMLElement;
 }
 
+/**
+ * Objects used for configuring the Accordion expanding item action properties.
+ */
 export class AccordionActionSettings extends ChildProperty<AccordionActionSettings> {
   /**
    * Specifies the type of animation.
@@ -117,6 +123,9 @@ export class AccordionActionSettings extends ChildProperty<AccordionActionSettin
   public easing: string;
 }
 
+/**
+ * Objects used for configuring the Accordion animation properties.
+ */
 export class AccordionAnimationSettings extends ChildProperty<AccordionAnimationSettings> {
   /**
    * Specifies the animation to appear while collapsing the Accordion item.

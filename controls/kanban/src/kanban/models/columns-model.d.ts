@@ -60,4 +60,10 @@ export interface ColumnsModel {
      */
     showItemCount?: boolean;
 
+    /**
+     * Enable or disable cell add button
+     * @default false
+     */
+    showAddButton?: boolean;
+
 }

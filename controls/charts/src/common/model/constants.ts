@@ -39,6 +39,8 @@ export const chartMouseClick : string = 'chartMouseClick';
 /** @private */
 export const pointClick : string = 'pointClick';
 /** @private */
+export const pointDoubleClick: string = 'pointDoubleClick';
+/** @private */
 export const pointMove : string = 'pointMove';
 /** @private */
 export const chartMouseLeave : string = 'chartMouseLeave';
@@ -84,3 +86,5 @@ export const beforeExport : string = 'beforeExport';
 export const afterExport : string = 'afterExport';
 /** @private */
 export const bulletChartMouseClick : string = 'chartMouseClick';
+/** @private */
+export const onZooming: string = 'onZooming';

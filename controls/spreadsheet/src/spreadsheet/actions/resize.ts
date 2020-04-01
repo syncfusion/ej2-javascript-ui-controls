@@ -4,7 +4,7 @@ import { colWidthChanged, rowHeightChanged, beforeHeaderLoaded, contentLoaded, h
 import { findMaxValue, setResize, autoFit, HideShowEventArgs, completeAction, setAutoFit } from '../common/index';
 import { setRowHeight, isHiddenRow, SheetModel, getRowHeight, getColumnWidth, setColumn, isHiddenCol } from '../../workbook/base/index';
 import { getColumn, setRow } from '../../workbook/base/index';
-import { getRangeIndexes, getSwapRange, CellStyleModel, getCellIndexes } from '../../workbook/common/index';
+import { getRangeIndexes, getSwapRange, CellStyleModel, getCellIndexes, setMerge, MergeArgs } from '../../workbook/common/index';
 
 /**
  * The `Resize` module is used to handle the resizing functionalities in Spreadsheet.
@@ -264,7 +264,7 @@ export class Resize {
         if (isCol) {
             let rowLength: number = sheet.rows.length;
             for (let rowIdx: number = 0; rowIdx < rowLength; rowIdx++) {
-                if (sheet.rows[rowIdx] && sheet.rows[rowIdx].cells[idx]) {
+                if (sheet.rows[rowIdx] && sheet.rows[rowIdx].cells && sheet.rows[rowIdx].cells[idx]) {
                     let td: HTMLElement = this.parent.createElement('td', {
                         className: 'e-cell',
                         innerHTML: this.parent.getDisplayText(sheet.rows[rowIdx].cells[idx])
@@ -374,7 +374,7 @@ export class Resize {
                 this.showHiddenColumns(index, width);
                 this.parent.notify(completeAction, {
                     eventArgs: {
-                        index: index, width: `${0}px`, isCol: true, sheetIdx: this.parent.activeSheetTab, oldWidth: `${curWidth}px`,
+                        index: index, width: `${0}px`, isCol: true, sheetIdx: this.parent.activeSheetIndex, oldWidth: `${curWidth}px`,
                         hide: false
                     }, action: 'resize'
                 });
@@ -388,7 +388,7 @@ export class Resize {
                 this.parent.hideColumn(index);
                 this.parent.notify(completeAction, {
                     eventArgs: {
-                        index: index, width: `${0}px`, isCol: true, sheetIdx: this.parent.activeSheetTab, oldWidth: `${curWidth}px`,
+                        index: index, width: `${0}px`, isCol: true, sheetIdx: this.parent.activeSheetIndex, oldWidth: `${curWidth}px`,
                         hide: true
                     }, action: 'resize'
                 });
@@ -451,6 +451,7 @@ export class Resize {
                 tbody.insertBefore(eventArgs.row, tbody.children[eventArgs.insertIdx]);
                 this.trgtEle = <HTMLElement>eventArgs.hdrRow.firstElementChild;
                 eventArgs.hdrRow.nextElementSibling.classList.remove('e-hide-end');
+                eventArgs.mergeCollection.forEach((mergeArgs: MergeArgs): void => { this.parent.notify(setMerge, mergeArgs); });
             } else {
                 if (this.trgtEle.classList.contains('e-skip-resize')) {
                     this.trgtEle.classList.remove('e-skip-resize');
@@ -470,7 +471,7 @@ export class Resize {
                 setRow(sheet, actualIdx, { height: 0, customHeight: true });
                 this.parent.notify(completeAction, {
                     eventArgs:
-                        { index: actualIdx, height: '0px', isCol: false, sheetIdx: this.parent.activeSheetTab, oldHeight: prevData },
+                        { index: actualIdx, height: '0px', isCol: false, sheetIdx: this.parent.activeSheetIndex, oldHeight: prevData },
                     action: 'resize'
                 });
                 return;
@@ -497,7 +498,7 @@ export class Resize {
                             eventArgs:
                             {
                                 index: i, height: `${rowHeight}px`, isCol: false,
-                                sheetIdx: this.parent.activeSheetTab, oldHeight: prevData
+                                sheetIdx: this.parent.activeSheetIndex, oldHeight: prevData
                             },
                             action: 'resize'
                         });
@@ -545,10 +546,10 @@ export class Resize {
         let eventArgs: object;
         let isAction: boolean;
         if (isCol) {
-            eventArgs = { index: idx, width: value, isCol: isCol, sheetIdx: this.parent.activeSheetTab, oldWidth: prevData };
+            eventArgs = { index: idx, width: value, isCol: isCol, sheetIdx: this.parent.activeSheetIndex, oldWidth: prevData };
             isAction = prevData !== value;
         } else {
-            eventArgs = { index: idx, height: value, isCol: isCol, sheetIdx: this.parent.activeSheetTab, oldHeight: prevData };
+            eventArgs = { index: idx, height: value, isCol: isCol, sheetIdx: this.parent.activeSheetIndex, oldHeight: prevData };
             isAction = prevData !== value;
         }
         if (isAction) {

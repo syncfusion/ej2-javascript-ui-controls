@@ -1,6 +1,6 @@
 import { Animation, AnimationOptions } from '@syncfusion/ej2-base';
 import { DoubleRange } from '../utils/double-range';
-import { appendChildElement, redrawElement, pathAnimation, valueToCoefficient } from '../../common/utils/helper';
+import { appendChildElement, redrawElement, pathAnimation, valueToCoefficient, getVisiblePoints } from '../../common/utils/helper';
 import { getAnimationFunction, getPoint, ChartLocation, getMinPointsDelta } from '../../common/utils/helper';
 import { PathOption, Rect } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
@@ -76,8 +76,8 @@ export class ColumnBase {
     private findRectPosition(seriesCollection: Series[]): void {
         let stackingGroup: string[] = [];
         let vSeries: RectPosition = { rectCount: 0, position: null };
-        for (let i : number = 0; i < seriesCollection.length; i++) {
-        let value: Series = seriesCollection[i];
+        for (let i: number = 0; i < seriesCollection.length; i++) {
+            let value: Series = seriesCollection[i];
             // tslint:disable-next-line:align
             if (value.type.indexOf('Stacking') !== -1) {
                 if (value.stackingGroup) {
@@ -98,12 +98,12 @@ export class ColumnBase {
             } else {
                 value.position = vSeries.rectCount++;
             }
-         }
-         // tslint:disable-next-line:align
-         for (let i : number = 0; i < seriesCollection.length; i++) {
+        }
+        // tslint:disable-next-line:align
+        for (let i: number = 0; i < seriesCollection.length; i++) {
             let value: Series = seriesCollection[i];
             value.rectCount = vSeries.rectCount;
-           }
+        }
     }
 
     /**
@@ -129,12 +129,12 @@ export class ColumnBase {
      * @private
      */
     protected updateXRegion(point: Points, rect: Rect, series: Series): void {
-        point.regions.push(rect);
         point.symbolLocations.push({
             x: rect.x + (rect.width) / 2,
             y: (series.seriesType === 'BoxPlot' || series.seriesType.indexOf('HighLow') !== -1 ||
                 (point.yValue >= 0 === !series.yAxis.isInversed)) ? rect.y : (rect.y + rect.height)
         });
+        this.getRegion(point, rect, series);
         if (series.type === 'RangeColumn') {
             point.symbolLocations.push({
                 x: rect.x + (rect.width) / 2,
@@ -148,12 +148,12 @@ export class ColumnBase {
      * @private
      */
     protected updateYRegion(point: Points, rect: Rect, series: Series): void {
-        point.regions.push(rect);
         point.symbolLocations.push({
             x: (series.seriesType === 'BoxPlot' || series.seriesType.indexOf('HighLow') !== -1 ||
                 (point.yValue >= 0 === !series.yAxis.isInversed)) ? rect.x + rect.width : rect.x,
             y: rect.y + rect.height / 2
         });
+        this.getRegion(point, rect, series);
         if (series.type === 'RangeColumn') {
             point.symbolLocations.push({
                 x: rect.x,
@@ -171,7 +171,25 @@ export class ColumnBase {
             series.chart.markerRender.render(series);
         }
     }
-
+    /**
+     * To get the marker region when Y value is 0
+     * @param point
+     * @param series
+     */
+    private getRegion(point: Points, rect: Rect, series: Series): void {
+        if (point.y === 0) {
+            let markerWidth: number = (series.marker && series.marker.width) ? series.marker.width : 0;
+            let markerHeight: number = (series.marker && series.marker.height) ? series.marker.height : 0;
+            point.regions.push(new Rect(
+                point.symbolLocations[0].x - markerWidth,
+                point.symbolLocations[0].y - markerHeight,
+                2 * markerWidth,
+                2 * markerHeight
+            ));
+        } else {
+            point.regions.push(rect);
+        }
+    }
     /**
      * To trigger the point rendering event.
      * @return {void}
@@ -232,7 +250,8 @@ export class ColumnBase {
     public animate(series: Series): void {
         let rectElements: NodeList = series.seriesElement.childNodes;
         let count: number = series.category === 'Indicator' ? 0 : 1;
-        for (let point of series.points) {
+        let visiblePoints: Points[] = getVisiblePoints(series);
+        for (let point of visiblePoints) {
             if (!point.symbolLocations.length && !(series.type === 'BoxAndWhisker' && point.regions.length)) {
                 continue;
             }
@@ -340,6 +359,7 @@ export class ColumnBase {
             (rect.y + rect.height) + ' ' + rect.x + ' ' + (rect.y + rect.height - bottomLeft) + ' ' + 'L' + ' ' + rect.x + ' ' +
             (topLeft + rect.y) + ' ' + 'Z';
     }
+
 }
 export interface RectPosition {
     position: number;

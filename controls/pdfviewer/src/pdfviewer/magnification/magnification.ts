@@ -332,7 +332,7 @@ export class Magnification {
             this.pdfViewerBase.viewerContainer.style.overflowY = 'auto';
         }
         if (this.pdfViewerBase.pageCount > 0) {
-            if ((this.previousZoomFactor !== this.zoomFactor)) {
+            if ((this.previousZoomFactor !== this.zoomFactor) && !this.pdfViewerBase.documentLoaded) {
                 if (!this.isPinchZoomed) {
                     this.magnifyPages();
                 } else {
@@ -551,12 +551,12 @@ export class Magnification {
             this.pdfViewerBase.renderedPagesList = [];
             this.pdfViewerBase.pinchZoomStorage = [];
             let pageDivs: NodeList = document.querySelectorAll('canvas[id*="' + this.pdfViewer.element.id + '_pageCanvas_"]');
-            let viewportWidth: number = 816;
+            let viewPortWidth: number = 816;
             for (let i: number = 0; i < pageDivs.length; i++) {
                 // tslint:disable-next-line:radix
                 let pageNumber: number = parseInt((pageDivs[i] as HTMLElement).id.split('_pageCanvas_')[1]);
                 let pageWidth: number = this.pdfViewerBase.pageSize[pageNumber].width;
-                if (viewportWidth < pageWidth) {
+                if ((viewPortWidth < pageWidth) && this.pdfViewer.tileRenderingSettings.enableTileRendering) {
                     (pageDivs[i] as HTMLCanvasElement).width = pageWidth * this.pdfViewerBase.getZoomFactor();
                     // tslint:disable-next-line:max-line-length
                     (pageDivs[i] as HTMLCanvasElement).height = this.pdfViewerBase.pageSize[pageNumber].height * this.pdfViewerBase.getZoomFactor();

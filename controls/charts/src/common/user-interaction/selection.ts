@@ -370,6 +370,9 @@ export class BaseSelection {
      * Selected points series visibility checking on legend click
      */
     protected checkVisibility(selectedIndexes: Indexes[]): boolean {
+        if (!selectedIndexes) {
+            return false;
+        }
         let visible: boolean = false;
         let uniqueSeries: number[] = [];
         for (let index of selectedIndexes) {

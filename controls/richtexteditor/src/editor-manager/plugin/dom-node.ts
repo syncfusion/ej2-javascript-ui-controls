@@ -441,7 +441,7 @@ export class DOMNode {
                     }
                     if (textNodes.indexOf(node) < 0 && (node.nodeType === Node.TEXT_NODE ||
                         (CONSTANT.IGNORE_BLOCK_TAGS.indexOf((node.parentNode as Element).tagName.toLocaleLowerCase()) >= 0
-                            && node.tagName === 'BR'))) {
+                            && (node.tagName === 'BR' || node.tagName === 'IMG')))) {
                         textNodes.push(node);
                     }
                 }
@@ -452,8 +452,9 @@ export class DOMNode {
             }
         }
         if (start !== end) {
-            if (start.nodeType !== Node.TEXT_NODE && start.tagName === 'BR' &&
-                CONSTANT.IGNORE_BLOCK_TAGS.indexOf((start.parentNode as Element).tagName.toLocaleLowerCase()) >= 0) {
+            if (start.nodeType !== Node.TEXT_NODE && ((start.tagName === 'BR' &&
+                CONSTANT.IGNORE_BLOCK_TAGS.indexOf((start.parentNode as Element).tagName.toLocaleLowerCase()) >= 0) ||
+                start.tagName === 'IMG')) {
                 this.replaceWith(start, this.marker(markerClassName.startSelection, this.encode(start.textContent)));
                 let markerStart: Element = (range.startContainer as HTMLElement).querySelector('.' + markerClassName.startSelection);
                 markerStart.appendChild(start);

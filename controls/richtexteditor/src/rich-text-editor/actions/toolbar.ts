@@ -104,26 +104,40 @@ export class Toolbar {
             case ToolbarType.Expand:
                 tbMode = 'Extended';
                 break;
+            case ToolbarType.Scrollable:
+                tbMode = 'Scrollable';
+                break;
             default:
                 tbMode = 'MultiRow';
+        }
+        if (isIDevice() && this.parent.toolbarSettings.type === ToolbarType.Expand) {
+            tbMode =  ToolbarType.Scrollable;
         }
         return tbMode;
     }
 
     private checkToolbarResponsive(ele: HTMLElement): boolean {
         if (!Browser.isDevice || isIDevice()) { return false; }
+        let tBarMode : string;
+        if (this.parent.toolbarSettings.type === ToolbarType.Expand) {
+            tBarMode = ToolbarType.MultiRow;
+        } else {
+            tBarMode = this.parent.toolbarSettings.type;
+        }
         this.baseToolbar.render({
             container: ((this.parent.inlineMode.enable) ? 'quick' : 'toolbar'),
             items: this.parent.toolbarSettings.items,
-            mode: 'MultiRow',
+            mode: tBarMode,
             target: ele
         } as IToolbarRenderOptions);
+        if (this.parent.toolbarSettings.type === ToolbarType.Expand) {
         addClass([ele], ['e-rte-tb-mobile']);
         if (this.parent.inlineMode.enable) {
             this.addFixedTBarClass();
         } else {
             addClass([ele], [classes.CLS_TB_STATIC]);
         }
+    }
         this.wireEvents();
         this.dropDownModule.renderDropDowns({
             container: ele,

@@ -3,399 +3,349 @@
  */
 
 /** 
- * Defines the Alignment. They are
- * * near - Align the element to the left.
- * * center - Align the element to the center.
- * * far - Align the element to the right.
- * * 
+ * Defines the alignment for the elements in map.
  */
 export type Alignment =
-    /** Define the left alignment. */
+    /** Specifies the element to be placed near the maps. */
     'Near' |
-    /** Define the center alignment. */
+    /** Specifies the element to be placed at the center of the maps. */
     'Center' |
-    /** Define the right alignment. */
+    /** Specifies the element to be placed far from the maps. */
     'Far';
 /** 
- * Defines Theme of the maps. They are
- * * Material - Render a maps with Material theme.
- * * Fabric - Render a maps with Fabric theme
- * * Bootstrap - Render a maps with Bootstrap theme
- * * Dark - Render a maps with Dark theme
+ * Defines the theme supported for maps.
  */
 export type MapsTheme =
-    /**  Render a maps with Material theme. */
+    /**  Renders a map with material theme. */
     'Material' |
-    /**  Render a maps with Fabric theme. */
+    /**  Renders a map with fabric theme. */
     'Fabric' |
-    /**  Render a maps with Highcontrast Light theme. */
+    /**  Renders a map with highcontrast light theme. */
     'HighContrastLight' |
-    /**  Render a maps with Bootstrap theme. */
+    /**  Renders a map with bootstrap theme. */
     'Bootstrap' |
-    /**  Render a maps with Material Dark theme. */
+    /**  Renders a map with material dark theme. */
     'MaterialDark'|
-    /**  Render a maps with Fabric Dark theme. */
+    /**  Renders a map with fabric dark theme. */
     'FabricDark'|
-    /**  Render a maps with Highcontrast Dark theme. */
+    /**  Renders a map with highcontrast dark theme. */
     'HighContrast'|
-    /**  Render a maps with Bootstrap Dark theme. */
+    /**  Renders a map with bootstrap dark theme. */
     'BootstrapDark'|
-    /** Render a maps with Bootstrap4 theme. */
+    /** Renders a map with bootstrap4 theme. */
     'Bootstrap4';
 
 
 /** 
- * Defines the position of the legend. They are
- * * top - Displays the legend on the top of maps.
- * * left - Displays the legend on the left of maps.
- * * bottom - Displays the legend on the bottom of maps.
- * * right - Displays the legend on the right of maps.
- * * float - Displays the legend  based on given x and y value.
+ * Defines the position of the legend.
  */
 export type LegendPosition =
-    /** Places the legend on the top of maps. */
+    /** Specifies the legend to be placed on the top of maps. */
     'Top' |
-    /** Places the legend on the left of maps. */
+    /** Specifies the legend to be placed to the left of maps. */
     'Left' |
-    /** Places the legend on the bottom of maps. */
+    /** Specifies the legend to be placed at the bottom of maps. */
     'Bottom' |
-    /** Places the legend on the right of maps. */
+    /** Specifies the legend to be placed to the right of maps. */
     'Right' |
-    /** Places the legend based on given x and y. */
+    /** Specifies the legend to be placed based on given x and y location. */
     'Float';
 
 /** 
- * Defines the Legend types. They are
- * * Layers - Legend applicable to Layers.
- * * Bubbles - Legend applicable to Bubbles.
- * * Markers - Legend applicable to Markers.
+ * Defines the type of the element in the map for which legend is to be rendered.
  */
 export type LegendType =
-    /** Legend applicable to Layers */
+    /** Renders the legend based on layers. */
     'Layers' |
-    /** Legend applicable to Bubbles. */
+    /** Renders the legend based on bubbles. */
     'Bubbles' |
-    /** Legend applicable to Markers */
+    /** Renders the legend based on markers. */
     'Markers';
 
 /**
- * Defines the smart label mode. They are
- * * Trim - Trims the datalabel which exceed the region
- * * None - Smart label mode is not applied
- * * hide - Hide the datalabel which exceeds the region
+ * Defines the smart label mode for the data-label. Smart label handles the data label text when it exceeds the shape.
  */
 export type SmartLabelMode =
-    /** Trims the datalabel which exceed the region */
+    /** Trims the datalabel which exceed the region. */
     'Trim' |
-    /** Smart label mode is not applied */
+    /** Smart label mode is not applied. */
     'None' |
-    /** Hides the datalabel which exceeds the region */
+    /** Hides the datalabel which exceeds the region. */
     'Hide';
 /**
- * Defines the arrow position in navigation line. They are
- * * Start - Arrow is positioned at the starting position of navigation line
- * * End - Arrow is positioned at the ending position of navigation line
+ * Defines the arrow position in navigation line.
  */
 export type ArrowPosition =
-    /** Arrow positioned at the start */
+    /** Defines the arrow to be positioned at the start of the navigation line. */
     'Start' |
-    /** Arrow positioned at the end */
+    /** Defines the arrow to be positioned at the end of the navigation line. */
     'End';
 /**
- * Defines the label intersect action. They are
- * * Trim - Trims the intersected datalabel
- * * None - Intersection action is not applied
- * * Hide - Hides the intersected datalabel
+ * Defines the label intersect action. Label interaction action handles the data label text
+ * when it intersects with other data label contents.
  */
 export type IntersectAction =
-    /** Trims the intersected datalabel */
+    /** Specifies the data label to be trimmed when it intersects. */
     'Trim' |
-    /** Intersection action is not applied */
+    /** Specifies that no action will be taken when it intersects. */
     'None' |
-    /** Hide the intersected datalabel */
+    /** Specifies the data label to be hidden when it intersects. */
     'Hide';
 /** 
- * Defines the Legend modes. They are
- * * Default - Specifies the Default mode.
- * * interactive - specifies the Interactive mode.
+ * Defines the mode of the legend.
  */
 export type LegendMode =
-    /** Legend remains static */
+    /** Specifies the legend as static. */
     'Default' |
-    /** Legend remains interactively */
+    /** Specifies the legend as interactive. */
     'Interactive';
 
 /**
- * Defines the Layer types.
- * * Geometry - Specifies the geometry type.
- * * Bing - Specifies the Bing type.
+ * Defines the type of the layer in the map.
  */
 export type ShapeLayerType =
     /**
-     * Draw the geometry shape
+     * Defines the map layer as geometry shapes.
      */
     'Geometry' |
     /**
-     * Draw the open street map
+     * Defines the map layer as open street map.
      */
     'OSM' |
     /**
-     * Draw the bing map
+     * Defines the map layer as bing.
      */
     'Bing' |
     /**
-     * Draw google map
+     * Specifies the map layer as google static map.
      */
     'GoogleStaticMap';
 /**
- * Defines the map layer types.
- * * Layer - Specifies the layer type.
- * * SubLayer - Specifies the sublayer type.
+ * Defines the type of the layer in maps.
  */
 export type Type =
-    /** Layer - Used to render layer on maps */
+    /**
+     * Specifies the layer type as main layer in the maps component.
+     */
     'Layer' |
-    /** SubLayer - Used to render sublayer on maps */
+    /**
+     * Specifies the layer type as sublayer in the maps component. This layer will be a part of the layer provided in the maps.
+     */
     'SubLayer';
 
 /**
- * Defines the marker types.
- * * Circle - Specifies the Circle type.
- * * Rectangle - Specifies the Rectangle type.
- * * Cross - Specifies the Cross type.
- * * Diamond - Specifies the Diamond type.
- * * Star - Specifies the Star type.
- * * Balloon - Specifies the Balloon type.
- * * Triangle - Specifies the Triangle type.
- * * HorizontalLine - Specifies the HorizontalLine type.
- * * VerticalLine - Specifies the VerticalLine type.
+ * Defines the type of markers in the maps component.
  */
 export type MarkerType =
-    /** Circle - Used to render marker shape as Circle on maps */
+    /** Specifies to render the marker shape as circle on maps. */
     'Circle' |
-    /** Rectangle - Used to render marker shape as Rectangle on maps */
+    /** Specifies to render the marker shape as rectangle on maps. */
     'Rectangle' |
-    /** Cross - Used to render marker shape as Cross on maps */
+    /** Specifies to render the marker shape as cross on maps. */
     'Cross' |
-    /** Diamond - Used to render marker shape as Diamond on maps */
+    /** Specifies to render the marker shape as diamond on maps. */
     'Diamond' |
-    /** Star - Used to render marker shape as Star on maps */
+    /** Specifies to render the marker shape as star on maps. */
     'Star' |
-    /** Balloon - Used to render marker shape as Balloon on maps */
+    /** Specifies to render the marker shape as balloon on maps. */
     'Balloon' |
-    /** Triangle - Used to render marker shape as Triangle on maps */
+    /** Specifies to render the marker shape as triangle on maps. */
     'Triangle' |
-    /** HorizontalLine - Used to render marker shape as HorizontalLine on maps */
+    /** Specifies to render the marker shape as horizontal line on maps. */
     'HorizontalLine' |
-    /** VerticalLine - Used to render marker shape as VerticalLine on maps */
+    /** Specifies to render the marker shape as vertical line on maps. */
     'VerticalLine' |
-    /** Image - Used to render marker shape as Image on maps  */
+    /** Specifies to render the marker shape as image on maps. */
     'Image' |
-    /** Inverted triangle - Used to render marker shape as InvertedTriangle on maps */
+    /** Specifies to render the marker shape as inverted triangle on maps. */
     'InvertedTriangle' |
-    /** Pentagon - Used  to render marker shape as Pentagon on maps */
+    /** Specifies to render the marker shape as pentagon on maps. */
     'Pentagon';
 
 /**
  * Defines the projection type of the maps.
- * * Mercator -Specifies the Mercator projection type.
  */
 export type ProjectionType =
-    /** Mercator - Used to render maps based on the Mercator type */
+    /** Specifies the maps to render in mercator projection type. */
     'Mercator' |
-    /** Winkel 3 is one of the projection for map rendering */
+    /** Specifies the maps to render in winklel3 projection type. */
     'Winkel3' |
-    /** Miller is one of the projection for map rendering */
+    /** Specifies the maps to render in miller projection type. */
     'Miller' |
-    /** Eckert3 is one of the projection for map rendering */
+    /** Specifies the maps to render in eckert3 projection type. */
     'Eckert3' |
-    /** Eckert5 is one of the projection for map rendering */
+    /** Specifies the maps to render in eckert5 projection type. */
     'Eckert5' |
-    /** Eckert6 is one of the projection for map rendering */
+    /** Specifies the maps to render in eckert6 projection type. */
     'Eckert6' |
-    /** Aitoff is one of the projection for map rendering */
+    /** Specifies the maps to render in ait off projection type. */
     'AitOff' |
-    /** Equirectangular is one of the projection for map rendering */
+    /** Specifies the maps to render in equirectangular projection type. */
     'Equirectangular';
 /**
- * Defines bing map types
- * * Aerial - specifies the Aerial type
- * * AerialWithLabel - specifies the AerialWithLabel type
- * * Road - specifies the Road type
+ * Defines the types of bing map.
  */
 export type BingMapType =
-    /** Aerial - Used to draw bing map layer with Aerial type */
+    /** Defines the maps to render bing map layer with aerial type. */
     'Aerial' |
-    /** AerialWithLabel - Used to draw bing map layer with AerialWithLabel type */
+    /** Defines the maps to render bing map layer with aerial with label type. */
     'AerialWithLabel' |
-    /** Road - Used to draw bing map layer with Road type */
+    /** Defines the maps to render bing map layer with road type. */
     'Road' |
-    /** CanvasDark - A dark version of the road maps */
+    /** Defines the maps to render a dark version of the road maps. */
     'CanvasDark' |
-    /** CanvasLight - A lighter version of the road maps */
+    /** Defines the maps to render a lighter version of the road maps. */
     'CanvasLight' |
-    /** CanvasGray - A grayscale version of the road maps */
+    /** Defines the maps to render a grayscale version of the road maps. */
     'CanvasGray';
 
 /**
- * Defines map types
- * * RoadMap - specifies the road type
+ * Defines the types of maps.
  */
 export type StaticMapType =
-    /** RoadMap - Used to render google map layer with RoadMap type */
+    /** Specifies the maps to render google map layer with road map type. */
     'RoadMap' |
-    /** Terrain - Used to render google map layer with Terrain type */
+    /** Specifies the maps to render google map layer with terrain type. */
     'Terrain' |
-    /** Satellite - Used to render google map layer with Satellite type */
+    /** Specifies the maps to render google map layer with satellite type. */
     'Satellite' |
-    /** Hybrid - google map with Hybrid type */
+    /** Specifies the maps to render the google map with hybrid type. */
     'Hybrid';
 
 /**
- * Defines the tool bar orientation
+ * Defines the zooming tool bar orientation.
  */
 export type Orientation =
-    /** Horizontal - Toolbar drawing horizontal orientation */
+    /** Specifies the zooming toolbar to be placed horizontally. */
     'Horizontal' |
-    /** Vertical - Toolbar drawing vertical orientation */
+    /** Specifies the zooming toolbar to be placed vertically. */
     'Vertical';
 
 /** 
- * Defines the shape of legend. They are
- * * circle - Renders a circle.
- * * rectangle - Renders a rectangle.
- * * triangle - Renders a triangle.
- * * diamond - Renders a diamond.
- * * cross - Renders a cross.
- * * Star - Renders a star.
- * * horizontalLine - Renders a horizontalLine.
- * * verticalLine - Renders a verticalLine.
- * * pentagon - Renders a pentagon.
- * * invertedTriangle - Renders a invertedTriangle.
+ * Defines the shape of legend.
  */
 export type LegendShape =
-    /** Render a circle. */
+    /** Specifies the legend shape as a circle. */
     'Circle' |
-    /** Render a Rectangle. */
+    /** Specifies the legend shape as a rectangle. */
     'Rectangle' |
-    /** Render a Triangle. */
+    /** Specifies the legend shape as a triangle. */
     'Triangle' |
-    /** Render a Diamond. */
+    /** Specifies the legend shape as a diamond. */
     'Diamond' |
-    /** Render a Cross. */
+    /** Specifies the legend shape as a cross. */
     'Cross' |
-    /** Render a Star. */
+    /** Specifies the legend shape as a star. */
     'Star' |
-    /** Render a HorizontalLine. */
+    /** Specifies the legend shape as a horizontal line. */
     'HorizontalLine' |
-    /** Render a VerticalLine. */
+    /** Specifies the legend shape as a vertical line. */
     'VerticalLine' |
-    /** Render a Pentagon. */
+    /** Specifies the legend shape as a pentagon. */
     'Pentagon' |
-    /** Render a InvertedTriangle. */
+    /** Specifies the legend shape as a inverted triangle. */
     'InvertedTriangle';
 /**
- * Defines the legend arrangement
+ * Defines the legend arrangement in the maps component.
  */
 export type LegendArrangement =
-    /** Legend item placed default based on legend orientation */
+    /** Specifies the legend item to be placed by default based on legend orientation. */
     'None' |
-    /** Legend items placed in row wise */
+    /** Specifies the legend items to be placed horizontally. */
     'Horizontal' |
-    /** Legend items place in column wise */
+    /** Specifies the legend items to be placed vertically. */
     'Vertical';
 
 /** 
- * Defines the Alignment. They are
- * * none - Default alignment as none
- * * near - Align the element to the left.
- * * center - Align the element to the center.
- * * far - Align the element to the right.
- * * 
+ * Defines the alignment for the annotation.
  */
 export type AnnotationAlignment =
-    /** Default alignement as none */
+    /** Specifies the annotation to be placed by default alignement. */
     'None' |
-    /** Define the left alignment. */
+    /** Specifies the annotation to be placed near the maps with respect to the position of the legend. */
     'Near' |
-    /** Define the center alignment. */
+    /** Specifies the annotation to be placed at the center of the maps with respect to the position of the legend. */
     'Center' |
-    /** Define the right alignment. */
+    /** Specifies the annotation to be placed far from the maps with respect to the position of the legend. */
     'Far';
 
 /** 
- * Defines the geometry type. They are
- * * Geographic - Default value of geometry layer. 
- * * Normal - Normal rendering of geometry layer.
- * *
+ * Defines the geometry type.
  */
 export type GeometryType =
-    /** Default value of geometry layer. */
+    /** Specifies the geometry rendering in the layer of the maps. */
     'Geographic' |
-    /** Define the normal rendering . */
+    /** Specifies the maps in normal rendering. */
     'Normal';
 /**
- * Defines the bubble type
+ * Defines the type of the bubble.
  */
 export type BubbleType =
-    /** Specifies the bubble circle type */
+    /** Specifies the bubble as circle type. */
     'Circle' |
-    /** Specifies the bubble Square type */
+    /** Specifies the bubble as square type. */
     'Square';
 
 /**
- * Defines the label placement type
+ * Defines the placement type of the label.
  */
 export type LabelPosition =
-    /** Specifies the label placement as Before */
+    /** Specifies the label placement as before. */
     'Before' |
-    /** Specifies the label plcement as After */
+    /** Specifies the label placement as after. */
     'After';
 
 /**
- * Defines the label intersect action types
+ * Defines the label intersect action in the maps component.
  */
 export type LabelIntersectAction =
-    /** Specifies the intersect action as None */
+    /**
+     * Specifies that no action will be taken when the label contents intersect.
+     */
     'None' |
-    /** Specifies the intersect action as Trim  */
+    /**
+     * Specifies the data label to be trimmed when it intersects.
+     */
     'Trim' |
-    /**  Specifies the intersect action as Hide */
+    /**
+     * Specifies the data label to be hidden when it intersects.
+     */
     'Hide';
+
 /**
- * Export Type
+ * Specifies the export type for the maps.
  */
 export type ExportType =
-    /** Used to export a image as png format */
+    /** Specifies the rendered maps to be exported in the png format. */
     'PNG' |
-    /** Used to export a image as jpeg format */
+    /** Specifies the rendered maps to be exported in the jpeg format. */
     'JPEG' |
-    /** Used to export a file as svg format */
+    /** Specifies the rendered maps to be exported in the svg format. */
     'SVG' |
-    /** Used to export a file as pdf format */
+    /** Specifies the rendered maps to be exported in the pdf format. */
     'PDF';
 
 /**
- * Pan Direction
+ * Specifies the direction of panning.
  */
 export type PanDirection =
-    /** Used to pan the left direction */
+    /** Specifies the maps to pan in the left direction. */
     'Left' |
-    /** Used to pan the right direction */
+    /** Specifies the maps to pan in the right direction. */
     'Right' |
-    /** Used to pan the top direction */
+    /** Specifies the maps to pan in the top direction. */
     'Top' |
-    /** Used to pan the bottom direction */
+    /** Specifies the maps to pan in the bottom direction. */
     'Bottom' |
-    /** Used to pan the map by mouse move */
+    /** Specifies the maps to pan map by mouse move. */
     'None';
 /**
- * Tooltip Gesture
+ * Specifies the tooltip to be rendered on mouse operation.
  */
 export type TooltipGesture =
-    /** Used to show tooltip on mouse hover */
+    /** Specifies the tooltip to be shown on mouse hover event. */
     'MouseMove' |
-    /** Used to show tooltip on click */
+    /** Specifies the tooltip to be shown on click event. */
     'Click' |
-    /** Used to show tooltip on double click */
+    /** Specifies the tooltip to be shown on double click event. */
     'DoubleClick';

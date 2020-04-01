@@ -206,7 +206,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when component is closed.
      * @event 
      * @blazorproperty 'OnClose'
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.EventArgs
+     * @blazorType Syncfusion.Blazor.Navigations.EventArgs
      */
     @Event()
     public close: EmitType<EventArgs>;
@@ -214,7 +214,7 @@ export class Sidebar extends Component<HTMLElement> implements INotifyPropertyCh
      * Triggers when component is opened.
      * @event 
      * @blazorproperty 'OnOpen'
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.EventArgs
+     * @blazorType Syncfusion.Blazor.Navigations.EventArgs
      */
     @Event()
     public open: EmitType<EventArgs>;

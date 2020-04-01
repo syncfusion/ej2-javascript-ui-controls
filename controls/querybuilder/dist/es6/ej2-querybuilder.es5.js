@@ -65,6 +65,9 @@ var __generator = (undefined && undefined.__generator) || function (thisArg, bod
  * Query Builder Source
  */
 MultiSelect.Inject(CheckBoxSelection);
+/**
+ * Defines the Columns of Query Builder
+ */
 var Columns = /** @__PURE__ @class */ (function (_super) {
     __extends(Columns, _super);
     function Columns() {
@@ -105,6 +108,9 @@ var Columns = /** @__PURE__ @class */ (function (_super) {
     ], Columns.prototype, "category", void 0);
     return Columns;
 }(ChildProperty));
+/**
+ * Defines the rule of Query Builder
+ */
 var Rule = /** @__PURE__ @class */ (function (_super) {
     __extends(Rule, _super);
     function Rule() {
@@ -136,6 +142,9 @@ var Rule = /** @__PURE__ @class */ (function (_super) {
     ], Rule.prototype, "not", void 0);
     return Rule;
 }(ChildProperty));
+/**
+ * Defines the ruleDelete, groupInsert, and groupDelete options of Query Builder.
+ */
 var ShowButtons = /** @__PURE__ @class */ (function (_super) {
     __extends(ShowButtons, _super);
     function ShowButtons() {
@@ -2494,6 +2503,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
      * @returns RuleModel.
      */
     QueryBuilder.prototype.getValidRules = function (currentRule) {
+        if (!currentRule) {
+            currentRule = this.getRules();
+        }
         var ruleCondtion = currentRule.condition;
         var notCondition = currentRule.not;
         var ruleColl = extend([], currentRule.rules, [], true);
@@ -3108,6 +3120,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
      * @returns object.
      */
     QueryBuilder.prototype.getSqlFromRules = function (rule, allowEscape) {
+        if (!rule) {
+            rule = this.getValidRules();
+        }
         rule = this.getRuleCollection(rule, false);
         return this.getSqlString(this.getValidRules(rule), allowEscape).replace(/"/g, '\'');
     };

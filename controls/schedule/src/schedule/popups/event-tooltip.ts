@@ -67,6 +67,7 @@ export class EventTooltip {
         }
     }
 
+    // tslint:disable-next-line:max-func-body-length
     private onBeforeRender(args: TooltipEventArgs): void {
         if (!isNullOrUndefined(args.target.getAttribute('data-tooltip-id'))) {
             return;
@@ -113,29 +114,49 @@ export class EventTooltip {
             let endDate: Date = util.resetTime(new Date('' + eventEnd));
             let tooltipSubject: string = (record[fields.subject] || this.parent.eventSettings.fields.subject.default) as string;
             let tooltipLocation: string = !isNullOrUndefined(record[fields.location]) ? <string>record[fields.location] : '';
-            let startMonthDate: string = globalize.formatDate(eventStart, {
-                type: 'date', skeleton: 'MMMd', calendar: this.parent.getCalendarMode()
-            });
-            let startMonthYearDate: string = globalize.formatDate(eventStart, {
-                type: 'date', skeleton: 'medium', calendar: this.parent.getCalendarMode()
-            });
-            let endMonthYearDate: string = globalize.formatDate(eventEnd, {
-                type: 'date', skeleton: 'medium', calendar: this.parent.getCalendarMode()
-            });
+            let startMonthDate: string = '';
+            let startMonthYearDate: string = '';
+            let endMonthYearDate: string = '';
+            if (isBlazor()) {
+                startMonthDate = globalize.formatDate(eventStart, {
+                    type: 'date', format: 'MMM d', calendar: this.parent.getCalendarMode()
+                });
+                startMonthYearDate = globalize.formatDate(eventStart, {
+                    type: 'date', format: 'MMMM d, y', calendar: this.parent.getCalendarMode()
+                });
+                endMonthYearDate = globalize.formatDate(eventEnd, {
+                    type: 'date', format: 'MMMM d, y', calendar: this.parent.getCalendarMode()
+                });
+            } else {
+                startMonthDate = globalize.formatDate(eventStart, {
+                    type: 'date', skeleton: 'MMMd', calendar: this.parent.getCalendarMode()
+                });
+                startMonthYearDate = globalize.formatDate(eventStart, {
+                    type: 'date', skeleton: 'medium', calendar: this.parent.getCalendarMode()
+                });
+                endMonthYearDate = globalize.formatDate(eventEnd, {
+                    type: 'date', skeleton: 'medium', calendar: this.parent.getCalendarMode()
+                });
+            }
             startMonthDate = util.capitalizeFirstWord(startMonthDate, 'single');
             startMonthYearDate = util.capitalizeFirstWord(startMonthYearDate, 'single');
             endMonthYearDate = util.capitalizeFirstWord(endMonthYearDate, 'single');
+            let skeleton: string = isBlazor() ? 't' : 'short';
             let startTime: string = globalize.formatDate(eventStart, {
-                type: 'time', skeleton: 'short', calendar: this.parent.getCalendarMode()
+                type: 'time', skeleton: skeleton, calendar: this.parent.getCalendarMode()
             });
             let endTime: string = globalize.formatDate(eventEnd, {
-                type: 'time', skeleton: 'short', calendar: this.parent.getCalendarMode()
+                type: 'time', skeleton: skeleton, calendar: this.parent.getCalendarMode()
             });
             let tooltipDetails: string;
             if (startDate.getTime() === endDate.getTime()) {
-                tooltipDetails = globalize.formatDate(eventStart, {
-                    type: 'date', skeleton: 'long', calendar: this.parent.getCalendarMode()
-                });
+                tooltipDetails = isBlazor() ?
+                    globalize.formatDate(eventStart, {
+                        type: 'date', format: 'MMMM d, y', calendar: this.parent.getCalendarMode()
+                    }) :
+                    globalize.formatDate(eventStart, {
+                        type: 'date', skeleton: 'long', calendar: this.parent.getCalendarMode()
+                    });
                 tooltipDetails = util.capitalizeFirstWord(tooltipDetails, 'single');
             } else {
                 tooltipDetails = (startDate.getFullYear() === endDate.getFullYear()) ? (startMonthDate + ' - ' + endMonthYearDate) :

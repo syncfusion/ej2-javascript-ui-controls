@@ -974,7 +974,7 @@ export class BatchEdit {
     private refreshTD(td: Element, column: Column, rowObj: Row<Column>, value: string | number | boolean | Date): void {
         let cell: CellRenderer = new CellRenderer(this.parent, this.serviceLocator);
         let rowcell: Cell<Column>[];
-        value = column.type === 'number' ? parseFloat(value as string) : value;
+        value = column.type === 'number' && !isNullOrUndefined(value) ? parseFloat(value as string) : value;
         this.setChanges(rowObj, column.field, value, td);
         let frzCols: number = this.parent.getFrozenColumns();
         refreshForeignData(rowObj, this.parent.getForeignKeyColumns(), rowObj.changes);
@@ -1133,6 +1133,7 @@ export class BatchEdit {
                     this.parent.notify(events.groupAggregates, {});
                 }
             }
+            this.preventSaveCell = false;
             if (this.editNext) {
                 this.editNext = false;
                 if (this.cellDetails.rowIndex === this.index && this.cellDetails.column.field === this.field) {
@@ -1140,7 +1141,6 @@ export class BatchEdit {
                 }
                 this.editCellExtend(this.index, this.field, this.isAdd);
             }
-            this.preventSaveCell = false;
         };
     }
 

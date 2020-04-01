@@ -66,7 +66,7 @@ export class DiagramNativeElement extends DiagramElement {
 
     /**
      * Measures minimum space that is required to render the Native Element
-     * @param availableSize
+     * @param {Size} availableSize
      */
     public measure(availableSize: Size): Size {
         if (this.isDirt) {
@@ -91,7 +91,7 @@ export class DiagramNativeElement extends DiagramElement {
 
     /**
      * Arranges the Native Element
-     * @param desiredSize 
+     * @param {Size} desiredSize 
      */
     public arrange(desiredSize: Size): Size {
         this.actualSize = new Size(this.desiredSize.width, this.desiredSize.height);

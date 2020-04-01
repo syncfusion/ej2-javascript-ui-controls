@@ -1,8 +1,8 @@
-import { StackValues, withInRange } from '../../common/utils/helper';
+import { StackValues, withInRange, getVisiblePoints } from '../../common/utils/helper';
 import { Rect } from '@syncfusion/ej2-svg-base';
 import { Chart } from '../chart';
 import { DoubleRange } from '../utils/double-range';
-import { Series } from './chart-series';
+import { Series, Points } from './chart-series';
 import { ColumnBase } from './column-base';
 import { IPointRenderEventArgs } from '../../chart/model/chart-interface';
 
@@ -22,10 +22,11 @@ export class StackingColumnSeries extends ColumnBase {
         let rect: Rect;
         let argsData: IPointRenderEventArgs;
         let stackedValue: StackValues = series.stackedValues;
-        for (let point of series.points) {
+        let visiblePoints: Points[] = getVisiblePoints(series);
+        for (let point of visiblePoints) {
             point.symbolLocations = [];
             point.regions = [];
-            if (point.visible && withInRange(series.points[point.index - 1], point, series.points[point.index + 1], series)) {
+            if (point.visible && withInRange(visiblePoints[point.index - 1], point, visiblePoints[point.index + 1], series)) {
                 rect = this.getRectangle(point.xValue + sideBySideInfo.start, stackedValue.endValues[point.index],
                                          point.xValue + sideBySideInfo.end, stackedValue.startValues[point.index], series);
                 argsData = this.triggerEvent(series, point, series.interior,

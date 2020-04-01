@@ -20,14 +20,14 @@ describe('Spreadsheet context menu module ->', () => {
                 model = {
                     sheets: [
                         {
-                            rangeSettings: [
+                            range: [
                                 { dataSource: defaultData }
                             ]
                         }
                     ],
                     beforeDataBound: (): void => {
                         let spreadsheet: Spreadsheet = helper.getInstance();
-                        if (spreadsheet.sheets[spreadsheet.activeSheetTab - 1].name === 'Sheet1') {
+                        if (spreadsheet.sheets[spreadsheet.activeSheetIndex].name === 'Sheet1') {
                             spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1');
                         }
                     },

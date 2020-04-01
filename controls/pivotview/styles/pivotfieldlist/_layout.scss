@@ -102,6 +102,13 @@
       background-color: transparent;
       border-color: transparent;
       box-shadow: 0 0 0 transparent;
+
+      .e-format-delete-icon {
+        font-weight: 600;
+        @if ($field-list-skin == 'bootstrap4') {
+          opacity: 1;
+        }
+      }
     }
 
     .e-format-delete-icon {
@@ -362,6 +369,17 @@
       width: 24px;
     }
 
+    .e-treeview .e-list-item div.e-iconspace {
+      cursor: pointer;
+      display: inline-block;
+      font-size: 12px;
+      height: 24px;
+      opacity: $pivot-calculated-icon-opacity;
+      padding: 2px 4px 4px;
+      pointer-events: auto;
+      width: 24px;
+    }
+
     .e-treeview .e-list-item span.e-icons {
       color: $field-list-drag-icon-color;
       cursor: move;
@@ -401,8 +419,16 @@
       .e-treeview .e-list-item div.e-icons {
         font-size: 14px;
         height: 24px;
+        margin-bottom: 10px;
         padding: 5px;
         width: 24px;
+      }
+
+      .e-treeview .e-list-item div.e-edit.e-icons,
+      .e-treeview .e-list-item div.e-edited.e-icons,
+      .e-treeview .e-list-item div.e-remove-report.e-icons {
+        margin-right: 0;
+        transform: rotate(0deg);
       }
 
       .e-treeview ul {
@@ -465,7 +491,7 @@
       overflow: hidden;
       text-overflow: ellipsis;
       white-space: nowrap;
-      width: 75%;
+      width: 65%;
     }
 
     .e-pivot-treeview-outer {
@@ -988,6 +1014,9 @@
                 height: 14px;
                 min-width: 14px;
                 width: 14px;
+                @if ($field-list-skin == 'bootstrap4') {
+                  height: auto;
+                }
 
                 &::before {
                   font-size: 14px;

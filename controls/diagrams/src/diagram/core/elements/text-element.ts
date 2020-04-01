@@ -112,7 +112,7 @@ export class TextElement extends DiagramElement {
 
     /**
      * Measures the minimum size that is required for the text element
-     * @param availableSize
+     * @param {Size} availableSize
      */
     public measure(availableSize: Size): Size {
         let size: Size;
@@ -133,7 +133,7 @@ export class TextElement extends DiagramElement {
 
     /**
      * Arranges the text element
-     * @param desiredSize 
+     * @param {Size} desiredSize 
      */
     public arrange(desiredSize: Size): Size {
         if (desiredSize.width !== this.actualSize.width || desiredSize.height !== this.actualSize.height || this.isDirt) {

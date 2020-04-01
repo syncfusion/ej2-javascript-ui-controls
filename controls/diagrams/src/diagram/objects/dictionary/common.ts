@@ -19,7 +19,7 @@ export function getDecoratorShape(shape: DecoratorShapes, decorator: DecoratorMo
 
 /**
  * @private
- * @param icon 
+ * @param {IconShapeModel} icon 
  * sets the path data for different icon shapes
  */
 export function getIconShape(icon: IconShapeModel): string {

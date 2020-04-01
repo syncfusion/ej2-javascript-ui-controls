@@ -939,3 +939,29 @@ export let XSSnestedData: any = [
             { id: '03-05', text: 'Youth Empowerment.pdf', icon: 'file' },
         ]
     }];
+
+export let autoCheckData: any = [
+        {hasChildren: true,id: "FY 2006",name: "FY 2006", isSelected: false},
+        {hasChildren: true,id: "FY 2007",name: "FY 2007", isSelected: true},
+        {hasChildren: true,id: "FY 2008",name: "FY 2008", isSelected: true},
+        {hasChildren: true,id: "FY 2009",name: "FY 2009", isSelected: true},
+        {hasChildren: true,id: "FY 2011",name: "FY 2011", isSelected: true},
+        {hasChildren: true,isSelected: false,id: "H1 FY 2006",pid: "FY 2006",name: "H1 FY 2006"},
+        {hasChildren: true,isSelected: true, id: "H2 FY 2006",pid: "FY 2006",name: "H2 FY 2006"},
+        {hasChildren: true,isSelected: false,id: "Q1 FY 2006",pid: "H1 FY 2006",name: "Q1 FY 2006"},
+        {hasChildren: true,isSelected: true,id: "Q2 FY 2006",pid: "H1 FY 2006",name: "Q2 FY 2006"}
+    ];
+
+export let autoCheckHierarcialData: any = [
+        {hasChildren: true,id: "FY 2006",name: "FY 2006", isSelected: false , child: [
+            {hasChildren: true,isSelected: false,id: "H1 FY 2006",name: "H1 FY 2006",child:[
+                {hasChildren: true,isSelected: false,id: "Q1 FY 2006",name: "Q1 FY 2006"},
+                {hasChildren: true,isSelected: true,id: "Q2 FY 2006",name: "Q2 FY 2006"}
+            ]},
+            {hasChildren: true,isSelected: true, id: "H2 FY 2006",name: "H2 FY 2006"},
+        ]},
+        {hasChildren: true,id: "FY 2007",name: "FY 2007", isSelected: true},
+        {hasChildren: true,id: "FY 2008",name: "FY 2008", isSelected: true},
+        {hasChildren: true,id: "FY 2009",name: "FY 2009", isSelected: true},
+        {hasChildren: true,id: "FY 2011",name: "FY 2011", isSelected: true},
+    ];

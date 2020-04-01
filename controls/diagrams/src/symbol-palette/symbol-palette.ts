@@ -433,8 +433,8 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
 
     /**
      * Refreshes the panel when the symbol palette properties are updated
-     * @param newProp Defines the new values of the changed properties
-     * @param oldProp Defines the old values of the changed properties
+     * @param {SymbolPaletteModel} newProp - Defines the new values of the changed properties
+     * @param {SymbolPaletteModel} oldProp - Defines the old values of the changed properties
      */
     public onPropertyChanged(newProp: SymbolPaletteModel, oldProp: SymbolPaletteModel): void {
         let refresh: boolean = false;
@@ -986,6 +986,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      */
     private getSymbolPreview(
         symbol: NodeModel | ConnectorModel, evt: PointerEvent | TouchEvent, parentDiv: HTMLElement): HTMLElement {
+        this.allowServerDataBinding = false;
         let canvas: HTMLCanvasElement | SVGElement;
         let sw: number; let sh: number;
         let symbolPreviewWidth: number = symbol.wrapper.children[0].desiredSize.width + symbol.style.strokeWidth;
@@ -1043,7 +1044,12 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                     (Math.ceil(symbolPreviewWidth) + symbol.style.strokeWidth + 1) * 2,
                     (Math.ceil(symbolPreviewHeight) + symbol.style.strokeWidth + 1) * 2);
                 previewContainer.appendChild(canvas);
-                style += 'transform:scale(0.5);';
+                // BLAZ-3223: translate applied only for Basic and Flow now and need to add for remaining shapes in future 
+                if (symbol.shape.type === 'Basic' || symbol.shape.type === 'Flow') {
+                    style += 'transform: scale(0.5) translate(-' + canvas.width / 2 + 'px, -' + canvas.height / 2 + 'px);';
+                } else {
+                    style += 'transform:scale(0.5);';
+                }
                 canvas.setAttribute('transform-origin', '0 0');
                 let index: number = 2;
                 if (symbol instanceof Connector) { index = 1.9; }
@@ -1057,6 +1063,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             style);
         content.offsetX = prevPosition.x;
         content.offsetY = prevPosition.y;
+        this.allowServerDataBinding = true;
         return previewContainer;
     }
 

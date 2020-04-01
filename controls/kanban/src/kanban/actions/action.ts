@@ -39,7 +39,7 @@ export class Action {
 
     public clickHandler(e: KeyboardEvent): void {
         let elementSelector: string = '.' + cls.CARD_CLASS + ',.' + cls.HEADER_ICON_CLASS + ',.' + cls.CONTENT_ROW_CLASS + '.' +
-            cls.SWIMLANE_ROW_CLASS;
+            cls.SWIMLANE_ROW_CLASS + ',.' + cls.SHOW_ADD_BUTTON;
         let target: Element = closest(e.target as Element, elementSelector);
         if (!target) { return; }
         if (target.classList.contains(cls.CARD_CLASS)) {
@@ -48,6 +48,25 @@ export class Action {
             this.columnExpandCollapse(e);
         } else if (target.classList.contains(cls.CONTENT_ROW_CLASS) && target.classList.contains(cls.SWIMLANE_ROW_CLASS)) {
             this.rowExpandCollapse(e);
+        } else if (target.classList.contains(cls.SHOW_ADD_BUTTON)) {
+            let newData: { [key: string]: string | number } = {};
+            if (typeof (this.parent.kanbanData[0] as { [key: string]: Object })[this.parent.cardSettings.headerField] === 'number') {
+                newData[this.parent.cardSettings.headerField] = Math.max.apply(Math, this.parent.kanbanData.map(
+                    (obj: { [key: string]: string }) => parseInt(obj[this.parent.cardSettings.headerField], 10))) + 1;
+            }
+            newData[this.parent.keyField] = target.closest('.' + cls.CONTENT_CELLS_CLASS).getAttribute('data-key');
+            if (this.parent.cardSettings.priority) {
+                newData[this.parent.cardSettings.priority] = 1;
+                if (target.closest('.' + cls.CONTENT_CELLS_CLASS).querySelector('.' + cls.CARD_CLASS)) {
+                    let data: { [key: string]: Object } = this.parent.getCardDetails(target.previousElementSibling.lastElementChild);
+                    newData[this.parent.cardSettings.priority] = data[this.parent.cardSettings.priority] as number + 1;
+                }
+            }
+            if (this.parent.swimlaneSettings.keyField) {
+                newData[this.parent.swimlaneSettings.keyField] =
+                    target.closest('.' + cls.CONTENT_ROW_CLASS).previousElementSibling.getAttribute('data-key');
+            }
+            this.parent.openDialog('Add', newData);
         }
     }
 
@@ -88,8 +107,13 @@ export class Action {
         this.parent.activeCardData = { data: cardDoubleClickObj, element: target };
         let args: CardClickEventArgs = { data: cardDoubleClickObj, element: target, cancel: false, event: e };
         this.parent.trigger(events.cardDoubleClick, args, (doubleClickArgs: CardClickEventArgs) => {
-            if (!doubleClickArgs.cancel && !this.parent.isBlazorRender()) {
-                this.parent.dialogModule.openDialog('Edit', args.data);
+            if (!doubleClickArgs.cancel) {
+                if (this.parent.isBlazorRender()) {
+                    // tslint:disable-next-line
+                    (this.parent as any).interopAdaptor.invokeMethodAsync('OpenDialog', 'Edit', args.data);
+                } else {
+                    this.parent.dialogModule.openDialog('Edit', args.data);
+                }
             }
         });
     }

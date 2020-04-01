@@ -1,5 +1,3 @@
-[![coverage](http://ej2.syncfusion.com/badges/ej2-inputs/coverage.svg)](http://ej2.syncfusion.com/badges/ej2-inputs)
-
 # ej2-inputs
 
 A package of Essential JS 2 Input textbox components. It comes with a collection of form components which is useful to get different input values from the users such as text, numbers, patterns, color and file inputs.
@@ -140,4 +138,4 @@ Check the license detail [here](https://github.com/syncfusion/ej2-javascript-ui-
 Check the changelog [here](https://github.com/syncfusion/ej2-javascript-ui-controls/blob/master/controls/inputs/CHANGELOG.md/?utm_source=npm&utm_campaign=input)
 
 
-© Copyright 2019 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.
+© Copyright 2020 Syncfusion, Inc. All Rights Reserved. The Syncfusion Essential Studio license and copyright applies to this distribution.

@@ -17,39 +17,7 @@ RichTextEditor.Inject(HtmlEditor);
  RichTextEditor.Inject(QuickToolbar);
  RichTextEditor.Inject(Table);
  
-let innerHTML: string = `<p><b>Description:</b></p>
-<p>The Rich Text <img src="https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png">Editor (RTE) control is an easy to render in
-client side. Customer easy to edit the contents and get the HTML content for
-the displayed content. A rich text editor control provides users with a toolbar
-that helps them to apply rich text formats to the text entered in the text
-area. </p>
-<p><b>Functional
-Specifications/Requirements:</b></p>
-<ol><li><p>Provide
-the tool bar support, it’s also customizable.</p></li><li><p>Options
-to get the HTML elements with styles.</p></li><li><p>Support
-to insert image from a defined path.</p></li><li><p>Footer
-elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li><li><p>Re-size
-the editor support.</p></li><li><p>Provide
-efficient public methods and client side events.</p></li><li><p>Keyboard
-navigation support.</p></li></ol>
-<p><b>Description:</b></p>
-<p>The Rich Text Editor (RTE) control is an easy to render in
-client side. Customer easy to edit the contents and get the HTML content for
-the displayed content. A rich text editor control provides users with a toolbar
-that helps them to apply rich text formats to the text entered in the text
-area. </p>
-<p><b>Functional
-Specifications/Requirements:</b></p>
-<ol><li><p>Provide
-the tool bar support, it’s also customizable.</p></li><li><p>Options
-to get the HTML elements with styles.</p></li><li><p>Support
-to insert image from a defined path.</p></li><li><p>Footer
-elements and styles(tag / Element information , Action button (Upload, Cancel))</p></li><li><p>Re-size
-the editor support.</p></li><li><p>Provide
-efficient public methods and client side events.</p></li><li><p>Keyboard
-navigation support.</p></li></ol>
-`;
+let innerHTML: string = `<p>The <img src="https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png">Editor </p><p>hello <p>`;
 let defaultRTE: RichTextEditor = new RichTextEditor({
     height: 400,
     toolbarSettings: {
@@ -68,6 +36,7 @@ let defaultRTE: RichTextEditor = new RichTextEditor({
     },
     value: innerHTML,
     created: onCreate,
+    saveInterval: 10,
     actionComplete: onActionComplete,
     insertImageSettings: {
         width: '300px',
@@ -85,7 +54,26 @@ function onActionComplete(args: any): void {
 }
  
 function onCreate() {
- let customBtn = defaultRTE.element.querySelector('#custom_tbar') as HTMLElement;
+    let insertImage = document.querySelector('#insertImage') as HTMLElement;
+    let insertText = document.querySelector('#insertText') as HTMLElement;
+    let insertHtml = document.querySelector('#insertHtml') as HTMLElement;
+    let customBtn = defaultRTE.element.querySelector('#custom_tbar') as HTMLElement;
+
+    insertText.onclick = () => {
+        defaultRTE.executeCommand('insertHTML', 'hello this is text content');
+    };
+    
+    insertHtml.onclick = () => {
+        defaultRTE.executeCommand('insertHTML', '<p>hello this is html content</p>');
+    };
+
+    insertImage.onclick = () => {
+        var selectedpath = 'https://ej2.syncfusion.com/javascript/demos/src/rich-text-editor/images/RTEImage-Feather.png';
+        let img = document.createElement('img');
+        img.setAttribute('src', selectedpath);
+        defaultRTE.executeCommand('insertHTML', img);
+    };
+
     customBtn.onclick = () => {
         let selection: NodeSelection = new NodeSelection();
         let ranges: Range;

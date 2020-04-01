@@ -741,15 +741,16 @@ export class CartesianAxisLayoutPanel {
         let anchor: string = ((isOpposed && isLabelInside) || (!isOpposed && !isLabelInside)) ? 'end' : 'start';
         let labelElement: Element = chart.renderer.createGroup({ id: chart.element.id + 'AxisLabels' + index });
         let scrollBarHeight: number = isNullOrUndefined(axis.crossesAt) ? axis.scrollBarHeight * (isOpposed ? 1 : -1) : 0;
+        let textHeight: number;
         for (let i: number = 0, len: number = axis.visibleLabels.length; i < len; i++) {
             isAxisBreakLabel = isBreakLabel(axis.visibleLabels[i].originalText);
             pointX = isLabelInside ? (rect.x - padding) : (rect.x + padding + scrollBarHeight);
             elementSize =  isAxisBreakLabel ? axis.visibleLabels[i].breakLabelSize : axis.visibleLabels[i].size;
             pointY = (valueToCoefficient(axis.visibleLabels[i].value, axis) * rect.height) + (chart.stockChart ? 7 : 0);
             pointY = Math.floor((pointY * -1) + (rect.y + rect.height));
-            pointY = isAxisBreakLabel ? pointY - ((elementSize.height / 8) * axis.visibleLabels[i].text.length / 2) :
-            pointY + (elementSize.height / 4);
-
+            textHeight = ((elementSize.height / 8) * axis.visibleLabels[i].text.length / 2);
+            pointY = (isAxisBreakLabel ? (axis.labelPosition === 'Inside' ? (pointY - (elementSize.height / 2) - textHeight - 5) :
+             (pointY - textHeight)) : (axis.labelPosition === 'Inside' ? (pointY - 5) :  pointY + (elementSize.height / 4)));
             options = new TextOption(
                 chart.element.id + index + '_AxisLabel_' + i, pointX, pointY,
                 anchor, axis.visibleLabels[i].text);
@@ -1074,6 +1075,7 @@ export class CartesianAxisLayoutPanel {
         let scrollBarHeight: number = axis.scrollbarSettings.enable || (!islabelInside && isNullOrUndefined(axis.crossesAt)
             && (axis.zoomFactor < 1 || axis.zoomPosition > 0)) ? axis.scrollBarHeight : 0;
         let newPoints: ChartLocation[][] = []; let isRotatedLabelIntersect: boolean = false;
+        padding += (angle === 90 || angle === 270 || angle === -90 || angle === -270) ? (islabelInside ? 5 : -5) : 0;
         for (let i: number = 0, len: number = length; i < len; i++) {
             label = axis.visibleLabels[i];
             isAxisBreakLabel = isBreakLabel(label.originalText);

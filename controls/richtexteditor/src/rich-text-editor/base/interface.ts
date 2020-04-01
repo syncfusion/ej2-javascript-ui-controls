@@ -33,7 +33,7 @@ import { PasteCleanup } from '../actions/paste-clean-up';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Resize } from '../actions/resize';
 /**
- * Specifies RichTextEditor interfaces.
+ * Specifies Rich Text Editor interfaces.
  * @hidden
  * @deprecated
  */
@@ -172,6 +172,9 @@ export interface IRenderer {
     renderColorPickerDropDown?(args?: IColorPickerModel, item?: string, colorPicker?: ColorPicker): DropDownButton;
 }
 
+/**
+ * Provides information about a Notify.
+ */
 export interface NotifyArgs {
     module?: string;
     args?: KeyboardEvent | MouseEvent | ClickEventArgs | ClipboardEvent | TouchEvent;
@@ -222,6 +225,9 @@ export interface IItemCollectionArgs {
     insertElement?: Element;
 }
 
+/** 
+ * Provides information about a TouchData.
+ */
 export interface ITouchData {
     prevClientX?: number;
     prevClientY?: number;
@@ -301,6 +307,10 @@ export interface IImageNotifyArgs {
     name?: string;
     cssClass?: string;
 }
+
+/**
+ * Provides information about a Image added in the Rich Text Editor.
+ */
 export interface IImageCommandsArgs {
     /** Defines the src attribute of the image */
     url?: string;
@@ -326,6 +336,9 @@ export interface ImageDragEvent extends DragEvent {
     rangeOffset?: number;
 }
 
+/**
+ * Provides information about a Link added to the Rich Text Editor.
+ */
 export interface ILinkCommandsArgs {
     /** Defines the url attribute of the link */
     url?: string;
@@ -341,6 +354,9 @@ export interface ILinkCommandsArgs {
     selectParent?: Node[];
 }
 
+/**
+ * Provides information about a Table added to the Rich Text Editor.
+ */
 export interface ITableCommandsArgs {
     /** Defines the number of rows to be inserted in the table */
     row?: number;
@@ -381,6 +397,9 @@ export interface ITableNotifyArgs {
     self?: Table;
 }
 
+/**
+ * Provides information about a EditorModel.
+ */
 export interface IEditorModel {
     execCommand?: Function;
     observer?: Observer;
@@ -390,6 +409,9 @@ export interface IEditorModel {
     mdSelectionFormats?: MDSelectionFormats;
 }
 
+/**
+ * Provides information about a ToolbarItems.
+ */
 export interface IToolbarItems {
     template?: string;
     tooltipText?: string;
@@ -461,6 +483,10 @@ export interface IToolsItems {
     subCommand?: string;
     value?: string;
 }
+
+/**
+ * Provides information about a ToolbarItemConfig.
+ */
 export interface IToolsItemConfigs {
     icon?: string;
     tooltip?: string;
@@ -481,6 +507,9 @@ export interface IDropDownItemModel extends DropDownItemModel {
     text?: string;
 }
 
+/**
+ * Provides information about a ActionComplete event.
+ */
 export interface ActionCompleteEventArgs {
     /** Defines the current action. */
     requestType?: string;
@@ -502,6 +531,9 @@ export interface ActionCompleteEventArgs {
     range?: Range;
 }
 
+/**
+ * Provides information about a ActionBegin event.
+ */
 export interface ActionBeginEventArgs {
     /** Defines the current action. */
     requestType?: string;
@@ -523,6 +555,9 @@ export interface ActionBeginEventArgs {
     itemCollection?: IItemCollectionArgs;
 }
 
+/**
+ * Provides information about a Print event.
+ */
 export interface PrintEventArgs extends ActionBeginEventArgs {
     /** Defines the RTE element. */
     element?: Element;
@@ -587,6 +622,9 @@ export interface IQuickToolbarOptions {
     toolbarItems: (string | IToolbarItems)[];
 }
 
+/**
+ * Provides information about a BeforeQuickToolbarOpen event.
+ */
 export interface BeforeQuickToolbarOpenArgs {
     /**
      * Defines the instance of the current popup element
@@ -599,6 +637,9 @@ export interface BeforeQuickToolbarOpenArgs {
     targetElement: Element;
 }
 
+/**
+ * Provides information about a QuickToolbar event.
+ */
 export interface QuickToolbarEventArgs {
     /**
      * Defines the instance of the current popup element
@@ -624,6 +665,9 @@ export interface IAdapterProcess {
     actionName: string;
 }
 
+/**
+ * Provides information about a Formatter.
+ */
 export interface IFormatter {
     /** Configure the format tags. */
     formatTags?: { [key: string]: string };
@@ -695,6 +739,9 @@ export interface OffsetPosition {
     top: number;
 }
 
+/**
+ * Provides information about a Resize event.
+ */
 export interface ResizeArgs {
     /** Defines the resize event args. */
     event?: MouseEvent | TouchEvent;
@@ -704,6 +751,9 @@ export interface ResizeArgs {
     cancel?: boolean;
 }
 
+/**
+ * Provides information about a BeforeSanitizeHtml event.
+ */
 export interface BeforeSanitizeHtmlArgs {
     /** Illustrates whether the current action needs to be prevented or not. */
     cancel?: boolean;
@@ -719,6 +769,9 @@ export interface BeforeSanitizeHtmlArgs {
     selectors?: SanitizeSelectors;
 }
 
+/**
+ * Provides information about a SanitizeSelectors.
+ */
 export interface SanitizeSelectors {
     /** Returns the tags. */
     tags?: string[];
@@ -726,10 +779,16 @@ export interface SanitizeSelectors {
     attributes?: SanitizeRemoveAttrs[];
 }
 
+/**
+ * Provides information about a ExecuteCommandOption.
+ */
 export interface ExecuteCommandOption {
     undo ?: boolean;
 }
 
+/**
+ * Provides information about a SanitizeRemoveAttributes.
+ */
 export interface SanitizeRemoveAttrs {
     /** Defines the attribute name to sanitize */
     attribute?: string;
@@ -748,6 +807,9 @@ export interface ISetToolbarStatusArgs {
     dropDownModule: DropDownButtons;
 }
 
+/**
+ * Provides information about a Change event.
+ */
 export interface ChangeEventArgs {
     /**
      * Returns value of RichTextEditor
@@ -757,6 +819,9 @@ export interface ChangeEventArgs {
     name?: string;
 }
 
+/**
+ * Provides information about a DialogOpen event.
+ */
 export interface DialogOpenEventArgs {
     /**
      * Defines whether the current action can be prevented.
@@ -776,6 +841,9 @@ export interface DialogOpenEventArgs {
     name?: string;
 }
 
+/**
+ * Provides information about a DialogClose event.
+ */
 export interface DialogCloseEventArgs {
     /**
      * Defines whether the current action can be prevented.
@@ -811,6 +879,9 @@ export interface DialogCloseEventArgs {
     target: HTMLElement | String;
 }
 
+/**
+ * Provides information about a ToolbarUpdate event.
+ */
 export interface ToolbarUpdateEventArgs {
     /**
      * Specify the name of the event.
@@ -826,6 +897,9 @@ export interface ToolbarUpdateEventArgs {
     undo: boolean;
 }
 
+/**
+ * Provides information about a ImageSuccess event.
+ */
 export interface ImageSuccessEventArgs {
     /**
      * Returns the original event arguments.
@@ -855,6 +929,9 @@ export interface ImageSuccessEventArgs {
     name?: string;
 }
 
+/**
+ * Provides information about a ImageFailed event.
+ */
 export interface ImageFailedEventArgs {
     /**
      * Returns the original event arguments.
@@ -884,6 +961,9 @@ export interface ImageFailedEventArgs {
     name?: string;
 }
 
+/**
+ * Provides information about a ImageResponse event.
+ */
 export interface ResponseEventArgs {
     /**
      * Returns the headers information of the upload image.
@@ -907,6 +987,9 @@ export interface ResponseEventArgs {
     withCredentials?: boolean;
 }
 
+/**
+ * Provides information about a Destroyed event.
+ */
 export interface DestroyedEventArgs {
     /**
      * Specify the name of the event.
@@ -918,6 +1001,9 @@ export interface DestroyedEventArgs {
     cancel: boolean;
 }
 
+/**
+ * Provides information about a Blur event.
+ */
 export interface BlurEventArgs {
     /**
      * Returns the original event arguments.
@@ -933,6 +1019,9 @@ export interface BlurEventArgs {
     name?: string;
 }
 
+/**
+ * Provides information about a ToolbarClick event.
+ */
 export interface ToolbarClickEventArgs {
     /**
      * Defines whether the current action can be prevented.
@@ -957,6 +1046,9 @@ export interface ToolbarClickEventArgs {
     name?: string;
 }
 
+/**
+ * Provides information about a Focus event.
+ */
 export interface FocusEventArgs {
     /**
      * Returns the original event arguments.
@@ -972,6 +1064,9 @@ export interface FocusEventArgs {
     name?: string;
 }
 
+/**
+ * Defines types to be used as ColorMode.
+ */
 export declare type ColorModeType = 'Picker' | 'Palette';
 
 /**
@@ -1164,6 +1259,9 @@ export const executeGroup: { [key: string]: IExecutionGroup } = {
     }
 };
 
+/**
+ * Defines types to be used as CommandName.
+ */
 export declare type CommandName = 'bold' | 'italic' | 'underline' | 'strikeThrough' | 'superscript' |
     'subscript' | 'uppercase' | 'lowercase' | 'fontColor' | 'fontName' | 'fontSize' | 'backColor' |
     'justifyCenter' | 'justifyFull' | 'justifyLeft' | 'justifyRight' | 'undo' | 'createLink' |

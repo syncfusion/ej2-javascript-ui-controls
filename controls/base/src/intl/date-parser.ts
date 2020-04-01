@@ -75,17 +75,20 @@ export class DateParser {
     // tslint:disable-next-line:max-func-body-length
     public static dateParser(culture: string, option: DateFormatOptions, cldr: Object): Function {
         let dependable: base.Dependables = base.getDependables(cldr, culture, option.calendar);
-        let numOptions: NumericOptions = parser.getCurrentNumericOptions(dependable.parserObject, parser.getNumberingSystem(cldr));
+        // tslint:disable-next-line
+        let numOptions: NumericOptions = parser.getCurrentNumericOptions(dependable.parserObject, parser.getNumberingSystem(cldr), false, isBlazor());
         let parseOptions: ParseOptions = {};
         if (isBlazor() && option.isServerRendered) {
             option = base.compareBlazorDateFormats(option, culture);
         }
-        let resPattern: string = option.format || base.getResultantPattern(option.skeleton, dependable.dateObject, option.type);
+        let resPattern: string = option.format ||
+            base.getResultantPattern(option.skeleton, dependable.dateObject, option.type, false, isBlazor() ? culture : '');
         let regexString: string = '';
         let hourOnly: boolean;
         if (isUndefined(resPattern)) {
             throwError('Format options or type given must be invalid');
         } else {
+            resPattern = base.ConvertDateToWeekFormat(resPattern);
             parseOptions = { isIslamic: base.islamicRegex.test(option.calendar), pattern: resPattern, evalposition: {} };
             let patternMatch: string[] = resPattern.match(base.dateParseRegex) || [];
             let length: number = patternMatch.length;
@@ -93,13 +96,16 @@ export class DateParser {
             let zCorrectTemp: number = 0;
             let isgmtTraversed: boolean = false;
             let nRegx: string = numOptions.numericRegex;
-            let numMapper: NumberMapper = parser.getNumberMapper(dependable.parserObject, parser.getNumberingSystem(cldr));
+             // tslint:disable-next-line
+            let numMapper: NumberMapper = isBlazor() ? (dependable.parserObject as any).numbers :
+                parser.getNumberMapper(dependable.parserObject, parser.getNumberingSystem(cldr));
             for (let i: number = 0; i < length; i++) {
                 let str: string = patternMatch[i];
                 let len: number = str.length;
                 let char: string = (str[0] === 'K') ? 'h' : str[0];
                 let isNumber: boolean;
                 let canUpdate: boolean;
+                 // tslint:disable-next-line
                 let charKey: any = datePartMatcher[char];
                 let optional: string = (len === 2) ? '' : '?';
                 if (isgmtTraversed) {
@@ -109,8 +115,15 @@ export class DateParser {
                 switch (char) {
                     case 'E':
                     case 'c':
-                        // tslint:disable-next-line
-                        let weekObject: Object = parser.reverseObject((<any>dependable.dateObject)[base.days][standalone][(<any>base).monthIndex[len]]);
+                        // tslint:disable
+                        let weekData: Object;
+                        if (isBlazor()) {
+                            weekData = getValue('days.' + (base as any).monthIndex[len], dependable.dateObject);
+                        } else {
+                            weekData = (<any>dependable.dateObject)[base.days][standalone][(<any>base).monthIndex[len]];
+                        }
+                        let weekObject: Object = parser.reverseObject(weekData);
+                        // tslint:enable
                         regexString += '(' + Object.keys(weekObject).join('|') + ')';
                         break;
                     case 'M':
@@ -123,8 +136,16 @@ export class DateParser {
                     case 'f':
                         canUpdate = true;
                         if ((char === 'M' || char === 'L') && len > 2) {
+                            let monthData: Object;
+                            if (isBlazor()) {
+                                /* tslint:disable no-any */
+                                monthData = getValue('months.' + (base as any).monthIndex[len], dependable.dateObject);
+                            } else {
+                                /* tslint:disable no-any */
+                                monthData = (<any>dependable).dateObject[month][standalone][(<any>base).monthIndex[len]];
+                            }
                             // tslint:disable-next-line
-                            (<any>parseOptions)[charKey] = parser.reverseObject((<any>dependable).dateObject[month][standalone][(<any>base).monthIndex[len]]);
+                            (<any>parseOptions)[charKey] = parser.reverseObject(monthData);
                             /* tslint:disable no-any */
                             regexString += '(' + Object.keys((<any>parseOptions)[charKey]).join('|') + ')';
                         } else if (char === 'f') {
@@ -151,13 +172,17 @@ export class DateParser {
                         break;
                     case 'a':
                         canUpdate = true;
-                        (<any>parseOptions)[charKey] = parser.reverseObject(getValue('dayPeriods.format.wide', dependable.dateObject));
+                        let periodValur: Object = isBlazor() ?
+                            getValue('dayPeriods', dependable.dateObject) :
+                            getValue('dayPeriods.format.wide', dependable.dateObject);
+                        (<any>parseOptions)[charKey] = parser.reverseObject(periodValur);
                         regexString += '(' + Object.keys((<any>parseOptions)[charKey]).join('|') + ')';
                         break;
                     case 'G':
                         canUpdate = true;
                         let eText: string = (len <= 3) ? 'eraAbbr' : (len === 4) ? 'eraNames' : 'eraNarrow';
-                        (<any>parseOptions)[charKey] = parser.reverseObject(getValue('eras.' + eText, dependable.dateObject));
+                        (<any>parseOptions)[charKey] = parser.reverseObject(isBlazor() ?
+                         getValue('eras', dependable.dateObject) : getValue('eras.' + eText, dependable.dateObject));
                         regexString += '(' + Object.keys((<any>parseOptions)[charKey]).join('|') + '?)';
                         break;
                     case 'z':

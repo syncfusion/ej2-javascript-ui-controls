@@ -1,5 +1,5 @@
 // tslint:disable-next-line:max-line-length
-import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, ModuleDeclaration, L10n, isBlazor, Complex } from '@syncfusion/ej2-base';
+import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, ModuleDeclaration, L10n, isBlazor, Complex, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Event, EmitType } from '@syncfusion/ej2-base';
 import { Toolbar } from './tool-bar/tool-bar';
 import { DocumentEditorContainerModel } from './document-editor-container-model';
@@ -533,6 +533,16 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                         this.documentEditor.layoutType = newModel.layoutType;
                     }
                     break;
+                case 'enableToolbar':
+                    this.createToolbarContainer(this.enableRtl, true);
+                    if (newModel.enableToolbar && this.toolbarModule) {
+                        this.toolbarModule.initToolBar(this.toolbarItems);
+                        this.toolbarModule.enableDisableInsertComment(this.enableComment);
+                    }
+                    if (this.documentEditor) {
+                        this.documentEditor.resize();
+                    }
+                    break;
             }
         }
     }
@@ -628,14 +638,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         // Toolbar container
         let isRtl: boolean = this.enableRtl;
         this.containerTarget = this.createElement('div', { className: 'e-de-ctn' });
-        if (this.enableToolbar) {
-            this.toolbarContainer = this.createElement('div', { className: 'e-de-ctnr-toolbar' + (isRtl ? ' e-de-ctnr-rtl' : '') });
-            this.containerTarget.appendChild(this.toolbarContainer);
-            // tslint:disable-next-line:max-line-length
-            this.editorContainer = this.createElement('div', { className: 'e-de-tool-ctnr-properties-pane' + (isRtl ? ' e-de-ctnr-rtl' : '') });
-        } else {
-            this.editorContainer = this.createElement('div', { className: 'e-de-ctnr-properties-pane' + (isRtl ? ' e-de-ctnr-rtl' : '') });
-        }
+        this.createToolbarContainer(isRtl);
         let propertiesPaneContainerBorder: string;
         if (!isRtl) {
             propertiesPaneContainerBorder = 'e-de-pane';
@@ -652,7 +655,25 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.containerTarget.appendChild(this.statusBarElement);
         this.element.appendChild(this.containerTarget);
     }
-
+    private createToolbarContainer(isRtl: boolean, isCustom?: boolean): void {
+        if (isNullOrUndefined((this.editorContainer))) {
+            // tslint:disable-next-line:max-line-length
+            this.editorContainer = this.createElement('div', { className: 'e-de-tool-ctnr-properties-pane' + (isRtl ? ' e-de-ctnr-rtl' : '') });
+        }
+        if (this.enableToolbar) {
+            this.toolbarContainer = this.createElement('div', { className: 'e-de-ctnr-toolbar' + (isRtl ? ' e-de-ctnr-rtl' : '') });
+            if (isCustom) {
+                this.containerTarget.insertBefore(this.toolbarContainer, this.containerTarget.firstChild);
+            } else {
+                this.containerTarget.appendChild(this.toolbarContainer);
+            }
+            this.editorContainer.classList.remove('e-de-ctnr-properties-pane');
+            this.editorContainer.classList.add('e-de-tool-ctnr-properties-pane');
+        } else {
+            this.editorContainer.classList.remove('e-de-tool-ctnr-properties-pane');
+            this.editorContainer.classList.add('e-de-ctnr-properties-pane');
+        }
+    }
     private initializeDocumentEditor(): void {
         let id: string = this.element.id + '_editor';
         let documentEditorTarget: HTMLElement = this.createElement('div', { id: id, styles: 'width:100%;height:100%' });
@@ -958,6 +979,5 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         this.containerTarget = undefined;
         this.statusBarElement = undefined;
         this.editorContainer = undefined;
-
     }
 }

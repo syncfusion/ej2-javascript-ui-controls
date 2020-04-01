@@ -17,7 +17,7 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
             model = {
                 sheets: [
                     { 
-                        rangeSettings: [
+                        range: [
                             { dataSource: defaultData }
                         ]
                     }
@@ -32,7 +32,7 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
 
         it('Add sheet icon testing', (done: Function) => {
             helper.click('.e-add-sheet-tab');
-            expect(helper.getInstance().activeSheetTab).toBe(2);
+            expect(helper.getInstance().activeSheetIndex).toBe(1);
             expect(helper.getInstance().sheets.length).toBe(2);
             done();
         });
@@ -67,7 +67,7 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
             editorElem.value = 'Sheet1';
             helper.triggerKeyEvent('keydown', 13, null, false, false, editorElem);
             setTimeout(() => {
-                expect(helper.getElementFromSpreadsheet('.e-sheet-panel .e-dialog.e-popup-open')).not.toBeNull();
+                expect(helper.getElementFromSpreadsheet('.e-dialog.e-popup-open')).not.toBeNull();
                 done();
             }, 10);
         });

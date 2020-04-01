@@ -206,6 +206,16 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
             previousPagerTooltip: 'Go to previous pager',
             pagerDropDown: 'Items per page',
             pagerAllDropDown: 'Items',
+            CurrentPageInfo: '{0} of {1} pages',
+            TotalItemsInfo: '({0} items)',
+            FirstPageTooltip: 'Go to first page',
+            LastPageTooltip: 'Go to last page',
+            NextPageTooltip: 'Go to next page',
+            PreviousPageTooltip: 'Go to previous page',
+            NextPagerTooltip: 'Go to next pager',
+            PreviousPagerTooltip: 'Go to previous pager',
+            PagerDropDown: 'Items per page',
+            PagerAllDropDown: 'Items',
             All: 'All'
         };
         this.containerModule = new NumericContainer(this);
@@ -501,12 +511,14 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         this.element.appendChild(createElement(
             'div', {
                 className: 'e-mfirst e-icons e-icon-first',
-                attrs: { title: this.getLocalizedLabel('firstPageTooltip'), tabindex: '-1' }
+                attrs: { title: isBlazor() ? this.getLocalizedLabel('FirstPageTooltip') : this.getLocalizedLabel('firstPageTooltip'),
+                tabindex: '-1' }
             }));
         this.element.appendChild(createElement(
             'div', {
                 className: 'e-mprev e-icons e-icon-prev',
-                attrs: { title: this.getLocalizedLabel('previousPageTooltip'), tabindex: '-1' }
+                attrs: { title: isBlazor() ? this.getLocalizedLabel('PreviousPageTooltip') :
+                this.getLocalizedLabel('previousPageTooltip'), tabindex: '-1' }
             }));
     }
 
@@ -514,12 +526,14 @@ export class Pager extends Component<HTMLElement> implements INotifyPropertyChan
         this.element.appendChild(createElement(
             'div', {
                 className: 'e-mnext e-icons e-icon-next',
-                attrs: { title: this.getLocalizedLabel('nextPageTooltip'), tabindex: '-1' }
+                attrs: { title: isBlazor() ? this.getLocalizedLabel('NextPageTooltip') :
+                this.getLocalizedLabel('nextPageTooltip'), tabindex: '-1' }
             }));
         this.element.appendChild(createElement(
             'div', {
                 className: 'e-mlast e-icons e-icon-last',
-                attrs: { title: this.getLocalizedLabel('lastPageTooltip'), tabindex: '-1' }
+                attrs: { title: isBlazor() ? this.getLocalizedLabel('LastPageTooltip') :
+                    this.getLocalizedLabel('lastPageTooltip'), tabindex: '-1' }
             }));
     }
 

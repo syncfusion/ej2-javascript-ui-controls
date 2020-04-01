@@ -2396,7 +2396,8 @@ export class Layout {
      */
     public getBeforeSpacing(paragraph: ParagraphWidget): number {
         let beforeSpacing: number = 0;
-        if (paragraph.previousWidget instanceof ParagraphWidget) {
+        if (paragraph.previousWidget instanceof ParagraphWidget
+            && !this.documentHelper.dontUseHtmlParagraphAutoSpacing) {
             let afterSpacing: number = this.getAfterSpacing(paragraph.previousWidget);
             if (afterSpacing < paragraph.paragraphFormat.beforeSpacing) {
                 // tslint:disable-next-line:max-line-length

@@ -755,7 +755,7 @@ describe('Schedule Timeline Month view', () => {
             headTrs = [].slice.call(schObj.element.querySelectorAll('.e-date-header-wrap tr'));
             expect((schObj.element.querySelector('.e-date-header-container .e-header-cells') as HTMLElement).innerText)
                 .toEqual('Dec 1');
-            expect((headTrs[2].children[0] as HTMLElement).innerText).toEqual('48');
+            expect((headTrs[2].children[0] as HTMLElement).innerText).toEqual('49');
         });
     });
 
@@ -783,6 +783,21 @@ describe('Schedule Timeline Month view', () => {
                 toEqual('<span class="e-navigate" title="Thursday, January 4, 2018">4</span>');
             (schObj.element.querySelector('.e-toolbar-item.e-prev') as HTMLElement).click();
             expect(schObj.element.querySelectorAll('.e-work-cells').length).toEqual(61);
+        });
+
+        it('scrollTo', (done: DoneFn) => {
+            let model: ScheduleModel = {
+                height: 500, width: 500, currentView: 'TimelineMonth',
+                views: [{ option: 'TimelineMonth', interval: 3 }], selectedDate: new Date(2017, 9, 1),
+                dataBound: () => {
+                    let contentArea: HTMLElement = schObj.element.querySelector('.e-content-wrap') as HTMLElement;
+                    expect(contentArea.scrollLeft).toEqual(0);
+                    schObj.scrollTo(null, new Date(2017, 11, 20));
+                    expect(contentArea.scrollLeft).toEqual(5600);
+                    done();
+                }
+            };
+            schObj = util.createSchedule(model, []);
         });
     });
 

@@ -49,17 +49,11 @@ export function calculateSize(maps: Maps): void {
     let containerHeight: number = maps.element.clientHeight;
     let parentHeight: number = maps.element.parentElement.clientHeight;
     let parentWidth: number = maps.element.parentElement.clientWidth;
-    if (maps.isBlazor) {
-        parentHeight = (maps.element.parentElement.style.height) ? maps.element.parentElement.clientHeight : 450;
-        containerHeight = parentHeight !== 0 ? parentHeight : containerHeight !== 0 ?
-            containerHeight : 450;
-        containerWidth = parentWidth !== 0 ?
-            parentWidth : containerWidth !== 0 ?
-                containerWidth : 600;
-    }
+    let containerElementWidth : number = stringToNumber(maps.element.style.width, containerWidth);
+    let containerElementHeight : number = stringToNumber(maps.element.style.height, containerWidth);
     maps.availableSize = new Size(
-        stringToNumber(maps.width, containerWidth) || containerWidth || parseFloat(maps.element.style.width) || 600,
-        stringToNumber(maps.height, containerHeight) || containerHeight || parseFloat(maps.element.style.height) || (maps.isDevice ?
+        stringToNumber(maps.width, containerWidth) || containerWidth || containerElementWidth || 600,
+        stringToNumber(maps.height, containerHeight) || containerHeight || containerElementHeight || (maps.isDevice ?
             Math.min(window.innerWidth, window.innerHeight) : 450)
     );
 }
@@ -522,10 +516,13 @@ export class Rect {
     }
 }
 /**
- * Internal use of pattern unit types enum.
- * @private
+ * Defines the pattern unit types for drawing the patterns in maps.
  */
-export type patternUnits = 'userSpaceOnUse' | 'objectBoundingBox';
+export type patternUnits =
+    /** Specifies the user space for maps. */
+    'userSpaceOnUse' |
+    /** Specifies the bounding box for the object. */
+    'objectBoundingBox';
 /**
  * Internal use for pattern creation.
  * @property
@@ -805,11 +802,12 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
                     }
                     tempX = bounds1.left + bounds1.width / 2;
                     tempY = bounds1.top + bounds1.height;
+                    indexCollection.push(o as number);
                     if (colloideBounds.length > 0) {
                         indexCollection = indexCollection.filter((item, index, value) => value.indexOf(item) === index);
                         let container: ClientRect = maps.element.getBoundingClientRect();
-                        tempX = Math.abs(container['left'] - tempX);
-                        tempY = Math.abs(container['top'] - tempY);
+                        tempX = tempX - container['left'];
+                        tempY = tempY - container['top'];
                         let translate: Object = (maps.isTileMap) ? new Object() : getTranslate(maps, currentLayer, false);
                         let transPoint: Point = (maps.isTileMap) ? { x: 0, y: 0 } : (maps.translatePoint.x !== 0) ?
                             maps.translatePoint : translate['location'];

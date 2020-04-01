@@ -175,6 +175,10 @@ export interface FileInfo {
      * Returns the input element mapped with file list item.
      */
     input ?: HTMLInputElement;
+    /**
+     * Returns the unique upload file name ID.
+     */
+    id?: string;
 }
 
 export interface MetaData {
@@ -1513,7 +1517,10 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             for (let pro of Object.keys(this.htmlAttributes)) {
                 if (wrapperAttr.indexOf(pro) > -1 ) {
                     if (pro === 'class') {
-                        addClass([this.uploadWrapper], this.htmlAttributes[pro].split(' '));
+                        let updatedClassValues : string = (this.htmlAttributes[pro].replace(/\s+/g, ' ')).trim();
+                        if (updatedClassValues !== '') {
+                            addClass([this.uploadWrapper], updatedClassValues.split(' '));
+                        }
                     } else if (pro === 'style') {
                         let uploadStyle: string = this.uploadWrapper.getAttribute(pro);
                         uploadStyle = !isNullOrUndefined(uploadStyle) ? (uploadStyle + this.htmlAttributes[pro]) :
@@ -1568,11 +1575,19 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         }
     }
     private setCSSClass(oldCSSClass?: string): void {
-        if ( this.cssClass) {
-            addClass([this.uploadWrapper], this.cssClass.split(this.cssClass.indexOf(',') > -1 ? ',' : ' '));
+        let updatedCssClassValue: string = this.cssClass;
+        if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+           updatedCssClassValue = (this.cssClass.replace(/\s+/g, ' ')).trim();
         }
-        if (oldCSSClass) {
-            removeClass([this.uploadWrapper], oldCSSClass.split(' '));
+        if (!isNullOrUndefined(this.cssClass) && updatedCssClassValue !== '') {
+           addClass([this.uploadWrapper], updatedCssClassValue.split(updatedCssClassValue.indexOf(',') > -1 ? ',' : ' '));
+        }
+        let updatedOldCssClass: string = oldCSSClass;
+        if (!isNullOrUndefined(oldCSSClass)) {
+            updatedOldCssClass = (oldCSSClass.replace(/\s+/g, ' ')).trim();
+        }
+        if (!isNullOrUndefined(oldCSSClass) && updatedOldCssClass !== '') {
+            removeClass([this.uploadWrapper], updatedOldCssClass.split(' '));
         }
     }
     private wireEvents(): void {
@@ -1973,7 +1988,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
 
     /* istanbul ignore next */
     private checkDirectoryUpload(items: DataTransferItem[] | DataTransferItemList): boolean {
-        for (let i: number = 0; i < items.length; i++) {
+        for (let i: number = 0; items && i < items.length; i++) {
             // tslint:disable-next-line
             let item :any = items[i].webkitGetAsEntry();
             if (item.isDirectory) { return true; }
@@ -1989,14 +2004,24 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             // tslint:disable-next-line
             let directoryReader: any = item.createReader();
             // tslint:disable-next-line
-            directoryReader.readEntries( (entries: any) => {
-                for (let i: number = 0; i < entries.length; i++) {
-                    this.traverseFileTree(entries[i]);
-                    // tslint:disable-next-line
-                };
-                this.pushFilesEntries(event);
-            });
+            this.readFileFromDirectory(directoryReader, event);
         }
+    }
+
+    // tslint:disable
+    /* istanbul ignore next */
+    private readFileFromDirectory(directoryReader: any, event?: MouseEvent | TouchEvent | DragEvent | ClipboardEvent): void {
+        // tslint:disable-next-line
+        directoryReader.readEntries( (entries: any) => {
+            for (let i: number = 0; i < entries.length; i++) {
+                this.traverseFileTree(entries[i]);
+                // tslint:disable-next-line
+            };
+            this.pushFilesEntries(event);
+            if (entries.length) {
+                this.readFileFromDirectory(directoryReader);
+            }
+        });
     }
 
     private pushFilesEntries(event?: MouseEvent | TouchEvent | DragEvent | ClipboardEvent): void {
@@ -2100,7 +2125,8 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
             status: this.localizedTexts('readyToUploadMessage'),
             type: this.getFileType(file.name),
             validationMessages: this.validatedFileSize(file.size),
-            statusCode: '1'
+            statusCode: '1',
+            id: getUniqueID(file.name.substring(0, file.name.lastIndexOf('.'))) + '.' + this.getFileType(file.name)
         };
         /* istanbul ignore next */
         if (paste) { fileDetails.fileSource = 'paste'; }
@@ -2126,7 +2152,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 if (eventArgs.isModified && eventArgs.modifiedFilesData.length > 0) {
                     for (let j: number = 0; j < eventArgs.modifiedFilesData.length; j++) {
                         for (let k: number = 0; k < fileData.length; k++) {
-                            if (eventArgs.modifiedFilesData[j].name === fileData[k].name) {
+                            if (eventArgs.modifiedFilesData[j].id === fileData[k].id) {
                                 eventArgs.modifiedFilesData[j].rawFile = fileData[k].rawFile;
                             }
                         }

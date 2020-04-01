@@ -865,6 +865,7 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('2').col == 1).toBe(true);
             expect((<any>gridLayOut).getCellInstance('3').row == 0).toBe(true);
             expect((<any>gridLayOut).getCellInstance('3').col == 0).toBe(true);
+            expect(gridLayOut.element.children[1].querySelectorAll('.e-resize').length).toBe(1);
         });
         it('Columns and panels order updating dynamically', () => {
             gridLayOut = new DashboardLayout({

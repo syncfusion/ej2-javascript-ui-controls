@@ -6,34 +6,34 @@ import { Property, ChildProperty, Complex, Collection } from '@syncfusion/ej2-ba
 export interface AnnotationModel {
 
     /**
-     * Specifies the id of html element.
+     * Sets and gets the content for the annotation in maps component.
      */
     content?: string;
 
     /**
-     * Specifies the position of x.
+     * Sets and gets the x position of the annotation in maps component.
      */
     x?: string;
 
     /**
-     * Specifies the position of y.
+     * Sets and gets the y position of the annotation in maps component.
      */
     y?: string;
 
     /**
-     * Specifies the vertical alignment of annotation.
+     * Sets and gets the annotation element to be aligned vertically.
      * @default None
      */
     verticalAlignment?: AnnotationAlignment;
 
     /**
-     * Specifies the horizontal alignment of annotation.
+     * Sets and gets the annotation element to be aligned horizontally.
      * @default None
      */
     horizontalAlignment?: AnnotationAlignment;
 
     /**
-     * Specifies the zIndex of the annotation.
+     * Sets and gets the z-index of the annotation in maps component.
      * @default '-1'
      */
     zIndex?: string;
@@ -46,27 +46,27 @@ export interface AnnotationModel {
 export interface ArrowModel {
 
     /**
-     * arrowPosition
+     * Sets and gets the type of the position to place the arrow in navigation lines.
      */
     position?: string;
 
     /**
-     * show
+     * Enables or disables the visibility state of the arrow in navigation line.
      */
     showArrow?: boolean;
 
     /**
-     * size
+     * Sets and gets the size of the arrow in navigation line in maps.
      */
     size?: number;
 
     /**
-     * color
+     * Sets and gets the color for the arrow in navigation line.
      */
     color?: string;
 
     /**
-     * offset the arrow in navigation line by specified pixels
+     * Sets and gets the offset value to position the arrow in navigation line.
      */
     offSet?: number;
 
@@ -78,32 +78,32 @@ export interface ArrowModel {
 export interface FontModel {
 
     /**
-     * Font size for the text.
+     * Sets and gets the size for the text in data label, legend and other texts.
      */
     size?: string;
 
     /**
-     * Color for the text.
+     * Sets and gets the color for the text in data label, legend and other texts in maps component.
      */
     color?: string;
 
     /**
-     * FontFamily for the text.
+     * Sets and gets the style of the text in data label, legend and other texts in maps component.
      */
     fontFamily?: string;
 
     /**
-     * FontWeight for the text.
+     * Sets and gets the font weight of the text in data label, legend and other texts in maps component.
      */
     fontWeight?: string;
 
     /**
-     * FontStyle for the text.
+     * Sets and gets the style of the text in data label, legend and other texts in maps component.
      */
     fontStyle?: string;
 
     /**
-     * Opacity for the text.
+     * Sets and gets the opacity for the text in data label, legend and other texts in maps component.
      * @default 1
      */
     opacity?: number;
@@ -116,12 +116,12 @@ export interface FontModel {
 export interface BorderModel {
 
     /**
-     * The color of the border that accepts value in hex and rgba as a valid CSS color string.
+     * Sets and gets the color of the border. This property accepts the value in hex code and rgba string as a valid CSS color string.
      */
     color?: string;
 
     /**
-     * The width of the border in pixels.
+     * Sets and gets the width of the border in maps.
      */
     width?: number;
 
@@ -133,13 +133,13 @@ export interface BorderModel {
 export interface CenterPositionModel {
 
     /**
-     * latitude for the center position of maps
+     * Sets and gets the latitude for the center position of maps.
      * @default null
      */
     latitude?: number;
 
     /**
-     * longitude for the center position of maps
+     * Sets and gets the longitude for the center position of maps.
      * @default null
      */
     longitude?: number;
@@ -152,40 +152,40 @@ export interface CenterPositionModel {
 export interface TooltipSettingsModel {
 
     /**
-     * Toggle the tooltip visibility.
+     * Enables or disables the tooltip visibility for layers, markers, and bubbles in maps.
      * @default false
      */
     visible?: boolean;
 
     /**
-     * To customize the tooltip template.
+     * Sets and gets the tooltip template for layers, markers, and bubbles in maps.
      * @default ''
      */
     template?: string;
 
     /**
-     * To customize the fill color of the tooltip.
+     * Sets and gets the color of the tooltip in layers, markers, and bubbles of maps.
      */
     fill?: string;
 
     /**
-     * Options for customizing the color and width of the tooltip.
+     * Sets and gets the options for customizing the color and width of the border of the tooltip in layers, markers, and bubbles of maps.
      */
     border?: BorderModel;
 
     /**
-     * Options for customizing text styles of the tooltip.
+     * Sets and gets the options for customizing the style of the text in tooltip for layers, markers, and bubbles of maps.
      */
     textStyle?: FontModel;
 
     /**
-     * To customize the format of the tooltip.
+     * Sets and gets the format of the tooltip in layers, markers, and bubbles of maps.
      * @default null
      */
     format?: string;
 
     /**
-     * To customize the value of the tooltip.
+     * Sets and gets the value from the data source based on which the tooltip is visible on layers, markers, and bubbles of maps.
      * @default null
      */
     valuePath?: string;
@@ -198,25 +198,25 @@ export interface TooltipSettingsModel {
 export interface MarginModel {
 
     /**
-     * Left margin in pixels.
+     * Sets and gets the left margin for maps.
      * @default 10
      */
     left?: number;
 
     /**
-     * Right margin in pixels.
+     * Sets and gets the right margin for maps.
      * @default 10
      */
     right?: number;
 
     /**
-     * Top margin in pixels.
+     * Sets and gets the top margin for maps.
      * @default 10
      */
     top?: number;
 
     /**
-     * Bottom margin in pixels.
+     * Sets and gets the bottom margin for maps.
      * @default 10
      */
     bottom?: number;
@@ -229,19 +229,19 @@ export interface MarginModel {
 export interface ConnectorLineSettingsModel {
 
     /**
-     * Set the color for connector line
+     * Sets and gets the color for connector line between the markers in marker cluster.
      * @default '#000000'
      */
     color?: string;
 
     /**
-     * Set the line width for connector line
+     * Sets and gets the line width for connector line between the markers in marker cluster.
      * @default 1
      */
     width?: number;
 
     /**
-     * Set the opacity for connector line
+     * Sets and gets the opacity for connector line between the markers in marker cluster.
      * @default 1
      */
     opacity?: number;
@@ -254,75 +254,75 @@ export interface ConnectorLineSettingsModel {
 export interface MarkerClusterSettingsModel {
 
     /**
-     * Toggle the Clustering visibility.
+     * Enables or disables the visibility state of the clustering of markers in the maps component.
      * @default false
      */
     allowClustering?: boolean;
 
     /**
-     * Options for customizing the color and width of the Clustering.
+     * Sets and gets the options for customizing the color and width of the border of cluster in maps.
      */
     border?: BorderModel;
 
     /**
-     * To customize the fill color of the Clustering.
+     * Sets and gets the fill color of the cluster.
      * @default '#D2691E'
      */
     fill?: string;
 
     /**
-     * To customize the opacity of the Clustering.
+     * Sets and gets the opacity of the marker cluster.
      * @default 1
      */
     opacity?: number;
 
     /**
-     * To customize the Clustering of the marker.
+     * Sets and gets shape for the cluster of markers.
      * @default Rectangle
      */
     shape?: MarkerType;
 
     /**
-     * Customize the legend width of the maps.
+     * Sets and gets the width of the marker cluster in maps.
      * @default 12
      */
     width?: number;
 
     /**
-     * Customize the legend height of the maps.
+     * Sets and gets the height of the marker cluster in maps.
      * @default 12
      */
     height?: number;
 
     /**
-     * To move the marker by setting offset values
+     * Sets and gets the offset position for the marker cluster in maps.
      */
     offset?: Point;
 
     /**
-     * To provide the image url for rendering marker image
+     * Sets and gets the URL path for the marker cluster when the cluster shape is set as image in maps.
      */
     imageUrl?: string;
 
     /**
-     * dashArray
+     * Sets and gets the dash array for the marker cluster in maps.
      *  @default ''
      */
     dashArray?: string;
 
     /**
-     * cluster style
+     * Sets and gets the options to customize the text in marker cluster.
      */
     labelStyle?: FontModel;
 
     /**
-     * Toggle the cluster separate
+     * Enables or disables the cluster expand when many markers are in same location.
      * @default false
      */
     allowClusterExpand?: boolean;
 
     /**
-     * Set connector style for cluster separating
+     * Sets and gets the options to customize the connector line in cluster separating the markers.
      */
     connectorLineSettings?: ConnectorLineSettingsModel;
 
@@ -341,7 +341,7 @@ export interface MarkerClusterDataModel {
 export interface ColorMappingSettingsModel {
 
     /**
-     * To configure from
+     * Sets and gets the value from where the range color-mapping starts.
      * @aspDefaultValueIgnore
      * @default null
      * @isBlazorNullableType true
@@ -349,7 +349,7 @@ export interface ColorMappingSettingsModel {
     from?: number;
 
     /**
-     * To configure to
+     * Sets and gets the value to where the range color-mapping ends.
      * @aspDefaultValueIgnore
      * @default null
      * @isBlazorNullableType true
@@ -357,37 +357,37 @@ export interface ColorMappingSettingsModel {
     to?: number;
 
     /**
-     * To configure value
+     * Sets and gets the value for the color-mapping from the data source.
      * @default null
      */
     value?: string;
 
     /**
-     * To configure color
+     * Sets and gets the color for the color-mapping in maps.
      * @default null
      */
     color?: string | string[];
 
     /**
-     * To configure min opacity
+     * Sets and gets the minimum opacity for the color-mapping in maps.
      * @default null
      */
     minOpacity?: number;
 
     /**
-     * To configure max opacity
+     * Sets and gets the maximum opacity for the color-mapping in maps.
      * @default null
      */
     maxOpacity?: number;
 
     /**
-     * To configure labels
+     * Sets and gets the label for the color-mapping from the data source in maps.
      * @default null
      */
     label?: string;
 
     /**
-     * To enable or disable the legend
+     * Enables or disables the visibility state of legend for the color-mapping shapes in maps.
      * @default true
      */
     showLegend?: boolean;
@@ -400,13 +400,13 @@ export interface ColorMappingSettingsModel {
 export interface InitialShapeSelectionSettingsModel {
 
     /**
-     * To customize the fill color of the highlight.
+     * Sets and gets the property name from the data source in maps.
      * @default null
      */
     shapePath?: string;
 
     /**
-     * Toggle the highlight settings.
+     * Sets and gets the value for the shape from data source in maps.
      * @default null
      */
     shapeValue?: string;
@@ -419,31 +419,31 @@ export interface InitialShapeSelectionSettingsModel {
 export interface SelectionSettingsModel {
 
     /**
-     * Toggle the selection settings.
+     * Enables or disables the selection for the layers, markers in maps.
      * @default false
      */
     enable?: boolean;
 
     /**
-     * To customize the fill color of the Selection.
+     * Sets and gets the color for the shape that is selected.
      * @default null
      */
     fill?: string;
 
     /**
-     * To customize the opacity of the Selection.
+     * Sets and gets the opacity for the shape that is selected.
      * @default 1
      */
     opacity?: number;
 
     /**
-     * Toggle the multi selection.
+     * Enables or disables the selection for many shapes in maps.
      * @default false
      */
     enableMultiSelect?: boolean;
 
     /**
-     * Options for customizing the color and width of the selection.
+     * Sets and gets the options for customizing the color and width of the border of selected shapes in maps.
      */
     border?: BorderModel;
 
@@ -455,25 +455,25 @@ export interface SelectionSettingsModel {
 export interface HighlightSettingsModel {
 
     /**
-     * To customize the fill color of the highlight.
+     * Sets and gets the color for the shapes on which the mouse has hovered in maps. 
      * @default null
      */
     fill?: string;
 
     /**
-     * Toggle the highlight settings.
+     * Enables or disables the highlight settings for maps.
      * @default false
      */
     enable?: boolean;
 
     /**
-     * To customize the opacity of the highlight.
+     * Sets and gets the opacity for the highlighted shapes in maps.
      * @default 1
      */
     opacity?: number;
 
     /**
-     * Options for customizing the color and width of the highlight.
+     * Sets and gets the options for customizing the color and width of the border for the highlighted shapes in maps.
      */
     border?: BorderModel;
 
@@ -485,58 +485,58 @@ export interface HighlightSettingsModel {
 export interface NavigationLineSettingsModel {
 
     /**
-     * NavigationSelectedLine visible
-     *  @default false
+     * Enables or disables the navigation lines to be drawn in maps.
+     * @default false
      */
     visible?: boolean;
 
     /**
-     * Configures the label border
+     * Sets and gets the width of the navigation lines in maps.
      * @default 1
      */
     width?: number;
 
     /**
-     * NavigationSelectedLine longitude
-     *  @default []
+     * Sets and gets the longitude for the navigation lines drawn in maps.
+     * @default []
      */
     longitude?: number[];
 
     /**
-     * NavigationSelectedLine latitude
-     *  @default []
+     * Sets and gets the latitude value for the navigation lines drawn in maps.
+     * @default []
      */
     latitude?: number[];
 
     /**
-     * dashArray
-     *  @default ''
+     * Sets and gets the dash-array for the navigation lines drawn in maps.
+     * @default ''
      */
     dashArray?: string;
 
     /**
-     * NavigationSelectedLine color
+     * Sets and gets the color for the navigation lines in maps.
      */
     color?: string;
 
     /**
-     * Specifies the angle of curve connecting different locations in map
+     * Sets and gets the angle of curve connecting different locations in maps.
      * @default 0
      */
     angle?: number;
 
     /**
-     * arrow
+     * Sets and gets the options to customize the arrow for the navigation line in maps.
      */
     arrowSettings?: ArrowModel;
 
     /**
-     * To configure the selection settings of the maps.
+     * Sets and gets the selection settings of the navigation line in maps.
      */
     selectionSettings?: SelectionSettingsModel;
 
     /**
-     * To configure the highlight settings of the maps.
+     * Sets and gets the highlight settings of the navigation line in maps.
      */
     highlightSettings?: HighlightSettingsModel;
 
@@ -548,21 +548,21 @@ export interface NavigationLineSettingsModel {
 export interface BubbleSettingsModel {
 
     /**
-     * Configures the bubble border
+     * Sets and gets the options to customize the color and width of the border for the bubble in maps.
      */
     border?: BorderModel;
 
     /**
-     * Toggle the visibility of bubble
+     * Enables or disables the visibility state of the bubbles in maps.
      * @default false
      */
     visible?: boolean;
 
     /**
-     * * Specifies dataSource for the bubble.
-     * * The datasource must contain the size value of the bubble that can be bound to the bubble 
+     * Sets and gets the data source for the bubble.
+     * The data source must contain the size value of the bubble that can be bound to the bubble 
      * of the Maps using the valuePath property in the bubbleSettings.
-     * * The datasource can contain data such as color, and the other information that can be bound to the color, and tooltip of the bubble.
+     * The data source can contain data such as color, and the other information that can be bound to the bubble, and tooltip of the bubble.
      * @isdatamanager false
      * @isObservable true
      * @default []
@@ -570,77 +570,77 @@ export interface BubbleSettingsModel {
     dataSource?: object[];
 
     /**
-     * To configure bubble animation duration
+     * Sets and gets the duration for the animation for bubble in maps.
      * @default 1000
      */
     animationDuration?: number;
 
     /**
-     * Animation duration
+     * Sets and gets the delay in animation for bubble in maps.
      * @default 0
      */
     animationDelay?: number;
 
     /**
-     * To configure bubble fill color
+     * Sets and gets the color for the bubble in maps.
      * @default ''
      */
     fill?: string;
 
     /**
-     * To configure bubble minRadius
+     * Sets and gets the minimum radius for the bubble in maps.
      * @default 10
      */
     minRadius?: number;
 
     /**
-     * To configure bubble maxRadius
+     * Sets and gets the maximum radius for the bubble in maps.
      * @default 20
      */
     maxRadius?: number;
 
     /**
-     * To configure bubble opacity
+     * Sets and gets the opacity of the bubble in maps.
      * @default 1
      */
     opacity?: number;
 
     /**
-     * To configure bubble valuePath
+     * Sets and gets the value from the data source of bubble settings for the bubble to be rendered in maps.
      * @default null
      */
     valuePath?: string;
 
     /**
-     * To configure bubble shape type
+     * Sets and gets the type of the bubble in maps.
      * @default Circle
      */
     bubbleType?: BubbleType;
 
     /**
-     * To configure bubble colorValuePath
+     * Sets and gets the value from the data source of bubble settings for the color of the bubble in maps.
      * @default null
      */
     colorValuePath?: string;
 
     /**
-     * To configure bubble colorMapping
+     * Sets and gets the color-mapping for the bubble in maps.
      * @default []
      */
     colorMapping?: ColorMappingSettingsModel[];
 
     /**
-     * To configure the tooltip settings of the bubble .
+     * Sets and gets the options to customize the tooltip for the bubbles in maps.
      */
     tooltipSettings?: TooltipSettingsModel;
 
     /**
-     * To configure the selection settings of the maps.
+     * Sets and gets the selection settings for the bubble in maps.
      */
     selectionSettings?: SelectionSettingsModel;
 
     /**
-     * To configure the highlight settings of the maps.
+     * Sets and gets the highlight settings for the bubble in maps.
      */
     highlightSettings?: HighlightSettingsModel;
 
@@ -652,13 +652,13 @@ export interface BubbleSettingsModel {
 export interface CommonTitleSettingsModel {
 
     /**
-     * To customize the text of the title.
+     * Sets and gets the text for the title in maps.
      * @default ''
      */
     text?: string;
 
     /**
-     * To customize title description for the accessibility.
+     * Sets and gets the description of the title in maps.
      * @default ''
      */
     description?: string;
@@ -671,12 +671,12 @@ export interface CommonTitleSettingsModel {
 export interface SubTitleSettingsModel extends CommonTitleSettingsModel{
 
     /**
-     * Options for customizing title styles of the Maps.
+     * Sets and gets the options for customizing the text in the subtitle for maps.
      */
     textStyle?: FontModel;
 
     /**
-     * text alignment
+     * Sets and gets the alignment of the subtitle for maps.
      * @default Center
      */
     alignment?: Alignment;
@@ -689,18 +689,18 @@ export interface SubTitleSettingsModel extends CommonTitleSettingsModel{
 export interface TitleSettingsModel extends CommonTitleSettingsModel{
 
     /**
-     * Options for customizing title styles of the Maps.
+     * Sets and gets the options for customizing the text of the title in Maps.
      */
     textStyle?: FontModel;
 
     /**
-     * text alignment
+     * Sets and gets the alignment for the text in the title for the maps.
      * @default Center
      */
     alignment?: Alignment;
 
     /**
-     * To configure sub title of maps.
+     * Sets and gets the subtitle for the maps.
      */
     subtitleSettings?: SubTitleSettingsModel;
 
@@ -712,113 +712,112 @@ export interface TitleSettingsModel extends CommonTitleSettingsModel{
 export interface ZoomSettingsModel {
 
     /**
-     * Toggle the visibility of zooming.
+     * Enables or disables the zooming operation in the maps component.
      * @default false
      */
     enable?: boolean;
 
     /**
-     * Toggle the visibility of Panning
+     * Enables or disables the panning operation in the maps component.
      * @default true
      */
     enablePanning?: boolean;
 
     /**
-     * Toggle the visibility of Selection Zooming
+     * Enables or disables the selection zooming operation in the maps component.
      * @default true
      */
     enableSelectionZooming?: boolean;
 
     /**
-     * Configures tool bar orientation
+     * Sets and gets the orientation of the zoom toolbar.
      * @default Horizontal
      * @blazorProperty 'ToolbarOrientation'
      */
     toolBarOrientation?: Orientation;
 
     /**
-     * Specifies the tool bar color.
+     * Sets and gets the color for the toolbar in maps.
      */
     color?: string;
 
     /**
-     * Specifies the tool bar highlight color.
+     * Sets and gets the color for the zooming toolbar when the mouse has hovered on toolbar element in maps.
      */
     highlightColor?: string;
 
     /**
-     * Specifies the tool bar selection color.
-     * 
+     * Sets and gets the color for the zooming toolbar when clicking the zooming toolbar in maps.
      */
     selectionColor?: string;
 
     /**
-     * Configures vertical placement of tool bar 
+     * Sets and gets the position type of toolbar when it is placed horizontally.
      * @default Far
      */
     horizontalAlignment?: Alignment;
 
     /**
-     * Configures vertical placement of tool bar 
+     * Sets and gets the position type of toolbar when it is placed vertically.
      * @default Near
      */
     verticalAlignment?: Alignment;
 
     /**
-     * To configure zooming items.
+     * Sets and gets the items that are to be shown in the zooming toolbar in maps.
      */
     toolbars?: string[];
 
     /**
-     * Toggle the mouse wheel zooming.
+     * Enables or disables the mouse wheel zooming in maps.
      * @default true
      */
     mouseWheelZoom?: boolean;
 
     /**
-     * Double tab zooming
+     * Enables or disables the double click zooming in maps.
      * @default false
      * @blazorProperty 'ZoomOnDoubleClick'
      */
     doubleClickZoom?: boolean;
 
     /**
-     * Toggle the pinch zooming.
+     * Enables or disables the pinch zooming in maps.
      * @default true
      */
     pinchZooming?: boolean;
 
     /**
-     * Toggle the selection on zooming.
+     * Enables or disables the zooming on clicking the shapes in maps.
      * @default false
      */
     zoomOnClick?: boolean;
 
     /**
-     * Configures zoom factor.
+     * Sets and gets the factor of zoom to be displayed while rendering the maps.
      * @default 1
      */
     zoomFactor?: number;
 
     /**
-     * Configures max zooming.
+     * Sets and gets the maximum zooming value in maps.
      * @default 10
      */
     maxZoom?: number;
 
     /**
-     * Configures minimum zooming.
+     * Sets and gets the minimum zooming value in maps.
      * @default 1
      */
     minZoom?: number;
 
     /**
-     * Zoom map based on marker positions.
+     * Enables or disables the zoom based on the marker position while rendering the maps.
      */
     shouldZoomInitially?: boolean;
 
     /**
-     * Zoom map based on marker positions.
+     * Enables or disables the zoom to set the initial State.
      */
     resetToInitial?: boolean;
 
@@ -830,31 +829,31 @@ export interface ZoomSettingsModel {
 export interface ToggleLegendSettingsModel {
 
     /**
-     * To toggle the legend
+     * Enables or disables the legend to be toggled.
      * @default false
      */
     enable?: boolean;
 
     /**
-     * To apply the shape settings
+     * Enables or disables the property of the shape settings to be displayed while clicking the legend.
      * @default true
      */
     applyShapeSettings?: boolean;
 
     /**
-     * To specify the opacity of the shape
+     * Sets and gets the opacity for the shape for which the legend is selected.
      * @default 1
      */
     opacity?: number;
 
     /**
-     * To fill the color for shape
+     * Sets and gets the color of the shape for which the legend is selected.
      * @default ''
      */
     fill?: string;
 
     /**
-     * To apply border for the shapes
+     * Sets and gets the options to customize the color and width of the border for the shape in maps.
      */
     border?: BorderModel;
 
@@ -866,168 +865,168 @@ export interface ToggleLegendSettingsModel {
 export interface LegendSettingsModel {
 
     /**
-     * Toggle the legend selection
+     * Enables or disables the toggle visibility for legend in maps.
      * @default false
      */
     toggleVisibility?: boolean;
 
     /**
-     * Toggle the legend visibility.
+     * Enables or disables the visibility state of the legend in maps.
      * @default false
      */
     visible?: boolean;
 
     /**
-     * Customize the legend background
+     * Sets and gets the background color for the legend in maps.
      * @default 'transparent'
      */
     background?: string;
 
     /**
-     * Type of the legend rendering
+     * Sets and gets the type of the legend in maps.
      * @default Layers
      */
     type?: LegendType;
 
     /**
-     * Inverted pointer for interactive legend
+     * Enables or disables the visibility of the inverted pointer in interactive legend in maps.
      */
     invertedPointer?: boolean;
 
     /**
-     * To place the label position for interactive legend.
+     * Sets and gets the position of the label in legend.
      * @default After
      */
     labelPosition?: LabelPosition;
 
     /**
-     * Specifies the label intersect action.
+     * Sets and gets the display mode for the label in legend.
      * @default None
      */
     labelDisplayMode?: LabelIntersectAction;
 
     /**
-     * Customize the legend shape of the maps.
+     * Sets and gets the shape of the legend in maps.
      * @default Circle
      */
     shape?: LegendShape;
 
     /**
-     * Customize the legend width of the maps.
+     * Sets and gets the width of the legend in maps.
      * @default ''
      */
     width?: string;
 
     /**
-     * Customize the legend height of the maps.
+     * Sets and gets the height of the legend in maps.
      * @default ''
      */
     height?: string;
 
     /**
-     * Options for customizing text styles of the legend.
+     * Sets and gets the options for customizing the text styles for the legend in maps.
      */
     textStyle?: FontModel;
 
     /**
-     * Customize the legend width of the maps.
+     * Sets and gets the width of the shapes in legend.
      * @default 15
      */
     shapeWidth?: number;
 
     /**
-     * Customize the legend height of the maps.
+     * Sets and gets the width of the shapes in legend.
      * @default 15
      */
     shapeHeight?: number;
 
     /**
-     * Customize the shape padding
+     * Sets and gets the padding for the shapes in legend.
      * @default 10
      */
     shapePadding?: number;
 
     /**
-     * Options for customizing the color and width of the legend border.
+     * Sets and gets the options for customizing the color and width of the legend border.
      */
     border?: BorderModel;
 
     /**
-     * Options for customizing the color and width of the shape border.
+     * Sets and gets the options for customizing the color and width of the border for the shape in legend.
      */
     shapeBorder?: BorderModel;
 
     /**
-     * To configure the title of the legend.
+     * Sets and gets the title for the legend in maps.
      */
     title?: CommonTitleSettingsModel;
 
     /**
-     * Options for customizing text styles of the legend.
+     * Sets and gets the options for customizing the style of the title for the legend in maps.
      */
     titleStyle?: FontModel;
 
     /**
-     * Customize the legend position of the maps.
+     * Sets and gets the position of the legend in maps.
      * @default Bottom
      */
     position?: LegendPosition;
 
     /**
-     * Customize the legend alignment of the maps.
+     * Sets and gets the alignment for the legend in maps.
      * @default Center
      */
     alignment?: Alignment;
 
     /**
-     * Customize the legend items placed
+     * Sets and gets the orientation of the legend in maps.
      * @default None
      */
     orientation?: LegendArrangement;
 
     /**
-     * Customize the legend placed by given x and y values. 
+     * Sets and gets the location of the legend, given by x and y values. 
      */
     location?: Point;
 
     /**
-     * Specifies the legend shape color
+     * Sets and gets the color of the legend in maps.
      */
     fill?: string;
 
     /**
-     * Specifies the opacity of legend shape color
+     * Sets and gets the opacity for the legend in maps.
      * @default 1
      */
     opacity?: number;
 
     /**
-     * Customize the legend mode.
+     * Sets and gets the mode of the legend in maps. The modes available are default and interactive modes.
      * @default Default
      */
     mode?: LegendMode;
 
     /**
-     * Enable or disable the visibility of legend
+     * Sets and gets the path for the legend from the data source to be shown.
      * @default null
      * @blazorProperty 'LegendPath'
      */
     showLegendPath?: string;
 
     /**
-     * Bind the dataSource field for legend
+     * Set and gets the value from the data source for legend.
      * @default null
      */
     valuePath?: string;
 
     /**
-     * Removes the duplicate legend item
+     * Enables or disables to remove the duplicate legend item.
      * @default false
      */
     removeDuplicateLegend?: boolean;
 
     /**
-     * Options for customizing the color and width of the selection.
+     * Sets and gets the options for customizing the color and width of the shape related to the legend on selecting the legend.
      */
     toggleLegendSettings?: ToggleLegendSettingsModel;
 
@@ -1039,63 +1038,63 @@ export interface LegendSettingsModel {
 export interface DataLabelSettingsModel {
 
     /**
-     * Toggle the data label visibility.
+     * Enables or disables the visibility of data-labels in maps.
      * @default false
      */
     visible?: boolean;
 
     /**
-     * Configures the label border
+     * Sets and gets the options for customizing the color and width of the border for the data-labels.
      */
     border?: BorderModel;
 
     /**
-     * configure the fill
+     * Sets and gets the color for the data-labels in maps.
      */
     fill?: string;
 
     /**
-     * configure the label opacity
+     * Sets and gets the opacity for the color of the data-labels in maps.
      */
     opacity?: number;
 
     /**
-     * rectangle rx 
+     * Sets and gets the x position for the data-labels.
      * @default 10
      */
     rx?: number;
 
     /**
-     * ry value
+     * Sets and gets the y position for the data-labels in maps.
      * @default 10
      */
     ry?: number;
 
     /**
-     * Options for customizing text styles of the data label.
+     * Sets and gets the options for customizing the styles of the text in data-labels.
      */
     textStyle?: FontModel;
 
     /**
-     * To customize the label path values.
+     * Sets and gets the path from the data source based on which the data-labels gets rendered.
      * @default ''
      */
     labelPath?: string;
 
     /**
-     * To customize the smartLabels.
+     * Sets and gets the label mode for the data-labels.
      * @default None
      */
     smartLabelMode?: SmartLabelMode;
 
     /**
-     * intersection action
+     * Sets and gets the intersection action for the data-labels in maps.
      * @default None
      */
     intersectionAction?: IntersectAction;
 
     /**
-     * To customize the data label template.
+     * Sets and gets the template for the data-labels in maps.
      * @default ''
      */
     template?: string;
@@ -1108,58 +1107,58 @@ export interface DataLabelSettingsModel {
 export interface ShapeSettingsModel {
 
     /**
-     * To customize the fill color of the shape.
+     * Sets and gets the color of the shapes in maps.
      * @default '#A6A6A6'
      */
     fill?: string;
 
     /**
-     * To customize the palette of the shape.
+     * Sets and gets a set of colors for the shapes in maps.
      * @default []
      */
     palette?: string[];
 
     /**
-     * Customize the radius for points
+     * Sets and gets the radius of the shape.
      */
     circleRadius?: number;
 
     /**
-     * Options for customizing the color and width of the shape.
+     * Sets and gets the options for customizing the color and width of the border for the shapes in maps.
      */
     border?: BorderModel;
 
     /**
-     * Dash array of line
+     * Sets and gets the dash-array for the shapes in maps.
      */
     dashArray?: string;
 
     /**
-     * To customize the opacity of the shape.
+     * Sets and gets the opacity for the shapes in maps.
      * @default 1
      */
     opacity?: number;
 
     /**
-     * To customize the colorValuePath of the shape.
+     * Sets and gets the value path from the data source to set the color for the shapes in maps.
      * @default null
      */
     colorValuePath?: string;
 
     /**
-     * To customize the valuePath of the shape.
+     * Sets and gets the value from the data source based on which the shape gets rendered.
      * @default null
      */
     valuePath?: string;
 
     /**
-     * To configure shape colorMapping
+     * Sets and gets the options to map the color for some set of the shapes in maps.
      * @default []
      */
     colorMapping?: ColorMappingSettingsModel[];
 
     /**
-     * Toggle the auto fill.
+     * Enables or disables the filling of color for the shapes automatically.
      * @default false
      */
     autofill?: boolean;
@@ -1172,97 +1171,97 @@ export interface ShapeSettingsModel {
 export interface MarkerBaseModel {
 
     /**
-     * Options for customizing the color and width of the marker.
+     * Sets and gets the options for customizing the color and width of the border for the marker in maps.
      */
     border?: BorderModel;
 
     /**
-     * Options for customizing the dash array options
+     * Sets and gets the dash-array for the marker.
      */
     dashArray?: string;
 
     /**
-     * Toggle the visibility of the marker.
+     * Enables or disables the visibility state of the marker based on the marker data source in maps.
      * @default false
      */
     visible?: boolean;
 
     /**
-     * To customize the fill color of the marker.
+     * Sets and gets the color for the marker in maps.
      * @default '#FF471A'
      */
     fill?: string;
 
     /**
-     * To customize the height of the marker.
+     * Sets and gets the height of the marker in maps.
      * @default 10
      */
     height?: number;
 
     /**
-     * To customize the width of the marker.
+     * Sets and gets the width of the marker in maps.
      * @default 10
      */
     width?: number;
 
     /**
-     * To customize the opacity of the marker.
+     * Sets and gets the opacity for the marker in maps.
      * @default 1
      */
     opacity?: number;
 
     /**
-     * To customize the color of marker from marker dataSource.
+     * Sets and gets the value path from the marker data source to apply color for the marker.
      * @default null
      */
     colorValuePath?: string;
 
     /**
-     * To customize the shape of marker from marker dataSource.
+     * Sets and gets the value path from the marker data source to set the shape of the marker.
      * @default null
      */
     shapeValuePath?: string;
 
     /**
-     * To customize the shape image of marker from marker dataSource.
+     * Sets and gets the value path from the marker data source for the image of the marker.
      * @default null
      */
     imageUrlValuePath?: string;
 
     /**
-     * To customize the shape of the marker.
+     * Sets and gets the shape of the marker in maps.
      * @default Balloon
      */
     shape?: MarkerType;
 
     /**
-     * To provide the dataSource field to display legend text
+     * Sets and gets the text for the legend from the marker data source.
      * @default ''
      */
     legendText?: string;
 
     /**
-     * To move the marker by setting offset values
+     * Sets and gets the position to move the marker by setting specific value.
      */
     offset?: Point;
 
     /**
-     * To provide the image url for rendering marker image
+     * Sets and gets the URL for rendering the marker as image.
      */
     imageUrl?: string;
 
     /**
-     * To customize the template of the marker.
+     * Sets and gets the template for the marker.
      * @default null
      */
     template?: string;
 
     /**
-     * * Specifies datasource for the marker.
-     * * The datasource for the marker will contain latitude and longitude values to specify the location 
+     * Sets and gets the data source for the marker.
+     * The data source for the marker will contain latitude and longitude values to specify the location 
      * of the marker.
-     * * The datasource can contain data such as color, shape, and other details that can be bound to the color, shape,
-     *  and tooltip of the marker.
+     * The data source can contain data such as color, shape, and other details that can be bound to the color, shape,
+     * and tooltip of the marker.
      * @isdatamanager false
      * @isObservable true
      * @default []
@@ -1270,39 +1269,39 @@ export interface MarkerBaseModel {
     dataSource?: Object[];
 
     /**
-     * To configure the tooltip settings of the maps marker.
+     * Sets and gets the options to customize the tooltip for the marker in maps.
      */
     tooltipSettings?: TooltipSettingsModel;
 
     /**
-     * Animation duration time
+     * Sets and gets the duration time for animating the marker.
      * @default 1000
      */
     animationDuration?: number;
 
     /**
-     * Animation delay time
+     * Sets and gets the delay time for the animation in marker.
      * @default 0
      */
     animationDelay?: number;
 
     /**
-     * To configure the selection settings of the maps.
+     * Sets and gets the options to customize the marker while selecting the marker in maps.
      */
     selectionSettings?: SelectionSettingsModel;
 
     /**
-     * To configure the highlight settings of the maps.
+     * Sets and gets the options to customize the marker while the mouse has hovered on the marker in maps.
      */
     highlightSettings?: HighlightSettingsModel;
 
     /**
-     * Options for customizing the enable Complex property
+     * Defines the value path from the marker data source for setting latitude for a set of markers.
      */
     latitudeValuePath?: string;
 
     /**
-     * Options for customizing the enable Complex property
+     * Defines the value path from the marker data source for setting longitude for a set of markers.
      */
     longitudeValuePath?: string;
 
@@ -1321,27 +1320,27 @@ export interface MarkerSettingsModel extends MarkerBaseModel{
 export interface LayerSettingsModel {
 
     /**
-     * Specifies the shape data for the layer.
+     * Sets and gets the shape data for the maps to render.
      * @isdatamanager false
      * @default null
      */
     shapeData?: Object | DataManager | MapAjax;
 
     /**
-     * Specifies the query to select particular data from the shape data. 
-     * This property is applicable only when the DataSource is `ej.DataManager`.
+     * Sets and gets the query to select particular data from the shape data. 
+     * This property is applicable only when the data source is created by data manager.
      * @default null
      */
     query?: Query;
 
     /**
-     * Specifies the shape properties 
+     * Sets and gets the options to customize the shape of the maps.
      */
     shapeSettings?: ShapeSettingsModel;
 
     /**
-     * * Specifies dataSource for the layer.
-     * * The datasource can contain data that can be bound to the tooltip, marker, and bubble.
+     * * Sets and gets the data source for the layer.
+     * * The data source can contain data that can be bound to the tooltip, marker, and bubble.
      * @isdatamanager false
      * @isObservable true
      * @default []
@@ -1349,118 +1348,120 @@ export interface LayerSettingsModel {
     dataSource?: Object[] | DataManager | MapAjax;
 
     /**
-     * Specifies the type for the layer.
+     * Sets and gets the type of the layer in maps.
      * @default Layer
      */
     type?: Type;
 
     /**
-     * Specifies the geometry type
+     * Sets and gets the geometry type for the layer in maps.
      * @default Geographic
      */
     geometryType?: GeometryType;
 
     /**
-     * Specifies the type for the bing map.
+     * Sets and gets the Bing map type for the layer. If you use shape data with BingMapType without using layer type as Bing,
+     * then the map will render based on shape data since default layer type will be set as Geometry.
      * @default Aerial
      */
     bingMapType?: BingMapType;
 
     /**
-     * Specifies the type for the static map.
+     * Sets and gets the type of the static maps.
      * @default RoadMap
      */
     staticMapType?: StaticMapType;
 
     /**
-     * Specifies the key for the layer.
+     * Sets and gets the key for the tile map layer in maps.
      * @default ''
      */
     key?: string;
 
     /**
-     * Specifies the layerType for the layer.
+     * Sets and gets the type of the layer in maps. If we use layer type with shape data property in layer of the maps 
+     * then map will render based on the provided layer type.
      * @default Geometry
      */
     layerType?: ShapeLayerType;
 
     /**
-     * Specifies the urlTemplate for the layer.
+     * Sets and gets the template for the map using the url.
      * @default 'https://a.tile.openstreetmap.org/level/tileX/tileY.png'
      */
     urlTemplate?: string;
 
     /**
-     * Toggle the visibility of the layers.
+     * Enables or disables the visibility state for the layers in maps.
      * @default true
      */
     visible?: boolean;
 
     /**
-     * Specifies the shapeDataPath for the layer.
+     * Sets and gets the path for the shape from the shape data in maps.
      * @default 'name'
      */
     shapeDataPath?: string;
 
     /**
-     * Specifies the shapePropertyPath for the layer.
+     * Sets and gets the path for the layers from the layer data source in maps.
      * @default 'name'
      */
     shapePropertyPath?: string | string[];
 
     /**
-     * Specifies the animation duration for the layer.
+     * Sets and gets the duration for the animation of layers in maps.
      * @default 0
      */
     animationDuration?: number;
 
     /**
-     * To configure the marker settings.
+     * Sets and gets the options for customizing the marker in maps.
      */
     markerSettings?: MarkerSettingsModel[];
 
     /**
-     * To configure the cluster settings.
+     * Sets and gets the options for customizing the cluster of markers in maps.
      */
     markerClusterSettings?: MarkerClusterSettingsModel;
 
     /**
-     * To configure the datalabel settings of the maps.
+     * Sets and gets the options for customizing the data-label in maps.
      */
     dataLabelSettings?: DataLabelSettingsModel;
 
     /**
-     * To configure the bubble settings of the maps.
+     * Sets and gets the options for customizing the bubble in maps.
      */
     bubbleSettings?: BubbleSettingsModel[];
 
     /**
-     * navigationLineSetting
+     * Sets and gets the options for customizing the navigation line in maps.
      */
     navigationLineSettings?: NavigationLineSettingsModel[];
 
     /**
-     * To configure the tooltip settings of the maps layer.
+     * Sets and gets the options for customizing the tooltip for the layers, markers, and bubbles in maps.
      */
     tooltipSettings?: TooltipSettingsModel;
 
     /**
-     * To configure the selection settings of the maps.
+     * Sets and gets the options for customizing the shapes when clicking the shapes in maps.
      */
     selectionSettings?: SelectionSettingsModel;
 
     /**
-     * To configure the highlight settings of the maps.
+     * Sets and gets the options for customizing the shapes when the mouse has hovered on maps.
      */
     highlightSettings?: HighlightSettingsModel;
 
     /**
-     * To configure the legend toggle settings.
+     * Sets and gets the options for customizing the toggle state of shapes when selecting the legend in maps.
      */
     toggleLegendSettings?: ToggleLegendSettingsModel;
 
     /**
-     * To select the shape at the rendering time.
+     * Sets and gets the settings for shapes that is selected at the time of rendering.
      */
     initialShapeSelection?: InitialShapeSelectionSettingsModel[];
 
@@ -1479,12 +1480,12 @@ export interface TileModel {
 export interface MapsAreaSettingsModel {
 
     /**
-     * To configure maps area background color
+     * Sets and gets the background color for the map area.
      */
     background?: string;
 
     /**
-     * Options for customizing the color and width of maps area.
+     * Sets and gets the options for customizing the color and width of the border of maps area.
      */
     border?: BorderModel;
 

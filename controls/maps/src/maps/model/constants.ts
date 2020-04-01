@@ -3,159 +3,159 @@
  */
 
 /**
- * Specifies maps load event name.
+ * Specifies the maps load event name.
  * @private
  */
 export const load: string = 'load';
 /**
- * Specifies maps loaded event name.
+ * Specifies the maps loaded event name.
  * @private
  */
 export const loaded: string = 'loaded';
 /**
- * Specifies maps click event name.
+ * Specifies the maps click event name.
  * @private
  */
 export const click: string = 'click';
 /**
- * Specifies maps loaded event name.
+ * Specifies the maps right click event name.
  * @private
  */
 export const rightClick: string = 'rightClick';
 /**
- * Specifies maps double click event name.
+ * Specifies the maps double click event name.
  * @private
  */
 export const doubleClick: string = 'doubleClick';
 /**
- * Specifies maps resize event name.
+ * Specifies the maps resize event name.
  * @private
  */
 export const resize: string = 'resize';
 /**
- * Specifies the map tooltip render event
+ * Specifies the maps tooltip event name.
  */
 export const tooltipRender: string = 'tooltipRender';
 /**
- * Specifies the map shapeSelected event
+ * Specifies the map shape selected event.
  */
 export const shapeSelected: string = 'shapeSelected';
 /**
- * Specifies the map shapeHighlight event
+ * Specifies the maps shape highlight event.
  */
 export const shapeHighlight: string = 'shapeHighlight';
 /**
- * Specifies maps mousemove event name.
+ * Specifies the maps mouse move event name.
  * @private
  */
 export const mousemove: string = 'mousemove';
 /**
- * Specifies maps mouseup event name.
+ * Specifies the maps mouse up event name.
  * @private
  */
 export const mouseup: string = 'mouseup';
 /**
- * Specifies maps mousedown event name.
+ * Specifies the maps mouse down event name.
  * @private
  */
 export const mousedown: string = 'mousedown';
 /**
- * Specifies maps layerRendering event name.
+ * Specifies the maps layer rendering event name.
  * @private
  */
 export const layerRendering: string = 'layerRendering';
 /**
- * Specifies maps shapeRendering event name.
+ * Specifies the maps shape rendering event name.
  * @private
  */
 export const shapeRendering: string = 'shapeRendering';
 /**
- * Specifies maps markerRendering event name.
+ * Specifies the maps marker rendering event name.
  * @private
  */
 export const markerRendering: string = 'markerRendering';
 /**
- * Specifies maps clusterRendering event name.
+ * Specifies the maps cluster rendering event name.
  * @private
  */
 export const markerClusterRendering: string = 'markerClusterRendering';
 /**
- * Specifies maps markerClick event name.
+ * Specifies the maps marker click event name.
  * @private
  */
 export const markerClick: string = 'markerClick';
 /**
- * Specifies maps clusterClick event name.
+ * Specifies the maps cluster click event name.
  * @private
  */
 export const markerClusterClick: string = 'markerClusterClick';
 /**
- * Specifies maps markerMouseMove event name.
+ * Specifies the maps marker mouse move event name.
  * @private
  */
 export const markerMouseMove: string = 'markerMouseMove';
 /**
- * Specifies maps clusterMouseMove event name.
+ * Specifies the maps cluster mouse move event name.
  * @private
  */
 export const markerClusterMouseMove: string = 'markerClusterMouseMove';
 /**
- * Specifies maps dataLabelRendering event name.
+ * Specifies the maps data label rendering event name.
  * @private
  */
 export const dataLabelRendering: string = 'dataLabelRendering';
 /**
- * Specifies maps bubbleRendering event name.
+ * Specifies the maps bubbleRendering event name.
  * @private
  */
 export const bubbleRendering: string = 'bubbleRendering';
 /**
- * Specifies maps bubbleClick event name.
+ * Specifies the maps bubble click event name.
  * @private
  */
 export const bubbleClick: string = 'bubbleClick';
 /**
- * Specifies maps bubbleMouseMove event name.
+ * Specifies the maps bubble mouse move event name.
  * @private
  */
 export const bubbleMouseMove: string = 'bubbleMouseMove';
 /**
- * Specifies maps animationComplete event name.
+ * Specifies the maps animation complete event name.
  * @private
  */
 export const animationComplete: string = 'animationComplete';
 /**
- * Specifies maps legendRendering event name.
+ * Specifies the maps legend rendering event name.
  * @private
  */
 export const legendRendering: string = 'legendRendering';
 /**
- * Specifies maps annotationRendering event name.
+ * Specifies the maps annotation rendering event name.
  * @private
  */
 export const annotationRendering: string = 'annotationRendering';
 /**
- * Specifies maps itemSelection event name
+ * Specifies the maps item selection event name.
  * @private
  */
 export const itemSelection: string = 'itemSelection';
 /**
- * Specifies maps itemHighlight event name
+ * Specifies the maps item highlight event name.
  */
 export const itemHighlight: string = 'itemHighlight';
 /**
- * Specifies maps beforePrint event name
+ * Specifies the maps before print event name.
  */
 export const beforePrint: string = 'beforePrint';
 /**
- * Specifies the map zoom in event name
+ * Specifies the maps zoom in event name.
  */
 export const zoomIn: string = 'zoomIn';
 /**
- * Specifies the map zoom out event name
+ * Specifies the maps zoom out event name.
  */
 export const zoomOut: string = 'zoomOut';
 /**
- * Specifies the map pan event name
+ * Specifies the maps pan event name.
  */
 export const pan: string = 'pan';

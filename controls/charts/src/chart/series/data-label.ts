@@ -1,5 +1,5 @@
 import { ChartLocation, ColorValue, RectOption, isCollide, isOverlap } from '../../common/utils/helper';
-import { markerAnimate, appendChildElement } from '../../common/utils/helper';
+import { markerAnimate, appendChildElement, getVisiblePoints } from '../../common/utils/helper';
 import { getLabelText, convertHexToColor, calculateRect, textElement, colorNameToHex } from '../../common/utils/helper';
 import { Chart } from '../chart';
 import { Size, measureText, TextOption, Rect, SvgRenderer, CanvasRenderer } from '@syncfusion/ej2-svg-base';
@@ -14,7 +14,7 @@ import {
 } from '../../common/utils/helper';
 import { createElement, getValue, extend } from '@syncfusion/ej2-base';
 import { Alignment } from '../../common/utils/enum';
-import { getPoint } from '../../common/utils/helper';
+import { getPoint, getRotatedRectangleCoordinates, isRotatedRectIntersect } from '../../common/utils/helper';
 import { Axis } from '../../chart/axis/axis';
 import { PolarRadarPanel } from '../axis/polar-radar-panel';
 
@@ -145,8 +145,11 @@ export class DataLabel {
         let element: HTMLElement = createElement('div', {
             id: templateId
         });
+        let visiblePoints: Points[] = getVisiblePoints(series);
+        let point: Points;
         // Data label point iteration started
-        series.points.map((point: Points, index: number) => {
+        for (let i: number = 0; i < visiblePoints.length; i++) {
+            point = visiblePoints[i];
             this.margin = dataLabel.margin;
             let labelText: string[] = [];
             let labelLength: number;
@@ -191,14 +194,32 @@ export class DataLabel {
                                     }
                                 }
                             }
-                            if (!isCollide(rect, chart.dataLabelCollections, clip) && isRender) {
-                                chart.dataLabelCollections.push(new Rect(
-                                    rect.x + clip.x, rect.y + clip.y, rect.width, rect.height
-                                ));
+                            let actualRect: Rect = new Rect(rect.x + clip.x, rect.y + clip.y, rect.width, rect.height);
+                            let notOverlapping: boolean;
+                            let rectPoints: ChartLocation[][] = [];
+                            if (dataLabel.enableRotation && angle !== 0) {
+                                let rectCoordinates: ChartLocation[] = this.getRectanglePoints(actualRect);
+                                let rectCenterX: number = actualRect.x + actualRect.width * 0.5;
+                                let rectCenterY: number = (actualRect.y - (actualRect.height / 2));
+                                rectPoints.push(getRotatedRectangleCoordinates(rectCoordinates, rectCenterX, rectCenterY, angle));
+                                notOverlapping = true;
+                                for (let index: number = i; index > 0; index--) {
+                                    if (rectPoints[i] && rectPoints[index - 1] &&
+                                        isRotatedRectIntersect(rectPoints[i], rectPoints[index - 1])) {
+                                        notOverlapping = false;
+                                        rectPoints[i] = null;
+                                        break;
+                                    }
+                                }
+                            } else {
+                                notOverlapping = !isCollide(rect, chart.dataLabelCollections, clip);
+                            }
+                            if ( notOverlapping && isRender) {
+                                chart.dataLabelCollections.push(actualRect);
                                 if (this.isShape) {
                                     shapeRect = chart.renderer.drawRectangle(
                                         new RectOption(
-                                            this.commonId + index + '_TextShape_' + i,
+                                            this.commonId + point.index + '_TextShape_' + i,
                                             argsData.color, argsData.border, dataLabel.opacity, rect, dataLabel.rx,
                                             dataLabel.ry
                                         ),
@@ -225,7 +246,7 @@ export class DataLabel {
                                 textElement(
                                     chart.renderer,
                                     new TextOption(
-                                        this.commonId + index + '_Text_' + i,
+                                        this.commonId + point.index + '_Text_' + i,
                                         xPos, yPos,
                                         'middle', argsData.text, 'rotate(' + degree + ',' + (xValue) + ',' + (yValue) + ')', 'auto', degree
                                     ),
@@ -238,12 +259,22 @@ export class DataLabel {
                     }
                 }
             }
-        });
+        }
         if (element.childElementCount) {
             appendChildElement(chart.enableCanvas, getElement(chart.element.id + '_Secondary_Element'), element, chart.redraw,
             // tslint:disable-next-line:align
             false, 'x', 'y', null, '', false, false, null, chart.duration);
         }
+    }
+    /**
+     * Get rect coordinates
+     */
+    private getRectanglePoints(rect: Rect): ChartLocation[] {
+        let loc1: ChartLocation = new ChartLocation(rect.x, rect.y);
+        let loc2: ChartLocation = new ChartLocation(rect.x + rect.width, rect.y);
+        let loc3: ChartLocation = new ChartLocation(rect.x + rect.width, rect.y + rect.height);
+        let loc4: ChartLocation = new ChartLocation(rect.x, rect.y + rect.height);
+        return [loc1, loc2, loc3, loc4];
     }
 
     /**
@@ -344,7 +375,8 @@ export class DataLabel {
         }
         rect = calculateRect(location, textSize, this.margin);
         // Checking the condition whether data Label has been exist the clip rect
-        if (!((rect.y > (clipRect.y + clipRect.height)) || (rect.x > (clipRect.x + clipRect.width)) ||
+        if (!(dataLabel.enableRotation ===  true && dataLabel.angle !== 0 ) &&
+        !((rect.y > (clipRect.y + clipRect.height)) || (rect.x > (clipRect.x + clipRect.width)) ||
             (rect.x + rect.width < 0) || (rect.y + rect.height < 0))) {
             rect.x = rect.x < 0 ? padding : rect.x;
             rect.y = rect.y < 0 ? padding : rect.y;

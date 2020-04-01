@@ -1,9 +1,9 @@
 import { Workbook } from './workbook';import { Query, DataManager } from '@syncfusion/ej2-data';import { RowModel } from './row-model';import { ColumnModel } from './column-model';import { processIdx } from './data';import { SheetState, ProtectSettingsModel } from '../common/index';import { ProtectSettings } from '../common/index';import { isUndefined, ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';import { Row } from './row';import { Column } from './column';import { WorkbookModel } from './workbook-model';
 
 /**
- * Interface for a class RangeSetting
+ * Interface for a class Range
  */
-export interface RangeSettingModel {
+export interface RangeModel {
 
     /**
      * Specifies the data as JSON / Data manager to the sheet.
@@ -37,10 +37,10 @@ export interface RangeSettingModel {
     template?: string;
 
     /**
-     * Specifies the range for updating the dataSource or template.
+     * Specifies the address for updating the dataSource or template.
      * @default 'A1'
      */
-    range?: string;
+    address?: string;
 
 }
 
@@ -96,10 +96,10 @@ export interface SheetModel {
     protectSettings?: ProtectSettingsModel;
 
     /**
-     * Specifies the range settings for the sheet.
+     * Specifies the range for the sheet.
      * @default []
      */
-    rangeSettings?: RangeSettingModel[];
+    range?: RangeModel[];
 
     /**
      * Specifies index of the sheet. Based on the index, sheet properties are applied.

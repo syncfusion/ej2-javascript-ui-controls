@@ -4,8 +4,8 @@ import { UndoRedoEventArgs, setActionData, getBeforeActionData, updateAction } f
 import { BeforeActionData, PreviousCellDetails, CollaborativeEditArgs, setUndoRedo } from '../common/index';
 import { selectRange, clearUndoRedoCollection } from '../common/index';
 import { getRangeFromAddress, getRangeIndexes, BeforeCellFormatArgs, getSheet, workbookEditOperation } from '../../workbook/index';
-import { getCell, setCell, CellModel, BeforeSortEventArgs, getSheetIndex, wrapEvent } from '../../workbook/index';
-import { SheetModel } from '../../workbook/index';
+import { getCell, setCell, CellModel, BeforeSortEventArgs, getSheetIndex, wrapEvent, getSheetIndexFromId } from '../../workbook/index';
+import { SheetModel, MergeArgs, setMerge } from '../../workbook/index';
 
 /**
  * UndoRedo module allows to perform undo redo functionalities.
@@ -37,7 +37,8 @@ export class UndoRedo {
                 let copiedInfo: { [key: string]: Object } = eventArgs.copiedInfo;
                 address = getRangeIndexes(getRangeFromAddress(eventArgs.pastedRange));
                 if (copiedInfo.isCut) {
-                    cutCellDetails = this.getCellDetails(copiedInfo.range as number[], getSheet(this.parent, copiedInfo.sId as number - 1));
+                    cutCellDetails = this.getCellDetails(
+                        copiedInfo.range as number[], getSheet(this.parent, getSheetIndexFromId(this.parent, <number>copiedInfo.sId)));
                 }
                 break;
             case 'beforeSort':
@@ -97,6 +98,10 @@ export class UndoRedo {
                 case 'validation':
                     updateAction(undoRedoArgs, this.parent, !args.isUndo);
                     break;
+                case 'merge':
+                    undoRedoArgs.eventArgs.merge = !undoRedoArgs.eventArgs.merge;
+                    updateAction(undoRedoArgs, this.parent);
+                    break;
             }
             args.isUndo ? this.redoCollection.push(undoRedoArgs) : this.undoCollection.push(undoRedoArgs);
             if (this.undoCollection.length > this.undoRedoStep) {
@@ -117,7 +122,7 @@ export class UndoRedo {
 
     private updateUndoRedoCollection(options: { args: CollaborativeEditArgs, isPublic?: boolean }): void {
         let actionList: string[] = ['clipboard', 'format', 'sorting', 'cellSave', 'resize', 'resizeToFit', 'wrap', 'hideShow', 'replace',
-        'validation'];
+        'validation', 'merge'];
         if ((options.args.action === 'insert' || options.args.action === 'delete') && options.args.eventArgs.modelType !== 'Sheet') {
             actionList.push(options.args.action);
         }
@@ -163,14 +168,19 @@ export class UndoRedo {
         if (this.isUndo) {
             if (copiedInfo.isCut) {
                 let cells: PreviousCellDetails[] = actionData.cutCellDetails;
-                this.updateCellDetails(cells, getSheet(this.parent, copiedInfo.sId as number - 1), copiedInfo.range as number[], isRefresh);
+                this.updateCellDetails(
+                    cells, getSheet(this.parent, getSheetIndexFromId(this.parent, <number>copiedInfo.sId)),
+                    copiedInfo.range as number[], isRefresh);
             }
             this.updateCellDetails(actionData.cellDetails, sheet, range, isRefresh);
+            eventArgs.mergeCollection.forEach((mergeArgs: MergeArgs): void => {
+                mergeArgs.merge = !mergeArgs.merge; this.parent.notify(setMerge, mergeArgs); mergeArgs.merge = !mergeArgs.merge;
+            });
         } else {
             updateAction(args, this.parent, copiedInfo.isCut as boolean);
         }
         if (isRefresh) {
-            this.parent.notify(selectRange, range);
+            this.parent.notify(selectRange, { indexes: range });
         }
         return args;
     }
@@ -210,7 +220,7 @@ export class UndoRedo {
             updateAction(args, this.parent);
         }
         if (isRefresh) {
-            this.parent.notify(selectRange, range);
+            this.parent.notify(selectRange, { indexes: range });
         }
         return args;
     }
@@ -261,8 +271,8 @@ export class UndoRedo {
 
     private checkRefreshNeeded(sheetIndex: number): boolean {
         let isRefresh: boolean = true;
-        if (sheetIndex + 1 !== this.parent.activeSheetTab) {
-            this.parent.activeSheetTab = sheetIndex + 1;
+        if (sheetIndex !== this.parent.activeSheetIndex) {
+            this.parent.activeSheetIndex = sheetIndex;
             this.parent.dataBind();
             isRefresh = false;
         }

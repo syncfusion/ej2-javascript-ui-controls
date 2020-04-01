@@ -451,6 +451,62 @@ describe('Schedule Resources', () => {
         });
     });
 
+    describe('Public methods for resoure expand/collpase ', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let model: ScheduleModel = {
+                width: '500px', height: '460px',
+                views: ['TimelineWeek'],
+                selectedDate: new Date(2017, 10, 1),
+                group: {
+                    resources: ['Rooms', 'Owners']
+                },
+                resources: [
+                    {
+                        field: 'RoomId', title: 'Room', name: 'Rooms',
+                        dataSource: [
+                            { Text: 'ROOM 1', Id: 1, Color: '#cb6bb2', Expand: false },
+                            { Text: 'ROOM 2', Id: 2, Color: '#56ca85' },
+                            { Text: 'ROOM 3', Id: 3, Color: '#df5286', Expand: false }
+                        ],
+                        textField: 'Text', idField: 'Id', colorField: 'Color', expandedField: 'Expand'
+                    }, {
+                        field: 'OwnerId', title: 'Owner',
+                        name: 'Owners', allowMultiple: true,
+                        dataSource: [
+                            { Text: 'Nancy', Id: 1, GroupId: 1, Color: '#df5286' },
+                            { Text: 'Steven', Id: 2, GroupId: 1, Color: '#7fa900' },
+                            { Text: 'Robert', Id: 3, GroupId: 2, Color: '#ea7a57' },
+                            { Text: 'Smith', Id: 4, GroupId: 2, Color: '#5978ee' },
+                            { Text: 'Micheal', Id: 5, GroupId: 3, Color: '#df5286' },
+                            { Text: 'Root', Id: 6, GroupId: 3, Color: '#00bdae' }
+                        ],
+                        textField: 'Text', idField: 'Id', groupIDField: 'GroupId', colorField: 'Color'
+                    }
+                ],
+            };
+            schObj = util.createSchedule(model, [], done);
+        });
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+        it('To check for resource expand', () => {
+            schObj.expandResource(1, "Rooms");
+            expect((schObj.element.querySelectorAll('.e-resource-expand')).length).toEqual(1);
+            expect(schObj.element.querySelectorAll('.e-resource-column-wrap tbody tr:not(.e-hidden)').length).toEqual(7);
+            expect((schObj.element.querySelector('[data-group-index="0"]')).classList.contains("e-parent-node")).toEqual(true);
+            expect((schObj.element.querySelector('[data-group-index="0"] .e-resource-tree-icon')).classList.contains("e-resource-collapse")).toEqual(true);
+            
+        });
+        it('To check for resource collapse', () => {
+            schObj.collapseResource(2, "Rooms");
+            expect((schObj.element.querySelectorAll('.e-resource-collpase')).length).toEqual(0);
+            expect(schObj.element.querySelectorAll('.e-resource-column-wrap tbody tr:not(.e-hidden)').length).toEqual(5);
+            expect((schObj.element.querySelector('[data-group-index="3"]')).classList.contains("e-parent-node")).toEqual(true);
+            expect((schObj.element.querySelector('[data-group-index="3"] .e-resource-tree-icon')).classList.contains("e-resource-expand")).toEqual(true);
+        });
+    })
+
     describe('Public methods checking for resources', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {

@@ -337,8 +337,8 @@ describe('Chart Control', () => {
         });
         it('Checking with empty point', (done: Function) => {
             loaded = (args: Object): void => {
-                let svg: HTMLElement = document.getElementById('container_Series_0_Point_0');
-                expect(svg === null).toBe(true);
+                let svg: HTMLElement = document.getElementById('containerSeriesGroup0');
+                expect(svg.childElementCount === 8).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;
@@ -748,8 +748,8 @@ describe('Chart Control', () => {
         });
         it('Checking with empty point', (done: Function) => {
             loaded = (args: Object): void => {
-                let svg: HTMLElement = document.getElementById('container_Series_0_Point_0');
-                expect(svg === null).toBe(true);
+                let svg: HTMLElement = document.getElementById('containerSeriesGroup0');
+                expect(svg.childElementCount === 8).toBe(true);
                 done();
             };
             chartObj.loaded = loaded;

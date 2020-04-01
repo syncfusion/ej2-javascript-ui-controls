@@ -25,7 +25,21 @@ export class SplineBase extends LineBase {
      */
     public findSplinePoint(series: Series): void {
         let value: ControlPoints;
-        let points: Points[] = this.filterEmptyPoints(series);
+        let realPoints: Points[] = [];
+        let points: Points[] = [];
+        let point: Points;
+        let pointIndex: number = 0;
+        realPoints = this.filterEmptyPoints(series);
+        for (let i: number = 0; i < realPoints.length; i++) {
+            point = realPoints[i];
+            if (point.x === null || point.x === '') {
+                continue;
+            } else {
+                point.index = pointIndex;
+                pointIndex++;
+                points.push(point);
+            }
+        }
         this.splinePoints = this.findSplineCoefficients(points, series);
         if (points.length > 1) {
             series.drawPoints = [];

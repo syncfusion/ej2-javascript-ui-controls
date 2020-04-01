@@ -1,5 +1,5 @@
 import { extend, Property, ChildProperty, Complex } from '@syncfusion/ej2-base';
-import { SheetModel, getRowsHeight, getColumnsWidth } from './index';
+import { SheetModel } from './index';
 import { CellStyleModel, HyperlinkModel, CellStyle, wrapEvent, ValidationModel } from '../common/index';
 import { getRow } from './row';
 import { RowModel } from './row-model';
@@ -76,11 +76,35 @@ export class Cell extends ChildProperty<RowModel> {
     public wrap: boolean;
 
     /**
+     * Specifies the cell is locked or not, for allow edit range in spreadsheet protect option.
+     * @default true
+     */
+    @Property(true)
+    public isLocked: boolean;
+
+
+    /**
      * Specifies the validation of the cell.
      * @default ''
      */
     @Property('')
     public validation: ValidationModel;
+
+    /**
+     * Specifies the column-wise cell merge count.
+     * @default 1
+     * @asptype int
+     */
+    @Property(1)
+    public colSpan: number;
+
+    /**
+     * Specifies the row-wise cell merge count.
+     * @default 1
+     * @asptype int
+     */
+    @Property(1)
+    public rowSpan: number;
 }
 
 /**
@@ -116,22 +140,6 @@ export function setCell(rowIndex: number, colIndex: number, sheet: SheetModel, c
     } else {
         sheet.rows[rowIndex].cells[colIndex] = cell;
     }
-}
-
-/**
- * @hidden
- */
-export function getCellPosition(sheet: SheetModel, indexes: number[]): { top: number, left: number } {
-    let i: number;
-    let top: number = 0;
-    let left: number = 0;
-    for (i = 0; i < indexes[0]; i++) {
-        top += getRowsHeight(sheet, i);
-    }
-    for (i = 0; i < indexes[1]; i++) {
-        left += getColumnsWidth(sheet, i);
-    }
-    return { top: top, left: left };
 }
 
 /** @hidden */

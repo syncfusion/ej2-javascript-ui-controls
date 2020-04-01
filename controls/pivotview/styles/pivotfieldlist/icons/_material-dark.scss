@@ -47,6 +47,10 @@
       content: '\e891';
     }
 
+    .e-list-item .e-text-content .e-remove-report.e-icons::before {
+      content: '\e706';
+    }
+
     .e-list-item .e-text-content .e-format.e-icons::before {
       content: '\e22f';
     }
@@ -320,6 +324,10 @@
 
     .e-pivot-calc-outer-div .e-pivot-accord .e-edit.e-icons::before {
       content: '\e891';
+    }
+
+    .e-pivot-calc-outer-div .e-pivot-accord .e-remove-report.e-icons::before {
+      content: '\e706';
     }
 
     .e-pivot-button .e-edit::before {

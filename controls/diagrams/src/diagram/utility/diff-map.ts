@@ -128,7 +128,7 @@ import { isBlazor } from '@syncfusion/ej2-base';
     public getDiagramObjects(diffValue: any, object: string, isNode: boolean, args: MouseEventArgs, labelDrag?: boolean, diagram?: Diagram): any {
         let index: number = 0;
         index = getIndex(diagram, object);
-        diffValue.ejsIndex = index;
+        diffValue.sfIndex = index;
         if (isNode) {
             this.newNodeObject.push(diffValue);
         } else {
@@ -151,7 +151,7 @@ import { isBlazor } from '@syncfusion/ej2-base';
                     } else {
                         for (let j: number = 0; j < selectedObject.annotations.length; j++) {
                             if (args.sourceWrapper.id === selectedObject.id + "_" + selectedObject.annotations[j].id) {
-                                (tempObject as any).ejsIndex = j;
+                                (tempObject as any).sfIndex = j;
                             }
                         }
                         if (isNode) {

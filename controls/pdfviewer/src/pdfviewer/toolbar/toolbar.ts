@@ -995,11 +995,15 @@ export class Toolbar {
             }
         }
         this.handleToolbarBtnClick(args);
-        // tslint:disable-next-line:max-line-length
+        // tslint:disable-next-line
+        let targetElement : any = args.originalEvent.target;
         if (!Browser.isDevice) {
+            // tslint:disable-next-line:max-line-length
             if (!(args.originalEvent.target === this.zoomDropdownItem.parentElement.childNodes[1] || args.originalEvent.target === this.zoomDropdownItem.parentElement.childNodes[2] || args.originalEvent.target === this.currentPageBoxElement || args.originalEvent.target === this.textSearchItem.childNodes[0])) {
-                (args.originalEvent.target as HTMLElement).blur();
-                this.pdfViewerBase.focusViewerContainer();
+                if (targetElement.parentElement.id !== this.pdfViewer.element.id + '_toolbarContainer_nav' && targetElement.id !== this.pdfViewer.element.id + '_toolbarContainer_nav') {
+                    (args.originalEvent.target as HTMLElement).blur();
+                    this.pdfViewerBase.focusViewerContainer();
+                }
             }
         }
     }

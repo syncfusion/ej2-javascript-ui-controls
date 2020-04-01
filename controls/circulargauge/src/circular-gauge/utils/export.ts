@@ -103,7 +103,7 @@ export class ExportUtils {
                     document.pageSettings.orientation = orientation;
                     imageString = imageString.slice(imageString.indexOf(',') + 1);
                     document.pages.add().graphics.drawImage(
-                        new PdfBitmap(imageString), 0, 0, (this.control.availableSize.width - 60), this.control.availableSize.height
+                        new PdfBitmap(imageString), 0, 0, this.control.availableSize.width, this.control.availableSize.height
                     );
                     if (isDownload) {
                         document.save(fileName + '.pdf');

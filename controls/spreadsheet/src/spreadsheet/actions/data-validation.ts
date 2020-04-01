@@ -6,7 +6,7 @@ import { FormValidatorModel, FormValidator, NumericTextBox } from '@syncfusion/e
 import { L10n, EventHandler, remove, closest, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Dialog } from '../services/dialog';
 import { dialog, locale, initiateDataValidation, invalidData, ICellRenderer, editOperation, keyUp } from '../common/index';
-import { formulaBarOperation } from '../common/index';
+import { formulaBarOperation, removeDataValidation } from '../common/index';
 import { CheckBox } from '@syncfusion/ej2-buttons';
 import { setRow } from '../../workbook/base/row';
 import { SheetModel } from '../../workbook/base/sheet-model';
@@ -14,7 +14,7 @@ import { getRangeIndexes, getIndexesFromAddress, getCellIndexes } from '../../wo
 import { CellFormatArgs } from '../../workbook/common/interface';
 import { DropDownList, PopupEventArgs } from '@syncfusion/ej2-dropdowns';
 import { DialogModel } from '@syncfusion/ej2-popups';
-import { ValidationModel, ValidationType, ValidationOperator } from '../../workbook';
+import { ValidationModel, ValidationType, ValidationOperator, CellStyleModel } from '../../workbook';
 
 /**
  * Represents Data Validation support for Spreadsheet.
@@ -54,6 +54,7 @@ export class DataValidation {
         this.parent.on(isValidation, this.checkDataValidation, this);
         this.parent.on(activeCellChanged, this.listHandler, this);
         this.parent.on(keyUp, this.keyUpHandler, this);
+        this.parent.on(removeDataValidation, this.removeValidationHandler, this);
     }
 
     private removeEventListener(): void {
@@ -64,16 +65,21 @@ export class DataValidation {
             this.parent.off(invalidData, this.invalidDataHandler);
             this.parent.off(isValidation, this.checkDataValidation);
             this.parent.off(activeCellChanged, this.listHandler);
-            this.parent.on(keyUp, this.keyUpHandler, this);
+            this.parent.off(keyUp, this.keyUpHandler);
+            this.parent.off(removeDataValidation, this.removeValidationHandler);
         }
+    }
+
+    private removeValidationHandler(e: MouseEvent): void {
+        this.parent.removeDataValidation(this.parent.getActiveSheet().selectedRange);
     }
 
     private mouseDownHandler(e: MouseEvent): void {
         let target: HTMLElement = e.target as HTMLElement;
         let parEle: HTMLElement = closest(target, '.e-ddl') as HTMLElement;
-        if (parEle && parEle.getAttribute('id') === 'listValid_popup' ) {
+        if (parEle && parEle.getAttribute('id') === 'listValid_popup') {
             this.parent.notify(formulaBarOperation, { action: 'refreshFormulabar', value: target.innerText });
-            }
+        }
     }
 
     private keyUpHandler(e: KeyboardEvent): void {
@@ -123,20 +129,22 @@ export class DataValidation {
             }
             let cell: CellModel = getCell(rowIdx, colIdx, sheet);
             let tr: HTMLElement = mainCont.getElementsByTagName('tr')[rowIdx];
-            if (cell && tr) {
-                let tdEle: HTMLElement = tr.getElementsByClassName('e-cell')[colIdx] as HTMLElement;
-                if (!tdEle) {
-                    return;
-                }
-                if (document.getElementsByClassName('e-validation-list')[0]) {
-                    remove(document.getElementsByClassName('e-validation-list')[0]);
-                    this.data = [];
-                }
-                if (cell.validation && cell.validation.type === 'List') {
-                    cell.validation.ignoreBlank = !isNullOrUndefined(cell.validation.ignoreBlank) ? cell.validation.ignoreBlank : true;
-                    cell.validation.inCellDropDown = !isNullOrUndefined(cell.validation.inCellDropDown) ?
-                     cell.validation.inCellDropDown : true;
-                    if (cell.validation.inCellDropDown) {
+            let tdEle: HTMLElement;
+            if (tr) {
+                tdEle = tr.getElementsByClassName('e-cell')[colIdx] as HTMLElement;
+            }
+            if (!tdEle) {
+                return;
+            }
+            if (document.getElementsByClassName('e-validation-list')[0]) {
+                remove(document.getElementsByClassName('e-validation-list')[0]);
+                this.data = [];
+            }
+            if (cell && cell.validation && cell.validation.type === 'List') {
+                cell.validation.ignoreBlank = !isNullOrUndefined(cell.validation.ignoreBlank) ? cell.validation.ignoreBlank : true;
+                cell.validation.inCellDropDown = !isNullOrUndefined(cell.validation.inCellDropDown) ?
+                    cell.validation.inCellDropDown : true;
+                if (cell.validation.inCellDropDown) {
                     let ddlCont: HTMLElement = this.parent.createElement('div', { className: 'e-validation-list' });
                     let ddlEle: HTMLElement = this.parent.createElement('input', { id: 'listValid' });
                     ddlCont.appendChild(ddlEle);
@@ -164,7 +172,6 @@ export class DataValidation {
                     });
                     this.listObj.appendTo('#listValid');
                 }
-            }
             }
         }
     }
@@ -615,27 +622,27 @@ export class DataValidation {
         let isEmpty: boolean = false;
         let formValidation: { isValidate: boolean, errorMsg: string };
         if (type === 'List') {
-           isEmpty = values.length > 0 ? false : true;
+            isEmpty = values.length > 0 ? false : true;
         } else {
             if (operator === 'Between' || operator === 'NotBetween') {
-               isEmpty = values.length === 2 ? false : true;
+                isEmpty = values.length === 2 ? false : true;
             } else {
-               isEmpty = values.length > 0 ? false : true;
+                isEmpty = values.length > 0 ? false : true;
             }
         }
         if (!isEmpty) {
-        for (let idx: number = 0; idx < values.length; idx++) {
-            formValidation = this.formatValidation(values[idx], type);
-            if (formValidation.isValidate) {
-                count = count + 1;
-            } else {
-                break;
+            for (let idx: number = 0; idx < values.length; idx++) {
+                formValidation = this.formatValidation(values[idx], type);
+                if (formValidation.isValidate) {
+                    count = count + 1;
+                } else {
+                    break;
+                }
             }
+            formValidation.isValidate = count === values.length ? true : false;
+        } else {
+            formValidation = { isValidate: false, errorMsg: l10n.getConstant('EmptyError') };
         }
-        formValidation.isValidate = count === values.length ? true : false;
-    } else {
-        formValidation = {isValidate: false, errorMsg: l10n.getConstant('EmptyError') };
-    }
         return { isValidate: formValidation.isValidate, errorMsg: formValidation.errorMsg };
     }
 
@@ -646,7 +653,7 @@ export class DataValidation {
         let isValidate: boolean;
         let errorMsg: string;
         let enterValue: string | number = args.value;
-        let sheet: SheetModel = this.parent.sheets[args.sheetIdx - 1];
+        let sheet: SheetModel = this.parent.sheets[args.sheetIdx];
         let cell: CellModel = getCell(args.range[0], args.range[1], sheet);
         let value: string | number = args.value;
         let value1: string | number = cell.validation.value1;
@@ -788,10 +795,10 @@ export class DataValidation {
             }
         }
         errorMsg = l10n.getConstant('ValidationError');
-        if (isValidate && cell.style && cell.style.backgroundColor === '#ffff00' && cell.style.color === '#ff0000') {
-            cell.style.backgroundColor = ''; cell.style.color = '';
+        if (isValidate) {
+            let style: CellStyleModel = this.parent.getCellStyleValue(['backgroundColor', 'color'], [args.range[0], args.range[1]]);
             this.parent.notify(applyCellFormat, <CellFormatArgs>{
-                style: { backgroundColor: '', color: '' }, rowIdx: args.range[0],
+                style: style, rowIdx: args.range[0],
                 colIdx: args.range[1], isHeightCheckNeeded: true, manualUpdate: true,
                 onActionUpdate: true
             });

@@ -40,10 +40,10 @@ export class VirtualScroll {
                 sheet.rowCount = sheet.usedRange.rowIndex + 1;
             }
             this.setScrollCount(sheet.rowCount, 'row');
-            height = getRowsHeight(sheet, 0, this.scroll[this.parent.activeSheetTab - 1].rowCount - 1);
+            height = getRowsHeight(sheet, 0, this.scroll[this.parent.activeSheetIndex].rowCount - 1);
         } else {
             if (!this.parent.scrollSettings.isFinite) { sheet.rowCount = domCount; }
-            this.scroll[this.parent.activeSheetTab - 1].rowCount = sheet.rowCount;
+            this.scroll[this.parent.activeSheetIndex].rowCount = sheet.rowCount;
             height = 1;
         }
         domCount = this.parent.viewport.colCount + 1 + (this.parent.getThreshold('col') * 2);
@@ -54,11 +54,11 @@ export class VirtualScroll {
             }
             size = getColumnsWidth(sheet, 0, domCount - 1);
             this.setScrollCount(sheet.colCount, 'col');
-            width = size + getColumnsWidth(sheet, domCount, this.scroll[this.parent.activeSheetTab - 1].colCount - 1);
+            width = size + getColumnsWidth(sheet, domCount, this.scroll[this.parent.activeSheetIndex].colCount - 1);
         } else {
             if (!this.parent.scrollSettings.isFinite) { sheet.colCount = domCount; }
             size = getColumnsWidth(sheet, 0, sheet.colCount - 1);
-            this.scroll[this.parent.activeSheetTab - 1].colCount = sheet.colCount; width = size;
+            this.scroll[this.parent.activeSheetIndex].colCount = sheet.colCount; width = size;
         }
         if (args.startColIdx) { size = getColumnsWidth(sheet, args.startColIdx, args.startColIdx + domCount - 1); }
         if (isNullOrUndefined(this.parent.viewport.leftIndex)) { this.parent.viewport.leftIndex = 0; }
@@ -95,7 +95,7 @@ export class VirtualScroll {
     }
 
     private setScrollCount(count: number, layout: string): void {
-        let activeSheetIdx: number = this.parent.activeSheetTab - 1;
+        let activeSheetIdx: number = this.parent.activeSheetIndex;
         if (!this.scroll[activeSheetIdx][layout + 'Count']) { this.scroll[activeSheetIdx][layout + 'Count'] = count; }
     }
 
@@ -110,7 +110,7 @@ export class VirtualScroll {
     private updateScrollCount(idx: number, layout: string, threshold: number = idx): void {
         let sheet: SheetModel = this.parent.getActiveSheet();
         let rowCount: number = idx + this.parent.viewport[layout + 'Count'] + 1 + threshold;
-        let usedRangeCount: number = this.scroll[this.parent.activeSheetTab - 1][layout + 'Count'];
+        let usedRangeCount: number = this.scroll[this.parent.activeSheetIndex][layout + 'Count'];
         if (rowCount < usedRangeCount) {
             if (sheet[layout + 'Count'] === usedRangeCount) { return; }
             rowCount = usedRangeCount;
@@ -357,27 +357,27 @@ export class VirtualScroll {
         if (!this.scroll.length) { return; }
         let sheet: SheetModel = this.parent.getActiveSheet();
         if (args.update === 'row') {
-            if (args.index !== this.scroll[this.parent.activeSheetTab - 1].rowCount - 1) {
+            if (args.index !== this.scroll[this.parent.activeSheetIndex].rowCount - 1) {
                 let height: number = this.getVTrackHeight('height');
-                if (args.index >= this.scroll[this.parent.activeSheetTab - 1].rowCount) {
-                    height += getRowsHeight(sheet, this.scroll[this.parent.activeSheetTab - 1].rowCount, args.index);
+                if (args.index >= this.scroll[this.parent.activeSheetIndex].rowCount) {
+                    height += getRowsHeight(sheet, this.scroll[this.parent.activeSheetIndex].rowCount, args.index);
                 } else {
-                    height -= getRowsHeight(sheet, args.index + 1, this.scroll[this.parent.activeSheetTab - 1].rowCount - 1);
+                    height -= getRowsHeight(sheet, args.index + 1, this.scroll[this.parent.activeSheetIndex].rowCount - 1);
                 }
-                this.scroll[this.parent.activeSheetTab - 1].rowCount = args.index + 1;
+                this.scroll[this.parent.activeSheetIndex].rowCount = args.index + 1;
                 this.updateVTrack(this.rowHeader, height, 'height');
-                if (this.scroll[this.parent.activeSheetTab - 1].rowCount > sheet.rowCount) {
-                    sheet.rowCount = this.scroll[this.parent.activeSheetTab - 1].rowCount;
+                if (this.scroll[this.parent.activeSheetIndex].rowCount > sheet.rowCount) {
+                    sheet.rowCount = this.scroll[this.parent.activeSheetIndex].rowCount;
                 }
             }
         } else {
-            if (args.index > this.scroll[this.parent.activeSheetTab - 1].colCount) {
+            if (args.index > this.scroll[this.parent.activeSheetIndex].colCount) {
                 let width: number = this.getVTrackHeight('width');
-                width += getColumnsWidth(sheet, this.scroll[this.parent.activeSheetTab - 1].colCount, args.index);
-                this.scroll[this.parent.activeSheetTab - 1].colCount = args.index + 1;
+                width += getColumnsWidth(sheet, this.scroll[this.parent.activeSheetIndex].colCount, args.index);
+                this.scroll[this.parent.activeSheetIndex].colCount = args.index + 1;
                 this.updateVTrack(this.colHeader, width, 'width');
-                if (this.scroll[this.parent.activeSheetTab - 1].colCount > sheet.colCount) {
-                    sheet.colCount = this.scroll[this.parent.activeSheetTab - 1].colCount;
+                if (this.scroll[this.parent.activeSheetIndex].colCount > sheet.colCount) {
+                    sheet.colCount = this.scroll[this.parent.activeSheetIndex].colCount;
                 }
             }
         }
@@ -412,7 +412,7 @@ export class VirtualScroll {
 
     private updateVTrackHeight(args: { rowIdx: number, threshold: number }): void {
         let domCount: number = this.parent.viewport.rowCount + 1 + (this.parent.getThreshold('row') * 2);
-        if (args.rowIdx >= domCount && args.rowIdx < this.scroll[this.parent.activeSheetTab - 1].rowCount) {
+        if (args.rowIdx >= domCount && args.rowIdx < this.scroll[this.parent.activeSheetIndex].rowCount) {
             this.updateVTrack(this.rowHeader, this.getVTrackHeight('height') + args.threshold, 'height');
         }
     }

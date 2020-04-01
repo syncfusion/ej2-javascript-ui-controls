@@ -39,7 +39,7 @@ export interface TreeGridModel extends ComponentModel{
     columns?: ColumnModel[] | string[] | Column[];
 
     /**
-   * Specifies the mapping property path for sub tasks in data source
+   * Specifies the mapping property path for child records in data source
    * @default null
    */
     childMapping?: string;
@@ -158,7 +158,7 @@ export interface TreeGridModel extends ComponentModel{
     allowResizing?: boolean;
 
     /**
- * If `autoCheckHierarchy` is set to true, hierarchy checkbox selection has been enabled in TreeGrid.      
+ * If `autoCheckHierarchy` is set to true, hierarchy checkbox selection is enabled in TreeGrid.      
  * @default false    
  */
     autoCheckHierarchy?: boolean;
@@ -223,7 +223,9 @@ export interface TreeGridModel extends ComponentModel{
     editSettings?: EditSettingsModel;
 
     /**
-   * If `allowFiltering` is set to true, pager renders.
+   * If `allowFiltering` is set to true the filter bar will be displayed. 
+   * If set to false the filter bar will not be displayed. 
+   * Filter bar allows the user to filter tree grid records with required criteria.
    * @default false
    */
     allowFiltering?: boolean;
@@ -429,7 +431,7 @@ export interface TreeGridModel extends ComponentModel{
     expanding?: EmitType<RowExpandingEventArgs>;
 
     /**
-   * Triggers after expand the record
+   * Triggers after the record is expanded
    * @event
    * @blazorproperty 'Expanded'
    */
@@ -443,7 +445,7 @@ export interface TreeGridModel extends ComponentModel{
     collapsing?: EmitType<RowExpandingEventArgs>;
 
     /**
-   * Triggers after collapse the TreeGrid record
+   * Triggers after the record is collapsed.
    * @event
    * @blazorproperty 'Collapsed'
    */
@@ -774,7 +776,7 @@ export interface TreeGridModel extends ComponentModel{
     toolbarClick?: EmitType<ClickEventArgs>;
 
     /**
-   * Triggers when a particular selected cell is deselected.
+   * Triggers before data is bound to Tree Grid.
    * @event 
    * @blazorproperty 'OnDataBound'
    * @blazorType Syncfusion.Blazor.Grids.BeforeDataBoundArgs<TValue>

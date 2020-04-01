@@ -255,6 +255,15 @@ export interface IExportEventArgs extends IChartEventArgs {
 export interface IAfterExportEventArgs extends IChartEventArgs {
     dataUrl: string;
 }
+export interface IZoomingEventArgs extends IChartEventArgs {
+    axisCollection: IAxisData[];
+}
+export interface IAxisData {
+    zoomFactor: number;
+    zoomPosition: number;
+    axisRange: VisibleRangeModel;
+    axisName: string;
+}
 /** @private */
 export interface IBoxPlotQuartile {
     minimum: number;

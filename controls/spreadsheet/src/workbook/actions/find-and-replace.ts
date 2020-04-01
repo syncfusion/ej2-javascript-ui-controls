@@ -1,6 +1,8 @@
 import { Workbook, SheetModel, UsedRangeModel, RowModel, CellModel } from '../base/index';
-import { getCellIndexes, FindOptions, FindNext, FindPrevious, getCellAddress, findNext, findPrevious, count } from '../common/index';
-import { goto, replaceHandler, replaceAllHandler, showDialog, findUndoRedo, replaceAllDialog, workBookeditAlert } from '../common/index';
+import { getCellIndexes, FindOptions, FindNext, FindPrevious, getCellAddress, findNext, findPrevious, count,  } from '../common/index';
+import { goto, replaceHandler, replaceAllHandler, showDialog, findUndoRedo, replaceAllDialog, ReplaceAllArgs } from '../common/index';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { findAllValues, FindAllArgs, workBookeditAlert } from '../common/index';
 /**
  * `WorkbookFindAndReplace` module is used to handle the search action in Spreadsheet.
  */
@@ -29,6 +31,7 @@ export class WorkbookFindAndReplace {
         this.parent.on(replaceHandler, this.replace, this);
         this.parent.on(replaceAllHandler, this.replaceAll, this);
         this.parent.on(count, this.totalCount, this);
+        this.parent.on(findAllValues, this.findAllValues, this);
     }
 
     private removeEventListener(): void {
@@ -38,12 +41,13 @@ export class WorkbookFindAndReplace {
             this.parent.off(replaceHandler, this.replace);
             this.parent.off(replaceAllHandler, this.replaceAll);
             this.parent.off(count, this.totalCount);
+            this.parent.off(findAllValues, this.findAllValues);
         }
     }
 
     private findNext(args: FindOptions): void {
         let sheets: SheetModel[] = this.parent.sheets; let val: string; let sheetIndex: number = args.sheetIndex;
-        let sheet: SheetModel = sheets[sheetIndex - 1];
+        let sheet: SheetModel = sheets[this.parent.activeSheetIndex];
         let activecell: number[] = getCellIndexes(sheet.activeCell);
         let usedRange: UsedRangeModel = sheet.usedRange; let endColumn: number = usedRange.colIndex;
         let stringValue: string = args.value.toString(); let cidx: number; let ridx: number;
@@ -90,7 +94,7 @@ export class WorkbookFindAndReplace {
         let findNextArgs: FindNext = {
             rowIndex: ridx, colIndex: cidx, usedRange: usedRange, endRow: endRow, endColumn: endColumn, startRow: startRow,
             mode: args.mode, loopCount: loopCount, count: count, args: args, val: val, stringValue: stringValue,
-            sheetIndex: sheetIndex, startColumn: startColumn, sheets: sheets
+            sheetIndex: this.parent.activeSheetIndex, startColumn: startColumn, sheets: sheets
         };
         if (args.searchBy === 'By Row') {
             this.findNxtRow(findNextArgs);
@@ -100,7 +104,7 @@ export class WorkbookFindAndReplace {
         }
     }
     private findNxtRow(findNextArgs: FindNext): void {
-        let usedRange: UsedRangeModel; let sheet: SheetModel = findNextArgs.sheets[findNextArgs.sheetIndex - 1];
+        let usedRange: UsedRangeModel; let sheet: SheetModel = findNextArgs.sheets[findNextArgs.sheetIndex];
         let sheetsLen: number = this.parent.sheets.length;
         let activecell: number[] = getCellIndexes(sheet.activeCell);
         if (findNextArgs.colIndex >= findNextArgs.usedRange.colIndex + 1) {
@@ -110,10 +114,10 @@ export class WorkbookFindAndReplace {
         for (findNextArgs.rowIndex; findNextArgs.rowIndex <= findNextArgs.endRow + 1; findNextArgs.rowIndex++) {
             if (findNextArgs.rowIndex > findNextArgs.endRow) {
                 if (findNextArgs.mode === 'Workbook') {
-                    let noCellfound: number = this.parent.activeSheetTab;
+                    let noCellfound: number = this.parent.activeSheetIndex;
                     findNextArgs.sheetIndex++;
-                    if (sheetsLen === findNextArgs.sheetIndex - 1) {
-                        findNextArgs.sheetIndex = 1;
+                    if (sheetsLen === findNextArgs.sheetIndex) {
+                        findNextArgs.sheetIndex = 0;
                     }
                     if (noCellfound === findNextArgs.sheetIndex) {
                         if (findNextArgs.count === 0) {
@@ -121,7 +125,7 @@ export class WorkbookFindAndReplace {
                             return;
                         }
                     }
-                    sheet = findNextArgs.sheets[findNextArgs.sheetIndex - 1];
+                    sheet = findNextArgs.sheets[findNextArgs.sheetIndex];
                     usedRange = sheet.usedRange;
                     activecell = getCellIndexes(sheet.activeCell);
                     findNextArgs.rowIndex = 0; findNextArgs.colIndex = 0; findNextArgs.endColumn = usedRange.colIndex;
@@ -179,7 +183,7 @@ export class WorkbookFindAndReplace {
         }
     }
     private findNxtCol(findNextArgs: FindNext): void {
-        let sheet: SheetModel = findNextArgs.sheets[findNextArgs.sheetIndex - 1]; let noFound: number;
+        let sheet: SheetModel = findNextArgs.sheets[findNextArgs.sheetIndex]; let noFound: number;
         let activecell: number[] = getCellIndexes(sheet.activeCell);
         let sheetsLen: number = this.parent.sheets.length;
         if (findNextArgs.rowIndex >= findNextArgs.usedRange.rowIndex) {
@@ -189,10 +193,10 @@ export class WorkbookFindAndReplace {
         for (findNextArgs.colIndex; findNextArgs.colIndex <= findNextArgs.usedRange.colIndex + 1; findNextArgs.colIndex++) {
             if (findNextArgs.colIndex >= findNextArgs.endColumn + 1) {
                 if (findNextArgs.mode === 'Workbook') {
-                    noFound = this.parent.activeSheetTab;
+                    noFound = this.parent.activeSheetIndex;
                     findNextArgs.sheetIndex++;
-                    if (sheetsLen === findNextArgs.sheetIndex - 1) {
-                        findNextArgs.sheetIndex = 1;
+                    if (sheetsLen === findNextArgs.sheetIndex) {
+                        findNextArgs.sheetIndex = 0;
                     }
                     if (noFound === findNextArgs.sheetIndex) {
                         if (findNextArgs.count === 0) {
@@ -200,7 +204,7 @@ export class WorkbookFindAndReplace {
                             return;
                         }
                     }
-                    sheet = findNextArgs.sheets[findNextArgs.sheetIndex - 1];
+                    sheet = findNextArgs.sheets[findNextArgs.sheetIndex];
                     findNextArgs.usedRange = sheet.usedRange;
                     activecell = getCellIndexes(sheet.activeCell);
                     findNextArgs.colIndex = 0; findNextArgs.rowIndex = 0; findNextArgs.endColumn = findNextArgs.usedRange.colIndex;
@@ -258,14 +262,13 @@ export class WorkbookFindAndReplace {
         }
     }
     private nextCommon(findNextArgs: FindNext): boolean {
-        let sheet: SheetModel = findNextArgs.sheets[findNextArgs.sheetIndex - 1];
+        let sheet: SheetModel = findNextArgs.sheets[findNextArgs.sheetIndex];
         if (sheet.rows[findNextArgs.rowIndex]) {
             if (sheet.rows[findNextArgs.rowIndex].cells[findNextArgs.colIndex]) {
-                let cellTyp: CellModel = sheet.rows[findNextArgs.rowIndex].cells[findNextArgs.colIndex];
-                if (cellTyp) {
-                    let cellTypeVal: string = cellTyp.format;
+                let cellType: CellModel = sheet.rows[findNextArgs.rowIndex].cells[findNextArgs.colIndex];
+                if (cellType) {
                     let cellval: string;
-                    if (cellTypeVal) {
+                    if (cellType.format) {
                         let displayTxt: string = this.parent.getDisplayText(sheet.rows[findNextArgs.rowIndex].
                             cells[findNextArgs.colIndex]);
                         cellval = displayTxt;
@@ -274,18 +277,15 @@ export class WorkbookFindAndReplace {
                     }
                     if (findNextArgs.args.isCSen && findNextArgs.args.isEMatch) {
                         if (cellval === findNextArgs.stringValue) {
-                            let sheetName: string = sheet.name;
-                            let address: string = sheetName + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
+                            let address: string = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
                             this.parent.notify(goto, { address: address });
                             findNextArgs.count++;
                             return true;
                         }
                     } else if (findNextArgs.args.isCSen && !findNextArgs.args.isEMatch) {
                         let index: boolean = cellval.indexOf(findNextArgs.args.value) > -1;
-                        let lowerCase: string = cellval.toString().toLowerCase();
                         if ((cellval === findNextArgs.stringValue) || (index)) {
-                            let sheetName: string = sheet.name;
-                            let address: string = sheetName + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
+                            let address: string = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
                             this.parent.notify(goto, { address: address });
                             findNextArgs.count++;
                             return true;
@@ -293,8 +293,7 @@ export class WorkbookFindAndReplace {
                     } else if (!findNextArgs.args.isCSen && findNextArgs.args.isEMatch) {
                         findNextArgs.val = cellval.toString().toLowerCase();
                         if (findNextArgs.val === findNextArgs.stringValue) {
-                            let sheetName: string = sheet.name;
-                            let address: string = sheetName + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
+                            let address: string = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
                             this.parent.notify(goto, { address: address });
                             findNextArgs.count++;
                             return true;
@@ -305,8 +304,7 @@ export class WorkbookFindAndReplace {
                         let lowerCaseIndex: boolean = findNextArgs.val.indexOf(findNextArgs.args.value) > -1;
                         if ((findNextArgs.val === findNextArgs.stringValue) || ((cellval === findNextArgs.stringValue) || (index)) ||
                             (cellval === findNextArgs.stringValue) || (lowerCaseIndex)) {
-                            let sheetName: string = sheet.name;
-                            let address: string = sheetName + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
+                            let address: string = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
                             this.parent.notify(goto, { address: address });
                             findNextArgs.count++;
                             return true;
@@ -320,7 +318,7 @@ export class WorkbookFindAndReplace {
 
     private findPrevious(args: FindOptions): void {
         let sheets: SheetModel[] = this.parent.sheets; let sheetIndex: number = args.sheetIndex;
-        let sheet: SheetModel = sheets[sheetIndex - 1]; let valueOfCell: string; let cellFormat: string; let val: string;
+        let sheet: SheetModel = sheets[sheetIndex]; let valueOfCell: string; let cellFormat: string; let val: string;
         let activecell: number[] = getCellIndexes(sheet.activeCell); let loopCount: number = 0; let count: number = 0;
         let endRow: number = sheet.usedRange.rowIndex;
         let endColumn: number = sheet.usedRange.colIndex;
@@ -377,7 +375,7 @@ export class WorkbookFindAndReplace {
 
     }
     private findPreRow(findPrevArgs: FindPrevious): void {
-        let usedRan: UsedRangeModel; let sheet: SheetModel = findPrevArgs.sheets[findPrevArgs.sheetIndex - 1];
+        let usedRan: UsedRangeModel; let sheet: SheetModel = findPrevArgs.sheets[findPrevArgs.sheetIndex];
         let sheetsLength: number = this.parent.sheets.length; let noValueBoolean: boolean = false;
         let activecell: number[] = getCellIndexes(sheet.activeCell);
         if (findPrevArgs.colIndex === -1) {
@@ -387,10 +385,10 @@ export class WorkbookFindAndReplace {
         for (findPrevArgs.rowIndex; findPrevArgs.rowIndex >= -1; findPrevArgs.rowIndex--) {
             if (findPrevArgs.rowIndex < 0 && findPrevArgs.colIndex < 0) {
                 if (findPrevArgs.args.mode === 'Workbook') {
-                    let noCellfound: number = this.parent.activeSheetTab;
+                    let noCellfound: number = this.parent.activeSheetIndex;
                     findPrevArgs.sheetIndex--;
-                    if (findPrevArgs.sheetIndex === 0) {
-                        findPrevArgs.sheetIndex = sheetsLength;
+                    if (findPrevArgs.sheetIndex === -1) {
+                        findPrevArgs.sheetIndex = sheetsLength - 1;
                     }
                     if (noCellfound === findPrevArgs.sheetIndex) {
                         if (findPrevArgs.count === 0) {
@@ -399,7 +397,7 @@ export class WorkbookFindAndReplace {
                         }
                     }
 
-                    sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex - 1];
+                    sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex];
                     usedRan = sheet.usedRange;
                     activecell = getCellIndexes(sheet.activeCell);
                     findPrevArgs.rowIndex = usedRan.rowIndex; findPrevArgs.colIndex = usedRan.colIndex; findPrevArgs.endColumn = 0;
@@ -451,16 +449,16 @@ export class WorkbookFindAndReplace {
         }
     }
     private findPreCol(findPrevArgs: FindPrevious): void {
-        let usedRange: UsedRangeModel; let sheet: SheetModel = findPrevArgs.sheets[findPrevArgs.sheetIndex - 1];
+        let usedRange: UsedRangeModel; let sheet: SheetModel = findPrevArgs.sheets[findPrevArgs.sheetIndex];
         let sheetsLen: number = this.parent.sheets.length; let noValueBoolean: boolean = false;
         let activecell: number[] = getCellIndexes(sheet.activeCell);
         for (findPrevArgs.colIndex; findPrevArgs.colIndex >= -1; findPrevArgs.colIndex--) {
             if (findPrevArgs.rowIndex < 0 && findPrevArgs.colIndex < 0) {
                 if (findPrevArgs.args.mode === 'Workbook') {
-                    let noCellfound: number = this.parent.activeSheetTab;
+                    let noCellfound: number = this.parent.activeSheetIndex;
                     findPrevArgs.sheetIndex--;
-                    if (findPrevArgs.sheetIndex === 0) {
-                        findPrevArgs.sheetIndex = sheetsLen;
+                    if (findPrevArgs.sheetIndex === -1) {
+                        findPrevArgs.sheetIndex = sheetsLen - 1;
                     }
                     if (noCellfound === findPrevArgs.sheetIndex) {
                         if (findPrevArgs.count === 0) {
@@ -468,7 +466,7 @@ export class WorkbookFindAndReplace {
                             return;
                         }
                     }
-                    sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex - 1];
+                    sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex];
                     usedRange = sheet.usedRange;
                     activecell = getCellIndexes(sheet.activeCell);
                     findPrevArgs.rowIndex = usedRange.rowIndex; findPrevArgs.colIndex = usedRange.colIndex; findPrevArgs.endColumn = 0;
@@ -523,7 +521,7 @@ export class WorkbookFindAndReplace {
         }
     }
     private commonCondition(findPrevArgs: FindPrevious, activecell: number[]): boolean {
-        let sheet: SheetModel = findPrevArgs.sheets[findPrevArgs.sheetIndex - 1];
+        let sheet: SheetModel = findPrevArgs.sheets[findPrevArgs.sheetIndex];
         let isTrue: boolean;
         if ((activecell[0] !== findPrevArgs.endRow && activecell[1] !== findPrevArgs.endColumn) ||
             (activecell[0] !== findPrevArgs.endRow || activecell[1] !== findPrevArgs.endColumn)) {
@@ -540,55 +538,49 @@ export class WorkbookFindAndReplace {
         return isTrue;
     }
     private prevCommon(findPrevArgs: FindPrevious): boolean {
-        let sheet: SheetModel = findPrevArgs.sheets[findPrevArgs.sheetIndex - 1];
+        let sheet: SheetModel = findPrevArgs.sheets[findPrevArgs.sheetIndex];
         if (sheet.rows[findPrevArgs.rowIndex]) {
             if (sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex]) {
-                let cellTyp: CellModel = sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex];
-                if (cellTyp) {
-                    let cellTypeVal: string = cellTyp.format;
-                    let cellval: string;
-                    if (cellTypeVal) {
+                let cellType: CellModel = sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex];
+                if (cellType) {
+                    let cellvalue: string;
+                    if (cellType.format) {
                         let displayTxt: string = this.parent.getDisplayText(sheet.rows[findPrevArgs.rowIndex]
                             .cells[findPrevArgs.colIndex]);
-                        cellval = displayTxt;
+                        cellvalue = displayTxt;
                     } else {
-                        cellval = sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex].value.toString();
+                        cellvalue = sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex].value.toString();
                     }
                     if (findPrevArgs.args.isCSen && findPrevArgs.args.isEMatch) {
-                        if (cellval === findPrevArgs.stringValue) {
-                            let sheetName: string = sheet.name;
-                            let address: string = sheetName + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
+                        if (cellvalue === findPrevArgs.stringValue) {
+                            let address: string = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
                             this.parent.notify(goto, { address: address });
                             findPrevArgs.count++;
                             return true;
                         }
                     } else if (findPrevArgs.args.isCSen && !findPrevArgs.args.isEMatch) {
-                        let index: boolean = cellval.indexOf(findPrevArgs.args.value) > -1;
-                        let lowerCase: string = cellval.toString().toLowerCase();
-                        if ((cellval === findPrevArgs.stringValue) || (index)) {
-                            let sheetName: string = sheet.name;
-                            let address: string = sheetName + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
+                        let index: boolean = cellvalue.indexOf(findPrevArgs.args.value) > -1;
+                        if ((cellvalue === findPrevArgs.stringValue) || (index)) {
+                            let address: string = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
                             this.parent.notify(goto, { address: address });
                             findPrevArgs.count++;
                             return true;
                         }
                     } else if (!findPrevArgs.args.isCSen && findPrevArgs.args.isEMatch) {
-                        findPrevArgs.val = cellval.toString().toLowerCase();
+                        findPrevArgs.val = cellvalue.toString().toLowerCase();
                         if (findPrevArgs.val === findPrevArgs.stringValue) {
-                            let sheetName: string = sheet.name;
-                            let address: string = sheetName + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
+                            let address: string = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
                             this.parent.notify(goto, { address: address });
                             findPrevArgs.count++;
                             return true;
                         }
                     } else if (!findPrevArgs.args.isCSen && !findPrevArgs.args.isEMatch) {
-                        findPrevArgs.val = cellval.toString().toLowerCase();
-                        let index: boolean = cellval.indexOf(findPrevArgs.args.value) > -1;
+                        findPrevArgs.val = cellvalue.toString().toLowerCase();
+                        let index: boolean = cellvalue.indexOf(findPrevArgs.args.value) > -1;
                         let lowerCaseIndex: boolean = findPrevArgs.val.indexOf(findPrevArgs.args.value) > -1;
-                        if ((cellval === findPrevArgs.stringValue) || ((cellval === findPrevArgs.stringValue) ||
+                        if ((cellvalue === findPrevArgs.stringValue) || ((cellvalue === findPrevArgs.stringValue) ||
                             (index)) || (findPrevArgs.val === findPrevArgs.stringValue) || (lowerCaseIndex)) {
-                            let sheetName: string = sheet.name;
-                            let address: string = sheetName + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
+                            let address: string = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
                             this.parent.notify(goto, { address: address });
                             findPrevArgs.count++;
                             return true;
@@ -620,9 +612,7 @@ export class WorkbookFindAndReplace {
         let cell: CellModel = sheet.rows[activecel[0]].cells[activecel[1]];
         let cellFormat: string = sheet.rows[activecel[0]].cells[activecel[1]].format;
         let compareVal: string;
-        let sheetName: string = sheet.name;
-        let undoRedoOpt: string = 'before';
-        let replaceAddress: string = sheetName + '!' + getCellAddress(activecel[0], activecel[1]);
+        let replaceAddress: string = sheet.name + '!' + getCellAddress(activecel[0], activecel[1]);
         if (cellFormat) {
             let dispTxt: string = this.parent.getDisplayText(sheet.rows[activecel[0]].cells[activecel[1]]);
             compareVal = dispTxt.toString();
@@ -630,42 +620,42 @@ export class WorkbookFindAndReplace {
         } else {
             compareVal = sheet.rows[activecel[0]].cells[activecel[1]].value.toString();
         }
-        this.parent.notify(findUndoRedo, { undoRedoOpt: undoRedoOpt, address: replaceAddress, compareVal: compareVal });
+        let replaceAllCollection: ReplaceAllArgs = { undoRedoOpt: 'before', address: replaceAddress, compareVal: compareVal };
+        this.parent.notify(findUndoRedo, replaceAllCollection);
         let lcValueOfCell: string = compareVal.toLowerCase();
         let ivalueOfCell: boolean = compareVal.indexOf(args.value) > -1;
         let caseInSensitive: boolean = lcValueOfCell.indexOf(args.value) > -1;
         if ((args.value === compareVal) || (args.value === lcValueOfCell)) {
             sheet.rows[activecel[0]].cells[activecel[1]].value = args.replaceValue;
             this.parent.updateCell(cell, address);
-            let undoRedoOpt: string = 'after';
-            this.parent.notify(findUndoRedo, { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: undoRedoOpt });
+            let replaceAllCollection: ReplaceAllArgs = { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: 'after' };
+            this.parent.notify(findUndoRedo, replaceAllCollection);
         } else if (ivalueOfCell) {
             let newValue: string = compareVal.replace(args.value, args.replaceValue);
             sheet.rows[activecel[0]].cells[activecel[1]].value = newValue;
             this.parent.updateCell(cell, address);
-            let undoRedoOpt: string = 'after';
-            this.parent.notify(findUndoRedo, { undoRedoOpt: undoRedoOpt, address: replaceAddress, compareVal: args.replaceValue });
+            let replaceAllCollection: ReplaceAllArgs = { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: 'after' };
+            this.parent.notify(findUndoRedo, replaceAllCollection);
         } else if (caseInSensitive) {
             let regx: RegExp = new RegExp(
                 args.value.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
             let updateValue: string = compareVal.replace(regx, args.replaceValue);
             sheet.rows[activecel[0]].cells[activecel[1]].value = updateValue;
             this.parent.updateCell(cell, address);
-            let undoRedoOpt: string = 'after';
-            this.parent.notify(findUndoRedo, { undoRedoOpt: undoRedoOpt, address: replaceAddress, compareVal: args.replaceValue });
+            let replaceAllCollection: ReplaceAllArgs = { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: 'after' };
+            this.parent.notify(findUndoRedo, replaceAllCollection);
         }
     }
     public replaceAll(args: FindOptions): void {
         let startSheet: number = 0; let sheet: SheetModel = this.parent.sheets[startSheet];
-        let endRow: number = sheet.usedRange.rowIndex; let count: number = 0;
+        let endRow: number = sheet.usedRange.rowIndex; let count: number = 0; let undoRedoOpt: string = 'beforeReplaceAll';
         let startRow: number = 0; let endColumn: number = sheet.usedRange.colIndex; let startColumn: number = 0;
-        let undoRedoOpt: string = 'beforeReplaceAll';
-        this.parent.notify(findUndoRedo, { undoRedoOpt: undoRedoOpt, replaceValue: args.replaceValue, replaceFor: args.mode });
+        let addressCollection: string[] = [];
+        let address: string ;
         for (startRow; startRow <= endRow; startRow++) {
             if (startColumn > endColumn && startRow === endRow) {
                 if (args.mode === 'Workbook') {
-                    startSheet++;
-                    sheet = this.parent.sheets[startSheet];
+                    startSheet++; sheet = this.parent.sheets[startSheet];
                     if (sheet) {
                         startColumn = 0; startRow = 0; endColumn = sheet.usedRange.colIndex;
                         endRow = sheet.usedRange.rowIndex; sheet = sheet;
@@ -680,15 +670,11 @@ export class WorkbookFindAndReplace {
                     }
                     for (startColumn; startColumn <= endColumn; startColumn++) {
                         let cell: CellModel = sheet.rows[startRow].cells[startColumn];
-                        let srow: number = startRow; let scol: number = startColumn;
-                        // let address: string = getCellAddress(srow, scol);
-                        let address: string = sheet.name + '!' + getCellAddress(srow, scol);
                         if (row) {
                             if (row.cells[startColumn]) {
-                                let cellTyp: CellModel = sheet.rows[startRow].cells[startColumn];
-                                if (cellTyp) {
-                                    let cellTypeVal: string = cellTyp.format;
-                                    let cellval: string;
+                                let cellType: CellModel = sheet.rows[startRow].cells[startColumn];
+                                if (cellType) {
+                                    let cellTypeVal: string = cellType.format; let cellval: string;
                                     if (cellTypeVal) {
                                         let displayTxt: string = this.parent.getDisplayText(sheet.rows[startRow].
                                             cells[startColumn]);
@@ -699,7 +685,9 @@ export class WorkbookFindAndReplace {
                                     if (args.isCSen && args.isEMatch) {
                                         if (cellval === args.value) {
                                             sheet.rows[startRow].cells[startColumn].value = args.replaceValue;
+                                            address = sheet.name + '!' + getCellAddress(startRow, startColumn);
                                             this.parent.updateCell(cell, address);
+                                            addressCollection.push(address);
                                             count++;
                                         }
                                     } else if (args.isCSen && !args.isEMatch) {
@@ -707,14 +695,18 @@ export class WorkbookFindAndReplace {
                                         if ((cellval === args.value) || (index)) {
                                             let newValue: string = cellval.replace(args.value, args.replaceValue);
                                             sheet.rows[startRow].cells[startColumn].value = newValue;
+                                            address = sheet.name + '!' + getCellAddress(startRow, startColumn);
                                             this.parent.updateCell(cell, address);
+                                            addressCollection.push(address);
                                             count++;
                                         }
                                     } else if (!args.isCSen && args.isEMatch) {
                                         let val: string = cellval.toString().toLowerCase();
                                         if (val === args.value) {
                                             sheet.rows[startRow].cells[startColumn].value = args.replaceValue;
+                                            address = sheet.name + '!' + getCellAddress(startRow, startColumn);
                                             this.parent.updateCell(cell, address);
+                                            addressCollection.push(address);
                                             count++;
                                         }
                                     } else if (!args.isCSen && !args.isEMatch) {
@@ -727,7 +719,9 @@ export class WorkbookFindAndReplace {
                                                 args.value.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
                                             let newValue: string = cellval.replace(regExepression, args.replaceValue);
                                             sheet.rows[startRow].cells[startColumn].value = newValue;
+                                            address = sheet.name + '!' + getCellAddress(startRow, startColumn);
                                             this.parent.updateCell(cell, address);
+                                            addressCollection.push(address);
                                             count++;
                                         }
                                     }
@@ -738,10 +732,18 @@ export class WorkbookFindAndReplace {
                 }
             }
         }
+        let replaceAllCollection: ReplaceAllArgs = {
+            undoRedoOpt: undoRedoOpt, Collection: addressCollection,
+            replaceValue: args.value
+        };
+        this.parent.notify(findUndoRedo, replaceAllCollection);
+        replaceAllCollection = {
+            undoRedoOpt: 'afterReplaceAll', Collection: addressCollection,
+            replaceValue: args.replaceValue
+        };
+        this.parent.notify(findUndoRedo, replaceAllCollection);
         let countNumber: number = count;
         this.parent.notify(replaceAllDialog, { count: countNumber, replaceValue: args.replaceValue });
-        undoRedoOpt = 'afterReplaceAll';
-        this.parent.notify(findUndoRedo, { undoRedoOpt: undoRedoOpt, replaceValue: args.replaceValue, replaceFor: args.mode });
     }
     private totalCount(args: FindOptions): void {
         let startSheet: number = 0; let sheet: SheetModel = this.parent.sheets[startSheet];
@@ -784,7 +786,9 @@ export class WorkbookFindAndReplace {
                                 } else if (!args.isCSen && !args.isEMatch) {
                                     let val: string = cellvalue.toString().toLowerCase();
                                     let index: boolean = cellvalue.indexOf(args.value) > -1;
-                                    if ((val === args.value) || ((cellvalue === args.value) || (index)) || ((cellvalue === args.value))) {
+                                    let lowerCaseValue: boolean = val.indexOf(args.value) > -1;
+                                    if ((val === args.value) || ((cellvalue === args.value) || (index)) || (cellvalue === args.value) ||
+                                        (lowerCaseValue)) {
                                         count++;
                                     }
                                 }
@@ -801,8 +805,8 @@ export class WorkbookFindAndReplace {
         return;
     }
     private requiredCount(args: FindOptions): number {
-        let sheetIndex: number = this.parent.activeSheetTab;
-        let sheet: SheetModel = this.parent.sheets[sheetIndex - 1]; let activecel: number[] = getCellIndexes(sheet.activeCell);
+        let sheetIndex: number = this.parent.activeSheetIndex;
+        let sheet: SheetModel = this.parent.sheets[sheetIndex]; let activecel: number[] = getCellIndexes(sheet.activeCell);
         let endRow: number = sheet.usedRange.rowIndex; let requiredCount: number = 0;
         let startRow: number = activecel[0]; let endColumn: number = sheet.usedRange.colIndex;
         let startColumn: number = activecel[1];
@@ -815,16 +819,14 @@ export class WorkbookFindAndReplace {
                 for (startColumn; startColumn <= endColumn; startColumn++) {
                     if (row) {
                         if (row.cells[startColumn]) {
-                            let cellTyp: CellModel = sheet.rows[startRow].cells[startColumn];
-                            if (cellTyp) {
-                                let cellTypeVal: string = cellTyp.format;
+                            if (sheet.rows[startRow].cells[startColumn]) {
                                 let cellval: string;
-                                if (cellTypeVal) {
+                                if (sheet.rows[startRow].cells[startColumn].format) {
                                     let displayTxt: string = this.parent.getDisplayText(sheet.rows[startRow].
                                         cells[startColumn]);
                                     cellval = displayTxt.toString();
                                 } else {
-                                    cellval = cellTyp.value.toString();
+                                    cellval = sheet.rows[startRow].cells[startColumn].value.toString();
                                 }
                                 if (args.isCSen && !args.isEMatch) {
                                     let index: boolean = cellval.indexOf(args.value) > -1;
@@ -843,7 +845,9 @@ export class WorkbookFindAndReplace {
                                 } else if (!args.isCSen && !args.isEMatch) {
                                     let val: string = cellval.toString().toLowerCase();
                                     let index: boolean = cellval.indexOf(args.value) > -1;
-                                    if ((cellval === args.value) || ((cellval === args.value) || (index)) || (val === args.value)) {
+                                    let lowerCaseVal: boolean = val.indexOf(args.value) > -1;
+                                    if ((cellval === args.value) || ((cellval === args.value) || (index)) || (val === args.value) ||
+                                        (lowerCaseVal)) {
                                         requiredCount++;
                                     }
                                 }
@@ -854,6 +858,96 @@ export class WorkbookFindAndReplace {
             }
         }
         return requiredCount;
+    }
+    private findAllValues(findAllArguments: FindAllArgs): void {
+        let startSheet: number = findAllArguments.sheetIndex; let sheet: SheetModel = this.parent.sheets[startSheet];
+        let endRow: number = sheet.usedRange.rowIndex; let rowIndex: number = 0; let count: number = 0; let address: string;
+        let endColumn: number = sheet.usedRange.colIndex; let columnIndex: number = 0; let sheetName: string;
+        let sheetLength: number = this.parent.sheets.length; let initialSheet: number = findAllArguments.sheetIndex;
+        for (rowIndex; rowIndex <= endRow + 1; rowIndex++) {
+            if ((initialSheet !== 1) && (findAllArguments.sheetIndex === sheetLength)) {
+                startSheet = 1;
+            }
+            if (rowIndex > endRow && columnIndex > endColumn) {
+                if (findAllArguments.mode === 'Workbook') {
+                    startSheet++;
+                    if (initialSheet === startSheet) {
+                        if (count === 0) {
+                            return;
+                        }
+                        return;
+                    }
+                    if (startSheet > sheetLength - 1) {
+                        startSheet = 0;
+                    }
+                    sheet = this.parent.sheets[startSheet];
+                    if (sheet) {
+                        rowIndex = 0; columnIndex = 0; endColumn = sheet.usedRange.colIndex;
+                        endRow = sheet.usedRange.rowIndex; sheet = sheet;
+                    }
+                }
+            }
+            if (!isNullOrUndefined(sheet)) {
+                if (sheet.rows[rowIndex]) {
+                    let row: RowModel = sheet.rows[rowIndex];
+                    if (columnIndex === endColumn + 2) {
+                        columnIndex = 0;
+                    }
+                    for (columnIndex; columnIndex <= endColumn + 1; columnIndex++) {
+                        if (row) {
+                            if (row.cells[columnIndex]) {
+                                let cell: CellModel = sheet.rows[rowIndex].cells[columnIndex];
+                                if (cell) {
+                                    let cellFormat: string = cell.format;
+                                    let cellvalue: string;
+                                    if (cellFormat) {
+                                        let displayTxt: string = this.parent.getDisplayText(sheet.rows[rowIndex].
+                                            cells[columnIndex]);
+                                        cellvalue = displayTxt.toString();
+                                    } else {
+                                        cellvalue = cell.value.toString();
+                                    }
+                                    if (findAllArguments.isCSen && findAllArguments.isEMatch) {
+                                        if (cellvalue === findAllArguments.value) {
+                                            address = sheet.name + '!' + getCellAddress(rowIndex, columnIndex);
+                                            findAllArguments.findCollection.push(address);
+                                            count++;
+                                        }
+                                    } else if (findAllArguments.isCSen && !findAllArguments.isEMatch) {
+                                        let index: boolean = cellvalue.indexOf(findAllArguments.value) > -1;
+                                        if ((cellvalue === findAllArguments.value) || (index)) {
+                                            address = sheet.name + '!' + getCellAddress(rowIndex, columnIndex);
+                                            findAllArguments.findCollection.push(address);
+                                            count++;
+                                        }
+                                    } else if (!findAllArguments.isCSen && findAllArguments.isEMatch) {
+                                        let val: string = cellvalue.toString().toLowerCase();
+                                        if (val === findAllArguments.value) {
+                                            address = sheet.name + '!' + getCellAddress(rowIndex, columnIndex);
+                                            findAllArguments.findCollection.push(address);
+                                            count++;
+                                        }
+                                    } else if (!findAllArguments.isCSen && !findAllArguments.isEMatch) {
+                                        let val: string = cellvalue.toString().toLowerCase();
+                                        let index: boolean = cellvalue.indexOf(findAllArguments.value) > -1;
+                                        if ((val === findAllArguments.value) || ((cellvalue === findAllArguments.value) || (index)) ||
+                                            ((cellvalue === findAllArguments.value))) {
+                                            address = sheet.name + '!' + getCellAddress(rowIndex, columnIndex);
+                                            findAllArguments.findCollection.push(address);
+                                            count++;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (count === 0) {
+            return;
+        }
+        return;
     }
     /**
      * Gets the module name.

@@ -4197,14 +4197,17 @@ describe('Splitter Control', () => {
         });
         it('on right arrow pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(rightarrow);
         });
         it('on left arrow pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(leftarrow);
         });
         it('on enter key pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(enterKey);
         });
     });
@@ -4229,14 +4232,17 @@ describe('Splitter Control', () => {
         });
          it('on up arrow pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(uparrow);
         });
         it('on down arrow key pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(downarrow);
         });
         it('on enter key pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(enterKey);
         });
     });
@@ -4258,6 +4264,7 @@ describe('Splitter Control', () => {
         });
         it('on enter key pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(enterKey);
         });
     });
@@ -4279,6 +4286,7 @@ describe('Splitter Control', () => {
         });
         it('on enter key pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(enterKey);
         });
     });
@@ -4303,14 +4311,17 @@ describe('Splitter Control', () => {
         });
         it('on right arrow pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(rightarrow);
         });
         it('on left arrow pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(leftarrow);
         });
         it('on enter key pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(enterKey);
         });
     });
@@ -4334,14 +4345,17 @@ describe('Splitter Control', () => {
         });
         it('on up arrow pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(uparrow);
         });
         it('on down arrow pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(downarrow);
         });
         it('on enter key pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(enterKey);
         });
     });
@@ -4366,14 +4380,17 @@ describe('Splitter Control', () => {
         });
         it('on up arrow pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(uparrow);
         });
         it('on down arrow pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(downarrow);
         });
         it('on enter key pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(enterKey);
         });
     });
@@ -4398,14 +4415,17 @@ describe('Splitter Control', () => {
         });
         it('on up arrow pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(leftarrow);
         });
         it('on down arrow pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(rightarrow);
         });
         it('on enter key pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(enterKey);
         });
     });
@@ -4430,14 +4450,17 @@ describe('Splitter Control', () => {
         });
         it('on up arrow pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(leftarrow);
         });
         it('on down arrow pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(rightarrow);
         });
         it('on enter key pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
+            splitterObj.currentSeparator.focus();
             splitterObj.onMove(enterKey);
         });
     });
@@ -5123,7 +5146,7 @@ describe('Splitter Control', () => {
         it('on left arrow pressing', () => {
             splitterObj.currentSeparator.classList.add('e-split-bar-active');
             splitterObj.onMove(leftarrow);
-            expect(splitterObj.element.querySelectorAll('.e-pane')[0].style.flexBasis).toEqual('49%');
+            expect(splitterObj.element.querySelectorAll('.e-pane')[0].style.flexBasis).toEqual('50%');
         });
     });
 

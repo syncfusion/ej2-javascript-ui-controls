@@ -1,6 +1,6 @@
 import { TreeGrid } from '../../src/treegrid/base/treegrid';
 import { createGrid, destroy } from '../base/treegridutil.spec';
-import { sampleData, projectData2 } from '../base/datasource.spec';
+import { sampleData, projectData2, unorederedData} from '../base/datasource.spec';
 import { getObject } from '@syncfusion/ej2-grids';
 import { EmitType } from '@syncfusion/ej2-base';
 import { RowDD } from '../../src/treegrid/actions/rowdragdrop';
@@ -375,3 +375,34 @@ describe('Treegrid Row Reorder', () => {
       destroy(TreeGridObj);
     });
   });
+  describe('Parent node disappearing on unordered list of data', () => {
+    let TreeGridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      TreeGridObj = createGrid(
+        {
+          dataSource: unorederedData,
+          idMapping: 'id',
+          parentIdMapping: 'parent_id',
+          treeColumnIndex: 1,
+          allowRowDragAndDrop: true,
+          columns: [
+            { field: 'id', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 100, visible: false },
+            { field: 'question', headerText: 'Task Name', width: 250 },
+            { field: 'is_sign_required', headerText: 'Start Date', textAlign: 'Right', width: 135, editType: 'booleanedit', displayAsCheckBox: true, type: 'boolean' },
+            { field: 'is_notes_required', headerText: 'Duration', textAlign: 'Right', width: 120, editType: 'booleanedit', displayAsCheckBox: true, type: 'boolean'  },
+          ],
+          
+        },done); 
+      });
+
+    it('Parent and child data', () => {
+      expect((TreeGridObj.grid.dataSource[1] as ITreeData).childRecords.length).toBe(2);
+      TreeGridObj.rowDragAndDropModule.reorderRows([4], 0, 'child');
+      expect(TreeGridObj.grid.dataSource[6].id).toBe(20);
+      TreeGridObj.rowDragAndDropModule.destroy();
+      
+    });
+    afterAll(() => {
+      destroy(TreeGridObj);
+    });
+});

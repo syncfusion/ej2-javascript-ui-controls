@@ -28,6 +28,7 @@ export class DialogFields extends ChildProperty<DialogFields>  {
 
     /**
      * Defines the validationRules for fields
+     * @deprecated
      * @default {}
      */
     @Property()

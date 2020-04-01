@@ -73,7 +73,8 @@ export class MapsTooltip {
                             let data: Object[] = layer.dataSource[i];
                             let dataPath: string = (layer.shapeDataPath.indexOf('.') > -1 ) ?
                             (getValueFromObject(data, layer.shapeDataPath)) : data[layer.shapeDataPath];
-                            let dataPathValue: string = isNullOrUndefined(dataPath) ? dataPath.toLowerCase() : dataPath;
+                            let dataPathValue: string = isNullOrUndefined(dataPath) && isNaN(data[layer.shapeDataPath])
+                            ? dataPath.toLowerCase() : dataPath;
                             let propertyValue: string = isNullOrUndefined(value[properties[k]])
                                 && isNaN(value[properties[k]]) ? value[properties[k]].toLowerCase() :
                                 value[properties[k]];
@@ -115,12 +116,16 @@ export class MapsTooltip {
                     if (marker.tooltipSettings.format) {
                         currentData = this.formatter(marker.tooltipSettings.format, marker.dataSource[dataIndex]);
                     } else {
-                        currentData =
-                        formatValue(((marker.tooltipSettings.valuePath. indexOf('.') > -1) ?
-                                     (getValueFromObject(marker.dataSource[dataIndex], marker.tooltipSettings.valuePath)) :
-                                     marker.dataSource[dataIndex][marker.tooltipSettings.valuePath]),
-                                    this.maps
-                                    ) as string;
+                        if (marker.template && !marker.tooltipSettings.valuePath) {
+                            currentData =  marker.template.split('>')[1].split('<')[0];
+                        } else {
+                            currentData =
+                            formatValue(((marker.tooltipSettings.valuePath. indexOf('.') > -1) ?
+                                         (getValueFromObject(marker.dataSource[dataIndex], marker.tooltipSettings.valuePath)) :
+                                         marker.dataSource[dataIndex][marker.tooltipSettings.valuePath]),
+                                        this.maps
+                                        ) as string;
+                        }
                     }
                 }
                 //location.y = this.template(option, location);
@@ -171,51 +176,121 @@ export class MapsTooltip {
                 element: target, eventArgs: e
             };
             if (this.maps.isBlazor) {
-                const {maps, eventArgs, ...blazorEventArgs} : ITooltipRenderEventArgs = tooltipArgs;
-                tooltipArgs = blazorEventArgs;
-            }
-            this.maps.trigger('tooltipRender', tooltipArgs, (observedArgs: ITooltipRenderEventArgs) => {
-                if (!tooltipArgs.cancel && option.visible && !isNullOrUndefined(currentData) &&
-                    (targetId.indexOf('_cluster_') === -1 && targetId.indexOf('_dataLabel_') === -1)) {
-                    let blazTooltipName: string;
-                    if (targetId.indexOf('MarkerIndex') > 0) {
-                        blazTooltipName = 'MarkerTooltipTemplate';
-                    } else if (targetId.indexOf('BubbleIndex') > 0) {
-                        blazTooltipName = 'BubbleTooltipTemplate';
+                let tootipOption : MapsTooltipOption = {
+                    location: location
+                };
+                const blazorArgs: ITooltipRenderEventArgs = {
+                   name: tooltipRender,
+                   cancel: false,
+                   options: tootipOption,
+                   data: templateData,
+                   textStyle: tooltipArgs.options['textStyle'],
+                   fill: tooltipArgs.fill,
+                   element: target, eventArgs: e
+                };
+                this.maps.trigger(tooltipRender, blazorArgs, (args: ITooltipRenderEventArgs) => {
+                    if (!blazorArgs.cancel && option.visible && !isNullOrUndefined(currentData) &&
+                        (targetId.indexOf('_cluster_') === -1 && targetId.indexOf('_dataLabel_') === -1)) {
+                        let blazTooltipName: string;
+                        if (targetId.indexOf('MarkerIndex') > 0) {
+                            blazTooltipName = 'MarkerTooltipTemplate';
+                        } else if (targetId.indexOf('BubbleIndex') > 0) {
+                            blazTooltipName = 'BubbleTooltipTemplate';
+                        } else {
+                            blazTooltipName = 'LayerTooltipTemplate';
+                        }
+                        this.maps['isProtectedOnChange'] = true;
+                        if (blazorArgs.cancel) {
+                            this.svgTooltip = new Tooltip({
+                                enable: true,
+                                header: '',
+                                content: [currentData.toString()],
+                                shapes: [],
+                                location: tootipOption.location,
+                                palette: [markerFill],
+                                areaBounds: this.maps.mapAreaRect,
+                                textStyle: tooltipArgs.options['textStyle'],
+                                availableSize: this.maps.availableSize,
+                                fill: tooltipArgs.fill,
+                            });
+                        } else {
+                            this.svgTooltip = new Tooltip({
+                                enable: true,
+                                header: '',
+                                content: [currentData.toString()],
+                                shapes: [],
+                                location: tootipOption.location,
+                                palette: [markerFill],
+                                areaBounds: this.maps.mapAreaRect,
+                                textStyle: blazorArgs.textStyle,
+                                availableSize: this.maps.availableSize,
+                                fill: blazorArgs.fill
+                            });
+                        }
+                        this.svgTooltip.opacity = this.maps.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
+                        this.svgTooltip.appendTo(tooltipEle);
                     } else {
-                        blazTooltipName = 'LayerTooltipTemplate';
+                        this.removeTooltip();
                     }
-                    this.maps['isProtectedOnChange'] = true;
-                    tooltipArgs.options['textStyle']['color'] = this.maps.themeStyle.tooltipFontColor
-                        || tooltipArgs.options['textStyle']['color'];
-                    this.svgTooltip = new Tooltip({
-                        enable: true,
-                        header: '',
-                        data: tooltipArgs.options['data'],
-                        template: tooltipArgs.options['template'],
-                        content: [currentData.toString()],
-                        shapes: [],
-                        location: tooltipArgs.options['location'],
-                        palette: [markerFill],
-                        areaBounds: this.maps.mapAreaRect,
-                        textStyle: tooltipArgs.options['textStyle'],
-                        availableSize: this.maps.availableSize,
-                        fill: tooltipArgs.fill || this.maps.themeStyle.tooltipFillColor,
-                        blazorTemplate: { name: blazTooltipName, parent: option }
-                    });
-                    this.svgTooltip.opacity = this.maps.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
-                    this.svgTooltip.appendTo(tooltipEle);
-                } else {
-                    this.removeTooltip();
-                }
-            });
+                });
+            } else {
+                this.maps.trigger(tooltipRender, tooltipArgs, (args: ITooltipRenderEventArgs) => {
+                    if (!tooltipArgs.cancel && option.visible && !isNullOrUndefined(currentData) &&
+                        (targetId.indexOf('_cluster_') === -1 && targetId.indexOf('_dataLabel_') === -1)) {
+                        this.maps['isProtectedOnChange'] = true;
+                        tooltipArgs.options['textStyle']['color'] = this.maps.themeStyle.tooltipFontColor
+                            || tooltipArgs.options['textStyle']['color'];
+                        if (tooltipArgs.cancel) {
+                            this.svgTooltip = new Tooltip({
+                                enable: true,
+                                header: '',
+                                data: option['data'],
+                                template: option['template'],
+                                content: [currentData.toString()],
+                                shapes: [],
+                                location: option['location'],
+                                palette: [markerFill],
+                                areaBounds: this.maps.mapAreaRect,
+                                textStyle: option['textStyle'],
+                                availableSize: this.maps.availableSize,
+                                fill: option.fill || this.maps.themeStyle.tooltipFillColor,
+                            });
+                        } else {
+                            this.svgTooltip = new Tooltip({
+                                enable: true,
+                                header: '',
+                                data: tooltipArgs.options['data'],
+                                template: tooltipArgs.options['template'],
+                                content: [currentData.toString()],
+                                shapes: [],
+                                location: tooltipArgs.options['location'],
+                                palette: [markerFill],
+                                areaBounds: this.maps.mapAreaRect,
+                                textStyle: tooltipArgs.options['textStyle'],
+                                availableSize: this.maps.availableSize,
+                                fill: tooltipArgs.fill || this.maps.themeStyle.tooltipFillColor,
+                            });
+                        }
+                        this.svgTooltip.opacity = this.maps.themeStyle.tooltipFillOpacity || this.svgTooltip.opacity;
+                        this.svgTooltip.appendTo(tooltipEle);
+                    } else {
+                        this.removeTooltip();
+                    }
+               });
+            }
+            if (this.svgTooltip) {
+                this.maps.trigger('tooltipRenderComplete', {
+                    cancel: false, name: 'tooltipRenderComplete', maps: this.maps, options: tooltipOption,
+                        element: this.svgTooltip.element
+                } as ITooltipRenderCompleteEventArgs);
+            }
             if (this.svgTooltip) {
                 this.maps.trigger('tooltipRenderComplete', {
                     cancel: false, name: 'tooltipRenderComplete', maps: this.maps, options: tooltipOption, element: this.svgTooltip.element
                 } as ITooltipRenderCompleteEventArgs);
+            } else {
+                this.removeTooltip();
             }
-        } else {
-            this.removeTooltip();
         }
     }
 

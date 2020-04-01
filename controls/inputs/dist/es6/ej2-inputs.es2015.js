@@ -324,8 +324,9 @@ var Input;
         let result = '';
         if (!isNullOrUndefined(placeholder) && placeholder !== '') {
             let spanEle = document.createElement('span');
-            spanEle.innerHTML = placeholder;
-            result = spanEle.innerHTML;
+            spanEle.innerHTML = '<input  placeholder="' + placeholder + '"/>';
+            let hiddenInput = (spanEle.children[0]);
+            result = hiddenInput.placeholder;
         }
         return result;
     }
@@ -1011,13 +1012,17 @@ let NumericTextBox = class NumericTextBox extends Component {
     }
     /* Wrapper creation */
     createWrapper() {
+        let updatedCssClassValue = this.cssClass;
+        if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+            updatedCssClassValue = this.getNumericValidClassList(this.cssClass);
+        }
         let inputObj = Input.createInput({
             element: this.element,
             floatLabelType: this.floatLabelType,
             properties: {
                 readonly: this.readonly,
                 placeholder: this.placeholder,
-                cssClass: this.cssClass,
+                cssClass: updatedCssClassValue,
                 enableRtl: this.enableRtl,
                 showClearButton: this.showClearButton,
                 enabled: this.enabled
@@ -1066,12 +1071,25 @@ let NumericTextBox = class NumericTextBox extends Component {
             }
         }
     }
+    updateCssClass(newClass, oldClass) {
+        Input.setCssClass(this.getNumericValidClassList(newClass), [this.container], this.getNumericValidClassList(oldClass));
+    }
+    getNumericValidClassList(numericClassName) {
+        let result = numericClassName;
+        if (!isNullOrUndefined(numericClassName) && numericClassName !== '') {
+            result = (numericClassName.replace(/\s+/g, ' ')).trim();
+        }
+        return result;
+    }
     updateHTMLAttrToWrapper() {
         if (!isNullOrUndefined(this.htmlAttributes)) {
             for (let pro of Object.keys(this.htmlAttributes)) {
                 if (wrapperAttributes.indexOf(pro) > -1) {
                     if (pro === 'class') {
-                        addClass([this.container], this.htmlAttributes[pro].split(' '));
+                        let updatedClassValue = this.getNumericValidClassList(this.htmlAttributes[pro]);
+                        if (updatedClassValue !== '') {
+                            addClass([this.container], updatedClassValue.split(' '));
+                        }
                     }
                     else if (pro === 'style') {
                         let numericStyle = this.container.getAttribute(pro);
@@ -1476,6 +1494,9 @@ let NumericTextBox = class NumericTextBox extends Component {
             this.setElementValue(elementValue);
             attributes(this.element, { 'aria-valuenow': value });
             this.hiddenInput.value = this.value.toString();
+            if (this.value !== null && this.serverDecimalSeparator) {
+                this.hiddenInput.value = this.hiddenInput.value.replace('.', this.serverDecimalSeparator);
+            }
         }
         else {
             this.setElementValue('');
@@ -1836,7 +1857,7 @@ let NumericTextBox = class NumericTextBox extends Component {
                     this.setElementWidth(newProp.width);
                     break;
                 case 'cssClass':
-                    Input.setCssClass(newProp.cssClass, [this.container], oldProp.cssClass);
+                    this.updateCssClass(newProp.cssClass, oldProp.cssClass);
                     break;
                 case 'enabled':
                     Input.setEnabled(newProp.enabled, this.element);
@@ -3183,12 +3204,25 @@ let MaskedTextBox = class MaskedTextBox extends Component {
             }
         }
     }
+    updateCssClass(newClass, oldClass) {
+        Input.setCssClass(this.getValidClassList(newClass), [this.inputObj.container], this.getValidClassList(oldClass));
+    }
+    getValidClassList(maskClassName) {
+        let result = maskClassName;
+        if (!isNullOrUndefined(maskClassName) && maskClassName !== '') {
+            result = (maskClassName.replace(/\s+/g, ' ')).trim();
+        }
+        return result;
+    }
     updateHTMLAttrToWrapper() {
         if (!isNullOrUndefined(this.htmlAttributes)) {
             for (let key of Object.keys(this.htmlAttributes)) {
                 if (wrapperAttr.indexOf(key) > -1) {
                     if (key === 'class') {
-                        addClass([this.inputObj.container], this.htmlAttributes[key].split(' '));
+                        let updatedClassValues = (this.htmlAttributes[key].replace(/\s+/g, ' ')).trim();
+                        if (updatedClassValues !== '') {
+                            addClass([this.inputObj.container], updatedClassValues.split(' '));
+                        }
                     }
                     else if (key === 'style') {
                         let maskStyle = this.inputObj.container.getAttribute(key);
@@ -3289,12 +3323,16 @@ let MaskedTextBox = class MaskedTextBox extends Component {
         }
     }
     createWrapper() {
+        let updatedCssClassValues = this.cssClass;
+        if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+            updatedCssClassValues = this.getValidClassList(this.cssClass);
+        }
         this.inputObj = Input.createInput({
             element: this.element,
             floatLabelType: this.floatLabelType,
             properties: {
                 enableRtl: this.enableRtl,
-                cssClass: this.cssClass,
+                cssClass: updatedCssClassValues,
                 enabled: this.enabled,
                 readonly: this.readonly,
                 placeholder: this.placeholder,
@@ -3323,7 +3361,7 @@ let MaskedTextBox = class MaskedTextBox extends Component {
                     this.setWidth(newProp.width);
                     break;
                 case 'cssClass':
-                    Input.setCssClass(newProp.cssClass, [this.inputObj.container], oldProp.cssClass);
+                    this.updateCssClass(newProp.cssClass, oldProp.cssClass);
                     break;
                 case 'enabled':
                     Input.setEnabled(newProp.enabled, this.element, this.floatLabelType, this.inputObj.container);
@@ -3529,6 +3567,7 @@ __decorate$2([
 ], TicksData.prototype, "format", void 0);
 /**
  * It illustrates the color track data in slider.
+ * {% codeBlock src='slider/colorrange/index.md' %}{% endcodeBlock %}
  */
 class ColorRangeData extends ChildProperty {
 }
@@ -3543,6 +3582,7 @@ __decorate$2([
 ], ColorRangeData.prototype, "end", void 0);
 /**
  * It illustrates the limit data in slider.
+ * {% codeBlock src='slider/limits/index.md' %}{% endcodeBlock %}
  */
 class LimitData extends ChildProperty {
 }
@@ -4340,7 +4380,9 @@ let Slider = class Slider extends Component {
             tooltipContentElement.classList.add(classNames.materialTooltipHide);
             this.firstHandle.style.cursor = '-webkit-grab';
             this.firstHandle.style.cursor = 'grab';
-            this.materialHandle.style.transform = 'scale(1)';
+            if (this.materialHandle) {
+                this.materialHandle.style.transform = 'scale(1)';
+            }
             this.tooltipElement.classList.remove(classNames.materialTooltipOpen);
             this.setTooltipTransform();
             this.tooltipTarget = undefined;
@@ -6105,8 +6147,8 @@ let Slider = class Slider extends Component {
         return this.addOnPersist(keyEntity);
     }
     /**
-     * Prepares the slider for safe removal from the DOM.
-     * Detaches all event handlers, attributes, and classes to avoid memory leaks.
+     * Removes the component from the DOM and detaches all its related event handlers.
+     * Also it removes the attributes and classes.
      * @method destroy
      * @return {void}
      */
@@ -7883,7 +7925,10 @@ let Uploader = class Uploader extends Component {
             for (let pro of Object.keys(this.htmlAttributes)) {
                 if (wrapperAttr$1.indexOf(pro) > -1) {
                     if (pro === 'class') {
-                        addClass([this.uploadWrapper], this.htmlAttributes[pro].split(' '));
+                        let updatedClassValues = (this.htmlAttributes[pro].replace(/\s+/g, ' ')).trim();
+                        if (updatedClassValues !== '') {
+                            addClass([this.uploadWrapper], updatedClassValues.split(' '));
+                        }
                     }
                     else if (pro === 'style') {
                         let uploadStyle = this.uploadWrapper.getAttribute(pro);
@@ -7941,11 +7986,19 @@ let Uploader = class Uploader extends Component {
         }
     }
     setCSSClass(oldCSSClass) {
-        if (this.cssClass) {
-            addClass([this.uploadWrapper], this.cssClass.split(this.cssClass.indexOf(',') > -1 ? ',' : ' '));
+        let updatedCssClassValue = this.cssClass;
+        if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+            updatedCssClassValue = (this.cssClass.replace(/\s+/g, ' ')).trim();
         }
-        if (oldCSSClass) {
-            removeClass([this.uploadWrapper], oldCSSClass.split(' '));
+        if (!isNullOrUndefined(this.cssClass) && updatedCssClassValue !== '') {
+            addClass([this.uploadWrapper], updatedCssClassValue.split(updatedCssClassValue.indexOf(',') > -1 ? ',' : ' '));
+        }
+        let updatedOldCssClass = oldCSSClass;
+        if (!isNullOrUndefined(oldCSSClass)) {
+            updatedOldCssClass = (oldCSSClass.replace(/\s+/g, ' ')).trim();
+        }
+        if (!isNullOrUndefined(oldCSSClass) && updatedOldCssClass !== '') {
+            removeClass([this.uploadWrapper], updatedOldCssClass.split(' '));
         }
     }
     wireEvents() {
@@ -8348,7 +8401,7 @@ let Uploader = class Uploader extends Component {
     }
     /* istanbul ignore next */
     checkDirectoryUpload(items) {
-        for (let i = 0; i < items.length; i++) {
+        for (let i = 0; items && i < items.length; i++) {
             // tslint:disable-next-line
             let item = items[i].webkitGetAsEntry();
             if (item.isDirectory) {
@@ -8367,15 +8420,24 @@ let Uploader = class Uploader extends Component {
             // tslint:disable-next-line
             let directoryReader = item.createReader();
             // tslint:disable-next-line
-            directoryReader.readEntries((entries) => {
-                for (let i = 0; i < entries.length; i++) {
-                    this.traverseFileTree(entries[i]);
-                    // tslint:disable-next-line
-                }
-                
-                this.pushFilesEntries(event);
-            });
+            this.readFileFromDirectory(directoryReader, event);
         }
+    }
+    // tslint:disable
+    /* istanbul ignore next */
+    readFileFromDirectory(directoryReader, event) {
+        // tslint:disable-next-line
+        directoryReader.readEntries((entries) => {
+            for (let i = 0; i < entries.length; i++) {
+                this.traverseFileTree(entries[i]);
+                // tslint:disable-next-line
+            }
+            
+            this.pushFilesEntries(event);
+            if (entries.length) {
+                this.readFileFromDirectory(directoryReader);
+            }
+        });
     }
     pushFilesEntries(event) {
         let files = [];
@@ -8483,7 +8545,8 @@ let Uploader = class Uploader extends Component {
             status: this.localizedTexts('readyToUploadMessage'),
             type: this.getFileType(file.name),
             validationMessages: this.validatedFileSize(file.size),
-            statusCode: '1'
+            statusCode: '1',
+            id: getUniqueID(file.name.substring(0, file.name.lastIndexOf('.'))) + '.' + this.getFileType(file.name)
         };
         /* istanbul ignore next */
         if (paste) {
@@ -8510,7 +8573,7 @@ let Uploader = class Uploader extends Component {
                 if (eventArgs.isModified && eventArgs.modifiedFilesData.length > 0) {
                     for (let j = 0; j < eventArgs.modifiedFilesData.length; j++) {
                         for (let k = 0; k < fileData.length; k++) {
-                            if (eventArgs.modifiedFilesData[j].name === fileData[k].name) {
+                            if (eventArgs.modifiedFilesData[j].id === fileData[k].id) {
                                 eventArgs.modifiedFilesData[j].rawFile = fileData[k].rawFile;
                             }
                         }
@@ -12556,7 +12619,7 @@ let TextBox = class TextBox extends Component {
                     }
                     break;
                 case 'cssClass':
-                    Input.setCssClass(newProp.cssClass, [this.textboxWrapper.container], oldProp.cssClass);
+                    this.updateCssClass(newProp.cssClass, oldProp.cssClass);
                     break;
                 case 'locale':
                     this.globalize = new Internationalization(this.locale);
@@ -12699,6 +12762,10 @@ let TextBox = class TextBox extends Component {
      * @private
      */
     render() {
+        let updatedCssClassValue = this.cssClass;
+        if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+            updatedCssClassValue = this.getInputValidClassList(this.cssClass);
+        }
         if (!(isBlazor() && this.isServerRendered)) {
             this.respectiveElement = (this.isHiddenInput) ? this.textarea : this.element;
             this.textboxWrapper = Input.createInput({
@@ -12707,7 +12774,7 @@ let TextBox = class TextBox extends Component {
                 properties: {
                     enabled: this.enabled,
                     enableRtl: this.enableRtl,
-                    cssClass: this.cssClass,
+                    cssClass: updatedCssClassValue,
                     readonly: this.readonly,
                     placeholder: this.placeholder,
                     showClearButton: this.showClearButton
@@ -12759,7 +12826,10 @@ let TextBox = class TextBox extends Component {
             for (let key of Object.keys(this.htmlAttributes)) {
                 if (containerAttr.indexOf(key) > -1) {
                     if (key === 'class') {
-                        addClass([this.textboxWrapper.container], this.htmlAttributes[key].split(' '));
+                        let updatedClassValues = this.getInputValidClassList(this.htmlAttributes[key]);
+                        if (updatedClassValues !== '') {
+                            addClass([this.textboxWrapper.container], updatedClassValues.split(' '));
+                        }
                     }
                     else if (key === 'style') {
                         let setStyle = this.textboxWrapper.container.getAttribute(key);
@@ -12782,6 +12852,16 @@ let TextBox = class TextBox extends Component {
                 }
             }
         }
+    }
+    updateCssClass(newClass, oldClass) {
+        Input.setCssClass(this.getInputValidClassList(newClass), [this.textboxWrapper.container], this.getInputValidClassList(oldClass));
+    }
+    getInputValidClassList(inputClassName) {
+        let result = inputClassName;
+        if (!isNullOrUndefined(inputClassName) && inputClassName !== '') {
+            result = (inputClassName.replace(/\s+/g, ' ')).trim();
+        }
+        return result;
     }
     setInitialValue() {
         if (!this.isAngular) {

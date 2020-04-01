@@ -67,4 +67,11 @@ export class Columns extends ChildProperty<Columns> {
     @Property(true)
     public showItemCount: boolean;
 
+    /**
+     * Enable or disable cell add button
+     * @default false
+     */
+    @Property(false)
+    public showAddButton: boolean;
+
 }

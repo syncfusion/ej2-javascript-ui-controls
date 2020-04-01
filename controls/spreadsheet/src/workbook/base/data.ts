@@ -3,6 +3,7 @@ import { getCellAddress, getIndexesFromAddress, getColumnHeaderText, updateSheet
 import { queryCellInfo, CellInfoEventArgs, CellStyleModel } from '../common/index';
 import { SheetModel, RowModel, CellModel, getRow, getCell, isHiddenRow, isHiddenCol, getMaxSheetId, getSheetNameCount } from './index';
 import { isUndefined, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { setCell } from './cell';
 
 /**
  * Update data source to Sheet and returns Sheet
@@ -13,7 +14,7 @@ export function getData(
     columnWiseData?: boolean, valueOnly?: boolean): Promise<Map<string, CellModel> | { [key: string]: CellModel }[]> {
     return new Promise((resolve: Function, reject: Function) => {
         resolve((() => {
-            let i: number;
+            let i: number; let cell: CellModel;
             let row: RowModel;
             let data: Map<string, CellModel> | { [key: string]: CellModel }[] = new Map();
             let sheetIdx: number = getSheetIndex(context, getSheetNameFromAddress(address));
@@ -28,7 +29,6 @@ export function getData(
             context.notify(updateSheetFromDataSource, args);
             return args.promise.then(() => {
                 while (sRow <= indexes[2]) {
-                    if (!valueOnly && isHiddenRow(sheet, sRow)) { sRow++; continue; }
                     let cells: { [key: string]: CellModel | string | Date } = {};
                     row = getRow(sheet, sRow);
                     i = indexes[1];
@@ -45,8 +45,38 @@ export function getData(
                             if (indexes[3] < i + 1) { cells[rowKey] = (sRow + 1).toString(); }
                             data[index.toString()] = cells;
                         } else {
-                            if (!valueOnly && isHiddenCol(sheet, i)) { i++; continue; }
                             let cellObj: CellModel = {}; Object.assign(cellObj, row ? getCell(sRow, i, sheet) : null);
+                            if (cellObj.colSpan > 1 && cellObj.rowSpan > 1) {
+                                let cell: CellModel;
+                                for (let j: number = sRow, len: number = sRow + cellObj.rowSpan; j < len; j++) {
+                                    for (let k: number = i, len: number = i + cellObj.colSpan; k < len; k++) {
+                                        if (j === sRow && k === i) { continue; }
+                                        cell = new Object();
+                                        if (j !== sRow) { cell.rowSpan = sRow - j; }
+                                        if (k !== i) { cell.colSpan = i - k; }
+                                        if (sheet.rows[j] && sheet.rows[j].cells && sheet.rows[j].cells[k]) {
+                                            delete sheet.rows[j].cells[k].value; delete sheet.rows[j].cells[k].formula;
+                                        }
+                                        setCell(j, k, sheet, cell, true);
+                                    }
+                                }
+                            } else if (cellObj.colSpan > 1) {
+                                for (let j: number = i + 1, len: number = i + cellObj.colSpan; j < len; j++) {
+                                    setCell(sRow, j, sheet, { colSpan: i - j }, true);
+                                    if (sheet.rows[sRow] && sheet.rows[sRow].cells && sheet.rows[sRow].cells[j]) {
+                                        delete sheet.rows[sRow].cells[j].value; delete sheet.rows[sRow].cells[j].formula;
+                                    }
+                                }
+                            } else if (cellObj.rowSpan > 1) {
+                                for (let j: number = sRow + 1, len: number = sRow + cellObj.rowSpan; j < len; j++) {
+                                    setCell(j, i, sheet, { rowSpan: sRow - j }, true);
+                                    if (sheet.rows[j] && sheet.rows[j].cells && sheet.rows[j].cells[i]) {
+                                        delete sheet.rows[j].cells[i].value; delete sheet.rows[j].cells[i].formula;
+                                    }
+                                }
+                            }
+                            if (!valueOnly && isHiddenRow(sheet, sRow)) { sRow++; continue; }
+                            if (!valueOnly && isHiddenCol(sheet, i)) { i++; continue; }
                             if (cellObj.style) {
                                 let style: CellStyleModel = {}; Object.assign(style, cellObj.style); cellObj.style = style;
                             }
@@ -164,7 +194,7 @@ export function processIdx(model: (SheetModel | RowModel | CellModel)[], isSheet
  * @hidden
  */
 export function clearRange(context: Workbook, address: string, sheetIdx: number, valueOnly: boolean): void {
-    let sheet: SheetModel = getSheet(context, sheetIdx - 1);
+    let sheet: SheetModel = getSheet(context, sheetIdx);
     let range: number[] = getIndexesFromAddress(address);
     let sRIdx: number = range[0];
     let eRIdx: number = range[2];

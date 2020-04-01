@@ -193,6 +193,7 @@ export class SfdtExport {
         this.document.saltValue = this.documentHelper.saltValue;
         this.document.formatting = this.documentHelper.restrictFormatting;
         this.document.protectionType = this.documentHelper.protectionType;
+        this.document.dontUseHTMLParagraphAutoSpacing = this.documentHelper.dontUseHtmlParagraphAutoSpacing;
     }
     /**
      * @private

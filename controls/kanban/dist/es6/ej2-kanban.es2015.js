@@ -246,6 +246,9 @@ __decorate$4([
 __decorate$4([
     Property(true)
 ], Columns.prototype, "showItemCount", void 0);
+__decorate$4([
+    Property(false)
+], Columns.prototype, "showAddButton", void 0);
 
 var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -430,6 +433,10 @@ const CLOSE_ICON_CLASS = 'e-close-icon';
 const POPUP_OPEN_CLASS = 'e-popup-open';
 /** @hidden */
 const DIALOG_CONTENT_CONTAINER = 'e-kanban-dialog-content';
+/** @hidden */
+const SHOW_ADD_BUTTON = 'e-show-add-button';
+/** @hidden */
+const SHOW_ADD_ICON = 'e-show-add-icon';
 
 /**
  * Action module is used to perform card actions.
@@ -453,7 +460,7 @@ class Action {
     }
     clickHandler(e) {
         let elementSelector = '.' + CARD_CLASS + ',.' + HEADER_ICON_CLASS + ',.' + CONTENT_ROW_CLASS + '.' +
-            SWIMLANE_ROW_CLASS;
+            SWIMLANE_ROW_CLASS + ',.' + SHOW_ADD_BUTTON;
         let target = closest(e.target, elementSelector);
         if (!target) {
             return;
@@ -466,6 +473,25 @@ class Action {
         }
         else if (target.classList.contains(CONTENT_ROW_CLASS) && target.classList.contains(SWIMLANE_ROW_CLASS)) {
             this.rowExpandCollapse(e);
+        }
+        else if (target.classList.contains(SHOW_ADD_BUTTON)) {
+            let newData = {};
+            if (typeof this.parent.kanbanData[0][this.parent.cardSettings.headerField] === 'number') {
+                newData[this.parent.cardSettings.headerField] = Math.max.apply(Math, this.parent.kanbanData.map((obj) => parseInt(obj[this.parent.cardSettings.headerField], 10))) + 1;
+            }
+            newData[this.parent.keyField] = target.closest('.' + CONTENT_CELLS_CLASS).getAttribute('data-key');
+            if (this.parent.cardSettings.priority) {
+                newData[this.parent.cardSettings.priority] = 1;
+                if (target.closest('.' + CONTENT_CELLS_CLASS).querySelector('.' + CARD_CLASS)) {
+                    let data = this.parent.getCardDetails(target.previousElementSibling.lastElementChild);
+                    newData[this.parent.cardSettings.priority] = data[this.parent.cardSettings.priority] + 1;
+                }
+            }
+            if (this.parent.swimlaneSettings.keyField) {
+                newData[this.parent.swimlaneSettings.keyField] =
+                    target.closest('.' + CONTENT_ROW_CLASS).previousElementSibling.getAttribute('data-key');
+            }
+            this.parent.openDialog('Add', newData);
         }
     }
     doubleClickHandler(e) {
@@ -504,8 +530,14 @@ class Action {
         this.parent.activeCardData = { data: cardDoubleClickObj, element: target };
         let args = { data: cardDoubleClickObj, element: target, cancel: false, event: e };
         this.parent.trigger(cardDoubleClick, args, (doubleClickArgs) => {
-            if (!doubleClickArgs.cancel && !this.parent.isBlazorRender()) {
-                this.parent.dialogModule.openDialog('Edit', args.data);
+            if (!doubleClickArgs.cancel) {
+                if (this.parent.isBlazorRender()) {
+                    // tslint:disable-next-line
+                    this.parent.interopAdaptor.invokeMethodAsync('OpenDialog', 'Edit', args.data);
+                }
+                else {
+                    this.parent.dialogModule.openDialog('Edit', args.data);
+                }
             }
         });
     }
@@ -1074,26 +1106,7 @@ class DragAndDrop {
                 }
             }
             else if (keys.length > 1) {
-                let offsetHeight = contentCell.offsetHeight;
-                let limitEle = contentCell.querySelector('.' + LIMITS_CLASS);
-                if (limitEle) {
-                    offsetHeight -= limitEle.offsetHeight;
-                }
-                this.dragObj.targetCloneMulti.style.height = formatUnit(offsetHeight);
-                addClass([contentCell.querySelector('.' + CARD_WRAPPER_CLASS)], MULTI_CARD_WRAPPER_CLASS);
-                contentCell.querySelector('.' + CARD_WRAPPER_CLASS).style.height = 'auto';
-                contentCell.style.borderStyle = 'none';
-                this.removeElement(this.dragObj.targetClone);
-                for (let key of keys) {
-                    let colKey = createElement('div', {
-                        className: MULTI_COLUMN_KEY_CLASS,
-                        attrs: { 'data-key': key.trim() }
-                    });
-                    let text = createElement('div', { className: 'e-text', innerHTML: key.trim() });
-                    contentCell.appendChild(this.dragObj.targetCloneMulti).appendChild(colKey).appendChild(text);
-                    colKey.style.lineHeight = colKey.style.height = formatUnit((offsetHeight / keys.length));
-                    text.style.top = formatUnit((offsetHeight / 2) - (text.offsetHeight / 2));
-                }
+                this.multiCloneCreate(keys, contentCell);
             }
             this.parent.notify(contentReady, {});
         }
@@ -1153,6 +1166,31 @@ class DragAndDrop {
             remove(element);
         }
     }
+    multiCloneCreate(keys, contentCell) {
+        let offsetHeight = contentCell.offsetHeight;
+        let limitEle = contentCell.querySelector('.' + LIMITS_CLASS);
+        if (limitEle) {
+            offsetHeight -= limitEle.offsetHeight;
+        }
+        this.dragObj.targetCloneMulti.style.height = formatUnit(offsetHeight);
+        if (contentCell.querySelector('.' + SHOW_ADD_BUTTON)) {
+            addClass([contentCell.querySelector('.' + SHOW_ADD_BUTTON)], MULTI_CARD_WRAPPER_CLASS);
+        }
+        addClass([contentCell.querySelector('.' + CARD_WRAPPER_CLASS)], MULTI_CARD_WRAPPER_CLASS);
+        contentCell.querySelector('.' + CARD_WRAPPER_CLASS).style.height = 'auto';
+        contentCell.style.borderStyle = 'none';
+        this.removeElement(this.dragObj.targetClone);
+        for (let key of keys) {
+            let colKey = createElement('div', {
+                className: MULTI_COLUMN_KEY_CLASS,
+                attrs: { 'data-key': key.trim() }
+            });
+            let text = createElement('div', { className: 'e-text', innerHTML: key.trim() });
+            contentCell.appendChild(this.dragObj.targetCloneMulti).appendChild(colKey).appendChild(text);
+            colKey.style.lineHeight = colKey.style.height = formatUnit((offsetHeight / keys.length));
+            text.style.top = formatUnit((offsetHeight / 2) - (text.offsetHeight / 2));
+        }
+    }
     addDropping() {
         if (this.parent.swimlaneSettings.keyField && this.parent.swimlaneSettings.allowDragAndDrop) {
             let className = '.' + CONTENT_ROW_CLASS + ':not(.' + SWIMLANE_ROW_CLASS + '):not(.' + COLLAPSED_CLASS + ')';
@@ -1176,29 +1214,31 @@ class DragAndDrop {
         if (this.parent.element.querySelector('.' + TARGET_MULTI_CLONE_CLASS)) {
             columnKey = closest(e.target, '.' + MULTI_COLUMN_KEY_CLASS);
         }
-        let dragArgs = { cancel: false, data: this.dragObj.cardDetails, event: e, element: this.dragObj.selectedCards };
+        if (contentCell || columnKey) {
+            let cardStatus;
+            if (contentCell) {
+                cardStatus = this.getColumnKey(contentCell);
+            }
+            else {
+                cardStatus = this.getColumnKey(columnKey);
+                contentCell = closest(columnKey, '.' + CONTENT_CELLS_CLASS);
+            }
+            if (this.dragObj.selectedCards instanceof HTMLElement) {
+                this.updateDroppedData(this.dragObj.selectedCards, cardStatus, contentCell);
+            }
+            else {
+                this.dragObj.selectedCards.forEach((element) => {
+                    this.updateDroppedData(element, cardStatus, contentCell);
+                });
+            }
+            if (this.parent.cardSettings.priority) {
+                this.changeOrder(this.dragObj.modifiedData);
+            }
+        }
+        let dragArgs = { cancel: false, data: this.dragObj.modifiedData, event: e, element: this.dragObj.selectedCards };
         this.parent.trigger(dragStop, dragArgs, (dragEventArgs) => {
             if (!dragEventArgs.cancel) {
                 if (contentCell || columnKey) {
-                    let cardStatus;
-                    if (contentCell) {
-                        cardStatus = this.getColumnKey(contentCell);
-                    }
-                    else {
-                        cardStatus = this.getColumnKey(columnKey);
-                        contentCell = closest(columnKey, '.' + CONTENT_CELLS_CLASS);
-                    }
-                    if (this.dragObj.selectedCards instanceof HTMLElement) {
-                        this.updateDroppedData(this.dragObj.selectedCards, cardStatus, contentCell);
-                    }
-                    else {
-                        this.dragObj.selectedCards.forEach((element) => {
-                            this.updateDroppedData(element, cardStatus, contentCell);
-                        });
-                    }
-                    if (this.parent.cardSettings.priority) {
-                        this.changeOrder(this.dragObj.modifiedData);
-                    }
                     this.parent.crudModule.updateCard(this.dragObj.modifiedData);
                 }
             }
@@ -1487,14 +1527,13 @@ class KanbanDialog {
             fields = [
                 { text: 'ID', key: this.parent.cardSettings.headerField, type: 'Input' },
                 { key: this.parent.keyField, type: 'DropDown' },
-                { key: 'Estimate', type: 'Numeric' },
-                { key: 'Summary', type: 'TextArea' }
+                { key: this.parent.cardSettings.contentField, type: 'TextArea' }
             ];
             if (this.parent.cardSettings.priority) {
                 fields.splice(fields.length - 1, 0, { key: this.parent.cardSettings.priority, type: 'Numeric' });
             }
             if (this.parent.swimlaneSettings.keyField) {
-                fields.splice(fields.length - 1, 0, { key: 'Assignee', type: 'DropDown' });
+                fields.splice(fields.length - 1, 0, { key: this.parent.swimlaneSettings.keyField, type: 'DropDown' });
             }
         }
         return fields;
@@ -1810,7 +1849,8 @@ class Keyboard {
             multiSelectionByRightArrow: 'shift+39',
             shiftTab: 'shift+tab',
             enter: '13',
-            tab: 'tab'
+            tab: 'tab',
+            delete: '46'
         };
         this.parent = parent;
         this.parent.element.tabIndex = this.parent.element.tabIndex === -1 ? 0 : this.parent.element.tabIndex;
@@ -1859,6 +1899,11 @@ class Keyboard {
             case 'tab':
             case 'shiftTab':
                 this.processTab(e.action, selectedCard);
+                break;
+            case 'delete':
+                let className = '.' + CARD_CLASS + '.' + CARD_SELECTION_CLASS;
+                let selectedCards = [].slice.call(this.parent.element.querySelectorAll(className));
+                selectedCards.forEach((selected) => this.parent.crudModule.deleteCard(this.parent.getCardDetails(selected)));
                 break;
         }
     }
@@ -2005,6 +2050,8 @@ class Keyboard {
         }
         if (selectedCard) {
             this.parent.actionModule.cardClick(e, selectedCard);
+            this.parent.activeCardData = { data: this.parent.getCardDetails(selectedCard), element: selectedCard };
+            this.parent.dialogModule.openDialog('Edit', this.parent.getCardDetails(selectedCard));
         }
     }
     processTab(action, selectedCard) {
@@ -2507,6 +2554,11 @@ class LayoutRender extends MobileLayout {
                         td.appendChild(createElement('div', { className: COLLAPSE_HEADER_TEXT_CLASS, innerHTML: column.headerText }));
                         td.setAttribute('aria-expanded', 'false');
                     }
+                    if (column.showAddButton) {
+                        let button = createElement('div', { className: SHOW_ADD_BUTTON });
+                        button.appendChild(createElement('div', { className: SHOW_ADD_ICON + ' ' + ICON_CLASS }));
+                        td.appendChild(button);
+                    }
                     tr.appendChild(td);
                     let dataObj = [{ keyField: row.keyField, textField: row.textField, count: row.count }];
                     let args = { data: dataObj, element: tr, cancel: false, requestType: 'contentRow' };
@@ -2588,7 +2640,12 @@ class LayoutRender extends MobileLayout {
                     dataCount += columnData.length;
                     let columnWrapper = tr.querySelector('[data-key="' + column.keyField + '"]');
                     let cardWrapper = createElement('div', { className: CARD_WRAPPER_CLASS });
-                    columnWrapper.appendChild(cardWrapper);
+                    if (column.showAddButton) {
+                        columnWrapper.insertBefore(cardWrapper, columnWrapper.querySelector('.' + SHOW_ADD_BUTTON));
+                    }
+                    else {
+                        columnWrapper.appendChild(cardWrapper);
+                    }
                     for (let data of columnData) {
                         let cardText = data[this.parent.cardSettings.headerField];
                         let cardIndex = this.parent.actionModule.selectionArray.indexOf(cardText);

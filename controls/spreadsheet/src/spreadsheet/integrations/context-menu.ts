@@ -7,7 +7,7 @@ import { addContextMenuItems, removeContextMenuItems, enableContextMenuItems, in
 import { openHyperlink, initiateHyperlink, editHyperlink, hideShow, HideShowEventArgs, applyProtect } from '../common/index';
 import { filterByCellValue, reapplyFilter, clearFilter, getFilteredColumn, applySort, locale } from '../common/index';
 import { getRangeIndexes, getColumnHeaderText, getCellIndexes, InsertDeleteModelArgs, insertModel } from '../../workbook/common/index';
-import { RowModel, ColumnModel, SheetModel } from '../../workbook/base/index';
+import { RowModel, ColumnModel, SheetModel, getSwapRange } from '../../workbook/index';
 
 /**
  * Represents context menu for Spreadsheet.
@@ -85,8 +85,8 @@ export class ContextMenu {
                     this.parent.notify(removeSheetTab, {});
                     break;
                 case id + '_insert_sheet':
-                    this.parent.notify(insertModel, <InsertDeleteModelArgs>{ model: this.parent, start: this.parent.activeSheetTab - 1,
-                        end: this.parent.activeSheetTab - 1, modelType: 'Sheet', isAction: true });
+                    this.parent.notify(insertModel, <InsertDeleteModelArgs>{ model: this.parent, start: this.parent.activeSheetIndex,
+                        end: this.parent.activeSheetIndex, modelType: 'Sheet', isAction: true });
                     break;
                 case id + '_hide_sheet':
                     this.parent.notify(hideSheet, null);
@@ -114,31 +114,49 @@ export class ContextMenu {
                     indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
                     this.parent.notify(hideShow, <HideShowEventArgs>{
                         startIndex: indexes[0], endIndex: indexes[2], hide: true, isCol: false, actionUpdate: true });
+                    this.parent.element.focus();
                     break;
                 case id + '_unhide_row':
                     indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
                     this.parent.notify(hideShow, <HideShowEventArgs>{
                         startIndex: indexes[0], endIndex: indexes[2], hide: false, isCol: false, actionUpdate: true });
+                    this.parent.element.focus();
                     break;
                 case id + '_hide_column':
                     indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
                     this.parent.notify(hideShow, <HideShowEventArgs>{
                         startIndex: indexes[1], endIndex: indexes[3], hide: true, isCol: true, actionUpdate: true });
+                    this.parent.element.focus();
                     break;
                 case id + '_unhide_column':
                     indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
                     this.parent.notify(hideShow, <HideShowEventArgs>{
                         startIndex: indexes[1], endIndex: indexes[3], hide: false, isCol: true, actionUpdate: true });
+                    this.parent.element.focus();
                     break;
-                case id + '_insert_row': case id + '_delete_row':
+                case id + '_insert_row_above': case id + '_delete_row':
                     indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
                     this.parent.notify(`${args.item.id.substr(id.length + 1, 6)}Model`, <InsertDeleteModelArgs>{ model:
                         this.parent.getActiveSheet(), start: indexes[0], end: indexes[2], modelType: 'Row', isAction: true });
+                    this.parent.element.focus();
                     break;
-                case id + '_insert_column': case id + '_delete_column':
+                case id + '_insert_row_below':
+                    indexes = getSwapRange(getRangeIndexes(this.parent.getActiveSheet().selectedRange));
+                    this.parent.notify(insertModel, <InsertDeleteModelArgs>{ model: this.parent.getActiveSheet(), start:
+                        indexes[2] + 1, end: indexes[2] + 1 + (indexes[2] - indexes[0]), modelType: 'Row', isAction: true });
+                    this.parent.element.focus();
+                    break;
+                case id + '_insert_column_before': case id + '_delete_column':
                     indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
                     this.parent.notify(`${args.item.id.substr(id.length + 1, 6)}Model`, <InsertDeleteModelArgs>{ model:
                         this.parent.getActiveSheet(), start: indexes[1], end: indexes[3], modelType: 'Column', isAction: true });
+                    this.parent.element.focus();
+                    break;
+                case id + '_insert_column_after':
+                    indexes = getSwapRange(getRangeIndexes(this.parent.getActiveSheet().selectedRange));
+                    this.parent.notify(insertModel, <InsertDeleteModelArgs>{ model: this.parent.getActiveSheet(), start:
+                        indexes[3] + 1, end: indexes[3] + 1 + (indexes[3] - indexes[1]), modelType: 'Column', isAction: true });
+                    this.parent.element.focus();
                     break;
                 case id + '_hyperlink':
                     this.parent.notify(initiateHyperlink, null);
@@ -191,7 +209,7 @@ export class ContextMenu {
      * To get target area based on right click.
      */
     private getTarget(target: Element): string {
-        if (closest(target, '.e-main-content')) {
+        if (closest(target, '.e-sheet-content')) {
             return 'Content';
         } else if (closest(target, '.e-column-header')) {
             return 'ColumnHeader';
@@ -224,12 +242,12 @@ export class ContextMenu {
         } else if (target === 'RowHeader') {
             this.setClipboardData(items, l10n, id);
             let indexes: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
-            this.setInsertDeleteItems(items, l10n, 'Row', id, [indexes[0], indexes[2]]);
+            this.setInsertDeleteItems(items, l10n, 'Row', id, [indexes[0], indexes[2]], ['Above', 'Below']);
             this.setHideShowItems(items, l10n, 'Row', id, [indexes[0], indexes[2]]);
         } else if (target === 'ColumnHeader') {
             this.setClipboardData(items, l10n, id);
             let indexes: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
-            this.setInsertDeleteItems(items, l10n, 'Column', id, [indexes[1], indexes[3]]);
+            this.setInsertDeleteItems(items, l10n, 'Column', id, [indexes[1], indexes[3]], ['Before', 'After']);
             this.setHideShowItems(items, l10n, 'Column', id, [indexes[1], indexes[3]]);
         } else if (target === 'SelectAll') {
             this.setClipboardData(items, l10n, id);
@@ -347,13 +365,21 @@ export class ContextMenu {
         }
     }
 
-    private setInsertDeleteItems(items: MenuItemModel[], l10n: L10n, layout: string, id: string, indexes: number[]): void {
+    private setInsertDeleteItems(
+        items: MenuItemModel[], l10n: L10n, layout: string, id: string, indexes: number[], subItems: string[]): void {
         items.push({ separator: true });
         ['Insert', 'Delete'].forEach((action: string): void => {
             if (indexes[0] === indexes[1]) {
                 items.push({ text: l10n.getConstant(`${action}${layout}`), id: id + `_${action.toLowerCase()}_${layout.toLowerCase()}` });
             } else {
                 items.push({ text: l10n.getConstant(`${action}${layout}s`), id: id + `_${action.toLowerCase()}_${layout.toLowerCase()}` });
+            }
+            if (action === 'Insert') {
+                items[items.length - 1].items = [];
+                subItems.forEach((item: string): void => {
+                    items[items.length - 1].items.push({
+                        text: l10n.getConstant(item), id: `${items[items.length - 1].id}_${item.toLowerCase()}` });
+                });
             }
         });
     }

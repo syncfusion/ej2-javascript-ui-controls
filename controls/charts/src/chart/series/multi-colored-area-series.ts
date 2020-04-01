@@ -26,8 +26,8 @@ export class MultiColoredAreaSeries extends MultiColoredSeries {
         let startRegion: ChartLocation;
         let previous: Points;
         let rendered: boolean;
-        let segments : ChartSegmentModel[] = this.sortSegments(series, series.segments);
-        series.points.map((point: Points, i: number, seriesPoints: Points[]) => {
+        let segments: ChartSegmentModel[] = this.sortSegments(series, series.segments);
+        series.visiblePoints.map((point: Points, i: number, seriesPoints: Points[]) => {
             point.symbolLocations = [];
             point.regions = [];
             rendered = false;

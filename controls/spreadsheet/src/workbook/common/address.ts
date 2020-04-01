@@ -95,7 +95,7 @@ export function getAddressInfo(context: Workbook, address: string): { sheetIndex
     if (address.indexOf('!') > -1) {
         sIdx = getSheetIndex(context, getSheetNameFromAddress(address));
     } else {
-        sIdx = context.activeSheetTab - 1;
+        sIdx = context.activeSheetIndex;
     }
     return { sheetIndex: sIdx, indices: getIndexesFromAddress(address) };
 }

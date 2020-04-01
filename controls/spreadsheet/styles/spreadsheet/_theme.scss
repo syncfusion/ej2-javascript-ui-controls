@@ -194,7 +194,7 @@
     }
 
     & .e-main-panel {
-      & .e-main-content {
+      & .e-sheet-content {
         background-color: $cell-background;
       }
 
@@ -386,6 +386,11 @@
     .e-selection {
       background-color: $selection-bg-color;
       border-color: $selection-border-color;
+
+      &.e-merged {
+        background-color: transparent;
+        border-color: transparent;
+      }
     }
 
     .e-row-header .e-header-cell:hover,

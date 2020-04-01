@@ -2,7 +2,7 @@ import { Animation, Browser, ChildProperty, Complex, Component, Event, EventHand
 import { DataManager, DataUtil, Predicate, Query } from '@syncfusion/ej2-data';
 import { ListBase, Sortable, cssClass, moveTo } from '@syncfusion/ej2-lists';
 import { Popup, createSpinner, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
-import { Input } from '@syncfusion/ej2-inputs';
+import { Input, TextBox } from '@syncfusion/ej2-inputs';
 import { Button, createCheckBox } from '@syncfusion/ej2-buttons';
 import { TreeView } from '@syncfusion/ej2-navigations';
 
@@ -1489,7 +1489,10 @@ let DropDownList = class DropDownList extends DropDownBase {
         if (Object.keys(this.htmlAttributes).length) {
             for (let htmlAttr of Object.keys(this.htmlAttributes)) {
                 if (htmlAttr === 'class') {
-                    this.inputWrapper.container.classList.add(this.htmlAttributes[htmlAttr]);
+                    let updatedClassValue = (this.htmlAttributes[htmlAttr].replace(/\s+/g, ' ')).trim();
+                    if (updatedClassValue !== '') {
+                        addClass([this.inputWrapper.container], updatedClassValue.split(' '));
+                    }
                 }
                 else if (htmlAttr === 'disabled' && this.htmlAttributes[htmlAttr] === 'disabled') {
                     this.enabled = false;
@@ -1915,7 +1918,9 @@ let DropDownList = class DropDownList extends DropDownBase {
                             index = index < 0 ? this.liCollections.length - 1 : index === this.liCollections.length ? 0 : index;
                         }
                         nextItem = isNullOrUndefined(this.activeIndex) ? this.liCollections[startIndex] : this.liCollections[index];
-                        this.setSelection(nextItem, e);
+                        if (!isNullOrUndefined(nextItem)) {
+                            this.setSelection(nextItem, e);
+                        }
                     }
                     e.preventDefault();
                     break;
@@ -3269,6 +3274,10 @@ let DropDownList = class DropDownList extends DropDownBase {
                 this.element.parentElement.insertBefore(this.inputElement, this.element);
                 this.preventTabIndex(this.inputElement);
             }
+            let updatedCssClassValues = this.cssClass;
+            if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+                updatedCssClassValues = (this.cssClass.replace(/\s+/g, ' ')).trim();
+            }
             this.inputWrapper = Input.createInput({
                 element: this.inputElement,
                 buttons: this.isPopupButton() ? [dropDownListClasses.icon] : null,
@@ -3276,7 +3285,7 @@ let DropDownList = class DropDownList extends DropDownBase {
                 properties: {
                     readonly: this.getModuleName() === 'dropdownlist' ? true : this.readonly,
                     placeholder: this.placeholder,
-                    cssClass: this.cssClass,
+                    cssClass: updatedCssClassValues,
                     enabled: this.enabled,
                     enableRtl: this.enableRtl,
                     showClearButton: this.showClearButton
@@ -3449,7 +3458,7 @@ let DropDownList = class DropDownList extends DropDownBase {
                     }
                     break;
                 case 'cssClass':
-                    this.setCssClass(newProp, oldProp);
+                    this.setCssClass(newProp.cssClass, oldProp.cssClass);
                     break;
                 case 'enableRtl':
                     this.setEnableRtl();
@@ -3601,18 +3610,16 @@ let DropDownList = class DropDownList extends DropDownBase {
             }
         };
     }
-    setCssClass(newProp, oldProp) {
-        if (!isNullOrUndefined(oldProp.cssClass) && oldProp.cssClass !== '') {
-            removeClass([this.inputWrapper.container], oldProp.cssClass.split(' '));
+    setCssClass(newClass, oldClass) {
+        if (!isNullOrUndefined(oldClass)) {
+            oldClass = (oldClass.replace(/\s+/g, ' ')).trim();
         }
-        Input.setCssClass(newProp.cssClass, [this.inputWrapper.container]);
+        if (!isNullOrUndefined(newClass)) {
+            newClass = (newClass.replace(/\s+/g, ' ')).trim();
+        }
+        Input.setCssClass(newClass, [this.inputWrapper.container], oldClass);
         if (this.popupObj) {
-            if (!isNullOrUndefined(oldProp.cssClass) && oldProp.cssClass !== '') {
-                removeClass([this.popupObj.element], oldProp.cssClass.split(' '));
-            }
-            if (!isNullOrUndefined(newProp.cssClass) && newProp.cssClass !== '') {
-                addClass([this.popupObj.element], newProp.cssClass.split(' '));
-            }
+            Input.setCssClass(newClass, [this.popupObj.element], oldClass);
         }
     }
     /**
@@ -3950,8 +3957,9 @@ var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, 
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 /**
- * The DropDownTree component contains a list of predefined values from which you can
- * choose a single or multiple values.
+ * The Dropdown Tree control allows you to select single or multiple values from hierarchical data in a tree-like structure.
+ * It has several out-of-the-box features, such as data binding, check boxes, templates,
+ * UI customization, accessibility, and preselected values.
  * ```html
  * <input type="text" tabindex="1" id="tree"> </input>
  * ```
@@ -3985,18 +3993,23 @@ const DROPDOWN = 'e-dropdown';
 const DISABLED = 'e-disabled';
 const ICONS = 'e-icons';
 const CHECKALLPARENT = 'e-selectall-parent';
+const CHECKALLHIDE = 'e-hide-selectall';
+const BIGGER = 'e-bigger';
+const SMALL = 'e-small';
 const ALLTEXT = 'e-all-text';
 const CHECKBOXFRAME = 'e-frame';
 const CHECK = 'e-check';
 const CHECKBOXWRAP = 'e-checkbox-wrapper';
+const FILTERWRAP = 'e-filter-wrap';
 const DDTICON = 'e-ddt-icon';
 const FOOTER = 'e-ddt-footer';
 const HEADER = 'e-ddt-header';
+const NODATACONTAINER = 'e-ddt-nodata';
 const NODATA = 'e-no-data';
-const HEADERTEMPLATE_PROPERTY$1 = 'HeaderTemplate';
-const FOOTERTEMPLATE_PROPERTY$1 = 'FooterTemplate';
-const NORECORDSTEMPLATE_PROPERTY$1 = 'NoRecordsTemplate';
-const ACTIONFAILURETEMPLATE_PROPERTY$1 = 'ActionFailureTemplate';
+const HEADERTEMPLATE = 'HeaderTemplate';
+const FOOTERTEMPLATE = 'FooterTemplate';
+const NORECORDSTEMPLATE = 'NoRecordsTemplate';
+const ACTIONFAILURETEMPLATE = 'ActionFailureTemplate';
 class Fields extends ChildProperty {
 }
 __decorate$2([
@@ -4055,6 +4068,11 @@ __decorate$2([
 let DropDownTree = class DropDownTree extends Component {
     constructor(options, element) {
         super(options, element);
+        this.filterTimer = null;
+        this.isFilteredData = false;
+        this.isFilterRestore = false;
+        this.selectedData = [];
+        this.filterDelayTime = 300;
     }
     /**
      * Get the properties to be maintained in the persisted state.
@@ -4084,16 +4102,47 @@ let DropDownTree = class DropDownTree extends Component {
         this.isNodeSelected = false;
         this.isDynamicChange = false;
         this.isBlazorPlatForm = isBlazor();
-        this.headerTemplateId = `${this.element.id}${HEADERTEMPLATE_PROPERTY$1}`;
-        this.footerTemplateId = `${this.element.id}${FOOTERTEMPLATE_PROPERTY$1}`;
-        this.actionFailureTemplateId = `${this.element.id}${ACTIONFAILURETEMPLATE_PROPERTY$1}`;
-        this.noRecordsTemplateId = `${this.element.id}${NORECORDSTEMPLATE_PROPERTY$1}`;
+        this.headerTemplateId = `${this.element.id}${HEADERTEMPLATE}`;
+        this.footerTemplateId = `${this.element.id}${FOOTERTEMPLATE}`;
+        this.actionFailureTemplateId = `${this.element.id}${ACTIONFAILURETEMPLATE}`;
+        this.noRecordsTemplateId = `${this.element.id}${NORECORDSTEMPLATE}`;
+        this.keyConfigs = {
+            escape: 'escape',
+            altUp: 'alt+uparrow',
+            altDown: 'alt+downarrow',
+            tab: 'tab',
+            shiftTab: 'shift+tab',
+            end: 'end',
+            enter: 'enter',
+            home: 'home',
+            moveDown: 'downarrow',
+            moveLeft: 'leftarrow',
+            moveRight: 'rightarrow',
+            moveUp: 'uparrow',
+            ctrlDown: 'ctrl+downarrow',
+            ctrlUp: 'ctrl+uparrow',
+            ctrlEnter: 'ctrl+enter',
+            ctrlHome: 'ctrl+home',
+            ctrlEnd: 'ctrl+end',
+            shiftDown: 'shift+downarrow',
+            shiftUp: 'shift+uparrow',
+            shiftEnter: 'shift+enter',
+            shiftHome: 'shift+home',
+            shiftEnd: 'shift+end',
+            csDown: 'ctrl+shift+downarrow',
+            csUp: 'ctrl+shift+uparrow',
+            csEnter: 'ctrl+shift+enter',
+            csHome: 'ctrl+shift+home',
+            csEnd: 'ctrl+shift+end',
+            space: 'space',
+        };
     }
     /**
      * To Initialize the control rendering
      * @private
      */
     render() {
+        this.ensureAutoCheck();
         if (this.element.tagName === 'INPUT') {
             this.inputEle = this.element;
             if (isNullOrUndefined(this.inputEle.getAttribute('role'))) {
@@ -4141,6 +4190,7 @@ let DropDownTree = class DropDownTree extends Component {
         this.tree = this.createElement('div', { id: this.element.id + '_tree', });
         this.popupDiv.appendChild(this.tree);
         document.body.appendChild(this.popupDiv);
+        this.wireTreeEvents();
         this.popupDiv.style.display = 'none';
         this.renderTree();
         this.isRemoteData = this.fields.dataSource instanceof DataManager;
@@ -4152,14 +4202,186 @@ let DropDownTree = class DropDownTree extends Component {
         if ((this.allowMultiSelection || this.showCheckBox) && this.mode !== 'Delimiter') {
             this.createChip();
         }
-        if (this.showCheckBox && this.showSelectAll) {
-            this.createSelectAllWrapper();
-            this.popupDiv.insertBefore(this.checkAllParent, this.tree);
-        }
         this.wireEvents();
         this.oldValue = this.value;
         this.isInitialized = true;
         this.renderComplete();
+    }
+    ensureAutoCheck() {
+        if (this.allowFiltering && this.treeSettings.autoCheck) {
+            this.setProperties({ treeSettings: { autoCheck: false } }, true);
+        }
+    }
+    hideCheckAll(flag) {
+        let checkAllEle = !isNullOrUndefined(this.popupEle) ? this.popupEle.querySelector('.' + CHECKALLPARENT) : null;
+        if (!isNullOrUndefined(checkAllEle)) {
+            if (flag && !checkAllEle.classList.contains(CHECKALLHIDE)) {
+                addClass([checkAllEle], CHECKALLHIDE);
+            }
+            else if (!flag && checkAllEle.classList.contains(CHECKALLHIDE)) {
+                removeClass([checkAllEle], CHECKALLHIDE);
+            }
+        }
+    }
+    renderFilter() {
+        this.filterContainer = this.createElement('div', {
+            id: this.element.id + '_filter_wrap',
+            className: FILTERWRAP
+        });
+        let filterInput = this.createElement('input', {
+            id: this.element.id + '_filter',
+            attrs: { autocomplete: 'off', 'aria-label': this.filterBarPlaceholder }
+        });
+        this.filterContainer.appendChild(filterInput);
+        prepend([this.filterContainer], this.popupEle);
+        this.filterObj = new TextBox({
+            value: '',
+            showClearButton: true,
+            placeholder: this.filterBarPlaceholder,
+            input: this.filterChangeHandler.bind(this),
+        });
+        this.filterObj.appendTo('#' + this.element.id + '_filter');
+    }
+    filterChangeHandler(args) {
+        if (!isNullOrUndefined(args.value)) {
+            window.clearTimeout(this.filterTimer);
+            this.filterTimer = window.setTimeout(() => { this.filterHandler(args.value, args.event); }, this.filterDelayTime);
+        }
+    }
+    filterHandler(value, event) {
+        if (!this.isFilteredData) {
+            this.treeData = this.treeObj.getTreeData();
+        }
+        let filterFields = this.cloneFields(this.fields);
+        let args = {
+            cancel: false,
+            preventDefaultAction: false,
+            event: event,
+            text: value,
+            fields: filterFields
+        };
+        this.trigger('filtering', args, (args) => {
+            if (!args.cancel) {
+                let flag = false;
+                let fields;
+                this.isFilteredData = true;
+                if (value === '') {
+                    this.isFilteredData = false;
+                    this.isFilterRestore = true;
+                    fields = this.cloneFields(this.fields);
+                }
+                else if (args.preventDefaultAction) {
+                    fields = args.fields;
+                }
+                else {
+                    if (this.treeDataType === 1) {
+                        fields = this.selfReferencefilter(value, args.fields);
+                    }
+                    else {
+                        if (this.fields.dataSource instanceof DataManager) {
+                            flag = true;
+                        }
+                        else {
+                            fields = this.nestedFilter(value, args.fields);
+                        }
+                    }
+                }
+                this.hideCheckAll(this.isFilteredData);
+                if (flag) {
+                    return;
+                }
+                this.treeObj.fields = this.getTreeFields(fields);
+                this.treeObj.dataBind();
+            }
+        });
+    }
+    nestedFilter(value, filteredFields) {
+        let matchedDataSource = [];
+        for (let i = 0; i < this.treeData.length; i++) {
+            let filteredChild = this.nestedChildFilter(value, this.treeData[i]);
+            if (!isNullOrUndefined(filteredChild)) {
+                matchedDataSource.push(filteredChild);
+            }
+        }
+        filteredFields.dataSource = matchedDataSource;
+        return filteredFields;
+    }
+    nestedChildFilter(value, node) {
+        let children = node[this.fields.child];
+        if (isNullOrUndefined(children)) {
+            return (this.isMatchedNode(value, node)) ? node : null;
+        }
+        else {
+            let matchedChildren = [];
+            for (let i = 0; i < children.length; i++) {
+                let filteredChild = this.nestedChildFilter(value, children[i]);
+                if (!isNullOrUndefined(filteredChild)) {
+                    matchedChildren.push(filteredChild);
+                }
+            }
+            if (matchedChildren.length !== 0) {
+                node[this.fields.child] = matchedChildren;
+                return node;
+            }
+            else {
+                node[this.fields.child] = null;
+                return (this.isMatchedNode(value, node)) ? node : null;
+            }
+        }
+    }
+    selfReferencefilter(value, filteredFields) {
+        let matchedData = [];
+        let matchedDataSource = [];
+        for (let i = 0; i < this.treeData.length; i++) {
+            if (this.isMatchedNode(value, this.treeData[i])) {
+                matchedData.push(this.treeData[i]);
+            }
+        }
+        for (let i = 0; i < matchedData.length; i++) {
+            if (matchedDataSource.indexOf(matchedData[i]) === -1) {
+                matchedDataSource.push(matchedData[i]);
+                let parentId = matchedData[i][this.fields.parentValue];
+                while (!isNullOrUndefined(parentId)) {
+                    let parent = null;
+                    for (let j = 0; j < this.treeData.length; j++) {
+                        let value = this.treeData[j][this.fields.value];
+                        if (!isNullOrUndefined(value) && (value === parentId)) {
+                            parent = this.treeData[j];
+                            break;
+                        }
+                    }
+                    if (!isNullOrUndefined(parent) && (matchedDataSource.indexOf(parent) === -1)) {
+                        matchedDataSource.push(parent);
+                        parentId = parent[this.fields.parentValue];
+                    }
+                    else {
+                        break;
+                    }
+                }
+            }
+        }
+        filteredFields.dataSource = matchedDataSource;
+        return filteredFields;
+    }
+    isMatchedNode(value, node) {
+        let checkValue = node[this.fields.text];
+        if (this.ignoreCase) {
+            checkValue = checkValue.toLowerCase();
+            value = value.toLowerCase();
+        }
+        if (this.ignoreAccent) {
+            checkValue = DataUtil.ignoreDiacritics(checkValue);
+            value = DataUtil.ignoreDiacritics(value);
+        }
+        if (this.filterType === 'StartsWith') {
+            return checkValue.slice(0, value.length) === value;
+        }
+        else if (this.filterType === 'EndsWith') {
+            return checkValue.slice(-value.length) === value;
+        }
+        else {
+            return checkValue.indexOf(value) !== -1;
+        }
     }
     /* To wire events for the dropdown tree */
     wireEvents() {
@@ -4169,6 +4391,26 @@ let DropDownTree = class DropDownTree extends Component {
         EventHandler.add(this.inputWrapper, 'mousemove', this.mouseIn, this);
         EventHandler.add(this.inputWrapper, 'mouseout', this.onMouseLeave, this);
         EventHandler.add(this.overAllClear, 'mousedown', this.clearAll, this);
+        EventHandler.add(window, 'resize', this.windowResize, this);
+        this.keyboardModule = new KeyboardEvents(this.inputWrapper, {
+            keyAction: this.keyActionHandler.bind(this),
+            keyConfigs: this.keyConfigs,
+            eventName: 'keydown',
+        });
+    }
+    wireTreeEvents() {
+        this.keyboardModule = new KeyboardEvents(this.tree, {
+            keyAction: this.treeAction.bind(this),
+            keyConfigs: this.keyConfigs,
+            eventName: 'keydown',
+        });
+    }
+    wireCheckAllWrapperEvents() {
+        this.keyboardModule = new KeyboardEvents(this.checkAllParent, {
+            keyAction: this.checkAllAction.bind(this),
+            keyConfigs: this.keyConfigs,
+            eventName: 'keydown',
+        });
     }
     /* To unwire events for the dropdown tree */
     unWireEvents() {
@@ -4178,6 +4420,7 @@ let DropDownTree = class DropDownTree extends Component {
         EventHandler.remove(this.inputWrapper, 'mousemove', this.mouseIn);
         EventHandler.remove(this.inputWrapper, 'mouseout', this.onMouseLeave);
         EventHandler.remove(this.overAllClear, 'mousedown', this.clearAll);
+        EventHandler.remove(window, 'resize', this.windowResize);
     }
     /* Trigger when the dropdown is clicked */
     dropDownClick(e) {
@@ -4219,9 +4462,6 @@ let DropDownTree = class DropDownTree extends Component {
             return;
         }
         let target = e.relatedTarget;
-        if (isNullOrUndefined(target) && document.activeElement !== this.inputEle && this.isDocumentClick) {
-            this.hidePopup();
-        }
         if ((target !== this.inputEle) && (isNullOrUndefined(target)) && (e.target !== this.inputWrapper || !this.isPopupOpen)) {
             this.onFocusOut(e);
         }
@@ -4245,9 +4485,6 @@ let DropDownTree = class DropDownTree extends Component {
                 addClass([this.chipWrapper], HIDEICON);
                 removeClass([this.inputWrapper], SHOW_CHIP);
                 removeClass([this.inputEle], CHIP_INPUT);
-            }
-            if (this.mode === 'Default') {
-                Input.setValue(this.dataValue, this.inputEle, this.floatLabelType);
             }
         }
         if (this.changeOnBlur) {
@@ -4302,10 +4539,125 @@ let DropDownTree = class DropDownTree extends Component {
             if (this.popupObj) {
                 this.popupObj.refreshPosition();
             }
-            Input.setValue(null, this.inputEle, this.floatLabelType);
         }
         let args = { isInteracted: e ? true : false, event: e };
         this.trigger('focus', args);
+    }
+    treeAction(e) {
+        let eventArgs = {
+            cancel: false,
+            event: e,
+        };
+        this.trigger('keyPress', eventArgs, (observedArgs) => {
+            if (!observedArgs.cancel) {
+                switch (e.action) {
+                    case 'escape':
+                    case 'altUp':
+                        this.inputWrapper.focus();
+                        e.preventDefault();
+                        if (this.isPopupOpen) {
+                            this.hidePopup();
+                        }
+                        break;
+                    case 'shiftTab':
+                        if (this.isPopupOpen) {
+                            this.hidePopup();
+                        }
+                        break;
+                    case 'enter':
+                    case 'ctrlEnter':
+                    case 'shiftEnter':
+                    case 'csEnter':
+                        if (!this.showCheckBox) {
+                            this.isValueChange = true;
+                            this.keyEventArgs = e;
+                        }
+                        break;
+                    case 'space':
+                        this.isValueChange = true;
+                        this.keyEventArgs = e;
+                        break;
+                    case 'moveRight':
+                    case 'moveLeft':
+                    case 'shiftDown':
+                    case 'moveDown':
+                    case 'ctrlDown':
+                    case 'csDown':
+                    case 'shiftUp':
+                    case 'moveUp':
+                    case 'ctrlUp':
+                    case 'csUp':
+                    case 'home':
+                    case 'shiftHome':
+                    case 'ctrlHome':
+                    case 'csHome':
+                    case 'end':
+                    case 'shiftEnd':
+                    case 'ctrlEnd':
+                    case 'csEnd':
+                }
+            }
+            else {
+                e.stopImmediatePropagation();
+            }
+        });
+    }
+    keyActionHandler(e) {
+        let eventArgs = {
+            cancel: false,
+            event: e,
+        };
+        this.trigger('keyPress', eventArgs, (observedArgs) => {
+            if (!observedArgs.cancel) {
+                switch (e.action) {
+                    case 'escape':
+                    case 'altUp':
+                    case 'shiftTab':
+                        e.preventDefault();
+                        this.hidePopup();
+                        break;
+                    case 'tab':
+                        e.preventDefault();
+                        this.hidePopup();
+                        this.inputEle.focus();
+                        break;
+                    case 'altDown':
+                        if (!this.isPopupOpen) {
+                            this.showPopup();
+                            e.preventDefault();
+                        }
+                        break;
+                    case 'moveDown':
+                        if (this.showSelectAll && this.showCheckBox) {
+                            this.checkAllParent.focus();
+                        }
+                        break;
+                }
+            }
+        });
+    }
+    checkAllAction(e) {
+        let eventArgs = {
+            cancel: false,
+            event: e,
+        };
+        this.trigger('keyPress', eventArgs, (observedArgs) => {
+            if (!observedArgs.cancel) {
+                switch (e.action) {
+                    case 'space':
+                        this.clickHandler(e);
+                        break;
+                    case 'moveDown':
+                        this.treeObj.element.focus();
+                }
+            }
+        });
+    }
+    windowResize() {
+        if (this.popupObj) {
+            this.popupObj.setProperties({ width: this.setWidth() });
+            this.popupObj.refreshPosition();
+        }
     }
     getAriaAttributes() {
         let disable = this.enabled ? 'false' : 'true';
@@ -4375,22 +4727,25 @@ let DropDownTree = class DropDownTree extends Component {
     }
     createSelectAllWrapper() {
         this.checkAllParent = this.createElement('div', {
-            className: CHECKALLPARENT
+            className: CHECKALLPARENT, attrs: { 'tabindex': '0' }
         });
         this.selectAllSpan = this.createElement('span', {
             className: ALLTEXT
         });
         this.selectAllSpan.textContent = '';
-        this.checkBoxElement = createCheckBox(this.createElement, true);
+        let ele = closest(this.element, '.' + BIGGER);
+        let touchClass = isNullOrUndefined(ele) ? '' : SMALL;
+        this.checkBoxElement = createCheckBox(this.createElement, true, { cssClass: touchClass });
         this.checkBoxElement.setAttribute('role', 'checkbox');
         this.checkAllParent.appendChild(this.checkBoxElement);
         this.checkAllParent.appendChild(this.selectAllSpan);
         this.setLocale();
         EventHandler.add(this.checkAllParent, 'mousedown', this.clickHandler, this);
+        this.wireCheckAllWrapperEvents();
     }
     clickHandler(e) {
         let target;
-        if (e.currentTarget.classList.contains(this.checkAllParent.className)) {
+        if ((e.currentTarget && e.currentTarget.classList.contains(CHECKALLPARENT))) {
             target = e.currentTarget.firstElementChild.lastElementChild;
         }
         else {
@@ -4465,11 +4820,11 @@ let DropDownTree = class DropDownTree extends Component {
                     this.inputWrapper.classList.add(this.htmlAttributes[htmlAttr]);
                 }
                 else if (htmlAttr === 'disabled' && this.htmlAttributes[htmlAttr] === 'disabled') {
-                    this.enabled = false;
+                    this.setProperties({ enabled: false }, true);
                     this.setEnable();
                 }
                 else if (htmlAttr === 'readonly' && !isNullOrUndefined(this.htmlAttributes[htmlAttr])) {
-                    this.readonly = true;
+                    this.setProperties({ readonly: true }, true);
                     this.dataBind();
                 }
                 else if (htmlAttr === 'style') {
@@ -4684,7 +5039,7 @@ let DropDownTree = class DropDownTree extends Component {
     /* To render the treeview */
     renderTree() {
         this.treeObj = new TreeView({
-            fields: this.getFields(),
+            fields: this.getTreeFields(this.fields),
             enableRtl: this.enableRtl,
             nodeSelected: this.onNodeSelected.bind(this),
             nodeChecked: this.onNodeChecked.bind(this),
@@ -4705,6 +5060,13 @@ let DropDownTree = class DropDownTree extends Component {
     }
     /* To render the popup element */
     renderPopup() {
+        if (this.isFilteredData) {
+            this.filterObj.value = '';
+            this.treeObj.fields = this.getTreeFields(this.fields);
+            this.isFilterRestore = true;
+            this.isFilteredData = false;
+            this.hideCheckAll(false);
+        }
         let isCancelled = false;
         let args = { cancel: false };
         this.trigger('beforeOpen', args, (args) => {
@@ -4727,6 +5089,13 @@ let DropDownTree = class DropDownTree extends Component {
             if (this.isFirstRender && !isCancelled) {
                 prepend([this.popupDiv], this.popupEle);
                 this.popupDiv.style.display = 'block';
+                if (this.allowFiltering) {
+                    this.renderFilter();
+                }
+                if (this.showCheckBox && this.showSelectAll && (!this.popupDiv.classList.contains(NODATA))) {
+                    this.createSelectAllWrapper();
+                    this.popupEle.insertBefore(this.checkAllParent, this.popupDiv);
+                }
                 if (this.headerTemplate) {
                     this.setHeaderTemplate();
                 }
@@ -4741,7 +5110,8 @@ let DropDownTree = class DropDownTree extends Component {
                 this.popupObj.refreshPosition();
                 this.popupEle.style.display = 'block';
                 this.updatePopupHeight();
-                if (!this.showCheckBox && (!this.popupDiv.classList.contains(NODATA) && this.treeItems.length > 0)) {
+                if (!(this.showCheckBox && this.showSelectAll) && (!this.popupDiv.classList.contains(NODATA)
+                    && this.treeItems.length > 0)) {
                     this.treeObj.element.focus();
                 }
                 if (this.checkSelectAll && this.checkBoxElement) {
@@ -4755,10 +5125,21 @@ let DropDownTree = class DropDownTree extends Component {
         });
     }
     updatePopupHeight() {
+        if (this.isFirstRender) {
+            return;
+        }
         let popupHeight = this.getHeight();
         this.popupEle.style.maxHeight = popupHeight;
+        if (this.allowFiltering) {
+            let height = Math.round(this.filterContainer.getBoundingClientRect().height);
+            popupHeight = formatUnit(parseInt(popupHeight, 10) - height + 'px');
+        }
         if (this.headerTemplate) {
             let height = Math.round(this.header.getBoundingClientRect().height);
+            popupHeight = formatUnit(parseInt(popupHeight, 10) - height + 'px');
+        }
+        if (this.showCheckBox && this.showSelectAll) {
+            let height = Math.round(this.checkAllParent.getBoundingClientRect().height);
             popupHeight = formatUnit(parseInt(popupHeight, 10) - height + 'px');
         }
         if (this.footerTemplate) {
@@ -4769,15 +5150,6 @@ let DropDownTree = class DropDownTree extends Component {
         border = border + parseInt(window.getComputedStyle(this.popupEle).borderBottomWidth, 10);
         popupHeight = formatUnit(parseInt(popupHeight, 10) - border + 'px');
         this.popupDiv.style.maxHeight = popupHeight;
-        this.updateTreeHeight();
-    }
-    updateTreeHeight() {
-        let treeHeight = this.popupDiv.style.maxHeight;
-        if (this.showCheckBox && this.showSelectAll) {
-            let height = Math.round(this.checkAllParent.getBoundingClientRect().height);
-            treeHeight = formatUnit(parseInt(treeHeight, 10) - height + 'px');
-        }
-        this.tree.style.maxHeight = treeHeight;
     }
     createPopup(element) {
         if (this.isFirstRender) {
@@ -4839,9 +5211,10 @@ let DropDownTree = class DropDownTree extends Component {
     onDocumentClick(e) {
         let target = e.target;
         let isTree = closest(target, '.' + PARENTITEM);
-        if ((this.isPopupOpen && (this.inputWrapper.contains(target) || isTree)) || ((this.allowMultiSelection || this.showCheckBox) &&
-            (this.isPopupOpen && (target.classList.contains(CHIP_CLOSE)) || target.classList.contains(ALLTEXT)) || (this.isPopupOpen &&
-            (target.classList.contains(CHECKALLPARENT) || target.classList.contains(CHECKBOXFRAME))))) {
+        let isFilter = closest(target, '.' + FILTERWRAP);
+        if ((this.isPopupOpen && (this.inputWrapper.contains(target) || isTree || isFilter)) ||
+            ((this.allowMultiSelection || this.showCheckBox) && (this.isPopupOpen && target.classList.contains(CHIP_CLOSE) ||
+                (this.isPopupOpen && (target.classList.contains(CHECKALLPARENT) || target.classList.contains(CHECKBOXFRAME)))))) {
             this.isDocumentClick = false;
         }
         else if (!this.inputWrapper.contains(target)) {
@@ -4862,9 +5235,11 @@ let DropDownTree = class DropDownTree extends Component {
         if (this.treeItems.length <= 0) {
             this.l10nUpdate();
             addClass([this.popupDiv], NODATA);
+            this.hideCheckAll(true);
         }
         else if (this.popupDiv.classList.contains(NODATA) && this.treeItems.length >= 1) {
             removeClass([this.popupDiv], NODATA);
+            this.hideCheckAll(false);
         }
         this.treeDataType = this.getTreeDataType(this.treeItems, this.fields);
         if (this.isFirstRender && this.isRemoteData) {
@@ -4875,6 +5250,21 @@ let DropDownTree = class DropDownTree extends Component {
         }
         let eventArgs = { data: args.data };
         this.trigger('dataBound', eventArgs);
+        if (this.isFilteredData) {
+            this.treeObj.expandAll();
+        }
+        if (this.isFilterRestore) {
+            this.restoreFilterSelection();
+            this.isFilterRestore = false;
+        }
+    }
+    restoreFilterSelection() {
+        if (this.showCheckBox) {
+            this.treeObj.checkedNodes = this.value ? this.value : [];
+        }
+        else {
+            this.treeObj.selectedNodes = this.value ? this.value : [];
+        }
     }
     /* To set cssclass for the dropdowntree */
     setCssClass(newClass, oldClass) {
@@ -4915,30 +5305,52 @@ let DropDownTree = class DropDownTree extends Component {
                 this.hidePopup();
             }
             addClass([this.inputWrapper], DISABLED);
-            let isFocus = this.inputWrapper ? (this.inputWrapper.classList.contains(INPUTFOCUS) ? true : false) : false;
-            if (isFocus) {
+            if (this.inputWrapper && this.inputWrapper.classList.contains(INPUTFOCUS)) {
                 removeClass([this.inputWrapper], [INPUTFOCUS]);
             }
             this.inputEle.setAttribute('aria-disabled', 'true');
             this.inputWrapper.setAttribute('aria-disabled', 'true');
         }
     }
-    getFields() {
+    cloneFields(fields) {
+        let clonedField = {
+            dataSource: fields.dataSource, value: fields.value, text: fields.text, parentValue: fields.parentValue,
+            child: this.cloneChildField(fields.child), hasChildren: fields.hasChildren, expanded: fields.expanded,
+            iconCss: fields.iconCss, imageUrl: fields.imageUrl, htmlAttributes: fields.htmlAttributes, query: fields.query,
+            selected: fields.selected, tableName: fields.tableName, tooltip: fields.tooltip
+        };
+        return clonedField;
+    }
+    cloneChildField(fields) {
+        if (typeof fields === 'string') {
+            return fields;
+        }
+        else {
+            let clonedField = {
+                dataSource: fields.dataSource, value: fields.value, text: fields.text, parentValue: fields.parentValue,
+                child: (fields.child ? this.cloneChildField(fields.child) : null), hasChildren: fields.hasChildren,
+                expanded: fields.expanded, iconCss: fields.iconCss, imageUrl: fields.imageUrl, htmlAttributes: fields.htmlAttributes,
+                query: fields.query, selected: fields.selected, tableName: fields.tableName, tooltip: fields.tooltip
+            };
+            return clonedField;
+        }
+    }
+    getTreeFields(fields) {
         let treeFields = {
-            dataSource: this.fields.dataSource, id: this.fields.value, text: this.fields.text, parentID: this.fields.parentValue,
-            child: this.getChildren(this.fields.child), hasChildren: this.fields.hasChildren, expanded: this.fields.expanded,
-            iconCss: this.fields.iconCss, imageUrl: this.fields.imageUrl, isChecked: this.fields.selected,
-            htmlAttributes: this.fields.htmlAttributes, query: this.fields.query, selected: this.fields.selected,
-            tableName: this.fields.tableName, tooltip: this.fields.tooltip
+            dataSource: fields.dataSource, id: fields.value, text: fields.text, parentID: fields.parentValue,
+            child: this.getTreeChildren(fields.child), hasChildren: fields.hasChildren, expanded: fields.expanded,
+            iconCss: fields.iconCss, imageUrl: fields.imageUrl, isChecked: fields.selected,
+            htmlAttributes: fields.htmlAttributes, query: fields.query, selected: fields.selected,
+            tableName: fields.tableName, tooltip: fields.tooltip
         };
         return treeFields;
     }
-    getChildren(mapper) {
-        let childFields;
-        if (typeof this.fields.child === 'string') {
-            childFields = this.fields.child;
+    getTreeChildren(mapper) {
+        if (typeof mapper === 'string') {
+            return mapper;
         }
         else if (!isNullOrUndefined(mapper)) {
+            let childFields;
             mapper = this.getActualProperties(mapper);
             childFields = mapper;
             if (mapper.value) {
@@ -4948,13 +5360,14 @@ let DropDownTree = class DropDownTree extends Component {
                 childFields.parentID = mapper.parentValue;
             }
             if (mapper.child) {
-                childFields.child = this.getChildren(mapper.child);
+                childFields.child = this.getTreeChildren(mapper.child);
             }
             if (mapper.selected && this.showCheckBox) {
                 childFields.isChecked = mapper.selected;
             }
+            return childFields;
         }
-        return childFields;
+        return null;
     }
     getTreeDataType(ds, field) {
         if (this.fields.dataSource instanceof DataManager) {
@@ -4978,18 +5391,26 @@ let DropDownTree = class DropDownTree extends Component {
     /* Triggers when the tree fields is changed dynamically */
     setFields() {
         this.resetValue();
-        this.treeObj.fields = this.getFields();
+        this.treeObj.fields = this.getTreeFields(this.fields);
         this.treeObj.dataBind();
     }
     getEventArgs(args) {
         let checkData = args.data;
         let selectData = args.nodeData;
+        let state;
+        if (this.showCheckBox) {
+            if (args.action === 'check') {
+                state = 'select';
+            }
+            else if (args.action === 'uncheck') {
+                state = 'un-select';
+            }
+        }
         let eventArgs = {
-            action: this.showCheckBox ? (args.action === 'check' ? 'select' : args.action === 'uncheck' ? 'un-select' : args.action)
-                : args.action,
+            action: this.showCheckBox ? state : args.action,
             isInteracted: args.isInteracted,
             item: args.node,
-            itemData: this.showCheckBox ? (checkData ? checkData[0] : selectData) : selectData
+            itemData: this.showCheckBox ? checkData[0] : selectData
         };
         return eventArgs;
     }
@@ -5007,8 +5428,6 @@ let DropDownTree = class DropDownTree extends Component {
             return;
         }
         let selectedText;
-        let eventArgs = this.getEventArgs(args);
-        this.trigger('select', eventArgs);
         if (args.isInteracted) {
             let id = getValue('id', args.nodeData).toString();
             if (!this.allowMultiSelection) {
@@ -5035,6 +5454,12 @@ let DropDownTree = class DropDownTree extends Component {
                 this.setMultiSelect();
             }
         }
+        let eventArgs = this.getEventArgs(args);
+        this.trigger('select', eventArgs);
+        if (this.isValueChange && !this.changeOnBlur) {
+            this.triggerChangeEvent(this.keyEventArgs);
+            this.isValueChange = false;
+        }
     }
     onNodeClicked(args) {
         if (!this.changeOnBlur && this.isNodeSelected) {
@@ -5059,6 +5484,10 @@ let DropDownTree = class DropDownTree extends Component {
     onNodeChecked(args) {
         let eventArgs = this.getEventArgs(args);
         this.trigger('select', eventArgs);
+        if (this.isFilteredData && args.action === 'uncheck') {
+            let id = getValue('id', args.data[0]).toString();
+            this.removeSelectedData(id, true);
+        }
         if (!this.isChipDelete && args.isInteracted) {
             this.setMultiSelect();
         }
@@ -5085,8 +5514,7 @@ let DropDownTree = class DropDownTree extends Component {
     }
     updateClearButton(state) {
         if (state) {
-            let isClearIcon = this.overAllClear ? (this.inputWrapper.contains(this.overAllClear) ? true : false) : false;
-            if (!isClearIcon) {
+            if (!this.inputWrapper.contains(this.overAllClear)) {
                 this.inputEle.parentElement.insertBefore(this.overAllClear, this.inputEle.nextSibling);
             }
             else {
@@ -5131,7 +5559,6 @@ let DropDownTree = class DropDownTree extends Component {
             if (!this.inputWrapper.contains(this.chipWrapper)) {
                 this.createChip();
             }
-            Input.setValue(null, this.inputEle, this.floatLabelType);
             let isValid = this.getValidMode();
             if (this.chipWrapper.classList.contains(HIDEICON) && isValid) {
                 removeClass([this.chipWrapper], HIDEICON);
@@ -5149,7 +5576,7 @@ let DropDownTree = class DropDownTree extends Component {
                 removeClass([this.inputEle], CHIP_INPUT);
             }
         }
-        else if (this.inputEle.classList.contains(CHIP)) {
+        else if (this.inputEle.classList.contains(CHIP_INPUT)) {
             removeClass([this.inputEle], CHIP_INPUT);
             if (this.chipWrapper) {
                 addClass([this.chipWrapper], HIDEICON);
@@ -5162,14 +5589,28 @@ let DropDownTree = class DropDownTree extends Component {
             this.inputWrapper.insertBefore(this.overAllClear, this.inputObj.buttons[0]);
         }
     }
+    setMultiSelectValue(newValues) {
+        if (!this.isFilteredData) {
+            this.setProperties({ value: newValues }, true);
+        }
+        else {
+            let selectedValues = isNullOrUndefined(this.value) ? [] : this.value;
+            for (let i = 0; i < newValues.length; i++) {
+                if (isNullOrUndefined(this.value) || this.value.indexOf(newValues[i]) === -1) {
+                    selectedValues.push(newValues[i]);
+                }
+            }
+            this.setProperties({ value: selectedValues }, true);
+        }
+    }
     setMultiSelect() {
         if (this.showCheckBox && !this.isDynamicChange) {
-            this.setProperties({ value: this.treeObj.checkedNodes }, true);
+            this.setMultiSelectValue(this.treeObj.checkedNodes);
         }
         else {
             let ddtValue = this.allowMultiSelection ? (this.showCheckBox ? this.treeObj.checkedNodes
                 : this.treeObj.selectedNodes) : (this.value ? (this.showCheckBox ? this.value : [this.value[0]]) : null);
-            this.setProperties({ value: ddtValue }, true);
+            this.setMultiSelectValue(ddtValue);
             if (this.showCheckBox && this.value !== null) {
                 this.treeObj.checkedNodes = this.value;
                 this.treeObj.dataBind();
@@ -5195,6 +5636,40 @@ let DropDownTree = class DropDownTree extends Component {
         }
         this.updateSelectedValues();
     }
+    getSelectedData(value) {
+        let data = null;
+        if (this.isFilteredData) {
+            for (let i = 0; i < this.selectedData.length; i++) {
+                if (getValue(this.treeSettings.loadOnDemand ? this.fields.value : 'id', this.selectedData[i]).toString() === value) {
+                    data = this.selectedData[i];
+                    break;
+                }
+            }
+        }
+        if (isNullOrUndefined(data)) {
+            if (this.treeSettings.loadOnDemand) {
+                data = this.treeObj.getTreeData(value)[0];
+            }
+            else {
+                data = this.treeObj.getNode(value);
+            }
+            if (!isNullOrUndefined(data)) {
+                this.selectedData.push(data);
+            }
+        }
+        return data;
+    }
+    removeSelectedData(value, muteOnChange) {
+        let selectedValues = isNullOrUndefined(this.value) ? [] : this.value.slice();
+        selectedValues.splice(selectedValues.indexOf(value), 1);
+        this.setProperties({ value: selectedValues }, muteOnChange);
+        for (let i = 0; i < this.selectedData.length; i++) {
+            if (getValue(this.treeSettings.loadOnDemand ? this.fields.value : 'id', this.selectedData[i]).toString() === value) {
+                this.selectedData.splice(i, 1);
+                break;
+            }
+        }
+    }
     updateSelectedValues() {
         this.dataValue = '';
         let temp;
@@ -5205,22 +5680,13 @@ let DropDownTree = class DropDownTree extends Component {
         if ((!this.isChipDelete || this.treeSettings.autoCheck) && (this.inputWrapper.contains(this.chipWrapper))) {
             this.chipCollection.innerHTML = '';
         }
+        if (!this.isFilteredData) {
+            this.selectedData = [];
+        }
         if (!isNullOrUndefined(this.value)) {
-            let val = this.value.slice();
             for (let i = 0, len = this.value.length; i < len; i++) {
-                if (this.treeSettings.loadOnDemand) {
-                    selectedData = this.treeObj.getTreeData(this.value[i])[0];
-                    text = getValue(this.fields.text, selectedData);
-                }
-                else {
-                    selectedData = this.treeObj.getNode(this.value[i]);
-                    text = getValue('text', selectedData);
-                }
-                if (text === '') {
-                    let index = val.indexOf(val[i]);
-                    val.splice(index, 1);
-                    continue;
-                }
+                selectedData = this.getSelectedData(this.value[i]);
+                text = getValue(this.treeSettings.loadOnDemand ? this.fields.text : 'text', selectedData);
                 this.selectedText.push(text);
                 temp = this.selectedText[this.selectedText.length - 1];
                 if (this.selectedText.length > 1) {
@@ -5239,7 +5705,6 @@ let DropDownTree = class DropDownTree extends Component {
                 this.hiddenElement.innerHTML += '<option selected value ="' + this.value[i] + '">' +
                     this.selectedText[this.selectedText.length - 1] + '</option>';
             }
-            this.setProperties({ value: val }, true);
         }
         let isValid = this.getValidMode();
         if (this.mode !== 'Box' && (this.allowMultiSelection || this.showCheckBox) && !isValid) {
@@ -5247,11 +5712,8 @@ let DropDownTree = class DropDownTree extends Component {
                 addClass([this.chipWrapper], HIDEICON);
                 removeClass([this.inputWrapper], SHOW_CHIP);
             }
-            Input.setValue(this.dataValue, this.inputEle, this.floatLabelType);
         }
-        else if (!this.allowMultiSelection || !this.showCheckBox) {
-            Input.setValue(this.dataValue, this.inputEle, this.floatLabelType);
-        }
+        Input.setValue(this.dataValue, this.inputEle, this.floatLabelType);
         if (textValue === '') {
             this.setProperties({ text: null }, true);
         }
@@ -5286,12 +5748,16 @@ let DropDownTree = class DropDownTree extends Component {
         }
     }
     setSelectAllWrapper(state) {
-        if (state && !this.popupDiv.contains(this.checkAllParent) && this.showCheckBox) {
-            this.createSelectAllWrapper();
-            prepend([this.checkAllParent], this.popupDiv);
+        if (this.isFirstRender) {
+            return;
         }
-        else if (this.popupDiv.contains(this.checkAllParent)) {
+        if (state && !this.popupEle.contains(this.checkAllParent) && this.showCheckBox) {
+            this.createSelectAllWrapper();
+            this.popupEle.insertBefore(this.checkAllParent, this.popupDiv);
+        }
+        else if (this.popupEle.contains(this.checkAllParent)) {
             detach(this.checkAllParent);
+            this.checkAllParent = null;
         }
     }
     setHeaderTemplate() {
@@ -5308,7 +5774,7 @@ let DropDownTree = class DropDownTree extends Component {
             this.header.appendChild(item);
         }
         this.ddtupdateBlazorTemplates(false, false, true, false);
-        this.popupEle.insertBefore(this.header, this.popupDiv);
+        this.popupEle.insertBefore(this.header, this.checkAllParent ? this.checkAllParent : this.popupDiv);
     }
     templateComplier(template) {
         if (template) {
@@ -5368,7 +5834,7 @@ let DropDownTree = class DropDownTree extends Component {
         }
         this.isChipDelete = true;
         this.isClearButtonClick = true;
-        this.value.splice(this.value.indexOf(value), 1);
+        this.removeSelectedData(value, true);
         this.selectedText = [];
         if (this.allowMultiSelection) {
             this.treeObj.selectedNodes = this.value.slice();
@@ -5388,6 +5854,7 @@ let DropDownTree = class DropDownTree extends Component {
         this.dataValue = null;
         this.setProperties({ value: [] }, true);
         this.setProperties({ text: null }, true);
+        this.selectedData = [];
         setValue('selectedNodes', [], this.treeObj);
         if (this.showCheckBox) {
             this.treeObj.uncheckAll();
@@ -5405,26 +5872,14 @@ let DropDownTree = class DropDownTree extends Component {
         }
     }
     clearCheckAll() {
-        if (this.showSelectAll && this.value.length === 0 && this.checkWrapper) {
-            let frameSpan = this.checkWrapper.getElementsByClassName(CHECKBOXFRAME)[0];
-            if (frameSpan.classList.contains(CHECK)) {
-                removeClass([frameSpan], CHECK);
-            }
+        if (this.showSelectAll && this.value.length === 0) {
             this.setLocale(false);
-        }
-    }
-    checkForSelectAll(state, e) {
-        if (this.checkWrapper) {
-            this.changeState(this.checkWrapper, !state ? 'uncheck' : 'check', e);
-        }
-        else {
-            this.checkSelectAll = true;
         }
     }
     selectAllItems(state) {
         if (this.showCheckBox) {
             state ? this.treeObj.checkAll() : this.treeObj.uncheckAll();
-            this.checkForSelectAll(state);
+            this.checkSelectAll = true;
         }
         else if (this.allowMultiSelection) {
             if (!state) {
@@ -5447,6 +5902,7 @@ let DropDownTree = class DropDownTree extends Component {
     updateTreeSettings(prop) {
         let value = Object.keys(prop.treeSettings)[0];
         if (value === 'autoCheck') {
+            this.ensureAutoCheck();
             this.treeObj.autoCheck = this.treeSettings.autoCheck;
         }
         else if (value === 'loadOnDemand') {
@@ -5488,60 +5944,65 @@ let DropDownTree = class DropDownTree extends Component {
         }
     }
     l10nUpdate(actionFailure) {
-        let ele = this.popupDiv;
+        if (this.noRecord) {
+            this.noRecord.innerHTML = '';
+        }
+        else {
+            this.noRecord = this.createElement('div');
+            addClass([this.noRecord], NODATACONTAINER);
+            prepend([this.noRecord], this.popupDiv);
+        }
         if (this.noRecordsTemplate !== 'No Records Found' || this.actionFailureTemplate !== 'The Request Failed') {
             let template = actionFailure ? this.actionFailureTemplate : this.noRecordsTemplate;
             let compiledString;
             let templateId = actionFailure ? this.actionFailureTemplateId : this.noRecordsTemplateId;
-            ele.innerHTML = '';
             compiledString = this.templateComplier(template);
             for (let item of compiledString({}, null, null, templateId, this.isStringTemplate)) {
-                ele.appendChild(item);
+                this.noRecord.appendChild(item);
             }
             this.ddtupdateBlazorTemplates(!actionFailure, actionFailure);
         }
         else {
             let l10nLocale = { noRecordsTemplate: 'No Records Found', actionFailureTemplate: 'The Request Failed' };
             this.l10n = new L10n(this.getModuleName(), l10nLocale, this.locale);
-            ele.innerHTML = actionFailure ?
+            this.noRecord.innerHTML = actionFailure ?
                 this.l10n.getConstant('actionFailureTemplate') : this.l10n.getConstant('noRecordsTemplate');
         }
     }
     ddtupdateBlazorTemplates(noRecord, action, header, footer, isEmpty) {
         if (!this.isStringTemplate) {
             if (this.noRecordsTemplate && noRecord) {
-                updateBlazorTemplate(this.noRecordsTemplateId, NORECORDSTEMPLATE_PROPERTY$1, this, isEmpty);
+                updateBlazorTemplate(this.noRecordsTemplateId, NORECORDSTEMPLATE, this, isEmpty);
             }
             if (this.actionFailureTemplate && action) {
-                updateBlazorTemplate(this.actionFailureTemplateId, ACTIONFAILURETEMPLATE_PROPERTY$1, this, isEmpty);
+                updateBlazorTemplate(this.actionFailureTemplateId, ACTIONFAILURETEMPLATE, this, isEmpty);
             }
             if (header) {
-                updateBlazorTemplate(this.headerTemplateId, HEADERTEMPLATE_PROPERTY$1, this);
+                updateBlazorTemplate(this.headerTemplateId, HEADERTEMPLATE, this);
             }
             if (footer) {
-                updateBlazorTemplate(this.footerTemplateId, FOOTERTEMPLATE_PROPERTY$1, this);
+                updateBlazorTemplate(this.footerTemplateId, FOOTERTEMPLATE, this);
             }
         }
     }
     ddtresetBlazorTemplates(noRecord, action, header, footer) {
         if (!this.isStringTemplate) {
             if (this.noRecordsTemplate && noRecord) {
-                resetBlazorTemplate(this.noRecordsTemplateId, NORECORDSTEMPLATE_PROPERTY$1);
+                resetBlazorTemplate(this.noRecordsTemplateId, NORECORDSTEMPLATE);
             }
             if (this.actionFailureTemplate && action) {
-                resetBlazorTemplate(this.actionFailureTemplateId, ACTIONFAILURETEMPLATE_PROPERTY$1);
+                resetBlazorTemplate(this.actionFailureTemplateId, ACTIONFAILURETEMPLATE);
             }
             if (header) {
-                resetBlazorTemplate(this.headerTemplateId, HEADERTEMPLATE_PROPERTY$1);
+                resetBlazorTemplate(this.headerTemplateId, HEADERTEMPLATE);
             }
             if (footer) {
-                resetBlazorTemplate(this.footerTemplateId, FOOTERTEMPLATE_PROPERTY$1);
+                resetBlazorTemplate(this.footerTemplateId, FOOTERTEMPLATE);
             }
         }
     }
     updateRecordTemplate(action) {
-        let isEmptyData = this.treeItems ? (this.treeItems.length <= 0 ? true : false) : true;
-        if (isEmptyData) {
+        if (this.treeItems && this.treeItems.length <= 0) {
             this.l10nUpdate(action);
             this.updateTemplate();
         }
@@ -5554,10 +6015,52 @@ let DropDownTree = class DropDownTree extends Component {
         }
         this.setMultiSelect();
     }
+    updateAllowFiltering(state) {
+        if (!this.isFirstRender) {
+            if (state) {
+                this.renderFilter();
+            }
+            else {
+                this.destroyFilter();
+            }
+        }
+        this.ensureAutoCheck();
+    }
+    updateFilterPlaceHolder() {
+        if (this.filterObj) {
+            this.filterObj.placeholder = this.filterBarPlaceholder;
+            this.filterObj.element.setAttribute('aria-label', this.filterBarPlaceholder);
+        }
+    }
+    updateValue(value) {
+        if (isNullOrUndefined(value) || value.length === 0) {
+            this.resetValue(true);
+        }
+        else {
+            this.setTreeValue();
+        }
+    }
+    updateText(text) {
+        if (isNullOrUndefined(text)) {
+            this.resetValue();
+        }
+        else {
+            this.setTreeText();
+        }
+    }
+    updateModelMode() {
+        let validMode = this.allowMultiSelection ? true : (this.showCheckBox ? true : false);
+        if (!validMode) {
+            return;
+        }
+        this.updateMode();
+        this.setMultiSelect();
+    }
     /**
      * Dynamically change the value of properties.
      * @private
      */
+    // tslint:disable-next-line:max-func-body-length
     onPropertyChanged(newProp, oldProp) {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
@@ -5593,32 +6096,23 @@ let DropDownTree = class DropDownTree extends Component {
                 case 'showClearButton':
                     this.updateClearButton(newProp.showClearButton);
                     break;
+                case 'allowFiltering':
+                    this.updateAllowFiltering(newProp.allowFiltering);
+                    break;
+                case 'filterBarPlaceholder':
+                    this.updateFilterPlaceHolder();
+                    break;
                 case 'value':
-                    if (isNullOrUndefined(newProp.value) || newProp.value.length === 0) {
-                        this.resetValue(true);
-                    }
-                    else {
-                        this.setTreeValue();
-                    }
+                    this.updateValue(newProp.value);
                     break;
                 case 'text':
-                    if (isNullOrUndefined(newProp.text)) {
-                        this.resetValue();
-                    }
-                    else {
-                        this.setTreeText();
-                    }
+                    this.updateText(newProp.text);
                     break;
                 case 'allowMultiSelection':
                     this.updateMultiSelection(newProp.allowMultiSelection);
                     break;
                 case 'mode':
-                    let validMode = this.allowMultiSelection ? true : (this.showCheckBox ? true : false);
-                    if (!validMode) {
-                        return;
-                    }
-                    this.updateMode();
-                    this.setMultiSelect();
+                    this.updateModelMode();
                     break;
                 case 'delimiterChar':
                     if (this.mode === 'Box') {
@@ -5641,12 +6135,12 @@ let DropDownTree = class DropDownTree extends Component {
                 case 'showSelectAll':
                     if (this.showCheckBox) {
                         this.setSelectAllWrapper(newProp.showSelectAll);
-                        this.updateTreeHeight();
+                        this.updatePopupHeight();
                     }
                     break;
                 case 'showCheckBox':
                     this.updateCheckBoxState(newProp.showCheckBox);
-                    this.updateTreeHeight();
+                    this.updatePopupHeight();
                     break;
                 case 'treeSettings':
                     this.updateTreeSettings(newProp);
@@ -5671,6 +6165,7 @@ let DropDownTree = class DropDownTree extends Component {
                 case 'zIndex':
                     if (this.popupObj) {
                         this.popupObj.zIndex = newProp.zIndex;
+                        this.popupObj.dataBind();
                     }
                     break;
                 case 'headerTemplate':
@@ -5689,11 +6184,14 @@ let DropDownTree = class DropDownTree extends Component {
                 case 'actionFailureTemplate':
                     this.updateRecordTemplate(true);
                     break;
+                case 'htmlAttributes':
+                    this.setHTMLAttributes();
+                    break;
             }
         }
     }
     /**
-     * Allows you to clear the selected values from the DropDownTree component
+     * Allows you to clear the selected values from the Dropdown Tree component.
      * @method clear
      * @return {void}.
      */
@@ -5720,6 +6218,7 @@ let DropDownTree = class DropDownTree extends Component {
         this.setCssClass(null, this.cssClass);
         this.resetValue();
         this.treeObj.destroy();
+        this.destroyFilter();
         if (this.popupObj) {
             this.popupObj.destroy();
             detach(this.popupObj.element);
@@ -5732,25 +6231,33 @@ let DropDownTree = class DropDownTree extends Component {
         this.element.classList.remove('e-input');
         super.destroy();
     }
+    destroyFilter() {
+        if (this.filterObj) {
+            this.filterObj.destroy();
+            detach(this.filterObj.element);
+            detach(this.filterContainer);
+            this.filterObj = null;
+        }
+    }
     /**
-     * Ensures visibility of the DropDownTree node by using node ID or node element.
-     * When many DropDownTree nodes are present and we need to find a particular node, `ensureVisible` property
-     * helps to bring the node to visibility by expanding the DropDownTree and scrolling to the specific node.
-     * @param  {string | Element} item - Specifies ID of TreeView node/TreeView nodes.
+     * Ensures visibility of the Dropdown Tree item by using item value or item element.
+     * When many Dropdown Tree items are present and we need to find a particular item, `ensureVisible` property
+     * helps to bring the item to visibility by expanding the Dropdown Tree and scrolling to the specific item.
+     * @param  {string | Element} item - Specifies value of Dropdown Tree item/ Dropdown Tree item element.
      */
     ensureVisible(item) {
         this.treeObj.ensureVisible(item);
     }
     /**
-     * To get the updated data source of DropDownTree
-     * @param  {string | Element} item - Specifies ID of TreeView node/TreeView node.
+     * To get the updated data of source of the Dropdown Tree.
+     * @param  {string | Element} item - Specifies value of Dropdown Tree item/ Dropdown Tree item element.
      * @returns { { [key: string]: Object }[] }.
      */
     getData(item) {
         return this.treeObj.getTreeData(item);
     }
     /**
-     * Close the popup that displays the tree items.
+     * Close the Dropdown tree pop-up.
      * @returns void.
      */
     hidePopup() {
@@ -5768,15 +6275,15 @@ let DropDownTree = class DropDownTree extends Component {
     /**
      * Based on the state parameter, entire list item will be selected/deselected.
      * parameter
-     * `true`   - Selects entire list items.
-     * `false`  - Un Selects entire list items.
+     * `true`   - Selects entire Dropdown Tree items.
+     * `false`  - Un Selects entire Dropdown Tree items.
      * @returns void
      */
     selectAll(state) {
         this.selectAllItems(state);
     }
     /**
-     * Opens the popup that displays the tree items.
+     * Opens the popup that displays the Dropdown Tree items.
      * @returns void.
      */
     showPopup() {
@@ -5799,6 +6306,9 @@ __decorate$2([
 ], DropDownTree.prototype, "actionFailureTemplate", void 0);
 __decorate$2([
     Property(false)
+], DropDownTree.prototype, "allowFiltering", void 0);
+__decorate$2([
+    Property(false)
 ], DropDownTree.prototype, "allowMultiSelection", void 0);
 __decorate$2([
     Property(true)
@@ -5816,20 +6326,32 @@ __decorate$2([
     Complex({}, Fields)
 ], DropDownTree.prototype, "fields", void 0);
 __decorate$2([
+    Property(null)
+], DropDownTree.prototype, "filterBarPlaceholder", void 0);
+__decorate$2([
+    Property('StartsWith')
+], DropDownTree.prototype, "filterType", void 0);
+__decorate$2([
     Property('Never')
 ], DropDownTree.prototype, "floatLabelType", void 0);
 __decorate$2([
     Property(null)
 ], DropDownTree.prototype, "footerTemplate", void 0);
 __decorate$2([
+    Property(false)
+], DropDownTree.prototype, "ignoreAccent", void 0);
+__decorate$2([
+    Property(true)
+], DropDownTree.prototype, "ignoreCase", void 0);
+__decorate$2([
     Property(null)
 ], DropDownTree.prototype, "headerTemplate", void 0);
 __decorate$2([
-    Property(null)
-], DropDownTree.prototype, "itemTemplate", void 0);
-__decorate$2([
     Property({})
 ], DropDownTree.prototype, "htmlAttributes", void 0);
+__decorate$2([
+    Property(null)
+], DropDownTree.prototype, "itemTemplate", void 0);
 __decorate$2([
     Property('Default')
 ], DropDownTree.prototype, "mode", void 0);
@@ -5910,7 +6432,13 @@ __decorate$2([
 ], DropDownTree.prototype, "destroyed", void 0);
 __decorate$2([
     Event()
+], DropDownTree.prototype, "filtering", void 0);
+__decorate$2([
+    Event()
 ], DropDownTree.prototype, "focus", void 0);
+__decorate$2([
+    Event()
+], DropDownTree.prototype, "keyPress", void 0);
 __decorate$2([
     Event()
 ], DropDownTree.prototype, "open", void 0);
@@ -7332,8 +7860,11 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             for (let htmlAttr of Object.keys(this.htmlAttributes)) {
                 switch (htmlAttr) {
                     case 'class':
-                        this.overAllWrapper.classList.add(this.htmlAttributes[htmlAttr]);
-                        this.popupWrapper.classList.add(this.htmlAttributes[htmlAttr]);
+                        let updatedClassValue = (this.htmlAttributes[htmlAttr].replace(/\s+/g, ' ')).trim();
+                        if (updatedClassValue !== '') {
+                            addClass([this.overAllWrapper], updatedClassValue.split(' '));
+                            addClass([this.popupWrapper], updatedClassValue.split(' '));
+                        }
                         break;
                     case 'disabled':
                         this.enable(false);
@@ -7391,8 +7922,21 @@ let MultiSelect = class MultiSelect extends DropDownBase {
     }
     updateCssClass() {
         if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
-            addClass([this.overAllWrapper], this.cssClass.split(' '));
-            addClass([this.popupWrapper], this.cssClass.split(' '));
+            let updatedCssClassValues = this.cssClass;
+            updatedCssClassValues = (this.cssClass.replace(/\s+/g, ' ')).trim();
+            if (updatedCssClassValues !== '') {
+                addClass([this.overAllWrapper], updatedCssClassValues.split(' '));
+                addClass([this.popupWrapper], updatedCssClassValues.split(' '));
+            }
+        }
+    }
+    updateOldPropCssClass(oldClass) {
+        if (!isNullOrUndefined(oldClass) && oldClass !== '') {
+            oldClass = (oldClass.replace(/\s+/g, ' ')).trim();
+            if (oldClass !== '') {
+                removeClass([this.overAllWrapper], oldClass.split(' '));
+                removeClass([this.popupWrapper], oldClass.split(' '));
+            }
         }
     }
     onPopupShown() {
@@ -8930,7 +9474,8 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         let chipContent = this.createElement('span', { className: CHIP_CONTENT$1 });
         let chipClose = this.createElement('span', { className: CHIP_CLOSE$1 });
         if (this.mainData) {
-            itemData = isBlazor() ? JSON.parse(JSON.stringify(this.getDataByValue(value))) : this.getDataByValue(value);
+            itemData = (isBlazor() && this.isServerRendered) ? JSON.parse(JSON.stringify(this.getDataByValue(value)))
+                : this.getDataByValue(value);
         }
         if (this.valueTemplate && !isNullOrUndefined(itemData)) {
             let compiledString = compile(this.valueTemplate);
@@ -8954,7 +9499,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         };
         this.trigger('tagging', eventArgs, (eventArgs) => {
             if (!eventArgs.cancel) {
-                if (eventArgs.setClass && typeof eventArgs.setClass === 'string' && isBlazor()) {
+                if (eventArgs.setClass && typeof eventArgs.setClass === 'string' && (isBlazor() && this.isServerRendered)) {
                     addClass([chip], eventArgs.setClass);
                 }
                 if (Browser.isDevice) {
@@ -9084,7 +9629,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                             if (!this.isFirstClick) {
                                 let ulElement = this.list.querySelector('ul');
                                 if (ulElement) {
-                                    if (this.itemTemplate && (this.mode === 'CheckBox') && isBlazor()) {
+                                    if (this.itemTemplate && (isBlazor() && this.isServerRendered)) {
                                         setTimeout(() => { this.mainList = this.ulElement; }, 0);
                                     }
                                     else {
@@ -10325,10 +10870,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                     this.updateData(newProp.delimiterChar);
                     break;
                 case 'cssClass':
-                    if (!isNullOrUndefined(oldProp.cssClass) && oldProp.cssClass !== '') {
-                        removeClass([this.overAllWrapper], oldProp.cssClass.split(' '));
-                        removeClass([this.popupWrapper], oldProp.cssClass.split(' '));
-                    }
+                    this.updateOldPropCssClass(oldProp.cssClass);
                     this.updateCssClass();
                     break;
                 case 'enableRtl':
@@ -10462,7 +11004,7 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         if (!this.enabled) {
             return;
         }
-        if (isBlazor() && this.itemTemplate) {
+        if ((isBlazor() && this.isServerRendered) && this.itemTemplate) {
             this.DropDownBaseupdateBlazorTemplates(true, false, false, false, false, false, false, false);
             if (this.mode !== 'CheckBox' && this.list) {
                 this.refreshSelection();
@@ -11416,6 +11958,9 @@ var __decorate$6 = (undefined && undefined.__decorate) || function (decorators, 
 var ListBox_1;
 /// <reference path='../drop-down-base/drop-down-base-model.d.ts'/>
 const ITEMTEMPLATE_PROPERTY$1 = 'ItemTemplate';
+/**
+ * Defines the Selection settings of List Box.
+ */
 class SelectionSettings extends ChildProperty {
 }
 __decorate$6([
@@ -11430,6 +11975,9 @@ __decorate$6([
 __decorate$6([
     Property('Left')
 ], SelectionSettings.prototype, "checkboxPosition", void 0);
+/**
+ * Defines the toolbar settings of List Box.
+ */
 class ToolbarSettings extends ChildProperty {
 }
 __decorate$6([
@@ -11492,6 +12040,7 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
             this.list = this.element.parentElement;
             this.liCollections = this.list.querySelectorAll('.' + cssClass.li);
             this.mainList = this.ulElement = this.list.querySelector('ul');
+            this.setSelection(this.value);
             if (this.allowFiltering) {
                 this.setFiltering();
             }
@@ -12634,8 +13183,10 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
             if (elems.length === 1 && childCnt && !fListBox.selectionSettings.showCheckbox) {
                 liIdx = childCnt <= dataLiIdx[0] ? childCnt - 1 : dataLiIdx[0];
                 ele = fListBox.ulElement.querySelectorAll('.e-list-item')[liIdx];
-                fListBox.ulElement.querySelectorAll('.e-list-item')[fListBox.getValidIndex(ele, liIdx, childCnt === dataIdx[0]
-                    ? 38 : 40)].classList.add(cssClass.selected);
+                let validIdx = fListBox.getValidIndex(ele, liIdx, childCnt === dataIdx[0] ? 38 : 40);
+                if (validIdx > -1) {
+                    (fListBox.ulElement.querySelectorAll('.e-list-item')[validIdx].classList.add(cssClass.selected));
+                }
             }
             if (isKey) {
                 this.list.focus();
@@ -13001,9 +13552,6 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
         if (this.tBListBox) {
             this.tBListBox.updateToolBarState();
         }
-        if (this.allowFiltering) {
-            this.list.getElementsByClassName('e-input-filter')[0].focus();
-        }
     }
     clearSelection(values = this.value) {
         if (this.selectionSettings.showCheckbox) {
@@ -13183,7 +13731,7 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
             this.element.innerHTML = '';
         }
         else {
-            if (!isBlazor()) {
+            if (!isBlazor() || (isBlazor() && !this.isServerRendered)) {
                 this.element.style.display = 'inline-block';
                 if (this.toolbarSettings.items.length) {
                     this.list.parentElement.parentElement.insertBefore(this.list, this.list.parentElement);
@@ -13192,7 +13740,7 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
                 this.list.parentElement.insertBefore(this.element, this.list);
             }
         }
-        if (!isBlazor()) {
+        if (!isBlazor() || (isBlazor() && !this.isServerRendered)) {
             super.destroy();
         }
     }

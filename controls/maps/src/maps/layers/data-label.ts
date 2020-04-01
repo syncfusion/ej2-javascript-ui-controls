@@ -27,10 +27,14 @@ export class DataLabel {
     }
     //tslint:disable:max-func-body-length
     private getDataLabel(dataSource: object[], labelPath: string, shapeName: string, shapeDataPath: string): object {
-        let text: object;
+        let text: object; let shapeNameValue : string;
         for (let i: number = 0; i < dataSource.length; i++) {
-            let data: object = dataSource[i];
-            if ((data[shapeDataPath]) === shapeName) {
+            let data: object = dataSource[i]; let dataShapePathValue : string;
+            dataShapePathValue = !isNullOrUndefined(data[shapeDataPath]) && isNaN(data[shapeDataPath]) ?
+            data[shapeDataPath].toLowerCase() : data[shapeDataPath];
+            shapeName = !isNullOrUndefined(shapeName) ? shapeName.toString() : shapeName;
+            shapeNameValue = !isNullOrUndefined(shapeName) ? shapeName.toLowerCase() : shapeName;
+            if ((dataShapePathValue) === shapeNameValue) {
                 text = data;
                 break;
             }
@@ -39,13 +43,13 @@ export class DataLabel {
     }
     /**
      * To render label for maps
-     * @param layer
-     * @param layerIndex
-     * @param shape
-     * @param layerData
-     * @param group
-     * @param labelTemplateElement
-     * @param index
+     * @param layer 
+     * @param layerIndex 
+     * @param shape 
+     * @param layerData 
+     * @param group 
+     * @param labelTemplateElement 
+     * @param index 
      */
     public renderLabel(
         layer: LayerSettings, layerIndex: number, shape: object,
@@ -145,10 +149,10 @@ export class DataLabel {
             };
         } else {
             location = findMidPointOfPolygon(shapePoint[midIndex], projectionType);
-        }
+        }   
         let firstLevelMapLocation : object = location;
         if (!isNullOrUndefined(text) && !isNullOrUndefined(location)) {
-            if(zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied) {
+            if(zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied && dataLabel.template === '') {
                 if(layerIndex > 0){
                     for(let k : number =0;k<this.maps.zoomLabelPositions.length;k++){
                         if(this.maps.zoomLabelPositions[k]['dataLabelText'] === text) {
@@ -209,15 +213,15 @@ export class DataLabel {
                 if (!isPoint && position.length > 5 && (shapeData['geometry']['type'] !== 'MultiPolygon') &&
                     (shapeData['type'] !== 'MultiPolygon')) {
                     let location1: object = findMidPointOfPolygon(position, projectionType);
-                    if(zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied) {
+                    if(zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied && eventargs.template === '') {
                             location1['x'] = ((this.maps.zoomLabelPositions[index]['location']['x'] + zoomTransPoint['x']) * scale);
                             location1['y'] = ((this.maps.zoomLabelPositions[index]['location']['y'] + zoomTransPoint['y']) * scale);
                     }
                     locationX = location1['x'];
                     location['x'] = location1['x'];
                     width = zoomLabelsPosition && scaleZoomValue > 1 && !this.maps.zoomNotApplied
-                            && this.maps.zoomShapeCollection.length > index ? this.maps.zoomShapeCollection[index]['width'] :
-                            (location1['rightMax']['x'] - location1['leftMax']['x']) * scale;
+                        && this.maps.zoomShapeCollection.length > index ? this.maps.zoomShapeCollection[index]['width'] :
+                    (location1['rightMax']['x'] - location1['leftMax']['x']) * scale;
                 }
                 let xpositionEnds: number = ((location['x'] + transPoint['x']) * scale) + textSize['width'] / 2;
                 let xpositionStart: number = ((location['x'] + transPoint['x']) * scale) - textSize['width'] / 2;
@@ -311,7 +315,7 @@ export class DataLabel {
                             } else {
                                 x = ((location['x'] + transPoint['x']) * scale) - textSize['width'] / 2;
                                 y = ((location['y'] + transPoint['y'] )* scale)- textSize['height'] / 2;
-                            }
+                            } 
                             let rectOptions: RectOption = new RectOption(
                                 this.maps.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + index + '_rectIndex_' + index,
                                 fill, border, opacity, new Rect(x, y, textSize['width'], textSize['height']), rx, ry
@@ -360,7 +364,7 @@ export class DataLabel {
     }
 
     /**
-     * To destroy the layers.
+     * To destroy the layers. 
      * @return {void}
      * @private
      */

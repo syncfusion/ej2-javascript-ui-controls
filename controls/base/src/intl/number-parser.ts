@@ -1,5 +1,5 @@
 import { NumberFormatOptions } from '../internationalization';
-import { extend, isNullOrUndefined } from '../util';
+import { extend, isNullOrUndefined, isBlazor, getValue } from '../util';
 import { ParserBase as parser, NumericOptions } from './parser-base';
 import { IntlBase as base } from './intl-base';
 const formatRegex: RegExp = /(^[ncpa]{1})([0-1]?[0-9]|20)?$/i;
@@ -52,18 +52,26 @@ export class NumberParser {
         } else {
             extend(parseOptions, base.customFormat(option.format, null, null));
         }
-        numOptions = parser.getCurrentNumericOptions(dependable.parserObject, parser.getNumberingSystem(cldr), true);
+        let numbers: Object = getValue('numbers', dependable.parserObject);
+        numOptions = parser.getCurrentNumericOptions(dependable.parserObject, parser.getNumberingSystem(cldr), true, isBlazor());
         parseOptions.symbolRegex = parser.getSymbolRegex(Object.keys(numOptions.symbolMatch));
         // tslint:disable-next-line:no-any
         parseOptions.infinity = (<any>numOptions).symbolNumberSystem[keys[1]];
-        let symbolpattern: string = base.getSymbolPattern(
-            parseOptions.type, numOptions.numberSystem, dependable.numericObject, parseOptions.isAccount);
-        if (symbolpattern) {
-            symbolpattern = symbolpattern.replace(/\u00A4/g, base.defaultCurrency);
-            let split: string[] = symbolpattern.split(';');
-            parseOptions.nData = base.getFormatData(split[1] || '-' + split[0], true, '');
-            parseOptions.pData = base.getFormatData(split[0], true, '');
+        let symbolpattern: string;
+        if (!isBlazor()) {
+            symbolpattern = base.getSymbolPattern(
+                parseOptions.type, numOptions.numberSystem, dependable.numericObject, parseOptions.isAccount);
+            if (symbolpattern) {
+                symbolpattern = symbolpattern.replace(/\u00A4/g, base.defaultCurrency);
+                let split: string[] = symbolpattern.split(';');
+                parseOptions.nData = base.getFormatData(split[1] || '-' + split[0], true, '');
+                parseOptions.pData = base.getFormatData(split[0], true, '');
+            }
+        } else {
+            parseOptions.nData = getValue(parseOptions.type + 'nData', numbers);
+            parseOptions.pData = getValue(parseOptions.type + 'pData', numbers);
         }
+
         return (value: string): number => {
             return this.getParsedNumber(value, parseOptions, numOptions);
         };

@@ -61,16 +61,17 @@ export class DateTimeCategory extends Category {
             axis.actualIntervalType = axis.intervalType;
         }
         axis.format = this.chart.intl.getDateFormat({
-            format: axis.labelFormat, type: firstToLowerCase(axis.skeletonType), skeleton: this.getSkeleton(axis, null, null)
+            format: axis.labelFormat || this.blazorCustomFormat(axis), type: firstToLowerCase(axis.skeletonType),
+            skeleton: this.getSkeleton(axis, null, null, this.chart.isBlazor)
         });
         for (let i: number = 0; i < axis.labels.length; i++) {
             labelStyle = <Font>(extend({}, getValue('properties', axis.labelStyle), null, true));
             if (!this.sameInterval(axis.labels.map(Number)[i], axis.labels.map(Number)[i - 1], axis.actualIntervalType, i)
-            || axis.isIndexed) {
+                || axis.isIndexed) {
                 if (withIn(i - padding, axis.visibleRange)) {
                     triggerLabelRender(
                         this.chart, i, (axis.isIndexed ? this.getIndexedAxisLabel(axis.labels[i], axis.format) :
-                        <string>axis.format(new Date(axis.labels.map(Number)[i]))),
+                            <string>axis.format(new Date(axis.labels.map(Number)[i]))),
                         labelStyle, axis
                     );
                 }
@@ -78,6 +79,15 @@ export class DateTimeCategory extends Category {
         }
         if (axis.getMaxLabelWidth) {
             axis.getMaxLabelWidth(this.chart);
+        }
+    }
+
+    /** @private */
+    private blazorCustomFormat(axis: Axis): string {
+        if (this.chart.isBlazor && axis.actualIntervalType === 'Years') {
+            return 'yyyy';
+        } else {
+            return '';
         }
     }
     /**

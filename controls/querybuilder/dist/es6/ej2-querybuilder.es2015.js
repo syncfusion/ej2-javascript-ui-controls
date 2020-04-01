@@ -25,6 +25,9 @@ var __awaiter = (undefined && undefined.__awaiter) || function (thisArg, _argume
  * Query Builder Source
  */
 MultiSelect.Inject(CheckBoxSelection);
+/**
+ * Defines the Columns of Query Builder
+ */
 class Columns extends ChildProperty {
 }
 __decorate([
@@ -60,6 +63,9 @@ __decorate([
 __decorate([
     Property(null)
 ], Columns.prototype, "category", void 0);
+/**
+ * Defines the rule of Query Builder
+ */
 class Rule extends ChildProperty {
 }
 __decorate([
@@ -86,6 +92,9 @@ __decorate([
 __decorate([
     Property(false)
 ], Rule.prototype, "not", void 0);
+/**
+ * Defines the ruleDelete, groupInsert, and groupDelete options of Query Builder.
+ */
 class ShowButtons extends ChildProperty {
 }
 __decorate([
@@ -2420,6 +2429,9 @@ let QueryBuilder = class QueryBuilder extends Component {
      * @returns RuleModel.
      */
     getValidRules(currentRule) {
+        if (!currentRule) {
+            currentRule = this.getRules();
+        }
         let ruleCondtion = currentRule.condition;
         let notCondition = currentRule.not;
         let ruleColl = extend([], currentRule.rules, [], true);
@@ -3034,6 +3046,9 @@ let QueryBuilder = class QueryBuilder extends Component {
      * @returns object.
      */
     getSqlFromRules(rule, allowEscape) {
+        if (!rule) {
+            rule = this.getValidRules();
+        }
         rule = this.getRuleCollection(rule, false);
         return this.getSqlString(this.getValidRules(rule), allowEscape).replace(/"/g, '\'');
     }

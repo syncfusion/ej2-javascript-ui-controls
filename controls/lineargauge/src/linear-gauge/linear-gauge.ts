@@ -39,17 +39,17 @@ import { ExportType } from '../linear-gauge/utils/enum';
 export class LinearGauge extends Component<HTMLElement> implements INotifyPropertyChanged {
     //Module declaration for gauge
     /**
-     *  annotationModule is used to place the any text or images into the gauge.
+     *  Specifies the module that is used to place any text or images as annotation into the linear gauge.
      */
     public annotationsModule: Annotations;
 
     /**
-     * tooltipModule is used to display the pointer value.
+     * Specifies the module that is used to display the pointer value in tooltip.
      */
     public tooltipModule: GaugeTooltip;
 
     /**
-     * The width of the Linear gauge as a string in order to provide input as both like '100px' or '100%'.
+     * Specifies the width of the linear gauge as a string in order to provide input as both like '100px' or '100%'.
      * If specified as '100%, gauge will render to the full width of its parent element.
      * @default null
      */
@@ -58,7 +58,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     public width: string;
 
     /**
-     * The height of the Linear gauge as a string in order to provide input as both like '100px' or '100%'.
+     * Specifies the height of the linear gauge as a string in order to provide input as both like '100px' or '100%'.
      * If specified as '100%, gauge will render to the full height of its parent element.
      * @default null
      */
@@ -67,28 +67,28 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     public height: string;
 
     /**
-     * Specifies the gauge will rendered either horizontal or vertical orientation.
+     * Specifies the orientation of the rendering of the linear gauge.
      * @default Vertical
      */
     @Property('Vertical')
     public orientation: Orientation;
 
     /**
-     *  Options to customize the left, right, top and bottom margins of the gauge.
+     * Specifies the options to customize the margins of the linear gauge.
      */
 
     @Complex<MarginModel>({}, Margin)
     public margin: MarginModel;
 
     /**
-     * Options for customizing the color and width of the gauge border.
+     * Specifies the options for customizing the color and width of the border for linear gauge.
      */
 
     @Complex<BorderModel>({ color: '', width: 0 }, Border)
     public border: BorderModel;
 
     /**
-     * The background color of the gauge, which accepts value in hex, rgba as a valid CSS color string.
+     * Specifies the background color of the gauge. This property accepts value in hex code, rgba string as a valid CSS color string.
      * @default 'transparent'
      */
     @Property(null)
@@ -102,48 +102,48 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     public title: string;
 
     /**
-     * Options for customizing the title appearance of linear gauge.
+     * Specifies the options for customizing the appearance of title for linear gauge.
      */
 
     @Complex<FontModel>({ size: '15px', color: null }, Font)
     public titleStyle: FontModel;
 
     /**
-     * Options for customizing the container linear gauge.
+     * Specifies the options for customizing the container in linear gauge.
      */
 
     @Complex<ContainerModel>({}, Container)
     public container: ContainerModel;
 
     /**
-     *  Options for customizing the axes of linear gauge.
+     * Specifies the options for customizing the axis in linear gauge.
      */
 
     @Collection<AxisModel>([{}], Axis)
     public axes: AxisModel[];
 
     /**
-     * Options for customizing the tooltip in linear gauge.
+     * Specifies the options for customizing the tooltip in linear gauge.
      */
 
     @Complex<TooltipSettingsModel>({}, TooltipSettings)
     public tooltip: TooltipSettingsModel;
 
     /**
-     *  Options for customizing the annotation of linear gauge.
+     * Specifies the options for customizing the annotation of linear gauge.
      */
     @Collection<AnnotationModel>([{}], Annotation)
     public annotations: AnnotationModel[];
 
     /**
-     * Specifies color palette for axis ranges.
+     * Specifies the color palette for axis ranges in linear gauge.
      * @default []
      */
     @Property([])
     public rangePalettes: string[];
 
     /**
-     * Specifies whether a grouping separator should be used for a number.
+     * Enables or disables a grouping separator should be used for a number.
      * @default false
      */
     @Property(false)
@@ -157,27 +157,28 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     public description: string;
 
     /**
-     * TabIndex value for the gauge.
+     * Specifies the tab index value for the linear gauge.
      * @default 1
      */
     @Property(1)
     public tabIndex: number;
+
     /**
-     * To apply internationalization for gauge
+     * Specifies the format to apply for internationalization in linear gauge.
      * @default null
      */
     @Property(null)
     public format: string;
 
     /**
-     * Specifies the theme for the maps.
+     * Specifies the theme supported for the linear gauge.
      * @default Material
      */
     @Property('Material')
     public theme: LinearGaugeTheme;
 
     /**
-     * Triggers after gauge loaded.
+     * Triggers after the gauge gets rendered.
      * @event
      * @blazorProperty 'Loaded'
      */
@@ -185,7 +186,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     public loaded: EmitType<ILoadedEventArgs>;
 
     /**
-     * Triggers before gauge load.
+     * Triggers before the gauge gets rendered.
      * @event
      * @blazorProperty 'OnLoad'
      */
@@ -193,7 +194,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     public load: EmitType<ILoadEventArgs>;
 
     /**
-     * Triggers after complete the animation for pointer.
+     * Triggers after completing the animation for pointer.
      * @event
      * @blazorProperty 'AnimationCompleted'
      */
@@ -203,11 +204,11 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     /**
      * Triggers before each axis label gets rendered.
      * @event
-     * @deprecated
      * @blazorProperty 'AxisLabelRendering'
      */
     @Event()
     public axisLabelRender: EmitType<IAxisLabelRenderEventArgs>;
+
     /**
      * Triggers before the pointer is dragged.
      * @event
@@ -231,9 +232,9 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * @event
      * @blazorProperty 'OnDragEnd'
      */
-
     @Event()
     public dragEnd: EmitType<IPointerDragEventArgs>;
+
     /**
      * Triggers before each annotation gets rendered.
      * @event
@@ -253,7 +254,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     public tooltipRender: EmitType<ITooltipRenderEventArgs>;
 
     /**
-     * Triggers when mouse move on gauge area.
+     * Triggers when performing the mouse move operation on gauge area.
      * @event
      * @blazorProperty 'OnGaugeMouseMove'
      */
@@ -263,7 +264,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
 
     /**
-     * Triggers when mouse leave from the gauge area .
+     * Triggers when performing the mouse leave operation from the gauge area.
      * @event
      * @blazorProperty 'OnGaugeMouseLeave'
      */
@@ -272,7 +273,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     public gaugeMouseLeave: EmitType<IMouseEventArgs>;
 
     /**
-     * Triggers when mouse down on gauge area.
+     * Triggers when performing the mouse down operation on gauge area.
      * @event
      * @blazorProperty 'OnGaugeMouseDown'
      */
@@ -281,7 +282,7 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     public gaugeMouseDown: EmitType<IMouseEventArgs>;
 
     /**
-     * Triggers when mouse up on gauge area.
+     * Triggers when performing mouse up operation on gauge area.
      * @event
      * @blazorProperty 'OnGaugeMouseUp'
      */
@@ -290,9 +291,8 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     public gaugeMouseUp: EmitType<IMouseEventArgs>;
 
     /**
-     * Triggers while drag the pointer.
+     * Triggers while changing the value of the pointer by UI interaction.
      * @event
-     * @deprecated
      * @blazorProperty 'ValueChange'
      */
 
@@ -997,7 +997,9 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
                 this.activeAxis = null;
                 this.activePointer = null;
                 this.isDrag = false;
-                this.triggerDragEvent(e.target as Element);
+                if (!isNullOrUndefined(this.mouseElement)) {
+                    this.triggerDragEvent(this.mouseElement);
+                }
             }
         }
         if (!isNullOrUndefined(this.mouseElement)) {
@@ -1012,16 +1014,18 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * Handles the print method for gauge control.
+     * This method handles the print functionality for linear gauge.
+     * @param id - Specifies the element to print the linear gauge.
      */
     public print(id?: string[] | string | Element): void {
         let exportChart: ExportUtils = new ExportUtils(this);
         exportChart.print(id);
     }
     /**
-     * Handles the export method for gauge control.
-     * @param type
-     * @param fileName
+     * This method handles the export functionality for linear gauge.
+     * @param type - Specifies the type of the export.
+     * @param fileName - Specifies the file name for the exported file.
+     * @param orientation - Specified the orientation for the exported pdf document.
      */
     public export(type: ExportType, fileName: string, orientation?: PdfPageOrientation): void {
         let exportMap: ExportUtils = new ExportUtils(this);
@@ -1164,10 +1168,10 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * To set the pointer value using this method
-     * @param axisIndex
-     * @param pointerIndex
-     * @param value
+     * This method is used to set the pointer value in the linear gauge.
+     * @param axisIndex - Specifies the index of the axis.
+     * @param pointerIndex - Specifies the index of the pointer.
+     * @param value - Specifies the pointer value.
      */
 
     public setPointerValue(axisIndex: number, pointerIndex: number, value: number): void {
@@ -1187,9 +1191,9 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     }
 
     /**
-     * To set the annotation value using this method.
-     * @param annotationIndex
-     * @param content
+     * This method is used to set the annotation value in the linear gauge.
+     * @param annotationIndex - Specifies the index of the annotation.
+     * @param content - Specifies the text of the annotation.
      */
 
     public setAnnotationValue(annotationIndex: number, content: string, axisValue?: number): void {

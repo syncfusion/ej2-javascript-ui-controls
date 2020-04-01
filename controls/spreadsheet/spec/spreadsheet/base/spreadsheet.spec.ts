@@ -36,7 +36,7 @@ describe('Spreadsheet base module ->', () => {
             };
             model = {
                 sheets: [{
-                    rangeSettings: [{
+                    range: [{
                         dataSource: defaultData,
                         startCell: 'A1'
                     }]
@@ -201,7 +201,7 @@ describe('Spreadsheet base module ->', () => {
             };
             model = {
                 sheets: [{
-                    rangeSettings: [{
+                    range: [{
                         dataSource: defaultData,
                         startCell: 'A1'
                     }],
@@ -239,7 +239,7 @@ describe('Spreadsheet base module ->', () => {
             };
             model = {
                 sheets: [{
-                    rangeSettings: [{
+                    range: [{
                         dataSource: defaultData,
                         startCell: 'A1'
                     }],
@@ -256,7 +256,7 @@ describe('Spreadsheet base module ->', () => {
                     ]
                 },
                 {
-                    rangeSettings: [{
+                    range: [{
                         dataSource: defaultData,
                         startCell: 'A1'
                     }]
@@ -295,7 +295,7 @@ describe('Spreadsheet base module ->', () => {
             };
             model = {
                 sheets: [{
-                    rangeSettings: [{
+                    range: [{
                         dataSource: defaultData
                     }]
                 }],
@@ -319,7 +319,7 @@ describe('Spreadsheet base module ->', () => {
             };
             model = {
                 sheets: [{
-                    rangeSettings: [{
+                    range: [{
                         dataSource: defaultData
                     }]
                 }],
@@ -340,7 +340,7 @@ describe('Spreadsheet base module ->', () => {
         //     };
         //     model = {
         //         sheets: [{
-        //             rangeSettings: [{
+        //             range: [{
         //                 dataSource: defaultData
         //             }]
         //         }],
@@ -364,7 +364,7 @@ describe('Spreadsheet base module ->', () => {
         //     };
         //     model = {
         //         sheets: [{
-        //             rangeSettings: [{
+        //             range: [{
         //                 dataSource: defaultData
         //             }]
         //         }],
@@ -399,12 +399,12 @@ describe('Spreadsheet base module ->', () => {
             model = {
                 sheets: [
                     {
-                        rangeSettings: [
+                        range: [
                             { dataSource: defaultData }
                         ]
                     },
                     {
-                        rangeSettings: [
+                        range: [
                             { dataSource: productData }
                         ]
                     }
@@ -435,18 +435,18 @@ describe('Spreadsheet base module ->', () => {
             done();
         });
 
-        it('activeSheetTab testing', (done: Function) => {
-            helper.setModel('activeSheetTab', 2);
+        it('activeSheetIndex testing', (done: Function) => {
+            helper.setModel('activeSheetIndex', 1);
             helper.eventHandler('dataBound', (args: EmitType<Object>) => {
                 setTimeout(() => {
-                    if (helper.getModel('activeSheetTab') === 1) {
+                    if (helper.getModel('activeSheetIndex') === 0) {
                         helper.eventHandler('dataBound', null);
                         done();
                     } else {
-                        expect(helper.getModel('activeSheetTab')).toBe(2);
+                        expect(helper.getModel('activeSheetIndex')).toBe(1);
                         let td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
                         expect(td.textContent).toBe('ProductID');
-                        helper.setModel('activeSheetTab', 1);
+                        helper.setModel('activeSheetIndex', 0);
                     }
                 }, 30);
             });
@@ -472,7 +472,7 @@ describe('Spreadsheet base module ->', () => {
             model = {
                 sheets: [
                     {
-                        rangeSettings: [
+                        range: [
                             { dataSource: defaultData }
                         ]
                     }
@@ -723,7 +723,7 @@ describe('Spreadsheet base module ->', () => {
             model = {
                 sheets: [
                     {
-                        rangeSettings: [
+                        range: [
                             { dataSource: defaultData }
                         ]
                     }

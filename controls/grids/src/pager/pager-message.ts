@@ -1,4 +1,4 @@
-import { createElement, append } from '@syncfusion/ej2-base';
+import { createElement, append, isBlazor } from '@syncfusion/ej2-base';
 import { Pager, IRender } from './pager';
 
 /**
@@ -39,11 +39,20 @@ export class PagerMessage implements IRender {
      */
     public refresh(): void {
         let pagerObj: Pager = this.pagerModule;
-        this.pageNoMsgElem.textContent = this.format(pagerObj.getLocalizedLabel('currentPageInfo'), [pagerObj.totalRecordsCount === 0 ? 0 :
-            pagerObj.currentPage, pagerObj.totalPages || 0]) + ' ';
-        this.pageCountMsgElem.textContent = this.format(pagerObj.getLocalizedLabel('totalItemsInfo'), [pagerObj.totalRecordsCount || 0]);
+        if (isBlazor()) {
+            this.pageNoMsgElem.textContent = this.format(
+                pagerObj.getLocalizedLabel('CurrentPageInfo'), [pagerObj.totalRecordsCount === 0 ? 0 :
+                    pagerObj.currentPage, pagerObj.totalPages || 0]) + ' ';
+            this.pageCountMsgElem.textContent = this.format(
+                pagerObj.getLocalizedLabel('TotalItemsInfo'), [pagerObj.totalRecordsCount || 0]);
+        } else {
+            this.pageNoMsgElem.textContent = this.format(
+                pagerObj.getLocalizedLabel('currentPageInfo'), [pagerObj.totalRecordsCount === 0 ? 0 :
+                    pagerObj.currentPage, pagerObj.totalPages || 0]) + ' ';
+            this.pageCountMsgElem.textContent = this.format(
+                pagerObj.getLocalizedLabel('totalItemsInfo'), [pagerObj.totalRecordsCount || 0]);
+        }
         this.pageNoMsgElem.parentElement.setAttribute('aria-label', this.pageNoMsgElem.textContent + this.pageCountMsgElem.textContent);
-
     }
 
     /**

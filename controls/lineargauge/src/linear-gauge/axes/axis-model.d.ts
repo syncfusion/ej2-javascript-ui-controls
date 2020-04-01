@@ -6,31 +6,31 @@ import { Property, Complex, ChildProperty, Collection } from '@syncfusion/ej2-ba
 export interface LineModel {
 
     /**
-     * The dash array of the axis line.
+     * Sets and gets the dash-array of the axis line.
      */
 
     dashArray?: string;
 
     /**
-     * Height of the axis line.
+     * Sets and gets the height of the axis line.
      * @aspDefaultValueIgnore
      * @blazorDefaultValueIgnore
      */
     height?: number;
 
     /**
-     * Width of the axis line.
+     * Sets and gets the width of the axis line.
      * @default 2
      */
     width?: number;
 
     /**
-     * Color of the axis line.
+     * Sets and gets the color for the axis line.
      */
     color?: string;
 
     /**
-     * Specifies to move the axis line.
+     * Sets and gets the offset to position the axis line in linear gauge.
      * @blazorDefaultValue 0
      */
     offset?: number;
@@ -43,33 +43,33 @@ export interface LineModel {
 export interface LabelModel {
 
     /**
-     * The font of the axis labels.
+     * Sets and gets the options for customizing the style of the text in axis labels.
      */
 
     font?: FontModel;
 
     /**
-     * The color of the label, based on range color.
+     * Enables or disables the color of the label to use the color of the ranges in linear gauge.
      * @default false
      */
 
     useRangeColor?: boolean;
 
     /**
-     * To format the axis label, which accepts any global format string like 'C', 'n1', 'P' etc.
+     * Sets and gets the format for the axis label. This property accepts any global format string like 'C', 'n1', 'P' etc.
      * Also accepts placeholder like '{value}°C' in which value represent the axis label e.g. 20°C.
      */
 
     format?: string;
 
     /**
-     * To move the axis labels.
+     * Sets and gets the value to position the axis labels in linear gauge.
      * @default 0
      */
     offset?: number;
 
     /**
-     * Specifies to position the axis label.
+     * Sets and gets the position of the axis label in linear gauge.
      * @default Auto
      */
     position?: Position;
@@ -82,48 +82,48 @@ export interface LabelModel {
 export interface RangeModel {
 
     /**
-     * Start of the axis range.
+     * Sets and gets the start value for the range in axis.
      * @default 0
      */
     start?: number;
 
     /**
-     * End of the axis range.
+     * Sets and gets the end value for the range in axis.
      * @default 0
      */
     end?: number;
 
     /**
-     * Specifies to position the axis range.
+     * Sets and gets the position to place the ranges in the axis.
      * @default Outside
      */
     position?: Position;
 
     /**
-     * Color of the axis range.
+     * Sets and gets the color of the axis range.
      */
     color?: string;
 
     /**
-     * Starting width of axis range.
+     * Sets and gets the width of the start of the range in axis.
      * @default 10
      */
     startWidth?: number;
 
     /**
-     * Ending width of axis range.
+     * Sets and gets the width of the end of the range in axis.
      * @default 10
      */
     endWidth?: number;
 
     /**
-     * Specifies to move the axis range.
+     * Sets and gets the value to position the range in the axis.
      * @default '0'
      */
     offset?: number | string;
 
     /**
-     * Specifies the border of axis range.
+     * Sets and gets the options to customize the color and width of the border for the axis range.
      */
     border?: BorderModel;
 
@@ -135,36 +135,37 @@ export interface RangeModel {
 export interface TickModel {
 
     /**
-     * Height of the tick line.
+     * Sets and gets the height of the tick line in the axis.
      */
     height?: number;
 
     /**
-     * Width of the tick line. 
+     * Sets and gets the width of the tick line in the axis. 
      * @default 2
      */
     width?: number;
 
     /**
-     * Specifies the interval for ticks.
+     * Sets and gets the gap between the ticks in the axis.
      * @aspDefaultValueIgnore
      */
     interval?: number;
 
     /**
-     * The color of the major or minor tick line, which accepts value in hex, rgba as a valid CSS color string.
+     * Sets and gets the color for the major or minor tick line. This property accepts value in hex code,
+     * rgba string as a valid CSS color string.
      */
 
     color?: string;
 
     /**
-     * Specifies to move the axis ticks.
+     * Sets and gets the value to move the ticks from the axis.
      * @aspDefaultValueIgnore
      */
     offset?: number;
 
     /**
-     * Specifies to position the axis tick.
+     * Sets and gets the value to place the ticks in the axis.
      * @default Auto
      */
     position?: Position;
@@ -177,13 +178,13 @@ export interface TickModel {
 export interface PointerModel {
 
     /**
-     * Specifies the type of pointer.
+     * Sets and gets the type of pointer in axis.
      * @default Marker
      */
     type?: Point;
 
     /**
-     * Specifies value of the pointer.
+     * Sets and gets the value of the pointer in axis.
      * @blazorDefaultValue 0
      * @default null
      */
@@ -191,83 +192,83 @@ export interface PointerModel {
     value?: number;
 
     /**
-     * Specifies the marker shape in pointer.
+     * Sets and gets the type of the marker for pointers in axis.
      * @default InvertedTriangle
      */
     markerType?: MarkerType;
 
     /**
-     * Specifies the path of image.
+     * Sets and gets the URL path for the image in marker when the marker type is chosen as image.
      * @default null
      */
     imageUrl?: string;
 
     /**
-     * Specifies the border of pointer.
+     * Sets and gets the options to optimize the color and width of the border for pointers.
      */
     border?: BorderModel;
 
     /**
-     * Specifies the corner radius for rounded rectangle.
+     * Sets and gets the corner radius for pointer.
      * @default 10
      */
     roundedCornerRadius?: number;
 
     /**
-     * Specifies the place of the pointer.
+     * Sets and gets the place of the pointer.
      * @default Far
      */
     placement?: Placement;
 
     /**
-     * Specifies the height of pointer.
+     * Sets and gets the height of the pointer.
      * @default 20
      */
     height?: number;
 
     /**
-     * Specifies the width of pointer.
+     * Sets and gets the width of the pointer.
      * @default 20
      */
     width?: number;
 
     /**
-     * Specifies the color of the pointer.
+     * Sets and gets the color of the pointer.
      */
     color?: string;
 
     /**
-     * Specifies the opacity for pointer.
+     * Sets and gets the opacity of pointer in linear gauge.
      * @default 1
      */
     opacity?: number;
 
     /**
-     * Specifies the animating duration of pointer in milliseconds.
+     * Sets and gets the duration of animation in pointer.
      * @default 0
      */
     animationDuration?: number;
 
     /**
-     * Specifies the enable or disable the pointer drag.
+     * Enables or disables the drag movement of pointer.
      * @default false
      */
     enableDrag?: boolean;
 
     /**
-     * Specifies to move the pointer.
+     * Sets and gets the value to position the pointer from the axis.
      * @default '0'
      */
     offset?: number | string;
 
     /**
-     * Specifies to position the pointer.
+     * Sets and gets the position of the pointer.
      * @default Auto
      */
     position?: Position;
 
     /**
-     * Description of the pointer.
+     * Sets and gets the description for the pointer.
      * @default null
      */
     description?: string;
@@ -280,67 +281,67 @@ export interface PointerModel {
 export interface AxisModel {
 
     /**
-     * Specifies the minimum value of an axis.
+     * Sets and gets the minimum value for the axis.
      * @default 0
      */
 
     minimum?: number;
 
     /**
-     * Specifies the maximum value of an axis.
+     * Sets and gets the maximum value for the axis.
      * @default 100
      */
 
     maximum?: number;
 
     /**
-     * Specifies the axis rendering direction.
+     * Enables or disables the inversed axis.
      */
 
     isInversed?: boolean;
 
     /**
-     * Specifies the last label to be shown
+     * Shows or hides the last label in the axis of the linear gauge.
      */
 
     showLastLabel?: boolean;
 
     /**
-     * Specifies the axis rendering position.
+     * Enables or disables the opposed position of the axis in the linear gauge.
      */
     opposedPosition?: boolean;
 
     /**
-     * Options for customizing the axis line.
+     * Sets and gets the options for customizing the axis line.
      */
     line?: LineModel;
 
     /**
-     * Options for customizing the ranges of an axis
+     * Sets and gets the options for customizing the ranges of an axis.
      */
 
     ranges?: RangeModel[];
 
     /**
-     * Options for customizing the pointers of an axis
+     * Sets and gets the options for customizing the pointers of an axis.
      */
 
     pointers?: PointerModel[];
 
     /**
-     * Options for customizing the major tick lines.
+     * Sets and gets the options for customizing the major tick lines.
      */
 
     majorTicks?: TickModel;
 
     /**
-     * Options for customizing the minor tick lines.
+     * Sets and gets the options for customizing the minor tick lines.
      */
 
     minorTicks?: TickModel;
 
     /**
-     * Options for customizing the axis label appearance.
+     * Sets and gets the options for customizing the appearance of the label in axis.
      */
 
     labelStyle?: LabelModel;

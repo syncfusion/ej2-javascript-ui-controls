@@ -205,6 +205,7 @@ export interface ToastModel extends ComponentModel{
    * 
    * {% codeBlock src='toast/animation/index.md' %}{% endcodeBlock %}
    * 
+   * @blazorType ToastAnimationSettings
    * @default { show: { effect: 'FadeIn', duration: 600, easing: 'linear' },
    * hide: { effect: 'FadeOut', duration: 600, easing: 'linear' }}
    */
@@ -220,6 +221,7 @@ export interface ToastModel extends ComponentModel{
    * {% codeBlock src='toast/position/index.md' %}{% endcodeBlock %}
    * 
    * @default { X: "Left", Y: "Top" }
+   * @blazorType ToastPosition
    */
     position?: ToastPositionModel;
 
@@ -230,6 +232,7 @@ export interface ToastModel extends ComponentModel{
    * {% codeBlock src='toast/buttons/index.md' %}{% endcodeBlock %}
    * 
    * @default [{}]
+   * @deprecated
    */
     buttons?: ButtonModelPropsModel[];
 

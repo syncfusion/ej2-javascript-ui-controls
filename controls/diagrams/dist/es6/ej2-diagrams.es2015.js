@@ -2696,9 +2696,9 @@ class DiagramElement {
     // }
     /**
      * Sets the offset of the element with respect to its parent
-     * @param x
-     * @param y
-     * @param mode
+     * @param {number} x
+     * @param {number} y
+     * @param {UnitMode} mode
      */
     setOffsetWithRespectToBounds(x, y, mode) {
         this.unitMode = mode;
@@ -2706,7 +2706,7 @@ class DiagramElement {
     }
     /**
      * Gets the position of the element with respect to its parent
-     * @param size
+     * @param {Size} size
      */
     getAbsolutePosition(size) {
         if (this.position !== undefined) {
@@ -2733,7 +2733,7 @@ class DiagramElement {
     }
     /**
      * Measures the minimum space that the element requires
-     * @param availableSize
+     * @param {Size} availableSize
      */
     measure(availableSize, obj, callback) {
         let width = this.width !== undefined ? this.width : (availableSize.width || 0) - this.margin.left - this.margin.right;
@@ -2746,7 +2746,7 @@ class DiagramElement {
     }
     /**
      * Arranges the element
-     * @param desiredSize
+     * @param {Size} desiredSize
      */
     arrange(desiredSize) {
         this.actualSize = desiredSize;
@@ -2761,8 +2761,8 @@ class DiagramElement {
     }
     /**
      * Validates the size of the element with respect to its minimum and maximum size
-     * @param desiredSize
-     * @param availableSize
+     * @param {Size} desiredSize
+     * @param {Size} availableSize
      */
     validateDesiredSize(desiredSize, availableSize) {
         //Empty canvas
@@ -2827,7 +2827,7 @@ class Container extends DiagramElement {
     /**
      * Measures the minimum space that the container requires
      *
-     * @param availableSize
+     * @param {Size} availableSize
      */
     measure(availableSize, id, callback) {
         // measure the element and find the desired size
@@ -2888,7 +2888,7 @@ class Container extends DiagramElement {
     }
     /**
      * Arranges the container and its children
-     * @param desiredSize
+     * @param {Size} desiredSize
      */
     arrange(desiredSize) {
         let child;
@@ -2932,7 +2932,7 @@ class Container extends DiagramElement {
     //protected methods
     /**
      * Stretches the child elements based on the size of the container
-     * @param size
+     * @param {Size} size
      */
     stretchChildren(size) {
         if (this.hasChildren()) {
@@ -2951,7 +2951,7 @@ class Container extends DiagramElement {
     }
     /**
      * Considers the padding of the element when measuring its desired size
-     * @param size
+     * @param {Size} size
      */
     applyPadding(size) {
         size.width += this.padding.left + this.padding.right;
@@ -2959,8 +2959,8 @@ class Container extends DiagramElement {
     }
     /**
      * Finds the offset of the child element with respect to the container
-     * @param child
-     * @param center
+     * @param {DiagramElement} child
+     * @param {PointModel} center
      */
     findChildOffsetFromCenter(child, center) {
         let topLeft = { x: center.x - child.desiredSize.width / 2, y: center.y - child.desiredSize.height / 2 };
@@ -3087,7 +3087,7 @@ class TextElement extends DiagramElement {
     }
     /**
      * Measures the minimum size that is required for the text element
-     * @param availableSize
+     * @param {Size} availableSize
      */
     measure(availableSize) {
         let size;
@@ -3109,7 +3109,7 @@ class TextElement extends DiagramElement {
     }
     /**
      * Arranges the text element
-     * @param desiredSize
+     * @param {Size} desiredSize
      */
     arrange(desiredSize) {
         if (desiredSize.width !== this.actualSize.width || desiredSize.height !== this.actualSize.height || this.isDirt) {
@@ -3136,7 +3136,7 @@ class Canvas extends Container {
     }
     /**
      * Measures the minimum space that the canvas requires
-     * @param availableSize
+     * @param {Size} availableSize
      */
     measure(availableSize, id, callback) {
         let desired = undefined;
@@ -3251,11 +3251,11 @@ class Canvas extends Container {
     }
     /**
      * Aligns the child element based on its parent
-     * @param child
-     * @param childSize
-     * @param parentSize
-     * @param x
-     * @param y
+     * @param {DiagramElement} child
+     * @param {Size} childSize
+     * @param {Size} parentSize
+     * @param {number} x
+     * @param {number} y
      */
     alignChildBasedOnParent(child, childSize, parentSize, x, y) {
         switch (child.horizontalAlignment) {
@@ -3288,9 +3288,9 @@ class Canvas extends Container {
     }
     /**
      * Aligns the child elements based on a point
-     * @param child
-     * @param x
-     * @param y
+     * @param {DiagramElement} child
+     * @param {number} x
+     * @param {number} y
      */
     alignChildBasedOnaPoint(child, x, y) {
         x += child.margin.left - child.margin.right;
@@ -3432,7 +3432,7 @@ class PathElement extends DiagramElement {
     }
     /**
      * Measures the minimum space that is required to render the element
-     * @param availableSize
+     * @param {Size} availableSize
      */
     measure(availableSize) {
         //Performance issue - Avoiding measuring the connector path
@@ -3459,7 +3459,7 @@ class PathElement extends DiagramElement {
     }
     /**
      * Arranges the path element
-     * @param desiredSize
+     * @param {Size} desiredSize
      */
     arrange(desiredSize) {
         if (this.isDirt || this.actualSize.width !== desiredSize.width || this.actualSize.height !== desiredSize.height) {
@@ -3476,9 +3476,9 @@ class PathElement extends DiagramElement {
     }
     /**
      * Translates the path to 0,0 and scales the path based on the actual size
-     * @param pathData
-     * @param bounds
-     * @param actualSize
+     * @param {string} pathData
+     * @param {Rect} bounds
+     * @param {Size} actualSize
      */
     updatePath(pathData, bounds, actualSize) {
         let isScale = false;
@@ -3545,7 +3545,7 @@ class ImageElement extends DiagramElement {
     }
     /**
      * Measures minimum space that is required to render the image
-     * @param availableSize
+     * @param {Size} availableSize
      */
     measure(availableSize, id, callback) {
         if (this.isDirt && (this.stretch !== 'Stretch' || this.width === undefined && this.height === undefined)) {
@@ -3564,7 +3564,7 @@ class ImageElement extends DiagramElement {
     }
     /**
      * Arranges the image
-     * @param desiredSize
+     * @param {Size} desiredSize
      */
     arrange(desiredSize) {
         this.actualSize = new Size(this.desiredSize.width, this.desiredSize.height);
@@ -3612,7 +3612,7 @@ class DiagramNativeElement extends DiagramElement {
     }
     /**
      * Measures minimum space that is required to render the Native Element
-     * @param availableSize
+     * @param {Size} availableSize
      */
     measure(availableSize) {
         if (this.isDirt) {
@@ -3637,7 +3637,7 @@ class DiagramNativeElement extends DiagramElement {
     }
     /**
      * Arranges the Native Element
-     * @param desiredSize
+     * @param {Size} desiredSize
      */
     arrange(desiredSize) {
         this.actualSize = new Size(this.desiredSize.width, this.desiredSize.height);
@@ -3880,7 +3880,7 @@ function getDecoratorShape(shape, decorator) {
 }
 /**
  * @private
- * @param icon
+ * @param {IconShapeModel} icon
  * sets the path data for different icon shapes
  */
 function getIconShape(icon) {
@@ -6755,7 +6755,7 @@ __decorate$8([
 /**
  * @private
  * defines the Tooltip.
- * @param diagram
+ * @param {Diagram} diagram
  */
 function initTooltip(diagram) {
     let tooltipOption = new Tooltip;
@@ -6782,8 +6782,8 @@ function beforeCollision(args) {
 /**
  * @private
  * updates the contents of the tooltip.
- * @param diagram
- * @param node
+ * @param {Diagram} diagram
+ * @param {NodeModel | ConnectorModel} node
  */
 function updateTooltip(diagram, node) {
     let tooltip;
@@ -8398,7 +8398,7 @@ class Ruler extends Component {
     }
     /**
      * @private
-     * @param scale
+     * @param {number} scale
      */
     updateSegmentWidth(scale) {
         if (this.segmentWidth !== 100) {
@@ -8438,8 +8438,9 @@ class Ruler extends Component {
     }
     /**
      * @private
-     * @param rulerObj
-     * @param currentPoint
+     * @param {HTMLElement} rulerObj - Defines the ruler Object
+     * @param {PointModel} currentPoint - Defines the current point for ruler Object
+     * @param {number} offset - Defines the offset ruler Object
      */
     drawRulerMarker(rulerObj, currentPoint, offset) {
         let rulerSvg;
@@ -10341,17 +10342,19 @@ function headerDefine(grid, diagram, object) {
     for (let i = 0; i < columns.length; i++) {
         maxWidth += columns[i].width;
     }
+    shape.header.id = shape.header.id || randomId();
     let node = {
-        annotations: [{
-                content: shape.header.annotation.content,
-                style: shape.header.annotation.style ? shape.header.annotation.style : undefined,
-            }],
+        id: object.id + shape.header.id,
+        annotations: [cloneObject(shape.header.annotation)],
         style: shape.header.style ? shape.header.style : undefined,
         offsetX: object.offsetX, offsetY: object.offsetY,
         rowIndex: 0, columnIndex: 0,
         maxWidth: maxWidth,
         container: { type: 'Canvas', orientation: 'Horizontal' }
     };
+    if (!canSelect(object)) {
+        node.constraints &= ~NodeConstraints.Select;
+    }
     let wrapper = addObjectToGrid(diagram, grid, object, node, true);
     grid.addObject(wrapper, 0, 0, 1, grid.columnDefinitions().length);
 }
@@ -10370,17 +10373,18 @@ function phaseDefine(grid, diagram, object, indexValue, orientation, phaseIndex)
         rowValue = shape.header && shape.hasHeader ? phaseIndex + 1 : phaseIndex;
     }
     let phaseObject = {
-        annotations: [{
-                content: shape.phases[phaseIndex].header.annotation.content,
-                rotateAngle: orientation ? 0 : 270,
-                style: shape.phases[phaseIndex].header.annotation.style
-            }], maxWidth: maxWidth,
+        annotations: [cloneObject(shape.phases[phaseIndex].header.annotation)],
+        maxWidth: maxWidth,
         id: object.id + shape.phases[phaseIndex].id + '_header',
         offsetX: object.offsetX, offsetY: object.offsetY,
         style: shape.phases[phaseIndex].style,
         rowIndex: rowValue, columnIndex: colValue,
         container: { type: 'Canvas', orientation: orientation ? 'Horizontal' : 'Vertical' }
     };
+    phaseObject.annotations[0].rotateAngle = orientation ? 0 : 270;
+    if (!canSelect(object)) {
+        phaseObject.constraints &= ~NodeConstraints.Select;
+    }
     shape.phases[phaseIndex].header.id = phaseObject.id;
     let wrapper = addObjectToGrid(diagram, grid, object, phaseObject, false, true, false, shape.phases[phaseIndex].id);
     grid.addObject(wrapper, rowValue, colValue);
@@ -10410,27 +10414,27 @@ function laneCollection(grid, diagram, object, indexValue, laneIndex, orientatio
             constraints: NodeConstraints.Default | NodeConstraints.ReadOnly | NodeConstraints.AllowDrop,
             container: { type: 'Canvas', orientation: orientation ? 'Horizontal' : 'Vertical' }
         };
+        if (!canSelect(object)) {
+            canvas.constraints &= ~NodeConstraints.Select;
+        }
         parentWrapper = addObjectToGrid(diagram, grid, object, canvas, false, false, true);
         parentWrapper.children[0].isCalculateDesiredSize = false;
         if (l === 0) {
             laneNode = {
                 id: object.id + shape.lanes[laneIndex].id + '_' + l + '_header',
                 style: shape.lanes[laneIndex].header.style,
-                annotations: [
-                    {
-                        id: shape.lanes[laneIndex].header.annotation.id,
-                        content: shape.lanes[laneIndex].header.annotation.content,
-                        rotateAngle: orientation ? 270 : 0,
-                        style: shape.lanes[laneIndex].header.annotation.style,
-                    }
-                ],
+                annotations: [cloneObject(shape.lanes[laneIndex].header.annotation)],
                 offsetX: object.offsetX, offsetY: object.offsetY,
                 rowIndex: rowValue, columnIndex: colValue,
                 container: { type: 'Canvas', orientation: orientation ? 'Horizontal' : 'Vertical' }
             };
+            laneNode.annotations[0].rotateAngle = orientation ? 270 : 0;
             shape.lanes[laneIndex].header.id = laneNode.id;
             (orientation) ? laneNode.width = shape.lanes[laneIndex].header.width :
                 laneNode.height = shape.lanes[laneIndex].header.height;
+            if (!canSelect(object)) {
+                laneNode.constraints &= ~NodeConstraints.Select;
+            }
             childWrapper = addObjectToGrid(diagram, grid, object, laneNode, false, false, true, shape.lanes[laneIndex].id);
             parentWrapper.children.push(childWrapper);
         }
@@ -10546,7 +10550,7 @@ function initGridColumns(columns, orientation, object) {
             }
             columns.push(cols);
         }
-        if ((shape.phases.length === 0 || shape.lanes.length === 0)) {
+        if ((shape.phases.length === 0 && shape.lanes.length === 0)) {
             cols = createColumn(object.width);
             columns.push(cols);
         }
@@ -10948,10 +10952,11 @@ function laneInterChanged(diagram, obj, target, position) {
                     }
                 }
                 if (sourceIndex !== targetIndex) {
-                    if (shape.phaseSize === 0 && targetIndex === 0) {
+                    if ((shape.phaseSize === 0 || shape.phases.length === 0) && (targetIndex === 0 || sourceIndex === 0)) {
                         if (shape.header && shape.hasHeader) {
-                            grid.rows[0].cells[sourceIndex].children = grid.rows[0].cells[0].children;
-                            grid.rows[0].cells[sourceIndex].columnSpan = grid.rows[0].cells[0].columnSpan;
+                            let changeHeaderIndex = (targetIndex === 0) ? sourceIndex : targetIndex;
+                            grid.rows[0].cells[changeHeaderIndex].children = grid.rows[0].cells[0].children;
+                            grid.rows[0].cells[changeHeaderIndex].columnSpan = grid.rows[0].cells[0].columnSpan;
                             grid.rows[0].cells[0].children = [];
                         }
                     }
@@ -12641,9 +12646,9 @@ function getPoints(element, corners, padding) {
 /**
  * @private
  * sets the offset of the tooltip.
- * @param diagram
- * @param mousePosition
- * @param node
+ * @param {Diagram} diagram
+ * @param {PointModel} mousePosition
+ * @param {NodeModel | ConnectorModel} node
  */
 function getTooltipOffset(diagram, mousePosition, node) {
     let offset;
@@ -13249,7 +13254,7 @@ function upgrade(dataObj) {
     if (dataObj && (dataObj.version === undefined || (dataObj.version < 17.1))) {
         let nodes = dataObj.nodes;
         for (let node of nodes) {
-            if (node && node.ports.length > 0) {
+            if (node && node.ports && node.ports.length > 0) {
                 for (let port of node.ports) {
                     if (port && port.constraints && port.constraints === PortConstraints.None) {
                         port.constraints = PortConstraints.Default;
@@ -14073,7 +14078,7 @@ function getPoint(x, y, w, h, angle, offsetX, offsetY, cornerPoint) {
 }
 /**
  * Get the object as Node | Connector
- * @param obj
+ * @param {Object} obj
  */
 let getObjectType = (obj) => {
     if (obj) {
@@ -14305,7 +14310,7 @@ class StackPanel extends Container {
     }
     /**
      * Measures the minimum space that the panel needs
-     * @param availableSize
+     * @param {Size} availableSize
      */
     measure(availableSize) {
         let updateSize = this.orientation === 'Horizontal' ? this.updateHorizontalStack : this.updateVerticalStack;
@@ -14314,7 +14319,7 @@ class StackPanel extends Container {
     }
     /**
      * Arranges the child elements of the stack panel
-     * @param desiredSize
+     * @param {Size} desiredSize
      */
     arrange(desiredSize) {
         let updateSize = this.orientation === 'Horizontal' ? this.arrangeHorizontalStack : this.arrangeVerticalStack;
@@ -14324,7 +14329,7 @@ class StackPanel extends Container {
     }
     /**
      * Measures the minimum space that the panel needs
-     * @param availableSize
+     * @param {Size} availableSize
      */
     measureStackPanel(availableSize, updateSize) {
         let desired = undefined;
@@ -16906,7 +16911,7 @@ function addTouchPointer(touchList, e, touches) {
 }
 /**
  * removes the element from dom
- * @param elementId
+ * @param {string} elementId
  */
 function removeElement(elementId, contentId) {
     let div = getDiagramElement(elementId, contentId);
@@ -18699,11 +18704,11 @@ class SvgRenderer {
     /**
      * used to crop the given native element into a rectangle of the given size
      * @private
-     * @param node
-     * @param group
-     * @param height
-     * @param width
-     * @param parentSvg
+     * @param {DiagramNativeElement} node
+     * @param {SVGElement} group
+     * @param {number} height
+     * @param {number} width
+     * @param {SVGSVGElement} parentSvg
      */
     drawClipPath(node, group, height, width, parentSvg) {
         let contentWidth = node.contentSize.width;
@@ -20601,6 +20606,7 @@ __decorate$20([
  * Finds the action to be taken for the object under mouse
  *
  */
+/* tslint:disable */
 /** @private */
 function findToolToActivate(obj, wrapper, position, diagram, touchStart, touchMove, target) {
     let conn = diagram.selectedItems.connectors[0];
@@ -20651,7 +20657,21 @@ function findToolToActivate(obj, wrapper, position, diagram, touchStart, touchMo
                     return 'ConnectorTargetEnd';
                 }
                 let action = checkForConnectorSegment(conn, handle, position, diagram);
-                if (action) {
+                if (action !== 'OrthoThumb') {
+                    if ((canShowCorner(handle.constraints, 'ConnectorSourceThumb'))
+                        && canDragSourceEnd(conn)) {
+                        if (action) {
+                            return action;
+                        }
+                    }
+                    if ((canShowCorner(handle.constraints, 'ConnectorTargetThumb'))
+                        && canDragTargetEnd(conn)) {
+                        if (action) {
+                            return action;
+                        }
+                    }
+                }
+                else {
                     return action;
                 }
             }
@@ -20739,6 +20759,7 @@ function findToolToActivate(obj, wrapper, position, diagram, touchStart, touchMo
     }
     return 'Select';
 }
+/* tslint:enable */
 function checkResizeHandles(diagram, element, position, matrix, x, y) {
     let action;
     if ((diagram.selectedItems.nodes.length === 1 && diagram.selectedItems.connectors.length === 0)
@@ -21168,7 +21189,7 @@ class DeepDiffMapper {
     getDiagramObjects(diffValue, object, isNode, args, labelDrag, diagram) {
         let index = 0;
         index = getIndex(diagram, object);
-        diffValue.ejsIndex = index;
+        diffValue.sfIndex = index;
         if (isNode) {
             this.newNodeObject.push(diffValue);
         }
@@ -21194,7 +21215,7 @@ class DeepDiffMapper {
                     else {
                         for (let j = 0; j < selectedObject.annotations.length; j++) {
                             if (args.sourceWrapper.id === selectedObject.id + "_" + selectedObject.annotations[j].id) {
-                                tempObject.ejsIndex = j;
+                                tempObject.sfIndex = j;
                             }
                         }
                         if (isNode) {
@@ -21404,7 +21425,7 @@ var __awaiter$1 = (undefined && undefined.__awaiter) || function (thisArg, _argu
 class ToolBase {
     /**
      * Initializes the tool
-     * @param command Command that is corresponding to the current action
+     * @param {CommandHandler} command Command that is corresponding to the current action
      */
     constructor(command, protectChange = false) {
         /**
@@ -21724,7 +21745,7 @@ class ConnectTool extends ToolBase {
                     };
                     let trigger = DiagramEvent.connectionChange;
                     let temparg;
-                    temparg = (yield this.commandHandler.triggerEvent(trigger, arg));
+                    temparg = (yield this.commandHandler.triggerEvent(trigger, arg)) || arg;
                     this.tempArgs = temparg;
                     if (arg.cancel || (temparg && temparg.cancel)) {
                         this.canCancel = true;
@@ -22551,18 +22572,18 @@ class ResizeTool extends ToolBase {
             let object;
             this.commandHandler.updateSelector();
             object = this.commandHandler.renderContainerHelper(args.source) || args.source;
-            if (!isBlazor() && (this.undoElement.offsetX !== object.wrapper.offsetX || this.undoElement.offsetY !== object.wrapper.offsetY)) {
-                let deltaValues = this.updateSize(args.source, this.currentPosition, this.prevPosition, this.corner, this.initialBounds);
-                this.blocked = this.scaleObjects(deltaValues.width, deltaValues.height, this.corner, this.currentPosition, this.prevPosition, object);
-                let oldValue = {
-                    offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY,
-                    width: args.source.wrapper.actualSize.width, height: args.source.wrapper.actualSize.height
-                };
-                let arg = {
-                    source: cloneBlazorObject(args.source), state: 'Completed',
-                    oldValue: oldValue, newValue: oldValue, cancel: false
-                };
+            if ((this.undoElement.offsetX !== object.wrapper.offsetX || this.undoElement.offsetY !== object.wrapper.offsetY)) {
                 if (!isBlazor()) {
+                    let deltaValues = this.updateSize(args.source, this.currentPosition, this.prevPosition, this.corner, this.initialBounds);
+                    this.blocked = this.scaleObjects(deltaValues.width, deltaValues.height, this.corner, this.currentPosition, this.prevPosition, object);
+                    let oldValue = {
+                        offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY,
+                        width: args.source.wrapper.actualSize.width, height: args.source.wrapper.actualSize.height
+                    };
+                    let arg = {
+                        source: cloneBlazorObject(args.source), state: 'Completed',
+                        oldValue: oldValue, newValue: oldValue, cancel: false
+                    };
                     this.commandHandler.triggerEvent(DiagramEvent.sizeChange, arg);
                 }
                 let obj = cloneObject(args.source);
@@ -24330,7 +24351,7 @@ class DiagramEventHandler {
                 }
                 let target;
                 let objects = this.objectFinder.findObjectsUnderMouse(this.currentPosition, this.diagram, this.eventArgs, null, this.action);
-                let obj = this.objectFinder.findObjectUnderMouse(this.diagram, objects, this.action, this.inAction, this.eventArgs, evt);
+                let obj = this.objectFinder.findObjectUnderMouse(this.diagram, objects, this.action, this.inAction, this.eventArgs, this.currentPosition);
                 let sourceElement = null;
                 if (obj !== null) {
                     sourceElement = this.diagram.findElementUnderMouse(obj, this.currentPosition);
@@ -24472,8 +24493,8 @@ class DiagramEventHandler {
                             let content = this.getContent();
                             if (this.hoverElement && this.hoverElement.tooltip.openOn === 'Auto' && content !== '') {
                                 this.elementLeave();
-                                this.diagram.updatePortVisibility(this.hoverElement, PortVisibility.Hover, true);
                             }
+                            this.diagram.updatePortVisibility(this.hoverElement, PortVisibility.Hover, true);
                             if (obj instanceof Node) {
                                 this.hoverNode = obj;
                             }
@@ -24483,7 +24504,12 @@ class DiagramEventHandler {
                                 canResetElement = false;
                             }
                             this.hoverElement = canResetElement ? obj : this.hoverElement;
-                            this.elementEnter(this.currentPosition, false);
+                            if (canResetElement) {
+                                this.elementEnter(this.currentPosition, false);
+                            }
+                            else {
+                                this.hoverElement = obj;
+                            }
                         }
                         else if (!this.hoverElement && this.hoverElement === obj) {
                             this.elementEnter(this.currentPosition, true);
@@ -25023,7 +25049,7 @@ class DiagramEventHandler {
         let selectedObject = (this.diagram.selectedItems.nodes.length) ?
             this.diagram.selectedItems.nodes : this.diagram.selectedItems.connectors;
         this.keyArgs = {
-            element: this.diagram.selectedItems,
+            element: cloneBlazorObject(this.diagram.selectedItems),
             key: evt.key, keyCode: evt.keyCode ? evt.keyCode : evt.which,
         };
         this.getKeyModifier(this.keyArgs, evt);
@@ -25061,7 +25087,7 @@ class DiagramEventHandler {
     }
     keyUp(evt) {
         this.keyArgs = {
-            element: this.diagram.selectedItems, key: evt.key, keyCode: evt.keyCode ? evt.keyCode : evt.which,
+            element: cloneBlazorObject(this.diagram.selectedItems), key: evt.key, keyCode: evt.keyCode ? evt.keyCode : evt.which,
         };
         let selectedObject = (this.diagram.selectedItems.nodes.length) ?
             this.diagram.selectedItems.nodes : this.diagram.selectedItems.connectors;
@@ -25613,37 +25639,35 @@ class DiagramEventHandler {
                 }
                 else {
                     let parentNode = this.diagram.nameTable[obj.parentId];
-                    if (!(this.diagram.lineRoutingModule && (this.diagram.constraints & DiagramConstraints.LineRouting))) {
-                        if (!parentNode || (parentNode && parentNode.shape.type !== 'SwimLane')) {
-                            if (parentNode && parentNode.isLane && (obj.constraints & NodeConstraints.AllowMovingOutsideLane)) {
-                                let swimlane = this.diagram.getObject(parentNode.parentId);
-                                let laneId = swimlane.id + swimlane.shape.lanes[0].id + '0';
-                                let firstlane = this.diagram.getObject(laneId);
-                                let x = firstlane.wrapper.bounds.x;
-                                let y = firstlane.wrapper.bounds.y;
-                                let width = swimlane.wrapper.bounds.bottomRight.x - x;
-                                let height = swimlane.wrapper.bounds.bottomRight.y - y;
-                                let swimlaneBounds = new Rect(x, y, width, height);
-                                if (swimlaneBounds.containsPoint(this.currentPosition)) {
-                                    obj.offsetX = helperObject.offsetX;
-                                    obj.offsetY = helperObject.offsetY;
-                                    obj.width = helperObject.width;
-                                    obj.height = helperObject.height;
-                                    obj.rotateAngle = helperObject.rotateAngle;
-                                }
-                            }
-                            else {
+                    if (!parentNode || (parentNode && parentNode.shape.type !== 'SwimLane')) {
+                        if (parentNode && parentNode.isLane && (obj.constraints & NodeConstraints.AllowMovingOutsideLane)) {
+                            let swimlane = this.diagram.getObject(parentNode.parentId);
+                            let laneId = swimlane.id + swimlane.shape.lanes[0].id + '0';
+                            let firstlane = this.diagram.getObject(laneId);
+                            let x = firstlane.wrapper.bounds.x;
+                            let y = firstlane.wrapper.bounds.y;
+                            let width = swimlane.wrapper.bounds.bottomRight.x - x;
+                            let height = swimlane.wrapper.bounds.bottomRight.y - y;
+                            let swimlaneBounds = new Rect(x, y, width, height);
+                            if (swimlaneBounds.containsPoint(this.currentPosition)) {
                                 obj.offsetX = helperObject.offsetX;
                                 obj.offsetY = helperObject.offsetY;
-                                if (obj && obj.shape && obj.shape.type !== 'UmlClassifier') {
-                                    if (obj.shape.type !== 'Bpmn' ||
-                                        (obj.shape.type === 'Bpmn' && obj.shape.shape !== 'TextAnnotation')) {
-                                        obj.width = helperObject.width;
-                                        obj.height = helperObject.height;
-                                    }
-                                }
+                                obj.width = helperObject.width;
+                                obj.height = helperObject.height;
                                 obj.rotateAngle = helperObject.rotateAngle;
                             }
+                        }
+                        else {
+                            obj.offsetX = helperObject.offsetX;
+                            obj.offsetY = helperObject.offsetY;
+                            if (obj && obj.shape && obj.shape.type !== 'UmlClassifier') {
+                                if (obj.shape.type !== 'Bpmn' ||
+                                    (obj.shape.type === 'Bpmn' && obj.shape.shape !== 'TextAnnotation')) {
+                                    obj.width = helperObject.width;
+                                    obj.height = helperObject.height;
+                                }
+                            }
+                            obj.rotateAngle = helperObject.rotateAngle;
                         }
                     }
                     let undoElement;
@@ -25675,6 +25699,13 @@ class DiagramEventHandler {
                     }
                     else {
                         history = this.updateContainerPropertiesExtend(parentNode, obj, connectors, helperObject, history);
+                    }
+                    if ((this.diagram.lineRoutingModule && (this.diagram.constraints & DiagramConstraints.LineRouting))
+                        && (!checkParentAsContainer(this.diagram, obj, true))) {
+                        this.diagram.nodePropertyChange(obj, {}, {
+                            width: obj.width, height: obj.height,
+                            offsetX: obj.offsetX, offsetY: obj.offsetY
+                        });
                     }
                     if (obj.shape.lanes) {
                         this.updateLaneChildNode(obj);
@@ -26114,7 +26145,7 @@ class ObjectFinder {
                 for (let i = objects.length - 1; i >= 0; i--) {
                     if (objects[i] instanceof Node || objects[i] instanceof Connector) {
                         let portElement = this.findTargetElement(objects[i].wrapper, position, undefined);
-                        if ((action === 'LayoutAnimation' || action === 'Pan') || ((portElement && (portElement.id.match('_icon_content_shape$') || portElement.id.match('_icon_content_rect$'))))) {
+                        if ((action === 'Pan') || ((portElement && (portElement.id.match('_icon_content_shape$') || portElement.id.match('_icon_content_rect$'))))) {
                             return objects[i];
                         }
                     }
@@ -26413,6 +26444,9 @@ class CommandHandler {
             connector = this.diagram.currentDrawingObject;
         }
         if (obj && connector && (hasSingleConnection(this.diagram) || this.diagram.currentDrawingObject)) {
+            if (isBlazor()) {
+                this.diagram.insertValue(cloneObject(connector), false);
+            }
             if (endPoint && (endPoint === 'ConnectorSourceEnd' || endPoint === 'ConnectorTargetEnd')) {
                 let nodeEndId = endPoint === 'ConnectorSourceEnd' ? 'sourceID' : 'targetID';
                 let portEndId = endPoint === 'ConnectorSourceEnd' ? 'sourcePortID' : 'targetPortID';
@@ -27535,75 +27569,99 @@ class CommandHandler {
     }
     /** @private */
     selectObjects(obj, multipleSelection, oldValue) {
-        let arg = {
-            oldValue: oldValue ? oldValue : this.getSelectedObject(),
-            newValue: obj, cause: this.diagram.diagramActions,
-            state: 'Changing', type: 'Addition', cancel: false
-        };
-        this.diagram.enableServerDataBinding(false);
-        let select = true;
-        if (!isBlazor()) {
-            this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
-        }
-        let canDoMultipleSelection = canMultiSelect(this.diagram);
-        let canDoSingleSelection = canSingleSelect(this.diagram);
-        if (canDoSingleSelection || canDoMultipleSelection) {
-            if (!canDoMultipleSelection && ((obj.length > 1) || (multipleSelection && obj.length === 1))) {
-                if (obj.length === 1) {
-                    this.clearSelection();
+        return __awaiter$2(this, void 0, void 0, function* () {
+            let arg = {
+                oldValue: oldValue ? oldValue : this.getSelectedObject(),
+                newValue: obj, cause: this.diagram.diagramActions,
+                state: 'Changing', type: 'Addition', cancel: false
+            };
+            this.diagram.enableServerDataBinding(false);
+            let select = true;
+            if (!isBlazor()) {
+                this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
+            }
+            let canDoMultipleSelection = canMultiSelect(this.diagram);
+            let canDoSingleSelection = canSingleSelect(this.diagram);
+            if (canDoSingleSelection || canDoMultipleSelection) {
+                if (!canDoMultipleSelection && ((obj.length > 1) || (multipleSelection && obj.length === 1))) {
+                    if (obj.length === 1) {
+                        this.clearSelection();
+                    }
+                    else {
+                        return;
+                    }
                 }
-                else {
+                if (!canDoSingleSelection && obj.length === 1 && (!multipleSelection || !hasSelection(this.diagram))) {
+                    this.clearSelection();
                     return;
                 }
             }
-            if (!canDoSingleSelection && obj.length === 1 && (!multipleSelection || !hasSelection(this.diagram))) {
-                this.clearSelection();
-                return;
-            }
-        }
-        if (!arg.cancel) {
-            for (let i = 0; i < obj.length; i++) {
-                let newObj = obj[i];
-                if (newObj) {
-                    select = true;
-                    if (!hasSelection(this.diagram)) {
-                        this.select(newObj, i > 0 || multipleSelection, true);
-                    }
-                    else {
-                        if ((i > 0 || multipleSelection) && newObj.children && !newObj.parentId) {
-                            for (let i = 0; i < this.diagram.selectedItems.nodes.length; i++) {
-                                let parentNode = this.diagram.nameTable[this.diagram.selectedItems.nodes[i].parentId];
-                                if (parentNode) {
-                                    parentNode = this.findParent(parentNode);
+            if (!arg.cancel) {
+                for (let i = 0; i < obj.length; i++) {
+                    let newObj = obj[i];
+                    if (newObj) {
+                        select = true;
+                        if (!hasSelection(this.diagram)) {
+                            this.select(newObj, i > 0 || multipleSelection, true);
+                        }
+                        else {
+                            if ((i > 0 || multipleSelection) && newObj.children && !newObj.parentId) {
+                                for (let i = 0; i < this.diagram.selectedItems.nodes.length; i++) {
+                                    let parentNode = this.diagram.nameTable[this.diagram.selectedItems.nodes[i].parentId];
                                     if (parentNode) {
-                                        if (newObj.id === parentNode.id) {
-                                            this.selectGroup(newObj);
+                                        parentNode = this.findParent(parentNode);
+                                        if (parentNode) {
+                                            if (newObj.id === parentNode.id) {
+                                                this.selectGroup(newObj);
+                                            }
                                         }
                                     }
                                 }
                             }
-                        }
-                        this.selectProcesses(newObj);
-                        select = this.selectBpmnSubProcesses(newObj);
-                        if (select) {
-                            this.select(newObj, i > 0 || multipleSelection, true);
+                            this.selectProcesses(newObj);
+                            select = this.selectBpmnSubProcesses(newObj);
+                            if (select) {
+                                this.select(newObj, i > 0 || multipleSelection, true);
+                            }
                         }
                     }
                 }
+                arg = {
+                    oldValue: oldValue ? oldValue : [],
+                    newValue: this.getSelectedObject(),
+                    cause: this.diagram.diagramActions, state: 'Changed', type: 'Addition', cancel: false,
+                };
+                this.diagram.renderSelector(multipleSelection || (obj && obj.length > 1));
+                this.updateBlazorSelectorModel(oldValue);
+                if (isBlazor() && this.diagram.selectionChange) {
+                    arg = this.updateSelectionChangeEventArgs(arg, obj, oldValue ? oldValue : []);
+                }
+                if (!isBlazor()) {
+                    this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
+                }
+                else {
+                    let blazorArgs = yield this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
+                    if (blazorArgs && blazorArgs.cancel) {
+                        let selectedObjects = [];
+                        if (blazorArgs.oldValue.nodes.length > 0) {
+                            selectedObjects = blazorArgs.oldValue.nodes;
+                        }
+                        if (blazorArgs.oldValue.connectors.length > 0) {
+                            selectedObjects = selectedObjects.concat(blazorArgs.oldValue.connectors);
+                        }
+                        if (selectedObjects) {
+                            if (selectedObjects.length > 0) {
+                                this.diagram.select(selectedObjects);
+                            }
+                            else {
+                                this.clearSelection(true, true);
+                            }
+                        }
+                    }
+                }
+                this.diagram.enableServerDataBinding(true);
             }
-            arg = {
-                oldValue: oldValue ? oldValue : [],
-                newValue: this.getSelectedObject(),
-                cause: this.diagram.diagramActions, state: 'Changed', type: 'Addition', cancel: false,
-            };
-            this.diagram.renderSelector(multipleSelection || (obj && obj.length > 1));
-            this.updateBlazorSelectorModel(oldValue);
-            if (isBlazor() && this.diagram.selectionChange) {
-                arg = this.updateSelectionChangeEventArgs(arg, obj, oldValue ? oldValue : []);
-            }
-            this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
-            this.diagram.enableServerDataBinding(true);
-        }
+        });
     }
     /** @private */
     updateBlazorSelector() {
@@ -28294,57 +28352,76 @@ class CommandHandler {
                 change.children = cloneObject(currentObject[i]).children;
             }
             change = this.deepDiffer.changeSegments(change, currentObject[i]);
-            change.ejsIndex = getIndex(this.diagram, currentObject[i].id);
+            change.sfIndex = getIndex(this.diagram, currentObject[i].id);
             changedNodes.push(change);
         }
     }
     /** @private */
-    clearSelection(triggerAction) {
-        this.diagram.enableServerDataBinding(false);
-        if (hasSelection(this.diagram)) {
-            let selectormodel = this.diagram.selectedItems;
-            let arrayNodes = this.getSelectedObject();
-            if (this.diagram.currentSymbol) {
-                this.diagram.previousSelectedObject = arrayNodes;
-            }
-            let arg = {
-                oldValue: arrayNodes, newValue: [], cause: this.diagram.diagramActions,
-                state: 'Changing', type: 'Removal', cancel: false
-            };
-            this.updateBlazorSelectorModel(arrayNodes, true);
-            if (triggerAction) {
-                if (!isBlazor()) {
-                    this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
+    clearSelection(triggerAction, isTriggered) {
+        return __awaiter$2(this, void 0, void 0, function* () {
+            this.diagram.enableServerDataBinding(false);
+            if (hasSelection(this.diagram)) {
+                let selectormodel = this.diagram.selectedItems;
+                let arrayNodes = this.getSelectedObject();
+                if (this.diagram.currentSymbol) {
+                    this.diagram.previousSelectedObject = arrayNodes;
                 }
-                else {
-                    this.oldSelectedObjects = cloneObject(selectormodel);
-                }
-            }
-            if (!arg.cancel) {
-                selectormodel.offsetX = 0;
-                selectormodel.offsetY = 0;
-                selectormodel.width = 0;
-                selectormodel.height = 0;
-                selectormodel.rotateAngle = 0;
-                selectormodel.nodes = [];
-                selectormodel.connectors = [];
-                selectormodel.wrapper = null;
-                selectormodel.annotation = undefined;
-                this.diagram.clearSelectorLayer();
+                let arg = {
+                    oldValue: arrayNodes, newValue: [], cause: this.diagram.diagramActions,
+                    state: 'Changing', type: 'Removal', cancel: false
+                };
+                this.updateBlazorSelectorModel(arrayNodes, true);
                 if (triggerAction) {
-                    arg = {
-                        oldValue: cloneBlazorObject(arrayNodes), newValue: [], cause: this.diagram.diagramActions,
-                        state: 'Changed', type: 'Removal', cancel: false
-                    };
-                    if (isBlazor()) {
-                        arg = this.updateSelectionChangeEventArgs(arg, [], arrayNodes);
+                    if (!isBlazor()) {
+                        this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
                     }
-                    this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
+                    else {
+                        this.oldSelectedObjects = cloneObject(selectormodel);
+                    }
                 }
+                if (!arg.cancel) {
+                    selectormodel.offsetX = 0;
+                    selectormodel.offsetY = 0;
+                    selectormodel.width = 0;
+                    selectormodel.height = 0;
+                    selectormodel.rotateAngle = 0;
+                    selectormodel.nodes = [];
+                    selectormodel.connectors = [];
+                    selectormodel.wrapper = null;
+                    selectormodel.annotation = undefined;
+                    this.diagram.clearSelectorLayer();
+                    if (triggerAction) {
+                        arg = {
+                            oldValue: cloneBlazorObject(arrayNodes), newValue: [], cause: this.diagram.diagramActions,
+                            state: 'Changed', type: 'Removal', cancel: false
+                        };
+                        if (isBlazor()) {
+                            arg = this.updateSelectionChangeEventArgs(arg, [], arrayNodes);
+                        }
+                        if (!isBlazor()) {
+                            this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
+                        }
+                        else {
+                            let blazarArgs = yield this.diagram.triggerEvent(DiagramEvent.selectionChange, arg);
+                            if (blazarArgs && blazarArgs.cancel && !isTriggered) {
+                                let selectNodes = [];
+                                if (blazarArgs.oldValue.nodes.length > 0) {
+                                    selectNodes = blazarArgs.oldValue.nodes;
+                                }
+                                if (blazarArgs.oldValue.connectors.length > 0) {
+                                    selectNodes = selectNodes.concat(blazarArgs.oldValue.connectors);
+                                }
+                                if (selectNodes) {
+                                    this.diagram.select(selectNodes);
+                                }
+                            }
+                        }
+                    }
+                }
+                this.updateBlazorSelector();
+                this.diagram.enableServerDataBinding(true);
             }
-            this.updateBlazorSelector();
-            this.diagram.enableServerDataBinding(true);
-        }
+        });
     }
     /** @private */
     clearSelectedItems() {
@@ -29809,6 +29886,12 @@ class CommandHandler {
         this.diagram.nodePropertyChange(node, oldValues, { isExpanded: node.isExpanded });
         this.diagram.diagramActions = this.diagram.diagramActions & ~DiagramAction.PreventIconsUpdate;
         this.diagram.preventNodesUpdate = false;
+        for (let temp of this.diagram.views) {
+            let view = this.diagram.views[temp];
+            if (!(view instanceof Diagram)) {
+                this.diagram.refreshCanvasDiagramLayer(view);
+            }
+        }
         this.diagram.protectPropertyChange(protectedChange);
     }
     /** @private */
@@ -29938,23 +30021,29 @@ class CommandHandler {
                 let width = (helperObject.width - actualObject.width);
                 let height = (helperObject.height - actualObject.height);
                 let rotateAngle = (helperObject.rotateAngle - actualObject.rotateAngle);
-                this.diagram.selectedItems.wrapper.rotateAngle = this.diagram.selectedItems.rotateAngle = helperObject.rotateAngle;
+                if (this.diagram.selectedItems.nodes.length + this.diagram.selectedItems.connectors.length > 0) {
+                    this.diagram.selectedItems.wrapper.rotateAngle = this.diagram.selectedItems.rotateAngle = helperObject.rotateAngle;
+                }
                 if (actualObject instanceof Node &&
                     actualObject.shape.type !== 'SwimLane' && !actualObject.isLane && !actualObject.isPhase && !actualObject.isHeader) {
-                    if (isBlazor()) {
-                        previousNodeObject.push(cloneObject(actualObject, undefined, undefined, true));
-                    }
-                    actualObject.offsetX += offsetX;
-                    actualObject.offsetY += offsetY;
-                    actualObject.width += width;
-                    actualObject.height += height;
-                    actualObject.rotateAngle += rotateAngle;
-                    this.diagram.nodePropertyChange(actualObject, {}, {
-                        offsetX: actualObject.offsetX, offsetY: actualObject.offsetY,
-                        width: actualObject.width, height: actualObject.height, rotateAngle: actualObject.rotateAngle
-                    });
-                    if (isBlazor()) {
-                        updateNodeObject.push(cloneObject(actualObject, undefined, undefined, true));
+                    if (actualObject.offsetX !== actualObject.wrapper.offsetX || actualObject.offsetY !== actualObject.wrapper.offsetY ||
+                        actualObject.width !== actualObject.wrapper.width || actualObject.height !== actualObject.wrapper.height ||
+                        actualObject.rotateAngle !== actualObject.wrapper.rotateAngle) {
+                        if (isBlazor()) {
+                            previousNodeObject.push(cloneObject(actualObject, undefined, undefined, true));
+                        }
+                        actualObject.offsetX += offsetX;
+                        actualObject.offsetY += offsetY;
+                        actualObject.width += width;
+                        actualObject.height += height;
+                        actualObject.rotateAngle += rotateAngle;
+                        this.diagram.nodePropertyChange(actualObject, {}, {
+                            offsetX: actualObject.offsetX, offsetY: actualObject.offsetY,
+                            width: actualObject.width, height: actualObject.height, rotateAngle: actualObject.rotateAngle
+                        });
+                        if (isBlazor()) {
+                            updateNodeObject.push(cloneObject(actualObject, undefined, undefined, true));
+                        }
                     }
                     objects = this.diagram.spatialSearch.findObjects(actualObject.wrapper.outerBounds);
                 }
@@ -31676,11 +31765,11 @@ class Diagram extends Component {
                     let split = key.split('-');
                     if (split && split[0]) {
                         if (split[0] === 'nodes') {
-                            defaultPropChanges[key].ejsIndex = Number(split[1]);
+                            defaultPropChanges[key].sfIndex = Number(split[1]);
                             this.changedNodesCollection.push(defaultPropChanges[key]);
                         }
                         if (split[0] === 'connectors') {
-                            defaultPropChanges[key].ejsIndex = Number(split[1]);
+                            defaultPropChanges[key].sfIndex = Number(split[1]);
                             this.changedConnectorCollection.push(defaultPropChanges[key]);
                         }
                     }
@@ -31748,8 +31837,8 @@ class Diagram extends Component {
     }
     /**
      * Updates the diagram control when the objects are changed
-     * @param newProp Lists the new values of the changed properties
-     * @param oldProp Lists the old values of the changed properties
+     * @param {DiagramModel} newProp - Lists the new values of the changed properties
+     * @param {DiagramModel} oldProp - Lists the old values of the changed properties
      */
     /* tslint:disable */
     onPropertyChanged(newProp, oldProp) {
@@ -31952,6 +32041,7 @@ class Diagram extends Component {
                     this.doLayout();
                 }
             }
+            let scrollAlone = ((Object.keys(newProp).length === 1) && newProp.scrollSettings !== undefined);
             if (!refereshColelction) {
                 for (let temp of this.views) {
                     let view = this.views[temp];
@@ -31959,7 +32049,9 @@ class Diagram extends Component {
                         if (newProp.scrollSettings && newProp.scrollSettings.currentZoom != oldProp.scrollSettings.currentZoom) {
                             view.updateHtmlLayer(view);
                         }
-                        this.refreshCanvasDiagramLayer(view);
+                        if (!scrollAlone) {
+                            this.refreshCanvasDiagramLayer(view);
+                        }
                     }
                 }
             }
@@ -32027,7 +32119,7 @@ class Diagram extends Component {
     initializePrivateVariables() {
         if (this.element.id === '') {
             let collection = document.getElementsByClassName('e-diagram').length;
-            this.element.id = 'chart_' + this.diagramid + '_' + collection;
+            this.element.id = 'diagram_' + this.diagramid + '_' + collection;
         }
         this.defaultLocale = {
             Copy: 'Copy',
@@ -32443,8 +32535,8 @@ class Diagram extends Component {
     //public methods - start region
     /**
      * Selects the given collection of objects
-     * @param objects Defines the collection of nodes and connectors to be selected
-     * @param multipleSelection Defines whether the existing selection has to be cleared or not
+     * @param {NodeModel | ConnectorModel} objects - Defines the collection of nodes and connectors to be selected
+     * @param {boolean} multipleSelection - Defines whether the existing selection has to be cleared or not
      */
     select(objects, multipleSelection) {
         if (isBlazor()) {
@@ -32467,7 +32559,7 @@ class Diagram extends Component {
     }
     /**
      * Removes the given object from selection list
-     * @param obj Defines the object to be unselected
+     * @param {NodeModel | ConnectorModel} obj - Defines the object to be unselected
      */
     unSelect(obj) {
         if (isBlazor()) {
@@ -32525,7 +32617,7 @@ class Diagram extends Component {
     }
     /**
      * Adds the given objects/ the objects in the diagram clipboard to diagram control
-     * @param obj Defines the objects to be added to diagram
+     * @param {NodeModel[] | ConnectorModel[]} obj - Defines the objects to be added to diagram
      * @deprecated
      */
     paste(obj) {
@@ -32600,7 +32692,7 @@ class Diagram extends Component {
     }
     /**
      * set the active layer
-     *  @param layerName defines the name of the layer which is to be active layer
+     *  @param {string} layerName - defines the name of the layer which is to be active layer
      */
     setActiveLayer(layerName) {
         let layer = this.commandHandler.getLayer(layerName);
@@ -32608,8 +32700,8 @@ class Diagram extends Component {
     }
     /**
      * add the layer into diagram
-     * @param layer defines the layer model which is to be added
-     * @param layerObject defines the object of the layer
+     * @param {LayerModel} layer - defines the layer model which is to be added
+     * @param {Object[]} layerObject - defines the object of the layer
      * @blazorArgsType layer|DiagramLayer
      */
     addLayer(layer, layerObject) {
@@ -32617,14 +32709,14 @@ class Diagram extends Component {
     }
     /**
      * remove the layer from diagram
-     * @param layerId define the id of the layer
+     * @param {string} layerId - define the id of the layer
      */
     removeLayer(layerId) {
         this.commandHandler.removeLayer(layerId);
     }
     /**
      * move objects from the layer to another layer from diagram
-     * @param objects define the objects id of string array
+     * @param {string[]} objects - define the objects id of string array
      */
     moveObjects(objects, targetLayer) {
         let oldValues = cloneObject(this.layers);
@@ -32642,7 +32734,7 @@ class Diagram extends Component {
             this.oldDiagramObject['layers'] = [];
             for (let i = 0; i < this.layers.length; i++) {
                 let leyerObject = cloneObject(this.layers[i]);
-                leyerObject.ejsIndex = this.layers[i].zIndex;
+                leyerObject.sfIndex = this.layers[i].zIndex;
                 this.oldDiagramObject['layers'].push(leyerObject);
             }
         }
@@ -32650,7 +32742,7 @@ class Diagram extends Component {
     /* tslint:enable */
     /**
      * move the layer backward
-     * @param layerName define the name of the layer
+     * @param {string} layerName - define the name of the layer
      */
     sendLayerBackward(layerName) {
         this.layerObjectUpdate();
@@ -32659,7 +32751,7 @@ class Diagram extends Component {
     }
     /**
      * move the layer forward
-     * @param layerName define the name of the layer
+     * @param {string} layerName - define the name of the layer
      */
     bringLayerForward(layerName) {
         this.layerObjectUpdate();
@@ -32668,7 +32760,7 @@ class Diagram extends Component {
     }
     /**
      * clone a layer with its object
-     * @param layerName define the name of the layer
+     * @param {string} layerName - define the name of the layer
      */
     cloneLayer(layerName) {
         this.commandHandler.cloneLayer(layerName);
@@ -32734,9 +32826,9 @@ class Diagram extends Component {
     }
     /**
      * Moves the selected objects towards the given direction
-     * @param direction Defines the direction by which the objects have to be moved
-     * @param x Defines the distance by which the selected objects have to be horizontally moved
-     * @param y Defines the distance by which the selected objects have to be vertically moved
+     * @param {NudgeDirection} direction -  Defines the direction by which the objects have to be moved
+     * @param {number} x - Defines the distance by which the selected objects have to be horizontally moved
+     * @param {number} y -  Defines the distance by which the selected objects have to be vertically moved
      */
     nudge(direction, x, y) {
         let tx = 0;
@@ -32785,9 +32877,9 @@ class Diagram extends Component {
     }
     /**
      * Drags the given object by the specified pixels
-     * @param obj Defines the nodes/connectors to be dragged
-     * @param tx Defines the distance by which the given objects have to be horizontally moved
-     * @param ty Defines the distance by which the given objects have to be vertically moved
+     * @param {NodeModel | ConnectorMode | SelectorModel} obj - Defines the nodes/connectors to be dragged
+     * @param {number} tx - Defines the distance by which the given objects have to be horizontally moved
+     * @param {number} ty - Defines the distance by which the given objects have to be vertically moved
      */
     drag(obj, tx, ty) {
         this.insertBlazorDiagramObjects(obj);
@@ -32858,10 +32950,10 @@ class Diagram extends Component {
     }
     /**
      * Scales the given objects by the given ratio
-     * @param obj Defines the objects to be resized
-     * @param sx Defines the ratio by which the objects have to be horizontally scaled
-     * @param sy Defines the ratio by which the objects have to be vertically scaled
-     * @param pivot Defines the reference point with respect to which the objects will be resized
+     * @param {NodeModel | ConnectorModel | SelectorModel} obj - Defines the objects to be resized
+     * @param {number} sx - Defines the ratio by which the objects have to be horizontally scaled
+     * @param {number} sy - Defines the ratio by which the objects have to be vertically scaled
+     * @param {PointModel} pivot - Defines the reference point with respect to which the objects will be resized
      */
     scale(obj, sx, sy, pivot) {
         this.insertBlazorDiagramObjects(obj);
@@ -32897,9 +32989,9 @@ class Diagram extends Component {
     }
     /**
      * Rotates the given nodes/connectors by the given angle
-     * @param obj Defines the objects to be rotated
-     * @param angle Defines the angle by which the objects have to be rotated
-     * @param pivot Defines the reference point with reference to which the objects have to be rotated
+     * @param {NodeModel | ConnectorModel | SelectorModel} obj - Defines the objects to be rotated
+     * @param {number} angle - Defines the angle by which the objects have to be rotated
+     * @param {PointModel} pivot - Defines the reference point with reference to which the objects have to be rotated
      */
     rotate(obj, angle, pivot) {
         this.insertBlazorDiagramObjects(obj);
@@ -32937,9 +33029,9 @@ class Diagram extends Component {
     }
     /**
      * Moves the source point of the given connector
-     * @param obj Defines the connector, the end points of which has to be moved
-     * @param tx Defines the distance by which the end point has to be horizontally moved
-     * @param ty Defines the distance by which the end point has to be vertically moved
+     * @param {ConnectorModel} obj - Defines the connector, the end points of which has to be moved
+     * @param {number} tx - Defines the distance by which the end point has to be horizontally moved
+     * @param {number} ty - Defines the distance by which the end point has to be vertically moved
      */
     dragSourceEnd(obj, tx, ty) {
         this.insertBlazorDiagramObjects(obj);
@@ -32950,9 +33042,9 @@ class Diagram extends Component {
     }
     /**
      * Moves the target point of the given connector
-     * @param obj Defines the connector, the end points of which has to be moved
-     * @param tx Defines the distance by which the end point has to be horizontally moved
-     * @param ty Defines the distance by which the end point has to be vertically moved
+     * @param {ConnectorModel} obj - Defines the connector, the end points of which has to be moved
+     * @param {number} tx - Defines the distance by which the end point has to be horizontally moved
+     * @param {number} ty - Defines the distance by which the end point has to be vertically moved
      */
     dragTargetEnd(obj, tx, ty) {
         this.insertBlazorDiagramObjects(obj);
@@ -32963,43 +33055,43 @@ class Diagram extends Component {
     }
     /**
      * Finds all the objects that is under the given mouse position
-     * @param position Defines the position, the objects under which has to be found
-     * @param source Defines the object, the objects under which has to be found
+     * @param {PointModel} position - Defines the position, the objects under which has to be found
+     * @param {IElement} source - Defines the object, the objects under which has to be found
      */
     findObjectsUnderMouse(position, source) {
         return this.eventHandler.findObjectsUnderMouse(position, source);
     }
     /**
      * Finds the object that is under the given mouse position
-     * @param objects Defines the collection of objects, from which the object has to be found.
-     * @param action Defines the action, using which the relevant object has to be found.
-     * @param inAction Defines the active state of the action.
+     * @param {NodeModel[] | ConnectorModel[]} objects - Defines the collection of objects, from which the object has to be found.
+     * @param {Actions} action - Defines the action, using which the relevant object has to be found.
+     * @param {boolean} inAction - Defines the active state of the action.
      */
     findObjectUnderMouse(objects, action, inAction) {
         return this.eventHandler.findObjectUnderMouse(objects, action, inAction);
     }
     /**
      * Finds the object that is under the given active object (Source)
-     * @param objects Defines the collection of objects, from which the object has to be found.
-     * @param action Defines the action, using which the relevant object has to be found.
-     * @param inAction Defines the active state of the action.
+     * @param {NodeModel[] | ConnectorModel[]} objects - Defines the collection of objects, from which the object has to be found.
+     * @param {Actions} action - Defines the action, using which the relevant object has to be found.
+     * @param {boolean} inAction - Defines the active state of the action.
      */
     findTargetObjectUnderMouse(objects, action, inAction, position, source) {
         return this.eventHandler.findTargetUnderMouse(objects, action, inAction, position, source);
     }
     /**
      * Finds the child element of the given object at the given position
-     * @param obj Defines the object, the child element of which has to be found
-     * @param position Defines the position, the child element under which has to be found
+     * @param {IElement} obj - Defines the object, the child element of which has to be found
+     * @param {PointModel} position - Defines the position, the child element under which has to be found
      */
     findElementUnderMouse(obj, position) {
         return this.eventHandler.findElementUnderMouse(obj, position);
     }
     /**
      * Defines the action to be done, when the mouse hovers the given element of the given object
-     * @param obj Defines the object under mouse
-     * @param wrapper Defines the target element of the object under mouse
-     * @param position Defines the current mouse position
+     * @param {NodeModel | ConnectorModel} obj - Defines the object under mouse
+     * @param {DiagramElement} wrapper - Defines the target element of the object under mouse
+     * @param {PointModel} position - Defines the current mouse position
      * @private
      */
     findActionToBeDone(obj, wrapper, position, target) {
@@ -33007,7 +33099,7 @@ class Diagram extends Component {
     }
     /**
      * Returns the tool that handles the given action
-     * @param action Defines the action that is going to be performed
+     * @param {string} action - Defines the action that is going to be performed
      */
     getTool(action) {
         let tool;
@@ -33022,7 +33114,7 @@ class Diagram extends Component {
     }
     /**
      * Defines the cursor that corresponds to the given action
-     * @param action Defines the action that is going to be performed
+     * @param {string} action - Defines the action that is going to be performed
      */
     getCursor(action, active) {
         let cursor;
@@ -33053,7 +33145,7 @@ class Diagram extends Component {
     }
     /**
      * Adds the given change in the diagram control to the track
-     * @param entry Defines the entry/information about a change in diagram
+     * @param {HistoryEntry} entry - Defines the entry/information about a change in diagram
      */
     addHistoryEntry(entry) {
         if (this.undoRedoModule && (this.constraints & DiagramConstraints.UndoRedo) && !this.currentSymbol) {
@@ -33068,7 +33160,7 @@ class Diagram extends Component {
     }
     /**
      * Adds the given custom change in the diagram control to the track
-     * @param entry Defines the entry/information about a change in diagram
+     * @param {HistoryEntry} entry - Defines the entry/information about a change in diagram
      */
     addCustomHistoryEntry(entry) {
         if (isBlazor() && this.undoRedoModule && (this.constraints & DiagramConstraints.UndoRedo)) {
@@ -33214,8 +33306,8 @@ class Diagram extends Component {
     }
     /**
      * Aligns the group of objects to with reference to the first object in the group
-     * @param objects Defines the objects that have to be aligned
-     * @param option Defines the factor, by which the objects have to be aligned
+     * @param {NodeModel[] | ConnectorModel[]} objects - Defines the objects that have to be aligned
+     * @param {AlignmentOptions} option - Defines the factor, by which the objects have to be aligned
      */
     align(option, objects, type) {
         this.getBlazorDiagramObjects(objects);
@@ -33231,8 +33323,8 @@ class Diagram extends Component {
     }
     /**
      * Arranges the group of objects with equal intervals, but within the group of objects
-     * @param objects Defines the objects that have to be equally spaced
-     * @param option Defines the factor to distribute the shapes
+     * @param {DistributeOptions} objects - Defines the objects that have to be equally spaced
+     * @param {NodeModel[] | ConnectorModel[]} option - Defines the factor to distribute the shapes
      */
     distribute(option, objects) {
         this.getBlazorDiagramObjects(objects);
@@ -33248,8 +33340,8 @@ class Diagram extends Component {
     }
     /**
      * Scales the given objects to the size of the first object in the group
-     * @param objects Defines the collection of objects that have to be scaled
-     * @param option Defines whether the node has to be horizontally scaled, vertically scaled or both
+     * @param {NodeModel[] | ConnectorModel[]} objects - Defines the collection of objects that have to be scaled
+     * @param {SizingOptions} option - Defines whether the node has to be horizontally scaled, vertically scaled or both
      */
     sameSize(option, objects) {
         this.getBlazorDiagramObjects(objects);
@@ -33282,8 +33374,8 @@ class Diagram extends Component {
     }
     /**
      * Scales the diagram control by the given factor
-     * @param factor Defines the factor by which the diagram is zoomed
-     * @param focusedPoint Defines the point with respect to which the diagram has to be zoomed
+     * @param {number} factor - Defines the factor by which the diagram is zoomed
+     * @param {PointModel} focusedPoint - Defines the point with respect to which the diagram has to be zoomed
      */
     zoom(factor, focusedPoint) {
         let attribute = this.getZoomingAttribute();
@@ -33295,7 +33387,7 @@ class Diagram extends Component {
     }
     /**
      * Scales the diagram control by the given factor
-     * @param options used to define the zoom factor, focus point and zoom type.
+     * @param {ZoomOptions} options - used to define the zoom factor, focus point and zoom type.
      *
      */
     zoomTo(options) {
@@ -33308,8 +33400,8 @@ class Diagram extends Component {
     }
     /**
      * Pans the diagram control to the given horizontal and vertical offsets
-     * @param horizontalOffset Defines the horizontal distance to which the diagram has to be scrolled
-     * @param verticalOffset Defines the vertical distance to which the diagram has to be scrolled
+     * @param {number} horizontalOffset - Defines the horizontal distance to which the diagram has to be scrolled
+     * @param {number} verticalOffset - Defines the vertical distance to which the diagram has to be scrolled
      */
     pan(horizontalOffset, verticalOffset, focusedPoint) {
         let attribute = this.getZoomingAttribute();
@@ -33327,6 +33419,9 @@ class Diagram extends Component {
         this.scroller.zoom(1 / this.scroller.currentZoom, -this.scroller.horizontalOffset, -this.scroller.verticalOffset, { x: 0, y: 0 });
         this.updateBlazorDiagramProperties(attribute, true);
     }
+    /**
+     * Resets the segments of the connectors
+     */
     resetSegments() {
         let previousConnectorObject = [];
         let updateConnectorObject = [];
@@ -33382,6 +33477,10 @@ class Diagram extends Component {
             args.element = (element.nodes.length === 1) ? element.nodes[0] : element.connectors[0];
         }
     }
+    /**
+     * Adds the given node to the lane
+     * @deprecated
+     */
     addNodeToLane(node, swimLane, lane) {
         if (this.nameTable[swimLane]) {
             let swimlaneNode = this.nameTable[swimLane];
@@ -33441,7 +33540,7 @@ class Diagram extends Component {
     }
     /**
      * Shows tooltip for corresponding diagram object
-     * @param obj Defines the object for that tooltip has to be shown
+     * @param {NodeModel | ConnectorModel} obj - Defines the object for that tooltip has to be shown
      */
     showTooltip(obj) {
         let bounds = getBounds(obj.wrapper);
@@ -33460,7 +33559,7 @@ class Diagram extends Component {
     }
     /**
      * hides tooltip for corresponding diagram object
-     * @param obj Defines the object for that tooltip has to be hide
+     * @param {NodeModel | ConnectorModel} obj - Defines the object for that tooltip has to be hide
      */
     hideTooltip(obj) {
         if (obj && obj.tooltip.openOn === 'Custom') {
@@ -33469,7 +33568,7 @@ class Diagram extends Component {
     }
     /**
      * Adds the given node to diagram control
-     * @param obj Defines the node that has to be added to diagram
+     * @param {NodeModel} obj - Defines the node that has to be added to diagram
      * @blazorArgsType obj|DiagramNode
      */
     addNode(obj, group) {
@@ -33477,8 +33576,8 @@ class Diagram extends Component {
     }
     /**
      * Adds the given diagram object to the group.
-     * @param Group defines where the diagram object to be added.
-     * @param Child defines the diagram object to be added to the group
+     * @param {NodeModel} Group - defines where the diagram object to be added.
+     * @param {string | NodeModel | ConnectorModel} Child - defines the diagram object to be added to the group
      * @blazorArgsType obj|DiagramNode
      */
     addChildToGroup(group, child) {
@@ -33486,7 +33585,7 @@ class Diagram extends Component {
     }
     /**
      * Will return the history stack values
-     * @param obj returns the history stack values
+     * @param {boolean} isUndoStack - returns the history stack values
      */
     getHistoryStack(isUndoStack) {
         let temp;
@@ -33508,7 +33607,8 @@ class Diagram extends Component {
     /* tslint:disable */
     /**
      * Return the edges for the given node
-     * @param obj return the edge of the given node
+     * @deprecated
+     * @param {Object} args - return the edge of the given node
      */
     getEdges(args) {
         return args['outEdge'] ? this.nameTable[args['id']].outEdges : this.nameTable[args['id']].inEdges;
@@ -33516,14 +33616,15 @@ class Diagram extends Component {
     /* tslint:enable */
     /**
      * Returns the parent id for the node
-     * @param obj returns the parent id
+     * @deprecated
+     * @param {string} id - returns the parent id
      */
     getParentId(id) {
         return this.nameTable[id].parentId;
     }
     /**
      * Adds the given connector to diagram control
-     * @param obj Defines the connector that has to be added to diagram
+     * @param {ConnectorModel} obj - Defines the connector that has to be added to diagram
      * @blazorArgsType obj|DiagramConnector
      */
     addConnector(obj) {
@@ -33649,7 +33750,7 @@ class Diagram extends Component {
     /* tslint:disable */
     /**
      * Adds the given object to diagram control
-     * @param obj Defines the object that has to be added to diagram
+     * @param {NodeModel | ConnectorModel} obj - Defines the object that has to be added to diagram
      */
     add(obj, group) {
         let newObj;
@@ -33856,8 +33957,8 @@ class Diagram extends Component {
     }
     /**
      * Adds the given annotation to the given node
-     * @param annotation Defines the annotation to be added
-     * @param node Defines the node to which the annotation has to be added
+     * @param {BpmnAnnotationModel} annotation - Defines the annotation to be added
+     * @param {NodeModel} node - Defines the node to which the annotation has to be added
      */
     addTextAnnotation(annotation, node) {
         if (this.bpmnModule) {
@@ -33965,7 +34066,7 @@ class Diagram extends Component {
     }
     /**
      * Removes the given object from diagram
-     * @param obj Defines the object that has to be removed from diagram
+     * @param {NodeModel | ConnectorModel} obj - Defines the object that has to be removed from diagram
      */
     /* tslint:disable */
     remove(obj) {
@@ -34303,8 +34404,8 @@ class Diagram extends Component {
     /* tslint:disable */
     /**
      * Specified annotation to edit mode
-     * @param node Defines node/connector that contains the annotation to be edited
-     * @param id Defines annotation id to be edited in the node
+     * @param {NodeModel | ConnectorModel} node - Defines node/connector that contains the annotation to be edited
+     * @param {string} id - Defines annotation id to be edited in the node
      */
     startTextEdit(node, id) {
         if ((!canZoomPan(this) && !canMultiSelect(this)) || canSingleSelect(this)) {
@@ -34577,7 +34678,7 @@ class Diagram extends Component {
     }
     /**
      * Converts the given string as a Diagram Control
-     * @param data Defines the behavior of the diagram to be loaded
+     * @param {string} data - Defines the behavior of the diagram to be loaded
      * @deprecated
      */
     loadDiagram(data) {
@@ -34585,7 +34686,7 @@ class Diagram extends Component {
     }
     /**
      * To  get the html diagram content
-     * @param styleSheets defines the collection of style files to be considered while exporting.
+     * @param {StyleSheetList} styleSheets - defines the collection of style files to be considered while exporting.
      */
     getDiagramContent(styleSheets) {
         if (this.printandExportModule) {
@@ -34596,8 +34697,8 @@ class Diagram extends Component {
     }
     /**
      * To export diagram native/html image
-     * @param image defines image content to be exported.
-     * @param options defines the image properties.
+     * @param {string} image - defines image content to be exported.
+     * @param {IExportOptions} options - defines the image properties.
      */
     exportImage(image, options) {
         if (this.printandExportModule) {
@@ -34606,8 +34707,8 @@ class Diagram extends Component {
     }
     /**
      * To print native/html nodes of diagram
-     * @param image defines image content.
-     * @param options defines the properties of the image
+     * @param {string} image - defines image content.
+     * @param {IExportOptions} options - defines the properties of the image
      */
     printImage(image, options) {
         if (this.printandExportModule) {
@@ -34617,7 +34718,7 @@ class Diagram extends Component {
     }
     /**
      * To limit the history entry of the diagram
-     * @param stackLimit defines stackLimit of the history manager.
+     * @param {number} stackLimit - defines stackLimit of the history manager.
      */
     setStackLimit(stackLimit) {
         if (this.undoRedoModule && stackLimit) {
@@ -34651,7 +34752,7 @@ class Diagram extends Component {
     }
     /**
      * To export Diagram
-     * @param options defines the how the image to be exported.
+     * @param {IExportOptions} options - defines the how the image to be exported.
      */
     exportDiagram(options) {
         if (this.printandExportModule) {
@@ -34662,7 +34763,7 @@ class Diagram extends Component {
     }
     /**
      * To print Diagram
-     * @param optons defines how the image to be printed.
+     * @param {IPrintOptions} optons - defines how the image to be printed.
      */
     print(options) {
         if (this.printandExportModule) {
@@ -34947,8 +35048,8 @@ class Diagram extends Component {
     //helper methods - start region
     /**
      * @private
-     * @param real
-     * @param rulerSize
+     * @param {string | number} real - real value
+     * @param {number} rulerSize - ruler size
      */
     getSizeValue(real, rulerSize) {
         let value;
@@ -37003,9 +37104,14 @@ class Diagram extends Component {
                     EventHandler.remove(textArea, 'input', this.eventHandler.inputChange);
                     EventHandler.remove(textArea, 'focusout', this.focusOutEdit);
                     let element = document.getElementById(this.element.id + '_editTextBoxDiv');
-                    let args = { oldValue: this.activeLabel.text, newValue: text, cancel: false };
-                    let bpmnAnnotation = false;
                     let node;
+                    node = this.nameTable[this.activeLabel.parentId];
+                    let annotation = findAnnotation(node, this.activeLabel.id);
+                    let args = { oldValue: this.activeLabel.text, newValue: text, cancel: false, element: node, annotation: annotation };
+                    if (isBlazor() && this.textEdit) {
+                        args = this.getBlazorTextEditArgs(args);
+                    }
+                    let bpmnAnnotation = false;
                     element.parentNode.removeChild(element);
                     let textWrapper;
                     if (this.bpmnModule) {
@@ -37112,6 +37218,30 @@ class Diagram extends Component {
         });
     }
     /* tslint:enable */
+    getBlazorTextEditArgs(args) {
+        let element = getObjectType(args.element) === Connector ? { connector: cloneBlazorObject(args.element) }
+            : { node: cloneBlazorObject(args.element) };
+        let annotation = {};
+        if (element.node) {
+            if (element.node.shape.type === 'Text') {
+                annotation.textNode = args.element.shape;
+            }
+            else {
+                annotation.nodeAnnotation = args.element.annotations[0];
+            }
+        }
+        else {
+            annotation.connectorAnnotation = args.element.annotations[0];
+        }
+        args = {
+            oldValue: args.oldValue,
+            newValue: args.newValue,
+            cancel: args.cancel,
+            element: element,
+            annotation: annotation
+        };
+        return args;
+    }
     /** @private */
     canLogChange() {
         if ((this.diagramActions & DiagramAction.Render) && (!(this.diagramActions & DiagramAction.ToolAction)) &&
@@ -37386,6 +37516,42 @@ class Diagram extends Component {
                 actualObject.height = actualObject.wrapper.height = grid.height;
                 actualObject.width = actualObject.wrapper.width = grid.width;
             }
+            else if (oldObject.constraints) {
+                let oldSelectConstraints = (oldObject.constraints & NodeConstraints.Select);
+                let newSelectConstraints = (node.constraints & NodeConstraints.Select);
+                if (oldSelectConstraints !== newSelectConstraints) {
+                    let shape = actualObject.shape;
+                    // Header - constraints
+                    let headerNode = this.nameTable[actualObject.id + shape.header.id];
+                    headerNode.constraints = (!newSelectConstraints) ? headerNode.constraints & ~NodeConstraints.Select :
+                        headerNode.constraints | NodeConstraints.Select;
+                    // Phase - Constraints
+                    let phaseNode;
+                    if (shape.phaseSize > 0) {
+                        for (let i = 0; i < shape.phases.length; i++) {
+                            phaseNode = this.nameTable[actualObject.id + shape.phases[i].id + '_header'];
+                            phaseNode.constraints = (!newSelectConstraints) ? phaseNode.constraints & ~NodeConstraints.Select :
+                                phaseNode.constraints | NodeConstraints.Select;
+                        }
+                    }
+                    // Header - Constraints
+                    let laneNode;
+                    let laneHeader;
+                    let value = shape.phases.length || 1;
+                    for (let i = 0; i < shape.lanes.length; i++) {
+                        for (let l = 0; l < value; l++) {
+                            laneNode = this.nameTable[actualObject.id + shape.lanes[i].id + l];
+                            laneNode.constraints = (!newSelectConstraints) ? laneNode.constraints & ~NodeConstraints.Select :
+                                laneNode.constraints | NodeConstraints.Select;
+                            if (l === 0) {
+                                laneHeader = this.nameTable[actualObject.id + shape.lanes[i].id + '_' + l + '_header'];
+                                laneHeader.constraints = (!newSelectConstraints) ? laneHeader.constraints & ~NodeConstraints.Select :
+                                    laneHeader.constraints | NodeConstraints.Select;
+                            }
+                        }
+                    }
+                }
+            }
             update = true;
         }
         return update;
@@ -37407,7 +37573,7 @@ class Diagram extends Component {
     /** @private */
     nodePropertyChange(actualObject, oldObject, node, isLayout, rotate, propertyChange) {
         if (this.canEnableBlazorObject) {
-            let node = !this.diagramActions ? cloneObject(actualObject) : actualObject;
+            let node = cloneObject(actualObject);
             this.insertValue(node, true);
         }
         let existingBounds = actualObject.wrapper.outerBounds;
@@ -37805,7 +37971,7 @@ class Diagram extends Component {
     /** @private */
     connectorPropertyChange(actualObject, oldProp, newProp, disableBridging, propertyChange) {
         if (this.canEnableBlazorObject) {
-            let node = !this.diagramActions ? cloneObject(actualObject) : actualObject;
+            let node = cloneObject(actualObject);
             this.insertValue(node, false);
         }
         let existingBounds = actualObject.wrapper.bounds;
@@ -38516,13 +38682,20 @@ class Diagram extends Component {
         // tslint:disable-next-line:no-any
         this.droppable.over = (args) => {
             if (!this.currentSymbol) {
-                if (args.dragData) {
+                let dragDataHelper = null;
+                if (!args.dragData && args.name === 'drag') {
+                    let helper = document.getElementsByClassName('e-dragclone')[0];
+                    if (helper) {
+                        dragDataHelper = helper;
+                    }
+                }
+                if (args.dragData || dragDataHelper) {
                     let newObj;
                     let isHorizontal;
                     document.getElementById(this.element.id + 'content').focus();
                     let position = this.eventHandler.getMousePosition(args.event);
                     let clonedObject;
-                    let selectedSymbol = args.dragData.helper;
+                    let selectedSymbol = dragDataHelper || args.dragData.helper;
                     let paletteId = selectedSymbol.getAttribute('paletteId');
                     let nodeDragSize;
                     let nodePreviewSize;
@@ -39017,6 +39190,9 @@ class Diagram extends Component {
             }
         }
     }
+    /**
+     * moves the node or connector forward within given layer
+     */
     moveObjectsUp(node, currentLayer) {
         let targetLayer;
         for (let i = this.layers.length - 1; i >= 0; i--) {
@@ -40189,8 +40365,8 @@ class DataBinding {
     }
     /**
      * Initialize nodes and connectors when we have a data as JSON
-     * @param data
-     * @param diagram
+     * @param {DataSourceModel} data
+     * @param {Diagram} diagram
      * @private
      */
     initData(data, diagram) {
@@ -40209,8 +40385,8 @@ class DataBinding {
     }
     /**
      * Initialize nodes and connector when we have a data as remote url
-     * @param data
-     * @param diagram
+     * @param {DataSourceModel} data
+     * @param {Diagram} diagram
      * @private
      */
     initSource(data, diagram) {
@@ -40289,10 +40465,10 @@ class DataBinding {
     }
     /**
      * updateMultipleRootNodes method is used  to update the multiple Root Nodes
-     * @param object
-     * @param rootnodes
-     * @param mapper
-     * @param data
+     * @param {Object} object
+     * @param {Object[]} rootnodes
+     * @param {DataSourceModel} mapper
+     * @param {Object[]} data
      */
     updateMultipleRootNodes(obj, rootNodes, mapper, data) {
         let parents = obj[mapper.parentId];
@@ -40310,9 +40486,9 @@ class DataBinding {
     }
     /**
      * Get the node values
-     * @param mapper
-     * @param item
-     * @param diagram
+     * @param {DataSourceModel} mapper
+     * @param {Object} item
+     * @param {Diagram} diagram
      */
     applyNodeTemplate(mapper, item, diagram) {
         let id = randomId();
@@ -40419,10 +40595,10 @@ class DataBinding {
     }
     /**
      *  collectionContains method is used to  check wthear the node is already present in collection or not
-     * @param node
-     * @param diagram
-     * @param id
-     * @param parentId
+     * @param {Node} node
+     * @param {Diagram} diagram
+     * @param {string} id
+     * @param {string} parentId
      */
     collectionContains(node, diagram, id, parentId) {
         let obj = this.dataTable[node.data[id]];
@@ -40435,9 +40611,9 @@ class DataBinding {
     }
     /**
      * Get the Connector values
-     * @param sourceNode
-     * @param targetNode
-     * @param diagram
+     * @param {string} sNode
+     * @param {string} tNode
+     * @param {Diagram} diagram
      */
     applyConnectorTemplate(sNode, tNode, diagram) {
         let connModel = {
@@ -46641,7 +46817,7 @@ class LineRouting {
         let prevDirection;
         let targetWrapper = connector.targetWrapper;
         let sourceWrapper = connector.sourceWrapper;
-        let sourcePoint = this.findEndPoint(connector, true, true);
+        let sourcePoint = this.findEndPoint(connector, true);
         if (connector.targetPortID !== '' || !connector.targetWrapper) {
             targetPoint = this.findEndPoint(connector, false, true);
         }
@@ -46665,7 +46841,7 @@ class LineRouting {
         }
         for (let j = 0; j < points.length - 1; j++) {
             if (points[j].x !== points[j + 1].x) {
-                if (j === 0 && sourceWrapper) {
+                if (j === 0 && connector.sourcePortID === '' && sourceWrapper) {
                     sourcePoint = (points[j].x > points[j + 1].x) ? sourceWrapper.bounds.middleLeft : sourceWrapper.bounds.middleRight;
                 }
                 if (j === points.length - 2 && connector.targetPortID === '' && targetWrapper) {
@@ -48174,6 +48350,7 @@ class HierarchicalTree {
         let width = 0;
         let height = 0;
         let mod = 0;
+        let yValue = 0;
         let viewPortBounds = new Rect(0, 0, viewPort.x, viewPort.y);
         let layoutBounds;
         layoutBounds = layout.bounds ? layout.bounds : viewPortBounds;
@@ -48195,12 +48372,14 @@ class HierarchicalTree {
                 mod += layout.graphNodes[node.id].subTreeTranslation || 0;
             }
             if (layout.orientation.indexOf('Left') !== -1) {
-                layout.anchorX -= layout.graphNodes[fixedNode.id].y;
+                yValue = layout.graphNodes[fixedNode.id].y;
+                orientation === 'LeftToRight' ? layout.anchorX -= yValue : layout.anchorX += yValue;
                 layout.anchorY -= layout.graphNodes[fixedNode.id].x + mod;
             }
             else {
+                yValue = layout.graphNodes[fixedNode.id].y;
                 layout.anchorX -= layout.graphNodes[fixedNode.id].x + mod;
-                layout.anchorY -= layout.graphNodes[fixedNode.id].y;
+                orientation === 'TopToBottom' ? layout.anchorY -= yValue : layout.anchorY += yValue;
             }
         }
         else {
@@ -49968,10 +50147,51 @@ class HierarchicalLayoutUtil {
                 else if (layout.orientation === 'RightToLeft') {
                     x = modelBounds.width - dx;
                 }
-                // x += trnsX;
                 dnode.offsetX += x - dnode.offsetX;
                 dnode.offsetY += y - dnode.offsetY;
             }
+        }
+        for (let i = 0; i < this.vertices.length; i++) {
+            this.isNodeOverLap(this.nameTable[this.vertices[i].name], layoutProp);
+        }
+    }
+    calculateRectValue(dnode) {
+        let rect = { x: 0, y: 0, right: 0, bottom: 0, height: 0, width: 0 };
+        rect.x = dnode.offsetX - dnode.actualSize.width / 2;
+        rect.right = dnode.offsetX + dnode.actualSize.width / 2;
+        rect.y = dnode.offsetY - dnode.actualSize.height / 2;
+        rect.bottom = dnode.offsetY + dnode.actualSize.height / 2;
+        return rect;
+    }
+    isNodeOverLap(dnode, layoutProp) {
+        let nodeRect = { x: 0, y: 0, right: 0, bottom: 0, height: 0, width: 0 };
+        for (let i = 0; i < this.vertices.length; i++) {
+            let rect = { x: 0, y: 0, width: 0, height: 0 };
+            let tempnode1;
+            tempnode1 = this.nameTable[this.vertices[i].value];
+            if (dnode.id !== tempnode1.id && tempnode1.offsetX !== 0 && tempnode1.offsetY !== 0) {
+                nodeRect = this.calculateRectValue(dnode);
+                rect = this.calculateRectValue(tempnode1);
+                if (this.isIntersect(rect, nodeRect, layoutProp)) {
+                    if (layoutProp.orientation === 'TopToBottom' || layoutProp.orientation === 'BottomToTop') {
+                        dnode.offsetX += layoutProp.horizontalSpacing;
+                    }
+                    else {
+                        dnode.offsetY += layoutProp.verticalSpacing;
+                    }
+                    this.isNodeOverLap(dnode, layoutProp);
+                }
+            }
+        }
+    }
+    isIntersect(rect, nodeRect, layoutProp) {
+        if (!(rect.right + layoutProp.horizontalSpacing <= nodeRect.x || rect.x - layoutProp.horizontalSpacing >= nodeRect.right
+            || rect.y - layoutProp.verticalSpacing >= nodeRect.bottom
+            || rect.bottom + layoutProp.verticalSpacing <= nodeRect.y)) {
+            return true;
+        }
+        else {
+            return false;
         }
     }
     updateMargin(layoutProp, layout, modelBounds, viewPort) {
@@ -51049,7 +51269,7 @@ class MultiParentModel {
 class CrossReduction {
     /**
      * used to calculate the number of edges crossing the layout model
-     * @param model
+     * @param {MultiParentModel} model
      */
     calculateCrossings(model) {
         let numRanks = model.ranks.length;
@@ -51497,8 +51717,8 @@ class SymbolPalette extends Component {
     }
     /**
      * Refreshes the panel when the symbol palette properties are updated
-     * @param newProp Defines the new values of the changed properties
-     * @param oldProp Defines the old values of the changed properties
+     * @param {SymbolPaletteModel} newProp - Defines the new values of the changed properties
+     * @param {SymbolPaletteModel} oldProp - Defines the old values of the changed properties
      */
     onPropertyChanged(newProp, oldProp) {
         let refresh = false;
@@ -52054,6 +52274,7 @@ class SymbolPalette extends Component {
      * @private
      */
     getSymbolPreview(symbol, evt, parentDiv) {
+        this.allowServerDataBinding = false;
         let canvas;
         let sw;
         let sh;
@@ -52107,7 +52328,13 @@ class SymbolPalette extends Component {
             else {
                 canvas = CanvasRenderer.createCanvas(symbol.id + '_preview', (Math.ceil(symbolPreviewWidth) + symbol.style.strokeWidth + 1) * 2, (Math.ceil(symbolPreviewHeight) + symbol.style.strokeWidth + 1) * 2);
                 previewContainer.appendChild(canvas);
-                style += 'transform:scale(0.5);';
+                // BLAZ-3223: translate applied only for Basic and Flow now and need to add for remaining shapes in future 
+                if (symbol.shape.type === 'Basic' || symbol.shape.type === 'Flow') {
+                    style += 'transform: scale(0.5) translate(-' + canvas.width / 2 + 'px, -' + canvas.height / 2 + 'px);';
+                }
+                else {
+                    style += 'transform:scale(0.5);';
+                }
                 canvas.setAttribute('transform-origin', '0 0');
                 let index = 2;
                 if (symbol instanceof Connector) {
@@ -52121,6 +52348,7 @@ class SymbolPalette extends Component {
             && symbol.children.length > 0)) ? div : canvas), style);
         content.offsetX = prevPosition.x;
         content.offsetY = prevPosition.y;
+        this.allowServerDataBinding = true;
         return previewContainer;
     }
     measureAndArrangeSymbol(content, isNode) {
@@ -52818,8 +53046,8 @@ class Overview extends Component {
     }
     /**
      * Updates the overview control when the objects are changed
-     * @param newProp Lists the new values of the changed properties
-     * @param oldProp Lists the old values of the changed properties
+     * @param {OverviewModel} newProp - Lists the new values of the changed properties
+     * @param {OverviewModel} oldProp - Lists the old values of the changed properties
      */
     onPropertyChanged(newProp, oldProp) {
         for (let prop of Object.keys(newProp)) {

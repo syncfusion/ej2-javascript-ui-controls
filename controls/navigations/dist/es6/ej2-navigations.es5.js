@@ -327,7 +327,7 @@ var HScroll = /** @__PURE__ @class */ (function (_super) {
                 else if (e.swipeDirection === 'Right') {
                     swipeEle.scrollLeft -= distance * step;
                 }
-                start -= 0.02;
+                start -= 0.5;
                 window.requestAnimationFrame(animate);
             }
         };
@@ -1377,7 +1377,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                 this.navIdx.push(fliIdx);
                 this.keyType = 'right';
                 this.action = e.action;
-                this.openMenu(fli, item, null, null, e);
+                this.openMenu(fli, item, -1, -1, e);
             }
             else {
                 if (e.action === ENTER) {
@@ -1580,6 +1580,12 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
         this.lItem = li;
         var elemId = this.element.id !== '' ? this.element.id : 'menu';
         this.isMenusClosed = false;
+        if (isNullOrUndefined(top)) {
+            top = -1;
+        }
+        if (isNullOrUndefined(left)) {
+            left = -1;
+        }
         if (li) {
             this.uList = this.createItems(item[this.getField('children', this.navIdx.length - 1)]);
             if (!this.isMenu && Browser.isDevice) {
@@ -1870,7 +1876,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
     MenuBase.prototype.setPosition = function (li, ul, top, left) {
         var px = 'px';
         this.toggleVisiblity(ul);
-        if (ul === this.element || (!isNullOrUndefined(left) && !isNullOrUndefined(top))) {
+        if (ul === this.element || (left > -1 && top > -1)) {
             var collide = isCollide(ul, null, left, top);
             if (collide.indexOf('right') > -1) {
                 left = left - ul.offsetWidth;
@@ -3141,12 +3147,24 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
     Toolbar.prototype.wireEvents = function () {
         EventHandler.add(this.element, 'click', this.clickHandler, this);
         window.addEventListener('resize', this.resizeContext);
+        if (this.allowKeyboard) {
+            this.wireKeyboardEvent();
+        }
+    };
+    Toolbar.prototype.wireKeyboardEvent = function () {
         this.keyModule = new KeyboardEvents(this.element, {
             keyAction: this.keyActionHandler.bind(this),
             keyConfigs: this.keyConfigs
         });
         EventHandler.add(this.element, 'keydown', this.docKeyDown, this);
         this.element.setAttribute('tabIndex', '0');
+    };
+    Toolbar.prototype.unwireKeyboardEvent = function () {
+        if (this.keyModule) {
+            EventHandler.remove(this.element, 'keydown', this.docKeyDown);
+            this.keyModule.destroy();
+            this.keyModule = null;
+        }
     };
     Toolbar.prototype.docKeyDown = function (e) {
         if (e.target.tagName === 'INPUT') {
@@ -3164,10 +3182,9 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
     Toolbar.prototype.unwireEvents = function () {
         EventHandler.remove(this.element, 'click', this.clickHandler);
         this.destroyScroll();
-        this.keyModule.destroy();
+        this.unwireKeyboardEvent();
         window.removeEventListener('resize', this.resizeContext);
         EventHandler.remove(document, 'scroll', this.docEvent);
-        EventHandler.remove(this.element, 'keydown', this.docKeyDown);
         EventHandler.remove(document, 'click', this.docEvent);
     };
     Toolbar.prototype.clearProperty = function () {
@@ -3467,7 +3484,31 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
             return;
         }
         if (clst) {
-            itemObj = this.items[this.tbarEle.indexOf(clst)];
+            var tempItem = this.items[this.tbarEle.indexOf(clst)];
+            if (tempItem && isBlazor() && this.isServerRendered) {
+                itemObj = {
+                    id: tempItem.id,
+                    text: tempItem.text,
+                    width: tempItem.width,
+                    cssClass: tempItem.cssClass,
+                    showAlwaysInPopup: tempItem.showAlwaysInPopup,
+                    disabled: tempItem.disabled,
+                    prefixIcon: tempItem.prefixIcon,
+                    suffixIcon: tempItem.suffixIcon,
+                    visible: tempItem.visible,
+                    overflow: tempItem.overflow,
+                    template: tempItem.template,
+                    type: tempItem.type,
+                    showTextOn: tempItem.showTextOn,
+                    htmlAttributes: tempItem.htmlAttributes,
+                    tooltipText: tempItem.tooltipText,
+                    align: tempItem.align,
+                    click: tempItem.click
+                };
+            }
+            else {
+                itemObj = tempItem;
+            }
         }
         var eventArgs = { originalEvent: e, item: itemObj };
         if (itemObj && !isNullOrUndefined(itemObj.click)) {
@@ -4958,6 +4999,12 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
                         addClass([this.element], newProp.cssClass.split(' '));
                     }
                     break;
+                case 'allowKeyboard':
+                    this.unwireKeyboardEvent();
+                    if (newProp.allowKeyboard) {
+                        this.wireKeyboardEvent();
+                    }
+                    break;
             }
         }
     };
@@ -5056,6 +5103,9 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
         Property(true)
     ], Toolbar.prototype, "enableHtmlSanitizer", void 0);
     __decorate$3([
+        Property(true)
+    ], Toolbar.prototype, "allowKeyboard", void 0);
+    __decorate$3([
         Event()
     ], Toolbar.prototype, "clicked", void 0);
     __decorate$3([
@@ -5120,6 +5170,9 @@ var CLS_TOGANIMATE = 'e-toggle-animation';
 var CLS_NEST = 'e-nested';
 var CLS_EXPANDSTATE = 'e-expand-state';
 var CLS_CONTAINER = 'e-accordion-container';
+/**
+ * Objects used for configuring the Accordion expanding item action properties.
+ */
 var AccordionActionSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$4(AccordionActionSettings, _super);
     function AccordionActionSettings() {
@@ -5136,6 +5189,9 @@ var AccordionActionSettings = /** @__PURE__ @class */ (function (_super) {
     ], AccordionActionSettings.prototype, "easing", void 0);
     return AccordionActionSettings;
 }(ChildProperty));
+/**
+ * Objects used for configuring the Accordion animation properties.
+ */
 var AccordionAnimationSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$4(AccordionAnimationSettings, _super);
     function AccordionAnimationSettings() {
@@ -6833,6 +6889,9 @@ var CLS_VLEFT = 'e-vertical-left';
 var CLS_VRIGHT = 'e-vertical-right';
 var CLS_HBOTTOM = 'e-horizontal-bottom';
 var CLS_FILL = 'e-fill-mode';
+/**
+ * Objects used for configuring the Tab selecting item action properties.
+ */
 var TabActionSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$7(TabActionSettings, _super);
     function TabActionSettings() {
@@ -6849,6 +6908,9 @@ var TabActionSettings = /** @__PURE__ @class */ (function (_super) {
     ], TabActionSettings.prototype, "easing", void 0);
     return TabActionSettings;
 }(ChildProperty));
+/**
+ * Objects used for configuring the Tab animation properties.
+ */
 var TabAnimationSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$7(TabAnimationSettings, _super);
     function TabAnimationSettings() {
@@ -8828,10 +8890,10 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         _this.preventExpand = false;
         _this.checkedElement = [];
         _this.disableNode = [];
-        _this.parentNodeCheck = [];
         _this.validArr = [];
         _this.expandChildren = [];
         _this.isFieldChange = false;
+        _this.changeDataSource = false;
         _this.mouseDownStatus = false;
         return _this;
     }
@@ -8851,6 +8913,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         var _this = this;
         this.isBlazorPlatform = (isBlazor() && this.isServerRendered);
         this.checkActionNodes = [];
+        this.parentNodeCheck = [];
         this.dragStartAction = false;
         this.isAnimate = false;
         this.keyConfigs = {
@@ -8931,7 +8994,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         this.initialRender = true;
         this.blazorInitialRender = false;
         this.initialize();
-        this.setDataBinding();
+        this.setDataBinding(false);
         this.setDisabledMode();
         this.setExpandOnType();
         if (!this.disabled) {
@@ -9007,7 +9070,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         }
         return undefined;
     };
-    TreeView.prototype.setDataBinding = function () {
+    TreeView.prototype.setDataBinding = function (changeDataSource) {
         var _this = this;
         this.treeList.push('false');
         if (this.fields.dataSource instanceof DataManager) {
@@ -9033,7 +9096,11 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                     _this.treeData = e.result;
                     _this.isNumberTypeId = _this.getType();
                     _this.setRootData();
+                    if (changeDataSource) {
+                        _this.changeDataSource = true;
+                    }
                     _this.renderItems(true);
+                    _this.changeDataSource = false;
                     if (_this.treeList.length === 0 && !_this.isLoaded) {
                         _this.finalize();
                     }
@@ -9107,20 +9174,21 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
     };
     TreeView.prototype.renderItems = function (isSorted) {
         // tslint:disable
-        if (!this.isBlazorPlatform || (this.isBlazorPlatform && this.fields.dataSource instanceof DataManager && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor'))) {
+        if (!this.isBlazorPlatform || (this.isBlazorPlatform && this.fields.dataSource instanceof DataManager && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) || this.changeDataSource) {
             this.listBaseOption.ariaAttributes.level = 1;
             var sortedData = this.getSortedData(this.rootData);
             this.ulElement = ListBase.createList(this.createElement, isSorted ? this.rootData : sortedData, this.listBaseOption);
             this.element.appendChild(this.ulElement);
+            var rootNodes = this.ulElement.querySelectorAll('.e-list-item');
             if (this.loadOnDemand === false) {
-                var rootNodes = this.ulElement.querySelectorAll('.e-list-item');
                 var i = 0;
                 while (i < rootNodes.length) {
                     this.renderChildNodes(rootNodes[i], true, null, true);
                     i++;
                 }
             }
-            else {
+            var parentEle = selectAll('.' + PARENTITEM, this.element);
+            if ((parentEle.length === 1 && (rootNodes && rootNodes.length !== 0)) || this.loadOnDemand) {
                 this.finalizeNode(this.element);
             }
         }
@@ -9389,7 +9457,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         }
     };
     TreeView.prototype.getDataType = function (ds, mapper) {
-        if (this.fields.dataSource instanceof DataManager) {
+        if (this.fields.dataSource instanceof DataManager && (this.fields.dataSource.adaptorName !== 'BlazorAdaptor')) {
             for (var i = 0; i < ds.length; i++) {
                 if ((typeof mapper.child === 'string') && isNullOrUndefined(getValue(mapper.child, ds[i]))) {
                     return 1;
@@ -9525,15 +9593,20 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                 var expandState = childElement.parentElement.getAttribute('aria-expanded');
                 var checkedState = void 0;
                 for (var index = 0; index < checkBoxes.length; index++) {
+                    var childId = childCheck[index].getAttribute('data-uid');
                     if (!isNullOrUndefined(this.currentLoadData) && !isNullOrUndefined(getValue(this.fields.isChecked, this.currentLoadData[index]))) {
                         checkedState = getValue(this.fields.isChecked, this.currentLoadData[index]) ? 'check' : 'uncheck';
                         if (this.ele !== -1) {
                             checkedState = isChecked ? 'check' : 'uncheck';
                         }
+                        if ((checkedState === 'uncheck') && (!isUndefined(this.parentNodeCheck) && this.autoCheck
+                            && this.parentNodeCheck.indexOf(childId) !== -1)) {
+                            this.parentNodeCheck.splice(this.parentNodeCheck.indexOf(childId), 1);
+                            checkedState = 'indeterminate';
+                        }
                     }
                     else {
                         var isNodeChecked = checkBoxes[index].getElementsByClassName(CHECKBOXFRAME)[0].classList.contains(CHECK);
-                        var childId = childCheck[index].getAttribute('data-uid');
                         if (isChecked) {
                             checkedState = 'check';
                         }
@@ -9872,7 +9945,9 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         if (!isPrevent) {
             if (!isNullOrUndefined(ariaState)) {
                 wrapper.setAttribute('aria-checked', ariaState);
+                this.allowServerDataBinding = true;
                 this.updateServerProperties("check");
+                this.allowServerDataBinding = false;
                 eventArgs.data[0].checked = ariaState;
                 this.trigger('nodeChecked', eventArgs);
                 this.checkActionNodes = [];
@@ -9898,15 +9973,17 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
     };
     TreeView.prototype.finalize = function () {
         var firstUl = select('.' + PARENTITEM, this.element);
-        firstUl.setAttribute('role', treeAriaAttr.treeRole);
-        this.setMultiSelect(this.allowMultiSelection);
-        var firstNode = select('.' + LISTITEM, this.element);
-        if (firstNode) {
-            addClass([firstNode], FOCUS);
-            this.updateIdAttr(null, firstNode);
+        if (!isNullOrUndefined(firstUl)) {
+            firstUl.setAttribute('role', treeAriaAttr.treeRole);
+            this.setMultiSelect(this.allowMultiSelection);
+            var firstNode = select('.' + LISTITEM, this.element);
+            if (firstNode) {
+                addClass([firstNode], FOCUS);
+                this.updateIdAttr(null, firstNode);
+            }
+            this.hasPid = this.rootData[0] ? this.rootData[0].hasOwnProperty(this.fields.parentID) : false;
+            this.doExpandAction();
         }
-        this.hasPid = this.rootData[0] ? this.rootData[0].hasOwnProperty(this.fields.parentID) : false;
-        this.doExpandAction();
     };
     TreeView.prototype.doExpandAction = function () {
         var eUids = this.expandedNodes;
@@ -10155,7 +10232,9 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         currLi.style.height = '';
         removeClass([icon], PROCESS);
         this.addExpand(currLi);
+        this.allowServerDataBinding = true;
         this.updateServerProperties("expand");
+        this.allowServerDataBinding = false;
         if (this.isLoaded && this.expandArgs && !this.isRefreshed) {
             this.expandArgs = this.getExpandEvent(currLi, null);
             this.trigger('nodeExpanded', this.expandArgs);
@@ -10536,7 +10615,9 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         }
         this.setFocusElement(li);
         if (this.isLoaded) {
+            this.allowServerDataBinding = true;
             this.updateServerProperties("select");
+            this.allowServerDataBinding = false;
             eventArgs.nodeData = this.getNodeData(li);
             this.trigger('nodeSelected', eventArgs);
         }
@@ -10548,6 +10629,9 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             eventArgs = this.getSelectEvent(li, 'un-select', e);
             this.trigger('nodeSelecting', eventArgs, function (observedArgs) {
                 if (!observedArgs.cancel) {
+                    _this.allowServerDataBinding = true;
+                    _this.updateServerProperties("select");
+                    _this.allowServerDataBinding = false;
                     _this.nodeUnselectAction(li, observedArgs);
                 }
             });
@@ -10560,7 +10644,9 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         this.removeSelect(li);
         this.setFocusElement(li);
         if (this.isLoaded) {
+            this.allowServerDataBinding = true;
             this.updateServerProperties("select");
+            this.allowServerDataBinding = false;
             eventArgs.nodeData = this.getNodeData(li);
             this.trigger('nodeSelected', eventArgs);
         }
@@ -10860,7 +10946,9 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             }
             this.ensureStateChange(li, doCheck);
         }
+        this.allowServerDataBinding = true;
         this.updateServerProperties("check");
+        this.allowServerDataBinding = false;
         this.nodeCheckedEvent(checkWrap, isCheck, e);
     };
     /**
@@ -11235,7 +11323,8 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
     };
     TreeView.prototype.reRenderNodes = function () {
         resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate');
-        if (this.isBlazorPlatform && this.ulElement && this.ulElement.parentElement) {
+        if (this.isBlazorPlatform) {
+            this.ulElement = this.element.querySelector('.e-list-parent.e-ul');
             this.ulElement.parentElement.removeChild(this.ulElement);
         }
         else {
@@ -11248,7 +11337,7 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         this.setProperties({ selectedNodes: [], checkedNodes: [], expandedNodes: [] }, true);
         this.checkedElement = [];
         this.isLoaded = false;
-        this.setDataBinding();
+        this.setDataBinding(true);
     };
     TreeView.prototype.setCssClass = function (oldClass, newClass) {
         if (!isNullOrUndefined(oldClass) && oldClass !== '') {
@@ -12110,13 +12199,14 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
         this.updateList();
         this.updateSelectedNodes();
         this.updateExpandedNodes();
+        this.allowServerDataBinding = false;
         this.updateServerProperties("expand");
         this.updateServerProperties("check");
         this.updateServerProperties("select");
+        this.allowServerDataBinding = true;
     };
     TreeView.prototype.updateServerProperties = function (action) {
         if (this.isBlazorPlatform) {
-            this.allowServerDataBinding = true;
             if (action == "expand") {
                 this.setProperties({ expandedNodes: [] }, true);
             }
@@ -12126,8 +12216,6 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
             else {
                 this.setProperties({ selectedNodes: this.selectedNodes }, true);
             }
-            this.serverDataBind();
-            this.allowServerDataBinding = false;
         }
     };
     TreeView.prototype.updateList = function () {
@@ -12304,6 +12392,9 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
                     (this.fields.dataSource instanceof DataManager && obj[i].hasOwnProperty('child'))) {
                     var key = (typeof mapper.child === 'string') ? mapper.child : 'child';
                     var childData = getValue(key, obj[i]);
+                    if (isNullOrUndefined(childData)) {
+                        childData = [];
+                    }
                     index = isNullOrUndefined(index) ? childData.length : index;
                     for (var k = 0, len = data.length; k < len; k++) {
                         childData.splice(index, 0, data[k]);
@@ -13477,6 +13568,9 @@ var TreeView = /** @__PURE__ @class */ (function (_super) {
     __decorate$8([
         Property(true)
     ], TreeView.prototype, "loadOnDemand", void 0);
+    __decorate$8([
+        Property()
+    ], TreeView.prototype, "locale", void 0);
     __decorate$8([
         Property()
     ], TreeView.prototype, "nodeTemplate", void 0);

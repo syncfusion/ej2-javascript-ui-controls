@@ -1,5 +1,5 @@
 /**
- * Exports util methods used by RichTextEditor.
+ * Defines util methods used by Rich Text Editor.
  */
 import { isNullOrUndefined as isNOU, addClass, removeClass, L10n, selectAll, createElement, Browser, detach } from '@syncfusion/ej2-base';
 import * as classes from '../base/classes';

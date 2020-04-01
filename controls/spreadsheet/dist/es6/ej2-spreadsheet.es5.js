@@ -96,7 +96,7 @@ function getAddressInfo(context, address) {
         sIdx = getSheetIndex(context, getSheetNameFromAddress(address));
     }
     else {
-        sIdx = context.activeSheetTab - 1;
+        sIdx = context.activeSheetIndex;
     }
     return { sheetIndex: sIdx, indices: getIndexesFromAddress(address) };
 }
@@ -381,6 +381,8 @@ var refreshCellElement = 'refreshCellElem';
 /** @hidden */
 var setCellFormat = 'setCellFormat';
 /** @hidden */
+var findAllValues = 'findAllValues';
+/** @hidden */
 var textDecorationUpdate = 'textDecorationUpdate';
 /** @hidden */
 var applyCellFormat = 'applyCellFormat';
@@ -496,6 +498,22 @@ var protectsheetHandler = 'protectsheetHandler';
 var replaceAllDialog = 'replaceAllDialog';
 /** @hidden */
 var workBookeditAlert = 'editAlert';
+/** @hidden */
+var setLockCells = 'setLockCells';
+/** @hidden */
+var applyLockCells = 'applyLockCells';
+/** @hidden */
+var setMerge = 'setMerge';
+/** @hidden */
+var applyMerge = 'applyMerge';
+/** @hidden */
+var mergedRange = 'mergedRange';
+/** @hidden */
+var activeCellMergedRange = 'activeCellMergedRange';
+/** @hidden */
+var insertMerge = 'insertMerge';
+/** @hidden */
+var pasteMerge = 'pasteMerge';
 
 /**
  * Specifies number format.
@@ -510,11 +528,11 @@ var WorkbookNumberFormat = /** @__PURE__ @class */ (function () {
         this.addEventListener();
     }
     WorkbookNumberFormat.prototype.numberFormatting = function (args) {
-        var activeSheetTab = this.parent.activeSheetTab;
+        var activeSheetIndex = this.parent.activeSheetIndex;
         if (args.range && args.range.indexOf('!') > -1) {
-            activeSheetTab = getSheetIndex(this.parent, args.range.split('!')[0]) + 1;
+            activeSheetIndex = getSheetIndex(this.parent, args.range.split('!')[0]);
         }
-        var sheet = this.parent.sheets[activeSheetTab - 1];
+        var sheet = this.parent.sheets[activeSheetIndex];
         var formatRange = args.range ? ((args.range.indexOf('!') > -1) ?
             args.range.split('!')[1] : args.range) : sheet.selectedRange;
         var selectedRange = getRangeIndexes(formatRange);
@@ -526,7 +544,7 @@ var WorkbookNumberFormat = /** @__PURE__ @class */ (function () {
                 this.getFormattedCell({
                     type: getTypeFromFormat(cell.format), value: cell.value,
                     format: cell.format, rowIndex: i, colIndex: j,
-                    sheetIndex: activeSheetTab, cell: cell
+                    sheetIndex: activeSheetIndex, cell: cell
                 });
             }
         }
@@ -536,16 +554,17 @@ var WorkbookNumberFormat = /** @__PURE__ @class */ (function () {
      */
     WorkbookNumberFormat.prototype.getFormattedCell = function (args) {
         var fResult = isNullOrUndefined(args.value) ? '' : args.value;
-        var sheet = args.sheetIndex ? this.parent.sheets[args.sheetIndex - 1] : this.parent.getActiveSheet();
+        var sheet = this.parent.sheets[isNullOrUndefined(args.sheetIndex) ? this.parent.activeSheetIndex :
+            args.sheetIndex];
         var range = getRangeIndexes(sheet.activeCell);
-        var sheetIdx = Number(args.sheetIndex) ? Number(args.sheetIndex) : this.parent.activeSheetTab;
+        var sheetIdx = Number(args.sheetIndex) ? Number(args.sheetIndex) : this.parent.activeSheetIndex;
         var cell = args.cell ? args.cell : getCell(range[0], range[1], sheet);
         var rightAlign = false;
         var currencySymbol = getNumberDependable(this.parent.locale, 'USD');
         if (args.format === '' || args.format === 'General') {
             cell = cell ? cell : {};
             var dateEventArgs = {
-                value: args.value, rowIndex: range[0], colIndex: range[1], sheetIndex: this.parent.activeSheetTab,
+                value: args.value, rowIndex: range[0], colIndex: range[1], sheetIndex: this.parent.activeSheetIndex,
                 updatedVal: args.value, isDate: false, isTime: false
             };
             this.checkDateFormat(dateEventArgs);
@@ -562,7 +581,7 @@ var WorkbookNumberFormat = /** @__PURE__ @class */ (function () {
         }
         args.type = args.format ? getTypeFromFormat(args.format) : 'General';
         var result = this.processFormats(args, fResult, rightAlign, cell);
-        if ((this.parent.getActiveSheet().id - 1 === sheetIdx - 1)) {
+        if ((this.parent.getActiveSheet().id - 1 === sheetIdx)) {
             this.parent.notify(refreshCellElement, {
                 isRightAlign: result.rightAlign, result: result.fResult || args.value,
                 rowIndex: args.rowIndex, colIndex: args.colIndex, sheetIndex: args.sheetIndex,
@@ -841,7 +860,7 @@ var WorkbookNumberFormat = /** @__PURE__ @class */ (function () {
         var dateObj;
         var intl = new Internationalization();
         var value = !isNullOrUndefined(args.value) ? args.value.toString() : '';
-        var cell = getCell(args.rowIndex, args.colIndex, getSheet(this.parent, (args.sheetIndex || this.parent.activeSheetTab) - 1));
+        var cell = getCell(args.rowIndex, args.colIndex, getSheet(this.parent, isNullOrUndefined(args.sheetIndex) ? this.parent.activeSheetIndex : args.sheetIndex));
         if (value && value.indexOf('/') > -1 || value.indexOf('-') > 0 || value.indexOf(':') > -1) {
             dateObj = toDate(value, intl);
             if (!isNullOrUndefined(dateObj.dateObj) && dateObj.dateObj.toString() !== 'Invalid Date') {
@@ -1049,11 +1068,11 @@ var DataBind = /** @__PURE__ @class */ (function () {
         var sColIdx;
         var loadedInfo;
         args.promise = deferred.promise;
-        if (args.sheet && args.sheet.rangeSettings.length) {
+        if (args.sheet && args.sheet.range.length) {
             var _loop_1 = function (k) {
                 var sRange = args.indexes[0];
                 var eRange = args.indexes[2];
-                var range = args.sheet.rangeSettings[k];
+                var range = args.sheet.range[k];
                 sRowIdx = getRangeIndexes(range.startCell)[0];
                 dataManager = range.dataSource instanceof DataManager ? range.dataSource
                     : range.dataSource ? new DataManager(range.dataSource) : new DataManager();
@@ -1105,6 +1124,9 @@ var DataBind = /** @__PURE__ @class */ (function () {
                             return;
                         }
                         result = (e.result && e.result.result ? e.result.result : e.result);
+                        sCellIdx = getRangeIndexes(range.startCell);
+                        sRowIdx = sCellIdx[0];
+                        sColIdx = sCellIdx[1];
                         if (result.length) {
                             if (!range.info.count) {
                                 count = e.count;
@@ -1114,9 +1136,6 @@ var DataBind = /** @__PURE__ @class */ (function () {
                             if (!range.info.fldLen) {
                                 range.info.fldLen = flds.length;
                             }
-                            sCellIdx = getRangeIndexes(range.startCell);
-                            sRowIdx = sCellIdx[0];
-                            sColIdx = sCellIdx[1];
                             if (range.info.insertColumnRange) {
                                 var insertCount_1 = 0;
                                 range.info.insertColumnRange.forEach(function (insertRange) {
@@ -1215,7 +1234,7 @@ var DataBind = /** @__PURE__ @class */ (function () {
                 }
             };
             var this_1 = this;
-            for (var k = args.sheet.rangeSettings.length - 1; k >= 0; k--) {
+            for (var k = args.sheet.range.length - 1; k >= 0; k--) {
                 _loop_1(k);
             }
         }
@@ -1374,10 +1393,10 @@ var DataBind = /** @__PURE__ @class */ (function () {
         var oldSheet = args.oldProp.sheets[args.sheetIdx];
         var row;
         var sheet = this.parent.sheets[args.sheetIdx];
-        var oldRange = oldSheet && oldSheet.rangeSettings && oldSheet.rangeSettings[args.rangeIdx];
+        var oldRange = oldSheet && oldSheet.range && oldSheet.range[args.rangeIdx];
         if (oldRange) {
             var indexes_1 = getRangeIndexes(oldRange.startCell);
-            sheet.rangeSettings[args.rangeIdx].info.loadedRange = [];
+            sheet.range[args.rangeIdx].info.loadedRange = [];
             oldRange.info.loadedRange.forEach(function (range) {
                 for (var i = range[0]; i < range[1]; i++) {
                     row = sheet.rows[i + indexes_1[0]];
@@ -1627,6 +1646,12 @@ var setUndoRedo = 'setUndoRedo';
 var enableFormulaInput = 'enableFormulaInput';
 /** @hidden */
 var protectSelection = 'protectSelection';
+/** @hidden */
+var hiddenMerge = 'hiddenMerge';
+/** @hidden */
+var checkPrevMerge = 'checkPrevMerge';
+/** @hidden */
+var removeDataValidation = 'removeDataValidation';
 
 /**
  * Open properties.
@@ -1718,16 +1743,17 @@ var WorkbookOpen = /** @__PURE__ @class */ (function () {
         this.parent.sheetNameCount = 1;
         this.parent.sheets = [];
         this.parent.notify(sheetsDestroyed, {});
-        workbookModel.activeSheetTab = workbookModel.activeSheetTab || 1;
+        workbookModel.activeSheetIndex = workbookModel.activeSheetIndex || 0;
         this.parent.setProperties({
             'sheets': workbookModel.sheets,
-            'activeSheetTab': workbookModel.activeSheetTab,
+            'activeSheetIndex': workbookModel.activeSheetIndex,
             'definedNames': workbookModel.definedNames || []
         }, true);
         initSheet(this.parent);
         this.parent.notify(sheetCreated, null);
         this.parent.notify(workbookFormulaOperation, { action: 'registerSheet', isImport: true });
         this.parent.notify(workbookFormulaOperation, { action: 'initiateDefinedNames' });
+        this.parent.notify(protectSheetWorkBook, null);
     };
     /**
      * Adding event listener for workbook open.
@@ -7106,11 +7132,11 @@ var Calculate = /** @__PURE__ @class */ (function (_super) {
         var cValue;
         /* tslint:disable-next-line */
         if (this.parentObject.getValueRowCol === undefined) {
-            cValue = this.getValueRowCol(this.getSheetID(grd) + 1, row, col);
+            cValue = this.getValueRowCol(this.getSheetID(grd), row, col);
         }
         else {
             /* tslint:disable-next-line */
-            cValue = this.parentObject.getValueRowCol(this.getSheetID(grd) + 1, row, col);
+            cValue = this.parentObject.getValueRowCol(this.getSheetID(grd), row, col);
             return isNullOrUndefined(cValue) ? this.emptyString : cValue.toString();
         }
         if (cValue === '' || cValue === undefined) {
@@ -7870,7 +7896,7 @@ var WorkbookFormula = /** @__PURE__ @class */ (function () {
             case 'deleteSheetTab':
                 var length_1 = this.sheetInfo.length;
                 for (var i = 0; i < length_1; i++) {
-                    if (this.sheetInfo[i].index === args.index + 1) {
+                    if (this.sheetInfo[i].index === args.index) {
                         args.sheetName = this.sheetInfo[i].sheet;
                         this.sheetInfo.splice(i, 1);
                         break;
@@ -8070,9 +8096,8 @@ var WorkbookFormula = /** @__PURE__ @class */ (function () {
     };
     WorkbookFormula.prototype.refreshCalculate = function (rowIdx, colIdx, value, isFormula, sheetIdx) {
         if (!sheetIdx) {
-            sheetIdx = this.parent.activeSheetTab;
+            sheetIdx = this.parent.activeSheetIndex;
         }
-        sheetIdx--;
         var sheetName = getSheet(this.parent, sheetIdx).id + '';
         if (isFormula) {
             value = this.parseSheetRef(value);
@@ -8190,7 +8215,7 @@ var WorkbookFormula = /** @__PURE__ @class */ (function () {
             if (scope) {
                 var sheetIdx = getSheetIndex(this.parent, scope);
                 if (sheetIdx) {
-                    calcName = getSheetName(this.parent, sheetIdx - 1) + '!' + name;
+                    calcName = getSheetName(this.parent, sheetIdx) + '!' + name;
                 }
             }
             this.calculateInstance.removeNamedRange(calcName);
@@ -8230,7 +8255,7 @@ var WorkbookFormula = /** @__PURE__ @class */ (function () {
             range = "A1:" + getCellAddress(sheet.usedRange.rowIndex, sheet.usedRange.colIndex);
         }
         args.Count = this.calculateInstance.getFunction('COUNTA')(range);
-        if (!args.Count) {
+        if (!args.Count || args.countOnly) {
             return;
         }
         args.Sum = this.toFixed(this.calculateInstance.getFunction('SUM')(range));
@@ -8533,7 +8558,7 @@ var WorkbookCellFormat = /** @__PURE__ @class */ (function () {
         eventArgs = { range: rng, style: args.style, requestType: 'CellFormat' };
         if (triggerEvent) {
             this.parent.trigger('beforeCellFormat', eventArgs);
-            this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'format' });
+            this.parent.notify('actionBegin', { eventArgs: eventArgs, action: 'format' });
             if (eventArgs.cancel) {
                 args.cancel = true;
                 return;
@@ -8618,7 +8643,7 @@ var WorkbookCellFormat = /** @__PURE__ @class */ (function () {
         }
         if (triggerEvent) {
             eventArgs.range = sheet.name + "!" + rng;
-            this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'format' });
+            this.parent.notify('actionComplete', { eventArgs: eventArgs, action: 'format' });
         }
     };
     WorkbookCellFormat.prototype.setBottomBorderPriority = function (sheet, rowIdx, colIdx) {
@@ -8684,7 +8709,7 @@ var WorkbookCellFormat = /** @__PURE__ @class */ (function () {
         var sheet = this.parent.getActiveSheet();
         var eventArgs = { range: sheet.selectedRange, style: args.style, requestType: 'CellFormat' };
         this.parent.trigger('beforeCellFormat', eventArgs);
-        this.parent.notify(beginAction, { eventArgs: eventArgs, action: 'format' });
+        this.parent.notify('actionBegin', { eventArgs: eventArgs, action: 'format' });
         if (eventArgs.cancel) {
             args.cancel = true;
             return;
@@ -8754,7 +8779,7 @@ var WorkbookCellFormat = /** @__PURE__ @class */ (function () {
             }
         }
         eventArgs.range = sheet.name + '!' + eventArgs.range;
-        this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'format' });
+        this.parent.notify('actionComplete', { eventArgs: eventArgs, action: 'format' });
     };
     WorkbookCellFormat.prototype.setTypedBorder = function (sheet, border, range, type, actionUpdate) {
         var prevBorder;
@@ -8966,7 +8991,7 @@ var WorkbookEdit = /** @__PURE__ @class */ (function () {
     WorkbookEdit.prototype.updateCellValue = function (address, value, sheetIdx, isValueOnly) {
         if (isValueOnly === void 0) { isValueOnly = false; }
         if (!sheetIdx) {
-            sheetIdx = this.parent.activeSheetTab;
+            sheetIdx = this.parent.activeSheetIndex;
         }
         var range;
         if (typeof address === 'string') {
@@ -8975,7 +9000,7 @@ var WorkbookEdit = /** @__PURE__ @class */ (function () {
         else {
             range = address;
         }
-        var sheet = getSheet(this.parent, sheetIdx - 1);
+        var sheet = getSheet(this.parent, sheetIdx);
         if (!sheet.rows[range[0]]) {
             sheet.rows[range[0]] = {};
             sheet.rows[range[0]].cells = [];
@@ -9131,6 +9156,7 @@ var WorkbookInsert = /** @__PURE__ @class */ (function () {
         var _a, _b, _c;
         var index;
         var model = [];
+        var mergeCollection;
         if (typeof (args.start) === 'number') {
             index = args.start;
             args.end = args.end || index;
@@ -9165,6 +9191,14 @@ var WorkbookInsert = /** @__PURE__ @class */ (function () {
             else {
                 this.parent.setUsedRange(args.model.usedRange.rowIndex + model.length, args.model.usedRange.colIndex);
             }
+            var curIdx = index + model.length;
+            for (var i = 0; i <= args.model.usedRange.colIndex; i++) {
+                if (args.model.rows[curIdx].cells[i] && args.model.rows[curIdx].cells[i].rowSpan !== undefined &&
+                    args.model.rows[curIdx].cells[i].rowSpan < 0 && args.model.rows[curIdx].cells[i].colSpan === undefined) {
+                    this.parent.notify(insertMerge, { range: [curIdx, i, curIdx, i], insertCount: model.length,
+                        insertModel: 'Row' });
+                }
+            }
         }
         else if (args.modelType === 'Column') {
             args.model = args.model;
@@ -9189,6 +9223,7 @@ var WorkbookInsert = /** @__PURE__ @class */ (function () {
             for (var i = 0; i < model.length; i++) {
                 cellModel.push({});
             }
+            mergeCollection = [];
             for (var i = 0; i <= args.model.usedRange.rowIndex; i++) {
                 if (!args.model.rows[i]) {
                     args.model.rows[i] = { cells: [] };
@@ -9201,7 +9236,14 @@ var WorkbookInsert = /** @__PURE__ @class */ (function () {
                 }
                 (_c = args.model.rows[i].cells).splice.apply(_c, [index, 0].concat((args.columnCellsModel[i] && args.columnCellsModel[i].cells ?
                     args.columnCellsModel[i].cells : cellModel)));
+                var curIdx = index + model.length;
+                if (args.model.rows[i].cells[curIdx] && args.model.rows[i].cells[curIdx].colSpan !== undefined &&
+                    args.model.rows[i].cells[curIdx].colSpan < 0 && args.model.rows[i].cells[curIdx].rowSpan === undefined) {
+                    mergeCollection.push({ range: [i, curIdx, i, curIdx], insertCount: cellModel.length,
+                        insertModel: 'Column' });
+                }
             }
+            mergeCollection.forEach(function (mergeArgs) { _this.parent.notify(insertMerge, mergeArgs); });
         }
         else {
             if (args.checkCount !== undefined && args.checkCount === this.parent.sheets.length) {
@@ -9209,8 +9251,8 @@ var WorkbookInsert = /** @__PURE__ @class */ (function () {
             }
             this.parent.createSheet(index, model);
             var id_1;
-            if (args.activeSheetTab) {
-                this.parent.setProperties({ activeSheetTab: args.activeSheetTab }, true);
+            if (args.activeSheetIndex) {
+                this.parent.setProperties({ activeSheetIndex: args.activeSheetIndex }, true);
             }
             model.forEach(function (sheet) {
                 id_1 = sheet.id;
@@ -9218,12 +9260,12 @@ var WorkbookInsert = /** @__PURE__ @class */ (function () {
                     index: id_1 });
             });
         }
-        this.parent.notify(insert, { model: model, index: index, modelType: args.modelType, isAction: args.isAction, activeSheetTab: args.activeSheetTab, sheetCount: this.parent.sheets.length });
+        this.parent.notify(insert, { model: model, index: index, modelType: args.modelType, isAction: args.isAction, activeSheetIndex: args.activeSheetIndex, sheetCount: this.parent.sheets.length });
     };
     WorkbookInsert.prototype.setInsertInfo = function (sheet, startIndex, count, totalKey, modelType) {
         if (modelType === void 0) { modelType = 'Row'; }
         var endIndex = count = startIndex + (count - 1);
-        sheet.rangeSettings.forEach(function (range) {
+        sheet.range.forEach(function (range) {
             if (range.info && startIndex < range.info[totalKey]) {
                 if (!range.info["insert" + modelType + "Range"]) {
                     range.info["insert" + modelType + "Range"] = [[startIndex, endIndex]];
@@ -9271,7 +9313,9 @@ var WorkbookDelete = /** @__PURE__ @class */ (function () {
         this.parent = parent;
         this.addEventListener();
     }
+    // tslint:disable-next-line
     WorkbookDelete.prototype.deleteModel = function (args) {
+        var _this = this;
         var modelName = args.modelType.toLowerCase() + "s";
         args.start = args.start;
         if (args.start > args.end) {
@@ -9280,6 +9324,8 @@ var WorkbookDelete = /** @__PURE__ @class */ (function () {
             args.end = temp;
         }
         var deletedCells;
+        var mergeArgsCollection = [];
+        var count = (args.end - args.start) + 1;
         if (args.modelType === 'Row') {
             args.model = args.model;
             if (args.start > args.model.usedRange.rowIndex) {
@@ -9293,6 +9339,62 @@ var WorkbookDelete = /** @__PURE__ @class */ (function () {
                 args.model.usedRange.rowIndex = 0;
             }
             this.parent.notify(updateUsedRange, { index: args.model.usedRange.rowIndex, update: 'row' });
+            var curIdx = args.end + 1;
+            var cell = void 0;
+            var mergeArgs = void 0;
+            if (args.model.rows[args.start] && args.model.rows[args.start].cells) {
+                for (var i = 0; i <= args.model.usedRange.colIndex; i++) {
+                    if (args.model.rows[args.start].cells[i] && args.model.rows[args.start].cells[i].rowSpan !== undefined &&
+                        args.model.rows[args.start].cells[i].rowSpan < 0 && args.model.rows[args.start].cells[i].colSpan === undefined) {
+                        mergeArgs = { range: [args.start, i, args.start, i] };
+                        this.parent.notify(activeCellMergedRange, mergeArgs);
+                        mergeArgs.range = mergeArgs.range;
+                        if (mergeArgs.range[2] <= args.end) {
+                            var prevCell = getCell(mergeArgs.range[0], i, args.model);
+                            if (prevCell && prevCell.rowSpan > 1) {
+                                if (prevCell.rowSpan - ((mergeArgs.range[2] - args.start) + 1) > 1) {
+                                    setCell(mergeArgs.range[0], i, args.model, { colSpan: prevCell.rowSpan - ((mergeArgs.range[2] - args.start) + 1) }, true);
+                                }
+                                else {
+                                    delete args.model.rows[mergeArgs.range[0]].cells[i].rowSpan;
+                                }
+                            }
+                            mergeArgs = null;
+                        }
+                    }
+                    if (args.model.rows[curIdx].cells[i] && args.model.rows[curIdx].cells[i].rowSpan !== undefined &&
+                        args.model.rows[curIdx].cells[i].rowSpan < 0 && args.model.rows[curIdx].cells[i].colSpan === undefined) {
+                        if (!mergeArgs) {
+                            mergeArgs = { range: [curIdx, i, curIdx, i] };
+                            this.parent.notify(activeCellMergedRange, mergeArgs);
+                        }
+                        cell = new Object();
+                        mergeArgs.range = mergeArgs.range;
+                        Object.assign(cell, getCell(mergeArgs.range[0], mergeArgs.range[1], args.model));
+                        if (cell && cell.rowSpan && (cell.rowSpan > 1 || cell.colSpan > 1)) {
+                            var indexes = [];
+                            indexes[1] = i;
+                            indexes[3] = cell.colSpan > 1 ? i + (cell.colSpan - 1) : i;
+                            mergeArgs.range = mergeArgs.range;
+                            if (mergeArgs.range[0] < args.start) {
+                                indexes[0] = indexes[2] = mergeArgs.range[0];
+                                if (cell.rowSpan - count > 1) {
+                                    indexes[2] += (cell.rowSpan - count - 1);
+                                }
+                            }
+                            else {
+                                indexes[0] = indexes[2] = args.start;
+                                if (cell.rowSpan - ((args.end - mergeArgs.range[0]) + 1) > 1) {
+                                    indexes[2] += ((cell.rowSpan - ((args.end - mergeArgs.range[0]) + 1)) - 1);
+                                }
+                            }
+                            mergeArgsCollection.push({ range: indexes, isAction: false, preventRefresh: true, merge: true,
+                                type: 'All', skipChecking: true });
+                        }
+                    }
+                    mergeArgs = null;
+                }
+            }
         }
         else if (args.modelType === 'Column') {
             args.model = args.model;
@@ -9302,7 +9404,6 @@ var WorkbookDelete = /** @__PURE__ @class */ (function () {
             if (args.end > args.model.usedRange.colIndex) {
                 args.end -= (args.end - args.model.usedRange.colIndex);
             }
-            var count = (args.end - args.start) + 1;
             args.model.usedRange.colIndex -= count;
             if (args.model.usedRange.colIndex < 0) {
                 args.model.usedRange.colIndex = 0;
@@ -9310,10 +9411,62 @@ var WorkbookDelete = /** @__PURE__ @class */ (function () {
             //this.setDeleteInfo(args.start, args.end, 'fldLen', 'Column');
             this.parent.notify(updateUsedRange, { index: args.model.usedRange.colIndex, update: 'col' });
             deletedCells = [];
+            var curIdx = args.end + 1;
+            var cell = void 0;
+            var mergeArgs = void 0;
             for (var i = 0; i <= args.model.usedRange.rowIndex; i++) {
                 deletedCells.push({});
                 if (args.model.rows[i] && args.model.rows[i].cells) {
-                    deletedCells[i].cells = (args.model.rows[i].cells.splice(args.start, count));
+                    if (args.model.rows[i].cells[args.start] && args.model.rows[i].cells[args.start].colSpan !== undefined &&
+                        args.model.rows[i].cells[args.start].colSpan < 0 && args.model.rows[i].cells[args.start].rowSpan === undefined) {
+                        mergeArgs = { range: [i, args.start, i, args.start] };
+                        this.parent.notify(activeCellMergedRange, mergeArgs);
+                        mergeArgs.range = mergeArgs.range;
+                        if (mergeArgs.range[3] <= args.end) {
+                            var prevCell = getCell(i, mergeArgs.range[1], args.model);
+                            if (prevCell && prevCell.colSpan > 1) {
+                                if (prevCell.colSpan - ((mergeArgs.range[3] - args.start) + 1) > 1) {
+                                    setCell(i, mergeArgs.range[1], args.model, { colSpan: prevCell.colSpan - ((mergeArgs.range[3] - args.start) + 1) }, true);
+                                }
+                                else {
+                                    delete args.model.rows[i].cells[mergeArgs.range[1]].colSpan;
+                                }
+                            }
+                            mergeArgs = null;
+                        }
+                    }
+                    if (args.model.rows[i].cells[curIdx] && args.model.rows[i].cells[curIdx].colSpan !== undefined &&
+                        args.model.rows[i].cells[curIdx].colSpan < 0 && args.model.rows[i].cells[curIdx].rowSpan === undefined) {
+                        if (!mergeArgs) {
+                            mergeArgs = { range: [i, curIdx, i, curIdx] };
+                            this.parent.notify(activeCellMergedRange, mergeArgs);
+                        }
+                        cell = new Object();
+                        mergeArgs.range = mergeArgs.range;
+                        Object.assign(cell, getCell(mergeArgs.range[0], mergeArgs.range[1], args.model));
+                        if (cell && cell.colSpan && (cell.colSpan > 1 || cell.rowSpan > 1)) {
+                            var indexes = [];
+                            indexes[0] = i;
+                            indexes[2] = cell.rowSpan > 1 ? i + (cell.rowSpan - 1) : i;
+                            mergeArgs.range = mergeArgs.range;
+                            if (mergeArgs.range[1] < args.start) {
+                                indexes[1] = indexes[3] = mergeArgs.range[1];
+                                if (cell.colSpan - count > 1) {
+                                    indexes[3] += (cell.colSpan - count - 1);
+                                }
+                            }
+                            else {
+                                indexes[1] = indexes[3] = args.start;
+                                if (cell.colSpan - ((args.end - mergeArgs.range[1]) + 1) > 1) {
+                                    indexes[3] += ((cell.colSpan - ((args.end - mergeArgs.range[1]) + 1)) - 1);
+                                }
+                            }
+                            mergeArgsCollection.push({ range: indexes, isAction: false, preventRefresh: true, merge: true,
+                                type: 'All', skipChecking: true });
+                        }
+                    }
+                    deletedCells[i].cells = args.model.rows[i].cells.splice(args.start, count);
+                    mergeArgs = null;
                 }
             }
         }
@@ -9330,6 +9483,7 @@ var WorkbookDelete = /** @__PURE__ @class */ (function () {
                 deletedModel[0].index = args.start;
             }
         }
+        mergeArgsCollection.forEach(function (merge$$1) { _this.parent.notify(setMerge, merge$$1); });
         this.parent.notify(deleteAction, { startIndex: args.start, endIndex: args.end, modelType: args.modelType,
             isAction: args.isAction, deletedModel: deletedModel, deletedCellsModel: deletedCells });
     };
@@ -9337,7 +9491,7 @@ var WorkbookDelete = /** @__PURE__ @class */ (function () {
         if (modelType === void 0) { modelType = 'Row'; }
         var total = (endIndex - startIndex) + 1;
         var newRange = [];
-        this.parent.getActiveSheet().rangeSettings.forEach(function (range) {
+        this.parent.getActiveSheet().range.forEach(function (range) {
             if (range.info && startIndex < range.info[totalKey]) {
                 if (range.info["delete" + modelType + "Range"]) {
                     range.info["delete" + modelType + "Range"].push([startIndex, endIndex]);
@@ -9417,6 +9571,7 @@ var WorkbookDataValidation = /** @__PURE__ @class */ (function () {
     WorkbookDataValidation.prototype.ValidationHandler = function (rules, range, isRemoveValidation) {
         var cell;
         var sheet = this.parent.getActiveSheet();
+        range = range || sheet.selectedRange;
         var indexes = getRangeIndexes(range);
         for (var rowIdx = indexes[0]; rowIdx <= indexes[2]; rowIdx++) {
             if (!sheet.rows[rowIdx]) {
@@ -9427,8 +9582,14 @@ var WorkbookDataValidation = /** @__PURE__ @class */ (function () {
                     setCell(rowIdx, colIdx, sheet, {});
                 }
                 cell = sheet.rows[rowIdx].cells[colIdx];
-                if (isRemoveValidation && cell.validation) {
-                    delete (cell.validation);
+                if (isRemoveValidation) {
+                    if (cell.validation) {
+                        delete (cell.validation);
+                        var style = this.parent.getCellStyleValue(['backgroundColor', 'color'], [rowIdx, colIdx]);
+                        this.parent.notify(applyCellFormat, {
+                            style: style, rowIdx: rowIdx, colIdx: colIdx
+                        });
+                    }
                 }
                 else {
                     cell.validation = {
@@ -9454,6 +9615,7 @@ var WorkbookDataValidation = /** @__PURE__ @class */ (function () {
         var cell;
         var value;
         var sheet = this.parent.getActiveSheet();
+        range = range || sheet.selectedRange;
         var indexes = range ? getRangeIndexes(range) : [];
         var rowIdx = range ? indexes[0] : 0;
         var lastRowIdx = range ? indexes[2] : sheet.rows.length;
@@ -9466,30 +9628,22 @@ var WorkbookDataValidation = /** @__PURE__ @class */ (function () {
                         cell = sheet.rows[rowIdx].cells[colIdx];
                         value = cell.value ? cell.value : '';
                         var range_1 = [rowIdx, colIdx];
-                        var sheetIdx = this.parent.activeSheetTab;
+                        var sheetIdx = this.parent.activeSheetIndex;
                         if (cell.validation && this.parent.allowDataValidation) {
                             this.parent.notify(isValidation, { value: value, range: range_1, sheetIdx: sheetIdx, isCell: isCell });
                             var isValid = this.parent.allowDataValidation;
                             this.parent.allowDataValidation = true;
                             if (!isValid) {
                                 if (!isRemoveHighlightedData) {
-                                    setCell(rowIdx, colIdx, sheet, { style: { backgroundColor: '#ffff00', color: '#ff0000' } }, true);
                                     this.parent.notify(applyCellFormat, {
-                                        style: { backgroundColor: '#ffff00', color: '#ff0000' }, rowIdx: rowIdx, colIdx: colIdx,
-                                        isHeightCheckNeeded: true, manualUpdate: true,
-                                        onActionUpdate: true
+                                        style: { backgroundColor: '#ffff00', color: '#ff0000' }, rowIdx: rowIdx, colIdx: colIdx
                                     });
                                 }
                                 else if (isRemoveHighlightedData) {
-                                    if (cell.style && cell.style.backgroundColor === '#ffff00' && cell.style.color === '#ff0000') {
-                                        cell.style.backgroundColor = '';
-                                        cell.style.color = '';
-                                        this.parent.notify(applyCellFormat, {
-                                            style: { backgroundColor: '', color: '' }, rowIdx: rowIdx, colIdx: colIdx,
-                                            isHeightCheckNeeded: true, manualUpdate: true,
-                                            onActionUpdate: true
-                                        });
-                                    }
+                                    var style = this.parent.getCellStyleValue(['backgroundColor', 'color'], [rowIdx, colIdx]);
+                                    this.parent.notify(applyCellFormat, {
+                                        style: style, rowIdx: rowIdx, colIdx: colIdx
+                                    });
                                 }
                             }
                         }
@@ -9532,6 +9686,7 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
         this.parent.on(replaceHandler, this.replace, this);
         this.parent.on(replaceAllHandler, this.replaceAll, this);
         this.parent.on(count, this.totalCount, this);
+        this.parent.on(findAllValues, this.findAllValues, this);
     };
     WorkbookFindAndReplace.prototype.removeEventListener = function () {
         if (!this.parent.isDestroyed) {
@@ -9540,13 +9695,14 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
             this.parent.off(replaceHandler, this.replace);
             this.parent.off(replaceAllHandler, this.replaceAll);
             this.parent.off(count, this.totalCount);
+            this.parent.off(findAllValues, this.findAllValues);
         }
     };
     WorkbookFindAndReplace.prototype.findNext = function (args) {
         var sheets = this.parent.sheets;
         var val;
         var sheetIndex = args.sheetIndex;
-        var sheet = sheets[sheetIndex - 1];
+        var sheet = sheets[this.parent.activeSheetIndex];
         var activecell = getCellIndexes(sheet.activeCell);
         var usedRange = sheet.usedRange;
         var endColumn = usedRange.colIndex;
@@ -9605,7 +9761,7 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
         var findNextArgs = {
             rowIndex: ridx, colIndex: cidx, usedRange: usedRange, endRow: endRow, endColumn: endColumn, startRow: startRow,
             mode: args.mode, loopCount: loopCount, count: count, args: args, val: val, stringValue: stringValue,
-            sheetIndex: sheetIndex, startColumn: startColumn, sheets: sheets
+            sheetIndex: this.parent.activeSheetIndex, startColumn: startColumn, sheets: sheets
         };
         if (args.searchBy === 'By Row') {
             this.findNxtRow(findNextArgs);
@@ -9616,7 +9772,7 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
     };
     WorkbookFindAndReplace.prototype.findNxtRow = function (findNextArgs) {
         var usedRange;
-        var sheet = findNextArgs.sheets[findNextArgs.sheetIndex - 1];
+        var sheet = findNextArgs.sheets[findNextArgs.sheetIndex];
         var sheetsLen = this.parent.sheets.length;
         var activecell = getCellIndexes(sheet.activeCell);
         if (findNextArgs.colIndex >= findNextArgs.usedRange.colIndex + 1) {
@@ -9626,10 +9782,10 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
         for (findNextArgs.rowIndex; findNextArgs.rowIndex <= findNextArgs.endRow + 1; findNextArgs.rowIndex++) {
             if (findNextArgs.rowIndex > findNextArgs.endRow) {
                 if (findNextArgs.mode === 'Workbook') {
-                    var noCellfound = this.parent.activeSheetTab;
+                    var noCellfound = this.parent.activeSheetIndex;
                     findNextArgs.sheetIndex++;
-                    if (sheetsLen === findNextArgs.sheetIndex - 1) {
-                        findNextArgs.sheetIndex = 1;
+                    if (sheetsLen === findNextArgs.sheetIndex) {
+                        findNextArgs.sheetIndex = 0;
                     }
                     if (noCellfound === findNextArgs.sheetIndex) {
                         if (findNextArgs.count === 0) {
@@ -9637,7 +9793,7 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
                             return;
                         }
                     }
-                    sheet = findNextArgs.sheets[findNextArgs.sheetIndex - 1];
+                    sheet = findNextArgs.sheets[findNextArgs.sheetIndex];
                     usedRange = sheet.usedRange;
                     activecell = getCellIndexes(sheet.activeCell);
                     findNextArgs.rowIndex = 0;
@@ -9701,7 +9857,7 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
         }
     };
     WorkbookFindAndReplace.prototype.findNxtCol = function (findNextArgs) {
-        var sheet = findNextArgs.sheets[findNextArgs.sheetIndex - 1];
+        var sheet = findNextArgs.sheets[findNextArgs.sheetIndex];
         var noFound;
         var activecell = getCellIndexes(sheet.activeCell);
         var sheetsLen = this.parent.sheets.length;
@@ -9712,10 +9868,10 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
         for (findNextArgs.colIndex; findNextArgs.colIndex <= findNextArgs.usedRange.colIndex + 1; findNextArgs.colIndex++) {
             if (findNextArgs.colIndex >= findNextArgs.endColumn + 1) {
                 if (findNextArgs.mode === 'Workbook') {
-                    noFound = this.parent.activeSheetTab;
+                    noFound = this.parent.activeSheetIndex;
                     findNextArgs.sheetIndex++;
-                    if (sheetsLen === findNextArgs.sheetIndex - 1) {
-                        findNextArgs.sheetIndex = 1;
+                    if (sheetsLen === findNextArgs.sheetIndex) {
+                        findNextArgs.sheetIndex = 0;
                     }
                     if (noFound === findNextArgs.sheetIndex) {
                         if (findNextArgs.count === 0) {
@@ -9723,7 +9879,7 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
                             return;
                         }
                     }
-                    sheet = findNextArgs.sheets[findNextArgs.sheetIndex - 1];
+                    sheet = findNextArgs.sheets[findNextArgs.sheetIndex];
                     findNextArgs.usedRange = sheet.usedRange;
                     activecell = getCellIndexes(sheet.activeCell);
                     findNextArgs.colIndex = 0;
@@ -9787,14 +9943,13 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
         }
     };
     WorkbookFindAndReplace.prototype.nextCommon = function (findNextArgs) {
-        var sheet = findNextArgs.sheets[findNextArgs.sheetIndex - 1];
+        var sheet = findNextArgs.sheets[findNextArgs.sheetIndex];
         if (sheet.rows[findNextArgs.rowIndex]) {
             if (sheet.rows[findNextArgs.rowIndex].cells[findNextArgs.colIndex]) {
-                var cellTyp = sheet.rows[findNextArgs.rowIndex].cells[findNextArgs.colIndex];
-                if (cellTyp) {
-                    var cellTypeVal = cellTyp.format;
+                var cellType = sheet.rows[findNextArgs.rowIndex].cells[findNextArgs.colIndex];
+                if (cellType) {
                     var cellval = void 0;
-                    if (cellTypeVal) {
+                    if (cellType.format) {
                         var displayTxt = this.parent.getDisplayText(sheet.rows[findNextArgs.rowIndex].
                             cells[findNextArgs.colIndex]);
                         cellval = displayTxt;
@@ -9804,8 +9959,7 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
                     }
                     if (findNextArgs.args.isCSen && findNextArgs.args.isEMatch) {
                         if (cellval === findNextArgs.stringValue) {
-                            var sheetName = sheet.name;
-                            var address = sheetName + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
+                            var address = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
                             this.parent.notify(goto, { address: address });
                             findNextArgs.count++;
                             return true;
@@ -9813,10 +9967,8 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
                     }
                     else if (findNextArgs.args.isCSen && !findNextArgs.args.isEMatch) {
                         var index = cellval.indexOf(findNextArgs.args.value) > -1;
-                        var lowerCase = cellval.toString().toLowerCase();
                         if ((cellval === findNextArgs.stringValue) || (index)) {
-                            var sheetName = sheet.name;
-                            var address = sheetName + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
+                            var address = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
                             this.parent.notify(goto, { address: address });
                             findNextArgs.count++;
                             return true;
@@ -9825,8 +9977,7 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
                     else if (!findNextArgs.args.isCSen && findNextArgs.args.isEMatch) {
                         findNextArgs.val = cellval.toString().toLowerCase();
                         if (findNextArgs.val === findNextArgs.stringValue) {
-                            var sheetName = sheet.name;
-                            var address = sheetName + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
+                            var address = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
                             this.parent.notify(goto, { address: address });
                             findNextArgs.count++;
                             return true;
@@ -9838,8 +9989,7 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
                         var lowerCaseIndex = findNextArgs.val.indexOf(findNextArgs.args.value) > -1;
                         if ((findNextArgs.val === findNextArgs.stringValue) || ((cellval === findNextArgs.stringValue) || (index)) ||
                             (cellval === findNextArgs.stringValue) || (lowerCaseIndex)) {
-                            var sheetName = sheet.name;
-                            var address = sheetName + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
+                            var address = sheet.name + '!' + getCellAddress(findNextArgs.rowIndex, findNextArgs.colIndex);
                             this.parent.notify(goto, { address: address });
                             findNextArgs.count++;
                             return true;
@@ -9853,7 +10003,7 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
     WorkbookFindAndReplace.prototype.findPrevious = function (args) {
         var sheets = this.parent.sheets;
         var sheetIndex = args.sheetIndex;
-        var sheet = sheets[sheetIndex - 1];
+        var sheet = sheets[sheetIndex];
         var valueOfCell;
         var cellFormat;
         var val;
@@ -9921,7 +10071,7 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
     };
     WorkbookFindAndReplace.prototype.findPreRow = function (findPrevArgs) {
         var usedRan;
-        var sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex - 1];
+        var sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex];
         var sheetsLength = this.parent.sheets.length;
         var noValueBoolean = false;
         var activecell = getCellIndexes(sheet.activeCell);
@@ -9932,10 +10082,10 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
         for (findPrevArgs.rowIndex; findPrevArgs.rowIndex >= -1; findPrevArgs.rowIndex--) {
             if (findPrevArgs.rowIndex < 0 && findPrevArgs.colIndex < 0) {
                 if (findPrevArgs.args.mode === 'Workbook') {
-                    var noCellfound = this.parent.activeSheetTab;
+                    var noCellfound = this.parent.activeSheetIndex;
                     findPrevArgs.sheetIndex--;
-                    if (findPrevArgs.sheetIndex === 0) {
-                        findPrevArgs.sheetIndex = sheetsLength;
+                    if (findPrevArgs.sheetIndex === -1) {
+                        findPrevArgs.sheetIndex = sheetsLength - 1;
                     }
                     if (noCellfound === findPrevArgs.sheetIndex) {
                         if (findPrevArgs.count === 0) {
@@ -9943,7 +10093,7 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
                             return;
                         }
                     }
-                    sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex - 1];
+                    sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex];
                     usedRan = sheet.usedRange;
                     activecell = getCellIndexes(sheet.activeCell);
                     findPrevArgs.rowIndex = usedRan.rowIndex;
@@ -9997,17 +10147,17 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
     };
     WorkbookFindAndReplace.prototype.findPreCol = function (findPrevArgs) {
         var usedRange;
-        var sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex - 1];
+        var sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex];
         var sheetsLen = this.parent.sheets.length;
         var noValueBoolean = false;
         var activecell = getCellIndexes(sheet.activeCell);
         for (findPrevArgs.colIndex; findPrevArgs.colIndex >= -1; findPrevArgs.colIndex--) {
             if (findPrevArgs.rowIndex < 0 && findPrevArgs.colIndex < 0) {
                 if (findPrevArgs.args.mode === 'Workbook') {
-                    var noCellfound = this.parent.activeSheetTab;
+                    var noCellfound = this.parent.activeSheetIndex;
                     findPrevArgs.sheetIndex--;
-                    if (findPrevArgs.sheetIndex === 0) {
-                        findPrevArgs.sheetIndex = sheetsLen;
+                    if (findPrevArgs.sheetIndex === -1) {
+                        findPrevArgs.sheetIndex = sheetsLen - 1;
                     }
                     if (noCellfound === findPrevArgs.sheetIndex) {
                         if (findPrevArgs.count === 0) {
@@ -10015,7 +10165,7 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
                             return;
                         }
                     }
-                    sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex - 1];
+                    sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex];
                     usedRange = sheet.usedRange;
                     activecell = getCellIndexes(sheet.activeCell);
                     findPrevArgs.rowIndex = usedRange.rowIndex;
@@ -10071,7 +10221,7 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
         }
     };
     WorkbookFindAndReplace.prototype.commonCondition = function (findPrevArgs, activecell) {
-        var sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex - 1];
+        var sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex];
         var isTrue;
         if ((activecell[0] !== findPrevArgs.endRow && activecell[1] !== findPrevArgs.endColumn) ||
             (activecell[0] !== findPrevArgs.endRow || activecell[1] !== findPrevArgs.endColumn)) {
@@ -10092,59 +10242,53 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
         return isTrue;
     };
     WorkbookFindAndReplace.prototype.prevCommon = function (findPrevArgs) {
-        var sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex - 1];
+        var sheet = findPrevArgs.sheets[findPrevArgs.sheetIndex];
         if (sheet.rows[findPrevArgs.rowIndex]) {
             if (sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex]) {
-                var cellTyp = sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex];
-                if (cellTyp) {
-                    var cellTypeVal = cellTyp.format;
-                    var cellval = void 0;
-                    if (cellTypeVal) {
+                var cellType = sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex];
+                if (cellType) {
+                    var cellvalue = void 0;
+                    if (cellType.format) {
                         var displayTxt = this.parent.getDisplayText(sheet.rows[findPrevArgs.rowIndex]
                             .cells[findPrevArgs.colIndex]);
-                        cellval = displayTxt;
+                        cellvalue = displayTxt;
                     }
                     else {
-                        cellval = sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex].value.toString();
+                        cellvalue = sheet.rows[findPrevArgs.rowIndex].cells[findPrevArgs.colIndex].value.toString();
                     }
                     if (findPrevArgs.args.isCSen && findPrevArgs.args.isEMatch) {
-                        if (cellval === findPrevArgs.stringValue) {
-                            var sheetName = sheet.name;
-                            var address = sheetName + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
+                        if (cellvalue === findPrevArgs.stringValue) {
+                            var address = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
                             this.parent.notify(goto, { address: address });
                             findPrevArgs.count++;
                             return true;
                         }
                     }
                     else if (findPrevArgs.args.isCSen && !findPrevArgs.args.isEMatch) {
-                        var index = cellval.indexOf(findPrevArgs.args.value) > -1;
-                        var lowerCase = cellval.toString().toLowerCase();
-                        if ((cellval === findPrevArgs.stringValue) || (index)) {
-                            var sheetName = sheet.name;
-                            var address = sheetName + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
+                        var index = cellvalue.indexOf(findPrevArgs.args.value) > -1;
+                        if ((cellvalue === findPrevArgs.stringValue) || (index)) {
+                            var address = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
                             this.parent.notify(goto, { address: address });
                             findPrevArgs.count++;
                             return true;
                         }
                     }
                     else if (!findPrevArgs.args.isCSen && findPrevArgs.args.isEMatch) {
-                        findPrevArgs.val = cellval.toString().toLowerCase();
+                        findPrevArgs.val = cellvalue.toString().toLowerCase();
                         if (findPrevArgs.val === findPrevArgs.stringValue) {
-                            var sheetName = sheet.name;
-                            var address = sheetName + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
+                            var address = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
                             this.parent.notify(goto, { address: address });
                             findPrevArgs.count++;
                             return true;
                         }
                     }
                     else if (!findPrevArgs.args.isCSen && !findPrevArgs.args.isEMatch) {
-                        findPrevArgs.val = cellval.toString().toLowerCase();
-                        var index = cellval.indexOf(findPrevArgs.args.value) > -1;
+                        findPrevArgs.val = cellvalue.toString().toLowerCase();
+                        var index = cellvalue.indexOf(findPrevArgs.args.value) > -1;
                         var lowerCaseIndex = findPrevArgs.val.indexOf(findPrevArgs.args.value) > -1;
-                        if ((cellval === findPrevArgs.stringValue) || ((cellval === findPrevArgs.stringValue) ||
+                        if ((cellvalue === findPrevArgs.stringValue) || ((cellvalue === findPrevArgs.stringValue) ||
                             (index)) || (findPrevArgs.val === findPrevArgs.stringValue) || (lowerCaseIndex)) {
-                            var sheetName = sheet.name;
-                            var address = sheetName + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
+                            var address = sheet.name + '!' + getCellAddress(findPrevArgs.rowIndex, findPrevArgs.colIndex);
                             this.parent.notify(goto, { address: address });
                             findPrevArgs.count++;
                             return true;
@@ -10176,9 +10320,7 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
         var cell = sheet.rows[activecel[0]].cells[activecel[1]];
         var cellFormat = sheet.rows[activecel[0]].cells[activecel[1]].format;
         var compareVal;
-        var sheetName = sheet.name;
-        var undoRedoOpt = 'before';
-        var replaceAddress = sheetName + '!' + getCellAddress(activecel[0], activecel[1]);
+        var replaceAddress = sheet.name + '!' + getCellAddress(activecel[0], activecel[1]);
         if (cellFormat) {
             var dispTxt = this.parent.getDisplayText(sheet.rows[activecel[0]].cells[activecel[1]]);
             compareVal = dispTxt.toString();
@@ -10186,30 +10328,31 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
         else {
             compareVal = sheet.rows[activecel[0]].cells[activecel[1]].value.toString();
         }
-        this.parent.notify(findUndoRedo, { undoRedoOpt: undoRedoOpt, address: replaceAddress, compareVal: compareVal });
+        var replaceAllCollection = { undoRedoOpt: 'before', address: replaceAddress, compareVal: compareVal };
+        this.parent.notify(findUndoRedo, replaceAllCollection);
         var lcValueOfCell = compareVal.toLowerCase();
         var ivalueOfCell = compareVal.indexOf(args.value) > -1;
         var caseInSensitive = lcValueOfCell.indexOf(args.value) > -1;
         if ((args.value === compareVal) || (args.value === lcValueOfCell)) {
             sheet.rows[activecel[0]].cells[activecel[1]].value = args.replaceValue;
             this.parent.updateCell(cell, address);
-            var undoRedoOpt_1 = 'after';
-            this.parent.notify(findUndoRedo, { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: undoRedoOpt_1 });
+            var replaceAllCollection_1 = { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: 'after' };
+            this.parent.notify(findUndoRedo, replaceAllCollection_1);
         }
         else if (ivalueOfCell) {
             var newValue = compareVal.replace(args.value, args.replaceValue);
             sheet.rows[activecel[0]].cells[activecel[1]].value = newValue;
             this.parent.updateCell(cell, address);
-            var undoRedoOpt_2 = 'after';
-            this.parent.notify(findUndoRedo, { undoRedoOpt: undoRedoOpt_2, address: replaceAddress, compareVal: args.replaceValue });
+            var replaceAllCollection_2 = { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: 'after' };
+            this.parent.notify(findUndoRedo, replaceAllCollection_2);
         }
         else if (caseInSensitive) {
             var regx = new RegExp(args.value.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
             var updateValue = compareVal.replace(regx, args.replaceValue);
             sheet.rows[activecel[0]].cells[activecel[1]].value = updateValue;
             this.parent.updateCell(cell, address);
-            var undoRedoOpt_3 = 'after';
-            this.parent.notify(findUndoRedo, { undoRedoOpt: undoRedoOpt_3, address: replaceAddress, compareVal: args.replaceValue });
+            var replaceAllCollection_3 = { address: replaceAddress, compareVal: args.replaceValue, undoRedoOpt: 'after' };
+            this.parent.notify(findUndoRedo, replaceAllCollection_3);
         }
     };
     WorkbookFindAndReplace.prototype.replaceAll = function (args) {
@@ -10217,11 +10360,12 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
         var sheet = this.parent.sheets[startSheet];
         var endRow = sheet.usedRange.rowIndex;
         var count = 0;
+        var undoRedoOpt = 'beforeReplaceAll';
         var startRow = 0;
         var endColumn = sheet.usedRange.colIndex;
         var startColumn = 0;
-        var undoRedoOpt = 'beforeReplaceAll';
-        this.parent.notify(findUndoRedo, { undoRedoOpt: undoRedoOpt, replaceValue: args.replaceValue, replaceFor: args.mode });
+        var addressCollection = [];
+        var address;
         for (startRow; startRow <= endRow; startRow++) {
             if (startColumn > endColumn && startRow === endRow) {
                 if (args.mode === 'Workbook') {
@@ -10244,15 +10388,11 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
                     }
                     for (startColumn; startColumn <= endColumn; startColumn++) {
                         var cell = sheet.rows[startRow].cells[startColumn];
-                        var srow = startRow;
-                        var scol = startColumn;
-                        // let address: string = getCellAddress(srow, scol);
-                        var address = sheet.name + '!' + getCellAddress(srow, scol);
                         if (row) {
                             if (row.cells[startColumn]) {
-                                var cellTyp = sheet.rows[startRow].cells[startColumn];
-                                if (cellTyp) {
-                                    var cellTypeVal = cellTyp.format;
+                                var cellType = sheet.rows[startRow].cells[startColumn];
+                                if (cellType) {
+                                    var cellTypeVal = cellType.format;
                                     var cellval = void 0;
                                     if (cellTypeVal) {
                                         var displayTxt = this.parent.getDisplayText(sheet.rows[startRow].
@@ -10265,7 +10405,9 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
                                     if (args.isCSen && args.isEMatch) {
                                         if (cellval === args.value) {
                                             sheet.rows[startRow].cells[startColumn].value = args.replaceValue;
+                                            address = sheet.name + '!' + getCellAddress(startRow, startColumn);
                                             this.parent.updateCell(cell, address);
+                                            addressCollection.push(address);
                                             count++;
                                         }
                                     }
@@ -10274,7 +10416,9 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
                                         if ((cellval === args.value) || (index)) {
                                             var newValue = cellval.replace(args.value, args.replaceValue);
                                             sheet.rows[startRow].cells[startColumn].value = newValue;
+                                            address = sheet.name + '!' + getCellAddress(startRow, startColumn);
                                             this.parent.updateCell(cell, address);
+                                            addressCollection.push(address);
                                             count++;
                                         }
                                     }
@@ -10282,7 +10426,9 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
                                         var val = cellval.toString().toLowerCase();
                                         if (val === args.value) {
                                             sheet.rows[startRow].cells[startColumn].value = args.replaceValue;
+                                            address = sheet.name + '!' + getCellAddress(startRow, startColumn);
                                             this.parent.updateCell(cell, address);
+                                            addressCollection.push(address);
                                             count++;
                                         }
                                     }
@@ -10295,7 +10441,9 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
                                             var regExepression = new RegExp(args.value.toString().replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'ig');
                                             var newValue = cellval.replace(regExepression, args.replaceValue);
                                             sheet.rows[startRow].cells[startColumn].value = newValue;
+                                            address = sheet.name + '!' + getCellAddress(startRow, startColumn);
                                             this.parent.updateCell(cell, address);
+                                            addressCollection.push(address);
                                             count++;
                                         }
                                     }
@@ -10306,10 +10454,18 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
                 }
             }
         }
+        var replaceAllCollection = {
+            undoRedoOpt: undoRedoOpt, Collection: addressCollection,
+            replaceValue: args.value
+        };
+        this.parent.notify(findUndoRedo, replaceAllCollection);
+        replaceAllCollection = {
+            undoRedoOpt: 'afterReplaceAll', Collection: addressCollection,
+            replaceValue: args.replaceValue
+        };
+        this.parent.notify(findUndoRedo, replaceAllCollection);
         var countNumber = count;
         this.parent.notify(replaceAllDialog, { count: countNumber, replaceValue: args.replaceValue });
-        undoRedoOpt = 'afterReplaceAll';
-        this.parent.notify(findUndoRedo, { undoRedoOpt: undoRedoOpt, replaceValue: args.replaceValue, replaceFor: args.mode });
     };
     WorkbookFindAndReplace.prototype.totalCount = function (args) {
         var startSheet = 0;
@@ -10360,7 +10516,9 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
                                 else if (!args.isCSen && !args.isEMatch) {
                                     var val = cellvalue.toString().toLowerCase();
                                     var index = cellvalue.indexOf(args.value) > -1;
-                                    if ((val === args.value) || ((cellvalue === args.value) || (index)) || ((cellvalue === args.value))) {
+                                    var lowerCaseValue = val.indexOf(args.value) > -1;
+                                    if ((val === args.value) || ((cellvalue === args.value) || (index)) || (cellvalue === args.value) ||
+                                        (lowerCaseValue)) {
                                         count++;
                                     }
                                 }
@@ -10377,8 +10535,8 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
         return;
     };
     WorkbookFindAndReplace.prototype.requiredCount = function (args) {
-        var sheetIndex = this.parent.activeSheetTab;
-        var sheet = this.parent.sheets[sheetIndex - 1];
+        var sheetIndex = this.parent.activeSheetIndex;
+        var sheet = this.parent.sheets[sheetIndex];
         var activecel = getCellIndexes(sheet.activeCell);
         var endRow = sheet.usedRange.rowIndex;
         var requiredCount = 0;
@@ -10394,17 +10552,15 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
                 for (startColumn; startColumn <= endColumn; startColumn++) {
                     if (row) {
                         if (row.cells[startColumn]) {
-                            var cellTyp = sheet.rows[startRow].cells[startColumn];
-                            if (cellTyp) {
-                                var cellTypeVal = cellTyp.format;
+                            if (sheet.rows[startRow].cells[startColumn]) {
                                 var cellval = void 0;
-                                if (cellTypeVal) {
+                                if (sheet.rows[startRow].cells[startColumn].format) {
                                     var displayTxt = this.parent.getDisplayText(sheet.rows[startRow].
                                         cells[startColumn]);
                                     cellval = displayTxt.toString();
                                 }
                                 else {
-                                    cellval = cellTyp.value.toString();
+                                    cellval = sheet.rows[startRow].cells[startColumn].value.toString();
                                 }
                                 if (args.isCSen && !args.isEMatch) {
                                     var index = cellval.indexOf(args.value) > -1;
@@ -10426,7 +10582,9 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
                                 else if (!args.isCSen && !args.isEMatch) {
                                     var val = cellval.toString().toLowerCase();
                                     var index = cellval.indexOf(args.value) > -1;
-                                    if ((cellval === args.value) || ((cellval === args.value) || (index)) || (val === args.value)) {
+                                    var lowerCaseVal = val.indexOf(args.value) > -1;
+                                    if ((cellval === args.value) || ((cellval === args.value) || (index)) || (val === args.value) ||
+                                        (lowerCaseVal)) {
                                         requiredCount++;
                                     }
                                 }
@@ -10437,6 +10595,109 @@ var WorkbookFindAndReplace = /** @__PURE__ @class */ (function () {
             }
         }
         return requiredCount;
+    };
+    WorkbookFindAndReplace.prototype.findAllValues = function (findAllArguments) {
+        var startSheet = findAllArguments.sheetIndex;
+        var sheet = this.parent.sheets[startSheet];
+        var endRow = sheet.usedRange.rowIndex;
+        var rowIndex = 0;
+        var count = 0;
+        var address;
+        var endColumn = sheet.usedRange.colIndex;
+        var columnIndex = 0;
+        var sheetLength = this.parent.sheets.length;
+        var initialSheet = findAllArguments.sheetIndex;
+        for (rowIndex; rowIndex <= endRow + 1; rowIndex++) {
+            if ((initialSheet !== 1) && (findAllArguments.sheetIndex === sheetLength)) {
+                startSheet = 1;
+            }
+            if (rowIndex > endRow && columnIndex > endColumn) {
+                if (findAllArguments.mode === 'Workbook') {
+                    startSheet++;
+                    if (initialSheet === startSheet) {
+                        if (count === 0) {
+                            return;
+                        }
+                        return;
+                    }
+                    if (startSheet > sheetLength - 1) {
+                        startSheet = 0;
+                    }
+                    sheet = this.parent.sheets[startSheet];
+                    if (sheet) {
+                        rowIndex = 0;
+                        columnIndex = 0;
+                        endColumn = sheet.usedRange.colIndex;
+                        endRow = sheet.usedRange.rowIndex;
+                        sheet = sheet;
+                    }
+                }
+            }
+            if (!isNullOrUndefined(sheet)) {
+                if (sheet.rows[rowIndex]) {
+                    var row = sheet.rows[rowIndex];
+                    if (columnIndex === endColumn + 2) {
+                        columnIndex = 0;
+                    }
+                    for (columnIndex; columnIndex <= endColumn + 1; columnIndex++) {
+                        if (row) {
+                            if (row.cells[columnIndex]) {
+                                var cell = sheet.rows[rowIndex].cells[columnIndex];
+                                if (cell) {
+                                    var cellFormat = cell.format;
+                                    var cellvalue = void 0;
+                                    if (cellFormat) {
+                                        var displayTxt = this.parent.getDisplayText(sheet.rows[rowIndex].
+                                            cells[columnIndex]);
+                                        cellvalue = displayTxt.toString();
+                                    }
+                                    else {
+                                        cellvalue = cell.value.toString();
+                                    }
+                                    if (findAllArguments.isCSen && findAllArguments.isEMatch) {
+                                        if (cellvalue === findAllArguments.value) {
+                                            address = sheet.name + '!' + getCellAddress(rowIndex, columnIndex);
+                                            findAllArguments.findCollection.push(address);
+                                            count++;
+                                        }
+                                    }
+                                    else if (findAllArguments.isCSen && !findAllArguments.isEMatch) {
+                                        var index = cellvalue.indexOf(findAllArguments.value) > -1;
+                                        if ((cellvalue === findAllArguments.value) || (index)) {
+                                            address = sheet.name + '!' + getCellAddress(rowIndex, columnIndex);
+                                            findAllArguments.findCollection.push(address);
+                                            count++;
+                                        }
+                                    }
+                                    else if (!findAllArguments.isCSen && findAllArguments.isEMatch) {
+                                        var val = cellvalue.toString().toLowerCase();
+                                        if (val === findAllArguments.value) {
+                                            address = sheet.name + '!' + getCellAddress(rowIndex, columnIndex);
+                                            findAllArguments.findCollection.push(address);
+                                            count++;
+                                        }
+                                    }
+                                    else if (!findAllArguments.isCSen && !findAllArguments.isEMatch) {
+                                        var val = cellvalue.toString().toLowerCase();
+                                        var index = cellvalue.indexOf(findAllArguments.value) > -1;
+                                        if ((val === findAllArguments.value) || ((cellvalue === findAllArguments.value) || (index)) ||
+                                            ((cellvalue === findAllArguments.value))) {
+                                            address = sheet.name + '!' + getCellAddress(rowIndex, columnIndex);
+                                            findAllArguments.findCollection.push(address);
+                                            count++;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (count === 0) {
+            return;
+        }
+        return;
     };
     /**
      * Gets the module name.
@@ -10481,10 +10742,32 @@ var WorkbookProtectSheet = /** @__PURE__ @class */ (function () {
     };
     WorkbookProtectSheet.prototype.addEventListener = function () {
         this.parent.on(protectsheetHandler, this.protectsheetHandler, this);
+        this.parent.on(setLockCells, this.lockCells, this);
     };
     WorkbookProtectSheet.prototype.removeEventListener = function () {
         if (!this.parent.isDestroyed) {
             this.parent.off(protectsheetHandler, this.protectsheetHandler);
+            this.parent.on(setLockCells, this.lockCells);
+        }
+    };
+    WorkbookProtectSheet.prototype.lockCells = function (args) {
+        var sheet = this.parent.getActiveSheet();
+        var range;
+        if (args) {
+            range = args.range;
+        }
+        else {
+            range = sheet.selectedRange;
+        }
+        var indexes = typeof (range) === 'object' ? range :
+            getSwapRange(getRangeIndexes(range));
+        for (var i = indexes[0]; i <= indexes[2]; i++) {
+            for (var j = indexes[1]; j <= indexes[3]; j++) {
+                if (this.parent.getActiveSheet().id === sheet.id) {
+                    this.parent.notify(applyLockCells, { rowIdx: i, colIdx: j, isLocked: args.isLocked
+                    });
+                }
+            }
         }
     };
     /**
@@ -10496,6 +10779,874 @@ var WorkbookProtectSheet = /** @__PURE__ @class */ (function () {
         return 'workbookProtectSheet';
     };
     return WorkbookProtectSheet;
+}());
+
+/**
+ * The `WorkbookMerge` module is used to merge the range of cells.
+ */
+var WorkbookMerge = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for the workbook merge module.
+     * @private
+     */
+    function WorkbookMerge(parent) {
+        this.parent = parent;
+        this.addEventListener();
+    }
+    WorkbookMerge.prototype.merge = function (args) {
+        if (args.isAction) {
+            this.parent.notify('actionBegin', { eventArgs: args, action: 'merge' });
+            if (!args.model) {
+                args.model = [];
+            }
+        }
+        if (typeof (args.range) === 'string') {
+            args.range = getRangeIndexes(args.range);
+        }
+        args.range = getSwapRange(args.range);
+        var sheet = this.parent.getActiveSheet();
+        if (!args.skipChecking) {
+            this.mergedRange(args);
+        }
+        if (!args.merge || args.type === 'All') {
+            this.mergeAll(args);
+            if (args.refreshRibbon) {
+                this.parent.notify(activeCellChanged, null);
+            }
+        }
+        else if (args.type === 'Horizontally') {
+            this.mergeHorizontally(args);
+        }
+        else if (args.type === 'Vertically') {
+            this.mergeVertically(args);
+        }
+        this.parent.setUsedRange(args.range[2], args.range[3]);
+        if (args.isAction) {
+            this.parent.notify('actionComplete', { eventArgs: args, action: 'merge' });
+        }
+        this.parent.notify('selectRange', { indexes: getRangeIndexes(sheet.selectedRange), skipChecking: true });
+    };
+    WorkbookMerge.prototype.mergeAll = function (args) {
+        var rowSpan = 0;
+        var cell;
+        args.range = args.range;
+        var colSpan;
+        var value;
+        var sheet = this.parent.getActiveSheet();
+        var curCell;
+        for (var i = args.range[0]; i <= args.range[2]; i++) {
+            colSpan = 0;
+            if (args.isAction) {
+                args.model.push({ cells: [] });
+            }
+            for (var j = args.range[1]; j <= args.range[3]; j++) {
+                cell = getCell(i, j, sheet);
+                if (cell && (cell.value || cell.formula) && !value) {
+                    value = cell.formula || cell.value;
+                }
+                if (args.isAction && args.merge) {
+                    args.model[i - args.range[0]].cells[j - args.range[1]] = {};
+                    Object.assign(args.model[i - args.range[0]].cells[j - args.range[1]], cell);
+                }
+                if (sheet.rows[i] && sheet.rows[i].cells && sheet.rows[i].cells[j]) {
+                    delete sheet.rows[i].cells[j].rowSpan;
+                    delete sheet.rows[i].cells[j].colSpan;
+                    if (!args.merge && !args.isAction && args.model && args.model[i - args.range[0]] && args.model[i - args.range[0]].
+                        cells[j - args.range[1]] && args.model[i - args.range[0]].cells[j - args.range[1]] !== {}) {
+                        setCell(i, j, sheet, args.model[i - args.range[0]].cells[j - args.range[1]]);
+                    }
+                }
+                if (args.merge) {
+                    cell = new Object();
+                    if (i === args.range[0] && j === args.range[1]) {
+                        if (args.range[3] - args.range[1] > 0) {
+                            cell.colSpan = (args.range[3] - args.range[1]) + 1;
+                        }
+                        if (args.range[2] - args.range[0] > 0) {
+                            cell.rowSpan = (args.range[2] - args.range[0]) + 1;
+                        }
+                        setCell(args.range[0], args.range[1], sheet, cell, true);
+                        continue;
+                    }
+                    else {
+                        if (i !== args.range[0]) {
+                            cell.rowSpan = -rowSpan;
+                        }
+                        if (j !== args.range[1]) {
+                            colSpan++;
+                            cell.colSpan = -colSpan;
+                        }
+                        if (sheet.rows[i] && sheet.rows[i].cells && sheet.rows[i].cells[j]) {
+                            delete sheet.rows[i].cells[j].value;
+                            delete sheet.rows[i].cells[j].formula;
+                        }
+                        curCell = getCell(i, j, sheet) || {};
+                        setCell(i, j, sheet, Object.assign(cell, curCell));
+                    }
+                }
+                if (!args.preventRefresh) {
+                    this.parent.notify(applyMerge, { rowIdx: i, colIdx: j });
+                }
+            }
+            rowSpan++;
+        }
+        if (args.merge) {
+            cell = this.getCellValue(args.range[0], args.range[1], value);
+            setCell(args.range[0], args.range[1], sheet, cell, true);
+            if (!args.preventRefresh) {
+                this.parent.notify(applyMerge, { rowIdx: args.range[0], colIdx: args.range[1] });
+            }
+        }
+    };
+    WorkbookMerge.prototype.mergeHorizontally = function (args) {
+        var mergeCount;
+        args.range = args.range;
+        var cell;
+        var sheet = this.parent.getActiveSheet();
+        var newValue;
+        var rowIdx;
+        var curCell;
+        for (var i = args.range[0]; i <= args.range[2]; i++) {
+            mergeCount = 0;
+            if (args.isAction) {
+                args.model.push({ cells: [] });
+            }
+            for (var j = args.range[1]; j <= args.range[3]; j++) {
+                curCell = getCell(i, j, sheet);
+                cell = new Object();
+                if (args.isAction) {
+                    args.model[i - args.range[0]].cells[j - args.range[1]] = {};
+                    Object.assign(args.model[i - args.range[0]].cells[j - args.range[1]], curCell);
+                }
+                if (j === args.range[1]) {
+                    if (i === args.range[0]) {
+                        continue;
+                    }
+                    rowIdx = i - 1;
+                    if (sheet.rows[rowIdx] && sheet.rows[rowIdx].cells && sheet.rows[rowIdx].cells[j]) {
+                        delete sheet.rows[rowIdx].cells[j].rowSpan;
+                    }
+                    cell = this.getCellValue(rowIdx, j, newValue);
+                    if (args.range[3] - args.range[1] > 0) {
+                        cell.colSpan = (args.range[3] - args.range[1]) + 1;
+                    }
+                    newValue = null;
+                    setCell(rowIdx, j, sheet, cell, true);
+                }
+                else {
+                    if (curCell && (curCell.value || curCell.formula) && !newValue) {
+                        newValue = curCell.formula || curCell.value;
+                    }
+                    rowIdx = i;
+                    if (sheet.rows[rowIdx] && sheet.rows[rowIdx].cells && sheet.rows[rowIdx].cells[j]) {
+                        delete sheet.rows[rowIdx].cells[j].rowSpan;
+                        delete sheet.rows[rowIdx].cells[j].value;
+                        delete sheet.rows[rowIdx].cells[j].formula;
+                    }
+                    mergeCount++;
+                    cell.colSpan = -mergeCount;
+                    setCell(rowIdx, j, sheet, cell, true);
+                }
+                this.parent.notify(applyMerge, { rowIdx: rowIdx, colIdx: j });
+            }
+        }
+        if (sheet.rows[args.range[2]] && sheet.rows[args.range[2]].cells && sheet.rows[args.range[2]].cells[args.range[1]]) {
+            delete sheet.rows[args.range[2]].cells[args.range[1]].rowSpan;
+        }
+        cell = this.getCellValue(args.range[2], args.range[1], newValue);
+        if (args.range[3] - args.range[1] > 0) {
+            cell.colSpan = (args.range[3] - args.range[1]) + 1;
+        }
+        setCell(args.range[2], args.range[1], sheet, cell, true);
+        this.parent.notify(applyMerge, { rowIdx: args.range[2], colIdx: args.range[1] });
+    };
+    WorkbookMerge.prototype.getCellValue = function (rowIdx, colIdx, value) {
+        var sheet = this.parent.getActiveSheet();
+        var cell = new Object();
+        var curCell = getCell(rowIdx, colIdx, sheet);
+        if (value && (!curCell || (!curCell.value && !curCell.formula))) {
+            if (checkIsFormula(value)) {
+                cell.formula = value;
+            }
+            else {
+                cell.value = value;
+            }
+        }
+        return cell;
+    };
+    WorkbookMerge.prototype.mergeVertically = function (args) {
+        var rowSpan = 0;
+        args.range = args.range;
+        var sheet = this.parent.getActiveSheet();
+        var cell;
+        var newValue;
+        var colIdx;
+        var curCell;
+        for (var i = args.range[1]; i <= args.range[3]; i++) {
+            for (var j = args.range[0]; j <= args.range[2]; j++) {
+                curCell = getCell(j, i, sheet);
+                if (args.isAction) {
+                    if (args.model[j - args.range[0]] === undefined) {
+                        args.model[j - args.range[0]] = { cells: [] };
+                    }
+                    args.model[j - args.range[0]].cells[i - args.range[1]] = {};
+                    Object.assign(args.model[j - args.range[0]].cells[i - args.range[1]], curCell);
+                }
+                if (j === args.range[0]) {
+                    rowSpan = 0;
+                    if (i === args.range[1]) {
+                        continue;
+                    }
+                    colIdx = i - 1;
+                    if (sheet.rows[j] && sheet.rows[j].cells && sheet.rows[j].cells[colIdx]) {
+                        delete sheet.rows[j].cells[colIdx].colSpan;
+                    }
+                    cell = this.getCellValue(j, colIdx, newValue);
+                    if (args.range[2] - args.range[0] > 0) {
+                        cell.rowSpan = (args.range[2] - args.range[0]) + 1;
+                    }
+                    newValue = null;
+                    setCell(j, colIdx, sheet, cell, true);
+                }
+                else {
+                    cell = new Object();
+                    if (curCell && (curCell.value || curCell.formula) && !newValue) {
+                        newValue = curCell.formula || curCell.value;
+                    }
+                    rowSpan++;
+                    colIdx = i;
+                    if (sheet.rows[j] && sheet.rows[j].cells && sheet.rows[j].cells[colIdx]) {
+                        delete sheet.rows[j].cells[colIdx].colSpan;
+                        delete sheet.rows[j].cells[colIdx].value;
+                        delete sheet.rows[j].cells[colIdx].formula;
+                    }
+                    cell.rowSpan = -rowSpan;
+                    setCell(j, colIdx, sheet, cell, true);
+                }
+                this.parent.notify(applyMerge, { rowIdx: j, colIdx: colIdx });
+            }
+        }
+        if (sheet.rows[args.range[0]] && sheet.rows[args.range[0]].cells && sheet.rows[args.range[0]].cells[args.range[3]]) {
+            delete sheet.rows[args.range[0]].cells[args.range[3]].colSpan;
+        }
+        cell = this.getCellValue(args.range[0], args.range[1], newValue);
+        if (args.range[2] - args.range[0] > 0) {
+            cell.rowSpan = (args.range[2] - args.range[0]) + 1;
+        }
+        setCell(args.range[0], args.range[3], sheet, cell, true);
+        this.parent.notify(applyMerge, { rowIdx: args.range[0], colIdx: args.range[3] });
+    };
+    WorkbookMerge.prototype.activeCellRange = function (args) {
+        args.range = args.range;
+        var sheet = this.parent.getActiveSheet();
+        var cell = getCell(args.range[0], args.range[1], sheet);
+        if (cell) {
+            if (!isNullOrUndefined(cell.rowSpan) && cell.rowSpan < 0) {
+                args.range[0] += cell.rowSpan;
+                if (args.insertCount) {
+                    args.range[0] -= args.insertCount;
+                }
+            }
+            if (!isNullOrUndefined(cell.colSpan) && cell.colSpan < 0) {
+                args.range[1] += cell.colSpan;
+                if (args.insertCount) {
+                    args.range[1] -= args.insertCount;
+                }
+            }
+            cell = getCell(args.range[0], args.range[1], sheet);
+            if (cell) {
+                if (cell.rowSpan > 1 && (args.range[0] + (cell.rowSpan - 1) >= args.range[2] || args.insertCount)) {
+                    args.range[2] = args.range[0] + (cell.rowSpan - 1);
+                }
+                if (cell.colSpan > 1 && (args.range[1] + (cell.colSpan - 1) >= args.range[3] || args.insertCount)) {
+                    args.range[3] = args.range[1] + (cell.colSpan - 1);
+                }
+            }
+        }
+    };
+    WorkbookMerge.prototype.mergedRange = function (args) {
+        if (typeof (args.range) === 'string') {
+            args.range = getRangeIndexes(args.range);
+        }
+        if (args.range[0] <= args.range[2] && args.range[1] <= args.range[3]) {
+            this.forward(args);
+        }
+        else if (args.range[0] >= args.range[2] && args.range[1] >= args.range[3]) {
+            this.reverse(args);
+        }
+        else if (args.range[0] < args.range[2] && args.range[1] > args.range[3]) {
+            this.forwardReverse(args);
+        }
+        else if (args.range[0] > args.range[2] && args.range[1] < args.range[3]) {
+            this.reverseForward(args);
+        }
+    };
+    WorkbookMerge.prototype.forward = function (args) {
+        args.range = args.range;
+        var sheet = this.parent.getActiveSheet();
+        var cell = getCell(args.range[0], args.range[1], sheet);
+        var endRowIdx;
+        var endColIdx;
+        var rowIdx = endRowIdx = args.range[0];
+        var colIdx = endColIdx = args.range[1];
+        if (cell) {
+            if (!isNullOrUndefined(cell.rowSpan) && cell.rowSpan < 0) {
+                rowIdx = endRowIdx = args.range[0] + cell.rowSpan;
+            }
+            if (!isNullOrUndefined(cell.colSpan) && cell.colSpan < 0) {
+                colIdx = endColIdx = args.range[1] + cell.colSpan;
+            }
+            cell = getCell(rowIdx, colIdx, sheet);
+            if (cell) {
+                if (cell.rowSpan > 1) {
+                    endRowIdx += (cell.rowSpan - 1);
+                    if (rowIdx + (cell.rowSpan - 1) >= args.range[2]) {
+                        args.range[2] = args.range[0];
+                        args.range[2] = rowIdx + (cell.rowSpan - 1);
+                    }
+                }
+                if (cell.colSpan > 1) {
+                    endColIdx += (cell.colSpan - 1);
+                    if (colIdx + (cell.colSpan - 1) >= args.range[3]) {
+                        args.range[3] = args.range[1];
+                        args.range[3] = colIdx + (cell.colSpan - 1);
+                    }
+                }
+            }
+        }
+        args.range[0] = rowIdx;
+        args.range[1] = colIdx;
+        if (args.range[0] === rowIdx && args.range[1] === colIdx && args.range[2] === endRowIdx && args.range[3] === endColIdx) {
+            args.isActiveCell = true;
+        }
+        if (args.skipChecking) {
+            return;
+        }
+        for (var i = args.range[1]; i <= args.range[3]; i++) {
+            cell = getCell(args.range[2], i, sheet);
+            if (cell) {
+                rowIdx = args.range[2];
+                colIdx = i;
+                if (!isNullOrUndefined(cell.colSpan) && cell.colSpan < 0) {
+                    colIdx += cell.colSpan;
+                    if (colIdx < args.range[1]) {
+                        args.range[1] = colIdx;
+                    }
+                }
+                if (!isNullOrUndefined(cell.rowSpan) && cell.rowSpan < 0) {
+                    rowIdx += cell.rowSpan;
+                    if (rowIdx < args.range[0]) {
+                        args.range[0] = rowIdx;
+                    }
+                }
+                cell = getCell(rowIdx, colIdx, sheet);
+                if (cell) {
+                    if (cell.colSpan > 1 && colIdx + (cell.colSpan - 1) > args.range[3]) {
+                        args.range[3] = colIdx;
+                        args.range[3] = colIdx + (cell.colSpan - 1);
+                    }
+                    if (cell.rowSpan > 1 && rowIdx + (cell.rowSpan - 1) > args.range[2]) {
+                        args.range[2] = rowIdx;
+                        args.range[2] = rowIdx + (cell.rowSpan - 1);
+                    }
+                }
+            }
+        }
+        var startRowIdx;
+        var startColIdx;
+        for (var i = args.range[1]; i <= args.range[3]; i++) {
+            cell = getCell(args.range[0], i, sheet);
+            if (cell) {
+                startColIdx = i;
+                startRowIdx = args.range[0];
+                if (!isNullOrUndefined(cell.colSpan) && cell.colSpan < 0) {
+                    startColIdx += cell.colSpan;
+                    if (startColIdx < args.range[1]) {
+                        args.range[1] = startColIdx;
+                    }
+                }
+                if (!isNullOrUndefined(cell.rowSpan) && cell.rowSpan < 0) {
+                    startRowIdx += cell.rowSpan;
+                    if (startRowIdx < args.range[0]) {
+                        args.range[0] = startRowIdx;
+                    }
+                }
+            }
+        }
+        for (var i = args.range[0]; i <= args.range[2]; i++) {
+            cell = getCell(i, args.range[3], sheet);
+            if (cell) {
+                rowIdx = i;
+                colIdx = args.range[3];
+                if (!isNullOrUndefined(cell.rowSpan) && cell.rowSpan < 0) {
+                    rowIdx += cell.rowSpan;
+                    if (rowIdx < args.range[0]) {
+                        args.range[0] = rowIdx;
+                    }
+                }
+                if (!isNullOrUndefined(cell.colSpan) && cell.colSpan < 0) {
+                    colIdx += cell.colSpan;
+                    if (colIdx < args.range[1]) {
+                        args.range[1] = colIdx;
+                    }
+                }
+                cell = getCell(rowIdx, colIdx, sheet);
+                if (cell) {
+                    if (cell.rowSpan > 1 && rowIdx + (cell.rowSpan - 1) > args.range[2]) {
+                        args.range[2] = rowIdx;
+                        args.range[2] = rowIdx + (cell.rowSpan - 1);
+                    }
+                    if (cell.colSpan > 1 && colIdx + (cell.colSpan - 1) > args.range[3]) {
+                        args.range[3] = colIdx;
+                        args.range[3] = colIdx + (cell.colSpan - 1);
+                    }
+                }
+            }
+        }
+    };
+    WorkbookMerge.prototype.forwardReverse = function (args) {
+        var sheet = this.parent.getActiveSheet();
+        args.range = args.range;
+        var colIndex = args.range[1];
+        var cell = getCell(args.range[0], args.range[1], sheet);
+        var rowIndex = args.range[0];
+        if (cell) {
+            if (!isNullOrUndefined(cell.colSpan) && cell.colSpan < 0) {
+                colIndex += cell.colSpan;
+                if (args.range[3] >= colIndex) {
+                    args.range[3] = colIndex;
+                }
+            }
+            if (!isNullOrUndefined(cell.rowSpan) && cell.rowSpan < 0) {
+                rowIndex += cell.rowSpan;
+                if (rowIndex < args.range[0]) {
+                    args.range[0] = rowIndex;
+                }
+            }
+            cell = getCell(rowIndex, colIndex, sheet);
+            if (cell) {
+                if (cell.rowSpan > 1 && rowIndex + (cell.rowSpan - 1) >= args.range[2]) {
+                    args.range[2] = rowIndex + (cell.rowSpan - 1);
+                }
+                if (cell.colSpan > 1 && colIndex + (cell.colSpan - 1) >= args.range[1]) {
+                    args.range[1] = colIndex + (cell.colSpan - 1);
+                }
+            }
+        }
+        args.range[0] = rowIndex;
+        if (args.skipChecking) {
+            return;
+        }
+        var rowIdx;
+        var cellIdx;
+        for (var i = args.range[3]; i <= args.range[1]; i++) {
+            cell = getCell(args.range[2], i, sheet);
+            if (cell) {
+                cellIdx = i;
+                rowIdx = args.range[2];
+                if (!isNullOrUndefined(cell.rowSpan) && cell.rowSpan < 0) {
+                    rowIdx += cell.rowSpan;
+                    if (rowIdx < args.range[0]) {
+                        args.range[0] = rowIdx;
+                    }
+                }
+                if (!isNullOrUndefined(cell.colSpan) && cell.colSpan < 0) {
+                    cellIdx += cell.colSpan;
+                    if (cellIdx < args.range[3]) {
+                        args.range[3] = cellIdx;
+                    }
+                }
+                cell = getCell(rowIdx, cellIdx, sheet);
+                if (cell) {
+                    if (cell.rowSpan > 1 && rowIdx + (cell.rowSpan - 1) > args.range[2]) {
+                        args.range[2] = rowIdx + (cell.rowSpan - 1);
+                    }
+                    if (cell.colSpan > 1 && cellIdx + (cell.colSpan - 1) > args.range[1]) {
+                        args.range[1] = cellIdx + (cell.colSpan - 1);
+                    }
+                }
+            }
+        }
+        var startRowIndex;
+        for (var i = args.range[3]; i <= args.range[1]; i++) {
+            cell = getCell(args.range[0], i, sheet);
+            if (cell) {
+                cellIdx = i;
+                startRowIndex = args.range[0];
+                if (!isNullOrUndefined(cell.rowSpan) && cell.rowSpan < 0) {
+                    startRowIndex += cell.rowSpan;
+                    if (startRowIndex < args.range[0]) {
+                        args.range[0] = startRowIndex;
+                    }
+                }
+                if (!isNullOrUndefined(cell.colSpan) && cell.colSpan < 0) {
+                    cellIdx += cell.colSpan;
+                }
+                cell = getCell(startRowIndex, cellIdx, sheet);
+                if (cell) {
+                    if (cell.rowSpan > 1 && startRowIndex + (cell.rowSpan - 1) > args.range[2]) {
+                        args.range[2] = startRowIndex + (cell.rowSpan - 1);
+                    }
+                    if (cell.colSpan > 1 && cellIdx + (cell.colSpan - 1) > args.range[1]) {
+                        args.range[1] = cellIdx;
+                        args.range[1] = cellIdx + (cell.colSpan - 1);
+                    }
+                }
+            }
+        }
+        var colIdx;
+        for (var i = args.range[0]; i <= args.range[2]; i++) {
+            cell = getCell(i, args.range[3], sheet);
+            if (cell) {
+                startRowIndex = i;
+                colIdx = args.range[3];
+                if (!isNullOrUndefined(cell.rowSpan) && cell.rowSpan < 0) {
+                    startRowIndex += cell.rowSpan;
+                    if (startRowIndex < args.range[0]) {
+                        args.range[0] = startRowIndex;
+                    }
+                }
+                if (!isNullOrUndefined(cell.colSpan) && cell.colSpan < 0) {
+                    colIdx += cell.colSpan;
+                    if (colIdx < args.range[3]) {
+                        args.range[3] = colIdx;
+                    }
+                }
+                cell = getCell(startRowIndex, colIdx, sheet);
+                if (cell) {
+                    if (cell.rowSpan > 1 && startRowIndex + (cell.rowSpan - 1) > args.range[2]) {
+                        args.range[2] = startRowIndex;
+                        args.range[2] = startRowIndex + (cell.rowSpan - 1);
+                    }
+                    if (cell.colSpan > 1 && colIdx + (cell.colSpan - 1) > args.range[1]) {
+                        args.range[1] = colIdx;
+                        args.range[1] = colIdx + (cell.colSpan - 1);
+                    }
+                }
+            }
+        }
+    };
+    WorkbookMerge.prototype.reverse = function (args) {
+        args.range = args.range;
+        var colnIdx = args.range[1];
+        var sheet = this.parent.getActiveSheet();
+        var cell = getCell(args.range[0], args.range[1], sheet);
+        var rowIdx = args.range[0];
+        if (cell) {
+            if (!isNullOrUndefined(cell.colSpan) && cell.colSpan < 0) {
+                colnIdx += cell.colSpan;
+            }
+            if (!isNullOrUndefined(cell.rowSpan) && cell.rowSpan < 0) {
+                rowIdx += cell.rowSpan;
+            }
+            if (args.range[2] >= rowIdx) {
+                args.range[2] = rowIdx;
+                args.isActiveCell = true;
+            }
+            if (args.range[3] >= colnIdx) {
+                args.range[3] = colnIdx;
+                if (args.range[2] === rowIdx) {
+                    args.isActiveCell = true;
+                }
+            }
+            else if (args.isActiveCell) {
+                args.isActiveCell = false;
+            }
+            cell = getCell(rowIdx, colnIdx, sheet);
+            if (cell) {
+                if (cell.rowSpan > 1 && rowIdx + (cell.rowSpan - 1) >= args.range[0]) {
+                    args.range[0] = rowIdx;
+                    args.range[0] = rowIdx + (cell.rowSpan - 1);
+                }
+                if (cell.colSpan > 1 && colnIdx + (cell.colSpan - 1) >= args.range[1]) {
+                    args.range[1] = colnIdx;
+                    args.range[1] = colnIdx + (cell.colSpan - 1);
+                }
+            }
+        }
+        var colIdx = args.range[3];
+        if (args.skipChecking) {
+            return;
+        }
+        for (var i = args.range[3]; i <= args.range[1]; i++) {
+            cell = getCell(args.range[2], i, sheet);
+            if (cell) {
+                colIdx = i;
+                rowIdx = args.range[2];
+                if (!isNullOrUndefined(cell.rowSpan) && cell.rowSpan < 0) {
+                    rowIdx += cell.rowSpan;
+                    if (rowIdx < args.range[2]) {
+                        args.range[2] = rowIdx;
+                    }
+                }
+                if (!isNullOrUndefined(cell.colSpan) && cell.colSpan < 0) {
+                    colIdx += cell.colSpan;
+                    if (colIdx < args.range[3]) {
+                        args.range[3] = colIdx;
+                    }
+                }
+                cell = getCell(rowIdx, colIdx, sheet);
+                if (cell) {
+                    if (cell.rowSpan > 1 && rowIdx + (cell.rowSpan - 1) > args.range[0]) {
+                        args.range[0] = rowIdx;
+                        args.range[0] = rowIdx + (cell.rowSpan - 1);
+                    }
+                    if (cell.colSpan > 1 && colIdx + (cell.colSpan - 1) > args.range[1]) {
+                        args.range[1] = colIdx;
+                        args.range[1] = colIdx + (cell.colSpan - 1);
+                    }
+                }
+            }
+        }
+        colIdx = args.range[3];
+        for (var i = args.range[3]; i <= args.range[1]; i++) {
+            cell = getCell(args.range[0], i, sheet);
+            if (cell) {
+                colIdx = i;
+                rowIdx = args.range[0];
+                if (!isNullOrUndefined(cell.colSpan) && cell.colSpan < 0) {
+                    colIdx += cell.colSpan;
+                }
+                if (!isNullOrUndefined(cell.rowSpan) && cell.rowSpan < 0) {
+                    rowIdx += cell.rowSpan;
+                }
+                cell = getCell(rowIdx, colIdx, sheet);
+                if (cell) {
+                    if (cell.colSpan > 1 && colIdx + (cell.colSpan - 1) > args.range[1]) {
+                        args.range[1] = colIdx;
+                        args.range[1] = colIdx + (cell.colSpan - 1);
+                    }
+                    if (cell.rowSpan > 1 && rowIdx + (cell.rowSpan - 1) > args.range[0]) {
+                        args.range[0] = rowIdx;
+                        args.range[0] = rowIdx + (cell.rowSpan - 1);
+                    }
+                }
+            }
+        }
+        var cellIndex;
+        var rIdx;
+        for (var i = args.range[2]; i <= args.range[0]; i++) {
+            cell = getCell(i, args.range[3], sheet);
+            if (cell) {
+                rIdx = i;
+                cellIndex = args.range[3];
+                if (!isNullOrUndefined(cell.rowSpan) && cell.rowSpan < 0) {
+                    rIdx += cell.rowSpan;
+                    if (rIdx < args.range[2]) {
+                        args.range[2] = rIdx;
+                    }
+                }
+                if (!isNullOrUndefined(cell.colSpan) && cell.colSpan < 0) {
+                    cellIndex += cell.colSpan;
+                    if (cellIndex < args.range[3]) {
+                        args.range[3] = cellIndex;
+                    }
+                }
+                cell = getCell(rIdx, cellIndex, sheet);
+                if (cell) {
+                    if (cell.rowSpan > 1 && rIdx + (cell.rowSpan - 1) > args.range[0]) {
+                        args.range[0] = rIdx;
+                        args.range[0] = rIdx + (cell.rowSpan - 1);
+                    }
+                    if (cell.colSpan > 1 && cellIndex + (cell.colSpan - 1) > args.range[1]) {
+                        args.range[1] = cellIndex;
+                        args.range[1] = cellIndex + (cell.colSpan - 1);
+                    }
+                }
+            }
+        }
+    };
+    WorkbookMerge.prototype.reverseForward = function (args) {
+        args.range = args.range;
+        var sheet = this.parent.getActiveSheet();
+        var rIdx = args.range[0];
+        var cIdx = args.range[1];
+        var cell = getCell(args.range[0], args.range[1], sheet);
+        if (cell) {
+            if (!isNullOrUndefined(cell.rowSpan) && cell.rowSpan < 0) {
+                rIdx += cell.rowSpan;
+                if (args.range[2] >= rIdx) {
+                    args.range[2] = rIdx;
+                }
+            }
+            if (!isNullOrUndefined(cell.colSpan) && cell.colSpan < 0) {
+                cIdx += cell.colSpan;
+            }
+            cell = getCell(rIdx, cIdx, sheet);
+            if (cell) {
+                if (cell.rowSpan > 1 && rIdx + (cell.rowSpan - 1) >= args.range[0]) {
+                    args.range[0] = rIdx;
+                    args.range[0] = rIdx + (cell.rowSpan - 1);
+                }
+                if (cell.colSpan > 1 && cIdx + (cell.colSpan - 1) >= args.range[3]) {
+                    args.range[3] = args.range[1];
+                    args.range[3] = cIdx + (cell.colSpan - 1);
+                }
+            }
+        }
+        if (args.skipChecking) {
+            return;
+        }
+        var cIndex = args.range[3];
+        var rIndex;
+        for (var i = args.range[1]; i <= args.range[3]; i++) {
+            cell = getCell(args.range[2], i, sheet);
+            if (cell) {
+                rIndex = args.range[2];
+                cIndex = i;
+                if (!isNullOrUndefined(cell.rowSpan) && cell.rowSpan < 0) {
+                    rIndex += cell.rowSpan;
+                    if (rIndex < args.range[2]) {
+                        args.range[2] = rIndex;
+                    }
+                }
+                if (!isNullOrUndefined(cell.colSpan) && cell.colSpan < 0) {
+                    cIndex += cell.colSpan;
+                    if (cIndex < args.range[1]) {
+                        args.range[1] = cIndex;
+                    }
+                }
+                cell = getCell(rIndex, cIndex, sheet);
+                if (cell) {
+                    if (cell.colSpan > 1 && cIndex + (cell.colSpan - 1) > args.range[3]) {
+                        args.range[3] = cIndex + (cell.colSpan - 1);
+                    }
+                    if (cell.rowSpan > 1 && (cell.rowSpan - 1) + rIndex > args.range[0]) {
+                        args.range[0] = (cell.rowSpan - 1) + rIndex;
+                    }
+                }
+            }
+        }
+        var sRowIdx;
+        var sColIdx;
+        for (var i = args.range[1]; i <= args.range[3]; i++) {
+            cell = getCell(args.range[0], i, sheet);
+            if (cell) {
+                sColIdx = i;
+                sRowIdx = args.range[0];
+                if (!isNullOrUndefined(cell.colSpan) && cell.colSpan < 0) {
+                    sColIdx += cell.colSpan;
+                    if (sColIdx < args.range[1]) {
+                        args.range[1] = sColIdx;
+                    }
+                }
+                if (!isNullOrUndefined(cell.rowSpan) && cell.rowSpan < 0) {
+                    sRowIdx += cell.rowSpan;
+                }
+                cell = getCell(sRowIdx, sColIdx, sheet);
+                if (cell) {
+                    if (cell.rowSpan > 1 && sRowIdx + (cell.rowSpan - 1) > args.range[0]) {
+                        args.range[0] = sRowIdx + (cell.rowSpan - 1);
+                    }
+                }
+            }
+        }
+        var cellIndex;
+        for (var i = args.range[2]; i <= args.range[0]; i++) {
+            cell = getCell(i, args.range[3], sheet);
+            if (cell) {
+                rIndex = i;
+                cellIndex = args.range[3];
+                if (!isNullOrUndefined(cell.rowSpan) && cell.rowSpan < 0) {
+                    rIndex += cell.rowSpan;
+                    if (rIndex < args.range[2]) {
+                        args.range[2] = rIndex;
+                    }
+                }
+                if (!isNullOrUndefined(cell.colSpan) && cell.colSpan < 0) {
+                    cellIndex += cell.colSpan;
+                    if (cellIndex < args.range[1]) {
+                        args.range[1] = cellIndex;
+                    }
+                }
+                cell = getCell(rIndex, cellIndex, sheet);
+                if (cell) {
+                    if (cell.rowSpan > 1 && (cell.rowSpan - 1) + rIndex > args.range[0]) {
+                        args.range[0] = (cell.rowSpan - 1) + rIndex;
+                    }
+                    if (cell.colSpan > 1 && (cell.colSpan - 1) + cellIndex > args.range[3]) {
+                        args.range[3] = cellIndex;
+                        args.range[3] = (cell.colSpan - 1) + cellIndex;
+                    }
+                }
+            }
+        }
+    };
+    WorkbookMerge.prototype.insertHandler = function (args) {
+        this.activeCellRange(args);
+        args.range = args.range;
+        if (args.insertModel === 'Row') {
+            args.range[2] += args.insertCount;
+        }
+        else {
+            args.range[3] += args.insertCount;
+        }
+        args.preventRefresh = true;
+        args.merge = true;
+        this.mergeAll(args);
+    };
+    WorkbookMerge.prototype.pasteHandler = function (args) {
+        var sheet = this.parent.getActiveSheet();
+        var cell;
+        var nextCell;
+        var prevCell;
+        var activeCell = getCellIndexes(sheet.activeCell);
+        for (var i = args.range[0], l = 0; i <= args.range[2]; i++, l++) {
+            for (var j = args.range[1], k = 0; j <= args.range[3]; j++, k++) {
+                cell = getCell(i, j, args.prevSheet) || {};
+                if (cell.rowSpan > 1) {
+                    prevCell = getCell(activeCell[0] + (cell.rowSpan - 1), activeCell[1], sheet) || {};
+                    nextCell = getCell(activeCell[0] + 1, activeCell[1], sheet) || {};
+                    if ((prevCell.colSpan !== undefined && prevCell.colSpan < 0) || (nextCell.colSpan !== undefined &&
+                        nextCell.colSpan < 0)) {
+                        args.cancel = true;
+                        this.parent.notify(applyMerge, { showDialog: true });
+                        return;
+                    }
+                }
+                if (cell.colSpan > 1) {
+                    prevCell = getCell(activeCell[0], activeCell[1] + (cell.colSpan - 1), sheet) || {};
+                    nextCell = getCell(activeCell[0], activeCell[1] + 1, sheet) || {};
+                    if ((prevCell.rowSpan !== undefined && prevCell.rowSpan < 0) || (nextCell.rowSpan !== undefined &&
+                        nextCell.rowSpan < 0)) {
+                        args.cancel = true;
+                        this.parent.notify(applyMerge, { showDialog: true });
+                        return;
+                    }
+                }
+            }
+        }
+    };
+    WorkbookMerge.prototype.addEventListener = function () {
+        this.parent.on(setMerge, this.merge, this);
+        this.parent.on(mergedRange, this.mergedRange, this);
+        this.parent.on(activeCellMergedRange, this.activeCellRange, this);
+        this.parent.on(insertMerge, this.insertHandler, this);
+        this.parent.on(pasteMerge, this.pasteHandler, this);
+    };
+    /**
+     * Destroy workbook merge module.
+     */
+    WorkbookMerge.prototype.destroy = function () {
+        this.removeEventListener();
+        this.parent = null;
+    };
+    WorkbookMerge.prototype.removeEventListener = function () {
+        if (!this.parent.isDestroyed) {
+            this.parent.off(setMerge, this.merge);
+            this.parent.off(mergedRange, this.mergedRange);
+            this.parent.off(activeCellMergedRange, this.activeCellRange);
+            this.parent.off(insertMerge, this.insertHandler);
+            this.parent.off(pasteMerge, this.pasteHandler);
+        }
+    };
+    /**
+     * Get the workbook merge module name.
+     */
+    WorkbookMerge.prototype.getModuleName = function () {
+        return 'workbookmerge';
+    };
+    return WorkbookMerge;
 }());
 
 /**
@@ -10512,7 +11663,7 @@ var WorkbookBasicModule = /** @__PURE__ @class */ (function () {
      * @private
      */
     function WorkbookBasicModule() {
-        Workbook.Inject(DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookDelete, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookDataValidation);
+        Workbook.Inject(DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookDelete, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookDataValidation, WorkbookMerge);
     }
     /**
      * For internal use only - Get the module name.
@@ -10541,7 +11692,7 @@ var WorkbookAllModule = /** @__PURE__ @class */ (function () {
      * @private
      */
     function WorkbookAllModule() {
-        Workbook.Inject(DataBind, WorkbookSave, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookDelete, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookDataValidation);
+        Workbook.Inject(DataBind, WorkbookSave, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookDelete, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookDataValidation, WorkbookMerge);
     }
     /**
      * For internal use only - Get the module name.
@@ -10631,6 +11782,9 @@ function getWorkbookRequiredModules(context, modules) {
     }
     if (context.allowDataValidation) {
         modules.push({ member: 'workbookDataValidation', args: [context] });
+    }
+    if (context.allowMerge) {
+        modules.push({ member: 'workbookmerge', args: [context] });
     }
     return modules;
 }
@@ -10820,6 +11974,254 @@ var localeData = {
  * Common tasks.
  */
 
+var __extends$6 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Configures the Row behavior for the spreadsheet.
+ *  ```html
+ * <div id='Spreadsheet'></div>
+ * ```
+ * ```typescript
+ * let spreadsheet: Spreadsheet = new Spreadsheet({
+ *      sheets: [{
+ *                rows: [{
+ *                        index: 30,
+ *                        cells: [{ index: 4, value: 'Total Amount:' },
+ *                               { formula: '=SUM(F2:F30)', style: { fontWeight: 'bold' } }]
+ *                }]
+ * ...
+ * });
+ * spreadsheet.appendTo('#Spreadsheet');
+ * ```
+ */
+var Row = /** @__PURE__ @class */ (function (_super) {
+    __extends$6(Row, _super);
+    function Row() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$5([
+        Collection([], Cell)
+    ], Row.prototype, "cells", void 0);
+    __decorate$5([
+        Property(0)
+    ], Row.prototype, "index", void 0);
+    __decorate$5([
+        Property(20)
+    ], Row.prototype, "height", void 0);
+    __decorate$5([
+        Property(false)
+    ], Row.prototype, "customHeight", void 0);
+    __decorate$5([
+        Property(false)
+    ], Row.prototype, "hidden", void 0);
+    return Row;
+}(ChildProperty));
+/**
+ * @hidden
+ */
+function getRow(sheet, rowIndex) {
+    return sheet.rows[rowIndex];
+}
+/** @hidden */
+function setRow(sheet, rowIndex, row) {
+    if (!sheet.rows[rowIndex]) {
+        sheet.rows[rowIndex] = {};
+    }
+    Object.keys(row).forEach(function (key) {
+        sheet.rows[rowIndex][key] = row[key];
+    });
+}
+/** @hidden */
+function isHiddenRow(sheet, index) {
+    return sheet.rows[index] && sheet.rows[index].hidden;
+}
+/**
+ * @hidden
+ */
+function getRowHeight(sheet, rowIndex) {
+    if (sheet && sheet.rows && sheet.rows[rowIndex]) {
+        if (sheet.rows[rowIndex].hidden) {
+            return 0;
+        }
+        return sheet.rows[rowIndex].height === undefined ? 20 : sheet.rows[rowIndex].height;
+    }
+    else {
+        return 20;
+    }
+}
+/**
+ * @hidden
+ */
+function setRowHeight(sheet, rowIndex, height) {
+    if (sheet && sheet.rows) {
+        if (!sheet.rows[rowIndex]) {
+            sheet.rows[rowIndex] = {};
+        }
+        sheet.rows[rowIndex].height = height;
+    }
+}
+/**
+ * @hidden
+ */
+function getRowsHeight(sheet, startRow, endRow) {
+    if (endRow === void 0) { endRow = startRow; }
+    var height = 0;
+    var swap;
+    if (startRow > endRow) {
+        swap = startRow;
+        startRow = endRow;
+        endRow = swap;
+    }
+    for (var i = startRow; i <= endRow; i++) {
+        height += getRowHeight(sheet, i);
+    }
+    return height;
+}
+
+var __extends$5 = (undefined && undefined.__extends) || (function () {
+    var extendStatics = function (d, b) {
+        extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return extendStatics(d, b);
+    };
+    return function (d, b) {
+        extendStatics(d, b);
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+})();
+var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
+    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
+    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
+    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
+    return c > 3 && r && Object.defineProperty(target, key, r), r;
+};
+/**
+ * Represents the cell.
+ */
+var Cell = /** @__PURE__ @class */ (function (_super) {
+    __extends$5(Cell, _super);
+    function Cell() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$4([
+        Property('')
+    ], Cell.prototype, "value", void 0);
+    __decorate$4([
+        Property('')
+    ], Cell.prototype, "formula", void 0);
+    __decorate$4([
+        Property(0)
+    ], Cell.prototype, "index", void 0);
+    __decorate$4([
+        Property('General')
+    ], Cell.prototype, "format", void 0);
+    __decorate$4([
+        Complex({}, CellStyle)
+    ], Cell.prototype, "style", void 0);
+    __decorate$4([
+        Property('')
+    ], Cell.prototype, "hyperlink", void 0);
+    __decorate$4([
+        Property(false)
+    ], Cell.prototype, "wrap", void 0);
+    __decorate$4([
+        Property(true)
+    ], Cell.prototype, "isLocked", void 0);
+    __decorate$4([
+        Property('')
+    ], Cell.prototype, "validation", void 0);
+    __decorate$4([
+        Property(1)
+    ], Cell.prototype, "colSpan", void 0);
+    __decorate$4([
+        Property(1)
+    ], Cell.prototype, "rowSpan", void 0);
+    return Cell;
+}(ChildProperty));
+/**
+ * @hidden
+ */
+function getCell(rowIndex, colIndex, sheet, isInitRow) {
+    var row = getRow(sheet, rowIndex);
+    if (!row || !row.cells) {
+        if (isInitRow) {
+            if (!row) {
+                sheet.rows[rowIndex] = { cells: [] };
+            }
+            else {
+                sheet.rows[rowIndex].cells = [];
+            }
+        }
+        else {
+            return null;
+        }
+    }
+    return sheet.rows[rowIndex].cells[colIndex] || null;
+}
+/**
+ * @hidden
+ */
+function setCell(rowIndex, colIndex, sheet, cell, isExtend) {
+    if (!sheet.rows[rowIndex]) {
+        sheet.rows[rowIndex] = { cells: [] };
+    }
+    else if (!sheet.rows[rowIndex].cells) {
+        sheet.rows[rowIndex].cells = [];
+    }
+    if (isExtend && sheet.rows[rowIndex].cells[colIndex]) {
+        extend(sheet.rows[rowIndex].cells[colIndex], cell, null, true);
+    }
+    else {
+        sheet.rows[rowIndex].cells[colIndex] = cell;
+    }
+}
+/** @hidden */
+function skipDefaultValue(style, defaultKey) {
+    var defaultProps = { fontFamily: 'Calibri', verticalAlign: 'bottom', textIndent: '0pt', backgroundColor: '#ffffff',
+        color: '#000000', textAlign: 'left', fontSize: '11pt', fontWeight: 'normal', fontStyle: 'normal', textDecoration: 'none',
+        border: '', borderLeft: '', borderTop: '', borderRight: '', borderBottom: '' };
+    var changedProps = {};
+    Object.keys(defaultKey ? defaultProps : style).forEach(function (propName) {
+        if (style[propName] !== defaultProps[propName]) {
+            changedProps[propName] = style[propName];
+        }
+    });
+    return changedProps;
+}
+/** @hidden */
+function wrap(address, wrap, context) {
+    if (wrap === void 0) { wrap = true; }
+    var addressInfo = context.getAddressInfo(address);
+    var rng = addressInfo.indices;
+    var sheet = getSheet(context, addressInfo.sheetIndex);
+    for (var i = rng[0]; i <= rng[2]; i++) {
+        for (var j = rng[1]; j <= rng[3]; j++) {
+            setCell(i, j, sheet, { wrap: wrap }, true);
+        }
+    }
+    context.setProperties({ sheets: context.sheets }, true);
+    context.notify(wrapEvent, { range: rng, wrap: wrap, sheet: sheet });
+}
+
 /**
  * Update data source to Sheet and returns Sheet
  * @hidden
@@ -10841,10 +12243,6 @@ function getData(context, address, columnWiseData, valueOnly) {
             context.notify(updateSheetFromDataSource, args);
             return args.promise.then(function () {
                 while (sRow <= indexes[2]) {
-                    if (!valueOnly && isHiddenRow(sheet, sRow)) {
-                        sRow++;
-                        continue;
-                    }
                     var cells = {};
                     row = getRow(sheet, sRow);
                     i = indexes[1];
@@ -10867,12 +12265,56 @@ function getData(context, address, columnWiseData, valueOnly) {
                             data[index.toString()] = cells;
                         }
                         else {
+                            var cellObj = {};
+                            Object.assign(cellObj, row ? getCell(sRow, i, sheet) : null);
+                            if (cellObj.colSpan > 1 && cellObj.rowSpan > 1) {
+                                var cell_1 = void 0;
+                                for (var j = sRow, len = sRow + cellObj.rowSpan; j < len; j++) {
+                                    for (var k = i, len_1 = i + cellObj.colSpan; k < len_1; k++) {
+                                        if (j === sRow && k === i) {
+                                            continue;
+                                        }
+                                        cell_1 = new Object();
+                                        if (j !== sRow) {
+                                            cell_1.rowSpan = sRow - j;
+                                        }
+                                        if (k !== i) {
+                                            cell_1.colSpan = i - k;
+                                        }
+                                        if (sheet.rows[j] && sheet.rows[j].cells && sheet.rows[j].cells[k]) {
+                                            delete sheet.rows[j].cells[k].value;
+                                            delete sheet.rows[j].cells[k].formula;
+                                        }
+                                        setCell(j, k, sheet, cell_1, true);
+                                    }
+                                }
+                            }
+                            else if (cellObj.colSpan > 1) {
+                                for (var j = i + 1, len = i + cellObj.colSpan; j < len; j++) {
+                                    setCell(sRow, j, sheet, { colSpan: i - j }, true);
+                                    if (sheet.rows[sRow] && sheet.rows[sRow].cells && sheet.rows[sRow].cells[j]) {
+                                        delete sheet.rows[sRow].cells[j].value;
+                                        delete sheet.rows[sRow].cells[j].formula;
+                                    }
+                                }
+                            }
+                            else if (cellObj.rowSpan > 1) {
+                                for (var j = sRow + 1, len = sRow + cellObj.rowSpan; j < len; j++) {
+                                    setCell(j, i, sheet, { rowSpan: sRow - j }, true);
+                                    if (sheet.rows[j] && sheet.rows[j].cells && sheet.rows[j].cells[i]) {
+                                        delete sheet.rows[j].cells[i].value;
+                                        delete sheet.rows[j].cells[i].formula;
+                                    }
+                                }
+                            }
+                            if (!valueOnly && isHiddenRow(sheet, sRow)) {
+                                sRow++;
+                                continue;
+                            }
                             if (!valueOnly && isHiddenCol(sheet, i)) {
                                 i++;
                                 continue;
                             }
-                            var cellObj = {};
-                            Object.assign(cellObj, row ? getCell(sRow, i, sheet) : null);
                             if (cellObj.style) {
                                 var style = {};
                                 Object.assign(style, cellObj.style);
@@ -11006,7 +12448,7 @@ function processIdx(model, isSheet, context) {
  * @hidden
  */
 function clearRange(context, address, sheetIdx, valueOnly) {
-    var sheet = getSheet(context, sheetIdx - 1);
+    var sheet = getSheet(context, sheetIdx);
     var range = getIndexesFromAddress(address);
     var sRIdx = range[0];
     var eRIdx = range[2];
@@ -11025,260 +12467,6 @@ function clearRange(context, address, sheetIdx, valueOnly) {
             }
         }
     }
-}
-
-var __extends$6 = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __decorate$5 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
- * Represents the cell.
- */
-var Cell = /** @__PURE__ @class */ (function (_super) {
-    __extends$6(Cell, _super);
-    function Cell() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$5([
-        Property('')
-    ], Cell.prototype, "value", void 0);
-    __decorate$5([
-        Property('')
-    ], Cell.prototype, "formula", void 0);
-    __decorate$5([
-        Property(0)
-    ], Cell.prototype, "index", void 0);
-    __decorate$5([
-        Property('General')
-    ], Cell.prototype, "format", void 0);
-    __decorate$5([
-        Complex({}, CellStyle)
-    ], Cell.prototype, "style", void 0);
-    __decorate$5([
-        Property('')
-    ], Cell.prototype, "hyperlink", void 0);
-    __decorate$5([
-        Property(false)
-    ], Cell.prototype, "wrap", void 0);
-    __decorate$5([
-        Property('')
-    ], Cell.prototype, "validation", void 0);
-    return Cell;
-}(ChildProperty));
-/**
- * @hidden
- */
-function getCell(rowIndex, colIndex, sheet, isInitRow) {
-    var row = getRow(sheet, rowIndex);
-    if (!row || !row.cells) {
-        if (isInitRow) {
-            if (!row) {
-                sheet.rows[rowIndex] = { cells: [] };
-            }
-            else {
-                sheet.rows[rowIndex].cells = [];
-            }
-        }
-        else {
-            return null;
-        }
-    }
-    return sheet.rows[rowIndex].cells[colIndex] || null;
-}
-/**
- * @hidden
- */
-function setCell(rowIndex, colIndex, sheet, cell, isExtend) {
-    if (!sheet.rows[rowIndex]) {
-        sheet.rows[rowIndex] = { cells: [] };
-    }
-    else if (!sheet.rows[rowIndex].cells) {
-        sheet.rows[rowIndex].cells = [];
-    }
-    if (isExtend && sheet.rows[rowIndex].cells[colIndex]) {
-        extend(sheet.rows[rowIndex].cells[colIndex], cell, null, true);
-    }
-    else {
-        sheet.rows[rowIndex].cells[colIndex] = cell;
-    }
-}
-/**
- * @hidden
- */
-function getCellPosition(sheet, indexes) {
-    var i;
-    var top = 0;
-    var left = 0;
-    for (i = 0; i < indexes[0]; i++) {
-        top += getRowsHeight(sheet, i);
-    }
-    for (i = 0; i < indexes[1]; i++) {
-        left += getColumnsWidth(sheet, i);
-    }
-    return { top: top, left: left };
-}
-/** @hidden */
-function skipDefaultValue(style, defaultKey) {
-    var defaultProps = { fontFamily: 'Calibri', verticalAlign: 'bottom', textIndent: '0pt', backgroundColor: '#ffffff',
-        color: '#000000', textAlign: 'left', fontSize: '11pt', fontWeight: 'normal', fontStyle: 'normal', textDecoration: 'none',
-        border: '', borderLeft: '', borderTop: '', borderRight: '', borderBottom: '' };
-    var changedProps = {};
-    Object.keys(defaultKey ? defaultProps : style).forEach(function (propName) {
-        if (style[propName] !== defaultProps[propName]) {
-            changedProps[propName] = style[propName];
-        }
-    });
-    return changedProps;
-}
-/** @hidden */
-function wrap(address, wrap, context) {
-    if (wrap === void 0) { wrap = true; }
-    var addressInfo = context.getAddressInfo(address);
-    var rng = addressInfo.indices;
-    var sheet = getSheet(context, addressInfo.sheetIndex);
-    for (var i = rng[0]; i <= rng[2]; i++) {
-        for (var j = rng[1]; j <= rng[3]; j++) {
-            setCell(i, j, sheet, { wrap: wrap }, true);
-        }
-    }
-    context.setProperties({ sheets: context.sheets }, true);
-    context.notify(wrapEvent, { range: rng, wrap: wrap, sheet: sheet });
-}
-
-var __extends$5 = (undefined && undefined.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
-    var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
-    if (typeof Reflect === "object" && typeof Reflect.decorate === "function") r = Reflect.decorate(decorators, target, key, desc);
-    else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
-    return c > 3 && r && Object.defineProperty(target, key, r), r;
-};
-/**
- * Configures the Row behavior for the spreadsheet.
- *  ```html
- * <div id='Spreadsheet'></div>
- * ```
- * ```typescript
- * let spreadsheet: Spreadsheet = new Spreadsheet({
- *      sheets: [{
- *                rows: [{
- *                        index: 30,
- *                        cells: [{ index: 4, value: 'Total Amount:' },
- *                               { formula: '=SUM(F2:F30)', style: { fontWeight: 'bold' } }]
- *                }]
- * ...
- * });
- * spreadsheet.appendTo('#Spreadsheet');
- * ```
- */
-var Row = /** @__PURE__ @class */ (function (_super) {
-    __extends$5(Row, _super);
-    function Row() {
-        return _super !== null && _super.apply(this, arguments) || this;
-    }
-    __decorate$4([
-        Collection([], Cell)
-    ], Row.prototype, "cells", void 0);
-    __decorate$4([
-        Property(0)
-    ], Row.prototype, "index", void 0);
-    __decorate$4([
-        Property(20)
-    ], Row.prototype, "height", void 0);
-    __decorate$4([
-        Property(false)
-    ], Row.prototype, "customHeight", void 0);
-    __decorate$4([
-        Property(false)
-    ], Row.prototype, "hidden", void 0);
-    return Row;
-}(ChildProperty));
-/**
- * @hidden
- */
-function getRow(sheet, rowIndex) {
-    return sheet.rows[rowIndex];
-}
-/** @hidden */
-function setRow(sheet, rowIndex, row) {
-    if (!sheet.rows[rowIndex]) {
-        sheet.rows[rowIndex] = {};
-    }
-    Object.keys(row).forEach(function (key) {
-        sheet.rows[rowIndex][key] = row[key];
-    });
-}
-/** @hidden */
-function isHiddenRow(sheet, index) {
-    return sheet.rows[index] && sheet.rows[index].hidden;
-}
-/**
- * @hidden
- */
-function getRowHeight(sheet, rowIndex) {
-    if (sheet && sheet.rows && sheet.rows[rowIndex]) {
-        if (sheet.rows[rowIndex].hidden) {
-            return 0;
-        }
-        return sheet.rows[rowIndex].height === undefined ? 20 : sheet.rows[rowIndex].height;
-    }
-    else {
-        return 20;
-    }
-}
-/**
- * @hidden
- */
-function setRowHeight(sheet, rowIndex, height) {
-    if (sheet && sheet.rows) {
-        if (!sheet.rows[rowIndex]) {
-            sheet.rows[rowIndex] = {};
-        }
-        sheet.rows[rowIndex].height = height;
-    }
-}
-/**
- * @hidden
- */
-function getRowsHeight(sheet, startRow, endRow) {
-    if (endRow === void 0) { endRow = startRow; }
-    var height = 0;
-    var swap;
-    if (startRow > endRow) {
-        swap = startRow;
-        startRow = endRow;
-        endRow = swap;
-    }
-    for (var i = startRow; i <= endRow; i++) {
-        height += getRowHeight(sheet, i);
-    }
-    return height;
 }
 
 var __extends$7 = (undefined && undefined.__extends) || (function () {
@@ -11407,7 +12595,7 @@ var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, 
  * let spreadsheet: Spreadsheet = new Spreadsheet({
  *      sheets: [{
  *                  name: 'First Sheet',
- *                  rangeSettings: [{ dataSource: defaultData }],
+ *                  range: [{ dataSource: defaultData }],
  *                  rows: [{
  *                          index: 30,
  *                          cells: [{ index: 4, value: 'Total Amount:' },
@@ -11418,30 +12606,30 @@ var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, 
  * spreadsheet.appendTo('#Spreadsheet');
  * ```
  */
-var RangeSetting = /** @__PURE__ @class */ (function (_super) {
-    __extends$1(RangeSetting, _super);
-    function RangeSetting() {
+var Range = /** @__PURE__ @class */ (function (_super) {
+    __extends$1(Range, _super);
+    function Range() {
         return _super !== null && _super.apply(this, arguments) || this;
     }
     __decorate$1([
         Property(null)
-    ], RangeSetting.prototype, "dataSource", void 0);
+    ], Range.prototype, "dataSource", void 0);
     __decorate$1([
         Property('A1')
-    ], RangeSetting.prototype, "startCell", void 0);
+    ], Range.prototype, "startCell", void 0);
     __decorate$1([
         Property(null)
-    ], RangeSetting.prototype, "query", void 0);
+    ], Range.prototype, "query", void 0);
     __decorate$1([
         Property(true)
-    ], RangeSetting.prototype, "showFieldAsHeader", void 0);
+    ], Range.prototype, "showFieldAsHeader", void 0);
     __decorate$1([
         Property('')
-    ], RangeSetting.prototype, "template", void 0);
+    ], Range.prototype, "template", void 0);
     __decorate$1([
         Property('A1')
-    ], RangeSetting.prototype, "range", void 0);
-    return RangeSetting;
+    ], Range.prototype, "address", void 0);
+    return Range;
 }(ChildProperty));
 /**
  * Used range which contains end row index and end column index of the last used cell in sheet .
@@ -11480,8 +12668,8 @@ var Sheet = /** @__PURE__ @class */ (function (_super) {
         Complex({}, ProtectSettings)
     ], Sheet.prototype, "protectSettings", void 0);
     __decorate$1([
-        Collection([], RangeSetting)
-    ], Sheet.prototype, "rangeSettings", void 0);
+        Collection([], Range)
+    ], Sheet.prototype, "range", void 0);
     __decorate$1([
         Property(0)
     ], Sheet.prototype, "index", void 0);
@@ -11538,7 +12726,7 @@ function getSheetIndex(context, name) {
     return idx;
 }
 /**
- * To get sheet index from address.
+ * To get sheet index from sheet id.
  * @hidden
  */
 function getSheetIndexFromId(context, id) {
@@ -11549,7 +12737,7 @@ function getSheetIndexFromId(context, id) {
             break;
         }
     }
-    return idx + 1;
+    return idx;
 }
 /**
  * To get sheet name from address.
@@ -11634,7 +12822,7 @@ function initSheet(context, sheet) {
         sheet.activeCell = sheet.activeCell || 'A1';
         sheet.selectedRange = sheet.selectedRange || 'A1';
         sheet.usedRange = sheet.usedRange || { rowIndex: 0, colIndex: 0 };
-        sheet.rangeSettings = sheet.rangeSettings ? initRangeSettings(sheet.rangeSettings) : [];
+        sheet.range = sheet.range ? initRangeSettings(sheet.range) : [];
         sheet.rows = sheet.rows || [];
         sheet.columns = sheet.columns || [];
         sheet.showHeaders = isUndefined(sheet.showHeaders) ? true : sheet.showHeaders;
@@ -11652,7 +12840,7 @@ function initSheet(context, sheet) {
 function initRangeSettings(rangeSettings) {
     rangeSettings.forEach(function (rangeSetting) {
         rangeSetting.startCell = rangeSetting.startCell || 'A1';
-        rangeSetting.range = rangeSetting.range || 'A1';
+        rangeSetting.address = rangeSetting.address || 'A1';
         rangeSetting.template = rangeSetting.template || '';
         rangeSetting.showFieldAsHeader = isUndefined(rangeSetting.showFieldAsHeader) ? true : rangeSetting.showFieldAsHeader;
     });
@@ -11671,8 +12859,8 @@ function initRow(rows) {
  * @hidden
  */
 function getSheetName(context, idx) {
-    if (idx === void 0) { idx = context.activeSheetTab; }
-    return getSheet(context, idx - 1).name;
+    if (idx === void 0) { idx = context.activeSheetIndex; }
+    return getSheet(context, idx).name;
 }
 
 /**
@@ -11751,7 +12939,7 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
          * @hidden
          */
         _this.isOpen = false;
-        Workbook_1.Inject(DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookFindAndReplace, WorkbookDataValidation, WorkbookProtectSheet);
+        Workbook_1.Inject(DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit, WorkbookFormula, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookFindAndReplace, WorkbookDataValidation, WorkbookProtectSheet, WorkbookMerge);
         _this.commonCellStyle = {};
         if (options && options.cellStyle) {
             _this.commonCellStyle = options.cellStyle;
@@ -11815,6 +13003,16 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
         range = range || sheet.selectedRange;
         this.notify(setCellFormat, { style: style, range: range, refreshRibbon: range.indexOf(sheet.activeCell) > -1 ? true : false });
     };
+    /**
+     * Applies cell lock to the specified range of cells.
+     * @param {string} range? - Specifies the address for the range of cells.
+     * @param {boolean} isLocked -Specifies the cell is locked or not.
+     */
+    Workbook.prototype.lockCells = function (range, isLocked) {
+        var sheet = this.getActiveSheet();
+        range = range || sheet.selectedRange;
+        this.notify(setLockCells, { range: range, isLocked: isLocked });
+    };
     /** @hidden */
     Workbook.prototype.getCellStyleValue = function (cssProps, indexes) {
         var _this = this;
@@ -11846,8 +13044,10 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
         var _a;
         (_a = this.sheets).splice.apply(_a, [index, 0].concat(sheets));
         initSheet(this, sheets);
-        this.notify(sheetCreated, { sheetIndex: index, sheets: sheets });
-        this.notify(workbookFormulaOperation, { action: 'registerSheet', sheetIndex: index, sheetCount: index + sheets.length });
+        this.notify(sheetCreated, { sheetIndex: index || 0, sheets: sheets });
+        this.notify(workbookFormulaOperation, {
+            action: 'registerSheet', sheetIndex: index || 0, sheetCount: index + sheets.length
+        });
     };
     /**
      * Used to remove sheet.
@@ -11928,7 +13128,9 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     Workbook.prototype.setBorder = function (style, range, type) {
-        this.notify(setCellFormat, { style: style, borderType: type, range: range || this.getActiveSheet().selectedRange });
+        this.notify(setCellFormat, {
+            style: style, borderType: type, range: range || this.getActiveSheet().selectedRange
+        });
     };
     /**
      * Used to insert rows in to the spreadsheet.
@@ -11946,8 +13148,10 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     Workbook.prototype.insertColumn = function (startColumn, endColumn) {
-        this.notify(insertModel, { model: this.getActiveSheet(), start: startColumn, end: endColumn,
-            modelType: 'Column' });
+        this.notify(insertModel, {
+            model: this.getActiveSheet(), start: startColumn, end: endColumn,
+            modelType: 'Column'
+        });
     };
     /**
      * Used to insert sheets in to the spreadsheet.
@@ -11969,10 +13173,24 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
      * @returns void
      */
     Workbook.prototype.delete = function (startIndex, endIndex, model) {
-        this.notify(deleteModel, { model: !model || model === 'Sheet' ? this : this.getActiveSheet(), start: startIndex || 0, end: endIndex || 0, modelType: model || 'Sheet' });
+        this.notify(deleteModel, {
+            model: !model || model === 'Sheet' ? this : this.getActiveSheet(), start: startIndex || 0, end: endIndex || 0, modelType: model || 'Sheet'
+        });
     };
     /**
-     * Used to compute the specified expression/formula.
+     * Used to merge the range of cells.
+     * @param {string} range? - Specifies the rnage of cells as address.
+     * @param {MergeType} type? - Specifies the merge type. The possible values are,
+     * - All: Merge all the cells between provided range.
+     * - Horizontally: Merge the cells row-wise.
+     * - Vertically: Merge the cells column-wise.
+     * @returns void
+     */
+    Workbook.prototype.merge = function (range, type) {
+        range = range || this.getActiveSheet().selectedRange;
+        this.notify(setMerge, { merge: true, range: range, type: type || 'All', refreshRibbon: range.indexOf(this.getActiveSheet().activeCell) > -1 ? true : false });
+    };
+    /** Used to compute the specified expression/formula.
      * @param {string} formula - Specifies the formula(=SUM(A1:A3)) or expression(2+3).
      * @returns string | number
      */
@@ -11993,7 +13211,7 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
     };
     /** @hidden */
     Workbook.prototype.getActiveSheet = function () {
-        return this.sheets[this.activeSheetTab - 1];
+        return this.sheets[this.activeSheetIndex];
     };
     /**
      * Used for setting the used range row and column index.
@@ -12031,14 +13249,14 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
             action: 'getSheetInfo', sheetInfo: []
         };
         this.notify(workbookFormulaOperation, args);
-        var id = getSheetIndexByName(this, 'Sheet' + sheetIndex, args.sheetInfo);
+        var id = getSheetIndexByName(this, 'Sheet' + (sheetIndex + 1), args.sheetInfo);
         if (id === -1) {
             var errArgs = { action: 'getReferenceError', refError: '' };
             this.notify(workbookFormulaOperation, errArgs);
             return errArgs.refError;
         }
-        sheetIndex = getSheetIndexFromId(this, sheetIndex);
-        var sheet = getSheet(this, sheetIndex - 1);
+        sheetIndex = getSheetIndexFromId(this, sheetIndex + 1);
+        var sheet = getSheet(this, sheetIndex);
         var cell = getCell(rowIndex - 1, colIndex - 1, sheet);
         return (cell && cell.value) || '';
     };
@@ -12136,7 +13354,7 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
      * Protect the active sheet based on the protect sheetings.
      * @param protectSettings - Specifies the protect settings of the sheet.
      */
-    Workbook.prototype.protectSheet = function (protectSettings) {
+    Workbook.prototype.protectSheet = function (sheetIndex, protectSettings) {
         this.notify(protectsheetHandler, protectSettings);
     };
     /**
@@ -12193,13 +13411,22 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
      * @param {string} address - Address to update.
      */
     Workbook.prototype.updateCell = function (cell, address) {
+        var sheetIdx;
         var range = getIndexesFromAddress(address);
-        var sheetIdx = getSheetIndex(this, address.split('!')[0]) || this.activeSheetTab - 1;
+        if (address.includes('!')) {
+            sheetIdx = getSheetIndex(this, address.split('!')[0]);
+            if (sheetIdx === undefined) {
+                sheetIdx = this.activeSheetIndex;
+            }
+        }
+        else {
+            sheetIdx = this.activeSheetIndex;
+        }
         setCell(range[0], range[1], this.sheets[sheetIdx], cell, true);
         if (cell.value) {
             this.notify(workbookEditOperation, {
                 action: 'updateCellValue', address: range, value: cell.value,
-                sheetIndex: sheetIdx + 1
+                sheetIndex: sheetIdx
             });
         }
     };
@@ -12247,9 +13474,7 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
     /** @hidden */
     Workbook.prototype.clearRange = function (address, sheetIndex, valueOnly) {
         if (valueOnly === void 0) { valueOnly = true; }
-        address = address ? address : this.getActiveSheet().selectedRange;
-        sheetIndex = sheetIndex ? sheetIndex : this.activeSheetTab;
-        clearRange(this, address, sheetIndex, valueOnly);
+        clearRange(this, address || this.getActiveSheet().selectedRange, isNullOrUndefined(sheetIndex) ? this.activeSheetIndex : sheetIndex, valueOnly);
     };
     /**
      * Filters the range of cells in the sheet.
@@ -12321,8 +13546,8 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
         Property([])
     ], Workbook.prototype, "sheets", void 0);
     __decorate([
-        Property(1)
-    ], Workbook.prototype, "activeSheetTab", void 0);
+        Property(0)
+    ], Workbook.prototype, "activeSheetIndex", void 0);
     __decorate([
         Property('100%')
     ], Workbook.prototype, "height", void 0);
@@ -12371,6 +13596,9 @@ var Workbook = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property(true)
     ], Workbook.prototype, "allowDelete", void 0);
+    __decorate([
+        Property(true)
+    ], Workbook.prototype, "allowMerge", void 0);
     __decorate([
         Property(true)
     ], Workbook.prototype, "allowDataValidation", void 0);
@@ -12570,6 +13798,9 @@ function pushBasicModules(context, modules) {
     if (context.allowFindAndReplace) {
         modules.push({ member: 'findAndReplace', args: [context] });
     }
+    if (context.allowMerge) {
+        modules.push({ member: 'merge', args: [context] });
+    }
 }
 
 /**
@@ -12688,12 +13919,29 @@ function inView(context, range, isModify) {
     }
 }
 /**
+ * To get the top left cell position in viewport.
+ * @hidden
+ */
+function getCellPosition(sheet, indexes, offset) {
+    if (offset === void 0) { offset = { left: { idx: 0, size: 0 }, top: { idx: 0, size: 0 } }; }
+    var i;
+    var top = offset.top.size;
+    var left = offset.left.size;
+    for (i = offset.top.idx; i < indexes[0]; i++) {
+        top += getRowsHeight(sheet, i);
+    }
+    for (i = offset.left.idx; i < indexes[1]; i++) {
+        left += getColumnsWidth(sheet, i);
+    }
+    return { top: top, left: left };
+}
+/**
  * Position element with given range
  * @hidden
  */
-function locateElem(ele, range, sheet, isRtl) {
+function locateElem(ele, range, sheet, isRtl, offset) {
     var swapRange = getSwapRange(range);
-    var cellPosition = getCellPosition(sheet, swapRange);
+    var cellPosition = getCellPosition(sheet, swapRange, offset);
     var startIndex = [skipHiddenIdx(sheet, 0, true), skipHiddenIdx(sheet, 0, true, 'columns')];
     var attrs = {
         'top': (swapRange[0] === startIndex[0] ? cellPosition.top : cellPosition.top - 1) + 'px',
@@ -12807,12 +14055,12 @@ function setResize(index, value, isCol, parent) {
     if (isCol) {
         curEle = parent.element.getElementsByClassName('e-column-header')[0].getElementsByTagName('th')[index];
         curEleH = parent.element.getElementsByClassName('e-column-header')[0].getElementsByTagName('col')[index];
-        curEleC = parent.element.getElementsByClassName('e-main-content')[0].getElementsByTagName('col')[index];
+        curEleC = parent.element.getElementsByClassName('e-sheet-content')[0].getElementsByTagName('col')[index];
     }
     else {
         curEle = parent.element.getElementsByClassName('e-row-header')[0].getElementsByTagName('tr')[index];
         curEleH = parent.element.getElementsByClassName('e-row-header')[0].getElementsByTagName('tr')[index];
-        curEleC = parent.element.getElementsByClassName('e-main-content')[0].getElementsByTagName('tr')[index];
+        curEleC = parent.element.getElementsByClassName('e-sheet-content')[0].getElementsByTagName('tr')[index];
         curEleH.style.height = parseInt(value, 10) > 0 ? value : '2px';
         curEleC.style.height = parseInt(value, 10) > 0 ? value : '0px';
         var hdrRow = parent.getRowHeaderContent().getElementsByClassName('e-row');
@@ -13244,10 +14492,10 @@ function updateAction(options, spreadsheet, isRedo) {
             });
             break;
         case 'gridLines':
-            spreadsheet.sheets[eventArgs.sheetIdx - 1].showGridLines = eventArgs.isShow;
+            spreadsheet.sheets[eventArgs.sheetIdx].showGridLines = eventArgs.isShow;
             break;
         case 'headers':
-            spreadsheet.sheets[eventArgs.sheetIdx - 1].showHeaders = eventArgs.isShow;
+            spreadsheet.sheets[eventArgs.sheetIdx].showHeaders = eventArgs.isShow;
             break;
         case 'resize':
         case 'resizeToFit':
@@ -13297,7 +14545,7 @@ function updateAction(options, spreadsheet, isRedo) {
                 spreadsheet.notify(insertModel, { model: options.eventArgs.modelType === 'Sheet' ? spreadsheet :
                         spreadsheet.getActiveSheet(), start: options.eventArgs.index, end: options.eventArgs.index + (options.eventArgs.model
                         .length - 1), modelType: options.eventArgs.modelType, isAction: false, checkCount: options.eventArgs.sheetCount,
-                    activeSheetTab: options.eventArgs.activeSheetTab });
+                    activeSheetIndex: options.eventArgs.activeSheetIndex });
             }
             break;
         case 'delete':
@@ -13322,6 +14570,10 @@ function updateAction(options, spreadsheet, isRedo) {
                 spreadsheet.notify(removeValidation, { range: eventArgs.range });
             }
             break;
+        case 'merge':
+            options.eventArgs.isAction = false;
+            spreadsheet.notify(setMerge, options.eventArgs);
+            break;
     }
 }
 /**
@@ -13329,11 +14581,11 @@ function updateAction(options, spreadsheet, isRedo) {
  */
 function hasTemplate(workbook, rowIdx, colIdx, sheetIdx) {
     var sheet = workbook.sheets[sheetIdx];
-    var rangeSettings = sheet.rangeSettings;
+    var rangeSettings = sheet.range;
     var range;
     for (var i = 0, len = rangeSettings.length; i < len; i++) {
         if (rangeSettings[i].template) {
-            range = getRangeIndexes(rangeSettings[i].range.length ? rangeSettings[i].range : rangeSettings[i].startCell);
+            range = getRangeIndexes(rangeSettings[i].address.length ? rangeSettings[i].address : rangeSettings[i].startCell);
             if (range[0] <= rowIdx && range[1] <= colIdx && range[2] >= rowIdx && range[3] >= colIdx) {
                 return true;
             }
@@ -13548,7 +14800,7 @@ var Clipboard = /** @__PURE__ @class */ (function () {
         this.setCopiedInfo(args, false);
     };
     Clipboard.prototype.paste = function (args) {
-        if (this.parent.isEdit) {
+        if (this.parent.isEdit && this.copiedInfo) {
             if (args && args.type) {
                 args.preventDefault();
                 document.getElementById(this.parent.element.id + '_edit').focus();
@@ -13561,7 +14813,7 @@ var Clipboard = /** @__PURE__ @class */ (function () {
         var copiedIdx = this.getCopiedIdx();
         var copyInfo = Object.assign({}, this.copiedInfo);
         if (this.copiedInfo || isExternal) {
-            var cSIdx = (args && args.sIdx > -1) ? args.sIdx : this.parent.activeSheetTab - 1;
+            var cSIdx = (args && args.sIdx > -1) ? args.sIdx : this.parent.activeSheetIndex;
             var curSheet = getSheet(this.parent, cSIdx);
             var selIdx = getSwapRange(args && args.range || getRangeIndexes(curSheet.selectedRange));
             var rows = isExternal && this.getExternalCells(args);
@@ -13591,15 +14843,24 @@ var Clipboard = /** @__PURE__ @class */ (function () {
             }
             var cell = void 0;
             var isExtend = void 0;
+            var prevCell = void 0;
+            var mergeCollection = [];
             var prevSheet = getSheet(this.parent, isExternal ? cSIdx : copiedIdx);
             selIdx = getRangeIndexes(beginEventArgs.pastedRange);
             rowIdx = selIdx[0];
             cIdx = isExternal
                 ? [0, 0, rows.length - 1, rows[0].cells.length - 1] : getSwapRange(this.copiedInfo.range);
-            isRepeative = (selIdx[2] - selIdx[0] + 1) % (cIdx[2] - cIdx[0] + 1) === 0
-                && (selIdx[3] - selIdx[1] + 1) % (cIdx[3] - cIdx[1] + 1) === 0;
+            isRepeative = (selIdx[2] - selIdx[0] + 1) % (cIdx[2] - cIdx[0] + 1) === 0 && (selIdx[3] - selIdx[1] + 1) %
+                (cIdx[3] - cIdx[1] + 1) === 0;
+            var mergeArgs = {
+                range: cIdx, prevSheet: prevSheet, cancel: false
+            };
             rfshRange = isRepeative ? selIdx : [selIdx[0], selIdx[1]]
                 .concat([selIdx[0] + cIdx[2] - cIdx[0], selIdx[1] + cIdx[3] - cIdx[1] || selIdx[1]]);
+            this.parent.notify(pasteMerge, mergeArgs);
+            if (mergeArgs.cancel) {
+                return;
+            }
             for (var i = cIdx[0], l = 0; i <= cIdx[2]; i++, l++) {
                 for (var j = cIdx[1], k = 0; j <= cIdx[3]; j++, k++) {
                     cell = isExternal ? rows[i].cells[j] : Object.assign({}, getCell(i, j, prevSheet));
@@ -13624,6 +14885,13 @@ var Clipboard = /** @__PURE__ @class */ (function () {
                     if (isRepeative) {
                         for (var x = selIdx[0]; x <= selIdx[2]; x += (cIdx[2] - cIdx[0]) + 1) {
                             for (var y = selIdx[1]; y <= selIdx[3]; y += (cIdx[3] - cIdx[1] + 1)) {
+                                prevCell = getCell(x + l, y + k, curSheet) || {};
+                                if (prevCell.colSpan !== undefined || prevCell.rowSpan !== undefined) {
+                                    mergeArgs = { range: [x + l, y + k, x + l, y + k] };
+                                    var merge$$1 = { range: mergeArgs.range, merge: false, isAction: false, type: 'All' };
+                                    mergeCollection.push(merge$$1);
+                                    this.parent.notify(setMerge, merge$$1);
+                                }
                                 this.setCell(x + l, y + k, curSheet, cell, isExtend);
                             }
                         }
@@ -13640,12 +14908,12 @@ var Clipboard = /** @__PURE__ @class */ (function () {
                 rowIdx++;
             }
             this.parent.setUsedRange(rfshRange[2] + 1, rfshRange[3]);
-            if (cSIdx === this.parent.activeSheetTab - 1) {
+            if (cSIdx === this.parent.activeSheetIndex) {
                 this.parent.serviceLocator.getService('cell').refreshRange(rfshRange);
-                this.parent.notify(selectRange, rfshRange);
+                this.parent.notify(selectRange, { indexes: rfshRange });
             }
             if (!isExternal && this.copiedInfo.isCut) {
-                if (copiedIdx === this.parent.activeSheetTab - 1) {
+                if (copiedIdx === this.parent.activeSheetIndex) {
                     this.parent.serviceLocator.getService('cell').refreshRange(cIdx);
                 }
                 this.clearCopiedInfo();
@@ -13654,15 +14922,16 @@ var Clipboard = /** @__PURE__ @class */ (function () {
                 this.parent.element.focus();
             }
             if (args.isAction) {
-                var cSID = copyInfo && copyInfo.sId ? copyInfo.sId : this.parent.activeSheetTab;
-                var copyRange = copyInfo &&
-                    copyInfo.range ? copyInfo.range : getRangeIndexes(this.parent.sheets[cSID - 1].selectedRange);
+                var sheetIndex = copyInfo && copyInfo.sId ? getSheetIndexFromId(this.parent, copyInfo.sId) :
+                    this.parent.activeSheetIndex;
                 var eventArgs = {
                     requestType: 'paste',
                     copiedInfo: copyInfo,
-                    pasteSheetIdx: this.parent.activeSheetTab,
-                    copiedRange: this.parent.sheets[cSID - 1].name + '!' + getRangeAddress(copyRange),
-                    pastedRange: this.parent.sheets[this.parent.activeSheetTab - 1].name + '!' + getRangeAddress(rfshRange),
+                    mergeCollection: mergeCollection,
+                    pasteSheetIndex: this.parent.activeSheetIndex,
+                    copiedRange: this.parent.sheets[sheetIndex].name + '!' + getRangeAddress(copyInfo && copyInfo.range ? copyInfo.range :
+                        getRangeIndexes(this.parent.sheets[sheetIndex].selectedRange)),
+                    pastedRange: getSheetName(this.parent) + '!' + getRangeAddress(rfshRange),
                     type: (args && args.type) || 'All'
                 };
                 this.parent.notify(completeAction, { eventArgs: eventArgs, action: 'clipboard' });
@@ -13677,7 +14946,7 @@ var Clipboard = /** @__PURE__ @class */ (function () {
         if (cell && cell.formula) {
             this.parent.notify(workbookFormulaOperation, {
                 action: 'refreshCalculate', value: isCut ? '' : cell.formula, rowIndex: rIdx,
-                colIndex: cIdx, sheetIndex: this.parent.activeSheetTab, isFormula: true
+                colIndex: cIdx, sheetIndex: this.parent.activeSheetIndex, isFormula: true
             });
         }
         if (cell && !cell.formula) {
@@ -13776,7 +15045,7 @@ var Clipboard = /** @__PURE__ @class */ (function () {
             copyIndicator.appendChild(this.parent.createElement('div', { className: 'e-bottom' }));
             copyIndicator.appendChild(this.parent.createElement('div', { className: 'e-left' }));
             copyIndicator.appendChild(this.parent.createElement('div', { className: 'e-right' }));
-            locateElem(copyIndicator, this.copiedInfo.range, this.parent.getActiveSheet());
+            locateElem(copyIndicator, this.copiedInfo.range, this.parent.getActiveSheet(), false);
             this.parent.getMainContent().appendChild(copyIndicator);
         }
     };
@@ -14062,8 +15331,11 @@ var Edit = /** @__PURE__ @class */ (function () {
     Edit.prototype.keyDownHandler = function (e) {
         var trgtElem = e.target;
         var keyCode = e.keyCode;
+        var sheet = this.parent.getActiveSheet();
+        var actCell = getCellIndexes(sheet.activeCell);
+        var cell = getCell(actCell[0], actCell[1], sheet) || {};
         if (!closest(e.target, '.e-findtool-dlg') && !closest(e.target, '.e-validationerror-dlg')) {
-            if (!this.parent.getActiveSheet().isProtected || closest(e.target, '.e-sheet-rename')) {
+            if (!sheet.isProtected || closest(e.target, '.e-sheet-rename') || (cell.isLocked === false)) {
                 if (this.isEdit) {
                     if (this.isCellEdit) {
                         this.refreshEditor(this.editorElem.textContent, this.isCellEdit);
@@ -14119,8 +15391,8 @@ var Edit = /** @__PURE__ @class */ (function () {
                     || (keyCode >= this.keyCodes.FIRSTNUMPAD && keyCode <= this.keyCodes.LASTNUMPAD) ||
                     (keyCode >= this.keyCodes.SYMBOLSETONESTART && keyCode <= this.keyCodes.SYMBOLSETONEEND)
                     || (keyCode >= 219 && keyCode <= 222) || (!e.shiftKey && !e.ctrlKey && keyCode === this.keyCodes.F2))
-                    && (keyCode !== 67)) {
-                    if (this.parent.getActiveSheet().protectSettings.insertLink && keyCode === 75) {
+                    && (keyCode !== 67) && (keyCode !== 89) && (keyCode !== 90)) {
+                    if (sheet.protectSettings.insertLink && keyCode === 75) {
                         return;
                     }
                     this.parent.notify(editAlert, null);
@@ -14135,7 +15407,7 @@ var Edit = /** @__PURE__ @class */ (function () {
             editor.contentEditable = 'true';
             editor.spellcheck = false;
             this.editorElem = editor;
-            this.parent.element.querySelector('.e-main-content').appendChild(this.editorElem);
+            this.parent.element.querySelector('.e-sheet-content').appendChild(this.editorElem);
         }
         this.parent.notify(formulaOperation, { action: 'renderAutoComplete' });
     };
@@ -14167,7 +15439,7 @@ var Edit = /** @__PURE__ @class */ (function () {
     Edit.prototype.startEdit = function (address, value, refreshCurPos) {
         if (refreshCurPos === void 0) { refreshCurPos = true; }
         var range = getRangeIndexes(this.parent.getActiveSheet().activeCell);
-        if (hasTemplate(this.parent, range[0], range[1], this.parent.activeSheetTab - 1)) {
+        if (hasTemplate(this.parent, range[0], range[1], this.parent.activeSheetIndex)) {
             return;
         }
         this.updateEditCellDetail(address, value);
@@ -14222,10 +15494,12 @@ var Edit = /** @__PURE__ @class */ (function () {
     };
     Edit.prototype.dblClickHandler = function (e) {
         var trgtElem = e.target;
-        var target = e.target;
-        if (!this.parent.getActiveSheet().isProtected) {
+        var sheet = this.parent.getActiveSheet();
+        var actCell = getCellIndexes(sheet.activeCell);
+        var cell = getCell(actCell[0], actCell[1], sheet) || {};
+        if (!sheet.isProtected || (cell.isLocked === false)) {
             if (trgtElem.classList.contains('e-active-cell') || trgtElem.classList.contains('e-cell')
-                || closest(trgtElem, '.e-main-content')) {
+                || closest(trgtElem, '.e-sheet-content')) {
                 if (this.isEdit) {
                     this.endEdit();
                 }
@@ -14249,11 +15523,11 @@ var Edit = /** @__PURE__ @class */ (function () {
                 sheetIdx = getSheetIndex(this.parent, getSheetNameFromAddress(addr));
             }
             else {
-                sheetIdx = this.parent.activeSheetTab;
+                sheetIdx = this.parent.activeSheetIndex;
             }
         }
         if (!this.editCellData.addr) {
-            sheet = getSheet(this.parent, sheetIdx - 1);
+            sheet = getSheet(this.parent, sheetIdx);
             if (addr) {
                 addr = getRangeFromAddress(addr);
             }
@@ -14350,7 +15624,7 @@ var Edit = /** @__PURE__ @class */ (function () {
         if (this.parent.allowDataValidation && cell && cell.validation) {
             var value = this.parent.element.getElementsByClassName('e-spreadsheet-edit')[0].innerText;
             var isCell = true;
-            var sheetIdx = this.parent.activeSheetTab;
+            var sheetIdx = this.parent.activeSheetIndex;
             var range = void 0;
             if (typeof address === 'string') {
                 range = getRangeIndexes(address);
@@ -14388,10 +15662,10 @@ var Edit = /** @__PURE__ @class */ (function () {
             rowIdx--;
             colIdx--;
             if ((this.editCellData.rowIndex !== rowIdx || this.editCellData.colIndex !== colIdx)
-                && this.parent.activeSheetTab === sheetIdx) {
+                && this.parent.activeSheetIndex === sheetIdx) {
                 var td = this.parent.getCell(rowIdx, colIdx);
                 if (td) {
-                    var sheet = getSheet(this.parent, sheetIdx - 1);
+                    var sheet = getSheet(this.parent, sheetIdx);
                     var cell = getCell(rowIdx, colIdx, sheet);
                     var eventArgs = this.getRefreshNodeArgs(cell);
                     this.parent.refreshNode(td, eventArgs);
@@ -14433,7 +15707,7 @@ var Edit = /** @__PURE__ @class */ (function () {
             this.resetEditState();
             this.focusElement();
         }
-        else {
+        else if (event) {
             event.preventDefault();
         }
     };
@@ -14597,8 +15871,8 @@ var Selection = /** @__PURE__ @class */ (function () {
             }
         });
     };
-    Selection.prototype.selectRange = function (indexes) {
-        this.selectRangeByIdx(this.parent.selectionSettings.mode === 'Single' ? indexes.slice(0, 2).concat(indexes.slice(0, 2)) : indexes);
+    Selection.prototype.selectRange = function (args) {
+        this.selectRangeByIdx(this.parent.selectionSettings.mode === 'Single' ? args.indexes.slice(0, 2).concat(args.indexes.slice(0, 2)) : args.indexes, null, null, null, null, args.skipChecking);
     };
     Selection.prototype.init = function () {
         var isInit = true;
@@ -14609,7 +15883,6 @@ var Selection = /** @__PURE__ @class */ (function () {
         var inRange = sRange[0] <= actRange[0] && sRange[2] >= actRange[0] && sRange[1] <= actRange[1]
             && sRange[3] >= actRange[1];
         this.createSelectionElement();
-        this.selectRangeByIdx(range, null, null, inRange);
         this.selectRangeByIdx(range, null, null, inRange, isInit);
     };
     Selection.prototype.createSelectionElement = function () {
@@ -14696,11 +15969,20 @@ var Selection = /** @__PURE__ @class */ (function () {
         // remove math.min or handle top and left auto scroll
         var colIdx = this.isRowSelected ? sheet.colCount - 1 : this.getColIdxFromClientX(Math.min(clientX, clientRect.right));
         var rowIdx = this.isColSelected ? sheet.rowCount - 1 : this.getRowIdxFromClientY(Math.min(clientY, clientRect.bottom));
+        var prevIndex = getRangeIndexes(sheet.selectedRange);
+        var mergeArgs = { range: [rowIdx, colIdx, rowIdx, colIdx] };
+        this.parent.notify(activeCellMergedRange, mergeArgs);
+        if (mergeArgs.range[2] === prevIndex[2] && mergeArgs.range[3] === prevIndex[3]) {
+            return;
+        }
         var isScrollDown = clientY > clientRect.bottom && rowIdx < sheet.rowCount;
         var isScrollUp = clientY < clientRect.top && rowIdx >= 0 && !this.isColSelected;
         var isScrollRight = clientX > clientRect.right && colIdx < sheet.colCount;
         var isScrollLeft = clientX < clientRect.left && colIdx >= 0 && !this.isRowSelected;
         this.clearInterval();
+        if (!this.isColSelected && !this.isRowSelected) {
+            prevIndex = getCellIndexes(sheet.activeCell);
+        }
         if (isScrollDown || isScrollUp || isScrollRight || isScrollLeft) {
             this.scrollInterval = setInterval(function () {
                 if ((isScrollDown || isScrollUp) && !_this.isColSelected) {
@@ -14719,12 +16001,12 @@ var Selection = /** @__PURE__ @class */ (function () {
                     }
                     cont.scrollLeft += (isScrollRight ? 1 : -1) * getColumnWidth(sheet, colIdx);
                 }
-                _this.selectRangeByIdx([].concat(_this.startCell, [rowIdx, colIdx]), e);
+                _this.selectRangeByIdx([].concat(prevIndex[0], prevIndex[1], [rowIdx, colIdx]), e);
                 // tslint:disable-next-line
             }, 100);
         }
         else {
-            this.selectRangeByIdx([].concat(this.startCell ? this.startCell : getCellIndexes(sheet.activeCell), [rowIdx, colIdx]), e);
+            this.selectRangeByIdx([].concat(prevIndex[0], prevIndex[1], [rowIdx, colIdx]), e);
         }
     };
     Selection.prototype.mouseUpHandler = function (e) {
@@ -14805,26 +16087,31 @@ var Selection = /** @__PURE__ @class */ (function () {
             }
         }
     };
-    Selection.prototype.selectRangeByIdx = function (range, e, isScrollRefresh, isActCellChanged, isInit) {
+    Selection.prototype.selectRangeByIdx = function (range, e, isScrollRefresh, isActCellChanged, isInit, skipChecking) {
         var ele = this.getSelectionElement();
         var sheet = this.parent.getActiveSheet();
+        var mergeArgs = { range: range, isActiveCell: false, skipChecking: skipChecking };
+        if (!this.isColSelected && !this.isRowSelected) {
+            this.parent.notify(mergedRange, mergeArgs);
+        }
+        range = mergeArgs.range;
         var args = { range: getRangeAddress(range), cancel: false };
         this.parent.trigger('beforeSelect', args);
         if (args.cancel === true) {
             return;
         }
-        if (isSingleCell(range)) {
+        if (isSingleCell(range) || mergeArgs.isActiveCell) {
             ele.classList.add('e-hide');
         }
         else {
             ele.classList.remove('e-hide');
-            locateElem(ele, range, sheet, this.parent.enableRtl);
+            locateElem(ele, range, sheet, this.parent.enableRtl, this.getOffset(range[2], range[3]));
         }
         updateSelectedRange(this.parent, getRangeAddress(range), sheet);
         this.UpdateRowColSelected(range);
         this.highlightHdr(range);
         if (!isScrollRefresh && !(e && (e.type === 'mousemove' || isTouchMove(e)))) {
-            this.updateActiveCell(isActCellChanged ? getCellIndexes(sheet.activeCell) : range, isInit);
+            this.updateActiveCell(isActCellChanged ? getRangeIndexes(sheet.activeCell) : range, isInit);
         }
         if (isNullOrUndefined(e)) {
             e = { type: 'mousedown' };
@@ -14839,16 +16126,45 @@ var Selection = /** @__PURE__ @class */ (function () {
     Selection.prototype.updateActiveCell = function (range, isInit) {
         var sheet = this.parent.getActiveSheet();
         var topLeftIdx = getRangeIndexes(sheet.topLeftCell);
-        var rowIdx = this.isColSelected ? topLeftIdx[0] : range[0];
-        var colIdx = this.isRowSelected ? topLeftIdx[1] : range[1];
-        if (sheet.activeCell !== getCellAddress(rowIdx, colIdx) || isInit) {
-            sheet.activeCell = getCellAddress(rowIdx, colIdx);
-            locateElem(this.getActiveCell(), getRangeIndexes(sheet.activeCell), sheet, this.parent.enableRtl);
+        var rowIdx;
+        var colIdx;
+        if (this.isColSelected) {
+            rowIdx = topLeftIdx[0];
+            colIdx = range[1];
+            if (this.isRowSelected) {
+                colIdx = topLeftIdx[1];
+            }
+        }
+        else {
+            rowIdx = range[0];
+            colIdx = range[1];
+            if (this.isRowSelected) {
+                colIdx = topLeftIdx[1];
+            }
+        }
+        var mergeArgs = { range: [rowIdx, colIdx].concat([rowIdx, colIdx]) };
+        this.parent.notify(activeCellMergedRange, mergeArgs);
+        range = mergeArgs.range;
+        if (sheet.activeCell !== getCellAddress(range[0], range[1]) || isInit) {
+            sheet.activeCell = getCellAddress(range[0], range[1]);
+            locateElem(this.getActiveCell(), range, sheet, this.parent.enableRtl, this.getOffset(range[2], range[3]));
             this.parent.notify(activeCellChanged, null);
         }
         else {
-            locateElem(this.getActiveCell(), getRangeIndexes(sheet.activeCell), sheet, this.parent.enableRtl);
+            locateElem(this.getActiveCell(), range, sheet, this.parent.enableRtl, this.getOffset(range[2], range[3]));
         }
+    };
+    Selection.prototype.getOffset = function (rowIdx, colIdx) {
+        var offset = { left: { idx: 0, size: 0 }, top: { idx: 0, size: 0 } };
+        if (this.parent.scrollModule) {
+            if (colIdx >= this.parent.scrollModule.offset.left.idx) {
+                offset.left = this.parent.scrollModule.offset.left;
+            }
+            if (rowIdx >= this.parent.scrollModule.offset.top.idx) {
+                offset.top = this.parent.scrollModule.offset.top;
+            }
+        }
+        return offset;
     };
     Selection.prototype.getSelectionElement = function () {
         return this.parent.element.getElementsByClassName('e-selection')[0];
@@ -15219,13 +16535,13 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
                 sheet.rowCount = sheet.usedRange.rowIndex + 1;
             }
             this.setScrollCount(sheet.rowCount, 'row');
-            height = getRowsHeight(sheet, 0, this.scroll[this.parent.activeSheetTab - 1].rowCount - 1);
+            height = getRowsHeight(sheet, 0, this.scroll[this.parent.activeSheetIndex].rowCount - 1);
         }
         else {
             if (!this.parent.scrollSettings.isFinite) {
                 sheet.rowCount = domCount;
             }
-            this.scroll[this.parent.activeSheetTab - 1].rowCount = sheet.rowCount;
+            this.scroll[this.parent.activeSheetIndex].rowCount = sheet.rowCount;
             height = 1;
         }
         domCount = this.parent.viewport.colCount + 1 + (this.parent.getThreshold('col') * 2);
@@ -15236,14 +16552,14 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
             }
             size = getColumnsWidth(sheet, 0, domCount - 1);
             this.setScrollCount(sheet.colCount, 'col');
-            width = size + getColumnsWidth(sheet, domCount, this.scroll[this.parent.activeSheetTab - 1].colCount - 1);
+            width = size + getColumnsWidth(sheet, domCount, this.scroll[this.parent.activeSheetIndex].colCount - 1);
         }
         else {
             if (!this.parent.scrollSettings.isFinite) {
                 sheet.colCount = domCount;
             }
             size = getColumnsWidth(sheet, 0, sheet.colCount - 1);
-            this.scroll[this.parent.activeSheetTab - 1].colCount = sheet.colCount;
+            this.scroll[this.parent.activeSheetIndex].colCount = sheet.colCount;
             width = size;
         }
         if (args.startColIdx) {
@@ -15293,7 +16609,7 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
         }
     };
     VirtualScroll.prototype.setScrollCount = function (count$$1, layout) {
-        var activeSheetIdx = this.parent.activeSheetTab - 1;
+        var activeSheetIdx = this.parent.activeSheetIndex;
         if (!this.scroll[activeSheetIdx][layout + 'Count']) {
             this.scroll[activeSheetIdx][layout + 'Count'] = count$$1;
         }
@@ -15308,7 +16624,7 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
         if (threshold === void 0) { threshold = idx; }
         var sheet = this.parent.getActiveSheet();
         var rowCount = idx + this.parent.viewport[layout + 'Count'] + 1 + threshold;
-        var usedRangeCount = this.scroll[this.parent.activeSheetTab - 1][layout + 'Count'];
+        var usedRangeCount = this.scroll[this.parent.activeSheetIndex][layout + 'Count'];
         if (rowCount < usedRangeCount) {
             if (sheet[layout + 'Count'] === usedRangeCount) {
                 return;
@@ -15572,29 +16888,29 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
         }
         var sheet = this.parent.getActiveSheet();
         if (args.update === 'row') {
-            if (args.index !== this.scroll[this.parent.activeSheetTab - 1].rowCount - 1) {
+            if (args.index !== this.scroll[this.parent.activeSheetIndex].rowCount - 1) {
                 var height = this.getVTrackHeight('height');
-                if (args.index >= this.scroll[this.parent.activeSheetTab - 1].rowCount) {
-                    height += getRowsHeight(sheet, this.scroll[this.parent.activeSheetTab - 1].rowCount, args.index);
+                if (args.index >= this.scroll[this.parent.activeSheetIndex].rowCount) {
+                    height += getRowsHeight(sheet, this.scroll[this.parent.activeSheetIndex].rowCount, args.index);
                 }
                 else {
-                    height -= getRowsHeight(sheet, args.index + 1, this.scroll[this.parent.activeSheetTab - 1].rowCount - 1);
+                    height -= getRowsHeight(sheet, args.index + 1, this.scroll[this.parent.activeSheetIndex].rowCount - 1);
                 }
-                this.scroll[this.parent.activeSheetTab - 1].rowCount = args.index + 1;
+                this.scroll[this.parent.activeSheetIndex].rowCount = args.index + 1;
                 this.updateVTrack(this.rowHeader, height, 'height');
-                if (this.scroll[this.parent.activeSheetTab - 1].rowCount > sheet.rowCount) {
-                    sheet.rowCount = this.scroll[this.parent.activeSheetTab - 1].rowCount;
+                if (this.scroll[this.parent.activeSheetIndex].rowCount > sheet.rowCount) {
+                    sheet.rowCount = this.scroll[this.parent.activeSheetIndex].rowCount;
                 }
             }
         }
         else {
-            if (args.index > this.scroll[this.parent.activeSheetTab - 1].colCount) {
+            if (args.index > this.scroll[this.parent.activeSheetIndex].colCount) {
                 var width = this.getVTrackHeight('width');
-                width += getColumnsWidth(sheet, this.scroll[this.parent.activeSheetTab - 1].colCount, args.index);
-                this.scroll[this.parent.activeSheetTab - 1].colCount = args.index + 1;
+                width += getColumnsWidth(sheet, this.scroll[this.parent.activeSheetIndex].colCount, args.index);
+                this.scroll[this.parent.activeSheetIndex].colCount = args.index + 1;
                 this.updateVTrack(this.colHeader, width, 'width');
-                if (this.scroll[this.parent.activeSheetTab - 1].colCount > sheet.colCount) {
-                    sheet.colCount = this.scroll[this.parent.activeSheetTab - 1].colCount;
+                if (this.scroll[this.parent.activeSheetIndex].colCount > sheet.colCount) {
+                    sheet.colCount = this.scroll[this.parent.activeSheetIndex].colCount;
                 }
             }
         }
@@ -15630,7 +16946,7 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
     };
     VirtualScroll.prototype.updateVTrackHeight = function (args) {
         var domCount = this.parent.viewport.rowCount + 1 + (this.parent.getThreshold('row') * 2);
-        if (args.rowIdx >= domCount && args.rowIdx < this.scroll[this.parent.activeSheetTab - 1].rowCount) {
+        if (args.rowIdx >= domCount && args.rowIdx < this.scroll[this.parent.activeSheetIndex].rowCount) {
             this.updateVTrack(this.rowHeader, this.getVTrackHeight('height') + args.threshold, 'height');
         }
     };
@@ -15783,12 +17099,20 @@ var KeyboardNavigation = /** @__PURE__ @class */ (function () {
                 }
             }
             else if ((!e.shiftKey && ((!isRtl && e.keyCode === 39) || (isRtl && e.keyCode === 37))) || e.keyCode === 9) { // Right key
+                var cell = getCell(actIdxes[0], actIdxes[1], sheet);
+                if (cell && cell.colSpan > 1) {
+                    actIdxes[1] += (cell.colSpan - 1);
+                }
                 if (actIdxes[1] < sheet.colCount - 1) {
                     actIdxes[1] += 1;
                     isNavigate = true;
                 }
             }
             else if ((!filterArgs.isFilterCell && !e.shiftKey && e.keyCode === 40) || e.keyCode === 13) { // Down Key
+                var cell = getCell(actIdxes[0], actIdxes[1], sheet);
+                if (cell && cell.rowSpan > 1) {
+                    actIdxes[0] += (cell.rowSpan - 1);
+                }
                 if (actIdxes[0] < sheet.rowCount - 1) {
                     actIdxes[0] += 1;
                     isNavigate = true;
@@ -15935,6 +17259,18 @@ var KeyboardShortcut = /** @__PURE__ @class */ (function () {
                     this.parent.notify(initiateHyperlink, null);
                 }
             }
+            else if (e.keyCode === 90) { /* Ctrl + Z */
+                if (!this.parent.isEdit) {
+                    e.preventDefault();
+                    this.parent.notify(performUndoRedo, { isUndo: true });
+                }
+            }
+            else if (e.keyCode === 89) { /* Ctrl + Y */
+                if (!this.parent.isEdit) {
+                    e.preventDefault();
+                    this.parent.notify(performUndoRedo, { isUndo: false });
+                }
+            }
             if (!this.parent.getActiveSheet().isProtected) {
                 if (e.keyCode === 70) {
                     e.preventDefault();
@@ -15976,18 +17312,6 @@ var KeyboardShortcut = /** @__PURE__ @class */ (function () {
                 else if (e.keyCode === 53) {
                     e.preventDefault();
                     this.parent.notify(textDecorationUpdate, { style: { textDecoration: 'line-through' }, refreshRibbon: true });
-                }
-                else if (e.keyCode === 90) { /* Ctrl + Z */
-                    if (!this.parent.isEdit) {
-                        e.preventDefault();
-                        this.parent.notify(performUndoRedo, { isUndo: true });
-                    }
-                }
-                else if (e.keyCode === 89) { /* Ctrl + Y */
-                    if (!this.parent.isEdit) {
-                        e.preventDefault();
-                        this.parent.notify(performUndoRedo, { isUndo: false });
-                    }
                 }
                 if (e.shiftKey) {
                     if (e.keyCode === 76) { /* Ctrl + Shift + L */
@@ -16476,7 +17800,7 @@ var Resize = /** @__PURE__ @class */ (function () {
         if (isCol) {
             var rowLength = sheet.rows.length;
             for (var rowIdx = 0; rowIdx < rowLength; rowIdx++) {
-                if (sheet.rows[rowIdx] && sheet.rows[rowIdx].cells[idx]) {
+                if (sheet.rows[rowIdx] && sheet.rows[rowIdx].cells && sheet.rows[rowIdx].cells[idx]) {
                     var td = this.parent.createElement('td', {
                         className: 'e-cell',
                         innerHTML: this.parent.getDisplayText(sheet.rows[rowIdx].cells[idx])
@@ -16591,7 +17915,7 @@ var Resize = /** @__PURE__ @class */ (function () {
                 this.showHiddenColumns(index, width);
                 this.parent.notify(completeAction, {
                     eventArgs: {
-                        index: index, width: 0 + "px", isCol: true, sheetIdx: this.parent.activeSheetTab, oldWidth: curWidth + "px",
+                        index: index, width: 0 + "px", isCol: true, sheetIdx: this.parent.activeSheetIndex, oldWidth: curWidth + "px",
                         hide: false
                     }, action: 'resize'
                 });
@@ -16606,7 +17930,7 @@ var Resize = /** @__PURE__ @class */ (function () {
                 this.parent.hideColumn(index);
                 this.parent.notify(completeAction, {
                     eventArgs: {
-                        index: index, width: 0 + "px", isCol: true, sheetIdx: this.parent.activeSheetTab, oldWidth: curWidth + "px",
+                        index: index, width: 0 + "px", isCol: true, sheetIdx: this.parent.activeSheetIndex, oldWidth: curWidth + "px",
                         hide: true
                     }, action: 'resize'
                 });
@@ -16655,6 +17979,7 @@ var Resize = /** @__PURE__ @class */ (function () {
         setRow(sheet, rowIdx, { height: parseInt(rowHeight, 10) > 0 ? parseInt(rowHeight, 10) : 0, customHeight: true });
     };
     Resize.prototype.resizeOn = function (e) {
+        var _this = this;
         var idx;
         var actualIdx;
         if (this.trgtEle.classList.contains('e-rowresize')) {
@@ -16673,6 +17998,7 @@ var Resize = /** @__PURE__ @class */ (function () {
                 tbody.insertBefore(eventArgs.row, tbody.children[eventArgs.insertIdx]);
                 this.trgtEle = eventArgs.hdrRow.firstElementChild;
                 eventArgs.hdrRow.nextElementSibling.classList.remove('e-hide-end');
+                eventArgs.mergeCollection.forEach(function (mergeArgs) { _this.parent.notify(setMerge, mergeArgs); });
             }
             else {
                 if (this.trgtEle.classList.contains('e-skip-resize')) {
@@ -16691,7 +18017,7 @@ var Resize = /** @__PURE__ @class */ (function () {
                 this.parent.hideRow(actualIdx);
                 setRow(sheet, actualIdx, { height: 0, customHeight: true });
                 this.parent.notify(completeAction, {
-                    eventArgs: { index: actualIdx, height: '0px', isCol: false, sheetIdx: this.parent.activeSheetTab, oldHeight: prevData },
+                    eventArgs: { index: actualIdx, height: '0px', isCol: false, sheetIdx: this.parent.activeSheetIndex, oldHeight: prevData },
                     action: 'resize'
                 });
                 return;
@@ -16723,7 +18049,7 @@ var Resize = /** @__PURE__ @class */ (function () {
                         this.parent.notify(completeAction, {
                             eventArgs: {
                                 index: i, height: rowHeight + "px", isCol: false,
-                                sheetIdx: this.parent.activeSheetTab, oldHeight: prevData
+                                sheetIdx: this.parent.activeSheetIndex, oldHeight: prevData
                             },
                             action: 'resize'
                         });
@@ -16780,11 +18106,11 @@ var Resize = /** @__PURE__ @class */ (function () {
         var eventArgs;
         var isAction;
         if (isCol) {
-            eventArgs = { index: idx, width: value, isCol: isCol, sheetIdx: this.parent.activeSheetTab, oldWidth: prevData };
+            eventArgs = { index: idx, width: value, isCol: isCol, sheetIdx: this.parent.activeSheetIndex, oldWidth: prevData };
             isAction = prevData !== value;
         }
         else {
-            eventArgs = { index: idx, height: value, isCol: isCol, sheetIdx: this.parent.activeSheetTab, oldHeight: prevData };
+            eventArgs = { index: idx, height: value, isCol: isCol, sheetIdx: this.parent.activeSheetIndex, oldHeight: prevData };
             isAction = prevData !== value;
         }
         if (isAction) {
@@ -16900,10 +18226,13 @@ var ShowHide = /** @__PURE__ @class */ (function () {
     };
     // tslint:disable-next-line
     ShowHide.prototype.hideRow = function (args) {
+        var _this = this;
         var sheet = this.parent.getActiveSheet();
+        var cell;
         var count = 0;
         var idx;
         var nextIdx;
+        var merge$$1;
         if (args.hide) {
             var content = void 0;
             var rowHdr = void 0;
@@ -16923,6 +18252,19 @@ var ShowHide = /** @__PURE__ @class */ (function () {
                 setRow(sheet, i, { hidden: true });
                 row = content.rows[idx];
                 if (row) {
+                    if (!merge$$1) {
+                        for (var j = 0; j <= sheet.usedRange.colIndex; j++) {
+                            cell = getCell(i, j, sheet) || {};
+                            if ((cell.colSpan || cell.rowSpan) && (args.startIndex >= this.parent.viewport.topIndex ||
+                                this.parent.scrollSettings.enableVirtualization)) {
+                                merge$$1 = true;
+                                break;
+                            }
+                        }
+                    }
+                    if (merge$$1) {
+                        continue;
+                    }
                     if (sheet.showHeaders) {
                         detach(rowHdr.rows[idx]);
                     }
@@ -16930,17 +18272,17 @@ var ShowHide = /** @__PURE__ @class */ (function () {
                     count++;
                     row = content.rows[idx];
                     if (row && i === args.endIndex) {
-                        var cell = void 0;
+                        var cell_1 = void 0;
                         nextIdx = skipHiddenIdx(sheet, i + 1, true);
                         var first = nextIdx !== skipHiddenIdx(sheet, 0, true) && nextIdx ===
                             (this.parent.viewport.topIndex >= args.startIndex ? args.endIndex + 1 : this.parent.viewport.topIndex) ? 'Row' : '';
                         for (var j = this.parent.viewport.leftIndex; j <= this.parent.viewport.rightIndex; j++) {
                             var borderTop = this.parent.getCellStyleValue(['borderTop'], [nextIdx, j]).borderTop;
                             if (borderTop !== '') {
-                                cell = row.cells[j];
+                                cell_1 = row.cells[j];
                                 this.parent.notify(applyCellFormat, { onActionUpdate: false, rowIdx: nextIdx, colIdx: j,
                                     style: { borderTop: borderTop }, row: row, pRow: row.previousElementSibling,
-                                    first: first, cell: cell });
+                                    first: first, cell: cell_1 });
                             }
                         }
                     }
@@ -16953,6 +18295,13 @@ var ShowHide = /** @__PURE__ @class */ (function () {
                         count--;
                     }
                 }
+            }
+            if (merge$$1 && (args.startIndex >= this.parent.viewport.topIndex || !this.parent.scrollSettings.enableVirtualization)) {
+                this.parent.selectRange(sheet.selectedRange);
+                this.parent.renderModule.refreshUI({
+                    rowIndex: this.parent.viewport.topIndex, colIndex: this.parent.viewport.leftIndex, refresh: 'Row'
+                });
+                return;
             }
             if (!count) {
                 return;
@@ -16997,6 +18346,7 @@ var ShowHide = /** @__PURE__ @class */ (function () {
             var startRow = void 0;
             var endRow = args.startIndex - 1;
             var newStartRow = void 0;
+            var mergeCollection = [];
             for (var i = args.startIndex, len = args.endIndex; i <= len; i++) {
                 if (!isHiddenRow(sheet, i)) {
                     if (args.startIndex === args.endIndex) {
@@ -17051,6 +18401,17 @@ var ShowHide = /** @__PURE__ @class */ (function () {
                 }
                 row = frag.appendChild(rowRenderer.refresh(i, row, hRow));
                 detach(tBody.lastElementChild);
+                for (var j = this.parent.viewport.leftIndex; j <= this.parent.viewport.rightIndex; j++) {
+                    cell = getCell(i, j, sheet) || {};
+                    if (cell.rowSpan !== undefined) {
+                        var mergeArgs = { range: [i, j, i, j], isAction: false, merge: true,
+                            type: 'All', skipChecking: true };
+                        this.parent.notify(activeCellMergedRange, mergeArgs);
+                        if (!mergeCollection.length || mergeArgs.range[1] !== mergeCollection[mergeCollection.length - 1].range[1]) {
+                            mergeCollection.push(mergeArgs);
+                        }
+                    }
+                }
             }
             this.parent.viewport.bottomIndex = this.parent.viewport.topIndex + this.parent.viewport.rowCount +
                 (this.parent.getThreshold('row') * 2);
@@ -17059,6 +18420,7 @@ var ShowHide = /** @__PURE__ @class */ (function () {
             this.parent.viewport.bottomIndex += count;
             args.insertIdx = idx;
             args.row = frag.querySelector('.e-row');
+            args.mergeCollection = mergeCollection;
             if (sheet.showHeaders) {
                 args.hdrRow = hFrag.querySelector('.e-row');
                 if (idx !== 0 && !isHiddenRow(sheet, endRow - 1) && rTBody.children[idx - 1]) {
@@ -17108,6 +18470,7 @@ var ShowHide = /** @__PURE__ @class */ (function () {
             if (args.autoFit && sheet.showHeaders) {
                 this.parent.notify(autoFit, { startIndex: args.startIndex, endIndex: args.endIndex, isRow: true });
             }
+            mergeCollection.forEach(function (mergeArgs) { _this.parent.notify(setMerge, mergeArgs); });
             if (newStartRow !== undefined && newStartRow !== args.endIndex) {
                 args.startIndex = newStartRow;
                 this.hideRow(args);
@@ -17233,6 +18596,7 @@ var ShowHide = /** @__PURE__ @class */ (function () {
         var colgrp;
         var rowIdx = 0;
         var cellIdx = this.parent.getViewportIndex(indexes[0], true) + 1;
+        var cell;
         if (this.parent.scrollSettings.enableVirtualization) {
             startIdx = this.parent.viewport.topIndex;
             endIdx = this.parent.viewport.bottomIndex;
@@ -17249,6 +18613,7 @@ var ShowHide = /** @__PURE__ @class */ (function () {
             hColgrp = hTable.getElementsByTagName('colgroup')[0];
             hRow = hTable.rows[0];
         }
+        var modelLen = indexes.length - 1;
         while (startIdx <= endIdx) {
             if (isHiddenRow(sheet, startIdx)) {
                 startIdx++;
@@ -17264,12 +18629,24 @@ var ShowHide = /** @__PURE__ @class */ (function () {
                     }
                     detach(colgrp.children[cellIdx]);
                 }
-                if (index === indexes.length - 1) {
+                if (index === 0) {
+                    cell = getCell(startIdx, idx, sheet) || {};
+                    if (cell.colSpan !== undefined && (cell.rowSpan === undefined || cell.colSpan > 1)) {
+                        _this.parent.notify(hiddenMerge, { rowIdx: startIdx, colIdx: idx, model: 'col',
+                            start: indexes[0], end: indexes[modelLen] });
+                    }
+                }
+                if (index === modelLen) {
                     nextIdx = skipHiddenIdx(sheet, idx + 1, true, 'columns');
                     var borderLeft = _this.parent.getCellStyleValue(['borderLeft'], [rowIdx, nextIdx]).borderLeft;
                     if (borderLeft !== '') {
                         _this.parent.notify(applyCellFormat, { onActionUpdate: false, rowIdx: rowIdx, colIdx: nextIdx,
                             style: { borderLeft: borderLeft }, row: row, first: '' });
+                    }
+                    cell = getCell(startIdx, idx, sheet) || {};
+                    if (cell.colSpan !== undefined && (cell.rowSpan === undefined || cell.colSpan > 1)) {
+                        _this.parent.notify(hiddenMerge, { rowIdx: startIdx, colIdx: idx, model: 'col',
+                            start: indexes[0], end: indexes[modelLen], isEnd: true });
                     }
                 }
             });
@@ -17315,9 +18692,12 @@ var ShowHide = /** @__PURE__ @class */ (function () {
         }
         var cellRenderer = this.parent.serviceLocator.getService('cell');
         indexes.sort(function (i, j) { return i - j; });
+        var cellModel;
+        var mergeCollection = [];
         var cellIdx = [];
         var cell;
         var refCell;
+        var modelLen = indexes.length - 1;
         while (startIdx <= endIdx) {
             if (isHiddenRow(sheet, startIdx)) {
                 startIdx++;
@@ -17335,7 +18715,7 @@ var ShowHide = /** @__PURE__ @class */ (function () {
                                 refCell.previousElementSibling.classList.remove('e-hide-start');
                             }
                             hRow.insertBefore(cellRenderer.renderColHeader(idx), refCell);
-                            if (index === indexes.length - 1) {
+                            if (index === modelLen) {
                                 refCell.classList.remove('e-hide-end');
                             }
                         }
@@ -17349,7 +18729,7 @@ var ShowHide = /** @__PURE__ @class */ (function () {
                     detach(colgrp.lastChild);
                     if (sheet.showHeaders) {
                         detach(hRow.lastChild);
-                        if (index === indexes.length - 1) {
+                        if (index === modelLen) {
                             detach(hColgrp);
                             hTable.insertBefore(colgrp.cloneNode(true), hTable.tHead[0]);
                         }
@@ -17358,9 +18738,9 @@ var ShowHide = /** @__PURE__ @class */ (function () {
                 detach(row.lastChild);
                 refCell = row.cells[cellIdx[index]];
                 cell = cellRenderer.render({ rowIdx: startIdx, colIdx: idx, cell: getCell(startIdx, idx, sheet),
-                    address: getCellAddress(startIdx, idx), lastCell: idx === indexes.length - 1, isHeightCheckNeeded: true,
+                    address: getCellAddress(startIdx, idx), lastCell: idx === modelLen, isHeightCheckNeeded: true,
                     first: idx !== skipHiddenIdx(sheet, 0, true, 'columns') && idx === _this.parent.viewport.leftIndex ? 'Column' : '',
-                    checkNextBorder: index === indexes.length - 1 ? 'Column' : '' });
+                    checkNextBorder: index === modelLen ? 'Column' : '' });
                 refCell ? row.insertBefore(cell, refCell) : row.appendChild(cell);
                 if (index === 0 && cell.previousSibling) {
                     var borderLeft = _this.parent.getCellStyleValue(['borderLeft'], [rowIdx, skipHiddenIdx(sheet, indexes[indexes.length - 1] + 1, true, 'columns')]).borderLeft;
@@ -17372,10 +18752,20 @@ var ShowHide = /** @__PURE__ @class */ (function () {
                         }
                     }
                 }
+                cellModel = getCell(rowIdx, idx, sheet) || {};
+                if (cellModel.colSpan !== undefined && (cellModel.rowSpan === undefined || cellModel.colSpan > 1)) {
+                    var mergeArgs = { range: [rowIdx, idx, rowIdx, idx], isAction: false, merge: true,
+                        type: 'All', skipChecking: true };
+                    _this.parent.notify(activeCellMergedRange, mergeArgs);
+                    if (!mergeCollection.length || mergeArgs.range[1] !== mergeCollection[mergeCollection.length - 1].range[1]) {
+                        mergeCollection.push(mergeArgs);
+                    }
+                }
             });
             startIdx++;
             rowIdx++;
         }
+        mergeCollection.forEach(function (mergeArgs) { _this.parent.notify(setMerge, mergeArgs); });
         this.parent.viewport.rightIndex = skipHiddenIdx(sheet, this.parent.viewport.rightIndex - indexes.length, false, 'columns');
     };
     ShowHide.prototype.addEventListener = function () {
@@ -17657,7 +19047,7 @@ var SpreadsheetHyperlink = /** @__PURE__ @class */ (function () {
                         }
                         else {
                             sheet.selectedRange = selRange;
-                            this.parent.activeSheetTab = sheetIdx + 1;
+                            this.parent.activeSheetIndex = sheetIdx;
                             this.parent.dataBind();
                         }
                         if (this.parent.scrollSettings.enableVirtualization) {
@@ -17794,6 +19184,14 @@ var SpreadsheetHyperlink = /** @__PURE__ @class */ (function () {
                 td.appendChild(hyperEle);
             }
         }
+        else if (td.querySelector('a') && cell.hyperlink) {
+            if (typeof (cell.hyperlink) === 'string') {
+                td.querySelector('a').setAttribute('href', cell.hyperlink);
+            }
+            else {
+                td.querySelector('a').setAttribute('href', cell.hyperlink.address);
+            }
+        }
     };
     SpreadsheetHyperlink.prototype.hyperEditContent = function () {
         var isWeb = true;
@@ -17903,18 +19301,17 @@ var SpreadsheetHyperlink = /** @__PURE__ @class */ (function () {
         var address;
         var indexes = getRangeIndexes(this.parent.getActiveSheet().activeCell);
         var sheet = this.parent.getActiveSheet();
-        var cell = this.parent.sheets[this.parent.getActiveSheet().id - 1].rows[indexes[0]].cells[indexes[1]];
+        var cell = getCell(indexes[0], indexes[1], sheet);
         var isEnable = true;
-        if (sheet.rows[indexes[0]] && sheet.rows[indexes[0]].cells[indexes[1]]) {
-            var cell_1 = sheet.rows[indexes[0]].cells[indexes[1]];
-            if ((cell_1.value && typeof (cell_1.value) === 'string' && cell_1.value.match('[A-Za-z]+') !== null) ||
-                cell_1.value === '' || isNullOrUndefined(cell_1.value)) {
+        if (cell) {
+            if ((cell.value && typeof (cell.value) === 'string' && cell.value.match('[A-Za-z]+') !== null) ||
+                cell.value === '' || isNullOrUndefined(cell.value)) {
                 isEnable = true;
             }
             else {
                 isEnable = false;
             }
-            var hyperlink = cell_1.hyperlink;
+            var hyperlink = cell.hyperlink;
             if (typeof (hyperlink) === 'string') {
                 var hl = hyperlink;
                 if (hl.indexOf('http://') === -1 && hl.indexOf('https://') === -1 && hl.indexOf('ftp://') === -1) {
@@ -18089,7 +19486,7 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
                 var copiedInfo = eventArgs.copiedInfo;
                 address = getRangeIndexes(getRangeFromAddress(eventArgs.pastedRange));
                 if (copiedInfo.isCut) {
-                    cutCellDetails = this.getCellDetails(copiedInfo.range, getSheet(this.parent, copiedInfo.sId - 1));
+                    cutCellDetails = this.getCellDetails(copiedInfo.range, getSheet(this.parent, getSheetIndexFromId(this.parent, copiedInfo.sId)));
                 }
                 break;
             case 'beforeSort':
@@ -18150,6 +19547,10 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
                 case 'validation':
                     updateAction(undoRedoArgs, this.parent, !args.isUndo);
                     break;
+                case 'merge':
+                    undoRedoArgs.eventArgs.merge = !undoRedoArgs.eventArgs.merge;
+                    updateAction(undoRedoArgs, this.parent);
+                    break;
             }
             args.isUndo ? this.redoCollection.push(undoRedoArgs) : this.undoCollection.push(undoRedoArgs);
             if (this.undoCollection.length > this.undoRedoStep) {
@@ -18169,7 +19570,7 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
     };
     UndoRedo.prototype.updateUndoRedoCollection = function (options) {
         var actionList = ['clipboard', 'format', 'sorting', 'cellSave', 'resize', 'resizeToFit', 'wrap', 'hideShow', 'replace',
-            'validation'];
+            'validation', 'merge'];
         if ((options.args.action === 'insert' || options.args.action === 'delete') && options.args.eventArgs.modelType !== 'Sheet') {
             actionList.push(options.args.action);
         }
@@ -18201,6 +19602,7 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
         this.parent.notify(enableToolbarItems, [{ items: [this.parent.element.id + '_redo'], enable: this.redoCollection.length > 0 }]);
     };
     UndoRedo.prototype.undoForClipboard = function (args) {
+        var _this = this;
         var eventArgs = args.eventArgs;
         var address = eventArgs.pastedRange.split('!');
         var range = getRangeIndexes(address[1]);
@@ -18212,15 +19614,20 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
         if (this.isUndo) {
             if (copiedInfo.isCut) {
                 var cells = actionData.cutCellDetails;
-                this.updateCellDetails(cells, getSheet(this.parent, copiedInfo.sId - 1), copiedInfo.range, isRefresh);
+                this.updateCellDetails(cells, getSheet(this.parent, getSheetIndexFromId(this.parent, copiedInfo.sId)), copiedInfo.range, isRefresh);
             }
             this.updateCellDetails(actionData.cellDetails, sheet, range, isRefresh);
+            eventArgs.mergeCollection.forEach(function (mergeArgs) {
+                mergeArgs.merge = !mergeArgs.merge;
+                _this.parent.notify(setMerge, mergeArgs);
+                mergeArgs.merge = !mergeArgs.merge;
+            });
         }
         else {
             updateAction(args, this.parent, copiedInfo.isCut);
         }
         if (isRefresh) {
-            this.parent.notify(selectRange, range);
+            this.parent.notify(selectRange, { indexes: range });
         }
         return args;
     };
@@ -18261,7 +19668,7 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
             updateAction(args, this.parent);
         }
         if (isRefresh) {
-            this.parent.notify(selectRange, range);
+            this.parent.notify(selectRange, { indexes: range });
         }
         return args;
     };
@@ -18307,8 +19714,8 @@ var UndoRedo = /** @__PURE__ @class */ (function () {
     };
     UndoRedo.prototype.checkRefreshNeeded = function (sheetIndex) {
         var isRefresh = true;
-        if (sheetIndex + 1 !== this.parent.activeSheetTab) {
-            this.parent.activeSheetTab = sheetIndex + 1;
+        if (sheetIndex !== this.parent.activeSheetIndex) {
+            this.parent.activeSheetIndex = sheetIndex;
             this.parent.dataBind();
             isRefresh = false;
         }
@@ -18671,6 +20078,7 @@ var DataValidation = /** @__PURE__ @class */ (function () {
         this.parent.on(isValidation, this.checkDataValidation, this);
         this.parent.on(activeCellChanged, this.listHandler, this);
         this.parent.on(keyUp, this.keyUpHandler, this);
+        this.parent.on(removeDataValidation, this.removeValidationHandler, this);
     };
     DataValidation.prototype.removeEventListener = function () {
         EventHandler.remove(this.parent.element, 'dblclick', this.listOpen);
@@ -18680,8 +20088,12 @@ var DataValidation = /** @__PURE__ @class */ (function () {
             this.parent.off(invalidData, this.invalidDataHandler);
             this.parent.off(isValidation, this.checkDataValidation);
             this.parent.off(activeCellChanged, this.listHandler);
-            this.parent.on(keyUp, this.keyUpHandler, this);
+            this.parent.off(keyUp, this.keyUpHandler);
+            this.parent.off(removeDataValidation, this.removeValidationHandler);
         }
+    };
+    DataValidation.prototype.removeValidationHandler = function (e) {
+        this.parent.removeDataValidation(this.parent.getActiveSheet().selectedRange);
     };
     DataValidation.prototype.mouseDownHandler = function (e) {
         var target = e.target;
@@ -18736,47 +20148,48 @@ var DataValidation = /** @__PURE__ @class */ (function () {
             }
             var cell_1 = getCell(rowIdx, colIdx, sheet);
             var tr = mainCont.getElementsByTagName('tr')[rowIdx];
-            if (cell_1 && tr) {
-                var tdEle_1 = tr.getElementsByClassName('e-cell')[colIdx];
-                if (!tdEle_1) {
-                    return;
-                }
-                if (document.getElementsByClassName('e-validation-list')[0]) {
-                    remove(document.getElementsByClassName('e-validation-list')[0]);
-                    this.data = [];
-                }
-                if (cell_1.validation && cell_1.validation.type === 'List') {
-                    cell_1.validation.ignoreBlank = !isNullOrUndefined(cell_1.validation.ignoreBlank) ? cell_1.validation.ignoreBlank : true;
-                    cell_1.validation.inCellDropDown = !isNullOrUndefined(cell_1.validation.inCellDropDown) ?
-                        cell_1.validation.inCellDropDown : true;
-                    if (cell_1.validation.inCellDropDown) {
-                        var ddlCont = this.parent.createElement('div', { className: 'e-validation-list' });
-                        var ddlEle = this.parent.createElement('input', { id: 'listValid' });
-                        ddlCont.appendChild(ddlEle);
-                        if (!cell_1.validation.inCellDropDown) {
-                            ddlCont.style.display = 'none';
-                        }
-                        tdEle_1.insertBefore(ddlCont, tdEle_1.firstChild);
-                        this.listObj = new DropDownList({
-                            index: 0,
-                            dataSource: this.data,
-                            fields: { text: 'text', value: 'id' },
-                            width: '0px',
-                            popupWidth: '200px',
-                            popupHeight: '200px',
-                            beforeOpen: function () {
-                                _this.listObj.popupWidth = tdEle_1.offsetWidth - 1;
-                                _this.data = [];
-                                _this.updateDataSource(_this.listObj, cell_1);
-                            },
-                            change: function () { _this.listValueChange(_this.listObj.text); },
-                            open: function (args) {
-                                args.popup.offsetX = -(tdEle_1.offsetWidth - 20) + 4;
-                                args.popup.offsetY = -13;
-                            }
-                        });
-                        this.listObj.appendTo('#listValid');
+            var tdEle_1;
+            if (tr) {
+                tdEle_1 = tr.getElementsByClassName('e-cell')[colIdx];
+            }
+            if (!tdEle_1) {
+                return;
+            }
+            if (document.getElementsByClassName('e-validation-list')[0]) {
+                remove(document.getElementsByClassName('e-validation-list')[0]);
+                this.data = [];
+            }
+            if (cell_1 && cell_1.validation && cell_1.validation.type === 'List') {
+                cell_1.validation.ignoreBlank = !isNullOrUndefined(cell_1.validation.ignoreBlank) ? cell_1.validation.ignoreBlank : true;
+                cell_1.validation.inCellDropDown = !isNullOrUndefined(cell_1.validation.inCellDropDown) ?
+                    cell_1.validation.inCellDropDown : true;
+                if (cell_1.validation.inCellDropDown) {
+                    var ddlCont = this.parent.createElement('div', { className: 'e-validation-list' });
+                    var ddlEle = this.parent.createElement('input', { id: 'listValid' });
+                    ddlCont.appendChild(ddlEle);
+                    if (!cell_1.validation.inCellDropDown) {
+                        ddlCont.style.display = 'none';
                     }
+                    tdEle_1.insertBefore(ddlCont, tdEle_1.firstChild);
+                    this.listObj = new DropDownList({
+                        index: 0,
+                        dataSource: this.data,
+                        fields: { text: 'text', value: 'id' },
+                        width: '0px',
+                        popupWidth: '200px',
+                        popupHeight: '200px',
+                        beforeOpen: function () {
+                            _this.listObj.popupWidth = tdEle_1.offsetWidth - 1;
+                            _this.data = [];
+                            _this.updateDataSource(_this.listObj, cell_1);
+                        },
+                        change: function () { _this.listValueChange(_this.listObj.text); },
+                        open: function (args) {
+                            args.popup.offsetX = -(tdEle_1.offsetWidth - 20) + 4;
+                            args.popup.offsetY = -13;
+                        }
+                    });
+                    this.listObj.appendTo('#listValid');
                 }
             }
         }
@@ -19261,7 +20674,7 @@ var DataValidation = /** @__PURE__ @class */ (function () {
         var isValidate;
         var errorMsg;
         var enterValue = args.value;
-        var sheet = this.parent.sheets[args.sheetIdx - 1];
+        var sheet = this.parent.sheets[args.sheetIdx];
         var cell = getCell(args.range[0], args.range[1], sheet);
         var value = args.value;
         var value1 = cell.validation.value1;
@@ -19425,11 +20838,10 @@ var DataValidation = /** @__PURE__ @class */ (function () {
             }
         }
         errorMsg = l10n.getConstant('ValidationError');
-        if (isValidate && cell.style && cell.style.backgroundColor === '#ffff00' && cell.style.color === '#ff0000') {
-            cell.style.backgroundColor = '';
-            cell.style.color = '';
+        if (isValidate) {
+            var style = this.parent.getCellStyleValue(['backgroundColor', 'color'], [args.range[0], args.range[1]]);
             this.parent.notify(applyCellFormat, {
-                style: { backgroundColor: '', color: '' }, rowIdx: args.range[0],
+                style: style, rowIdx: args.range[0],
                 colIdx: args.range[1], isHeightCheckNeeded: true, manualUpdate: true,
                 onActionUpdate: true
             });
@@ -19601,12 +21013,14 @@ var ProtectSheet = /** @__PURE__ @class */ (function () {
         this.parent.on(applyProtect, this.protect, this);
         this.parent.on(protectSheet, this.protectSheetHandler, this);
         this.parent.on(editAlert, this.editProtectedAlert, this);
+        this.parent.on(applyLockCells, this.lockCellsHandler, this);
     };
     ProtectSheet.prototype.removeEventListener = function () {
         if (!this.parent.isDestroyed) {
             this.parent.off(applyProtect, this.protect);
             this.parent.off(protectSheet, this.protectSheetHandler);
             this.parent.off(editAlert, this.editProtectedAlert);
+            this.parent.off(applyLockCells, this.lockCellsHandler);
         }
     };
     ProtectSheet.prototype.protect = function (args) {
@@ -19699,8 +21113,9 @@ var ProtectSheet = /** @__PURE__ @class */ (function () {
             formatRows: selectedItems.text.indexOf(l10n.getConstant('FormatRows')) > -1,
             formatColumns: selectedItems.text.indexOf(l10n.getConstant('FormatColumns')) > -1,
             insertLink: selectedItems.text.indexOf(l10n.getConstant('InsertLinks')) > -1 };
-        this.parent.protectSheet(protectSettings);
+        this.parent.protectSheet(null, protectSettings);
         this.parent.notify(protectSelection, null);
+        this.parent.notify(clearUndoRedoCollection, null);
         this.dialog.hide();
     };
     ProtectSheet.prototype.protectSheetHandler = function (args) {
@@ -19708,7 +21123,7 @@ var ProtectSheet = /** @__PURE__ @class */ (function () {
         var id = this.parent.element.id;
         var disableHomeBtnId = [id + '_undo', id + '_redo', id + '_cut', id + '_copy', id + '_paste', id + '_number_format',
             id + '_font_name', id + '_font_size', id + '_bold', id + '_italic', id + '_line-through', id + '_underline',
-            id + '_font_color_picker', id + '_fill_color_picker', id + '_borders', id + '_text_align',
+            id + '_font_color_picker', id + '_fill_color_picker', id + '_borders', id + '_merge_cells', id + '_text_align',
             id + '_vertical_align', id + '_wrap', id + '_sorting'];
         var enableHomeBtnId = [id + '_cut', id + '_copy', id + '_number_format', id + '_font_name', id + '_font_size',
             id + '_bold', id + '_italic', id + '_line-through', id + '_underline', id + '_font_color_picker', id + '_fill_color_picker',
@@ -19752,6 +21167,18 @@ var ProtectSheet = /** @__PURE__ @class */ (function () {
                 beforeOpen: function () { return _this.parent.element.focus(); },
                 close: function () { return _this.parent.element.focus(); }
             });
+        }
+    };
+    ProtectSheet.prototype.lockCellsHandler = function (args) {
+        var sheet = this.parent.getActiveSheet();
+        var cell = getCell(args.rowIdx, args.colIdx, sheet);
+        if (cell) {
+            if (args.isLocked) {
+                cell.isLocked = args.isLocked;
+            }
+            else {
+                cell.isLocked = false;
+            }
         }
     };
     /**
@@ -19815,98 +21242,130 @@ var FindAndReplace = /** @__PURE__ @class */ (function () {
         }
         else if (options.undoRedoOpt === 'beforeReplaceAll') {
             if (!eventArgs.cancel) {
-                var eventArgs_2 = { replace: options.replace, replaceFor: options.replaceFor };
+                var eventArgs_2 = { replaceValue: options.replaceValue, addressCollection: options.Collection };
                 this.parent.notify(beginAction, { action: 'beforeReplaceAll', eventArgs: eventArgs_2 });
             }
         }
         else if (options.undoRedoOpt === 'afterReplaceAll') {
             if (!eventArgs.cancel) {
-                var eventArgs_3 = { replace: options.replace, replaceFor: options.replaceFor };
-                this.parent.notify(completeAction, { action: 'undoRedo', eventArgs: eventArgs_3 });
+                var eventArgs_3 = { replaceValue: options.replaceValue, addressCollection: options.Collection };
+                this.parent.notify(completeAction, { action: 'replaceAll', eventArgs: eventArgs_3 });
             }
         }
     };
     FindAndReplace.prototype.renderFindDlg = function () {
         var _this = this;
         var l10n = this.parent.serviceLocator.getService(locale);
-        var findOpt;
         var dialogInst = this.parent.serviceLocator.getService(dialog);
-        var cancelBtn = false;
-        var dlg = {
-            isModal: false, showCloseIcon: true, cssClass: 'e-find-dlg', allowDragging: true,
-            header: l10n.getConstant('FindAndReplace'), closeOnEscape: true,
-            beforeOpen: function () {
-                dialogInst.dialogInstance.content = _this.findandreplaceContent();
-                dialogInst.dialogInstance.dataBind();
-                _this.parent.element.focus();
-            },
-            buttons: [{
-                    buttonModel: {
-                        content: l10n.getConstant('FindPreviousBtn'), isPrimary: true, cssClass: 'e-btn-findPrevious', disabled: true
-                    },
-                    click: function () {
-                        findOpt = 'prev';
-                        _this.findDlgClick(findOpt);
+        var cancelButton = false;
+        if (isNullOrUndefined(this.parent.element.querySelector('.e-find-dlg'))) {
+            var dlg = {
+                isModal: false, showCloseIcon: true, cssClass: 'e-find-dlg', allowDragging: true,
+                header: l10n.getConstant('FindAndReplace'), closeOnEscape: false,
+                beforeOpen: function () {
+                    dialogInst.dialogInstance.content = _this.findandreplaceContent();
+                    dialogInst.dialogInstance.dataBind();
+                    _this.parent.element.focus();
+                },
+                buttons: [{
+                        buttonModel: {
+                            content: l10n.getConstant('FindPreviousBtn'), isPrimary: true, cssClass: 'e-btn-findPrevious', disabled: true
+                        },
+                        click: function () {
+                            _this.dialogMessage();
+                            _this.findDlgClick('prev');
+                        }
+                    }, {
+                        buttonModel: {
+                            content: l10n.getConstant('FindNextBtn'), isPrimary: true, cssClass: 'e-btn-findNext', disabled: true
+                        },
+                        click: function () {
+                            _this.dialogMessage();
+                            _this.findDlgClick('next');
+                        }
+                    }, {
+                        buttonModel: {
+                            content: l10n.getConstant('ReplaceBtn'), isPrimary: true, cssClass: 'e-btn-replace', disabled: true
+                        },
+                        click: function () {
+                            _this.dialogMessage();
+                            _this.findDlgClick('replace');
+                        }
+                    }, {
+                        buttonModel: {
+                            content: l10n.getConstant('ReplaceAllBtn'), isPrimary: true, cssClass: 'e-btn-replaceAll', disabled: true
+                        },
+                        click: function () {
+                            _this.dialogMessage();
+                            _this.findDlgClick('replaceAll');
+                        }
+                    }], open: function () {
+                    var findInput = _this.parent.element.querySelector('.e-text-findNext').value;
+                    if (findInput) {
+                        var prevButton = _this.parent.element.querySelector('.e-btn-findPrevious');
+                        var prevButtonObj = getComponent(prevButton, 'btn');
+                        prevButtonObj.disabled = false;
+                        getComponent(_this.parent.element.querySelector('.e-btn-findNext'), 'btn').disabled = false;
                     }
-                }, {
-                    buttonModel: {
-                        content: l10n.getConstant('FindNextBtn'), isPrimary: true, cssClass: 'e-btn-findNext', disabled: true
-                    },
-                    click: function () {
-                        findOpt = 'next';
-                        _this.findDlgClick(findOpt);
-                    }
-                }, {
-                    buttonModel: {
-                        content: l10n.getConstant('ReplaceBtn'), isPrimary: true, cssClass: 'e-btn-replace', disabled: true
-                    },
-                    click: function () {
-                        var replace = 'replace';
-                        _this.findDlgClick(replace);
-                    }
-                }, {
-                    buttonModel: {
-                        content: l10n.getConstant('ReplaceAllBtn'), isPrimary: true, cssClass: 'e-btn-replaceAll', disabled: true
-                    },
-                    click: function () {
-                        var replace = 'replaceAll';
-                        _this.findDlgClick(replace);
-                    }
-                }], open: function () {
-                var findInput = _this.parent.element.querySelector('.e-text-findNext').value;
-                if (findInput) {
-                    var prevButton = _this.parent.element.querySelector('.e-btn-findPrevious');
-                    var prevButtonObj = getComponent(prevButton, 'btn');
-                    prevButtonObj.disabled = false;
-                    getComponent(_this.parent.element.querySelector('.e-btn-findNext'), 'btn').disabled = false;
+                }, close: function () {
+                    dialogInst.hide();
                 }
-            },
-        };
-        dialogInst.show(dlg, cancelBtn);
+            };
+            dialogInst.show(dlg, cancelButton);
+        }
+        else {
+            dialogInst.hide();
+        }
+    };
+    FindAndReplace.prototype.dialogMessage = function () {
+        if (this.parent.element.querySelector('.e-replace-alert-span')) {
+            this.parent.element.querySelector('.e-replace-alert-span').remove();
+        }
+        else if (this.parent.element.querySelector('.e-find-alert-span')) {
+            this.parent.element.querySelector('.e-find-alert-span').remove();
+        }
     };
     FindAndReplace.prototype.renderGotoDlg = function () {
         var _this = this;
         var l10n = this.parent.serviceLocator.getService(locale);
         var dialogInst = this.parent.serviceLocator.getService(dialog);
         var cancelBtn = false;
-        var dlg = {
-            width: 300, isModal: false, showCloseIcon: true, cssClass: 'e-goto-dlg', allowDragging: true,
-            header: l10n.getConstant('GotoHeader'),
-            beforeOpen: function () {
-                dialogInst.dialogInstance.content = _this.GotoContent();
-                dialogInst.dialogInstance.dataBind();
-                _this.parent.element.focus();
-            },
-            buttons: [{
-                    buttonModel: {
-                        content: l10n.getConstant('Ok'), isPrimary: true, cssClass: 'e-btn-goto-ok'
-                    },
-                    click: function () {
-                        _this.gotoHandler();
-                    }
-                }]
-        };
-        dialogInst.show(dlg, cancelBtn);
+        if (isNullOrUndefined(this.parent.element.querySelector('.e-find-dlg'))) {
+            var dlg = {
+                width: 300, isModal: false, showCloseIcon: true, cssClass: 'e-goto-dlg', allowDragging: true,
+                header: l10n.getConstant('GotoHeader'),
+                beforeOpen: function () {
+                    dialogInst.dialogInstance.content = _this.GotoContent();
+                    dialogInst.dialogInstance.dataBind();
+                    _this.parent.element.focus();
+                },
+                buttons: [{
+                        buttonModel: {
+                            content: l10n.getConstant('Ok'), isPrimary: true, cssClass: 'e-btn-goto-ok'
+                        },
+                        click: function () {
+                            _this.gotoHandler();
+                        },
+                    }], close: function () {
+                    dialogInst.hide();
+                }, open: function () {
+                    _this.textFocus();
+                },
+            };
+            dialogInst.show(dlg, cancelBtn);
+        }
+        else {
+            dialogInst.hide();
+        }
+    };
+    FindAndReplace.prototype.textFocus = function () {
+        var _this = this;
+        var element = this.parent.element.querySelector('.e-text-goto');
+        element.addEventListener('focus', function () {
+            if (_this.parent.element.querySelector('.e-goto-alert-span')) {
+                _this.parent.element.querySelector('.e-goto-alert-span').remove();
+            }
+        });
     };
     FindAndReplace.prototype.findDlgClick = function (findDlgArgs) {
         if (findDlgArgs === 'prev') {
@@ -19922,14 +21381,14 @@ var FindAndReplace = /** @__PURE__ @class */ (function () {
     FindAndReplace.prototype.findHandler = function (findOpt) {
         var findInput = this.parent.element.querySelector('.e-text-findNext');
         if (!findInput) {
-            findInput = document.querySelector('.e-text-findNext-short');
+            findInput = this.parent.element.querySelector('.e-text-findNext-short');
             if (!findInput) {
                 this.gotoAlert();
             }
         }
         var value = findInput.value;
         if (findInput.value !== '') {
-            var sheetIndex = this.parent.activeSheetTab;
+            var sheetIndex = this.parent.activeSheetIndex;
             var checkCase = this.parent.element.querySelector('.e-findnreplace-checkcase');
             var isCSen = void 0;
             if (!checkCase) {
@@ -19980,7 +21439,7 @@ var FindAndReplace = /** @__PURE__ @class */ (function () {
         }
     };
     FindAndReplace.prototype.replaceHandler = function (replace) {
-        var sheetIndex = this.parent.activeSheetTab;
+        var sheetIndex = this.parent.activeSheetIndex;
         var findInput = this.parent.element.querySelector('.e-text-findNext');
         var replaceWith = this.parent.element.querySelector('.e-text-replaceInp');
         var checkCase = this.parent.element.querySelector('.e-findnreplace-checkcase');
@@ -20018,35 +21477,38 @@ var FindAndReplace = /** @__PURE__ @class */ (function () {
         }
     };
     FindAndReplace.prototype.gotoAlert = function () {
-        var _this = this;
         var l10n = this.parent.serviceLocator.getService(locale);
-        var dialogInst = this.parent.serviceLocator.getService(dialog);
-        var dlg = {
-            width: 300, isModal: true, showCloseIcon: true, cssClass: 'e-goto-alert-dlg',
-            beforeOpen: function () {
-                dialogInst.dialogInstance.content = l10n.getConstant('InsertingEmptyValue');
-                dialogInst.dialogInstance.dataBind();
-                _this.parent.element.focus();
-            }
-        };
-        dialogInst.show(dlg);
+        var gotoSpan = this.parent.createElement('span', {
+            className: 'e-goto-alert-span',
+            innerHTML: l10n.getConstant('InsertingEmptyValue')
+        });
+        (this.parent.element.querySelector('.e-goto-dlg').querySelector('.e-dlg-content')).appendChild(gotoSpan);
     };
     FindAndReplace.prototype.showDialog = function () {
-        this.parent.serviceLocator.getService(dialog).show({
-            width: 300, isModal: true, showCloseIcon: true, cssClass: 'e-find-alert-dlg',
-            content: this.parent.serviceLocator.getService(locale).getConstant('NoElements')
+        if (this.parent.element.querySelector('.e-replace-alert-span')) {
+            this.parent.element.querySelector('.e-replace-alert-span').remove();
+        }
+        var l10n = this.parent.serviceLocator.getService(locale);
+        var findSpan = this.parent.createElement('span', {
+            className: 'e-find-alert-span',
+            innerHTML: l10n.getConstant('NoElements')
         });
+        (this.parent.element.querySelector('.e-find-dlg').querySelector('.e-dlg-content')).appendChild(findSpan);
     };
     FindAndReplace.prototype.replaceAllDialog = function (options) {
+        if (this.parent.element.querySelector('.e-find-alert-span')) {
+            this.parent.element.querySelector('.e-find-alert-span').remove();
+        }
         var l10n = (this.parent.serviceLocator.getService(locale));
-        this.parent.serviceLocator.getService(dialog).show({
-            height: 160, width: 300, isModal: true, showCloseIcon: true,
-            content: options.count + l10n.getConstant('ReplaceAllEnd') + options.replaceValue
+        var replaceSpan = this.parent.createElement('span', {
+            className: 'e-replace-alert-span',
+            innerHTML: options.count + l10n.getConstant('ReplaceAllEnd') + options.replaceValue
         });
+        (this.parent.element.querySelector('.e-find-dlg').querySelector('.e-dlg-content')).appendChild(replaceSpan);
     };
     FindAndReplace.prototype.findKeyUp = function (e) {
         {
-            var findValue_1 = document.querySelector('.e-text-findNext').value;
+            var findValue_1 = this.parent.element.querySelector('.e-text-findNext').value;
             if (!isNullOrUndefined(findValue_1) && findValue_1 !== '') {
                 var prevButton = this.parent.element.querySelector('.e-btn-findPrevious');
                 var prevButtonObj = getComponent(prevButton, 'btn');
@@ -20056,22 +21518,26 @@ var FindAndReplace = /** @__PURE__ @class */ (function () {
             else {
                 getComponent(this.parent.element.querySelector('.e-btn-findPrevious'), 'btn').disabled = true;
                 getComponent(this.parent.element.querySelector('.e-btn-findNext'), 'btn').disabled = true;
+                this.dialogMessage();
             }
         }
-        var findValue = document.querySelector('.e-text-findNext').value;
-        var replaceValue = document.querySelector('.e-text-replaceInp').value;
+        var findValue = this.parent.element.querySelector('.e-text-findNext').value;
+        var replaceValue = this.parent.element.querySelector('.e-text-replaceInp').value;
         if (!isNullOrUndefined(findValue) && !isNullOrUndefined(replaceValue) && (findValue !== '') && (replaceValue !== '')) {
-            getComponent(this.parent.element.querySelector('.e-btn-replace'), 'btn').disabled = false;
-            getComponent(this.parent.element.querySelector('.e-btn-replaceAll'), 'btn').disabled = false;
+            if (this.parent.getActiveSheet().isProtected === false) {
+                getComponent(this.parent.element.querySelector('.e-btn-replace'), 'btn').disabled = false;
+                getComponent(this.parent.element.querySelector('.e-btn-replaceAll'), 'btn').disabled = false;
+            }
         }
         else {
             getComponent(this.parent.element.querySelector('.e-btn-replace'), 'btn').disabled = true;
             getComponent(this.parent.element.querySelector('.e-btn-replaceAll'), 'btn').disabled = true;
+            this.dialogMessage();
         }
     };
     FindAndReplace.prototype.findandreplaceContent = function () {
-        if (document.querySelector('.e-text-findNext-short')) {
-            this.shortValue = document.querySelector('.e-text-findNext-short').value;
+        if (this.parent.element.querySelector('.e-text-findNext-short')) {
+            this.shortValue = this.parent.element.querySelector('.e-text-findNext-short').value;
         }
         var dialogElem = this.parent.createElement('div', { className: 'e-link-dialog' });
         var findElem = this.parent.createElement('div', { className: 'e-find' });
@@ -20194,6 +21660,166 @@ var FindAndReplace = /** @__PURE__ @class */ (function () {
         return 'findAndReplace';
     };
     return FindAndReplace;
+}());
+
+/**
+ * The `Merge` module is used to to merge the range of cells.
+ */
+var Merge = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for the Spreadsheet merge module.
+     * @private
+     */
+    function Merge(parent) {
+        this.parent = parent;
+        this.addEventListener();
+    }
+    Merge.prototype.merge = function (args) {
+        var _this = this;
+        if (args.showDialog) {
+            this.parent.serviceLocator.getService(dialog).show({
+                target: this.parent.element,
+                height: 180, width: 400, isModal: true, showCloseIcon: true,
+                content: this.parent.serviceLocator.getService(locale).getConstant('PasteMergeAlert'),
+                beforeOpen: function () { return _this.parent.element.focus(); }
+            });
+            return;
+        }
+        this.parent.serviceLocator.getService('cell').refresh(args.rowIdx, args.colIdx);
+    };
+    Merge.prototype.hideHandler = function (args) {
+        var sheet = this.parent.getActiveSheet();
+        var mergeArgs = { range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx] };
+        this.parent.notify(activeCellMergedRange, mergeArgs);
+        mergeArgs.range = mergeArgs.range;
+        var endIdx;
+        var cell = getCell(mergeArgs.range[0], mergeArgs.range[1], sheet) || {};
+        var startIdx = args.model === 'row' ? mergeArgs.range[0] : mergeArgs.range[1];
+        endIdx = startIdx + ((cell[args.model + "Span"] || 1) - 1);
+        if ((!args.isEnd && (args.start === startIdx || isHiddenCol(sheet, startIdx))) || (args.isEnd && (args.start > startIdx &&
+            !isHiddenCol(sheet, startIdx)))) {
+            return;
+        }
+        if (cell[args.model + "Span"] > 1 && endIdx >= args.start) {
+            if (args.model === 'row' ? isHiddenRow(sheet, startIdx) : isHiddenCol(sheet, startIdx)) {
+                if (args.end < endIdx && (endIdx - args.end > 1 || cell.rowSpan > 1)) {
+                    var cellEle = this.parent.getCell(args.rowIdx, args.end + 1);
+                    if (cellEle) {
+                        if (endIdx - args.end > 1) {
+                            cellEle.colSpan = endIdx - args.end;
+                        }
+                        cellEle.style.display = '';
+                    }
+                    if (cell.rowSpan > 1) {
+                        var rowSpan = cell.rowSpan - this.parent.hiddenCount(args.rowIdx, args.rowIdx + (cell.rowSpan - 1));
+                        if (rowSpan > 1) {
+                            cellEle.rowSpan = rowSpan;
+                        }
+                    }
+                }
+            }
+            else {
+                this.merge({ rowIdx: mergeArgs.range[0], colIdx: mergeArgs.range[1] });
+            }
+        }
+    };
+    Merge.prototype.checkPrevMerge = function (args) {
+        var cell;
+        var sheet = this.parent.getActiveSheet();
+        var mergeArgs;
+        var mergeCount;
+        if (args.isRow) {
+            if (args.rowIdx - 1 > -1 && isHiddenRow(sheet, args.rowIdx - 1)) {
+                cell = getCell(args.rowIdx - 1, args.colIdx, sheet) || {};
+                if ((cell.rowSpan !== undefined || cell.colSpan !== undefined) && (cell.colSpan === undefined || cell.colSpan > 1 ||
+                    (args.colIdx - 1 > -1 && isHiddenCol(sheet, args.colIdx - 1)))) {
+                    mergeArgs = { range: [args.rowIdx - 1, args.colIdx, args.rowIdx - 1, args.colIdx] };
+                    this.parent.notify(activeCellMergedRange, mergeArgs);
+                    mergeArgs.range = mergeArgs.range;
+                    if (isHiddenRow(sheet, mergeArgs.range[0]) && mergeArgs.range[2] >= args.rowIdx) {
+                        cell = getCell(mergeArgs.range[0], mergeArgs.range[1], sheet) || {};
+                        if (cell.rowSpan > 1) {
+                            mergeCount = (mergeArgs.range[2] - args.rowIdx) + 1 - this.parent.hiddenCount(args.rowIdx, args.rowIdx + (mergeArgs.range[2] - args.rowIdx));
+                            if (mergeCount > 1) {
+                                args.td.rowSpan = mergeCount;
+                                args.td.style.display = '';
+                            }
+                            else {
+                                if (args.td.rowSpan) {
+                                    args.td.removeAttribute('rowSpan');
+                                }
+                            }
+                            if (cell.colSpan > 1 && !(args.colIdx - 1 > -1 && isHiddenCol(sheet, args.colIdx - 1))) {
+                                mergeCount = cell.colSpan - this.parent.hiddenCount(args.colIdx, args.colIdx + (cell.colSpan - 1), 'columns');
+                                if (mergeCount > 1) {
+                                    args.td.colSpan = mergeCount;
+                                    args.td.style.display = '';
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            return;
+        }
+        if (args.colIdx - 1 > -1 && isHiddenCol(sheet, args.colIdx - 1)) {
+            cell = getCell(args.rowIdx, args.colIdx - 1, sheet) || {};
+            if ((cell.colSpan !== undefined || cell.rowSpan !== undefined) && (cell.rowSpan === undefined || cell.rowSpan > 1 ||
+                (args.rowIdx - 1 > -1 && isHiddenRow(sheet, args.rowIdx - 1)))) {
+                mergeArgs = { range: [args.rowIdx, args.colIdx - 1, args.rowIdx, args.colIdx - 1] };
+                this.parent.notify(activeCellMergedRange, mergeArgs);
+                mergeArgs.range = mergeArgs.range;
+                if (isHiddenCol(sheet, mergeArgs.range[1]) && mergeArgs.range[3] >= args.colIdx) {
+                    cell = getCell(mergeArgs.range[0], mergeArgs.range[1], sheet) || {};
+                    if (cell.colSpan > 1) {
+                        mergeCount = (mergeArgs.range[3] - args.colIdx) + 1 - this.parent.hiddenCount(args.colIdx, args.colIdx + (cell.colSpan - 1), 'columns');
+                        if (mergeCount > 1) {
+                            args.td.colSpan = mergeCount;
+                            args.td.style.display = '';
+                        }
+                        else {
+                            if (args.td.colSpan) {
+                                args.td.removeAttribute('colSpan');
+                            }
+                        }
+                        if (cell.rowSpan > 1 && !(args.rowIdx - 1 > -1 && isHiddenRow(sheet, args.rowIdx - 1))) {
+                            mergeCount = cell.rowSpan - this.parent.hiddenCount(args.rowIdx, args.rowIdx + (cell.rowSpan - 1));
+                            if (mergeCount > 1) {
+                                args.td.rowSpan = mergeCount;
+                                args.td.style.display = '';
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    };
+    Merge.prototype.addEventListener = function () {
+        this.parent.on(applyMerge, this.merge, this);
+        this.parent.on(hiddenMerge, this.hideHandler, this);
+        this.parent.on(checkPrevMerge, this.checkPrevMerge, this);
+    };
+    /**
+     * Destroy merge module.
+     */
+    Merge.prototype.destroy = function () {
+        this.removeEventListener();
+        this.parent = null;
+    };
+    Merge.prototype.removeEventListener = function () {
+        if (!this.parent.isDestroyed) {
+            this.parent.off(applyMerge, this.merge);
+            this.parent.off(hiddenMerge, this.hideHandler);
+            this.parent.off(checkPrevMerge, this.checkPrevMerge);
+        }
+    };
+    /**
+     * Get the merge module name.
+     */
+    Merge.prototype.getModuleName = function () {
+        return 'merge';
+    };
+    return Merge;
 }());
 
 /**
@@ -20655,7 +22281,7 @@ var Ribbon$1 = /** @__PURE__ @class */ (function (_super) {
     Ribbon.prototype.addToolbarItems = function (tab, items, index) {
         var _this = this;
         var tabIdx = this.getTabIndex(tab);
-        if (!index) {
+        if (isNullOrUndefined(index)) {
             index = this.items[tabIdx].content.length;
         }
         items.forEach(function (item) {
@@ -20969,6 +22595,7 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
         this.border = '1px solid #000000';
         this.fontNameIndex = 5;
         this.numPopupWidth = 0;
+        this.findValue = '';
         this.parent = parent;
         this.addEventListener();
         new ColorPicker$1(parent);
@@ -21013,8 +22640,7 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
         var _this = this;
         var id = this.parent.element.id;
         var l10n = this.parent.serviceLocator.getService(locale);
-        var items = [
-            {
+        var items = [{
                 header: { text: l10n.getConstant('Home') },
                 content: [
                     { prefixIcon: 'e-undo-icon', tooltipText: l10n.getConstant('Undo') + " (Ctrl+Z)", id: id + '_undo', disabled: true },
@@ -21022,8 +22648,7 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
                     { type: 'Separator', id: id + '_separator_1' },
                     { prefixIcon: 'e-cut-icon', tooltipText: l10n.getConstant('Cut') + " (Ctrl+X)", id: id + '_cut' },
                     { prefixIcon: 'e-copy-icon', tooltipText: l10n.getConstant('Copy') + " (Ctrl+C)", id: id + '_copy' },
-                    {
-                        tooltipText: l10n.getConstant('Paste') + " (Ctrl+V)", template: this.getPasteBtn(id), id: id + '_paste',
+                    { tooltipText: l10n.getConstant('Paste') + " (Ctrl+V)", template: this.getPasteBtn(id), id: id + '_paste',
                         disabled: true
                     }, { type: 'Separator', id: id + '_separator_2' },
                     { template: this.getNumFormatDDB(id), tooltipText: l10n.getConstant('NumberFormat'), id: id + '_number_format' },
@@ -21034,62 +22659,58 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
                     { type: 'Separator', id: id + '_separator_5' },
                     { template: this.getBtn(id, 'bold'), tooltipText: l10n.getConstant('Bold') + " (Ctrl+B)", id: id + '_bold' },
                     { template: this.getBtn(id, 'italic'), tooltipText: l10n.getConstant('Italic') + " (Ctrl+I)", id: id + '_italic' },
-                    {
-                        template: this.getBtn(id, 'line-through'), tooltipText: l10n.getConstant('Strikethrough') + " (Ctrl+5)",
-                        id: id + '_line-through'
-                    },
-                    {
-                        template: this.getBtn(id, 'underline'), tooltipText: l10n.getConstant('Underline') + " (Ctrl+U)",
-                        id: id + '_underline'
-                    },
-                    {
-                        template: document.getElementById(id + "_font_color_picker"), tooltipText: l10n.getConstant('TextColor'),
-                        id: id + '_font_color_picker'
-                    }, { type: 'Separator', id: id + '_separator_6' },
-                    {
-                        template: document.getElementById(id + "_fill_color_picker"), tooltipText: l10n.getConstant('FillColor'),
-                        id: id + '_fill_color_picker'
-                    }, {
-                        template: this.getBordersDBB(id), tooltipText: l10n.getConstant('Borders'), id: id + '_borders'
+                    { template: this.getBtn(id, 'line-through'), tooltipText: l10n.getConstant('Strikethrough') + " (Ctrl+5)",
+                        id: id + '_line-through' },
+                    { template: this.getBtn(id, 'underline'), tooltipText: l10n.getConstant('Underline') + " (Ctrl+U)",
+                        id: id + '_underline' },
+                    { template: document.getElementById(id + "_font_color_picker"), tooltipText: l10n.getConstant('TextColor'),
+                        id: id + '_font_color_picker' }, { type: 'Separator', id: id + '_separator_6' },
+                    { template: document.getElementById(id + "_fill_color_picker"), tooltipText: l10n.getConstant('FillColor'),
+                        id: id + '_fill_color_picker' },
+                    { template: this.getBordersDBB(id), tooltipText: l10n.getConstant('Borders'), id: id + '_borders' }, {
+                        template: this.getMergeSplitBtn(id), tooltipText: l10n.getConstant('MergeCells'), id: id + '_merge_cells',
+                        disabled: true
                     }, { type: 'Separator', id: id + '_separator_7' },
+                    { template: this.getTextAlignDDB(id), tooltipText: l10n.getConstant('HorizontalAlignment'), id: id + '_text_align' }, { template: this.getVerticalAlignDDB(id), tooltipText: l10n.getConstant('VerticalAlignment'), id: id + '_vertical_align' },
+                    { template: this.getBtn(id, 'wrap', false), tooltipText: "" + l10n.getConstant('WrapText'), id: id + '_wrap' }
+                ]
+            },
+            {
+                header: { text: l10n.getConstant('Insert') }, content: [{
+                        prefixIcon: 'e-hyperlink-icon', text: l10n.getConstant('Link'),
+                        id: id + '_hyperlink', tooltipText: l10n.getConstant('Link'), click: function () { _this.getHyperlinkDlg(); }
+                    }]
+            },
+            {
+                header: { text: l10n.getConstant('Formulas') }, content: [{
+                        prefixIcon: 'e-insert-function', tooltipText: l10n.getConstant('InsertFunction'),
+                        text: l10n.getConstant('InsertFunction'), id: id + '_insert_function'
+                    }]
+            },
+            {
+                header: { text: l10n.getConstant('Data') }, content: [
                     {
-                        template: this.getTextAlignDDB(id), tooltipText: l10n.getConstant('HorizontalAlignment'), id: id + '_text_align'
-                    }, {
-                        template: this.getVerticalAlignDDB(id), tooltipText: l10n.getConstant('VerticalAlignment'), id: id + '_vertical_align'
-                    }, {
-                        template: this.getBtn(id, 'wrap', false),
-                        tooltipText: "" + l10n.getConstant('WrapText'), id: id + '_wrap'
+                        prefixIcon: 'e-protect-icon', text: l10n.getConstant('ProtectSheet'), id: id + '_protect',
+                        tooltipText: l10n.getConstant('ProtectSheet')
+                    }, { type: 'Separator', id: id + '_separator_8' },
+                    {
+                        template: this.datavalidationDDB(id), tooltipText: l10n.getConstant('DataValidation'),
+                        id: id + '_datavalidation'
                     }
                 ]
             },
             {
-                header: { text: l10n.getConstant('Insert') },
-                content: [{
-                        prefixIcon: 'e-hyperlink-icon', text: l10n.getConstant('Link'),
-                        id: id + '_hyperlink', click: function () { _this.getHyperlinkDlg(); }
-                    }]
-            },
-            {
-                header: { text: l10n.getConstant('Formulas') },
-                content: [{ prefixIcon: 'e-insert-function', text: l10n.getConstant('InsertFunction'), id: id + '_insert_function' }]
-            },
-            {
-                header: { text: l10n.getConstant('Data') },
-                content: [
-                    { prefixIcon: 'e-protect-icon', text: l10n.getConstant('ProtectSheet'), id: id + '_protect' },
-                    { type: 'Separator', id: id + '_separator_8' },
-                    { template: this.datavalidationDDB(id), tooltipText: l10n.getConstant('DataValidation'), id: id + '_datavalidation' }
+                header: { text: l10n.getConstant('View') }, content: [
+                    {
+                        prefixIcon: 'e-hide-headers', text: this.getLocaleText('Headers'), id: id + '_headers',
+                        tooltipText: this.getLocaleText('Headers')
+                    }, { type: 'Separator', id: id + '_separator_9' },
+                    {
+                        prefixIcon: 'e-hide-gridlines', text: this.getLocaleText('GridLines'), id: id + '_gridlines',
+                        tooltipText: this.getLocaleText('GridLines')
+                    }
                 ]
-            },
-            {
-                header: { text: l10n.getConstant('View') },
-                content: [
-                    { prefixIcon: 'e-hide-headers', text: this.getLocaleText('Headers'), id: id + '_headers' },
-                    { type: 'Separator', id: id + '_separator_9' },
-                    { prefixIcon: 'e-hide-gridlines', text: this.getLocaleText('GridLines'), id: id + '_gridlines' }
-                ]
-            }
-        ];
+            }];
         if (this.parent.allowSorting || this.parent.allowFiltering) {
             items.find(function (x) { return x.header && x.header.text === l10n.getConstant('Home'); }).content.push({ type: 'Separator', id: id + '_separator_10' }, { template: this.getSortFilterDDB(id), tooltipText: l10n.getConstant('SortAndFilter'), id: id + '_sorting' });
         }
@@ -21268,17 +22889,28 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
         var l10n = this.parent.serviceLocator.getService(locale);
         this.bordersMenu = new Menu({
             cssClass: 'e-borders-menu',
-            items: [{ iconCss: 'e-icons e-top-borders', text: l10n.getConstant('TopBorders') }, { iconCss: 'e-icons e-left-borders',
-                    text: l10n.getConstant('LeftBorders') }, { iconCss: 'e-icons e-right-borders', text: l10n.getConstant('RightBorders') }, {
+            items: [{ iconCss: 'e-icons e-top-borders', text: l10n.getConstant('TopBorders') }, {
+                    iconCss: 'e-icons e-left-borders',
+                    text: l10n.getConstant('LeftBorders')
+                }, { iconCss: 'e-icons e-right-borders', text: l10n.getConstant('RightBorders') }, {
                     iconCss: 'e-icons e-bottom-borders', text: l10n.getConstant('BottomBorders')
-                }, { iconCss: 'e-icons e-all-borders', text: l10n.getConstant('AllBorders') }, { iconCss: 'e-icons e-horizontal-borders', text: l10n.getConstant('HorizontalBorders') }, {
+                }, {
+                    iconCss: 'e-icons e-all-borders', text: l10n.getConstant('AllBorders')
+                }, { iconCss: 'e-icons e-horizontal-borders', text: l10n.getConstant('HorizontalBorders') }, {
                     iconCss: 'e-icons e-vertical-borders', text: l10n.getConstant('VerticalBorders')
-                }, { iconCss: 'e-icons e-outside-borders',
-                    text: l10n.getConstant('OutsideBorders') }, { iconCss: 'e-icons e-inside-borders', text: l10n.getConstant('InsideBorders') },
-                { iconCss: 'e-icons e-no-borders', text: l10n.getConstant('NoBorders') }, { separator: true }, { text: l10n.getConstant('BorderColor'), items: [{ id: id + "_border_colors" }] }, { text: l10n.getConstant('BorderStyle'), items: [
-                        { iconCss: 'e-icons e-selected-icon', id: id + "_1px" }, { id: id + "_2px" }, { id: id + "_3px" }, { id: id + "_dashed" },
+                }, {
+                    iconCss: 'e-icons e-outside-borders',
+                    text: l10n.getConstant('OutsideBorders')
+                }, { iconCss: 'e-icons e-inside-borders', text: l10n.getConstant('InsideBorders') },
+                { iconCss: 'e-icons e-no-borders', text: l10n.getConstant('NoBorders') }, { separator: true }, {
+                    text: l10n.getConstant('BorderColor'), items: [{ id: id + "_border_colors" }]
+                }, {
+                    text: l10n.getConstant('BorderStyle'), items: [
+                        { iconCss: 'e-icons e-selected-icon', id: id + "_1px" }, { id: id + "_2px" },
+                        { id: id + "_3px" }, { id: id + "_dashed" },
                         { id: id + "_dotted" }, { id: id + "_double" }
-                    ] }],
+                    ]
+                }],
             orientation: 'Vertical',
             beforeOpen: function (args) {
                 if (args.parentItem.text === 'Border Color') {
@@ -21461,7 +23093,8 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
             items: [
                 { text: l10n.getConstant('DataValidation') },
                 { text: l10n.getConstant('HighlightInvalidData') },
-                { text: l10n.getConstant('ClearHighlight') }
+                { text: l10n.getConstant('ClearHighlight') },
+                { text: l10n.getConstant('ClearValidation') }
             ],
             beforeOpen: function (args) {
                 _this.refreshSelected(_this.datavalidationDdb, args.element, 'iconCss');
@@ -21476,6 +23109,9 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
                         break;
                     case l10n.getConstant('ClearHighlight'):
                         _this.parent.notify(invalidData, { isRemoveHighlight: true });
+                        break;
+                    case l10n.getConstant('ClearValidation'):
+                        _this.parent.notify(removeDataValidation, null);
                         break;
                     default:
                         var direction = args.item.text === l10n.getConstant('SortAscending') ? 'Ascending' : 'Descending';
@@ -21540,6 +23176,102 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
         this.verticalAlignDdb.createElement = this.parent.createElement;
         this.verticalAlignDdb.appendTo(this.parent.createElement('button', { id: id + '_vertical_align' }));
         return this.verticalAlignDdb.element;
+    };
+    Ribbon$$1.prototype.getMergeSplitBtn = function (id) {
+        var _this = this;
+        this.parent.element.appendChild(this.parent.createElement('button', { id: id + '_merge' }));
+        var l10n = this.parent.serviceLocator.getService(locale);
+        this.mergeSplitBtn = new SplitButton({
+            cssClass: 'e-merge-ddb',
+            iconCss: 'e-icons e-merge-icon',
+            items: [{ text: l10n.getConstant('MergeAll'), id: id + "_merge_all" }, { text: l10n.getConstant('MergeHorizontally'), id: id + "_merge_horizontally" }, { text: l10n.getConstant('MergeVertically'), id: id + "_merge_vertically" },
+                { separator: true, id: id + "_merge_separator" }, { text: l10n.getConstant('Unmerge'), id: id + "_unmerge" }],
+            select: this.mergeSelectHandler.bind(this),
+            close: function () { return _this.parent.element.focus(); },
+            click: function (args) {
+                if (args.element.classList.contains('e-active')) {
+                    _this.toggleActiveState(false);
+                    _this.unMerge();
+                }
+                else {
+                    _this.toggleActiveState(true);
+                    _this.merge(_this.parent.element.id + "_merge_all");
+                }
+            },
+            created: function () {
+                _this.mergeSplitBtn.element.title = l10n.getConstant('MergeCells');
+                _this.mergeSplitBtn.element.nextElementSibling.title = l10n.getConstant('SelectMergeType');
+            }
+        });
+        this.mergeSplitBtn.createElement = this.parent.createElement;
+        this.mergeSplitBtn.appendTo('#' + id + '_merge');
+        return this.mergeSplitBtn.element.parentElement;
+    };
+    Ribbon$$1.prototype.mergeSelectHandler = function (args) {
+        args.item.id === this.parent.element.id + "_unmerge" ? this.unMerge() : this.merge(args.item.id);
+    };
+    Ribbon$$1.prototype.unMerge = function () {
+        this.parent.showSpinner();
+        this.parent.notify(setMerge, { merge: false, range: this.parent.getActiveSheet().selectedRange,
+            isAction: true, refreshRibbon: true, type: 'All' });
+        this.parent.hideSpinner();
+    };
+    Ribbon$$1.prototype.merge = function (itemId) {
+        var _this = this;
+        var sheet = this.parent.getActiveSheet();
+        var indexes = getRangeIndexes(sheet.selectedRange);
+        var cell;
+        var isDataPresent;
+        for (var i = indexes[0]; i <= indexes[2]; i++) {
+            for (var j = indexes[1]; j <= indexes[3]; j++) {
+                if (i === indexes[0] && j === indexes[1] && itemId.includes('merge_all')) {
+                    continue;
+                }
+                if (i === indexes[0] && itemId.includes('merge_vertically')) {
+                    continue;
+                }
+                if (j === indexes[1] && itemId.includes('_merge_horizontally')) {
+                    continue;
+                }
+                cell = getCell(i, j, sheet) || {};
+                if (cell.value || cell.formula) {
+                    isDataPresent = true;
+                }
+            }
+        }
+        if (!isDataPresent) {
+            this.performMerge(itemId);
+            return;
+        }
+        var dialogInst = this.parent.serviceLocator.getService(dialog);
+        dialogInst.show({
+            target: this.parent.element, height: 200, width: 400, isModal: true, showCloseIcon: true,
+            content: this.parent.serviceLocator.getService(locale).getConstant('MergeCellsAlert'),
+            beforeOpen: function () { return _this.parent.element.focus(); },
+            buttons: [{
+                    buttonModel: { content: this.parent.serviceLocator.getService(locale).getConstant('Ok'), isPrimary: true },
+                    click: function () { dialogInst.hide(); _this.performMerge(itemId); }
+                }]
+        });
+    };
+    Ribbon$$1.prototype.performMerge = function (itemId) {
+        var id = this.parent.element.id;
+        this.parent.showSpinner();
+        switch (itemId) {
+            case id + "_merge_all":
+                this.parent.notify(setMerge, { merge: true, range: this.parent.getActiveSheet().selectedRange,
+                    type: 'All', isAction: true, refreshRibbon: true });
+                break;
+            case id + "_merge_horizontally":
+                this.parent.notify(setMerge, { merge: true, range: this.parent.getActiveSheet().selectedRange,
+                    type: 'Horizontally', isAction: true });
+                break;
+            case id + "_merge_vertically":
+                this.parent.notify(setMerge, { merge: true, range: this.parent.getActiveSheet().selectedRange,
+                    type: 'Vertically', isAction: true });
+                break;
+        }
+        this.parent.hideSpinner();
     };
     Ribbon$$1.prototype.getSortFilterDDB = function (id) {
         var _this = this;
@@ -21617,7 +23349,7 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
             var toolbarObj_1;
             var findTextElement = this.parent.createElement('div');
             var findTextInput_1 = this.parent.createElement('input', {
-                className: 'e-input e-text-findNext-short', attrs: { 'type': 'Text' }
+                className: 'e-input e-text-findNext-short', attrs: { 'type': 'Text', value: this.findValue }
             });
             findTextInput_1.onkeyup = function () {
                 var countArgs = { countOpt: 'count', findCount: '' };
@@ -21626,11 +23358,11 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
                 var value = element.value;
                 var nextElement = document.querySelector('.e-findRib-next');
                 var prevElement = document.querySelector('.e-findRib-prev');
-                if (isNullOrUndefined(value) || (value === '')) {
+                if (isNullOrUndefined(value) || (value === '') || (countArgs.findCount === '0of0')) {
                     toolbarObj_1.enableItems(nextElement, false);
                     toolbarObj_1.enableItems(prevElement, false);
                 }
-                else if (!isNullOrUndefined(value)) {
+                else if (!isNullOrUndefined(value) || (countArgs.findCount !== '0of0')) {
                     toolbarObj_1.enableItems(nextElement, true);
                     toolbarObj_1.enableItems(prevElement, true);
                 }
@@ -21653,13 +23385,11 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
             toolbarObj_1 = new Toolbar({
                 clicked: function (args) {
                     if (args.item.cssClass === 'e-findRib-next') {
-                        var findOption = 'next';
-                        var buttonArg = { findOption: findOption };
+                        var buttonArg = { findOption: 'next' };
                         _this.parent.notify(findHandler, buttonArg);
                     }
                     else if (args.item.cssClass === 'e-findRib-prev') {
-                        var findOption = 'prev';
-                        var buttonArg = { findOption: findOption };
+                        var buttonArg = { findOption: 'prev' };
                         _this.parent.notify(findHandler, buttonArg);
                     }
                     else if (args.item.cssClass === 'e-findRib-more') {
@@ -21684,12 +23414,10 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
                     _this.textFocus(toolbarObj_1.element);
                 },
                 beforeClose: function () {
+                    _this.findValue = _this.parent.element.querySelector('.e-text-findNext-short').value;
                     toolbarObj_1.destroy();
                     var element = document.querySelector('.e-find-toolbar');
                     EventHandler.remove(element, 'focus', _this.textFocus);
-                    _this.parent.element.querySelector('.e-findtool-dlg').remove();
-                    _this.findDialog.destroy();
-                    _this.findDialog = null;
                     EventHandler.remove(document, 'click', _this.closeDialog);
                     _this.parent.element.focus();
                 },
@@ -21701,7 +23429,7 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
                     var dialogWidth = _this.findDialog.width;
                     var rightValue = calculate.width - parseInt(dialogWidth.toString(), 10) - 14; /** 14- width of scroll bar */
                     /** 31- height of sheetHeader */
-                    var topValue = _this.parent.sheets[_this.parent.activeSheetTab - 1].showHeaders ? 31 : 0;
+                    var topValue = _this.parent.sheets[_this.parent.activeSheetIndex].showHeaders ? 31 : 0;
                     _this.findDialog.position = { X: rightValue, Y: topValue };
                     _this.findDialog.dataBind();
                     _this.findDialog.show();
@@ -21712,8 +23440,8 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
         }
         else {
             if (!isNullOrUndefined(this.parent.element.querySelector('.e-findtool-dlg'))) {
-                this.parent.element.querySelector('.e-findtool-dlg').remove();
-                this.findDialog.destroy();
+                this.findDialog.hide();
+                detach(this.parent.element.querySelector('.e-findtool-dlg'));
                 this.findDialog = null;
                 this.parent.element.focus();
             }
@@ -21723,14 +23451,12 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
         if (document.querySelector('.e-text-findNext-short').value) {
             if (e.shiftKey) {
                 if (e.keyCode === 13) {
-                    var findOpt = 'prev';
-                    var buttonArgs = { findOption: findOpt };
+                    var buttonArgs = { findOption: 'prev' };
                     this.parent.notify(findHandler, buttonArgs);
                 }
             }
             else if (e.keyCode === 13) {
-                var findOption = 'next';
-                var buttonArg = { findOption: findOption };
+                var buttonArg = { findOption: 'next' };
                 this.parent.notify(findHandler, buttonArg);
             }
         }
@@ -21739,6 +23465,8 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
         if ((closest(e.target, '.e-findRib-close')) || (!closest(e.target, '.e-spreadsheet'))) {
             if (!isNullOrUndefined(this.findDialog)) {
                 this.findDialog.hide();
+                detach(this.parent.element.querySelector('.e-findtool-dlg'));
+                this.findDialog = null;
             }
         }
     };
@@ -21747,6 +23475,7 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
         element.addEventListener('focus', function () {
             var elements = document.querySelector('.e-text-findNext-short');
             elements.focus();
+            (elements).setSelectionRange(0, elements.value.length);
         });
     };
     Ribbon$$1.prototype.ribbonCreated = function () {
@@ -21921,7 +23650,7 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
             formattedText: '',
             value: cell && cell.value ? cell.value : '',
             format: getFormatFromType(args.item.text),
-            sheetIndex: this.parent.activeSheetTab,
+            sheetIndex: this.parent.activeSheetIndex,
             onLoad: true
         };
         var numElem = this.parent.createElement('div', {
@@ -22034,6 +23763,32 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
             }
         }
         this.refreshToggleBtn(indexes);
+        if (!sheet.isProtected && (cell.rowSpan > 1 || cell.colSpan > 1)) {
+            this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: [this.parent.element.id + "_merge_cells"],
+                    enable: true }]);
+            this.toggleActiveState(true);
+        }
+        else {
+            var indexes_1 = getRangeIndexes(sheet.selectedRange);
+            this.enableToolbarItems([{ tab: l10n.getConstant('Home'), items: [this.parent.element.id + "_merge_cells"],
+                    enable: indexes_1[0] !== indexes_1[2] || indexes_1[1] !== indexes_1[3] ? true : false }]);
+            this.toggleActiveState(false);
+        }
+    };
+    Ribbon$$1.prototype.toggleActiveState = function (active) {
+        var l10n = this.parent.serviceLocator.getService(locale);
+        if (!this.parent.getActiveSheet().isProtected) {
+            if (active) {
+                this.mergeSplitBtn.element.classList.add('e-active');
+                this.mergeSplitBtn.element.title = l10n.getConstant('UnmergeCells');
+            }
+            else {
+                if (this.mergeSplitBtn.element.classList.contains('e-active')) {
+                    this.mergeSplitBtn.element.classList.remove('e-active');
+                }
+                this.mergeSplitBtn.element.title = l10n.getConstant('MergeCells');
+            }
+        }
     };
     Ribbon$$1.prototype.refreshToggleBtn = function (indexes) {
         var _this = this;
@@ -22124,7 +23879,7 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
                                     _this.parent.sheets.length = 0;
                                     _this.parent.createSheet();
                                     dialogInst_1.hide();
-                                    _this.parent.activeSheetTab = _this.parent.sheets.length;
+                                    _this.parent.activeSheetIndex = _this.parent.sheets.length - 1;
                                     _this.parent.notify(refreshSheetTabs, {});
                                     _this.parent.notify(sheetsDestroyed, {});
                                     _this.parent.renderModule.refreshSheet();
@@ -22143,7 +23898,7 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
                 case parentId + '_headers':
                     var evtHArgs = {
                         isShow: !sheet.showHeaders,
-                        sheetIdx: this.parent.activeSheetTab,
+                        sheetIdx: this.parent.activeSheetIndex,
                         cancel: false
                     };
                     this.parent.notify(completeAction, { eventArgs: evtHArgs, action: 'headers' });
@@ -22158,7 +23913,7 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
                 case parentId + '_gridlines':
                     var evtglArgs = {
                         isShow: !sheet.showGridLines,
-                        sheetIdx: this.parent.activeSheetTab,
+                        sheetIdx: this.parent.activeSheetIndex,
                         cancel: false
                     };
                     this.parent.notify(completeAction, { eventArgs: evtglArgs, action: 'gridLines' });
@@ -22507,6 +24262,16 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
             this.enableToolbarItems([{ tab: l10n.getConstant('Formulas'), items: args.enableFrmlaBtnId, enable: true }]);
         }
     };
+    Ribbon$$1.prototype.updateMergeItem = function (e) {
+        if (e.type === 'mousemove' || e.type === 'pointermove' || (e.shiftKey && e.type === 'mousedown')) {
+            var indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
+            if ((indexes[1] !== indexes[3] || indexes[0] !== indexes[2]) && !this.parent.getActiveSheet().isProtected) {
+                this.enableToolbarItems([{ tab: this.parent.serviceLocator.getService(locale).getConstant('Home'),
+                        items: [this.parent.element.id + "_merge_cells"], enable: true }]);
+                this.toggleActiveState(false);
+            }
+        }
+    };
     Ribbon$$1.prototype.addEventListener = function () {
         this.parent.on(ribbon, this.initRibbon, this);
         this.parent.on(enableToolbarItems, this.enableToolbarItems, this);
@@ -22521,6 +24286,7 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
         this.parent.on(hideToolbarItems, this.hideToolbarItems, this);
         this.parent.on(enableRibbonTabs, this.enableRibbonTabs, this);
         this.parent.on(protectCellFormat, this.protectSheetHandler, this);
+        this.parent.on(selectionComplete, this.updateMergeItem, this);
     };
     Ribbon$$1.prototype.destroy = function () {
         var parentElem = this.parent.element;
@@ -22531,6 +24297,8 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
         });
         this.pasteSplitBtn.destroy();
         this.pasteSplitBtn = null;
+        this.mergeSplitBtn.destroy();
+        this.mergeSplitBtn = null;
         this.numFormatDDB.destroy();
         this.numFormatDDB = null;
         this.fontSizeDdb.destroy();
@@ -22574,6 +24342,7 @@ var Ribbon$$1 = /** @__PURE__ @class */ (function () {
             this.parent.off(hideToolbarItems, this.hideToolbarItems);
             this.parent.off(enableRibbonTabs, this.enableRibbonTabs);
             this.parent.off(protectCellFormat, this.protectSheetHandler);
+            this.parent.off(selectionComplete, this.updateMergeItem);
         }
     };
     return Ribbon$$1;
@@ -22717,13 +24486,13 @@ var FormulaBar = /** @__PURE__ @class */ (function () {
                     range = left + ':' + right;
                 }
             }
-            if ((sheetIdx + 1) === this.parent.activeSheetTab) {
+            if ((sheetIdx) === this.parent.activeSheetIndex) {
                 this.parent.selectRange(range);
                 this.parent.element.focus();
             }
             else {
                 updateSelectedRange(this.parent, range, sheet);
-                this.parent.activeSheetTab = sheetIdx + 1;
+                this.parent.activeSheetIndex = sheetIdx;
             }
         }
     };
@@ -22799,12 +24568,12 @@ var FormulaBar = /** @__PURE__ @class */ (function () {
         }
     };
     FormulaBar.prototype.disabletextarea = function () {
-        var el = document.getElementById(this.parent.element.id + '_formula_input');
+        var element = this.getFormulaBar();
         if (this.parent.getActiveSheet().isProtected) {
-            el.disabled = true;
+            element.disabled = true;
         }
         else {
-            el.disabled = false;
+            element.disabled = false;
         }
     };
     FormulaBar.prototype.formulaBarClickHandler = function (e) {
@@ -22940,7 +24709,7 @@ var FormulaBar = /** @__PURE__ @class */ (function () {
     };
     FormulaBar.prototype.selectFormula = function (dialog, formulaBarObj) {
         var formulaText = formulaBarObj.formulaList.getSelectedItems().text;
-        var sheet = getSheet(this.parent, this.parent.activeSheetTab - 1);
+        var sheet = getSheet(this.parent, this.parent.activeSheetIndex);
         if (this.parent.isEdit) {
             this.parent.notify(editOperation, {
                 action: 'refreshEditor', value: formulaText + '(', refreshFormulaBar: true,
@@ -23007,7 +24776,7 @@ var FormulaBar = /** @__PURE__ @class */ (function () {
     };
     FormulaBar.prototype.formulaClickHandler = function (args) {
         var trgtElem = args.target;
-        var sheet = getSheet(this.parent, this.parent.activeSheetTab - 1);
+        var sheet = getSheet(this.parent, this.parent.activeSheetIndex);
         if (trgtElem.offsetParent.classList.contains('e-text-content') || trgtElem.classList.contains('e-list-item')) {
             if (this.parent.isEdit) {
                 this.parent.notify(editOperation, {
@@ -23440,7 +25209,7 @@ var Formula = /** @__PURE__ @class */ (function () {
         var name = definedName.name;
         var isAdded = false;
         if (!definedName.refersTo) {
-            var sheet = getSheet(this.parent, this.parent.activeSheetTab - 1);
+            var sheet = getSheet(this.parent, this.parent.activeSheetIndex);
             var sheetName = getSheetName(this.parent);
             sheetName = sheetName.indexOf(' ') !== -1 ? '\'' + sheetName + '\'' : sheetName;
             var selectRange$$1 = sheet.selectedRange;
@@ -23548,7 +25317,7 @@ var SheetTabs = /** @__PURE__ @class */ (function () {
         this.dropDownInstance.appendTo(ddb);
         var sheetTab = this.parent.createElement('div', { className: 'e-sheet-tab' });
         this.tabInstance = new Tab({
-            selectedItem: this.parent.activeSheetTab - 1,
+            selectedItem: this.parent.activeSheetIndex,
             overflowMode: 'Scrollable',
             items: items.tabItems,
             scrollStep: 250,
@@ -23559,7 +25328,7 @@ var SheetTabs = /** @__PURE__ @class */ (function () {
                 if (args.selectedIndex === args.previousIndex) {
                     return;
                 }
-                _this.parent.activeSheetTab = args.selectedIndex + 1;
+                _this.parent.activeSheetIndex = args.selectedIndex;
                 _this.parent.dataBind();
                 _this.updateDropDownItems(args.selectedIndex, args.previousIndex);
                 _this.parent.element.focus();
@@ -23577,7 +25346,7 @@ var SheetTabs = /** @__PURE__ @class */ (function () {
         EventHandler.remove(this.tabInstance.element, 'keydown', this.tabInstance.spaceKeyDown);
         var sheetCount = items.tabItems.length;
         for (var i = 0; i < sheetCount; i++) {
-            var sheetName = getSheetName(this.parent, i + 1);
+            var sheetName = getSheetName(this.parent, i);
             var arg = { action: 'addSheet', sheetName: 'Sheet' + (i + 1), index: i + 1, visibleName: sheetName };
             this.parent.notify(workbookFormulaOperation, arg);
         }
@@ -23622,9 +25391,9 @@ var SheetTabs = /** @__PURE__ @class */ (function () {
         var ddbItems = [];
         var sheetName;
         this.parent.sheets.forEach(function (sheet, index) {
-            sheetName = getSheetName(_this.parent, index + 1);
+            sheetName = getSheetName(_this.parent, index);
             tabItems.push({ header: { 'text': sheetName }, cssClass: sheet.state === 'Visible' ? '' : 'e-hide' });
-            ddbItems.push({ text: sheetName, iconCss: index + 1 === _this.parent.activeSheetTab ? 'e-selected-icon e-icons' : '' });
+            ddbItems.push({ text: sheetName, iconCss: index === _this.parent.activeSheetIndex ? 'e-selected-icon e-icons' : '' });
         });
         return { tabItems: tabItems, ddbItems: ddbItems };
     };
@@ -23633,11 +25402,11 @@ var SheetTabs = /** @__PURE__ @class */ (function () {
         this.dropDownInstance.items = items.ddbItems;
         this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
         this.tabInstance.items = items.tabItems;
-        this.tabInstance.selectedItem = this.parent.activeSheetTab - 1;
+        this.tabInstance.selectedItem = this.parent.activeSheetIndex;
         this.tabInstance.dataBind();
     };
     SheetTabs.prototype.addSheetTab = function () {
-        this.parent.notify(insertModel, { model: this.parent, start: this.parent.activeSheetTab, end: this.parent.activeSheetTab, modelType: 'Sheet', isAction: true, activeSheetTab: this.parent.activeSheetTab + 1 });
+        this.parent.notify(insertModel, { model: this.parent, start: this.parent.activeSheetIndex + 1, end: this.parent.activeSheetIndex + 1, modelType: 'Sheet', isAction: true, activeSheetIndex: this.parent.activeSheetIndex + 1 });
         this.parent.element.focus();
     };
     SheetTabs.prototype.insertSheetTab = function (args) {
@@ -23675,7 +25444,7 @@ var SheetTabs = /** @__PURE__ @class */ (function () {
         var text = target.querySelector('.e-tab-text').textContent;
         for (var i = 0, len = this.tabInstance.items.length; i < len; i++) {
             if (this.tabInstance.items[i].header.text === text) {
-                if (this.parent.activeSheetTab - 1 !== i) {
+                if (this.parent.activeSheetIndex !== i) {
                     this.updateSheetTab({ idx: i });
                 }
                 break;
@@ -23753,7 +25522,7 @@ var SheetTabs = /** @__PURE__ @class */ (function () {
             if (!value.match(new RegExp('.*[\\[\\]\\*\\\\\/\\?].*'))) {
                 if (this.tabInstance.items[idx].header.text !== value) {
                     for (var i = 0, len = this.parent.sheets.length; i < len; i++) {
-                        if (i + 1 !== this.parent.activeSheetTab && this.parent.sheets[i].name.toLowerCase() === value.toLowerCase()) {
+                        if (i !== this.parent.activeSheetIndex && this.parent.sheets[i].name.toLowerCase() === value.toLowerCase()) {
                             this.showRenameDialog(target, l10n.getConstant('SheetRenameAlreadyExistsAlert'));
                             return;
                         }
@@ -23799,10 +25568,11 @@ var SheetTabs = /** @__PURE__ @class */ (function () {
     };
     SheetTabs.prototype.hideSheet = function () {
         this.parent.getActiveSheet().state = 'Hidden';
-        this.tabInstance.items[this.parent.activeSheetTab - 1].cssClass = 'e-hide';
+        this.tabInstance.items[this.parent.activeSheetIndex].cssClass = 'e-hide';
         this.tabInstance.items = this.tabInstance.items;
         this.tabInstance.dataBind();
-        this.tabInstance.selectedItem = this.parent.skipHiddenSheets(this.parent.activeSheetTab === this.parent.sheets.length ? this.parent.activeSheetTab - 2 : this.parent.activeSheetTab);
+        this.tabInstance.selectedItem = this.parent.skipHiddenSheets(this.parent.activeSheetIndex === this.parent.sheets.length - 1 ? this.parent.activeSheetIndex - 1 :
+            this.parent.activeSheetIndex + 1);
         this.tabInstance.dataBind();
     };
     SheetTabs.prototype.removeRenameInput = function (target) {
@@ -23816,13 +25586,16 @@ var SheetTabs = /** @__PURE__ @class */ (function () {
         return sheetItems;
     };
     SheetTabs.prototype.showRenameDialog = function (target, content) {
-        this.parent.serviceLocator.getService(dialog).show({
-            target: document.getElementById(this.parent.element.id + '_sheet_panel'),
-            height: 180, width: 400, isModal: true, showCloseIcon: true,
-            content: content,
-            beforeOpen: function () { return target.focus(); },
-            close: function () { return target.setSelectionRange(0, target.value.length); }
-        });
+        var dialogInst = this.parent.serviceLocator.getService(dialog);
+        if (!dialogInst.dialogInstance) {
+            dialogInst.show({
+                target: document.getElementById(this.parent.element.id + '_sheet_panel'),
+                height: 180, width: 400, isModal: true, showCloseIcon: true,
+                content: content,
+                beforeOpen: function () { return target.focus(); },
+                close: function () { return target.setSelectionRange(0, target.value.length); }
+            });
+        }
     };
     SheetTabs.prototype.focusRenameInput = function () {
         var input = document.getElementById(this.parent.element.id + '_rename_input');
@@ -23904,18 +25677,19 @@ var SheetTabs = /** @__PURE__ @class */ (function () {
         this.parent.notify(workbookFormulaOperation, sheetArgs);
     };
     SheetTabs.prototype.destroySheet = function (sheetIndex) {
-        var activeSheetIdx = sheetIndex || this.parent.activeSheetTab - 1;
+        var activeSheetIdx = sheetIndex || this.parent.activeSheetIndex;
         this.parent.removeSheet(activeSheetIdx);
         this.parent.notify(sheetsDestroyed, { sheetIndex: activeSheetIdx });
         this.dropDownInstance.items.splice(activeSheetIdx, 1);
         this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
         this.tabInstance.removeTab(activeSheetIdx);
         var activeIndex = this.parent.skipHiddenSheets(this.tabInstance.selectedItem);
-        this.parent.activeSheetTab = activeIndex + 1;
+        this.parent.activeSheetIndex = activeIndex;
         this.parent.renderModule.refreshSheet();
         this.tabInstance.selectedItem = activeIndex;
         this.tabInstance.dataBind();
         this.updateDropDownItems(activeIndex);
+        this.parent.notify(protectSheet, null);
         this.parent.element.focus();
     };
     SheetTabs.prototype.showAggregate = function () {
@@ -24261,8 +26035,8 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
                     this.parent.notify(removeSheetTab, {});
                     break;
                 case id + '_insert_sheet':
-                    this.parent.notify(insertModel, { model: this.parent, start: this.parent.activeSheetTab - 1,
-                        end: this.parent.activeSheetTab - 1, modelType: 'Sheet', isAction: true });
+                    this.parent.notify(insertModel, { model: this.parent, start: this.parent.activeSheetIndex,
+                        end: this.parent.activeSheetIndex, modelType: 'Sheet', isAction: true });
                     break;
                 case id + '_hide_sheet':
                     this.parent.notify(hideSheet, null);
@@ -24291,34 +26065,50 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
                     this.parent.notify(hideShow, {
                         startIndex: indexes[0], endIndex: indexes[2], hide: true, isCol: false, actionUpdate: true
                     });
+                    this.parent.element.focus();
                     break;
                 case id + '_unhide_row':
                     indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
                     this.parent.notify(hideShow, {
                         startIndex: indexes[0], endIndex: indexes[2], hide: false, isCol: false, actionUpdate: true
                     });
+                    this.parent.element.focus();
                     break;
                 case id + '_hide_column':
                     indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
                     this.parent.notify(hideShow, {
                         startIndex: indexes[1], endIndex: indexes[3], hide: true, isCol: true, actionUpdate: true
                     });
+                    this.parent.element.focus();
                     break;
                 case id + '_unhide_column':
                     indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
                     this.parent.notify(hideShow, {
                         startIndex: indexes[1], endIndex: indexes[3], hide: false, isCol: true, actionUpdate: true
                     });
+                    this.parent.element.focus();
                     break;
-                case id + '_insert_row':
+                case id + '_insert_row_above':
                 case id + '_delete_row':
                     indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
                     this.parent.notify(args.item.id.substr(id.length + 1, 6) + "Model", { model: this.parent.getActiveSheet(), start: indexes[0], end: indexes[2], modelType: 'Row', isAction: true });
+                    this.parent.element.focus();
                     break;
-                case id + '_insert_column':
+                case id + '_insert_row_below':
+                    indexes = getSwapRange(getRangeIndexes(this.parent.getActiveSheet().selectedRange));
+                    this.parent.notify(insertModel, { model: this.parent.getActiveSheet(), start: indexes[2] + 1, end: indexes[2] + 1 + (indexes[2] - indexes[0]), modelType: 'Row', isAction: true });
+                    this.parent.element.focus();
+                    break;
+                case id + '_insert_column_before':
                 case id + '_delete_column':
                     indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
                     this.parent.notify(args.item.id.substr(id.length + 1, 6) + "Model", { model: this.parent.getActiveSheet(), start: indexes[1], end: indexes[3], modelType: 'Column', isAction: true });
+                    this.parent.element.focus();
+                    break;
+                case id + '_insert_column_after':
+                    indexes = getSwapRange(getRangeIndexes(this.parent.getActiveSheet().selectedRange));
+                    this.parent.notify(insertModel, { model: this.parent.getActiveSheet(), start: indexes[3] + 1, end: indexes[3] + 1 + (indexes[3] - indexes[1]), modelType: 'Column', isAction: true });
+                    this.parent.element.focus();
                     break;
                 case id + '_hyperlink':
                     this.parent.notify(initiateHyperlink, null);
@@ -24375,7 +26165,7 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
      * To get target area based on right click.
      */
     ContextMenu$$1.prototype.getTarget = function (target) {
-        if (closest(target, '.e-main-content')) {
+        if (closest(target, '.e-sheet-content')) {
             return 'Content';
         }
         else if (closest(target, '.e-column-header')) {
@@ -24413,13 +26203,13 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         else if (target === 'RowHeader') {
             this.setClipboardData(items, l10n, id);
             var indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
-            this.setInsertDeleteItems(items, l10n, 'Row', id, [indexes[0], indexes[2]]);
+            this.setInsertDeleteItems(items, l10n, 'Row', id, [indexes[0], indexes[2]], ['Above', 'Below']);
             this.setHideShowItems(items, l10n, 'Row', id, [indexes[0], indexes[2]]);
         }
         else if (target === 'ColumnHeader') {
             this.setClipboardData(items, l10n, id);
             var indexes = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
-            this.setInsertDeleteItems(items, l10n, 'Column', id, [indexes[1], indexes[3]]);
+            this.setInsertDeleteItems(items, l10n, 'Column', id, [indexes[1], indexes[3]], ['Before', 'After']);
             this.setHideShowItems(items, l10n, 'Column', id, [indexes[1], indexes[3]]);
         }
         else if (target === 'SelectAll') {
@@ -24532,7 +26322,7 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
             });
         }
     };
-    ContextMenu$$1.prototype.setInsertDeleteItems = function (items, l10n, layout, id, indexes) {
+    ContextMenu$$1.prototype.setInsertDeleteItems = function (items, l10n, layout, id, indexes, subItems) {
         items.push({ separator: true });
         ['Insert', 'Delete'].forEach(function (action) {
             if (indexes[0] === indexes[1]) {
@@ -24540,6 +26330,14 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
             }
             else {
                 items.push({ text: l10n.getConstant("" + action + layout + "s"), id: id + ("_" + action.toLowerCase() + "_" + layout.toLowerCase()) });
+            }
+            if (action === 'Insert') {
+                items[items.length - 1].items = [];
+                subItems.forEach(function (item) {
+                    items[items.length - 1].items.push({
+                        text: l10n.getConstant(item), id: items[items.length - 1].id + "_" + item.toLowerCase()
+                    });
+                });
             }
         });
     };
@@ -25229,7 +27027,7 @@ var Filter = /** @__PURE__ @class */ (function () {
     Filter.prototype.initiateFilterUIHandler = function (args) {
         var _this = this;
         var predicates = args ? args.predicates : null;
-        var sheetIdx = this.parent.activeSheetTab - 1;
+        var sheetIdx = this.parent.activeSheetIndex;
         if (this.filterRange.size > 0 && this.filterRange.has(sheetIdx)) { //disable filter
             this.removeFilter(sheetIdx);
             if (!predicates) {
@@ -25292,7 +27090,7 @@ var Filter = /** @__PURE__ @class */ (function () {
      */
     Filter.prototype.filterByCellValueHandler = function () {
         var _this = this;
-        var sheetIdx = this.parent.activeSheetTab - 1;
+        var sheetIdx = this.parent.activeSheetIndex;
         var sheet = this.parent.getActiveSheet();
         if (this.isInValidFilterRange(sheet)) {
             var l10n = this.parent.serviceLocator.getService(locale);
@@ -25321,7 +27119,7 @@ var Filter = /** @__PURE__ @class */ (function () {
      * Creates filter buttons and renders the filter applied cells.
      */
     Filter.prototype.renderFilterCellHandler = function (args) {
-        var sheetIdx = this.parent.activeSheetTab - 1;
+        var sheetIdx = this.parent.activeSheetIndex;
         if (this.filterRange.has(sheetIdx) && this.isFilterCell(sheetIdx, args.rowIndex, args.colIndex)) {
             if (!args.td) {
                 return;
@@ -25348,7 +27146,7 @@ var Filter = /** @__PURE__ @class */ (function () {
      * Refreshes the filter header range.
      */
     Filter.prototype.refreshFilterRange = function (filterRange, remove$$1) {
-        var range = filterRange || this.filterRange.get(this.parent.activeSheetTab - 1).slice();
+        var range = filterRange || this.filterRange.get(this.parent.activeSheetIndex).slice();
         for (var index = range[1]; index <= range[3]; index++) {
             var cell = this.parent.getCell(range[0], index);
             if (remove$$1) {
@@ -25380,7 +27178,7 @@ var Filter = /** @__PURE__ @class */ (function () {
      * Gets the filter information from active cell
      */
     Filter.prototype.getFilteredColumnHandler = function (args) {
-        var sheetIdx = this.parent.activeSheetTab - 1;
+        var sheetIdx = this.parent.activeSheetIndex;
         var l10n = this.parent.serviceLocator.getService(locale);
         args.clearFilterText = l10n.getConstant('ClearFilter');
         if (this.filterRange.has(sheetIdx)) {
@@ -25434,7 +27232,7 @@ var Filter = /** @__PURE__ @class */ (function () {
         return filterPopup && filterPopup.style.display !== 'none';
     };
     Filter.prototype.filterCellKeyDownHandler = function (args) {
-        var sheetIdx = this.parent.activeSheetTab - 1;
+        var sheetIdx = this.parent.activeSheetIndex;
         var sheet = this.parent.getActiveSheet();
         var indexes = getCellIndexes(sheet.activeCell);
         if (this.isFilterCell(sheetIdx, indexes[0], indexes[1])) {
@@ -25482,7 +27280,7 @@ var Filter = /** @__PURE__ @class */ (function () {
         var field = getColumnHeaderText(colIndex);
         //Update datasource dynamically
         this.parent.showSpinner();
-        var sheetIdx = this.parent.activeSheetTab - 1;
+        var sheetIdx = this.parent.activeSheetIndex;
         var range = this.filterRange.get(sheetIdx).slice();
         var sheet = this.parent.getActiveSheet();
         var filterCell = getCell(range[0], colIndex - 1, sheet);
@@ -25530,13 +27328,13 @@ var Filter = /** @__PURE__ @class */ (function () {
      * Triggers when sorting items are chosen on context menu of filter popup.
      */
     Filter.prototype.selectSortItemHandler = function (target) {
-        var sheetIdx = this.parent.activeSheetTab - 1;
         var sortOrder = target.classList.contains('e-filter-sortasc') ? 'Ascending'
             : target.classList.contains('e-filter-sortdesc') ? 'Descending' : null;
         if (!sortOrder) {
             return;
         }
         var sheet = this.parent.getActiveSheet();
+        var sheetIdx = this.parent.activeSheetIndex;
         var range = this.filterRange.get(sheetIdx).slice();
         range[0] = range[0] + 1; // to skip first row.
         range[2] = sheet.usedRange.rowIndex; //filter range should be till used range.
@@ -25558,7 +27356,7 @@ var Filter = /** @__PURE__ @class */ (function () {
      * Triggers when OK button or clear filter item is selected
      */
     Filter.prototype.filterSuccessHandler = function (dataSource, args) {
-        var sheetIdx = this.parent.activeSheetTab - 1;
+        var sheetIdx = this.parent.activeSheetIndex;
         var predicates = this.filterCollection.get(sheetIdx);
         var dataManager = new DataManager(predicates);
         var query = new Query();
@@ -25683,12 +27481,11 @@ var Filter = /** @__PURE__ @class */ (function () {
      * Clears all the filtered columns in the active sheet.
      */
     Filter.prototype.clearAllFilterHandler = function () {
-        var sheetIdx = this.parent.activeSheetTab - 1;
-        if (this.filterRange.has(sheetIdx)) {
-            this.filterCollection.set(sheetIdx, []);
-            for (var _i = 0, _a = Object.keys(this.filterClassList.get(sheetIdx)); _i < _a.length; _i++) {
+        if (this.filterRange.has(this.parent.activeSheetIndex)) {
+            this.filterCollection.set(this.parent.activeSheetIndex, []);
+            for (var _i = 0, _a = Object.keys(this.filterClassList.get(this.parent.activeSheetIndex)); _i < _a.length; _i++) {
                 var key = _a[_i];
-                this.filterClassList.get(sheetIdx)[key] = '';
+                this.filterClassList.get(this.parent.activeSheetIndex)[key] = '';
             }
             this.refreshFilterRange();
         }
@@ -25703,7 +27500,7 @@ var Filter = /** @__PURE__ @class */ (function () {
      * Reapplies the filter.
      */
     Filter.prototype.reapplyFilterHandler = function () {
-        var sheetIdx = this.parent.activeSheetTab - 1;
+        var sheetIdx = this.parent.activeSheetIndex;
         if (this.filterRange.has(sheetIdx)) {
             this.applyFilter({ predicates: this.getPredicates(sheetIdx) }, getRangeAddress(this.filterRange.get(sheetIdx)));
         }
@@ -25712,7 +27509,7 @@ var Filter = /** @__PURE__ @class */ (function () {
      * Gets the filter information of the sheet.
      */
     Filter.prototype.getFilterRangeHandler = function (args) {
-        var sheetIdx = args.sheetIdx || this.parent.activeSheetTab - 1;
+        var sheetIdx = args.sheetIdx || this.parent.activeSheetIndex;
         if (this.filterRange && this.filterRange.has(sheetIdx)) {
             args.hasFilter = true;
             args.filterRange = this.filterRange.get(sheetIdx);
@@ -25770,7 +27567,7 @@ var BasicModule = /** @__PURE__ @class */ (function () {
      * @private
      */
     function BasicModule() {
-        Spreadsheet.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, Sort, CollaborativeEditing, UndoRedo, Resize, Filter, SpreadsheetHyperlink, WrapText, Insert, Delete, ProtectSheet, DataValidation, FindAndReplace);
+        Spreadsheet.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, Sort, CollaborativeEditing, UndoRedo, Resize, Filter, SpreadsheetHyperlink, WrapText, Insert, Delete, ProtectSheet, DataValidation, FindAndReplace, Merge);
     }
     /**
      * For internal use only - Get the module name.
@@ -25799,7 +27596,7 @@ var AllModule = /** @__PURE__ @class */ (function () {
      * @private
      */
     function AllModule() {
-        Spreadsheet.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, Save, NumberFormat, CellFormat, Formula, Sort, Resize, CollaborativeEditing, UndoRedo, Filter, SpreadsheetHyperlink, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace);
+        Spreadsheet.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, Save, NumberFormat, CellFormat, Formula, Sort, Resize, CollaborativeEditing, UndoRedo, Filter, SpreadsheetHyperlink, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge);
     }
     /**
      * For internal use only - Get the module name.
@@ -25962,6 +27759,15 @@ var defaultLocale = {
     AlignMiddle: 'Align Middle',
     AlignBottom: 'Align Bottom',
     WrapText: 'Wrap Text',
+    MergeCells: 'Merge Cells',
+    MergeAll: 'Merge All',
+    MergeHorizontally: 'Merge Horizontally',
+    MergeVertically: 'Merge Vertically',
+    Unmerge: 'Unmerge',
+    UnmergeCells: 'Unmerge Cells',
+    SelectMergeType: 'Select Merge Type',
+    MergeCellsAlert: 'Merging cells will only preserve the top-leftmost(Uppermost) value. Merge anyway?',
+    PasteMergeAlert: 'We can"t do that to a merge cell.',
     Borders: 'Borders',
     TopBorders: 'Top Borders',
     LeftBorders: 'Left Borders',
@@ -26033,8 +27839,12 @@ var defaultLocale = {
     UnHideColumns: 'UnHide Columns',
     InsertRow: 'Insert Row',
     InsertRows: 'Insert Rows',
+    Above: 'Above',
+    Below: 'Below',
     InsertColumn: 'Insert Column',
     InsertColumns: 'Insert Columns',
+    Before: 'Before',
+    After: 'After',
     DeleteRow: 'Delete Row',
     DeleteRows: 'Delete Rows',
     DeleteColumn: 'Delete Column',
@@ -26188,7 +27998,8 @@ var defaultLocale = {
     ValidationError: 'This value doesn' + '\'' + 't match the data validation restrictions defined for the cell.',
     EmptyError: 'You must enter a value',
     ClearHighlight: 'Clear Highlight',
-    HighlightInvalidData: 'Highlight Invalid Data'
+    HighlightInvalidData: 'Highlight Invalid Data',
+    ClearValidation: 'Clear Validation'
 };
 
 /**
@@ -26274,7 +28085,7 @@ var SheetRender = /** @__PURE__ @class */ (function () {
         else {
             this.updateHideHeaders();
         }
-        var content = this.contentPanel.appendChild(this.parent.createElement('div', { className: 'e-main-content', id: id + "_main_content" }));
+        var content = this.contentPanel.appendChild(this.parent.createElement('div', { className: 'e-sheet-content', id: id + "_main_content" }));
         if (!sheet.showGridLines) {
             content.classList.add('e-hide-gridlines');
         }
@@ -26321,7 +28132,7 @@ var SheetRender = /** @__PURE__ @class */ (function () {
         var frag = document.createDocumentFragment();
         this.createTable();
         var colGrp = this.parent.createElement('colgroup');
-        var cTBody = this.contentPanel.querySelector('.e-main-content tbody');
+        var cTBody = this.contentPanel.querySelector('.e-sheet-content tbody');
         var rHdrTBody;
         var cHdrTHead;
         var cHdrRow;
@@ -26392,8 +28203,8 @@ var SheetRender = /** @__PURE__ @class */ (function () {
             if (args.initLoad) {
                 var triggerEvent = true;
                 if (_this.parent.scrollSettings.enableVirtualization) {
-                    for (var i = 0; i < sheet.rangeSettings.length; i++) {
-                        if (sheet.rangeSettings[i].info.count - 1 > _this.parent.viewport.bottomIndex) {
+                    for (var i = 0; i < sheet.range.length; i++) {
+                        if (sheet.range[i].info.count - 1 > _this.parent.viewport.bottomIndex) {
                             triggerEvent = false;
                             break;
                         }
@@ -26426,9 +28237,9 @@ var SheetRender = /** @__PURE__ @class */ (function () {
         var sheet = this.parent.getActiveSheet();
         var frag = document.createDocumentFragment();
         var hFrag = document.createDocumentFragment();
-        var tBody = this.parent.element.querySelector('.e-main-content tbody');
+        var tBody = this.parent.element.querySelector('.e-sheet-content tbody');
         tBody = frag.appendChild(tBody.cloneNode(true));
-        var colGrp = this.parent.element.querySelector('.e-main-content colgroup');
+        var colGrp = this.parent.element.querySelector('.e-sheet-content colgroup');
         colGrp = colGrp.cloneNode();
         var hRow;
         var tHead;
@@ -26523,7 +28334,7 @@ var SheetRender = /** @__PURE__ @class */ (function () {
             detach(this.contentPanel.querySelector('.e-row-header tbody'));
             this.getRowHeaderTable().appendChild(hFrag);
         }
-        detach(this.contentPanel.querySelector('.e-main-content tbody'));
+        detach(this.contentPanel.querySelector('.e-sheet-content tbody'));
         this.getContentTable().appendChild(frag);
         this.parent.notify(virtualContentLoaded, { refresh: 'Row' });
         if (!this.parent.isOpen) {
@@ -26553,10 +28364,10 @@ var SheetRender = /** @__PURE__ @class */ (function () {
                 hRow = _this.parent.element.querySelector('.e-column-header .e-header-row');
                 hRefChild = hRow.firstElementChild;
             }
-            var colGrp = _this.parent.element.querySelector('.e-main-content colgroup');
+            var colGrp = _this.parent.element.querySelector('.e-sheet-content colgroup');
             var colRefChild = colGrp.firstElementChild;
             var skipRender;
-            var tBody = _this.parent.element.querySelector('.e-main-content tbody');
+            var tBody = _this.parent.element.querySelector('.e-sheet-content tbody');
             args.cells.forEach(function (value, key) {
                 if (skipRender) {
                     return;
@@ -26813,7 +28624,7 @@ var SheetRender = /** @__PURE__ @class */ (function () {
      * @return {Element}
      */
     SheetRender.prototype.getContentPanel = function () {
-        return this.contentPanel.getElementsByClassName('e-main-content')[0];
+        return this.contentPanel.getElementsByClassName('e-sheet-content')[0];
     };
     SheetRender.prototype.addEventListener = function () {
         this.parent.on(created, this.triggerCreatedEvent, this);
@@ -26917,10 +28728,13 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
         args.td = this.element.cloneNode();
         args.td.className = 'e-cell';
         attributes(args.td, { 'role': 'gridcell', 'aria-colindex': (args.colIdx + 1).toString(), 'tabindex': '-1' });
+        if (this.checkMerged(args)) {
+            return args.td;
+        }
         args.td.innerHTML = this.processTemplates(args.cell, args.rowIdx, args.colIdx);
         args.isRefresh = false;
         this.update(args);
-        if (!hasTemplate(this.parent, args.rowIdx, args.colIdx, this.parent.activeSheetTab - 1)) {
+        if (!hasTemplate(this.parent, args.rowIdx, args.colIdx, this.parent.activeSheetIndex)) {
             this.parent.notify(renderFilterCell, { td: args.td, rowIndex: args.rowIdx, colIndex: args.colIdx });
         }
         var evtArgs = { cell: args.cell, element: args.td, address: args.address };
@@ -26936,6 +28750,17 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
         return evtArgs.element;
     };
     CellRenderer.prototype.update = function (args) {
+        if (args.isRefresh) {
+            if (this.checkMerged(args)) {
+                return;
+            }
+            if (args.td.rowSpan) {
+                args.td.removeAttribute('rowSpan');
+            }
+            if (args.td.colSpan) {
+                args.td.removeAttribute('colSpan');
+            }
+        }
         if (args.cell && args.cell.formula && !args.cell.value) {
             var isFormula = checkIsFormula(args.cell.formula);
             var eventArgs = {
@@ -26958,11 +28783,8 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
             this.parent.notify(getFormattedCellObject, formatArgs);
         }
         if (!isNullOrUndefined(args.td)) {
-            this.parent.refreshNode(args.td, {
-                type: formatArgs.type,
-                result: formatArgs.formattedText,
-                curSymbol: getNumberDependable(this.parent.locale, 'USD'),
-                isRightAlign: formatArgs.isRightAlign,
+            this.parent.refreshNode(args.td, { type: formatArgs.type, result: formatArgs.formattedText,
+                curSymbol: getNumberDependable(this.parent.locale, 'USD'), isRightAlign: formatArgs.isRightAlign,
                 value: formatArgs.value || ''
             });
         }
@@ -26983,6 +28805,19 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
                 this.parent.notify(wrapEvent, {
                     range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx], wrap: true, sheet: this.parent.getActiveSheet(), initial: true, td: args.td, row: args.row, hRow: args.hRow
                 });
+            }
+            if (args.cell.rowSpan > 1) {
+                var rowSpan = args.cell.rowSpan - this.parent.hiddenCount(args.rowIdx, args.rowIdx + (args.cell.rowSpan - 1));
+                if (rowSpan > 1) {
+                    args.td.rowSpan = rowSpan;
+                }
+            }
+            if (args.cell.colSpan > 1) {
+                var colSpan = args.cell.colSpan -
+                    this.parent.hiddenCount(args.colIdx, args.colIdx + (args.cell.colSpan - 1), 'columns');
+                if (colSpan > 1) {
+                    args.td.colSpan = colSpan;
+                }
             }
         }
         if (args.isRefresh) {
@@ -27008,7 +28843,7 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
                     cell: args.td });
             }
         }
-        if (args.cell && args.cell.hyperlink && !hasTemplate(this.parent, args.rowIdx, args.colIdx, this.parent.activeSheetTab - 1)) {
+        if (args.cell && args.cell.hyperlink && !hasTemplate(this.parent, args.rowIdx, args.colIdx, this.parent.activeSheetIndex)) {
             var address = void 0;
             if (typeof (args.cell.hyperlink) === 'string') {
                 address = args.cell.hyperlink;
@@ -27025,13 +28860,27 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
             this.parent.notify(createHyperlinkElement, { cell: args.cell, td: args.td, rowIdx: args.rowIdx, colIdx: args.colIdx });
         }
     };
+    CellRenderer.prototype.checkMerged = function (args) {
+        if (args.cell && (args.cell.colSpan < 0 || args.cell.rowSpan < 0)) {
+            args.td.style.display = 'none';
+            if (args.cell.colSpan < 0) {
+                this.parent.notify(checkPrevMerge, args);
+            }
+            if (args.cell.rowSpan < 0) {
+                args.isRow = true;
+                this.parent.notify(checkPrevMerge, args);
+            }
+            return true;
+        }
+        return false;
+    };
     CellRenderer.prototype.processTemplates = function (cell, rowIdx, colIdx) {
         var sheet = this.parent.getActiveSheet();
-        var rangeSettings = sheet.rangeSettings;
+        var rangeSettings = sheet.range;
         var range;
         for (var j = 0, len = rangeSettings.length; j < len; j++) {
             if (rangeSettings[j].template) {
-                range = getRangeIndexes(rangeSettings[j].range.length ? rangeSettings[j].range : rangeSettings[j].startCell);
+                range = getRangeIndexes(rangeSettings[j].address.length ? rangeSettings[j].address : rangeSettings[j].startCell);
                 if (range[0] <= rowIdx && range[1] <= colIdx && range[2] >= rowIdx && range[3] >= colIdx) {
                     if (cell) {
                         return this.compileCellTemplate(rangeSettings[j].template);
@@ -27125,6 +28974,20 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
             }
         }
     };
+    CellRenderer.prototype.refresh = function (rowIdx, colIdx, lastCell) {
+        var sheet = this.parent.getActiveSheet();
+        if (isHiddenRow(sheet, rowIdx) || isHiddenCol(sheet, colIdx)) {
+            return;
+        }
+        if (!this.parent.scrollSettings.enableVirtualization || (rowIdx >= this.parent.viewport.topIndex && rowIdx <=
+            this.parent.viewport.bottomIndex && colIdx >= this.parent.viewport.leftIndex && colIdx <=
+            this.parent.viewport.rightIndex)) {
+            var cell = this.parent.getCell(rowIdx, colIdx);
+            this.update({ rowIdx: rowIdx, colIdx: colIdx, td: cell, cell: getCell(rowIdx, colIdx, sheet), lastCell: lastCell, isRefresh: true, isHeightCheckNeeded: true,
+                manualUpdate: true, first: '' });
+            this.parent.notify(renderFilterCell, { td: cell, rowIndex: rowIdx, colIndex: colIdx });
+        }
+    };
     return CellRenderer;
 }());
 
@@ -27142,7 +29005,7 @@ var Render = /** @__PURE__ @class */ (function () {
         this.addEventListener();
     }
     Render.prototype.render = function () {
-        this.parent.activeSheetTab = this.parent.skipHiddenSheets(this.parent.activeSheetTab - 1) + 1;
+        this.parent.activeSheetIndex = this.parent.skipHiddenSheets(this.parent.activeSheetIndex);
         if (!this.parent.isMobileView()) {
             this.parent.notify(ribbon, null);
             this.parent.notify(formulaBar, null);
@@ -27158,7 +29021,7 @@ var Render = /** @__PURE__ @class */ (function () {
             this.parent.notify(sheetTabs, null);
         }
         else { // for formula calculation
-            var sheetName = getSheetName(this.parent, 1);
+            var sheetName = getSheetName(this.parent, 0);
             var arg = { action: 'addSheet', sheetName: 'Sheet1', index: 1, visibleName: sheetName };
             this.parent.notify(workbookFormulaOperation, arg);
             this.parent.notify(workbookFormulaOperation, { action: 'initiateDefinedNames' });
@@ -27460,7 +29323,7 @@ var ActionEvents = /** @__PURE__ @class */ (function () {
     ActionEvents.prototype.actionBeginHandler = function (args) {
         this.parent.trigger('actionBegin', { action: args.action, args: args });
         if (args.action === 'clipboard' || args.action === 'beforeSort' || args.action === 'format' || args.action === 'cellSave'
-            || args.action === 'beforeWrap' || args.action === 'beforeReplace') {
+            || args.action === 'beforeWrap' || args.action === 'beforeReplace' || args.action === 'beforeReplaceAll') {
             this.parent.notify(setActionData, { args: args });
         }
     };
@@ -27532,7 +29395,7 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
             bottomIndex: 0, rightIndex: 0
         };
         _this.needsID = true;
-        Spreadsheet_1.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, WrapText, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat, WorkbookNumberFormat, WorkbookFormula, Sort, WorkbookSort, Resize, UndoRedo, WorkbookFilter, Filter, SpreadsheetHyperlink, WorkbookHyperlink, Insert, Delete, WorkbookInsert, WorkbookDelete, DataValidation, WorkbookDataValidation, ProtectSheet, FindAndReplace);
+        Spreadsheet_1.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, WrapText, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat, WorkbookNumberFormat, WorkbookFormula, Sort, WorkbookSort, Resize, UndoRedo, WorkbookFilter, Filter, SpreadsheetHyperlink, WorkbookHyperlink, Insert, Delete, WorkbookInsert, WorkbookDelete, DataValidation, WorkbookDataValidation, ProtectSheet, FindAndReplace, Merge, WorkbookMerge);
         if (element) {
             _this.appendTo(element);
         }
@@ -27669,9 +29532,19 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     Spreadsheet.prototype.hideSpinner = function () {
         hideSpinner(this.element);
     };
-    Spreadsheet.prototype.protectSheet = function (protectSettings) {
-        this.getActiveSheet().isProtected = true;
-        _super.prototype.protectSheet.call(this, protectSettings);
+    Spreadsheet.prototype.protectSheet = function (sheetIndex, protectSettings) {
+        if (typeof (sheetIndex) === 'string') {
+            sheetIndex = getSheetIndex(this, sheetIndex);
+        }
+        else {
+            if (sheetIndex) {
+                this.sheets[sheetIndex].isProtected = true;
+                this.sheets[sheetIndex].protectSettings = protectSettings;
+            }
+            sheetIndex = this.getActiveSheet().index;
+            this.getActiveSheet().isProtected = true;
+        }
+        _super.prototype.protectSheet.call(this, sheetIndex, protectSettings);
     };
     /**
      * To find the specified cell value.
@@ -27700,6 +29573,28 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
         _super.prototype.replaceHandler.call(this, args);
     };
     /**
+     * To Find All the Match values Address within Sheet or Workbook.
+     * @param {string} value - Specifies the value to find.
+     * @param {FindModeType} mode - Specifies the value to be find within Sheet/Workbook.
+     * @param {boolean} isCSen - Specifies the find match with case sensitive or not.
+     * @param {boolean} isEMatch - Specifies the find match with entire match or not.
+     * @param {number} sheetIndex - Specifies the sheetIndex. If not specified, it will consider the active sheet.
+     * @return {string[]}
+     */
+    Spreadsheet.prototype.findAll = function (value, mode, isCSen, isEMatch, sheetIndex) {
+        mode = mode ? mode : 'Sheet';
+        sheetIndex = sheetIndex ? sheetIndex : this.activeSheetIndex;
+        isCSen = isCSen ? isCSen : false;
+        isEMatch = isEMatch ? isEMatch : false;
+        var findCollection = [];
+        var findAllArguments = {
+            value: value, mode: mode, sheetIndex: sheetIndex, isCSen: isCSen,
+            isEMatch: isEMatch, findCollection: findCollection
+        };
+        this.notify(findAllValues, findAllArguments);
+        return findCollection;
+    };
+    /**
      * Used to navigate to cell address within workbook.
      * @param {string} address - Specifies the cell address you need to navigate.
      * You can specify the address in two formats,
@@ -27714,7 +29609,7 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
             if (idx === undefined) {
                 return;
             }
-            if (idx + 1 !== this.activeSheetTab) {
+            if (idx !== this.activeSheetIndex) {
                 var activeCell = addrArr[1].split(':')[0];
                 this.sheets[idx].activeCell = activeCell;
                 this.sheets[idx].selectedRange = addrArr[1];
@@ -27726,7 +29621,7 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
                     cellIndex[1] = 0;
                 }
                 this.sheets[idx].topLeftCell = getCellAddress(cellIndex[0], cellIndex[1]);
-                this.activeSheetTab = idx + 1;
+                this.activeSheetIndex = idx;
                 this.dataBind();
                 return;
             }
@@ -27882,9 +29777,10 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
      * @param {number} sheetIndex
      */
     Spreadsheet.prototype.setColWidth = function (width, colIndex, sheetIndex) {
+        if (width === void 0) { width = 64; }
+        if (colIndex === void 0) { colIndex = 0; }
         var colThreshold = this.getThreshold('col');
         var lastIdx = this.viewport.leftIndex + this.viewport.colCount + (colThreshold * 2);
-        sheetIndex = isNullOrUndefined(sheetIndex) ? null : sheetIndex - 1;
         var sheet = isNullOrUndefined(sheetIndex) ? this.getActiveSheet() : this.sheets[sheetIndex];
         if (sheet) {
             var mIndex = colIndex;
@@ -27926,13 +29822,14 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Set the height of row.
-     * @param {number} height
-     * @param {number} rowIndex
-     * @param {number} sheetIndex
+     * @param {number} height? - Specifies height needs to be updated. If not specified, it will set the default height 20.
+     * @param {number} rowIndex? - Specifies the row index. If not specified, it will consider the first row.
+     * @param {number} sheetIndex? - Specifies the sheetIndex. If not specified, it will consider the active sheet.
      */
     Spreadsheet.prototype.setRowHeight = function (height, rowIndex, sheetIndex) {
-        sheetIndex = isNullOrUndefined(sheetIndex) ? null : sheetIndex - 1;
-        var sheet = isNullOrUndefined(sheetIndex) ? this.getActiveSheet() : this.sheets[sheetIndex];
+        if (height === void 0) { height = 20; }
+        if (rowIndex === void 0) { rowIndex = 0; }
+        var sheet = isNullOrUndefined(sheetIndex) ? this.getActiveSheet() : this.sheets[sheetIndex - 1];
         if (sheet) {
             var mIndex = rowIndex;
             var rowHeight = (typeof height === 'number') ? height + 'px' : height;
@@ -28097,7 +29994,7 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
                             eleRowIdx = rowIdx - this.viewport.topIndex;
                             eleColIdx = colIdx - this.viewport.leftIndex;
                         }
-                        var cell = this.element.getElementsByClassName('e-main-content')[0].
+                        var cell = this.element.getElementsByClassName('e-sheet-content')[0].
                             getElementsByClassName('e-row')[eleRowIdx].getElementsByClassName('e-cell')[eleColIdx];
                         if (cell.getElementsByClassName('e-hyperlink')[0]) {
                             cell.innerText = cell.getElementsByClassName('e-hyperlink')[0].innerHTML;
@@ -28689,7 +30586,7 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
      * @param {string} address - Specifies the range address.
      */
     Spreadsheet.prototype.selectRange = function (address) {
-        this.notify(selectRange, getRangeIndexes(address));
+        this.notify(selectRange, { indexes: getRangeIndexes(address) });
     };
     /**
      * Start edit the active cell.
@@ -28737,9 +30634,9 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
                         addClass([this.element], newProp.cssClass.split(' '));
                     }
                     break;
-                case 'activeSheetTab':
+                case 'activeSheetIndex':
                     this.renderModule.refreshSheet();
-                    this.notify(activeSheetChanged, { idx: newProp.activeSheetTab - 1 });
+                    this.notify(activeSheetChanged, { idx: newProp.activeSheetIndex });
                     break;
                 case 'width':
                     this.setWidth();
@@ -28763,7 +30660,7 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'sheets':
                     // Object.keys(newProp.sheets).forEach((sheetIdx: string): void => {
-                    // if (this.activeSheetTab - 1 === Number(sheetIdx)) {
+                    // if (this.activeSheetIndex === Number(sheetIdx)) {
                     //     if (newProp.sheets[sheetIdx].showGridLines !== undefined) {
                     //         this.notify(updateToggleItem, { props: 'GridLines', pos: 2 });
                     //     }
@@ -28779,8 +30676,8 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
                     //         idx: sheetIdx
                     //     });
                     // }
-                    // if (newProp.sheets[sheetIdx].rangeSettings) {
-                    //     this.sheets[sheetIdx].rangeSettings = newProp.sheets[sheetIdx].rangeSettings;
+                    // if (newProp.sheets[sheetIdx].range) {
+                    //     this.sheets[sheetIdx].range = newProp.sheets[sheetIdx].range;
                     this.renderModule.refreshSheet();
                     if (this.showSheetTabs) {
                         Object.keys(newProp.sheets).forEach(function (sheetIdx) {
@@ -28976,5 +30873,5 @@ var Spreadsheet = /** @__PURE__ @class */ (function (_super) {
  * Export Spreadsheet modules
  */
 
-export { Workbook, RangeSetting, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, setColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Cell, getCell, setCell, getCellPosition, skipDefaultValue, wrap, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getAddressFromSelectedRange, getAddressInfo, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, ProtectSettings, Hyperlink, Validation, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, wrapEvent, onSave, insert, deleteAction, insertModel, deleteModel, isValidation, setValidation, addHighlight, dataValidate, findNext, findPrevious, goto, findWorkbookHandler, replaceHandler, replaceAllHandler, showDialog, findUndoRedo, findKeyUp, removeValidation, removeHighlight, queryCellInfo, count, findCount, protectSheetWorkBook, updateToggle, protectsheetHandler, replaceAllDialog, workBookeditAlert, checkIsFormula, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, WorkbookInsert, WorkbookDelete, WorkbookDataValidation, WorkbookFindAndReplace, WorkbookProtectSheet, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, insertSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableToolbarItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideFileMenuItems, addFileMenuItems, hideRibbonTabs, enableRibbonTabs, addRibbonTabs, addToolbarItems, hideToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, initiateCustomSort, applySort, collaborativeUpdate, hideShow, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, setScrollEvent, initiateDataValidation, validationError, startEdit, invalidData, clearInvalid, protectSheet, applyProtect, protectCellFormat, gotoDlg, findDlg, findHandler, replace, created, editAlert, setUndoRedo, enableFormulaInput, protectSelection, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, getSiblingsHeight, inView, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, setRowEleHeight, getTextHeight, getTextWidth, getLines, setMaxHgt, getMaxHgt, skipHiddenIdx, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, WRAPTEXT, locale, dialog, actionEvents, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
+export { Workbook, Range, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, setColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Cell, getCell, setCell, skipDefaultValue, wrap, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getAddressFromSelectedRange, getAddressInfo, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, ProtectSettings, Hyperlink, Validation, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, findAllValues, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, wrapEvent, onSave, insert, deleteAction, insertModel, deleteModel, isValidation, setValidation, addHighlight, dataValidate, findNext, findPrevious, goto, findWorkbookHandler, replaceHandler, replaceAllHandler, showDialog, findUndoRedo, findKeyUp, removeValidation, removeHighlight, queryCellInfo, count, findCount, protectSheetWorkBook, updateToggle, protectsheetHandler, replaceAllDialog, workBookeditAlert, setLockCells, applyLockCells, setMerge, applyMerge, mergedRange, activeCellMergedRange, insertMerge, pasteMerge, checkIsFormula, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, WorkbookInsert, WorkbookDelete, WorkbookDataValidation, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookMerge, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, insertSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableToolbarItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideFileMenuItems, addFileMenuItems, hideRibbonTabs, enableRibbonTabs, addRibbonTabs, addToolbarItems, hideToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, initiateCustomSort, applySort, collaborativeUpdate, hideShow, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, setScrollEvent, initiateDataValidation, validationError, startEdit, invalidData, clearInvalid, protectSheet, applyProtect, protectCellFormat, gotoDlg, findDlg, findHandler, replace, created, editAlert, setUndoRedo, enableFormulaInput, protectSelection, hiddenMerge, checkPrevMerge, removeDataValidation, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, getSiblingsHeight, inView, getCellPosition, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, setRowEleHeight, getTextHeight, getTextWidth, getLines, setMaxHgt, getMaxHgt, skipHiddenIdx, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, WRAPTEXT, locale, dialog, actionEvents, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
 //# sourceMappingURL=ej2-spreadsheet.es5.js.map

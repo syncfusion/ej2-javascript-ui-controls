@@ -1,7 +1,7 @@
 /**
  * Spreadsheet show/hide column sample
  */
-import { Spreadsheet, SheetModel, ColumnModel, RowModel, RangeSettingModel, SpreadsheetModel } from './../../../../src/index';
+import { Spreadsheet, SheetModel, ColumnModel, RowModel, RangeModel, SpreadsheetModel } from './../../../../src/index';
 import { enableRipple } from '@syncfusion/ej2-base';
 import { switchTheme } from '../../../common/switch-theme';
 import { defaultData as dataSource } from './../../../common/data-source';
@@ -16,16 +16,16 @@ let columns: ColumnModel[] = [{ hidden: true }, { width: 130 }, { hidden: true, 
 
 let rows: RowModel[] = [{ hidden: true }];
 
-let rangeSettings: RangeSettingModel[] = [{ dataSource: dataSource, startCell: 'B2' }];
+let rangeSettings: RangeModel[] = [{ dataSource: dataSource, startCell: 'B2' }];
 
-let sheet: SheetModel[] = [{ name: 'Price Details', columns: columns, selectedRange: 'B2', rows: rows, rangeSettings: rangeSettings }];
+let sheet: SheetModel[] = [{ name: 'Price Details', columns: columns, selectedRange: 'B2', rows: rows, range: rangeSettings }];
 
 let spreadsheetModel: SpreadsheetModel = {
     sheets: sheet,
     openUrl: 'https://ej2services.syncfusion.com/production/web-services/api/spreadsheet/open',
     saveUrl: 'https://ej2services.syncfusion.com/production/web-services/api/spreadsheet/save',
     beforeDataBound: (): void => {
-        if (spreadsheet.sheets[spreadsheet.activeSheetTab - 1].name === 'Price Details') {
+        if (spreadsheet.sheets[spreadsheet.activeSheetIndex].name === 'Price Details') {
             spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'B2:I2');
         }
     }

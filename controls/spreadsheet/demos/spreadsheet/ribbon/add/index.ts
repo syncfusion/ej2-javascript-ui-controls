@@ -27,7 +27,7 @@ let columns: ColumnModel[] = [
 
 let sheet: SheetModel[] = [{
     name: 'PriceDetails',
-    rangeSettings: [{
+    range: [{
         dataSource: dataSource,
         startCell: 'A1'
     }],
@@ -38,7 +38,7 @@ let sheet: SheetModel[] = [{
 let spreadsheet: Spreadsheet = new Spreadsheet({
     sheets: sheet,
     beforeDataBound: (): void => {
-        if (spreadsheet.sheets[spreadsheet.activeSheetTab - 1].name === 'Sheet1') {
+        if (spreadsheet.sheets[spreadsheet.activeSheetIndex].name === 'Sheet1') {
             spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1');
         }
     },

@@ -5,56 +5,65 @@ import { Size } from '../utils/helper';
 
 
 /**
- * Specifies TreeMap Events
+ * Specifies the event argument for the treemap component.
  * @private
  */
 export interface ITreeMapEventArgs {
-    /** Defines the name of the event */
+    /** Defines the name of the event. */
     name: string;
-    /** Defines the event cancel status */
+    /**
+     * Specifies the cancel state for the event. The default value is false.
+     * If set as true, the event progress will be stopped.
+     */
     cancel: boolean;
 }
+/**
+ * Specifies the event arguments for print event in treemap.
+ */
 export interface IPrintEventArgs extends ITreeMapEventArgs {
+    /**
+     * Specifies the html content that is printed. The html content returned is usually the id string of the treemap.
+     */
     htmlContent: Element;
 }
 /**
- * Specifies the Load Event arguments.
+ * Specifies the event arguments for on load event in treemap.
  */
 export interface ILoadEventArgs extends ITreeMapEventArgs {
-    /** Defines the current TreeMap instance
+    /** Defines the current treemap instance.
      * @deprecated
      */
     treemap?: TreeMap;
 }
 
 /**
- * Specifies the Loaded Event arguments.
+ * Specifies the event arguments for loaded event in treemap.
  */
 export interface ILoadedEventArgs extends ITreeMapEventArgs {
-    /** Defines the current TreeMap instance
+    /** Defines the current treemap instance.
      * @deprecated
      */
     treemap?: TreeMap;
 }
 
 /**
- * Specifies the Item Rendering Event arguments.
+ * Specifies the event arguments in item rendering event in treemap.
  */
 export interface IItemRenderingEventArgs extends ITreeMapEventArgs {
-    /** Defines the current TreeMap instance
+    /** Defines the current treemap instance
      * @deprecated
      */
     treemap?: TreeMap;
     /**
-     * Define the current rendering item.
+     * Defines the current rendering item.
      */
     currentItem: Object;
     /**
-     * Define the all render items
+     * Defines all the items for rendering.
      */
     RenderItems?: Object[];
     /**
-     * Define the options.
+     * Defines the options for the treemap item rendering.
      */
     options: Object;
     /**
@@ -64,19 +73,19 @@ export interface IItemRenderingEventArgs extends ITreeMapEventArgs {
 }
 
 /**
- * Specifies the Drill Start Event arguments.
+ * Specifies the event arguments for the drill down start event of treemap.
  */
 export interface IDrillStartEventArgs extends ITreeMapEventArgs {
-    /** Defines the current TreeMap instance
+    /** Defines the current treemap instance.
      * @deprecated
      */
     treemap?: TreeMap;
     /**
-     * Define the current drillDown item.
+     * Defines the current drill-down.
      */
     item: Object;
     /**
-     * Define the current element of drillDown.
+     * Defines the current element of drill-down.
      */
     element: Element;
     /**
@@ -88,251 +97,334 @@ export interface IDrillStartEventArgs extends ITreeMapEventArgs {
      */
     groupName: string;
     /**
-     * return the boolean value whether it is right or not.
+     * Returns a boolean value whether it is right click or not.
      */
     rightClick: boolean;
     /**
-     * return the child values to process the onDemand support.
+     * Defines the child values of the item in the drill start event.
      */
     childItems: Object;
-
-
 }
 
+/**
+ * Specifies the event arguments for the drill down end event of the treemap.
+ */
 export interface IDrillEndEventArgs extends ITreeMapEventArgs {
-    /** Defines the current TreeMap instance
+    /** Defines the current treemap instance.
      * @deprecated
      */
     treemap?: TreeMap;
     /**
-     * Define the rendering all items.
+     * Defines all the items for rendering.
      */
     renderItems: Object[];
 }
 
+/**
+ * Defines the event arguments for treemap item click event.
+ */
 export interface IItemClickEventArgs extends ITreeMapEventArgs {
-    /** Defines the current TreeMap instance
+    /** Defines the current treemap instance.
      * @deprecated
      */
     treemap?: TreeMap;
     /**
-     * Define the current item click.
+     * Defines the current item in the click event.
      * @isGenericType true
      */
     item: Object;
     /**
-     * Define the mouse event.
+     * Defines the original mouse event arguments.
      */
     mouseEvent: PointerEvent;
     /**
-     * Defines the level of the treemap item.
+     * Defines the level of the current treemap item.
      */
     groupIndex: number;
     /**
-     * Defines the parent name of the treemap item.
+     * Defines the parent name of the current treemap item.
      */
     groupName: string;
     /**
-     * Defines the header name of the treemap item.
+     * Defines the header name of the current treemap item.
      */
     text: string;
+    /**
+     * Defines the template of the treemap item which is used to add it in the treemap control.
+     */
+    contentItemTemplate : string;
 }
 
+/**
+ * Defines the event argument of the treemap item data.
+ */
 export interface IItemDataEventArgs {
+    /**
+     * Defines the name of the treemap item.
+     */
     name: string;
+    /**
+     * Defines the level of the current treemap item.
+     */
     groupIndex: number;
+    /**
+     * Defines the parent name of the current treemap item.
+     */
     groupName: string;
+    /**
+     * Specifies whether the drill down is performed or not.
+     */
     isDrilled: boolean;
+    /**
+     * Specifies whether the item is leaf item or not.
+     */
     isLeafItem: boolean;
+    /**
+     * Defines the item area in the treemap.
+     */
     itemArea: number;
+    /**
+     * Defines the name of the parent level of the treemap item.
+     */
     levelOrderName: string;
+    /**
+     * Defines the options provided in the event arguments
+     */
     options?: Object;
+    /**
+     * Specifies the rect element in the event.
+     */
     rect?: Object;
 }
 
+/**
+ * Specifies the event arguments available on performing mouse move on the treemap items.
+ */
 export interface IItemMoveEventArgs extends ITreeMapEventArgs {
-    /** Defines the current TreeMap instance
+    /** Defines the current treemap instance.
      * @deprecated
      */
     treemap?: TreeMap;
     /**
-     * Define the current item move.
+     * Defines the current item move.
      * @isGenericType true
      */
     item: Object;
     /**
-     * Define the mouse event.
+     * Defines the original mouse event arguments.
      */
     mouseEvent: PointerEvent;
 }
 
+/**
+ * Specifies the event arguments available on performing click event on the treemap items.
+ */
 export interface IClickEventArgs extends ITreeMapEventArgs {
-    /** Defines the current TreeMap instance
+    /** Defines the current treemap instance.
      * @deprecated
      */
     treemap?: TreeMap;
     /**
-     * Define the mouse event.
+     * Defines the original mouse event arguments.
      */
     mouseEvent: PointerEvent;
 }
 
+/**
+ * Specifies the event arguments available on performing double click event on the treemap items.
+ */
 export interface IDoubleClickEventArgs extends ITreeMapEventArgs {
-    /** Defines the current TreeMap instance
+    /** Defines the current treemap instance.
      * @deprecated
      */
     treemap?: TreeMap;
     /**
-     * Define the mouse event.
+     * Defines the original mouse event arguments.
      */
     mouseEvent: PointerEvent;
 }
 
+/**
+ * Specifies the event arguments available on performing right click event on the treemap items.
+ */
 export interface IRightClickEventArgs extends ITreeMapEventArgs {
-    /** Defines the current TreeMap instance
+    /** Defines the current treemap instance.
      * @deprecated
      */
     treemap?: TreeMap;
     /**
-     * Define the mouse event.
+     * Defines the original mouse event arguments.
      */
     mouseEvent: PointerEvent;
 }
 
+/**
+ * Specifies the event arguments available on performing mouse over on the treemap items.
+ */
 export interface IMouseMoveEventArgs extends ITreeMapEventArgs {
-    /** Defines the current TreeMap instance
+    /** Defines the current treemap instance.
      * @deprecated
      */
     treemap?: TreeMap;
     /**
-     * Define the mouse event.
+     * Defines the original mouse event arguments.
      */
     mouseEvent: PointerEvent;
 }
 
+/**
+ * Specifies the event arguments available when the item is selected in the treemap component.
+ */
 export interface IItemSelectedEventArgs extends ITreeMapEventArgs {
-    /** Defines the current TreeMap instance
+    /** Defines the current treemap instance.
      * @deprecated
      */
     treemap?: TreeMap;
     /**
-     * Define the current item selected.
+     * Specifies the current selected item.
      */
     items: Object[];
     /**
-     * Define the current element of selected.
+     * Specifies the current selected elements.
      */
     elements: Element[];
+    /**
+     * Defines the text used in the label contents.
+     */
+    text: string;
+    /**
+     * Defines the template of the treemap item which is used to add it in the treemap control.
+     */
+    contentItemTemplate : string;
 }
 
+/**
+ * Specifies the event arguments available when the item is highlighted in the treemap component.
+ */
 export interface IItemHighlightEventArgs extends ITreeMapEventArgs {
-    /** Defines the current TreeMap instance
+    /**
+     * Defines the current treemap instance.
      * @deprecated
      */
     treemap?: TreeMap;
     /**
-     * Define the current item highlight.
+     * Defines the current item which is highlighted.
      */
     items: Object[];
     /**
-     * Define the current element of highlight.
+     * Defines the current highlighted elements.
      */
     elements: Element[];
 }
 
 /**
- * Specifies the Tooltip Rendering Event arguments.
+ * Specifies the event arguments available when the tooltip is rendered in the treemap component.
  */
 export interface ITreeMapTooltipRenderEventArgs extends ITreeMapEventArgs {
-    /** Defines the current TreeMap instance
+    /** Defines the current treemap instance.
      * @deprecated
      */
     treemap?: TreeMap;
     /**
-     * Define the current tooltip item.
+     * Defines the current treemap item in which the tooltip appears.
      */
     item: Object;
     /**
-     * Define the tooltip options.
+     * Defines the options for customizing the tooltip.
      */
     options: Object;
     /**
-     * Define the current tooltip element.
+     * Defines the current tooltip element.
      */
     element?: Element;
     /**
-     * Define the mouse location.
+     * Defines the original mouse event arguments.
      */
     eventArgs: PointerEvent;
 }
 
 /**
- * Specifies the Tooltip Rendering Event arguments.
+ * Specifies the event arguments available for the tooltip events in the treemap component.
  */
 export interface ITreeMapTooltipArgs extends ITreeMapEventArgs {
+    /**
+     * Defines the location of the tooltip rendering event.
+     */
     location: Object;
+    /**
+     * Defines the text rendered in the tooltip.
+     */
     text: string[];
+    /**
+     * Defines the data for rendering the tooltip.
+     */
     data: Object;
+    /**
+     * Defines the text style for customizing the tooltip text.
+     */
     textStyle: FontModel;
+    /**
+     * Defines the template for rendering the tooltip.
+     */
     template: string;
 }
 
 /**
- * Specifies legendRendering event arguments for maps.
+ * Specifies the event arguments available when rendering each legend item in the treemap component.
  */
 export interface ILegendItemRenderingEventArgs extends ITreeMapEventArgs {
     /**
-     * maps instance event argument
+     * Defines the current treemap instance.
      * @deprecated
      */
     treemap?: TreeMap;
     /**
-     * Specifies the legend shape color
+     * Specifies the shape color of the legend.
      */
     fill?: string;
     /**
-     * Options for customizing the color and width of the shape border.
+     * Specifies the options for customizing the color and width of the shape border.
      */
     shapeBorder?: BorderModel;
     /**
-     * Customize the legend shape of the maps.
+     * Defines the legend shape of the treemap.
      */
     shape?: LegendShape;
     /**
-     * Customize the image url.
+     * Defines the URL of the legend if the shape is rendered as image.
      */
     imageUrl?: string;
 }
 
 /**
- * Specifies legendRendering event arguments for maps.
+ * Specifies the event arguments available when rendering the legend in the treemap component.
  */
 export interface ILegendRenderingEventArgs extends ITreeMapEventArgs {
     /**
-     * maps instance event argument
+     * Defines the current treemap instance.
      * @deprecated
      */
     treemap?: TreeMap;
     /**
-     * Customize the legend position of the maps.
+     * Specifies the position of the legend in the treemap component.
      */
     position?: LegendPosition;
     /**
-     * Customize the legend position of the maps.
+     * Specifies the position of the legend in the treemap component.
      */
     _changePosition?: LegendPosition;
 }
 
 
 /**
- * TreeMap Resize event arguments.
+ * Specifies the event arguments available for resize event of the treemap component.
  */
 export interface IResizeEventArgs extends ITreeMapEventArgs {
-    /** Defines the previous size of the treemap */
+    /** Defines the size of the treemap before resizing. */
     previousSize: Size;
-    /** Defines the current size of the treemap */
+    /** Defines the size of the treemap after resizing. */
     currentSize: Size;
-    /** Defines the treemap instance 
+    /** Defines the treemap instance.
      * @deprecated
      */
     treemap?: TreeMap;
@@ -357,20 +449,59 @@ export interface IShapes {
 
 
 /**
- * Specifies the theme style interface.
+ * Defines the theme supported for treemap component.
  */
 export interface IThemeStyle {
+    /**
+     * Defines the background color of the treemap, supporting the theme.
+     */
     backgroundColor: string;
+    /**
+     * Defines the title text color of the treemap, supporting the theme.
+     */
     titleFontColor: string;
+    /**
+     * Defines the subtitle text color of the treemap, supporting the theme.
+     */
     subTitleFontColor: string;
+    /**
+     * Defines the tooltip fill color of the treemap, supporting the theme.
+     */
     tooltipFillColor: string;
+    /**
+     * Defines the tooltip text color of the treemap supporting the theme.
+     */
     tooltipFontColor: string;
+    /**
+     * Defines the opacity of tooltip in the treemap, supporting the theme.
+     */
     tooltipFillOpacity?: number;
+    /**
+     * Defines the opacity of tooltip text in the treemap, supporting the theme.
+     */
     tooltipTextOpacity?: number;
+    /**
+     * Defines the color of the legend title in the treemap, supporting the theme.
+     */
     legendTitleColor: string;
+    /**
+     * Defines the color of the legend text in the treemap, supporting the theme.
+     */
     legendTextColor: string;
+    /**
+     * Defines the font family of texts in the treemap, supporting the theme.
+     */
     fontFamily?: string;
+    /**
+     * Defines the font size of the texts in the treemap, supporting the theme.
+     */
     fontSize?: string;
+    /**
+     * Defines the font size of the legend texts in the treemap, supporting the theme.
+     */
     legendFontSize?: string;
+    /**
+     * Defines the font family of the label contents in the treemap, supporting the theme.
+     */
     labelFontFamily?: string;
 }

@@ -1,190 +1,168 @@
 
 /**
- * Defines Position of Ticks / Labels / Pointers / Ranges. They are
- * * Inside
- * * Outside
- * * Cross
- * * Auto
+ * Defines the position of ticks, labels, pointers, and ranges.
  * @private
  */
 export type Position =
-    /**  Inside of Axis. */
+    /** Specifies the position of ticks, labels, pointers, and ranges to be placed inside the axis. */
     'Inside' |
-    /**  Outside of Axis. */
+    /** Specifies the position of ticks, labels, pointers, and ranges to be placed outside the axis. */
     'Outside'|
-    /**  Cross of Axis. */
+    /** Specifies the position of ticks, labels, pointers, and ranges to be placed on the axis. */
     'Cross' |
-    /** Default position of Axis. */
+    /** Specifies the position of ticks, labels, pointers, and ranges to be placed based on the available size in linear gauge. */
     'Auto';
 
 /**
- * Defines type of pointer. They are
- * * Marker
- * * Bar
+ * Defines type of pointer in linear gauge.
  * @private
  */
 
 export type Point =
-    /**  Marker pointer. */
+    /** Specifies the pointer as marker type. */
     'Marker' |
-    /**  Bar pointer. */
+    /** Specifies the pointer as bar. */
     'Bar';
 
 /**
- * Defines Theme of the gauge. They are
- * * Material
- * * Fabric
+ * Defines theme supported for the linear gauge.
  * @private
  */
 export type LinearGaugeTheme =
-    /**  Render a gauge with Material theme. */
+    /** Defines the linear gauge with material theme. */
     'Material' |
-    /**  Render a gauge with Bootstrap theme. */
+    /** Defines the linear gauge with bootstrap theme. */
     'Bootstrap' |
-    /**  Render a gauge with Highcontrast Light theme. */
+    /** Defines the linear gauge with highcontrast light theme. */
     'HighContrastLight'|
-    /**  Render a gauge with Fabric theme. */
+    /** Defines the linear gauge with with fabric theme. */
     'Fabric'|
-    /**  Render a gauge with Material Dark theme. */
+    /** Defines the linear gauge with with material dark theme. */
     'MaterialDark' |
-    /**  Render a gauge with Fabric Dark theme. */
+    /** Defines the linear gauge with with fabric dark theme. */
     'FabricDark' |
-    /**  Render a gauge with Highcontrast Dark theme. */
+    /** Defines the linear gauge with with highcontrast dark theme. */
     'HighContrast'|
-    /**  Render a gauge with Bootstrap Dark theme. */
+    /** Defines the linear gauge with with bootstrap dark theme. */
     'BootstrapDark'|
-    /** Render a gauge with Bootstrap4 theme. */
+    /** Defines the linear gauge with with bootstrap4 theme. */
     'Bootstrap4';
 
 /**
- * Defines the type of marker. They are
- * Traingle
- * Diamond
- * Rectangle
- * Circle
- * Image
+ * Defines the type of marker.
  * @private
  */
 
 export type MarkerType =
     /**
-     * Triangle marker
+     * Specifies the marker as triangle.
      */
     'Triangle' |
     /**
-     * Inverted triangle
+     * Specifies the marker as inverted triangle.
      */
     'InvertedTriangle' |
     /**
-     * Diamond marker
+     * Specifies the marker as diamond.
      */
     'Diamond' |
     /**
-     * Rectangle marker
+     * Specifies the marker as rectangle.
      */
     'Rectangle' |
     /**
-     * Circle marker
+     * Specifies the marker as circle.
      */
     'Circle' |
     /**
-     * Arrow marker
+     * Specifies the marker as arrow.
      */
     'Arrow' |
     /**
-     * Inverted Arrow marker
+     * Specifies the marker as inverted arrow.
      */
     'InvertedArrow' |
     /**
-     * Image marker
+     * Specifies the marker as image.
      */
     'Image';
 
 
 /**
- * Defines the place of the pointer. They are
- * None
- * Near
- * Center
- * Far
+ * Defines the place of the pointer.
  * @private
  */
 
 export type Placement =
     /**
-     * Near
+     * Specifies the pointer to be placed near the linear gauge.
      */
     'Near' |
     /**
-     * Center
+     * Specifies the pointer to be placed at the center of the linear gauge.
      */
     'Center' |
     /**
-     * Far
+     * Specifies the pointer to be placed far from the linear gauge.
      */
     'Far' |
     /**
-     * None
+     * Specifies the pointer to be placed at default position.
      */
     'None';
 
 /**
- * Defines the type of gauge orientation. They are
- * Horizontal
- * Vertical
+ * Defines the type of gauge orientation.
  * @private
  */
 export type Orientation =
     /**
-     * Horizontal
+     * Specifies the linear gauge to be placed horizontally.
      */
     'Horizontal' |
     /**
-     * Vertical
+     * Specifies the linear gauge to be placed vertically.
      */
     'Vertical';
 
 /**
- * Defines the container type. They are
- * Normal
- * Thermometer
- * Rounded Rectangle
+ * Defines the container type.
  */
 export type ContainerType =
-    /** To draw the normal rectangle box */
+    /** Specifies the container to be drawn as normal rectangle box. */
     'Normal' |
     /**
-     * To draw the thermometer box
+     * Specifies the container to be drawn as the thermometer box.
      */
     'Thermometer' |
     /**
-     * To draw the rounded rectangle box
+     * Specifies the container to be drawn as the rounded rectangle box.
      */
     'RoundedRectangle';
 
 /**
- * Export Type
+ * Defines the export type.
  */
 export type ExportType =
-    /** Used to export a image as png format */
+    /** Specifies the rendered linear gauge to be exported as png format */
     'PNG' |
-    /** Used to export a image as jpeg format */
+    /** Specifies the rendered linear gauge to be exported as jpeg format */
     'JPEG' |
-    /** Used to export a file as svg format */
+    /** Specifies the rendered linear gauge to be exported as svg format */
     'SVG' |
-    /** Used to export a file as pdf format */
+    /** Specifies the rendered linear gauge to be exported as pdf format */
     'PDF';
 /**
- * Tooltip Position
+ * Specifies the tooltip position for the range in linear gauge.
  */
 export type TooltipPosition =
-     /** To draw the normal rectangle box */
+     /** Specifies the tooltip for the range to be placed at the start of the range. */
      'Start' |
      /**
-      * To draw the thermometer box
+      * Specifies the tooltip for the range to be placed at the center of the range.
       */
      'Center' |
      /**
-      * To draw the rounded rectangle box
+      * Specifies the tooltip for the range to be placed at the end of the range.
       */
      'End';

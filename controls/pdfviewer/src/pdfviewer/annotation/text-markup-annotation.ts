@@ -1574,10 +1574,13 @@ export class TextMarkupAnnotation {
             let pageText: string = storedData.pageText;
             for (let p: number = 0; p < pageNumber; p++) {
                 if (this.pdfViewer.isExtractText) {
+                    // tslint:disable-next-line
+                    let documentIndex: any = this.pdfViewer.textSearchModule.documentTextCollection[p][p];
+                    let pageTextData: string = documentIndex.pageText ? documentIndex.pageText : documentIndex.PageText;
                     // tslint:disable-next-line:max-line-length
                     if (this.pdfViewer.textSearchModule && this.pdfViewer.textSearchModule.documentTextCollection && this.pdfViewer.textSearchModule.isTextRetrieved) {
                         if (this.pdfViewer.textSearchModule.documentTextCollection[p]) {
-                            previousIndex = previousIndex + this.pdfViewer.textSearchModule.documentTextCollection[p][p].PageText.length;
+                            previousIndex = previousIndex + pageTextData.length;
                         }
                     } else {
                         // tslint:disable-next-line:max-line-length
@@ -1585,7 +1588,7 @@ export class TextMarkupAnnotation {
                             if (pageNumber <= this.pdfViewer.textSearchModule.documentTextCollection.length) {
                                 if (this.pdfViewer.textSearchModule.documentTextCollection[p]) {
                                     // tslint:disable-next-line:max-line-length
-                                    previousIndex = previousIndex + this.pdfViewer.textSearchModule.documentTextCollection[p][p].PageText.length;
+                                    previousIndex = previousIndex + pageTextData.length;
                                 }
                             } else {
                                 previousIndex = 0;
@@ -1761,10 +1764,14 @@ export class TextMarkupAnnotation {
             let currentAnnot: ITextMarkupAnnotation = this.getCurrentMarkupAnnotation(event.clientX, event.clientY, pageIndex, canvas);
             if (currentAnnot) {
                 eventTarget.style.cursor = 'pointer';
+                 // tslint:disable-next-line
+                let currentPosition : any = this.pdfViewerBase.getMousePosition(event);
+                // tslint:disable-next-line
+                let mousePositions: any = { left: currentPosition.x, top: currentPosition.y };
                 // tslint:disable-next-line
                 let annotationSettings: any = { opacity: currentAnnot.opacity, color: currentAnnot.color, author: currentAnnot.author, subject: currentAnnot.subject, modifiedDate: currentAnnot.modifiedDate };
                 // tslint:disable-next-line:max-line-length
-                this.pdfViewer.fireAnnotationMouseover(currentAnnot.annotName, currentAnnot.pageNumber, currentAnnot.textMarkupAnnotationType as AnnotationType, currentAnnot.bounds, annotationSettings);
+                this.pdfViewer.fireAnnotationMouseover(currentAnnot.annotName, currentAnnot.pageNumber, currentAnnot.textMarkupAnnotationType as AnnotationType, currentAnnot.bounds, annotationSettings, mousePositions);
                 // this.showPopupNote(event, currentAnnot);
             } else {
                 this.pdfViewer.annotationModule.hidePopupNote();

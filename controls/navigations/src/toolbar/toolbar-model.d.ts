@@ -112,7 +112,7 @@ export interface ItemModel {
     htmlAttributes?: { [key: string]: string; };
 
     /**
-     * Specifies the text to be displayed on the Toolbar button.
+     * Specifies the text to be displayed on hovering the Toolbar button.
      * @default ""
      */
     tooltipText?: string;
@@ -209,6 +209,12 @@ export interface ToolbarModel extends ComponentModel{
      * @deprecated
      */
     enableHtmlSanitizer?: boolean;
+
+    /**
+     * When this property is set to true, it allows the keyboard interaction in toolbar.
+     * @default true
+     */
+    allowKeyboard?: boolean;
 
     /**
      * The event will be fired on clicking the Toolbar elements.

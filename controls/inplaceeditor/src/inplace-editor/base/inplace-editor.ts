@@ -33,6 +33,9 @@ import { ActionBeginEventArgs, ActionEventArgs, FormEventArgs, ValidateEventArgs
 /* Interface */
 import { parseValue, getCompValue } from './util';
 
+/**
+ * Provides information about a SanitizeSelectors.
+ */
 export interface SanitizeSelectors {
     /** Returns the tags. */
     tags?: string[];
@@ -40,6 +43,9 @@ export interface SanitizeSelectors {
     attributes?: SanitizeRemoveAttrs[];
 }
 
+/**
+ * Provides information about a BeforeSanitizeHtml event.
+ */
 export interface BeforeSanitizeHtmlArgs {
     /** Illustrates whether the current action needs to be prevented or not. */
     cancel?: boolean;
@@ -55,6 +61,9 @@ export interface BeforeSanitizeHtmlArgs {
     selectors?: SanitizeSelectors;
 }
 
+/**
+ * Provides information about a SanitizeRemoveAttributes.
+ */
 export interface SanitizeRemoveAttrs {
     /** Defines the attribute name to sanitize */
     attribute?: string;
@@ -1416,7 +1425,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         while (this.element.firstElementChild) {
             this.element.removeChild(this.element.firstElementChild);
         }
-        super.destroy();
+        if (!(isBlazor() && this.isServerRendered)) { super.destroy(); }
     }
     /**
      * Get the properties to be maintained in the persisted state.

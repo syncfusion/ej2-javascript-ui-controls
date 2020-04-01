@@ -15,7 +15,7 @@ describe('Spreadsheet Ribbon integration module ->', (): void => {
             model = {
                 sheets: [
                     {
-                        rangeSettings: [
+                        range: [
                             { dataSource: defaultData }
                         ]
                     }

@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Component, Event, EventHandler, HijriParser, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, cldrData, closest, createElement, detach, extend, formatUnit, getDefaultDateObject, getUniqueID, getValue, isBlazor, isNullOrUndefined, isUndefined, merge, prepend, remove, removeClass, rippleEffect, select, setStyleAttribute, setValue, throwError } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Component, Event, EventHandler, HijriParser, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, append, attributes, blazorCultureFormats, cldrData, closest, createElement, detach, extend, formatUnit, getDefaultDateObject, getUniqueID, getValue, isBlazor, isNullOrUndefined, isUndefined, merge, prepend, remove, removeClass, rippleEffect, select, setStyleAttribute, setValue, throwError } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Input } from '@syncfusion/ej2-inputs';
 import { Button } from '@syncfusion/ej2-buttons';
@@ -252,7 +252,7 @@ let CalendarBase = class CalendarBase extends Component {
     getCultureValues() {
         let culShortNames = [];
         let cldrObj;
-        let dayFormat = 'days.stand-alone.' + this.dayHeaderFormat.toLowerCase();
+        let dayFormat = (isBlazor() ? 'days.' : 'days.stand-alone.') + this.dayHeaderFormat.toLowerCase();
         if (this.locale === 'en' || this.locale === 'en-US') {
             cldrObj = (getValue(dayFormat, getDefaultDateObject()));
         }
@@ -679,12 +679,12 @@ let CalendarBase = class CalendarBase extends Component {
             }
             minMaxDate = new Date(+localDate);
             localDate = this.minMaxDate(localDate);
-            let dateFormatOptions = { type: 'dateTime', skeleton: 'full' };
+            let dateFormatOptions = { type: 'dateTime', skeleton: isBlazor() ? 'D' : 'full' };
             let date = this.globalize.parseDate(this.globalize.formatDate(localDate, dateFormatOptions), dateFormatOptions);
             let tdEle = this.dayCell(localDate);
-            let title = this.globalize.formatDate(localDate, { type: 'date', skeleton: 'full' });
+            let title = this.globalize.formatDate(localDate, { type: 'date', skeleton: isBlazor() ? 'D' : 'full' });
             let dayLink = this.createElement('span');
-            dayLink.textContent = this.globalize.formatDate(localDate, { format: 'd', type: 'date', skeleton: 'yMd' });
+            dayLink.textContent = this.globalize.formatDate(localDate, { format: 'd', type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' });
             let disabled = (this.min > localDate) || (this.max < localDate);
             if (disabled) {
                 addClass([tdEle], DISABLED);
@@ -712,8 +712,8 @@ let CalendarBase = class CalendarBase extends Component {
                 if (multiSelection) {
                     if (!isNullOrUndefined(values) && values.length > 0) {
                         for (let index = 0; index < values.length; index++) {
-                            let localDateString = +new Date(this.globalize.formatDate(argument.date, { type: 'date', skeleton: 'yMd' }));
-                            let tempDateString = +new Date(this.globalize.formatDate(values[index], { type: 'date', skeleton: 'yMd' }));
+                            let localDateString = +new Date(this.globalize.formatDate(argument.date, { type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' }));
+                            let tempDateString = +new Date(this.globalize.formatDate(values[index], { type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' }));
                             if (localDateString === tempDateString) {
                                 values.splice(index, 1);
                                 index = -1;
@@ -744,7 +744,7 @@ let CalendarBase = class CalendarBase extends Component {
             if (multiSelection && !isNullOrUndefined(values) && !disabledCls) {
                 for (let tempValue = 0; tempValue < values.length; tempValue++) {
                     let type = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
-                    let formatOptions = { type: 'date', skeleton: 'short', calendar: type };
+                    let formatOptions = { format: this.getFromatStringValue(), type: 'date', skeleton: 'short', calendar: type };
                     let localDateString = this.globalize.formatDate(localDate, formatOptions);
                     let tempDateString = this.globalize.formatDate(values[tempValue], formatOptions);
                     if ((localDateString === tempDateString && this.getDateVal(localDate, values[tempValue]))
@@ -812,7 +812,9 @@ let CalendarBase = class CalendarBase extends Component {
             let dayLink = this.createElement('span');
             let localMonth = (value && (value).getMonth() === localDate.getMonth());
             let select$$1 = (value && (value).getFullYear() === yr && localMonth);
-            dayLink.textContent = this.toCapitalize(this.globalize.formatDate(localDate, { type: 'dateTime', skeleton: 'MMM' }));
+            dayLink.textContent = this.toCapitalize(this.globalize.formatDate(localDate, {
+                format: isBlazor() ? 'MMM' : null, type: 'dateTime', skeleton: 'MMM'
+            }));
             if ((this.min && (curYrs < minYr || (month < minMonth && curYrs === minYr))) || (this.max && (curYrs > maxYr || (month > maxMonth && curYrs >= maxYr)))) {
                 addClass([tdEle], DISABLED);
             }
@@ -847,8 +849,10 @@ let CalendarBase = class CalendarBase extends Component {
         let endYr = new Date(localDate.setFullYear((localYr - localYr % 10 + (10 - 1))));
         let startFullYr = startYr.getFullYear();
         let endFullYr = endYr.getFullYear();
-        let startHdrYr = this.globalize.formatDate(startYr, { type: 'dateTime', skeleton: 'y' });
-        let endHdrYr = this.globalize.formatDate(endYr, { type: 'dateTime', skeleton: 'y' });
+        let startHdrYr = this.globalize.formatDate(startYr, {
+            format: isBlazor() ? 'yyyy' : null, type: 'dateTime', skeleton: 'y'
+        });
+        let endHdrYr = this.globalize.formatDate(endYr, { format: isBlazor() ? 'yyyy' : null, type: 'dateTime', skeleton: 'y' });
         this.headerTitleElement.textContent = startHdrYr + ' - ' + (endHdrYr);
         let start = new Date(localYr - (localYr % 10) - 1, 0, 1);
         let startYear = start.getFullYear();
@@ -858,7 +862,9 @@ let CalendarBase = class CalendarBase extends Component {
             let tdEle = this.dayCell(localDate);
             attributes(tdEle, { 'role': 'gridcell' });
             let dayLink = this.createElement('span');
-            dayLink.textContent = this.globalize.formatDate(localDate, { type: 'dateTime', skeleton: 'y' });
+            dayLink.textContent = this.globalize.formatDate(localDate, {
+                format: isBlazor() ? 'yyyy' : null, type: 'dateTime', skeleton: 'y'
+            });
             if ((year < startFullYr) || (year > endFullYr)) {
                 addClass([tdEle], OTHERDECADE);
                 if (!isNullOrUndefined(value) && localDate.getFullYear() === (value).getFullYear()) {
@@ -891,7 +897,7 @@ let CalendarBase = class CalendarBase extends Component {
     }
     dayCell(localDate) {
         let type = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
-        let dateFormatOptions = { skeleton: 'full', type: 'dateTime', calendar: type };
+        let dateFormatOptions = { skeleton: isBlazor() ? 'F' : 'full', type: 'dateTime', calendar: type };
         let date = this.globalize.parseDate(this.globalize.formatDate(localDate, dateFormatOptions), dateFormatOptions);
         let value = date.valueOf();
         let attrs = {
@@ -1228,16 +1234,16 @@ let CalendarBase = class CalendarBase extends Component {
                 let tempValueString;
                 if (this.calendarMode === 'Gregorian') {
                     /* tslint:disable-next-line:max-line-length */
-                    tempValueString = this.globalize.formatDate(tempValue, { type: 'date', skeleton: 'yMd' });
+                    tempValueString = this.globalize.formatDate(tempValue, { type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' });
                 }
                 else {
                     /* tslint:disable-next-line:max-line-length */
                     tempValueString = this.globalize.formatDate(tempValue, { type: 'dateTime', skeleton: 'full', calendar: 'islamic' });
                 }
-                let minFormatOption = { type: 'date', skeleton: 'yMd', calendar: type };
+                let minFormatOption = { type: 'date', skeleton: isBlazor() ? 'd' : 'yMd', calendar: type };
                 let minStringValue = this.globalize.formatDate(this.min, minFormatOption);
                 let minString = minStringValue;
-                let maxFormatOption = { type: 'date', skeleton: 'yMd', calendar: type };
+                let maxFormatOption = { type: 'date', skeleton: isBlazor() ? 'd' : 'yMd', calendar: type };
                 let maxStringValue = this.globalize.formatDate(this.max, maxFormatOption);
                 let maxString = maxStringValue;
                 if (+new Date(tempValueString) < +new Date(minString) ||
@@ -1271,8 +1277,10 @@ let CalendarBase = class CalendarBase extends Component {
         let monthFormatOptions;
         let type = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
         if (this.calendarMode === 'Gregorian') {
-            dayFormatOptions = globalize.formatDate(date, { type: 'dateTime', skeleton: 'yMMMM', calendar: type });
-            monthFormatOptions = globalize.formatDate(date, { type: 'dateTime', skeleton: 'y', calendar: type });
+            dayFormatOptions = globalize.formatDate(date, { type: 'dateTime', skeleton: isBlazor() ? 'y' : 'yMMMM', calendar: type });
+            monthFormatOptions = globalize.formatDate(date, {
+                format: isBlazor() ? 'yyyy' : null, type: 'dateTime', skeleton: 'y', calendar: type
+            });
         }
         else {
             dayFormatOptions = globalize.formatDate(date, { type: 'dateTime', format: 'MMMM y', calendar: type });
@@ -1294,18 +1302,20 @@ let CalendarBase = class CalendarBase extends Component {
         let title;
         let view = this.currentView();
         if (view === 'Month') {
-            title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: 'full', calendar: type });
+            title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: isBlazor() ? 'D' : 'full', calendar: type });
         }
         else if (view === 'Year') {
             if (type !== 'islamic') {
-                title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: 'yMMMM', calendar: type });
+                title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: isBlazor() ? 'y' : 'yMMMM', calendar: type });
             }
             else {
                 title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: 'GyMMM', calendar: type });
             }
         }
         else {
-            title = this.globalize.formatDate(this.currentDate, { type: 'date', skeleton: 'y', calendar: type });
+            title = this.globalize.formatDate(this.currentDate, {
+                format: isBlazor() ? 'yyyy' : null, type: 'date', skeleton: 'y', calendar: type
+            });
         }
         if (selectedEle || focusedEle) {
             if (!isNullOrUndefined(selectedEle)) {
@@ -1489,10 +1499,13 @@ let CalendarBase = class CalendarBase extends Component {
             && date.getMonth() === (value).getMonth() && date.getFullYear() === (value).getFullYear());
     }
     getCultureObjects(ld, c) {
-        let gregorianFormat = '.dates.calendars.gregorian.days.format.' + this.dayHeaderFormat.toLowerCase();
-        let islamicFormat = '.dates.calendars.islamic.days.format.' + this.dayHeaderFormat.toLowerCase();
+        let gregorianFormat = (isBlazor() ? '.dates.days.' :
+            '.dates.calendars.gregorian.days.format.') + this.dayHeaderFormat.toLowerCase();
+        let islamicFormat = (isBlazor() ? '.dates.days.' :
+            '.dates.calendars.islamic.days.format.') + this.dayHeaderFormat.toLowerCase();
+        let mainVal = isBlazor() ? '' : 'main.';
         if (this.calendarMode === 'Gregorian') {
-            return getValue('main.' + '' + this.locale + gregorianFormat, ld);
+            return getValue(mainVal + '' + this.locale + gregorianFormat, ld);
         }
         else {
             return getValue('main.' + '' + this.locale + islamicFormat, ld);
@@ -1544,7 +1557,7 @@ let CalendarBase = class CalendarBase extends Component {
             eve = element;
         }
         let type = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
-        let dateFormatOptions = { type: 'dateTime', skeleton: 'full', calendar: type };
+        let dateFormatOptions = { type: 'dateTime', skeleton: isBlazor() ? 'F' : 'full', calendar: type };
         let dateString = this.globalize.formatDate(new Date(parseInt('' + eve.getAttribute('id'), 0)), dateFormatOptions);
         let date = this.globalize.parseDate(dateString, dateFormatOptions);
         let value = date.valueOf() - date.valueOf() % 1000;
@@ -1611,7 +1624,7 @@ let CalendarBase = class CalendarBase extends Component {
                 removeClass([element], SELECTED);
                 for (let i = 0; i < copyValues.length; i++) {
                     let type = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
-                    let formatOptions = { type: 'date', skeleton: 'short', calendar: type };
+                    let formatOptions = { format: this.getFromatStringValue(), type: 'date', skeleton: 'short', calendar: type };
                     let localDateString = this.globalize.formatDate(date, formatOptions);
                     let tempDateString = this.globalize.formatDate(copyValues[i], formatOptions);
                     if (localDateString === tempDateString) {
@@ -1631,15 +1644,25 @@ let CalendarBase = class CalendarBase extends Component {
         }
         this.isDateSelected = true;
     }
+    getFromatStringValue() {
+        return isBlazor() ?
+            // tslint:disable-next-line
+            'M' + getDefaultDateObject().dateSeperator + 'd' + getDefaultDateObject().dateSeperator + 'yy'
+            : null;
+    }
     checkPresentDate(dates, values) {
         let previousValue = false;
         if (!isNullOrUndefined(values)) {
             for (let checkPrevious = 0; checkPrevious < values.length; checkPrevious++) {
                 let type = (this.calendarMode === 'Gregorian') ? 'gregorian' : 'islamic';
                 /* tslint:disable-next-line:max-line-length */
-                let localDateString = this.globalize.formatDate(dates, { type: 'date', skeleton: 'short', calendar: type });
+                let localDateString = this.globalize.formatDate(dates, {
+                    format: this.getFromatStringValue(), type: 'date', skeleton: 'short', calendar: type
+                });
                 /* tslint:disable-next-line:max-line-length */
-                let tempDateString = this.globalize.formatDate(values[checkPrevious], { type: 'date', skeleton: 'short', calendar: type });
+                let tempDateString = this.globalize.formatDate(values[checkPrevious], {
+                    format: this.getFromatStringValue(), type: 'date', skeleton: 'short', calendar: type
+                });
                 if (localDateString === tempDateString) {
                     previousValue = true;
                 }
@@ -1963,7 +1986,7 @@ let Calendar = class Calendar extends CalendarBase {
         return (this.value.getTimezoneOffset() < Math.max(firstOffset, secondOffset));
     }
     setTimeZone(offsetValue) {
-        if (this.serverTimezoneOffset && this.value) {
+        if (!isNullOrUndefined(this.serverTimezoneOffset) && this.value) {
             let serverTimezoneDiff = offsetValue;
             let clientTimeZoneDiff = new Date().getTimezoneOffset() / 60;
             let timeZoneDiff = serverTimezoneDiff + clientTimeZoneDiff;
@@ -2322,7 +2345,8 @@ let Calendar = class Calendar extends CalendarBase {
         this.changeHandler(e);
     }
     changeEvent(e) {
-        if ((this.value && this.value.valueOf()) !== (this.previousDate && +this.previousDate.valueOf())) {
+        if ((this.value && this.value.valueOf()) !== (this.previousDate && +this.previousDate.valueOf())
+            || this.isMultiSelection) {
             this.trigger('change', this.changedArgs);
             this.previousDate = new Date(+this.value);
         }
@@ -2928,7 +2952,7 @@ let DatePicker = class DatePicker extends Calendar {
         this.setTimeZone(this.serverTimezoneOffset);
     }
     setTimeZone(offsetValue) {
-        if (this.serverTimezoneOffset && this.value) {
+        if (!isNullOrUndefined(this.serverTimezoneOffset) && this.value) {
             let clientTimeZoneDiff = new Date().getTimezoneOffset() / 60;
             let serverTimezoneDiff = offsetValue;
             let timeZoneDiff = serverTimezoneDiff + clientTimeZoneDiff;
@@ -2991,7 +3015,7 @@ let DatePicker = class DatePicker extends Calendar {
             this.setAllowEdit();
         }
         this.previousElementValue = this.inputElement.value;
-        this.previousDate = new Date(+this.value);
+        this.previousDate = !isNullOrUndefined(this.value) ? new Date(+this.value) : null;
         this.inputElement.setAttribute('value', this.inputElement.value);
         this.inputValueCopy = this.value;
     }
@@ -3008,13 +3032,17 @@ let DatePicker = class DatePicker extends Calendar {
             this.l10n = new L10n('datepicker', l10nLocale, this.locale);
             this.setProperties({ placeholder: this.placeholder || this.l10n.getConstant('placeholder') }, true);
         }
+        let updatedCssClassValues = this.cssClass;
+        if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+            updatedCssClassValues = (this.cssClass.replace(/\s+/g, ' ')).trim();
+        }
         this.inputWrapper = Input.createInput({
             element: this.inputElement,
             floatLabelType: this.floatLabelType,
             properties: {
                 readonly: this.readonly,
                 placeholder: this.placeholder,
-                cssClass: this.cssClass,
+                cssClass: updatedCssClassValues,
                 enabled: this.enabled,
                 enableRtl: this.enableRtl,
                 showClearButton: this.showClearButton,
@@ -3063,7 +3091,7 @@ let DatePicker = class DatePicker extends Calendar {
             if (this.getModuleName() === 'datetimepicker') {
                 if (this.calendarMode === 'Gregorian') {
                     dateString = this.globalize.formatDate(this.value, {
-                        format: tempFormat, type: 'dateTime', skeleton: 'yMd'
+                        format: tempFormat, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd'
                     });
                 }
                 else {
@@ -3074,7 +3102,7 @@ let DatePicker = class DatePicker extends Calendar {
             }
             else {
                 if (this.calendarMode === 'Gregorian') {
-                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
+                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
                 }
                 else {
                     formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
@@ -3121,8 +3149,8 @@ let DatePicker = class DatePicker extends Calendar {
         if (this.getModuleName() === 'datetimepicker') {
             let culture = new Internationalization(this.locale);
             if (this.calendarMode === 'Gregorian') {
-                formatOptions = { format: this.dateTimeFormat, type: 'dateTime', skeleton: 'yMd' };
-                formatDateTime = { format: culture.getDatePattern({ skeleton: 'yMd' }), type: 'dateTime' };
+                formatOptions = { format: this.dateTimeFormat, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
+                formatDateTime = { format: culture.getDatePattern({ skeleton: isBlazor() ? 'd' : 'yMd' }), type: 'dateTime' };
             }
             else {
                 formatOptions = { format: this.dateTimeFormat, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
@@ -3131,7 +3159,7 @@ let DatePicker = class DatePicker extends Calendar {
         }
         else {
             if (this.calendarMode === 'Gregorian') {
-                formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
+                formatOptions = { format: this.formatString, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
             }
             else {
                 formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
@@ -3155,8 +3183,8 @@ let DatePicker = class DatePicker extends Calendar {
             if (this.getModuleName() === 'datetimepicker') {
                 let culture = new Internationalization(this.locale);
                 if (this.calendarMode === 'Gregorian') {
-                    formatOptions = { format: this.dateTimeFormat, type: 'dateTime', skeleton: 'yMd' };
-                    formatDateTime = { format: culture.getDatePattern({ skeleton: 'yMd' }), type: 'dateTime' };
+                    formatOptions = { format: this.dateTimeFormat, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
+                    formatDateTime = { format: culture.getDatePattern({ skeleton: isBlazor() ? 'd' : 'yMd' }), type: 'dateTime' };
                 }
                 else {
                     formatOptions = { format: this.dateTimeFormat, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
@@ -3165,7 +3193,7 @@ let DatePicker = class DatePicker extends Calendar {
             }
             else {
                 if (this.calendarMode === 'Gregorian') {
-                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
+                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
                 }
                 else {
                     formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
@@ -3275,7 +3303,9 @@ let DatePicker = class DatePicker extends Calendar {
         this.currentDate = this.value ? this.value : new Date();
         this.previousDate = this.value;
         this.previousElementValue = (isNullOrUndefined(this.inputValueCopy)) ? '' :
-            this.globalize.formatDate(this.inputValueCopy, { format: this.formatString, type: 'dateTime', skeleton: 'yMd' });
+            this.globalize.formatDate(this.inputValueCopy, {
+                format: this.formatString, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd'
+            });
     }
     inputChangeHandler(e) {
         e.stopPropagation();
@@ -3351,7 +3381,10 @@ let DatePicker = class DatePicker extends Calendar {
                 if (!isNullOrUndefined(this.htmlAttributes[key])) {
                     if (containerAttr.indexOf(key) > -1) {
                         if (key === 'class') {
-                            addClass([this.inputWrapper.container], this.htmlAttributes[key].split(' '));
+                            let updatedClassValues = (this.htmlAttributes[key].replace(/\s+/g, ' ')).trim();
+                            if (updatedClassValues !== '') {
+                                addClass([this.inputWrapper.container], updatedClassValues.split(' '));
+                            }
                         }
                         else if (key === 'style') {
                             let setStyle = this.inputWrapper.container.getAttribute(key);
@@ -3383,6 +3416,18 @@ let DatePicker = class DatePicker extends Calendar {
                     this.inputElement.setAttribute(key, this.htmlAttributes[key]);
                 }
             }
+        }
+    }
+    updateCssClass(newCssClass, oldCssClass) {
+        if (!isNullOrUndefined(oldCssClass)) {
+            oldCssClass = (oldCssClass.replace(/\s+/g, ' ')).trim();
+        }
+        if (!isNullOrUndefined(newCssClass)) {
+            newCssClass = (newCssClass.replace(/\s+/g, ' ')).trim();
+        }
+        Input.setCssClass(newCssClass, [this.inputWrapper.container], oldCssClass);
+        if (this.popupWrapper) {
+            Input.setCssClass(newCssClass, [this.popupWrapper], oldCssClass);
         }
     }
     CalendarKeyActionHandle(e) {
@@ -3614,7 +3659,7 @@ let DatePicker = class DatePicker extends Calendar {
             if (this.calendarMode === 'Gregorian') {
                 dateOptions = {
                     format: !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat,
-                    type: 'dateTime', skeleton: 'yMd'
+                    type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd'
                 };
             }
             else {
@@ -3626,7 +3671,7 @@ let DatePicker = class DatePicker extends Calendar {
         }
         else {
             if (this.calendarMode === 'Gregorian') {
-                formatOptions = { format: format, type: 'dateTime', skeleton: 'yMd' };
+                formatOptions = { format: format, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
             }
             else {
                 formatOptions = { format: format, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
@@ -3643,7 +3688,7 @@ let DatePicker = class DatePicker extends Calendar {
             }
             else {
                 if (this.calendarMode === 'Gregorian') {
-                    formatOptions = { type: 'dateTime', skeleton: 'yMd' };
+                    formatOptions = { type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
                 }
                 else {
                     formatOptions = { type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
@@ -3852,7 +3897,7 @@ let DatePicker = class DatePicker extends Calendar {
         if (this.value) {
             if (this.getModuleName() === 'datetimepicker') {
                 if (this.calendarMode === 'Gregorian') {
-                    formatOptions = { format: tempFormat, type: 'dateTime', skeleton: 'yMd' };
+                    formatOptions = { format: tempFormat, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
                 }
                 else {
                     formatOptions = { format: tempFormat, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
@@ -3861,7 +3906,7 @@ let DatePicker = class DatePicker extends Calendar {
             }
             else {
                 if (this.calendarMode === 'Gregorian') {
-                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
+                    formatOptions = { format: this.formatString, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
                 }
                 else {
                     formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
@@ -4207,8 +4252,8 @@ let DatePicker = class DatePicker extends Calendar {
         this.defaultKeyConfigs = this.getDefaultKeyConfig();
         this.checkHtmlAttributes(false);
         this.tabIndex = this.element.hasAttribute('tabindex') ? this.element.getAttribute('tabindex') : '0';
-        this.element.removeAttribute('tabindex');
         if (!this.isBlazorServer) {
+            this.element.removeAttribute('tabindex');
             super.preRender();
         }
     }
@@ -4292,7 +4337,7 @@ let DatePicker = class DatePicker extends Calendar {
             if (this.calendarMode === 'Gregorian') {
                 options = {
                     format: !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat,
-                    type: 'dateTime', skeleton: 'yMd'
+                    type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd'
                 };
             }
             else {
@@ -4304,7 +4349,7 @@ let DatePicker = class DatePicker extends Calendar {
         }
         else {
             if (this.calendarMode === 'Gregorian') {
-                options = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
+                options = { format: this.formatString, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
             }
             else {
                 options = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
@@ -4412,7 +4457,7 @@ let DatePicker = class DatePicker extends Calendar {
             if (this.calendarMode === 'Gregorian') {
                 globalize = this.globalize.formatDate(valueCopy, {
                     format: !isNullOrUndefined(this.formatString) ? this.formatString : this.dateTimeFormat,
-                    type: 'dateTime', skeleton: 'yMd'
+                    type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd'
                 });
             }
             else {
@@ -4425,7 +4470,7 @@ let DatePicker = class DatePicker extends Calendar {
         }
         else {
             if (this.calendarMode === 'Gregorian') {
-                formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
+                formatOptions = { format: this.formatString, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
             }
             else {
                 formatOptions = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
@@ -4483,7 +4528,7 @@ let DatePicker = class DatePicker extends Calendar {
     onPropertyChanged(newProp, oldProp) {
         let options;
         if (this.calendarMode === 'Gregorian') {
-            options = { format: this.formatString, type: 'dateTime', skeleton: 'yMd' };
+            options = { format: this.formatString, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
         }
         else {
             options = { format: this.formatString, type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
@@ -4559,10 +4604,7 @@ let DatePicker = class DatePicker extends Calendar {
                     this.setProperties({ zIndex: newProp.zIndex }, true);
                     break;
                 case 'cssClass':
-                    Input.setCssClass(newProp.cssClass, [this.inputWrapper.container], oldProp.cssClass);
-                    if (this.popupWrapper) {
-                        Input.setCssClass(newProp.cssClass, [this.popupWrapper], oldProp.cssClass);
-                    }
+                    this.updateCssClass(newProp.cssClass, oldProp.cssClass);
                     break;
                 case 'showClearButton':
                     Input.setClearButton(this.showClearButton, this.inputElement, this.inputWrapper);
@@ -4874,7 +4916,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
     }
     ;
     updateValue() {
-        let dateOptions = { format: this.formatString, type: 'date', skeleton: 'yMd' };
+        let dateOptions = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
         if (this.value && this.value.length > 0) {
             if (this.value[0] instanceof Date && !isNaN(+this.value[0])) {
                 this.setProperties({ startDate: this.value[0] }, true);
@@ -5057,7 +5099,10 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
             for (let key of Object.keys(this.htmlAttributes)) {
                 if (wrapperAttr.indexOf(key) > -1) {
                     if (key === 'class') {
-                        addClass([this.inputWrapper.container], this.htmlAttributes[key].split(' '));
+                        let updatedClassValue = (this.htmlAttributes[key].replace(/\s+/g, ' ')).trim();
+                        if (updatedClassValue !== '') {
+                            addClass([this.inputWrapper.container], updatedClassValue.split(' '));
+                        }
                     }
                     else if (key === 'style') {
                         let dateRangeStyle = this.inputWrapper.container.getAttribute(key);
@@ -5079,6 +5124,18 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                     this.inputElement.setAttribute(key, this.htmlAttributes[key]);
                 }
             }
+        }
+    }
+    updateCssClass(cssNewClass, cssOldClass) {
+        if (!isNullOrUndefined(cssOldClass)) {
+            cssOldClass = (cssOldClass.replace(/\s+/g, ' ')).trim();
+        }
+        if (!isNullOrUndefined(cssNewClass)) {
+            cssNewClass = (cssNewClass.replace(/\s+/g, ' ')).trim();
+        }
+        Input.setCssClass(cssNewClass, [this.inputWrapper.container], cssOldClass);
+        if (this.popupWrapper) {
+            Input.setCssClass(cssNewClass, [this.popupWrapper], cssOldClass);
         }
     }
     processPresets() {
@@ -5148,7 +5205,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
     }
     updateHiddenInput() {
         if (this.firstHiddenChild && this.secondHiddenChild) {
-            let format = { type: 'datetime', skeleton: 'yMd' };
+            let format = { type: 'datetime', skeleton: isBlazor() ? 'd' : 'yMd' };
             if (typeof this.startDate === 'string') {
                 this.startDate = this.globalize.parseDate(this.startDate, format);
             }
@@ -5276,7 +5333,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         let attributes$$1 = isDynamic ? isNullOrUndefined(this.htmlAttributes) ? [] : Object.keys(this.htmlAttributes) :
             ['startDate', 'endDate', 'minDays', 'maxDays', 'min', 'max', 'disabled', 'readonly', 'style', 'name', 'placeholder',
                 'type', 'value'];
-        let format = { format: this.formatString, type: 'date', skeleton: 'yMd' };
+        let format = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
         for (let prop of attributes$$1) {
             if (!isNullOrUndefined(this.inputElement.getAttribute(prop))) {
                 switch (prop) {
@@ -5553,7 +5610,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                 let range = value.split(' ' + this.separator + ' ');
                 if (range.length > 1) {
                     this.invalidValueString = null;
-                    let dateOptions = { format: this.formatString, type: 'date', skeleton: 'yMd' };
+                    let dateOptions = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
                     let startDate = this.globalize.parseDate(range[0].trim(), dateOptions);
                     let endDate = this.globalize.parseDate(range[1].trim(), dateOptions);
                     if (!isNullOrUndefined(startDate) && !isNaN(+startDate) && !isNullOrUndefined(endDate) && !isNaN(+endDate)) {
@@ -6141,9 +6198,13 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         let inputValue;
         let range;
         let startDate = !isNullOrUndefined(this.startValue) ?
-            this.globalize.formatDate(this.startValue, { format: this.formatString, type: 'date', skeleton: 'yMd' }) : null;
+            this.globalize.formatDate(this.startValue, {
+                format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd'
+            }) : null;
         let endDate = !isNullOrUndefined(this.endValue) ?
-            this.globalize.formatDate(this.endValue, { format: this.formatString, type: 'date', skeleton: 'yMd' }) : null;
+            this.globalize.formatDate(this.endValue, {
+                format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd'
+            }) : null;
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
             inputValue = startDate + ' ' + this.separator + ' ' + endDate;
             range = (Math.round(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
@@ -6493,7 +6554,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         }
     }
     updateHeader() {
-        let format = { type: 'date', skeleton: 'yMMMd' };
+        let format = { type: 'date', skeleton: isBlazor() ? 'D' : 'yMMMd' };
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
             let range = (Math.round(Math.abs((this.startValue.getTime() - this.endValue.getTime()) / (1000 * 60 * 60 * 24))) + 1);
             if (!isNullOrUndefined(this.disabledDayCnt)) {
@@ -6573,7 +6634,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
     }
     addSelectedAttributes(ele, date, isStartDate, sameDate) {
         if (ele) {
-            let title = this.globalize.formatDate(date, { type: 'date', skeleton: 'full' });
+            let title = this.globalize.formatDate(date, { type: 'date', skeleton: isBlazor() ? 'D' : 'full' });
             if (!isNullOrUndefined(sameDate) && sameDate) {
                 ele.setAttribute('aria-label', 'The current start and end date is ' + '' + title);
             }
@@ -7758,13 +7819,17 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         }
     }
     createInput() {
+        let updatedCssClassValue = this.cssClass;
+        if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+            updatedCssClassValue = (this.cssClass.replace(/\s+/g, ' ')).trim();
+        }
         this.inputWrapper = Input.createInput({
             floatLabelType: this.floatLabelType,
             element: this.inputElement,
             properties: {
                 readonly: this.readonly,
                 placeholder: this.placeholder,
-                cssClass: this.cssClass,
+                cssClass: updatedCssClassValue,
                 enabled: this.enabled,
                 enableRtl: this.enableRtl,
                 showClearButton: this.showClearButton,
@@ -7840,7 +7905,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
     }
     updateInput() {
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
-            let formatOption = { format: this.formatString, type: 'date', skeleton: 'yMd' };
+            let formatOption = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
             let startDate = this.globalize.formatDate(this.startValue, formatOption);
             let endDate = this.globalize.formatDate(this.endValue, formatOption);
             Input.setValue(startDate + ' ' + this.separator + ' ' + endDate, this.inputElement, this.floatLabelType, this.showClearButton);
@@ -7954,7 +8019,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         let valueString = value;
         let invalid = false;
         let formatOpt = null;
-        formatOpt = { format: this.formatString, type: 'date', skeleton: 'yMd' };
+        formatOpt = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
         if (typeof valueString !== 'string') {
             invalid = true;
         }
@@ -8497,7 +8562,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         attributes(this.secondHiddenChild, {
             'type': 'text', 'name': this.inputElement.getAttribute('data-name'), 'class': HIDDENELEMENT
         });
-        let format = { type: 'datetime', skeleton: 'yMd' };
+        let format = { type: 'datetime', skeleton: isBlazor() ? 'd' : 'yMd' };
         this.firstHiddenChild.value = this.startDate && this.globalize.formatDate(this.startDate, format);
         this.secondHiddenChild.value = this.endDate && this.globalize.formatDate(this.endDate, format);
         this.inputElement.parentElement.appendChild(this.firstHiddenChild);
@@ -8510,7 +8575,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
      */
     // tslint:disable-next-line:max-func-body-length
     onPropertyChanged(newProp, oldProp) {
-        let format = { format: this.formatString, type: 'date', skeleton: 'yMd' };
+        let format = { format: this.formatString, type: 'date', skeleton: isBlazor() ? 'd' : 'yMd' };
         for (let prop of Object.keys(newProp)) {
             this.hide(null);
             switch (prop) {
@@ -8533,10 +8598,7 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                     this.setRangeAllowEdit();
                     break;
                 case 'cssClass':
-                    Input.setCssClass(newProp.cssClass, [this.inputWrapper.container], oldProp.cssClass);
-                    if (this.popupWrapper) {
-                        Input.setCssClass(newProp.cssClass, [this.popupWrapper], oldProp.cssClass);
-                    }
+                    this.updateCssClass(newProp.cssClass, oldProp.cssClass);
                     break;
                 case 'enabled':
                     this.setProperties({ enabled: newProp.enabled }, true);
@@ -9101,13 +9163,17 @@ let TimePicker = class TimePicker extends Component {
         return (!isNullOrUndefined(value) && value instanceof Date && !isNaN(+value)) ? value : null;
     }
     createInputElement() {
+        let updatedCssClassesValue = this.cssClass;
+        if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+            updatedCssClassesValue = (this.cssClass.replace(/\s+/g, ' ')).trim();
+        }
         this.inputWrapper = Input.createInput({
             element: this.inputElement,
             floatLabelType: this.floatLabelType,
             properties: {
                 readonly: this.readonly,
                 placeholder: this.placeholder,
-                cssClass: this.cssClass,
+                cssClass: updatedCssClassesValue,
                 enabled: this.enabled,
                 enableRtl: this.enableRtl,
                 showClearButton: this.showClearButton,
@@ -9128,7 +9194,7 @@ let TimePicker = class TimePicker extends Component {
     getCldrDateTimeFormat() {
         let culture = new Internationalization(this.locale);
         let cldrTime;
-        let dateFormat = culture.getDatePattern({ skeleton: 'yMd' });
+        let dateFormat = culture.getDatePattern({ skeleton: isBlazor() ? 'd' : 'yMd' });
         if (this.isNullOrEmpty(this.formatString)) {
             cldrTime = dateFormat + ' ' + this.CldrFormat('time');
         }
@@ -9158,7 +9224,7 @@ let TimePicker = class TimePicker extends Component {
                         }));
                         if (isNullOrUndefined(valueExpression)) {
                             valueExpression = this.checkDateValue(this.globalize.parseDate(valueString, {
-                                format: this.formatString, type: 'dateTime', skeleton: 'yMd'
+                                format: this.formatString, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd'
                             }));
                         }
                     }
@@ -9199,7 +9265,8 @@ let TimePicker = class TimePicker extends Component {
     CldrFormat(type) {
         let cldrDateTimeString;
         if (this.locale === 'en' || this.locale === 'en-US') {
-            cldrDateTimeString = (getValue('timeFormats.short', getDefaultDateObject()));
+            cldrDateTimeString = isBlazor() ? this.getBlazorCultureFormat('t') :
+                (getValue('timeFormats.short', getDefaultDateObject()));
         }
         else {
             cldrDateTimeString = (this.getCultureTimeObject(cldrData, '' + this.locale));
@@ -9355,7 +9422,7 @@ let TimePicker = class TimePicker extends Component {
             return null;
         }
         else {
-            return this.globalize.formatDate(value, { skeleton: 'medium', type: 'time' });
+            return this.globalize.formatDate(value, { skeleton: isBlazor() ? 't' : 'medium', type: 'time' });
         }
     }
     getDateObject(text) {
@@ -9376,7 +9443,10 @@ let TimePicker = class TimePicker extends Component {
             for (let key of Object.keys(this.htmlAttributes)) {
                 if (wrapperAttributes.indexOf(key) > -1) {
                     if (key === 'class') {
-                        addClass([this.inputWrapper.container], this.htmlAttributes[key].split(' '));
+                        let updatedClassesValue = (this.htmlAttributes[key].replace(/\s+/g, ' ')).trim();
+                        if (updatedClassesValue !== '') {
+                            addClass([this.inputWrapper.container], updatedClassesValue.split(' '));
+                        }
                     }
                     else if (key === 'style') {
                         let timeStyle = this.inputWrapper.container.getAttribute(key);
@@ -9398,6 +9468,18 @@ let TimePicker = class TimePicker extends Component {
                     this.inputElement.setAttribute(key, this.htmlAttributes[key]);
                 }
             }
+        }
+    }
+    updateCssClass(cssClassNew, cssClassOld) {
+        if (!isNullOrUndefined(cssClassOld)) {
+            cssClassOld = (cssClassOld.replace(/\s+/g, ' ')).trim();
+        }
+        if (!isNullOrUndefined(cssClassNew)) {
+            cssClassNew = (cssClassNew.replace(/\s+/g, ' ')).trim();
+        }
+        Input.setCssClass(cssClassNew, [this.inputWrapper.container], cssClassOld);
+        if (this.popupWrapper) {
+            Input.setCssClass(cssClassNew, [this.popupWrapper], cssClassOld);
         }
     }
     removeErrorClass() {
@@ -9441,10 +9523,13 @@ let TimePicker = class TimePicker extends Component {
     getMeridianText() {
         let meridian;
         if (this.locale === 'en' || this.locale === 'en-US') {
-            meridian = getValue('dayPeriods.format.wide', getDefaultDateObject());
+            meridian = getValue((isBlazor() ? 'dayPeriods.wide' : 'dayPeriods.format.wide'), getDefaultDateObject());
         }
         else {
-            meridian = getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.dayPeriods.format.abbreviated', cldrData);
+            let gregorianFormat = (isBlazor() ? '.dates.dayPeriods.abbreviated' :
+                '.dates.calendars.gregorian.dayPeriods.format.abbreviated');
+            let mainVal = isBlazor() ? '' : 'main.';
+            meridian = getValue(mainVal + '' + this.locale + gregorianFormat, cldrData);
         }
         return meridian;
     }
@@ -9551,18 +9636,23 @@ let TimePicker = class TimePicker extends Component {
     cldrDateFormat() {
         let cldrDate;
         if (this.locale === 'en' || this.locale === 'en-US') {
-            cldrDate = (getValue('dateFormats.short', getDefaultDateObject()));
+            cldrDate = isBlazor() ? (getValue('d', getValue(this.locale, blazorCultureFormats))) :
+                (getValue('dateFormats.short', getDefaultDateObject()));
         }
         else {
             cldrDate = (this.getCultureDateObject(cldrData, '' + this.locale));
         }
         return cldrDate;
     }
+    getBlazorCultureFormat(formatVal) {
+        return (getValue(formatVal, getValue(this.locale, blazorCultureFormats))).replace(/tt/, 'a');
+    }
     cldrTimeFormat() {
         let cldrTime;
         if (this.isNullOrEmpty(this.formatString)) {
             if (this.locale === 'en' || this.locale === 'en-US') {
-                cldrTime = (getValue('timeFormats.short', getDefaultDateObject()));
+                cldrTime = isBlazor() ? this.getBlazorCultureFormat('t') :
+                    (getValue('timeFormats.short', getDefaultDateObject()));
             }
             else {
                 cldrTime = (this.getCultureTimeObject(cldrData, '' + this.locale));
@@ -9576,10 +9666,12 @@ let TimePicker = class TimePicker extends Component {
     dateToNumeric() {
         let cldrTime;
         if (this.locale === 'en' || this.locale === 'en-US') {
-            cldrTime = (getValue('timeFormats.medium', getDefaultDateObject()));
+            cldrTime = isBlazor() ? this.getBlazorCultureFormat('T') :
+                (getValue('timeFormats.medium', getDefaultDateObject()));
         }
         else {
-            cldrTime = (getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.timeFormats.medium', cldrData));
+            cldrTime = isBlazor() ? this.getBlazorCultureFormat('T') :
+                (getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.timeFormats.medium', cldrData));
         }
         return cldrTime;
     }
@@ -10571,10 +10663,12 @@ let TimePicker = class TimePicker extends Component {
         }
     }
     getCultureTimeObject(ld, c) {
-        return getValue('main.' + c + '.dates.calendars.gregorian.timeFormats.short', ld);
+        return isBlazor() ? (getValue('t', getValue(c, blazorCultureFormats))).replace(/tt/, 'a') :
+            getValue('main.' + c + '.dates.calendars.gregorian.timeFormats.short', ld);
     }
     getCultureDateObject(ld, c) {
-        return getValue('main.' + c + '.dates.calendars.gregorian.dateFormats.short', ld);
+        return isBlazor() ? (getValue('d', getValue(c, blazorCultureFormats))) :
+            getValue('main.' + c + '.dates.calendars.gregorian.dateFormats.short', ld);
     }
     wireListEvents() {
         EventHandler.add(this.listWrapper, 'click', this.onMouseClick, this);
@@ -10692,11 +10786,15 @@ let TimePicker = class TimePicker extends Component {
         return (li && li.classList.contains(LISTCLASS$1) && !li.classList.contains(DISABLED$3));
     }
     createDateObj(val) {
-        let today = this.globalize.formatDate(new Date(), { skeleton: 'short', type: 'date' });
+        let formatStr = isBlazor() ?
+            // tslint:disable-next-line
+            'M' + getDefaultDateObject().dateSeperator + 'd' + getDefaultDateObject().dateSeperator + 'yy'
+            : null;
+        let today = this.globalize.formatDate(new Date(), { format: formatStr, skeleton: 'short', type: 'date' });
         let value = null;
         if (typeof val === 'string') {
             if (val.toUpperCase().indexOf('AM') > -1 || val.toUpperCase().indexOf('PM') > -1) {
-                today = this.defaultCulture.formatDate(new Date(), { skeleton: 'short', type: 'date' });
+                today = this.defaultCulture.formatDate(new Date(), { format: formatStr, skeleton: 'short', type: 'date' });
                 value = isNaN(+new Date(today + ' ' + val)) ? null : new Date(new Date(today + ' ' + val).setMilliseconds(0));
                 if (isNullOrUndefined(value)) {
                     value = this.TimeParse(today, val);
@@ -11088,10 +11186,7 @@ let TimePicker = class TimePicker extends Component {
                     }
                     break;
                 case 'cssClass':
-                    Input.setCssClass(newProp.cssClass, [this.inputWrapper.container], oldProp.cssClass);
-                    if (this.popupWrapper) {
-                        Input.setCssClass(newProp.cssClass, [this.popupWrapper], oldProp.cssClass);
-                    }
+                    this.updateCssClass(newProp.cssClass, oldProp.cssClass);
                     break;
                 case 'zIndex':
                     this.setProperties({ zIndex: newProp.zIndex }, true);
@@ -11550,7 +11645,7 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
         let dateOptions;
         if (!isNullOrUndefined(value)) {
             if (this.calendarMode === 'Gregorian') {
-                dateOptions = { format: this.cldrDateTimeFormat(), type: 'dateTime', skeleton: 'yMd' };
+                dateOptions = { format: this.cldrDateTimeFormat(), type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
             }
             else {
                 dateOptions = { format: this.cldrDateTimeFormat(), type: 'dateTime', skeleton: 'yMd', calendar: 'islamic' };
@@ -11601,7 +11696,8 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
         let cldrTime;
         if (this.isNullOrEmpty(this.timeFormat)) {
             if (this.locale === 'en' || this.locale === 'en-US') {
-                cldrTime = (getValue('timeFormats.short', getDefaultDateObject()));
+                cldrTime = isBlazor() ? (getValue('t', getValue(this.locale, blazorCultureFormats))).replace(/tt/, 'a') :
+                    (getValue('timeFormats.short', getDefaultDateObject()));
             }
             else {
                 cldrTime = (this.getCultureTimeObject(cldrData, '' + this.locale));
@@ -11615,7 +11711,7 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
     cldrDateTimeFormat() {
         let cldrTime;
         let culture = new Internationalization(this.locale);
-        let dateFormat = culture.getDatePattern({ skeleton: 'yMd' });
+        let dateFormat = culture.getDatePattern({ skeleton: isBlazor() ? 'd' : 'yMd' });
         if (this.isNullOrEmpty(this.formatString)) {
             cldrTime = dateFormat + ' ' + this.getCldrFormat('time');
         }
@@ -11627,7 +11723,8 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
     getCldrFormat(type) {
         let cldrDateTime;
         if (this.locale === 'en' || this.locale === 'en-US') {
-            cldrDateTime = (getValue('timeFormats.short', getDefaultDateObject()));
+            cldrDateTime = isBlazor() ? (getValue('t', getValue(this.locale, blazorCultureFormats))).replace(/tt/, 'a') :
+                (getValue('timeFormats.short', getDefaultDateObject()));
         }
         else {
             cldrDateTime = (this.getCultureTimeObject(cldrData, '' + this.locale));
@@ -11644,7 +11741,8 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
     }
     getCultureTimeObject(ld, c) {
         if (this.calendarMode === 'Gregorian') {
-            return getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.timeFormats.short', ld);
+            return isBlazor() ? (getValue('t', getValue(this.locale, blazorCultureFormats))).replace(/tt/, 'a') :
+                (getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.timeFormats.short', ld));
         }
         else {
             return getValue('main.' + '' + this.locale + '.dates.calendars.islamic.timeFormats.short', ld);
@@ -12417,7 +12515,7 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
         if (this.calendarMode === 'Gregorian') {
             dateString = this.globalize.formatDate(time, {
                 format: !isNullOrUndefined(this.formatString) ? this.formatString : this.cldrDateTimeFormat(),
-                type: 'dateTime', skeleton: 'yMd'
+                type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd'
             });
         }
         else {
@@ -12542,7 +12640,7 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'value':
-                    let options = { format: this.cldrDateTimeFormat(), type: 'dateTime', skeleton: 'yMd' };
+                    let options = { format: this.cldrDateTimeFormat(), type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd' };
                     this.invalidValueString = null;
                     this.checkInvalidValue(newProp.value);
                     newProp.value = this.value;
@@ -12563,6 +12661,12 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
                     Input.setEnableRtl(this.enableRtl, [this.inputWrapper.container]);
                     break;
                 case 'cssClass':
+                    if (!isNullOrUndefined(oldProp.cssClass)) {
+                        oldProp.cssClass = (oldProp.cssClass.replace(/\s+/g, ' ')).trim();
+                    }
+                    if (!isNullOrUndefined(newProp.cssClass)) {
+                        newProp.cssClass = (newProp.cssClass.replace(/\s+/g, ' ')).trim();
+                    }
                     Input.setCssClass(newProp.cssClass, [this.inputWrapper.container], oldProp.cssClass);
                     if (this.dateTimeWrapper) {
                         Input.setCssClass(newProp.cssClass, [this.dateTimeWrapper], oldProp.cssClass);

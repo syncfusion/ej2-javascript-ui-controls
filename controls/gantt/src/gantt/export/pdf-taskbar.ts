@@ -294,7 +294,8 @@ export class PdfGanttTaskbarCollection {
             labelLeft = this.left;
             if (!this.leftTaskLabel.isLeftCalculated) {
                 let result: PdfStringLayoutResult = this.getWidth(this.leftTaskLabel.value, Number.MAX_VALUE, 15);
-                let reduceLeft: number = this.isMilestone ? Math.floor(this.parent.chartRowsModule.taskBarHeight / 2) + 30 : 30;
+                /* tslint:disable-next-line */
+                let reduceLeft: number = this.isMilestone ? Math.floor(this.parent.chartRowsModule.taskBarHeight / 2) + 33 : 33; // 33 indicates default timeline cell width
                 left = pixelToPoint(labelLeft - reduceLeft) - result.actualSize.width;
                 this.leftTaskLabel.left = left;
                 this.leftTaskLabel.isLeftCalculated = true;
@@ -305,7 +306,7 @@ export class PdfGanttTaskbarCollection {
             if (detail.startPoint <= left && left < detail.endPoint && !isNullOrUndefined(this.leftTaskLabel.value)
                 && !this.leftTaskLabel.isCompleted) {
                 let result: PdfStringLayoutResult = this.getWidth(this.leftTaskLabel.value, detail.endPoint - left, 15);
-                let font: PdfFont = new PdfStandardFont(this.fontFamily, 10);
+                let font: PdfFont = new PdfStandardFont(this.fontFamily, 9);
                 let adjustHeight: number = (pixelToPoint(this.parent.rowHeight) - result.actualSize.height) / 2;
                 let rightLabelpoint: PointF = new PointF(actualLeft, startPoint.y + adjustHeight);
                 let rightLabelSize: SizeF = new SizeF(result.actualSize.width, result.actualSize.height);
@@ -331,7 +332,7 @@ export class PdfGanttTaskbarCollection {
         }
     }
     private getWidth(value: string, width: number, height: number): PdfStringLayoutResult {
-        let font: PdfFont = new PdfStandardFont(this.fontFamily, 10);
+        let font: PdfFont = new PdfStandardFont(this.fontFamily, 9);
         let layouter: PdfStringLayouter = new PdfStringLayouter();
         let progressFormat: PdfStringFormat = new PdfStringFormat();
         progressFormat.alignment = PdfTextAlignment.Left;

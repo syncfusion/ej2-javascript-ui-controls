@@ -233,10 +233,11 @@ export class Tooltip {
         }
         switch (elementType) {
             case 'milestone':
+                let sDate: string = !isNullOrUndefined(data.startDate) ? '<tr><td class = "e-gantt-tooltip-label"> Date</td><td>:</td>' +
+                '<td class = "e-gantt-tooltip-value">' +
+                this.parent.getFormatedDate(data.startDate, this.parent.dateFormat) + '</td></tr>' : '';
                 content = '<table class = "e-gantt-tooltiptable"><tbody>' +
-                    taskName + '<tr><td class = "e-gantt-tooltip-label"> Date</td><td>:</td>' +
-                    '<td class = "e-gantt-tooltip-value">' +
-                    this.parent.getFormatedDate(data.startDate, this.parent.dateFormat) + '</tr></tbody></table>';
+                    taskName + sDate + '</tbody></table>';
                 break;
             case 'taskbar':
                 let scheduledTask: boolean = !ganttData.hasChildRecords || data.isAutoSchedule ? true : false;

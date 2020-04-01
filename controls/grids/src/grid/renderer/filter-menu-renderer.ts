@@ -241,9 +241,9 @@ export class FilterMenuRenderer {
                         { value?: string | boolean | Date }).value;
                 } else {
                     let eControl: EJ2Intance = ((element.querySelector('.e-control') as Element) as EJ2Intance);
-                    fltrValue = !isNullOrUndefined(eControl.ej2_instances) ? (eControl.ej2_instances[0] as
-                        { value?: string | boolean | Date }).value : (col.type === 'boolean') ?
-                            ((element.querySelector('.e-control') as HTMLInputElement).checked) :
+                    fltrValue = col.type === 'boolean' ? (eControl as { checked?: boolean }).checked :
+                            !isNullOrUndefined(eControl.ej2_instances) ?
+                            (eControl.ej2_instances[0] as { value?: string | boolean | Date }).value :
                             (eControl as { value?: string | boolean | Date }).value;
                 }
             }

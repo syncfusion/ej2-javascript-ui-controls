@@ -361,7 +361,8 @@ export class ColumnChooser implements IAction {
     private confirmDlgBtnClick(args: Object): void {
         this.parent.notify(events.columnChooserOpened, { event: args, dialog: this.dlgObj });
         this.stateChangeColumns = [];
-        let uncheckedLength: number = this.ulElement.querySelectorAll('.e-uncheck:not(.e-selectall)').length;
+        let uncheckedLength: number =  this.ulElement.querySelector('.e-uncheck') &&
+        this.ulElement.querySelectorAll('.e-uncheck:not(.e-selectall)').length;
         if (!isNullOrUndefined(args)) {
             if (uncheckedLength < this.parent.getColumns().length) {
                 this.parent.trigger(events.actionBegin, {requestType: 'columnstate'});
@@ -429,7 +430,8 @@ export class ColumnChooser implements IAction {
         let fltrCol: Column[];
         let okButton: Button;
         let buttonEle: HTMLElement = this.dlgDiv.querySelector('.e-footer-content');
-        let selectedCbox: number = this.ulElement.querySelectorAll('.e-check:not(.e-selectall)').length;
+        let selectedCbox: number = this.ulElement.querySelector('.e-check') &&
+        this.ulElement.querySelectorAll('.e-check:not(.e-selectall)').length;
         this.isInitialOpen = true;
         if (buttonEle) {
             okButton = (buttonEle.querySelector('.e-btn') as EJ2Intance).ej2_instances[0] as Button;

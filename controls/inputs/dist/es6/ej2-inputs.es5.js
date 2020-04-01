@@ -325,8 +325,9 @@ var Input;
         var result = '';
         if (!isNullOrUndefined(placeholder) && placeholder !== '') {
             var spanEle = document.createElement('span');
-            spanEle.innerHTML = placeholder;
-            result = spanEle.innerHTML;
+            spanEle.innerHTML = '<input  placeholder="' + placeholder + '"/>';
+            var hiddenInput = (spanEle.children[0]);
+            result = hiddenInput.placeholder;
         }
         return result;
     }
@@ -1032,13 +1033,17 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
     };
     /* Wrapper creation */
     NumericTextBox.prototype.createWrapper = function () {
+        var updatedCssClassValue = this.cssClass;
+        if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+            updatedCssClassValue = this.getNumericValidClassList(this.cssClass);
+        }
         var inputObj = Input.createInput({
             element: this.element,
             floatLabelType: this.floatLabelType,
             properties: {
                 readonly: this.readonly,
                 placeholder: this.placeholder,
-                cssClass: this.cssClass,
+                cssClass: updatedCssClassValue,
                 enableRtl: this.enableRtl,
                 showClearButton: this.showClearButton,
                 enabled: this.enabled
@@ -1089,13 +1094,26 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    NumericTextBox.prototype.updateCssClass = function (newClass, oldClass) {
+        Input.setCssClass(this.getNumericValidClassList(newClass), [this.container], this.getNumericValidClassList(oldClass));
+    };
+    NumericTextBox.prototype.getNumericValidClassList = function (numericClassName) {
+        var result = numericClassName;
+        if (!isNullOrUndefined(numericClassName) && numericClassName !== '') {
+            result = (numericClassName.replace(/\s+/g, ' ')).trim();
+        }
+        return result;
+    };
     NumericTextBox.prototype.updateHTMLAttrToWrapper = function () {
         if (!isNullOrUndefined(this.htmlAttributes)) {
             for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
                 var pro = _a[_i];
                 if (wrapperAttributes.indexOf(pro) > -1) {
                     if (pro === 'class') {
-                        addClass([this.container], this.htmlAttributes[pro].split(' '));
+                        var updatedClassValue = this.getNumericValidClassList(this.htmlAttributes[pro]);
+                        if (updatedClassValue !== '') {
+                            addClass([this.container], updatedClassValue.split(' '));
+                        }
                     }
                     else if (pro === 'style') {
                         var numericStyle = this.container.getAttribute(pro);
@@ -1502,6 +1520,9 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
             this.setElementValue(elementValue);
             attributes(this.element, { 'aria-valuenow': value });
             this.hiddenInput.value = this.value.toString();
+            if (this.value !== null && this.serverDecimalSeparator) {
+                this.hiddenInput.value = this.hiddenInput.value.replace('.', this.serverDecimalSeparator);
+            }
         }
         else {
             this.setElementValue('');
@@ -1868,7 +1889,7 @@ var NumericTextBox = /** @__PURE__ @class */ (function (_super) {
                     this.setElementWidth(newProp.width);
                     break;
                 case 'cssClass':
-                    Input.setCssClass(newProp.cssClass, [this.container], oldProp.cssClass);
+                    this.updateCssClass(newProp.cssClass, oldProp.cssClass);
                     break;
                 case 'enabled':
                     Input.setEnabled(newProp.enabled, this.element);
@@ -3239,13 +3260,26 @@ var MaskedTextBox = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    MaskedTextBox.prototype.updateCssClass = function (newClass, oldClass) {
+        Input.setCssClass(this.getValidClassList(newClass), [this.inputObj.container], this.getValidClassList(oldClass));
+    };
+    MaskedTextBox.prototype.getValidClassList = function (maskClassName) {
+        var result = maskClassName;
+        if (!isNullOrUndefined(maskClassName) && maskClassName !== '') {
+            result = (maskClassName.replace(/\s+/g, ' ')).trim();
+        }
+        return result;
+    };
     MaskedTextBox.prototype.updateHTMLAttrToWrapper = function () {
         if (!isNullOrUndefined(this.htmlAttributes)) {
             for (var _i = 0, _a = Object.keys(this.htmlAttributes); _i < _a.length; _i++) {
                 var key = _a[_i];
                 if (wrapperAttr.indexOf(key) > -1) {
                     if (key === 'class') {
-                        addClass([this.inputObj.container], this.htmlAttributes[key].split(' '));
+                        var updatedClassValues = (this.htmlAttributes[key].replace(/\s+/g, ' ')).trim();
+                        if (updatedClassValues !== '') {
+                            addClass([this.inputObj.container], updatedClassValues.split(' '));
+                        }
                     }
                     else if (key === 'style') {
                         var maskStyle = this.inputObj.container.getAttribute(key);
@@ -3347,12 +3381,16 @@ var MaskedTextBox = /** @__PURE__ @class */ (function (_super) {
         }
     };
     MaskedTextBox.prototype.createWrapper = function () {
+        var updatedCssClassValues = this.cssClass;
+        if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+            updatedCssClassValues = this.getValidClassList(this.cssClass);
+        }
         this.inputObj = Input.createInput({
             element: this.element,
             floatLabelType: this.floatLabelType,
             properties: {
                 enableRtl: this.enableRtl,
-                cssClass: this.cssClass,
+                cssClass: updatedCssClassValues,
                 enabled: this.enabled,
                 readonly: this.readonly,
                 placeholder: this.placeholder,
@@ -3382,7 +3420,7 @@ var MaskedTextBox = /** @__PURE__ @class */ (function (_super) {
                     this.setWidth(newProp.width);
                     break;
                 case 'cssClass':
-                    Input.setCssClass(newProp.cssClass, [this.inputObj.container], oldProp.cssClass);
+                    this.updateCssClass(newProp.cssClass, oldProp.cssClass);
                     break;
                 case 'enabled':
                     Input.setEnabled(newProp.enabled, this.element, this.floatLabelType, this.inputObj.container);
@@ -3607,6 +3645,7 @@ var TicksData = /** @__PURE__ @class */ (function (_super) {
 }(ChildProperty));
 /**
  * It illustrates the color track data in slider.
+ * {% codeBlock src='slider/colorrange/index.md' %}{% endcodeBlock %}
  */
 var ColorRangeData = /** @__PURE__ @class */ (function (_super) {
     __extends$2(ColorRangeData, _super);
@@ -3626,6 +3665,7 @@ var ColorRangeData = /** @__PURE__ @class */ (function (_super) {
 }(ChildProperty));
 /**
  * It illustrates the limit data in slider.
+ * {% codeBlock src='slider/limits/index.md' %}{% endcodeBlock %}
  */
 var LimitData = /** @__PURE__ @class */ (function (_super) {
     __extends$2(LimitData, _super);
@@ -4439,7 +4479,9 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
             tooltipContentElement.classList.add(classNames.materialTooltipHide);
             this.firstHandle.style.cursor = '-webkit-grab';
             this.firstHandle.style.cursor = 'grab';
-            this.materialHandle.style.transform = 'scale(1)';
+            if (this.materialHandle) {
+                this.materialHandle.style.transform = 'scale(1)';
+            }
             this.tooltipElement.classList.remove(classNames.materialTooltipOpen);
             this.setTooltipTransform();
             this.tooltipTarget = undefined;
@@ -6211,8 +6253,8 @@ var Slider = /** @__PURE__ @class */ (function (_super) {
         return this.addOnPersist(keyEntity);
     };
     /**
-     * Prepares the slider for safe removal from the DOM.
-     * Detaches all event handlers, attributes, and classes to avoid memory leaks.
+     * Removes the component from the DOM and detaches all its related event handlers.
+     * Also it removes the attributes and classes.
      * @method destroy
      * @return {void}
      */
@@ -8055,7 +8097,10 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 var pro = _a[_i];
                 if (wrapperAttr$1.indexOf(pro) > -1) {
                     if (pro === 'class') {
-                        addClass([this.uploadWrapper], this.htmlAttributes[pro].split(' '));
+                        var updatedClassValues = (this.htmlAttributes[pro].replace(/\s+/g, ' ')).trim();
+                        if (updatedClassValues !== '') {
+                            addClass([this.uploadWrapper], updatedClassValues.split(' '));
+                        }
                     }
                     else if (pro === 'style') {
                         var uploadStyle = this.uploadWrapper.getAttribute(pro);
@@ -8113,11 +8158,19 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
         }
     };
     Uploader.prototype.setCSSClass = function (oldCSSClass) {
-        if (this.cssClass) {
-            addClass([this.uploadWrapper], this.cssClass.split(this.cssClass.indexOf(',') > -1 ? ',' : ' '));
+        var updatedCssClassValue = this.cssClass;
+        if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+            updatedCssClassValue = (this.cssClass.replace(/\s+/g, ' ')).trim();
         }
-        if (oldCSSClass) {
-            removeClass([this.uploadWrapper], oldCSSClass.split(' '));
+        if (!isNullOrUndefined(this.cssClass) && updatedCssClassValue !== '') {
+            addClass([this.uploadWrapper], updatedCssClassValue.split(updatedCssClassValue.indexOf(',') > -1 ? ',' : ' '));
+        }
+        var updatedOldCssClass = oldCSSClass;
+        if (!isNullOrUndefined(oldCSSClass)) {
+            updatedOldCssClass = (oldCSSClass.replace(/\s+/g, ' ')).trim();
+        }
+        if (!isNullOrUndefined(oldCSSClass) && updatedOldCssClass !== '') {
+            removeClass([this.uploadWrapper], updatedOldCssClass.split(' '));
         }
     };
     Uploader.prototype.wireEvents = function () {
@@ -8531,7 +8584,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     };
     /* istanbul ignore next */
     Uploader.prototype.checkDirectoryUpload = function (items) {
-        for (var i = 0; i < items.length; i++) {
+        for (var i = 0; items && i < items.length; i++) {
             // tslint:disable-next-line
             var item = items[i].webkitGetAsEntry();
             if (item.isDirectory) {
@@ -8543,7 +8596,6 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
     // tslint:disable
     /* istanbul ignore next */
     Uploader.prototype.traverseFileTree = function (item, event) {
-        var _this = this;
         if (item.isFile) {
             this.filesEntries.push(item);
         }
@@ -8551,15 +8603,25 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             // tslint:disable-next-line
             var directoryReader = item.createReader();
             // tslint:disable-next-line
-            directoryReader.readEntries(function (entries) {
-                for (var i = 0; i < entries.length; i++) {
-                    _this.traverseFileTree(entries[i]);
-                    // tslint:disable-next-line
-                }
-                
-                _this.pushFilesEntries(event);
-            });
+            this.readFileFromDirectory(directoryReader, event);
         }
+    };
+    // tslint:disable
+    /* istanbul ignore next */
+    Uploader.prototype.readFileFromDirectory = function (directoryReader, event) {
+        var _this = this;
+        // tslint:disable-next-line
+        directoryReader.readEntries(function (entries) {
+            for (var i = 0; i < entries.length; i++) {
+                _this.traverseFileTree(entries[i]);
+                // tslint:disable-next-line
+            }
+            
+            _this.pushFilesEntries(event);
+            if (entries.length) {
+                _this.readFileFromDirectory(directoryReader);
+            }
+        });
     };
     Uploader.prototype.pushFilesEntries = function (event) {
         var _this = this;
@@ -8673,7 +8735,8 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
             status: this.localizedTexts('readyToUploadMessage'),
             type: this.getFileType(file.name),
             validationMessages: this.validatedFileSize(file.size),
-            statusCode: '1'
+            statusCode: '1',
+            id: getUniqueID(file.name.substring(0, file.name.lastIndexOf('.'))) + '.' + this.getFileType(file.name)
         };
         /* istanbul ignore next */
         if (paste) {
@@ -8700,7 +8763,7 @@ var Uploader = /** @__PURE__ @class */ (function (_super) {
                 if (eventArgs.isModified && eventArgs.modifiedFilesData.length > 0) {
                     for (var j = 0; j < eventArgs.modifiedFilesData.length; j++) {
                         for (var k = 0; k < fileData.length; k++) {
-                            if (eventArgs.modifiedFilesData[j].name === fileData[k].name) {
+                            if (eventArgs.modifiedFilesData[j].id === fileData[k].id) {
                                 eventArgs.modifiedFilesData[j].rawFile = fileData[k].rawFile;
                             }
                         }
@@ -12834,7 +12897,7 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
                     }
                     break;
                 case 'cssClass':
-                    Input.setCssClass(newProp.cssClass, [this.textboxWrapper.container], oldProp.cssClass);
+                    this.updateCssClass(newProp.cssClass, oldProp.cssClass);
                     break;
                 case 'locale':
                     this.globalize = new Internationalization(this.locale);
@@ -12978,6 +13041,10 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     TextBox.prototype.render = function () {
+        var updatedCssClassValue = this.cssClass;
+        if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+            updatedCssClassValue = this.getInputValidClassList(this.cssClass);
+        }
         if (!(isBlazor() && this.isServerRendered)) {
             this.respectiveElement = (this.isHiddenInput) ? this.textarea : this.element;
             this.textboxWrapper = Input.createInput({
@@ -12986,7 +13053,7 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
                 properties: {
                     enabled: this.enabled,
                     enableRtl: this.enableRtl,
-                    cssClass: this.cssClass,
+                    cssClass: updatedCssClassValue,
                     readonly: this.readonly,
                     placeholder: this.placeholder,
                     showClearButton: this.showClearButton
@@ -13039,7 +13106,10 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
                 var key = _a[_i];
                 if (containerAttr.indexOf(key) > -1) {
                     if (key === 'class') {
-                        addClass([this.textboxWrapper.container], this.htmlAttributes[key].split(' '));
+                        var updatedClassValues = this.getInputValidClassList(this.htmlAttributes[key]);
+                        if (updatedClassValues !== '') {
+                            addClass([this.textboxWrapper.container], updatedClassValues.split(' '));
+                        }
                     }
                     else if (key === 'style') {
                         var setStyle = this.textboxWrapper.container.getAttribute(key);
@@ -13063,6 +13133,16 @@ var TextBox = /** @__PURE__ @class */ (function (_super) {
                 }
             }
         }
+    };
+    TextBox.prototype.updateCssClass = function (newClass, oldClass) {
+        Input.setCssClass(this.getInputValidClassList(newClass), [this.textboxWrapper.container], this.getInputValidClassList(oldClass));
+    };
+    TextBox.prototype.getInputValidClassList = function (inputClassName) {
+        var result = inputClassName;
+        if (!isNullOrUndefined(inputClassName) && inputClassName !== '') {
+            result = (inputClassName.replace(/\s+/g, ' ')).trim();
+        }
+        return result;
     };
     TextBox.prototype.setInitialValue = function () {
         if (!this.isAngular) {

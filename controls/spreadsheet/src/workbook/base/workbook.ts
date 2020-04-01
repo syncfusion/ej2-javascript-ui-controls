@@ -1,6 +1,6 @@
 import { Component, Property, NotifyPropertyChanges, INotifyPropertyChanged, Collection, Complex, EmitType } from '@syncfusion/ej2-base';
 import { initSheet, getSheet, getSheetIndexFromId, getSheetIndexByName, getSheetIndex } from './sheet';
-import { Event, ModuleDeclaration, merge, L10n } from '@syncfusion/ej2-base';
+import { Event, ModuleDeclaration, merge, L10n, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { WorkbookModel } from './workbook-model';
 import { getWorkbookRequiredModules } from '../common/module';
 import { SheetModel, CellModel, ColumnModel, RowModel, getData, clearRange } from './index';
@@ -8,16 +8,16 @@ import { OpenOptions, BeforeOpenEventArgs, OpenFailureArgs, CellValidationEventA
 import { DefineName, CellStyle, updateUsedRange, getIndexesFromAddress, localeData, workbookLocale, BorderType } from '../common/index';
 import * as events from '../common/event';
 import { CellStyleModel, DefineNameModel, HyperlinkModel, insertModel, InsertDeleteModelArgs, getAddressInfo } from '../common/index';
-import { setCellFormat, sheetCreated, deleteModel, ModelType, ProtectSettingsModel, ValidationModel } from '../common/index';
+import { setCellFormat, sheetCreated, deleteModel, ModelType, ProtectSettingsModel, ValidationModel, setLockCells } from '../common/index';
 import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, SaveOptions, SetCellFormatArgs } from '../common/interface';
 import { SortOptions, BeforeSortEventArgs, SortEventArgs, FindOptions, CellInfoEventArgs } from '../common/index';
-import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs } from '../common/index';
+import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs, setMerge, MergeType, MergeArgs } from '../common/index';
 import { getCell, skipDefaultValue, setCell, wrap as wrapText } from './cell';
 import { DataBind, setRow, setColumn } from '../index';
 import { WorkbookSave, WorkbookFormula, WorkbookOpen, WorkbookSort, WorkbookFilter } from '../integrations/index';
 import { WorkbookNumberFormat } from '../integrations/number-format';
 import { WorkbookEdit, WorkbookCellFormat, WorkbookHyperlink, WorkbookInsert, WorkbookProtectSheet } from '../actions/index';
-import { WorkbookDataValidation } from '../actions/index';
+import { WorkbookDataValidation, WorkbookMerge } from '../actions/index';
 import { ServiceLocator } from '../services/index';
 import { setLinkModel } from '../common/event';
 import { beginAction, completeAction } from '../../spreadsheet/common/event';
@@ -37,7 +37,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * new Spreadsheet({
      *      sheets: [{
      *                  name: 'First Sheet',
-     *                  rangeSettings: [{ dataSource: data }],
+     *                  range: [{ dataSource: data }],
      *                  rows: [{
      *                          index: 5,
      *                          cells: [{ index: 4, value: 'Total Amount:' },
@@ -56,21 +56,21 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     public sheets: SheetModel[];
 
     /**
-     * Specifies active sheet tab in workbook.
+     * Specifies active sheet index in workbook.
      *  ```html
      * <div id='Spreadsheet'></div>
      * ```
      * ```typescript
      * new Spreadsheet({
-     *      activeSheetTab: 2
+     *      activeSheetIndex: 2
      * ...
      *  }, '#Spreadsheet');
      * ```
-     * @default 1
+     * @default 0
      * @asptype int
      */
-    @Property(1)
-    public activeSheetTab: number;
+    @Property(0)
+    public activeSheetIndex: number;
 
     /**
      * Defines the height of the Spreadsheet. It accepts height as pixels, number, and percentage.
@@ -201,6 +201,13 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property(true)
     public allowDelete: boolean;
+
+    /**
+     * It allows you to merge the range of cells.
+     * @default true
+     */
+    @Property(true)
+    public allowMerge: boolean;
 
     /**
      * It allows you to apply validation to the spreadsheet cells. 
@@ -387,7 +394,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         Workbook.Inject(
             DataBind, WorkbookSave, WorkbookOpen, WorkbookNumberFormat, WorkbookCellFormat, WorkbookEdit,
             WorkbookFormula, WorkbookSort, WorkbookHyperlink, WorkbookFilter, WorkbookInsert, WorkbookFindAndReplace,
-            WorkbookDataValidation, WorkbookProtectSheet);
+            WorkbookDataValidation, WorkbookProtectSheet, WorkbookMerge);
         this.commonCellStyle = {};
         if (options && options.cellStyle) { this.commonCellStyle = options.cellStyle; }
         if (this.getModuleName() === 'workbook') {
@@ -453,6 +460,17 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         this.notify(setCellFormat, { style: style, range: range, refreshRibbon: range.indexOf(sheet.activeCell) > -1 ? true : false });
     }
 
+    /**
+     * Applies cell lock to the specified range of cells.
+     * @param {string} range? - Specifies the address for the range of cells.
+     * @param {boolean} isLocked -Specifies the cell is locked or not.
+     */
+    public lockCells(range?: string, isLocked?: boolean): void {
+        let sheet: SheetModel = this.getActiveSheet();
+        range = range || sheet.selectedRange;
+        this.notify(setLockCells, { range: range, isLocked: isLocked});
+    }
+
     /** @hidden */
     public getCellStyleValue(cssProps: string[], indexes: number[]): CellStyleModel {
         let cell: CellModel = getCell(indexes[0], indexes[1], this.getActiveSheet());
@@ -482,8 +500,10 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     public createSheet(index: number = this.sheets.length, sheets: SheetModel[] = [{}]): void {
         this.sheets.splice(index, 0, ...sheets);
         initSheet(this, sheets);
-        this.notify(sheetCreated, { sheetIndex: index, sheets: sheets });
-        this.notify(events.workbookFormulaOperation, { action: 'registerSheet', sheetIndex: index, sheetCount: index + sheets.length });
+        this.notify(sheetCreated, { sheetIndex: index || 0, sheets: sheets });
+        this.notify(events.workbookFormulaOperation, {
+            action: 'registerSheet', sheetIndex: index || 0, sheetCount: index + sheets.length
+        });
     }
 
     /**
@@ -566,8 +586,10 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @returns void
      */
     public setBorder(style: CellStyleModel, range?: string, type?: BorderType): void {
-        this.notify(setCellFormat, <SetCellFormatArgs>{ style: style, borderType: type, range:
-            range || this.getActiveSheet().selectedRange });
+        this.notify(setCellFormat, <SetCellFormatArgs>{
+            style: style, borderType: type, range:
+                range || this.getActiveSheet().selectedRange
+        });
     }
 
     /**
@@ -587,8 +609,10 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @returns void
      */
     public insertColumn(startColumn?: number | ColumnModel[], endColumn?: number): void {
-        this.notify(insertModel, <InsertDeleteModelArgs>{ model: this.getActiveSheet(), start: startColumn, end: endColumn,
-            modelType: 'Column' });
+        this.notify(insertModel, <InsertDeleteModelArgs>{
+            model: this.getActiveSheet(), start: startColumn, end: endColumn,
+            modelType: 'Column'
+        });
     }
 
     /**
@@ -612,12 +636,28 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @returns void
      */
     public delete(startIndex?: number, endIndex?: number, model?: ModelType): void {
-        this.notify(deleteModel, <InsertDeleteModelArgs>{ model: !model || model === 'Sheet' ? this : this.getActiveSheet(), start:
-            startIndex || 0, end: endIndex || 0, modelType: model || 'Sheet' });
+        this.notify(deleteModel, <InsertDeleteModelArgs>{
+            model: !model || model === 'Sheet' ? this : this.getActiveSheet(), start:
+                startIndex || 0, end: endIndex || 0, modelType: model || 'Sheet'
+        });
     }
 
     /**
-     * Used to compute the specified expression/formula.
+     * Used to merge the range of cells.
+     * @param {string} range? - Specifies the rnage of cells as address.
+     * @param {MergeType} type? - Specifies the merge type. The possible values are,
+     * - All: Merge all the cells between provided range.
+     * - Horizontally: Merge the cells row-wise.
+     * - Vertically: Merge the cells column-wise.
+     * @returns void
+     */
+    public merge(range?: string, type?: MergeType): void {
+        range = range || this.getActiveSheet().selectedRange;
+        this.notify(setMerge, <MergeArgs>{ merge: true, range: range, type: type || 'All', refreshRibbon:
+            range.indexOf(this.getActiveSheet().activeCell) > -1 ? true : false });
+    }
+
+    /** Used to compute the specified expression/formula.
      * @param {string} formula - Specifies the formula(=SUM(A1:A3)) or expression(2+3).
      * @returns string | number
      */
@@ -639,7 +679,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
 
     /** @hidden */
     public getActiveSheet(): SheetModel {
-        return this.sheets[this.activeSheetTab - 1];
+        return this.sheets[this.activeSheetIndex];
     }
 
     /**
@@ -681,14 +721,14 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             action: 'getSheetInfo', sheetInfo: []
         };
         this.notify(events.workbookFormulaOperation, args);
-        let id: number = getSheetIndexByName(this, 'Sheet' + sheetIndex, args.sheetInfo);
+        let id: number = getSheetIndexByName(this, 'Sheet' + (sheetIndex + 1), args.sheetInfo);
         if (id === -1) {
             let errArgs: { action: string, refError: string } = { action: 'getReferenceError', refError: '' };
             this.notify(events.workbookFormulaOperation, errArgs);
             return errArgs.refError;
         }
-        sheetIndex = getSheetIndexFromId(this, sheetIndex);
-        let sheet: SheetModel = getSheet(this, sheetIndex - 1);
+        sheetIndex = getSheetIndexFromId(this, sheetIndex + 1);
+        let sheet: SheetModel = getSheet(this, sheetIndex);
         let cell: CellModel = getCell(rowIndex - 1, colIndex - 1, sheet);
         return (cell && cell.value) || '';
     }
@@ -746,9 +786,9 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
             if (!eventArgs.cancel) {
                 this.notify(
                     events.beginSave, {
-                    saveSettings: eventArgs, isFullPost: eventArgs.isFullPost,
-                    needBlobData: eventArgs.needBlobData, customParams: eventArgs.customParams
-                });
+                        saveSettings: eventArgs, isFullPost: eventArgs.isFullPost,
+                        needBlobData: eventArgs.needBlobData, customParams: eventArgs.customParams
+                    });
             }
         }
     }
@@ -799,7 +839,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * Protect the active sheet based on the protect sheetings.
      * @param protectSettings - Specifies the protect settings of the sheet.
      */
-    public protectSheet(protectSettings?: ProtectSettingsModel): void {
+    public protectSheet(sheetIndex?: number | string, protectSettings?: ProtectSettingsModel): void {
       this.notify(events.protectsheetHandler, protectSettings);
     }
 
@@ -821,7 +861,7 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         return sortArgs.promise as Promise<SortEventArgs>;
     }
 
-    public addDataValidation( rules: ValidationModel, range?: string): void {
+    public addDataValidation(rules: ValidationModel, range?: string): void {
         range = range ? range : this.getActiveSheet().selectedRange;
         let eventArgs: CellValidationEventArgs = {
             range: range, type: rules.type, operator: rules.operator, value1: rules.value1,
@@ -829,29 +869,29 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
         };
         this.notify(beginAction, { eventArgs: eventArgs, action: 'validation' });
         if (!eventArgs.cancel) {
-        range = eventArgs.range;
-        rules.type = eventArgs.type;
-        rules.operator = eventArgs.operator;
-        rules.value1 = eventArgs.value1;
-        rules.value2 = eventArgs.value2;
-        rules.ignoreBlank = eventArgs.ignoreBlank;
-        rules.inCellDropDown = eventArgs.inCellDropDown;
-        this.notify(events.setValidation, { rules: rules, range: range});
-        delete eventArgs.cancel;
-        this.notify(completeAction, { eventArgs: eventArgs, action: 'validation' });
+            range = eventArgs.range;
+            rules.type = eventArgs.type;
+            rules.operator = eventArgs.operator;
+            rules.value1 = eventArgs.value1;
+            rules.value2 = eventArgs.value2;
+            rules.ignoreBlank = eventArgs.ignoreBlank;
+            rules.inCellDropDown = eventArgs.inCellDropDown;
+            this.notify(events.setValidation, { rules: rules, range: range });
+            delete eventArgs.cancel;
+            this.notify(completeAction, { eventArgs: eventArgs, action: 'validation' });
         }
     }
 
-    public removeDataValidation( range?: string): void {
-        this.notify(events.removeValidation, { range: range});
+    public removeDataValidation(range?: string): void {
+        this.notify(events.removeValidation, { range: range });
     }
 
-    public addInvalidHighlight( range: string): void {
-        this.notify( events.addHighlight, { range: range });
+    public addInvalidHighlight(range: string): void {
+        this.notify(events.addHighlight, { range: range });
     }
 
-    public removeInvalidHighlight( range: string): void {
-        this.notify( events.removeHighlight, { range: range });
+    public removeInvalidHighlight(range: string): void {
+        this.notify(events.removeHighlight, { range: range });
     }
 
     /**
@@ -860,15 +900,20 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
      * @param {string} address - Address to update.
      */
     public updateCell(cell: CellModel, address?: string): void {
-        let range: number[] = getIndexesFromAddress(address);
-        let sheetIdx: number = getSheetIndex(this, address.split('!')[0]) || this.activeSheetTab - 1;
+        let sheetIdx: number; let range: number[] = getIndexesFromAddress(address);
+        if (address.includes('!')) {
+            sheetIdx = getSheetIndex(this, address.split('!')[0]);
+            if (sheetIdx === undefined) { sheetIdx = this.activeSheetIndex; }
+        } else {
+            sheetIdx = this.activeSheetIndex;
+        }
         setCell(range[0], range[1], this.sheets[sheetIdx], cell, true);
         if (cell.value) {
             this.notify(
                 events.workbookEditOperation,
                 {
                     action: 'updateCellValue', address: range, value: cell.value,
-                    sheetIndex: sheetIdx + 1
+                    sheetIndex: sheetIdx
                 });
         }
     }
@@ -916,11 +961,10 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /** @hidden */
-    public clearRange(
-        address?: string, sheetIndex?: number, valueOnly: boolean = true): void {
-        address = address ? address : this.getActiveSheet().selectedRange;
-        sheetIndex = sheetIndex ? sheetIndex : this.activeSheetTab;
-        clearRange(this, address, sheetIndex, valueOnly);
+    public clearRange(address?: string, sheetIndex?: number, valueOnly: boolean = true): void {
+        clearRange(
+            this, address || this.getActiveSheet().selectedRange,
+            isNullOrUndefined(sheetIndex) ? this.activeSheetIndex : sheetIndex, valueOnly);
     }
 
     /**

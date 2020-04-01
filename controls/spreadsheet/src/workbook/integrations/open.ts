@@ -3,7 +3,8 @@
  */
 import { isUndefined } from '@syncfusion/ej2-base';
 import { OpenOptions, OpenFailureArgs, BeforeOpenEventArgs } from '../../spreadsheet/common/interface';
-import { workbookOpen, openSuccess, openFailure, sheetsDestroyed, workbookFormulaOperation, sheetCreated } from '../common/index';
+import { workbookOpen, openSuccess, openFailure, sheetsDestroyed, workbookFormulaOperation } from '../common/index';
+import { sheetCreated, protectSheetWorkBook } from '../common/index';
 import { WorkbookModel, Workbook, initSheet } from '../base/index';
 import { beginAction } from '../../spreadsheet/common/event';
 
@@ -96,11 +97,11 @@ export class WorkbookOpen {
         this.parent.sheetNameCount = 1;
         this.parent.sheets = [];
         this.parent.notify(sheetsDestroyed, {});
-        workbookModel.activeSheetTab = workbookModel.activeSheetTab || 1;
+        workbookModel.activeSheetIndex  = workbookModel.activeSheetIndex  || 0;
         this.parent.setProperties(
             {
                 'sheets': workbookModel.sheets,
-                'activeSheetTab': workbookModel.activeSheetTab,
+                'activeSheetIndex': workbookModel.activeSheetIndex,
                 'definedNames': workbookModel.definedNames || []
             },
             true
@@ -109,6 +110,7 @@ export class WorkbookOpen {
         this.parent.notify(sheetCreated, null);
         this.parent.notify(workbookFormulaOperation, { action: 'registerSheet', isImport: true });
         this.parent.notify(workbookFormulaOperation, { action: 'initiateDefinedNames' });
+        this.parent.notify(protectSheetWorkBook, null);
     }
 
     /**

@@ -28,10 +28,10 @@ export class LinkAnnotation {
             let linkAnnotation: number[] = data.linkAnnotation;
             let linkPage: number[] = data.linkPage;
             let annotationY: number[] = data.annotationLocation;
-            if (hyperlinks.length > 0 && hyperlinksBounds.length > 0) {
+            if (hyperlinks && hyperlinks.length > 0 && hyperlinksBounds.length > 0) {
                 this.renderWebLink(hyperlinks, hyperlinksBounds, pageIndex);
             }
-            if (linkAnnotation.length > 0 && linkPage.length > 0) {
+            if (linkAnnotation && linkAnnotation.length > 0 && linkPage.length > 0) {
                 this.renderDocumentLink(linkAnnotation, linkPage, annotationY, pageIndex);
             }
         }

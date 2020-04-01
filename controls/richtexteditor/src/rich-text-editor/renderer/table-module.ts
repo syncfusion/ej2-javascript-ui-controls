@@ -484,20 +484,22 @@ export class Table {
         let pos: OffsetPosition = this.calcPos(table);
         for (let i: number = 0; columns.length > i; i++) {
             let colReEle: HTMLElement = this.parent.createElement('span', {
-                className: classes.CLS_TB_COL_RES, attrs: {
+                attrs: {
                     'data-col': (i + 1).toString(), 'unselectable': 'on', 'contenteditable': 'false'
                 }
             });
+            colReEle.classList.add(classes.CLS_RTE_TABLE_RESIZE, classes.CLS_TB_COL_RES);
             colReEle.style.cssText = 'height: ' + height + 'px; width: 4px; top: ' + pos.top +
                 'px; left:' + (pos.left + this.calcPos(columns[i] as HTMLElement).left) + 'px;';
             this.contentModule.getEditPanel().appendChild(colReEle);
         }
         for (let i: number = 0; rows.length > i; i++) {
             let rowReEle: HTMLElement = this.parent.createElement('span', {
-                className: classes.CLS_TB_ROW_RES, attrs: {
+                 attrs: {
                     'data-row': (i).toString(), 'unselectable': 'on', 'contenteditable': 'false'
                 }
             });
+            rowReEle.classList.add(classes.CLS_RTE_TABLE_RESIZE, classes.CLS_TB_ROW_RES);
             let rowPosLeft: number = !isNOU(table.getAttribute('cellspacing')) || table.getAttribute('cellspacing') !== '' ?
             0 : this.calcPos(rows[i] as HTMLElement).left;
             rowReEle.style.cssText = 'width: ' + width + 'px; height: 4px; top: ' +

@@ -313,7 +313,7 @@ export class HScroll extends Component<HTMLElement> implements INotifyPropertyCh
                 } else if (e.swipeDirection === 'Right') {
                     swipeEle.scrollLeft -= distance * step;
                 }
-                start -= 0.02;
+                start -= 0.5;
                 window.requestAnimationFrame(animate as FrameRequestCallback);
             }
         };

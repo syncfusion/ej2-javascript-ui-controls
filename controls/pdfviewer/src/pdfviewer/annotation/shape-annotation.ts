@@ -280,7 +280,8 @@ export class ShapeAnnotation {
                             // tslint:disable-next-line:max-line-length
                             labelContent: annotation.LabelContent, enableShapeLabel: annotation.EnableShapeLabel, labelFillColor: annotation.LabelFillColor,
                             fontColor: annotation.FontColor, labelBorderColor: annotation.LabelBorderColor, fontSize: annotation.FontSize,
-                            labelBounds: annotation.LabelBounds, annotationSelectorSettings: annotation.AnnotationSelectorSettings
+                            labelBounds: annotation.LabelBounds, annotationSelectorSettings: annotation.AnnotationSelectorSettings,
+                            annotationSettings: annotationObject.annotationSettings
                         };
                         let addedAnnot: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
                         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape');

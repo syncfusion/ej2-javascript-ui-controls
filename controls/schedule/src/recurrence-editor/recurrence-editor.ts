@@ -169,6 +169,7 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
     /**
      * Sets the specific calendar type to be applied on recurrence editor.
      * @default 'Gregorian'
+     * @deprecated
      */
     @Property('Gregorian')
     public calendarMode: CalendarType;
@@ -300,8 +301,10 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         if (!isNullOrUndefined(this.value) && this.value !== '') {
             this.setRecurrenceRule(this.value as string);
         } else {
-            this.startState(this.repeatType.value.toString().toUpperCase(), NEVER, this.startDate);
-            this.updateForm(this.repeatType.value.toString());
+            if (!isNullOrUndefined(this.repeatType.value)) {
+                this.startState(this.repeatType.value.toString().toUpperCase(), NEVER, this.startDate);
+                this.updateForm(this.repeatType.value.toString());
+            }
             if (this.selectedType > 0) {
                 this.setProperties({ value: this.getRecurrenceRule() }, false);
             }
@@ -710,15 +713,20 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         return dataSource;
     }
     private getDayData(format: DayFormateType): { [key: string]: string }[] {
+        if (isBlazor() && format === 'narrow') {
+            format = 'short';
+        }
         let weekday: string[] = [KEYSUNDAY, KEYMONDAY, KEYTUESDAY, KEYWEDNESDAY, KEYTHURSDAY, KEYFRIDAY, KEYSATURDAY];
         let dayData: { [key: string]: string }[] = [];
         let cldrObj: string[];
         this.rotateArray(weekday, this.firstDayOfWeek);
         if (this.locale === 'en' || this.locale === 'en-US') {
-            cldrObj = <string[]>(getValue('days.stand-alone.' + format, getDefaultDateObject(this.getCalendarMode())));
+            let nameSpaceString: string = isBlazor() ? 'days.' : 'days.stand-alone.';
+            cldrObj = <string[]>(getValue(nameSpaceString + format, getDefaultDateObject(this.getCalendarMode())));
         } else {
-            cldrObj = <string[]>(getValue(
-                'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.days.stand-alone.' + format, cldrData));
+            let nameSpaceString: string = isBlazor() ? this.locale + '.dates.days.' + format :
+                'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.days.stand-alone.' + format;
+            cldrObj = <string[]>(getValue(nameSpaceString, cldrData));
         }
         for (let obj of weekday) {
             let day: string = getValue(obj, cldrObj);
@@ -730,10 +738,12 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         let monthData: { [key: string]: string }[] = [];
         let cldrObj: string[];
         if (this.locale === 'en' || this.locale === 'en-US') {
-            cldrObj = <string[]>(getValue('months.stand-alone.wide', getDefaultDateObject(this.getCalendarMode())));
+            let nameSpaceString: string = isBlazor() ? 'months.wide' : 'months.stand-alone.wide';
+            cldrObj = <string[]>(getValue(nameSpaceString, getDefaultDateObject(this.getCalendarMode())));
         } else {
-            cldrObj = <string[]>(getValue(
-                'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.months.stand-alone.wide', cldrData));
+            let nameSpaceString: string = isBlazor() ? this.locale + '.dates.months.wide' :
+             'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.months.stand-alone.wide';
+            cldrObj = <string[]>(getValue(nameSpaceString, cldrData));
         }
         for (let obj of Object.keys(cldrObj)) {
             monthData.push({
@@ -935,6 +945,15 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
         this.startState(NONE, NEVER, this.startDate);
         this.setDefaultValue();
     }
+    public updateRuleUntilDate(startDate: Date): void {
+        if (this.untilDateObj.value && startDate) {
+            let untilDate: Date = this.untilDateObj.value;
+            let newUntilDate: Date = new Date(
+                untilDate.getFullYear(), untilDate.getMonth(), untilDate.getDate(), startDate.getHours(),
+                startDate.getMinutes(), startDate.getMilliseconds());
+            this.untilDateObj.setProperties({ value: newUntilDate });
+        }
+    }
     private getCalendarMode(): string {
         return this.calendarMode.toLowerCase();
     }
@@ -1109,5 +1128,5 @@ export interface RecurrenceEditorChangeEventArgs {
     /** Returns the current recurrence rule. */
     value: string;
 }
-type DayFormateType = 'wide' | 'narrow';
+type DayFormateType = 'wide' | 'narrow' | 'short';
 export type RepeatType = 'none' | 'daily' | 'weekly' | 'monthly' | 'yearly';

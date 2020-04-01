@@ -489,14 +489,15 @@ export class Edit {
         let ganttProp: ITaskData = currentData.ganttProperties;
         let taskType: string = ganttProp.taskType;
         let isEffectDriven: boolean;
+        let isAutoSchedule: boolean = ganttProp.isAutoSchedule;
         if (!isNullOrUndefined(ganttProp.resourceInfo)) {
             if (ganttProp.work > 0 || column === 'work') {
                 switch (taskType) {
                     case 'FixedUnit':
-                        if (ganttProp.resourceInfo.length &&
-                            (column === 'work' || ((column === 'resource') && isEffectDriven))) {
+                        if (isAutoSchedule && ganttProp.resourceInfo.length &&
+                            (column === 'work' || ((column === 'resource')))) {
                             this.parent.dataOperation.updateDurationWithWork(currentData);
-                        } else if (column === 'work') {
+                        } else if (!isAutoSchedule && column === 'work') {
                             this.parent.dataOperation.updateUnitWithWork(currentData);
                         } else {
                             this.parent.dataOperation.updateWorkWithDuration(currentData);
@@ -505,7 +506,7 @@ export class Edit {
                     case 'FixedWork':
                         if (ganttProp.resourceInfo.length === 0) {
                             return;
-                        } else {
+                        } else if (isAutoSchedule) {
                             if (column === 'duration' || column === 'endDate') {
                                 this.parent.dataOperation.updateUnitWithWork(currentData);
                                 if (ganttProp.duration === 0) {
@@ -517,10 +518,17 @@ export class Edit {
                             } else {
                                 this.parent.dataOperation.updateDurationWithWork(currentData);
                             }
+                        } else {
+                            if (column === 'work') {
+                                this.parent.dataOperation.updateUnitWithWork(currentData);
+                            } else {
+                                this.parent.dataOperation.updateWorkWithDuration(currentData);
+                            }
                         }
                         break;
                     case 'FixedDuration':
-                        if (ganttProp.resourceInfo.length && (column === 'work' || (isEffectDriven && (column === 'resource')))) {
+                        if (ganttProp.resourceInfo.length && (column === 'work' || (isAutoSchedule &&
+                             isEffectDriven && (column === 'resource')))) {
                             this.parent.dataOperation.updateUnitWithWork(currentData);
                         } else {
                             this.parent.dataOperation.updateWorkWithDuration(currentData);

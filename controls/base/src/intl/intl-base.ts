@@ -6,15 +6,25 @@ import { DateFormat, FormatOptions } from './date-formatter';
 import { NumberFormat, FormatParts, CommonOptions } from './number-formatter';
 import { isUndefined } from '../util';
 
-export const blazorCultureFormats: Object  = {
+export const blazorCultureFormats: Object = {
     'en-US': {
         'd': 'M/d/y',
         'D': 'EEEE, MMMM d, y',
         'f': 'EEEE, MMMM d, y h:mm a',
         'F': 'EEEE, MMMM d, y h:mm:s a',
         'g': 'M/d/y h:mm a',
-        't': 'h:mm a',
-        'T': 'h:m:s a'
+        'G': 'M/d/yyyy h:mm:ss tt',
+        'm': 'MMMM d',
+        'M': 'MMMM d',
+        'r': 'ddd, dd MMM yyyy HH\':\'mm\':\'ss \'GMT\'',
+        'R': 'ddd, dd MMM yyyy HH\':\'mm\':\'ss \'GMT\'',
+        's': 'yyyy\'-\'MM\'-\'dd\'T\'HH\':\'mm\':\'ss',
+        't': 'h:mm tt',
+        'T': 'h:m:s tt',
+        'u': 'yyyy\'-\'MM\'-\'dd HH\':\'mm\':\'ss\'Z\'',
+        'U': 'dddd, MMMM d, yyyy h:mm:ss tt',
+        'y': 'MMMM yyyy',
+        'Y': 'MMMM yyyy'
     }
 };
 /**
@@ -42,6 +52,7 @@ export namespace IntlBase {
         'EEEE': 'dddd',
         'E': 'ddd'
     };
+    export const dateConverterMapper: RegExp = /dddd|ddd/ig;
     const defaultFirstDay: string = 'sun';
     export const islamicRegex: RegExp = /^islamic/;
     const firstDayMapper: Object = {
@@ -360,7 +371,7 @@ export namespace IntlBase {
                             }
                         }
                     },
-                     "dayPeriods": {
+                    "dayPeriods": {
                         "format": {
                             "wide": {
                                 "am": "AM",
@@ -491,6 +502,162 @@ export namespace IntlBase {
             }
         }
     };
+    export const blazorDefaultObject: Object = {
+        "numbers": {
+            "mapper": {
+                "0": "0",
+                "1": "1",
+                "2": "2",
+                "3": "3",
+                "4": "4",
+                "5": "5",
+                "6": "6",
+                "7": "7",
+                "8": "8",
+                "9": "9"
+            },
+            "mapperDigits": "0123456789",
+            "numberSymbols": {
+                "decimal": ".",
+                "group": ",",
+                "plusSign": "+",
+                "minusSign": "-",
+                "percentSign": "%",
+                "nan": "NaN",
+                "timeSeparator": ":",
+                "infinity": "∞"
+            },
+            "timeSeparator": ":",
+            "currencySymbol": "$",
+            "currencypData": {
+                "nlead": "$",
+                "nend": "",
+                "groupSeparator": ",",
+                "groupData": {
+                    "primary": 3
+                },
+                "maximumFraction": 2,
+                "minimumFraction": 2
+            },
+            "percentpData": {
+                "nlead": "",
+                "nend": "%",
+                "groupSeparator": ",",
+                "groupData": {
+                    "primary": 3
+                },
+                "maximumFraction": 2,
+                "minimumFraction": 2
+            },
+            "percentnData": {
+                "nlead": "-",
+                "nend": "%",
+                "groupSeparator": ",",
+                "groupData": {
+                    "primary": 3
+                },
+                "maximumFraction": 2,
+                "minimumFraction": 2
+            },
+            "currencynData": {
+                "nlead": "($",
+                "nend": ")",
+                "groupSeparator": ",",
+                "groupData": {
+                    "primary": 3
+                },
+                "maximumFraction": 2,
+                "minimumFraction": 2
+            },
+            "decimalnData": {
+                "nlead": "-",
+                "nend": "",
+                "groupData": {
+                    "primary": 3
+                },
+                "maximumFraction": 2,
+                "minimumFraction": 2
+            },
+            "decimalpData": {
+                "nlead": "",
+                "nend": "",
+                "groupData": {
+                    "primary": 3
+                },
+                "maximumFraction": 2,
+                "minimumFraction": 2
+            }
+        },
+        "dates": {
+            "dayPeriods": {
+                "am": "AM",
+                "pm": "PM"
+            },
+            "dateSeperator": "/",
+            "days": {
+                "abbreviated": {
+                    "sun": "Sun",
+                    "mon": "Mon",
+                    "tue": "Tue",
+                    "wed": "Wed",
+                    "thu": "Thu",
+                    "fri": "Fri",
+                    "sat": "Sat"
+                },
+                "short": {
+                    "sun": "Su",
+                    "mon": "Mo",
+                    "tue": "Tu",
+                    "wed": "We",
+                    "thu": "Th",
+                    "fri": "Fr",
+                    "sat": "Sa"
+                },
+                "wide": {
+                    "sun": "Sunday",
+                    "mon": "Monday",
+                    "tue": "Tuesday",
+                    "wed": "Wednesday",
+                    "thu": "Thursday",
+                    "fri": "Friday",
+                    "sat": "Saturday"
+                }
+            },
+            "months": {
+                "abbreviated": {
+                    "1": "Jan",
+                    "2": "Feb",
+                    "3": "Mar",
+                    "4": "Apr",
+                    "5": "May",
+                    "6": "Jun",
+                    "7": "Jul",
+                    "8": "Aug",
+                    "9": "Sep",
+                    "10": "Oct",
+                    "11": "Nov",
+                    "12": "Dec"
+                },
+                "wide": {
+                    "1": "January",
+                    "2": "February",
+                    "3": "March",
+                    "4": "April",
+                    "5": "May",
+                    "6": "June",
+                    "7": "July",
+                    "8": "August",
+                    "9": "September",
+                    "10": "October",
+                    "11": "November",
+                    "12": "December"
+                }
+            },
+            "eras": {
+                "1": "AD"
+            }
+        }
+    };
     /* tslint:enable:quotemark */
     export const monthIndex: Object = {
         3: 'abbreviated',
@@ -523,21 +690,28 @@ export namespace IntlBase {
      * @param {string} type 
      * @returns {string}
      */
-    export function getResultantPattern(skeleton: string, dateObject: Object, type: string, isIslamic?: boolean): string {
+    export function getResultantPattern(
+        skeleton: string, dateObject: Object, type: string, isIslamic?: boolean,
+        blazorCulture?: string): string {
         let resPattern: string;
         let iType: string = type || 'date';
-        if (basicPatterns.indexOf(skeleton) !== -1) {
-            resPattern = getValue(iType + 'Formats.' + skeleton, dateObject);
-            if (iType === 'dateTime') {
-                let dPattern: string = getValue('dateFormats.' + skeleton, dateObject);
-                let tPattern: string = getValue('timeFormats.' + skeleton, dateObject);
-                resPattern = resPattern.replace('{1}', dPattern).replace('{0}', tPattern);
-            }
+        if (blazorCulture) {
+            resPattern = compareBlazorDateFormats({ skeleton: skeleton }, blazorCulture).format ||
+                compareBlazorDateFormats({ skeleton: 'd' }, 'en-US').format;
         } else {
-            resPattern = getValue('dateTimeFormats.availableFormats.' + skeleton, dateObject);
-        }
-        if (isUndefined(resPattern) && skeleton === 'yMd') {
-            resPattern = 'M/d/y';
+            if (basicPatterns.indexOf(skeleton) !== -1) {
+                resPattern = getValue(iType + 'Formats.' + skeleton, dateObject);
+                if (iType === 'dateTime') {
+                    let dPattern: string = getValue('dateFormats.' + skeleton, dateObject);
+                    let tPattern: string = getValue('timeFormats.' + skeleton, dateObject);
+                    resPattern = resPattern.replace('{1}', dPattern).replace('{0}', tPattern);
+                }
+            } else {
+                resPattern = getValue('dateTimeFormats.availableFormats.' + skeleton, dateObject);
+            }
+            if (isUndefined(resPattern) && skeleton === 'yMd') {
+                resPattern = 'M/d/y';
+            }
         }
         return resPattern;
     }
@@ -557,11 +731,12 @@ export namespace IntlBase {
     export function getDependables(cldr: Object, culture: string, mode: string, isNumber?: boolean): Dependables {
         let ret: Dependables = {};
         let calendartype: string = mode || 'gregorian';
-        ret.parserObject = parser.getMainObject(cldr, culture) || defaultObject;
+        ret.parserObject = parser.getMainObject(cldr, culture) || (isBlazor() ? blazorDefaultObject : defaultObject);
         if (isNumber) {
             ret.numericObject = getValue('numbers', ret.parserObject);
         } else {
-            ret.dateObject = getValue('dates.calendars.' + calendartype, ret.parserObject);
+            let dateString: string = isBlazor() ? 'dates' : ('dates.calendars.' + calendartype);
+            ret.dateObject = getValue(dateString, ret.parserObject);
         }
         return ret;
     }
@@ -583,14 +758,22 @@ export namespace IntlBase {
                 numSystem + '.standard',
                 obj) : '');
     }
-
+    export function ConvertDateToWeekFormat(format: string): string {
+        let convertMapper: string[] = format.match(dateConverterMapper);
+        if (convertMapper && isBlazor()) {
+            let tempString: string = convertMapper[0].length === 3 ? 'EEE' : 'EEEE';
+            return format.replace(dateConverterMapper, tempString);
+        }
+        return format;
+    }
     export function compareBlazorDateFormats(formatOptions: DateFormatOptions, culture?: string): DateFormatOptions {
         let format: string = formatOptions.format || formatOptions.skeleton;
-        let curFormatMapper : string  = getValue((culture || 'en-US') + '.' + format, blazorCultureFormats);
+        let curFormatMapper: string = getValue((culture || 'en-US') + '.' + format, blazorCultureFormats);
         if (!curFormatMapper) {
             curFormatMapper = getValue('en-US.' + format, blazorCultureFormats);
         }
         if (curFormatMapper) {
+            curFormatMapper = ConvertDateToWeekFormat(curFormatMapper);
             formatOptions.format = curFormatMapper.replace(/tt/, 'a');
         }
         return formatOptions;
@@ -833,20 +1016,27 @@ export namespace IntlBase {
     export function getActualNumberFormat(culture: string, options: NumberFormatOptions, cldr?: Object): string {
         let dependable: Dependables = getDependables(cldr, culture, '', true);
         let parseOptions: NumericParts = { custom: true };
+        let numrericObject: Object = dependable.numericObject;
         let minFrac: number;
         let curObj: GenericFormatOptions & { hasNegativePattern?: boolean } = {};
         let curMatch: string[] = (options.format || '').match(currencyFormatRegex);
+        let type: NumericSkeleton = formatRegex.test(options.format)  ? getProperNumericSkeleton(options.format || 'N') : {};
         if (curMatch) {
             let dOptions: CommonOptions = {};
-            dOptions.numberMapper = parser.getNumberMapper(dependable.parserObject, parser.getNumberingSystem(cldr), true);
-            let curCode: string = getCurrencySymbol(dependable.numericObject, options.currency || defaultCurrencyCode, options.altSymbol);
+            dOptions.numberMapper = isBlazor() ?
+                extend({}, dependable.numericObject) :
+                parser.getNumberMapper(dependable.parserObject, parser.getNumberingSystem(cldr), true);
+            let curCode: string = isBlazor() ? getValue('currencySymbol', dependable.numericObject) :
+                getCurrencySymbol(dependable.numericObject, options.currency || defaultCurrencyCode, options.altSymbol);
             let symbolPattern: string = getSymbolPattern(
                 'currency', dOptions.numberMapper.numberSystem, dependable.numericObject, (/a/i).test(options.format));
             symbolPattern = symbolPattern.replace(/\u00A4/g, curCode);
             let split: string[] = symbolPattern.split(';');
-            curObj.hasNegativePattern = (split.length > 1);
-            curObj.nData = getFormatData(split[1] || '-' + split[0], true, curCode);
-            curObj.pData = getFormatData(split[0], false, curCode);
+            curObj.hasNegativePattern = isBlazor() ? true : (split.length > 1);
+            curObj.nData = isBlazor() ? getValue(type.type + 'nData', numrericObject) :
+                getFormatData(split[1] || '-' + split[0], true, curCode);
+            curObj.pData = isBlazor() ? getValue(type.type + 'pData', numrericObject) :
+                getFormatData(split[0], false, curCode);
             if (!curMatch[2] && !options.minimumFractionDigits && !options.maximumFractionDigits) {
                 minFrac = getFormatData(symbolPattern.split(';')[0], true, '', true).minimumFraction;
             }
@@ -872,14 +1062,18 @@ export namespace IntlBase {
             if (options.useGrouping) {
                 actualPattern = groupingPattern(actualPattern);
             }
-            if (parseOptions.type === 'currency') {
+            if (parseOptions.type === 'currency' || (parseOptions.type && isBlazor())) {
+                if (isBlazor() && parseOptions.type !== 'currency') {
+                    curObj.pData = getValue(parseOptions.type + 'pData', numrericObject);
+                    curObj.nData = getValue(parseOptions.type + 'nData', numrericObject);
+                }
                 let cPattern: string = actualPattern;
                 actualPattern = curObj.pData.nlead + cPattern + curObj.pData.nend;
-                if (curObj.hasNegativePattern) {
+                if (curObj.hasNegativePattern || isBlazor()) {
                     actualPattern += ';' + curObj.nData.nlead + cPattern + curObj.nData.nend;
                 }
             }
-            if (parseOptions.type === 'percent') {
+            if (parseOptions.type === 'percent' && !isBlazor()) {
                 actualPattern += ' %';
             }
         } else {

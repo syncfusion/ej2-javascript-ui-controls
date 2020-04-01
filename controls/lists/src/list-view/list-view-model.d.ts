@@ -1,4 +1,4 @@
-﻿﻿﻿import { Virtualization } from './virtualization';import { merge, formatUnit, isNullOrUndefined, append, detach, ModuleDeclaration, isBlazor, extend } from '@syncfusion/ej2-base';import { attributes, addClass, removeClass, prepend, closest, remove } from '@syncfusion/ej2-base';import { Component, EventHandler, BaseEventArgs, Property, Complex, Event } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';import { KeyboardEventArgs, EmitType, compile, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { Animation, AnimationOptions, Effect, rippleEffect, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { createCheckBox } from '@syncfusion/ej2-buttons';import { ListBase, ListBaseOptions, SortOrder, getFieldValues, FieldsMapping } from '../common/list-base';import { updateBlazorTemplate, resetBlazorTemplate, blazorTemplates } from '@syncfusion/ej2-base';
+import { Virtualization } from './virtualization';import { merge, formatUnit, isNullOrUndefined, append, detach, ModuleDeclaration, isBlazor, extend } from '@syncfusion/ej2-base';import { attributes, addClass, removeClass, prepend, closest, remove } from '@syncfusion/ej2-base';import { Component, EventHandler, BaseEventArgs, Property, Complex, Event } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, ChildProperty } from '@syncfusion/ej2-base';import { KeyboardEventArgs, EmitType, compile, SanitizeHtmlHelper } from '@syncfusion/ej2-base';import { Animation, AnimationOptions, Effect, rippleEffect, Touch, SwipeEventArgs } from '@syncfusion/ej2-base';import { DataManager, Query } from '@syncfusion/ej2-data';import { createCheckBox } from '@syncfusion/ej2-buttons';import { ListBase, ListBaseOptions, SortOrder, getFieldValues, FieldsMapping } from '../common/list-base';import { updateBlazorTemplate, resetBlazorTemplate, blazorTemplates } from '@syncfusion/ej2-base';
 import {AnimationSettings,checkBoxPosition,SelectEventArgs} from "./list-view";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -8,70 +8,65 @@ import {ComponentModel} from '@syncfusion/ej2-base';
 export interface FieldSettingsModel {
 
     /**
-     * ID attribute of specific list-item.
+     * Specifies the id field mapped in dataSource.
      */
     id?: string;
 
     /**
-     * It is used to map the text value of list item from the dataSource.
+     * The `text` property is used to map the text value from the data source for each list item.
      */
     text?: string;
 
     /**
-     * This property used to check whether the list item is in checked state or not.
+     * The `isChecked` property is used to check whether the list items are in checked state or not.
      */
     isChecked?: string;
 
     /**
-     * To check whether the visibility state of list item.
+     * The `isVisible` property is used to check whether the list items are in visible state or not.
      */
     isVisible?: string;
 
     /**
-     * It is used to enable the list item
+     * Specifies the enabled state of the ListView component. 
+     * And, we can disable the component using this property by setting its value as false.
      */
     enabled?: string;
 
     /**
-     * It is used to customize the icon to the list items dynamically.
-     *  We can add specific image to the icons using iconCss property.
+     * The `iconCss` is used to customize the icon to the list items dynamically. 
+     *  We can add a specific image to the icons using `iconCss` property.
      */
     iconCss?: string;
 
     /**
-     * This property used for nested navigation of list-items.
-     * Refer the documentation [here](../../listview/nested-list)
-     *  to know more about this property with demo.
+     * The `child` property is used for nested navigation of listed items.
      */
     child?: string;
 
     /**
-     * It is used to display `tooltip content of text` while hovering on list items.
+     * The `tooltip` is used to display the information about the target element while hovering on list items.
      */
     tooltip?: string;
 
     /**
-     * It wraps the list view element into a group based on the value of groupBy property.
-     * Refer the documentation [here](../../listview/grouping)
-     *  to know more about this property with demo.
+     * The `groupBy` property is used to wraps the ListView elements into a group.
      */
     groupBy?: string;
 
     /**
-     * It is used to enable the sorting of list items to be ascending or descending.
+     * The `sortBy` property used to enable the sorting of list items to be ascending or descending order.
      */
     sortBy?: string;
 
     /**
-     * Defines the HTML attributes such as id, class, etc,. for the specific list item.
+     * The `htmlAttributes` allows additional attributes such as id, class, etc., and 
+     *  accepts n number of attributes in a key-value pair format.
      */
     htmlAttributes?: string;
 
     /**
-     * It is used to fetch a specified named table data while using serviceUrl of DataManager
-     *  in dataSource property.
-     * Refer the documentation [here](https://ej2.syncfusion.com/documentation/data/getting-started?lang=typescript)
-     *  to know more about this property with demo.
+     * Specifies the `tableName` used to fetch data from a specific table in the server.
      */
     tableName?: string;
 
@@ -83,191 +78,188 @@ export interface FieldSettingsModel {
 export interface ListViewModel extends ComponentModel{
 
     /**
-     * This cssClass property helps to use custom skinning option for ListView component,
-     *  by adding the mentioned class name into root element of ListView.
+     * The `cssClass` property is used to add a user-preferred class name in the root element of the ListView, 
+     *  using which we can customize the component (both CSS and functionality customization)
+     *      
+     * 
      * @default ''
      */
     cssClass?: string;
 
     /**
-     * It enables UI virtualization which will increase ListView performance on loading large number of data.
+     * If `enableVirtualization` set to true, which will increase the ListView performance, while loading a large amount of data.
      *
      * @default false
      */
     enableVirtualization?: boolean;
 
     /**
-     * Defines the HTML attributes such as id, class, etc., for the ListView.
+     * The `htmlAttributes` allows additional attributes such as id, class, etc., and 
+     *  accepts n number of attributes in a key-value pair format.
+     *      
      * @default {}
      */
     htmlAttributes?: { [key: string]: string; };
 
     /**
-     * It specifies enabled state of ListView component.
+     * If `enable` set to true, the list items are enabled. 
+     * And, we can disable the component using this property by setting its value as false.
+     *      
      * @default true
      */
     enable?: boolean;
 
     /**
-     * It provides the data to render the ListView component which is mapped
-     *  with the fields of ListView.
-     * @isGenericType true
-     * {% codeBlock src="listview/datasource-api/index.ts" %}{% endcodeBlock %}
+     * The `dataSource` provides the data to render the ListView component which is mapped with the fields of ListView.
+     * @isGenericType true     
      * @default []
      */
     dataSource?: { [key: string]: Object }[] | string[] | number[] | DataManager;
 
     /**
-     * It is used to fetch the specific data from dataSource by using where, select key words.
-     * Refer the documentation [here]
-     * (./data-binding#bind-to-remote-data)
-     *  to know more about this property with demo.
-     *
-     * {% codeBlock src="listview/query-api/index.ts" %}{% endcodeBlock %}
+     * The `query` is used to fetch the specific data from dataSource by using where and select keywords.
+     *     
      * @default null
      * @blazorType Data.Query
      */
     query?: Query;
 
     /**
-     * It is used to map keys from the dataSource which extracts the appropriate data from the dataSource
+     * The `fields` is used to map keys from the dataSource which extracts the appropriate data from the dataSource
      *  with specified mapped with the column fields to render the ListView.
-     *
-     * {% codeBlock src="listview/fields-api/index.ts" %}{% endcodeBlock %}
+     *     
      * @default ListBase.defaultMappedFields
      */
     fields?: FieldSettingsModel;
 
     /**
-     * It is used to apply the animation to sub list navigation of list items.
+     * The `animation` property provides an option to apply the different 
+     *  animations on the ListView component.
+     *      
      * @default { effect: 'SlideLeft', duration: 400, easing: 'ease' }
      */
     animation?: AnimationSettings;
 
     /**
-     * It is used to enable the sorting of list items to be ascending or descending.
-     *
-     * {% codeBlock src="listview/sortorder-api/index.ts" %}{% endcodeBlock %}
+     * The `sortOrder` is used to sort the data source. The available type of sort orders are,
+     * * `None` - The data source is not sorting.
+     * * `Ascending` - The data source is sorting with ascending order.
+     * * `Descending` - The data source is sorting with descending order.
+     *     
      * @default 'None'
      */
     sortOrder?: SortOrder;
 
     /**
-     * Using this property, we can show or hide the icon of list item.
-     *
-     * {% codeBlock src="listview/showicon-api/index.ts" %}{% endcodeBlock %}
+     * If `showIcon` set to true, which will show or hide the icon of the list item.
+     *     
      * @default false
      */
     showIcon?: boolean;
 
     /**
-     * Using this property, we can show or hide the `checkbox`.
-     *
-     * {% codeBlock src="listview/showcheckbox-api/index.ts" %}{% endcodeBlock %}
+     * If `showCheckBox` set to true, which will show or hide the checkbox.
+     *     
      * @default false
      */
     showCheckBox?: boolean;
 
     /**
-     * It is used to set the position of check box in an item.
+     * The `checkBoxPosition` is used to set the position of check box in a list item.
+     * By default, the `checkBoxPosition` is Left, which will appear before the text content in a list item.
+     *      
      * @default 'Left'
      */
     checkBoxPosition?: checkBoxPosition;
 
     /**
-     * It is used to set the title of ListView component.
-     *
-     * {% codeBlock src="listview/fields-api/index.ts" %}{% endcodeBlock %}
+     * The `headerTitle` is used to set the title of the ListView component.
+     *     
      * @default ""
      */
     headerTitle?: string;
 
     /**
-     * Using this property, we can show or hide the header of ListView component.
-     *
-     * {% codeBlock src="listview/fields-api/index.ts" %}{% endcodeBlock %}
+     * If `showHeader` set to true, which will show or hide the header of the ListView component.
+     *     
      * @default false
      */
     showHeader?: boolean;
 
     /**
-     * Defines whether to allow the cross-scripting site or not.
+     * If `enableHtmlSanitizer` set to true, allows the cross-scripting site.
+     *      
      * @default false
      */
     enableHtmlSanitizer?: boolean;
 
     /**
-     * It is used to set the height of the ListView component.
+     * Defines the height of the ListView component which accepts both string and number values.
+     *      
      * @default ''
      */
     height?: number | string;
 
     /**
-     * It sets the width to the ListView component.
+     * Defines the width of the ListView component which accepts both string and number values.
+     *      
      * @default ''
      */
     width?: number | string;
 
     /**
-     * The ListView supports to customize the content of each list items with the help of template property.
-     * Refer the documentation [here](../../listview/customizing-templates)
-     *  to know more about this property with demo.
-     *
-     * {% codeBlock src="listview/template-api/index.ts" %}{% endcodeBlock %}
+     * It is used for set checkBox in virtualization with template concept ListView component.
+     * @default ''
+     */
+    virtualCheckBox?: Element | string;
+
+    /**
+     * The ListView component supports to customize the content of each list items with the help of `template` property.
+     *     
      * @default null
      * @deprecated
      */
     template?: string;
 
     /**
-     * The ListView has an option to custom design the ListView header title with the help of headerTemplate property.
-     * Refer the documentation [here]
-     * (./listview/customizing-templates#header-template)
-     *  to know more about this property with demo.
-     *
-     * {% codeBlock src="listview/headertemplate-api/index.ts" %}{% endcodeBlock %}
+     * The ListView has an option to custom design the ListView header title with the help of `headerTemplate` property.
+     *     
      * @default null
      * @deprecated
      */
     headerTemplate?: string;
 
     /**
-     * The ListView has an option to custom design the group header title with the help of groupTemplate property.
-     * Refer the documentation [here]
-     * (./listview/customizing-templates#group-template)
-     *  to know more about this property with demo.
-     *
-     * {% codeBlock src="listview/grouptemplate-api/index.ts" %}{% endcodeBlock %}
+     * The ListView has an option to custom design the group header title with the help of `groupTemplate` property.
+     *     
      * @default null
      * @deprecated
      */
     groupTemplate?: string;
 
     /**
-     * We can trigger the `select` event when we select the list item in the component.
+     * Triggers when we select the list item in the component.
      * @event
      * @blazorProperty 'Selected'
      */
     select?: EmitType<SelectEventArgs>;
 
     /**
-     * We can trigger `actionBegin` event before every ListView action starts.
+     * Triggers when every ListView action starts.
      * @event
      * @blazorProperty 'OnActionBegin'
      */
     actionBegin?: EmitType<Object>;
 
     /**
-     * We can trigger `actionComplete` event for every ListView action success event
-     *  with the dataSource parameter.
+     * Triggers when every ListView actions completed.
      * @event
      * @blazorProperty 'OnActionComplete'
      */
     actionComplete?: EmitType<Object>;
 
     /**
-     * We can trigger `actionFailure` event for every ListView action failure event
-     *  with the dataSource parameter.
+     * Triggers, when the data fetch request from the remote server, fails.
      * @event
      * @blazorProperty 'OnActionFailure'
      */

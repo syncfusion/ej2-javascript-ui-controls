@@ -246,7 +246,7 @@ export class ToolbarRenderer implements IRenderer {
                     if ((range.startContainer.nodeName === 'TD' || range.startContainer.nodeName === 'TH' ||
                         (closest(range.startContainer.parentNode, 'td,th')) ||
                         (proxy.parent.iframeSettings.enable && !hasClass(parentNode.ownerDocument.querySelector('body'), 'e-lib')))
-                        && range.collapsed) {
+                        && range.collapsed && args.subCommand === 'BackgroundColor') {
                         proxy.parent.notify(events.tableColorPickerChanged, { item: { command: args.command, subCommand: args.subCommand,
                             value: colorpickerValue }
                         });
@@ -380,7 +380,7 @@ export class ToolbarRenderer implements IRenderer {
                 (proxy.currentElement.querySelector('.' + CLS_RTE_ELEMENTS) as HTMLElement).style.borderBottomColor = colorpickerValue;
                 let range: Range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.parent.contentModule.getDocument());
                 if ((range.startContainer.nodeName === 'TD' || range.startContainer.nodeName === 'TH' ||
-                        closest(range.startContainer.parentNode, 'td,th')) && range.collapsed) {
+                        closest(range.startContainer.parentNode, 'td,th')) && range.collapsed && args.subCommand === 'BackgroundColor') {
                     proxy.parent.notify(events.tableColorPickerChanged, colorPickerArgs);
                 } else {
                     proxy.parent.notify(events.colorPickerChanged, colorPickerArgs);
@@ -402,7 +402,7 @@ export class ToolbarRenderer implements IRenderer {
     }
 
     /**
-     * The function is used to render RichTextEditor toolbar
+     * The function is used to render Rich Text Editor toolbar
      * @hidden
      * @deprecated
      */

@@ -132,11 +132,14 @@ export class Timeline {
         let newTimeline: ZoomTimelineSettings = this.parent.zoomingLevels[currentLevel];
         let args: ZoomEventArgs = {
             requestType: isZoomIn ? 'beforeZoomIn' : 'beforeZoomOut',
-            timeline: newTimeline
+            timeline: newTimeline,
+            cancel: false
         };
         this.parent.trigger('actionBegin', args);
-        newTimeline = args.timeline;
-        this.changeTimelineSettings(newTimeline);
+        if (!args.cancel) {
+            newTimeline = args.timeline;
+            this.changeTimelineSettings(newTimeline);
+        }
     }
 
     /**

@@ -1865,10 +1865,11 @@ describe('insert Hyperlink validation in multiple cases in backward direction', 
         let fieldBegin = editor.selection.getHyperlinkField();
         expect(fieldBegin).toBeUndefined();
     });
+    // Once insert hyperlink bahaviour handled similar to word by excluding para mark considered
     it('redo after insert Hyperlink validation', () => {
         editor.editorHistory.redo();
-        editor.selection.handleRightKey();
-        editor.selection.handleRightKey();
+        editor.selection.handleLeftKey();
+        editor.selection.handleLeftKey();
         let fieldBegin = editor.selection.getHyperlinkField();
         expect(fieldBegin).not.toBeUndefined();
         expect(editor.selection.getFieldCode(fieldBegin)).toBe('HYPERLINK "https://syncfusion.com"')
@@ -1880,8 +1881,8 @@ describe('insert Hyperlink validation in multiple cases in backward direction', 
             editor.editorHistory.redo();
             i++;
         }
-        editor.selection.handleRightKey();
-        editor.selection.handleRightKey();
+        editor.selection.handleLeftKey();
+        editor.selection.handleLeftKey();
         let fieldBegin = editor.selection.getHyperlinkField();
         expect(fieldBegin).not.toBeUndefined();
         expect(editor.selection.getFieldCode(fieldBegin)).toBe('HYPERLINK "https://syncfusion.com"')

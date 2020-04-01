@@ -668,8 +668,11 @@ export class MultiSelect extends DropDownBase implements IInput {
             for (let htmlAttr of Object.keys(this.htmlAttributes)) {
                 switch (htmlAttr) {
                     case 'class':
-                        this.overAllWrapper.classList.add(this.htmlAttributes[htmlAttr]);
-                        this.popupWrapper.classList.add(this.htmlAttributes[htmlAttr]);
+                        let updatedClassValue : string = (this.htmlAttributes[htmlAttr].replace(/\s+/g, ' ')).trim();
+                        if (updatedClassValue !== '') {
+                            addClass([this.overAllWrapper], updatedClassValue.split(' '));
+                            addClass([this.popupWrapper], updatedClassValue.split(' '));
+                        }
                         break;
                     case 'disabled':
                         this.enable(false);
@@ -723,8 +726,21 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     private updateCssClass(): void {
         if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
-            addClass([this.overAllWrapper], this.cssClass.split(' '));
-            addClass([this.popupWrapper], this.cssClass.split(' '));
+            let updatedCssClassValues : string = this.cssClass;
+            updatedCssClassValues = (this.cssClass.replace(/\s+/g, ' ')).trim();
+            if (updatedCssClassValues !== '') {
+            addClass([this.overAllWrapper], updatedCssClassValues.split(' '));
+            addClass([this.popupWrapper], updatedCssClassValues.split(' '));
+            }
+        }
+    }
+    private updateOldPropCssClass(oldClass : string) : void {
+        if (!isNullOrUndefined(oldClass) && oldClass !== '') {
+            oldClass = (oldClass.replace(/\s+/g, ' ')).trim();
+            if (oldClass !== '' ) {
+              removeClass([this.overAllWrapper], oldClass.split(' '));
+              removeClass([this.popupWrapper], oldClass.split(' '));
+            }
         }
     }
     private onPopupShown(): void {
@@ -2245,7 +2261,8 @@ export class MultiSelect extends DropDownBase implements IInput {
         let chipContent: HTMLElement = this.createElement('span', { className: CHIP_CONTENT });
         let chipClose: HTMLElement = this.createElement('span', { className: CHIP_CLOSE });
         if (this.mainData) {
-            itemData = isBlazor() ? JSON.parse(JSON.stringify(this.getDataByValue(value))) : this.getDataByValue(value);
+            itemData = (isBlazor() && this.isServerRendered) ? JSON.parse(JSON.stringify(this.getDataByValue(value)))
+                : this.getDataByValue(value);
         }
         if (this.valueTemplate && !isNullOrUndefined(itemData)) {
             let compiledString: Function = compile(this.valueTemplate);
@@ -2268,7 +2285,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         };
         this.trigger('tagging', eventArgs, (eventArgs: TaggingEventArgs) => {
             if (!eventArgs.cancel) {
-                if (eventArgs.setClass && typeof eventArgs.setClass === 'string' && isBlazor()) {
+                if (eventArgs.setClass && typeof eventArgs.setClass === 'string' && (isBlazor() && this.isServerRendered)) {
                     addClass([chip], eventArgs.setClass);
                 }
                 if (Browser.isDevice) {
@@ -2388,7 +2405,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                             if (!this.isFirstClick) {
                                 let ulElement: HTMLElement = this.list.querySelector('ul');
                                 if (ulElement) {
-                                    if (this.itemTemplate && (this.mode === 'CheckBox') && isBlazor()) {
+                                    if (this.itemTemplate && (isBlazor() && this.isServerRendered)) {
                                         setTimeout((): void => { this.mainList = this.ulElement; }, 0);
                                     } else {
                                         if (!(this.mode !== 'CheckBox' && this.allowFiltering && this.targetElement().trim() !== '')) {
@@ -3590,10 +3607,7 @@ export class MultiSelect extends DropDownBase implements IInput {
                     this.updateData(newProp.delimiterChar);
                     break;
                 case 'cssClass':
-                    if (!isNullOrUndefined(oldProp.cssClass) && oldProp.cssClass !== '') {
-                        removeClass([this.overAllWrapper], oldProp.cssClass.split(' '));
-                        removeClass([this.popupWrapper], oldProp.cssClass.split(' '));
-                    }
+                    this.updateOldPropCssClass(oldProp.cssClass);
                     this.updateCssClass();
                     break;
                 case 'enableRtl':
@@ -3721,7 +3735,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (!this.enabled) {
             return;
         }
-        if (isBlazor() && this.itemTemplate) {
+        if ((isBlazor() && this.isServerRendered) && this.itemTemplate) {
             this.DropDownBaseupdateBlazorTemplates(true, false, false, false, false, false, false, false);
             if (this.mode !== 'CheckBox' && this.list) {
                 this.refreshSelection();

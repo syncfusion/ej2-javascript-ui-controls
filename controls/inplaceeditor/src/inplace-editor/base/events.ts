@@ -1,5 +1,5 @@
 /**
- * InPlace-Editor events defined here.
+ * In-place Editor events defined here.
  */
 
 /** @hidden */

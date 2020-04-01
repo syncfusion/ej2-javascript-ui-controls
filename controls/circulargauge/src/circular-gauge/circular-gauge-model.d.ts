@@ -7,7 +7,7 @@ import {ComponentModel} from '@syncfusion/ej2-base';
 export interface CircularGaugeModel extends ComponentModel{
 
     /**
-     * The width of the circular gauge as a string in order to provide input as both like '100px' or '100%'.
+     * Sets and gets the width of the circular gauge as a string in order to provide input as both like '100px' or '100%'.
      * If specified as '100%, gauge will render to the full width of its parent element.
      * @default null
      */
@@ -15,7 +15,7 @@ export interface CircularGaugeModel extends ComponentModel{
     width?: string;
 
     /**
-     * The height of the circular gauge as a string in order to provide input as both like '100px' or '100%'.
+     * Sets and gets the height of the circular gauge as a string in order to provide input as both like '100px' or '100%'.
      * If specified as '100%, gauge will render to the full height of its parent element.
      * @default null
      */
@@ -23,127 +23,119 @@ export interface CircularGaugeModel extends ComponentModel{
     height?: string;
 
     /**
-     * Options for customizing the color and width of the gauge border.
+     * Sets and gets the options for customizing the color and width of the gauge border.
      */
-
     border?: BorderModel;
 
     /**
-     * The background color of the gauge, which accepts value in hex, rgba as a valid CSS color string.
+     * Sets and gets the background color of the gauge. This property accepts value in hex code, rgba string as a valid CSS color string.
      * @default null
      */
     background?: string;
 
     /**
-     * Title for gauge
+     * Sets and gets the title for circular gauge.
      * @default ''
      */
-
     title?: string;
 
     /**
-     * Options for customizing the title of Gauge.
+     * Sets and gets the options for customizing the title for circular gauge.
      */
-
     titleStyle?: FontModel;
 
     /**
-     *  Options to customize the left, right, top and bottom margins of the gauge.
+     * Sets and gets the options to customize the left, right, top and bottom margins of the circular gauge.
      */
-
     margin?: MarginModel;
 
     /**
-     * Options for customizing the axes of gauge
+     * Sets and gets the options for customizing the axes of circular gauge.
      */
-
     axes?: AxisModel[];
 
     /**
-     * Options for customizing the tooltip of gauge.
+     * Sets and gets the options for customizing the tooltip of gauge.
      */
-
     tooltip?: TooltipSettingsModel;
 
     /**
-     * If set true, pointers can able to drag on interaction.
+     * Enables and disables drag movement of the pointer in the circular gauge.
      * @default false
      */
     enablePointerDrag?: boolean;
 
     /**
-     * Enables or disables the drag movement of the ranges in the circular gauge.
+     * Enables and disables the drag movement of the ranges in the circular gauge.
      * @default false
      */
     enableRangeDrag?: boolean;
 
     /**
-     * X coordinate of the circular gauge center point, which takes values either in pixels or in percentage.
+     * Sets and gets the X coordinate of the circular gauge.
      * @default null
      */
 
     centerX?: string;
 
     /**
-     * Y coordinate of the circular gauge center point, which takes values either in pixels or in percentage.
+     * Sets and gets the Y coordinate of the circular gauge.
      * @default null
      */
 
     centerY?: string;
 
     /**
-     * To place the half or quarter circle in center position, if values not specified for centerX and centerY.
+     * Enables and disables to place the half or quarter circle in center position, if values not specified for centerX and centerY.
      * @default false
      */
     moveToCenter?: boolean;
 
     /**
-     * Specifies the theme for circular gauge.
-     * * Material - Gauge render with material theme.
-     * * Fabric - Gauge render with fabric theme.
+     * Sets and gets the themes supported for circular gauge.
      * @default Material
      */
     theme?: GaugeTheme;
 
     /**
-     * Specifies whether a grouping separator should be used for a number.
+     * Enables and disables the grouping separator should be used for a number.
      * @default false
      */
     useGroupingSeparator?: boolean;
 
     /**
-     * Information about gauge for assistive technology.
+     * Sets and gets the information about gauge for assistive technology.
      * @default null
      */
     description?: string;
 
     /**
-     * TabIndex value for the gauge.
+     * Sets and gets the tab index value for the circular gauge.
      * @default 1
      */
     tabIndex?: number;
 
     /**
-     * Options for customizing the legend of the chart.
+     * Sets and gets the options for customizing the legend of the circular gauge.
      */
     legendSettings?: LegendSettingsModel;
 
     /**
-     * Triggers after gauge loaded.
+     * Triggers after the circular gauge gets loaded.
      * @event
      * @blazorProperty 'Loaded'
      */
     loaded?: EmitType<ILoadedEventArgs>;
 
     /**
-     * Triggers before gauge load.
+     * Triggers before the circular gauge gets loaded.
      * @event
      * @blazorProperty 'OnLoad'
      */
     load?: EmitType<ILoadedEventArgs>;
 
     /**
-     * Triggers after animation gets completed for pointers.
+     * Triggers after the animation gets completed for pointers.
      * @event
      * @blazorProperty 'AnimationCompleted'
      */
@@ -157,21 +149,21 @@ export interface CircularGaugeModel extends ComponentModel{
     axisLabelRender?: EmitType<IAxisLabelRenderEventArgs>;
 
     /**
-     * Triggers before the radius gets rendered
+     * Triggers before the radius for the circular gauge gets calculated.
      * @event
      * @blazorProperty 'OnRadiusCalculate'
      */
     radiusCalculate?: EmitType<IRadiusCalculateEventArgs>;
 
     /**
-     * Triggers before each annotation gets rendered.
+     * Triggers before each annotation for the circular gauge gets rendered.
      * @event
      * @blazorProperty 'AnnotationRendering'
      */
     annotationRender?: EmitType<IAnnotationRenderEventArgs>;
 
     /**
-     * Triggers before each legend gets rendered.
+     * Triggers before each legend for the circular gauge gets rendered.
      * @event
      * @deprecated
      * @blazorProperty 'legendRender'
@@ -179,7 +171,7 @@ export interface CircularGaugeModel extends ComponentModel{
     legendRender?: EmitType<ILegendRenderEventArgs>;
 
     /**
-     * Triggers before the tooltip for pointer gets rendered.
+     * Triggers before the tooltip for pointer of the circular gauge gets rendered.
      * @event
      * @blazorProperty 'TooltipRendering'
      */
@@ -207,7 +199,6 @@ export interface CircularGaugeModel extends ComponentModel{
      * @event
      * @blazorProperty 'OnDragEnd'
      */
-
     dragEnd?: EmitType<IPointerDragEventArgs>;
 
     /**

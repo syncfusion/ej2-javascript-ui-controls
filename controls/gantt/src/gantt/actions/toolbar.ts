@@ -6,6 +6,7 @@ import { Toolbar as NavToolbar, ItemModel, ClickEventArgs } from '@syncfusion/ej
 import { createElement, extend, isNullOrUndefined, remove, getValue, EventHandler, addClass } from '@syncfusion/ej2-base';
 import * as cls from '../base/css-constants';
 import * as events from '../base/constant';
+import { RowSelectEventArgs } from '@syncfusion/ej2-grids';
 import { ToolbarItem } from '../base/enum';
 import { EditSettingsModel } from '../models/edit-settings-model';
 import { TextBox } from '@syncfusion/ej2-inputs';
@@ -325,7 +326,7 @@ export class Toolbar {
     /**
      * To refresh toolbar items bases current state of tasks
      */
-    public refreshToolbarItems(): void {
+    public refreshToolbarItems(args?: RowSelectEventArgs): void {
         let gObj: Gantt = this.parent;
         let enableItems: string[] = [];
         let disableItems: string[] = [];
@@ -336,16 +337,18 @@ export class Toolbar {
         let toolbarItems: ItemModel[] = this.toolbar ? this.toolbar.items : [];
         let toolbarDefaultItems: string[] = [gID + '_add', gID + '_edit', gID + '_delete',
         gID + '_update', gID + '_cancel'];
+        let isResouceParent: boolean = ((this.parent.viewType === 'ResourceView' && getValue('data.level', args) !== 0
+          || this.parent.viewType === 'ProjectView'));
         if (!isNullOrUndefined(this.parent.editModule)) {
             let touchEdit: boolean = gObj.editModule.taskbarEditModule ?
                 gObj.editModule.taskbarEditModule.touchEdit : false;
             let hasData: number = gObj.currentViewData && gObj.currentViewData.length;
-            edit.allowAdding && !touchEdit ? enableItems.push(gID + '_add') : disableItems.push(gID + '_add');
-            edit.allowEditing && hasData && isSelected && !touchEdit ?
+            edit.allowAdding && isResouceParent && !touchEdit ? enableItems.push(gID + '_add') : disableItems.push(gID + '_add');
+            edit.allowEditing && isResouceParent && hasData && isSelected && !touchEdit ?
                 enableItems.push(gID + '_edit') : disableItems.push(gID + '_edit');
             let isDeleteSelected: boolean = gObj.selectionModule ? gObj.selectionModule.selectedRowIndexes.length > 0 ||
                 gObj.selectionModule.getSelectedRowCellIndexes().length > 0 ? true : false : false;
-            edit.allowDeleting && hasData && isDeleteSelected && !touchEdit ?
+            edit.allowDeleting && isResouceParent && hasData && isDeleteSelected && !touchEdit ?
                 enableItems.push(gID + '_delete') : disableItems.push(gID + '_delete');
             if (gObj.editSettings.mode === 'Auto' && !isNullOrUndefined(gObj.editModule.cellEditModule)
                 && gObj.editModule.cellEditModule.isCellEdit) {

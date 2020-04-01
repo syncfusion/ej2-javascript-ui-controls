@@ -1271,6 +1271,11 @@ export class Selection {
         }
         this.end.moveToLineStartInternal(this, true);
         this.upDownSelectionLength = this.end.location.x;
+        // To select Paragraph mark similar to MS WORD
+        if (this.start.paragraph === this.end.paragraph && this.start.offset === this.start.currentWidget.getEndOffset()
+            && this.isParagraphLastLine(this.start.currentWidget) && this.isParagraphFirstLine(this.end.currentWidget)) {
+            this.start.setPositionParagraph(this.start.currentWidget, this.start.offset + 1);
+        }
         this.fireSelectionChanged(true);
     }
     /**
@@ -7201,12 +7206,15 @@ export class Selection {
     public copyToClipboard(htmlContent: string): boolean {
         window.getSelection().removeAllRanges();
         let div: HTMLDivElement = document.createElement('div');
-        div.tabIndex = 0;
         div.style.left = '-10000px';
         div.style.top = '-10000px';
+        div.style.position = 'relative';
         div.innerHTML = htmlContent;
         document.body.appendChild(div);
-        div.focus();
+        if (navigator.userAgent.indexOf('Firefox') !== -1) {
+            div.tabIndex = 0;
+            div.focus();
+        }
         let range: Range = document.createRange();
         range.selectNodeContents(div);
         window.getSelection().addRange(range);

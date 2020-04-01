@@ -1,4 +1,4 @@
-import { IPivotValues, IDataOptions, IFieldOptions, IFilter, ISort, IFormatSettings, ICalculatedFieldSettings } from './engine';
+import { IPivotValues, IDataOptions, IFieldOptions, IFilter, ISort, IFormatSettings, ICalculatedFieldSettings, IAuthenticationInfo } from './engine';
 import { IDrillOptions, IValueSortSettings, IGroupSettings, IConditionalFormatSettings, ICustomGroups, FieldItemInfo } from './engine';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { PivotView, PivotViewModel } from '../pivotview';
@@ -166,7 +166,9 @@ export class PivotUtil {
             alwaysShowValueHeader: dataSourceSettings.alwaysShowValueHeader,
             conditionalFormatSettings: this.cloneConditionalFormattingSettings(dataSourceSettings.conditionalFormatSettings),
             emptyCellsTextContent: dataSourceSettings.emptyCellsTextContent,
-            groupSettings: this.cloneGroupSettings(dataSourceSettings.groupSettings)
+            groupSettings: this.cloneGroupSettings(dataSourceSettings.groupSettings),
+            showAggregationOnValueField: dataSourceSettings.showAggregationOnValueField,
+            authentication: this.CloneAuthenticationObject(dataSourceSettings.authentication),
             /* tslint:disable:no-any */
         } as { [key: string]: any });
         /* tslint:enable:no-any */
@@ -209,7 +211,9 @@ export class PivotUtil {
                     alwaysShowValueHeader: dataSourceSettings.alwaysShowValueHeader,
                     conditionalFormatSettings: dataSourceSettings.conditionalFormatSettings,
                     emptyCellsTextContent: dataSourceSettings.emptyCellsTextContent,
-                    groupSettings: dataSourceSettings.groupSettings
+                    groupSettings: dataSourceSettings.groupSettings,
+                    showAggregationOnValueField: dataSourceSettings.showAggregationOnValueField,
+                    authentication: this.CloneAuthenticationObject(dataSourceSettings.authentication),
                     /* tslint:disable:no-any */
                 } as { [key: string]: any })
                 /* tslint:enable:no-any */
@@ -346,6 +350,18 @@ export class PivotUtil {
                 headerText: collection.headerText,
                 measure: collection.measure,
                 sortOrder: collection.sortOrder
+            };
+            return clonedCollection;
+        } else {
+            return collection;
+        }
+    }
+
+    private static CloneAuthenticationObject(collection: IAuthenticationInfo): IAuthenticationInfo {
+        if (collection) {
+            let clonedCollection: IAuthenticationInfo = {
+                userName: collection.userName,
+                password: collection.password
             };
             return clonedCollection;
         } else {

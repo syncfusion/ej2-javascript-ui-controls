@@ -122,6 +122,7 @@ export class Render {
                 gObj.notify('closebatch', {});
             }
         }
+        let tempPreventUpdate: boolean = this.parent[preventUpdate];
         gObj.trigger(events.actionBegin, e, (args: NotifyArgs = { requestType: 'refresh' }) => {
             if (args.requestType === 'delete' && isBlazor() && !gObj.isJsComponent) {
                 let data: string = 'data';
@@ -145,7 +146,9 @@ export class Render {
                 }
             }
             if (isBlazor() && this.parent.isServerRendered) {
-                if (this.parent[preventUpdate]) {
+                if (tempPreventUpdate) {
+                    let bulkChanges: string = 'bulkChanges';
+                    gObj[bulkChanges] = {};
                     return;
                 }
                 if (e.requestType === 'refresh') {
@@ -167,7 +170,11 @@ export class Render {
             }
         });
     }
-    private resetTemplates(): void {
+
+    /**
+     * @hidden
+     */
+    public resetTemplates(): void {
         let gObj: IGrid = this.parent;
         let gridColumns: Column[] = gObj.getColumns();
         if (gObj.detailTemplate) {

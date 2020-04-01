@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { FormFields } from './index';import { Print, CalibrationUnit } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs } from './index';import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs } from './index';import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';import { PdfAnnotationBaseModel } from '../diagram/pdf-annotation-model';import { Drawing, ClipBoardObject } from '../diagram/drawing';import { Selector } from '../diagram/selector';import { SelectorModel } from '../diagram/selector-model';import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from '../diagram/dom-util';import { ThumbnailClickEventArgs } from './index';import { ValidateFormFieldsArgs } from './base';import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs } from './base';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { FormFields } from './index';import { Print, CalibrationUnit } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs } from './index';import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs } from './index';import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';import { PdfAnnotationBaseModel } from '../diagram/pdf-annotation-model';import { Drawing, ClipBoardObject } from '../diagram/drawing';import { Selector } from '../diagram/selector';import { SelectorModel } from '../diagram/selector-model';import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from '../diagram/dom-util';import { ThumbnailClickEventArgs } from './index';import { ValidateFormFieldsArgs } from './base';import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs } from './base';
 import {IAjaxHeaders} from "./pdfviewer";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -1602,6 +1602,125 @@ export interface AnnotationSettingsModel {
 }
 
 /**
+ * Interface for a class DocumentTextCollectionSettings
+ */
+export interface DocumentTextCollectionSettingsModel {
+
+    /**
+     * specifies the text data of the document.
+     */
+    textData?: TextDataSettingsModel[];
+
+    /**
+     * specifies the page text of the document.
+     */
+    pageText?: string;
+
+    /**
+     * specifies the page size of the document.
+     */
+    pageSize?: number;
+
+}
+
+/**
+ * Interface for a class TextDataSettings
+ */
+export interface TextDataSettingsModel {
+
+    /**
+     * specifies the bounds of the rectangle.
+     */
+    bounds?: RectangleBoundsModel;
+
+    /**
+     * specifies the text of the document.
+     */
+    text?: string;
+
+}
+
+/**
+ * Interface for a class RectangleBounds
+ */
+export interface RectangleBoundsModel {
+
+    /**
+     * specifies the size of the rectangle.
+     */
+    size?: number;
+
+    /**
+     * specifies the x co-ordinate of the upper-left corner of the rectangle.
+     */
+    x?: number;
+
+    /**
+     * specifies the y co-ordinate of the upper-left corner of the rectangle.
+     */
+    y?: number;
+
+    /**
+     * specifies the width of the rectangle.
+     */
+    width?: number;
+
+    /**
+     * specifies the height of the rectangle.
+     */
+    height?: number;
+
+    /**
+     * specifies the left value of the rectangle.
+     */
+    left?: number;
+
+    /**
+     * specifies the top value of the rectangle.
+     */
+    top?: number;
+
+    /**
+     * specifies the right of the rectangle.
+     */
+    right?: number;
+
+    /**
+     * specifies the bottom value of the rectangle.
+     */
+    bottom?: number;
+
+    /**
+     * Returns true if height and width of the rectangle is zero.
+     * @default 'false'
+     */
+    isEmpty?: boolean;
+
+}
+
+/**
+ * Interface for a class TileRenderingSettings
+ */
+export interface TileRenderingSettingsModel {
+
+    /**
+     * Enable or disables tile rendering mode in the PDF Viewer.
+     */
+    enableTileRendering?: boolean;
+
+    /**
+     * specifies the tileX count of the render Page.
+     */
+    x?: number;
+
+    /**
+     * specifies the tileY count of the render Page.
+     */
+    y?: number;
+
+}
+
+/**
  * Interface for a class PdfViewer
  */
 export interface PdfViewerModel extends ComponentModel{
@@ -1856,6 +1975,18 @@ export interface PdfViewerModel extends ComponentModel{
     printMode?: PrintMode;
 
     /**
+     * Sets the initial loading zoom value from 10 to 400 in PdfViewer Control.
+     * @default 0
+     */
+    zoomValue?: number;
+
+    /**
+     *  Enable or disable the zoom optimization mode in PDF Viewer.
+     * @default true
+     */
+    enableZoomOptimization?: boolean;
+
+    /**
      * Enable or disables the get the document text collections.
      * @default false
      */
@@ -2029,6 +2160,11 @@ export interface PdfViewerModel extends ComponentModel{
     annotationSettings?: AnnotationSettingsModel;
 
     /**
+     * Defines the tile rendering settings.
+     */
+    tileRenderingSettings?: TileRenderingSettingsModel;
+
+    /**
      * Defines the collection of selected items, size and position of the selector
      * @default {}
      */
@@ -2188,6 +2324,12 @@ export interface PdfViewerModel extends ComponentModel{
      * @event
      */
     annotationMouseover?: EmitType<AnnotationMouseoverEventArgs>;
+
+    /**
+     * Triggers when mouse over the page.
+     * @event
+     */
+    pageMouseover?: EmitType<PageMouseoverEventArgs>;
 
     /**
      * Triggers when an imported annotations started in the PDF document.

@@ -1,4 +1,4 @@
-﻿﻿﻿import { Virtualization } from './virtualization';
+import { Virtualization } from './virtualization';
 import { merge, formatUnit, isNullOrUndefined, append, detach, ModuleDeclaration, isBlazor, extend } from '@syncfusion/ej2-base';
 import { attributes, addClass, removeClass, prepend, closest, remove } from '@syncfusion/ej2-base';
 import { Component, EventHandler, BaseEventArgs, Property, Complex, Event } from '@syncfusion/ej2-base';
@@ -64,14 +64,18 @@ export const classNames: ClassNames = {
 const LISTVIEW_TEMPLATE_PROPERTY: string = 'Template';
 const LISTVIEW_GROUPTEMPLATE_PROPERTY: string = 'GroupTemplate';
 const LISTVIEW_HEADERTEMPLATE_PROPERTY: string = 'HeaderTemplate';
+const swipeVelocity: number = 0.5;
 
+/**
+ * An interface that holds options of fields.
+ */
 export interface Fields {
     /**
-     * ID attribute of specific list-item.
+     * Specifies the id field mapped in dataSource.
      */
     id?: string | number;
     /**
-     * It is used to map the text value of list item from the dataSource.
+     * The `text` property is used to map the text value from the data source for each list item.
      */
     text?: string | number;
     /**
@@ -80,84 +84,84 @@ export interface Fields {
     [key: string]: Object | string | number | undefined;
 }
 
+
+/** 
+ * Represents the field settings of the ListView.
+ */
+
 export class FieldSettings extends ChildProperty<FieldSettings> {
 
     /**
-     * ID attribute of specific list-item.
+     * Specifies the id field mapped in dataSource.
      */
     @Property('id')
     public id: string;
     /**
-     * It is used to map the text value of list item from the dataSource.
+     * The `text` property is used to map the text value from the data source for each list item.
      */
     @Property('text')
     public text: string;
 
     /**
-     * This property used to check whether the list item is in checked state or not.
+     * The `isChecked` property is used to check whether the list items are in checked state or not.
      */
     @Property('isChecked')
     public isChecked: string;
     /**
-     * To check whether the visibility state of list item.
+     * The `isVisible` property is used to check whether the list items are in visible state or not.
      */
     @Property('isVisible')
     public isVisible: string;
     /**
-     * It is used to enable the list item
+     * Specifies the enabled state of the ListView component. 
+     * And, we can disable the component using this property by setting its value as false.
      */
     @Property('enabled')
     public enabled: string;
     /**
-     * It is used to customize the icon to the list items dynamically.
-     *  We can add specific image to the icons using iconCss property.
+     * The `iconCss` is used to customize the icon to the list items dynamically. 
+     *  We can add a specific image to the icons using `iconCss` property.
      */
     @Property('iconCss')
     public iconCss: string;
     /**
-     * This property used for nested navigation of list-items.
-     * Refer the documentation [here](../../listview/nested-list)
-     *  to know more about this property with demo.
+     * The `child` property is used for nested navigation of listed items.
      */
     @Property('child')
     public child: string;
     /**
-     * It is used to display `tooltip content of text` while hovering on list items.
+     * The `tooltip` is used to display the information about the target element while hovering on list items.
      */
     @Property('tooltip')
     public tooltip: string;
 
     /**
-     * It wraps the list view element into a group based on the value of groupBy property.
-     * Refer the documentation [here](../../listview/grouping)
-     *  to know more about this property with demo.
+     * The `groupBy` property is used to wraps the ListView elements into a group.
      */
     @Property('groupBy')
     public groupBy: string;
 
     /**
-     * It is used to enable the sorting of list items to be ascending or descending.
+     * The `sortBy` property used to enable the sorting of list items to be ascending or descending order.
      */
     @Property('text')
     public sortBy: string;
 
     /**
-     * Defines the HTML attributes such as id, class, etc,. for the specific list item.
+     * The `htmlAttributes` allows additional attributes such as id, class, etc., and 
+     *  accepts n number of attributes in a key-value pair format.
      */
     @Property('htmlAttributes')
     public htmlAttributes: string;
     /**
-     * It is used to fetch a specified named table data while using serviceUrl of DataManager
-     *  in dataSource property.
-     * Refer the documentation [here](https://ej2.syncfusion.com/documentation/data/getting-started?lang=typescript)
-     *  to know more about this property with demo.
+     * Specifies the `tableName` used to fetch data from a specific table in the server.
      */
     @Property('tableName')
     public tableName: string;
 }
 
 /**
- * Animation configuration settings.
+ * An interface that holds animation settings.
  */
 export interface AnimationSettings {
     /**
@@ -175,12 +179,12 @@ export interface AnimationSettings {
 }
 
 /**
- * ListView animation effects
+ * An enum type that denotes the effects of the ListView. Available options are as follows None, SlideLeft, SlideDown, Zoom, Fade;
  */
 export type ListViewEffect = 'None' | 'SlideLeft' | 'SlideDown' | 'Zoom' | 'Fade';
 
 /**
- * ListView check box positions
+ * An enum type that denotes the position of checkbox of the ListView. Available options are as follows Left and Right;
  */
 export type checkBoxPosition = 'Left' | 'Right';
 
@@ -197,8 +201,8 @@ export type checkBoxPosition = 'Left' | 'Right';
  * </div>
  * ```
  * ```typescript
- *   var lvObj = new ListView({});
- *   lvObj.appendTo("#listview");
+ *   var listviewObject = new ListView({});
+ *   listviewObject.appendTo("#listview");
  * ```
  */
 @NotifyPropertyChanges
@@ -233,15 +237,17 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     private liElement: Element;
     private itemReRender: boolean = false;
     /**
-     * This cssClass property helps to use custom skinning option for ListView component,
-     *  by adding the mentioned class name into root element of ListView.
+     * The `cssClass` property is used to add a user-preferred class name in the root element of the ListView, 
+     *  using which we can customize the component (both CSS and functionality customization)
+     *      
+     * 
      * @default ''
      */
     @Property('')
     public cssClass: string;
 
     /**
-     * It enables UI virtualization which will increase ListView performance on loading large number of data.
+     * If `enableVirtualization` set to true, which will increase the ListView performance, while loading a large amount of data.
      *
      * @default false
      */
@@ -249,36 +255,34 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     public enableVirtualization: boolean;
 
     /**
-     * Defines the HTML attributes such as id, class, etc., for the ListView.
+     * The `htmlAttributes` allows additional attributes such as id, class, etc., and 
+     *  accepts n number of attributes in a key-value pair format.
+     *      
      * @default {}
      */
     @Property({})
     public htmlAttributes: { [key: string]: string; };
 
     /**
-     * It specifies enabled state of ListView component.
+     * If `enable` set to true, the list items are enabled. 
+     * And, we can disable the component using this property by setting its value as false.
+     *      
      * @default true
      */
     @Property(true)
     public enable: boolean;
 
     /**
-     * It provides the data to render the ListView component which is mapped
-     *  with the fields of ListView.
-     * @isGenericType true
-     * {% codeBlock src="listview/datasource-api/index.ts" %}{% endcodeBlock %}
+     * The `dataSource` provides the data to render the ListView component which is mapped with the fields of ListView.
+     * @isGenericType true     
      * @default []
      */
     @Property([])
     public dataSource: { [key: string]: Object }[] | string[] | number[] | DataManager;
 
     /**
-     * It is used to fetch the specific data from dataSource by using where, select key words.
-     * Refer the documentation [here]
-     * (./data-binding#bind-to-remote-data)
-     *  to know more about this property with demo.
-     *
-     * {% codeBlock src="listview/query-api/index.ts" %}{% endcodeBlock %}
+     * The `query` is used to fetch the specific data from dataSource by using where and select keywords.
+     *     
      * @default null
      * @blazorType Data.Query
      */
@@ -286,101 +290,108 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     public query: Query;
 
     /**
-     * It is used to map keys from the dataSource which extracts the appropriate data from the dataSource
+     * The `fields` is used to map keys from the dataSource which extracts the appropriate data from the dataSource
      *  with specified mapped with the column fields to render the ListView.
-     *
-     * {% codeBlock src="listview/fields-api/index.ts" %}{% endcodeBlock %}
+     *     
      * @default ListBase.defaultMappedFields
      */
     @Complex<FieldSettingsModel>(ListBase.defaultMappedFields, FieldSettings)
     public fields: FieldSettingsModel;
 
     /**
-     * It is used to apply the animation to sub list navigation of list items.
+     * The `animation` property provides an option to apply the different 
+     *  animations on the ListView component.
+     *      
      * @default { effect: 'SlideLeft', duration: 400, easing: 'ease' }
      */
     @Property<AnimationSettings>({ effect: 'SlideLeft', duration: 400, easing: 'ease' })
     public animation: AnimationSettings;
 
     /**
-     * It is used to enable the sorting of list items to be ascending or descending.
-     *
-     * {% codeBlock src="listview/sortorder-api/index.ts" %}{% endcodeBlock %}
+     * The `sortOrder` is used to sort the data source. The available type of sort orders are,
+     * * `None` - The data source is not sorting.
+     * * `Ascending` - The data source is sorting with ascending order.
+     * * `Descending` - The data source is sorting with descending order.
+     *     
      * @default 'None'
      */
     @Property<SortOrder>('None')
     public sortOrder: SortOrder;
 
     /**
-     * Using this property, we can show or hide the icon of list item.
-     *
-     * {% codeBlock src="listview/showicon-api/index.ts" %}{% endcodeBlock %}
+     * If `showIcon` set to true, which will show or hide the icon of the list item.
+     *     
      * @default false
      */
     @Property<boolean>(false)
     public showIcon: boolean;
 
     /**
-     * Using this property, we can show or hide the `checkbox`.
-     *
-     * {% codeBlock src="listview/showcheckbox-api/index.ts" %}{% endcodeBlock %}
+     * If `showCheckBox` set to true, which will show or hide the checkbox.
+     *     
      * @default false
      */
     @Property<boolean>(false)
     public showCheckBox: boolean;
 
     /**
-     * It is used to set the position of check box in an item.
+     * The `checkBoxPosition` is used to set the position of check box in a list item.
+     * By default, the `checkBoxPosition` is Left, which will appear before the text content in a list item.
+     *      
      * @default 'Left'
      */
     @Property<string>('Left')
     public checkBoxPosition: checkBoxPosition;
 
     /**
-     * It is used to set the title of ListView component.
-     *
-     * {% codeBlock src="listview/fields-api/index.ts" %}{% endcodeBlock %}
+     * The `headerTitle` is used to set the title of the ListView component.
+     *     
      * @default ""
      */
     @Property<string>('')
     public headerTitle: string;
 
     /**
-     * Using this property, we can show or hide the header of ListView component.
-     *
-     * {% codeBlock src="listview/fields-api/index.ts" %}{% endcodeBlock %}
+     * If `showHeader` set to true, which will show or hide the header of the ListView component.
+     *     
      * @default false
      */
     @Property<boolean>(false)
     public showHeader: boolean;
 
     /**
-     * Defines whether to allow the cross-scripting site or not.
+     * If `enableHtmlSanitizer` set to true, allows the cross-scripting site.
+     *      
      * @default false
      */
     @Property(false)
     public enableHtmlSanitizer: boolean;
 
     /**
-     * It is used to set the height of the ListView component.
+     * Defines the height of the ListView component which accepts both string and number values.
+     *      
      * @default ''
      */
     @Property('')
     public height: number | string;
 
     /**
-     * It sets the width to the ListView component.
+     * Defines the width of the ListView component which accepts both string and number values.
+     *      
      * @default ''
      */
     @Property('')
     public width: number | string;
 
     /**
-     * The ListView supports to customize the content of each list items with the help of template property.
-     * Refer the documentation [here](../../listview/customizing-templates)
-     *  to know more about this property with demo.
-     *
-     * {% codeBlock src="listview/template-api/index.ts" %}{% endcodeBlock %}
+     * It is used for set checkBox in virtualization with template concept ListView component.
+     * @default ''
+     */
+    @Property('')
+    protected virtualCheckBox: Element | string;
+    /**
+     * The ListView component supports to customize the content of each list items with the help of `template` property.
+     *     
      * @default null
      * @deprecated
      */
@@ -388,12 +399,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     public template: string;
 
     /**
-     * The ListView has an option to custom design the ListView header title with the help of headerTemplate property.
-     * Refer the documentation [here]
-     * (./listview/customizing-templates#header-template)
-     *  to know more about this property with demo.
-     *
-     * {% codeBlock src="listview/headertemplate-api/index.ts" %}{% endcodeBlock %}
+     * The ListView has an option to custom design the ListView header title with the help of `headerTemplate` property.
+     *     
      * @default null
      * @deprecated
      */
@@ -401,12 +408,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     public headerTemplate: string;
 
     /**
-     * The ListView has an option to custom design the group header title with the help of groupTemplate property.
-     * Refer the documentation [here]
-     * (./listview/customizing-templates#group-template)
-     *  to know more about this property with demo.
-     *
-     * {% codeBlock src="listview/grouptemplate-api/index.ts" %}{% endcodeBlock %}
+     * The ListView has an option to custom design the group header title with the help of `groupTemplate` property.
+     *     
      * @default null
      * @deprecated
      */
@@ -414,7 +417,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     public groupTemplate: string;
 
     /**
-     * We can trigger the `select` event when we select the list item in the component.
+     * Triggers when we select the list item in the component.
      * @event
      * @blazorProperty 'Selected'
      */
@@ -422,7 +425,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     public select: EmitType<SelectEventArgs>;
 
     /**
-     * We can trigger `actionBegin` event before every ListView action starts.
+     * Triggers when every ListView action starts.
      * @event
      * @blazorProperty 'OnActionBegin'
      */
@@ -430,8 +433,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     public actionBegin: EmitType<Object>;
 
     /**
-     * We can trigger `actionComplete` event for every ListView action success event
-     *  with the dataSource parameter.
+     * Triggers when every ListView actions completed.
      * @event
      * @blazorProperty 'OnActionComplete'
      */
@@ -439,8 +441,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     public actionComplete: EmitType<Object>;
 
     /**
-     * We can trigger `actionFailure` event for every ListView action failure event
-     *  with the dataSource parameter.
+     * Triggers, when the data fetch request from the remote server, fails.
      * @event
      * @blazorProperty 'OnActionFailure'
      */
@@ -768,6 +769,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 args.item.firstElementChild.appendChild(checkboxElement);
             }
             this.currentLiElements.push(args.item);
+            this.checkBoxPosition == "Left" ? this.virtualCheckBox = args.item.firstElementChild.children[0] : this.virtualCheckBox = args.item.firstElementChild.lastElementChild;
         }
     }
 
@@ -779,7 +781,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * It is used to check the checkbox of an item.
+     * Checks the specific list item by passing the unchecked fields as an argument to this method.
      * @param  {Fields | HTMLElement | Element} item - It accepts Fields or HTML list element as an argument.
      */
     public checkItem(item: Fields | HTMLElement | Element): void {
@@ -804,7 +806,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * It is used to uncheck the checkbox of an item.
+     * Uncheck the specific list item by passing the checked fields as an argument to this method.
      * @param  {Fields | HTMLElement | Element} item - It accepts Fields or HTML list element as an argument.
      */
     public uncheckItem(item: Fields | HTMLElement | Element): void {
@@ -812,14 +814,14 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * It is used to check all the items in ListView.
+     * Checks all the unchecked items in the ListView.
      */
     public checkAllItems(): void {
         this.toggleAllCheckBase(true);
     }
 
     /**
-     * It is used to un-check all the items in ListView.
+     * Uncheck all the checked items in ListView.
      */
     public uncheckAllItems(): void {
         this.toggleAllCheckBase(false);
@@ -881,7 +883,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * It is used to refresh the UI list item height
+     * Refresh the height of the list item.
      */
     public refreshItemHeight(): void {
         this.virtualizationModule.refreshItemHeight();
@@ -1127,7 +1129,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private swipeActionHandler(e: SwipeEventArgs): void {
-        if (e.swipeDirection === 'Right') {
+        if (e.swipeDirection === 'Right' && e.velocity > swipeVelocity && e.originalEvent.type == "touchend") {
             if (this.showCheckBox && this.curDSLevel[this.curDSLevel.length - 1]) {
                 this.uncheckAllItems();
             }
@@ -1470,7 +1472,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     private setAttributes(liElements: HTMLElement[]): void {
-        for (let i : number = 0; i < liElements.length; i++) {
+        for (let i: number = 0; i < liElements.length; i++) {
             let element: HTMLElement = liElements[i];
             if (element.classList.contains('e-list-item')) {
                 element.setAttribute('id', this.element.id + '_' + element.getAttribute('data-uid'));
@@ -1620,7 +1622,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * It is used to Initialize the control rendering.
+     * Initializes the ListView component rendering.
      */
     public render(): void {
         if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
@@ -1664,13 +1666,15 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         removeClass([this.element], classAr);
         this.element.removeAttribute('role');
         this.element.removeAttribute('tabindex');
-        this.element.innerHTML = '';
         this.curUL = this.ulElement = this.liCollection = this.headerEle = undefined;
-        super.destroy();
+        if (!(isBlazor() && this.isServerRendered)) {
+            this.element.innerHTML = '';
+            super.destroy();
+        }
     }
 
     /**
-     * It helps to switch back from navigated sub list.
+     * Switches back from the navigated sub list item.
      */
     public back(): void {
         let pID: string = this.curDSLevel[this.curDSLevel.length - 1];
@@ -1707,16 +1711,16 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * It is used to select the list item from the ListView.
-     * @param  {Fields | HTMLElement | Element} obj - We can pass element Object or Fields as Object with ID and Text fields.
+     * Selects the list item from the ListView by passing the elements or field object.
+     * @param  {Fields | HTMLElement | Element} item - We can pass element Object or Fields as Object with ID and Text fields.
      */
-    public selectItem(obj: Fields | HTMLElement | Element): void {
+    public selectItem(item: Fields | HTMLElement | Element): void {
         if (this.enableVirtualization) {
-            this.virtualizationModule.selectItem(obj);
+            this.virtualizationModule.selectItem(item);
         } else if (this.showCheckBox) {
-            this.setCheckboxLI(this.getLiFromObjOrElement(obj));
+            this.setCheckboxLI(this.getLiFromObjOrElement(item));
         } else {
-            isNullOrUndefined(obj) ? this.removeSelect() : this.setSelectLI(this.getLiFromObjOrElement(obj));
+            isNullOrUndefined(item) ? this.removeSelect() : this.setSelectLI(this.getLiFromObjOrElement(item));
 
         }
     }
@@ -1767,14 +1771,15 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * It is used to select multiple list item from the ListView.
-     * @param  {Fields[] | HTMLElement[] | Element[]} obj - We can pass array of elements or array of field Object with ID and Text fields.
+     * Selects multiple list items from the ListView.
+     * @param  {Fields[] | HTMLElement[] | Element[]} item - We can pass array of
+     *  elements or array of fields Object with ID and Text fields.
      */
-    public selectMultipleItems(obj: Fields[] | HTMLElement[] | Element[]): void {
-        if (!isNullOrUndefined(obj)) {
-            for (let i: number = 0; i < obj.length; i++) {
-                if (!isNullOrUndefined(obj[i])) {
-                    this.selectItem(obj[i]);
+    public selectMultipleItems(item: Fields[] | HTMLElement[] | Element[]): void {
+        if (!isNullOrUndefined(item)) {
+            for (let i: number = 0; i < item.length; i++) {
+                if (!isNullOrUndefined(item[i])) {
+                    this.selectItem(item[i]);
                 }
             }
         }
@@ -1791,8 +1796,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * It is used to get the currently [here](./selectedItem)
-     *  item details from the list items.
+     * Gets the details of the currently selected item from the list items.
      * @blazorType ListSelectedItem<TValue>
      */
     public getSelectedItems(): SelectedItem | SelectedCollection | UISelectedItem | NestedListData {
@@ -1916,39 +1920,39 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         return Array.isArray(items) ? [...items] : [items];
     }
     /**
-     * It is used to find out an item details from the current list.
-     * @param  {Fields | HTMLElement | Element} obj - We can pass element Object or Fields as Object with ID and Text fields.
+     * Finds out an item details from the current list.
+     * @param  {Fields | HTMLElement | Element} item - We can pass element Object or Fields as Object with ID and Text fields.
      * @blazorType TValue
      */
-    public findItem(obj: Fields | HTMLElement | Element): SelectedItem {
-        return <SelectedItem & DataSource>this.getItemData(obj);
+    public findItem(item: Fields | HTMLElement | Element): SelectedItem {
+        return <SelectedItem & DataSource>this.getItemData(item);
     }
 
     /**
-     * A function that used to enable the disabled list items based on passed element.
-     * @param  {Fields | HTMLElement | Element} obj - We can pass element Object or Fields as Object with ID and Text fields.
+     * Enables the disabled list items by passing the Id and text fields.
+     * @param  {Fields | HTMLElement | Element} item - We can pass element Object or Fields as Object with ID and Text fields.
      */
-    public enableItem(obj: Fields | HTMLElement | Element): void {
-        this.setItemState(obj, true);
+    public enableItem(item: Fields | HTMLElement | Element): void {
+        this.setItemState(item, true);
         if (this.enableVirtualization) {
-            this.virtualizationModule.enableItem(obj);
+            this.virtualizationModule.enableItem(item);
         }
     }
 
     /**
-     * It is used to disable the list items based on passed element.
-     * @param  {Fields | HTMLElement | Element} obj - We can pass element Object or Fields as Object with ID and Text fields.
+     * Disables the list items by passing the Id and text fields.
+     * @param  {Fields | HTMLElement | Element} item - We can pass element Object or Fields as Object with ID and Text fields.
      */
-    public disableItem(obj: Fields | HTMLElement | Element): void {
-        this.setItemState(obj, false);
+    public disableItem(item: Fields | HTMLElement | Element): void {
+        this.setItemState(item, false);
         if (this.enableVirtualization) {
-            this.virtualizationModule.disableItem(obj);
+            this.virtualizationModule.disableItem(item);
         }
     }
 
     //A function that used to set state of the list item like enable, disable.
-    private setItemState(obj: Fields | HTMLElement | Element, isEnable: boolean): void {
-        let resultJSON: DataSource = this.getItemData(obj);
+    private setItemState(item: Fields | HTMLElement | Element, isEnable: boolean): void {
+        let resultJSON: DataSource = this.getItemData(item);
         let fieldData: DataSource = <DataSource>getFieldValues(resultJSON, this.listBaseOption.fields);
         if (resultJSON) {
             let li: Element = this.element.querySelector('[data-uid="' + fieldData[this.fields.id] + '"]');
@@ -1963,24 +1967,24 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * It is used to show an list item from the ListView.
-     * @param  {Fields | HTMLElement | Element} obj - We can pass element Object or Fields as Object with ID and Text fields.
+     * Shows the hide list item from the ListView.
+     * @param  {Fields | HTMLElement | Element} item - We can pass element Object or Fields as Object with ID and Text fields.
      */
-    public showItem(obj: Fields | HTMLElement | Element): void {
-        this.showHideItem(obj, false, '');
+    public showItem(item: Fields | HTMLElement | Element): void {
+        this.showHideItem(item, false, '');
         if (this.enableVirtualization) {
-            this.virtualizationModule.showItem(obj);
+            this.virtualizationModule.showItem(item);
         }
     }
 
     /**
-     * It is used to hide an item from the ListView.
-     * @param  {Fields | HTMLElement | Element} obj - We can pass element Object or Fields as Object with ID and Text fields.
+     * Hides an list item from the ListView.
+     * @param  {Fields | HTMLElement | Element} item - We can pass element Object or Fields as Object with ID and Text fields.
      */
-    public hideItem(obj: Fields | HTMLElement | Element): void {
-        this.showHideItem(obj, true, 'none');
+    public hideItem(item: Fields | HTMLElement | Element): void {
+        this.showHideItem(item, true, 'none');
         if (this.enableVirtualization) {
-            this.virtualizationModule.hideItem(obj);
+            this.virtualizationModule.hideItem(item);
         }
     }
 
@@ -1999,8 +2003,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * It adds new item(s) to current ListView.
-     * To add a new item(s) in the listview, we need to pass `data` as array of items that needs
+     * Adds the new list item(s) to the current ListView.
+     * To add a new list item(s) in the ListView, we need to pass the `data` as an array of items that need
      * to be added and `fields` as the target item to which we need to add the given item(s) as its children.
      * For example fields: { text: 'Name', tooltip: 'Name', id:'id'}
      * @param  {{[key:string]:Object}[]} data - JSON Array Data that need to add.
@@ -2116,16 +2120,17 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * A function that removes the item from data source based on passed element like fields: { text: 'Name', tooltip: 'Name', id:'id'}
-     * @param  {Fields | HTMLElement | Element} obj - We can pass element Object or Fields as Object with ID and Text fields.
+     * Removes the list item from the data source based on a passed
+     *  element like fields: { text: 'Name', tooltip: 'Name', id:'id'}
+     * @param  {Fields | HTMLElement | Element} item - We can pass element Object or Fields as Object with ID and Text fields.
      */
-    public removeItem(obj: Fields | HTMLElement | Element): void {
+    public removeItem(item: Fields | HTMLElement | Element): void {
         const listDataSource: DataSource[] = this.dataSource instanceof DataManager
             ? this.localData : this.dataSource as DataSource[];
         if (this.enableVirtualization) {
-            this.virtualizationModule.removeItem(obj);
+            this.virtualizationModule.removeItem(item);
         } else {
-            this.removeItemFromList(obj, listDataSource);
+            this.removeItemFromList(item, listDataSource);
             this.updateBlazorTemplates(true);
         }
     }
@@ -2200,13 +2205,13 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * A function that removes multiple item from list view based on given input.
-     * @param  {Fields[] | HTMLElement[] | Element[]} obj - We can pass array of elements or array of field Object with ID and Text fields.
+     * Removes multiple items from the ListView by passing the array of elements or array of field objects.
+     * @param  {Fields[] | HTMLElement[] | Element[]} item - We can pass array of elements or array of field Object with ID and Text fields.
      */
-    public removeMultipleItems(obj: HTMLElement[] | Element[] | Fields[]): void {
-        if (obj.length) {
-            for (let i: number = 0; i < obj.length; i++) {
-                this.removeItem(obj[i]);
+    public removeMultipleItems(item: HTMLElement[] | Element[] | Fields[]): void {
+        if (item.length) {
+            for (let i: number = 0; i < item.length; i++) {
+                this.removeItem(item[i]);
             }
             this.updateBlazorTemplates(true);
         }
@@ -2262,6 +2267,7 @@ interface ResultData {
     result: { [key: string]: Object }[];
 }
 
+/** @hidden */
 export interface ClassNames {
     root: string;
     hover: string;
@@ -2294,80 +2300,92 @@ export interface ClassNames {
     itemCheckList: string;
 }
 
+/**
+ * An interface that holds list selected item.
+ */
 export interface ListSelectedItem {
     /**
-     * Selected Item dataSource collection.
+     * Specifies the selected item dataSource collection.
      * @isGenericType true
      * @blazorType List<T>
      */
     data?: object[];
     /**
-     * Selected Item text collection.
+     * Specifies the selected item text collection.
      */
     text?: string[];
     /**
-     * Index of the selected element.
+     * Specifies index of the selected element.
      * Available only in virtualization.
      */
     index?: number[];
     /**
-     * Hierarchical Parent Id collection of the current view.
-     * Available only in nested list with Checkbox enabled.
+     * Specifies the hierarchical parent id collection of the current view.
+     * Available only in nested list with checkbox enabled.
      */
     parentId?: string[];
 }
 
+/**
+ * An interface that holds selected item.
+ */
 export interface SelectedItem {
     /**
-     * It denotes the Selected Item text.
+     * It denotes the selected item text.
      */
     text: string;
 
     /**
-     * It denotes the Selected Item list element.
+     * It denotes the selected item list element.
      * @blazorType DOM
      */
     item: HTMLElement | Element;
 
     /**
-     * It denotes the Selected Item dataSource JSON object.
+     * It denotes the selected item dataSource JSON object.
      * @isGenericType true
      */
     data: { [key: string]: Object } | string[] | number[];
 
 }
 
+/**
+ * An interface that holds selected collection.
+ */
 export interface SelectedCollection {
     /**
-     * It denotes the Selected Item text data or collection.
+     * It denotes the selected item text data or collection.
      */
     text: string | string[];
 
     /**
-     * It denotes the Selected Item list element or element collection.
+     * It denotes the selected item list element or element collection.
      */
     item: HTMLElement | Element[] | NodeList;
 
     /**
-     * It denotes the Selected Item dataSource JSON object or object collection.
+     * It denotes the selected item dataSource JSON object or object collection.
      * @isGenericType true
      */
     data: { [key: string]: Object } | { [key: string]: Object }[] | string[] | number[];
 }
 
+/**
+ * An interface that holds UI selected item.
+ */
 export interface UISelectedItem {
     /**
-     * It denotes the Selected Item text data or collection.
+     * It denotes the selected item text data or collection.
      */
     text: string | number | string[] | number[];
 
     /**
-     * It denotes the Selected Item list element or element collection.
+     * It denotes the selected item list element or element collection.
      */
     item?: HTMLElement | Element[] | NodeList;
 
     /**
-     * It denotes the Selected Item dataSource JSON object or object collection.
+     * It denotes the selected item dataSource JSON object or object collection.
      * @isGenericType true
      */
     data: { [key: string]: Object } | { [key: string]: Object }[] | string | number | string[] | number[];
@@ -2381,33 +2399,42 @@ export interface UISelectedItem {
     isChecked?: boolean;
 }
 
+/**
+ * An interface that holds details of data and parent.
+ */
 export interface DataAndParent {
     /**
-     * It denotes the Selected Item dataSource JSON object or object collection.
+     * It denotes the selected item dataSource JSON object or object collection.
      * @isGenericType true
      */
     data: { [key: string]: Object } | { [key: string]: Object }[] | string[];
     /**
-     * It denotes the Selected Item's parent id;
+     * It denotes the selected item's parent id;
      */
     parentId: string[];
 }
 
+/**
+ * An interface that holds nested list data.
+ */
 export interface NestedListData {
     /**
-     * It denotes the Selected Item text data or collection.
+     * It denotes the selected item text data or collection.
      */
     text: string | string[];
     /**
-     * It denotes the Selected Item list element or element collection.
+     * It denotes the selected item list element or element collection.
      */
     item: HTMLElement | Element[] | NodeList;
     /**
-     * It denotes the Selected Item dataSource JSON object with it's parent ID.
+     * It denotes the selected item dataSource JSON object with it's parent id.
      */
     data: DataAndParent[];
 }
 
+/**
+ * An interface that holds selected event arguments
+ */
 export interface SelectEventArgs extends BaseEventArgs, SelectedItem {
     /**
      * Specifies that event has triggered by user interaction.
@@ -2426,6 +2453,10 @@ export interface SelectEventArgs extends BaseEventArgs, SelectedItem {
      */
     isChecked?: boolean;
 }
+
+/**
+ * An interface that holds item created event arguments
+ */
 export interface ItemCreatedArgs {
     curData: { [key: string]: Object };
     dataSource: { [key: string]: Object } | string[];

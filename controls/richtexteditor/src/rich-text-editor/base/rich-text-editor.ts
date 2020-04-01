@@ -48,7 +48,7 @@ import { SelectedEventArgs, RemovingEventArgs, UploadingEventArgs } from '@syncf
 import { Resize } from '../actions/resize';
 
 /**
- * Represents the RichTextEditor component.
+ * Represents the Rich Text Editor component.
  * ```html
  * <textarea id="rte"></textarea>
  * <script>
@@ -175,10 +175,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Specifies the group of items aligned horizontally in the toolbar as well as defined the toolbar rendering type.
      * By default, toolbar is float at the top of the RichTextEditor.
-     * When you scroll down, the toolbar will scroll along with the page on RichTextEditor with the specified offset value.
+     * When you scroll down, the toolbar will scroll along with the page on Rich Text Editor with the specified offset value.
      * * enable: set boolean value to show or hide the toolbar.
      * * enableFloating: Set Boolean value to enable or disable the floating toolbar. 
-     * Preserves the toolbar at top of the RichTextEditor on scrolling.
+     * Preserves the toolbar at top of the Rich Text Editor on scrolling.
      * * type: it has two possible options
      *      1. Expand: Hide the overflowing toolbar items in the next row. Click the expand arrow to view overflowing toolbar items
      *      2. MultiRow: The toolbar overflowing items wrapped in the next row.
@@ -228,7 +228,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     @Complex<QuickToolbarSettingsModel>({}, QuickToolbarSettings)
     public quickToolbarSettings: QuickToolbarSettingsModel;
     /**
-     * Specifies the pasting options in RichTextEditor component and control with the following properties.
+     * Specifies the pasting options in Rich Text Editor component and control with the following properties.
      * * prompt - Set boolean value to enable or disable the prompt when pasting.
      * * deniedAttrs  -  Specifies the attributes to restrict when pasting in RTE.
      * * allowedStyleProps  -  Specifies the allowed style properties when pasting in RTE.
@@ -277,13 +277,15 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     @Complex<IFrameSettingsModel>({}, IFrameSettings)
     public iframeSettings: IFrameSettingsModel;
     /**
-     * Specifies the image insert options in RichTextEditor component and control with the following properties.
+     * Specifies the image insert options in Rich Text Editor component and control with the following properties.
      * * allowedTypes - Specifies the extensions of the image types allowed to insert on bowering and 
      * passing the extensions with comma separators. For example, pass allowedTypes as .jpg and .png.
      * * display - Sets the default display for an image when it is inserted in to the RichTextEditor. 
      * Possible options are: 'inline' and 'block'.
      * * width - Sets the default width of the image when it is inserted in the RichTextEditor.
-     * * saveFormat - Specifies the format to store the image in the RichTextEditor (Base64 or Blob).
+     * * saveFormat - Specifies the format to store the image in the Rich Text Editor (Base64 or Blob).
+     * > If you want to insert a lot of tiny images in the editor and don't want a specific physical location for 
+     * saving images, you can opt to save format as Base64.
      * * height - Sets the default height of the image when it is inserted in the RichTextEditor.
      * * saveUrl - Specifies the service URL of save action that will receive the uploaded files and save them in the server.
      * * path - Specifies the path of the location to store the images and refer it to display the images.
@@ -304,7 +306,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     @Complex<ImageSettingsModel>({}, ImageSettings)
     public insertImageSettings: ImageSettingsModel;
     /**
-     * Specifies the table insert options in RichTextEditor component and control with the following properties.
+     * Specifies the table insert options in Rich Text Editor component and control with the following properties.
      * * styles - Class name should be appended by default in table element.
      * It helps to design the table in specific CSS styles always when inserting in editor.
      * * width - Sets the default width of the table when it is inserted in the RichTextEditor.
@@ -327,7 +329,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     @Complex<TableSettingsModel>({}, TableSettings)
     public tableSettings: TableSettingsModel;
     /**
-     * Preserves the toolbar at the top of the RichTextEditor on scrolling and 
+     * Preserves the toolbar at the top of the Rich Text Editor on scrolling and 
      * specifies the offset of the floating toolbar from documents top position
      * @default 0
      */
@@ -357,7 +359,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public width: string | number;
     /**
      * Enables or disables the persisting component's state between page reloads. 
-     * If enabled, the value of RichTextEditor is persisted
+     * If enabled, the value of Rich Text Editor is persisted
      * 
      * {% codeBlock src='rich-text-editor/enable-persistence/index.md' %}{% endcodeBlock %}
      * 
@@ -367,7 +369,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public enablePersistence: boolean;
     /**
      * Enables or disables the resizing option in the editor. 
-     * If enabled, the RichTextEditor can be resized by dragging the resize icon in the bottom right corner.
+     * If enabled, the Rich Text Editor can be resized by dragging the resize icon in the bottom right corner.
      * 
      * {% codeBlock src='rich-text-editor/enable-resize/index.md' %}{% endcodeBlock %}
      * 
@@ -383,7 +385,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     @Property({})
     public htmlAttributes: { [key: string]: string; };
     /**
-     * Specifies the placeholder for the RichTextEditor’s content used when the RichTextEditor body is empty.
+     * Specifies the placeholder for the RichTextEditor’s content used when the Rich Text Editor body is empty.
      * @default null.
      */
     @Property(null)
@@ -423,7 +425,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     @Property(false)
     public enableXhtml: boolean;
     /**    
-     * Specifies the height of the RichTextEditor component.    
+     * Specifies the height of the Rich Text Editor component.    
      * @default "auto"    
      */
     @Property('auto')
@@ -437,7 +439,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     public cssClass: string;
     /**     
      * Specifies the value displayed in the RichTextEditor's content area and it should be string. 
-     * The content of RichTextEditor can be loaded with dynamic data such as database, AJAX content, and more.
+     * The content of Rich Text Editor can be loaded with dynamic data such as database, AJAX content, and more.
      * 
      * {% codeBlock src='rich-text-editor/value/index.md' %}{% endcodeBlock %}
      * 
@@ -463,10 +465,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     /**
      * Specifies the editing mode of the RichTextEditor.
      * 
-     *   - `HTML` - Render RichTextEditor as HTML editor using &lt;IFRAME&gt; element or content editable &lt;div&gt; element
+     *   - `HTML` - Render Rich Text Editor as HTML editor using &lt;IFRAME&gt; element or content editable &lt;div&gt; element
      *     or &lt;textarea&gt; element.
      * 
-     *   - `Markdown` - Render RichTextEditor as markdown editor using &lt;textarea&gt;.
+     *   - `Markdown` - Render Rich Text Editor as markdown editor using &lt;textarea&gt;.
      * 
      * @default 'HTML'
      */
@@ -492,7 +494,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     @Property(false)
     public showCharCount: boolean;
     /**     
-     * Allows the tab key action in the RichTextEditor content. 
+     * Allows the tab key action in the Rich Text Editor content. 
      * 
      * {% codeBlock src='rich-text-editor/enable-tab-key/index.md' %}{% endcodeBlock %}
      * 
@@ -511,7 +513,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     @Property(false)
     public enableAutoUrl: boolean;
     /**     
-     * Specifies the maximum number of characters allowed in the RichTextEditor component.
+     * Specifies the maximum number of characters allowed in the Rich Text Editor component.
      * 
      * {% codeBlock src='rich-text-editor/max-length/index.md' %}{% endcodeBlock %}
      * 
@@ -763,14 +765,14 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     @Event()
     public imageRemoving: EmitType<RemovingEventArgs>;
     /** 
-     * Triggers when the RichTextEditor is rendered.
+     * Triggers when the Rich Text Editor is rendered.
      * @event 
      * @blazorProperty 'Created'
      */
     @Event()
     public created: EmitType<Object>;
     /** 
-     * Triggers when the RichTextEditor is destroyed.
+     * Triggers when the Rich Text Editor is destroyed.
      * @event 
      * @blazorProperty 'Destroyed'
      * @blazorType DestroyedEventArgs
@@ -785,14 +787,14 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     @Event()
     public beforeSanitizeHtml: EmitType<BeforeSanitizeHtmlArgs>;
     /**
-     * Triggers when RichTextEditor is focused out.
+     * Triggers when Rich Text Editor is focused out.
      * @event
      * @blazorType BlurEventArgs
      */
     @Event()
     public blur: EmitType<Object>;
     /**
-     * Triggers when RichTextEditor Toolbar items is clicked.
+     * Triggers when Rich Text Editor Toolbar items is clicked.
      * @event
      * @blazorProperty 'OnToolbarClick'
      * @blazorType ToolbarClickEventArgs
@@ -800,14 +802,14 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     @Event()
     public toolbarClick: EmitType<Object>;
     /** 
-     * Triggers when RichTextEditor is focused in
+     * Triggers when Rich Text Editor is focused in
      * @event
      * @blazorType FocusEventArgs
      */
     @Event()
     public focus: EmitType<Object>;
     /** 
-     * Triggers only when RichTextEditor is blurred and changes are done to the content.
+     * Triggers only when Rich Text Editor is blurred and changes are done to the content.
      * @event 
      * @blazorProperty 'ValueChange'
      */
@@ -1027,7 +1029,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         return this.addOnPersist(['value']);
     }
     /**
-     * Focuses the RichTextEditor component
+     * Focuses the Rich Text Editor component
      * @public
      */
     public focusIn(): void {
@@ -1037,7 +1039,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
     /**
-     * Blurs the RichTextEditor component
+     * Blurs the Rich Text Editor component
      * @public
      */
     public focusOut(): void {
@@ -1455,6 +1457,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      * @return {void}
      */
     public destroy(): void {
+        if (this.isDestroyed) { return; }
         if (this.isRendered) {
             this.notify(events.destroy, {});
             this.destroyDependentModules();
@@ -1501,7 +1504,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
             this.removeHtmlAttributes();
             this.removeAttributes();
-            super.destroy();
+            if (!(isBlazor() && this.isServerRendered)) {
+                super.destroy();
+            } else {
+                this.isDestroyed = true;
+            }
+            this.isRendered = false;
             if (this.enablePersistence) { window.localStorage.removeItem(this.getModuleName() + this.element.id); }
         }
     }
@@ -1845,14 +1853,14 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.renderModule.refresh();
     }
     /**
-     * Shows the RichTextEditor component in full-screen mode.
+     * Shows the Rich Text Editor component in full-screen mode.
      */
     public showFullScreen(): void {
         if (this.readonly) { return; }
         this.fullScreenModule.showFullScreen();
     }
     /**
-     * Enables the give toolbar items in the RichTextEditor component.
+     * Enables the give toolbar items in the Rich Text Editor component.
      * @param {boolean} muteToolbarUpdate enable/disables the toolbar item status in RichTextEditor.
      * @param {string | string[]} items - Specifies the single or collection of items
      * that you want to be enable in Rich Text Editor’s Toolbar.
@@ -1862,7 +1870,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.toolbarModule.enableTBarItems(this.getBaseToolbarObject(), items, true, muteToolbarUpdate);
     }
     /**
-     * Disables the given toolbar items in the RichTextEditor component.
+     * Disables the given toolbar items in the Rich Text Editor component.
      * @param {boolean} muteToolbarUpdate enable/disables the toolbar item status in RichTextEditor.
      * @param {string | string[]} items - Specifies the single or collection of items
      * that you want to be disable in Rich Text Editor’s Toolbar.
@@ -1872,7 +1880,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         this.toolbarModule.enableTBarItems(this.getBaseToolbarObject(), items, false, muteToolbarUpdate);
     }
     /**
-     * Removes the give toolbar items from the RichTextEditor component.
+     * Removes the give toolbar items from the Rich Text Editor component.
      * @param {string | string[]} items - Specifies the single or collection of items 
      * that you want to be remove from Rich Text Editor’s Toolbar.
      * @public

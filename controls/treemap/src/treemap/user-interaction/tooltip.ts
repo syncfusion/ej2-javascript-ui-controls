@@ -89,7 +89,7 @@ export class TreeMapTooltip {
                         location : tootipArgs.options['location'],
                         text : tootipArgs.options['text'],
                         textStyle :  tootipArgs.options['textStyle'],
-                        data : this.treemap.isBlazor ? null : tootipArgs.options['data'],
+                        data : tootipArgs.options['data'],
                         template :  tootipArgs.options['template'],
                         name : tooltipRendering
                     };

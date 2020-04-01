@@ -4762,6 +4762,7 @@ var Render = /** @__PURE__ @class */ (function () {
                 gObj.notify('closebatch', {});
             }
         }
+        var tempPreventUpdate = this.parent[preventUpdate];
         gObj.trigger(actionBegin, e, function (args) {
             if (args === void 0) { args = { requestType: 'refresh' }; }
             if (args.requestType === 'delete' && isBlazor() && !gObj.isJsComponent) {
@@ -4786,7 +4787,9 @@ var Render = /** @__PURE__ @class */ (function () {
                 }
             }
             if (isBlazor() && _this.parent.isServerRendered) {
-                if (_this.parent[preventUpdate]) {
+                if (tempPreventUpdate) {
+                    var bulkChanges = 'bulkChanges';
+                    gObj[bulkChanges] = {};
                     return;
                 }
                 if (e.requestType === 'refresh') {
@@ -4810,6 +4813,9 @@ var Render = /** @__PURE__ @class */ (function () {
             }
         });
     };
+    /**
+     * @hidden
+     */
     Render.prototype.resetTemplates = function () {
         var gObj = this.parent;
         var gridColumns = gObj.getColumns();
@@ -10505,7 +10511,7 @@ var BlazorAction = /** @__PURE__ @class */ (function () {
         this.parent.on(modelChanged, this.modelChanged, this);
         this.parent.on('group-expand-collapse', this.onGroupClick, this);
         this.parent.on('setcolumnstyles', this.setColVTableWidthAndTranslate, this);
-        this.parent.on('refresh-virtual-indices', this.editSuccess, this);
+        this.parent.on('refresh-virtual-indices', this.invokeServerDataBind, this);
         this.parent.on('contentcolgroup', this.contentColGroup, this);
         this.parent.on(dataSourceModified, this.dataSourceModified, this);
     };
@@ -10522,7 +10528,7 @@ var BlazorAction = /** @__PURE__ @class */ (function () {
         this.parent.off(modelChanged, this.modelChanged);
         this.parent.off('group-expand-collapse', this.onGroupClick);
         this.parent.off('setcolumnstyles', this.setColVTableWidthAndTranslate);
-        this.parent.off('refresh-virtual-indices', this.editSuccess);
+        this.parent.off('refresh-virtual-indices', this.invokeServerDataBind);
         this.parent.off('contentcolgroup', this.contentColGroup);
         this.parent.off(dataSourceModified, this.dataSourceModified);
     };
@@ -10535,13 +10541,17 @@ var BlazorAction = /** @__PURE__ @class */ (function () {
     BlazorAction.prototype.addDeleteSuccess = function (args) {
         var _this = this;
         var editArgs;
-        var action = 'name';
+        var action = 'action';
         var data = 'data';
+        var index = 'index';
         editArgs = {
             requestType: args.requestType,
             data: args[data],
             action: args[action]
         };
+        if (!isNullOrUndefined(args[index])) {
+            editArgs[index] = args[index];
+        }
         args.promise.then(function (e) { return _this.editSuccess(editArgs); }).catch(function (e) {
             if (isBlazor() && _this.parent.isServerRendered) {
                 var error = 'error';
@@ -10556,6 +10566,10 @@ var BlazorAction = /** @__PURE__ @class */ (function () {
         });
     };
     BlazorAction.prototype.editSuccess = function (args) {
+        this.parent.renderModule.resetTemplates();
+        this.invokeServerDataBind(args);
+    };
+    BlazorAction.prototype.invokeServerDataBind = function (args) {
         this.actionArgs = args;
         this.parent.currentAction = args;
         this.parent.allowServerDataBinding = true;
@@ -11446,6 +11460,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
             InvalidFilterMessage: 'Invalid Filter Data',
             GroupDropArea: 'Drag a column header here to group its column',
             UnGroup: 'Click here to ungroup',
+            UnGroupButton: 'Click here to ungroup',
             GroupDisable: 'Grouping is disabled for this column',
             FilterbarTitle: '\'s filter bar cell',
             EmptyDataSourceError: 'DataSource must not be empty at initial load since columns are generated from dataSource in AutoGenerate Column Grid',
@@ -11497,6 +11512,8 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
             Ungroup: 'Ungroup by this column',
             autoFitAll: 'Autofit all columns',
             autoFit: 'Autofit this column',
+            AutoFitAll: 'Autofit all columns',
+            AutoFit: 'Autofit this column',
             Export: 'Export',
             FirstPage: 'First Page',
             LastPage: 'Last Page',
@@ -12356,6 +12373,12 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
             && isNullOrUndefined(parentsUntil(ele, 'e-recordplusexpand'))) && !this.isEdit) {
             var cell = closest(ele, '.e-rowcell');
             if (!cell) {
+                var row = closest(ele, '.e-row');
+                if (!isNullOrUndefined(row)) {
+                    var rowObj = this.getRowObjectFromUID(row.getAttribute('data-uid'));
+                    var rowIndex = parseInt(row.getAttribute('aria-rowindex'), 10);
+                    args = { row: row, rowData: rowObj.data, rowIndex: rowIndex };
+                }
                 return args;
             }
             var cellIndex = parseInt(cell.getAttribute('aria-colindex'), 10);
@@ -13427,7 +13450,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
                     }
                 }
                 if (!flag) {
-                    sCols.push({ field: gCols[i], direction: 'Ascending' });
+                    sCols.push({ field: gCols[i], direction: 'Ascending', isFromGroup: true });
                 }
                 else {
                     if (this_1.allowSorting) {
@@ -18460,16 +18483,20 @@ var NumericContainer = /** @__PURE__ @class */ (function () {
         this.first = createElement('div', {
             className: 'e-first e-icons e-icon-first',
             attrs: {
-                title: this.pagerModule.getLocalizedLabel('firstPageTooltip'),
-                'aria-label': this.pagerModule.getLocalizedLabel('firstPageTooltip'),
+                title: isBlazor() ? this.pagerModule.getLocalizedLabel('FirstPageTooltip') :
+                    this.pagerModule.getLocalizedLabel('firstPageTooltip'),
+                'aria-label': isBlazor() ? this.pagerModule.getLocalizedLabel('FirstPageTooltip') :
+                    this.pagerModule.getLocalizedLabel('firstPageTooltip'),
                 tabindex: '-1'
             }
         });
         this.prev = createElement('div', {
             className: 'e-prev e-icons e-icon-prev',
             attrs: {
-                title: this.pagerModule.getLocalizedLabel('previousPageTooltip'),
-                'aria-label': this.pagerModule.getLocalizedLabel('previousPageTooltip'),
+                title: isBlazor() ? this.pagerModule.getLocalizedLabel('PreviousPageTooltip') :
+                    this.pagerModule.getLocalizedLabel('previousPageTooltip'),
+                'aria-label': isBlazor() ? this.pagerModule.getLocalizedLabel('PreviousPageTooltip') :
+                    this.pagerModule.getLocalizedLabel('previousPageTooltip'),
                 tabindex: '-1'
             }
         });
@@ -18480,10 +18507,13 @@ var NumericContainer = /** @__PURE__ @class */ (function () {
         this.PP = createElement('a', {
             className: 'e-link e-pp e-spacing', innerHTML: '...',
             attrs: {
-                title: this.pagerModule.getLocalizedLabel('previousPagerTooltip'), role: 'link',
-                'aria-label': this.pagerModule.getLocalizedLabel('previousPagerTooltip'),
+                title: isBlazor() ? this.pagerModule.getLocalizedLabel('PreviousPagerTooltip') :
+                    this.pagerModule.getLocalizedLabel('previousPagerTooltip'), role: 'link',
+                'aria-label': isBlazor() ? this.pagerModule.getLocalizedLabel('PreviousPagerTooltip') :
+                    this.pagerModule.getLocalizedLabel('previousPagerTooltip'),
                 tabindex: '-1',
-                name: this.pagerModule.getLocalizedLabel('previousPagerTooltip'),
+                name: isBlazor() ? this.pagerModule.getLocalizedLabel('PreviousPagerTooltip') :
+                    this.pagerModule.getLocalizedLabel('previousPagerTooltip'),
                 href: 'javascript:void(0);'
             }
         });
@@ -18495,10 +18525,13 @@ var NumericContainer = /** @__PURE__ @class */ (function () {
         this.NP = createElement('a', {
             className: 'e-link e-np e-spacing',
             innerHTML: '...', attrs: {
-                title: this.pagerModule.getLocalizedLabel('nextPagerTooltip'), role: 'link',
-                'aria-label': this.pagerModule.getLocalizedLabel('nextPagerTooltip'),
+                title: isBlazor() ? this.pagerModule.getLocalizedLabel('NextPagerTooltip') :
+                    this.pagerModule.getLocalizedLabel('nextPagerTooltip'), role: 'link',
+                'aria-label': isBlazor() ? this.pagerModule.getLocalizedLabel('NextPagerTooltip') :
+                    this.pagerModule.getLocalizedLabel('nextPagerTooltip'),
                 tabindex: '-1',
-                name: this.pagerModule.getLocalizedLabel('nextPagerTooltip'),
+                name: isBlazor() ? this.pagerModule.getLocalizedLabel('NextPagerTooltip') :
+                    this.pagerModule.getLocalizedLabel('nextPagerTooltip'),
                 href: 'javascript:void(0);'
             }
         });
@@ -18509,16 +18542,20 @@ var NumericContainer = /** @__PURE__ @class */ (function () {
         this.next = createElement('div', {
             className: 'e-next e-icons e-icon-next',
             attrs: {
-                title: this.pagerModule.getLocalizedLabel('nextPageTooltip'),
-                'aria-label': this.pagerModule.getLocalizedLabel('nextPageTooltip'),
+                title: isBlazor() ? this.pagerModule.getLocalizedLabel('NextPageTooltip') :
+                    this.pagerModule.getLocalizedLabel('nextPageTooltip'),
+                'aria-label': isBlazor() ? this.pagerModule.getLocalizedLabel('NextPageTooltip') :
+                    this.pagerModule.getLocalizedLabel('nextPageTooltip'),
                 tabindex: '-1'
             }
         });
         this.last = createElement('div', {
             className: 'e-last e-icons e-icon-last',
             attrs: {
-                title: this.pagerModule.getLocalizedLabel('lastPageTooltip'),
-                'aria-label': this.pagerModule.getLocalizedLabel('lastPageTooltip'),
+                title: isBlazor() ? this.pagerModule.getLocalizedLabel('LastPageTooltip') :
+                    this.pagerModule.getLocalizedLabel('lastPageTooltip'),
+                'aria-label': isBlazor() ? this.pagerModule.getLocalizedLabel('LastPageTooltip') :
+                    this.pagerModule.getLocalizedLabel('lastPageTooltip'),
                 tabindex: '-1'
             }
         });
@@ -18671,9 +18708,16 @@ var PagerMessage = /** @__PURE__ @class */ (function () {
      */
     PagerMessage.prototype.refresh = function () {
         var pagerObj = this.pagerModule;
-        this.pageNoMsgElem.textContent = this.format(pagerObj.getLocalizedLabel('currentPageInfo'), [pagerObj.totalRecordsCount === 0 ? 0 :
-                pagerObj.currentPage, pagerObj.totalPages || 0]) + ' ';
-        this.pageCountMsgElem.textContent = this.format(pagerObj.getLocalizedLabel('totalItemsInfo'), [pagerObj.totalRecordsCount || 0]);
+        if (isBlazor()) {
+            this.pageNoMsgElem.textContent = this.format(pagerObj.getLocalizedLabel('CurrentPageInfo'), [pagerObj.totalRecordsCount === 0 ? 0 :
+                    pagerObj.currentPage, pagerObj.totalPages || 0]) + ' ';
+            this.pageCountMsgElem.textContent = this.format(pagerObj.getLocalizedLabel('TotalItemsInfo'), [pagerObj.totalRecordsCount || 0]);
+        }
+        else {
+            this.pageNoMsgElem.textContent = this.format(pagerObj.getLocalizedLabel('currentPageInfo'), [pagerObj.totalRecordsCount === 0 ? 0 :
+                    pagerObj.currentPage, pagerObj.totalPages || 0]) + ' ';
+            this.pageCountMsgElem.textContent = this.format(pagerObj.getLocalizedLabel('totalItemsInfo'), [pagerObj.totalRecordsCount || 0]);
+        }
         this.pageNoMsgElem.parentElement.setAttribute('aria-label', this.pageNoMsgElem.textContent + this.pageCountMsgElem.textContent);
     };
     /**
@@ -18794,6 +18838,16 @@ var Pager = /** @__PURE__ @class */ (function (_super) {
             previousPagerTooltip: 'Go to previous pager',
             pagerDropDown: 'Items per page',
             pagerAllDropDown: 'Items',
+            CurrentPageInfo: '{0} of {1} pages',
+            TotalItemsInfo: '({0} items)',
+            FirstPageTooltip: 'Go to first page',
+            LastPageTooltip: 'Go to last page',
+            NextPageTooltip: 'Go to next page',
+            PreviousPageTooltip: 'Go to previous page',
+            NextPagerTooltip: 'Go to next pager',
+            PreviousPagerTooltip: 'Go to previous pager',
+            PagerDropDown: 'Items per page',
+            PagerAllDropDown: 'Items',
             All: 'All'
         };
         this.containerModule = new NumericContainer(this);
@@ -19076,21 +19130,25 @@ var Pager = /** @__PURE__ @class */ (function (_super) {
     Pager.prototype.renderFirstPrevDivForDevice = function () {
         this.element.appendChild(createElement('div', {
             className: 'e-mfirst e-icons e-icon-first',
-            attrs: { title: this.getLocalizedLabel('firstPageTooltip'), tabindex: '-1' }
+            attrs: { title: isBlazor() ? this.getLocalizedLabel('FirstPageTooltip') : this.getLocalizedLabel('firstPageTooltip'),
+                tabindex: '-1' }
         }));
         this.element.appendChild(createElement('div', {
             className: 'e-mprev e-icons e-icon-prev',
-            attrs: { title: this.getLocalizedLabel('previousPageTooltip'), tabindex: '-1' }
+            attrs: { title: isBlazor() ? this.getLocalizedLabel('PreviousPageTooltip') :
+                    this.getLocalizedLabel('previousPageTooltip'), tabindex: '-1' }
         }));
     };
     Pager.prototype.renderNextLastDivForDevice = function () {
         this.element.appendChild(createElement('div', {
             className: 'e-mnext e-icons e-icon-next',
-            attrs: { title: this.getLocalizedLabel('nextPageTooltip'), tabindex: '-1' }
+            attrs: { title: isBlazor() ? this.getLocalizedLabel('NextPageTooltip') :
+                    this.getLocalizedLabel('nextPageTooltip'), tabindex: '-1' }
         }));
         this.element.appendChild(createElement('div', {
             className: 'e-mlast e-icons e-icon-last',
-            attrs: { title: this.getLocalizedLabel('lastPageTooltip'), tabindex: '-1' }
+            attrs: { title: isBlazor() ? this.getLocalizedLabel('LastPageTooltip') :
+                    this.getLocalizedLabel('lastPageTooltip'), tabindex: '-1' }
         }));
     };
     Pager.prototype.addAriaLabel = function () {
@@ -19179,7 +19237,9 @@ var PagerDropDown = /** @__PURE__ @class */ (function () {
         var dropDownDiv = createElement('div', { className: 'e-pagerdropdown' });
         var defaultTextDiv = createElement('div', { className: 'e-pagerconstant' });
         var input = createElement('input', { attrs: { type: 'text', tabindex: '1' } });
-        this.pagerCons = createElement('span', { className: 'e-constant', innerHTML: this.pagerModule.getLocalizedLabel('pagerDropDown') });
+        this.pagerCons = createElement('span', { className: 'e-constant', innerHTML: isBlazor() ?
+                this.pagerModule.getLocalizedLabel('PagerDropDown') :
+                this.pagerModule.getLocalizedLabel('pagerDropDown') });
         dropDownDiv.appendChild(input);
         defaultTextDiv.appendChild(this.pagerCons);
         this.pagerDropDownDiv.appendChild(dropDownDiv);
@@ -19212,7 +19272,8 @@ var PagerDropDown = /** @__PURE__ @class */ (function () {
     PagerDropDown.prototype.onChange = function (e) {
         if (this.dropDownListObject.value === this.pagerModule.getLocalizedLabel('All')) {
             this.pagerModule.pageSize = this.pagerModule.totalRecordsCount;
-            this.pagerCons.innerHTML = this.pagerModule.getLocalizedLabel('pagerAllDropDown');
+            this.pagerCons.innerHTML = isBlazor() ? this.pagerModule.getLocalizedLabel('PagerAllDropDown') :
+                this.pagerModule.getLocalizedLabel('pagerAllDropDown');
             e.value = this.pagerModule.pageSize;
             if (document.getElementsByClassName('e-popup-open e-alldrop').length) {
                 document.getElementsByClassName('e-popup-open e-alldrop')[0].style.display = 'none';
@@ -19221,7 +19282,8 @@ var PagerDropDown = /** @__PURE__ @class */ (function () {
         else {
             this.pagerModule.pageSize = parseInt(this.dropDownListObject.value, 10);
             if (this.pagerCons.innerHTML !== this.pagerModule.getLocalizedLabel('pagerDropDown')) {
-                this.pagerCons.innerHTML = this.pagerModule.getLocalizedLabel('pagerDropDown');
+                this.pagerCons.innerHTML = isBlazor() ? this.pagerModule.getLocalizedLabel('PagerDropDown') :
+                    this.pagerModule.getLocalizedLabel('pagerDropDown');
             }
         }
         this.pagerModule.dataBind();
@@ -20240,9 +20302,10 @@ var FilterMenuRenderer = /** @__PURE__ @class */ (function () {
                 }
                 else {
                     var eControl = element.querySelector('.e-control');
-                    fltrValue = !isNullOrUndefined(eControl.ej2_instances) ? eControl.ej2_instances[0].value : (col.type === 'boolean') ?
-                        (element.querySelector('.e-control').checked) :
-                        eControl.value;
+                    fltrValue = col.type === 'boolean' ? eControl.checked :
+                        !isNullOrUndefined(eControl.ej2_instances) ?
+                            eControl.ej2_instances[0].value :
+                            eControl.value;
                 }
             }
             this.filterObj.filterByColumn(col.field, flOptrValue, fltrValue);
@@ -24017,7 +24080,8 @@ var Group = /** @__PURE__ @class */ (function () {
         }));
         childDiv.appendChild(this.parent.createElement('span', {
             className: 'e-ungroupbutton e-icons e-icon-hide', innerHTML: '&nbsp;',
-            attrs: { title: this.l10n.getConstant('UnGroup'), tabindex: '-1', 'aria-label': 'ungroup the grouped column' },
+            attrs: { title: isBlazor() ? this.l10n.getConstant('UnGroupButton') : this.l10n.getConstant('UnGroup'),
+                tabindex: '-1', 'aria-label': 'ungroup the grouped column' },
             styles: this.groupSettings.showUngroupButton ? '' : 'display:none'
         }));
         groupedColumn.appendChild(childDiv);
@@ -24055,7 +24119,7 @@ var Group = /** @__PURE__ @class */ (function () {
     };
     Group.prototype.refreshToggleBtn = function (isRemove) {
         if (this.groupSettings.showToggleButton) {
-            var headers = [].slice.call(this.parent.element.getElementsByClassName('e-headercelldiv'));
+            var headers = [].slice.call(this.parent.getHeaderTable().getElementsByClassName('e-headercelldiv'));
             for (var i = 0, len = headers.length; i < len; i++) {
                 if (!((headers[i].classList.contains('e-emptycell')) || (headers[i].classList.contains('e-headerchkcelldiv')))) {
                     var column = this.parent.getColumnByUid(headers[i].getAttribute('e-mappinguid'));
@@ -26928,7 +26992,7 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
         var size = this.parent.pageSettings.pageSize;
         this.parent.setProperties({ pageSettings: { pageSize: size < height ? height : size } }, true);
         if (isBlazor() && this.parent.isServerRendered) {
-            this.parent.notify('editsuccess', {});
+            this.parent.notify('refresh-virtual-indices', {});
         }
     };
     VirtualScroll.prototype.addEventListener = function () {
@@ -29463,7 +29527,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
     BatchEdit.prototype.refreshTD = function (td, column, rowObj, value) {
         var cell = new CellRenderer(this.parent, this.serviceLocator);
         var rowcell;
-        value = column.type === 'number' ? parseFloat(value) : value;
+        value = column.type === 'number' && !isNullOrUndefined(value) ? parseFloat(value) : value;
         this.setChanges(rowObj, column.field, value, td);
         var frzCols = this.parent.getFrozenColumns();
         refreshForeignData(rowObj, this.parent.getForeignKeyColumns(), rowObj.changes);
@@ -29625,6 +29689,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                     _this.parent.notify(groupAggregates, {});
                 }
             }
+            _this.preventSaveCell = false;
             if (_this.editNext) {
                 _this.editNext = false;
                 if (_this.cellDetails.rowIndex === _this.index && _this.cellDetails.column.field === _this.field) {
@@ -29632,7 +29697,6 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                 }
                 _this.editCellExtend(_this.index, _this.field, _this.isAdd);
             }
-            _this.preventSaveCell = false;
         };
     };
     BatchEdit.prototype.getDataByIndex = function (index) {
@@ -30313,7 +30377,9 @@ var Edit = /** @__PURE__ @class */ (function () {
         return editedData;
     };
     Edit.prototype.getValue = function (col, input, editedData) {
-        var value = input.ej2_instances ?
+        var value = input.ej2_instances &&
+            !(isBlazor() && input.ej2_instances[0].isServerRendered
+                && (col.type === 'date' || col.type === 'datetime')) ?
             input.ej2_instances[0].value : input.value;
         var gObj = this.parent;
         var temp = col.edit.read;
@@ -31020,7 +31086,8 @@ var ColumnChooser = /** @__PURE__ @class */ (function () {
     ColumnChooser.prototype.confirmDlgBtnClick = function (args) {
         this.parent.notify(columnChooserOpened, { event: args, dialog: this.dlgObj });
         this.stateChangeColumns = [];
-        var uncheckedLength = this.ulElement.querySelectorAll('.e-uncheck:not(.e-selectall)').length;
+        var uncheckedLength = this.ulElement.querySelector('.e-uncheck') &&
+            this.ulElement.querySelectorAll('.e-uncheck:not(.e-selectall)').length;
         if (!isNullOrUndefined(args)) {
             if (uncheckedLength < this.parent.getColumns().length) {
                 this.parent.trigger(actionBegin, { requestType: 'columnstate' });
@@ -31085,7 +31152,8 @@ var ColumnChooser = /** @__PURE__ @class */ (function () {
         var fltrCol;
         var okButton;
         var buttonEle = this.dlgDiv.querySelector('.e-footer-content');
-        var selectedCbox = this.ulElement.querySelectorAll('.e-check:not(.e-selectall)').length;
+        var selectedCbox = this.ulElement.querySelector('.e-check') &&
+            this.ulElement.querySelectorAll('.e-check:not(.e-selectall)').length;
         this.isInitialOpen = true;
         if (buttonEle) {
             okButton = buttonEle.querySelector('.e-btn').ej2_instances[0];
@@ -34675,7 +34743,7 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
             'FirstPage', 'PrevPage', 'LastPage', 'NextPage'];
     };
     ContextMenu$$1.prototype.setLocaleKey = function () {
-        return {
+        var localeKeys = {
             'AutoFitAll': 'autoFitAll',
             'AutoFit': 'autoFit',
             'Copy': 'Copy',
@@ -34696,6 +34764,13 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
             'PrevPage': 'PreviousPage',
             'NextPage': 'NextPage'
         };
+        if (isBlazor()) {
+            var autoFitAll = 'AutoFitAll';
+            localeKeys[autoFitAll] = 'AutoFitAll';
+            var autoFit = 'AutoFit';
+            localeKeys[autoFit] = 'AutoFit';
+        }
+        return localeKeys;
     };
     ContextMenu$$1.prototype.getColumn = function (e) {
         var cell = closest(e.target, 'th.e-headercell');
@@ -35753,7 +35828,7 @@ var ColumnMenu = /** @__PURE__ @class */ (function () {
         return 'columnMenu';
     };
     ColumnMenu.prototype.setLocaleKey = function () {
-        return {
+        var localeKeys = {
             'AutoFitAll': 'autoFitAll',
             'AutoFit': 'autoFit',
             'Group': 'Group',
@@ -35763,6 +35838,13 @@ var ColumnMenu = /** @__PURE__ @class */ (function () {
             'ColumnChooser': 'Columnchooser',
             'Filter': 'FilterMenu'
         };
+        if (isBlazor()) {
+            var autoFitAll = 'AutoFitAll';
+            localeKeys[autoFitAll] = 'AutoFitAll';
+            var autoFit = 'AutoFit';
+            localeKeys[autoFit] = 'AutoFit';
+        }
+        return localeKeys;
     };
     ColumnMenu.prototype.getHeaderCell = function (e) {
         return closest(e.target, 'th.e-headercell');

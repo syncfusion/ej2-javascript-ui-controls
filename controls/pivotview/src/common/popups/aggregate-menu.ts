@@ -15,6 +15,7 @@ import * as events from '../../common/base/constant';
 import { PivotUtil } from '../../base/util';
 import { AggregateTypes } from '../base/enum';
 import { AggregateMenuOpenEventArgs } from '../base/interface';
+import { OpenCloseMenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 
 /**
  * `AggregateMenu` module to create aggregate type popup.
@@ -24,6 +25,7 @@ export class AggregateMenu {
     public parent: PivotView | PivotFieldList;
     private menuInfo: Menu[] = [];
     private parentElement: HTMLElement;
+    private buttonElement: HTMLElement;
     private currentMenu: Element;
     private valueDialog: Dialog;
     private summaryTypes: AggregateTypes[];
@@ -47,6 +49,7 @@ export class AggregateMenu {
     }
     private openContextMenu(args: MouseEventArgs): void {
         let fieldName: string = (args.target as HTMLElement).parentElement.id;
+        this.buttonElement = (args.target as HTMLElement).parentElement;
         let isStringField: number = this.parent.engineModule.fieldList[fieldName].type !== 'number' ? 1 : 0;
         this.summaryTypes = [...this.getMenuItem(isStringField)];
         let eventArgs: AggregateMenuOpenEventArgs = {
@@ -105,6 +108,9 @@ export class AggregateMenu {
             items: menuItems[isStringField],
             enableRtl: this.parent.enableRtl,
             beforeOpen: this.beforeMenuOpen.bind(this, isStringField),
+            onClose: (args: OpenCloseMenuEventArgs) => {
+                this.buttonElement.focus();
+            },
             select: this.selectOptionInContextMenu.bind(this)
         };
         let contextMenu: HTMLElement =
@@ -172,6 +178,7 @@ export class AggregateMenu {
                     buttonModel: { cssClass: cls.CANCEL_BUTTON_CLASS, content: this.parent.localeObj.getConstant('cancel') }
                 }
             ],
+            /* tslint:disable-next-line:max-line-length */
             closeOnEscape: (this.parent.getModuleName() === 'pivotfieldlist' && (this.parent as PivotFieldList).renderMode === 'Popup') ? false : true,
             target: this.parentElement,
             overlayClick: () => { this.removeDialog(); },
@@ -278,7 +285,7 @@ export class AggregateMenu {
                 optionWrapper3.enabled = baseItemTypes.indexOf(args.value as string) !== -1 ? true : false;
                 if (optionWrapper3.enabled && (optionWrapper3.dataSource as string[]).length === 1) {
                     optionWrapper3.dataSource = fieldItemDataSource;
-                    optionWrapper3.refresh();
+                    optionWrapper3.dataBind();
                 }
             }
         });
@@ -296,7 +303,7 @@ export class AggregateMenu {
                 optionWrapper3.dataSource = fieldItemDataSource;
                 optionWrapper3.value = fieldItemDataSource[0];
                 optionWrapper3.filterBarPlaceholder = popupInstance.parent.localeObj.getConstant('example') + ' ' + fieldItemDataSource[0];
-                optionWrapper3.refresh();
+                optionWrapper3.dataBind();
             }
         });
         optionWrapper2.isStringTemplate = true;
@@ -409,6 +416,7 @@ export class AggregateMenu {
         this.updateDataSource(true);
     }
     private removeDialog(): void {
+        this.buttonElement.focus();
         if (this.valueDialog && !this.valueDialog.isDestroyed) { this.valueDialog.destroy(); }
         if (document.getElementById(this.parentElement.id + '_ValueDialog')) {
             remove(document.getElementById(this.parentElement.id + '_ValueDialog'));

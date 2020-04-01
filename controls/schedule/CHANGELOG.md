@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.42 (2020-04-01)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#269264` - An issue with last occurrence of the recurrence event is not rendered on month view has been fixed.
+
 ## 18.1.36-beta (2020-03-19)
 
 ### Schedule
@@ -9,6 +17,7 @@
 #### Bug Fixes
 
 - `#151738` - An issue with swipe action in mobile mode while applying `setWorkHours()` method has been fixed.
+- `#151972` - An issue with particular recurrence event while changing time zone as `Eastern time` has been fixed.
 
 ## 17.4.55 (2020-03-10)
 

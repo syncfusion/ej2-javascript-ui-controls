@@ -79,3 +79,6 @@ export interface IAnnotationRenderEventArgs extends IProgressEventArgs {
     /** Defines the current annotation location */
     location: ProgressLocation;
 }
+export interface IMouseEventArgs {
+    target: string;
+}

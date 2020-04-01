@@ -1055,6 +1055,8 @@ var chartMouseClick = 'chartMouseClick';
 /** @private */
 var pointClick = 'pointClick';
 /** @private */
+var pointDoubleClick = 'pointDoubleClick';
+/** @private */
 var pointMove = 'pointMove';
 /** @private */
 var chartMouseLeave = 'chartMouseLeave';
@@ -1100,6 +1102,8 @@ var beforeExport = 'beforeExport';
 var afterExport = 'afterExport';
 /** @private */
 var bulletChartMouseClick = 'chartMouseClick';
+/** @private */
+var onZooming = 'onZooming';
 
 var __extends$4 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -2182,6 +2186,23 @@ function sort(data, fields, isDescending) {
 /** @private */
 function isBreakLabel(label) {
     return label.indexOf('<br>') !== -1;
+}
+function getVisiblePoints(series) {
+    var points = extend([], series.points, null, true);
+    var tempPoints = [];
+    var tempPoint;
+    var pointIndex = 0;
+    for (var i = 0; i < points.length; i++) {
+        tempPoint = points[i];
+        if (isNullOrUndefined(tempPoint.x) || tempPoint.x === '') {
+            continue;
+        }
+        else {
+            tempPoint.index = pointIndex++;
+            tempPoints.push(tempPoint);
+        }
+    }
+    return tempPoints;
 }
 /** @private */
 function rotateTextSize(font, text, angle, chart) {
@@ -4520,14 +4541,16 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
         var anchor = ((isOpposed && isLabelInside) || (!isOpposed && !isLabelInside)) ? 'end' : 'start';
         var labelElement = chart.renderer.createGroup({ id: chart.element.id + 'AxisLabels' + index });
         var scrollBarHeight = isNullOrUndefined(axis.crossesAt) ? axis.scrollBarHeight * (isOpposed ? 1 : -1) : 0;
+        var textHeight;
         for (var i = 0, len = axis.visibleLabels.length; i < len; i++) {
             isAxisBreakLabel = isBreakLabel(axis.visibleLabels[i].originalText);
             pointX = isLabelInside ? (rect.x - padding) : (rect.x + padding + scrollBarHeight);
             elementSize = isAxisBreakLabel ? axis.visibleLabels[i].breakLabelSize : axis.visibleLabels[i].size;
             pointY = (valueToCoefficient(axis.visibleLabels[i].value, axis) * rect.height) + (chart.stockChart ? 7 : 0);
             pointY = Math.floor((pointY * -1) + (rect.y + rect.height));
-            pointY = isAxisBreakLabel ? pointY - ((elementSize.height / 8) * axis.visibleLabels[i].text.length / 2) :
-                pointY + (elementSize.height / 4);
+            textHeight = ((elementSize.height / 8) * axis.visibleLabels[i].text.length / 2);
+            pointY = (isAxisBreakLabel ? (axis.labelPosition === 'Inside' ? (pointY - (elementSize.height / 2) - textHeight - 5) :
+                (pointY - textHeight)) : (axis.labelPosition === 'Inside' ? (pointY - 5) : pointY + (elementSize.height / 4)));
             options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, anchor, axis.visibleLabels[i].text);
             if (axis.edgeLabelPlacement) {
                 switch (axis.edgeLabelPlacement) {
@@ -4839,6 +4862,7 @@ var CartesianAxisLayoutPanel = /** @__PURE__ @class */ (function () {
             && (axis.zoomFactor < 1 || axis.zoomPosition > 0)) ? axis.scrollBarHeight : 0;
         var newPoints = [];
         var isRotatedLabelIntersect = false;
+        padding += (angle === 90 || angle === 270 || angle === -90 || angle === -270) ? (islabelInside ? 5 : -5) : 0;
         for (var i = 0, len = length; i < len; i++) {
             label = axis.visibleLabels[i];
             isAxisBreakLabel = isBreakLabel(label.originalText);
@@ -5760,15 +5784,20 @@ var SeriesBase = /** @__PURE__ @class */ (function (_super) {
             var dateFormatter = this.chart.intl.getDateFormat(option);
             while (i < len) {
                 point = this.dataPoint(i, textMappingName, xName);
-                point.x = new Date(DataUtil.parse.parseJson({ val: point.x }).val);
-                if (this.xAxis.valueType === 'DateTime') {
-                    point.xValue = Date.parse(dateParser(dateFormatter(point.x)));
+                if (!isNullOrUndefined(point.x) && point.x !== '') {
+                    point.x = new Date(DataUtil.parse.parseJson({ val: point.x }).val);
+                    if (this.xAxis.valueType === 'DateTime') {
+                        point.xValue = Date.parse(point.x.toString());
+                    }
+                    else {
+                        this.pushCategoryData(point, i, Date.parse(dateParser(dateFormatter(point.x))).toString());
+                    }
+                    this.pushData(point, i);
+                    this.setEmptyPoint(point, i);
                 }
                 else {
-                    this.pushCategoryData(point, i, Date.parse(dateParser(dateFormatter(point.x))).toString());
+                    point.visible = false;
                 }
-                this.pushData(point, i);
-                this.setEmptyPoint(point, i);
                 i++;
             }
         }
@@ -6133,7 +6162,7 @@ var Series = /** @__PURE__ @class */ (function (_super) {
         this.xAxis.labels = [];
         for (var _i = 0, _a = this.xAxis.series; _i < _a.length; _i++) {
             var item = _a[_i];
-            if (item.visible) {
+            if (item.visible && item.category !== 'TrendLine') {
                 item.xMin = Infinity;
                 item.xMax = -Infinity;
                 for (var _b = 0, _c = item.points; _b < _c.length; _b++) {
@@ -6210,6 +6239,7 @@ var Series = /** @__PURE__ @class */ (function (_super) {
         }
         var stackingSeies = [];
         var stackedValues = [];
+        var visiblePoints = [];
         for (var _i = 0, seriesCollection_1 = seriesCollection; _i < seriesCollection_1.length; _i++) {
             var series = seriesCollection_1[_i];
             if (series.type.indexOf('Stacking') !== -1 || (series.drawType.indexOf('Stacking') !== -1 &&
@@ -6224,30 +6254,31 @@ var Series = /** @__PURE__ @class */ (function (_super) {
                 startValues = [];
                 endValues = [];
                 stackingSeies.push(series);
-                for (var j = 0, pointsLength = series.points.length; j < pointsLength; j++) {
+                visiblePoints = getVisiblePoints(series);
+                for (var j = 0, pointsLength = visiblePoints.length; j < pointsLength; j++) {
                     lastValue = 0;
                     value = +yValues[j]; // Fix for chart not rendering while y value is given as string issue
-                    if (lastPositive[stackingGroup][series.points[j].xValue] === undefined) {
-                        lastPositive[stackingGroup][series.points[j].xValue] = 0;
+                    if (lastPositive[stackingGroup][visiblePoints[j].xValue] === undefined) {
+                        lastPositive[stackingGroup][visiblePoints[j].xValue] = 0;
                     }
-                    if (lastNegative[stackingGroup][series.points[j].xValue] === undefined) {
-                        lastNegative[stackingGroup][series.points[j].xValue] = 0;
+                    if (lastNegative[stackingGroup][visiblePoints[j].xValue] === undefined) {
+                        lastNegative[stackingGroup][visiblePoints[j].xValue] = 0;
                     }
                     if (isStacking100) {
-                        value = value / frequencies[stackingGroup][series.points[j].xValue] * 100;
+                        value = value / frequencies[stackingGroup][visiblePoints[j].xValue] * 100;
                         value = !isNaN(value) ? value : 0;
-                        series.points[j].percentage = +(value.toFixed(2));
+                        visiblePoints[j].percentage = +(value.toFixed(2));
                     }
                     else {
                         stackedValues[j] = stackedValues[j] ? stackedValues[j] + Math.abs(value) : Math.abs(value);
                     }
                     if (value >= 0) {
-                        lastValue = lastPositive[stackingGroup][series.points[j].xValue];
-                        lastPositive[stackingGroup][series.points[j].xValue] += value;
+                        lastValue = lastPositive[stackingGroup][visiblePoints[j].xValue];
+                        lastPositive[stackingGroup][visiblePoints[j].xValue] += value;
                     }
                     else {
-                        lastValue = lastNegative[stackingGroup][series.points[j].xValue];
-                        lastNegative[stackingGroup][series.points[j].xValue] += value;
+                        lastValue = lastNegative[stackingGroup][visiblePoints[j].xValue];
+                        lastNegative[stackingGroup][visiblePoints[j].xValue] += value;
                     }
                     startValues.push(lastValue);
                     endValues.push(value + lastValue);
@@ -6274,7 +6305,7 @@ var Series = /** @__PURE__ @class */ (function (_super) {
             if (isStacking100) {
                 return null;
             }
-            for (var _a = 0, _b = item.points; _a < _b.length; _a++) {
+            for (var _a = 0, _b = getVisiblePoints(item); _a < _b.length; _a++) {
                 var point = _b[_a];
                 point.percentage = Math.abs(+(point.y / values[point.index] * 100).toFixed(2));
             }
@@ -6283,24 +6314,26 @@ var Series = /** @__PURE__ @class */ (function (_super) {
     Series.prototype.findFrequencies = function (seriesCollection) {
         var frequencies = [];
         var stackingGroup;
+        var visiblePoints = [];
         for (var _i = 0, seriesCollection_2 = seriesCollection; _i < seriesCollection_2.length; _i++) {
             var series = seriesCollection_2[_i];
             series.yAxis.isStack100 = series.type.indexOf('100') !== -1 ? true : false;
+            visiblePoints = getVisiblePoints(series);
             if (series.type.indexOf('Stacking') !== -1) {
                 stackingGroup = (series.type.indexOf('StackingArea') !== -1) ? 'StackingArea100' :
                     (series.type.indexOf('StackingLine') !== -1) ? 'StackingLine100' : series.stackingGroup;
                 if (!frequencies[stackingGroup]) {
                     frequencies[stackingGroup] = [];
                 }
-                for (var j = 0, pointsLength = series.points.length; j < pointsLength; j++) {
-                    if (frequencies[stackingGroup][series.points[j].xValue] === undefined) {
-                        frequencies[stackingGroup][series.points[j].xValue] = 0;
+                for (var j = 0, pointsLength = visiblePoints.length; j < pointsLength; j++) {
+                    if (frequencies[stackingGroup][visiblePoints[j].xValue] === undefined) {
+                        frequencies[stackingGroup][visiblePoints[j].xValue] = 0;
                     }
                     if (series.yData[j] > 0) {
-                        frequencies[stackingGroup][series.points[j].xValue] += series.yData[j];
+                        frequencies[stackingGroup][visiblePoints[j].xValue] += series.yData[j];
                     }
                     else {
-                        frequencies[stackingGroup][series.points[j].xValue] -= series.yData[j];
+                        frequencies[stackingGroup][visiblePoints[j].xValue] -= series.yData[j];
                     }
                 }
             }
@@ -6319,6 +6352,7 @@ var Series = /** @__PURE__ @class */ (function (_super) {
             if (this.category !== 'Indicator' && this.category !== 'TrendLine') {
                 this.createSeriesElements(chart);
             }
+            this.visiblePoints = getVisiblePoints(this);
             chart[seriesType + 'SeriesModule'].render(this, this.xAxis, this.yAxis, chart.requireInvertedAxis);
             if (this.category !== 'Indicator') {
                 if (this.errorBar.visible) {
@@ -7030,15 +7064,17 @@ var Marker = /** @__PURE__ @class */ (function (_super) {
             var j = 1;
             var incFactor = (series.type === 'RangeArea' || series.type === 'RangeColumn') ? 2 : 1;
             for (var i = 0; i < series.points.length; i++) {
-                if (!series.points[i].symbolLocations.length || !markerElements[j]) {
-                    continue;
+                if (series.points[i].symbolLocations) {
+                    if (!series.points[i].symbolLocations.length || !markerElements[j]) {
+                        continue;
+                    }
+                    markerAnimate(markerElements[j], delay, duration, series, i, series.points[i].symbolLocations[0], false);
+                    if (incFactor === 2) {
+                        var lowPoint = this.getRangeLowPoint(series.points[i].regions[0], series);
+                        markerAnimate(markerElements[j + 1], delay, duration, series, i, lowPoint, false);
+                    }
+                    j += incFactor;
                 }
-                markerAnimate(markerElements[j], delay, duration, series, i, series.points[i].symbolLocations[0], false);
-                if (incFactor === 2) {
-                    var lowPoint = this.getRangeLowPoint(series.points[i].regions[0], series);
-                    markerAnimate(markerElements[j + 1], delay, duration, series, i, lowPoint, false);
-                }
-                j += incFactor;
             }
         }
     };
@@ -8177,6 +8213,10 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         /** @private */
         _this.visible = 0;
         /** @private */
+        _this.clickCount = 0;
+        /** @private */
+        _this.singleClickTimer = 0;
+        /** @private */
         _this.chartAreaType = 'Cartesian';
         _this.chartid = 57723;
         setValue('mergePersistData', _this.mergePersistChartData, _this);
@@ -9287,10 +9327,20 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     Chart.prototype.chartOnMouseClick = function (e) {
+        var _this = this;
         var element = e.target;
         this.trigger(chartMouseClick, { target: element.id, x: this.mouseX, y: this.mouseY });
-        if (this.pointClick) {
-            this.triggerPointEvent(pointClick);
+        this.clickCount++;
+        if (this.clickCount === 1 && this.pointClick) {
+            this.singleClickTimer = +setTimeout(function () {
+                _this.clickCount = 0;
+                _this.triggerPointEvent(pointClick);
+            }, 400);
+        }
+        else if (this.clickCount === 2 && this.pointDoubleClick) {
+            clearTimeout(this.singleClickTimer);
+            this.clickCount = 0;
+            this.triggerPointEvent(pointDoubleClick);
         }
         this.notify('click', e);
         return false;
@@ -10061,7 +10111,9 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
                         _super.prototype.refresh.call(this);
                         break;
                     case 'tooltip':
-                        this.tooltipModule.previousPoints = [];
+                        if (this.tooltipModule) { // To check the tooltip enable is true.
+                            this.tooltipModule.previousPoints = [];
+                        }
                         break;
                 }
             }
@@ -10268,6 +10320,9 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
     ], Chart.prototype, "pointClick", void 0);
     __decorate([
         Event()
+    ], Chart.prototype, "pointDoubleClick", void 0);
+    __decorate([
+        Event()
     ], Chart.prototype, "pointMove", void 0);
     __decorate([
         Event()
@@ -10287,6 +10342,9 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event()
     ], Chart.prototype, "zoomComplete", void 0);
+    __decorate([
+        Event()
+    ], Chart.prototype, "onZooming", void 0);
     __decorate([
         Event()
     ], Chart.prototype, "scrollStart", void 0);
@@ -10421,35 +10479,65 @@ var NiceInterval = /** @__PURE__ @class */ (function (_super) {
      * @return {string}
      * @private
      */
-    NiceInterval.prototype.getSkeleton = function (axis, currentValue, previousValue) {
+    NiceInterval.prototype.getSkeleton = function (axis, currentValue, previousValue, isBlazor$$1) {
         var skeleton;
         var intervalType = axis.actualIntervalType;
         if (axis.skeleton) {
             return axis.skeleton;
         }
         if (intervalType === 'Years') {
-            skeleton = axis.isChart ? (axis.valueType === 'DateTime' ? 'y' : 'yMMM') : 'y';
+            if (isBlazor$$1) {
+                skeleton = axis.isChart ? (axis.valueType === 'DateTime' ? 'y' : 'y') : 'y';
+            }
+            else {
+                skeleton = axis.isChart ? (axis.valueType === 'DateTime' ? 'y' : 'yMMM') : 'y';
+            }
         }
         else if (intervalType === 'Quarter') {
-            skeleton = 'yMMM';
+            skeleton = isBlazor$$1 ? 'y' : 'yMMM';
         }
         else if (intervalType === 'Months') {
-            skeleton = axis.isChart ? 'MMMd' : 'MMM';
+            if (isBlazor$$1) {
+                skeleton = axis.isChart ? 'm' : 'm';
+            }
+            else {
+                skeleton = axis.isChart ? 'MMMd' : 'MMM';
+            }
         }
         else if (intervalType === 'Weeks') {
-            skeleton = 'MEd';
+            skeleton = isBlazor$$1 ? 'm' : 'MEd';
         }
         else if (intervalType === 'Days') {
-            skeleton = axis.isChart ? this.getDayFormat(axis, currentValue, previousValue) : 'MMMd';
+            if (isBlazor$$1) {
+                skeleton = 'd';
+            }
+            else {
+                skeleton = axis.isChart ? this.getDayFormat(axis, currentValue, previousValue) : 'MMMd';
+            }
         }
         else if (intervalType === 'Hours') {
-            skeleton = axis.isChart ? (axis.valueType === 'DateTime' ? 'Hm' : 'EHm') : 'h';
+            if (isBlazor$$1) {
+                skeleton = 't';
+            }
+            else {
+                skeleton = axis.isChart ? (axis.valueType === 'DateTime' ? 'Hm' : 'EHm') : 'h';
+            }
         }
         else if (intervalType === 'Minutes') {
-            skeleton = axis.isChart ? 'Hms' : 'hm';
+            if (isBlazor$$1) {
+                skeleton = 'T';
+            }
+            else {
+                skeleton = axis.isChart ? 'Hms' : 'hm';
+            }
         }
         else {
-            skeleton = axis.isChart ? 'Hms' : 'hms';
+            if (isBlazor$$1) {
+                skeleton = 'T';
+            }
+            else {
+                skeleton = axis.isChart ? 'Hms' : 'hms';
+            }
         }
         return skeleton;
     };
@@ -10719,9 +10807,9 @@ var DateTime = /** @__PURE__ @class */ (function (_super) {
             labelStyle = (extend({}, getValue('properties', axis.labelStyle), null, true));
             previousValue = axisLabels.length ? axis.visibleLabels[axisLabels.length - 1].value : tempInterval;
             axis.format = chart.intl.getDateFormat({
-                format: this.findCustomFormats(axis, tempInterval, previousValue),
+                format: this.findCustomFormats(axis, tempInterval, previousValue) || this.blazorCustomFormat(axis),
                 type: firstToLowerCase(axis.skeletonType),
-                skeleton: this.getSkeleton(axis, tempInterval, previousValue)
+                skeleton: this.getSkeleton(axis, tempInterval, previousValue, chart.isBlazor)
             });
             axis.startLabel = axis.format(new Date(axis.visibleRange.min));
             axis.endLabel = axis.format(new Date(axis.visibleRange.max));
@@ -10739,6 +10827,15 @@ var DateTime = /** @__PURE__ @class */ (function (_super) {
         }
         if (axis.getMaxLabelWidth) {
             axis.getMaxLabelWidth(this.chart);
+        }
+    };
+    /** @private */
+    DateTime.prototype.blazorCustomFormat = function (axis) {
+        if (this.chart.isBlazor && axis.actualIntervalType === 'Years') {
+            return 'yyyy';
+        }
+        else {
+            return '';
         }
     };
     /** @private */
@@ -11139,7 +11236,8 @@ var DateTimeCategory = /** @__PURE__ @class */ (function (_super) {
             axis.actualIntervalType = axis.intervalType;
         }
         axis.format = this.chart.intl.getDateFormat({
-            format: axis.labelFormat, type: firstToLowerCase(axis.skeletonType), skeleton: this.getSkeleton(axis, null, null)
+            format: axis.labelFormat || this.blazorCustomFormat(axis), type: firstToLowerCase(axis.skeletonType),
+            skeleton: this.getSkeleton(axis, null, null, this.chart.isBlazor)
         });
         for (var i = 0; i < axis.labels.length; i++) {
             labelStyle = (extend({}, getValue('properties', axis.labelStyle), null, true));
@@ -11153,6 +11251,15 @@ var DateTimeCategory = /** @__PURE__ @class */ (function (_super) {
         }
         if (axis.getMaxLabelWidth) {
             axis.getMaxLabelWidth(this.chart);
+        }
+    };
+    /** @private */
+    DateTimeCategory.prototype.blazorCustomFormat = function (axis) {
+        if (this.chart.isBlazor && axis.actualIntervalType === 'Years') {
+            return 'yyyy';
+        }
+        else {
+            return '';
         }
     };
     /**
@@ -11618,6 +11725,7 @@ var LineBase = /** @__PURE__ @class */ (function () {
      */
     LineBase.prototype.enableComplexProperty = function (series) {
         var tempPoints = [];
+        var tempPoints2 = [];
         var xVisibleRange = series.xAxis.visibleRange;
         var yVisibleRange = series.yAxis.visibleRange;
         var seriesPoints = series.points;
@@ -11639,7 +11747,17 @@ var LineBase = /** @__PURE__ @class */ (function () {
                 prevYValue = yVal;
             }
         }
-        return tempPoints;
+        var tempPoint;
+        for (var i = 0; i < tempPoints.length; i++) {
+            tempPoint = tempPoints[i];
+            if (isNullOrUndefined(tempPoint.x) || tempPoint.x === '') {
+                continue;
+            }
+            else {
+                tempPoints2.push(tempPoint);
+            }
+        }
+        return tempPoints2;
     };
     /**
      * To generate the line path direction
@@ -12018,12 +12136,12 @@ var ColumnBase = /** @__PURE__ @class */ (function () {
      * @private
      */
     ColumnBase.prototype.updateXRegion = function (point, rect, series) {
-        point.regions.push(rect);
         point.symbolLocations.push({
             x: rect.x + (rect.width) / 2,
             y: (series.seriesType === 'BoxPlot' || series.seriesType.indexOf('HighLow') !== -1 ||
                 (point.yValue >= 0 === !series.yAxis.isInversed)) ? rect.y : (rect.y + rect.height)
         });
+        this.getRegion(point, rect, series);
         if (series.type === 'RangeColumn') {
             point.symbolLocations.push({
                 x: rect.x + (rect.width) / 2,
@@ -12037,12 +12155,12 @@ var ColumnBase = /** @__PURE__ @class */ (function () {
      * @private
      */
     ColumnBase.prototype.updateYRegion = function (point, rect, series) {
-        point.regions.push(rect);
         point.symbolLocations.push({
             x: (series.seriesType === 'BoxPlot' || series.seriesType.indexOf('HighLow') !== -1 ||
                 (point.yValue >= 0 === !series.yAxis.isInversed)) ? rect.x + rect.width : rect.x,
             y: rect.y + rect.height / 2
         });
+        this.getRegion(point, rect, series);
         if (series.type === 'RangeColumn') {
             point.symbolLocations.push({
                 x: rect.x,
@@ -12058,6 +12176,21 @@ var ColumnBase = /** @__PURE__ @class */ (function () {
     ColumnBase.prototype.renderMarker = function (series) {
         if (series.marker && series.marker.visible) {
             series.chart.markerRender.render(series);
+        }
+    };
+    /**
+     * To get the marker region when Y value is 0
+     * @param point
+     * @param series
+     */
+    ColumnBase.prototype.getRegion = function (point, rect, series) {
+        if (point.y === 0) {
+            var markerWidth = (series.marker && series.marker.width) ? series.marker.width : 0;
+            var markerHeight = (series.marker && series.marker.height) ? series.marker.height : 0;
+            point.regions.push(new Rect(point.symbolLocations[0].x - markerWidth, point.symbolLocations[0].y - markerHeight, 2 * markerWidth, 2 * markerHeight));
+        }
+        else {
+            point.regions.push(rect);
         }
     };
     /**
@@ -12114,8 +12247,9 @@ var ColumnBase = /** @__PURE__ @class */ (function () {
     ColumnBase.prototype.animate = function (series) {
         var rectElements = series.seriesElement.childNodes;
         var count = series.category === 'Indicator' ? 0 : 1;
-        for (var _i = 0, _a = series.points; _i < _a.length; _i++) {
-            var point = _a[_i];
+        var visiblePoints = getVisiblePoints(series);
+        for (var _i = 0, visiblePoints_1 = visiblePoints; _i < visiblePoints_1.length; _i++) {
+            var point = visiblePoints_1[_i];
             if (!point.symbolLocations.length && !(series.type === 'BoxAndWhisker' && point.regions.length)) {
                 continue;
             }
@@ -12536,7 +12670,6 @@ var AreaSeries = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     AreaSeries.prototype.render = function (series, xAxis, yAxis, isInverted) {
-        var _this = this;
         var startPoint = null;
         var direction = '';
         var isPolar = (series.chart && series.chart.chartAreaType === 'PolarRadar');
@@ -12550,23 +12683,26 @@ var AreaSeries = /** @__PURE__ @class */ (function (_super) {
         var borderWidth = series.border ? series.border.width : 0;
         var borderColor = series.border ? series.border.color : 'transparent';
         var getCoordinate = series.chart.chartAreaType === 'PolarRadar' ? TransformToVisible : getPoint;
-        series.points.map(function (point, i, seriesPoints) {
+        var visiblePoints = this.enableComplexProperty(series);
+        var point;
+        for (var i = 0; i < visiblePoints.length; i++) {
+            point = visiblePoints[i];
             currentXValue = point.xValue;
             point.symbolLocations = [];
             point.regions = [];
-            if (point.visible && withInRange(seriesPoints[i - 1], point, seriesPoints[i + 1], series)) {
-                direction += _this.getAreaPathDirection(currentXValue, origin, series, isInverted, getCoordinate, startPoint, 'M');
+            if (point.visible && withInRange(visiblePoints[i - 1], point, visiblePoints[i + 1], series)) {
+                direction += this.getAreaPathDirection(currentXValue, origin, series, isInverted, getCoordinate, startPoint, 'M');
                 startPoint = startPoint || new ChartLocation(currentXValue, origin);
                 // First Point to draw the area path
-                direction += _this.getAreaPathDirection(currentXValue, point.yValue, series, isInverted, getCoordinate, null, 'L');
-                if (seriesPoints[i + 1] && (!seriesPoints[i + 1].visible &&
-                    (!isPolar || (isPolar && _this.withinYRange(seriesPoints[i + 1], yAxis)))) && !isDropMode) {
-                    direction += _this.getAreaEmptyDirection({ 'x': currentXValue, 'y': origin }, startPoint, series, isInverted, getCoordinate);
+                direction += this.getAreaPathDirection(currentXValue, point.yValue, series, isInverted, getCoordinate, null, 'L');
+                if (visiblePoints[i + 1] && (!visiblePoints[i + 1].visible &&
+                    (!isPolar || (isPolar && this.withinYRange(visiblePoints[i + 1], yAxis)))) && !isDropMode) {
+                    direction += this.getAreaEmptyDirection({ 'x': currentXValue, 'y': origin }, startPoint, series, isInverted, getCoordinate);
                     startPoint = null;
                 }
-                _this.storePointLocation(point, series, isInverted, getCoordinate);
+                this.storePointLocation(point, series, isInverted, getCoordinate);
             }
-        });
+        }
         if (isPolar && direction !== '') {
             var endPoint = '';
             var chart = this.chart;
@@ -13979,11 +14115,12 @@ var StackingColumnSeries = /** @__PURE__ @class */ (function (_super) {
         var rect;
         var argsData;
         var stackedValue = series.stackedValues;
-        for (var _i = 0, _a = series.points; _i < _a.length; _i++) {
-            var point = _a[_i];
+        var visiblePoints = getVisiblePoints(series);
+        for (var _i = 0, visiblePoints_1 = visiblePoints; _i < visiblePoints_1.length; _i++) {
+            var point = visiblePoints_1[_i];
             point.symbolLocations = [];
             point.regions = [];
-            if (point.visible && withInRange(series.points[point.index - 1], point, series.points[point.index + 1], series)) {
+            if (point.visible && withInRange(visiblePoints[point.index - 1], point, visiblePoints[point.index + 1], series)) {
                 rect = this.getRectangle(point.xValue + sideBySideInfo.start, stackedValue.endValues[point.index], point.xValue + sideBySideInfo.end, stackedValue.startValues[point.index], series);
                 argsData = this.triggerEvent(series, point, series.interior, { width: series.border.width, color: series.border.color });
                 if (!argsData.cancel) {
@@ -14155,7 +14292,8 @@ var StepAreaSeries = /** @__PURE__ @class */ (function (_super) {
         var secondPoint;
         var start = null;
         var direction = '';
-        var pointsLength = series.points.length;
+        var visiblePoints = this.enableComplexProperty(series);
+        var pointsLength = visiblePoints.length;
         var origin = Math.max(series.yAxis.visibleRange.min, 0);
         var options;
         var point;
@@ -14169,11 +14307,11 @@ var StepAreaSeries = /** @__PURE__ @class */ (function (_super) {
             lineLength = 0;
         }
         for (var i = 0; i < pointsLength; i++) {
-            point = series.points[i];
+            point = visiblePoints[i];
             xValue = point.xValue;
             point.symbolLocations = [];
             point.regions = [];
-            if (point.visible && withInRange(series.points[i - 1], point, series.points[i + 1], series)) {
+            if (point.visible && withInRange(visiblePoints[i - 1], point, visiblePoints[i + 1], series)) {
                 if (start === null) {
                     start = new ChartLocation(xValue, 0);
                     // Start point for the current path
@@ -14196,7 +14334,7 @@ var StepAreaSeries = /** @__PURE__ @class */ (function (_super) {
                 this.storePointLocation(point, series, isInverted, getPoint);
                 prevPoint = point;
             }
-            if (series.points[i + 1] && !series.points[i + 1].visible && series.emptyPointSettings.mode !== 'Drop') {
+            if (visiblePoints[i + 1] && !visiblePoints[i + 1].visible && series.emptyPointSettings.mode !== 'Drop') {
                 // current start point
                 currentPoint = getPoint(xValue + lineLength, origin, xAxis, yAxis, isInverted);
                 direction += ('L' + ' ' + (currentPoint.x) + ' ' + (currentPoint.y));
@@ -14205,10 +14343,10 @@ var StepAreaSeries = /** @__PURE__ @class */ (function (_super) {
             }
         }
         if ((pointsLength > 1) && direction !== '') {
-            start = { 'x': series.points[pointsLength - 1].xValue + lineLength, 'y': series.points[pointsLength - 1].yValue };
+            start = { 'x': visiblePoints[pointsLength - 1].xValue + lineLength, 'y': visiblePoints[pointsLength - 1].yValue };
             secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
             direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
-            start = { 'x': series.points[pointsLength - 1].xValue + lineLength, 'y': origin };
+            start = { 'x': visiblePoints[pointsLength - 1].xValue + lineLength, 'y': origin };
             secondPoint = getPoint(start.x, start.y, xAxis, yAxis, isInverted);
             direction += ('L' + ' ' + (secondPoint.x) + ' ' + (secondPoint.y) + ' ');
         }
@@ -14280,7 +14418,7 @@ var StackingAreaSeries = /** @__PURE__ @class */ (function (_super) {
         var polarAreaType = series.chart.chartAreaType === 'PolarRadar';
         var getCoordinate = polarAreaType ? TransformToVisible : getPoint;
         var lineDirection = '';
-        var visiblePoints = series.points;
+        var visiblePoints = this.enableComplexProperty(series);
         var pointsLength = visiblePoints.length;
         var stackedvalue = series.stackedValues;
         var origin = polarAreaType ?
@@ -14432,12 +14570,9 @@ var StackingLineSeries = /** @__PURE__ @class */ (function (_super) {
         var polarType = series.chart.chartAreaType === 'PolarRadar';
         var getCoordinate = polarType ? TransformToVisible : getPoint;
         var direction = '';
-        var visiblePts = series.points;
+        var visiblePts = this.enableComplexProperty(series);
         var pointsLength = visiblePts.length;
         var stackedvalue = series.stackedValues;
-        var origin = polarType ?
-            Math.max(series.yAxis.visibleRange.min, stackedvalue.endValues[0]) :
-            Math.max(series.yAxis.visibleRange.min, stackedvalue.startValues[0]);
         var options;
         var point1;
         var point2;
@@ -15426,21 +15561,36 @@ var SplineBase = /** @__PURE__ @class */ (function (_super) {
      */
     SplineBase.prototype.findSplinePoint = function (series) {
         var value;
-        var points = this.filterEmptyPoints(series);
+        var realPoints = [];
+        var points = [];
+        var point;
+        var pointIndex = 0;
+        realPoints = this.filterEmptyPoints(series);
+        for (var i = 0; i < realPoints.length; i++) {
+            point = realPoints[i];
+            if (point.x === null || point.x === '') {
+                continue;
+            }
+            else {
+                point.index = pointIndex;
+                pointIndex++;
+                points.push(point);
+            }
+        }
         this.splinePoints = this.findSplineCoefficients(points, series);
         if (points.length > 1) {
             series.drawPoints = [];
             for (var _i = 0, points_1 = points; _i < points_1.length; _i++) {
-                var point = points_1[_i];
-                if (point.index !== 0) {
-                    var previous = this.getPreviousIndex(points, point.index - 1, series);
-                    value = this.getControlPoints(points[previous], point, this.splinePoints[previous], this.splinePoints[point.index], series);
+                var point_1 = points_1[_i];
+                if (point_1.index !== 0) {
+                    var previous = this.getPreviousIndex(points, point_1.index - 1, series);
+                    value = this.getControlPoints(points[previous], point_1, this.splinePoints[previous], this.splinePoints[point_1.index], series);
                     series.drawPoints.push(value);
                     // fix for Y-Axis of Spline chart not adjusting scale to suit dataSource issue 
                     var delta = series.yMax - series.yMin;
-                    if (point.yValue && value.controlPoint1.y && value.controlPoint2.y && delta > 1) {
-                        series.yMin = Math.floor(Math.min(series.yMin, point.yValue, value.controlPoint1.y, value.controlPoint2.y));
-                        series.yMax = Math.ceil(Math.max(series.yMax, point.yValue, value.controlPoint1.y, value.controlPoint2.y));
+                    if (point_1.yValue && value.controlPoint1.y && value.controlPoint2.y && delta > 1) {
+                        series.yMin = Math.floor(Math.min(series.yMin, point_1.yValue, value.controlPoint1.y, value.controlPoint2.y));
+                        series.yMax = Math.ceil(Math.max(series.yMax, point_1.yValue, value.controlPoint1.y, value.controlPoint2.y));
                     }
                 }
             }
@@ -15711,32 +15861,44 @@ var SplineSeries = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     SplineSeries.prototype.render = function (series, xAxis, yAxis, isInverted) {
-        var chart = series.chart;
-        var marker = series.marker;
         var options;
         var firstPoint = null;
         var direction = '';
         var startPoint = 'M';
-        var points = this.filterEmptyPoints(series);
+        var tempPoints = [];
+        var points = [];
+        var point;
+        var pointIndex = 0;
+        tempPoints = this.filterEmptyPoints(series);
+        for (var i = 0; i < tempPoints.length; i++) {
+            point = tempPoints[i];
+            if (isNullOrUndefined(point.x) || point.x === '') {
+                continue;
+            }
+            else {
+                point.index = pointIndex++;
+                points.push(point);
+            }
+        }
         var previous;
         var getCoordinate = series.chart.chartAreaType === 'PolarRadar' ? TransformToVisible : getPoint;
         for (var _i = 0, points_1 = points; _i < points_1.length; _i++) {
-            var point = points_1[_i];
-            previous = this.getPreviousIndex(points, point.index - 1, series);
-            point.symbolLocations = [];
-            point.regions = [];
-            if (point.visible && withInRange(points[previous], point, points[this.getNextIndex(points, point.index - 1, series)], series)) {
+            var point_1 = points_1[_i];
+            previous = this.getPreviousIndex(points, point_1.index - 1, series);
+            point_1.symbolLocations = [];
+            point_1.regions = [];
+            if (point_1.visible && withInRange(points[previous], point_1, points[this.getNextIndex(points, point_1.index - 1, series)], series)) {
                 if (firstPoint !== null) {
-                    direction = this.getSplineDirection(series.drawPoints[previous], firstPoint, point, xAxis, yAxis, isInverted, series, startPoint, getCoordinate, direction);
+                    direction = this.getSplineDirection(series.drawPoints[previous], firstPoint, point_1, xAxis, yAxis, isInverted, series, startPoint, getCoordinate, direction);
                     startPoint = 'L';
                 }
-                firstPoint = point;
-                this.storePointLocation(point, series, isInverted, getCoordinate);
+                firstPoint = point_1;
+                this.storePointLocation(point_1, series, isInverted, getCoordinate);
             }
             else {
                 startPoint = 'M';
                 firstPoint = null;
-                point.symbolLocations = [];
+                point_1.symbolLocations = [];
             }
         }
         if ((points.length > 0 && series.drawPoints.length > 0) && series.chart.chartAreaType === 'PolarRadar' && series.isClosed) {
@@ -15981,15 +16143,29 @@ var SplineAreaSeries = /** @__PURE__ @class */ (function (_super) {
         var bpt2;
         var controlPt1;
         var controlPt2;
-        var points = this.filterEmptyPoints(series);
-        var pointsLength = series.points.length;
+        var realPoints = [];
+        var points = [];
         var point;
+        var pointIndex = 0;
+        realPoints = this.filterEmptyPoints(series);
+        for (var i = 0; i < realPoints.length; i++) {
+            point = realPoints[i];
+            if (point.x === null || point.x === '') {
+                continue;
+            }
+            else {
+                point.index = pointIndex;
+                pointIndex++;
+                points.push(point);
+            }
+        }
+        var pointsLength = points.length;
         var previous;
         var getCoordinate = series.chart.chartAreaType === 'PolarRadar' ? TransformToVisible : getPoint;
         var origin = series.chart.chartAreaType === 'PolarRadar' ? series.points[0].yValue :
             Math.max(series.yAxis.visibleRange.min, 0);
         for (var i = 0; i < pointsLength; i++) {
-            point = series.points[i];
+            point = points[i];
             point.symbolLocations = [];
             point.regions = [];
             previous = this.getPreviousIndex(points, point.index - 1, series);
@@ -16020,7 +16196,7 @@ var SplineAreaSeries = /** @__PURE__ @class */ (function (_super) {
                 firstPoint = null;
                 point.symbolLocations = [];
             }
-            if (((i + 1 < pointsLength && !series.points[i + 1].visible) || i === pointsLength - 1)
+            if (((i + 1 < pointsLength && !points[i + 1].visible) || i === pointsLength - 1)
                 && pt2 && startPoint) {
                 startPoint = getCoordinate(point.xValue, origin, xAxis, yAxis, isInverted, series);
                 direction = direction.concat('L ' + (startPoint.x) + ' ' + (startPoint.y));
@@ -18471,6 +18647,9 @@ var BaseTooltip = /** @__PURE__ @class */ (function (_super) {
         if (templatePoint === void 0) { templatePoint = null; }
         var series = this.currentPoints[0].series;
         var module = chart.tooltipModule || chart.accumulationTooltipModule;
+        if (!module) { // For the tooltip enable is false.
+            return;
+        }
         if (isFirst) {
             this.svgTooltip = new Tooltip({
                 opacity: chart.tooltip.opacity,
@@ -19329,6 +19508,7 @@ var Toolkit = /** @__PURE__ @class */ (function () {
     // Toolkit events function calculation here.
     /** @private */
     Toolkit.prototype.reset = function () {
+        var _this = this;
         var chart = this.chart;
         if (!chart.zoomModule.isDevice) {
             remove(chart.zoomModule.toolkitElements);
@@ -19336,8 +19516,10 @@ var Toolkit = /** @__PURE__ @class */ (function () {
         var argsData;
         this.removeTooltip();
         chart.svgObject.setAttribute('cursor', 'auto');
-        for (var i = 0; i < chart.axisCollections.length; i++) {
-            var axis = chart.axisCollections[i];
+        var zoomingEventArgs;
+        var zoomedAxisCollection = [];
+        for (var _i = 0, _a = chart.axisCollections; _i < _a.length; _i++) {
+            var axis = _a[_i];
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: 1, currentZoomPosition: 0
@@ -19352,7 +19534,23 @@ var Toolkit = /** @__PURE__ @class */ (function () {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
             }
+            zoomedAxisCollection.push({
+                zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
+                axisRange: axis.visibleRange
+            });
         }
+        zoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
+        if (!zoomingEventArgs.cancel && this.chart.isBlazor) {
+            this.chart.trigger(onZooming, zoomingEventArgs, function () {
+                _this.setDefferedZoom(chart);
+            });
+            return false;
+        }
+        else {
+            return (this.setDefferedZoom(chart));
+        }
+    };
+    Toolkit.prototype.setDefferedZoom = function (chart) {
         chart.disableTrackTooltip = false;
         chart.zoomModule.isZoomed = chart.zoomModule.isPanning = chart.isChartDrag = chart.delayRedraw = false;
         chart.zoomModule.touchMoveList = chart.zoomModule.touchStartList = [];
@@ -19412,8 +19610,8 @@ var Toolkit = /** @__PURE__ @class */ (function () {
             chart.disableTrackTooltip = true;
             chart.delayRedraw = true;
             var argsData = void 0;
-            for (var i = 0; i < axes.length; i++) {
-                var axis = axes[i];
+            for (var _i = 0, _a = axes; _i < _a.length; _i++) {
+                var axis = _a[_i];
                 argsData = {
                     cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor,
                     previousZoomPosition: axis.zoomPosition, currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -19517,20 +19715,21 @@ var Zoom = /** @__PURE__ @class */ (function () {
     };
     // Panning performed here
     Zoom.prototype.doPan = function (chart, axes) {
+        var _this = this;
         if (chart.startMove && chart.crosshair.enable) {
             return null;
         }
         var currentScale;
         var offset;
         this.isZoomed = true;
-        var translateX;
-        var translateY;
         this.offset = !chart.delayRedraw ? chart.chartAxisLayoutPanel.seriesClipRect : this.offset;
         chart.delayRedraw = true;
         chart.disableTrackTooltip = true;
         var argsData;
-        for (var i = 0; i < axes.length; i++) {
-            var axis = axes[i];
+        var zoomingEventArgs;
+        var zoomedAxisCollection = [];
+        for (var _i = 0, _a = axes; _i < _a.length; _i++) {
+            var axis = _a[_i];
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -19549,7 +19748,24 @@ var Zoom = /** @__PURE__ @class */ (function () {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
             }
+            zoomedAxisCollection.push({
+                zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
+                axisRange: axis.visibleRange
+            });
         }
+        zoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
+        if (!zoomingEventArgs.cancel && this.chart.isBlazor) {
+            this.chart.trigger(onZooming, zoomingEventArgs, function () {
+                _this.performDefferedZoom(chart);
+            });
+        }
+        else {
+            this.performDefferedZoom(chart);
+        }
+    };
+    Zoom.prototype.performDefferedZoom = function (chart) {
+        var translateX;
+        var translateY;
         if (this.zooming.enableDeferredZooming) {
             translateX = chart.mouseX - chart.mouseDownX;
             translateY = chart.mouseY - chart.mouseDownY;
@@ -19611,12 +19827,15 @@ var Zoom = /** @__PURE__ @class */ (function () {
     };
     // Rectangular zoom calculated here performed here
     Zoom.prototype.doZoom = function (chart, axes, bounds) {
+        var _this = this;
         var zoomRect = this.zoomingRect;
         var mode = this.zooming.mode;
         var argsData;
         this.isPanning = chart.zoomSettings.enablePan || this.isPanning;
-        for (var j = 0; j < axes.length; j++) {
-            var axis = axes[j];
+        var onZoomingEventArg;
+        var zoomedAxisCollections = [];
+        for (var _i = 0, _a = axes; _i < _a.length; _i++) {
+            var axis = _a[_i];
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -19640,9 +19859,22 @@ var Zoom = /** @__PURE__ @class */ (function () {
                 axis.zoomFactor = argsData.currentZoomFactor;
                 axis.zoomPosition = argsData.currentZoomPosition;
             }
+            zoomedAxisCollections.push({
+                zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
+                axisRange: axis.visibleRange
+            });
         }
-        this.zoomingRect = new Rect(0, 0, 0, 0);
-        this.performZoomRedraw(chart);
+        onZoomingEventArg = { cancel: false, axisCollection: zoomedAxisCollections, name: onZooming };
+        if (!onZoomingEventArg.cancel && this.chart.isBlazor) {
+            this.chart.trigger(onZooming, onZoomingEventArg, function () {
+                _this.zoomingRect = new Rect(0, 0, 0, 0);
+                _this.performZoomRedraw(chart);
+            });
+        }
+        else {
+            this.zoomingRect = new Rect(0, 0, 0, 0);
+            this.performZoomRedraw(chart);
+        }
     };
     /**
      * Function that handles the Mouse wheel zooming.
@@ -19650,6 +19882,7 @@ var Zoom = /** @__PURE__ @class */ (function () {
      * @private
      */
     Zoom.prototype.performMouseWheelZooming = function (e, mouseX, mouseY, chart, axes) {
+        var _this = this;
         var direction = (this.browserName === 'mozilla' && !this.isPointer) ?
             -(e.detail) / 3 > 0 ? 1 : -1 : (e.wheelDelta / 120) > 0 ? 1 : -1;
         var mode = this.zooming.mode;
@@ -19663,8 +19896,10 @@ var Zoom = /** @__PURE__ @class */ (function () {
         this.performedUI = true;
         this.isPanning = chart.zoomSettings.enablePan || this.isPanning;
         var argsData;
-        for (var index = 0; index < axes.length; index++) {
-            var axis = axes[index];
+        var onZoomingEventArgs;
+        var zoomedAxisCollection = [];
+        for (var _i = 0, _a = axes; _i < _a.length; _i++) {
+            var axis = _a[_i];
             argsData = {
                 cancel: false, name: zoomComplete, axis: axis, previousZoomFactor: axis.zoomFactor, previousZoomPosition: axis.zoomPosition,
                 currentZoomFactor: axis.zoomFactor, currentZoomPosition: axis.zoomPosition
@@ -19689,8 +19924,18 @@ var Zoom = /** @__PURE__ @class */ (function () {
                     axis.zoomPosition = argsData.currentZoomPosition;
                 }
             }
+            zoomedAxisCollection.push({
+                zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
+                axisRange: axis.visibleRange
+            });
         }
-        this.performZoomRedraw(chart);
+        onZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
+        if (!onZoomingEventArgs.cancel && this.chart.isBlazor) {
+            this.chart.trigger(onZooming, onZoomingEventArgs, function () { _this.performZoomRedraw(chart); });
+        }
+        else {
+            this.performZoomRedraw(chart);
+        }
     };
     /**
      * Function that handles the Pinch zooming.
@@ -19761,6 +20006,8 @@ var Zoom = /** @__PURE__ @class */ (function () {
         var argsData;
         var currentZF;
         var currentZP;
+        var onZoomingEventArgs;
+        var zoomedAxisCollection = [];
         for (var index = 0; index < chart.axisCollections.length; index++) {
             var axis = chart.axisCollections[index];
             if ((axis.orientation === 'Horizontal' && mode !== 'Y') ||
@@ -19796,7 +20043,15 @@ var Zoom = /** @__PURE__ @class */ (function () {
                     axis.zoomFactor = argsData.currentZoomFactor;
                     axis.zoomPosition = argsData.currentZoomPosition;
                 }
+                zoomedAxisCollection.push({
+                    zoomFactor: axis.zoomFactor, zoomPosition: axis.zoomFactor, axisName: axis.name,
+                    axisRange: axis.visibleRange
+                });
             }
+        }
+        onZoomingEventArgs = { cancel: false, axisCollection: zoomedAxisCollection, name: onZooming };
+        if (!onZoomingEventArgs.cancel && this.chart.isBlazor) {
+            this.chart.trigger(onZooming, onZoomingEventArgs);
         }
     };
     // Series transformation style applied here.
@@ -19812,8 +20067,8 @@ var Zoom = /** @__PURE__ @class */ (function () {
         var yAxisLoc;
         var element;
         if (transX !== null && transY !== null) {
-            for (var i = 0; i < chart.visibleSeries.length; i++) {
-                var value = chart.visibleSeries[i];
+            for (var _i = 0, _a = chart.visibleSeries; _i < _a.length; _i++) {
+                var value = _a[_i];
                 xAxisLoc = chart.requireInvertedAxis ? value.yAxis.rect.x : value.xAxis.rect.x;
                 yAxisLoc = chart.requireInvertedAxis ? value.xAxis.rect.y : value.yAxis.rect.y;
                 translate = 'translate(' + (transX + (isPinch ? (scaleX * xAxisLoc) : xAxisLoc)) +
@@ -19983,8 +20238,8 @@ var Zoom = /** @__PURE__ @class */ (function () {
      */
     Zoom.prototype.isAxisZoomed = function (axes) {
         var showToolkit = false;
-        for (var k = 0; k < axes.length; k++) {
-            var axis = axes[k];
+        for (var _i = 0, _a = axes; _i < _a.length; _i++) {
+            var axis = _a[_i];
             showToolkit = (showToolkit || (axis.zoomFactor !== 1 || axis.zoomPosition !== 0));
         }
         return showToolkit;
@@ -20529,6 +20784,9 @@ var BaseSelection = /** @__PURE__ @class */ (function () {
      * Selected points series visibility checking on legend click
      */
     BaseSelection.prototype.checkVisibility = function (selectedIndexes) {
+        if (!selectedIndexes) {
+            return false;
+        }
         var visible = false;
         var uniqueSeries = [];
         for (var _i = 0, selectedIndexes_1 = selectedIndexes; _i < selectedIndexes_1.length; _i++) {
@@ -21067,8 +21325,8 @@ var Selection = /** @__PURE__ @class */ (function (_super) {
      */
     Selection.prototype.blurEffect = function (chartId, visibleSeries, legendClick$$1) {
         if (legendClick$$1 === void 0) { legendClick$$1 = false; }
-        var visibility = this.styleId.indexOf('highlight') > 0 ? this.checkVisibility(this.highlightDataIndexes) :
-            this.checkVisibility(this.selectedDataIndexes); // legend click scenario
+        var visibility = (this.checkVisibility(this.highlightDataIndexes) ||
+            this.checkVisibility(this.selectedDataIndexes)); // legend click scenario
         for (var _i = 0, visibleSeries_1 = visibleSeries; _i < visibleSeries_1.length; _i++) {
             var series = visibleSeries_1[_i];
             if (series.visible) {
@@ -22329,7 +22587,6 @@ var DataLabel = /** @__PURE__ @class */ (function () {
      */
     // tslint:disable-next-line:max-func-body-length
     DataLabel.prototype.render = function (series, chart, dataLabel) {
-        var _this = this;
         // initialize the private variable
         this.initPrivateVariables(series, series.marker);
         var rect;
@@ -22348,18 +22605,21 @@ var DataLabel = /** @__PURE__ @class */ (function () {
         var element = createElement('div', {
             id: templateId
         });
+        var visiblePoints = getVisiblePoints(series);
+        var point;
         // Data label point iteration started
-        series.points.map(function (point, index) {
-            _this.margin = dataLabel.margin;
+        for (var i = 0; i < visiblePoints.length; i++) {
+            point = visiblePoints[i];
+            this.margin = dataLabel.margin;
             var labelText = [];
-            var labelLength;
-            var xPos;
-            var yPos;
-            var xValue;
-            var yValue;
+            var labelLength = void 0;
+            var xPos = void 0;
+            var yPos = void 0;
+            var xValue = void 0;
+            var yValue = void 0;
             var isRender = true;
             var clip = series.clipRect;
-            var shapeRect;
+            var shapeRect = void 0;
             angle = degree = dataLabel.angle;
             border = { width: dataLabel.border.width, color: dataLabel.border.color };
             var argsFont = (extend({}, getValue('properties', dataLabel.font), null, true));
@@ -22367,23 +22627,23 @@ var DataLabel = /** @__PURE__ @class */ (function () {
                 (series.type === 'BoxAndWhisker' && point.regions.length)) {
                 labelText = getLabelText(point, series, chart);
                 labelLength = labelText.length;
-                for (var i = 0; i < labelLength; i++) {
+                for (var i_1 = 0; i_1 < labelLength; i_1++) {
                     argsData = {
                         cancel: false, name: textRender, series: series,
-                        point: point, text: labelText[i], border: border,
+                        point: point, text: labelText[i_1], border: border,
                         color: dataLabel.fill, template: dataLabel.template, font: argsFont
                     };
                     chart.trigger(textRender, argsData);
                     if (!argsData.cancel) {
-                        _this.fontBackground = argsData.color;
-                        _this.isDataLabelShape(argsData);
-                        _this.markerHeight = series.type === 'Bubble' ? (point.regions[0].height / 2) : _this.markerHeight;
+                        this.fontBackground = argsData.color;
+                        this.isDataLabelShape(argsData);
+                        this.markerHeight = series.type === 'Bubble' ? (point.regions[0].height / 2) : this.markerHeight;
                         if (argsData.template !== null) {
-                            _this.createDataLabelTemplate(element, series, dataLabel, point, argsData, i, redraw);
+                            this.createDataLabelTemplate(element, series, dataLabel, point, argsData, i_1, redraw);
                         }
                         else {
                             textSize = measureText(argsData.text, dataLabel.font);
-                            rect = _this.calculateTextPosition(point, series, textSize, dataLabel, i);
+                            rect = this.calculateTextPosition(point, series, textSize, dataLabel, i_1);
                             // To check whether the polar radar chart datalabel intersects the axis label or not
                             if (chart.chartAreaType === 'PolarRadar') {
                                 for (var _i = 0, _a = chart.chartAxisLayoutPanel.visibleAxisLabelRect; _i < _a.length; _i++) {
@@ -22394,19 +22654,40 @@ var DataLabel = /** @__PURE__ @class */ (function () {
                                     }
                                 }
                             }
-                            if (!isCollide(rect, chart.dataLabelCollections, clip) && isRender) {
-                                chart.dataLabelCollections.push(new Rect(rect.x + clip.x, rect.y + clip.y, rect.width, rect.height));
-                                if (_this.isShape) {
-                                    shapeRect = chart.renderer.drawRectangle(new RectOption(_this.commonId + index + '_TextShape_' + i, argsData.color, argsData.border, dataLabel.opacity, rect, dataLabel.rx, dataLabel.ry), new Int32Array([clip.x, clip.y]));
+                            var actualRect = new Rect(rect.x + clip.x, rect.y + clip.y, rect.width, rect.height);
+                            var notOverlapping = void 0;
+                            var rectPoints = [];
+                            if (dataLabel.enableRotation && angle !== 0) {
+                                var rectCoordinates = this.getRectanglePoints(actualRect);
+                                var rectCenterX = actualRect.x + actualRect.width * 0.5;
+                                var rectCenterY = (actualRect.y - (actualRect.height / 2));
+                                rectPoints.push(getRotatedRectangleCoordinates(rectCoordinates, rectCenterX, rectCenterY, angle));
+                                notOverlapping = true;
+                                for (var index = i_1; index > 0; index--) {
+                                    if (rectPoints[i_1] && rectPoints[index - 1] &&
+                                        isRotatedRectIntersect(rectPoints[i_1], rectPoints[index - 1])) {
+                                        notOverlapping = false;
+                                        rectPoints[i_1] = null;
+                                        break;
+                                    }
+                                }
+                            }
+                            else {
+                                notOverlapping = !isCollide(rect, chart.dataLabelCollections, clip);
+                            }
+                            if (notOverlapping && isRender) {
+                                chart.dataLabelCollections.push(actualRect);
+                                if (this.isShape) {
+                                    shapeRect = chart.renderer.drawRectangle(new RectOption(this.commonId + point.index + '_TextShape_' + i_1, argsData.color, argsData.border, dataLabel.opacity, rect, dataLabel.rx, dataLabel.ry), new Int32Array([clip.x, clip.y]));
                                     if (series.shapeElement) {
                                         series.shapeElement.appendChild(shapeRect);
                                     }
                                 }
                                 // Checking the font color
-                                rgbValue = convertHexToColor(colorNameToHex(_this.fontBackground));
+                                rgbValue = convertHexToColor(colorNameToHex(this.fontBackground));
                                 contrast = Math.round((rgbValue.r * 299 + rgbValue.g * 587 + rgbValue.b * 114) / 1000);
-                                xPos = rect.x + _this.margin.left + textSize.width / 2;
-                                yPos = rect.y + _this.margin.top + textSize.height * 3 / 4;
+                                xPos = rect.x + this.margin.left + textSize.width / 2;
+                                yPos = rect.y + this.margin.top + textSize.height * 3 / 4;
                                 if (angle !== 0 && dataLabel.enableRotation) {
                                     xValue = xPos - (dataLabel.margin.left) / 2 + (dataLabel.margin.right / 2);
                                     yValue = yPos - (dataLabel.margin.top) / 2 - (textSize.height / dataLabel.margin.top) +
@@ -22418,19 +22699,29 @@ var DataLabel = /** @__PURE__ @class */ (function () {
                                     xValue = rect.x;
                                     yValue = rect.y;
                                 }
-                                textElement$1(chart.renderer, new TextOption(_this.commonId + index + '_Text_' + i, xPos, yPos, 'middle', argsData.text, 'rotate(' + degree + ',' + (xValue) + ',' + (yValue) + ')', 'auto', degree), argsData.font, argsData.font.color ||
+                                textElement$1(chart.renderer, new TextOption(this.commonId + point.index + '_Text_' + i_1, xPos, yPos, 'middle', argsData.text, 'rotate(' + degree + ',' + (xValue) + ',' + (yValue) + ')', 'auto', degree), argsData.font, argsData.font.color ||
                                     ((contrast >= 128 || series.type === 'Hilo') ? 'black' : 'white'), series.textElement, false, redraw, true, false, series.chart.duration, series.clipRect);
                             }
                         }
                     }
                 }
             }
-        });
+        }
         if (element.childElementCount) {
             appendChildElement(chart.enableCanvas, getElement$1(chart.element.id + '_Secondary_Element'), element, chart.redraw, 
             // tslint:disable-next-line:align
             false, 'x', 'y', null, '', false, false, null, chart.duration);
         }
+    };
+    /**
+     * Get rect coordinates
+     */
+    DataLabel.prototype.getRectanglePoints = function (rect) {
+        var loc1 = new ChartLocation(rect.x, rect.y);
+        var loc2 = new ChartLocation(rect.x + rect.width, rect.y);
+        var loc3 = new ChartLocation(rect.x + rect.width, rect.y + rect.height);
+        var loc4 = new ChartLocation(rect.x, rect.y + rect.height);
+        return [loc1, loc2, loc3, loc4];
     };
     /**
      * Render the data label template.
@@ -22504,8 +22795,9 @@ var DataLabel = /** @__PURE__ @class */ (function () {
         }
         rect = calculateRect(location, textSize, this.margin);
         // Checking the condition whether data Label has been exist the clip rect
-        if (!((rect.y > (clipRect.y + clipRect.height)) || (rect.x > (clipRect.x + clipRect.width)) ||
-            (rect.x + rect.width < 0) || (rect.y + rect.height < 0))) {
+        if (!(dataLabel.enableRotation === true && dataLabel.angle !== 0) &&
+            !((rect.y > (clipRect.y + clipRect.height)) || (rect.x > (clipRect.x + clipRect.width)) ||
+                (rect.x + rect.width < 0) || (rect.y + rect.height < 0))) {
             rect.x = rect.x < 0 ? padding : rect.x;
             rect.y = rect.y < 0 ? padding : rect.y;
             rect.x -= (rect.x + rect.width) > (clipRect.x + clipRect.width) ? (rect.x + rect.width)
@@ -23520,8 +23812,8 @@ var Legend = /** @__PURE__ @class */ (function (_super) {
         if (!this.chart.legendSettings.visible) {
             return;
         }
-        var pageX = event.pageX;
-        var pageY = event.pageY;
+        var pageX = this.chart.mouseX;
+        var pageY = this.chart.mouseY;
         var legendRegion = [];
         var targetId = event.target.id;
         var legendItemsId = [this.legendID + '_text_', this.legendID + '_shape_marker_',
@@ -24251,7 +24543,7 @@ var MultiColoredAreaSeries = /** @__PURE__ @class */ (function (_super) {
         var previous;
         var rendered;
         var segments = this.sortSegments(series, series.segments);
-        series.points.map(function (point, i, seriesPoints) {
+        series.visiblePoints.map(function (point, i, seriesPoints) {
             point.symbolLocations = [];
             point.regions = [];
             rendered = false;
@@ -30842,12 +31134,21 @@ var RangeNavigatorAxis = /** @__PURE__ @class */ (function (_super) {
         }
         nextInterval = start.getTime();
         this.rangeNavigator.format = this.rangeNavigator.intl.getDateFormat({
-            format: axis.labelFormat, type: firstToLowerCase(axis.skeletonType), skeleton: this.getSkeleton(axis, null, null)
+            format: axis.labelFormat || this.blazorFormat(axis),
+            type: firstToLowerCase(axis.skeletonType), skeleton: this.getSkeleton(axis, null, null, this.rangeNavigator.isBlazor)
         });
         while (nextInterval <= axis.visibleRange.max) {
             text = this.dateFormats(this.rangeNavigator.format(new Date(nextInterval)), axis, axis.visibleLabels.length);
             axis.visibleLabels.push(new VisibleLabels(text, nextInterval, this.rangeNavigator.labelStyle, text));
             nextInterval = this.increaseDateTimeInterval(axis, nextInterval, interval).getTime();
+        }
+    };
+    RangeNavigatorAxis.prototype.blazorFormat = function (axis) {
+        if (this.rangeNavigator.isBlazor && axis.actualIntervalType === 'Years') {
+            return 'yyyy';
+        }
+        else {
+            return '';
         }
     };
     /**
@@ -30858,20 +31159,21 @@ var RangeNavigatorAxis = /** @__PURE__ @class */ (function (_super) {
      */
     RangeNavigatorAxis.prototype.dateFormats = function (text, axis, index) {
         var changedText = text;
+        var isBlazor$$1 = this.rangeNavigator.isBlazor;
         var isFirstLevel = this.rangeNavigator.enableGrouping && this.firstLevelLabels.length === 0;
         switch (axis.actualIntervalType) {
             case 'Quarter':
                 if (text.indexOf('Jan') > -1) {
-                    changedText = !isFirstLevel ? text.replace('Jan', 'Quarter1') : 'Quarter1';
+                    changedText = !isFirstLevel ? text.replace(isBlazor$$1 ? 'January' : 'Jan', 'Quarter1') : 'Quarter1';
                 }
                 else if (text.indexOf('Apr') > -1) {
-                    changedText = !isFirstLevel ? text.replace('Apr', 'Quarter2') : 'Quarter2';
+                    changedText = !isFirstLevel ? text.replace(isBlazor$$1 ? 'April' : 'Apr', 'Quarter2') : 'Quarter2';
                 }
                 else if (text.indexOf('Jul') > -1) {
-                    changedText = !isFirstLevel ? text.replace('Jul', 'Quarter3') : 'Quarter3';
+                    changedText = !isFirstLevel ? text.replace(isBlazor$$1 ? 'July' : 'Jul', 'Quarter3') : 'Quarter3';
                 }
                 else if (text.indexOf('Oct') > -1) {
-                    changedText = !isFirstLevel ? text.replace('Oct', 'Quarter4') : 'Quarter4';
+                    changedText = !isFirstLevel ? text.replace(isBlazor$$1 ? 'October' : 'Oct', 'Quarter4') : 'Quarter4';
                 }
                 break;
             case 'Weeks':
@@ -32983,7 +33285,7 @@ var RangeTooltip = /** @__PURE__ @class */ (function () {
             text = (control.intl.getDateFormat({
                 format: format || 'MM/dd/yyyy',
                 type: firstToLowerCase(control.skeletonType),
-                skeleton: control.dateTimeModule.getSkeleton(xAxis, null, null)
+                skeleton: control.dateTimeModule.getSkeleton(xAxis, null, null, control.isBlazor)
             }))(new Date(value));
         }
         else {
@@ -33087,6 +33389,7 @@ var CartesianChart = /** @__PURE__ @class */ (function () {
                 //args.data = this.stockChart.findCurrentData(args.data ,args.series.xName);
                 _this.stockChart.trigger('seriesRender', args);
             },
+            onZooming: function (args) { _this.stockChart.trigger(onZooming, args); },
             pointClick: function (args) {
                 _this.stockChart.trigger('pointClick', args);
             },
@@ -34976,7 +35279,7 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
         this.findRange();
         this.renderRangeSelector();
         this.renderPeriodSelector();
-        this.trigger('loaded', { stockChart: this });
+        this.trigger('loaded', { stockChart: this.isBlazor ? {} : this });
     };
     /**
      * To set styles to resolve mvc width issue.
@@ -35570,6 +35873,9 @@ var StockChart = /** @__PURE__ @class */ (function (_super) {
     __decorate$9([
         Event()
     ], StockChart.prototype, "pointMove", void 0);
+    __decorate$9([
+        Event()
+    ], StockChart.prototype, "onZooming", void 0);
     __decorate$9([
         Property('None')
     ], StockChart.prototype, "selectionMode", void 0);
@@ -44974,5 +45280,5 @@ var SparklineTooltip = /** @__PURE__ @class */ (function () {
  * Chart components exported.
  */
 
-export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, Offset, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, degreeToRadian, getRotatedRectangleCoordinates, isRotatedRectIntersect, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement$1 as getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement$1 as textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, getUnicodeText, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, ImageOption, CircleOption, PolygonOption, ChartLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, Highlight, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, selectionComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, regSub, regSup, beforeExport, afterExport, bulletChartMouseClick, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, Double, RangeTooltip, BulletChart, Range, MajorTickLinesSettings, MinorTickLinesSettings, BulletLabelStyle, BulletTooltipSettings, BulletDataLabel, BulletChartLegendSettings, BulletChartTheme, getBulletThemeColor, BulletTooltip, BulletChartLegend, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
+export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, Offset, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, getVisiblePoints, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, degreeToRadian, getRotatedRectangleCoordinates, isRotatedRectIntersect, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement$1 as getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement$1 as textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, getUnicodeText, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, ImageOption, CircleOption, PolygonOption, ChartLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, Highlight, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointDoubleClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, selectionComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, regSub, regSup, beforeExport, afterExport, bulletChartMouseClick, onZooming, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, Double, RangeTooltip, BulletChart, Range, MajorTickLinesSettings, MinorTickLinesSettings, BulletLabelStyle, BulletTooltipSettings, BulletDataLabel, BulletChartLegendSettings, BulletChartTheme, getBulletThemeColor, BulletTooltip, BulletChartLegend, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
 //# sourceMappingURL=ej2-charts.es5.js.map

@@ -8,6 +8,9 @@ import { getZindexPartial } from '@syncfusion/ej2-popups';
 import { ToastModel, ButtonModelPropsModel, ToastPositionModel } from './toast-model';
 import { ToastAnimationsModel, ToastAnimationSettingsModel } from './toast-model';
 
+/**
+ * Provides information about a SanitizeSelectors.
+ */
 export interface SanitizeSelectors {
   /** Returns the tags. */
   tags?: string[];
@@ -15,6 +18,9 @@ export interface SanitizeSelectors {
   attributes?: SanitizeRemoveAttrs[];
 }
 
+/**
+ * Provides information about a BeforeSanitizeHtml event.
+ */
 export interface BeforeSanitizeHtmlArgs {
   /** Illustrates whether the current action needs to be prevented or not. */
   cancel?: boolean;
@@ -30,6 +36,9 @@ export interface BeforeSanitizeHtmlArgs {
   selectors?: SanitizeSelectors;
 }
 
+/**
+ * Provides information about a SanitizeRemoveAttributes.
+ */
 export interface SanitizeRemoveAttrs {
   /** Defines the attribute name to sanitize */
   attribute?: string;
@@ -400,6 +409,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
    * 
    * {% codeBlock src='toast/animation/index.md' %}{% endcodeBlock %}
    * 
+   * @blazorType ToastAnimationSettings
    * @default { show: { effect: 'FadeIn', duration: 600, easing: 'linear' },
    * hide: { effect: 'FadeOut', duration: 600, easing: 'linear' }}
    */
@@ -416,6 +426,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
    * {% codeBlock src='toast/position/index.md' %}{% endcodeBlock %}
    * 
    * @default { X: "Left", Y: "Top" }
+   * @blazorType ToastPosition
    */
   @Complex<ToastPositionModel>({}, ToastPosition)
   public position: ToastPositionModel;
@@ -427,6 +438,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
    * {% codeBlock src='toast/buttons/index.md' %}{% endcodeBlock %}
    * 
    * @default [{}]
+   * @deprecated
    */
   @Collection<ButtonModelPropsModel>([{}], ButtonModelProps)
   public buttons: ButtonModelPropsModel[];
@@ -522,7 +534,7 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
       detach(this.refElement);
       this.refElement = undefined;
     }
-    super.destroy();
+    if (!this.isBlazorServer()) { super.destroy(); }
   }
 
   /**
@@ -1011,24 +1023,6 @@ export class Toast extends Component<HTMLElement> implements INotifyPropertyChan
     });
     if (actionBtnContainer.childElementCount > 0) {
       this.appendMessageContainer(actionBtnContainer);
-    }
-  }
-
-  /* istanbul ignore next */
-  private wireClientSideEvent(toastObj?: ToastModel): void {
-    if (this.isBlazorServer()) {
-      this.toastEle = this.element.lastElementChild as HTEle;
-      EventHandler.add(this.toastEle, 'click', this.clickHandler, this);
-      EventHandler.add(this.toastEle, 'keydown', this.keyDownHandler, this);
-      let count: number = 0;
-      [].slice.call(this.buttons).forEach((actionBtn: ButtonModelPropsModel) => {
-        if (isNOU(actionBtn.model)) { return; }
-        let btnDom: HTMLButtonElement = this.toastEle.querySelectorAll('.e-toast-actions button')[count] as HTMLButtonElement;
-        if (!isNOU(actionBtn.click) && typeof (actionBtn.click) === 'function') {
-          EventHandler.add(btnDom, 'click', actionBtn.click);
-        }
-        count++;
-      });
     }
   }
 

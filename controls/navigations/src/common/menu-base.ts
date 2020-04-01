@@ -676,7 +676,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                 this.navIdx.push(fliIdx);
                 this.keyType = 'right';
                 this.action = e.action;
-                this.openMenu(fli, item, null, null, e);
+                this.openMenu(fli, item, -1, -1, e);
             } else {
                 if (e.action === ENTER) {
                     if (this.isMenu && this.navIdx.length === 0) {
@@ -858,6 +858,12 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         let eventArgs: BeforeOpenCloseMenuEventArgs; let wrapper: Element = this.getWrapper();
         this.lItem = li; let elemId: string = this.element.id !== '' ? this.element.id : 'menu';
         this.isMenusClosed = false;
+        if (isNullOrUndefined(top)) {
+            top = -1;
+        }
+        if (isNullOrUndefined(left)) {
+            left = -1;
+        }
         if (li) {
             this.uList = this.createItems((<obj>item)[this.getField('children', this.navIdx.length - 1)] as objColl);
             if (!this.isMenu && Browser.isDevice) {
@@ -1135,7 +1141,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
     private setPosition(li: Element, ul: HTMLElement, top: number, left: number): void {
         let px: string = 'px';
         this.toggleVisiblity(ul);
-        if (ul === this.element || (!isNullOrUndefined(left) && !isNullOrUndefined(top))) {
+        if (ul === this.element || (left > -1 && top > -1)) {
             let collide: string[] = isCollide(ul, null, left, top);
             if (collide.indexOf('right') > -1) {
                 left = left - ul.offsetWidth;

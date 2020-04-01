@@ -8,12 +8,12 @@ import { Size, Rect, VisibleLabels } from '../utils/helper';
 import { Theme } from '../model/theme';
 
 /**   
- * Configures the axis line.   
+ * Sets and gets the axis line in circular gauge component.   
  */
 export class Line extends ChildProperty<Line> {
 
     /**
-     * The width of the line in pixels.
+     * Sets and gets the width of the line in circular gauge component.
      * @default 2
      */
 
@@ -21,7 +21,7 @@ export class Line extends ChildProperty<Line> {
     public width: number;
 
     /**
-     * The dash array of the axis line.
+     * Sets and gets the dash-array of the axis line in circular gauge component.
      * @default ''
      */
 
@@ -29,27 +29,28 @@ export class Line extends ChildProperty<Line> {
     public dashArray: string;
 
     /**
-     * The color of the axis line, which accepts value in hex, rgba as a valid CSS color string.
+     * Sets and gets the color of the axis line in the circular gauge component. This property accepts the value in hex code,
+     * rgba string as a valid CSS color string.
      */
 
     @Property(null)
     public color: string;
 }
 
-/**   
- * Configures the axis label.  
+/**
+ * Sets and gets the axis label in circular gauge component.
  */
 export class Label extends ChildProperty<Label> {
 
     /**
-     * The font of the axis labels
+     * Sets and gets the options to customize the style of the text in axis labels in circular gauge component.
      */
 
     @Complex<FontModel>(Theme.axisLabelFont, Font)
     public font: FontModel;
 
     /**
-     * To format the axis label, which accepts any global string format like 'C', 'n1', 'P' etc.
+     * Sets and gets the format for the axis label. This property accepts any global string format like 'C', 'n1', 'P' etc.
      * Also accepts placeholder like '{value}°C' in which value represent the axis label e.g. 20°C.
      * @default ''
      */
@@ -58,9 +59,7 @@ export class Label extends ChildProperty<Label> {
     public format: string;
 
     /**
-     * Specifies the position of the labels. They are,
-     * * inside -  Places the labels inside the axis.
-     * * outside - Places the labels outside of the axis.
+     * Sets and gets the position type to place the labels in the axis in the circular gauge component.
      * @default Inside
      */
 
@@ -68,10 +67,7 @@ export class Label extends ChildProperty<Label> {
     public position: Position;
 
     /**
-     * Specifies the label of an axis, which must get hide when an axis makes a complete circle. They are
-     * * first -  Hides the 1st label on intersect.
-     * * last - Hides the last label on intersect.
-     * * none - Places both the labels.
+     * Sets and gets the label of an axis, which gets hidden when an axis makes a complete circle.
      * @default None
      */
 
@@ -79,14 +75,14 @@ export class Label extends ChildProperty<Label> {
     public hiddenLabel: HiddenLabel;
 
     /**
-     * if set true, the labels will get rotated along the axis.
+     * Enables and disables the labels get rotated along the axis in the circular gauge component.
      * @default false
      */
     @Property(false)
     public autoAngle: boolean;
 
     /**
-     * If set true, labels takes the range color.
+     * Enables and disables the axis labels to use the range color of the axis.
      * @default false
      */
 
@@ -94,7 +90,7 @@ export class Label extends ChildProperty<Label> {
     public useRangeColor: boolean;
 
     /**
-     * Distance of the labels from axis in pixel.
+     * Sets and gets the value to place the labels from the axis in circular gauge.
      * @default 0
      */
 
@@ -102,7 +98,7 @@ export class Label extends ChildProperty<Label> {
     public offset: number;
 
     /**
-     * To apply default padding value
+     * Enables and disables the default padding value of axis labels in circular gauge component.
      * @default true
      */
 
@@ -111,8 +107,8 @@ export class Label extends ChildProperty<Label> {
 
 }
 
-/**   
- * Configures the ranges of an axis.
+/**
+ * Sets and gets the option to customize the ranges of an axis in circular gauge component.
  */
 
 export class Range extends ChildProperty<Range> {
@@ -124,7 +120,7 @@ export class Range extends ChildProperty<Range> {
     public currentValue: number;
 
     /**
-     * Specifies the minimum value of the range.
+     * Sets and gets the start value of the range in circular gauge component.
      * @aspDefaultValueIgnore
      * @default 0
      */
@@ -133,7 +129,7 @@ export class Range extends ChildProperty<Range> {
     public start: number;
 
     /**
-     * Specifies the maximum value of the range.
+     * Sets and gets the end value of the range in circular gauge component.
      * @aspDefaultValueIgnore
      * @default 0
      */
@@ -142,7 +138,7 @@ export class Range extends ChildProperty<Range> {
     public end: number;
 
     /**
-     * The radius of the range in pixels or in percentage.
+     * Sets and gets the radius of the range for circular gauge component.
      * @default null
      */
 
@@ -150,7 +146,7 @@ export class Range extends ChildProperty<Range> {
     public radius: string;
 
     /**
-     * Specifies the start width of the ranges
+     *  Sets and gets the width for the start of the range in the circular gauge component.
      * @default '10'
      */
 
@@ -158,7 +154,7 @@ export class Range extends ChildProperty<Range> {
     public startWidth: number | string;
 
     /**
-     * Specifies the end width of the ranges
+     *   Sets and gets the width for the end of the range in the circular gauge component.
      * @default '10'
      */
 
@@ -166,7 +162,7 @@ export class Range extends ChildProperty<Range> {
     public endWidth: number | string;
 
     /**
-     * Specifies the color of the ranges
+     * Sets and gets the color of the ranges in circular gauge component.
      * @aspDefaultValueIgnore
      * @default null
      */
@@ -175,7 +171,7 @@ export class Range extends ChildProperty<Range> {
     public color: string;
 
     /**
-     * Specifies the rounded corner radius for ranges.
+     * Sets and gets the corner radius for ranges in circular gauge component.
      * @default 0
      */
 
@@ -183,7 +179,7 @@ export class Range extends ChildProperty<Range> {
     public roundedCornerRadius: number;
 
     /**
-     * Specifies the opacity for ranges.
+     * Sets and gets the opacity for the ranges in circular gauge component.
      * @default 1
      */
 
@@ -191,18 +187,14 @@ export class Range extends ChildProperty<Range> {
     public opacity: number;
 
     /**
-     * Specifies the text for legend.
+     * Sets and gets the text for the legend in the circular gauge component.
      * @default ''
      */
     @Property('')
     public legendText: string;
 
     /**
-     * Specifies the position of range for an axis.
-     * * inside -  Renders inside axis.
-     * * outside - Renders outside axis.
-     * * cross - Renders on the axis.
-     * * auto - Renders based on radius. 
+     * Sets and gets the position of the range and pointer for an axis in circular gauge component.
      * @default Auto
      */
 
@@ -210,7 +202,7 @@ export class Range extends ChildProperty<Range> {
     public position: PointerRangePosition;
 
     /**
-     * Specifies the offset value of range.
+     * Sets and gets the offset value of range in circular gauge component.
      * @default '0'
      */
     @Property(0)
@@ -226,13 +218,13 @@ export class Range extends ChildProperty<Range> {
 }
 
 /**   
- * Configures the major and minor tick lines of an axis.   
+ * Sets and gets the major and minor tick lines of an axis in circular gauge component.
  */
 
 export class Tick extends ChildProperty<Tick> {
 
     /**
-     * The width of the ticks in pixels.
+     * Sets and gets the width of the ticks in circular gauge component.
      * @aspDefaultValueIgnore
      * @default 2
      */
@@ -241,7 +233,7 @@ export class Tick extends ChildProperty<Tick> {
     public width: number;
 
     /**
-     * The height of the line in pixels.
+     * Sets and gets the height of the ticks in circular gauge component.
      * @aspDefaultValueIgnore
      * @default null
      */
@@ -250,7 +242,7 @@ export class Tick extends ChildProperty<Tick> {
     public height: number;
 
     /**
-     * Specifies the interval of the tick line.
+     * Sets and gets the interval between the tick lines in circular gauge component.
      * @aspDefaultValueIgnore
      * @default null
      */
@@ -259,7 +251,7 @@ export class Tick extends ChildProperty<Tick> {
     public interval: number;
 
     /**
-     * Distance of the ticks from axis in pixel.
+     * Sets and gets the distance of the ticks from axis in circular gauge component.
      * @default 0
      */
 
@@ -267,7 +259,7 @@ export class Tick extends ChildProperty<Tick> {
     public offset: number;
 
     /**
-     * The color of the tick line, which accepts value in hex, rgba as a valid CSS color string.
+     * Sets and gets the color of the tick line. This property accepts value in hex code, rgba string as a valid CSS color string.
      * @aspDefaultValueIgnore
      * @default null
      */
@@ -276,9 +268,7 @@ export class Tick extends ChildProperty<Tick> {
     public color: string;
 
     /**
-     * Specifies the position of the ticks. They are
-     * * inside -  Places the ticks inside the axis.
-     * * outside - Places the ticks outside of the axis.
+     * Sets and gets the position of the ticks in circular gauge component.
      * @default Inside
      */
 
@@ -286,7 +276,7 @@ export class Tick extends ChildProperty<Tick> {
     public position: Position;
 
     /**
-     * If set true, major ticks takes the range color.
+     * Enables and disables the tick lines to take the range color.
      * @default false
      */
 
@@ -294,7 +284,7 @@ export class Tick extends ChildProperty<Tick> {
     public useRangeColor: boolean;
 
     /**
-     * Sets or gets the dash array for the ticks
+     * Sets and gets the dash-array for the ticks in circular gauge component.
      * @default '0'
      */
 
@@ -303,13 +293,13 @@ export class Tick extends ChildProperty<Tick> {
 }
 
 /**   
- * Configures the needle cap in pointer.    
+ * Sets and gets the needle cap of pointer in circular gauge component.    
  */
 
 export class Cap extends ChildProperty<Cap> {
 
     /**
-     * The color of the cap.
+     * Sets and gets the color for the pointer cap in the circular gauge component.
      * @default null
      */
 
@@ -317,14 +307,14 @@ export class Cap extends ChildProperty<Cap> {
     public color: string;
 
     /**
-     * Options for customizing the border of the cap.
+     * Sets and gets the border of the pointer cap in the circular gauge component.
      */
 
     @Complex<BorderModel>({ color: null, width: 8 }, Border)
     public border: BorderModel;
 
     /**
-     * Radius of the cap in pixels.
+     * Sets and gets the radius of pointer cap in the circular gauge component.
      * @default 8
      */
 
@@ -333,14 +323,14 @@ export class Cap extends ChildProperty<Cap> {
 
 }
 
-/**   
- * Configures the back needle in pointers.   
+/**
+ * Sets and gets the pointer needle in the circular gauge component.  
  */
 
 export class NeedleTail extends ChildProperty<NeedleTail> {
 
     /**
-     * The color of the back needle.
+     * Sets and gets the color for the needle pointer in the circular gauge component.
      * @aspDefaultValueIgnore
      * @default null
      */
@@ -349,14 +339,14 @@ export class NeedleTail extends ChildProperty<NeedleTail> {
     public color: string;
 
     /**
-     * Options for customizing the border of the back needle.
+     * Sets and gets options to customize the color and width of the border for the pointer needle in the circular gauge component.
      */
 
     @Complex<BorderModel>({ color: null, width: 0 }, Border)
     public border: BorderModel;
 
     /**
-     * The radius of the back needle in pixels or in percentage.
+     * Sets and gets the length of the needle in pixels or in percentage in circular gauge component.
      * @default '0%'
      */
 
@@ -366,13 +356,13 @@ export class NeedleTail extends ChildProperty<NeedleTail> {
 }
 
 /**
- * Configures the animation of pointers.
+ * Sets and gets the animation of pointers in circular gauge component.
  */
 
 export class Animation extends ChildProperty<Animation> {
 
     /**
-     * If set true, pointers get animate on initial loading.
+     * Enables and disables the pointer animation during initial rendering in circular gauge component.
      * @default true
      */
 
@@ -380,7 +370,7 @@ export class Animation extends ChildProperty<Animation> {
     public enable: boolean;
 
     /**
-     * Duration of animation in milliseconds.
+     * Sets and gets the duration of animation in milliseconds in circular gauge component.
      * @default 1000
      */
 
@@ -389,56 +379,56 @@ export class Animation extends ChildProperty<Animation> {
 
 }
 
-/**   
- * ‘Annotation’ module is used to handle annotation action for an axis.
+/**
+ * Sets and gets the annotation element for an axis in circular gauge component.
  */
 
 export class Annotation extends ChildProperty<Annotation> {
 
     /**
-     * Content of the annotation, which accepts the id of the custom element.
+     * Sets and gets the content of the annotation. This property accepts the id of the custom element.
      * @default null
      */
     @Property(null)
     public content: string;
 
     /**
-     * Angle for annotation with respect to axis.
+     * Sets and gets the angle for annotation with respect to axis in circular gauge component.
      * @default 90
      */
     @Property(90)
     public angle: number;
 
     /**
-     * Radius for annotation with respect to axis.
+     * Sets and gets the radius for annotation with respect to axis in circular gauge component.
      * @default '50%'
      */
     @Property('50%')
     public radius: string;
 
     /**
-     * Order of an annotation in an axis.
+     * Sets and gets the z-index of an annotation in an axis in the circular gauge component.
      * @default '-1'
      */
     @Property('-1')
     public zIndex: string;
 
     /**
-     * Rotates the annotation along the axis.
+     * Enables and disables the annotation rotation along the axis.
      * @default false
      */
     @Property(false)
     public autoAngle: boolean;
 
     /**
-     * Options for customizing the annotation text.
+     * Sets and gets the style of the text in annotation.
      */
 
     @Complex<FontModel>({ size: '12px', color: '#686868' }, Font)
     public textStyle: FontModel;
 
     /**
-     * Information about annotation for assistive technology.
+     * Sets and gets the information about annotation for assistive technology.
      * @default null
      */
     @Property(null)
@@ -446,14 +436,14 @@ export class Annotation extends ChildProperty<Annotation> {
 
 }
 
-/**   
- * Configures the pointers of an axis.
+/**
+ * Sets and gets the pointers of an axis in circular gauge component.
  */
 
 export class Pointer extends ChildProperty<Pointer> {
 
     /**
-     * Specifies the value of the pointer.
+     * Sets and gets the value of the pointer in circular gauge component.
      * @aspDefaultValueIgnore
      * @default null
      */
@@ -462,10 +452,7 @@ export class Pointer extends ChildProperty<Pointer> {
     public value: number;
 
     /**
-     * Specifies the type of pointer for an axis.
-     * * needle -  Renders a needle.
-     * * marker - Renders a marker.
-     * * rangeBar - Renders a rangeBar.
+     * Sets and gets the type of pointer for an axis in Circular gauge component.
      * @default Needle
      */
 
@@ -473,11 +460,7 @@ export class Pointer extends ChildProperty<Pointer> {
     public type: PointerType;
 
     /**
-     * Specifies the position of pointer for an axis.
-     * * inside -  Renders a Inside.
-     * * outside - Renders a Outside.
-     * * cross - Renders a Cross.
-     * * Auto - Renders a based on radius
+     * Sets and gets the position of pointer for an axis.
      * @default Auto
      */
 
@@ -485,7 +468,7 @@ export class Pointer extends ChildProperty<Pointer> {
     public position: PointerRangePosition;
 
     /**
-     * Specifies the rounded corner radius for pointer.
+     * Sets and gets the corner radius for pointer in axis.
      * @default 0
      */
 
@@ -493,7 +476,7 @@ export class Pointer extends ChildProperty<Pointer> {
     public roundedCornerRadius: number;
 
     /**
-     * The URL for the Image that is to be displayed as pointer.
+     * Sets and gets the url for the image that is to be displayed as pointer.
      * It requires marker shape value to be Image.
      * @default null
      */
@@ -501,70 +484,63 @@ export class Pointer extends ChildProperty<Pointer> {
     public imageUrl: string;
 
     /**
-     * Length of the pointer in pixels or in percentage.
+     * Sets and gets the radius of pointer for marker and range type pointer and fix length of pointer for needle pointer.
      * @default null
      */
     @Property(null)
     public radius: string;
 
     /**
-     * Width of the pointer in pixels.
+     * Sets and gets the width of the pointer in axis.
      * @default 20
      */
     @Property(20)
     public pointerWidth: number;
 
     /**
-     * Options for customizing the cap
+     * Sets and gets the cap of pointer in an axis.
      */
 
     @Complex<CapModel>({}, Cap)
     public cap: CapModel;
 
     /**
-     * Options for customizing the font
+     * Sets and gets the style of text in pointer of an axis.
      */
 
     @Complex<FontModel>({}, Font)
     public textStyle: FontModel;
 
     /**
-     * Options for customizing the back needle.
+     * Sets and gets the tail of needle pointer in an axis.
      */
 
     @Complex<NeedleTailModel>({}, NeedleTail)
     public needleTail: NeedleTailModel;
 
     /**
-     * The color of the pointer.
+     * Sets and gets the color of the pointer in an axis.
      */
 
     @Property(null)
     public color: string;
 
     /**
-     * Options for customizing the border of the needle.
+     * Sets and gets the options to customize the color and width of the border for the needle pointer in an axis.
      */
 
     @Complex<BorderModel>({ color: '#DDDDDD', width: 0 }, Border)
     public border: BorderModel;
 
     /**
-     * Configures the animation of pointers.
+     * Sets and gets the animation of pointers while rendering the axis in circular gauge.
      */
 
     @Complex<AnimationModel>(null, Animation)
     public animation: AnimationModel;
 
     /**
-     * Specifies the shape of the marker. They are
-     * * circle - Renders a circle.
-     * * rectangle - Renders a rectangle.
-     * * triangle - Renders a triangle.
-     * * diamond - Renders a diamond.
-     * * invertedTriangle - Renders a invertedTriangle.
-     * * image - Renders a image.
-     * * Text - Renders a Text.
+     * Sets and gets the shape of the marker type pointer in an axis.
      * @default Circle
      */
 
@@ -572,7 +548,7 @@ export class Pointer extends ChildProperty<Pointer> {
     public markerShape: GaugeShape;
 
     /**
-     * The height of the marker in pixels.
+     * Sets and gets the height of the marker pointer in an axis.
      * @default 5
      */
 
@@ -580,21 +556,21 @@ export class Pointer extends ChildProperty<Pointer> {
     public markerHeight: number;
 
     /**
-     * text of the pointer.
+     * Sets and gets the text in pointer.
      * @default ''
      */
     @Property('')
     public text: string;
 
     /**
-     * Information about pointer for assistive technology.
+     * Sets and gets the information about pointer for assistive technology.
      * @default null
      */
     @Property(null)
     public description: string;
 
     /**
-     * The width of the marker in pixels.
+     * Sets and gets the width of the marker pointer in an axis.
      * @default 5
      */
 
@@ -602,7 +578,7 @@ export class Pointer extends ChildProperty<Pointer> {
     public markerWidth: number;
 
     /**
-     * The offset value of pointer from scale.
+     * Sets and gets the offset value of pointer from scale.
      * @default '0'
      */
 
@@ -622,7 +598,7 @@ export class Pointer extends ChildProperty<Pointer> {
     public currentDistanceFromScale: number;
 
     /**
-     * Sets or gets the start width of the needle pointer
+     * Sets or gets the start width of the needle pointer in an axis.
      * @default null
      */
 
@@ -630,7 +606,7 @@ export class Pointer extends ChildProperty<Pointer> {
     public needleStartWidth: number;
 
     /**
-     * Sets or gets the end width of the needle pointer
+     * Sets or gets the end width of the needle pointer in an axis.
      * @default null
      */
 
@@ -641,13 +617,13 @@ export class Pointer extends ChildProperty<Pointer> {
 }
 
 /**
- * Configures an axis in a gauge.
+ * Sets and gets the options to customize the axis for the circular gauge component.
  */
 
 export class Axis extends ChildProperty<Axis> {
 
     /**
-     * Specifies the minimum value of an axis.
+     * Sets and gets the minimum value of an axis in the circular gauge component.
      * @aspDefaultValueIgnore
      * @default null
      */
@@ -656,7 +632,7 @@ export class Axis extends ChildProperty<Axis> {
     public minimum: number;
 
     /**
-     * Specifies the maximum value of an axis.
+     * Sets and gets the maximum value of an axis in the circular gauge component.
      * @aspDefaultValueIgnore
      * @default null
      */
@@ -665,7 +641,7 @@ export class Axis extends ChildProperty<Axis> {
     public maximum: number;
 
     /**
-     * Specifies the last label to be shown
+     * Enables and disables the last label of axis when it is hidden in circular gauge component.
      * @default false
      */
 
@@ -673,7 +649,7 @@ export class Axis extends ChildProperty<Axis> {
     public showLastLabel: boolean;
 
     /**
-     * Specifies to hide the intersecting axis labels
+     * Enables and disables the intersecting labels to be hidden in axis.
      * @default false
      */
 
@@ -681,7 +657,7 @@ export class Axis extends ChildProperty<Axis> {
     public hideIntersectingLabel: boolean;
 
     /**
-     * Specifies the rounding Off value in the label
+     * Sets and gets the rounding Off value in the label in an axis.
      * @default null
      */
 
@@ -689,7 +665,7 @@ export class Axis extends ChildProperty<Axis> {
     public roundingPlaces: number;
 
     /**
-     * Radius of an axis in pixels or in percentage.
+     * Sets and gets the radius of an axis in circular gauge.
      * @default null
      */
 
@@ -697,35 +673,35 @@ export class Axis extends ChildProperty<Axis> {
     public radius: string;
 
     /**
-     * Options for customizing the axis lines.
+     * Sets and gets the style of the line in axis of circular gauge component.
      */
 
     @Complex<LineModel>({}, Line)
     public lineStyle: LineModel;
 
     /**
-     * Options for customizing the ranges of an axis
+     * Sets and gets the ranges of an axis in circular gauge component.
      */
 
     @Collection<RangeModel>([{}], Range)
     public ranges: RangeModel[];
 
     /**
-     * Options for customizing the pointers of an axis
+     * Sets and gets the pointers of an axis in circular gauge component.
      */
 
     @Collection<PointerModel>([{}], Pointer)
     public pointers: PointerModel[];
 
     /**
-     * ‘Annotation’ module is used to handle annotation action for an axis.
+     * Sets and gets the annotation element for an axis in circular gauge component.
      */
 
     @Collection<AnnotationModel>([{}], Annotation)
     public annotations: AnnotationModel[];
 
     /**
-     * Options for customizing the major tick lines.
+     * Sets and gets the major tick lines of an axis in circular gauge component.
      * @default { width: 2, height: 10 }
      */
 
@@ -733,7 +709,7 @@ export class Axis extends ChildProperty<Axis> {
     public majorTicks: TickModel;
 
     /**
-     * Options for customizing the minor tick lines.
+     * Sets and gets the minor tick lines of an axis in circular gauge component.
      * @default { width: 2, height: 5 }
      */
 
@@ -741,7 +717,7 @@ export class Axis extends ChildProperty<Axis> {
     public minorTicks: TickModel;
 
     /**
-     * The start angle of an axis
+     * Sets and gets the start angle of an axis in circular gauge component.
      * @default 200
      */
 
@@ -749,7 +725,7 @@ export class Axis extends ChildProperty<Axis> {
     public startAngle: number;
 
     /**
-     * The end angle of an axis
+     * Sets and gets the end angle of an axis in circular gauge component.
      * @default 160
      */
 
@@ -757,9 +733,7 @@ export class Axis extends ChildProperty<Axis> {
     public endAngle: number;
 
     /**
-     * Specifies the direction of an axis. They are
-     * * clockWise -  Renders the axis in clock wise direction.
-     * * antiClockWise - Renders the axis in anti-clock wise direction.
+     * Sets and gets the direction of an axis.
      * @default ClockWise
      */
 
@@ -767,28 +741,28 @@ export class Axis extends ChildProperty<Axis> {
     public direction: GaugeDirection;
 
     /**
-     * The background color of the axis, which accepts value in hex, rgba as a valid CSS color string.
+     * Sets and gets the background color of an axis. This property accepts value in hex code, rgba string as a valid CSS color string.
      * @default null
      */
     @Property(null)
     public background: string;
 
     /**
-     * Specifies the range gap property by pixel value.
+     * Sets and gets the gap between the ranges by specified value in circular gauge component.
      * @default null
      */
     @Property(null)
     public rangeGap: number;
 
     /**
-     * Specifies the start and end range gap.
+     * Enables and disables the start and end gap between the ranges and axis in circular gauge.
      * @default false
      */
     @Property(false)
     public startAndEndRangeGap: boolean;
 
     /**
-     * Options to customize the axis label.
+     * Sets and gets the style of the axis label in circular gauge component.
      */
 
     @Complex<LabelModel>({}, Label)

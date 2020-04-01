@@ -1,4 +1,4 @@
-import { extend, Property, ChildProperty, Complex } from '@syncfusion/ej2-base';import { SheetModel, getRowsHeight, getColumnsWidth } from './index';import { CellStyleModel, HyperlinkModel, CellStyle, wrapEvent, ValidationModel } from '../common/index';import { getRow } from './row';import { RowModel } from './row-model';import { Workbook } from './workbook';import { getSheet } from './sheet';
+import { extend, Property, ChildProperty, Complex } from '@syncfusion/ej2-base';import { SheetModel } from './index';import { CellStyleModel, HyperlinkModel, CellStyle, wrapEvent, ValidationModel } from '../common/index';import { getRow } from './row';import { RowModel } from './row-model';import { Workbook } from './workbook';import { getSheet } from './sheet';
 
 /**
  * Interface for a class Cell
@@ -64,9 +64,29 @@ export interface CellModel {
     wrap?: boolean;
 
     /**
+     * Specifies the cell is locked or not, for allow edit range in spreadsheet protect option.
+     * @default true
+     */
+    isLocked?: boolean;
+
+    /**
      * Specifies the validation of the cell.
      * @default ''
      */
     validation?: ValidationModel;
+
+    /**
+     * Specifies the column-wise cell merge count.
+     * @default 1
+     * @asptype int
+     */
+    colSpan?: number;
+
+    /**
+     * Specifies the row-wise cell merge count.
+     * @default 1
+     * @asptype int
+     */
+    rowSpan?: number;
 
 }

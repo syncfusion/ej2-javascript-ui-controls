@@ -2,7 +2,7 @@
 import { KeyboardEvents, KeyboardEventArgs, Animation, AnimationModel, Browser, BaseEventArgs } from '@syncfusion/ej2-base';
 import { EmitType, cldrData, L10n, Component, getDefaultDateObject, rippleEffect, RippleOptions, Event } from '@syncfusion/ej2-base';
 import { createElement, remove, addClass, detach, removeClass, closest, append, attributes, setStyleAttribute } from '@syncfusion/ej2-base';
-import { isNullOrUndefined, formatUnit, getValue, setValue, extend, getUniqueID } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, formatUnit, getValue, setValue, extend, getUniqueID, blazorCultureFormats } from '@syncfusion/ej2-base';
 import { Popup } from '@syncfusion/ej2-popups';
 import { FocusEventArgs, BlurEventArgs, ClearedEventArgs } from '../calendar/calendar';
 import { Input, InputObject, IInput, FloatLabelType } from '@syncfusion/ej2-inputs';
@@ -652,6 +652,10 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         return (!isNullOrUndefined(value) && value instanceof Date && !isNaN(+value)) ? value : null;
     }
     private createInputElement(): void {
+        let updatedCssClassesValue: string = this.cssClass;
+        if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+            updatedCssClassesValue = (this.cssClass.replace(/\s+/g, ' ')).trim();
+        }
         this.inputWrapper = Input.createInput(
             {
                 element: this.inputElement,
@@ -659,7 +663,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                 properties: {
                     readonly: this.readonly,
                     placeholder: this.placeholder,
-                    cssClass: this.cssClass,
+                    cssClass: updatedCssClassesValue,
                     enabled: this.enabled,
                     enableRtl: this.enableRtl,
                     showClearButton: this.showClearButton,
@@ -682,7 +686,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     private getCldrDateTimeFormat(): string {
         let culture: Internationalization = new Internationalization(this.locale);
         let cldrTime: string;
-        let dateFormat: string = culture.getDatePattern({ skeleton: 'yMd' });
+        let dateFormat: string = culture.getDatePattern({ skeleton: isBlazor() ? 'd' : 'yMd' });
         if (this.isNullOrEmpty(this.formatString)) {
             cldrTime = dateFormat + ' ' + this.CldrFormat('time');
         } else {
@@ -708,7 +712,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                         }));
                         if (isNullOrUndefined(valueExpression)) {
                             valueExpression = this.checkDateValue(this.globalize.parseDate(valueString, {
-                                format: this.formatString, type: 'dateTime', skeleton: 'yMd'
+                                format: this.formatString, type: 'dateTime', skeleton: isBlazor() ? 'd' : 'yMd'
                             }));
                         }
                     }
@@ -745,7 +749,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     private CldrFormat(type: string): string {
         let cldrDateTimeString: string;
         if (this.locale === 'en' || this.locale === 'en-US') {
-            cldrDateTimeString = <string>(getValue('timeFormats.short', getDefaultDateObject()));
+            cldrDateTimeString = isBlazor() ? this.getBlazorCultureFormat('t') :
+                <string>(getValue('timeFormats.short', getDefaultDateObject()));
         } else {
             cldrDateTimeString = <string>(this.getCultureTimeObject(cldrData, '' + this.locale));
         }
@@ -888,7 +893,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         if (isNullOrUndefined(this.checkDateValue(value))) {
             return null;
         } else {
-            return this.globalize.formatDate(value, { skeleton: 'medium', type: 'time' });
+            return this.globalize.formatDate(value, { skeleton: isBlazor() ? 't' : 'medium', type: 'time' });
         }
     }
     private getDateObject(text: string | Date): Date {
@@ -910,7 +915,10 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             for (let key of Object.keys(this.htmlAttributes)) {
                 if (wrapperAttributes.indexOf(key) > -1 ) {
                     if (key === 'class') {
-                        addClass([this.inputWrapper.container], this.htmlAttributes[key].split(' '));
+                        let updatedClassesValue: string = (this.htmlAttributes[key].replace(/\s+/g, ' ')).trim();
+                        if (updatedClassesValue !== '') {
+                            addClass([this.inputWrapper.container], updatedClassesValue.split(' '));
+                        }
                     } else if (key === 'style') {
                         let timeStyle: string = this.inputWrapper.container.getAttribute(key);
                         timeStyle = !isNullOrUndefined(timeStyle) ? (timeStyle + this.htmlAttributes[key]) :
@@ -933,7 +941,18 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             }
         }
     }
-
+    private updateCssClass(cssClassNew : string, cssClassOld : string) : void {
+        if (!isNullOrUndefined(cssClassOld)) {
+            cssClassOld = (cssClassOld.replace(/\s+/g, ' ')).trim();
+        }
+        if (!isNullOrUndefined(cssClassNew)) {
+            cssClassNew = (cssClassNew.replace(/\s+/g, ' ')).trim();
+        }
+        Input.setCssClass(cssClassNew, [this.inputWrapper.container], cssClassOld);
+        if (this.popupWrapper) {
+            Input.setCssClass(cssClassNew, [this.popupWrapper], cssClassOld);
+        }
+    }
     private removeErrorClass(): void {
         removeClass([this.inputWrapper.container], ERROR);
         attributes(this.inputElement, { 'aria-invalid': 'false' });
@@ -973,9 +992,12 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     private getMeridianText(): MeridianText {
         let meridian: MeridianText;
         if (this.locale === 'en' || this.locale === 'en-US') {
-            meridian = getValue('dayPeriods.format.wide', getDefaultDateObject());
+            meridian = getValue((isBlazor() ? 'dayPeriods.wide' : 'dayPeriods.format.wide'), getDefaultDateObject());
         } else {
-            meridian = getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.dayPeriods.format.abbreviated', cldrData);
+            let gregorianFormat: string = (isBlazor() ? '.dates.dayPeriods.abbreviated'  :
+            '.dates.calendars.gregorian.dayPeriods.format.abbreviated');
+            let mainVal: string = isBlazor() ? '' : 'main.';
+            meridian = getValue(mainVal + '' + this.locale + gregorianFormat, cldrData);
         }
         return meridian;
     }
@@ -1070,17 +1092,22 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     private cldrDateFormat(): string {
         let cldrDate: string;
         if (this.locale === 'en' || this.locale === 'en-US') {
-            cldrDate = <string>(getValue('dateFormats.short', getDefaultDateObject()));
+            cldrDate = isBlazor() ? <string>(getValue('d', getValue(this.locale, blazorCultureFormats))) :
+                <string>(getValue('dateFormats.short', getDefaultDateObject()));
         } else {
             cldrDate = <string>(this.getCultureDateObject(cldrData, '' + this.locale));
         }
         return cldrDate;
     }
+    private getBlazorCultureFormat(formatVal: string): string {
+        return (<string>(getValue(formatVal, getValue(this.locale, blazorCultureFormats)))).replace(/tt/, 'a');
+    }
     private cldrTimeFormat(): string {
         let cldrTime: string;
         if (this.isNullOrEmpty(this.formatString)) {
             if (this.locale === 'en' || this.locale === 'en-US') {
-                cldrTime = <string>(getValue('timeFormats.short', getDefaultDateObject()));
+                cldrTime = isBlazor() ?  this.getBlazorCultureFormat('t') :
+                    <string>(getValue('timeFormats.short', getDefaultDateObject()));
             } else {
                 cldrTime = <string>(this.getCultureTimeObject(cldrData, '' + this.locale));
             }
@@ -1092,9 +1119,11 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     private dateToNumeric(): string {
         let cldrTime: string;
         if (this.locale === 'en' || this.locale === 'en-US') {
-            cldrTime = <string>(getValue('timeFormats.medium', getDefaultDateObject()));
+            cldrTime = isBlazor() ? this.getBlazorCultureFormat('T') :
+                <string>(getValue('timeFormats.medium', getDefaultDateObject()));
         } else {
-            cldrTime = <string>(getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.timeFormats.medium', cldrData));
+            cldrTime = isBlazor() ? this.getBlazorCultureFormat('T') :
+                <string>(getValue('main.' + '' + this.locale + '.dates.calendars.gregorian.timeFormats.medium', cldrData));
         }
         return cldrTime;
     }
@@ -2032,10 +2061,12 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         if (this.isPopupOpen() && this.selectedElement !== null && (!event || event.type !== 'click')) { this.setScrollPosition(); }
     }
     protected getCultureTimeObject(ld: Object, c: string): Object {
-        return getValue('main.' + c + '.dates.calendars.gregorian.timeFormats.short', ld);
+        return isBlazor() ? (<string>(getValue('t', getValue(c, blazorCultureFormats)))).replace(/tt/, 'a') :
+            getValue('main.' + c + '.dates.calendars.gregorian.timeFormats.short', ld);
     }
     protected getCultureDateObject(ld: Object, c: string): Object {
-        return getValue('main.' + c + '.dates.calendars.gregorian.dateFormats.short', ld);
+        return isBlazor() ? <string>(getValue('d', getValue(c, blazorCultureFormats))) :
+                getValue('main.' + c + '.dates.calendars.gregorian.dateFormats.short', ld);
     }
     protected wireListEvents(): void {
         EventHandler.add(this.listWrapper, 'click', this.onMouseClick, this);
@@ -2154,11 +2185,15 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         return (li && li.classList.contains(LISTCLASS) && !li.classList.contains(DISABLED));
     }
     protected createDateObj(val: Date | string): Date {
-        let today: string = this.globalize.formatDate(new Date(), { skeleton: 'short', type: 'date' });
+        let formatStr: string = isBlazor() ?
+            // tslint:disable-next-line
+            'M' + (getDefaultDateObject() as any).dateSeperator + 'd' + (getDefaultDateObject() as any).dateSeperator + 'yy'
+            : null;
+        let today: string = this.globalize.formatDate(new Date(), { format: formatStr, skeleton: 'short', type: 'date' });
         let value: Date = null;
         if (typeof val === 'string') {
             if (val.toUpperCase().indexOf('AM') > -1 || val.toUpperCase().indexOf('PM') > -1) {
-                today = this.defaultCulture.formatDate(new Date(), { skeleton: 'short', type: 'date' });
+                today = this.defaultCulture.formatDate(new Date(), { format: formatStr,  skeleton: 'short', type: 'date' });
                 value = isNaN(+new Date(today + ' ' + val)) ? null : new Date(new Date(today + ' ' + val).setMilliseconds(0));
                 if (isNullOrUndefined(value)) {
                     value = this.TimeParse(today, val);
@@ -2538,10 +2573,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                     }
                     break;
                 case 'cssClass':
-                    Input.setCssClass(newProp.cssClass, [this.inputWrapper.container], oldProp.cssClass);
-                    if (this.popupWrapper) {
-                        Input.setCssClass(newProp.cssClass, [this.popupWrapper], oldProp.cssClass);
-                    }
+                    this.updateCssClass(newProp.cssClass, oldProp.cssClass);
                     break;
                 case 'zIndex':
                     this.setProperties({ zIndex: newProp.zIndex }, true);

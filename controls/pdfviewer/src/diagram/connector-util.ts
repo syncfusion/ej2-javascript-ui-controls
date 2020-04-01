@@ -171,10 +171,7 @@ export function updateRadiusLabel(obj: PdfAnnotationBaseModel, measure: MeasureA
     for (let i: number = 0; i < obj.wrapper.children.length; i++) {
         let textElement: TextElement = (obj.wrapper.children[i] as TextElement);
         if (textElement && !isNullOrUndefined(textElement.content)) {
-            let length: number = findPointsLength([
-                { x: obj.bounds.x, y: obj.bounds.y },
-                { x: obj.bounds.x + obj.bounds.width, y: obj.bounds.y + obj.bounds.height }]);
-            radius = measure.setConversion((length / 2) * measure.pixelToPointFactor, obj);
+            radius = measure.setConversion((obj.bounds.width / 2) * measure.pixelToPointFactor, obj);
             textElement.content = radius;
             if (textElement.childNodes.length === 2) {
                 textElement.childNodes[0].text = radius;

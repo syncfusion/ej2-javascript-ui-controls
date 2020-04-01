@@ -55,9 +55,7 @@ export class DrillThroughDialog {
                     dataSource: this.parent.editSettings.allowEditing ?
                         this.dataWithPrimarykey(eventArgs) : this.gridData,
                     height: !this.parent.editSettings.allowEditing ? 300 : 220
-                }, true);
-                /* tslint:enable:align */
-                this.drillThroughGrid.enableVirtualization = !this.parent.editSettings.allowEditing;
+                }, false);
             },
             beforeClose: () => {
                 if (this.parent.editSettings.allowEditing && this.isUpdated) {
@@ -205,7 +203,7 @@ export class DrillThroughDialog {
             columns: eventArgs.gridColumns,
             locale: this.parent.locale,
             enableRtl: this.parent.enableRtl,
-            enableVirtualization: this.parent.editSettings.allowEditing,
+            enableVirtualization: !this.parent.editSettings.allowEditing,
             allowPaging: this.parent.editSettings.allowEditing
         });
         if (isBlazor()) {

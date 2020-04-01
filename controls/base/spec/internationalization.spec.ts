@@ -642,5 +642,54 @@ describe('Internationalization', () => {
             expect(res).toBe(null);
         });
     });
+    describe('Blazor Internationalization with server data', () => {
+        it('Check Number Formatting format N2', () => {
+            enableBlazorMode()
+            let intl: Internationalization = new Internationalization();
+            let res: string = intl.formatNumber(12122, { format: 'N2' });
+            disableBlazorMode()
+            expect(res).toBe('12,122.00');
+        });
+        it('Check Number Formatting format C2', () => {
+            enableBlazorMode()
+            let intl: Internationalization = new Internationalization();
+            let res: string = intl.formatNumber(12122, { format: 'C2' });
+            disableBlazorMode()
+            expect(res).toBe('$12,122.00');
+        });
+        it('Check Number Formatting format C2', () => {
+            enableBlazorMode()
+            let intl: Internationalization = new Internationalization();
+            let res: string = intl.formatNumber(-12122, { format: 'C2' });
+            disableBlazorMode()
+            expect(res).toBe('($12,122.00)');
+        });
+        it('Check Number Parsing  C2', () => {
+            enableBlazorMode()
+            let intl: Internationalization = new Internationalization();
+            let res: Number = intl.parseNumber('($12,122.00)', { format: 'C2' });
+            disableBlazorMode()
+            expect(res).toBe(-12122);
+        });
+        
+       
+        it('datefromatting ', () => {
+            enableBlazorMode();
+            let date: Date = new Date('11/17/2016');
+            let intl: Internationalization = new Internationalization();
+            let dateformatter: string = intl.formatDate(date, { format:"EEEE, MMMM d, y"});
+            disableBlazorMode();
+            expect(dateformatter).toBe('Thursday, November 17, 2016');
+        });
+        it('dateParser ', ()=> {
+            enableBlazorMode();
+            let date: Date = new Date('11/17/2016');
+            let intl: Internationalization = new Internationalization();
+            let dateformatter: Date = intl.parseDate('Thursday, November 17, 2016', { format:"EEEE, MMMM d, y"});
+            disableBlazorMode();
+            expect(intl.formatDate(date, { format:"EEEE, MMMM d, y"})).toBe('Thursday, November 17, 2016');
+        })
+    });
+
     /* tslint:enable:quotemark */
 });

@@ -160,12 +160,12 @@ export class FormulaBar {
                     range = left + ':' + right;
                 }
             }
-            if ((sheetIdx + 1) === this.parent.activeSheetTab) {
+            if ((sheetIdx) === this.parent.activeSheetIndex) {
                 this.parent.selectRange(range);
                 this.parent.element.focus();
             } else {
                 updateSelectedRange(this.parent, range, sheet);
-                this.parent.activeSheetTab = sheetIdx + 1;
+                this.parent.activeSheetIndex = sheetIdx;
             }
         }
     }
@@ -235,10 +235,10 @@ export class FormulaBar {
         }
     }
     private disabletextarea(): void {
-        let el: HTMLTextAreaElement =  document.getElementById(this.parent.element.id + '_formula_input') as HTMLTextAreaElement;
+        let element: HTMLTextAreaElement = this.getFormulaBar();
         if (this.parent.getActiveSheet().isProtected) {
-          el.disabled = true;
-        } else { el.disabled = false; }
+          element.disabled = true;
+        } else { element.disabled = false; }
     }
     private formulaBarClickHandler(e: MouseEvent & TouchEvent): void {
         let target: HTMLElement = e.target as HTMLElement;
@@ -371,7 +371,7 @@ export class FormulaBar {
 
     private selectFormula(dialog: Dialog, formulaBarObj: FormulaBar): void {
         let formulaText: string | string[] | number | number[] = formulaBarObj.formulaList.getSelectedItems().text;
-        let sheet: SheetModel = getSheet(this.parent, this.parent.activeSheetTab - 1);
+        let sheet: SheetModel = getSheet(this.parent, this.parent.activeSheetIndex);
         if (this.parent.isEdit) {
             this.parent.notify(editOperation, {
                 action: 'refreshEditor', value: formulaText + '(', refreshFormulaBar: true,
@@ -436,7 +436,7 @@ export class FormulaBar {
     }
     private formulaClickHandler(args: MouseEvent & TouchEvent): void {
         let trgtElem: HTMLElement = <HTMLElement>args.target;
-        let sheet: SheetModel = getSheet(this.parent, this.parent.activeSheetTab - 1);
+        let sheet: SheetModel = getSheet(this.parent, this.parent.activeSheetIndex);
         if (trgtElem.offsetParent.classList.contains('e-text-content') || trgtElem.classList.contains('e-list-item')) {
             if (this.parent.isEdit) {
                 this.parent.notify(editOperation, {

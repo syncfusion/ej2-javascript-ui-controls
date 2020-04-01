@@ -9,7 +9,10 @@ import { BorderModel } from '../model/base-model';
 export class Selection {
     private maps: Maps;
     private selectionsettings: SelectionSettingsModel;
-    private selectionType: string;
+    /**
+     * @private
+     */
+    public selectionType: string;
     /* tslint:disable:no-string-literal */
     constructor(maps: Maps) {
         this.maps = maps;
@@ -134,60 +137,65 @@ export class Selection {
             eventArgs = blazorEventArgs;
         }
         this.maps.trigger('itemSelection', eventArgs, (observedArgs: ISelectionEventArgs) => {
-            if (targetElement.getAttribute('class') === this.selectionType + 'selectionMapStyle') {
-                removeClass(targetElement);
-                this.removedSelectionList(targetElement);
-                if (targetElement.id.indexOf('NavigationIndex') > -1) {
-                    let index: number = parseInt(targetElement.id.split('_NavigationIndex_')[1].split('_')[0], 10);
-                    let layerIndex: number = parseInt(targetElement.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
-                    targetElement.setAttribute('stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
-                    targetElement.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
-                }
-            } else {
-                let layetElement: Element = getElementByID(this.maps.element.id + '_Layer_Collections');
-                if (!this.selectionsettings.enableMultiSelect &&
-                    layetElement.getElementsByClassName(this.selectionType + 'selectionMapStyle').length > 0) {
-                    let ele: Element = layetElement.getElementsByClassName(this.selectionType + 'selectionMapStyle')[0];
-                    removeClass(ele);
-                    this.removedSelectionList(ele);
-                    if (this.selectionType === 'Shape') {
-                        let selectionLength: number = this.maps.selectedElementId.length;
-                        for (let i: number = 0; i < selectionLength; i++) {
-                            ele = layetElement.getElementsByClassName(this.selectionType + 'selectionMapStyle')[0];
-                            removeClass(ele);
-                            let selectedElementIdIndex: number = this.maps.selectedElementId.indexOf(ele.getAttribute('id'));
-                            this.maps.selectedElementId.splice(selectedElementIdIndex, 1);
-                        }
-                    }
-                    if (ele.id.indexOf('NavigationIndex') > -1) {
+            if (!eventArgs.cancel) {
+                if (targetElement.getAttribute('class') === this.selectionType + 'selectionMapStyle') {
+                    removeClass(targetElement);
+                    this.removedSelectionList(targetElement);
+                    if (targetElement.id.indexOf('NavigationIndex') > -1) {
                         let index: number = parseInt(targetElement.id.split('_NavigationIndex_')[1].split('_')[0], 10);
                         let layerIndex: number = parseInt(targetElement.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
-                        ele.setAttribute('stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
-                        ele.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
+                        targetElement.setAttribute
+                        (
+                            'stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString()
+                        );
+                        targetElement.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
                     }
-                }
-                if (!getElement(this.selectionType + 'selectionMap')) {
-                    document.body.appendChild(createStyle(this.selectionType + 'selectionMap',
-                                                          this.selectionType + 'selectionMapStyle', eventArgs));
                 } else {
-                    customizeStyle(this.selectionType + 'selectionMap', this.selectionType + 'selectionMapStyle', eventArgs);
-                }
-                targetElement.setAttribute('class', this.selectionType + 'selectionMapStyle');
-                if (targetElement.getAttribute('class') === 'ShapeselectionMapStyle') {
-                    this.maps.shapeSelectionClass = getElement(this.selectionType + 'selectionMap');
-                    this.maps.selectedElementId.push(targetElement.getAttribute('id'));
-                }
-                if (targetElement.getAttribute('class') === 'MarkerselectionMapStyle') {
-                    this.maps.markerSelectionClass = getElement(this.selectionType + 'selectionMap');
-                    this.maps.selectedMarkerElementId.push(targetElement.getAttribute('id'));
-                }
-                if (targetElement.getAttribute('class') === 'BubbleselectionMapStyle') {
-                    this.maps.bubbleSelectionClass = getElement(this.selectionType + 'selectionMap');
-                    this.maps.selectedBubbleElementId.push(targetElement.getAttribute('id'));
-                }
-                if (targetElement.getAttribute('class') === 'navigationlineselectionMapStyle') {
-                    this.maps.navigationSelectionClass = getElement(this.selectionType + 'selectionMap');
-                    this.maps.selectedNavigationElementId.push(targetElement.getAttribute('id'));
+                    let layetElement: Element = getElementByID(this.maps.element.id + '_Layer_Collections');
+                    if (!this.selectionsettings.enableMultiSelect &&
+                        layetElement.getElementsByClassName(this.selectionType + 'selectionMapStyle').length > 0) {
+                        let ele: Element = layetElement.getElementsByClassName(this.selectionType + 'selectionMapStyle')[0];
+                        removeClass(ele);
+                        this.removedSelectionList(ele);
+                        if (this.selectionType === 'Shape') {
+                            let selectionLength: number = this.maps.selectedElementId.length;
+                            for (let i: number = 0; i < selectionLength; i++) {
+                                ele = layetElement.getElementsByClassName(this.selectionType + 'selectionMapStyle')[0];
+                                removeClass(ele);
+                                let selectedElementIdIndex: number = this.maps.selectedElementId.indexOf(ele.getAttribute('id'));
+                                this.maps.selectedElementId.splice(selectedElementIdIndex, 1);
+                            }
+                        }
+                        if (ele.id.indexOf('NavigationIndex') > -1) {
+                            let index: number = parseInt(targetElement.id.split('_NavigationIndex_')[1].split('_')[0], 10);
+                            let layerIndex: number = parseInt(targetElement.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
+                            ele.setAttribute('stroke-width', this.maps.layers[layerIndex].navigationLineSettings[index].width.toString());
+                            ele.setAttribute('stroke', this.maps.layers[layerIndex].navigationLineSettings[index].color);
+                        }
+                    }
+                    if (!getElement(this.selectionType + 'selectionMap')) {
+                        document.body.appendChild(createStyle(this.selectionType + 'selectionMap',
+                                                              this.selectionType + 'selectionMapStyle', eventArgs));
+                    } else {
+                        customizeStyle(this.selectionType + 'selectionMap', this.selectionType + 'selectionMapStyle', eventArgs);
+                    }
+                    targetElement.setAttribute('class', this.selectionType + 'selectionMapStyle');
+                    if (targetElement.getAttribute('class') === 'ShapeselectionMapStyle') {
+                        this.maps.shapeSelectionClass = getElement(this.selectionType + 'selectionMap');
+                        this.maps.selectedElementId.push(targetElement.getAttribute('id'));
+                    }
+                    if (targetElement.getAttribute('class') === 'MarkerselectionMapStyle') {
+                        this.maps.markerSelectionClass = getElement(this.selectionType + 'selectionMap');
+                        this.maps.selectedMarkerElementId.push(targetElement.getAttribute('id'));
+                    }
+                    if (targetElement.getAttribute('class') === 'BubbleselectionMapStyle') {
+                        this.maps.bubbleSelectionClass = getElement(this.selectionType + 'selectionMap');
+                        this.maps.selectedBubbleElementId.push(targetElement.getAttribute('id'));
+                    }
+                    if (targetElement.getAttribute('class') === 'navigationlineselectionMapStyle') {
+                        this.maps.navigationSelectionClass = getElement(this.selectionType + 'selectionMap');
+                        this.maps.selectedNavigationElementId.push(targetElement.getAttribute('id'));
+                    }
                 }
             }
         });

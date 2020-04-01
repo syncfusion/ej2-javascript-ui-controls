@@ -154,7 +154,8 @@
     }
   }
 
-  .e-de-tool-ctnr-properties-pane {
+  .e-de-tool-ctnr-properties-pane,
+  .e-de-ctnr-properties-pane {
     background-color: $de-ctnr-bg-clr;
     border-bottom: 1px solid $de-panel-border;
     border-top: 1px solid $de-panel-border;

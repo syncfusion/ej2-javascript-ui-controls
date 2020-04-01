@@ -1,4 +1,4 @@
-import { Component, Property, NotifyPropertyChanges, Browser, Complex, Event, Collection } from '@syncfusion/ej2-base';import { EmitType, INotifyPropertyChanged, createElement, remove, ModuleDeclaration } from '@syncfusion/ej2-base';import { Rect, Size, getPathArc, RectOption, stringToNumber } from './utils/helper';import { doLinearAnimation, doCircularAnimation, doCircularIndeterminate, doAnnotationAnimation } from './utils/progress-animation';import { MarginModel, AnimationModel, FontModel } from './model/progress-base-model';import { Margin, Animation, Font } from './model/progress-base';import { ILoadedEventArgs, IProgressStyle, IProgressValueEventArgs } from './model/progress-interface';import { ITextRenderEventArgs, IProgressResizeEventArgs } from './model/progress-interface';import { SvgRenderer, PathOption, getElement, measureText } from '@syncfusion/ej2-svg-base';import { ProgressType, CornerType, ProgressTheme } from './utils/enum';import { getProgressThemeColor } from './utils/theme';import { lineCapRadius, completeAngle, valueChanged, progressCompleted } from './model/constant';import { ProgressAnnotation } from './model/index';import { ProgressAnnotationSettingsModel } from './model/index';import { ProgressAnnotationSettings } from './model/index';
+import { Component, Property, NotifyPropertyChanges, Browser, Complex, Event, Collection, EventHandler } from '@syncfusion/ej2-base';import { EmitType, INotifyPropertyChanged, createElement, remove, ModuleDeclaration } from '@syncfusion/ej2-base';import { Rect, Size, RectOption, stringToNumber } from './utils/helper';import { MarginModel, AnimationModel, FontModel } from './model/progress-base-model';import { Margin, Animation, Font } from './model/progress-base';import { ILoadedEventArgs, IProgressStyle, IProgressValueEventArgs } from './model/progress-interface';import { ITextRenderEventArgs, IProgressResizeEventArgs, IMouseEventArgs } from './model/progress-interface';import { SvgRenderer, PathOption, getElement, measureText } from '@syncfusion/ej2-svg-base';import { ProgressType, CornerType, ProgressTheme } from './utils/enum';import { getProgressThemeColor } from './utils/theme';import { lineCapRadius, completeAngle, valueChanged, progressCompleted } from './model/constant';import { mouseClick, mouseDown, mouseLeave, mouseMove, mouseUp } from './model/constant';import { ProgressAnnotation } from './model/index';import { ProgressAnnotationSettingsModel } from './model/index';import { ProgressAnnotationSettings } from './model/index';import { Linear } from './types/linear-progress';import { Circular } from './types/circular-progress';import { ProgressAnimation } from './utils/progress-animation';
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -133,6 +133,12 @@ export interface ProgressBarModel extends ComponentModel{
     progressThickness?: number;
 
     /**
+     * pie view
+     * @default false
+     */
+    enablePieProgress?: boolean;
+
+    /**
      * theme style
      * @default Fabric
      */
@@ -201,6 +207,36 @@ export interface ProgressBarModel extends ComponentModel{
      * @event
      */
     animationComplete?: EmitType<IProgressValueEventArgs>;
+
+    /**
+     * Trigger after mouse click
+     * @event
+     */
+    mouseClick?: EmitType<IMouseEventArgs>;
+
+    /**
+     * Trigger after mouse move
+     * @event
+     */
+    mouseMove?: EmitType<IMouseEventArgs>;
+
+    /**
+     * Trigger after mouse up
+     * @event
+     */
+    mouseUp?: EmitType<IMouseEventArgs>;
+
+    /**
+     * Trigger after mouse down
+     * @event
+     */
+    mouseDown?: EmitType<IMouseEventArgs>;
+
+    /**
+     * Trigger after mouse down
+     * @event
+     */
+    mouseLeave?: EmitType<IMouseEventArgs>;
 
     /**
      * The configuration for annotation in Progressbar.

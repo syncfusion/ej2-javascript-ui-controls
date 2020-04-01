@@ -6,7 +6,7 @@ import { RendererFactory } from '../services/renderer-factory';
 import { ContentRender } from '../renderer/content-renderer';
 
 /**
- * Content module is used to render RichTextEditor content
+ * Content module is used to render Rich Text Editor content
  * @hidden
  * @deprecated
  */
@@ -28,7 +28,7 @@ export class Render {
     }
 
     /**
-     * To initialize RichTextEditor header, content and footer rendering
+     * To initialize Rich Text Editor header, content and footer rendering
      * @hidden
      * @deprecated
      */

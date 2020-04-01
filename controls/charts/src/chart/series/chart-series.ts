@@ -21,7 +21,7 @@ import { ISeriesRenderEventArgs } from '../../chart/model/chart-interface';
 import { seriesRender } from '../../common/model/constants';
 import { Alignment, SeriesCategories } from '../../common/utils/enum';
 import { BoxPlotMode, Segment } from '../utils/enum';
-import { sort } from '../../common/utils/helper';
+import { sort, getVisiblePoints } from '../../common/utils/helper';
 import { Browser } from '@syncfusion/ej2-base';
 import { StockSeries } from '../../stock-chart/index';
 
@@ -939,16 +939,20 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
             let dateFormatter: Function = this.chart.intl.getDateFormat(option);
             while (i < len) {
                 point = this.dataPoint(i, textMappingName, xName);
-                point.x = new Date(
-                    DataUtil.parse.parseJson({ val: point.x }).val
-                );
-                if (this.xAxis.valueType === 'DateTime') {
-                    point.xValue = Date.parse(dateParser(dateFormatter(point.x)));
+                if (!isNullOrUndefined(point.x) && point.x !== '') {
+                    point.x = new Date(
+                        DataUtil.parse.parseJson({ val: point.x }).val
+                    );
+                    if (this.xAxis.valueType === 'DateTime') {
+                        point.xValue = Date.parse(point.x.toString());
+                    } else {
+                        this.pushCategoryData(point, i, Date.parse(dateParser(dateFormatter(point.x))).toString());
+                    }
+                    this.pushData(point, i);
+                    this.setEmptyPoint(point, i);
                 } else {
-                    this.pushCategoryData(point, i, Date.parse(dateParser(dateFormatter(point.x))).toString());
+                    point.visible = false;
                 }
-                this.pushData(point, i);
-                this.setEmptyPoint(point, i);
                 i++;
             }
         } else {
@@ -1053,12 +1057,12 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     private findVisibility(point: Points): boolean {
         let type: SeriesValueType = this instanceof Series ? this.seriesType : 'HighLowOpenClose';
         let yValues: number[];
-        let yAxisMin: number =  <number>this.yAxis.minimum;
+        let yAxisMin: number = <number>this.yAxis.minimum;
         let yAxisMax: number = <number>this.yAxis.maximum;
         switch (type) {
             case 'XY':
                 if (this.chart.chartAreaType === 'PolarRadar' && ((!isNullOrUndefined(yAxisMin) && point.yValue < yAxisMin) ||
-                (!isNullOrUndefined(yAxisMax) && point.yValue > yAxisMax))) {
+                    (!isNullOrUndefined(yAxisMax) && point.yValue > yAxisMax))) {
                     point.isPointInRange = false;
                     return true;
                 }
@@ -1255,6 +1259,8 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
     public dataModule: Data;
     /** @private */
     public points: Points[];
+    /** @private */
+    public visiblePoints: Points[];
     /** @private */
     public seriesType: SeriesValueType = 'XY';
     /** @private */
@@ -1462,7 +1468,7 @@ export class Series extends SeriesBase {
      * @default ''
      */
     @Property('')
-    public tooltipFormat : string;
+    public tooltipFormat: string;
 
     /**
      * The provided value will be considered as a Tooltip name 
@@ -1672,7 +1678,7 @@ export class Series extends SeriesBase {
         }
         this.xAxis.labels = [];
         for (let item of this.xAxis.series) {
-            if (item.visible) {
+            if (item.visible && item.category !== 'TrendLine') {
                 item.xMin = Infinity; item.xMax = -Infinity;
                 for (let point of item.points) {
                     item.pushCategoryData(point, point.index, <string>point.x);
@@ -1748,11 +1754,12 @@ export class Series extends SeriesBase {
         }
         let stackingSeies: Series[] = [];
         let stackedValues: number[] = [];
+        let visiblePoints: Points[] = [];
         for (let series of seriesCollection) {
             if (series.type.indexOf('Stacking') !== -1 || (series.drawType.indexOf('Stacking') !== -1 &&
                 (series.chart.chartAreaType === 'PolarRadar'))) {
                 stackingGroup = (series.type.indexOf('StackingArea') !== -1) ? 'StackingArea100' :
-                (series.type.indexOf('StackingLine') !== -1) ? 'StackingLine100' : series.stackingGroup;
+                    (series.type.indexOf('StackingLine') !== -1) ? 'StackingLine100' : series.stackingGroup;
                 if (!lastPositive[stackingGroup]) {
                     lastPositive[stackingGroup] = [];
                     lastNegative[stackingGroup] = [];
@@ -1761,28 +1768,29 @@ export class Series extends SeriesBase {
                 startValues = [];
                 endValues = [];
                 stackingSeies.push(series);
-                for (let j: number = 0, pointsLength: number = series.points.length; j < pointsLength; j++) {
+                visiblePoints = getVisiblePoints(series);
+                for (let j: number = 0, pointsLength: number = visiblePoints.length; j < pointsLength; j++) {
                     lastValue = 0;
                     value = +yValues[j]; // Fix for chart not rendering while y value is given as string issue
-                    if (lastPositive[stackingGroup][series.points[j].xValue] === undefined) {
-                        lastPositive[stackingGroup][series.points[j].xValue] = 0;
+                    if (lastPositive[stackingGroup][visiblePoints[j].xValue] === undefined) {
+                        lastPositive[stackingGroup][visiblePoints[j].xValue] = 0;
                     }
-                    if (lastNegative[stackingGroup][series.points[j].xValue] === undefined) {
-                        lastNegative[stackingGroup][series.points[j].xValue] = 0;
+                    if (lastNegative[stackingGroup][visiblePoints[j].xValue] === undefined) {
+                        lastNegative[stackingGroup][visiblePoints[j].xValue] = 0;
                     }
                     if (isStacking100) {
-                        value = value / frequencies[stackingGroup][series.points[j].xValue] * 100;
+                        value = value / frequencies[stackingGroup][visiblePoints[j].xValue] * 100;
                         value = !isNaN(value) ? value : 0;
-                        series.points[j].percentage = +(value.toFixed(2));
+                        visiblePoints[j].percentage = +(value.toFixed(2));
                     } else {
                         stackedValues[j] = stackedValues[j] ? stackedValues[j] + Math.abs(value) : Math.abs(value);
                     }
                     if (value >= 0) {
-                        lastValue = lastPositive[stackingGroup][series.points[j].xValue];
-                        lastPositive[stackingGroup][series.points[j].xValue] += value;
+                        lastValue = lastPositive[stackingGroup][visiblePoints[j].xValue];
+                        lastPositive[stackingGroup][visiblePoints[j].xValue] += value;
                     } else {
-                        lastValue = lastNegative[stackingGroup][series.points[j].xValue];
-                        lastNegative[stackingGroup][series.points[j].xValue] += value;
+                        lastValue = lastNegative[stackingGroup][visiblePoints[j].xValue];
+                        lastNegative[stackingGroup][visiblePoints[j].xValue] += value;
                     }
                     startValues.push(lastValue);
                     endValues.push(value + lastValue);
@@ -1803,12 +1811,12 @@ export class Series extends SeriesBase {
         }
         this.findPercentageOfStacking(stackingSeies, stackedValues, isStacking100);
     }
-      private findPercentageOfStacking(stackingSeies: Series[], values: number[], isStacking100: boolean): void {
+    private findPercentageOfStacking(stackingSeies: Series[], values: number[], isStacking100: boolean): void {
         for (let item of stackingSeies) {
             if (isStacking100) {
                 return null;
             }
-            for (let point of item.points) {
+            for (let point of getVisiblePoints(item)) {
                 point.percentage = Math.abs(+(<number>point.y / values[point.index] * 100).toFixed(2));
             }
         }
@@ -1816,22 +1824,24 @@ export class Series extends SeriesBase {
     private findFrequencies(seriesCollection: Series[]): number[] {
         let frequencies: number[] = [];
         let stackingGroup: string;
+        let visiblePoints: Points[] = [];
         for (let series of seriesCollection) {
             series.yAxis.isStack100 = series.type.indexOf('100') !== -1 ? true : false;
+            visiblePoints = getVisiblePoints(series);
             if (series.type.indexOf('Stacking') !== -1) {
                 stackingGroup = (series.type.indexOf('StackingArea') !== -1) ? 'StackingArea100' :
-                (series.type.indexOf('StackingLine') !== -1) ? 'StackingLine100' : series.stackingGroup;
+                    (series.type.indexOf('StackingLine') !== -1) ? 'StackingLine100' : series.stackingGroup;
                 if (!frequencies[stackingGroup]) {
                     frequencies[stackingGroup] = [];
                 }
-                for (let j: number = 0, pointsLength: number = series.points.length; j < pointsLength; j++) {
-                    if (frequencies[stackingGroup][series.points[j].xValue] === undefined) {
-                        frequencies[stackingGroup][series.points[j].xValue] = 0;
+                for (let j: number = 0, pointsLength: number = visiblePoints.length; j < pointsLength; j++) {
+                    if (frequencies[stackingGroup][visiblePoints[j].xValue] === undefined) {
+                        frequencies[stackingGroup][visiblePoints[j].xValue] = 0;
                     }
                     if (series.yData[j] > 0) {
-                        frequencies[stackingGroup][series.points[j].xValue] += series.yData[j];
+                        frequencies[stackingGroup][visiblePoints[j].xValue] += series.yData[j];
                     } else {
-                        frequencies[stackingGroup][series.points[j].xValue] -= series.yData[j];
+                        frequencies[stackingGroup][visiblePoints[j].xValue] -= series.yData[j];
                     }
                 }
             }
@@ -1851,6 +1861,7 @@ export class Series extends SeriesBase {
             if (this.category !== 'Indicator' && this.category !== 'TrendLine') {
                 this.createSeriesElements(chart);
             }
+            this.visiblePoints = getVisiblePoints(this);
             chart[seriesType + 'SeriesModule'].render(this, this.xAxis, this.yAxis, chart.requireInvertedAxis);
             if (this.category !== 'Indicator') {
                 if (this.errorBar.visible) {
@@ -1878,7 +1889,7 @@ export class Series extends SeriesBase {
             // 8 for extend border value 5 for extend size value
             let explodeValue: number = this.marker.border.width + 8 + 5;
             let render: SvgRenderer | CanvasRenderer = (this.type === 'Scatter' || this.type === 'Bubble') ?
-             chart.svgRenderer : chart.renderer;
+                chart.svgRenderer : chart.renderer;
             let index: string | number = this.index === undefined ? this.category : this.index;
             let markerHeight: number = (this.type === 'Scatter') ? (this.marker.height + explodeValue) / 2 : 0;
             let markerWidth: number = (this.type === 'Scatter') ? (this.marker.width + explodeValue) / 2 : 0;

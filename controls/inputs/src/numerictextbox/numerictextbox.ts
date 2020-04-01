@@ -68,6 +68,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
     private blurEventArgs: NumericBlurEventArgs;
     private numericOptions: NumericTextBoxModel;
     private isInteract: boolean;
+    private serverDecimalSeparator: string;
 
     /*NumericTextBox Options */
 
@@ -502,6 +503,10 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
 
     /* Wrapper creation */
     private createWrapper(): void {
+        let updatedCssClassValue: string = this.cssClass;
+        if (!isNullOrUndefined(this.cssClass) && this.cssClass !== '') {
+            updatedCssClassValue = this.getNumericValidClassList(this.cssClass);
+        }
         let inputObj: InputObject = Input.createInput(
             {
                 element: this.element,
@@ -509,7 +514,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                 properties: {
                     readonly: this.readonly,
                     placeholder: this.placeholder,
-                    cssClass: this.cssClass,
+                    cssClass: updatedCssClassValue,
                     enableRtl: this.enableRtl,
                     showClearButton: this.showClearButton,
                     enabled: this.enabled
@@ -555,12 +560,25 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             }
         }
     }
+    private updateCssClass(newClass : string, oldClass : string) : void {
+        Input.setCssClass(this.getNumericValidClassList(newClass), [this.container], this.getNumericValidClassList(oldClass));
+    }
+    private getNumericValidClassList(numericClassName: string): string {
+        let result: string = numericClassName;
+        if (!isNullOrUndefined(numericClassName) && numericClassName !== '') {
+            result = (numericClassName.replace(/\s+/g, ' ')).trim();
+        }
+        return result;
+    }
     private updateHTMLAttrToWrapper(): void {
         if ( !isNullOrUndefined(this.htmlAttributes)) {
             for (let pro of Object.keys(this.htmlAttributes)) {
                 if (wrapperAttributes.indexOf(pro) > -1 ) {
                     if (pro === 'class') {
-                        addClass([this.container], this.htmlAttributes[pro].split(' '));
+                        let updatedClassValue : string = this.getNumericValidClassList(this.htmlAttributes[pro]);
+                        if (updatedClassValue !== '') {
+                            addClass([this.container], updatedClassValue.split(' '));
+                        }
                     } else if (pro === 'style') {
                         let numericStyle: string = this.container.getAttribute(pro);
                         numericStyle = !isNullOrUndefined(numericStyle) ? (numericStyle + this.htmlAttributes[pro]) :
@@ -961,6 +979,9 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
             this.setElementValue(elementValue);
             attributes(this.element, { 'aria-valuenow': value });
             this.hiddenInput.value = this.value.toString();
+            if (this.value !== null && this.serverDecimalSeparator) {
+                this.hiddenInput.value = this.hiddenInput.value.replace('.', this.serverDecimalSeparator);
+            }
         } else {
             this.setElementValue('');
             this.element.removeAttribute('aria-valuenow');
@@ -1317,7 +1338,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                     this.setElementWidth(newProp.width);
                     break;
                 case 'cssClass':
-                    Input.setCssClass(newProp.cssClass, [this.container], oldProp.cssClass);
+                    this.updateCssClass(newProp.cssClass, oldProp.cssClass);
                     break;
                 case 'enabled':
                     Input.setEnabled(newProp.enabled, this.element);

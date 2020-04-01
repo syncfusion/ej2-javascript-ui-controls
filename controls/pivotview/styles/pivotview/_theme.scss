@@ -381,6 +381,25 @@
             }
           }
 
+          &.e-btn-focused {
+            background-color: $pivotgrid-focus-color;
+            color: $pivotgrid-button-acitve-font-color;
+            @if ($pivotgrid-skin == 'bootstrap4') {
+              background-color: #545b62;
+              border-color: #4e555b;
+              box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.5);
+            }
+
+            .e-sort,
+            .e-dropdown-icon,
+            .e-pv-filter,
+            .e-pv-filtered,
+            .e-remove,
+            .e-edit {
+              color: $pivotgrid-icon-focus-color !important;
+            }
+          }
+
           &:focus,
           &:active {
             background-color: $pivotgrid-focus-color;
@@ -524,6 +543,25 @@
               .e-remove,
               .e-edit {
                 color: $pivotgrid-icon-hover-color !important;
+              }
+            }
+
+            &.e-btn-focused {
+              background-color: $pivotgrid-focus-color;
+              color: $pivotgrid-button-acitve-font-color;
+              @if ($pivotgrid-skin == 'bootstrap4') {
+                background-color: #545b62;
+                border-color: #4e555b;
+                box-shadow: 0 0 0 0.2rem rgba(108, 117, 125, 0.5);
+              }
+ 
+              .e-sort,
+              .e-dropdown-icon,
+              .e-pv-filter,
+              .e-pv-filtered,
+              .e-remove,
+              .e-edit {
+                color: $pivotgrid-icon-focus-color !important;
               }
             }
 

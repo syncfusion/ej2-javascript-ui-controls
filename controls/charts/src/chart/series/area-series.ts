@@ -22,7 +22,7 @@ export class AreaSeries extends MultiColoredSeries {
         let isPolar: boolean = (series.chart && series.chart.chartAreaType === 'PolarRadar');
         let origin: number = Math.max(<number>series.yAxis.visibleRange.min, 0);
         if (isPolar) {
-            let connectPoints: { first: Points, last: Points} = this.getFirstLastVisiblePoint(series.points);
+            let connectPoints: { first: Points, last: Points } = this.getFirstLastVisiblePoint(series.points);
             origin = connectPoints.first.yValue;
         }
         let currentXValue: number;
@@ -30,11 +30,14 @@ export class AreaSeries extends MultiColoredSeries {
         let borderWidth: number = series.border ? series.border.width : 0;
         let borderColor: string = series.border ? series.border.color : 'transparent';
         let getCoordinate: Function = series.chart.chartAreaType === 'PolarRadar' ? TransformToVisible : getPoint;
-        series.points.map((point: Points, i: number, seriesPoints: Points[]) => {
+        let visiblePoints: Points[] = this.enableComplexProperty(series);
+        let point: Points;
+        for (let i: number = 0; i < visiblePoints.length; i++) {
+            point = visiblePoints[i];
             currentXValue = point.xValue;
             point.symbolLocations = [];
             point.regions = [];
-            if (point.visible && withInRange(seriesPoints[i - 1], point, seriesPoints[i + 1], series)) {
+            if (point.visible && withInRange(visiblePoints[i - 1], point, visiblePoints[i + 1], series)) {
                 direction += this.getAreaPathDirection(
                     currentXValue, origin, series, isInverted, getCoordinate, startPoint,
                     'M'
@@ -45,8 +48,8 @@ export class AreaSeries extends MultiColoredSeries {
                     currentXValue, point.yValue, series, isInverted, getCoordinate, null,
                     'L'
                 );
-                if (seriesPoints[i + 1] && (!seriesPoints[i + 1].visible &&
-                    (!isPolar || (isPolar && this.withinYRange(seriesPoints[i + 1], yAxis)))) && !isDropMode) {
+                if (visiblePoints[i + 1] && (!visiblePoints[i + 1].visible &&
+                    (!isPolar || (isPolar && this.withinYRange(visiblePoints[i + 1], yAxis)))) && !isDropMode) {
                     direction += this.getAreaEmptyDirection(
                         { 'x': currentXValue, 'y': origin },
                         startPoint, series, isInverted, getCoordinate
@@ -55,14 +58,14 @@ export class AreaSeries extends MultiColoredSeries {
                 }
                 this.storePointLocation(point, series, isInverted, getCoordinate);
             }
-        });
+        }
         if (isPolar && direction !== '') {
             let endPoint: string = '';
             let chart: Chart = this.chart;
             endPoint += this.getAreaPathDirection(0, origin, series, isInverted, getCoordinate, null, 'L');
             if (xAxis.isInversed || yAxis.isInversed) {
                 direction += (series.type === 'Polar' ? chart.polarSeriesModule.getPolarIsInversedPath(xAxis, endPoint) :
-                chart.radarSeriesModule.getRadarIsInversedPath(xAxis, endPoint));
+                    chart.radarSeriesModule.getRadarIsInversedPath(xAxis, endPoint));
             }
             direction = direction.concat(direction + ' ' + 'Z');
         }
@@ -70,7 +73,7 @@ export class AreaSeries extends MultiColoredSeries {
             new PathOption(
                 series.chart.element.id + '_Series_' + series.index, series.interior,
                 borderWidth, borderColor, series.opacity, series.dashArray,
-                ((series.points.length > 1  && direction !== '') ? (direction + this.getAreaPathDirection(
+                ((series.points.length > 1 && direction !== '') ? (direction + this.getAreaPathDirection(
                     series.points[series.points.length - 1].xValue,
                     series.chart.chartAreaType === 'PolarRadar' ?
                         series.points[series.points.length - 1].yValue : origin,

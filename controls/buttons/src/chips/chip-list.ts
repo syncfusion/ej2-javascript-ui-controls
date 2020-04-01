@@ -213,49 +213,49 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     public chips: string[] | number[] | ChipModel[];
 
     /**
-     * This text property helps to render Chip component.
+     * Specifies the text content for the chip.
      * @default ''
      */
     @Property('')
     public text: string;
 
     /**
-     * This avatarText property helps to customize avatar content.
+     * Specifies the customized text value for the avatar in the chip.
      * @default ''
      */
     @Property('')
     public avatarText: string;
 
     /**
-     * This avatarIconCss property helps to customize avatar element.
+     * Specifies the icon CSS class for the avatar in the chip.
      * @default ''
      */
     @Property('')
     public avatarIconCss: string;
 
     /**
-     * This leadingIconCss property helps to customize leading icon element.
+     * Specifies the leading icon CSS class for the chip.
      * @default ''
      */
     @Property('')
     public leadingIconCss: string;
 
     /**
-     * This trailingIconCss property helps to customize trailing icon element.
+     * Specifies the trailing icon CSS class for the chip.
      * @default ''
      */
     @Property('')
     public trailingIconCss: string;
 
     /**
-     * This cssClass property helps to customize ChipList component.
+     * Specifies the custom classes to be added to the chip element used to customize the ChipList component.
      * @default ''
      */
     @Property('')
     public cssClass: string;
 
     /**
-     * This enabled property helps to enable/disable ChipList component.
+     * Specifies a value that indicates whether the chip component is enabled or not.
      * @default true
      * @blazorDefaultValue null
      * @blazorType bool?
@@ -264,28 +264,32 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     public enabled: boolean;
 
     /**
-     * This selectedChips property helps to select chip items.
+     * Sets or gets the selected chip items in the chip list.
      * @default []
      */
     @Property([])
     public selectedChips: string[] | number[] | number;
 
     /**
-     * This selection property enables chip selection type.
+     * Defines the selection type of the chip. The available types are:
+     *   1. Input chip
+     *   2. Choice chip
+     *   3. Filter chip
+     *   4. Action chip
      * @default 'None'
      */
     @Property('None')
     public selection: Selection;
 
     /**
-     * This enableDelete property helps to enable delete functionality.
+     * Enables or disables the delete functionality of a chip.
      * @default false
      */
     @Property(false)
     public enableDelete: boolean;
 
     /**
-     * This created event will get triggered once the component rendering is completed.
+     * Triggers when the component is created successfully.
      * @event
      * @blazorProperty 'Created'
      */
@@ -293,7 +297,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     public created: EmitType<Event>;
 
     /**
-     * This click event will get triggered once the chip is clicked.
+     * Triggers when a chip is clicked.
      * @event
      * @blazorProperty 'OnClick'
      */
@@ -301,7 +305,8 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     public click: EmitType<ClickEventArgs>;
 
     /**
-     * This click event will get triggered once the chip is before click.
+     * Triggers before the click event of the chip is fired. 
+     * This event can be used to prevent the further process and restrict the click action over a chip.
      * @event
      * @blazorProperty 'OnBeforeClick'
      */
@@ -309,7 +314,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     public beforeClick: EmitType<ClickEventArgs>;
 
     /**
-     * This delete event will get triggered before removing the chip.
+     * Fires before removing the chip element.
      * @event
      * @blazorProperty 'OnDelete'
      */
@@ -493,7 +498,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * A function that adds chip items based on given input.
+     * Allows adding the chip item(s) by passing a single or array of string, number, or ChipModel values.
      * @param  {string[] | number[] | ChipModel[] | string | number | ChipModel} chipsData - We can pass array of string or
      *  array of number or array of chip model or string data or number data or chip model.
      * @deprecated
@@ -508,7 +513,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * A function that selects chip items based on given input.
+     * Allows selecting the chip item(s) by passing a single or array of string, number, or ChipModel values.
      * @param  {number | number[] | HTMLElement | HTMLElement[]} fields - We can pass number or array of number
      *  or chip element or array of chip element.
      */
@@ -555,7 +560,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * A function that removes chip items based on given input.
+     * Allows removing the chip item(s) by passing a single or array of string, number, or ChipModel values.
      * @param  {number | number[] | HTMLElement | HTMLElement[]} fields - We can pass number or array of number
      *  or chip element or array of chip element.
      */
@@ -580,7 +585,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * A function that returns selected chips data.
+     * Returns the selected chip(s) data.
      */
     public getSelectedChips(): SelectedItem | SelectedItems {
         let selectedChips: SelectedItem | SelectedItems;
@@ -678,8 +683,8 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
         if (this.type !== 'chip') {
             let chipData: ChipDataArgs = this.find(chipWrapper);
             (chipData as ClickEventArgs).event = e;
-            let deleteElement: HTMLElement = (e.target as HTMLElement).classList.contains(classNames.delete) ?
-                e.target as HTMLElement : (del ? chipWrapper.querySelector('.' + classNames.delete) : undefined);
+            let deleteElement: HTMLElement = (e.target as HTMLElement).classList.contains(classNames.deleteIcon) ?
+                e.target as HTMLElement : (del ? chipWrapper.querySelector('.' + classNames.deleteIcon) : undefined);
             if (deleteElement && this.enableDelete) {
                 (chipData as DeleteEventArgs).cancel = false;
                 let deletedItemArgs: DeleteEventArgs = chipData as DeleteEventArgs;
@@ -763,7 +768,7 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
     }
 
     /**
-     * It is used to destroy the ChipList component.
+     * Removes the component from the DOM and detaches all its related event handlers. Also, it removes the attributes and classes.
      */
     public destroy(): void {
         removeClass([this.element], [classNames.chipSet, classNames.chip, classNames.rtl,
@@ -817,20 +822,22 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                 case 'selection':
                 case 'enableDelete':
                 case 'enabled':
-                    if (!(prop === 'chips' && (isBlazor() && this.isServerRendered))) {
+                    if (!(isBlazor() && this.isServerRendered)) {
                         this.isServerRendered = false;
                         this.refresh();
                         this.isServerRendered = true;
                     }
                     break;
                 case 'cssClass':
-                    if (this.type === 'chip') {
-                        removeClass([this.element], oldProp.cssClass.toString().split(' ').filter((css: string) => css));
-                        addClass([this.element], newProp.cssClass.toString().split(' ').filter((css: string) => css));
-                    } else {
-                        this.isServerRendered = false;
-                        this.refresh();
-                        this.isServerRendered = true;
+                    if (!(isBlazor() && this.isServerRendered)) {
+                        if (this.type === 'chip') {
+                            removeClass([this.element], oldProp.cssClass.toString().split(' ').filter((css: string) => css));
+                            addClass([this.element], newProp.cssClass.toString().split(' ').filter((css: string) => css));
+                        } else {
+                            this.isServerRendered = false;
+                            this.refresh();
+                            this.isServerRendered = true;
+                        }
                     }
                     break;
                 case 'selectedChips':

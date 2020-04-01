@@ -137,6 +137,9 @@ export class YearEvent extends TimelineEvent {
         let wrap: HTMLElement = this.createEventElement(eventObj);
         let width: number;
         let top: number;
+        if (eventObj[this.fields.isAllDay]) {
+            eventObj[this.fields.endTime] = new Date((eventObj[this.fields.startTime] as Date).getTime());
+        }
         if (this.parent.activeViewOptions.orientation === 'Horizontal') {
             width = (<{ [key: string]: number }>eventObj.isSpanned).count * this.cellWidth;
             top = this.cellHeader + (this.eventHeight * overlapCount) + EVENT_GAP + (this.cellHeight * row);

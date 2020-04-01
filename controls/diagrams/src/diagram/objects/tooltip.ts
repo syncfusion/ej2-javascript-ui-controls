@@ -96,7 +96,7 @@ export abstract class DiagramTooltip extends ChildProperty<DiagramTooltip> {
 /**
  * @private
  * defines the Tooltip.
- * @param diagram
+ * @param {Diagram} diagram
  */
 export function initTooltip(diagram: Diagram): Tooltip {
     let tooltipOption: Tooltip = new Tooltip;
@@ -126,8 +126,8 @@ function beforeCollision(args: TooltipEventArgs): void {
 /**
  * @private
  * updates the contents of the tooltip.
- * @param diagram
- * @param node
+ * @param {Diagram} diagram
+ * @param {NodeModel | ConnectorModel} node
  */
 export function updateTooltip(diagram: Diagram, node?: NodeModel | ConnectorModel): Tooltip {
     let tooltip: DiagramTooltipModel;

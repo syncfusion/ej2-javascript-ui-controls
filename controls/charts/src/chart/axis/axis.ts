@@ -360,6 +360,7 @@ export class Axis extends ChildProperty<Axis> {
     /**
      * It specifies the type of format to be used in dateTime format process.
      * @default 'DateTime'
+     * @deprecated
      */
 
     @Property('DateTime')
