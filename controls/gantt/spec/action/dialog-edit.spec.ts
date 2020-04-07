@@ -5,8 +5,10 @@ import { getValue } from '@syncfusion/ej2-base';
 import { Gantt, Edit, Toolbar, IGanttData } from '../../src/index';
 import { dialogEditData, resourcesData, resources, scheduleModeData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
-import { EJ2Instance } from '@syncfusion/ej2-navigations';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
+interface EJ2Instance extends HTMLElement {
+    ej2_instances: Object[];
+}
 let dropDownElement: HTMLElement;
 let dropDownObj: DropDownList;
 let dropDownData = [

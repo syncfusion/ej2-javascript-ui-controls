@@ -26,27 +26,26 @@ let columns: ColumnModel[] = [
 ];
 
 let sheet: SheetModel[] = [{
-    name: 'Price Details',
-    range: [{
+    name: 'Price',
+    ranges: [{
         dataSource: dataSource,
         startCell: 'A1'
     }],
     rowCount: 200,
     columns: columns,
-
-},{
+},
+{
+    isProtected: true,
     name: 'Price Details',
-    range: [{
+    ranges: [{
         dataSource: dataSource,
         startCell: 'A1'
     }]
-
 }];
-let spreadsheet: Spreadsheet = new Spreadsheet({
-    sheets: sheet
-    
-});
+let spreadsheet: Spreadsheet = new Spreadsheet({ sheets: sheet });
 
 spreadsheet.appendTo('#spreadsheet');
-    spreadsheet.protectSheet(null, {selectCells: true, formatRows: true});
+spreadsheet.protectSheet('Price',{selectCells: true});
+spreadsheet.unprotectSheet('Price Details');
+
 switchTheme('#select-theme', spreadsheet);

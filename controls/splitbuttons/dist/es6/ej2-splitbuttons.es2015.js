@@ -21,6 +21,9 @@ function getModel(props, model) {
     }
     return obj;
 }
+/**
+ * Defines the items of Split Button/DropDownButton.
+ */
 class Item extends ChildProperty {
 }
 __decorate([
@@ -715,6 +718,11 @@ let SplitButton = class SplitButton extends DropDownButton {
             this.element.id = getUniqueID('e-' + this.getModuleName());
         }
     }
+    /**
+     * Initialize the Component rendering
+     * @returns void
+     * @private
+     */
     render() {
         if (isBlazor() && this.isServerRendered) {
             buttonObserver.on('component-rendered', this.buttonInstance, this, this.element.id);
@@ -746,10 +754,22 @@ let SplitButton = class SplitButton extends DropDownButton {
         this.wireEvents();
         this.renderComplete();
     }
+    /**
+     * Adds a new item to the menu. By default, new item appends to the list as the last item,
+     * but you can insert based on the text parameter.
+     * @param  { ItemModel[] } items - Specifies an array of JSON data.
+     * @param { string } text - Specifies the text to insert the newly added item in the menu.
+     * @returns {void}.
+     */
     addItems(items, text) {
         super.addItems(items, text);
         this.secondaryBtnObj.items = this.items;
     }
+    /**
+     * Removes the items from the menu.
+     * @param  { string[] } items - Specifies an array of string to remove the items.
+     * @returns {void}.
+     */
     removeItems(items) {
         super.removeItems(items);
         this.secondaryBtnObj.items = this.items;
@@ -1027,13 +1047,13 @@ class Deferred {
             this.reject = reject;
         });
         /**
-         * Defines the callback function triggers when the Deferred object is resolved.
-         */
-        this.then = this.promise.then.bind(this.promise);
-        /**
          * Defines the callback function triggers when the Deferred object is rejected.
          */
         this.catch = this.promise.catch.bind(this.promise);
+        /**
+         * Defines the callback function triggers when the Deferred object is resolved.
+         */
+        this.then = this.promise.then.bind(this.promise);
     }
 }
 
@@ -1124,6 +1144,9 @@ const HIDESPINNER = 'e-hide-spinner';
 const PROGRESS = 'e-progress';
 const PROGRESSACTIVE = 'e-progress-active';
 const CONTENTCLS = 'e-btn-content';
+/**
+ * Defines the spin settings.
+ */
 class SpinSettings extends ChildProperty {
 }
 __decorate$3([
@@ -1135,6 +1158,9 @@ __decorate$3([
 __decorate$3([
     Property('Left')
 ], SpinSettings.prototype, "position", void 0);
+/**
+ * Defines the animation settings.
+ */
 class AnimationSettings extends ChildProperty {
 }
 __decorate$3([

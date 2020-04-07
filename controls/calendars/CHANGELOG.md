@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.43 (2020-04-07)
+
+### TimePicker
+
+#### Bug Fixes
+
+- `#266088`- Now, you can use focusOut method inside close event.
+
 ## 17.4.50 (2020-02-18)
 
 ### DateRangePicker

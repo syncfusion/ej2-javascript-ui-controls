@@ -40,10 +40,10 @@ export class DataBind {
         let deferred: Deferred = new Deferred(); let sRowIdx: number; let sColIdx: number;
         let loadedInfo: { isNotLoaded: boolean, unloadedRange: number[] };
         args.promise = deferred.promise;
-        if (args.sheet && args.sheet.range.length) {
-            for (let k: number = args.sheet.range.length - 1; k >= 0; k--) {
+        if (args.sheet && args.sheet.ranges.length) {
+            for (let k: number = args.sheet.ranges.length - 1; k >= 0; k--) {
                 let sRange: number = args.indexes[0]; let eRange: number = args.indexes[2];
-                let range: ExtendedRange = args.sheet.range[k];
+                let range: ExtendedRange = args.sheet.ranges[k];
                 sRowIdx = getRangeIndexes(range.startCell)[0];
                 dataManager = range.dataSource instanceof DataManager ? range.dataSource as DataManager
                     : range.dataSource ? new DataManager(range.dataSource) : new DataManager();
@@ -319,10 +319,10 @@ export class DataBind {
         let oldSheet: SheetModel = args.oldProp.sheets[args.sheetIdx];
         let row: RowModel;
         let sheet: SheetModel = this.parent.sheets[args.sheetIdx];
-        let oldRange: ExtendedRange = oldSheet && oldSheet.range && oldSheet.range[args.rangeIdx];
+        let oldRange: ExtendedRange = oldSheet && oldSheet.ranges && oldSheet.ranges[args.rangeIdx];
         if (oldRange) {
             let indexes: number[] = getRangeIndexes(oldRange.startCell);
-            (sheet.range[args.rangeIdx] as ExtendedRange).info.loadedRange = [];
+            (sheet.ranges[args.rangeIdx] as ExtendedRange).info.loadedRange = [];
             oldRange.info.loadedRange.forEach((range: number[]) => {
                 for (let i: number = range[0]; i < range[1]; i++) {
                     row = sheet.rows[i + indexes[0]];

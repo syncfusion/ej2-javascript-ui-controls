@@ -1,14 +1,18 @@
 import { ProgressBar } from '../../progressbar';
 import { ProgressAnimation } from '../utils/progress-animation';
-import { PathOption, getElement } from '@syncfusion/ej2-svg-base';
+import { PathOption, getElement, Size, measureText } from '@syncfusion/ej2-svg-base';
+import { ITextRenderEventArgs } from '../model/progress-interface';
 import { stringToNumber, getPathArc } from '../utils/helper';
 import { Segment } from './segment-progress';
+import { TextOption } from '../utils/helper';
+
 
 /**
  * Progressbar of type circular
  */
 export class Circular {
     private progress: ProgressBar;
+    private delay: number;
     private segment: Segment = new Segment();
     private animation: ProgressAnimation = new ProgressAnimation();
     constructor(progress: ProgressBar) {
@@ -99,7 +103,6 @@ export class Circular {
                     (progress.progressThickness || progress.themeStyle.circularProgressThickness)
                 );
             } else {
-                progress.annotationEnd = progressEnd;
                 endAngle = ((progress.isIndeterminate) ? (progress.startAngle + (
                     (progress.enableRtl) ? -progress.totalAngle : +progress.totalAngle)) % 360 : progressEnd
                 );
@@ -134,7 +137,7 @@ export class Circular {
                     }
                     circularProgress.setAttribute('stroke-dasharray', progress.segmentSize);
                 }
-                if (progress.cornerRadius === 'Round') {
+                if (progress.cornerRadius === 'Round' && startAngle !== endAngle) {
                     circularProgress.setAttribute('stroke-linecap', 'round');
                 }
             }
@@ -145,11 +148,12 @@ export class Circular {
             }
             if (progress.animation.enable && !progress.isIndeterminate) {
                 let circulardelay: number = (progress.secondaryProgress !== null) ? 300 : progress.animation.delay;
+                this.delay = circulardelay;
                 linearClipPath = progress.createClipPath(progress.clipPath, null, refresh ? previousPath : '', null, refresh);
                 circularProgressGroup.appendChild(progress.clipPath);
                 circularProgress.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippath)');
                 this.animation.doCircularAnimation(
-                    centerX, centerY, radius, startAngle, progressEnd, linearClipPath, progress,
+                    centerX, centerY, radius, startAngle, progressEnd, progress.value, linearClipPath, progress,
                     (progress.progressThickness || progress.themeStyle.circularProgressThickness),
                     circulardelay, refresh ? previousEnd : null
                 );
@@ -220,10 +224,50 @@ export class Circular {
             circularBufferGroup.appendChild(progress.bufferClipPath);
             circularBuffer.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippathBuffer)');
             this.animation.doCircularAnimation(
-                centerX, centerY, radius, startAngle, bufferEnd, bufferClipPath, progress,
+                centerX, centerY, radius, startAngle, bufferEnd, progress.secondaryProgress, bufferClipPath, progress,
                 (progress.progressThickness || progress.themeStyle.circularProgressThickness), progress.animation.delay, null
             );
         }
         progress.svgObject.appendChild(circularBufferGroup);
+    }
+
+    /** To render the circular Label */
+    public renderCircularLabel(): void {
+        let end: number;
+        let circularLabel: Element;
+        let circularValue: number;
+        let centerX: number;
+        let centerY: number;
+        let argsData: ITextRenderEventArgs;
+        let textSize: Size;
+        let progress: ProgressBar = this.progress;
+        let labelValue: number;
+        let percentage: number = 100;
+        let option: TextOption;
+        labelValue = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * percentage;
+        circularValue = (progress.value < progress.minimum || progress.value > progress.maximum) ? 0 : Math.round(labelValue);
+        argsData = {
+            cancel: false, text: progress.label ? progress.label : String(circularValue) + '%', color: progress.labelStyle.color
+        };
+        progress.trigger('textRender', argsData);
+        if (!argsData.cancel) {
+            textSize = measureText(argsData.text, progress.labelStyle);
+            centerX = progress.progressRect.x + (progress.progressRect.width / 2);
+            centerY = progress.progressRect.y + (progress.progressRect.height / 2) + (textSize.height / 2);
+            option = new TextOption(
+                progress.element.id + '_circularLabel', progress.labelStyle.size || progress.themeStyle.circularFontSize,
+                progress.labelStyle.fontStyle || progress.themeStyle.circularFontStyle,
+                progress.labelStyle.fontFamily || progress.themeStyle.circularFontFamily, progress.labelStyle.fontWeight,
+                'middle', argsData.color || progress.themeStyle.fontColor, centerX, centerY, progress.progressRect.width,
+                progress.progressRect.height
+            );
+            circularLabel = progress.renderer.createText(option, argsData.text);
+            progress.svgObject.appendChild(circularLabel);
+            if (progress.animation.enable && !progress.isIndeterminate) {
+                end = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * progress.totalAngle;
+                end = (progress.value < progress.minimum || progress.value > progress.maximum) ? 0 : end;
+                this.animation.doLabelAnimation(circularLabel, progress.startAngle, end, progress, this.delay);
+            }
+        }
     }
 }

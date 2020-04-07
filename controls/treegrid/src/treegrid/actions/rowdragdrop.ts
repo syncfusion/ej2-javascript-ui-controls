@@ -6,7 +6,7 @@ import { ITreeData } from '../base';
 import { DataManager } from '@syncfusion/ej2-data';
 import * as events from '../base/constant';
 import { editAction } from './crud-actions';
-import { getParentData, findChildrenRecords, isRemoteData, isOffline } from '../utils';
+import { getParentData, findChildrenRecords, isRemoteData, isOffline, isCountRequired } from '../utils';
 /**
  * TreeGrid RowDragAndDrop module
  * @hidden
@@ -69,6 +69,7 @@ export class RowDD {
      * Reorder the rows based on given indexes and position
      */
     public reorderRows(fromIndexes: number[], toIndex: number, position: string): void {
+        let tObj: TreeGrid = this.parent;
         if (fromIndexes[0] !== toIndex && position === 'above' || 'below' || 'child') {
             if (position === 'above') {
                 this.dropPosition = 'topSegment';
@@ -88,12 +89,24 @@ export class RowDD {
                 data: data,
                 dropIndex: toIndex
             };
-            this.dropRows(args, isByMethod);
+            if (!isCountRequired(this.parent)) {
+                this.dropRows(args, isByMethod);
+            }
             //this.refreshGridDataSource();
             this.parent.refresh();
+            if (tObj.isLocalData) {
+                tObj.flatData = this.orderToIndex(tObj.flatData);
+            }
         } else {
             return;
         }
+    }
+
+    private orderToIndex(currentData: ITreeData[]): ITreeData[] {
+        for (let i: number = 0; i < currentData.length; i++) {
+            currentData[i].index = i;
+        }
+        return currentData;
     }
 
     private rowsAdded(e: { toIndex: number, records: Object[] }): void {
@@ -119,7 +132,7 @@ export class RowDD {
                 }
             }
         }
-        if (!(this.parent.dataSource as ITreeData[]).length) {
+        if ( isNullOrUndefined(this.parent.dataSource as ITreeData[]) || !(this.parent.dataSource as ITreeData[]).length ) {
             let tObj: TreeGrid = this.parent;
             let draggedRecord: ITreeData;
             let dragRecords: ITreeData[] = e.records;
@@ -129,6 +142,9 @@ export class RowDD {
                 let recordIndex1: number = 0;
                 if (!(draggedRecord.taskData as Object).hasOwnProperty(tObj.childMapping)) {
                    draggedRecord.taskData[tObj.childMapping] = [];
+                }
+                if (isNullOrUndefined(tObj.dataSource as ITreeData[])) {
+                    tObj.dataSource = [];
                 }
                 (tObj.dataSource as ITreeData[]).splice(recordIndex1, 0, draggedRecord.taskData);
                 tObj.setProperties({ dataSource: tObj.dataSource }, false);
@@ -495,8 +511,13 @@ export class RowDD {
             setValue('dropPosition', this.dropPosition, args);
             tObj.trigger(events.rowDrop, args);
             if (!args.cancel) {
-                this.dropRows(args);
+                if (!isCountRequired(this.parent)) {
+                    this.dropRows(args);
+                }
                 tObj.refresh();
+                if (tObj.isLocalData) {
+                    tObj.flatData = this.orderToIndex(tObj.flatData);
+                }
                 if (!isNullOrUndefined(tObj.getHeaderContent().querySelector('.e-firstrow-border'))) {
                     tObj.getHeaderContent().querySelector('.e-firstrow-border').remove();
                 }
@@ -509,6 +530,9 @@ export class RowDD {
               tObj.trigger(events.rowDrop, args);
               if (!args.cancel && tObj.rowDropSettings.targetID) {
                   this.dragDropGrid(args);
+                  if (tObj.isLocalData) {
+                    tObj.flatData = this.orderToIndex(tObj.flatData);
+                  }
               }
             }
         }
@@ -527,8 +551,10 @@ export class RowDD {
         let targetRow: HTMLTableRowElement = closest(args.target, 'tr') as HTMLTableRowElement;
         let targetIndex: number = isNaN(this.getTargetIdx(targetRow)) ? 0 : this.getTargetIdx(targetRow);
         let dropElement: Element = parentsUntil(args.target, 'e-treegrid');
-        if (dropElement && dropElement.id === this.parent.rowDropSettings.targetID && !isRemoteData(this.parent)) {
-            let srcControl: TreeGrid = (<EJ2Intance>dropElement).ej2_instances[0];
+        let srcControl: TreeGrid;
+        if (dropElement && dropElement.id === this.parent.rowDropSettings.targetID && !isRemoteData(this.parent)
+            && !isCountRequired(this.parent)) {
+            srcControl = (<EJ2Intance>dropElement).ej2_instances[0];
             let records: ITreeData[] = tObj.getSelectedRecords();
             let indexes: number[] = [];
             for (let i: number = 0; i < records.length; i++) {
@@ -547,6 +573,11 @@ export class RowDD {
                    srcControl.getContent().querySelector('.e-lastrow-border').remove();
                 }
             }
+        }
+        if (isCountRequired(this.parent)) {
+            srcControl = (<EJ2Intance>dropElement).ej2_instances[0];
+            tObj.refresh();
+            srcControl.refresh();
         }
     }
 

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.43 (2020-04-07)
+
+### Barcode
+
+#### Bug Fixes
+
+- `#269847` - "Barcode control is not rendering in MVC" issue has been fixed.
+
 ## 17.4.51 (2020-02-25)
 
 ### Barcode

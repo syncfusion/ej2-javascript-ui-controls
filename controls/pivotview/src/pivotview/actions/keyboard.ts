@@ -32,6 +32,8 @@ export class KeyboardInteraction {
         ctrlShiftF: 'ctrl+shift+f'
     };
     private pivotViewKeyboardModule: KeyboardEvents;
+    /* tslint:disable-next-line:no-any */
+    private timeOutObj: any;
     /**
      * Constructor
      */
@@ -132,10 +134,26 @@ export class KeyboardInteraction {
                 e.preventDefault();
                 return;
             }
-        } else if (!this.parent.showGroupingBar && this.parent.showFieldList) {
-            if (target && closest(target, '.' + cls.TOGGLE_FIELD_LIST_CLASS)) {
-                if (this.parent.grid) {
-                    let gridFocus: FocusStrategy = this.parent.grid.serviceLocator.getService<FocusStrategy>('focus');
+        } else if (!this.parent.showGroupingBar && this.parent.showFieldList &&
+            target && closest(target, '.' + cls.TOGGLE_FIELD_LIST_CLASS)) {
+            if (this.parent.grid) {
+                let gridFocus: FocusStrategy = this.parent.grid.serviceLocator.getService<FocusStrategy>('focus');
+                gridFocus.focus();
+                let element: HTMLElement = gridFocus.getFocusedElement();
+                addClass([element], ['e-focused', 'e-focus']);
+                element.setAttribute('tabindex', '0');
+                e.preventDefault();
+                return;
+            }
+        } else if (!this.parent.showGroupingBar && !this.parent.showFieldList &&
+            target && closest(target, '.' + cls.PIVOT_VIEW_CLASS) && !closest(target, '.e-popup.e-popup-open')) {
+            if (this.parent.grid) {
+                let gridElement: HTMLElement = closest(target, '.' + cls.PIVOT_VIEW_CLASS) as HTMLElement;
+                let gridFocus: FocusStrategy = this.parent.grid.serviceLocator.getService<FocusStrategy>('focus');
+                let rows: HTMLElement[] = [].slice.call(gridElement.getElementsByTagName('tr')) as HTMLElement[];
+                if (target.innerHTML === ((rows[rows.length - 1]).lastChild as HTMLElement).innerHTML) {
+                    gridFocus.currentInfo.skipAction = true;
+                } else {
                     gridFocus.focus();
                     let element: HTMLElement = gridFocus.getFocusedElement();
                     addClass([element], ['e-focused', 'e-focus']);
@@ -144,24 +162,15 @@ export class KeyboardInteraction {
                     return;
                 }
             }
-        } else if (!this.parent.showGroupingBar && !this.parent.showFieldList) {
-            if (target && closest(target, '.' + cls.PIVOT_VIEW_CLASS) && !closest(target, '.e-popup.e-popup-open')) {
-                if (this.parent.grid) {
-                    let gridElement: HTMLElement = closest(target, '.' + cls.PIVOT_VIEW_CLASS) as HTMLElement;
-                    let gridFocus: FocusStrategy = this.parent.grid.serviceLocator.getService<FocusStrategy>('focus');
-                    let rows: HTMLElement[] = [].slice.call(gridElement.getElementsByTagName('tr')) as HTMLElement[];
-                    if (target.innerHTML === ((rows[rows.length - 1]).lastChild as HTMLElement).innerHTML) {
-                        gridFocus.currentInfo.skipAction = true;
-                    } else {
-                        gridFocus.focus();
-                        let element: HTMLElement = gridFocus.getFocusedElement();
-                        addClass([element], ['e-focused', 'e-focus']);
-                        element.setAttribute('tabindex', '0');
-                        e.preventDefault();
-                        return;
-                    }
+        } else if (target && closest(target, '.' + cls.GRID_TOOLBAR) &&
+            this.parent.toolbar && this.parent.toolbarModule) {
+            clearTimeout(this.timeOutObj);
+            this.timeOutObj = setTimeout(() => {
+                removeClass(closest(target, '.' + cls.GRID_TOOLBAR).querySelectorAll('.e-menu-item.e-focused'), 'e-focused');
+                if (document.activeElement && document.activeElement.classList.contains('e-menu-item')) {
+                    addClass([document.activeElement], 'e-focused');
                 }
-            }
+            });
         }
     }
     private processShiftTab(e: Event): void {
@@ -193,6 +202,15 @@ export class KeyboardInteraction {
                 e.preventDefault();
                 return;
             }
+        } else if (target && closest(target, '.' + cls.GRID_TOOLBAR) &&
+            this.parent.toolbar && this.parent.toolbarModule) {
+            clearTimeout(this.timeOutObj);
+            this.timeOutObj = setTimeout(() => {
+                removeClass(closest(target, '.' + cls.GRID_TOOLBAR).querySelectorAll('.e-menu-item.e-focused'), 'e-focused');
+                if (document.activeElement && document.activeElement.classList.contains('e-menu-item')) {
+                    addClass([document.activeElement], 'e-focused');
+                }
+            });
         }
     }
     private processEnter(e: KeyboardEventArgs): void {

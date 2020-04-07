@@ -5602,7 +5602,7 @@ class AggregateMenu {
             if (!observedArgs.cancel) {
                 this.summaryTypes = observedArgs.aggregateTypes;
                 this.createContextMenu(isStringField);
-                this.currentMenu = args.currentTarget;
+                this.currentMenu = args.target;
                 let pos = this.currentMenu.getBoundingClientRect();
                 if (this.parent.enableRtl) {
                     this.menuInfo[isStringField].open(pos.top + (window.scrollY || document.documentElement.scrollTop), pos.left - 105);
@@ -11510,10 +11510,28 @@ class KeyboardInteraction {
                 return;
             }
         }
-        else if (!this.parent.showGroupingBar && this.parent.showFieldList) {
-            if (target && closest(target, '.' + TOGGLE_FIELD_LIST_CLASS)) {
-                if (this.parent.grid) {
-                    let gridFocus = this.parent.grid.serviceLocator.getService('focus');
+        else if (!this.parent.showGroupingBar && this.parent.showFieldList &&
+            target && closest(target, '.' + TOGGLE_FIELD_LIST_CLASS)) {
+            if (this.parent.grid) {
+                let gridFocus = this.parent.grid.serviceLocator.getService('focus');
+                gridFocus.focus();
+                let element = gridFocus.getFocusedElement();
+                addClass([element], ['e-focused', 'e-focus']);
+                element.setAttribute('tabindex', '0');
+                e.preventDefault();
+                return;
+            }
+        }
+        else if (!this.parent.showGroupingBar && !this.parent.showFieldList &&
+            target && closest(target, '.' + PIVOT_VIEW_CLASS) && !closest(target, '.e-popup.e-popup-open')) {
+            if (this.parent.grid) {
+                let gridElement = closest(target, '.' + PIVOT_VIEW_CLASS);
+                let gridFocus = this.parent.grid.serviceLocator.getService('focus');
+                let rows = [].slice.call(gridElement.getElementsByTagName('tr'));
+                if (target.innerHTML === (rows[rows.length - 1]).lastChild.innerHTML) {
+                    gridFocus.currentInfo.skipAction = true;
+                }
+                else {
                     gridFocus.focus();
                     let element = gridFocus.getFocusedElement();
                     addClass([element], ['e-focused', 'e-focus']);
@@ -11523,25 +11541,15 @@ class KeyboardInteraction {
                 }
             }
         }
-        else if (!this.parent.showGroupingBar && !this.parent.showFieldList) {
-            if (target && closest(target, '.' + PIVOT_VIEW_CLASS) && !closest(target, '.e-popup.e-popup-open')) {
-                if (this.parent.grid) {
-                    let gridElement = closest(target, '.' + PIVOT_VIEW_CLASS);
-                    let gridFocus = this.parent.grid.serviceLocator.getService('focus');
-                    let rows = [].slice.call(gridElement.getElementsByTagName('tr'));
-                    if (target.innerHTML === (rows[rows.length - 1]).lastChild.innerHTML) {
-                        gridFocus.currentInfo.skipAction = true;
-                    }
-                    else {
-                        gridFocus.focus();
-                        let element = gridFocus.getFocusedElement();
-                        addClass([element], ['e-focused', 'e-focus']);
-                        element.setAttribute('tabindex', '0');
-                        e.preventDefault();
-                        return;
-                    }
+        else if (target && closest(target, '.' + GRID_TOOLBAR) &&
+            this.parent.toolbar && this.parent.toolbarModule) {
+            clearTimeout(this.timeOutObj);
+            this.timeOutObj = setTimeout(() => {
+                removeClass(closest(target, '.' + GRID_TOOLBAR).querySelectorAll('.e-menu-item.e-focused'), 'e-focused');
+                if (document.activeElement && document.activeElement.classList.contains('e-menu-item')) {
+                    addClass([document.activeElement], 'e-focused');
                 }
-            }
+            });
         }
     }
     processShiftTab(e) {
@@ -11574,6 +11582,16 @@ class KeyboardInteraction {
                 e.preventDefault();
                 return;
             }
+        }
+        else if (target && closest(target, '.' + GRID_TOOLBAR) &&
+            this.parent.toolbar && this.parent.toolbarModule) {
+            clearTimeout(this.timeOutObj);
+            this.timeOutObj = setTimeout(() => {
+                removeClass(closest(target, '.' + GRID_TOOLBAR).querySelectorAll('.e-menu-item.e-focused'), 'e-focused');
+                if (document.activeElement && document.activeElement.classList.contains('e-menu-item')) {
+                    addClass([document.activeElement], 'e-focused');
+                }
+            });
         }
     }
     processEnter(e) {
@@ -19998,7 +20016,8 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             createSpinner({ target: this.element }, this.createElement);
         }
         let loadArgs = {
-            dataSourceSettings: this.dataSourceSettings,
+            /* tslint:disable-next-line:max-line-length */
+            dataSourceSettings: isBlazor() ? PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings) : this.dataSourceSettings,
             pivotview: isBlazor() ? undefined : this,
             fieldsType: {}
         };
@@ -22469,8 +22488,8 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                 remove(this.element.querySelector('#' + this.element.id + '_chart'));
             }
         }
-        if (this.grid && this.grid.contextMenuModule) {
-            this.grid.contextMenuModule.destroy();
+        if (this.grid) {
+            this.grid.destroy();
             if (this.grid.isDestroyed && this.element.querySelector('#' + this.element.id + '_grid')) {
                 remove(this.element.querySelector('#' + this.element.id + '_grid'));
             }
@@ -22484,8 +22503,8 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             if (this.element.querySelector('.e-spinner-pane')) {
                 remove(this.element.querySelector('.e-spinner-pane'));
             }
-            if (this.showFieldList && this.element.querySelector('#' + this.element.id + '_PivotFieldList')) {
-                remove(this.element.querySelector('#' + this.element.id + '_PivotFieldList'));
+            if (this.showFieldList && document.querySelector('#' + this.element.id + '_PivotFieldList')) {
+                remove(document.querySelector('#' + this.element.id + '_PivotFieldList'));
             }
         }
         removeClass([this.element], ROOT);
@@ -26013,7 +26032,8 @@ let PivotFieldList = class PivotFieldList extends Component {
      * @private
      */
     render() {
-        this.trigger(load, { dataSourceSettings: this.dataSourceSettings }, (observedArgs) => {
+        /* tslint:disable-next-line:max-line-length */
+        this.trigger(load, { dataSourceSettings: isBlazor() ? PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings) : this.dataSourceSettings }, (observedArgs) => {
             if (isBlazor()) {
                 observedArgs.dataSourceSettings.dataSource = this.dataSourceSettings.dataSource;
             }
@@ -26084,7 +26104,7 @@ let PivotFieldList = class PivotFieldList extends Component {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'locale':
-                    this.refresh();
+                    super.refresh();
                     break;
                 case 'dataSourceSettings':
                     if (PivotUtil.isButtonIconRefesh(prop, oldProp, newProp)) {
@@ -29958,7 +29978,8 @@ class Toolbar$2 {
         this.toolbar = new Toolbar$1({
             created: this.create.bind(this),
             enableRtl: this.parent.enableRtl,
-            items: this.getItems()
+            items: this.getItems(),
+            allowKeyboard: false,
         });
         this.toolbar.isStringTemplate = true;
         this.toolbar.appendTo('#' + this.parent.element.id + 'pivot-toolbar');
@@ -30808,6 +30829,21 @@ class Toolbar$2 {
             });
             this.reportList.isStringTemplate = true;
             this.reportList.appendTo('#' + this.parent.element.id + '_reportlist');
+        }
+        this.updateItemElements();
+    }
+    updateItemElements() {
+        let itemElements = [].slice.call(this.toolbar.element.querySelectorAll('.e-toolbar-item'));
+        for (let element of itemElements) {
+            if (element.querySelector('button')) {
+                element.querySelector('button').setAttribute('tabindex', '0');
+            }
+            else if (element.querySelector('.e-menu.e-menu-parent')) {
+                element.querySelector('.e-menu.e-menu-parent').setAttribute('tabindex', '-1');
+                if (element.querySelector('.e-menu-item.e-menu-caret-icon')) {
+                    element.querySelector('.e-menu-item.e-menu-caret-icon').setAttribute('tabindex', '0');
+                }
+            }
         }
     }
     whitespaceRemove(args) {

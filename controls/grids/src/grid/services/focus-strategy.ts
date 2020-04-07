@@ -353,10 +353,8 @@ export class FocusStrategy {
         for (let i: number = 0; i < evts.length; i++) {
             this.parent.on(evts[i], this.clearIndicator, this);
         }
-        let actions: string[] = ['sorting', 'filtering'];
-        for (let j: number = 0; j < actions.length; j++) {
-            this.parent.on(`${actions[j]}-complete`, this.restoreFocus, this);
-        }
+        this.parent.on('sorting-complete', this.restoreFocus, this);
+        this.parent.on('filtering-complete', this.filterfocus, this);
         let actionsG: string[] = ['grouping', 'ungrouping'];
         for (let k: number = 0; k < actionsG.length; k++) {
             this.parent.on(`${actionsG[k]}-complete`, this.restoreFocusWithAction, this);
@@ -367,6 +365,12 @@ export class FocusStrategy {
         this.parent.on(event.detailDataBound, this.refMatrix, this);
         this.parent.on(event.onEmpty, this.refMatrix, this);
         this.parent.on(event.cellFocused, this.internalCellFocus, this);
+    }
+
+    public filterfocus(): void {
+        if (this.parent.filterSettings.type !== 'FilterBar') {
+            this.restoreFocus();
+        }
     }
 
     public removeEventListener(): void {
@@ -386,10 +390,8 @@ export class FocusStrategy {
         for (let i: number = 0; i < evts.length; i++) {
             this.parent.off(evts[i], this.clearOutline);
         }
-        let actions: string[] = ['sorting', 'filtering'];
-        for (let j: number = 0; j < actions.length; j++) {
-            this.parent.off(`${actions[j]}-complete`, this.restoreFocus);
-        }
+        this.parent.off('sorting-complete', this.restoreFocus);
+        this.parent.off('filtering-complete', this.filterfocus);
         let actionsG: string[] = ['grouping', 'ungrouping'];
         for (let k: number = 0; k < actionsG.length; k++) {
             this.parent.on(`${actionsG[k]}-complete`, this.restoreFocusWithAction);
@@ -497,6 +499,7 @@ export class Matrix {
     public get(rowIndex: number, columnIndex: number, navigator: number[], action?: string, validator?: Function): number[] {
         let tmp: number = columnIndex; if (rowIndex + navigator[0] < 0) { return [rowIndex, columnIndex]; }
         rowIndex = Math.max(0, Math.min(rowIndex + navigator[0], this.rows));
+        let emptyTable: boolean = true;
         if (isNullOrUndefined(this.matrix[rowIndex])) { return null; }
         columnIndex = Math.max(0, Math.min(columnIndex + navigator[1], this.matrix[rowIndex].length - 1));
         if (tmp + navigator[1] > this.matrix[rowIndex].length - 1 && validator(rowIndex, columnIndex, action)) { return [rowIndex, tmp]; }
@@ -505,6 +508,18 @@ export class Matrix {
         let val: number = getValue(`${rowIndex}.${columnIndex}`, this.matrix);
         if (rowIndex === this.rows && (action === 'downArrow' || action === 'enter')) {
             navigator[0] = -1;
+        }
+        if (first === null) {
+            rowIndex = this.current[0];
+            for (let i: number = 0; i < this.rows; i++) {
+                if (this.matrix[i].some((v: number) => { return v === 1; })) {
+                    emptyTable = false;
+                    break;
+                }
+            }
+            if (emptyTable) {
+                return [rowIndex, columnIndex];
+            }
         }
         return this.inValid(val) || !validator(rowIndex, columnIndex, action) ?
             this.get(rowIndex, tmp, navigator, action, validator) : [rowIndex, columnIndex];

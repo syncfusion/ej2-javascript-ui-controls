@@ -92,6 +92,16 @@
     .e-de-nav-left-arrow::before {
       content: '\e654';
     }
+
+    .e-de-save-icon::before {
+      content: '\e718';
+      font-family: 'e-icons';
+    }
+
+    .e-de-cancel-icon::before {
+      content: '\e745';
+      font-family: 'e-icons';
+    }
  }
 
   .e-menu-item .e-de-cmt-add::before {

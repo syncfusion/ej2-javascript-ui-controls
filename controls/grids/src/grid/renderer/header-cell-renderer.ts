@@ -131,7 +131,7 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
             let headerTempID: string = gridObj.element.id + column.uid + 'headerTemplate';
             let str: string = 'isStringTemplate';
             result = column.getHeaderTemplate()(
-                extend({ 'index': colIndex }, column), gridObj, 'headerTemplate', headerTempID, this.parent[str]);
+                extend({ 'index': colIndex }, column.toJSON()), gridObj, 'headerTemplate', headerTempID, this.parent[str]);
             node.firstElementChild.innerHTML = '';
             appendChildren(node.firstElementChild, result);
         }

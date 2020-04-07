@@ -4,7 +4,7 @@ import { isNullOrUndefined, L10n, classList } from '@syncfusion/ej2-base';
 import { DocumentEditor } from '../document-editor';
 import { Selection, ContextElementInfo } from './index';
 import { TextPosition } from './selection/selection-helper';
-import { FieldElementBox } from './viewer/page';
+import { FieldElementBox, ElementBox, TextFormField, CheckBoxFormField, DropDownFormField } from './viewer/page';
 import { SpellChecker } from './spell-check/spell-checker';
 import { Point } from './editor/editor-helper';
 
@@ -18,6 +18,7 @@ const CONTEXTMENU_HYPERLINK: string = '_contextmenu_hyperlink';
 const CONTEXTMENU_OPEN_HYPERLINK: string = '_contextmenu_open_hyperlink';
 const CONTEXTMENU_COPY_HYPERLINK: string = '_contextmenu_copy_hyperlink';
 const CONTEXTMENU_REMOVE_HYPERLINK: string = '_contextmenu_remove_hyperlink';
+const CONTEXTMENU_PROPERTIES: string = '_properties';
 const CONTEXTMENU_EDIT_HYPERLINK: string = '_contextmenu_edit_hyperlink';
 const CONTEXTMENU_FONT_DIALOG: string = '_contextmenu_font_dialog';
 const CONTEXTMENU_PARAGRAPH: string = '_contextmenu_paragraph_dialog';
@@ -201,6 +202,11 @@ export class ContextMenu {
                 text: localValue.getConstant('Remove Hyperlink'),
                 iconCss: 'e-icons e-de-remove-hyperlink',
                 id: id + CONTEXTMENU_REMOVE_HYPERLINK
+            },
+            {
+                text: localValue.getConstant('Properties'),
+                iconCss: 'e-icons e-de-formproperties',
+                id: id + CONTEXTMENU_PROPERTIES
             },
             {
                 separator: true
@@ -452,6 +458,18 @@ export class ContextMenu {
                 this.currentContextInfo = null;
                 this.documentHelper.owner.spellCheckDialog.show(contextInfo.text, contextInfo.element);
                 break;
+            case id + CONTEXTMENU_PROPERTIES:
+                let inline: ElementBox = this.documentHelper.selection.getCurrentFormField();
+                if (inline instanceof FieldElementBox) {
+                    if (inline.formFieldData instanceof TextFormField) {
+                        this.documentHelper.owner.textFormFieldDialogModule.show();
+                    } else if (inline.formFieldData instanceof CheckBoxFormField) {
+                        this.documentHelper.owner.checkBoxFormFieldDialogModule.show();
+                    } else if (inline.formFieldData instanceof DropDownFormField) {
+                        this.documentHelper.owner.dropDownFormFieldDialogModule.show();
+                    }
+                }
+                break;
             default:
                 let expectedData: string = this.documentHelper.owner.element.id + CONTEXTMENU_SPELLCHECK_OTHERSUGGESTIONS;
                 if (item.substring(0, expectedData.length) === expectedData) {
@@ -672,6 +690,7 @@ export class ContextMenu {
         let editHyperlink: HTMLElement = document.getElementById(id + CONTEXTMENU_EDIT_HYPERLINK);
         let copyHyperlink: HTMLElement = document.getElementById(id + CONTEXTMENU_COPY_HYPERLINK);
         let removeHyperlink: HTMLElement = document.getElementById(id + CONTEXTMENU_REMOVE_HYPERLINK);
+        let properties: HTMLElement = document.getElementById(id + CONTEXTMENU_PROPERTIES);
         let continueNumbering: HTMLElement = document.getElementById(id + CONTEXTMENU_CONTINUE_NUMBERING);
         let restartAt: HTMLElement = document.getElementById(id + CONTEXTMENU_RESTART_AT);
         let autoFitTable: HTMLElement = document.getElementById(id + CONTEXTMENU_AUTO_FIT);
@@ -687,6 +706,7 @@ export class ContextMenu {
         editHyperlink.style.display = 'none';
         removeHyperlink.style.display = 'none';
         (removeHyperlink.nextSibling as HTMLElement).style.display = 'none';
+        properties.style.display = 'none';
         mergeCells.style.display = 'none';
         autoFitTable.style.display = 'none';
         font.style.display = 'none';
@@ -766,6 +786,10 @@ export class ContextMenu {
                     (font.previousSibling as HTMLElement).style.display = 'block';
                     isDialogHidden = true;
                 }
+            }
+            if (selection.isFormField() && this.documentHelper.owner.enableFormField) {
+                hyperlink.style.display = 'none';
+                properties.style.display = 'block';
             }
         }
         if (this.documentHelper.owner.selection.start.paragraph.isInsideTable

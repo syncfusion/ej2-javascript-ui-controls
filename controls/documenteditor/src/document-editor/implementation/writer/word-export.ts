@@ -3675,6 +3675,65 @@ export class WordExport {
         let type: string = field.fieldType === 0 ? 'begin'
             : field.fieldType === 1 ? 'end' : 'separate';
         writer.writeAttributeString(undefined, 'fldCharType', this.wNamespace, type);
+        if (type === 'begin' && !isNullOrUndefined(field.formFieldData)) {
+            let formFieldData: any = field.formFieldData;
+            writer.writeStartElement(undefined, 'ffData', this.wNamespace);
+            writer.writeStartElement(undefined, 'name', this.wNamespace);
+            writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.name);
+            writer.writeEndElement();
+            writer.writeStartElement(undefined, 'enabled', this.wNamespace);
+            writer.writeEndElement();
+            if (formFieldData.hasOwnProperty('textInput')) {
+                writer.writeStartElement(undefined, 'textInput', this.wNamespace);
+                let type: any = formFieldData.textInput.type;
+                if (type === 'Number' || 'Date') {
+                    writer.writeStartElement(undefined, 'type', this.wNamespace);
+                    writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.textInput.type.toString().toLowerCase());
+                    writer.writeEndElement();
+                }
+                writer.writeStartElement(undefined, 'defalut', this.wNamespace);
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.textInput.defaultValue);
+                writer.writeEndElement();
+                writer.writeStartElement(undefined, 'format', this.wNamespace);
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.textInput.format);
+                writer.writeEndElement();
+                writer.writeEndElement();
+            } else if (formFieldData.hasOwnProperty('checkBox')) {
+                writer.writeStartElement(undefined, 'checkBox', this.wNamespace);
+                if (formFieldData.checkBox.sizeType === 'Auto') {
+                    writer.writeStartElement(undefined, 'sizeAuto', this.wNamespace);
+                    writer.writeEndElement();
+                } else {
+                    writer.writeStartElement(undefined, 'size', this.wNamespace);
+                    // tslint:disable-next-line:max-line-length
+                    writer.writeAttributeString(undefined, 'val', this.wNamespace, this.roundToTwoDecimal(formFieldData.checkBox.size * 2).toString());
+                    writer.writeEndElement();
+                }
+                writer.writeStartElement(undefined, 'defalut', this.wNamespace);
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.checkBox.defaultValue ? '1' : '0');
+                writer.writeEndElement();
+                if (formFieldData.checkBox.checked) {
+                    writer.writeStartElement(undefined, 'checked', this.wNamespace);
+                    writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.checkBox.checked ? '1' : '0');
+                    writer.writeEndElement();
+                }
+                writer.writeEndElement();
+            } else {
+                writer.writeStartElement(undefined, 'ddList', this.wNamespace);
+                if (formFieldData.dropDownList.selectedIndex !== 0) {
+                    writer.writeStartElement(undefined, 'result', this.wNamespace);
+                    writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.dropDownList.selectedIndex.toString());
+                    writer.writeEndElement();
+                }
+                for (let i: number = 0; i < formFieldData.dropDownList.dropdownItems.length; i++) {
+                    writer.writeStartElement(undefined, 'listEntry', this.wNamespace);
+                    writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.dropDownList.dropdownItems[i].toString());
+                    writer.writeEndElement();
+                }
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
+        }
         writer.writeEndElement();
         writer.writeEndElement();
         if (field.fieldType === 0 && field.fieldCodeType === 'FieldFormTextInput') {
@@ -4542,8 +4601,9 @@ export class WordExport {
         if (this.formatting) {
             writer.writeAttributeString('w', 'formatting', this.wNamespace, '1');
         }
-        if (this.protectionType && this.protectionType === 'ReadOnly') {
-            writer.writeAttributeString('w', 'edit', this.wNamespace, 'readOnly');
+        if (this.protectionType && this.protectionType !== 'NoProtection') {
+            let editMode: string = this.protectionType === 'ReadOnly' ? 'readOnly' : 'forms';
+            writer.writeAttributeString('w', 'edit', this.wNamespace, editMode);
         }
         writer.writeAttributeString('w', 'cryptProviderType', this.wNamespace, 'rsaAES');
         writer.writeAttributeString('w', 'cryptAlgorithmClass', this.wNamespace, 'hash');

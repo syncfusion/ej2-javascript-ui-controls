@@ -1,5 +1,8 @@
 import { ChildProperty, extend, deleteObject, Property, BaseEventArgs } from '@syncfusion/ej2-base';
 import { ItemModel } from './common-model';
+/**
+ * Defines the icon position of Split Button.
+ */
 export type SplitButtonIconPosition = 'Left' | 'Top';
 
 /**
@@ -15,7 +18,9 @@ export function getModel(props: Object, model: string[]): Object {
     }
     return obj as Object;
 }
-
+/**
+ * Defines the items of Split Button/DropDownButton.
+ */
 export class Item extends ChildProperty<Item> {
     /**
      * Defines class/multiple classes separated by a space for the item that is used to include an icon.

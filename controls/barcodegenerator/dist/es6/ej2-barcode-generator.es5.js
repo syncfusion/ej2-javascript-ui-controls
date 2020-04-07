@@ -3212,6 +3212,7 @@ var BarcodeGenerator = /** @__PURE__ @class */ (function (_super) {
         return value;
     };
     BarcodeGenerator.prototype.preRender = function () {
+        this.element.classList.add('e-barcode');
         this.barcodeRenderer = new BarcodeRenderer(this.element.id, this.mode === 'SVG');
         this.initialize();
         this.initializePrivateVariables();
@@ -3224,7 +3225,6 @@ var BarcodeGenerator = /** @__PURE__ @class */ (function (_super) {
             var element = 'barcodeMeasureElement';
             window[element] = null;
         }
-        this.element.classList.add('e-barcode');
     };
     BarcodeGenerator.prototype.initializePrivateVariables = function () {
         this.defaultLocale = {};
@@ -7128,11 +7128,11 @@ var QRCodeGenerator = /** @__PURE__ @class */ (function (_super) {
         this.element.appendChild(this.barcodeCanvas);
     };
     QRCodeGenerator.prototype.preRender = function () {
+        this.element.classList.add('e-qrcode');
         this.barcodeRenderer = new BarcodeRenderer(this.element.id, this.mode === 'SVG');
         this.initialize();
         this.initializePrivateVariables();
         this.setCulture();
-        this.element.classList.add('e-qrcode');
     };
     /**
      * Get the properties to be maintained in the persisted state.
@@ -8117,6 +8117,7 @@ var DataMatrixGenerator = /** @__PURE__ @class */ (function (_super) {
         this.trigger(BarcodeEvent[eventName], arg);
     };
     DataMatrixGenerator.prototype.preRender = function () {
+        this.element.classList.add('e-datamatrix');
         //initialize the data matrix renderer
         this.barcodeRenderer = new BarcodeRenderer(this.element.id, this.mode === 'SVG');
         this.initialize();
@@ -8124,7 +8125,6 @@ var DataMatrixGenerator = /** @__PURE__ @class */ (function (_super) {
         this.initializePrivateVariables();
         this.setCulture();
         //set class data matrix renderer
-        this.element.classList.add('e-datamatrix');
     };
     DataMatrixGenerator.prototype.onPropertyChanged = function (newProp, oldProp) {
         var width;

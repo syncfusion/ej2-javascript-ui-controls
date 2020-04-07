@@ -1,7 +1,7 @@
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, NumberFormatOptions, Internationalization, DateFormatOptions } from '@syncfusion/ej2-base';
 import { LineWidget, ElementBox, BodyWidget, ParagraphWidget, TextElementBox } from '../viewer/page';
 import { WCharacterFormat, WCellFormat, TextPosition, TextSearchResults } from '../index';
-import { HighlightColor } from '../../base/types';
+import { HighlightColor, TextFormFieldType, CheckBoxSizeType } from '../../base/types';
 import { Widget, FieldElementBox } from '../viewer/page';
 import { Dictionary } from '../..';
 /** 
@@ -355,6 +355,84 @@ export class HelperMethods {
     }
     private static startsWith(sourceString: string, startString: string): boolean {
         return startString.length > 0 && sourceString.substring(0, startString.length) === startString;
+    }
+
+    /**
+     * @private
+     */
+    public static formatText(format: string, value: string): string {
+        let text: string = value;
+        switch (format.toLowerCase()) {
+            case 'uppercase':
+                text = value.toUpperCase();
+                break;
+            case 'lowercase':
+                text = value.toLowerCase();
+                break;
+            case 'first capital':
+                text = this.capitaliseFirst(value, 'First capital');
+                break;
+            case 'title case':
+                text = this.capitaliseFirst(value, 'Title case');
+                break;
+        }
+        return text;
+    }
+
+    /**
+     * @private
+     */
+    public static formatNumber(format: string, value: string): string {
+        let numberFormat: NumberFormatOptions;
+        let intl: Internationalization = new Internationalization();
+        let formattedValue: string;
+        let dotData: string[] = value.split('.');
+        value = dotData[0];
+        let numberValue: number;
+        numberValue = intl.parseNumber(value);
+        if (value.toString() === 'NaN') {
+            return '';
+        }
+        numberFormat = { format: format };
+        formattedValue = intl.formatNumber(numberValue, numberFormat);
+        return formattedValue;
+    }
+
+    /**
+     * @private
+     */
+    public static formatDate(format: string, value: string): string {
+        let dateFormat: DateFormatOptions;
+        let intl: Internationalization = new Internationalization();
+        let formattedValue: string;
+        let date: Date = new Date(value);
+        if (format.indexOf('am/pm') !== -1) {
+            format = format.replace(/am\/pm/gi, 'a');
+        }
+        dateFormat = { 'format': format };
+        formattedValue = intl.formatDate(date, dateFormat);
+        return formattedValue;
+    }
+    /* tslint:enable:no-any */
+
+    private static capitaliseFirst(value: string, type: string): string {
+        let text: string = '';
+        if (type === 'Title case') {
+            let valArry: string[] = value.split(' ');
+            for (let i: number = 0; i < valArry.length; i++) {
+                text += this.capitaliseFirstInternal(valArry[i]);
+                if (valArry.length >= 0) {
+                    text += ' ';
+                }
+            }
+        } else if (type === 'First capital') {
+            text = this.capitaliseFirstInternal(value);
+        }
+        return text;
+    }
+
+    private static capitaliseFirstInternal(value: string): string {
+        return (value.charAt(0).toUpperCase() + value.slice(1, value.length).toLowerCase());
     }
 
 }
@@ -770,4 +848,82 @@ export interface ImageInfo {
 export interface PositionInfo {
     startPosition: TextPosition;
     endPosition: TextPosition;
+}
+
+/**
+ * Text form field info
+ */
+
+export interface TextFormFieldInfo {
+    /**
+     * Specifies text form field type.
+     */
+    type: TextFormFieldType;
+    /**
+     * Text form field default value.
+     */
+    defaultValue: string;
+    /**
+     * Text form field format
+     */
+    format: string;
+    /**
+     * Maximum text length.
+     */
+    maxLength: number;
+    /**
+     * Enable or disable form field.
+     */
+    enabled: boolean;
+    /**
+     * Tooltip text.
+     */
+    helpText: string;
+}
+
+/**
+ * CheckBox form field info
+ */
+
+export interface CheckBoxFormFieldInfo {
+    /**
+     * CheckBox form field size type.
+     */
+    sizeType: CheckBoxSizeType;
+    /**
+     * CheckBox form field size.
+     */
+    size: number;
+    /**
+     * CheckBox form field default value.
+     */
+    defaultValue: boolean;
+    /**
+     * Enable or disable form field.
+     */
+    enabled: boolean;
+    /**
+     * Tooltip text.
+     */
+    helpText: string;
+}
+
+/**
+ * DropDown form field info
+ */
+
+export interface DropDownFormFieldInfo {
+    /**
+     * DropDown items
+     */
+    dropDownItems: string[];
+    /**
+     * Enable or disable form field.
+     */
+    enabled: boolean;
+    /**
+     * Tooltip text.
+     */
+    helpText: string;
+
 }

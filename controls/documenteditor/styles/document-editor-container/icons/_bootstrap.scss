@@ -331,4 +331,43 @@
     font-family: 'e-icons';
   }
 
+  .e-de-textform::before {
+    content: '\e198';
+    font-family: 'e-icons';
+  }
+
+  .e-de-formproperties::before {
+    content: '\e199';
+    font-family: 'e-icons';
+  }
+
+  .e-de-clearform::before {
+    content: '\e19a';
+    font-family: 'e-icons';
+  }
+
+  .e-de-dropdownform::before {
+    content: '\e19b';
+    font-family: 'e-icons';
+  }
+
+  .e-de-formfield::before {
+    content: '\e19c';
+    font-family: 'e-icons';
+  }
+
+  .e-de-checkbox-form::before {
+    content: '\e19d';
+    font-family: 'e-icons';
+  }
+
+  .e-de-arrow-up::before {
+    content: '\e834';
+    font-family: 'e-icons';
+  }
+
+  .e-de-arrow-down::before {
+    content: '\e83d';
+    font-family: 'e-icons';
+  }
 }

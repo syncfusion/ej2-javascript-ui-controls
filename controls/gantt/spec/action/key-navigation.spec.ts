@@ -4,7 +4,9 @@ import { IKeyPressedEventArgs } from '../../src/gantt/base/interface';
 import { createGantt, destroyGantt, triggerMouseEvent, getKeyUpObj } from '../base/gantt-util.spec';
 import { Browser, getValue } from '@syncfusion/ej2-base';
 import { RowSelectingEventArgs } from '@syncfusion/ej2-grids';
-import { EJ2Instance } from '@syncfusion/ej2-navigations';
+interface EJ2Instance extends HTMLElement {
+    ej2_instances: Object[];
+}
 Gantt.Inject(Selection, Edit, Toolbar,Filter);
 
 describe('Gantt Selection support', () => {

@@ -5728,10 +5728,13 @@ var QuickPopups = /** @class */ (function () {
     QuickPopups.prototype.getPopupHeader = function (headerType, headerData) {
         var headerTemplate = sf.base.createElement('div', { className: POPUP_HEADER_CLASS });
         if (this.isQuickTemplate(headerType) && this.parent.quickInfoTemplates.header) {
-            var headerArgs = sf.base.extend({}, headerData, { elementType: headerType.toLowerCase() }, true);
+            var headerArgs = sf.base.extend({}, headerData, !sf.base.isBlazor() ? { elementType: headerType.toLowerCase() } :
+                { elementType: headerType.toLowerCase(),
+                    startTimeValue: addLocalOffset(headerData[this.parent.eventFields.startTime]),
+                    endTimeValue: addLocalOffset(headerData[this.parent.eventFields.endTime])
+                }, true);
             var templateId = this.parent.element.id;
-            var templateArgs = addLocalOffsetToEvent(headerArgs, this.parent.eventFields);
-            var headerTemp = [].slice.call(this.parent.getQuickInfoTemplatesHeader()(templateArgs, this.parent, 'header', templateId + '_headerTemplate', false));
+            var headerTemp = [].slice.call(this.parent.getQuickInfoTemplatesHeader()(headerArgs, this.parent, 'header', templateId + '_headerTemplate', false));
             sf.base.append([].slice.call(headerTemp), headerTemplate);
         }
         else {
@@ -5759,10 +5762,13 @@ var QuickPopups = /** @class */ (function () {
     QuickPopups.prototype.getPopupContent = function (type, args, data) {
         var contentTemplate = sf.base.createElement('div', { className: POPUP_CONTENT_CLASS });
         if (this.isQuickTemplate(type) && this.parent.quickInfoTemplates.content) {
-            var contentArgs = sf.base.extend({}, data, { elementType: type.toLowerCase() }, true);
+            var contentArgs = sf.base.extend({}, data, !sf.base.isBlazor() ? { elementType: type.toLowerCase() } :
+                { elementType: type.toLowerCase(),
+                    startTimeValue: addLocalOffset(data[this.parent.eventFields.startTime]),
+                    endTimeValue: addLocalOffset(data[this.parent.eventFields.endTime])
+                }, true);
             var templateId = this.parent.element.id;
-            var templateArgs = addLocalOffsetToEvent(contentArgs, this.parent.eventFields);
-            var contentTemp = [].slice.call(this.parent.getQuickInfoTemplatesContent()(templateArgs, this.parent, 'content', templateId + '_contentTemplate', false));
+            var contentTemp = [].slice.call(this.parent.getQuickInfoTemplatesContent()(contentArgs, this.parent, 'content', templateId + '_contentTemplate', false));
             sf.base.append([].slice.call(contentTemp), contentTemplate);
         }
         else {
@@ -5820,10 +5826,13 @@ var QuickPopups = /** @class */ (function () {
     QuickPopups.prototype.getPopupFooter = function (footerType, footerData) {
         var footerTemplate = sf.base.createElement('div', { className: POPUP_FOOTER_CLASS });
         if (this.isQuickTemplate(footerType) && this.parent.quickInfoTemplates.footer) {
-            var footerArgs = sf.base.extend({}, footerData, { elementType: footerType.toLowerCase() }, true);
+            var footerArgs = sf.base.extend({}, footerData, !sf.base.isBlazor() ? { elementType: footerType.toLowerCase() } :
+                { elementType: footerType.toLowerCase(),
+                    startTimeValue: addLocalOffset(footerData[this.parent.eventFields.startTime]),
+                    endTimeValue: addLocalOffset(footerData[this.parent.eventFields.endTime])
+                }, true);
             var templateId = this.parent.element.id;
-            var templateArgs = addLocalOffsetToEvent(footerArgs, this.parent.eventFields);
-            var footerTemp = [].slice.call(this.parent.getQuickInfoTemplatesFooter()(templateArgs, this.parent, 'footer', templateId + '_footerTemplate', false));
+            var footerTemp = [].slice.call(this.parent.getQuickInfoTemplatesFooter()(footerArgs, this.parent, 'footer', templateId + '_footerTemplate', false));
             sf.base.append([].slice.call(footerTemp), footerTemplate);
         }
         else {
@@ -7186,6 +7195,8 @@ var RecurrenceEditor = /** @class */ (function (_super) {
             locale: this.locale,
             min: this.minDate,
             max: this.maxDate,
+            format: (sf.base.isNullOrUndefined(this.dateFormat) ?
+                this.getFormat('dateFormats') : this.dateFormat),
             change: function (args) {
                 if (args.value) {
                     self.triggerChangeEvent();
@@ -7193,6 +7204,24 @@ var RecurrenceEditor = /** @class */ (function (_super) {
             }
         });
         this.untilDateObj.appendTo(this.element.querySelector('.' + UNTILDATE));
+    };
+    RecurrenceEditor.prototype.getFormat = function (formatType) {
+        if (sf.base.isBlazor()) {
+            if (formatType === 'dateFormats') {
+                return sf.base.IntlBase.compareBlazorDateFormats({ skeleton: 'd' }, this.locale).format;
+            }
+            return sf.base.IntlBase.compareBlazorDateFormats({ skeleton: 't' }, this.locale).format;
+        }
+        var format;
+        if (this.locale === 'en' || this.locale === 'en-US') {
+            format = sf.base.getValue(formatType + '.short', sf.base.getDefaultDateObject(this.getCalendarMode()));
+        }
+        else {
+            format = sf.base.getValue(
+            // tslint:disable-next-line:max-line-length
+            'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.' + formatType + '.short', sf.base.cldrData);
+        }
+        return format;
     };
     RecurrenceEditor.prototype.dayButtonRender = function () {
         var _this = this;
@@ -7761,6 +7790,9 @@ var RecurrenceEditor = /** @class */ (function (_super) {
                 case 'frequencies':
                 case 'firstDayOfWeek':
                     this.refresh();
+                    break;
+                case 'dateFormat':
+                    this.untilDateObj.setProperties({ format: newProp.dateFormat });
                     break;
             }
         }
@@ -11908,7 +11940,7 @@ var ResourceBase = /** @class */ (function () {
         }
         var target = this.parent.element.querySelector('.' + RESOURCE_COLUMN_WRAP_CLASS + ' ' + ("[data-group-index=\"" + index + "\"]") +
             ' ' + '.' + RESOURCE_TREE_ICON_CLASS);
-        if (resourceData.ClassName === RESOURCE_PARENT_CLASS && target) {
+        if (target) {
             if (target.classList.contains(RESOURCE_EXPAND_CLASS) && !hide) {
                 target.click();
             }
@@ -12308,6 +12340,7 @@ var Schedule = /** @class */ (function (_super) {
         this.viewCollections = [];
         var viewName;
         var selectedView;
+        var prevIndex = this.viewIndex;
         var count = 0;
         this.viewIndex = -1;
         for (var _i = 0, _a = this.views; _i < _a.length; _i++) {
@@ -12349,7 +12382,8 @@ var Schedule = /** @class */ (function (_super) {
         }
         if (this.viewIndex === -1) {
             var currentIndex = this.getViewIndex(this.currentView);
-            this.viewIndex = (currentIndex === -1) ? 0 : currentIndex;
+            this.viewIndex = ((typeof this.views[0] !== 'string') && (!sf.base.isNullOrUndefined(prevIndex) && prevIndex !== -1)) ? prevIndex :
+                (currentIndex === -1) ? 0 : currentIndex;
         }
     };
     /** @hidden */
@@ -12952,7 +12986,7 @@ var Schedule = /** @class */ (function (_super) {
     /** @hidden */
     Schedule.prototype.getAnnocementString = function (event, subject) {
         var recordSubject = (subject || (event[this.eventFields.subject] || this.eventSettings.fields.subject.default));
-        var skeleton = sf.base.isBlazor() ? 'R' : 'full';
+        var skeleton = sf.base.isBlazor() ? 'F' : 'full';
         var startDateText = this.globalize.formatDate(event[this.eventFields.startTime], {
             type: 'dateTime', skeleton: skeleton, calendar: this.getCalendarMode()
         });
@@ -19221,7 +19255,9 @@ var Month = /** @class */ (function (_super) {
                 ele.setAttribute('title', capitalizeFirstWord(title, 'multiple'));
                 var innerText = (this.parent.calendarUtil.isMonthStart(td.date) && !this.isCurrentDate(td.date) && !this.parent.isAdaptive) ?
                     this.parent.globalize.formatDate(td.date, { format: 'MMM d', calendar: this.parent.getCalendarMode() }) :
-                    this.parent.globalize.formatDate(td.date, { skeleton: 'd', calendar: this.parent.getCalendarMode() });
+                    sf.base.isBlazor() ?
+                        this.parent.globalize.formatDate(td.date, { format: 'd', calendar: this.parent.getCalendarMode() }) :
+                        this.parent.globalize.formatDate(td.date, { skeleton: 'd', calendar: this.parent.getCalendarMode() });
                 ele.innerHTML = capitalizeFirstWord(innerText, 'single');
                 tdEle.appendChild(ele);
             }

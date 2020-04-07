@@ -185,6 +185,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private actionButton;
     private isInitialLoad;
     private timer;
+    private isReadonly;
     /**
      * Triggers when the component is created.
      * @event
@@ -290,6 +291,11 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
      */
     enableNotCondition: boolean;
     /**
+     * When set to true, the user interactions on the component are disabled.
+     * @default false
+     */
+    readonly: boolean;
+    /**
      * Defines rules in the QueryBuilder.
      * Specifies the initial rule, which is JSON data.
      * @default {}
@@ -305,6 +311,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private getWrapper;
     protected getModuleName(): string;
     private initialize;
+    private updateCustomOperator;
     private clickEventHandler;
     private beforeSuccessCallBack;
     private selectBtn;
@@ -397,6 +404,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private deleteRule;
     private deleteRuleSuccessCallBack;
     private setGroupRules;
+    private keyBoardHandler;
     private disableRuleCondition;
     /**
      * return the valid rule or rules collection.
@@ -458,6 +466,8 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private importRules;
     private renderGroup;
     private renderRule;
+    private enableReadonly;
+    private enableBtnGroup;
     private getSqlString;
     /**
      * Sets the rules from the sql query.
@@ -529,6 +539,7 @@ export interface Validation {
 export interface ChangeEventArgs extends BaseEventArgs {
     groupID: string;
     ruleID?: string;
+    childGroupID?: string;
     value?: string | number | Date | boolean | string[];
     selectedIndex?: number;
     selectedField?: string;

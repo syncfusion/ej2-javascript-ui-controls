@@ -6847,8 +6847,11 @@ describe('DateRangePicker', () => {
             (<HTMLElement>document.querySelectorAll('.e-focused-date')[0]).click();
             (<HTMLElement>document.querySelectorAll('.e-focused-date')[0]).dispatchEvent(clickEvent);
             rightCalendarTitleClick();
-            (<HTMLElement>document.querySelector('.e-right-calendar .e-focused-date').previousElementSibling) &&
-                (<HTMLElement>document.querySelector('.e-right-calendar .e-focused-date').previousElementSibling).click();
+            if (<HTMLElement>document.querySelector('.e-right-calendar .e-focused-date').previousElementSibling) {
+                ((document.querySelector('.e-right-calendar .e-focused-date').previousElementSibling)as HTMLElement).click();
+            } else {
+                ((document.querySelector('.e-right-calendar .e-focused-date').parentElement.previousElementSibling.lastElementChild) as HTMLElement).click();
+            }
             expect(document.querySelectorAll('.e-start-date').length).toBe(2)
             expect((<HTMLElement>document.querySelector('.e-start-date')).textContent).toBe('' + new Date().getDate())
         });

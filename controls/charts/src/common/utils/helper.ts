@@ -1545,7 +1545,7 @@ export function textElement(
     renderer: SvgRenderer | CanvasRenderer, option: TextOption, font: FontModel, color: string,
     parent: HTMLElement | Element, isMinus: boolean = false, redraw?: boolean, isAnimate?: boolean,
     forceAnimate: boolean = false, animateDuration?: number, seriesClipRect?: Rect,
-    labelSize?: Size, isRotatedLabelIntersect?: boolean
+    labelSize?: Size, isRotatedLabelIntersect?: boolean, isCanvas?: boolean
 ): Element {
     let renderOptions: Object = {};
     let htmlObject: Element;
@@ -1553,6 +1553,8 @@ export function textElement(
     //let renderer: SvgRenderer = new SvgRenderer('');
     let text: string;
     let height: number;
+    let dy: number;
+    let label: string;
     renderOptions = {
         'id': option.id,
         'x': option.x,
@@ -1573,14 +1575,20 @@ export function textElement(
     if (typeof option.text !== 'string' && option.text.length > 1) {
         for (let i: number = 1, len: number = option.text.length; i < len; i++) {
             height = (measureText(option.text[i], font).height);
-            tspanElement = (renderer as SvgRenderer).createTSpan(
-                {
-                    'x': option.x, 'id': option.id,
-                    'y': (option.y) + ((isMinus) ? -(i * height) : (i * height))
-                },
-                isMinus ? option.text[option.text.length - (i + 1)] : option.text[i]
-            );
-            htmlObject.appendChild(tspanElement);
+            dy = (option.y) + ((isMinus) ? -(i * height) : (i * height));
+            label = isMinus ? option.text[option.text.length - (i + 1)] : option.text[i];
+            if (isCanvas) {
+                tspanElement = renderer.createText(renderOptions, label, null, null, dy, true);
+            } else {
+                tspanElement = (renderer as SvgRenderer).createTSpan(
+                    {
+                        'x': option.x, 'id': option.id,
+                        'y': dy
+                    },
+                    label
+                );
+                htmlObject.appendChild(tspanElement);
+            }
         }
     }
     if (!isRotatedLabelIntersect) {

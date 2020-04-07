@@ -503,6 +503,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
         }
         this.previousValue = this.value;
         this.inputPreviousValue = this.value;
+        this.respectiveElement.defaultValue = this.respectiveElement.value;
         Input.setWidth(this.width, this.textboxWrapper.container);
         this.renderComplete();
     }
@@ -710,6 +711,7 @@ export class TextBox extends Component<HTMLInputElement | HTMLTextAreaElement> i
                 this.respectiveElement = this.element;
                 this.element.removeAttribute('type');
             }
+            this.respectiveElement.value = this.respectiveElement.defaultValue;
             this.respectiveElement.classList.remove('e-input');
             this.removeAttributes(['aria-placeholder', 'aria-disabled', 'aria-readonly', 'aria-labelledby']);
             if (!isNullOrUndefined(this.textboxWrapper)) {

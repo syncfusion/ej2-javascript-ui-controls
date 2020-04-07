@@ -196,6 +196,8 @@ export const clearInvalid: string = 'clearInvalid';
 /** @hidden */
 export const protectSheet: string = 'protectSheet';
 /** @hidden */
+export const unprotectSheet: string = 'unprotectSheet';
+/** @hidden */
 export const applyProtect: string = 'applyProtect';
 /** @hidden */
 export const protectCellFormat: string = 'protectCellFormat';
@@ -221,5 +223,7 @@ export const protectSelection: string = 'protectSelection';
 export const hiddenMerge: string = 'hiddenMerge';
 /** @hidden */
 export const checkPrevMerge: string = 'checkPrevMerge';
+/** @hidden */
+export const checkMerge: string = 'checkMerge';
 /** @hidden */
 export const removeDataValidation: string = 'removeDataValidation';

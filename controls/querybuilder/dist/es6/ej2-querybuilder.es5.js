@@ -164,7 +164,9 @@ var ShowButtons = /** @__PURE__ @class */ (function (_super) {
 var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     __extends(QueryBuilder, _super);
     function QueryBuilder(options, element) {
-        return _super.call(this, options, element) || this;
+        var _this = _super.call(this, options, element) || this;
+        _this.isReadonly = true;
+        return _this;
     }
     QueryBuilder.prototype.getPersistData = function () {
         return this.addOnPersist(['rule']);
@@ -204,6 +206,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 this.columnSort();
                 var columns = this.columns;
                 for (var i = 0, len = columns.length; i < len; i++) {
+                    this.updateCustomOperator(columns[i]);
                     if (!columns[i].type) {
                         if (columnKeys.indexOf(columns[i].field) > -1) {
                             value = this.dataColl[0][columns[i].field];
@@ -261,6 +264,25 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 else {
                     columns[i].category = this.l10n.getConstant('OtherFields');
                 }
+                this.updateCustomOperator(columns[i]);
+            }
+        }
+    };
+    QueryBuilder.prototype.updateCustomOperator = function (column) {
+        if (column.operators) {
+            var _loop_1 = function (j) {
+                var sqlIdx = Object.keys(column.operators[j]).indexOf('sqlOperator');
+                if (sqlIdx > -1) {
+                    var operator_1 = column.operators[j];
+                    var operColl = Object.keys(operator_1);
+                    var values = operColl.map(function (key) { return operator_1[key]; }).join(',').split(',');
+                    var valueIdx = operColl.indexOf('value');
+                    this_1.operators[values[valueIdx]] = values[sqlIdx];
+                }
+            };
+            var this_1 = this;
+            for (var j = 0; j < column.operators.length; j++) {
+                _loop_1(j);
             }
         }
     };
@@ -758,7 +780,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             });
             btnObj.appendTo(groupBtn);
             if (!this.isImportRules) {
-                this.trigger('change', { groupID: target.id.replace(this.element.id + '_', ''), type: 'insertGroup' });
+                var grpId = target.id.replace(this.element.id + '_', '');
+                var chgrpId = groupElem.id.replace(this.element.id + '_', '');
+                this.trigger('change', { groupID: grpId, type: 'insertGroup', childGroupID: chgrpId });
             }
         }
     };
@@ -2011,6 +2035,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 this.addRuleElement(this.element.querySelector('.e-group-container'), {});
             }
             this.notGroupRtl();
+            if (this.readonly) {
+                this.enableReadonly();
+            }
             var buttons = this.element.querySelectorAll('label.e-btn');
             var button = void 0;
             for (var i = 0; i < buttons.length; i++) {
@@ -2195,6 +2222,10 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 case 'enableNotCondition':
                     this.onChangeNotGroup();
                     break;
+                case 'readonly':
+                    this.isReadonly = newProp.readonly;
+                    this.enableReadonly();
+                    break;
             }
         }
     };
@@ -2338,10 +2369,12 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     QueryBuilder.prototype.wireEvents = function () {
         var wrapper = this.getWrapper();
         EventHandler.add(wrapper, 'click', this.clickEventHandler, this);
+        EventHandler.add(this.element, 'keydown', this.keyBoardHandler, this);
     };
     QueryBuilder.prototype.unWireEvents = function () {
         var wrapper = this.getWrapper();
         EventHandler.remove(wrapper, 'click', this.clickEventHandler);
+        EventHandler.remove(this.element, 'keydown', this.keyBoardHandler);
     };
     QueryBuilder.prototype.getParentGroup = function (target, isParent) {
         var groupLevel = (target instanceof Element) ? this.levelColl[target.id] : this.levelColl[target];
@@ -2482,13 +2515,25 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         this.importRules(this.rule, this.element.querySelector('.e-group-container'), true);
         this.isImportRules = false;
     };
+    QueryBuilder.prototype.keyBoardHandler = function (e) {
+        if (this.readonly && e.keyCode === 38 || e.keyCode === 40 || e.keyCode === 13) {
+            e.preventDefault();
+        }
+    };
     QueryBuilder.prototype.disableRuleCondition = function (groupElem, rules) {
+        if (this.readonly) {
+            return;
+        }
         var count = groupElem.querySelector('.e-rule-list').childElementCount;
         var andElem = groupElem.querySelector('.e-btngroup-and');
         var orElem = groupElem.querySelector('.e-btngroup-or');
         if (count > 1) {
             andElem.disabled = false;
             orElem.disabled = false;
+            if (orElem.nextElementSibling.classList.contains('e-disable') || andElem.nextElementSibling.classList.contains('e-disable')) {
+                orElem.classList.remove('e-disable');
+                andElem.classList.remove('e-disable');
+            }
             rules && rules.condition === 'or' ? orElem.checked = true : andElem.checked = true;
         }
         else {
@@ -2496,6 +2541,10 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             andElem.disabled = true;
             orElem.checked = false;
             orElem.disabled = true;
+            if (rules) {
+                orElem.nextElementSibling.classList.add('e-disable');
+                andElem.nextElementSibling.classList.add('e-disable');
+            }
         }
     };
     /**
@@ -2778,9 +2827,10 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         return pred;
     };
     QueryBuilder.prototype.getLocale = function () {
-        var gregorianFormat = '.dates.calendars.gregorian.days.format.short';
+        var gregorianFormat = isBlazor() ? '.dates.days.short' : '.dates.calendars.gregorian.days.format.short';
         var localeString = this.locale;
-        var cultureObj = getValue('main.' + '' + this.locale + gregorianFormat, cldrData);
+        var mainVal = isBlazor() ? '' : 'main.';
+        var cultureObj = getValue(mainVal + '' + this.locale + gregorianFormat, cldrData);
         if (!cultureObj) {
             localeString = 'en';
         }
@@ -2999,6 +3049,118 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         else {
             this.addRuleElement(parentElem.querySelector('.e-group-container'), rule); //Create group
         }
+    };
+    QueryBuilder.prototype.enableReadonly = function () {
+        var target = this.element;
+        var elem = target.querySelectorAll('.e-dropdownlist, .e-numerictextbox, .e-textbox, .e-datepicker, .e-multiselect .e-lib, .e-radio');
+        for (var i = 0; i < elem.length; i++) {
+            if (elem[i].classList.contains('e-dropdownlist')) {
+                var dropDownObj = getInstance(elem[i], DropDownList);
+                dropDownObj.readonly = this.isReadonly;
+            }
+            else if (elem[i].classList.contains('e-numerictextbox')) {
+                var numericTextBoxObj = getInstance(elem[i], NumericTextBox);
+                numericTextBoxObj.readonly = this.isReadonly;
+            }
+            else if (elem[i].classList.contains('e-textbox')) {
+                var textBoxObj = getInstance(elem[i], TextBox);
+                textBoxObj.readonly = this.isReadonly;
+            }
+            else if (elem[i].classList.contains('e-datepicker')) {
+                var datePickerObj = getInstance(elem[i], DatePicker);
+                datePickerObj.readonly = this.isReadonly;
+            }
+            else if (elem[i].classList.contains('e-multiselect')) {
+                var multiSelectObj = getInstance(elem[i], MultiSelect);
+                multiSelectObj.readonly = this.isReadonly;
+            }
+            else if (elem[i].classList.contains('e-radio')) {
+                var radioButtonObj = getInstance(elem[i], RadioButton);
+                if (!radioButtonObj.checked) {
+                    if (this.isReadonly) {
+                        elem[i].parentElement.style.display = 'none';
+                    }
+                    else {
+                        elem[i].parentElement.style.display = 'inherit';
+                    }
+                }
+            }
+        }
+        var deleteGroupElems = this.element.querySelectorAll('.e-deletegroup');
+        var addRuleGroupElems = this.element.querySelectorAll('.e-addrulegroup');
+        var removeRuleElems = this.element.querySelectorAll('.e-removerule');
+        if (!this.isReadonly && this.ruleElem.classList.contains('e-readonly')) {
+            this.ruleElem.classList.remove('e-readonly');
+        }
+        var elems = [deleteGroupElems, addRuleGroupElems, removeRuleElems];
+        for (var i = 0; i < elems.length; i++) {
+            elems[i].forEach(function (elem) {
+                if (elem.classList.contains('e-readonly')) {
+                    elem.classList.remove('e-readonly');
+                }
+                else {
+                    elem.classList.add('e-readonly');
+                }
+            });
+        }
+        this.enableBtnGroup();
+    };
+    QueryBuilder.prototype.enableBtnGroup = function () {
+        var _this = this;
+        var elems = this.element.querySelectorAll('.e-btngroup-and-lbl, .e-btngroup-or-lbl, .e-qb-toggle');
+        var not = false;
+        elems.forEach(function (elem) {
+            if (elem.classList.contains('e-qb-toggle') && !elem.classList.contains('e-active-toggle')
+                && !elem.classList.contains('e-readonly')) {
+                elem.classList.add('e-readonly');
+                not = false;
+            }
+            else if (elem.classList.contains('e-qb-toggle') && elem.classList.contains('e-not-readonly')) {
+                elem.classList.remove('e-not-readonly');
+            }
+            else if (elem.classList.contains('e-qb-toggle') && elem.classList.contains('e-readonly')) {
+                elem.classList.remove('e-readonly');
+            }
+            else if (elem.classList.contains('e-active-toggle')) {
+                elem.classList.add('e-not-readonly');
+                not = true;
+            }
+            else if (elem.previousElementSibling.checked || elem.classList.contains('e-readonly')) {
+                elem.classList.remove('e-readonly');
+                if (not) {
+                    if (elem.textContent === 'AND') {
+                        elem.classList.add('e-readonly-and');
+                    }
+                    else {
+                        elem.classList.add('e-readonly-or');
+                    }
+                }
+                else {
+                    if (elem.textContent === 'AND' && _this.isReadonly) {
+                        elem.classList.remove('e-not');
+                        elem.classList.add('e-readonly-and');
+                    }
+                    else {
+                        if (_this.enableNotCondition) {
+                            elem.classList.add('e-not');
+                        }
+                        elem.classList.remove('e-readonly-and');
+                    }
+                    if (elem.textContent === 'OR' && _this.isReadonly) {
+                        elem.classList.add('e-readonly-or-not');
+                    }
+                    else {
+                        elem.classList.remove('e-readonly-or-not');
+                    }
+                }
+            }
+            else if (elem.classList.contains('e-disable')) {
+                // do nothing
+            }
+            else {
+                elem.classList.add('e-readonly');
+            }
+        });
     };
     QueryBuilder.prototype.getSqlString = function (rules, enableEscape, queryStr) {
         var isRoot = false;
@@ -3439,6 +3601,9 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property(false)
     ], QueryBuilder.prototype, "enableNotCondition", void 0);
+    __decorate([
+        Property(false)
+    ], QueryBuilder.prototype, "readonly", void 0);
     __decorate([
         Complex({ condition: 'and', rules: [] }, Rule)
     ], QueryBuilder.prototype, "rule", void 0);

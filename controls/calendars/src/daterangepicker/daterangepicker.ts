@@ -1448,7 +1448,9 @@ export class DateRangePicker extends CalendarBase {
                     let startDate: Date = this.globalize.parseDate(range[0].trim(), dateOptions);
                     let endDate: Date = this.globalize.parseDate(range[1].trim(), dateOptions);
                     if (!isNullOrUndefined(startDate) && !isNaN(+startDate) && !isNullOrUndefined(endDate) && !isNaN(+endDate)) {
+                        let prevStartVal: Date = this.startValue;
                         this.startValue = startDate;
+                        let prevEndVal: Date = this.endValue;
                         this.endValue = endDate;
                         this.setValue();
                         this.refreshControl();
@@ -1463,6 +1465,12 @@ export class DateRangePicker extends CalendarBase {
                             this.trigger('blur', blurArguments);
                         }
                         this.updateHiddenInput();
+                        // For Mobile mode, when a value is present and choose another range and click on console
+                        // when popup is open, two startvalues and end values are updated in the popup.
+                        if (this.isMobile && this.isPopupOpen()) {
+                            this.startValue = prevStartVal;
+                            this.endValue = prevEndVal;
+                        }
                         return;
                     } else {
                         if (!this.strictMode) {
@@ -3827,7 +3835,9 @@ export class DateRangePicker extends CalendarBase {
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
             isStartDisabled = this.isDateDisabled(this.startValue);
             isEndDisabled = this.isDateDisabled(this.endValue);
-            this.currentDate = null;
+            if (!this.isPopupOpen()) {
+                this.currentDate = null;
+            }
             this.setValue();
         }
         return (isStartDisabled || isEndDisabled);

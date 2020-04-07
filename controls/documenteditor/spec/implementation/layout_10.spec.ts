@@ -9845,6 +9845,6 @@ describe('List tab Width Validation', () => {
         }, 1000);
     });
     it('List Tab Width', () => {
-        expect(Math.round(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1].width)).toBe(18);
+        expect(Math.round(((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children[1].width)).toBeGreaterThanOrEqual(18);
     });
 });

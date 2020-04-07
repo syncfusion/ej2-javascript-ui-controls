@@ -850,11 +850,8 @@ export class LayerPanel {
         }
         xcount += xLeft + xRight;
         if (zoomType === 'Pan') {
-            if (this.horizontalPanXCount !== xcount) {
-                xcount = this.horizontalPanXCount;
-                this.horizontalPan = false;
-                return null;
-            }
+          xcount = (this.horizontalPanXCount >= xcount) ? this.horizontalPanXCount : xcount;
+          this.horizontalPan = false;
         } else {
             this.horizontalPanXCount = xcount;
             this.horizontalPan = true;
@@ -939,7 +936,8 @@ export class LayerPanel {
                     element.style.zIndex = '1';
                 }
                 if (element1) {
-                    element1.style.zIndex = '0';
+                  element1.style.zIndex = '0';
+                  element1.style.visibility = 'hidden';
                 }
                 let animateElement: HTMLElement;
                 if (!document.getElementById('animated_tiles') && element) {

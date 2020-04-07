@@ -112,7 +112,6 @@ let Splitter = class Splitter extends Component {
         this.templateElement = [];
         this.collapseFlag = false;
         this.expandFlag = true;
-        this.isModalChange = true;
     }
     /**
      * Gets called when the model property changes.The data that describes the old and new values of the property that changed.
@@ -123,10 +122,6 @@ let Splitter = class Splitter extends Component {
      */
     onPropertyChanged(newProp, oldProp) {
         if (!this.element.classList.contains(ROOT)) {
-            return;
-        }
-        if (!this.isModalChange) {
-            this.isModalChange = true;
             return;
         }
         for (let prop of Object.keys(newProp)) {
@@ -537,6 +532,10 @@ let Splitter = class Splitter extends Component {
         }
     }
     isCollapsed(index) {
+        if (!isNullOrUndefined(index) && this.paneSettings[index].collapsed
+            && isNullOrUndefined(this.allPanes[index].classList.contains(COLLAPSE_PANE))) {
+            return;
+        }
         this.expandFlag = false;
         if (!isNullOrUndefined(index)) {
             this.collapseFlag = true;
@@ -1176,10 +1175,7 @@ let Splitter = class Splitter extends Component {
         return eventArgs;
     }
     updatePaneSettings(index, collapsed) {
-        if (!this.checkBlazor()) {
-            this.isModalChange = false;
-            this.paneSettings[index].collapsed = collapsed;
-        }
+        this.paneSettings[index].collapsed = collapsed;
     }
     splitterProperty() {
         this.splitInstance = {

@@ -4,7 +4,6 @@ import { createElement, addClass, EmitType, isNullOrUndefined } from '@syncfusio
 
 describe('Resize Plugin', () => {
     let dialog: any;
-    
     beforeAll(() => {
         let resizeTarget = createElement('div', { id: 'resizetarget' });
         document.body.appendChild(resizeTarget);
@@ -19,7 +18,8 @@ describe('Resize Plugin', () => {
             maxWidth: 500,
             resizeBegin: OnresizeStart,
             resizeComplete: OnresizeEnd,
-            resizing: Onresizing
+            resizing: Onresizing,
+            proxy: dialog
         }
         createResize(argument)
         function OnresizeStart() {    }
@@ -74,7 +74,8 @@ describe('Resize Plugin', () => {
             maxWidth: 500,
             resizeBegin: OnresizeStart,
             resizeComplete: OnresizeEnd,
-            resizing: Onresizing
+            resizing: Onresizing,
+            proxy: dialog
         }
         createResize(argument)
         function OnresizeStart() {    }

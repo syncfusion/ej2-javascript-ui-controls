@@ -13,7 +13,7 @@ let sheet: SheetModel[] = [
     {
         name: 'Border Format',
         showGridLines: false,
-        range: [{ dataSource: dataSource }],
+        ranges: [{ dataSource: dataSource }],
         columns: [
             { width: 80 }, { width: 80 }, { width: 80 },
             { width: 160 }, { width: 80 }, { width: 85 }, { width: 85 }

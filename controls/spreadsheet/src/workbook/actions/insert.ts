@@ -96,7 +96,7 @@ export class WorkbookInsert {
     }
     private setInsertInfo(sheet: SheetModel, startIndex: number, count: number, totalKey: string, modelType: ModelType = 'Row'): void {
         let endIndex: number = count = startIndex + (count - 1);
-        sheet.range.forEach((range: ExtendedRange): void => {
+        sheet.ranges.forEach((range: ExtendedRange): void => {
             if (range.info && startIndex < range.info[totalKey]) {
                 if (!range.info[`insert${modelType}Range`]) {
                     range.info[`insert${modelType}Range`] = [[startIndex, endIndex]];

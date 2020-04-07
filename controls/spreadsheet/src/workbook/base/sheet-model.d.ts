@@ -1,4 +1,4 @@
-import { Workbook } from './workbook';import { Query, DataManager } from '@syncfusion/ej2-data';import { RowModel } from './row-model';import { ColumnModel } from './column-model';import { processIdx } from './data';import { SheetState, ProtectSettingsModel } from '../common/index';import { ProtectSettings } from '../common/index';import { isUndefined, ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';import { Row } from './row';import { Column } from './column';import { WorkbookModel } from './workbook-model';
+import { Workbook } from './workbook';import { Query, DataManager } from '@syncfusion/ej2-data';import { RowModel } from './row-model';import { ColumnModel } from './column-model';import { processIdx } from './data';import { SheetState, ProtectSettingsModel } from '../common/index';import { ProtectSettings } from '../common/index';import { isUndefined, ChildProperty, Property, Complex } from '@syncfusion/ej2-base';import { WorkbookModel } from './workbook-model';
 
 /**
  * Interface for a class Range
@@ -96,10 +96,10 @@ export interface SheetModel {
     protectSettings?: ProtectSettingsModel;
 
     /**
-     * Specifies the range for the sheet.
+     * Specifies the collection of range for the sheet.
      * @default []
      */
-    range?: RangeModel[];
+    ranges?: RangeModel[];
 
     /**
      * Specifies index of the sheet. Based on the index, sheet properties are applied.

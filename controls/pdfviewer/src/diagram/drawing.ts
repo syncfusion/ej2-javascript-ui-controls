@@ -641,7 +641,7 @@ export class Drawing {
         let index: number = obj.pageIndex;
         for (let i: number = 0; i < this.pdfViewer.annotations.length; i++) {
             let annotation: PdfAnnotationBaseModel = this.pdfViewer.annotations[i];
-            if (annotation.id === obj.id) {
+            if (annotation.id === obj.id || annotation.wrapper.id === obj.id) {
                 this.pdfViewer.annotations.splice(i, 1);
                 let objects: (PdfAnnotationBaseModel)[] = this.getPageObjects(obj.pageIndex);
                 for (let j: number = 0; j < objects.length; j++) {

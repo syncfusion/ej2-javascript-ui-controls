@@ -370,6 +370,7 @@ export class NormalEdit {
         }
         if (this.cloneRow) {
             this.cloneRow.remove();
+            this.cloneRow = null;
             this.originalRow.classList.remove('e-hiddenrow');
         }
         if (this.parent.getFrozenColumns() && this.cloneFrozen) {

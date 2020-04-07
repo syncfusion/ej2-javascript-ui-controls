@@ -10,7 +10,7 @@ import {
     TableRowWidget, TableCellWidget, ImageElementBox, HeaderFooterWidget, HeaderFooters,
     ListTextElementBox, BookmarkElementBox, EditRangeStartElementBox, EditRangeEndElementBox,
     ChartElementBox, ChartDataTable, ChartTitleArea, ChartDataFormat, ChartLayout, ChartArea, ChartLegend, ChartCategoryAxis,
-    CommentElementBox, CommentCharacterElementBox
+    CommentElementBox, CommentCharacterElementBox, TextFormField, CheckBoxFormField, DropDownFormField
 } from '../viewer/page';
 import { BlockWidget } from '../viewer/page';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -18,6 +18,7 @@ import { HelperMethods } from '../editor/editor-helper';
 import { StreamWriter } from '@syncfusion/ej2-file-utils';
 import { TextPosition } from '../selection';
 import { DocumentHelper } from '../viewer';
+import { WLevelOverride } from '../list';
 /**
  * Exports the document to Sfdt format.
  */
@@ -328,6 +329,31 @@ export class SfdtExport {
             inline.fieldType = element.fieldType;
             if (element.fieldType === 0) {
                 inline.hasFieldEnd = true;
+                if (element.formFieldData) {
+                    inline.formFieldData = {};
+                    inline.formFieldData.name = element.formFieldData.name;
+                    inline.formFieldData.enabled = element.formFieldData.enabled;
+                    inline.formFieldData.helpText = element.formFieldData.helpText;
+                    inline.formFieldData.statusText = element.formFieldData.statusText;
+                    if (element.formFieldData instanceof TextFormField) {
+                        inline.formFieldData.textInput = {};
+                        inline.formFieldData.textInput.type = (element.formFieldData as TextFormField).type;
+                        inline.formFieldData.textInput.maxLength = (element.formFieldData as TextFormField).maxLength;
+                        inline.formFieldData.textInput.defaultValue = (element.formFieldData as TextFormField).defaultValue;
+                        inline.formFieldData.textInput.format = (element.formFieldData as TextFormField).format;
+                    } else if (element.formFieldData instanceof CheckBoxFormField) {
+                        inline.formFieldData.checkBox = {};
+                        inline.formFieldData.checkBox.sizeType = (element.formFieldData as CheckBoxFormField).sizeType;
+                        inline.formFieldData.checkBox.size = (element.formFieldData as CheckBoxFormField).size;
+                        inline.formFieldData.checkBox.defaultValue = (element.formFieldData as CheckBoxFormField).defaultValue;
+                        inline.formFieldData.checkBox.checked = (element.formFieldData as CheckBoxFormField).checked;
+                    } else {
+                        inline.formFieldData.dropDownList = {};
+                        inline.formFieldData.dropDownList.dropdownItems = (element.formFieldData as DropDownFormField).dropDownItems;
+                        inline.formFieldData.dropDownList.selectedIndex = (element.formFieldData as DropDownFormField).selectedIndex;
+                    }
+                }
+
             }
             if (element.fieldCodeType && element.fieldCodeType !== '') {
                 inline.fieldCodeType = element.fieldCodeType;
@@ -954,11 +980,21 @@ export class SfdtExport {
     private writeList(wList: WList): any {
         let list: any = {};
         list.abstractListId = wList.abstractListId;
-        if (wList.levelOverrides.length > 0) {
-            list.levelOverrides = wList.levelOverrides;
+        list.levelOverrides = [];
+        for (let i: number = 0; i < wList.levelOverrides.length; i++) {
+            list.levelOverrides.push(this.writeLevelOverrides(wList.levelOverrides[i]));
         }
         list.listId = wList.listId;
         return list;
+    }
+    private writeLevelOverrides(wlevel: WLevelOverride): any {
+        let levelOverrides: any = {};
+        levelOverrides.levelNumber = wlevel.levelNumber;
+        if (wlevel.overrideListLevel) {
+            levelOverrides.overrideListLevel = this.writeListLevel(wlevel.overrideListLevel);
+        }
+        levelOverrides.startAt = wlevel.startAt;
+        return levelOverrides;
     }
     private writeListLevel(wListLevel: WListLevel): any {
         let listLevel: any = {};

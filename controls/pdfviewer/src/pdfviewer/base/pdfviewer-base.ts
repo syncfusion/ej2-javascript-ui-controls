@@ -5161,9 +5161,17 @@ export class PdfViewerBase {
             eventTarget.style.cursor = 'crosshair';
         } else if (this.tool instanceof ConnectTool) {
             if (this.tool.endPoint && this.tool.endPoint.indexOf('Leader0')) {
+                if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Distance') {
+                    eventTarget.style.cursor = this.pdfViewer.distanceSettings.resizeCursorType;
+                } else {
                 eventTarget.style.cursor = 'nw-resize';
+                }
             } else if (this.tool.endPoint && this.tool.endPoint.indexOf('Leader1')) {
+                if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Distance') {
+                    eventTarget.style.cursor = this.pdfViewer.distanceSettings.resizeCursorType;
+                } else {
                 eventTarget.style.cursor = 'ne-resize';
+                }
             } else if (this.tool.endPoint && this.tool.endPoint.indexOf('ConnectorSegmentPoint')) {
                 eventTarget.style.cursor = 'sw-resize';
             }

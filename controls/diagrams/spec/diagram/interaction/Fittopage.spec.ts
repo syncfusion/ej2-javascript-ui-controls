@@ -63,19 +63,19 @@ describe('Diagram Control', () => {
             done();
             let bound: Rect = new Rect(200, 400, 500, 400)
             diagram.fitToPage({ mode: 'Page', region: 'CustomBounds', margin: { left: 50, right: 50 }, canZoomIn: false, customBounds: bound });
-            expect(diagram.scroller.currentZoom == zoom).toBe(true);
+            expect(diagram.scroller.currentZoom == 0.425).toBe(true);
             done();
             diagram.fitToPage({ mode: 'Width', region: 'CustomBounds', margin: { bottom: 50 }, canZoomIn: false, customBounds: bound });
-            expect(diagram.scroller.currentZoom == 1.9).toBe(true);
+            expect(diagram.scroller.currentZoom == 0.425).toBe(true);
             done();
             diagram.fitToPage({ mode: 'Height', region: 'CustomBounds', margin: { top: 50 }, canZoomIn: false, customBounds: bound });
-            expect(diagram.scroller.currentZoom == 0.9999999999999999).toBe(true);
+            expect(diagram.scroller.currentZoom ==0.425).toBe(true);
             done();
             diagram.bringIntoView(bound);
-            expect(diagram.scroller.currentZoom == 0.9999999999999999).toBe(true);
+            expect(diagram.scroller.currentZoom == 0.425).toBe(true);
             done();
             diagram.bringToCenter(bound);
-            expect(diagram.scroller.currentZoom == 0.9999999999999999).toBe(true);
+            expect(diagram.scroller.currentZoom == 0.425).toBe(true);
             done();
         });
        });

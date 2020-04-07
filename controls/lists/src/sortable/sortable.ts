@@ -351,6 +351,9 @@ export function moveTo(from: HTMLElement, to?: HTMLElement, targetIndexes?: numb
     }
 }
 
+/**
+ * An interface that holds item drop event arguments
+ */
 export interface DropEventArgs {
     previousIndex: number;
     currentIndex: number;

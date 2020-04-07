@@ -25,6 +25,9 @@ export let cssClass: ClassList = {
     navigable: 'e-navigable'
 };
 
+/**
+ * An interface that holds item class list
+ */
 export interface ClassList {
     li: string;
     ul: string;
@@ -871,6 +874,9 @@ export type createElementParams = (
     prop?: { id?: string, className?: string, innerHTML?: string, styles?: string, attrs?: { [key: string]: string } }
 ) => HTMLElement;
 
+/**
+ * An interface that holds the field mappings
+ */
 export interface FieldsMapping {
     id?: string;
     text?: string;
@@ -906,6 +912,9 @@ export interface FieldsMapping {
 
 export type Position = 'Right' | 'Left';
 
+/**
+ * An interface that holds item aria attributes mapping
+ */
 export interface AriaAttributesMapping {
     level?: number;
     listRole?: string;

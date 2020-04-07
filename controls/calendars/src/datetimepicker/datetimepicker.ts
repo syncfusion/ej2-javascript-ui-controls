@@ -1066,7 +1066,6 @@ export class DateTimePicker extends DatePicker {
     protected changeEvent(e: Event): void {
         if ((this.value && this.value.valueOf()) !== (this.previousDateTime && +this.previousDateTime.valueOf())) {
             super.changeEvent(e);
-            this.inputElement.focus();
             this.valueWithMinutes = this.value;
             this.setInputValue('date');
             this.previousDateTime = this.value && new Date(+this.value);

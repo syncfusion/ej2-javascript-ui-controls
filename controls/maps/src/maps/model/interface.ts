@@ -413,6 +413,7 @@ export interface IMarkerClusterRenderingEventArgs extends IMapsEventArgs {
      * Defines the data for the marker cluster in maps.
      */
     data?: Object;
+
 }
 
 /**
@@ -466,6 +467,10 @@ export interface IMarkerClusterClickEventArgs extends IMouseEventArgs {
      * @deprecated
      */
     maps?: Maps;
+    /**
+     * Defines the collection of markers in a cluster.
+     */
+    markerClusterCollection?: Object;
 }
 
 /**

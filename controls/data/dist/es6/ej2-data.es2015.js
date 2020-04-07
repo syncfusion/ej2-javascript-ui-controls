@@ -2798,10 +2798,10 @@ class JsonAdaptor extends Adaptor {
         let ds = dm.dataSource.json;
         let i;
         if (typeof value === 'object' && !(value instanceof Date)) {
-            value = value[keyField];
+            value = DataUtil.getObject(keyField, value);
         }
         for (i = 0; i < ds.length; i++) {
-            if (ds[i][keyField] === value) {
+            if (DataUtil.getObject(keyField, ds[i]) === value) {
                 break;
             }
         }
@@ -3119,7 +3119,7 @@ class UrlAdaptor extends Adaptor {
                 value: value,
                 action: 'update',
                 keyColumn: keyField,
-                key: value[keyField],
+                key: DataUtil.getObject(keyField, value),
                 table: tableName
             }, DataUtil.getAddParams(this, dm, query)))
         };
@@ -4889,7 +4889,7 @@ class DataManager {
      */
     remove(keyField, value, tableName, query) {
         if (typeof value === 'object') {
-            value = value[keyField];
+            value = DataUtil.getObject(keyField, value);
         }
         if (tableName instanceof Query) {
             query = tableName;

@@ -27,27 +27,27 @@ function parseValue(type, val, model) {
             break;
         case 'Date':
             tempFormat = model.format;
-            result = intl.formatDate(val, { format: tempFormat, type: type, skeleton: 'yMd' });
+            result = intl.formatDate(val, { format: tempFormat, type: type, skeleton: isBlazor() ? 'd' : 'yMd' });
             break;
         case 'DateRange':
             tempFormat = model.format;
             let date = val;
-            result = intl.formatDate(date[0], { format: tempFormat, type: type, skeleton: 'yMd' }) + ' - '
-                + intl.formatDate(date[1], { format: tempFormat, type: type, skeleton: 'yMd' });
+            result = intl.formatDate(date[0], { format: tempFormat, type: type, skeleton: isBlazor() ? 'd' : 'yMd' }) + ' - '
+                + intl.formatDate(date[1], { format: tempFormat, type: type, skeleton: isBlazor() ? 'd' : 'yMd' });
             break;
         case 'DateTime':
             tempFormat = model.format;
             if (isNullOrUndefined(tempFormat) || tempFormat === '') {
-                result = intl.formatDate(val, { format: tempFormat, type: type, skeleton: 'yMd' }) + ' '
-                    + intl.formatDate(val, { format: tempFormat, type: type, skeleton: 'hm' });
+                result = intl.formatDate(val, { format: tempFormat, type: type, skeleton: isBlazor() ? 'd' : 'yMd' }) + ' '
+                    + intl.formatDate(val, { format: tempFormat, type: type, skeleton: isBlazor() ? 't' : 'hm' });
             }
             else {
-                result = intl.formatDate(val, { format: tempFormat, type: type, skeleton: 'yMd' });
+                result = intl.formatDate(val, { format: tempFormat, type: type, skeleton: isBlazor() ? 'd' : 'yMd' });
             }
             break;
         case 'Time':
             tempFormat = model.format;
-            result = intl.formatDate(val, { format: tempFormat, type: type, skeleton: 'hm' });
+            result = intl.formatDate(val, { format: tempFormat, type: type, skeleton: isBlazor() ? 't' : 'hm' });
             break;
         case 'Numeric':
             tempFormat = isNullOrUndefined(model.format) ? 'n2' :
@@ -1256,6 +1256,9 @@ let InPlaceEditor = class InPlaceEditor extends Component {
      * @returns void
      */
     destroy() {
+        if (this.isDestroyed) {
+            return;
+        }
         this.removeEditor(isBlazor());
         if (this.isExtModule) {
             this.notify(destroy, {});
@@ -1270,6 +1273,9 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         }
         if (!(isBlazor() && this.isServerRendered)) {
             super.destroy();
+        }
+        else {
+            this.isDestroyed = true;
         }
     }
     /**

@@ -747,7 +747,7 @@ export class MeasureAnnotation {
         let element: HTMLElement = createElement('div');
         let elementID: string = this.pdfViewer.element.id;
         // tslint:disable-next-line:max-line-length
-        let items: { [key: string]: Object }[] = [{ text: 'pt' }, { text: 'in' }, { text: 'mm' }, { text: 'cm' }, { text: 'p' }, { text: 'ft' }];
+        let items: { [key: string]: Object }[] = [{ text: 'pt' }, { text: 'in' }, { text: 'mm' }, { text: 'cm' }, { text: 'p' }, { text: 'ft' }, { text: 'ft_in' }];
         let labelText: HTMLElement = createElement('div', { id: elementID + '_scale_ratio_label', className: 'e-pv-scale-ratio-text' });
         labelText.textContent = this.pdfViewer.localeObj.getConstant('Scale Ratio');
         element.appendChild(labelText);
@@ -1099,7 +1099,11 @@ export class MeasureAnnotation {
 
     private getCurrentRatio(ratioString: string): number {
         let stringArray: string[] = ratioString.split(' ');
-        return parseFloat(stringArray[3]) / parseFloat(stringArray[0]);
+        if (stringArray[3] === '=') {
+            return parseFloat(stringArray[4]) / parseFloat(stringArray[0]);
+        } else {
+            return parseFloat(stringArray[3]) / parseFloat(stringArray[0]);
+        }
     }
 
     /**
@@ -1109,6 +1113,21 @@ export class MeasureAnnotation {
         // tslint:disable-next-line
         let values: any = this.getCurrentValues(id, pageNumber);
         let area: number = this.getArea(points, values.factor) * values.ratio;
+        if (values.unit === 'ft_in') {
+            // tslint:disable-next-line
+           let calculateValue: any = Math.round(area * 100) / 100;
+           if (calculateValue >= 12) {
+                calculateValue = (Math.round(calculateValue / 12 * 100) / 100).toString();
+                calculateValue =  calculateValue.split('.');
+                if (calculateValue[1]) {
+                    return (calculateValue[0] + ' sq ft ' + calculateValue[1] + ' in');
+                } else {
+                    return(calculateValue[0] + ' sq ft 00 in');
+                }
+           } else {
+                return (Math.round(area * 100) / 100) + ' sq in';
+           }
+        }
         return (Math.round(area * 100) / 100) + ' sq ' + values.unit;
     }
 
@@ -1132,6 +1151,21 @@ export class MeasureAnnotation {
         let depth: number = values.depth ? values.depth : this.volumeDepth;
         let area: number = this.getArea(points, values.factor);
         let volume: number = area * ((depth * this.convertUnitToPoint(values.unit)) * values.factor) * values.ratio;
+        if (values.unit === 'ft_in') {
+            // tslint:disable-next-line
+           let calculateValue: any = Math.round(volume * 100) / 100;
+           if (calculateValue >= 12) {
+                calculateValue = (Math.round(calculateValue / 12 * 100) / 100).toString();
+                calculateValue = calculateValue.split('.');
+                if (calculateValue[1]) {
+                    return (calculateValue[0] + ' cu ft ' + calculateValue[1] + ' in');
+                } else {
+                    return(calculateValue[0] + ' cu ft 00 in');
+                }
+           } else {
+                return (Math.round(volume * 100) / 100) + ' cu in';
+           }
+        }
         return (Math.round(volume * 100) / 100) + ' cu ' + values.unit;
     }
 
@@ -1164,12 +1198,32 @@ export class MeasureAnnotation {
             case 'ft':
                 factor = 1 / 864;
                 break;
+            case 'ft_in':
+                factor = 1 / 72;
+                break;
         }
         return factor;
     }
 
     private convertPointToUnits(factor: number, value: number, unit: CalibrationUnit): string {
-        let convertedValue: string = Math.round((value * factor) * 100) / 100 + ' ' + unit;
+        let convertedValue: string;
+        if (unit === 'ft_in') {
+            // tslint:disable-next-line
+           let calculateValue: any = Math.round((value * factor) * 100) / 100;
+           if (calculateValue >= 12) {
+                calculateValue = (Math.round(calculateValue / 12 * 100) / 100).toString();
+                calculateValue = calculateValue.split('.');
+                if (calculateValue[1]) {
+                    convertedValue = calculateValue[0] + ' ft ' + calculateValue[1] + ' in';
+                } else {
+                    convertedValue = calculateValue[0] + ' ft 00 in';
+                }
+           } else {
+                convertedValue = Math.round((value * factor) * 100) / 100 + '  in';
+           }
+        } else {
+            convertedValue = Math.round((value * factor) * 100) / 100 + ' ' + unit;
+        }
         return convertedValue;
     }
 
@@ -1193,6 +1247,9 @@ export class MeasureAnnotation {
                 break;
             case 'ft':
                 factor = 864;
+                break;
+            case 'ft_in':
+                factor = 72;
                 break;
         }
         return factor;

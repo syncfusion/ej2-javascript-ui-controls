@@ -14,7 +14,7 @@ describe('Spreadsheet edit module ->', () => {
         beforeAll((done: Function) => {
             model = {
                 sheets: [{
-                    range: [{ dataSource: defaultData }],
+                    ranges: [{ dataSource: defaultData }],
                     rows: [{
                         index: 1,
                         cells: [

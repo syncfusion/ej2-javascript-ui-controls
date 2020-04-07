@@ -14,7 +14,7 @@ export class SpreadsheetHelper extends TestHelper {
         }
     }
 
-    initializeSpreadsheet(model: SpreadsheetModel = {}, done?: Function): void {
+    public initializeSpreadsheet(model: SpreadsheetModel = {}, done?: Function): void {
         let dataBound: EmitType<Object> = () => {
             setTimeout(() => {
                 if (done) { done(); }
@@ -30,51 +30,51 @@ export class SpreadsheetHelper extends TestHelper {
     /**
      * Used to get root element or passed selector element of the Spreadsheet component.
      */
-    getElementFromSpreadsheet(elemRefr?: string): HTMLElement {
+    public getElementFromSpreadsheet(elemRefr?: string): HTMLElement {
         return elemRefr ? this.getElement().querySelector(elemRefr) : this.getElement();
     }
 
-    getRibbonElement(): HTMLElement {
+    public getRibbonElement(): HTMLElement {
         return this.getElement().querySelector('.e-ribbon');
     }
 
-    getFormulaBarElement(): HTMLElement {
+    public getFormulaBarElement(): HTMLElement {
         return this.getElementFromSpreadsheet('.e-formula-bar-panel');
     }
 
-    getCellEditorElement(): HTMLElement {
+    public getCellEditorElement(): HTMLElement {
         return this.getElementFromSpreadsheet('.e-spreadsheet-edit');
     }
 
-    getSheetPanelElement(): HTMLElement {
+    public getSheetPanelElement(): HTMLElement {
         return this.getElementFromSpreadsheet('.e-sheet-panel');
     }
 
-    getContentElement(): HTMLElement {
+    public getContentElement(): HTMLElement {
         return this.getElementFromSpreadsheet('.e-sheet-content');
     }
 
-    getRowHeaderElement(): HTMLElement {
+    public getRowHeaderElement(): HTMLElement {
         return this.getElementFromSpreadsheet('.e-row-header');
     }
 
-    getColHeaderElement(): HTMLElement {
+    public getColHeaderElement(): HTMLElement {
         return this.getElementFromSpreadsheet('.e-column-header');
     }
 
-    getContentTableElement(): HTMLTableElement {
+    public getContentTableElement(): HTMLTableElement {
         return this.getElementFromSpreadsheet().querySelector('.e-content-table');
     }
 
-    getSpinnerElement(): HTMLElement {
+    public getSpinnerElement(): HTMLElement {
         return this.getElementFromSpreadsheet('.e-spinner-pane');
     }
 
-    hasClass(refr: string, element: HTMLElement = this.getElement()): boolean {
+    public hasClass(refr: string, element: HTMLElement = this.getElement()): boolean {
         return element.classList.contains(refr);
     }
 
-    triggerKeyNativeEvent(keyCode: number, isCtrl: boolean = false, isShift: boolean = false,
+    public triggerKeyNativeEvent(keyCode: number, isCtrl: boolean = false, isShift: boolean = false,
         element?: HTMLElement, type: string = 'keydown'): void {
             if (!element) {
                 element = this.getElement();
@@ -88,7 +88,7 @@ export class SpreadsheetHelper extends TestHelper {
             element.dispatchEvent(eventArg);
     }
 
-    triggerKeyEvent(type: string, keyCode: number, element?: HTMLElement,
+    public triggerKeyEvent(type: string, keyCode: number, element?: HTMLElement,
         isCtrl: boolean = false, isShift: boolean = false, target?: HTMLElement, args: Object = {}): void {
             if (!element) {
                 element = this.getElement();
@@ -106,7 +106,7 @@ export class SpreadsheetHelper extends TestHelper {
             EventHandler.trigger(element, type, eventArg);
     }
 
-    triggerMouseAction(type: string, coords?: { x: number, y: number },
+    public triggerMouseAction(type: string, coords?: { x: number, y: number },
         element?: HTMLElement | Document, target?: HTMLElement): void {
         if (!element) {
             element = this.getElement();
@@ -122,17 +122,17 @@ export class SpreadsheetHelper extends TestHelper {
         EventHandler.trigger(element as HTMLElement, type, eventArg);
     }
 
-    isEditState(): boolean {
+    public isEditState(): boolean {
         return this.getInstance().isEdit;
     }
 
-    copyObject(source: any, destination: any): Object {
+    public copyObject(source: any, destination: any): Object {
         for (let prop in source) {
             destination[prop] = source[prop];
         }
         return destination;
     }
-    
+
     private setMouseCoordinates(eventarg: any, x: number, y: number, target: Element): Object {
         eventarg.pageX = x;
         eventarg.pageY = y;

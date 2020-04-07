@@ -2394,51 +2394,6 @@ describe('Testing resizing option with RTL mode', () => {
     });
 });
 
-describe('Testing resize Events', () => {
-    let dialog: any;
-    let resizeTarget: any;
-    beforeAll(() => {
-        let ele: HTMLElement = createElement('div', { id: 'dialog1' });
-        document.body.appendChild(ele);
-        resizeTarget = createElement('div', { id: 'resizeTarget' });
-        document.body.appendChild(resizeTarget);
-        resizeTarget.style.width = '500px';
-        resizeTarget.style.height = '500px';
-        resizeTarget.style.position = 'relative';
-        dialog = new Dialog({
-            header:'Demo',
-            target: document.body,
-            content:'First demo content',
-            enableResize: true,
-            resizeStart: function () {
-                expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(true)
-            }, 
-            resizing: function () {
-                expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(true)
-            },
-            resizeStop : function () {
-                expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(false)
-            }
-         });
-        dialog.appendTo('#dialog1');
-    });
-
-    afterAll(() => {
-        destroyDialog(dialog);
-        detach(resizeTarget);
-    });
-    it('Mouse events', (done) => {
-        let mouseEvent = document.createEvent ('MouseEvents');
-        mouseEvent.initEvent ('mousedown', true, true);
-        (document.querySelector('.e-south-east') as HTMLElement).dispatchEvent (mouseEvent);
-        mouseEvent.initEvent ('mousemove', true, true);
-        (document.querySelector('.e-south-east') as HTMLElement).dispatchEvent(mouseEvent);
-        mouseEvent.initEvent ('mouseup', true, true);
-        document.dispatchEvent(mouseEvent);
-        done()
-    });
-});
-
 describe('Testing args.cancel', () => {
     let dialog: any;
     let resizeTarget: any;
@@ -2758,6 +2713,38 @@ describe('EJ2-33526 enableHtmlSanitizer as false', () => {
     });
     it('check the style element', () => {
         expect(((<any>dialog).contentEle.querySelectorAll('style')).length).toBe(1);
+    });
+});
+
+describe('Update target of dialog', () => {
+    let dialog: Dialog;
+    beforeEach((): void => {
+        dialog = undefined;
+    let target: HTMLElement = createElement('div', { id: 'target' });
+    target.style.height ="300px";
+    document.body.appendChild(target);
+    let ele: HTMLElement = createElement('div', { id: 'dialog' });
+    document.body.appendChild(ele);
+        dialog = new Dialog({
+            header: 'Demo', content: 'dialog content',
+            target : '#target',
+            showCloseIcon: true
+        });
+        dialog.appendTo('#dialog');
+    });
+
+    afterEach((): void => {
+        destroyDialog(dialog);
+    });
+    it('check dynamic target', (done) => {
+        expect(dialog.target).toBe('#target');
+        expect(document.querySelector('#target')).toBe((dialog as any).targetEle);
+        dialog.target='BODY';
+        setTimeout(function () {
+            expect(dialog.target).toBe('BODY');
+            expect(document.querySelector('BODY') === (dialog as any).targetEle).toBe(true);
+            done();
+        });
     });
 });
 
@@ -3297,5 +3284,70 @@ describe('EJ2-34298 - Dialog render with virtual DOM testing', () => {
         expect(document.querySelectorAll('.e-dlg-ref-element').length > 0).toEqual(false);
         expect(document.querySelector('#dialog').parentElement.tagName).toEqual('DIV');
         expect(document.querySelector('#dialog').classList.length).toEqual(0);
+    });
+});
+
+describe('Testing resize Events', () => {
+    let dialog: any;
+    let dialog2: any;
+    let resizeTarget: any;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'dialog1' });
+        let ele2: HTMLElement = createElement('div', { id: 'dialog2' });
+        document.body.appendChild(ele);
+        document.body.appendChild(ele2);
+        resizeTarget = createElement('div', { id: 'resizeTarget' });
+        document.body.appendChild(resizeTarget);
+        resizeTarget.style.width = '500px';
+        resizeTarget.style.height = '500px';
+        resizeTarget.style.position = 'relative';
+        dialog = new Dialog({
+            header:'Demo',
+            target: document.body,
+            content:'First demo content',
+            enableResize: true,
+            resizeStart: function () {
+                expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(true)
+            }, 
+            resizing: function () {
+                expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(true)
+            },
+            resizeStop : function () {
+                expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).toBe(false)
+            }
+         });
+        dialog.appendTo('#dialog1');
+
+        dialog2 = new Dialog({
+            header:'Second Demo',
+            target: document.body,
+            content:'Second demo content',
+            enableResize: true,
+            resizeStart: function () {
+                expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).not.toBe(true)
+            }, 
+            resizing: function () {
+                expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).not.toBe(true)
+            },
+            resizeStop : function () {
+                expect((document.querySelector('.e-south-east') as HTMLElement).classList.contains('e-focused-handle')).not.toBe(false)
+            }
+         });
+        dialog2.appendTo('#dialog2');
+    });
+
+    afterAll(() => {
+        destroyDialog(dialog);
+        detach(resizeTarget);
+    });
+    it('Mouse events', (done) => {
+        let mouseEvent = document.createEvent ('MouseEvents');
+        mouseEvent.initEvent ('mousedown', true, true);
+        (document.querySelector('.e-south-east') as HTMLElement).dispatchEvent (mouseEvent);
+        mouseEvent.initEvent ('mousemove', true, true);
+        (document.querySelector('.e-south-east') as HTMLElement).dispatchEvent(mouseEvent);
+        mouseEvent.initEvent ('mouseup', true, true);
+        document.dispatchEvent(mouseEvent);
+        done()
     });
 });

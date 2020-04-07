@@ -116,9 +116,7 @@ export class Render {
                 let target: string = 'target';
                 e[target] = null;
             }
-            if (gObj.editSettings.mode === 'Normal' && gObj.isEdit) {
-                gObj.notify('closeinline', {});
-            } else if (gObj.editSettings.mode === 'Batch' && !gObj.isEdit) {
+            if (gObj.editSettings.mode === 'Batch' && !gObj.isEdit) {
                 gObj.notify('closebatch', {});
             }
         }
@@ -131,6 +129,9 @@ export class Render {
             if (args.cancel) {
                 gObj.notify(events.cancelBegin, args);
                 return;
+            }
+            if (gObj.editSettings.mode === 'Normal' && gObj.isEdit) {
+                gObj.notify('closeinline', {});
             }
             if (args.requestType === 'delete' as Action && gObj.allowPaging) {
                 let dataLength: number = (<{ data?: NotifyArgs[] }>args).data.length;

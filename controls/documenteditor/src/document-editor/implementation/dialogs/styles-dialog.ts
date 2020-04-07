@@ -115,7 +115,7 @@ export class StylesDialog {
     private defaultStyleName = (styleNames: string[], localValue: L10n): string[] => {
         let styleName: string[] = [];
         for (let index: number = 0; index < styleNames.length; index++) {
-            styleName.push(localValue.getConstant(styleNames[index]));
+            styleName.push(styleNames[index]);
         }
         return styleName;
     }

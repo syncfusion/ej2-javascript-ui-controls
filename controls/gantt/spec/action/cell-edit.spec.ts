@@ -6,7 +6,6 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Gantt, Edit, Toolbar } from '../../src/index';
 import { cellEditData, resourcesData, resources, scheduleModeData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent, triggerKeyboardEvent, getKeyUpObj } from '../base/gantt-util.spec';
-import { EJ2Instance } from '@syncfusion/ej2-navigations';
 import { DatePickerEditCell } from '@syncfusion/ej2-grids';
 import { Input } from '@syncfusion/ej2-inputs';
 
@@ -102,7 +101,7 @@ describe('Gantt Edit module', () => {
             ganttObj.dataBind();
             let startDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(3)') as HTMLElement;
             triggerMouseEvent(startDate, 'dblclick');
-            let input: any = (<EJ2Instance>document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolStartDate')).ej2_instances[0];
+            let input: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolStartDate')as any).ej2_instances[0];
             input.value = new Date('04/04/2019');
             let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;
             triggerMouseEvent(element, 'click');
@@ -118,7 +117,7 @@ describe('Gantt Edit module', () => {
             expect(ganttObj.currentViewData[1].ganttProperties.work).toBe(0);
             let endDate: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(2) > td:nth-child(4)') as HTMLElement;
             triggerMouseEvent(endDate, 'dblclick');
-            let input: any = (<EJ2Instance>document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolEndDate')).ej2_instances[0];
+            let input: any = (document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolEndDate')as any).ej2_instances[0];
             input.value = new Date('04/10/2019');
             input.dataBind();
             let element: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(2)') as HTMLElement;

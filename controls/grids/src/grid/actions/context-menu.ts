@@ -121,6 +121,11 @@ export class ContextMenu implements IAction {
         if (e.code === 'Tab' || e.which === 9) {
             this.contextMenu.close();
         }
+        if (e.code === 'Escape') {
+            this.contextMenu.close();
+            this.parent.notify(events.restoreFocus, {});
+        }
+
     }
 
     private render(): void {

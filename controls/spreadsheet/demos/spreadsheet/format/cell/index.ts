@@ -1,5 +1,5 @@
 /**
- * Spreadsheet default sample
+ * Spreadsheet cell formatting sample
  */
 import { Spreadsheet, SheetModel } from './../../../../src/index';
 import { enableRipple } from '@syncfusion/ej2-base';
@@ -107,7 +107,7 @@ spreadsheet.appendTo('#spreadsheet');
 
 window.addEventListener('resize', onResize);
 
-function onResize() {
+function onResize () {
     document.body.style.height = `${document.documentElement.clientHeight - 70}px`;
     spreadsheet.resize();
 }

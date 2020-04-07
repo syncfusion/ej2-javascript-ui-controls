@@ -108,7 +108,8 @@ export class Data implements IDataProcessor {
         return query;
     }
 
-    protected aggregateQuery(query: Query, isForeign?: boolean): Query {
+     /** @hidden */
+    public aggregateQuery(query: Query, isForeign?: boolean): Query {
         let rows: AggregateRowModel[] = this.parent.aggregates;
         for (let i: number = 0; i < rows.length; i++) {
             let row: AggregateRowModel = rows[i];
@@ -374,6 +375,8 @@ export class Data implements IDataProcessor {
             if (crud && !Array.isArray(crud) && !crud.hasOwnProperty('deletedRecords')) {
                 return crud.then((result: ReturnType) => {
                     return this.insert(query, args);
+                }).catch((e: ReturnType) => {
+                    return null;
                 });
             } else {
                 return this.insert(query, args);

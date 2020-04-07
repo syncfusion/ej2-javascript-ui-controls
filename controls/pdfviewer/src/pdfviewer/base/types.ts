@@ -60,7 +60,7 @@ export type LineHeadStyle = 'None' | 'Closed' | 'Open' | 'Square' | 'Round' | 'D
 /**
  * Enum unit for calibration annotation
  */
-export type CalibrationUnit = 'pt' | 'in' | 'mm' | 'cm' | 'p' | 'ft';
+export type CalibrationUnit = 'pt' | 'in' | 'mm' | 'cm' | 'p' | 'ft'| 'ft_in';
 
 /**
  * Enum unit for ContextMenu Actions
@@ -105,3 +105,26 @@ export type ZoomMode = 'Default' | 'FitToWidth' | 'FitToPage';
  * Enum for Print Mode
  */
 export type PrintMode = 'Default' | 'NewWindow' ;
+
+/**
+ * Enum for cursor type
+ */
+export enum CursorType {
+    auto = 'auto',
+    crossHair = 'crosshair',
+    e_resize = 'e-resize',
+    ew_resize = 'ew-resize',
+    grab = 'grab',
+    grabbing = 'grabbing',
+    move = 'move',
+    n_resize = 'n-resize',
+    ne_resize = 'ne-resize',
+    ns_resize = 'ns-resize',
+    nw_resize = 'nw-resize',
+    pointer = 'pointer',
+    s_resize = 's-resize',
+    se_resize = 'se-resize',
+    sw_resize = 'sw-resize',
+    text = 'text',
+    w_resize = 'w-resize'
+}

@@ -4,7 +4,7 @@ import { DropDownList, ChangeEventArgs } from '@syncfusion/ej2-dropdowns';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { DatePicker, ChangedEventArgs } from '@syncfusion/ej2-calendars';
 import { Button, RadioButton } from '@syncfusion/ej2-buttons';
-import { EventHandler, MouseEventArgs, classList } from '@syncfusion/ej2-base';
+import { EventHandler, MouseEventArgs, classList, IntlBase } from '@syncfusion/ej2-base';
 import { EJ2Instance } from '../schedule/base/interface';
 import { RecRule, extractObjectFromRule, generate, generateSummary, getRecurrenceStringFromDate, getCalendarUtil } from './date-generator';
 import { RecurrenceEditorModel } from './recurrence-editor-model';
@@ -550,6 +550,8 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
             locale: this.locale,
             min: this.minDate,
             max: this.maxDate,
+            format: (isNullOrUndefined(this.dateFormat) ?
+                this.getFormat('dateFormats') : this.dateFormat),
             change: (args: ChangedEventArgs) => {
                 if (args.value) {
                     self.triggerChangeEvent();
@@ -557,6 +559,24 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
             }
         });
         this.untilDateObj.appendTo(<HTMLElement>this.element.querySelector('.' + UNTILDATE));
+    }
+    private getFormat(formatType: string): string {
+        if (isBlazor()) {
+            if (formatType === 'dateFormats') {
+                return IntlBase.compareBlazorDateFormats({ skeleton: 'd' }, this.locale).format;
+            }
+            return IntlBase.compareBlazorDateFormats({ skeleton: 't' }, this.locale).format;
+        }
+        let format: string;
+        if (this.locale === 'en' || this.locale === 'en-US') {
+            format = getValue(formatType + '.short', getDefaultDateObject(this.getCalendarMode()));
+        } else {
+            format = getValue(
+                // tslint:disable-next-line:max-line-length
+                'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.' + formatType + '.short', cldrData
+            );
+        }
+        return format;
     }
     private dayButtonRender(): void {
         let btns: HTMLButtonElement[] = [].slice.call(this.element.querySelectorAll('.' + DAYWRAPPER + ' button'));
@@ -1115,6 +1135,9 @@ export class RecurrenceEditor extends Component<HTMLElement> implements INotifyP
                 case 'frequencies':
                 case 'firstDayOfWeek':
                     this.refresh();
+                    break;
+                case 'dateFormat':
+                    this.untilDateObj.setProperties({ format: newProp.dateFormat });
                     break;
             }
         }

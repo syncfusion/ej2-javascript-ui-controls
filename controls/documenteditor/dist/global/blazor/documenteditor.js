@@ -3241,6 +3241,80 @@ var HelperMethods = /** @class */ (function () {
     /**
      * @private
      */
+    HelperMethods.formatText = function (format, value) {
+        var text = value;
+        switch (format.toLowerCase()) {
+            case 'uppercase':
+                text = value.toUpperCase();
+                break;
+            case 'lowercase':
+                text = value.toLowerCase();
+                break;
+            case 'first capital':
+                text = this.capitaliseFirst(value, 'First capital');
+                break;
+            case 'title case':
+                text = this.capitaliseFirst(value, 'Title case');
+                break;
+        }
+        return text;
+    };
+    /**
+     * @private
+     */
+    HelperMethods.formatNumber = function (format, value) {
+        var numberFormat;
+        var intl = new sf.base.Internationalization();
+        var formattedValue;
+        var dotData = value.split('.');
+        value = dotData[0];
+        var numberValue;
+        numberValue = intl.parseNumber(value);
+        if (value.toString() === 'NaN') {
+            return '';
+        }
+        numberFormat = { format: format };
+        formattedValue = intl.formatNumber(numberValue, numberFormat);
+        return formattedValue;
+    };
+    /**
+     * @private
+     */
+    HelperMethods.formatDate = function (format, value) {
+        var dateFormat;
+        var intl = new sf.base.Internationalization();
+        var formattedValue;
+        var date = new Date(value);
+        if (format.indexOf('am/pm') !== -1) {
+            format = format.replace(/am\/pm/gi, 'a');
+        }
+        dateFormat = { 'format': format };
+        formattedValue = intl.formatDate(date, dateFormat);
+        return formattedValue;
+    };
+    /* tslint:enable:no-any */
+    HelperMethods.capitaliseFirst = function (value, type) {
+        var text = '';
+        if (type === 'Title case') {
+            var valArry = value.split(' ');
+            for (var i = 0; i < valArry.length; i++) {
+                text += this.capitaliseFirstInternal(valArry[i]);
+                if (valArry.length >= 0) {
+                    text += ' ';
+                }
+            }
+        }
+        else if (type === 'First capital') {
+            text = this.capitaliseFirstInternal(value);
+        }
+        return text;
+    };
+    HelperMethods.capitaliseFirstInternal = function (value) {
+        return (value.charAt(0).toUpperCase() + value.slice(1, value.length).toLowerCase());
+    };
+    /**
+     * @private
+     */
     HelperMethods.wordBefore = '\\b';
     /**
      * @private
@@ -6126,8 +6200,14 @@ var Layout = /** @class */ (function () {
         var text = '';
         var index = element.indexInOwner;
         if (element instanceof FieldElementBox) {
-            if (element.fieldType === 0 && this.documentHelper.fields.indexOf(element) === -1) {
-                this.documentHelper.fields.push(element);
+            if (element.fieldType === 0) {
+                if (this.documentHelper.fields.indexOf(element) === -1) {
+                    this.documentHelper.fields.push(element);
+                }
+                if (!sf.base.isNullOrUndefined(element.formFieldData) &&
+                    this.documentHelper.formFields.indexOf(element) === -1) {
+                    this.documentHelper.formFields.push(element);
+                }
             }
             this.layoutFieldCharacters(element);
             if (element.line.isLastLine() && sf.base.isNullOrUndefined(element.nextNode) && !this.isFieldCode) {
@@ -6585,6 +6665,9 @@ var Layout = /** @class */ (function () {
     };
     Layout.prototype.layoutFieldCharacters = function (element) {
         if (element.fieldType === 0) {
+            if (!sf.base.isNullOrUndefined(element.formFieldData) && this.isInitialLoad) {
+                this.checkAndUpdateFieldData(element);
+            }
             if (!this.isFieldCode && (!sf.base.isNullOrUndefined(element.fieldEnd) || element.hasFieldEnd)) {
                 this.documentHelper.fieldStacks.push(element);
                 this.isFieldCode = true;
@@ -6603,6 +6686,53 @@ var Layout = /** @class */ (function () {
                 if (element === field.fieldEnd) {
                     this.documentHelper.fieldStacks.pop();
                     this.isFieldCode = false;
+                }
+            }
+        }
+    };
+    Layout.prototype.checkAndUpdateFieldData = function (fieldBegin) {
+        if (fieldBegin.hasFieldEnd && !sf.base.isNullOrUndefined(fieldBegin.fieldEnd)) {
+            if (sf.base.isNullOrUndefined(fieldBegin.fieldSeparator)) {
+                var seperator = new FieldElementBox(2);
+                seperator.fieldBegin = fieldBegin;
+                seperator.fieldEnd = fieldBegin.fieldEnd;
+                seperator.line = fieldBegin.line;
+                fieldBegin.line.children.splice(fieldBegin.fieldEnd.indexInOwner, 0, seperator);
+                fieldBegin.fieldSeparator = seperator;
+                fieldBegin.fieldEnd.fieldSeparator = seperator;
+            }
+            var previousNode = fieldBegin.fieldEnd.previousNode;
+            if (previousNode instanceof FieldElementBox && previousNode.fieldType === 2) {
+                var formFieldData = fieldBegin.formFieldData;
+                if (formFieldData instanceof CheckBoxFormField) {
+                    var checkBoxTextElement = new TextElementBox();
+                    checkBoxTextElement.characterFormat = fieldBegin.characterFormat.cloneFormat();
+                    if (formFieldData.checked) {
+                        checkBoxTextElement.text = String.fromCharCode(9745);
+                    }
+                    else {
+                        checkBoxTextElement.text = String.fromCharCode(9744);
+                    }
+                    if (formFieldData.sizeType !== 'Auto') {
+                        checkBoxTextElement.characterFormat.fontSize = fieldBegin.characterFormat.fontSize;
+                    }
+                    checkBoxTextElement.line = fieldBegin.line;
+                    var index = fieldBegin.line.children.indexOf(fieldBegin.fieldEnd);
+                    fieldBegin.line.children.splice(index, 0, checkBoxTextElement);
+                }
+                else if (formFieldData instanceof DropDownFormField) {
+                    var dropDownTextElement = new TextElementBox();
+                    dropDownTextElement.characterFormat = fieldBegin.characterFormat.cloneFormat();
+                    dropDownTextElement.line = fieldBegin.line;
+                    if (formFieldData.dropDownItems.length > 0) {
+                        dropDownTextElement.text = formFieldData.dropDownItems[formFieldData.selectedIndex];
+                    }
+                    else {
+                        // tslint:disable-next-line:max-line-length
+                        dropDownTextElement.text = this.documentHelper.textHelper.repeatChar(this.documentHelper.textHelper.getEnSpaceCharacter(), 5);
+                    }
+                    var index = fieldBegin.line.children.indexOf(fieldBegin.fieldEnd);
+                    fieldBegin.line.children.splice(index, 0, dropDownTextElement);
                 }
             }
         }
@@ -7830,7 +7960,9 @@ var Layout = /** @class */ (function () {
         var firstLineIndent = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent);
         if (!sf.base.isNullOrUndefined(element) && lineWidget.isFirstLine()) {
             clientWidth = this.viewer.clientArea.x + firstLineIndent;
-            clientActiveX = clientActiveX + firstLineIndent;
+            if (!(element instanceof ListTextElementBox)) {
+                clientActiveX = clientActiveX + firstLineIndent;
+            }
         }
         else {
             clientWidth = this.viewer.clientArea.x;
@@ -11155,6 +11287,7 @@ var Renderer = /** @class */ (function () {
         this.isFieldCode = false;
         this.leftPosition = 0;
         this.topPosition = 0;
+        this.isFormField = false;
         this.documentHelper = documentHelper;
     }
     Object.defineProperty(Renderer.prototype, "pageCanvas", {
@@ -11561,8 +11694,7 @@ var Renderer = /** @class */ (function () {
         this.renderTableCellOutline(page.documentHelper, cellWidget);
         for (var i = 0; i < cellWidget.childWidgets.length; i++) {
             var widget = cellWidget.childWidgets[i];
-            var width = cellWidget.width + cellWidget.margin.left - cellWidget.leftBorderWidth;
-            this.clipRect(cellWidget.x, cellWidget.y, this.getScaledValue(width), this.getScaledValue(cellWidget.height));
+            // this.clipRect(cellWidget.x, cellWidget.y, this.getScaledValue(width), this.getScaledValue(cellWidget.height));
             this.renderWidget(page, widget);
             this.pageContext.restore();
         }
@@ -11681,9 +11813,15 @@ var Renderer = /** @class */ (function () {
                 if ((!sf.base.isNullOrUndefined(element.fieldEnd) || element.hasFieldEnd)) {
                     this.isFieldCode = true;
                 }
+                if (!sf.base.isNullOrUndefined(element.formFieldData) && element.hasFieldEnd && !sf.base.isNullOrUndefined(element.fieldEnd)) {
+                    this.isFormField = true;
+                }
             }
             else if (element.fieldType === 2 || element.fieldType === 1) {
                 this.isFieldCode = false;
+                if (element.fieldType === 1) {
+                    this.isFormField = false;
+                }
             }
         }
     };
@@ -11727,8 +11865,8 @@ var Renderer = /** @class */ (function () {
         var fontSize = format.fontSize === 11 ? breakCharacterFormat.fontSize : format.fontSize;
         // tslint:disable-next-line:max-line-length
         var baselineAlignment = format.baselineAlignment === 'Normal' ? breakCharacterFormat.baselineAlignment : format.baselineAlignment;
-        bold = format.bold ? 'bold' : breakCharacterFormat.bold ? 'bold' : '';
-        italic = format.italic ? 'italic' : breakCharacterFormat.italic ? 'italic' : '';
+        bold = format.hasValue('bold') ? format.bold ? 'bold' : '' : breakCharacterFormat.bold ? 'bold' : '';
+        italic = format.hasValue('italic') ? format.italic ? 'italic' : '' : breakCharacterFormat.italic ? 'italic' : '';
         fontSize = fontSize === 0 ? 0.5 : fontSize / (baselineAlignment === 'Normal' ? 1 : 1.5);
         fontSize = this.isPrinting ? fontSize : fontSize * this.documentHelper.zoomFactor;
         var strikethrough = format.strikethrough === 'None' ? breakCharacterFormat.strikethrough : format.strikethrough;
@@ -11796,6 +11934,12 @@ var Renderer = /** @class */ (function () {
             }
             // tslint:disable-next-line:max-line-length
             this.pageContext.fillRect(this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
+        }
+        if (this.documentHelper && this.documentHelper.owner.documentEditorSettings
+            && this.documentHelper.owner.documentEditorSettings.formFieldSettings.applyShading && this.isFormField) {
+            this.pageContext.fillStyle = this.documentHelper.owner.documentEditorSettings.formFieldSettings.shadingColor;
+            // tslint:disable-next-line:max-line-length
+            this.pageContext.fillRect(this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width) + 0.5, this.getScaledValue(elementBox.height));
         }
         var color = format.fontColor;
         this.pageContext.textBaseline = 'alphabetic';
@@ -12164,8 +12308,12 @@ var Renderer = /** @class */ (function () {
         this.pageContext.textBaseline = 'top';
         var widgetWidth = 0;
         var isClipped = false;
+        var containerWid = elementBox.line.paragraph.containerWidget;
+        var isHeightType = false;
+        if (containerWid instanceof TableCellWidget) {
+            isHeightType = (containerWid.ownerRow.rowFormat.heightType === 'Exactly');
+        }
         if (topMargin < 0 || elementBox.line.paragraph.width < elementBox.width) {
-            var containerWid = elementBox.line.paragraph.containerWidget;
             // if (containerWid instanceof BodyWidget) {
             //     widgetWidth = containerWid.width + containerWid.x;
             // } else 
@@ -12180,6 +12328,11 @@ var Renderer = /** @class */ (function () {
                 // tslint:disable-next-line:max-line-length
                 this.clipRect(left + leftMargin, top + topMargin, this.getScaledValue(widgetWidth), this.getScaledValue(containerWid.height));
             }
+        }
+        else if (isHeightType) {
+            var width = containerWid.width + containerWid.margin.left - containerWid.leftBorderWidth;
+            // tslint:disable-next-line:max-line-length
+            this.clipRect(containerWid.x, containerWid.y, this.getScaledValue(width), this.getScaledValue(containerWid.height));
         }
         if (elementBox.isMetaFile) {
             /* tslint:disable:no-empty */
@@ -12309,7 +12462,12 @@ var Renderer = /** @class */ (function () {
         //Specifies the next row is within the current table widget.
         //True means current row is not rendered at page end; Otherwise False.
         var nextRowIsInCurrentTableWidget = false;
+        var previousCellIndex = undefined;
         if (!sf.base.isNullOrUndefined(nextRow)) {
+            if (nextRow.lastChild) {
+                var lastCellWidget = nextRow.lastChild;
+                previousCellIndex = lastCellWidget.columnIndex + lastCellWidget.cellFormat.columnSpan;
+            }
             var nextRowWidget = undefined;
             // if (viewer.renderedElements.containsKey(nextRow) && viewer.renderedElements.get(nextRow).length > 0) {
             nextRowWidget = nextRow;
@@ -12324,7 +12482,8 @@ var Renderer = /** @class */ (function () {
         if (tableCell.ownerTable.tableFormat.cellSpacing > 0 || tableCell.ownerRow.rowIndex === tableCell.ownerTable.childWidgets.length - 1
             || (tableCell.cellFormat.rowSpan > 1
                 && tableCell.ownerRow.rowIndex + tableCell.cellFormat.rowSpan >= tableCell.ownerTable.childWidgets.length) ||
-            !nextRowIsInCurrentTableWidget) {
+            !nextRowIsInCurrentTableWidget || previousCellIndex && nextRow.childWidgets.length < tableCell.ownerRow.childWidgets.length
+            && previousCellIndex < tableCell.columnIndex + tableCell.cellFormat.columnSpan) {
             // tslint:disable-next-line:max-line-length
             border = (tableCell.cellFormat.rowSpan > 1 && tableCell.ownerRow.rowIndex + tableCell.cellFormat.rowSpan === tableCell.ownerTable.childWidgets.length) ?
                 //true part for vertically merged cells specifically.
@@ -12469,6 +12628,22 @@ var TextHelper = /** @class */ (function () {
     /**
      * @private
      */
+    TextHelper.prototype.getEnSpaceCharacter = function () {
+        return String.fromCharCode(8194);
+    };
+    /**
+     * @private
+     */
+    TextHelper.prototype.repeatChar = function (char, count) {
+        var text = '';
+        for (var i = 0; i < count; i++) {
+            text += char;
+        }
+        return text;
+    };
+    /**
+     * @private
+     */
     TextHelper.prototype.getParagraphMarkWidth = function (characterFormat) {
         return this.getParagraphMarkSize(characterFormat).Width;
     };
@@ -12558,10 +12733,10 @@ var TextHelper = /** @class */ (function () {
         // Calculate the text element's baseline offset.
         var textTopVal = spanElement.offsetTop;
         var tempDivTopVal = tempDiv.offsetTop;
-        var width = (parentDiv.offsetWidth - spanElement.offsetWidth);
-        if ((textTopVal - width) === 1) {
-            tempDivTopVal += width;
-        }
+        // let width: number = (parentDiv.offsetWidth - spanElement.offsetWidth);
+        // if ((textTopVal - width) === 1) {
+        //     tempDivTopVal += width;
+        // }
         baselineOffset = tempDivTopVal - textTopVal;
         document.body.removeChild(parentDiv);
         return { 'Height': textHeight, 'BaselineOffset': baselineOffset };
@@ -12655,8 +12830,9 @@ var TextHelper = /** @class */ (function () {
         var italic = '';
         var baselineAlignment = listCharacterFormat.baselineAlignment === 'Normal' ?
             breakCharacterFormat.baselineAlignment : listCharacterFormat.baselineAlignment;
-        bold = listCharacterFormat.bold ? 'bold' : breakCharacterFormat.bold ? 'bold' : '';
-        italic = listCharacterFormat.italic ? 'italic' : breakCharacterFormat.italic ? 'italic' : '';
+        bold = listCharacterFormat.hasValue('bold') ? listCharacterFormat.bold ? 'bold' : '' : breakCharacterFormat.bold ? 'bold' : '';
+        italic = listCharacterFormat.hasValue('italic') ? listCharacterFormat.italic ? 'italic' : ''
+            : breakCharacterFormat.italic ? 'italic' : '';
         format.baselineAlignment = baselineAlignment;
         if (bold) {
             format.bold = true;
@@ -13228,7 +13404,7 @@ var RestrictEditing = /** @class */ (function () {
     function RestrictEditing(documentHelper) {
         var _this = this;
         this.addRemove = true;
-        this.protectionType = 'NoProtection';
+        this.protectionType = 'ReadOnly';
         this.restrictFormatting = false;
         this.isShowRestrictPane = false;
         this.isAddUser = false;
@@ -13249,9 +13425,16 @@ var RestrictEditing = /** @class */ (function () {
             }
             _this.unProtectDialog.show();
         };
-        this.readOnlyChanges = function (args) {
-            if (args.checked) {
+        this.protectionTypeDropChanges = function (args) {
+            if (args.value === 'Read only') {
                 _this.protectionType = 'ReadOnly';
+                _this.userWholeDiv.style.display = 'block';
+                _this.enforceProtection.style.marginLeft = '0px';
+            }
+            else if (args.value === 'Filling in forms') {
+                _this.protectionType = 'FormFieldsOnly';
+                _this.userWholeDiv.style.display = 'none';
+                _this.enforceProtection.style.marginLeft = '8px';
             }
             else {
                 _this.protectionType = 'NoProtection';
@@ -13360,8 +13543,18 @@ var RestrictEditing = /** @class */ (function () {
             attrs: { type: 'checkbox' },
             id: this.viewer.owner.containerId + '_readOnly'
         });
-        editRestrictWholeDiv.appendChild(readOnly);
-        this.readonly = this.createCheckBox('Read only', readOnly);
+        var protectionTypeInput = sf.base.createElement('input', {
+            id: this.viewer.owner.containerId + '_readOnly',
+            className: 'e-prop-font-style'
+        });
+        editRestrictWholeDiv.appendChild(protectionTypeInput);
+        var protectionTypeValue = ['Read only', 'Filling in forms'];
+        this.protectionTypeDrop = new sf.dropdowns.DropDownList({
+            dataSource: protectionTypeValue,
+            cssClass: 'e-de-prop-dropdown'
+        });
+        this.protectionTypeDrop.value = 'Read only';
+        this.protectionTypeDrop.appendTo(protectionTypeInput);
         // let allowPrint: HTMLInputElement = createElement('input', {
         //     attrs: { type: 'checkbox' },
         //     id: this.viewer.owner.containerId + '_allowPrint'
@@ -13376,19 +13569,19 @@ var RestrictEditing = /** @class */ (function () {
         // this.allowCopy = this.createCheckBox('Allow Copy', allowCopy);
         this.restrictPaneWholeDiv.appendChild(editRestrictWholeDiv);
         // User Permissions
-        var userWholeDiv = sf.base.createElement('div', { className: 'e-de-rp-sub-div' });
+        this.userWholeDiv = sf.base.createElement('div', { className: 'e-de-rp-sub-div' });
         var userDiv = sf.base.createElement('div', {
             innerHTML: localObj.getConstant('Exceptions Optional'),
             className: 'e-de-rp-format'
         });
-        userWholeDiv.appendChild(userDiv);
+        this.userWholeDiv.appendChild(userDiv);
         var subContentDiv = sf.base.createElement('div', {
             innerHTML: localObj.getConstant('Select Part Of Document And User'),
             styles: 'margin-bottom:8px;'
         });
-        userWholeDiv.appendChild(subContentDiv);
+        this.userWholeDiv.appendChild(subContentDiv);
         var emptyuserDiv = sf.base.createElement('div', { className: 'e-de-rp-user' });
-        userWholeDiv.appendChild(emptyuserDiv);
+        this.userWholeDiv.appendChild(emptyuserDiv);
         this.addedUser = new sf.lists.ListView({
             cssClass: 'e-de-user-listView',
             dataSource: [{ text: 'Everyone' }],
@@ -13402,8 +13595,8 @@ var RestrictEditing = /** @class */ (function () {
             innerHTML: localObj.getConstant('More users') + '...',
             styles: 'margin-top: 3px'
         });
-        userWholeDiv.appendChild(this.addUser);
-        this.restrictPaneWholeDiv.appendChild(userWholeDiv);
+        this.userWholeDiv.appendChild(this.addUser);
+        this.restrictPaneWholeDiv.appendChild(this.userWholeDiv);
         var lastDiv = sf.base.createElement('div', { className: 'e-de-rp-enforce' });
         this.restrictPaneWholeDiv.appendChild(lastDiv);
         this.enforceProtection = sf.base.createElement('button', {
@@ -13475,7 +13668,7 @@ var RestrictEditing = /** @class */ (function () {
         this.stopProtection.addEventListener('click', this.stopProtectionTriggered);
         this.closeButton.addEventListener('click', this.closePane);
         this.allowFormat.addEventListener('change', this.enableFormatting);
-        this.readonly.addEventListener('change', this.readOnlyChanges);
+        this.protectionTypeDrop.addEventListener('change', this.protectionTypeDropChanges);
         this.highlightCheckBox.addEventListener('change', this.highlightClicked);
     };
     RestrictEditing.prototype.createCheckBox = function (label, element) {
@@ -13484,11 +13677,16 @@ var RestrictEditing = /** @class */ (function () {
         return checkBox;
     };
     RestrictEditing.prototype.loadPaneValue = function () {
-        if (!this.isAddUser) {
-            this.protectionType = this.documentHelper.protectionType;
-        }
+        // if (!this.isAddUser) {
+        //     this.protectionType = this.documentHelper.protectionType;
+        // }
         this.allowFormat.checked = !this.documentHelper.restrictFormatting;
-        this.readonly.checked = this.documentHelper.protectionType === 'ReadOnly' || this.protectionType !== 'NoProtection';
+        if (this.documentHelper.protectionType === 'ReadOnly') {
+            this.protectionTypeDrop.value = 'Read only';
+        }
+        else if (this.documentHelper.protectionType === 'FormFieldsOnly') {
+            this.protectionTypeDrop.value = 'Filling in forms';
+        }
         this.highlightCheckBox.checked = true;
         this.addedUser.enablePersistence = true;
         this.addedUser.dataSource = this.documentHelper.userCollection;
@@ -13529,6 +13727,254 @@ var RestrictEditing = /** @class */ (function () {
         }
     };
     return RestrictEditing;
+}());
+
+/**
+ * @private
+ */
+var FormFieldPopUp = /** @class */ (function () {
+    function FormFieldPopUp(owner) {
+        var _this = this;
+        this.applyTextFormFieldValue = function () {
+            _this.owner.editor.updateFormField(_this.formField, _this.textBoxInstance.value);
+            // tslint:disable-next-line:max-line-length
+            _this.owner.trigger('afterFormFieldFill', { 'fieldName': _this.formField.formFieldData.name, value: _this.formField.resultText, isCanceled: false });
+            _this.hidePopup();
+        };
+        this.applyNumberFormFieldValue = function () {
+            _this.owner.editor.updateFormField(_this.formField, _this.numberInput.value.toString());
+            // tslint:disable-next-line:max-line-length
+            _this.owner.trigger('afterFormFieldFill', { 'fieldName': _this.formField.formFieldData.name, value: _this.formField.resultText, isCanceled: false });
+            _this.hidePopup();
+        };
+        this.applyDateFormFieldValue = function () {
+            if (!sf.base.isNullOrUndefined(_this.datePickerInstance.value)) {
+                _this.owner.editor.updateFormField(_this.formField, _this.dateInput.value);
+                // tslint:disable-next-line:max-line-length
+                _this.owner.trigger('afterFormFieldFill', { 'fieldName': _this.formField.formFieldData.name, value: _this.formField.resultText, isCanceled: false });
+                _this.hidePopup();
+            }
+        };
+        this.applyDropDownFormFieldValue = function () {
+            _this.owner.editor.updateFormField(_this.formField, _this.ddlInstance.index);
+            // tslint:disable-next-line:max-line-length
+            _this.owner.trigger('afterFieldFill', { 'fieldName': _this.formField.formFieldData.name, value: _this.formField.formFieldData.selectedIndex, isCanceled: false });
+            _this.hidePopup();
+        };
+        this.enableDisableDatePickerOkButton = function (args) {
+            if (args.isInteracted) {
+                _this.dataPickerOkButton.disabled = false;
+            }
+        };
+        /**
+         * @private
+         */
+        this.closeButton = function () {
+            var field = _this.formField;
+            _this.hidePopup();
+            var eventArgs = { 'fieldName': field.formFieldData.name };
+            if (field.formFieldData instanceof TextFormField) {
+                eventArgs.value = field.resultText;
+            }
+            else if (field.formFieldData instanceof CheckBoxFormField) {
+                eventArgs.value = field.formFieldData.checked;
+            }
+            else {
+                eventArgs.value = field.formFieldData.selectedIndex;
+            }
+            eventArgs.isCanceled = true;
+            _this.owner.trigger('afterFormFieldFill', eventArgs);
+        };
+        /**
+         * @private
+         */
+        this.hidePopup = function () {
+            _this.formField = undefined;
+            if (_this.target) {
+                _this.target.style.display = 'none';
+            }
+            if (_this.popupObject) {
+                _this.popupObject.hide();
+                _this.popupObject.destroy();
+                _this.popupObject = undefined;
+            }
+        };
+        this.owner = owner;
+    }
+    FormFieldPopUp.prototype.initPopup = function () {
+        var popupElement = sf.base.createElement('div', { className: 'e-de-form-popup' });
+        this.textBoxContainer = this.initTextBoxInput();
+        popupElement.appendChild(this.textBoxContainer);
+        popupElement.appendChild(this.initNumericTextBox());
+        popupElement.appendChild(this.initDatePicker());
+        popupElement.appendChild(this.initDropDownList());
+        this.target = popupElement;
+        this.owner.documentHelper.viewerContainer.appendChild(popupElement);
+    };
+    FormFieldPopUp.prototype.initTextBoxInput = function () {
+        var textBoxDiv = sf.base.createElement('div', { className: 'e-de-txt-field' });
+        var textBoxInput = sf.base.createElement('input', { className: 'e-de-txt-form' });
+        var textBox = new sf.inputs.TextBox();
+        this.textBoxInput = textBoxInput;
+        var textBoxButtonDiv = sf.base.createElement('div', { className: 'e-de-cmt-action-button' });
+        var textBoxOkButton = sf.base.createElement('button');
+        var textBoxCancelButton = sf.base.createElement('button');
+        textBoxOkButton.addEventListener('click', this.applyTextFormFieldValue);
+        textBoxCancelButton.addEventListener('click', this.closeButton);
+        textBoxDiv.appendChild(textBoxInput);
+        textBoxButtonDiv.appendChild(textBoxOkButton);
+        textBoxButtonDiv.appendChild(textBoxCancelButton);
+        textBoxDiv.appendChild(textBoxButtonDiv);
+        textBox.appendTo(textBoxInput);
+        var okButton = new sf.buttons.Button({ cssClass: 'e-de-save', iconCss: 'e-de-save-icon' }, textBoxOkButton);
+        var cancelButton = new sf.buttons.Button({ cssClass: 'e-de-cancel', iconCss: 'e-de-cancel-icon' }, textBoxCancelButton);
+        this.textBoxInstance = textBox;
+        return textBoxDiv;
+    };
+    FormFieldPopUp.prototype.initNumericTextBox = function () {
+        var numericDiv = sf.base.createElement('div', { className: 'e-de-num-field' });
+        var numberInput = sf.base.createElement('input', { className: 'e-de-txt-form' });
+        var numericTextBox = new sf.inputs.NumericTextBox();
+        this.numberInput = numberInput;
+        var textBoxButtonDiv = sf.base.createElement('div', { className: 'e-de-cmt-action-button' });
+        var textBoxOkButton = sf.base.createElement('button');
+        var textBoxCancelButton = sf.base.createElement('button');
+        textBoxOkButton.addEventListener('click', this.applyNumberFormFieldValue);
+        textBoxCancelButton.addEventListener('click', this.closeButton);
+        numericDiv.appendChild(numberInput);
+        textBoxButtonDiv.appendChild(textBoxOkButton);
+        textBoxButtonDiv.appendChild(textBoxCancelButton);
+        numericDiv.appendChild(textBoxButtonDiv);
+        numericTextBox.appendTo(numberInput);
+        var okButton = new sf.buttons.Button({ cssClass: 'e-de-save', iconCss: 'e-de-save-icon' }, textBoxOkButton);
+        var cancelButton = new sf.buttons.Button({ cssClass: 'e-de-cancel', iconCss: 'e-de-cancel-icon' }, textBoxCancelButton);
+        this.numericTextBoxInstance = numericTextBox;
+        return numericDiv;
+    };
+    FormFieldPopUp.prototype.initDatePicker = function () {
+        var dateDiv = sf.base.createElement('div', { className: 'e-de-date-field' });
+        var dateInput = sf.base.createElement('input', { className: 'e-de-txt-form' });
+        // tslint:disable-next-line:max-line-length
+        var datePicker = new sf.calendars.DateTimePicker({ allowEdit: false, strictMode: true, change: this.enableDisableDatePickerOkButton });
+        this.dateInput = dateInput;
+        var textBoxButtonDiv = sf.base.createElement('div', { className: 'e-de-cmt-action-button' });
+        var textBoxOkButton = sf.base.createElement('button');
+        var textBoxCancelButton = sf.base.createElement('button');
+        textBoxOkButton.addEventListener('click', this.applyDateFormFieldValue);
+        textBoxCancelButton.addEventListener('click', this.closeButton);
+        dateDiv.appendChild(dateInput);
+        textBoxButtonDiv.appendChild(textBoxOkButton);
+        textBoxButtonDiv.appendChild(textBoxCancelButton);
+        dateDiv.appendChild(textBoxButtonDiv);
+        datePicker.appendTo(dateInput);
+        this.dataPickerOkButton = new sf.buttons.Button({ cssClass: 'e-de-save', iconCss: 'e-de-save-icon' }, textBoxOkButton);
+        var cancelButton = new sf.buttons.Button({ cssClass: 'e-de-cancel', iconCss: 'e-de-cancel-icon' }, textBoxCancelButton);
+        this.datePickerInstance = datePicker;
+        return dateDiv;
+    };
+    FormFieldPopUp.prototype.initDropDownList = function () {
+        var dropDownDiv = sf.base.createElement('div', { className: 'e-de-ddl-field' });
+        var dropDownInput = sf.base.createElement('input', { className: 'e-de-txt-form' });
+        var ddl = new sf.dropdowns.DropDownList();
+        this.dropDownInput = dropDownInput;
+        var textBoxButtonDiv = sf.base.createElement('div', { className: 'e-de-cmt-action-button' });
+        var textBoxOkButton = sf.base.createElement('button');
+        var textBoxCancelButton = sf.base.createElement('button');
+        textBoxOkButton.addEventListener('click', this.applyDropDownFormFieldValue);
+        textBoxCancelButton.addEventListener('click', this.closeButton);
+        dropDownDiv.appendChild(dropDownInput);
+        textBoxButtonDiv.appendChild(textBoxOkButton);
+        textBoxButtonDiv.appendChild(textBoxCancelButton);
+        dropDownDiv.appendChild(textBoxButtonDiv);
+        ddl.appendTo(dropDownInput);
+        var okButton = new sf.buttons.Button({ cssClass: 'e-de-save', iconCss: 'e-de-save-icon' }, textBoxOkButton);
+        var cancelButton = new sf.buttons.Button({ cssClass: 'e-de-cancel', iconCss: 'e-de-cancel-icon' }, textBoxCancelButton);
+        this.ddlInstance = ddl;
+        return dropDownDiv;
+    };
+    /**
+     * @private
+     */
+    FormFieldPopUp.prototype.showPopUp = function (formField, point) {
+        var _this = this;
+        if (formField) {
+            this.formField = formField;
+            this.owner.selection.selectField();
+            if (sf.base.isNullOrUndefined(this.target)) {
+                this.initPopup();
+            }
+            sf.base.classList(this.target, [], ['e-de-txt-form', 'e-de-num-form', 'e-de-date-form', 'e-de-ddl-form']);
+            var formFieldData = formField.formFieldData;
+            if (formFieldData) {
+                if (formFieldData instanceof TextFormField) {
+                    var resultText = formField.resultText;
+                    var rex = new RegExp(this.owner.documentHelper.textHelper.getEnSpaceCharacter(), 'gi');
+                    if (resultText.replace(rex, '') === '') {
+                        resultText = '';
+                    }
+                    var maxLength = formFieldData.maxLength;
+                    var formFieldType = formFieldData.type;
+                    var inputElement_1;
+                    resultText = resultText ? resultText : '';
+                    if (formFieldType === 'Text') {
+                        sf.base.classList(this.target, ['e-de-txt-form'], []);
+                        inputElement_1 = this.textBoxInput;
+                        this.textBoxInstance.value = resultText;
+                    }
+                    else if (formFieldData.type === 'Number') {
+                        sf.base.classList(this.target, ['e-de-num-form'], []);
+                        inputElement_1 = this.numberInput;
+                        this.numericTextBoxInstance.format = formFieldData.format;
+                        this.numericTextBoxInstance.value = parseFloat(resultText.replace(/,/gi, ''));
+                    }
+                    else if (formFieldType === 'Date') {
+                        sf.base.classList(this.target, ['e-de-date-form'], []);
+                        inputElement_1 = this.dateInput;
+                        var format = formFieldData.format;
+                        if (format.indexOf('am/pm') !== -1) {
+                            format = format.replace(/am\/pm/gi, 'a');
+                        }
+                        this.datePickerInstance.format = format;
+                        this.datePickerInstance.value = new Date(resultText);
+                        this.dataPickerOkButton.disabled = true;
+                    }
+                    if (inputElement_1) {
+                        if (maxLength > 0) {
+                            inputElement_1.maxLength = maxLength;
+                        }
+                        else {
+                            inputElement_1.removeAttribute('maxlength');
+                        }
+                        setTimeout(function () {
+                            inputElement_1.focus();
+                        });
+                    }
+                }
+                else if (formFieldData instanceof DropDownFormField) {
+                    sf.base.classList(this.target, ['e-de-ddl-form'], []);
+                    this.ddlInstance.dataSource = formFieldData.dropDownItems;
+                    this.ddlInstance.index = formFieldData.selectedIndex;
+                    setTimeout(function () {
+                        _this.ddlInstance.showPopup();
+                    });
+                }
+                var left = this.owner.selection.getLeftInternal(formField.line, formField, 0);
+                var lineHeight = formField.line.height;
+                var position = this.owner.selection.getTooltipPosition(formField, left, this.target, true);
+                if (!this.popupObject) {
+                    this.popupObject = new sf.popups.Popup(this.target, {
+                        height: 'auto',
+                        width: 'auto',
+                        relateTo: this.owner.documentHelper.viewerContainer.parentElement,
+                        position: { X: position.x, Y: position.y + lineHeight }
+                    });
+                }
+                this.target.style.display = 'block';
+                this.popupObject.show();
+            }
+        }
+    };
+    return FormFieldPopUp;
 }());
 
 var __extends$2 = (undefined && undefined.__extends) || (function () {
@@ -13715,6 +14161,10 @@ var DocumentHelper = /** @class */ (function () {
          * @private
          */
         this.isRowOrCellResizing = false;
+        /**
+         * @private
+         */
+        this.formFields = [];
         this.isMouseDownInFooterRegion = false;
         this.pageFitTypeIn = 'None';
         /**
@@ -14031,13 +14481,17 @@ var DocumentHelper = /** @class */ (function () {
          * @private
          */
         this.onMouseDownInternal = function (event) {
-            if ((event.target && event.target.classList.contains('e-de-cmt-mark-icon')) || _this.isTouchInput ||
+            var target = event.target;
+            if ((!sf.base.isNullOrUndefined(target) && target !== _this.viewerContainer) || _this.isTouchInput ||
                 event.offsetX > (_this.visibleBounds.width - (_this.visibleBounds.width - _this.viewerContainer.clientWidth))
                 || event.offsetY > (_this.visibleBounds.height - (_this.visibleBounds.height - _this.viewerContainer.clientHeight))) {
                 return;
             }
             if (!sf.base.isNullOrUndefined(_this.selection)) {
                 _this.updateCursor(event);
+                if (_this.formFillPopup) {
+                    _this.formFillPopup.hidePopup();
+                }
                 // tslint:disable-next-line:max-line-length
                 if (_this.isLeftButtonPressed(event) && !_this.owner.isReadOnlyMode && _this.owner.enableImageResizerMode && !sf.base.isNullOrUndefined(_this.owner.imageResizerModule.selectedResizeElement)) {
                     _this.owner.imageResizerModule.isImageResizing = true;
@@ -14181,6 +14635,29 @@ var DocumentHelper = /** @class */ (function () {
                 if (_this.selection.checkAndEnableHeaderFooter(cursorPoint, _this.owner.viewer.findFocusedPage(cursorPoint, true))) {
                     return;
                 }
+                if (!_this.isDocumentProtected && _this.owner.enableFormField) {
+                    var formatType = _this.selection.getFormFieldType();
+                    if (formatType) {
+                        if (formatType.toString() !== '') {
+                            _this.selection.selectField();
+                        }
+                        switch (formatType) {
+                            case 'Text':
+                                _this.owner.textFormFieldDialogModule.show();
+                                break;
+                            case 'CheckBox':
+                                _this.owner.checkBoxFormFieldDialogModule.show();
+                                break;
+                            case 'DropDown':
+                                _this.owner.dropDownFormFieldDialogModule.show();
+                                break;
+                        }
+                    }
+                }
+                else {
+                    _this.tapCount = 2;
+                    return;
+                }
                 // tslint:disable-next-line:max-line-length
                 if (_this.selection.isEmpty && !sf.base.isNullOrUndefined(_this.currentPage) && !sf.base.isNullOrUndefined(_this.owner.selection.start)) {
                     _this.owner.selection.selectCurrentWord();
@@ -14194,7 +14671,11 @@ var DocumentHelper = /** @class */ (function () {
          * @param {MouseEvent} event
          * @private
          */
+        // tslint:disable:max-func-body-length
         this.onMouseUpInternal = function (event) {
+            if (!sf.base.isNullOrUndefined(event.target) && event.target !== _this.viewerContainer) {
+                return;
+            }
             event.preventDefault();
             _this.isListTextSelected = false;
             var cursorPoint = new Point(event.offsetX, event.offsetY);
@@ -14233,6 +14714,38 @@ var DocumentHelper = /** @class */ (function () {
                     (((isCtrlkeyPressed && _this.owner.useCtrlClickToFollowHyperlink ||
                         !_this.owner.useCtrlClickToFollowHyperlink) && _this.isLeftButtonPressed(event) === true))) {
                     _this.selection.navigateHyperLinkOnEvent(touchPoint, false);
+                }
+                if (_this.isLeftButtonPressed(event) && _this.isDocumentProtected && _this.protectionType === 'FormFieldsOnly' && _this.selection) {
+                    var formField = _this.selection.getCurrentFormField();
+                    if (formField && formField.formFieldData && formField.formFieldData.enabled) {
+                        var data = { 'fieldName': formField.formFieldData.name };
+                        if (formField.formFieldData instanceof TextFormField) {
+                            data.value = formField.resultText;
+                        }
+                        else if (formField.formFieldData instanceof CheckBoxFormField) {
+                            data.value = formField.formFieldData.checked;
+                        }
+                        else {
+                            data.value = formField.formFieldData.selectedIndex;
+                        }
+                        _this.owner.trigger('beforeFormFieldFill', data);
+                        if (formField.formFieldData instanceof TextFormField || formField.formFieldData instanceof DropDownFormField) {
+                            _this.formFillPopup.showPopUp(formField, touchPoint);
+                        }
+                        else {
+                            _this.owner.editor.toggleCheckBoxFormField(formField);
+                            _this.owner.trigger('afterFormFieldFill', data);
+                        }
+                    }
+                    else {
+                        _this.owner.selection.selectNextFormField();
+                    }
+                }
+                else {
+                    var formField = _this.selection.getCurrentFormField();
+                    if (formField && formField.formFieldData) {
+                        _this.selection.selectField();
+                    }
                 }
                 if (!_this.owner.isReadOnlyMode && _this.isSelectionInListText(touchPoint)) {
                     _this.selection.selectListText();
@@ -14526,6 +15039,9 @@ var DocumentHelper = /** @class */ (function () {
          * @private
          */
         this.onKeyDownInternal = function (event) {
+            if (!sf.base.isNullOrUndefined(event.target) && event.target !== _this.editableDiv) {
+                return;
+            }
             var isHandled = false;
             var keyEventArgs = { 'event': event, 'isHandled': false, source: _this.owner };
             _this.owner.trigger('keyDown', keyEventArgs);
@@ -14573,6 +15089,7 @@ var DocumentHelper = /** @class */ (function () {
         this.bookmarks = new Dictionary();
         this.editRanges = new Dictionary();
         this.isIosDevice = /Mac|iPad|iPod/i.test(navigator.userAgent);
+        this.formFillPopup = new FormFieldPopUp(this.owner);
     }
     Object.defineProperty(DocumentHelper.prototype, "visibleBounds", {
         /**
@@ -14822,6 +15339,7 @@ var DocumentHelper = /** @class */ (function () {
         this.editRanges.clear();
         this.headersFooters = [];
         this.fields = [];
+        this.formFields = [];
         this.currentSelectedComment = undefined;
         for (var i = 0; i < this.comments.length; i++) {
             var commentStart = this.comments[i].commentStart;
@@ -14845,6 +15363,9 @@ var DocumentHelper = /** @class */ (function () {
         this.hashValue = '';
         this.saltValue = '';
         this.userCollection = [];
+        if (this.formFillPopup) {
+            this.formFillPopup.hidePopup();
+        }
     };
     /**
      * @private
@@ -15975,17 +16496,21 @@ var DocumentHelper = /** @class */ (function () {
             resizePosition = resizeObj.resizePosition;
         }
         var lineLeft = 0;
+        var formField = undefined;
         if (!sf.base.isNullOrUndefined(widget)) {
             lineLeft = this.selection.getLineStartLeft(widget);
             hyperlinkField = this.selection.getHyperLinkFieldInCurrentSelection(widget, touchPoint);
+            if (sf.base.isNullOrUndefined(hyperlinkField)) {
+                formField = this.selection.getHyperLinkFieldInCurrentSelection(widget, touchPoint, true);
+            }
             widgetInfo = this.selection.updateTextPositionIn(widget, undefined, 0, touchPoint, true);
             left = this.selection.getLeft(widget);
             top = this.selection.getTop(widget);
             this.selection.setHyperlinkContentToToolTip(hyperlinkField, widget, touchPoint.x);
         }
         var isCtrlkeyPressed = this.isIosDevice ? event.metaKey : event.ctrlKey;
-        if (!sf.base.isNullOrUndefined(hyperlinkField) && (isCtrlkeyPressed &&
-            this.owner.useCtrlClickToFollowHyperlink || !this.owner.useCtrlClickToFollowHyperlink)) {
+        if ((!sf.base.isNullOrUndefined(hyperlinkField) && (isCtrlkeyPressed &&
+            this.owner.useCtrlClickToFollowHyperlink || !this.owner.useCtrlClickToFollowHyperlink)) || formField) {
             div.style.cursor = 'pointer';
             return;
         }
@@ -17165,6 +17690,7 @@ var __extends = (undefined && undefined.__extends) || (function () {
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
 })();
+// tslint:disable-next-line:max-line-length
 /**
  * @private
  */
@@ -21155,6 +21681,10 @@ var ElementBox = /** @class */ (function () {
                 if (documentHelper.fields.indexOf(fieldBegin) === -1) {
                     documentHelper.fields.push(fieldBegin);
                 }
+                if (!sf.base.isNullOrUndefined(fieldBegin.formFieldData) &&
+                    documentHelper.formFields.indexOf(fieldBegin) === -1) {
+                    documentHelper.formFields.push(fieldBegin);
+                }
             }
         }
         else if (this.fieldType === 2) {
@@ -21486,6 +22016,31 @@ var FieldElementBox = /** @class */ (function (_super) {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(FieldElementBox.prototype, "resultText", {
+        /**
+         * @private
+         */
+        get: function () {
+            if (!sf.base.isNullOrUndefined(this.formFieldData) && this.fieldType === 0 &&
+                !sf.base.isNullOrUndefined(this.fieldSeparator) && !sf.base.isNullOrUndefined(this.fieldEnd)) {
+                var textElement = this.fieldSeparator.nextElement;
+                var text = '';
+                do {
+                    if (textElement instanceof TextElementBox) {
+                        text += textElement.text;
+                    }
+                    textElement = textElement.nextNode;
+                    if (textElement === this.fieldEnd) {
+                        break;
+                    }
+                } while (textElement);
+                return text;
+            }
+            return undefined;
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * @private
      */
@@ -21497,6 +22052,9 @@ var FieldElementBox = /** @class */ (function (_super) {
      */
     FieldElementBox.prototype.clone = function () {
         var field = new FieldElementBox(this.fieldType);
+        if (this.fieldType === 0 && !sf.base.isNullOrUndefined(this.formFieldData)) {
+            field.formFieldData = this.formFieldData.clone();
+        }
         field.characterFormat.copyFormat(this.characterFormat);
         if (this.margin) {
             field.margin = this.margin.clone();
@@ -21519,6 +22077,242 @@ var FieldElementBox = /** @class */ (function (_super) {
     };
     return FieldElementBox;
 }(ElementBox));
+/**
+ * @private
+ */
+var FormField = /** @class */ (function () {
+    function FormField() {
+        /*
+         * @private
+         */
+        this.name = '';
+        /**
+         * @private
+         */
+        this.enabled = true;
+        /**
+         * @private
+         */
+        this.helpText = '';
+        /**
+         * @private
+         */
+        this.statusText = '';
+    }
+    return FormField;
+}());
+/**
+ * @private
+ */
+var TextFormField = /** @class */ (function (_super) {
+    __extends(TextFormField, _super);
+    function TextFormField() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        /**
+         * @private
+         */
+        _this.type = 'Text';
+        /**
+         * @private
+         */
+        _this.maxLength = 0;
+        /**
+         * @private
+         */
+        _this.defaultValue = '';
+        /**
+         * @private
+         */
+        _this.format = '';
+        return _this;
+    }
+    /**
+     * @private
+     */
+    TextFormField.prototype.clone = function () {
+        var textForm = new TextFormField();
+        textForm.type = this.type;
+        textForm.name = this.name;
+        textForm.enabled = this.enabled;
+        textForm.helpText = this.helpText;
+        textForm.statusText = this.statusText;
+        textForm.maxLength = this.maxLength;
+        textForm.defaultValue = this.defaultValue;
+        textForm.format = this.format;
+        return textForm;
+    };
+    /**
+     * @private
+     */
+    TextFormField.prototype.getFormFieldInfo = function () {
+        var textFormField = {
+            defaultValue: this.defaultValue,
+            enabled: this.enabled,
+            format: this.format,
+            helpText: this.helpText,
+            maxLength: this.maxLength,
+            type: this.type
+        };
+        return textFormField;
+    };
+    /**
+     * @private
+     */
+    TextFormField.prototype.copyFieldInfo = function (info) {
+        if (!sf.base.isNullOrUndefined(info.defaultValue)) {
+            this.defaultValue = info.defaultValue;
+        }
+        if (!sf.base.isNullOrUndefined(info.enabled)) {
+            this.enabled = info.enabled;
+        }
+        if (!sf.base.isNullOrUndefined(info.format)) {
+            this.format = info.format;
+        }
+        if (!sf.base.isNullOrUndefined(info.helpText)) {
+            this.helpText = info.helpText;
+        }
+        if (!sf.base.isNullOrUndefined(info.maxLength)) {
+            this.maxLength = info.maxLength;
+        }
+        if (!sf.base.isNullOrUndefined(info.type)) {
+            this.type = info.type;
+        }
+    };
+    return TextFormField;
+}(FormField));
+/**
+ * @private
+ */
+var CheckBoxFormField = /** @class */ (function (_super) {
+    __extends(CheckBoxFormField, _super);
+    function CheckBoxFormField() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        /**
+         * @private
+         */
+        _this.sizeType = 'Auto';
+        /**
+         * @private
+         */
+        _this.size = 11;
+        /**
+         * @private
+         */
+        _this.defaultValue = false;
+        /**
+         * @private
+         */
+        _this.checked = false;
+        return _this;
+    }
+    /**
+     * @private
+     */
+    CheckBoxFormField.prototype.clone = function () {
+        var checkBoxForm = new CheckBoxFormField();
+        checkBoxForm.name = this.name;
+        checkBoxForm.enabled = this.enabled;
+        checkBoxForm.helpText = this.helpText;
+        checkBoxForm.statusText = this.statusText;
+        checkBoxForm.sizeType = this.sizeType;
+        checkBoxForm.size = this.size;
+        checkBoxForm.defaultValue = this.defaultValue;
+        checkBoxForm.checked = this.checked;
+        return checkBoxForm;
+    };
+    /**
+     * @private
+     */
+    CheckBoxFormField.prototype.getFormFieldInfo = function () {
+        var checkBoxFormField = {
+            defaultValue: this.defaultValue,
+            enabled: this.enabled,
+            helpText: this.helpText,
+            size: this.size,
+            sizeType: this.sizeType
+        };
+        return checkBoxFormField;
+    };
+    /**
+     * @private
+     */
+    CheckBoxFormField.prototype.copyFieldInfo = function (info) {
+        if (!sf.base.isNullOrUndefined(info.defaultValue)) {
+            this.defaultValue = info.defaultValue;
+            this.checked = info.defaultValue;
+        }
+        if (!sf.base.isNullOrUndefined(info.enabled)) {
+            this.enabled = info.enabled;
+        }
+        if (!sf.base.isNullOrUndefined(info.size)) {
+            this.size = info.size;
+        }
+        if (!sf.base.isNullOrUndefined(info.helpText)) {
+            this.helpText = info.helpText;
+        }
+        if (!sf.base.isNullOrUndefined(info.sizeType)) {
+            this.sizeType = info.sizeType;
+        }
+    };
+    return CheckBoxFormField;
+}(FormField));
+/**
+ * @private
+ */
+var DropDownFormField = /** @class */ (function (_super) {
+    __extends(DropDownFormField, _super);
+    function DropDownFormField() {
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        /**
+         * @private
+         */
+        _this.dropDownItems = [];
+        /**
+         * @private
+         */
+        _this.selectedIndex = 0;
+        return _this;
+    }
+    /**
+     * @private
+     */
+    DropDownFormField.prototype.clone = function () {
+        var dropDown = new DropDownFormField();
+        dropDown.name = this.name;
+        dropDown.enabled = this.enabled;
+        dropDown.helpText = this.helpText;
+        dropDown.statusText = this.statusText;
+        dropDown.dropDownItems = this.dropDownItems.slice();
+        dropDown.selectedIndex = this.selectedIndex;
+        return dropDown;
+    };
+    /**
+     * @private
+     */
+    DropDownFormField.prototype.getFormFieldInfo = function () {
+        var dropDownFormField = {
+            dropDownItems: this.dropDownItems.slice(),
+            enabled: this.enabled,
+            helpText: this.helpText
+        };
+        return dropDownFormField;
+    };
+    /**
+     * @private
+     */
+    DropDownFormField.prototype.copyFieldInfo = function (info) {
+        if (!sf.base.isNullOrUndefined(info.dropDownItems)) {
+            this.dropDownItems = info.dropDownItems;
+        }
+        if (!sf.base.isNullOrUndefined(info.enabled)) {
+            this.enabled = info.enabled;
+        }
+        if (!sf.base.isNullOrUndefined(info.helpText)) {
+            this.helpText = info.helpText;
+        }
+    };
+    return DropDownFormField;
+}(FormField));
 /**
  * @private
  */
@@ -24318,6 +25112,7 @@ var CONTEXTMENU_HYPERLINK = '_contextmenu_hyperlink';
 var CONTEXTMENU_OPEN_HYPERLINK = '_contextmenu_open_hyperlink';
 var CONTEXTMENU_COPY_HYPERLINK = '_contextmenu_copy_hyperlink';
 var CONTEXTMENU_REMOVE_HYPERLINK = '_contextmenu_remove_hyperlink';
+var CONTEXTMENU_PROPERTIES = '_properties';
 var CONTEXTMENU_EDIT_HYPERLINK = '_contextmenu_edit_hyperlink';
 var CONTEXTMENU_FONT_DIALOG = '_contextmenu_font_dialog';
 var CONTEXTMENU_PARAGRAPH = '_contextmenu_paragraph_dialog';
@@ -24543,6 +25338,11 @@ var ContextMenu$1 = /** @class */ (function () {
                 text: localValue.getConstant('Remove Hyperlink'),
                 iconCss: 'e-icons e-de-remove-hyperlink',
                 id: id + CONTEXTMENU_REMOVE_HYPERLINK
+            },
+            {
+                text: localValue.getConstant('Properties'),
+                iconCss: 'e-icons e-de-formproperties',
+                id: id + CONTEXTMENU_PROPERTIES
             },
             {
                 separator: true
@@ -24796,6 +25596,20 @@ var ContextMenu$1 = /** @class */ (function () {
                 this.currentContextInfo = null;
                 this.documentHelper.owner.spellCheckDialog.show(contextInfo.text, contextInfo.element);
                 break;
+            case id + CONTEXTMENU_PROPERTIES:
+                var inline = this.documentHelper.selection.getCurrentFormField();
+                if (inline instanceof FieldElementBox) {
+                    if (inline.formFieldData instanceof TextFormField) {
+                        this.documentHelper.owner.textFormFieldDialogModule.show();
+                    }
+                    else if (inline.formFieldData instanceof CheckBoxFormField) {
+                        this.documentHelper.owner.checkBoxFormFieldDialogModule.show();
+                    }
+                    else if (inline.formFieldData instanceof DropDownFormField) {
+                        this.documentHelper.owner.dropDownFormFieldDialogModule.show();
+                    }
+                }
+                break;
             default:
                 var expectedData = this.documentHelper.owner.element.id + CONTEXTMENU_SPELLCHECK_OTHERSUGGESTIONS;
                 if (item.substring(0, expectedData.length) === expectedData) {
@@ -24973,6 +25787,7 @@ var ContextMenu$1 = /** @class */ (function () {
         var editHyperlink = document.getElementById(id + CONTEXTMENU_EDIT_HYPERLINK);
         var copyHyperlink = document.getElementById(id + CONTEXTMENU_COPY_HYPERLINK);
         var removeHyperlink = document.getElementById(id + CONTEXTMENU_REMOVE_HYPERLINK);
+        var properties = document.getElementById(id + CONTEXTMENU_PROPERTIES);
         var continueNumbering = document.getElementById(id + CONTEXTMENU_CONTINUE_NUMBERING);
         var restartAt = document.getElementById(id + CONTEXTMENU_RESTART_AT);
         var autoFitTable = document.getElementById(id + CONTEXTMENU_AUTO_FIT);
@@ -24988,6 +25803,7 @@ var ContextMenu$1 = /** @class */ (function () {
         editHyperlink.style.display = 'none';
         removeHyperlink.style.display = 'none';
         removeHyperlink.nextSibling.style.display = 'none';
+        properties.style.display = 'none';
         mergeCells.style.display = 'none';
         autoFitTable.style.display = 'none';
         font.style.display = 'none';
@@ -25071,6 +25887,10 @@ var ContextMenu$1 = /** @class */ (function () {
                     isDialogHidden = true;
                 }
             }
+            if (selection.isFormField() && this.documentHelper.owner.enableFormField) {
+                hyperlink.style.display = 'none';
+                properties.style.display = 'block';
+            }
         }
         if (this.documentHelper.owner.selection.start.paragraph.isInsideTable
             && this.documentHelper.owner.selection.end.paragraph.isInsideTable) {
@@ -25139,6 +25959,10 @@ var SfdtReader = /** @class */ (function () {
         this.commentsCollection = undefined;
         this.isPageBreakInsideTable = false;
         this.isParseHeader = false;
+        /**
+         * @private
+         */
+        this.isPaste = false;
         this.documentHelper = documentHelper;
         this.editableRanges = new Dictionary();
     }
@@ -25704,6 +26528,34 @@ var SfdtReader = /** @class */ (function () {
                 this.applyCharacterStyle(inline, fieldBegin);
                 fieldBegin.fieldCodeType = inline.fieldCodeType;
                 fieldBegin.hasFieldEnd = inline.hasFieldEnd;
+                if (inline.hasOwnProperty('formFieldData')) {
+                    var formFieldData = void 0;
+                    if (inline.formFieldData.hasOwnProperty('textInput')) {
+                        formFieldData = new TextFormField();
+                        formFieldData.type = inline.formFieldData.textInput.type;
+                        formFieldData.maxLength = inline.formFieldData.textInput.maxLength;
+                        formFieldData.defaultValue = inline.formFieldData.textInput.defaultValue;
+                        formFieldData.format = inline.formFieldData.textInput.format;
+                    }
+                    else if (inline.formFieldData.hasOwnProperty('checkBox')) {
+                        formFieldData = new CheckBoxFormField();
+                        formFieldData.sizeType = inline.formFieldData.checkBox.sizeType;
+                        formFieldData.size = inline.formFieldData.checkBox.size;
+                        formFieldData.defaultValue = inline.formFieldData.checkBox.defaultValue;
+                        formFieldData.checked = inline.formFieldData.checkBox.checked;
+                    }
+                    else {
+                        formFieldData = new DropDownFormField();
+                        formFieldData.dropDownItems = inline.formFieldData.dropDownList.dropDownItems;
+                        formFieldData.selectedIndex = inline.formFieldData.dropDownList.selectedIndex;
+                    }
+                    formFieldData.name = inline.formFieldData.name;
+                    formFieldData.enabled = inline.formFieldData.enabled;
+                    formFieldData.helpText = inline.formFieldData.helpText;
+                    formFieldData.statusText = inline.formFieldData.statusText;
+                    fieldBegin.formFieldData = formFieldData;
+                    this.documentHelper.formFields.push(fieldBegin);
+                }
                 this.documentHelper.fieldStacks.push(fieldBegin);
                 fieldBegin.line = lineWidget;
                 this.documentHelper.fields.push(fieldBegin);
@@ -25752,7 +26604,7 @@ var SfdtReader = /** @class */ (function () {
                 field.line = lineWidget;
                 lineWidget.children.push(field);
             }
-            else if (inline.hasOwnProperty('bookmarkType')) {
+            else if (inline.hasOwnProperty('bookmarkType') && !this.isPaste) {
                 var bookmark = undefined;
                 bookmark = new BookmarkElementBox(inline.bookmarkType);
                 bookmark.name = inline.name;
@@ -27345,6 +28197,9 @@ var SelectionParagraphFormat = /** @class */ (function () {
         }
         if (!sf.base.isNullOrUndefined(this.contextualSpacing) && this.contextualSpacing !== format.contextualSpacing) {
             this.contextualSpacing = undefined;
+        }
+        if (!sf.base.isNullOrUndefined(this.styleName) && format.baseStyle && this.styleName !== format.baseStyle.name) {
+            this.styleName = undefined;
         }
     };
     /**
@@ -29126,7 +29981,8 @@ var HtmlExport = /** @class */ (function () {
             else if (inline.hasOwnProperty('fieldType')) {
                 if (inline.fieldType === 0) {
                     var fieldCode = paragraph.inlines[i + 1];
-                    if (!sf.base.isNullOrUndefined(fieldCode) && (fieldCode.text.indexOf('TOC') >= 0 || fieldCode.text.indexOf('HYPERLINK') >= 0)) {
+                    if (!sf.base.isNullOrUndefined(fieldCode) && !sf.base.isNullOrUndefined(fieldCode.text) &&
+                        (fieldCode.text.indexOf('TOC') >= 0 || fieldCode.text.indexOf('HYPERLINK') >= 0)) {
                         this.fieldCheck = 1;
                         var tagAttributes = [];
                         tagAttributes.push('style="' + this.serializeInlineStyle(inline.characterFormat, '') + '"');
@@ -32712,10 +33568,22 @@ var Selection = /** @class */ (function () {
     Selection.prototype.selectField = function () {
         if (this.isInField) {
             var fieldStart = this.getHyperlinkField(true);
+            this.selectFieldInternal(fieldStart);
+        }
+    };
+    /**
+     * @private
+     */
+    Selection.prototype.selectFieldInternal = function (fieldStart) {
+        if (fieldStart) {
             var fieldEnd = fieldStart.fieldEnd;
             var offset = fieldStart.line.getOffset(fieldStart, 0);
             var startPosition = new TextPosition(this.owner);
             startPosition.setPositionParagraph(fieldStart.line, offset);
+            var isBookmark = fieldStart.nextNode instanceof BookmarkElementBox;
+            if (isBookmark) {
+                fieldEnd = fieldStart.nextElement.reference;
+            }
             var endoffset = fieldEnd.line.getOffset(fieldEnd, 1);
             var endPosition = new TextPosition(this.owner);
             endPosition.setPositionParagraph(fieldEnd.line, endoffset);
@@ -33924,6 +34792,12 @@ var Selection = /** @class */ (function () {
         }
         this.checkForCursorVisibility();
     };
+    Selection.prototype.handleSpaceBarKey = function () {
+        if (this.owner.documentHelper.isDocumentProtected && this.owner.documentHelper.protectionType === 'FormFieldsOnly'
+            && this.getFormFieldType() === 'CheckBox') {
+            this.owner.editor.toggleCheckBoxFormField(this.getCurrentFormField());
+        }
+    };
     /**
      * Handles tab key.
      * @param isNavigateInCell
@@ -33937,11 +34811,13 @@ var Selection = /** @class */ (function () {
         }
         if (start.paragraph.isInsideTable && this.end.paragraph.isInsideTable && (isNavigateInCell || isShiftTab)) {
             //Perform tab navigation
-            if (isShiftTab) {
-                this.selectPreviousCell();
-            }
-            else {
-                this.selectNextCell();
+            if (!this.owner.documentHelper.isDocumentProtected && !(this.documentHelper.protectionType === 'FormFieldsOnly')) {
+                if (isShiftTab) {
+                    this.selectPreviousCell();
+                }
+                else {
+                    this.selectNextCell();
+                }
             }
         }
         else if ((isNavigateInCell || isShiftTab) && !sf.base.isNullOrUndefined(start) && start.offset === this.getStartOffset(start.paragraph)
@@ -33952,7 +34828,55 @@ var Selection = /** @class */ (function () {
         else if (!this.owner.isReadOnlyMode) {
             this.owner.editorModule.handleTextInput('\t');
         }
+        if (this.documentHelper.protectionType === 'FormFieldsOnly' && this.documentHelper.formFields.length > 0) {
+            if (isShiftTab) {
+                this.selectPreviousFormField();
+            }
+            else {
+                this.selectNextFormField();
+            }
+        }
         this.checkForCursorVisibility();
+    };
+    /**
+     * @private
+     * Navigates to next form field
+     */
+    Selection.prototype.selectNextFormField = function () {
+        // tslint:disable-next-line:max-line-length
+        var currentStart = this.owner.selection.end;
+        for (var i = 0; i < this.documentHelper.formFields.length; i++) {
+            // tslint:disable-next-line:max-line-length
+            if (!this.documentHelper.formFields[i].formFieldData.enabled) {
+                continue;
+            }
+            var paraIndex = this.owner.selection.getElementPosition(this.documentHelper.formFields[i]).startPosition;
+            if (paraIndex.isExistAfter(currentStart)) {
+                this.selectFieldInternal(this.documentHelper.formFields[i]);
+                break;
+            }
+            else if (i === (this.documentHelper.formFields.length - 1)) {
+                this.selectFieldInternal(this.documentHelper.formFields[0]);
+            }
+        }
+    };
+    Selection.prototype.selectPreviousFormField = function () {
+        // tslint:disable-next-line:max-line-length
+        var currentStart = this.owner.selection.start;
+        for (var i = (this.documentHelper.formFields.length - 1); i >= 0; i--) {
+            // tslint:disable-next-line:max-line-length
+            if (!this.documentHelper.formFields[i].formFieldData.enabled) {
+                continue;
+            }
+            var paraIndex = this.owner.selection.getElementPosition(this.documentHelper.formFields[i]).startPosition;
+            if (paraIndex.isExistBefore(currentStart)) {
+                this.selectFieldInternal(this.documentHelper.formFields[i]);
+                break;
+            }
+            else if (i === 0) {
+                this.selectFieldInternal(this.documentHelper.formFields[(this.documentHelper.formFields.length - 1)]);
+            }
+        }
     };
     Selection.prototype.selectPreviousCell = function () {
         var tableCell = this.start.paragraph.associatedCell;
@@ -35065,7 +35989,7 @@ var Selection = /** @class */ (function () {
      */
     Selection.prototype.isExistBeforeInline = function (currentInline, inline) {
         if (currentInline.line === inline.line) {
-            return currentInline.line.children.indexOf(currentInline) <
+            return currentInline.line.children.indexOf(currentInline) <=
                 inline.line.children.indexOf(inline);
         }
         if (currentInline.line.paragraph === inline.line.paragraph) {
@@ -35094,10 +36018,16 @@ var Selection = /** @class */ (function () {
      * Return true id current inline is exist after inline
      * @private
      */
-    Selection.prototype.isExistAfterInline = function (currentInline, inline) {
+    Selection.prototype.isExistAfterInline = function (currentInline, inline, isRetrieve) {
         if (currentInline.line === inline.line) {
-            return currentInline.line.children.indexOf(currentInline) >
-                inline.line.children.indexOf(inline);
+            if (isRetrieve) {
+                return currentInline.line.children.indexOf(currentInline) >=
+                    inline.line.children.indexOf(inline);
+            }
+            else {
+                return currentInline.line.children.indexOf(currentInline) >
+                    inline.line.children.indexOf(inline);
+            }
         }
         if (currentInline.line.paragraph === inline.line.paragraph) {
             return currentInline.line.paragraph.childWidgets.indexOf(currentInline.line)
@@ -38691,7 +39621,7 @@ var Selection = /** @class */ (function () {
      * @private
      */
     Selection.prototype.getCharacterFormat = function (paragraph, start, end) {
-        if (paragraph !== start.paragraph && paragraph !== end.paragraph) {
+        if (paragraph !== start.paragraph && paragraph !== end.paragraph && !paragraph.isEmpty()) {
             this.getCharacterFormatInternal(paragraph, this);
             return;
         }
@@ -39085,19 +40015,10 @@ var Selection = /** @class */ (function () {
             }
             var linkText = this.getLinkText(fieldBegin);
             this.toolTipElement.innerHTML = linkText + '</br><b>' + toolTipText + '</b>';
-            var widgetTop = this.getTop(widget) * this.documentHelper.zoomFactor;
-            var page = this.getPage(widget.paragraph);
-            // tslint:disable-next-line:max-line-length
-            var containerWidth = this.documentHelper.viewerContainer.getBoundingClientRect().width + this.documentHelper.viewerContainer.scrollLeft;
-            var left = page.boundingRectangle.x + xPos * this.documentHelper.zoomFactor;
-            if ((left + this.toolTipElement.clientWidth + 10) > containerWidth) {
-                left = left - ((this.toolTipElement.clientWidth - (containerWidth - left)) + 15);
-            }
-            var top_5 = this.getPageTop(page) + (widgetTop - this.toolTipElement.offsetHeight);
-            top_5 = top_5 > this.documentHelper.viewerContainer.scrollTop ? top_5 : top_5 + widget.height + this.toolTipElement.offsetHeight;
-            this.showToolTip(left, top_5);
+            var position = this.getTooltipPosition(fieldBegin, xPos, this.toolTipElement, false);
+            this.showToolTip(position.x, position.y);
             if (!sf.base.isNullOrUndefined(this.toolTipField) && fieldBegin !== this.toolTipField) {
-                this.toolTipObject.position = { X: left, Y: top_5 };
+                this.toolTipObject.position = { X: position.x, Y: position.y };
             }
             this.toolTipObject.show();
             this.toolTipField = fieldBegin;
@@ -39105,6 +40026,24 @@ var Selection = /** @class */ (function () {
         else {
             this.hideToolTip();
         }
+    };
+    /**
+     * @private
+     */
+    Selection.prototype.getTooltipPosition = function (fieldBegin, xPos, toolTipElement, isFormField) {
+        var widget = fieldBegin.line;
+        var widgetTop = this.getTop(widget) * this.documentHelper.zoomFactor;
+        var page = this.getPage(widget.paragraph);
+        // tslint:disable-next-line:max-line-length
+        var containerWidth = this.documentHelper.viewerContainer.getBoundingClientRect().width + this.documentHelper.viewerContainer.scrollLeft;
+        var left = page.boundingRectangle.x + xPos * this.documentHelper.zoomFactor;
+        if ((left + toolTipElement.clientWidth + 10) > containerWidth) {
+            left = left - ((toolTipElement.clientWidth - (containerWidth - left)) + 15);
+        }
+        var offsetHeight = !isFormField ? toolTipElement.offsetHeight : 0;
+        var top = this.getPageTop(page) + (widgetTop - offsetHeight);
+        top = top > this.documentHelper.viewerContainer.scrollTop ? top : top + widget.height + offsetHeight;
+        return new Point(left, top);
     };
     /**
      * @private
@@ -39172,7 +40111,7 @@ var Selection = /** @class */ (function () {
      * Return hyperlink field
      * @private
      */
-    Selection.prototype.getHyperLinkFieldInCurrentSelection = function (widget, cursorPosition) {
+    Selection.prototype.getHyperLinkFieldInCurrentSelection = function (widget, cursorPosition, isFormField) {
         var inline = undefined;
         var top = this.getTop(widget);
         var lineStartLeft = this.getLineStartLeft(widget);
@@ -39189,7 +40128,7 @@ var Selection = /** @class */ (function () {
             if (cursorPosition.x <= lineStartLeft + width || cursorPosition.x >= lineStartLeft + width) {
                 //Check if paragraph is within a field result.
                 var checkedFields = [];
-                var field = this.getHyperLinkFields(widget.paragraph, checkedFields);
+                var field = this.getHyperLinkFields(widget.paragraph, checkedFields, false, isFormField);
                 checkedFields = [];
                 checkedFields = undefined;
                 return field;
@@ -39214,7 +40153,8 @@ var Selection = /** @class */ (function () {
             if (cursorPosition.x <= left + width) {
                 //Check if inline is within a field result.
                 var checkedFields = [];
-                var field = this.getHyperLinkFieldInternal(inline.line.paragraph, inline, checkedFields);
+                // tslint:disable-next-line:max-line-length
+                var field = this.getHyperLinkFieldInternal(inline.line.paragraph, inline, checkedFields, false, isFormField);
                 checkedFields = [];
                 checkedFields = undefined;
                 return field;
@@ -39241,7 +40181,7 @@ var Selection = /** @class */ (function () {
         }
         else {
             var paragraph = inline.line.paragraph;
-            field = this.getHyperLinkFieldInternal(paragraph, inline, checkedFields, isRetrieve);
+            field = this.getHyperLinkFieldInternal(paragraph, inline, checkedFields, isRetrieve, false);
         }
         checkedFields = [];
         return field;
@@ -39249,7 +40189,8 @@ var Selection = /** @class */ (function () {
     /**
      * @private
      */
-    Selection.prototype.getHyperLinkFields = function (paragraph, checkedFields, isRetrieve) {
+    // tslint:disable-next-line:max-line-length
+    Selection.prototype.getHyperLinkFields = function (paragraph, checkedFields, isRetrieve, checkFormField) {
         for (var i = 0; i < this.documentHelper.fields.length; i++) {
             // tslint:disable-next-line:max-line-length
             if (checkedFields.indexOf(this.documentHelper.fields[i]) !== -1 || sf.base.isNullOrUndefined(this.documentHelper.fields[i].fieldSeparator)) {
@@ -39264,6 +40205,9 @@ var Selection = /** @class */ (function () {
             if ((isRetrieve || (!isRetrieve && field.match('hyperlink '))) && isParagraph) {
                 return this.documentHelper.fields[i];
             }
+            if (isParagraph && checkFormField && this.documentHelper.fields[i].formFieldData) {
+                return this.documentHelper.fields[i];
+            }
         }
         // if (paragraph.containerWidget instanceof BodyWidget && !(paragraph instanceof WHeaderFooter)) {
         //     return this.getHyperLinkFields((paragraph.con as WCompositeNode), checkedFields);
@@ -39274,7 +40218,7 @@ var Selection = /** @class */ (function () {
      * @private
      */
     // tslint:disable-next-line:max-line-length
-    Selection.prototype.getHyperLinkFieldInternal = function (paragraph, inline, fields, isRetrieve) {
+    Selection.prototype.getHyperLinkFieldInternal = function (paragraph, inline, fields, isRetrieve, checkFormField) {
         for (var i = 0; i < this.documentHelper.fields.length; i++) {
             if (fields.indexOf(this.documentHelper.fields[i]) !== -1 || sf.base.isNullOrUndefined(this.documentHelper.fields[i].fieldSeparator)) {
                 continue;
@@ -39284,13 +40228,22 @@ var Selection = /** @class */ (function () {
             }
             var fieldCode = this.getFieldCode(this.documentHelper.fields[i]);
             fieldCode = fieldCode.trim().toLowerCase();
-            var isInline = (this.inlineIsInFieldResult(this.documentHelper.fields[i], inline) || this.isImageField());
+            var fieldBegin = this.documentHelper.fields[i];
+            var fieldEnd = fieldBegin.fieldEnd;
+            if (isRetrieve && fieldBegin.nextNode instanceof BookmarkElementBox) {
+                fieldEnd = fieldBegin.nextNode.reference;
+            }
+            // tslint:disable-next-line:max-line-length
+            var isInline = (this.inlineIsInFieldResult(fieldBegin, fieldEnd, fieldBegin.fieldSeparator, inline, isRetrieve) || this.isImageField());
             if ((isRetrieve || (!isRetrieve && fieldCode.match('hyperlink '))) && isInline) {
+                return this.documentHelper.fields[i];
+            }
+            if (isInline && checkFormField && this.documentHelper.fields[i].formFieldData) {
                 return this.documentHelper.fields[i];
             }
         }
         if (paragraph.containerWidget instanceof BodyWidget && !(paragraph instanceof HeaderFooterWidget)) {
-            return this.getHyperLinkFieldInternal(paragraph.containerWidget, inline, fields, isRetrieve);
+            return this.getHyperLinkFieldInternal(paragraph.containerWidget, inline, fields, isRetrieve, checkFormField);
         }
         return undefined;
     };
@@ -39355,10 +40308,11 @@ var Selection = /** @class */ (function () {
      * Return true if inline is in field result
      * @private
      */
-    Selection.prototype.inlineIsInFieldResult = function (fieldBegin, inline) {
-        if (!sf.base.isNullOrUndefined(fieldBegin.fieldEnd) && !sf.base.isNullOrUndefined(fieldBegin.fieldSeparator)) {
-            if (this.isExistBeforeInline(fieldBegin.fieldSeparator, inline)) {
-                return this.isExistAfterInline(fieldBegin.fieldEnd, inline);
+    // tslint:disable-next-line:max-line-length
+    Selection.prototype.inlineIsInFieldResult = function (fieldBegin, fieldEnd, fieldSeparator, inline, isRetrieve) {
+        if (!sf.base.isNullOrUndefined(fieldEnd) && !sf.base.isNullOrUndefined(fieldSeparator)) {
+            if (this.isExistBeforeInline(fieldSeparator, inline)) {
+                return this.isExistAfterInline(fieldEnd, inline, isRetrieve);
             }
         }
         return false;
@@ -39410,6 +40364,46 @@ var Selection = /** @class */ (function () {
             }
         }
         return false;
+    };
+    /**
+     * Return true if selection is in Form field
+     * @private
+     */
+    Selection.prototype.isFormField = function () {
+        var inline = this.getCurrentFormField();
+        if (inline instanceof FieldElementBox && inline.formFieldData) {
+            return true;
+        }
+        return false;
+    };
+    /**
+     * @private
+     */
+    Selection.prototype.getFormFieldType = function () {
+        var formField = this.getCurrentFormField();
+        if (formField instanceof FieldElementBox) {
+            if (formField.formFieldData instanceof TextFormField) {
+                return 'Text';
+            }
+            else if (formField.formFieldData instanceof CheckBoxFormField) {
+                return 'CheckBox';
+            }
+            else if (formField.formFieldData instanceof DropDownFormField) {
+                return 'DropDown';
+            }
+        }
+        return undefined;
+    };
+    /**
+     * Get selected form field type
+     * @private
+     */
+    Selection.prototype.getCurrentFormField = function () {
+        var field = this.getHyperlinkField(true);
+        if (field instanceof FieldElementBox && field.fieldType === 0 && !sf.base.isNullOrUndefined(field.formFieldData)) {
+            return field;
+        }
+        return undefined;
     };
     /**
      * @private
@@ -39742,8 +40736,8 @@ var Selection = /** @class */ (function () {
             var pageGap = this.viewer.pageGap;
             // tslint:disable-next-line:max-line-length
             var pageTop = (page.boundingRectangle.y - pageGap * (page.index + 1)) * documentHelper.zoomFactor + pageGap * (page.index + 1);
-            var top_6 = pageTop + (Math.round(caretPosition.y) * documentHelper.zoomFactor);
-            return new Point(left, top_6);
+            var top_5 = pageTop + (Math.round(caretPosition.y) * documentHelper.zoomFactor);
+            return new Point(left, top_5);
         }
         return new Point(0, 0);
     };
@@ -39983,7 +40977,10 @@ var Selection = /** @class */ (function () {
                 //     if (this.owner.acceptTab) {
                 //         this.handleTabKey(true, false);
                 //     }
-                //     break;             
+                //     break;  
+                case 32:
+                    this.handleSpaceBarKey();
+                    break;
                 case 33:
                     event.preventDefault();
                     this.documentHelper.viewerContainer.scrollTop -= this.documentHelper.visibleBounds.height;
@@ -40018,7 +41015,7 @@ var Selection = /** @class */ (function () {
                     break;
             }
         }
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.documentHelper.protectionType === 'FormFieldsOnly') {
             this.owner.editorModule.onKeyDownInternal(event, ctrl, shift, alt);
         }
         if (this.owner.searchModule) {
@@ -43981,6 +44978,7 @@ var Editor = /** @class */ (function () {
         this.startParagraph = undefined;
         this.endParagraph = undefined;
         this.removeEditRange = false;
+        this.formFieldCounter = 1;
         /**
          * @private
          */
@@ -44176,8 +45174,8 @@ var Editor = /** @class */ (function () {
          * @private
          */
         get: function () {
-            return this.documentHelper.isDocumentProtected && this.documentHelper.protectionType === 'ReadOnly'
-                && !this.selection.isSelectionIsAtEditRegion(false);
+            return this.documentHelper.isDocumentProtected && (this.documentHelper.protectionType === 'ReadOnly'
+                && !this.selection.isSelectionIsAtEditRegion(false) || this.documentHelper.protectionType === 'FormFieldsOnly');
         },
         enumerable: true,
         configurable: true
@@ -46221,6 +47219,10 @@ var Editor = /** @class */ (function () {
                 if (fieldIndex !== -1) {
                     this.documentHelper.fields.splice(fieldIndex, 1);
                 }
+                var formFieldIndex = this.documentHelper.formFields.indexOf(inline.fieldBegin);
+                if (formFieldIndex !== -1) {
+                    this.documentHelper.formFields.splice(formFieldIndex, 1);
+                }
                 inline.fieldBegin = undefined;
             }
         }
@@ -46907,6 +47909,7 @@ var Editor = /** @class */ (function () {
             this.viewer.owner.parser.addCustomStyles(pasteContent);
             for (var i = 0; i < pasteContent.sections.length; i++) {
                 var parser = this.documentHelper.owner.parser;
+                parser.isPaste = true;
                 if (!this.isPasteListUpdated && !sf.base.isNullOrUndefined(pasteContent.lists)) {
                     if (this.documentHelper.lists.length > 0) {
                         this.updatePasteContent(pasteContent, i);
@@ -46920,6 +47923,7 @@ var Editor = /** @class */ (function () {
                     }
                 }
                 parser.parseBody(pasteContent.sections[i].blocks, widgets);
+                parser.isPaste = false;
             }
         }
         if (this.currentPasteOptions === 'MergeWithExistingFormatting') {
@@ -47722,22 +48726,25 @@ var Editor = /** @class */ (function () {
         return { count: count, cellFormats: cellFormats };
     };
     Editor.prototype.insertTableRows = function (table, prevBlock) {
-        this.initHistory('InsertRowBelow');
+        this.initHistory('InsertTableBelow');
         table.containerWidget = prevBlock.containerWidget;
         prevBlock = prevBlock.combineWidget(this.owner.viewer);
-        if (this.editorHistory) {
-            var clonedTable = this.cloneTableToHistoryInfo(prevBlock);
-        }
+        // if (this.editorHistory) {
+        //     let clonedTable: TableWidget = this.cloneTableToHistoryInfo(prevBlock);
+        // }
         var row = prevBlock.childWidgets[prevBlock.childWidgets.length - 1];
         prevBlock.insertTableRowsInternal(table.childWidgets, prevBlock.childWidgets.length);
         var paragraph = this.selection.getFirstParagraph(row.nextWidget.childWidgets[0]);
+        if (this.checkInsertPosition(this.selection)) {
+            this.updateHistoryPosition(this.selection.getHierarchicalIndex(paragraph, '0'), true);
+        }
         prevBlock.isDefaultFormatUpdated = false;
         this.documentHelper.layout.reLayoutTable(prevBlock);
-        this.selection.selectParagraphInternal(paragraph, true);
+        this.selection.start.setPosition(paragraph.firstChild, true);
         if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
-            this.updateHistoryPosition(this.selection.start, true);
             this.updateHistoryPosition(this.selection.end, false);
         }
+        this.selection.end.setPosition(paragraph.firstChild, true);
         this.reLayout(this.selection);
     };
     /**
@@ -51769,6 +52776,9 @@ var Editor = /** @class */ (function () {
                 }
                 else {
                     this.documentHelper.fields.splice(i, 1);
+                    if (this.documentHelper.formFields.indexOf(element) !== -1) {
+                        this.documentHelper.formFields.splice(this.documentHelper.formFields.indexOf(element), 1);
+                    }
                 }
                 i--;
             }
@@ -51781,6 +52791,9 @@ var Editor = /** @class */ (function () {
         if (node instanceof FieldElementBox && node.fieldType === 0) {
             if (this.documentHelper.fields.indexOf(node) !== -1) {
                 this.documentHelper.fields.splice(this.documentHelper.fields.indexOf(node), 1);
+            }
+            if (this.documentHelper.formFields.indexOf(node) !== -1) {
+                this.documentHelper.formFields.splice(this.documentHelper.formFields.indexOf(node), 1);
             }
         }
         if (this.editorHistory && !sf.base.isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
@@ -52565,7 +53578,7 @@ var Editor = /** @class */ (function () {
             }
             this.initComplexHistory('PageBreak');
             this.onEnter(true);
-            if (this.editorHistory && this.editorHistory.currentHistoryInfo != null) {
+            if (this.editorHistory && this.editorHistory.currentHistoryInfo !== null) {
                 this.editorHistory.updateComplexHistory();
             }
             this.selection.checkForCursorVisibility();
@@ -52913,49 +53926,12 @@ var Editor = /** @class */ (function () {
             if (HelperMethods.isLinkedFieldCharacter(inline)) {
                 var begin = inline.fieldBegin;
                 var end = inline.fieldEnd;
+                if (begin.nextNode instanceof BookmarkElementBox) {
+                    end = begin.nextNode.reference;
+                }
                 selection.start.setPositionParagraph(begin.line, begin.line.getOffset(begin, 0));
                 selection.end.setPositionParagraph(end.line, end.line.getOffset(end, 0) + 1);
                 selection.fireSelectionChanged(true);
-                return;
-            }
-        }
-        if (inline instanceof FieldElementBox && inline.fieldType === 1) {
-            var prevInline = selection.getPreviousValidElement(inline);
-            if (prevInline instanceof FieldElementBox) {
-                inline = prevInline.fieldBegin;
-                paragraph = inline.line.paragraph;
-                offset = inline.line.getOffset(inline, 0);
-                selection.end.setPositionParagraph(inline.line, offset); //Selects the entire field.
-                selection.fireSelectionChanged(true);
-                return;
-            }
-            else if (prevInline !== inline) {
-                inline = prevInline; //Updates the offset to delete next content.
-                paragraph = inline.line.paragraph;
-                offset = inline.line.getOffset(inline, inline.length);
-            }
-        }
-        if (inline instanceof EditRangeStartElementBox || inline instanceof EditRangeEndElementBox) {
-            if ((inline.nextNode instanceof EditRangeEndElementBox && inline.editRangeEnd === inline.nextNode)
-                || (inline.previousNode instanceof EditRangeStartElementBox
-                    && inline.editRangeStart === inline.previousNode)) {
-                return;
-            }
-            if (inline instanceof EditRangeStartElementBox && !(inline.previousNode instanceof EditRangeEndElementBox)) {
-                return;
-            }
-            if (inline instanceof EditRangeEndElementBox) {
-                inline = inline.previousNode;
-                paragraph = inline.line.paragraph;
-                offset = inline.line.getOffset(inline, inline.length);
-            }
-            if (inline.length === 1 && inline.nextNode instanceof EditRangeEndElementBox
-                && inline.previousNode instanceof EditRangeStartElementBox) {
-                var start = inline.previousNode;
-                var end = inline.nextNode;
-                selection.start.setPositionParagraph(start.line, start.line.getOffset(start, 0));
-                selection.end.setPositionParagraph(end.line, end.line.getOffset(end, 0) + 1);
-                this.removeWholeElement(selection);
                 return;
             }
         }
@@ -52988,6 +53964,50 @@ var Editor = /** @class */ (function () {
                 var begin = inline.previousNode;
                 var end = inline.nextNode;
                 selection.start.setPositionParagraph(begin.line, begin.line.getOffset(begin, 0));
+                selection.end.setPositionParagraph(end.line, end.line.getOffset(end, 0) + 1);
+                this.removeWholeElement(selection);
+                return;
+            }
+        }
+        if (inline instanceof FieldElementBox && inline.fieldType === 1) {
+            var prevInline = selection.getPreviousValidElement(inline);
+            if (prevInline instanceof FieldElementBox) {
+                inline = prevInline.fieldBegin;
+                paragraph = inline.line.paragraph;
+                offset = inline.line.getOffset(inline, 0);
+                if (inline.nextNode instanceof BookmarkElementBox) {
+                    var start = inline.nextNode.reference;
+                    selection.start.setPositionParagraph(start.line, start.line.getOffset(start, 0));
+                }
+                selection.end.setPositionParagraph(inline.line, offset); //Selects the entire field.
+                selection.fireSelectionChanged(true);
+                return;
+            }
+            else if (prevInline !== inline) {
+                inline = prevInline; //Updates the offset to delete next content.
+                paragraph = inline.line.paragraph;
+                offset = inline.line.getOffset(inline, inline.length);
+            }
+        }
+        if (inline instanceof EditRangeStartElementBox || inline instanceof EditRangeEndElementBox) {
+            if ((inline.nextNode instanceof EditRangeEndElementBox && inline.editRangeEnd === inline.nextNode)
+                || (inline.previousNode instanceof EditRangeStartElementBox
+                    && inline.editRangeStart === inline.previousNode)) {
+                return;
+            }
+            if (inline instanceof EditRangeStartElementBox && !(inline.previousNode instanceof EditRangeEndElementBox)) {
+                return;
+            }
+            if (inline instanceof EditRangeEndElementBox) {
+                inline = inline.previousNode;
+                paragraph = inline.line.paragraph;
+                offset = inline.line.getOffset(inline, inline.length);
+            }
+            if (inline.length === 1 && inline.nextNode instanceof EditRangeEndElementBox
+                && inline.previousNode instanceof EditRangeStartElementBox) {
+                var start = inline.previousNode;
+                var end = inline.nextNode;
+                selection.start.setPositionParagraph(start.line, start.line.getOffset(start, 0));
                 selection.end.setPositionParagraph(end.line, end.line.getOffset(end, 0) + 1);
                 this.removeWholeElement(selection);
                 return;
@@ -54111,6 +55131,11 @@ var Editor = /** @class */ (function () {
      * @private
      */
     Editor.prototype.deleteBookmarkInternal = function (bookmark) {
+        var previousNode = bookmark.previousNode;
+        if (previousNode instanceof FieldElementBox && previousNode.fieldType === 0
+            && !sf.base.isNullOrUndefined(previousNode.formFieldData)) {
+            previousNode.formFieldData.name = '';
+        }
         this.documentHelper.bookmarks.remove(bookmark.name);
         bookmark.line.children.splice(bookmark.indexInOwner, 1);
         bookmark.reference.line.children.splice(bookmark.reference.indexInOwner, 1);
@@ -55876,6 +56901,9 @@ var Editor = /** @class */ (function () {
         this.documentHelper.isDocumentProtected = true;
         this.documentHelper.protectionType = protectionType;
         this.selection.highlightEditRegion();
+        if (this.editorHistory) {
+            this.editorHistory.destroy();
+        }
     };
     /**
      * @private
@@ -55966,6 +56994,380 @@ var Editor = /** @class */ (function () {
         this.owner.viewer.updateScrollBars();
         this.selection.fireSelectionChanged(false);
         this.selection.skipEditRangeRetrieval = false;
+    };
+    /**
+     * Insert specified form field at current selection.
+     * @param type Form field type
+     */
+    Editor.prototype.insertFormField = function (type) {
+        if (sf.base.isNullOrUndefined(this.selection.start)) {
+            return;
+        }
+        this.initHistory('InsertHyperlink');
+        var isRemoved = true;
+        if (!this.selection.isEmpty) {
+            isRemoved = this.removeSelectedContents(this.selection);
+        }
+        if (isRemoved) {
+            this.insertFormFieldInternal(type);
+        }
+    };
+    Editor.prototype.insertFormFieldInternal = function (type) {
+        this.updateInsertPosition();
+        var element = [];
+        var temp = this.getCharacterFormat(this.selection);
+        var format = new WCharacterFormat(undefined);
+        format.copyFormat(temp);
+        var fieldBegin = new FieldElementBox(0);
+        fieldBegin.formFieldData = this.getFormFieldData(type);
+        fieldBegin.characterFormat.copyFormat(format);
+        element.push(fieldBegin);
+        var bookmark = new BookmarkElementBox(0);
+        bookmark.characterFormat.copyFormat(format);
+        fieldBegin.formFieldData.name = this.getBookmarkName(type, 'Insert', this.formFieldCounter);
+        bookmark.name = fieldBegin.formFieldData.name;
+        element.push(bookmark);
+        var span = new TextElementBox();
+        span.text = this.getFormFieldCode(type);
+        element.push(span);
+        var fieldSeparator = new FieldElementBox(2);
+        element.push(fieldSeparator);
+        var result = new TextElementBox();
+        if (type === 'CheckBox') {
+            result.text = String.fromCharCode(9744);
+        }
+        else {
+            result.text = this.documentHelper.textHelper.repeatChar(this.documentHelper.textHelper.getEnSpaceCharacter(), 5);
+        }
+        result.characterFormat.copyFormat(format);
+        element.push(result);
+        var fieldEnd = new FieldElementBox(1);
+        fieldEnd.characterFormat.copyFormat(format);
+        element.push(fieldEnd);
+        var bookmarkEnd = new BookmarkElementBox(1);
+        bookmarkEnd.characterFormat.copyFormat(format);
+        bookmarkEnd.name = fieldBegin.formFieldData.name;
+        bookmarkEnd.reference = bookmark;
+        bookmark.reference = bookmarkEnd;
+        element.push(bookmarkEnd);
+        this.insertElement(element);
+        var paragraph = this.selection.start.paragraph;
+        fieldEnd.linkFieldCharacter(this.documentHelper);
+        if (this.documentHelper.fields.indexOf(fieldBegin) === -1) {
+            this.documentHelper.fields.push(fieldBegin);
+        }
+        if (this.documentHelper.formFields.indexOf(fieldBegin) === -1) {
+            this.documentHelper.formFields.push(fieldBegin);
+        }
+        var offset = bookmarkEnd.line.getOffset(bookmarkEnd, 1);
+        this.selection.selects(bookmarkEnd.line, offset, true);
+        this.updateEndPosition();
+        this.reLayout(this.selection, true);
+    };
+    Editor.prototype.getFormFieldData = function (type) {
+        switch (type) {
+            case 'Text':
+                return new TextFormField();
+            case 'CheckBox':
+                return new CheckBoxFormField();
+            case 'DropDown':
+                return new DropDownFormField();
+        }
+    };
+    /**
+     * @private
+     */
+    Editor.prototype.setFormField = function (field, info) {
+        var type;
+        var formField;
+        if (!sf.base.isNullOrUndefined(info.format)) {
+            type = 'Text';
+            formField = new TextFormField();
+        }
+        else if (!sf.base.isNullOrUndefined(info.sizeType)) {
+            type = 'CheckBox';
+            formField = new CheckBoxFormField();
+        }
+        else if (!sf.base.isNullOrUndefined(info.dropDownItems)) {
+            type = 'DropDown';
+            formField = new DropDownFormField();
+        }
+        if (!sf.base.isNullOrUndefined(type) && !sf.base.isNullOrUndefined(formField)) {
+            formField.name = field.formFieldData.name;
+            formField.copyFieldInfo(info);
+            this.editFormField(type, formField);
+        }
+    };
+    /**
+     * @private
+     */
+    Editor.prototype.editFormField = function (type, formData) {
+        var begin = this.selection.getCurrentFormField();
+        if (sf.base.isNullOrUndefined(begin) || sf.base.isNullOrUndefined(begin.formFieldData)) {
+            return false;
+        }
+        this.initComplexHistory('FormField');
+        var bookmarkStart;
+        var bookmarkEnd;
+        if (formData.name !== '') {
+            if (begin.formFieldData.name !== formData.name &&
+                this.documentHelper.bookmarks.containsKey(formData.name)) {
+                this.deleteBookmark(formData.name);
+            }
+            bookmarkStart = new BookmarkElementBox(0);
+            bookmarkStart.name = formData.name;
+            bookmarkEnd = new BookmarkElementBox(1);
+            bookmarkEnd.name = formData.name;
+            bookmarkStart.reference = bookmarkEnd;
+            bookmarkEnd.reference = bookmarkStart;
+        }
+        this.initHistory('InsertHyperlink');
+        this.editHyperlinkInternal = sf.base.isNullOrUndefined(this.editorHistory)
+            || (this.editorHistory && sf.base.isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo));
+        // Preserves the character format for hyperlink field.
+        var temp = begin.characterFormat.cloneFormat();
+        var format = new WCharacterFormat();
+        format.copyFormat(temp);
+        var textFormat = begin.fieldSeparator.nextElement.characterFormat.cloneFormat();
+        var currentOffset = begin.line.getOffset(begin, 0);
+        this.selection.start.setPositionParagraph(begin.line, currentOffset);
+        var endElement = begin.fieldEnd;
+        if (begin.nextNode && begin.nextNode instanceof BookmarkElementBox) {
+            endElement = begin.nextNode.reference;
+        }
+        currentOffset = endElement.line.getOffset(endElement, 1);
+        this.selection.end.setPositionParagraph(endElement.line, currentOffset);
+        this.deleteSelectedContents(this.selection, false);
+        this.updateInsertPosition();
+        var element = [];
+        var fieldBegin = new FieldElementBox(0);
+        fieldBegin.formFieldData = formData;
+        element.push(fieldBegin);
+        fieldBegin.characterFormat.copyFormat(format);
+        if (!sf.base.isNullOrUndefined(bookmarkStart)) {
+            element.push(bookmarkStart);
+        }
+        var span = new TextElementBox();
+        span.text = this.getFormFieldCode(type);
+        element.push(span);
+        var fieldSeparator = new FieldElementBox(2);
+        fieldSeparator.characterFormat.copyFormat(format);
+        element.push(fieldSeparator);
+        span = new TextElementBox();
+        span.characterFormat.copyFormat(textFormat);
+        span.text = this.getDefaultText(formData);
+        if (type === 'CheckBox') {
+            span.characterFormat = fieldBegin.characterFormat.cloneFormat();
+            if (formData.sizeType === 'Exactly') {
+                span.characterFormat.fontSize = formData.size;
+            }
+        }
+        else if (formData instanceof TextFormField) {
+            if (formData.type === 'Text') {
+                span.text = HelperMethods.formatText(formData.format, formData.defaultValue);
+            }
+            else if (formData.type === 'Number') {
+                span.text = HelperMethods.formatNumber(formData.format, formData.defaultValue);
+            }
+            else {
+                span.text = HelperMethods.formatDate(formData.format, formData.defaultValue);
+            }
+        }
+        element.push(span);
+        var fieldEnd = new FieldElementBox(1);
+        fieldEnd.characterFormat.copyFormat(format);
+        element.push(fieldEnd);
+        var lastElement = fieldEnd;
+        if (!sf.base.isNullOrUndefined(bookmarkEnd)) {
+            lastElement = bookmarkEnd;
+            element.push(bookmarkEnd);
+        }
+        this.insertElement(element);
+        var paragraph = this.selection.start.paragraph;
+        fieldEnd.linkFieldCharacter(this.documentHelper);
+        if (this.documentHelper.fields.indexOf(fieldBegin) === -1) {
+            this.documentHelper.fields.push(fieldBegin);
+        }
+        var offset = lastElement.line.getOffset(lastElement, 1);
+        this.selection.selects(lastElement.line, offset, true);
+        this.updateEndPosition();
+        if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
+            this.editorHistory.updateHistory();
+        }
+        if (this.editorHistory && this.editorHistory.currentHistoryInfo) {
+            this.editorHistory.updateComplexHistory();
+        }
+        this.reLayout(this.selection, true);
+        this.editHyperlinkInternal = false;
+        this.nodes = [];
+        return true;
+    };
+    Editor.prototype.getDefaultText = function (formField) {
+        var defaultText = '';
+        if (formField instanceof CheckBoxFormField) {
+            defaultText = formField.defaultValue ? String.fromCharCode(9745) : String.fromCharCode(9744);
+        }
+        else if (formField instanceof DropDownFormField) {
+            if (formField.dropDownItems.length > 0) {
+                defaultText = formField.dropDownItems[0];
+            }
+            else {
+                defaultText = this.documentHelper.textHelper.repeatChar(this.documentHelper.textHelper.getEnSpaceCharacter(), 5);
+            }
+        }
+        else if (formField instanceof TextFormField) {
+            if (formField.defaultValue !== '') {
+                defaultText = formField.defaultValue;
+            }
+            else {
+                defaultText = this.documentHelper.textHelper.repeatChar(this.documentHelper.textHelper.getEnSpaceCharacter(), 5);
+            }
+        }
+        return defaultText;
+    };
+    Editor.prototype.getFormFieldCode = function (type) {
+        switch (type) {
+            case 'Text':
+                return 'FORMTEXT';
+            case 'CheckBox':
+                return 'FORMCHECKBOX';
+            case 'DropDown':
+                return 'FORMDROPDOWN';
+        }
+    };
+    /**
+     * @private
+     */
+    Editor.prototype.toggleCheckBoxFormField = function (field, reset, value) {
+        var formFieldData = field.formFieldData;
+        if (formFieldData instanceof CheckBoxFormField && formFieldData.enabled) {
+            this.initHistory('UpdateFormField');
+            if (this.editorHistory) {
+                var currentValue = void 0;
+                if (formFieldData instanceof CheckBoxFormField) {
+                    currentValue = formFieldData.checked;
+                }
+                this.editorHistory.currentBaseHistoryInfo.setFormFieldInfo(field, currentValue);
+                this.editorHistory.updateHistory();
+            }
+            if (reset) {
+                formFieldData.checked = value;
+            }
+            else {
+                formFieldData.checked = !formFieldData.checked;
+            }
+            var separator = field.fieldSeparator;
+            var checkBoxTextElement = separator.nextNode;
+            if (formFieldData.checked) {
+                checkBoxTextElement.text = String.fromCharCode(9745);
+            }
+            else {
+                checkBoxTextElement.text = String.fromCharCode(9744);
+            }
+            this.owner.documentHelper.layout.reLayoutParagraph(field.line.paragraph, 0, 0);
+            this.reLayout(this.selection, false);
+        }
+    };
+    /**
+     * @private
+     */
+    Editor.prototype.updateFormField = function (field, value, reset) {
+        var formFieldData = field.formFieldData;
+        if (formFieldData) {
+            this.initHistory('UpdateFormField');
+            if (this.editorHistory) {
+                var currentValue = void 0;
+                if (formFieldData instanceof TextFormField) {
+                    currentValue = field.resultText;
+                }
+                else if (formFieldData instanceof DropDownFormField) {
+                    currentValue = formFieldData.selectedIndex;
+                }
+                this.editorHistory.currentBaseHistoryInfo.setFormFieldInfo(field, currentValue);
+                this.editorHistory.updateHistory();
+            }
+            this.updateFormFieldInternal(field, formFieldData, value, reset);
+        }
+    };
+    /**
+     * @private
+     */
+    // tslint:disable-next-line:max-line-length
+    Editor.prototype.updateFormFieldInternal = function (field, formFieldData, value, reset) {
+        if (formFieldData instanceof TextFormField) {
+            if (reset && value === '') {
+                value = this.getDefaultText(formFieldData);
+            }
+            var formattedText = value;
+            var type = formFieldData.type;
+            if (type === 'Text') {
+                formattedText = HelperMethods.formatText(formFieldData.format, value);
+            }
+            this.updateFormFieldResult(field, formattedText);
+        }
+        else if (formFieldData instanceof DropDownFormField) {
+            var text = formFieldData.dropDownItems[value];
+            formFieldData.selectedIndex = value;
+            this.updateFormFieldResult(field, text);
+        }
+        var endoffset = field.fieldEnd.line.getOffset(field.fieldEnd, 1);
+        var startPos = new TextPosition(this.owner);
+        startPos.setPositionParagraph(field.fieldEnd.line, endoffset);
+        //selects the field range
+        this.documentHelper.selection.selectRange(startPos, startPos);
+        this.reLayout(this.selection, false);
+    };
+    Editor.prototype.updateFormFieldResult = function (field, value) {
+        var textElement = field.fieldSeparator.nextNode;
+        while (!(textElement instanceof TextElementBox)) {
+            textElement = textElement.nextNode;
+            if (textElement === field.fieldEnd) {
+                break;
+            }
+        }
+        if (textElement instanceof TextElementBox) {
+            textElement.text = value;
+            textElement = textElement.nextNode;
+            do {
+                var index = field.line.children.indexOf(textElement);
+                if (textElement instanceof TextElementBox) {
+                    textElement = textElement.nextNode;
+                    field.line.children.splice(index, 1);
+                }
+                else {
+                    if (textElement === field.fieldEnd) {
+                        break;
+                    }
+                    textElement = textElement.nextNode;
+                }
+            } while (textElement !== field.fieldEnd);
+        }
+        this.owner.documentHelper.layout.reLayoutParagraph(field.line.paragraph, 0, 0);
+    };
+    /**
+     * @private
+     */
+    Editor.prototype.checkBookmarkAvailability = function (name, action) {
+        var bookmarkCol = this.documentHelper.bookmarks;
+        for (var i = 0; i < bookmarkCol.length; i++) {
+            if (bookmarkCol.containsKey(name)) {
+                return false;
+            }
+        }
+        return true;
+    };
+    /**
+     * @private
+     */
+    Editor.prototype.getBookmarkName = function (type, action, count) {
+        var name;
+        var available = false;
+        while (available === false) {
+            name = type + count;
+            available = this.checkBookmarkAvailability(name, action);
+            count = count + 1;
+        }
+        return name;
     };
     return Editor;
 }());
@@ -56317,9 +57719,27 @@ var BaseHistoryInfo = /** @class */ (function () {
     BaseHistoryInfo.prototype.setBookmarkInfo = function (bookmark) {
         this.removedNodes.push({ 'bookmark': bookmark, 'startIndex': bookmark.indexInOwner, 'endIndex': bookmark.reference.indexInOwner });
     };
+    /**
+     * @private
+     */
+    BaseHistoryInfo.prototype.setFormFieldInfo = function (field, value) {
+        this.removedNodes.push({ 'formField': field, 'value': value });
+    };
     BaseHistoryInfo.prototype.setEditRangeInfo = function (editStart) {
         // tslint:disable-next-line:max-line-length
         this.removedNodes.push({ 'editStart': editStart, 'startIndex': editStart.indexInOwner, 'endIndex': editStart.editRangeEnd.indexInOwner });
+    };
+    BaseHistoryInfo.prototype.revertFormField = function () {
+        /* tslint:disable:no-any */
+        var fieldInfo = this.removedNodes[0];
+        /* tslint:enable:no-any */
+        var field = fieldInfo.formField;
+        if (field.formFieldData instanceof CheckBoxFormField) {
+            this.owner.editorModule.toggleCheckBoxFormField(field, true, fieldInfo.value);
+        }
+        else {
+            this.owner.editorModule.updateFormField(field, fieldInfo.value);
+        }
     };
     BaseHistoryInfo.prototype.revertBookmark = function () {
         var bookmarkInfo = this.removedNodes[0];
@@ -56327,6 +57747,10 @@ var BaseHistoryInfo = /** @class */ (function () {
         if (this.editorHistory.isUndoing) {
             this.documentHelper.bookmarks.add(bookmark.name, bookmark);
             bookmark.line.children.splice(bookmarkInfo.startIndex, 0, bookmark);
+            var previousNode = bookmark.previousNode;
+            if (previousNode instanceof FieldElementBox && !sf.base.isNullOrUndefined(previousNode.formFieldData)) {
+                previousNode.formFieldData.name = bookmark.name;
+            }
             bookmark.reference.line.children.splice(bookmarkInfo.endIndex, 0, bookmark.reference);
             this.editorHistory.recordChanges(this);
         }
@@ -56382,6 +57806,10 @@ var BaseHistoryInfo = /** @class */ (function () {
      */
     // tslint:disable: max-func-body-length
     BaseHistoryInfo.prototype.revert = function () {
+        if (this.action === 'UpdateFormField') {
+            this.revertFormField();
+            return;
+        }
         if (this.action === 'DeleteBookmark') {
             this.revertBookmark();
             return;
@@ -59328,7 +60756,9 @@ var EditorHistory = /** @class */ (function () {
      * Reverts the last editing action.
      */
     EditorHistory.prototype.undo = function () {
-        if (this.owner.isReadOnlyMode || !this.canUndo() || !this.owner.enableHistoryMode) {
+        if ((this.owner.isReadOnlyMode &&
+            (this.owner.documentHelper.protectionType !== 'FormFieldsOnly')) ||
+            !this.canUndo() || !this.owner.enableHistoryMode) {
             return;
         }
         //this.owner.ClearTextSearchResults();
@@ -59343,7 +60773,9 @@ var EditorHistory = /** @class */ (function () {
      * Performs the last reverted action.
      */
     EditorHistory.prototype.redo = function () {
-        if (this.owner.isReadOnlyMode || !this.canRedo() || !this.owner.enableHistoryMode) {
+        if ((this.owner.isReadOnlyMode &&
+            (this.owner.documentHelper.protectionType !== 'FormFieldsOnly'))
+            || !this.canRedo() || !this.owner.enableHistoryMode) {
             return;
         }
         //this.owner.ClearTextSearchResults();
@@ -63001,6 +64433,68 @@ var WordExport = /** @class */ (function () {
         var type = field.fieldType === 0 ? 'begin'
             : field.fieldType === 1 ? 'end' : 'separate';
         writer.writeAttributeString(undefined, 'fldCharType', this.wNamespace, type);
+        if (type === 'begin' && !sf.base.isNullOrUndefined(field.formFieldData)) {
+            var formFieldData = field.formFieldData;
+            writer.writeStartElement(undefined, 'ffData', this.wNamespace);
+            writer.writeStartElement(undefined, 'name', this.wNamespace);
+            writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.name);
+            writer.writeEndElement();
+            writer.writeStartElement(undefined, 'enabled', this.wNamespace);
+            writer.writeEndElement();
+            if (formFieldData.hasOwnProperty('textInput')) {
+                writer.writeStartElement(undefined, 'textInput', this.wNamespace);
+                var type_1 = formFieldData.textInput.type;
+                if (type_1 === 'Number' || 'Date') {
+                    writer.writeStartElement(undefined, 'type', this.wNamespace);
+                    writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.textInput.type.toString().toLowerCase());
+                    writer.writeEndElement();
+                }
+                writer.writeStartElement(undefined, 'defalut', this.wNamespace);
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.textInput.defaultValue);
+                writer.writeEndElement();
+                writer.writeStartElement(undefined, 'format', this.wNamespace);
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.textInput.format);
+                writer.writeEndElement();
+                writer.writeEndElement();
+            }
+            else if (formFieldData.hasOwnProperty('checkBox')) {
+                writer.writeStartElement(undefined, 'checkBox', this.wNamespace);
+                if (formFieldData.checkBox.sizeType === 'Auto') {
+                    writer.writeStartElement(undefined, 'sizeAuto', this.wNamespace);
+                    writer.writeEndElement();
+                }
+                else {
+                    writer.writeStartElement(undefined, 'size', this.wNamespace);
+                    // tslint:disable-next-line:max-line-length
+                    writer.writeAttributeString(undefined, 'val', this.wNamespace, this.roundToTwoDecimal(formFieldData.checkBox.size * 2).toString());
+                    writer.writeEndElement();
+                }
+                writer.writeStartElement(undefined, 'defalut', this.wNamespace);
+                writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.checkBox.defaultValue ? '1' : '0');
+                writer.writeEndElement();
+                if (formFieldData.checkBox.checked) {
+                    writer.writeStartElement(undefined, 'checked', this.wNamespace);
+                    writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.checkBox.checked ? '1' : '0');
+                    writer.writeEndElement();
+                }
+                writer.writeEndElement();
+            }
+            else {
+                writer.writeStartElement(undefined, 'ddList', this.wNamespace);
+                if (formFieldData.dropDownList.selectedIndex !== 0) {
+                    writer.writeStartElement(undefined, 'result', this.wNamespace);
+                    writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.dropDownList.selectedIndex.toString());
+                    writer.writeEndElement();
+                }
+                for (var i = 0; i < formFieldData.dropDownList.dropdownItems.length; i++) {
+                    writer.writeStartElement(undefined, 'listEntry', this.wNamespace);
+                    writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.dropDownList.dropdownItems[i].toString());
+                    writer.writeEndElement();
+                }
+                writer.writeEndElement();
+            }
+            writer.writeEndElement();
+        }
         writer.writeEndElement();
         writer.writeEndElement();
         if (field.fieldType === 0 && field.fieldCodeType === 'FieldFormTextInput') {
@@ -63821,8 +65315,9 @@ var WordExport = /** @class */ (function () {
         if (this.formatting) {
             writer.writeAttributeString('w', 'formatting', this.wNamespace, '1');
         }
-        if (this.protectionType && this.protectionType === 'ReadOnly') {
-            writer.writeAttributeString('w', 'edit', this.wNamespace, 'readOnly');
+        if (this.protectionType && this.protectionType !== 'NoProtection') {
+            var editMode = this.protectionType === 'ReadOnly' ? 'readOnly' : 'forms';
+            writer.writeAttributeString('w', 'edit', this.wNamespace, editMode);
         }
         writer.writeAttributeString('w', 'cryptProviderType', this.wNamespace, 'rsaAES');
         writer.writeAttributeString('w', 'cryptAlgorithmClass', this.wNamespace, 'hash');
@@ -64919,6 +66414,32 @@ var SfdtExport = /** @class */ (function () {
             inline.fieldType = element.fieldType;
             if (element.fieldType === 0) {
                 inline.hasFieldEnd = true;
+                if (element.formFieldData) {
+                    inline.formFieldData = {};
+                    inline.formFieldData.name = element.formFieldData.name;
+                    inline.formFieldData.enabled = element.formFieldData.enabled;
+                    inline.formFieldData.helpText = element.formFieldData.helpText;
+                    inline.formFieldData.statusText = element.formFieldData.statusText;
+                    if (element.formFieldData instanceof TextFormField) {
+                        inline.formFieldData.textInput = {};
+                        inline.formFieldData.textInput.type = element.formFieldData.type;
+                        inline.formFieldData.textInput.maxLength = element.formFieldData.maxLength;
+                        inline.formFieldData.textInput.defaultValue = element.formFieldData.defaultValue;
+                        inline.formFieldData.textInput.format = element.formFieldData.format;
+                    }
+                    else if (element.formFieldData instanceof CheckBoxFormField) {
+                        inline.formFieldData.checkBox = {};
+                        inline.formFieldData.checkBox.sizeType = element.formFieldData.sizeType;
+                        inline.formFieldData.checkBox.size = element.formFieldData.size;
+                        inline.formFieldData.checkBox.defaultValue = element.formFieldData.defaultValue;
+                        inline.formFieldData.checkBox.checked = element.formFieldData.checked;
+                    }
+                    else {
+                        inline.formFieldData.dropDownList = {};
+                        inline.formFieldData.dropDownList.dropdownItems = element.formFieldData.dropDownItems;
+                        inline.formFieldData.dropDownList.selectedIndex = element.formFieldData.selectedIndex;
+                    }
+                }
             }
             if (element.fieldCodeType && element.fieldCodeType !== '') {
                 inline.fieldCodeType = element.fieldCodeType;
@@ -65553,11 +67074,21 @@ var SfdtExport = /** @class */ (function () {
     SfdtExport.prototype.writeList = function (wList) {
         var list = {};
         list.abstractListId = wList.abstractListId;
-        if (wList.levelOverrides.length > 0) {
-            list.levelOverrides = wList.levelOverrides;
+        list.levelOverrides = [];
+        for (var i = 0; i < wList.levelOverrides.length; i++) {
+            list.levelOverrides.push(this.writeLevelOverrides(wList.levelOverrides[i]));
         }
         list.listId = wList.listId;
         return list;
+    };
+    SfdtExport.prototype.writeLevelOverrides = function (wlevel) {
+        var levelOverrides = {};
+        levelOverrides.levelNumber = wlevel.levelNumber;
+        if (wlevel.overrideListLevel) {
+            levelOverrides.overrideListLevel = this.writeListLevel(wlevel.overrideListLevel);
+        }
+        levelOverrides.startAt = wlevel.startAt;
+        return levelOverrides;
     };
     SfdtExport.prototype.writeListLevel = function (wListLevel) {
         var listLevel = {};
@@ -65898,6 +67429,7 @@ var TableDialog = /** @class */ (function () {
          */
         this.onCancelButtonClick = function () {
             _this.documentHelper.dialog.hide();
+            _this.documentHelper.updateFocus();
         };
         /**
          * @private
@@ -73865,7 +75397,7 @@ var StylesDialog = /** @class */ (function () {
         this.defaultStyleName = function (styleNames, localValue) {
             var styleName = [];
             for (var index = 0; index < styleNames.length; index++) {
-                styleName.push(localValue.getConstant(styleNames[index]));
+                styleName.push(styleNames[index]);
             }
             return styleName;
         };
@@ -74252,6 +75784,1065 @@ var SpellCheckDialog = /** @class */ (function () {
         }
     };
     return SpellCheckDialog;
+}());
+
+/**
+ * Form field checkbox dialog is used to modify the value in checkbox form field.
+ */
+/* tslint:disable:no-any */
+var CheckBoxFormFieldDialog = /** @class */ (function () {
+    function CheckBoxFormFieldDialog(owner) {
+        var _this = this;
+        this.changeBidirectional = function (event) {
+            if (event.value === 'exact') {
+                _this.autoButton.checked = !_this.exactButton.checked;
+                _this.exactlyNumber.enabled = true;
+            }
+            else {
+                _this.exactButton.checked = !_this.autoButton.checked;
+                _this.exactlyNumber.enabled = false;
+            }
+        };
+        this.changeBidirect = function (event) {
+            if (event.value === 'check') {
+                _this.notCheckedButton.checked = !_this.checkedButton.checked;
+            }
+            else {
+                _this.checkedButton.checked = !_this.notCheckedButton.checked;
+            }
+        };
+        /**
+         * @private
+         */
+        this.onCancelButtonClick = function () {
+            _this.documentHelper.dialog.hide();
+        };
+        /**
+         * @private
+         */
+        this.insertCheckBoxField = function () {
+            _this.closeCheckBoxField();
+            var checkBoxField = new CheckBoxFormField();
+            checkBoxField.defaultValue = _this.checkedButton.checked;
+            checkBoxField.name = _this.bookmarkInputText.value;
+            checkBoxField.helpText = _this.tooltipInputText.value;
+            checkBoxField.checked = checkBoxField.defaultValue;
+            checkBoxField.enabled = _this.checBoxEnableElement.checked;
+            if (_this.exactButton.checked) {
+                checkBoxField.sizeType = 'Exactly';
+                checkBoxField.size = _this.exactlyNumber.value;
+            }
+            else {
+                checkBoxField.sizeType = 'Auto';
+                checkBoxField.size = 11;
+            }
+            _this.owner.editor.editFormField('CheckBox', checkBoxField);
+        };
+        this.closeCheckBoxField = function () {
+            _this.documentHelper.dialog.hide();
+            _this.documentHelper.dialog.element.style.pointerEvents = '';
+        };
+        this.owner = owner;
+    }
+    Object.defineProperty(CheckBoxFormFieldDialog.prototype, "documentHelper", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.owner.documentHelper;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * @private
+     */
+    CheckBoxFormFieldDialog.prototype.getModuleName = function () {
+        return 'CheckBoxFormFieldDialog';
+    };
+    // tslint:disable:max-func-body-length
+    CheckBoxFormFieldDialog.prototype.initCheckBoxDialog = function (localValue, isRtl) {
+        this.target = sf.base.createElement('div');
+        var dialogDiv = sf.base.createElement('div');
+        var headingLabel = sf.base.createElement('div', {
+            className: 'e-de-ff-dlg-heading',
+            innerHTML: localValue.getConstant('Check box size')
+        });
+        var autoDiv = sf.base.createElement('div', { className: 'e-de-ff-radio-scnd-div' });
+        var exactDiv = sf.base.createElement('div', { className: 'e-de-ff-radio-scnd-div' });
+        var autoEle = sf.base.createElement('input', { className: 'e-de-rtl-btn-div' });
+        var exactEle = sf.base.createElement('input', { className: 'e-de-rtl-btn-div' });
+        this.autoButton = new sf.buttons.RadioButton({
+            label: localValue.getConstant('Auto'), cssClass: 'e-small', change: this.changeBidirectional, checked: true,
+            enableRtl: isRtl
+        });
+        this.exactButton = new sf.buttons.RadioButton({
+            label: localValue.getConstant('Exactly'), value: 'exact', cssClass: 'e-small', change: this.changeBidirectional,
+            enableRtl: isRtl
+        });
+        this.exactNumberDiv = sf.base.createElement('div', { className: 'e-de-ff-chck-exact' });
+        var exactNumber = sf.base.createElement('input', { attrs: { 'type': 'text' } });
+        this.exactlyNumber = new sf.inputs.NumericTextBox({
+            format: 'n', value: 10, min: 1, max: 1584, enablePersistence: false, enabled: false, cssClass: 'e-de-check-exactnumbr-width',
+            enableRtl: isRtl
+        });
+        var defaultValueLabel = sf.base.createElement('div', {
+            className: 'e-de-ff-dlg-heading',
+            innerHTML: localValue.getConstant('Default value')
+        });
+        var notcheckDiv = sf.base.createElement('div', { className: 'e-de-ff-radio-div' });
+        var checkDiv = sf.base.createElement('div', { className: 'e-de-ff-radio-div' });
+        var notcheckEle = sf.base.createElement('input', { className: 'e-de-rtl-btn-div' });
+        var checkEle = sf.base.createElement('input', { className: 'e-de-rtl-btn-div' });
+        this.notCheckedButton = new sf.buttons.RadioButton({
+            label: localValue.getConstant('Not checked'), enableRtl: isRtl, cssClass: 'e-small', change: this.changeBidirect
+        });
+        this.checkedButton = new sf.buttons.RadioButton({
+            label: localValue.getConstant('Checked'), value: 'check', enableRtl: isRtl, cssClass: 'e-small',
+            change: this.changeBidirect, checked: true
+        });
+        var fieldSettingsLabel = sf.base.createElement('div', {
+            className: 'e-de-ff-dlg-heading',
+            innerHTML: localValue.getConstant('Field settings')
+        });
+        var settingsTotalDiv = sf.base.createElement('div', { className: 'e-de-div-seperate-dlg' });
+        var totalToolTipDiv = sf.base.createElement('div', { className: 'e-de-ff-dlg-lft-hlf' });
+        var totalBookmarkDiv = sf.base.createElement('div', { className: 'e-de-ff-dlg-rght-hlf' });
+        var toolTipLabelHeading = sf.base.createElement('div', {
+            className: 'e-de-ff-dlg-heading-small',
+            innerHTML: localValue.getConstant('Tooltip')
+        });
+        this.tooltipInputText = sf.base.createElement('input', { className: 'e-input e-bookmark-textbox-input' });
+        var bookmarkLabelHeading = sf.base.createElement('div', {
+            className: 'e-de-ff-dlg-heading-small',
+            innerHTML: localValue.getConstant('Name')
+        });
+        this.bookmarkInputText = sf.base.createElement('input', { className: 'e-input e-bookmark-textbox-input' });
+        var checkBoxEnableDiv = sf.base.createElement('div');
+        var checBoxEnableEle = sf.base.createElement('input', { attrs: { type: 'checkbox' } });
+        this.checBoxEnableElement = new sf.buttons.CheckBox({
+            cssClass: 'e-de-ff-dlg-check',
+            label: localValue.getConstant('Check box enabled'),
+            enableRtl: isRtl
+        });
+        if (isRtl) {
+            autoDiv.classList.add('e-de-rtl');
+            exactDiv.classList.add('e-de-rtl');
+            this.exactNumberDiv.classList.add('e-de-rtl');
+            notcheckDiv.classList.add('e-de-rtl');
+            checkDiv.classList.add('e-de-rtl');
+            totalToolTipDiv.classList.add('e-de-rtl');
+            totalBookmarkDiv.classList.add('e-de-rtl');
+        }
+        this.target.appendChild(dialogDiv);
+        dialogDiv.appendChild(defaultValueLabel);
+        dialogDiv.appendChild(notcheckDiv);
+        notcheckDiv.appendChild(notcheckEle);
+        this.notCheckedButton.appendTo(notcheckEle);
+        dialogDiv.appendChild(checkDiv);
+        checkDiv.appendChild(checkEle);
+        this.checkedButton.appendTo(checkEle);
+        dialogDiv.appendChild(headingLabel);
+        dialogDiv.appendChild(autoDiv);
+        autoDiv.appendChild(autoEle);
+        this.autoButton.appendTo(autoEle);
+        dialogDiv.appendChild(exactDiv);
+        exactDiv.appendChild(exactEle);
+        this.exactButton.appendTo(exactEle);
+        exactDiv.appendChild(this.exactNumberDiv);
+        this.exactNumberDiv.appendChild(exactNumber);
+        this.exactlyNumber.appendTo(exactNumber);
+        dialogDiv.appendChild(fieldSettingsLabel);
+        dialogDiv.appendChild(settingsTotalDiv);
+        settingsTotalDiv.appendChild(totalToolTipDiv);
+        settingsTotalDiv.appendChild(totalBookmarkDiv);
+        totalToolTipDiv.appendChild(toolTipLabelHeading);
+        totalToolTipDiv.appendChild(this.tooltipInputText);
+        totalBookmarkDiv.appendChild(bookmarkLabelHeading);
+        totalBookmarkDiv.appendChild(this.bookmarkInputText);
+        dialogDiv.appendChild(checkBoxEnableDiv);
+        checkBoxEnableDiv.appendChild(checBoxEnableEle);
+        this.checBoxEnableElement.appendTo(checBoxEnableEle);
+    };
+    /**
+     * @private
+     */
+    CheckBoxFormFieldDialog.prototype.show = function () {
+        var localObj = new sf.base.L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        localObj.setLocale(this.documentHelper.owner.locale);
+        if (sf.base.isNullOrUndefined(this.target)) {
+            this.initCheckBoxDialog(localObj, this.documentHelper.owner.enableRtl);
+        }
+        this.loadCheckBoxDialog();
+        this.documentHelper.dialog.header = localObj.getConstant('Check Box Form Field');
+        this.documentHelper.dialog.position = { X: 'center', Y: 'center' };
+        this.documentHelper.dialog.height = 'auto';
+        this.documentHelper.dialog.width = '400px';
+        this.documentHelper.dialog.content = this.target;
+        this.documentHelper.dialog.buttons = [{
+                click: this.insertCheckBoxField,
+                buttonModel: { content: localObj.getConstant('Ok'), cssClass: 'e-flat e-table-cell-margin-okay', isPrimary: true }
+            },
+            {
+                click: this.onCancelButtonClick,
+                buttonModel: { content: localObj.getConstant('Cancel'), cssClass: 'e-flat e-table-cell-margin-cancel' }
+            }];
+        this.documentHelper.dialog.show();
+    };
+    /**
+     * @private
+     */
+    CheckBoxFormFieldDialog.prototype.loadCheckBoxDialog = function () {
+        var inline = this.owner.selection.getCurrentFormField();
+        if (inline instanceof FieldElementBox) {
+            this.fieldBegin = inline;
+            var fieldData = this.fieldBegin.formFieldData;
+            if (!fieldData.defaultValue) {
+                this.checkedButton.checked = false;
+                this.notCheckedButton.checked = true;
+            }
+            else {
+                this.checkedButton.checked = true;
+                this.notCheckedButton.checked = false;
+            }
+            if (fieldData.sizeType !== 'Auto') {
+                this.exactButton.checked = true;
+                this.autoButton.checked = false;
+                this.exactlyNumber.enabled = true;
+            }
+            else {
+                this.autoButton.checked = true;
+                this.exactButton.checked = false;
+                this.exactlyNumber.enabled = false;
+            }
+            if (fieldData.size) {
+                this.exactlyNumber.value = fieldData.size;
+            }
+            if (fieldData.enabled) {
+                this.checBoxEnableElement.checked = true;
+            }
+            else {
+                this.checBoxEnableElement.checked = false;
+            }
+            if (fieldData.name && fieldData.name !== '') {
+                this.bookmarkInputText.value = fieldData.name;
+            }
+            else {
+                this.bookmarkInputText.value = '';
+            }
+            if (fieldData.helpText && fieldData.helpText !== '') {
+                this.tooltipInputText.value = fieldData.helpText;
+            }
+            else {
+                this.tooltipInputText.value = '';
+            }
+        }
+    };
+    CheckBoxFormFieldDialog.prototype.destroy = function () {
+        var checkBoxDialogTarget = this.target;
+        if (checkBoxDialogTarget) {
+            if (checkBoxDialogTarget.parentElement) {
+                checkBoxDialogTarget.parentElement.removeChild(checkBoxDialogTarget);
+            }
+            this.target = undefined;
+        }
+        this.owner = undefined;
+        if (this.autoButton) {
+            this.autoButton.destroy();
+            this.autoButton = undefined;
+        }
+        if (this.exactButton) {
+            this.exactButton.destroy();
+            this.exactButton = undefined;
+        }
+        if (this.notCheckedButton) {
+            this.notCheckedButton.destroy();
+            this.notCheckedButton = undefined;
+        }
+        if (this.checkedButton) {
+            this.checkedButton.destroy();
+            this.checkedButton = undefined;
+        }
+        this.bookmarkInputText = undefined;
+        this.tooltipInputText = undefined;
+        if (this.checBoxEnableElement) {
+            this.checBoxEnableElement.destroy();
+            this.checBoxEnableElement = undefined;
+        }
+        if (this.exactlyNumber) {
+            this.exactlyNumber.destroy();
+            this.exactlyNumber = undefined;
+        }
+        this.exactNumberDiv = undefined;
+    };
+    return CheckBoxFormFieldDialog;
+}());
+
+// tslint:disable-next-line:max-line-length
+/**
+ * Form field text dialog is used to modify the value in text form field.
+ */
+var TextFormFieldDialog = /** @class */ (function () {
+    function TextFormFieldDialog(owner) {
+        var _this = this;
+        /**
+         * @private
+         */
+        this.updateTextFormtas = function () {
+            var defautText = _this.updateFormats(_this.defaultTextInput.value);
+            _this.defaultTextInput.value = !sf.base.isNullOrUndefined(defautText) ? defautText : '';
+        };
+        /**
+         * @private
+         */
+        this.onCancelButtonClick = function () {
+            _this.documentHelper.dialog.hide();
+        };
+        /**
+         * @private
+         */
+        this.insertTextField = function () {
+            var valid = true;
+            if (_this.typeDropDown.value === 'Date') {
+                valid = _this.isValidDateFormat();
+            }
+            if (valid) {
+                _this.updateTextFormtas();
+                if (_this.defaultTextInput.value.length > _this.maxLengthNumber.value && !sf.base.isNullOrUndefined(_this.maxLengthNumber.value) &&
+                    _this.maxLengthNumber.value !== 0) {
+                    sf.popups.DialogUtility.alert({
+                        content: 'The maximum length value must be equal or greater than the length of the default text.',
+                        showCloseIcon: true,
+                        closeOnEscape: true,
+                        position: { X: 'center', Y: 'center' },
+                        animationSettings: { effect: 'Zoom' }
+                    });
+                }
+                else {
+                    var type = void 0;
+                    if (_this.typeDropDown.value === 'Date') {
+                        type = 'Date';
+                    }
+                    else if (_this.typeDropDown.value === 'Number') {
+                        type = 'Number';
+                    }
+                    else {
+                        type = 'Text';
+                    }
+                    var format = _this.textFormatDropDown.value;
+                    var formField = new TextFormField();
+                    formField.type = type;
+                    formField.defaultValue = _this.defaultTextInput.value;
+                    formField.maxLength = _this.maxLengthNumber.value;
+                    formField.format = !sf.base.isNullOrUndefined(format) ? format : '';
+                    formField.name = _this.bookmarkTextInput.value;
+                    formField.helpText = _this.tooltipTextInput.value;
+                    formField.enabled = _this.fillInEnable.checked;
+                    _this.owner.editor.editFormField('Text', formField);
+                    _this.closeTextField();
+                }
+            }
+            else {
+                sf.popups.DialogUtility.alert({
+                    content: 'A valid date or time is required',
+                    showCloseIcon: true,
+                    closeOnEscape: true,
+                    position: { X: 'center', Y: 'center' },
+                    animationSettings: { effect: 'Zoom' }
+                });
+            }
+        };
+        this.closeTextField = function () {
+            _this.documentHelper.dialog.hide();
+            _this.documentHelper.dialog.element.style.pointerEvents = '';
+        };
+        this.owner = owner;
+    }
+    Object.defineProperty(TextFormFieldDialog.prototype, "documentHelper", {
+        get: function () {
+            return this.owner.documentHelper;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * @private
+     */
+    TextFormFieldDialog.prototype.getModuleName = function () {
+        return 'TextFormFieldDialog';
+    };
+    //tslint:disable: max-func-body-length
+    TextFormFieldDialog.prototype.initTextDialog = function (localValue, isRtl) {
+        var _this = this;
+        this.target = sf.base.createElement('div');
+        var dialogDiv = sf.base.createElement('div');
+        var firstDiv = sf.base.createElement('div', { className: 'e-de-div-seperate-dlg' });
+        var typeDiv = sf.base.createElement('div', { className: 'e-de-ff-dlg-lft-hlf' });
+        this.defaultTextDiv = sf.base.createElement('div', { className: 'e-de-ff-dlg-rght-hlf' });
+        var typeLabel = sf.base.createElement('div', {
+            className: 'e-de-ff-dlg-heading-small',
+            innerHTML: localValue.getConstant('Type')
+        });
+        var typeDropDownList = sf.base.createElement('input');
+        var typeDropDownitems = ['Regular text', 'Number', 'Date'];
+        this.typeDropDown = new sf.dropdowns.DropDownList({
+            dataSource: typeDropDownitems,
+            popupHeight: '150px',
+            value: 'Regular text',
+            change: this.changeTypeDropDown.bind(this)
+        });
+        this.defaultTextLabel = sf.base.createElement('div', {
+            className: 'e-de-ff-dlg-heading-small',
+            innerHTML: localValue.getConstant('Default text')
+        });
+        // tslint:disable-next-line:max-line-length 
+        this.defaultTextInput = sf.base.createElement('input', { className: 'e-input e-bookmark-textbox-input', styles: 'margin-top:3px' });
+        var secondDiv = sf.base.createElement('div', { className: 'e-de-div-seperate-dlg' });
+        var maxLengthDiv = sf.base.createElement('div', { className: 'e-de-ff-dlg-lft-hlf' });
+        var maxLengthLabel = sf.base.createElement('div', {
+            className: 'e-de-ff-dlg-heading-small',
+            innerHTML: localValue.getConstant('Maximum length')
+        });
+        var maxLength = sf.base.createElement('input');
+        this.maxLengthNumber = new sf.inputs.NumericTextBox({
+            format: 'n', value: 0, min: 0, max: 32767, width: '100%', enablePersistence: false,
+            change: function (args) {
+                if (!args.value) {
+                    this.element.value = 'Unlimited';
+                }
+            },
+            focus: function (args) {
+                if (!args.value) {
+                    this.element.value = 'Unlimited';
+                }
+            },
+            blur: function (args) {
+                if (!args.value) {
+                    var proxy_1 = this;
+                    /* tslint:disable:align */
+                    setTimeout(function () {
+                        proxy_1.element.value = 'Unlimited';
+                    }, 0);
+                }
+            },
+        });
+        var textFromatDiv = sf.base.createElement('div', { className: 'e-de-ff-dlg-rght-hlf' });
+        this.textFormatLabel = sf.base.createElement('div', {
+            className: 'e-de-ff-dlg-heading-small',
+            innerHTML: localValue.getConstant('Text format')
+        });
+        var textFormatList = sf.base.createElement('input');
+        var formatDropDownitems = ['Uppercase', 'Lowercase', 'First capital', 'Title case'];
+        this.textFormatDropDown = new sf.dropdowns.ComboBox({
+            dataSource: formatDropDownitems,
+            popupHeight: '150px',
+            allowCustom: true,
+            showClearButton: false,
+            change: this.updateTextFormtas.bind(this)
+        });
+        this.textFormatDropDown.focus = function () {
+            _this.textFormatDropDown.element.select();
+        };
+        // tslint:disable-next-line:max-line-length
+        var fileSettingsLabel = sf.base.createElement('div', {
+            className: 'e-de-ff-dlg-heading',
+            innerHTML: localValue.getConstant('Field settings')
+        });
+        var thirdDiv = sf.base.createElement('div', { className: 'e-de-div-seperate-dlg' });
+        var toolTipTotalDiv = sf.base.createElement('div', { className: 'e-de-ff-dlg-lft-hlf' });
+        var bookmarkTotalDiv = sf.base.createElement('div', { className: 'e-de-ff-dlg-rght-hlf' });
+        var toolTipHeadingLabel = sf.base.createElement('div', {
+            className: 'e-de-ff-dlg-heading-small',
+            innerHTML: localValue.getConstant('Tooltip')
+        });
+        this.tooltipTextInput = sf.base.createElement('input', { className: 'e-input e-bookmark-textbox-input' });
+        var bookmarkHeadingLabel = sf.base.createElement('div', {
+            className: 'e-de-ff-dlg-heading-small',
+            innerHTML: localValue.getConstant('Name')
+        });
+        this.bookmarkTextInput = sf.base.createElement('input', { className: 'e-input e-bookmark-textbox-input' });
+        var fillInEnableDiv = sf.base.createElement('div');
+        var fillInEnableEle = sf.base.createElement('input', { attrs: { type: 'checkbox' } });
+        this.fillInEnable = new sf.buttons.CheckBox({
+            cssClass: 'e-de-ff-dlg-check',
+            label: localValue.getConstant('Fillin enabled'),
+            enableRtl: isRtl
+        });
+        if (isRtl) {
+            typeDiv.classList.add('e-de-rtl');
+            maxLengthDiv.classList.add('e-de-rtl');
+            toolTipTotalDiv.classList.add('e-de-rtl');
+            bookmarkTotalDiv.classList.add('e-de-rtl');
+        }
+        this.target.appendChild(dialogDiv);
+        dialogDiv.appendChild(firstDiv);
+        firstDiv.appendChild(typeDiv);
+        typeDiv.appendChild(typeLabel);
+        typeDiv.appendChild(typeDropDownList);
+        this.typeDropDown.appendTo(typeDropDownList);
+        firstDiv.appendChild(this.defaultTextDiv);
+        this.defaultTextDiv.appendChild(this.defaultTextLabel);
+        this.defaultTextDiv.appendChild(this.defaultTextInput);
+        dialogDiv.appendChild(secondDiv);
+        secondDiv.appendChild(maxLengthDiv);
+        maxLengthDiv.appendChild(maxLengthLabel);
+        maxLengthDiv.appendChild(maxLength);
+        this.maxLengthNumber.appendTo(maxLength);
+        secondDiv.appendChild(textFromatDiv);
+        textFromatDiv.appendChild(this.textFormatLabel);
+        textFromatDiv.appendChild(textFormatList);
+        this.textFormatDropDown.appendTo(textFormatList);
+        dialogDiv.appendChild(fileSettingsLabel);
+        dialogDiv.appendChild(thirdDiv);
+        thirdDiv.appendChild(toolTipTotalDiv);
+        toolTipTotalDiv.appendChild(toolTipHeadingLabel);
+        toolTipTotalDiv.appendChild(this.tooltipTextInput);
+        thirdDiv.appendChild(bookmarkTotalDiv);
+        bookmarkTotalDiv.appendChild(bookmarkHeadingLabel);
+        bookmarkTotalDiv.appendChild(this.bookmarkTextInput);
+        dialogDiv.appendChild(fillInEnableDiv);
+        fillInEnableDiv.appendChild(fillInEnableEle);
+        this.fillInEnable.appendTo(fillInEnableEle);
+    };
+    TextFormFieldDialog.prototype.show = function () {
+        this.localObj = new sf.base.L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        this.localObj.setLocale(this.documentHelper.owner.locale);
+        if (sf.base.isNullOrUndefined(this.target)) {
+            this.initTextDialog(this.localObj, this.documentHelper.owner.enableRtl);
+        }
+        this.loadTextDialog();
+        this.documentHelper.dialog.header = this.localObj.getConstant('Text Form Field');
+        this.documentHelper.dialog.position = { X: 'center', Y: 'center' };
+        this.documentHelper.dialog.height = 'auto';
+        this.documentHelper.dialog.width = '448px';
+        this.documentHelper.dialog.content = this.target;
+        this.documentHelper.dialog.buttons = [{
+                click: this.insertTextField,
+                buttonModel: { content: this.localObj.getConstant('Ok'), cssClass: 'e-flat e-table-cell-margin-okay', isPrimary: true }
+            },
+            {
+                click: this.onCancelButtonClick,
+                buttonModel: { content: this.localObj.getConstant('Cancel'), cssClass: 'e-flat e-table-cell-margin-cancel' }
+            }];
+        this.documentHelper.dialog.show();
+    };
+    /**
+     * @private
+     */
+    TextFormFieldDialog.prototype.changeTypeDropDown = function (args) {
+        var _this = this;
+        if (args.isInteracted) {
+            setTimeout(function () {
+                _this.defaultTextInput.value = '';
+                _this.textFormatDropDown.value = '';
+            });
+        }
+        if (args.value === 'Regular text') {
+            this.defaultTextLabel.innerHTML = this.localObj.getConstant('Default text');
+            this.textFormatLabel.innerHTML = this.localObj.getConstant('Text format');
+            this.textFormatDropDown.dataSource = ['Uppercase', 'Lowercase', 'First capital', 'Title case'];
+        }
+        else if (args.value === 'Number') {
+            this.defaultTextLabel.innerHTML = this.localObj.getConstant('Default number');
+            this.textFormatLabel.innerHTML = this.localObj.getConstant('Number format');
+            this.textFormatDropDown.dataSource = ['0', '0.00', '#,##0', '#,##0.00', '$#,##0.00;($#,##0.00)', '0%'];
+        }
+        else if (args.value === 'Date') {
+            this.defaultTextLabel.innerHTML = this.localObj.getConstant('Default date');
+            this.textFormatLabel.innerHTML = this.localObj.getConstant('Date format');
+            // tslint:disable:max-line-length
+            this.textFormatDropDown.dataSource = ['M/d/yyyy', 'dddd, MMMM d, yyyy', 'MMMM d, yyyy', 'M/d/yy', 'yyyy-MM-dd', 'd-MMM-yy',
+                'M.d.yyyy', 'MMM. d, yy', 'd MMMM yyyy', 'MMMM yy', 'MMM-yy', 'M/d/yyyy h:mm am/pm', 'M/d/yyyy h:mm:ss am/pm', 'h:mm am/pm', 'h:mm:ss am/pm',
+                'HH:mm', 'HH:mm:ss'];
+            // tslint:enable:max-line-length
+        }
+    };
+    /**
+     * @private
+     */
+    TextFormFieldDialog.prototype.loadTextDialog = function () {
+        var inline = this.owner.selection.getCurrentFormField();
+        if (inline instanceof FieldElementBox) {
+            this.fieldBegin = inline;
+            var data = inline.formFieldData;
+            if (data.maxLength > 0) {
+                this.maxLengthNumber.value = data.maxLength;
+            }
+            else {
+                this.maxLengthNumber.value = 0;
+                this.maxLengthNumber.element.value = 'Unlimited';
+            }
+            if (data.type === 'Date') {
+                this.typeDropDown.value = 'Date';
+            }
+            else if (data.type === 'Number') {
+                this.typeDropDown.value = 'Number';
+            }
+            else {
+                this.typeDropDown.value = 'Regular text';
+            }
+            if (data.format) {
+                this.textFormatDropDown.value = data.format;
+            }
+            else {
+                this.textFormatDropDown.value = '';
+            }
+            this.defaultTextInput.value = !sf.base.isNullOrUndefined(data.defaultValue) ? data.defaultValue : '';
+            this.fillInEnable.checked = data.enabled;
+            this.tooltipTextInput.value = !sf.base.isNullOrUndefined(data.helpText) ? data.helpText : '';
+            this.bookmarkTextInput.value = !sf.base.isNullOrUndefined(data.name) ? data.name : '';
+        }
+    };
+    TextFormFieldDialog.prototype.updateFormats = function (value) {
+        if (!sf.base.isNullOrUndefined(this.textFormatDropDown.value)) {
+            if (this.typeDropDown.value === 'Regular text') {
+                return HelperMethods.formatText(this.textFormatDropDown.value.toString(), value);
+            }
+            if (this.typeDropDown.value === 'Number') {
+                var data = HelperMethods.formatNumber(this.textFormatDropDown.value.toString(), value);
+                if (!(data.toString() === 'NaN')) {
+                    return data;
+                }
+                return '';
+            }
+            if (this.typeDropDown.value === 'Date') {
+                return HelperMethods.formatDate(this.textFormatDropDown.value.toString(), value);
+            }
+        }
+        return undefined;
+    };
+    /**
+     * @private
+     */
+    TextFormFieldDialog.prototype.isValidDateFormat = function () {
+        var date = new Date(this.defaultTextInput.value);
+        if (isNaN(date.getDate())) {
+            return false;
+        }
+        return true;
+    };
+    TextFormFieldDialog.prototype.destroy = function () {
+        var textDialogTarget = this.target;
+        if (textDialogTarget) {
+            if (textDialogTarget.parentElement) {
+                textDialogTarget.parentElement.removeChild(textDialogTarget);
+            }
+            this.target = undefined;
+        }
+        if (this.maxLengthNumber) {
+            this.maxLengthNumber.destroy();
+            this.maxLengthNumber = undefined;
+        }
+        if (this.fillInEnable) {
+            this.fillInEnable.destroy();
+            this.fillInEnable = undefined;
+        }
+        if (this.typeDropDown) {
+            this.typeDropDown.destroy();
+            this.typeDropDown = undefined;
+        }
+        if (this.textFormatDropDown) {
+            this.textFormatDropDown.destroy();
+            this.textFormatDropDown = undefined;
+        }
+        this.owner = undefined;
+        this.defaultTextInput = undefined;
+        this.tooltipTextInput = undefined;
+        this.bookmarkTextInput = undefined;
+        this.defaultTextLabel = undefined;
+        this.defaultTextDiv = undefined;
+        this.textFormatLabel = undefined;
+    };
+    return TextFormFieldDialog;
+}());
+
+/**
+ * Form field drop-down dialog is used to modify the value in drop-down form field.
+ */
+/* tslint:disable:no-any */
+var DropDownFormFieldDialog = /** @class */ (function () {
+    function DropDownFormFieldDialog(owner) {
+        var _this = this;
+        /**
+         * @private
+         */
+        this.addItemtoList = function () {
+            _this.dropDownItems.push(_this.drpDownItemsInput.value);
+            _this.currentSelectedItem = _this.drpDownItemsInput.value;
+            _this.drpDownItemsInput.value = '';
+            _this.enableOrDisableButton();
+            _this.updateList();
+        };
+        /**
+         * @private
+         */
+        this.removeItemFromList = function () {
+            for (var i = 0; i < _this.dropDownItems.length; i++) {
+                if (_this.dropDownItems[i] === _this.currentSelectedItem) {
+                    _this.dropDownItems.splice(i, 1);
+                }
+            }
+            _this.updateList();
+        };
+        this.selectHandler = function (args) {
+            _this.currentSelectedItem = args.text;
+        };
+        /**
+         * @private
+         */
+        this.moveUpItem = function () {
+            var index = _this.getSelectedIndex();
+            _this.moveUp(index, (index - 1));
+            _this.updateList();
+        };
+        /**
+         * @private
+         */
+        this.moveDownItem = function () {
+            var index = _this.getSelectedIndex();
+            _this.moveDown(index, (index + 1));
+            _this.updateList();
+        };
+        /**
+         * @private
+         */
+        this.onKeyUpOnTextBox = function () {
+            _this.enableOrDisableButton();
+        };
+        /**
+         * @private
+         */
+        this.onCancelButtonClick = function () {
+            _this.documentHelper.dialog.hide();
+        };
+        /**
+         * @private
+         */
+        this.insertDropDownField = function () {
+            var dropDownField = new DropDownFormField();
+            dropDownField.dropDownItems = _this.dropDownItems;
+            dropDownField.selectedIndex = 0;
+            dropDownField.name = _this.bookmarkInput.value;
+            dropDownField.helpText = _this.tooltipInput.value;
+            dropDownField.enabled = _this.dropDownEnable.checked;
+            _this.owner.editor.editFormField('DropDown', dropDownField);
+            _this.closeDropDownField();
+        };
+        this.closeDropDownField = function () {
+            _this.documentHelper.dialog.hide();
+            _this.documentHelper.dialog.element.style.pointerEvents = '';
+        };
+        this.owner = owner;
+    }
+    Object.defineProperty(DropDownFormFieldDialog.prototype, "documentHelper", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.owner.documentHelper;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    /**
+     * @private
+     */
+    DropDownFormFieldDialog.prototype.getModuleName = function () {
+        return 'DropDownFormFieldDialog';
+    };
+    // tslint:disable:max-func-body-length
+    DropDownFormFieldDialog.prototype.initTextDialog = function (localValue, isRtl) {
+        this.target = sf.base.createElement('div');
+        var dialogDiv = sf.base.createElement('div');
+        var firstDiv = sf.base.createElement('div', { className: 'e-de-drp-dwn-frst-div' });
+        var drpDownItemsLabel = sf.base.createElement('div', {
+            className: 'e-de-ff-dlg-heading-small',
+            innerHTML: localValue.getConstant('Drop-down items')
+        });
+        this.drpDownItemsInput = sf.base.createElement('input', {
+            className: 'e-input e-bookmark-textbox-input',
+            id: 'fielditems_text_box'
+        });
+        this.drpDownItemsInput.addEventListener('keyup', this.onKeyUpOnTextBox);
+        var secondDiv = sf.base.createElement('div', { className: 'e-de-ff-drpdwn-dlg-scndiv' });
+        var itemsDrpItemsLabel = sf.base.createElement('div', {
+            className: 'e-de-ff-dlg-drpdwn-heading',
+            innerHTML: localValue.getConstant('Items in drop-down list')
+        });
+        var listviewDiv = sf.base.createElement('div', {
+            className: 'e-bookmark-listViewDiv e-de-ff-drpdwn-listview',
+            attrs: { style: 'height:100%' }
+        });
+        this.listviewInstance = new sf.lists.ListView({
+            cssClass: 'e-bookmark-listview',
+            select: this.selectHandler
+        });
+        var buttonDiv = sf.base.createElement('div');
+        var addButtonDiv = sf.base.createElement('div', { className: 'e-bookmark-addbutton' });
+        var addButtonEle = sf.base.createElement('button', {
+            innerHTML: localValue.getConstant('ADD'),
+            attrs: { type: 'button', style: 'height:36px;width:100%' }
+        });
+        this.addButton = new sf.buttons.Button({ cssClass: 'e-button-custom' });
+        this.addButton.disabled = true;
+        addButtonEle.addEventListener('click', this.addItemtoList.bind(this));
+        var editButtonDiv = sf.base.createElement('div', { className: 'e-bookmark-addbutton' });
+        editButtonDiv.style.display = 'none';
+        var editButtonEle = sf.base.createElement('button', {
+            innerHTML: 'EDIT',
+            attrs: { type: 'button', style: 'height:36px;width:100%' }
+        });
+        this.editButton = new sf.buttons.Button({ cssClass: 'e-button-custom' });
+        var removeButtonDiv = sf.base.createElement('div', { className: 'e-bookmark-addbutton' });
+        var removeButtonEle = sf.base.createElement('button', {
+            innerHTML: localValue.getConstant('REMOVE'),
+            attrs: { type: 'button', style: 'height:36px;width:100%' }
+        });
+        this.removeButton = new sf.buttons.Button({ cssClass: 'e-button-custom' });
+        removeButtonEle.addEventListener('click', this.removeItemFromList.bind(this));
+        var moveBtnDiv = sf.base.createElement('div', { attrs: { style: 'display:inline-flex' } });
+        var moveUpButtonDiv = sf.base.createElement('div', { className: 'e-bookmark-addbutton' });
+        var moveUpButtonEle = sf.base.createElement('button', {
+            attrs: { type: 'button', style: 'height:36px;width:36px' },
+            className: 'e-de-ff-drpdwn-mvup'
+        });
+        this.moveUpButton = new sf.buttons.Button({ cssClass: 'e-button-custom', iconCss: 'e-de-arrow-up' });
+        moveUpButtonEle.addEventListener('click', this.moveUpItem.bind(this));
+        var moveDownButtonDiv = sf.base.createElement('div', { className: 'e-bookmark-addbutton' });
+        var moveDownButtonEle = sf.base.createElement('button', {
+            attrs: { type: 'button', style: 'height:36px;width:36px' }
+        });
+        this.moveDownButton = new sf.buttons.Button({ cssClass: 'e-button-custom', iconCss: 'e-de-arrow-down' });
+        moveDownButtonEle.addEventListener('click', this.moveDownItem.bind(this));
+        var fileSettingsLabel = sf.base.createElement('div', {
+            className: 'e-de-ff-dlg-heading',
+            innerHTML: localValue.getConstant('Field settings')
+        });
+        var thirdDiv = sf.base.createElement('div', { className: 'e-de-div-seperate-dlg' });
+        var toolTipDiv = sf.base.createElement('div', { className: 'e-de-ff-dlg-lft-hlf' });
+        var bookmarkDiv = sf.base.createElement('div', { className: 'e-de-ff-dlg-rght-hlf' });
+        var toolTipLabel = sf.base.createElement('div', {
+            className: 'e-de-ff-dlg-heading-small',
+            innerHTML: localValue.getConstant('Tooltip')
+        });
+        this.tooltipInput = sf.base.createElement('input', { className: 'e-input e-bookmark-textbox-input' });
+        var bookmarkLabel = sf.base.createElement('div', {
+            className: 'e-de-ff-dlg-heading-small',
+            innerHTML: localValue.getConstant('Name')
+        });
+        this.bookmarkInput = sf.base.createElement('input', { className: 'e-input e-bookmark-textbox-input' });
+        var dropDownEnableDiv = sf.base.createElement('div');
+        var dropDownEnableEle = sf.base.createElement('input', { attrs: { type: 'checkbox' } });
+        this.dropDownEnable = new sf.buttons.CheckBox({
+            cssClass: 'e-de-ff-dlg-check',
+            label: localValue.getConstant('Dropdown enabled'),
+            enableRtl: isRtl
+        });
+        if (isRtl) {
+            listviewDiv.classList.add('e-de-rtl');
+            moveUpButtonEle.classList.add('e-de-rtl');
+            toolTipDiv.classList.add('e-de-rtl');
+            bookmarkDiv.classList.add('e-de-rtl');
+        }
+        this.target.appendChild(dialogDiv);
+        dialogDiv.appendChild(firstDiv);
+        firstDiv.appendChild(drpDownItemsLabel);
+        firstDiv.appendChild(this.drpDownItemsInput);
+        dialogDiv.appendChild(itemsDrpItemsLabel);
+        dialogDiv.appendChild(secondDiv);
+        secondDiv.appendChild(listviewDiv);
+        this.listviewInstance.appendTo(listviewDiv);
+        secondDiv.appendChild(buttonDiv);
+        buttonDiv.appendChild(addButtonDiv);
+        addButtonDiv.appendChild(addButtonEle);
+        this.addButton.appendTo(addButtonEle);
+        buttonDiv.appendChild(editButtonDiv);
+        editButtonDiv.appendChild(editButtonEle);
+        this.editButton.appendTo(editButtonEle);
+        buttonDiv.appendChild(removeButtonDiv);
+        removeButtonDiv.appendChild(removeButtonEle);
+        this.removeButton.appendTo(removeButtonEle);
+        buttonDiv.appendChild(moveBtnDiv);
+        moveBtnDiv.appendChild(moveUpButtonDiv);
+        moveUpButtonDiv.appendChild(moveUpButtonEle);
+        this.moveUpButton.appendTo(moveUpButtonEle);
+        moveBtnDiv.appendChild(moveDownButtonDiv);
+        moveDownButtonDiv.appendChild(moveDownButtonEle);
+        this.moveDownButton.appendTo(moveDownButtonEle);
+        dialogDiv.appendChild(fileSettingsLabel);
+        dialogDiv.appendChild(thirdDiv);
+        thirdDiv.appendChild(toolTipDiv);
+        toolTipDiv.appendChild(toolTipLabel);
+        toolTipDiv.appendChild(this.tooltipInput);
+        thirdDiv.appendChild(bookmarkDiv);
+        bookmarkDiv.appendChild(bookmarkLabel);
+        bookmarkDiv.appendChild(this.bookmarkInput);
+        dialogDiv.appendChild(dropDownEnableDiv);
+        dropDownEnableDiv.appendChild(dropDownEnableEle);
+        this.dropDownEnable.appendTo(dropDownEnableEle);
+    };
+    /**
+     * @private
+     */
+    DropDownFormFieldDialog.prototype.show = function () {
+        var localObj = new sf.base.L10n('documenteditor', this.documentHelper.owner.defaultLocale);
+        localObj.setLocale(this.documentHelper.owner.locale);
+        if (sf.base.isNullOrUndefined(this.target)) {
+            this.initTextDialog(localObj, this.documentHelper.owner.enableRtl);
+        }
+        this.loadDropDownDialog();
+        this.documentHelper.dialog.header = localObj.getConstant('Drop Down Form Field');
+        this.documentHelper.dialog.position = { X: 'center', Y: 'center' };
+        this.documentHelper.dialog.height = 'auto';
+        this.documentHelper.dialog.width = '448px';
+        this.documentHelper.dialog.content = this.target;
+        this.documentHelper.dialog.buttons = [{
+                click: this.insertDropDownField,
+                buttonModel: { content: localObj.getConstant('Ok'), cssClass: 'e-flat e-table-cell-margin-okay', isPrimary: true }
+            },
+            {
+                click: this.onCancelButtonClick,
+                buttonModel: { content: localObj.getConstant('Cancel'), cssClass: 'e-flat e-table-cell-margin-cancel' }
+            }];
+        this.documentHelper.dialog.show();
+    };
+    /**
+     * @private
+     */
+    DropDownFormFieldDialog.prototype.loadDropDownDialog = function () {
+        var inline = this.owner.selection.getCurrentFormField();
+        if (inline instanceof FieldElementBox) {
+            this.fieldBegin = inline;
+            this.dropDownInstance = inline.formFieldData;
+            if (this.dropDownInstance.dropDownItems.length > 0) {
+                var index = this.dropDownInstance.selectedIndex;
+                this.currentSelectedItem = this.dropDownInstance.dropDownItems[index];
+            }
+            if (this.dropDownInstance.enabled) {
+                this.dropDownEnable.checked = true;
+            }
+            else {
+                this.dropDownEnable.disabled = false;
+            }
+            if (this.dropDownInstance.helpText !== '') {
+                this.tooltipInput.value = this.dropDownInstance.helpText;
+            }
+            else {
+                this.tooltipInput.value = '';
+            }
+            if (this.dropDownInstance.name !== '') {
+                this.bookmarkInput.value = this.dropDownInstance.name;
+            }
+            else {
+                this.bookmarkInput.value = '';
+            }
+            this.dropDownItems = this.dropDownInstance.dropDownItems.slice();
+            this.updateList();
+        }
+    };
+    // sets updated list to dialog & refresh the List
+    DropDownFormFieldDialog.prototype.updateList = function () {
+        this.listviewInstance.dataSource = this.dropDownItems.slice();
+        this.listviewInstance.dataBind();
+        if (this.currentSelectedItem) {
+            var toSelectItem = this.currentSelectedItem;
+            this.listviewInstance.selectItem(toSelectItem);
+        }
+    };
+    DropDownFormFieldDialog.prototype.getSelectedIndex = function () {
+        for (var i = 0; i < this.dropDownItems.length; i++) {
+            if (this.dropDownItems[i] === this.currentSelectedItem) {
+                return i;
+            }
+        }
+        return 0;
+    };
+    DropDownFormFieldDialog.prototype.moveUp = function (fromIndex, toIndex) {
+        var tempData = [];
+        if (fromIndex === 0) {
+            for (var i = 0; i < this.dropDownItems.length; i++) {
+                if (i < (this.dropDownItems.length - 1)) {
+                    tempData[i] = this.dropDownItems[i + 1];
+                }
+                else {
+                    tempData[i] = this.dropDownItems[0];
+                }
+            }
+            this.dropDownItems = tempData;
+        }
+        else {
+            var temp = this.dropDownItems[fromIndex];
+            this.dropDownItems[fromIndex] = this.dropDownItems[toIndex];
+            this.dropDownItems[toIndex] = temp;
+        }
+    };
+    DropDownFormFieldDialog.prototype.moveDown = function (fromIndex, toIndex) {
+        var tempData = [];
+        if (fromIndex === (this.dropDownItems.length - 1)) {
+            for (var i = 0; i < this.dropDownItems.length; i++) {
+                if (i !== 0) {
+                    tempData[i] = this.dropDownItems[i - 1];
+                }
+                else {
+                    tempData[i] = this.dropDownItems[(this.dropDownItems.length - 1)];
+                }
+            }
+            this.dropDownItems = tempData;
+        }
+        else {
+            var temp = this.dropDownItems[fromIndex];
+            this.dropDownItems[fromIndex] = this.dropDownItems[toIndex];
+            this.dropDownItems[toIndex] = temp;
+        }
+    };
+    DropDownFormFieldDialog.prototype.enableOrDisableButton = function () {
+        if (!sf.base.isNullOrUndefined(this.addButton)) {
+            this.addButton.disabled = (this.drpDownItemsInput.value === '');
+        }
+    };
+    DropDownFormFieldDialog.prototype.destroy = function () {
+        var dropDownDialogTarget = this.target;
+        if (dropDownDialogTarget) {
+            if (dropDownDialogTarget.parentElement) {
+                dropDownDialogTarget.parentElement.removeChild(dropDownDialogTarget);
+            }
+            this.target = undefined;
+        }
+        this.owner = undefined;
+        this.drpDownItemsInput = undefined;
+        if (this.listviewInstance) {
+            this.listviewInstance.destroy();
+            this.listviewInstance = undefined;
+        }
+        if (this.addButton) {
+            this.addButton.destroy();
+            this.addButton = undefined;
+        }
+        if (this.editButton) {
+            this.editButton.destroy();
+            this.editButton = undefined;
+        }
+        if (this.removeButton) {
+            this.removeButton.destroy();
+            this.removeButton = undefined;
+        }
+        if (this.moveUpButton) {
+            this.moveUpButton.destroy();
+            this.moveUpButton = undefined;
+        }
+        if (this.moveDownButton) {
+            this.moveDownButton.destroy();
+            this.moveDownButton = undefined;
+        }
+        this.tooltipInput = undefined;
+        this.bookmarkInput = undefined;
+        if (this.dropDownEnable) {
+            this.dropDownEnable.destroy();
+            this.dropDownEnable = undefined;
+        }
+        this.dropDownInstance = undefined;
+    };
+    return DropDownFormFieldDialog;
 }());
 
 /**
@@ -76501,6 +79092,7 @@ var __decorate = (undefined && undefined.__decorate) || function (decorators, ta
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
 // tslint:disable-next-line:max-line-length
+// tslint:disable-next-line:max-line-length
 /**
  * The `DocumentEditorSettings` module is used to provide the customize property of Document Editor.
  */
@@ -76512,6 +79104,9 @@ var DocumentEditorSettings = /** @class */ (function (_super) {
     __decorate([
         sf.base.Property('#FFE97F')
     ], DocumentEditorSettings.prototype, "searchHighlightColor", void 0);
+    __decorate([
+        sf.base.Property({ shadingColor: '#cfcfcf', applyShading: true, selectionColor: '#cccccc' })
+    ], DocumentEditorSettings.prototype, "formFieldSettings", void 0);
     return DocumentEditorSettings;
 }(sf.base.ChildProperty));
 /**
@@ -76524,7 +79119,6 @@ var DocumentEditor = /** @class */ (function (_super) {
      */
     function DocumentEditor(options, element) {
         var _this = _super.call(this, options, element) || this;
-        //Internal Variable
         _this.enableHeaderFooterIn = false;
         /**
          * @private
@@ -76882,7 +79476,34 @@ var DocumentEditor = /** @class */ (function (_super) {
             'No Headings': 'No Heading Found!',
             'Add Headings': 'This document has no headings. Please add headings and try again.',
             'More Options': 'More Options',
-            'Click to see this comment': 'Click to see this comment'
+            'Click to see this comment': 'Click to see this comment',
+            'Form Fields': 'Form Fields',
+            'Text Form': 'Text Form',
+            'Check Box': 'Check Box',
+            'Drop Down Form Field': 'Drop Down Form Field',
+            'Dropdown items': 'Drop-down items',
+            'Items in dropdown list': 'Items in drop-down list',
+            'ADD': 'ADD',
+            'REMOVE': 'REMOVE',
+            'Field settings': 'Field settings',
+            'Tooltip': 'Tooltip',
+            'Dropdown enabled': 'Drop-down enabled',
+            'Check Box Form Field': 'Check Box Form Field',
+            'Check box size': 'Check box size',
+            'Auto': 'Auto',
+            'Default value': 'Default value',
+            'Not checked': 'Not checked',
+            'Checked': 'Checked',
+            'Check box enabled': 'Check box enabled',
+            'Text Form Field': 'Text Form Field',
+            'Type': 'Type',
+            'Default text': 'Default text',
+            'Maximum length': 'Maximum length',
+            'Text format': 'Text format',
+            'Fillin enabled': 'Fill-in enabled',
+            'Default number': 'Default number',
+            'Default date': 'Default date',
+            'Date format': 'Date format'
         };
         _this.documentHelper = new DocumentHelper(_this);
         if (_this.layoutType === 'Pages') {
@@ -77347,6 +79968,20 @@ var DocumentEditor = /** @class */ (function (_super) {
     /**
      * @private
      */
+    DocumentEditor.prototype.fireBeformFieldFill = function () {
+        var eventArgs = {};
+        this.trigger('beforeFieldFill', eventArgs);
+    };
+    /**
+     * @private
+     */
+    DocumentEditor.prototype.fireAfterFormFieldFill = function () {
+        var eventArgs = {};
+        this.trigger('afterFieldFill', eventArgs);
+    };
+    /**
+     * @private
+     */
     DocumentEditor.prototype.fireViewChange = function () {
         if (this.viewer && this.documentHelper.pages.length > 0) {
             if (this.viewer.visiblePages.length > 0) {
@@ -77437,7 +80072,6 @@ var DocumentEditor = /** @class */ (function (_super) {
             this.tableOfContentsDialogModule.show();
         }
     };
-    /* tslint:enable:no-any */
     /**
      * Shows the style dialog
      * @private
@@ -77635,6 +80269,17 @@ var DocumentEditor = /** @class */ (function (_super) {
                     member: 'SpellCheckDialog', args: [this.documentHelper]
                 });
             }
+            if (this.enableFormField) {
+                modules.push({
+                    member: 'TextFormFieldDialog', args: [this]
+                });
+                modules.push({
+                    member: 'DropDownFormFieldDialog', args: [this]
+                });
+                modules.push({
+                    member: 'CheckBoxFormFieldDialog', args: [this]
+                });
+            }
         }
         return modules;
     };
@@ -77692,9 +80337,9 @@ var DocumentEditor = /** @class */ (function (_super) {
                         = this.enableTableOfContentsDialog = this.enablePageSetupDialog = this.enableStyleDialog
                             = this.enableListDialog = this.enableParagraphDialog = this.enableFontDialog
                                 = this.enableTablePropertiesDialog = this.enableBordersAndShadingDialog
-                                    = this.enableTableOptionsDialog = this.enableSpellCheck = this.enableComment = true;
+                                    = this.enableTableOptionsDialog = this.enableSpellCheck = this.enableComment = this.enableFormField = true;
         // tslint:disable-next-line:max-line-length
-        DocumentEditor_1.Inject(Print, SfdtExport, WordExport, TextExport, Selection, Search, Editor, ImageResizer, EditorHistory, ContextMenu$1, OptionsPane, HyperlinkDialog, TableDialog, BookmarkDialog, TableOfContentsDialog, PageSetupDialog, StyleDialog, ListDialog, ParagraphDialog, BulletsAndNumberingDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, CellOptionsDialog, StylesDialog, SpellChecker, SpellCheckDialog);
+        DocumentEditor_1.Inject(Print, SfdtExport, WordExport, TextExport, Selection, Search, Editor, ImageResizer, EditorHistory, ContextMenu$1, OptionsPane, HyperlinkDialog, TableDialog, BookmarkDialog, TableOfContentsDialog, PageSetupDialog, StyleDialog, ListDialog, ParagraphDialog, BulletsAndNumberingDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, CellOptionsDialog, StylesDialog, SpellChecker, SpellCheckDialog, CheckBoxFormFieldDialog, TextFormFieldDialog, DropDownFormFieldDialog);
     };
     /**
      * Resizes the component and its sub elements based on given size or container size.
@@ -77713,6 +80358,126 @@ var DocumentEditor = /** @class */ (function (_super) {
                 this.documentHelper.updateViewerSize();
             }
         }
+    };
+    /**
+     * Get all form field names.
+     */
+    DocumentEditor.prototype.getFormFieldNames = function () {
+        var formFieldNames = [];
+        var formFields = this.documentHelper.formFields;
+        for (var i = 0; i < formFields.length; i++) {
+            if (formFields[i].formFieldData.name !== '') {
+                formFieldNames.push(formFields[i].formFieldData.name);
+            }
+        }
+        return formFieldNames;
+    };
+    /**
+     * Get form field by name
+     * @param name - Form field name.
+     */
+    DocumentEditor.prototype.getFormFieldInfo = function (name) {
+        var formFields = this.documentHelper.formFields;
+        for (var i = 0; i < formFields.length; i++) {
+            if ((formFields[i].formFieldData.name === name) && (formFields[i].formFieldData.name !== '')) {
+                return formFields[i].formFieldData.getFormFieldInfo();
+            }
+        }
+        return undefined;
+    };
+    /**
+     * Set form field.
+     * @param name - Form field name.
+     * @param formFieldInfo - Form Field info
+     */
+    DocumentEditor.prototype.setFormFieldInfo = function (name, formFieldInfo) {
+        var formFields = this.documentHelper.formFields;
+        for (var i = 0; i < formFields.length; i++) {
+            if ((formFields[i].formFieldData.name === name) && (formFields[i].formFieldData.name !== '')) {
+                var currentField = formFields[i];
+                if (this.selection) {
+                    this.selection.selectFieldInternal(currentField);
+                    if (this.editor) {
+                        this.editor.setFormField(currentField, formFieldInfo);
+                    }
+                }
+                return;
+            }
+        }
+    };
+    /**
+     * Reset form field value to default.
+     * @param name - specify form field name
+     */
+    DocumentEditor.prototype.resetFormFields = function (name) {
+        var formFields = this.documentHelper.formFields;
+        for (var i = 0; i < formFields.length; i++) {
+            if (sf.base.isNullOrUndefined(name) || name === formFields[i].formFieldData.name) {
+                if (formFields[i].formFieldData instanceof TextFormField) {
+                    this.editor.updateFormField(formFields[i], formFields[i].formFieldData.defaultValue, true);
+                }
+                else if (formFields[i].formFieldData instanceof CheckBoxFormField) {
+                    // tslint:disable-next-line:max-line-length
+                    this.editor.toggleCheckBoxFormField(formFields[i], true, formFields[i].formFieldData.defaultValue);
+                }
+                else if (formFields[i].formFieldData instanceof DropDownFormField) {
+                    this.editor.updateFormField(formFields[i], 0, true);
+                }
+            }
+        }
+    };
+    /**
+     * Import form field values.
+     */
+    DocumentEditor.prototype.importFormData = function (formData) {
+        var formField = this.documentHelper.formFields;
+        for (var i = 0; i < formData.length; i++) {
+            var fieldName = Object.keys(formData[i])[0];
+            for (var j = 0; j < formField.length; j++) {
+                if (formField[j].formFieldData.name === fieldName) {
+                    if (formField[j].formFieldData instanceof CheckBoxFormField) {
+                        this.editor.toggleCheckBoxFormField(formField[j], true, formData[i][fieldName]);
+                    }
+                    else if (formField[j].formFieldData instanceof TextFormField) {
+                        this.editor.updateFormField(formField[j], formData[i][fieldName]);
+                    }
+                    else if (formField[j].formFieldData instanceof DropDownFormField) {
+                        this.editor.updateFormField(formField[j], formData[i][fieldName]);
+                    }
+                }
+            }
+        }
+    };
+    /**
+     * Export form field values.
+     * @returns - {FormData[]}
+     */
+    DocumentEditor.prototype.exportFormData = function () {
+        var data = [];
+        var formField = this.documentHelper.formFields;
+        for (var i = 0; i < formField.length; i++) {
+            if (formField[i].formFieldData.name !== '') {
+                var formData = {};
+                if (formField[i].formFieldData instanceof CheckBoxFormField) {
+                    // tslint:disable-next-line:max-line-length
+                    formData[formField[i].formFieldData.name] = formField[i].formFieldData.checked;
+                }
+                else if (formField[i].formFieldData instanceof TextFormField) {
+                    var resultText = formField[i].resultText;
+                    var rex = new RegExp(this.documentHelper.textHelper.getEnSpaceCharacter(), 'gi');
+                    if (resultText.replace(rex, '') === '') {
+                        resultText = '';
+                    }
+                    formData[formField[i].formFieldData.name] = resultText;
+                }
+                else if (formField[i].formFieldData instanceof DropDownFormField) {
+                    // tslint:disable-next-line:max-line-length
+                    formData[formField[i].formFieldData.name] = formField[i].formFieldData.selectedIndex;
+                }
+                data.push(formData);
+            }
+        }
+        return data;
     };
     /**
      * Shifts the focus to the document.
@@ -78180,6 +80945,9 @@ var DocumentEditor = /** @class */ (function (_super) {
         sf.base.Property(false)
     ], DocumentEditor.prototype, "enableComment", void 0);
     __decorate([
+        sf.base.Property(true)
+    ], DocumentEditor.prototype, "enableFormField", void 0);
+    __decorate([
         sf.base.Property(false)
     ], DocumentEditor.prototype, "acceptTab", void 0);
     __decorate([
@@ -78251,6 +81019,12 @@ var DocumentEditor = /** @class */ (function (_super) {
     __decorate([
         sf.base.Event()
     ], DocumentEditor.prototype, "commentEnd", void 0);
+    __decorate([
+        sf.base.Event()
+    ], DocumentEditor.prototype, "beforeFormFieldFill", void 0);
+    __decorate([
+        sf.base.Event()
+    ], DocumentEditor.prototype, "afterFormFieldFill", void 0);
     DocumentEditor = DocumentEditor_1 = __decorate([
         sf.base.NotifyPropertyChanges
     ], DocumentEditor);
@@ -78274,6 +81048,25 @@ var ServerActionSettings = /** @class */ (function (_super) {
         sf.base.Property('RestrictEditing')
     ], ServerActionSettings.prototype, "restrictEditing", void 0);
     return ServerActionSettings;
+}(sf.base.ChildProperty));
+/**
+ * Form field settings.
+ */
+var FormFieldSettings = /** @class */ (function (_super) {
+    __extends$4(FormFieldSettings, _super);
+    function FormFieldSettings() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate([
+        sf.base.Property('#cfcfcf')
+    ], FormFieldSettings.prototype, "shadingColor", void 0);
+    __decorate([
+        sf.base.Property(true)
+    ], FormFieldSettings.prototype, "applyShading", void 0);
+    __decorate([
+        sf.base.Property('#cccccc')
+    ], FormFieldSettings.prototype, "selectionColor", void 0);
+    return FormFieldSettings;
 }(sf.base.ChildProperty));
 /**
  * The `ServerActionSettings` module is used to provide the server action methods of Document Editor Container.
@@ -78318,6 +81111,10 @@ var PAGE_BREAK = '_page_break';
 var SECTION_BREAK = '_section_break';
 var READ_ONLY = '_read_only';
 var PROTECTIONS = '_protections';
+var FORM_FIELDS_ID = '_form_fields';
+var TEXT_FORM = '_text_form';
+var CHECKBOX = '_checkbox';
+var DROPDOWN = '_dropdown';
 /**
  * Toolbar Module
  */
@@ -78451,6 +81248,19 @@ var Toolbar$1 = /** @class */ (function () {
             };
             this.restrictDropDwn = new sf.splitbuttons.DropDownButton(items, restrictEditing);
         }
+        if (this.toolbarItems.indexOf('FormFields') >= 0) {
+            var breakButton = toolbarTarget.getElementsByClassName('e-de-formfields')[0].firstChild;
+            var items = {
+                items: [
+                    { text: locale.getConstant('Text Form'), iconCss: 'e-icons e-de-textform', id: id + TEXT_FORM },
+                    { text: locale.getConstant('Check Box'), iconCss: 'e-icons e-de-checkbox-form', id: id + CHECKBOX },
+                    { text: locale.getConstant('DropDown'), iconCss: 'e-icons e-de-dropdownform', id: id + DROPDOWN }
+                ],
+                cssClass: 'e-de-toolbar-btn-first e-caret-hide',
+                select: this.onDropDownButtonSelect.bind(this),
+            };
+            this.formFieldDropDown = new sf.splitbuttons.DropDownButton(items, breakButton);
+        }
     };
     Toolbar$$1.prototype.showHidePropertiesPane = function () {
         if (this.container.propertiesPaneContainer.style.display === 'none') {
@@ -78545,25 +81355,25 @@ var Toolbar$1 = /** @class */ (function () {
                     break;
                 case 'New':
                     toolbarItems.push({
-                        prefixIcon: 'e-de-ctnr-new', tooltipText: locale.getConstant('Create a new document.'),
+                        prefixIcon: 'e-de-ctnr-new', tooltipText: locale.getConstant('Create a new document'),
                         id: id + NEW_ID, text: locale.getConstant('New'), cssClass: className
                     });
                     break;
                 case 'Open':
                     toolbarItems.push({
-                        prefixIcon: 'e-de-ctnr-open', tooltipText: locale.getConstant('Open a document.'), id: id + OPEN_ID,
+                        prefixIcon: 'e-de-ctnr-open', tooltipText: locale.getConstant('Open a document'), id: id + OPEN_ID,
                         text: locale.getConstant('Open'), cssClass: className
                     });
                     break;
                 case 'Undo':
                     toolbarItems.push({
-                        prefixIcon: 'e-de-ctnr-undo', tooltipText: locale.getConstant('Undo the last operation (Ctrl+Z).'),
+                        prefixIcon: 'e-de-ctnr-undo', tooltipText: locale.getConstant('Undo Tooltip'),
                         id: id + UNDO_ID, text: locale.getConstant('Undo'), cssClass: className
                     });
                     break;
                 case 'Redo':
                     toolbarItems.push({
-                        prefixIcon: 'e-de-ctnr-redo', tooltipText: locale.getConstant('Redo the last operation (Ctrl+Y).'),
+                        prefixIcon: 'e-de-ctnr-redo', tooltipText: locale.getConstant('Redo Tooltip'),
                         id: id + REDO_ID, text: locale.getConstant('Redo'), cssClass: className
                     });
                     break;
@@ -78576,7 +81386,7 @@ var Toolbar$1 = /** @class */ (function () {
                     break;
                 case 'Image':
                     toolbarItems.push({
-                        tooltipText: locale.getConstant('Insert inline picture from a file.'), id: id + INSERT_IMAGE_ID,
+                        tooltipText: locale.getConstant('Insert inline picture from a file'), id: id + INSERT_IMAGE_ID,
                         text: locale.getConstant('Image'), cssClass: className + ' e-de-image-splitbutton e-de-image-focus'
                     });
                     break;
@@ -78589,47 +81399,47 @@ var Toolbar$1 = /** @class */ (function () {
                 case 'Hyperlink':
                     toolbarItems.push({
                         prefixIcon: 'e-de-ctnr-link',
-                        tooltipText: locale.getConstant('Create a link in your document for quick access to webpages and files (Ctrl+K).'),
+                        tooltipText: locale.getConstant('Create Hyperlink'),
                         id: id + INSERT_LINK_ID, text: locale.getConstant('Link'), cssClass: className
                     });
                     break;
                 case 'Bookmark':
                     toolbarItems.push({
                         prefixIcon: 'e-de-ctnr-bookmark',
-                        tooltipText: locale.getConstant('Insert a bookmark in a specific place in this document.'),
+                        tooltipText: locale.getConstant('Insert a bookmark in a specific place in this document'),
                         id: id + BOOKMARK_ID, text: locale.getConstant('Bookmark'), cssClass: className
                     });
                     break;
                 case 'TableOfContents':
                     toolbarItems.push({
                         prefixIcon: 'e-de-ctnr-tableofcontent',
-                        tooltipText: locale.getConstant('Provide an overview of your document by adding a table of contents.'),
+                        tooltipText: locale.getConstant('Provide an overview of your document by adding a table of contents'),
                         id: id + TABLE_OF_CONTENT_ID, text: this.onWrapText(locale.getConstant('Table of Contents')),
                         cssClass: className
                     });
                     break;
                 case 'Header':
                     toolbarItems.push({
-                        prefixIcon: 'e-de-ctnr-header', tooltipText: locale.getConstant('Add or edit the header.'),
+                        prefixIcon: 'e-de-ctnr-header', tooltipText: locale.getConstant('Add or edit the header'),
                         id: id + HEADER_ID, text: locale.getConstant('Header'), cssClass: className
                     });
                     break;
                 case 'Footer':
                     toolbarItems.push({
-                        prefixIcon: 'e-de-ctnr-footer', tooltipText: locale.getConstant('Add or edit the footer.'),
+                        prefixIcon: 'e-de-ctnr-footer', tooltipText: locale.getConstant('Add or edit the footer'),
                         id: id + FOOTER_ID, text: locale.getConstant('Footer'), cssClass: className
                     });
                     break;
                 case 'PageSetup':
                     toolbarItems.push({
-                        prefixIcon: 'e-de-ctnr-pagesetup', tooltipText: locale.getConstant('Open the page setup dialog.'),
+                        prefixIcon: 'e-de-ctnr-pagesetup', tooltipText: locale.getConstant('Open the page setup dialog'),
                         id: id + PAGE_SET_UP_ID, text: this.onWrapText(locale.getConstant('Page Setup')),
                         cssClass: className
                     });
                     break;
                 case 'PageNumber':
                     toolbarItems.push({
-                        prefixIcon: 'e-de-ctnr-pagenumber', tooltipText: locale.getConstant('Add page numbers.'),
+                        prefixIcon: 'e-de-ctnr-pagenumber', tooltipText: locale.getConstant('Add page numbers'),
                         id: id + PAGE_NUMBER_ID, text: this.onWrapText(locale.getConstant('Page Number')),
                         cssClass: className
                     });
@@ -78642,7 +81452,7 @@ var Toolbar$1 = /** @class */ (function () {
                     break;
                 case 'Find':
                     toolbarItems.push({
-                        prefixIcon: 'e-de-ctnr-find', tooltipText: locale.getConstant('Find text in the document (Ctrl+F).'),
+                        prefixIcon: 'e-de-ctnr-find', tooltipText: locale.getConstant('Find Text'),
                         id: id + FIND_ID, text: locale.getConstant('Find'), cssClass: className
                     });
                     break;
@@ -78656,8 +81466,14 @@ var Toolbar$1 = /** @class */ (function () {
                     break;
                 case 'RestrictEditing':
                     toolbarItems.push({
-                        prefixIcon: 'e-de-ctnr-lock', tooltipText: locale.getConstant('Restrict editing.'), id: id + RESTRICT_EDITING_ID,
+                        prefixIcon: 'e-de-ctnr-lock', tooltipText: locale.getConstant('Restrict editing'), id: id + RESTRICT_EDITING_ID,
                         text: this.onWrapText(locale.getConstant('Restrict Editing')), cssClass: className + ' e-de-lock-dropdownbutton'
+                    });
+                    break;
+                case 'FormFields':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-formfield', tooltipText: locale.getConstant('Form Fields'), id: id + FORM_FIELDS_ID,
+                        text: this.onWrapText(locale.getConstant('Form Fields')), cssClass: className + ' e-de-formfields'
                     });
                     break;
                 default:
@@ -78772,6 +81588,15 @@ var Toolbar$1 = /** @class */ (function () {
         else if (id === parentId + PROTECTIONS) {
             this.documentEditor.documentHelper.restrictEditingPane.showHideRestrictPane(true);
         }
+        else if (id === parentId + CHECKBOX) {
+            this.documentEditor.editor.insertFormField('CheckBox');
+        }
+        else if (id === parentId + DROPDOWN) {
+            this.documentEditor.editor.insertFormField('DropDown');
+        }
+        else if (id === parentId + TEXT_FORM) {
+            this.documentEditor.editor.insertFormField('Text');
+        }
         setTimeout(function () { _this.documentEditor.focusIn(); }, 30);
     };
     Toolbar$$1.prototype.onFileChange = function () {
@@ -78870,7 +81695,8 @@ var Toolbar$1 = /** @class */ (function () {
         if (!isProtectedContent) {
             sf.base.classList(this.propertiesPaneButton.element.parentElement, !enable ? ['e-de-overlay'] : [], !enable ? [] : ['e-de-overlay']);
         }
-        if (enable) {
+        if (enable || (this.documentEditor.documentHelper.isDocumentProtected &&
+            this.documentEditor.documentHelper.protectionType === 'FormFieldsOnly')) {
             this.enableDisableUndoRedo();
         }
     };
@@ -78928,6 +81754,10 @@ var Toolbar$1 = /** @class */ (function () {
         if (this.breakDropDwn) {
             this.breakDropDwn.destroy();
             this.breakDropDwn = undefined;
+        }
+        if (this.formFieldDropDown) {
+            this.formFieldDropDown.destroy();
+            this.formFieldDropDown = undefined;
         }
         if (this.toolbar) {
             var toolbarElement = this.toolbar.element;
@@ -80289,7 +83119,7 @@ var Paragraph = /** @class */ (function () {
                 this.style.dataBind();
             }
             else {
-                this.style.value = '';
+                this.style.value = null;
             }
             sf.base.classList(this.leftAlignment, [], ['e-btn-toggle']);
             sf.base.classList(this.rightAlignment, [], ['e-btn-toggle']);
@@ -82387,7 +85217,11 @@ var DocumentEditorContainer = /** @class */ (function (_super) {
             'New comment': 'New comment',
             'Comments': 'Comments',
             'Print layout': 'Print layout',
-            'Web layout': 'Web layout'
+            'Web layout': 'Web layout',
+            'Form Fields': 'Form Fields',
+            'Text Form': 'Text Form',
+            'Check Box': 'Check Box',
+            'DropDown': 'Drop-Down'
         };
         return _this;
     }
@@ -82789,7 +85623,7 @@ var DocumentEditorContainer = /** @class */ (function (_super) {
         if (this.restrictEditing || this.textProperties === undefined) {
             return;
         }
-        var isProtectedDocument = this.documentEditor.documentHelper.protectionType === 'ReadOnly';
+        var isProtectedDocument = this.documentEditor.documentHelper.protectionType !== 'NoProtection';
         var allowFormatting = isProtectedDocument && this.documentEditor.documentHelper.restrictFormatting;
         var isSelectionInProtectecRegion = this.documentEditor.editor.restrictEditing;
         if (isProtectedDocument) {
@@ -82844,7 +85678,8 @@ var DocumentEditorContainer = /** @class */ (function (_super) {
         }
         this.previousContext = this.documentEditor.selection.contextType;
         if (this.toolbarModule && this.toolbarModule.toolbar) {
-            this.toolbarModule.enableDisableInsertComment(!this.documentEditor.enableHeaderAndFooter && this.enableComment);
+            // tslint:disable-next-line:max-line-length
+            this.toolbarModule.enableDisableInsertComment(!this.documentEditor.enableHeaderAndFooter && this.enableComment && !this.documentEditor.isReadOnlyMode);
         }
     };
     /**
@@ -83017,7 +85852,7 @@ var DocumentEditorContainer = /** @class */ (function (_super) {
         sf.base.Property({ import: 'Import', systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing' })
     ], DocumentEditorContainer.prototype, "serverActionSettings", void 0);
     __decorate$1([
-        sf.base.Property(['New', 'Open', 'Separator', 'Undo', 'Redo', 'Separator', 'Image', 'Table', 'Hyperlink', 'Bookmark', 'Comments', 'TableOfContents', 'Separator', 'Header', 'Footer', 'PageSetup', 'PageNumber', 'Break', 'Separator', 'Find', 'Separator', 'LocalClipboard', 'RestrictEditing'])
+        sf.base.Property(['New', 'Open', 'Separator', 'Undo', 'Redo', 'Separator', 'Image', 'Table', 'Hyperlink', 'Bookmark', 'Comments', 'TableOfContents', 'Separator', 'Header', 'Footer', 'PageSetup', 'PageNumber', 'Break', 'Separator', 'Find', 'Separator', 'LocalClipboard', 'RestrictEditing', 'Separator', 'FormFields'])
     ], DocumentEditorContainer.prototype, "toolbarItems", void 0);
     __decorate$1([
         sf.base.Property([])
@@ -83083,6 +85918,10 @@ exports.TableCellWidget = TableCellWidget;
 exports.LineWidget = LineWidget;
 exports.ElementBox = ElementBox;
 exports.FieldElementBox = FieldElementBox;
+exports.FormField = FormField;
+exports.TextFormField = TextFormField;
+exports.CheckBoxFormField = CheckBoxFormField;
+exports.DropDownFormField = DropDownFormField;
 exports.TextElementBox = TextElementBox;
 exports.ErrorTextElementBox = ErrorTextElementBox;
 exports.FieldTextElementBox = FieldTextElementBox;
@@ -83176,6 +86015,10 @@ exports.TableOptionsDialog = TableOptionsDialog;
 exports.CellOptionsDialog = CellOptionsDialog;
 exports.StylesDialog = StylesDialog;
 exports.SpellCheckDialog = SpellCheckDialog;
+exports.CheckBoxFormFieldDialog = CheckBoxFormFieldDialog;
+exports.TextFormFieldDialog = TextFormFieldDialog;
+exports.DropDownFormFieldDialog = DropDownFormFieldDialog;
+exports.FormFieldPopUp = FormFieldPopUp;
 exports.SpellChecker = SpellChecker;
 exports.AddUserDialog = AddUserDialog;
 exports.EnforceProtectionDialog = EnforceProtectionDialog;
@@ -83187,6 +86030,7 @@ exports.CommentView = CommentView;
 exports.DocumentEditorSettings = DocumentEditorSettings;
 exports.DocumentEditor = DocumentEditor;
 exports.ServerActionSettings = ServerActionSettings;
+exports.FormFieldSettings = FormFieldSettings;
 exports.ContainerServerActionSettings = ContainerServerActionSettings;
 exports.Toolbar = Toolbar$1;
 exports.DocumentEditorContainer = DocumentEditorContainer;

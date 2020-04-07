@@ -1511,7 +1511,7 @@ export class ConnectorDrawingTool extends ConnectTool {
                 this.drawingObject = this.commandHandler.drawObject(connector as Connector);
             }
             args.source = this.drawingObject;
-            if ((args.target || (args.actualObject && checkPort(args.actualObject, args.sourceWrapper)))
+            if ((args.target || (args.actualObject&&args.sourceWrapper && checkPort(args.actualObject, args.sourceWrapper)))
                 && (this.endPoint !== 'ConnectorTargetEnd' || (canInConnect(args.target as NodeModel)))) {
                 this.commandHandler.diagram.allowServerDataBinding = false;
                 this.commandHandler.connect(this.endPoint, args);

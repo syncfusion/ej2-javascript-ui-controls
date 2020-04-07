@@ -101,6 +101,35 @@ describe('Treegrid Row Reorder', () => {
     });
   });
 
+  describe('Treegrid Row Reorder', () => {
+    let TreeGridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      TreeGridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 1,
+          allowRowDragAndDrop: true,
+          columns: [
+            { field: "taskID", headerText: "Task Id", width: 90 },
+            { field: 'taskName', headerText: 'taskName', width: 60 },
+            { field: 'duration', headerText: 'duration', textAlign: 'Right', width: 90 },
+            { field: 'progress', headerText: 'progress', textAlign: 'Right', width: 90 },
+          ],
+        },done);
+    });
+
+    it('Reordered rows index must be changed', () => {
+      let before: ITreeData = TreeGridObj.flatData[5];
+      TreeGridObj.rowDragAndDropModule.reorderRows([3,4],0,'above');
+      expect((TreeGridObj.flatData[0] as ITreeData)['taskID']).toBe(4);
+      expect((TreeGridObj.flatData[0] as ITreeData).index).toBe(0);
+      TreeGridObj.rowDragAndDropModule.destroy();
+    });
+    afterAll(() => {
+      destroy(TreeGridObj);
+    });
+  });
 
   describe('Treegrid Row Reorder', () => {
     let TreeGridObj: TreeGrid;

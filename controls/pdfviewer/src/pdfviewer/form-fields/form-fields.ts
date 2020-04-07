@@ -23,6 +23,12 @@ export class FormFields {
     private isSignatureField: boolean = false;
     // tslint:disable-next-line
     private currentTarget: any;
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public nonFillableFields: any = {};
+
 
 
     /**
@@ -97,11 +103,17 @@ export class FormFields {
             if (currentData.Name === 'Textbox' || currentData.Name === 'Password' || currentData.Multiline) {
                 if (currentData.Text === '' || currentData.Text === null) {
                     this.pdfViewerBase.validateForm = true;
+                    this.nonFillableFields[currentData.FieldName] = currentData.Text;
+                } else {
+                    delete(this.nonFillableFields[currentData.FieldName]);
                 }
                 datas[currentData.FieldName] = currentData.Text;
             } else if (currentData.Name === 'RadioButton' && currentData.Selected) {
                 if (currentData.Selected === false) {
                     this.pdfViewerBase.validateForm = true;
+                    this.nonFillableFields[currentData.GroupName] = currentData.Value;
+                } else {
+                    delete(this.nonFillableFields[currentData.GroupName]);
                 }
                 datas[currentData.GroupName] = currentData.Value;
             } else if (currentData.Name === 'CheckBox') {
@@ -112,6 +124,9 @@ export class FormFields {
             } else if (currentData.Name === 'DropDown') {
                 if (currentData.SelectedValue === '') {
                     this.pdfViewerBase.validateForm = true;
+                    this.nonFillableFields[currentData.Text] = currentData.SelectedValue;
+                } else {
+                    delete(this.nonFillableFields[currentData.Text]);
                 }
                 datas[currentData.Text] = currentData.SelectedValue;
             } else if (currentData.Name === 'ListBox') {
@@ -131,6 +146,9 @@ export class FormFields {
                 let csData: any = splitArrayCollection(collectionData);
                 if (currentData.Value === null || currentData.Value === '') {
                     this.pdfViewerBase.validateForm = true;
+                    this.nonFillableFields[currentData.FieldName] = JSON.stringify(csData);
+                } else {
+                    delete(this.nonFillableFields[currentData.FieldName]);
                 }
                 datas[currentData.FieldName] = JSON.stringify(csData);
             }

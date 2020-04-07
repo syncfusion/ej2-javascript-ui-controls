@@ -5,7 +5,7 @@ import { formulaData as dataSource } from './../../../common/data-source';
  * Spreadsheet formula datasource binding sample.
  */
 let sheet: SheetModel[] = [{
-    range: [{
+    ranges: [{
         dataSource: dataSource,
         startCell: 'A1'
     }],

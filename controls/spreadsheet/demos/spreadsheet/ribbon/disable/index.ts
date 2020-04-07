@@ -1,5 +1,5 @@
 /**
- * Spreadsheet default sample
+ * Spreadsheet ribbon disable sample
  */
 import { Spreadsheet, SheetModel, ColumnModel } from './../../../../src/index';
 import { enableRipple } from '@syncfusion/ej2-base';
@@ -27,24 +27,17 @@ let columns: ColumnModel[] = [
 
 let sheet: SheetModel[] = [{
     name: 'PriceDetails',
-    range: [{
-        dataSource: dataSource,
-        startCell: 'A1'
-    }],
+    ranges: [{ dataSource: dataSource }],
     rowCount: 200,
     columns: columns
 }];
 
 let spreadsheet: Spreadsheet = new Spreadsheet({
     sheets: sheet,
-    beforeDataBound: (): void => {
-        if (spreadsheet.sheets[spreadsheet.activeSheetIndex].name === 'Sheet1') {
-            spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1');
-        }
-    },
     openUrl: 'https://ej2services.syncfusion.com/production/web-services/api/spreadsheet/open',
     saveUrl: 'https://ej2services.syncfusion.com/production/web-services/api/spreadsheet/save',
     created: (): void => {
+        spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1');
         spreadsheet.enableRibbonTabs(['Insert', 'View'], false);
         spreadsheet.enableToolbarItems('Home', ['spreadsheet_line-through', 'spreadsheet_underline', 'spreadsheet_vertical_align'], false);
         spreadsheet.enableToolbarItems('Formulas', [0], false);

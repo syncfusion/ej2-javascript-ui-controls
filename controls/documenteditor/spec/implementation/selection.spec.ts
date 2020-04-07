@@ -4310,7 +4310,7 @@ describe('Selection Validation for branch ', () => {
         editor.editorModule.insertText('www.google.com');
         editor.editorModule.insertText(' ');
         let field: FieldElementBox[] = editor.documentHelper.fields;
-        editor.selection.getHyperLinkFields(editor.selection.start.paragraph, field);
+        editor.selection.getHyperLinkFields(editor.selection.start.paragraph, field, false);
         expect(field.length).toBe(1);
     });
 });

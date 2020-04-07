@@ -847,8 +847,8 @@ export class Edit implements IAction {
         }
     }
 
-    // tslint:disable-next-line:max-func-body-length
-    private createTooltip(element: Element, error: HTMLElement, name: string, display: string): void {
+     // tslint:disable-next-line:max-func-body-length
+     private createTooltip(element: Element, error: HTMLElement, name: string, display: string): void {
         let gcontent: HTMLElement = this.parent.getContent().firstElementChild as HTMLElement;
         if (this.parent.getFrozenColumns()) {
             gcontent = this.parent.getMovableVirtualContent() as HTMLElement;
@@ -862,10 +862,12 @@ export class Edit implements IAction {
         let isFHdrLastRow: boolean = false;
         let validationForBottomRowPos: boolean;
         let isBatchModeLastRow: boolean = false;
+        let viewPortRowCount: number = Math.round(this.parent.getContent().clientHeight / this.parent.getRowHeight()) - 1;
+        let rows: Element[] = !fCont ? [].slice.call(this.parent.getContent().querySelectorAll('.e-row'))
+            : [].slice.call(this.parent.getFrozenVirtualContent().querySelectorAll('.e-row'));
         if (this.parent.editSettings.mode === 'Batch') {
-            let rows: Element[] = !fCont ? [].slice.call(this.parent.getContent().querySelectorAll('.e-row'))
-                : [].slice.call(this.parent.getFrozenVirtualContent().querySelectorAll('.e-row'));
-            if (rows[rows.length - 1].getAttribute('aria-rowindex') === row.getAttribute('aria-rowindex')) {
+            if (viewPortRowCount > 1 && rows.length >= viewPortRowCount
+                && rows[rows.length - 1].getAttribute('aria-rowindex') === row.getAttribute('aria-rowindex')) {
                 isBatchModeLastRow = true;
             }
         }
@@ -877,9 +879,10 @@ export class Edit implements IAction {
                 isFHdr = fHeraderRows.length > (parseInt(row.getAttribute('aria-rowindex'), 10) || 0);
                 isFHdrLastRow = isFHdr && parseInt(row.getAttribute('aria-rowindex'), 10) === fHeraderRows.length - 1;
             }
-            if (isFHdrLastRow || (this.parent.editSettings.newRowPosition === 'Bottom' && (this.editModule.args
-                && this.editModule.args.requestType === 'add')) || (td.classList.contains('e-lastrowcell')
-                    && !row.classList.contains('e-addedrow')) || isBatchModeLastRow) {
+            if (isFHdrLastRow || (viewPortRowCount > 1 && rows.length >= viewPortRowCount
+                && ((this.parent.editSettings.newRowPosition === 'Bottom' && (this.editModule.args
+                    && this.editModule.args.requestType === 'add')) || (td.classList.contains('e-lastrowcell')
+                        && !row.classList.contains('e-addedrow')))) || isBatchModeLastRow) {
                 validationForBottomRowPos = true;
             }
         }
@@ -962,6 +965,13 @@ export class Edit implements IAction {
                     - scrollWidth) + inputClient.height + 9 + 'px';
             } else {
                 div.style.bottom = inputClient.height + 9 + 'px';
+            }
+            if (rows.length < viewPortRowCount && this.parent.editSettings.newRowPosition === 'Bottom' && (this.editModule.args
+                && this.editModule.args.requestType === 'add')) {
+                let rowsCount: number = this.parent.frozenRows ? this.parent.frozenRows + (rows.length - 1) : rows.length - 1;
+                let rowsHeight: number = rowsCount * this.parent.getRowHeight();
+                let position: number = this.parent.getContent().clientHeight - rowsHeight;
+                div.style.bottom = position + 9 + 'px';
             }
             div.style.top = null;
         }

@@ -13097,6 +13097,7 @@ var TextBox = /** @class */ (function (_super) {
         }
         this.previousValue = this.value;
         this.inputPreviousValue = this.value;
+        this.respectiveElement.defaultValue = this.respectiveElement.value;
         exports.Input.setWidth(this.width, this.textboxWrapper.container);
         this.renderComplete();
     };
@@ -13298,6 +13299,7 @@ var TextBox = /** @class */ (function (_super) {
                 this.respectiveElement = this.element;
                 this.element.removeAttribute('type');
             }
+            this.respectiveElement.value = this.respectiveElement.defaultValue;
             this.respectiveElement.classList.remove('e-input');
             this.removeAttributes(['aria-placeholder', 'aria-disabled', 'aria-readonly', 'aria-labelledby']);
             if (!sf.base.isNullOrUndefined(this.textboxWrapper)) {

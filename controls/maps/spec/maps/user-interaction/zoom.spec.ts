@@ -193,6 +193,28 @@ describe('Zoom feature tesing for map control', () => {
             map.enablePersistence = true;
             map.refresh();
         });
+      
+        it('Checking with pan button', () => {
+          map.loaded = (args: ILoadedEventArgs) => {
+              let element: Element = getElementByID(map.element.id + '_Zooming_ToolBar_Pan_Rect');
+              let eventObj: Object = {
+                  target: element,
+                  type: 'mouseup',
+                  stopImmediatePropagation: prevent,
+                  pageX: element.getBoundingClientRect().left,
+                  pageY: element.getBoundingClientRect().top
+              };
+              map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
+              element = getElementByID(map.element.id + '_Zooming_ToolBar_ZoomIn_Rect');
+              eventObj['target'] = element;
+              map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
+              element = getElementByID(map.element.id + '_Zooming_ToolBar_Pan_Rect');
+              eventObj['target'] = element;
+              map.zoomModule.performToolBarAction(<PointerEvent>eventObj);
+          };
+          map.layers[0].layerType = "OSM";
+          map.refresh();
+      });
 
         it('Checking with Zoom in button - bing map ', () => {
             map.load = (args: ILoadEventArgs) => {
@@ -517,6 +539,35 @@ describe('Zoom feature tesing for map control', () => {
             map.refresh();
 
         });
+        it('Check - panning with OSM map ', () => {
+          map.loaded = (args: ILoadedEventArgs) => {
+              let rect: ClientRect = getElementByID(map.element.id + '_svg').getBoundingClientRect();
+              let wheelArgs: Object; let delta: number = 130;
+              wheelArgs = {
+                  preventDefault: prevent,
+                  wheelDelta: delta++,
+                  detail: 3,
+                  clientX: rect.left + map.mapAreaRect.x + (map.mapAreaRect.width / 2),
+                  clientY: rect.top + map.mapAreaRect.y + (map.mapAreaRect.height / 2),
+                  pageX: rect.left + map.mapAreaRect.x + (map.mapAreaRect.width / 2),
+                  pageY: rect.top + map.mapAreaRect.y + (map.mapAreaRect.height / 2),
+              };
+              map.zoomModule.mouseDownPoints = { x: (rect.left + 100), y: (rect.top + 100) };
+              map.zoomModule.mouseMovePoints = { x: (rect.left + 200), y: (rect.top + 100) };
+              map.scale = 2;
+              map.tileZoomLevel = 2;
+              map.zoomModule.panning('None', null, null, <PointerEvent | TouchEvent>wheelArgs);
+          };
+          map.load = (args: ILoadEventArgs) => {
+              let bing: BingMap = new BingMap(map);
+              bing.imageUrl = imageUrl;
+              bing.maxZoom = zoomMax;
+              bing.subDomains = subDomains;
+          };
+          map.layers[0].layerType = 'OSM';
+          map.refresh();
+
+      });
     });
 
     describe('Checking with toolbar alignment', () => {

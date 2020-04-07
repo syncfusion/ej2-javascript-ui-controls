@@ -18,7 +18,7 @@ describe('Spreadsheet formula bar module ->', () => {
             model = {
                 sheets: [
                     {
-                        range: [
+                        ranges: [
                             { dataSource: defaultData }
                         ]
                     }

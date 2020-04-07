@@ -13,7 +13,7 @@ import { data, filterData } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { createGrid, destroy, getClickObj, getKeyActionObj } from '../base/specutil.spec';
 import  {profile , inMB, getMemoryProfile} from './common.spec';
-import { keyPressed, KeyboardEventArgs, columnChooserOpened, AggregateColumnModel } from '../../../src';
+import { keyPressed, KeyboardEventArgs, columnChooserOpened, AggregateColumnModel, recordClick } from '../../../src';
 import { Selection } from '../../../src/grid/actions/selection';
 Grid.Inject(Page);
 
@@ -1506,5 +1506,40 @@ describe('Grid base module', () => {
             destroy(gridObj);
             gridObj = null;
             gridObj.recordDoubleClick = null;
+        });
+    });
+
+    describe('EJ2-38148-Column name mismatches in recordClick event when Grid is grouped', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: false,
+                    allowGrouping: true,
+                    groupSettings:{columns:['OrderID','CustomerID']},
+                    columns: [
+                        { headerText: 'OrderID', field: 'OrderID', isPrimaryKey: true },
+                        { headerText: 'CustomerID', field: 'CustomerID', visible: false },
+                        { headerText: 'Freight', field: 'Freight' },
+                        { headerText: 'EmployeeID', field: 'EmployeeID' },
+                        { headerText: 'ShipAddress', field: 'Shipping Address of the order' },
+                        { headerText: 'ShipCity', field: 'ShipCity' },
+                        { headerText: 'ShipCountry', field: 'ShipCountry' },
+                    ],
+                }, done);
+        });
+        it('double click in row-drag-n-drop icon', (done: Function) => {
+            let recordClick = (args: any) => {
+                expect(args.column.field).toBe('Freight');
+                done();
+            }
+            gridObj.recordClick = recordClick;
+            (gridObj.element.querySelectorAll('.e-rowcell')[2] as any).click();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+            gridObj.recordClick = null;
         });
     });

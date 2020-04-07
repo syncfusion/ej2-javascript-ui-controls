@@ -314,7 +314,7 @@ export class Marker {
         if (target.indexOf('_LayerIndex_') === -1 || target.indexOf('_cluster_') === -1) {
             return;
         }
-        let options: { marker: MarkerSettingsModel, data: object, clusterCollection: MarkerClusterData[] } = this.getMarker(target);
+        let options: { marker: MarkerSettingsModel, data: object, clusterCollection: MarkerClusterData[], markCollection: object[] } = this.getMarker(target);
         if (isNullOrUndefined(options)) {
             return;
         }
@@ -332,10 +332,11 @@ export class Marker {
         let eventArgs: IMarkerClusterClickEventArgs = {
             cancel: false, name: markerClusterClick, data: options, maps: this.maps,
             target: target, x: e.clientX, y: e.clientY,
-            latitude: options.data["latitude"] || options.data["Latitude"], longitude: options.data["longitude"] || options.data["Longitude"]
+            latitude: options.data["latitude"] || options.data["Latitude"], longitude: options.data["longitude"] || options.data["Longitude"],
+            markerClusterCollection: options['markCollection']
         };
         if (this.maps.isBlazor) {
-            const { maps, data, latitude, longitude, ...blazorEventArgs }: IMarkerClusterClickEventArgs = eventArgs;
+            const { maps, latitude, longitude, ...blazorEventArgs }: IMarkerClusterClickEventArgs = eventArgs;
             eventArgs = blazorEventArgs;
         }
         this.maps.trigger(markerClusterClick, eventArgs);
@@ -343,11 +344,12 @@ export class Marker {
     /**
      * To get marker from target id
      */
-    private getMarker(target: string): { marker: MarkerSettingsModel, data: object, clusterCollection: MarkerClusterData[] } {
+    private getMarker(target: string): { marker: MarkerSettingsModel, data: object, clusterCollection: MarkerClusterData[], markCollection: object[] } {
         let id: string[] = target.split('_LayerIndex_');
         let index: number = parseInt(id[1].split('_')[0], 10);
         let layer: LayerSettings = <LayerSettings>this.maps.layers[index];
-        let data: object;
+      let data: object;
+      let markCollection: object[] = [];
         let clusterCollection: MarkerClusterData[] = [];
         let marker: MarkerSettingsModel;
         if (target.indexOf('_MarkerIndex_') > -1) {
@@ -375,6 +377,8 @@ export class Marker {
                         collection = [];
                         for (let i of indexes) {
                             collection.push({ data: marker.dataSource[i], index: i });
+                            if (this.maps.isBlazor) { marker.dataSource[i]["text"] = "";}
+                            markCollection.push(marker.dataSource[i]);
                         }
                         isClusterSame = false;
                     }
@@ -384,7 +388,7 @@ export class Marker {
                         isClusterSame: isClusterSame
                     });
                 }
-                return { marker: marker, data: data, clusterCollection: clusterCollection };
+                return { marker: marker, data: data, clusterCollection: clusterCollection, markCollection: markCollection };
             }
         }
         return null;

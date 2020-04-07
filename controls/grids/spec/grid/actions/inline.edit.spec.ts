@@ -2843,4 +2843,45 @@ describe('Inline Editing module', () => {
 
     });
 
+    describe('EJ2-37498 checkbox column value overrides the boolean column while editing', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: dataSource(),
+                    allowPaging:true,
+                    selectionSettings:{ persistSelection:true, checkboxOnly:true },
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true},
+                    toolbar: ['Add',  'Delete', 'Update', 'Cancel'],
+                    columns: [
+                        { type:"checkbox", width:50},
+                        { field: 'OrderID', isPrimaryKey: true, validationRules: { required: true },headerText: 'Order ID', width: 120},
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 140 },
+                        { field: 'Verified', headerText: 'Verified', textAlign: 'Right', editType: 'booleanedit',
+                            width: 120, displayAsCheckBox:true, type:"boolean" }
+                    ],
+                    actionComplete: actionComplete
+                }, done);
+        });
+
+        it('editing row', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'beginEdit') {
+                    expect(gridObj.dataSource[1].Verified).toBe(false);
+                    expect(args.form.querySelector("#" + gridObj.element.id +"Verified").nextSibling.classList.contains("e-check")).toBe(false);
+                    gridObj.actionComplete = undefined;
+                }
+                done();
+            };
+            gridObj.actionComplete = actionComplete;       
+            gridObj.selectRow(1);
+            (gridObj.editModule as any).editModule.startEdit(gridObj.getRows()[1]);
+        });
+        afterAll(() => {
+            destroy(gridObj);
+        });
+
+    });
+
 });

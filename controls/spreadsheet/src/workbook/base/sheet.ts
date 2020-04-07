@@ -6,13 +6,11 @@ import { ColumnModel } from './column-model';
 import { processIdx } from './data';
 import { SheetState, ProtectSettingsModel } from '../common/index';
 import { ProtectSettings } from '../common/index';
-import { isUndefined, ChildProperty, Property, Complex, Collection } from '@syncfusion/ej2-base';
-import { Row } from './row';
-import { Column } from './column';
+import { isUndefined, ChildProperty, Property, Complex } from '@syncfusion/ej2-base';
 import { WorkbookModel } from './workbook-model';
 
 /**
- * Configures the Range settings for the spreadsheet.
+ * Configures the range processing for the spreadsheet.
  *  ```html
  * <div id='Spreadsheet'></div>
  * ```
@@ -20,7 +18,7 @@ import { WorkbookModel } from './workbook-model';
  * let spreadsheet: Spreadsheet = new Spreadsheet({
  *      sheets: [{
  *                  name: 'First Sheet',
- *                  range: [{ dataSource: defaultData }],
+ *                  ranges: [{ dataSource: defaultData }],
  *                  rows: [{
  *                          index: 30,
  *                          cells: [{ index: 4, value: 'Total Amount:' },
@@ -115,14 +113,14 @@ export class Sheet extends ChildProperty<WorkbookModel> {
      * Configures row and its properties for the sheet.
      * @default []
      */
-    @Collection([], Row)
+    @Property([])
     public rows: RowModel[];
 
     /**
      * Configures column and its properties for the sheet.
      * @default []
      */
-    @Collection([], Column)
+    @Property([])
     public columns: ColumnModel[];
 
     /**
@@ -133,11 +131,11 @@ export class Sheet extends ChildProperty<WorkbookModel> {
     public protectSettings: ProtectSettingsModel;
 
     /**
-     * Specifies the range for the sheet.
+     * Specifies the collection of range for the sheet.
      * @default []
      */
-    @Collection([], Range)
-    public range: RangeModel[];
+    @Property([])
+    public ranges: RangeModel[];
 
     /**
      * Specifies index of the sheet. Based on the index, sheet properties are applied.
@@ -366,7 +364,7 @@ export function initSheet(context: Workbook, sheet?: SheetModel[]): void {
         sheet.activeCell = sheet.activeCell || 'A1';
         sheet.selectedRange = sheet.selectedRange || 'A1';
         sheet.usedRange = sheet.usedRange || { rowIndex: 0, colIndex: 0 };
-        sheet.range = sheet.range ? initRangeSettings(sheet.range) : [];
+        sheet.ranges = sheet.ranges ? initRangeSettings(sheet.ranges) : [];
         sheet.rows = sheet.rows || [];
         sheet.columns = sheet.columns || [];
         sheet.showHeaders = isUndefined(sheet.showHeaders) ? true : sheet.showHeaders;
@@ -382,14 +380,14 @@ export function initSheet(context: Workbook, sheet?: SheetModel[]): void {
     processIdx(sheets, true, context);
 }
 
-function initRangeSettings(rangeSettings: RangeModel[]): RangeModel[] {
-    rangeSettings.forEach((rangeSetting: RangeModel) => {
-        rangeSetting.startCell = rangeSetting.startCell || 'A1';
-        rangeSetting.address = rangeSetting.address || 'A1';
-        rangeSetting.template = rangeSetting.template || '';
-        rangeSetting.showFieldAsHeader = isUndefined(rangeSetting.showFieldAsHeader) ? true : rangeSetting.showFieldAsHeader;
+function initRangeSettings(ranges: RangeModel[]): RangeModel[] {
+    ranges.forEach((range: RangeModel) => {
+        range.startCell = range.startCell || 'A1';
+        range.address = range.address || 'A1';
+        range.template = range.template || '';
+        range.showFieldAsHeader = isUndefined(range.showFieldAsHeader) ? true : range.showFieldAsHeader;
     });
-    return rangeSettings;
+    return ranges;
 }
 
 function initRow(rows: RowModel[]): void {

@@ -3,7 +3,6 @@
  */
 import { Toolbar, ItemModel } from '../../src/toolbar/index';
 import { extend } from '@syncfusion/ej2-base';
-import { EJ2Instance } from '../../src';
 
 let items: ItemModel[] = [
     {
@@ -139,7 +138,7 @@ toolbarObj4.appendTo('#ej2Toolbar4');
 let refreshToolbars: Function = () => {
     let toolbars: HTMLElement[] = [].slice.call(document.querySelectorAll('.e-toolbar'));
     for (let toolbar of toolbars) {
-        ((toolbar as EJ2Instance).ej2_instances[0] as Toolbar).refresh();
+        ((toolbar as any).ej2_instances[0] as Toolbar).refresh();
     }
 }
 

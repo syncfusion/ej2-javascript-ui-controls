@@ -1,7 +1,7 @@
 import { remove, extend, isNullOrUndefined, createElement, L10n, getValue, closest, isBlazor } from '@syncfusion/ej2-base';
 import { DataManager, DataUtil } from '@syncfusion/ej2-data';
 import { Dialog, PositionDataModel, DialogModel } from '@syncfusion/ej2-popups';
-import { Tab, TabModel, TabItemModel, EJ2Instance, SelectEventArgs } from '@syncfusion/ej2-navigations';
+import { Tab, TabModel, TabItemModel, SelectEventArgs } from '@syncfusion/ej2-navigations';
 import { Grid, Edit, Toolbar as GridToolbar, Page, GridModel } from '@syncfusion/ej2-grids';
 import {
     ColumnModel as GridColumnModel, ForeignKey,
@@ -26,6 +26,9 @@ import {
     TreeGridModel, ColumnModel as TreeGridColumnModel,
     TreeGrid, Selection, Filter, Edit as TreeGridEdit
 } from '@syncfusion/ej2-treegrid';
+interface EJ2Instance extends HTMLElement {
+    ej2_instances: Object[];
+}
 
 /**
  * 

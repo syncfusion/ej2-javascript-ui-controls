@@ -2606,7 +2606,9 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         this.setColIndex(this.grid.columns);
         this.bindGridEvents();
         let headerCheckbox = 'headerCheckbox';
-        this.grid.on('colgroup-refresh', this.selectionModule[headerCheckbox], this.selectionModule);
+        if (!isNullOrUndefined(this.selectionModule)) {
+            this.grid.on('colgroup-refresh', this.selectionModule[headerCheckbox], this.selectionModule);
+        }
         for (let i = 0; i < this.columns.length; i++) {
             this.columns[i].uid = this.grid.columns[i].uid;
         }
@@ -2898,10 +2900,14 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         let editKeyPress = 'keyPressed';
         let localobserver = 'localObserver';
         let cellEdit$$1;
+        let cellSave$$1;
         let name = 'name';
         if (isBlazor() && this.isServerRendered) {
             if (!isNullOrUndefined(this.grid.cellEdit) && this.grid.cellEdit[name] === 'bound triggerEJEvents') {
                 cellEdit$$1 = this.grid.cellEdit;
+            }
+            if (!isNullOrUndefined(this.grid.cellSave) && this.grid.cellSave[name] === 'bound triggerEJEvents') {
+                cellSave$$1 = this.grid.cellSave;
             }
         }
         if (this.editModule && isBlazor() && this.isServerRendered) {
@@ -2919,6 +2925,11 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             }
         };
         this.grid.cellSave = (args) => {
+            if (isBlazor() && this.isServerRendered) {
+                if (cellSave$$1 && typeof cellSave$$1 === 'function' && cellSave$$1[name] === 'bound triggerEJEvents') {
+                    cellSave$$1.apply(this, [args]);
+                }
+            }
             if (this.grid.isContextMenuOpen()) {
                 let contextitems;
                 contextitems = this.grid.contextMenuModule.contextMenu.element.getElementsByClassName('e-selected')[0];
@@ -3364,10 +3375,13 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     onPropertyChanged(newProp, oldProp) {
         let properties = Object.keys(newProp);
         let requireRefresh = false;
+        let preventUpdate = 'preventUpdate';
         for (let prop of properties) {
             switch (prop) {
                 case 'columns':
-                    this.grid.columns = this.getGridColumns(this.columns);
+                    if (!(isBlazor() && this.isServerRendered && this[preventUpdate])) {
+                        this.grid.columns = this.getGridColumns(this.columns);
+                    }
                     break;
                 case 'treeColumnIndex':
                     this.grid.refreshColumns();
@@ -5585,6 +5599,7 @@ class RowDD$1 {
      * Reorder the rows based on given indexes and position
      */
     reorderRows(fromIndexes, toIndex, position) {
+        let tObj = this.parent;
         if (fromIndexes[0] !== toIndex && position === 'above' || 'below' || 'child') {
             if (position === 'above') {
                 this.dropPosition = 'topSegment';
@@ -5604,13 +5619,24 @@ class RowDD$1 {
                 data: data,
                 dropIndex: toIndex
             };
-            this.dropRows(args, isByMethod);
+            if (!isCountRequired(this.parent)) {
+                this.dropRows(args, isByMethod);
+            }
             //this.refreshGridDataSource();
             this.parent.refresh();
+            if (tObj.isLocalData) {
+                tObj.flatData = this.orderToIndex(tObj.flatData);
+            }
         }
         else {
             return;
         }
+    }
+    orderToIndex(currentData) {
+        for (let i = 0; i < currentData.length; i++) {
+            currentData[i].index = i;
+        }
+        return currentData;
     }
     rowsAdded(e) {
         let draggedRecord;
@@ -5635,7 +5661,7 @@ class RowDD$1 {
                 }
             }
         }
-        if (!this.parent.dataSource.length) {
+        if (isNullOrUndefined(this.parent.dataSource) || !this.parent.dataSource.length) {
             let tObj = this.parent;
             let draggedRecord;
             let dragRecords = e.records;
@@ -5645,6 +5671,9 @@ class RowDD$1 {
                 let recordIndex1 = 0;
                 if (!draggedRecord.taskData.hasOwnProperty(tObj.childMapping)) {
                     draggedRecord.taskData[tObj.childMapping] = [];
+                }
+                if (isNullOrUndefined(tObj.dataSource)) {
+                    tObj.dataSource = [];
                 }
                 tObj.dataSource.splice(recordIndex1, 0, draggedRecord.taskData);
                 tObj.setProperties({ dataSource: tObj.dataSource }, false);
@@ -6002,8 +6031,13 @@ class RowDD$1 {
                 setValue('dropPosition', this.dropPosition, args);
                 tObj.trigger(rowDrop, args);
                 if (!args.cancel) {
-                    this.dropRows(args);
+                    if (!isCountRequired(this.parent)) {
+                        this.dropRows(args);
+                    }
                     tObj.refresh();
+                    if (tObj.isLocalData) {
+                        tObj.flatData = this.orderToIndex(tObj.flatData);
+                    }
                     if (!isNullOrUndefined(tObj.getHeaderContent().querySelector('.e-firstrow-border'))) {
                         tObj.getHeaderContent().querySelector('.e-firstrow-border').remove();
                     }
@@ -6017,6 +6051,9 @@ class RowDD$1 {
                 tObj.trigger(rowDrop, args);
                 if (!args.cancel && tObj.rowDropSettings.targetID) {
                     this.dragDropGrid(args);
+                    if (tObj.isLocalData) {
+                        tObj.flatData = this.orderToIndex(tObj.flatData);
+                    }
                 }
             }
         }
@@ -6034,8 +6071,10 @@ class RowDD$1 {
         let targetRow = closest(args.target, 'tr');
         let targetIndex = isNaN(this.getTargetIdx(targetRow)) ? 0 : this.getTargetIdx(targetRow);
         let dropElement = parentsUntil(args.target, 'e-treegrid');
-        if (dropElement && dropElement.id === this.parent.rowDropSettings.targetID && !isRemoteData(this.parent)) {
-            let srcControl = dropElement.ej2_instances[0];
+        let srcControl;
+        if (dropElement && dropElement.id === this.parent.rowDropSettings.targetID && !isRemoteData(this.parent)
+            && !isCountRequired(this.parent)) {
+            srcControl = dropElement.ej2_instances[0];
             let records = tObj.getSelectedRecords();
             let indexes = [];
             for (let i = 0; i < records.length; i++) {
@@ -6054,6 +6093,11 @@ class RowDD$1 {
                     srcControl.getContent().querySelector('.e-lastrow-border').remove();
                 }
             }
+        }
+        if (isCountRequired(this.parent)) {
+            srcControl = dropElement.ej2_instances[0];
+            tObj.refresh();
+            srcControl.refresh();
         }
     }
     getTargetIdx(targetRow) {

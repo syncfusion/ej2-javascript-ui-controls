@@ -916,6 +916,9 @@ export class SelectionParagraphFormat {
         if (!isNullOrUndefined(this.contextualSpacing) && this.contextualSpacing !== format.contextualSpacing) {
             this.contextualSpacing = undefined;
         }
+        if (!isNullOrUndefined(this.styleName) && format.baseStyle && this.styleName !== format.baseStyle.name) {
+            this.styleName = undefined;
+        }
     }
     /**
      * Clears the format.

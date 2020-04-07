@@ -16,7 +16,6 @@ import {
 
 import { MouseEvents } from '../diagram/interaction/mouseevents.spec';
 import { PaletteModel, IElement, PointModel, PortVisibility, PortConstraints, IDragEnterEventArgs } from '../../src/index';
-import { EJ2Instance } from '@syncfusion/ej2-navigations';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 Diagram.Inject(BpmnDiagrams);
 SymbolPalette.Inject(BpmnDiagrams);
@@ -94,7 +93,7 @@ describe('Symbol Palette - Group', () => {
         });
         it('Checking drag and drop', (done: Function) => {
             palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                let clonedElement: HTMLElement;  
                 let position: PointModel = palette['getMousePosition'](e.sender);
                 let symbols: IElement = palette.symbolTable['group'];
                 palette['selectedSymbols'] = symbols;
@@ -141,7 +140,7 @@ describe('Symbol Palette - Group', () => {
             palette.allowDrag = true;
             palette.dataBind();
             palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                let clonedElement: HTMLElement; let diagramElement: any;
                 let position: PointModel = palette['getMousePosition'](e.sender);
                 let symbols: IElement = palette.symbolTable['group'];
                 palette['selectedSymbols'] = symbols;
@@ -289,7 +288,7 @@ describe('Symbol Palette - Group', () => {
         });
         it('Checking drag and drop group Node', (done: Function) => {
             palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                let clonedElement: HTMLElement; let diagramElement: any;
                 let position: PointModel = palette['getMousePosition'](e.sender);
                 let target = document.elementFromPoint(position.x, position.y).childNodes[0];
                 let symbols: IElement = palette.symbolTable['group3'];
@@ -418,7 +417,7 @@ describe('Symbol Palette - Group', () => {
         });
         it('Checking drag and drop group Path Node', (done: Function) => {
             palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                let clonedElement: HTMLElement; let diagramElement: any;
                 let position: PointModel = palette['getMousePosition'](e.sender);
                 let target = document.elementFromPoint(position.x, position.y).childNodes[0];
                 let symbols: IElement = palette.symbolTable['SHAPE_BELL11'];
@@ -514,7 +513,7 @@ describe('Symbol Palette - Group', () => {
             setTimeout(() => {
 
                 palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                    let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                    let clonedElement: HTMLElement; let diagramElement: any;
                     let position: PointModel = palette['getMousePosition'](e.sender);
                     let symbols: IElement = palette.symbolTable['group1'];
                     palette['selectedSymbols'] = symbols;
@@ -634,7 +633,7 @@ describe('SymbolPalette - swimLane', () => {
         });
         it('Checking default palette rendering with lanes with html elements', (done: Function) => {
             palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                let clonedElement: HTMLElement; let diagramElement: any;
                 let position: PointModel = palette['getMousePosition'](e.sender);
                 let target = document.elementFromPoint(position.x, position.y).childNodes[0];
                 let symbols: IElement = palette.symbolTable['stackCanvas1'];

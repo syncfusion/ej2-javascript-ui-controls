@@ -1005,7 +1005,7 @@ export class ListBox extends DropDownBase {
                 if (this.selectionSettings.showCheckbox) {
                     let ele: Element = li.getElementsByClassName('e-check')[0];
                     if ((!ele && state) || (ele && !state)) {
-                        this.notify('updatelist', { li: li });
+                        this.notify('updatelist', { li: li, module: 'listbox' });
                         if (this.maximumSelectionLength >= this.list.querySelectorAll('.e-list-item span.e-check').length) {
                             this.checkMaxSelection();
                         }
@@ -1443,10 +1443,11 @@ export class ListBox extends DropDownBase {
             }
             if (tListBox.listData.length === 0) {
                 if (isBlazor()) {
-                    let textNode: HTMLElement = tListBox.ulElement.childNodes[1] as HTMLElement;
-                    if (textNode) {
-                        textNode.nodeValue = '';
+                    tListBox.ulElement.childNodes.forEach((elem: HTMLElement) => {
+                    if (elem.nodeName === '#text') {
+                        elem.nodeValue = '';
                     }
+                });
                 } else {
                     tListBox.ulElement.innerHTML = '';
                 }
@@ -1536,20 +1537,22 @@ export class ListBox extends DropDownBase {
         }
         if (tListBox.listData.length === 0) {
             if (isBlazor()) {
-                let textNode: HTMLElement = tListBox.ulElement.childNodes[1] as HTMLElement;
-                if (textNode) {
-                    textNode.nodeValue = '';
-                }
+                tListBox.ulElement.childNodes.forEach((elem: HTMLElement) => {
+                    if (elem.nodeName === '#text') {
+                        elem.nodeValue = '';
+                    }
+                });
             } else {
                 tListBox.ulElement.innerHTML = '';
             }
         }
         if (isRefresh) {
             if (isBlazor()) {
-                let textNode: HTMLElement = fListBox.ulElement.childNodes[1] as HTMLElement;
-                if (textNode) {
-                    textNode.nodeValue = '';
-                }
+                fListBox.ulElement.childNodes.forEach((elem: HTMLElement) => {
+                    if (elem.nodeName === '#text') {
+                        elem.nodeValue = '';
+                    }
+                });
             } else {
                 fListBox.ulElement.innerHTML = '';
             }
@@ -1893,7 +1896,7 @@ export class ListBox extends DropDownBase {
                     }
                     if (!isSelect && liselect || isSelect && !liselect && li) {
                         if (this.selectionSettings.showCheckbox) {
-                            this.notify('updatelist', { li: li });
+                            this.notify('updatelist', { li: li, module: 'listbox' });
                         } else {
                             if (isSelect) {
                                 li.classList.add(cssClass.selected);

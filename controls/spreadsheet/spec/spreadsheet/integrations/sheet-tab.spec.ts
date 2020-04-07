@@ -16,10 +16,8 @@ describe('Spreadsheet Sheet tab integration module ->', () => {
         beforeAll((done: Function) => {
             model = {
                 sheets: [
-                    { 
-                        range: [
-                            { dataSource: defaultData }
-                        ]
+                    {
+                        ranges: [{ dataSource: defaultData }]
                     }
                 ]
             };

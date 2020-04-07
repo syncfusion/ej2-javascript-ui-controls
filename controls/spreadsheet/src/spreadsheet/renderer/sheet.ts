@@ -1,11 +1,12 @@
-import { formatUnit, detach, attributes } from '@syncfusion/ej2-base';
+import { formatUnit, detach, attributes, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Spreadsheet } from '../base/index';
 import { getRangeIndexes } from './../../workbook/common/address';
 import { getColumnWidth } from '../../workbook/base/column';
 import { contentLoaded, editOperation, getUpdateUsingRaf, IRowRenderer, removeAllChildren, SheetRenderArgs } from '../common/index';
 import { IRenderer, beforeContentLoaded, getColGroupWidth, virtualContentLoaded, setAriaOptions, dataBound } from '../common/index';
 import { CellRenderArgs, beforeHeaderLoaded, ICellRenderer, created, spreadsheetDestroyed, skipHiddenIdx } from '../common/index';
-import { CellModel, SheetModel, ExtendedRange } from '../../workbook/index';
+import { checkMerge } from '../common/index';
+import { CellModel, SheetModel, ExtendedRange, getCell } from '../../workbook/index';
 
 /**
  * Sheet module is used to render Sheet
@@ -186,8 +187,8 @@ export class SheetRender implements IRenderer {
             if (args.initLoad) {
                 let triggerEvent: boolean = true;
                 if (this.parent.scrollSettings.enableVirtualization) {
-                    for (let i: number = 0; i < sheet.range.length; i++) {
-                        if ((<ExtendedRange>sheet.range[i]).info.count - 1 > this.parent.viewport.bottomIndex) {
+                    for (let i: number = 0; i < sheet.ranges.length; i++) {
+                        if ((<ExtendedRange>sheet.ranges[i]).info.count - 1 > this.parent.viewport.bottomIndex) {
                             triggerEvent = false; break;
                         }
                     }
@@ -209,7 +210,7 @@ export class SheetRender implements IRenderer {
     }
 
     public refreshColumnContent(args: SheetRenderArgs): void {
-        let indexes: number[]; let row: Element; let table: Element; let count: number = 0;
+        let indexes: number[]; let row: Element; let table: Element; let count: number = 0; let cell: Element;
         let sheet: SheetModel = this.parent.getActiveSheet();
         let frag: DocumentFragment = document.createDocumentFragment(); let hFrag: DocumentFragment = document.createDocumentFragment();
         let tBody: Element = this.parent.element.querySelector('.e-sheet-content tbody');
@@ -237,11 +238,12 @@ export class SheetRender implements IRenderer {
                     return;
                 }
             }
-            row.appendChild(this.cellRenderer.render(<CellRenderArgs>{
+            cell = row.appendChild(this.cellRenderer.render(<CellRenderArgs>{
                 colIdx: indexes[1], rowIdx: indexes[0], cell: value, address: key, row: row, pRow: row.previousSibling,
                 first: !args.skipUpdateOnFirst && indexes[1] === args.indexes[1] ? 'Column' : (this.parent.scrollSettings.
                 enableVirtualization && indexes[0] === args.indexes[0] && this.parent.viewport.topIndex !== skipHiddenIdx(sheet, 0, true)
                 ? 'Row' : '') }));
+            this.checkColMerge(indexes, args.indexes, cell, value);
         });
         frag.insertBefore(colGrp.cloneNode(true), tBody);
         getUpdateUsingRaf((): void => {
@@ -261,7 +263,7 @@ export class SheetRender implements IRenderer {
 
     public refreshRowContent(args: SheetRenderArgs): void {
         let indexes: number[]; let row: HTMLElement; let hdrRow: HTMLElement; let colGroupWidth: number = this.colGroupWidth;
-        let sheet: SheetModel = this.parent.getActiveSheet(); let hFrag: DocumentFragment; let hTBody: Element;
+        let sheet: SheetModel = this.parent.getActiveSheet(); let hFrag: DocumentFragment; let hTBody: Element; let cell: Element;
         let frag: DocumentFragment = document.createDocumentFragment();
         let tBody: Element = this.parent.createElement('tbody');
         if (sheet.showHeaders) {
@@ -281,11 +283,12 @@ export class SheetRender implements IRenderer {
                 row = this.rowRenderer.render(indexes[0]) as HTMLElement;
                 tBody.appendChild(row);
             }
-            row.appendChild(this.cellRenderer.render(<CellRenderArgs>{ rowIdx: indexes[0], colIdx: indexes[1], cell: value, address: key,
-                lastCell: indexes[1] === args.indexes[3], row: row, hRow: hdrRow, pRow: row.previousSibling, pHRow: sheet.showHeaders ?
+            cell = row.appendChild(this.cellRenderer.render(<CellRenderArgs>{ rowIdx: indexes[0], colIdx: indexes[1], cell: value, address:
+                key, lastCell: indexes[1] === args.indexes[3], row: row, hRow: hdrRow, pRow: row.previousSibling, pHRow: sheet.showHeaders ?
                 hdrRow.previousSibling : null, isHeightCheckNeeded: true, first: !args.skipUpdateOnFirst && indexes[0] === args.indexes[0] ?
                 'Row' : (this.parent.scrollSettings.enableVirtualization && indexes[1] === args.indexes[1] && this.parent.viewport.leftIndex
                 !== skipHiddenIdx(sheet, 0, true, 'columns') ? 'Column' : '') }));
+            this.checkRowMerge(indexes, args.indexes, cell, value);
         });
         if (this.colGroupWidth !== colGroupWidth) {
             this.updateLeftColGroup(colGroupWidth);
@@ -319,10 +322,16 @@ export class SheetRender implements IRenderer {
             }
             let colGrp: Element = this.parent.element.querySelector('.e-sheet-content colgroup');
             let colRefChild: Element = colGrp.firstElementChild; let skipRender: boolean;
-            let tBody: Element = this.parent.element.querySelector('.e-sheet-content tbody');
+            let tBody: HTMLTableSectionElement = this.parent.element.querySelector('.e-sheet-content tbody');
             (args.cells as Map<string, CellModel>).forEach((value: CellModel, key: string): void => {
                 if (skipRender) { return; }
                 indexes = getRangeIndexes(key);
+                if (args.direction ===  'first' && indexes[1] === args.indexes[1]) {
+                    this.checkColMerge(
+                        [indexes[0], this.parent.viewport.leftIndex], args.indexes,
+                        (tBody.rows[rowCount] || { cells: [] }).cells[(args.indexes[3] - args.indexes[1]) + 1],
+                        getCell(indexes[0], this.parent.viewport.leftIndex, sheet) || {});
+                }
                 if (indexes[0] === args.indexes[0]) {
                     if (args.direction === 'last') {
                         col = this.col.cloneNode() as HTMLElement;
@@ -351,6 +360,7 @@ export class SheetRender implements IRenderer {
                     first: args.direction === 'last' && !args.skipUpdateOnFirst && indexes[1] === args.indexes[1] ? 'Column' : '',
                     checkNextBorder: args.direction === 'last' && indexes[3] === args.indexes[3] ? 'Column' : '', });
                 if (args.direction === 'last') {
+                    this.checkColMerge(indexes, args.indexes, cell, value, (tBody.rows[rowCount - 1] || { cells: [] }).cells[0]);
                     row.insertBefore(cell, refChild);
                 } else {
                     row.appendChild(cell);
@@ -376,9 +386,10 @@ export class SheetRender implements IRenderer {
     }
 
     public updateRowContent(args: SheetRenderArgs): void {
-        let colGroupWidth: number = this.colGroupWidth; let row: HTMLElement; let hRow: HTMLElement;
-        let sheet: SheetModel = this.parent.getActiveSheet();
-        let tBody: Element = this.parent.getMainContent().querySelector('tbody'); let rTBody: Element; let rFrag: DocumentFragment;
+        let colGroupWidth: number = this.colGroupWidth; let row: HTMLElement; let hRow: HTMLElement; let cell: Element;
+        let sheet: SheetModel = this.parent.getActiveSheet(); let cellModel: CellModel; let count: number = 0;
+        let tBody: HTMLTableSectionElement = this.parent.getMainContent().querySelector('tbody');
+        let rTBody: Element; let rFrag: DocumentFragment; let index: number;
         if (sheet.showHeaders) {
             rFrag = document.createDocumentFragment();
             rTBody = this.parent.getRowHeaderContent().querySelector('tbody');
@@ -387,6 +398,12 @@ export class SheetRender implements IRenderer {
         this.parent.showSpinner();
         (args.cells as Map<string, CellModel>).forEach((value: CellModel, cKey: string): void => {
             indexes = getRangeIndexes(cKey);
+            if (args.direction ===  'first' && indexes[0] === args.indexes[0]) {
+                this.checkRowMerge(
+                    [this.parent.viewport.topIndex, indexes[1]], args.indexes,
+                    (tBody.rows[(args.indexes[2] - args.indexes[0]) + 1] || { cells: [] }).cells[count],
+                    getCell(this.parent.viewport.topIndex, indexes[1], sheet) || {});
+            }
             if (indexes[1] === args.indexes[1]) {
                 if (sheet.showHeaders) {
                     hRow = this.rowRenderer.render(indexes[0], true) as HTMLElement;
@@ -405,11 +422,13 @@ export class SheetRender implements IRenderer {
                     detach((tBody as any)[args.direction + 'ElementChild']);
                 }
             }
-            row.appendChild(this.cellRenderer.render(<CellRenderArgs>{ colIdx: indexes[1], rowIdx: indexes[2], cell: value, address: cKey,
-                lastCell: indexes[1] === args.indexes[3], row: row, pHRow: sheet.showHeaders ? hRow.previousSibling : null,
+            cell = row.appendChild(this.cellRenderer.render(<CellRenderArgs>{ colIdx: indexes[1], rowIdx: indexes[2], cell: value, address:
+                cKey, lastCell: indexes[1] === args.indexes[3], row: row, pHRow: sheet.showHeaders ? hRow.previousSibling : null,
                 checkNextBorder: args.direction === 'last' && indexes[2] === args.indexes[2] ? 'Row' : '', pRow: row.previousSibling,
                 isHeightCheckNeeded: args.direction === 'first' || args.direction === '', hRow: hRow, first: args.direction === 'last' &&
                 !args.skipUpdateOnFirst && indexes[0] === args.indexes[0] ? 'Row' : '' }));
+            if (args.direction ===  'last') { this.checkRowMerge(indexes, args.indexes, cell, value, tBody.rows[0].cells[count]); }
+            count++;
         });
         if (this.colGroupWidth !== colGroupWidth) {
             this.updateLeftColGroup(colGroupWidth);
@@ -428,6 +447,30 @@ export class SheetRender implements IRenderer {
             this.parent.hideSpinner();
         }
         setAriaOptions(this.parent.getMainContent() as HTMLElement, { busy: false });
+    }
+
+    private checkRowMerge(indexes: number[], range: number[], cell: Element, model: CellModel, firstcell?: Element): void {
+        if (this.parent.scrollSettings.enableVirtualization && cell && indexes[0] === this.parent.viewport.topIndex &&
+            (!isNullOrUndefined(model.rowSpan) || !isNullOrUndefined(model.colSpan))) {
+            if (model.rowSpan < 0) {
+                this.parent.notify(checkMerge, <CellRenderArgs>{ td: cell, rowIdx: indexes[0], colIdx: indexes[1], isRow: true });
+            }
+            if (firstcell && ((firstcell as HTMLTableCellElement).colSpan || (firstcell as HTMLTableCellElement).rowSpan)) {
+                this.cellRenderer.refresh(indexes[0] + (range[2] - range[0]) + 1, indexes[1], null, firstcell);
+            }
+        }
+    }
+
+    private checkColMerge(indexes: number[], range: number[], cell: Element, model: CellModel, firstcell?: Element): void {
+        if (this.parent.scrollSettings.enableVirtualization && cell && indexes[1] === this.parent.viewport.leftIndex &&
+            (!isNullOrUndefined(model.rowSpan) || !isNullOrUndefined(model.colSpan))) {
+            if (model.colSpan < 0) {
+                this.parent.notify(checkMerge, <CellRenderArgs>{ td: cell, colIdx: indexes[1], rowIdx: indexes[0] });
+            }
+            if (firstcell && ((firstcell as HTMLTableCellElement).colSpan || (firstcell as HTMLTableCellElement).rowSpan)) {
+                this.cellRenderer.refresh(indexes[0], indexes[1] + (range[3] - range[1]) + 1, null, firstcell);
+            }
+        }
     }
 
     /**

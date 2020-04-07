@@ -103,7 +103,7 @@ export interface ICellRenderer {
     renderRowHeader(index: number): Element;
     render(args: CellRenderArgs): Element;
     refreshRange(range: number[]): void;
-    refresh(rowIdx: number, colIdx: number, lastCell?: boolean): void;
+    refresh(rowIdx: number, colIdx: number, lastCell?: boolean, element?: Element): void;
 }
 
 /**

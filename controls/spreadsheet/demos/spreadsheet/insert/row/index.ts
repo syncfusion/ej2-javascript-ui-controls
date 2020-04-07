@@ -24,9 +24,7 @@ let columns: ColumnModel[] = [
 
 let sheet: SheetModel[] = [{
     name: 'Insert Row',
-    range: [{
-        dataSource: dataSource
-    }],
+    ranges: [{ dataSource: dataSource }],
     rowCount: 200,
     columns: columns
 }];

@@ -46,6 +46,78 @@
     width: 625px;
   }
 
+  .e-de-txt-form {
+    .e-de-txt-field {
+      display: block;
+    }
+
+    .e-de-num-field {
+      display: none;
+    }
+
+    .e-de-date-field {
+      display: none;
+    }
+
+    .e-de-ddl-field {
+      display: none;
+    }
+  }
+
+  .e-de-num-form {
+    .e-de-txt-field {
+      display: none;
+    }
+
+    .e-de-num-field {
+      display: block;
+    }
+
+    .e-de-date-field {
+      display: none;
+    }
+
+    .e-de-ddl-field {
+      display: none;
+    }
+  }
+
+  .e-de-date-form {
+    .e-de-txt-field {
+      display: none;
+    }
+
+    .e-de-num-field {
+      display: none;
+    }
+
+    .e-de-date-field {
+      display: block;
+    }
+
+    .e-de-ddl-field {
+      display: none;
+    }
+  }
+
+  .e-de-ddl-form {
+    .e-de-txt-field {
+      display: none;
+    }
+
+    .e-de-num-field {
+      display: none;
+    }
+
+    .e-de-date-field {
+      display: none;
+    }
+
+    .e-de-ddl-field {
+      display: block;
+    }
+  }
+
   .e-documenteditor {
     .e-checkbox-wrapper .e-frame {
       height: 14px;

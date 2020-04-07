@@ -258,6 +258,8 @@ export class Gantt extends Component<HTMLElement>
     protected needsID: boolean = true;
     /** @hidden */
     public showActiveElement: boolean = false;
+    /** @hidden */
+    public enableHeaderFocus: boolean = false;
     /**
      * Enables or disables the key board interaction of Gantt.
      * 

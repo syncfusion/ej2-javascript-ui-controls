@@ -1295,17 +1295,17 @@ export function getIntersection(ele: Connector, bounds: DiagramElement, sPt: Poi
             sPt = Point.transform({ x: sPt.x, y: sPt.y }, angle, Math.max(wrapper.actualSize.width, wrapper.actualSize.height));
         }
     }
+    if ((ele.sourcePadding || ele.targetPadding)) {
+        rect = new Rect(
+            wrapper.bounds.x - padding, wrapper.bounds.y - padding, wrapper.actualSize.width + 2 * padding,
+            wrapper.actualSize.height + 2 * padding);
+    }
     if (wrapper instanceof PathElement && (wrapper as PathElement).data) {
-        segmentPoints = child.getPoints();
+        segmentPoints = rect ? [rect.topLeft, rect.topRight, rect.bottomRight, rect.bottomLeft] : child.getPoints();
         if (((child.data.split('m').length - 1) + (child.data.split('M').length - 1)) === 1) {
             segmentPoints[segmentPoints.length] = segmentPoints[0];
         }
     } else {
-        if ((ele.sourcePadding || ele.targetPadding)) {
-            rect = new Rect(
-                wrapper.bounds.x - padding, wrapper.bounds.y - padding, wrapper.actualSize.width + 2 * padding,
-                wrapper.actualSize.height + 2 * padding);
-        }
         segmentPoints = rect ? [rect.topLeft, rect.topRight, rect.bottomRight, rect.bottomLeft] : getPoints(wrapper, wrapper.corners);
         segmentPoints[segmentPoints.length] = segmentPoints[0];
     }

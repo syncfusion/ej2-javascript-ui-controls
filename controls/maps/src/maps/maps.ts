@@ -533,6 +533,12 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Sets and gets the legend bounds
      */
     public totalRect: Rect;
+    /**
+     * Specifies whether the shape is selected in the maps or not..
+     */
+    public get isShapeSelected(): boolean {
+        return this.mapSelect;
+    };
     public dataLabel: DataLabel;
     /** @private */
     public isTouch: boolean;
@@ -542,6 +548,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public scale: number;
     /** @private */
     public baseScale: number;
+    /** @private */
+    public mapSelect: boolean;
     /** @private */
     public baseMapBounds: GeoLocation;
     /** @private */

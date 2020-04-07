@@ -291,7 +291,9 @@ export class MapsTooltip {
             } else {
                 this.removeTooltip();
             }
-        }
+        } else {
+            this.removeTooltip();
+          }
     }
 
     /**

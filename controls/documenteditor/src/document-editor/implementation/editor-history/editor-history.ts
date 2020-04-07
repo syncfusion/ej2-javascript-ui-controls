@@ -484,7 +484,9 @@ export class EditorHistory {
      * Reverts the last editing action.
      */
     public undo(): void {
-        if (this.owner.isReadOnlyMode || !this.canUndo() || !this.owner.enableHistoryMode) {
+        if ((this.owner.isReadOnlyMode &&
+            (this.owner.documentHelper.protectionType !== 'FormFieldsOnly')) ||
+            !this.canUndo() || !this.owner.enableHistoryMode) {
             return;
         }
         //this.owner.ClearTextSearchResults();
@@ -500,7 +502,9 @@ export class EditorHistory {
      * Performs the last reverted action.
      */
     public redo(): void {
-        if (this.owner.isReadOnlyMode || !this.canRedo() || !this.owner.enableHistoryMode) {
+        if ((this.owner.isReadOnlyMode &&
+            (this.owner.documentHelper.protectionType !== 'FormFieldsOnly'))
+            || !this.canRedo() || !this.owner.enableHistoryMode) {
             return;
         }
         //this.owner.ClearTextSearchResults();

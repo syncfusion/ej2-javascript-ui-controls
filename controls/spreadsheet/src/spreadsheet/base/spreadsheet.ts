@@ -774,18 +774,42 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     public hideSpinner(): void {
         hideSpinner(this.element);
     }
-    public protectSheet(sheetIndex?: number | string, protectSettings?: ProtectSettingsModel): void {
-        if (typeof(sheetIndex) === 'string') {
-            sheetIndex = getSheetIndex(this, sheetIndex);
-        } else {
-            if (sheetIndex) {
-                this.sheets[sheetIndex].isProtected = true;
-                this.sheets[sheetIndex].protectSettings = protectSettings;
-            }
-            sheetIndex = this.getActiveSheet().index;
-            this.getActiveSheet().isProtected = true;
+
+    /**
+     * To protect the particular sheet.
+     * @param {number | string} sheet - Specifies the sheet to protect.
+     * @param {ProtectSettingsModel} protectSettings - Specifies the protect sheet options.
+     * @default { selectCells: 'false', formatCells: 'false', formatRows: 'false', formatColumns:'false', insertLink:'false' }
+     * @return {void}
+     */
+    public protectSheet(sheet?: number | string, protectSettings?: ProtectSettingsModel): void {
+        if (typeof(sheet) === 'string') {
+            sheet = getSheetIndex(this, sheet);
         }
-        super.protectSheet(sheetIndex, protectSettings);
+        if (sheet) {
+            this.sheets[sheet].isProtected = true;
+            this.sheets[sheet].protectSettings = protectSettings;
+        }
+        sheet = this.getActiveSheet().index;
+        this.getActiveSheet().isProtected = true;
+        super.protectSheet(sheet, protectSettings);
+    }
+
+    /**
+     * To unprotect the particular sheet.
+     * @param {number | string} sheet - Specifies the sheet to Unprotect.
+     * @return {void}
+     */
+    public unprotectSheet(sheet?: number | string): void {
+        if (typeof(sheet) === 'string') {
+            sheet = getSheetIndex(this, sheet);
+        }
+        if (sheet) {
+            this.sheets[sheet].isProtected = false;
+        } else {
+            this.getActiveSheet().isProtected = false;
+        }
+        super.unprotectSheet(sheet);
     }
 
     /**

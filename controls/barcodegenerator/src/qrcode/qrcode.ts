@@ -218,11 +218,11 @@ export class QRCodeGenerator extends Component<HTMLElement> implements INotifyPr
     }
 
     protected preRender(): void {
+        this.element.classList.add('e-qrcode');
         this.barcodeRenderer = new BarcodeRenderer(this.element.id, this.mode === 'SVG');
         this.initialize();
         this.initializePrivateVariables();
         this.setCulture();
-        this.element.classList.add('e-qrcode');
     }
 
 

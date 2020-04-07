@@ -1270,7 +1270,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
                         }
                     }
                     this.hide();
-                    addClass([this.inputWrapper.container], FOCUS);
                     this.isNavigate = false;
                     if (this.isPopupOpen()) {
                         event.stopPropagation();
@@ -1307,7 +1306,6 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
         this.setSelection(li, event);
         if (li && li.classList.contains(LISTCLASS)) {
             this.hide();
-            addClass([this.inputWrapper.container], FOCUS);
         }
     }
     private closePopup(delay?: number, e?: MouseEvent | KeyboardEvent | Event): void {
@@ -2268,7 +2266,8 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
             }
         } else if (target !== this.inputElement) {
             if (!Browser.isDevice) {
-                this.isPreventBlur = (Browser.isIE || Browser.info.name === 'edge') && (document.activeElement === this.inputElement);
+                this.isPreventBlur = (Browser.isIE || Browser.info.name === 'edge') && (document.activeElement === this.inputElement)
+                && (target ===  this.popupWrapper);
             }
         }
     }
@@ -2344,6 +2343,7 @@ export class TimePicker extends Component<HTMLElement> implements IInput {
     public focusOut(): void {
         if (document.activeElement === this.inputElement) {
             this.inputElement.blur();
+            removeClass([this.inputWrapper.container], [FOCUS]);
             let blurArguments: BlurEventArgs = {
                 model: this.isBlazorServer ? null : this
             };

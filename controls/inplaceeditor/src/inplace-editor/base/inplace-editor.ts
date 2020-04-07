@@ -1413,6 +1413,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
      * @returns void
      */
     public destroy(): void {
+        if (this.isDestroyed) { return; }
         this.removeEditor(isBlazor());
         if (this.isExtModule) {
             this.notify(events.destroy, {});
@@ -1425,7 +1426,11 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         while (this.element.firstElementChild) {
             this.element.removeChild(this.element.firstElementChild);
         }
-        if (!(isBlazor() && this.isServerRendered)) { super.destroy(); }
+        if (!(isBlazor() && this.isServerRendered)) {
+            super.destroy();
+        } else {
+            this.isDestroyed = true;
+        }
     }
     /**
      * Get the properties to be maintained in the persisted state.

@@ -1,4 +1,4 @@
-import { isNullOrUndefined as isNOU, Internationalization } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, Internationalization, isBlazor } from '@syncfusion/ej2-base';
 import { RichTextEditorModel } from '@syncfusion/ej2-richtexteditor';
 import { DatePickerModel } from '@syncfusion/ej2-calendars';
 import { DateTimePickerModel, DateRangePickerModel, TimePickerModel } from '@syncfusion/ej2-calendars';
@@ -28,26 +28,26 @@ export function parseValue(type: string, val: valueType, model: modelType): stri
             break;
         case 'Date':
             tempFormat = (model as DatePickerModel).format as string;
-            result = intl.formatDate(<Date>val, { format: tempFormat, type: type, skeleton: 'yMd' });
+            result = intl.formatDate(<Date>val, { format: tempFormat, type: type, skeleton: isBlazor() ? 'd' : 'yMd' });
             break;
         case 'DateRange':
             tempFormat = (model as DateRangePickerModel).format as string;
             let date: Date[] = <Date[]>val;
-            result = intl.formatDate(date[0], { format: tempFormat, type: type, skeleton: 'yMd' }) + ' - '
-                + intl.formatDate(date[1], { format: tempFormat, type: type, skeleton: 'yMd' });
+            result = intl.formatDate(date[0], { format: tempFormat, type: type, skeleton: isBlazor() ? 'd' : 'yMd' }) + ' - '
+                + intl.formatDate(date[1], { format: tempFormat, type: type, skeleton: isBlazor() ? 'd' : 'yMd' });
             break;
         case 'DateTime':
             tempFormat = (model as DateTimePickerModel).format as string;
             if (isNOU(tempFormat) || tempFormat === '') {
-                result = intl.formatDate(<Date>val, { format: tempFormat, type: type, skeleton: 'yMd' }) + ' '
-                    + intl.formatDate(<Date>val, { format: tempFormat, type: type, skeleton: 'hm' });
+                result = intl.formatDate(<Date>val, { format: tempFormat, type: type, skeleton: isBlazor() ? 'd' : 'yMd' }) + ' '
+                    + intl.formatDate(<Date>val, { format: tempFormat, type: type, skeleton: isBlazor() ? 't' : 'hm' });
             } else {
-                result = intl.formatDate(<Date>val, { format: tempFormat, type: type, skeleton: 'yMd' });
+                result = intl.formatDate(<Date>val, { format: tempFormat, type: type, skeleton: isBlazor() ? 'd' : 'yMd' });
             }
             break;
         case 'Time':
             tempFormat = (model as TimePickerModel).format as string;
-            result = intl.formatDate(<Date>val, { format: tempFormat, type: type, skeleton: 'hm' });
+            result = intl.formatDate(<Date>val, { format: tempFormat, type: type, skeleton: isBlazor() ? 't' : 'hm' });
             break;
         case 'Numeric':
             tempFormat = isNOU((model as NumericTextBoxModel).format) ? 'n2' :

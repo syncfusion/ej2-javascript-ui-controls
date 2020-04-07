@@ -194,6 +194,7 @@ export class DataMatrixGenerator extends Component<HTMLElement> implements INoti
     }
 
     protected preRender(): void {
+        this.element.classList.add('e-datamatrix');
         //initialize the data matrix renderer
         this.barcodeRenderer = new BarcodeRenderer(this.element.id, this.mode === 'SVG');
         this.initialize();
@@ -201,7 +202,6 @@ export class DataMatrixGenerator extends Component<HTMLElement> implements INoti
         this.initializePrivateVariables();
         this.setCulture();
         //set class data matrix renderer
-        this.element.classList.add('e-datamatrix');
     }
 
     public onPropertyChanged(newProp: DataMatrixGeneratorModel, oldProp: DataMatrixGeneratorModel): void {

@@ -134,8 +134,14 @@ export function getCellPosition(
     let i: number;
     let top: number = offset.top.size;
     let left: number = offset.left.size;
+    for (i = indexes[0]; i < offset.top.idx; i++) {
+        top -= getRowsHeight(sheet, i);
+    }
     for (i = offset.top.idx; i < indexes[0]; i++) {
         top += getRowsHeight(sheet, i);
+    }
+    for (i = indexes[1]; i < offset.left.idx; i++) {
+        left -= getColumnsWidth(sheet, i);
     }
     for (i = offset.left.idx; i < indexes[1]; i++) {
         left += getColumnsWidth(sheet, i);
@@ -736,11 +742,11 @@ export function updateAction(options: CollaborativeEditArgs, spreadsheet: Spread
  */
 export function hasTemplate(workbook: Workbook, rowIdx: number, colIdx: number, sheetIdx: number): boolean {
     let sheet: SheetModel = workbook.sheets[sheetIdx];
-    let rangeSettings: RangeModel[] = sheet.range;
+    let ranges: RangeModel[] = sheet.ranges;
     let range: number[];
-    for (let i: number = 0, len: number = rangeSettings.length; i < len; i++) {
-        if (rangeSettings[i].template) {
-            range = getRangeIndexes(rangeSettings[i].address.length ? rangeSettings[i].address : rangeSettings[i].startCell);
+    for (let i: number = 0, len: number = ranges.length; i < len; i++) {
+        if (ranges[i].template) {
+            range = getRangeIndexes(ranges[i].address.length ? ranges[i].address : ranges[i].startCell);
             if (range[0] <= rowIdx && range[1] <= colIdx && range[2] >= rowIdx && range[3] >= colIdx) {
                 return true;
             }

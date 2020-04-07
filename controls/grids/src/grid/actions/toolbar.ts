@@ -49,12 +49,6 @@ export class Toolbar {
         }
         (this.predefinedItems as { Search: ItemModel }).Search = {
             id: this.gridID + '_search',
-            template: '<div class="e-input-group e-search" role="search">\
-            <input id="' + this.gridID + '_searchbar" class="e-input" name="input" type="search" \
-            placeholder= \"' + this.l10n.getConstant('Search') + '\"/>\
-            <span id="' + this.gridID + '_searchbutton" class="e-input-group-icon e-search-icon e-icons" \
-            tabindex="-1" title="' + this.l10n.getConstant('Search') + '" aria-label= "search"></span> \
-            </div>',
             tooltipText: this.l10n.getConstant('Search'), align: 'Right', cssClass: 'e-search-wrapper'
         };
         (this.predefinedItems as { ColumnChooser: ItemModel }).ColumnChooser = {
@@ -100,6 +94,17 @@ export class Toolbar {
         }
     }
 
+    private toolbarCreated (): void {
+        if (this.element.querySelector('.e-search-wrapper')) {
+           this.element.querySelector('.e-search-wrapper').innerHTML = '<div class="e-input-group e-search" role="search">\
+        <input id="' + this.gridID + '_searchbar" class="e-input" name="input" type="search" \
+        placeholder= \"' + this.l10n.getConstant('Search') + '\"/>\
+        <span id="' + this.gridID + '_searchbutton" class="e-input-group-icon e-search-icon e-icons" \
+        tabindex="-1" title="' + this.l10n.getConstant('Search') + '" aria-label= "search"></span> \
+        </div>';
+        }
+        this.bindSearchEvents();
+    }
 
     private createToolbar(): void {
         let items: ItemModel[] = this.getItems();
@@ -108,7 +113,7 @@ export class Toolbar {
             clicked: this.toolbarClickHandler.bind(this),
             enablePersistence: this.parent.enablePersistence,
             enableRtl: this.parent.enableRtl,
-            created: this.bindSearchEvents.bind(this)
+            created: this.toolbarCreated.bind(this)
         });
         let isStringTemplate: string = 'isStringTemplate';
         this.toolbar[isStringTemplate] = true;
@@ -141,7 +146,6 @@ export class Toolbar {
             this.toolbar.appendTo(this.element);
         }
         this.parent.element.insertBefore(this.element, this.parent.getHeaderContent());
-        this.bindSearchEvents();
     }
 
     private refreshToolbarItems(args?: { editSettings: EditSettingsModel, name: string }): void {

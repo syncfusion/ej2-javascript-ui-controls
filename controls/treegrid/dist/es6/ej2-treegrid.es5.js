@@ -2813,7 +2813,9 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         this.setColIndex(this.grid.columns);
         this.bindGridEvents();
         var headerCheckbox = 'headerCheckbox';
-        this.grid.on('colgroup-refresh', this.selectionModule[headerCheckbox], this.selectionModule);
+        if (!isNullOrUndefined(this.selectionModule)) {
+            this.grid.on('colgroup-refresh', this.selectionModule[headerCheckbox], this.selectionModule);
+        }
         for (var i = 0; i < this.columns.length; i++) {
             this.columns[i].uid = this.grid.columns[i].uid;
         }
@@ -3111,10 +3113,14 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         var editKeyPress = 'keyPressed';
         var localobserver = 'localObserver';
         var cellEdit$$1;
+        var cellSave$$1;
         var name = 'name';
         if (isBlazor() && this.isServerRendered) {
             if (!isNullOrUndefined(this.grid.cellEdit) && this.grid.cellEdit[name] === 'bound triggerEJEvents') {
                 cellEdit$$1 = this.grid.cellEdit;
+            }
+            if (!isNullOrUndefined(this.grid.cellSave) && this.grid.cellSave[name] === 'bound triggerEJEvents') {
+                cellSave$$1 = this.grid.cellSave;
             }
         }
         if (this.editModule && isBlazor() && this.isServerRendered) {
@@ -3132,6 +3138,11 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             }
         };
         this.grid.cellSave = function (args) {
+            if (isBlazor() && _this.isServerRendered) {
+                if (cellSave$$1 && typeof cellSave$$1 === 'function' && cellSave$$1[name] === 'bound triggerEJEvents') {
+                    cellSave$$1.apply(_this, [args]);
+                }
+            }
             if (_this.grid.isContextMenuOpen()) {
                 var contextitems = void 0;
                 contextitems = _this.grid.contextMenuModule.contextMenu.element.getElementsByClassName('e-selected')[0];
@@ -3582,11 +3593,14 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
     TreeGrid.prototype.onPropertyChanged = function (newProp, oldProp) {
         var properties = Object.keys(newProp);
         var requireRefresh = false;
+        var preventUpdate = 'preventUpdate';
         for (var _i = 0, properties_1 = properties; _i < properties_1.length; _i++) {
             var prop = properties_1[_i];
             switch (prop) {
                 case 'columns':
-                    this.grid.columns = this.getGridColumns(this.columns);
+                    if (!(isBlazor() && this.isServerRendered && this[preventUpdate])) {
+                        this.grid.columns = this.getGridColumns(this.columns);
+                    }
                     break;
                 case 'treeColumnIndex':
                     this.grid.refreshColumns();
@@ -5829,6 +5843,7 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
      * Reorder the rows based on given indexes and position
      */
     RowDD$$1.prototype.reorderRows = function (fromIndexes, toIndex, position) {
+        var tObj = this.parent;
         if (fromIndexes[0] !== toIndex && position === 'above' || 'below' || 'child') {
             if (position === 'above') {
                 this.dropPosition = 'topSegment';
@@ -5848,13 +5863,24 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
                 data: data,
                 dropIndex: toIndex
             };
-            this.dropRows(args, isByMethod);
+            if (!isCountRequired(this.parent)) {
+                this.dropRows(args, isByMethod);
+            }
             //this.refreshGridDataSource();
             this.parent.refresh();
+            if (tObj.isLocalData) {
+                tObj.flatData = this.orderToIndex(tObj.flatData);
+            }
         }
         else {
             return;
         }
+    };
+    RowDD$$1.prototype.orderToIndex = function (currentData) {
+        for (var i = 0; i < currentData.length; i++) {
+            currentData[i].index = i;
+        }
+        return currentData;
     };
     RowDD$$1.prototype.rowsAdded = function (e) {
         var draggedRecord;
@@ -5879,7 +5905,7 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
                 }
             }
         }
-        if (!this.parent.dataSource.length) {
+        if (isNullOrUndefined(this.parent.dataSource) || !this.parent.dataSource.length) {
             var tObj = this.parent;
             var draggedRecord_1;
             var dragRecords_1 = e.records;
@@ -5889,6 +5915,9 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
                 var recordIndex1 = 0;
                 if (!draggedRecord_1.taskData.hasOwnProperty(tObj.childMapping)) {
                     draggedRecord_1.taskData[tObj.childMapping] = [];
+                }
+                if (isNullOrUndefined(tObj.dataSource)) {
+                    tObj.dataSource = [];
                 }
                 tObj.dataSource.splice(recordIndex1, 0, draggedRecord_1.taskData);
                 tObj.setProperties({ dataSource: tObj.dataSource }, false);
@@ -6246,8 +6275,13 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
                 setValue('dropPosition', this.dropPosition, args);
                 tObj.trigger(rowDrop, args);
                 if (!args.cancel) {
-                    this.dropRows(args);
+                    if (!isCountRequired(this.parent)) {
+                        this.dropRows(args);
+                    }
                     tObj.refresh();
+                    if (tObj.isLocalData) {
+                        tObj.flatData = this.orderToIndex(tObj.flatData);
+                    }
                     if (!isNullOrUndefined(tObj.getHeaderContent().querySelector('.e-firstrow-border'))) {
                         tObj.getHeaderContent().querySelector('.e-firstrow-border').remove();
                     }
@@ -6261,6 +6295,9 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
                 tObj.trigger(rowDrop, args);
                 if (!args.cancel && tObj.rowDropSettings.targetID) {
                     this.dragDropGrid(args);
+                    if (tObj.isLocalData) {
+                        tObj.flatData = this.orderToIndex(tObj.flatData);
+                    }
                 }
             }
         }
@@ -6278,8 +6315,10 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
         var targetRow = closest(args.target, 'tr');
         var targetIndex = isNaN(this.getTargetIdx(targetRow)) ? 0 : this.getTargetIdx(targetRow);
         var dropElement = parentsUntil(args.target, 'e-treegrid');
-        if (dropElement && dropElement.id === this.parent.rowDropSettings.targetID && !isRemoteData(this.parent)) {
-            var srcControl = dropElement.ej2_instances[0];
+        var srcControl;
+        if (dropElement && dropElement.id === this.parent.rowDropSettings.targetID && !isRemoteData(this.parent)
+            && !isCountRequired(this.parent)) {
+            srcControl = dropElement.ej2_instances[0];
             var records = tObj.getSelectedRecords();
             var indexes = [];
             for (var i = 0; i < records.length; i++) {
@@ -6298,6 +6337,11 @@ var RowDD$1 = /** @__PURE__ @class */ (function () {
                     srcControl.getContent().querySelector('.e-lastrow-border').remove();
                 }
             }
+        }
+        if (isCountRequired(this.parent)) {
+            srcControl = dropElement.ej2_instances[0];
+            tObj.refresh();
+            srcControl.refresh();
         }
     };
     RowDD$$1.prototype.getTargetIdx = function (targetRow) {

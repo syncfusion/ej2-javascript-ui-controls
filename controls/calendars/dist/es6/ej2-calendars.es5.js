@@ -5686,7 +5686,9 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                     var startDate = this.globalize.parseDate(range[0].trim(), dateOptions);
                     var endDate = this.globalize.parseDate(range[1].trim(), dateOptions);
                     if (!isNullOrUndefined(startDate) && !isNaN(+startDate) && !isNullOrUndefined(endDate) && !isNaN(+endDate)) {
+                        var prevStartVal = this.startValue;
                         this.startValue = startDate;
+                        var prevEndVal = this.endValue;
                         this.endValue = endDate;
                         this.setValue();
                         this.refreshControl();
@@ -5701,6 +5703,12 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
                             this.trigger('blur', blurArguments);
                         }
                         this.updateHiddenInput();
+                        // For Mobile mode, when a value is present and choose another range and click on console
+                        // when popup is open, two startvalues and end values are updated in the popup.
+                        if (this.isMobile && this.isPopupOpen()) {
+                            this.startValue = prevStartVal;
+                            this.endValue = prevEndVal;
+                        }
                         return;
                     }
                     else {
@@ -8178,7 +8186,9 @@ var DateRangePicker = /** @__PURE__ @class */ (function (_super) {
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
             isStartDisabled = this.isDateDisabled(this.startValue);
             isEndDisabled = this.isDateDisabled(this.endValue);
-            this.currentDate = null;
+            if (!this.isPopupOpen()) {
+                this.currentDate = null;
+            }
             this.setValue();
         }
         return (isStartDisabled || isEndDisabled);
@@ -9937,7 +9947,6 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
                         }
                     }
                     this.hide();
-                    addClass([this.inputWrapper.container], FOCUS);
                     this.isNavigate = false;
                     if (this.isPopupOpen()) {
                         event.stopPropagation();
@@ -9975,7 +9984,6 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         this.setSelection(li, event);
         if (li && li.classList.contains(LISTCLASS$1)) {
             this.hide();
-            addClass([this.inputWrapper.container], FOCUS);
         }
     };
     TimePicker.prototype.closePopup = function (delay, e) {
@@ -10984,7 +10992,8 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
         }
         else if (target !== this.inputElement) {
             if (!Browser.isDevice) {
-                this.isPreventBlur = (Browser.isIE || Browser.info.name === 'edge') && (document.activeElement === this.inputElement);
+                this.isPreventBlur = (Browser.isIE || Browser.info.name === 'edge') && (document.activeElement === this.inputElement)
+                    && (target === this.popupWrapper);
             }
         }
     };
@@ -11061,6 +11070,7 @@ var TimePicker = /** @__PURE__ @class */ (function (_super) {
     TimePicker.prototype.focusOut = function () {
         if (document.activeElement === this.inputElement) {
             this.inputElement.blur();
+            removeClass([this.inputWrapper.container], [FOCUS]);
             var blurArguments = {
                 model: this.isBlazorServer ? null : this
             };
@@ -12168,7 +12178,6 @@ var DateTimePicker = /** @__PURE__ @class */ (function (_super) {
     DateTimePicker.prototype.changeEvent = function (e) {
         if ((this.value && this.value.valueOf()) !== (this.previousDateTime && +this.previousDateTime.valueOf())) {
             _super.prototype.changeEvent.call(this, e);
-            this.inputElement.focus();
             this.valueWithMinutes = this.value;
             this.setInputValue('date');
             this.previousDateTime = this.value && new Date(+this.value);

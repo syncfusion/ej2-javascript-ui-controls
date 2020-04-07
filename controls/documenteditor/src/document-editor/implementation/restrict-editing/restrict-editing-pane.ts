@@ -6,6 +6,7 @@ import { EnforceProtectionDialog, UnProtectDocumentDialog } from './enforce-prot
 import { ProtectionType } from '../../base/types';
 import { Base64 } from '../editor/editor-helper';
 import { ListView } from '@syncfusion/ej2-lists';
+import { DropDownList } from '@syncfusion/ej2-dropdowns';
 
 /**
  * @private
@@ -16,7 +17,6 @@ export class RestrictEditing {
     public allowFormatting: CheckBox;
     private addUser: HTMLButtonElement;
     private enforceProtection: HTMLButtonElement;
-    private readonly: CheckBox;
     private allowFormat: CheckBox;
     private allowPrint: CheckBox;
     private allowCopy: CheckBox;
@@ -24,6 +24,8 @@ export class RestrictEditing {
     public enforceProtectionDialog: EnforceProtectionDialog;
     public stopProtection: HTMLButtonElement;
     public addRemove: boolean = true;
+    private protectionTypeDrop: DropDownList;
+    private userWholeDiv: HTMLElement;
     /**
      * @private
      */
@@ -31,7 +33,7 @@ export class RestrictEditing {
     public stopProtectionDiv: HTMLElement;
     public restrictPaneWholeDiv: HTMLElement;
     private closeButton: HTMLButtonElement;
-    public protectionType: ProtectionType = 'NoProtection';
+    public protectionType: ProtectionType = 'ReadOnly';
     public restrictFormatting: boolean = false;
     private localObj: L10n;
 
@@ -122,8 +124,18 @@ export class RestrictEditing {
             attrs: { type: 'checkbox' },
             id: this.viewer.owner.containerId + '_readOnly'
         }) as HTMLInputElement;
-        editRestrictWholeDiv.appendChild(readOnly);
-        this.readonly = this.createCheckBox('Read only', readOnly);
+        let protectionTypeInput: HTMLInputElement = createElement('input', {
+            id: this.viewer.owner.containerId + '_readOnly',
+            className: 'e-prop-font-style'
+        }) as HTMLInputElement;
+        editRestrictWholeDiv.appendChild(protectionTypeInput);
+        let protectionTypeValue: string[] = ['Read only', 'Filling in forms'];
+        this.protectionTypeDrop = new DropDownList({
+            dataSource: protectionTypeValue,
+            cssClass: 'e-de-prop-dropdown'
+        });
+        this.protectionTypeDrop.value = 'Read only';
+        this.protectionTypeDrop.appendTo(protectionTypeInput);
         // let allowPrint: HTMLInputElement = createElement('input', {
         //     attrs: { type: 'checkbox' },
         //     id: this.viewer.owner.containerId + '_allowPrint'
@@ -138,19 +150,19 @@ export class RestrictEditing {
         // this.allowCopy = this.createCheckBox('Allow Copy', allowCopy);
         this.restrictPaneWholeDiv.appendChild(editRestrictWholeDiv);
         // User Permissions
-        let userWholeDiv: HTMLElement = createElement('div', { className: 'e-de-rp-sub-div' });
+        this.userWholeDiv = createElement('div', { className: 'e-de-rp-sub-div' });
         let userDiv: HTMLElement = createElement('div', {
             innerHTML: localObj.getConstant('Exceptions Optional'),
             className: 'e-de-rp-format'
         });
-        userWholeDiv.appendChild(userDiv);
+        this.userWholeDiv.appendChild(userDiv);
         let subContentDiv: HTMLElement = createElement('div', {
             innerHTML: localObj.getConstant('Select Part Of Document And User'),
             styles: 'margin-bottom:8px;'
         });
-        userWholeDiv.appendChild(subContentDiv);
+        this.userWholeDiv.appendChild(subContentDiv);
         let emptyuserDiv: HTMLElement = createElement('div', { className: 'e-de-rp-user' });
-        userWholeDiv.appendChild(emptyuserDiv);
+        this.userWholeDiv.appendChild(emptyuserDiv);
         this.addedUser = new ListView({
             cssClass: 'e-de-user-listView',
             dataSource: [{ text: 'Everyone' }],
@@ -165,9 +177,9 @@ export class RestrictEditing {
             innerHTML: localObj.getConstant('More users') + '...',
             styles: 'margin-top: 3px'
         }) as HTMLButtonElement;
-        userWholeDiv.appendChild(this.addUser);
+        this.userWholeDiv.appendChild(this.addUser);
 
-        this.restrictPaneWholeDiv.appendChild(userWholeDiv);
+        this.restrictPaneWholeDiv.appendChild(this.userWholeDiv);
         let lastDiv: HTMLElement = createElement('div', { className: 'e-de-rp-enforce' });
         this.restrictPaneWholeDiv.appendChild(lastDiv);
         this.enforceProtection = createElement('button', {
@@ -244,7 +256,7 @@ export class RestrictEditing {
         this.stopProtection.addEventListener('click', this.stopProtectionTriggered);
         this.closeButton.addEventListener('click', this.closePane);
         this.allowFormat.addEventListener('change', this.enableFormatting);
-        this.readonly.addEventListener('change', this.readOnlyChanges);
+        this.protectionTypeDrop.addEventListener('change', this.protectionTypeDropChanges);
         this.highlightCheckBox.addEventListener('change', this.highlightClicked);
     }
     /* tslint:disable:no-any */
@@ -259,9 +271,15 @@ export class RestrictEditing {
         }
         this.unProtectDialog.show();
     }
-    private readOnlyChanges = (args: any): void => {
-        if (args.checked) {
+    private protectionTypeDropChanges = (args: any): void => {
+        if (args.value === 'Read only') {
             this.protectionType = 'ReadOnly';
+            this.userWholeDiv.style.display = 'block';
+            this.enforceProtection.style.marginLeft = '0px';
+        } else if (args.value === 'Filling in forms') {
+            this.protectionType = 'FormFieldsOnly';
+            this.userWholeDiv.style.display = 'none';
+            this.enforceProtection.style.marginLeft = '8px';
         } else {
             this.protectionType = 'NoProtection';
             this.addedUser.uncheckAllItems();
@@ -291,11 +309,15 @@ export class RestrictEditing {
     }
 
     public loadPaneValue(): void {
-        if (!this.isAddUser) {
-            this.protectionType = this.documentHelper.protectionType;
-        }
+        // if (!this.isAddUser) {
+        //     this.protectionType = this.documentHelper.protectionType;
+        // }
         this.allowFormat.checked = !this.documentHelper.restrictFormatting;
-        this.readonly.checked = this.documentHelper.protectionType === 'ReadOnly' || this.protectionType !== 'NoProtection';
+        if (this.documentHelper.protectionType === 'ReadOnly') {
+            this.protectionTypeDrop.value = 'Read only';
+        } else if (this.documentHelper.protectionType === 'FormFieldsOnly') {
+            this.protectionTypeDrop.value = 'Filling in forms';
+        }
         this.highlightCheckBox.checked = true;
         this.addedUser.enablePersistence = true;
         this.addedUser.dataSource = this.documentHelper.userCollection;

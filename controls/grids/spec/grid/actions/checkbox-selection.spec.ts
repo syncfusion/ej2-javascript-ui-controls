@@ -750,4 +750,97 @@ describe('Grid checkbox selection functionality', () => {
             gridObj = selectionModule = rows = null;
         });
     });
+
+    describe('EJ2-37662 CheckBoxMode on ResetOnRowClick with persist selection', () => {
+        let gridObj: Grid;
+        let selectionModule: Selection;
+        let rows: Element[];
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    columns: [
+                        {type: 'checkbox', width: 50},
+                        { headerText: 'OrderID', isPrimaryKey: true, field: 'OrderID' },
+                        { headerText: 'CustomerID', field: 'CustomerID' },
+                        { headerText: 'EmployeeID', field: 'EmployeeID' },
+                        { headerText: 'ShipCountry', field: 'ShipCountry' },
+                        { headerText: 'ShipCity', field: 'ShipCity' },
+                    ],
+                    allowSelection: true,
+                    pageSettings: { pageSize: 5 },
+                    allowPaging: true,
+                    allowSorting: true,
+                    selectionSettings: { persistSelection: true, checkboxMode: 'ResetOnRowClick' },
+                    actionComplete: actionComplete
+                }, done);
+        });
+
+        it('checking multiple row selection reset with persistence', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if(args.requestType === 'paging'){    
+                expect(selectionModule.getSelectedRecords().length).toBe(1);
+                done();
+                }
+            };
+            gridObj.clearSelection();
+            rows = gridObj.getRows();
+            selectionModule = gridObj.selectionModule;
+            selectionModule.selectRows([1, 2]);
+            expect(rows[1].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
+            expect(rows[2].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
+            selectionModule.selectRows([3]);
+            expect(rows[3].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
+            expect(selectionModule.getSelectedRecords().length).toBe(1);
+            gridObj.actionComplete = actionComplete;        
+            gridObj.goToPage(2);
+        });
+
+        it('checking single row selection reset with persistence', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if(args.requestType === 'paging'){    
+                expect(selectionModule.getSelectedRecords().length).toBe(1);
+                done();
+                }
+            };
+            gridObj.goToPage(1);
+            gridObj.clearSelection();
+            rows = gridObj.getRows();
+            selectionModule = gridObj.selectionModule;
+            selectionModule.selectRows([1, 2]);
+            expect(rows[1].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
+            expect(rows[2].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
+            selectionModule.selectRows([1]);
+            expect(selectionModule.getSelectedRecords().length).toBe(1);
+            gridObj.actionComplete = actionComplete;        
+            gridObj.goToPage(2);
+        });
+
+        it('checking all row selection reset with persistence', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if(args.requestType === 'paging'){
+                    expect(selectionModule.selectedRecords.length).toBe(1);
+                    done();
+                }
+            };
+            gridObj.goToPage(1);
+            gridObj.clearSelection();
+            rows = gridObj.getRows();
+            selectionModule = gridObj.selectionModule;
+            (<any>(gridObj.element.querySelector('.e-checkselectall')) as HTMLElement).click();
+            expect(rows[1].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
+            selectionModule.selectRows([1]);
+            expect(rows[1].firstElementChild.classList.contains('e-selectionbackground')).toBeTruthy();
+            expect(selectionModule.selectedRecords.length).toBe(1);
+            gridObj.goToPage(1);
+            gridObj.actionComplete = actionComplete;        
+            gridObj.goToPage(2);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = selectionModule = rows = actionComplete = null;
+        });
+    });
 });

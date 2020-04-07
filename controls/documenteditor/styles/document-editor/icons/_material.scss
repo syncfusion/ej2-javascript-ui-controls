@@ -45,6 +45,16 @@
       font-size: $de-op-icon-font-size;
     }
 
+    .e-de-save-icon::before {
+      content: '\e614';
+      font-family: 'e-icons';
+    }
+
+    .e-de-cancel-icon::before {
+      content: '\eb36';
+      font-family: 'e-icons';
+    }
+
     .e-de-cmt-mark-icon::before {
       content: '\e817';
       font-family: 'e-icons';
@@ -310,6 +320,10 @@
 
   .e-menu-item .e-de-open-hyperlink::before {
     content: '\e278';
+  }
+
+  .e-menu-item .e-de-open-properties::before {
+    content: '\e605';
   }
 
   .e-menu-item .e-de-copy-hyperlink::before {

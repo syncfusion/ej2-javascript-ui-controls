@@ -11,6 +11,7 @@ import { Group } from '../../../src/grid/actions/group';
 import { Selection } from '../../../src/grid/actions/selection';
 import { Filter } from '../../../src/grid/actions/filter';
 import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
+import { Aggregate } from '../../../src/grid/actions/aggregate';
 import { GridModel } from '../../../src/grid/base/grid-model';
 import { Column } from '../../../src/grid/models/column';
 import { Row } from '../../../src/grid/models/row';
@@ -20,7 +21,7 @@ import { RowModelGenerator } from '../../../src/grid/services/row-model-generato
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 
-Grid.Inject(VirtualScroll, Sort, Filter, Selection, Group);
+Grid.Inject(VirtualScroll, Sort, Filter, Selection, Group, Aggregate);
 
 let createGrid: Function = (options: GridModel, done: Function): Grid => {
     let grid: Grid;
@@ -61,6 +62,15 @@ let data1: Object[] = (() => {
     let arr: Object[] = [];
     for (let i: number = 0, o: Object = {}, j: number = 0; i < 1000; i++ , j++ , o = {}) {
         count5000.forEach((lt: string) => o[lt] = 'Column' + lt + 'Row' + i);
+        arr[j] = o;
+    }
+    return arr;
+})();
+
+let virtualData: Object[] = (() => {
+    let arr: Object[] = [];
+    for (let i: number = 0, o: Object = {}, j: number = 0; i < 1000; i++ , j++ , o = {}) {
+        count500.forEach((lt: string) => o[lt] = i);
         arr[j] = o;
     }
     return arr;
@@ -707,6 +717,55 @@ describe('Column virtualization', () => {
         afterAll(() => {
             destroy(grid);
             grid = null;
+        });
+    });
+
+    describe('EJ2-37789 - Summary has an empty when collapse the record', () => {
+        let gObj: Grid;
+        beforeAll((done: Function) => {
+            gObj = createGrid(
+                {
+                    dataSource: virtualData,
+                    columns: count500,
+                    enableVirtualization: true,
+                    allowGrouping: true,
+                    height: 300,
+                    aggregates: [{
+                        columns: [{
+                            type: 'Sum',
+                            field: 'Column2',
+                            footerTemplate: 'Total: ${Sum}'
+                        }]
+                    }]
+                }, done);
+        });
+
+        it('grouping', function (done: Function) {
+            let actionC = function (args: any) {
+                if (args.requestType === 'grouping') {
+                    done();
+                }
+            }
+            gObj.actionComplete = actionC;
+            gObj.groupModule.groupColumn('Column3');
+        });
+        it('collapse first row', (done: Function) => {
+            gObj.groupModule.expandCollapseRows(gObj.getContent().querySelector('.e-gdiagonaldown'));
+            setTimeout(done, 200);
+        });
+        it('check aggregare value after the collapse action', (done: Function) => {
+            let text: string = (gObj as any).footerElement.querySelector('.e-templatecell').textContent;
+            let value: number = parseInt(text.split(' ')[1], 10);
+            expect(gObj.getRows()[0].getAttribute('aria-rowindex')).toBe('1');
+            expect(text).not.toBe('Total:  ');
+            expect(text).not.toBe('');
+            expect(text).not.toBe(' ');
+            expect(value).toBe(499500);
+            setTimeout(done, 200);
+        });
+        afterAll(() => {
+            destroy(gObj);
+            gObj = null;
         });
     });
 });

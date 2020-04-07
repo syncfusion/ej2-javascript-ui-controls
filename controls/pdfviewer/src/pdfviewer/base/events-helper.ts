@@ -86,6 +86,11 @@ export interface ValidateFormFieldsArgs extends BaseEventArgs {
      * Document name to be loaded into PdfViewer
      */
     documentName: string;
+    /**
+     * Defines the non-fillable form fields.
+     */
+    // tslint:disable-next-line
+    nonFillableFields: any;
 }
 
 /** 

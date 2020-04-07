@@ -35,6 +35,9 @@ function getModel(props, model) {
     }
     return obj;
 }
+/**
+ * Defines the items of Split Button/DropDownButton.
+ */
 var Item = /** @__PURE__ @class */ (function (_super) {
     __extends(Item, _super);
     function Item() {
@@ -768,6 +771,11 @@ var SplitButton = /** @__PURE__ @class */ (function (_super) {
             this.element.id = getUniqueID('e-' + this.getModuleName());
         }
     };
+    /**
+     * Initialize the Component rendering
+     * @returns void
+     * @private
+     */
     SplitButton.prototype.render = function () {
         if (isBlazor() && this.isServerRendered) {
             buttonObserver.on('component-rendered', this.buttonInstance, this, this.element.id);
@@ -799,10 +807,22 @@ var SplitButton = /** @__PURE__ @class */ (function (_super) {
         this.wireEvents();
         this.renderComplete();
     };
+    /**
+     * Adds a new item to the menu. By default, new item appends to the list as the last item,
+     * but you can insert based on the text parameter.
+     * @param  { ItemModel[] } items - Specifies an array of JSON data.
+     * @param { string } text - Specifies the text to insert the newly added item in the menu.
+     * @returns {void}.
+     */
     SplitButton.prototype.addItems = function (items, text) {
         _super.prototype.addItems.call(this, items, text);
         this.secondaryBtnObj.items = this.items;
     };
+    /**
+     * Removes the items from the menu.
+     * @param  { string[] } items - Specifies an array of string to remove the items.
+     * @returns {void}.
+     */
     SplitButton.prototype.removeItems = function (items) {
         _super.prototype.removeItems.call(this, items);
         this.secondaryBtnObj.items = this.items;
@@ -1085,13 +1105,13 @@ var Deferred = /** @__PURE__ @class */ (function () {
             _this.reject = reject;
         });
         /**
-         * Defines the callback function triggers when the Deferred object is resolved.
-         */
-        this.then = this.promise.then.bind(this.promise);
-        /**
          * Defines the callback function triggers when the Deferred object is rejected.
          */
         this.catch = this.promise.catch.bind(this.promise);
+        /**
+         * Defines the callback function triggers when the Deferred object is resolved.
+         */
+        this.then = this.promise.then.bind(this.promise);
     }
     return Deferred;
 }());
@@ -1197,6 +1217,9 @@ var HIDESPINNER = 'e-hide-spinner';
 var PROGRESS = 'e-progress';
 var PROGRESSACTIVE = 'e-progress-active';
 var CONTENTCLS = 'e-btn-content';
+/**
+ * Defines the spin settings.
+ */
 var SpinSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$3(SpinSettings, _super);
     function SpinSettings() {
@@ -1213,6 +1236,9 @@ var SpinSettings = /** @__PURE__ @class */ (function (_super) {
     ], SpinSettings.prototype, "position", void 0);
     return SpinSettings;
 }(ChildProperty));
+/**
+ * Defines the animation settings.
+ */
 var AnimationSettings = /** @__PURE__ @class */ (function (_super) {
     __extends$3(AnimationSettings, _super);
     function AnimationSettings() {

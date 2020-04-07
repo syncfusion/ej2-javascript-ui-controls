@@ -741,7 +741,7 @@ class DateProcessor {
         if (sDate.getTime() < eDate.getTime()) {
             for (let i = 0; i < holidays.length; i++) {
                 let currentHoliday = this.getDateFromFormat(new Date(holidays[i]));
-                if (sDate.getTime() <= currentHoliday.getTime() && eDate.getTime() >= currentHoliday.getTime()) {
+                if (sDate.getTime() <= currentHoliday.getTime() && eDate.getTime() > currentHoliday.getTime()) {
                     if (!this.parent.includeWeekend && this.parent.nonWorkingDayIndex.indexOf(currentHoliday.getDay()) === -1) {
                         holidaysCount += 1;
                     }
@@ -1129,11 +1129,11 @@ class DateProcessor {
                 addDateToList(maxEndDate);
                 addDateToList(tempStartDate);
                 addDateToList(tempEndDate);
-                if (this.parent.renderBaseline) {
+                if (this.parent.renderBaseline && !this.parent.timelineModule.isZoomToFit) {
                     addDateToList(task.baselineStartDate);
                     addDateToList(task.baselineEndDate);
                 }
-                if (task.indicators && task.indicators.length > 0) {
+                if (task.indicators && task.indicators.length > 0 && !this.parent.timelineModule.isZoomToFit) {
                     task.indicators.forEach((item, index) => {
                         addDateToList(this.getDateFromFormat(item.date));
                     });
@@ -1144,13 +1144,13 @@ class DateProcessor {
             addDateToList(minStartDate);
             addDateToList(maxEndDate);
             //update schedule dates as per holiday and strip line collection
-            if (this.parent.eventMarkers.length > 0) {
+            if (this.parent.eventMarkers.length > 0 && !this.parent.timelineModule.isZoomToFit) {
                 let eventMarkers = this.parent.eventMarkers;
                 eventMarkers.forEach((marker, index) => {
                     addDateToList(this.getDateFromFormat(marker.day));
                 });
             }
-            if (this.parent.totalHolidayDates.length > 0) {
+            if (this.parent.totalHolidayDates.length > 0 && !this.parent.timelineModule.isZoomToFit) {
                 let holidays = this.parent.totalHolidayDates;
                 holidays.forEach((holiday, index) => {
                     addDateToList(new Date(holiday));
@@ -3399,6 +3399,7 @@ class GanttChart {
      * @private
      */
     onTabAction(e) {
+        this.parent.treeGrid.grid.enableHeaderFocus = this.parent.enableHeaderFocus;
         let isInEditedState = this.parent.editModule && this.parent.editModule.cellEditModule &&
             this.parent.editModule.cellEditModule.isCellEdit;
         if (!this.parent.showActiveElement && !isInEditedState) {
@@ -3407,10 +3408,12 @@ class GanttChart {
         let $target = isInEditedState ? e.target.closest('.e-rowcell') : e.target;
         let isTab = (e.action === 'tab') ? true : false;
         let nextElement = this.getNextElement($target, isTab);
-        if ($target.classList.contains('e-rowcell') || $target.closest('.e-chart-row-cell')) {
+        if ($target.classList.contains('e-rowcell') || $target.closest('.e-chart-row-cell') ||
+            $target.classList.contains('e-headercell')) {
             e.preventDefault();
         }
-        if ($target.classList.contains('e-rowcell') && (nextElement && nextElement.classList.contains('e-rowcell'))) {
+        if ($target.classList.contains('e-rowcell') && (nextElement && nextElement.classList.contains('e-rowcell')) ||
+            $target.classList.contains('e-headercell')) {
             this.parent.treeGrid.grid.notify('key-pressed', e);
         }
         if (!isInEditedState) {
@@ -3446,7 +3449,7 @@ class GanttChart {
     getNextElement($target, isTab) {
         let nextElement = isTab ? $target.nextElementSibling : $target.previousElementSibling;
         while (nextElement && nextElement.parentElement.classList.contains('e-row')) {
-            if (!nextElement.matches('.e-hide')) {
+            if (!nextElement.matches('.e-hide') && !nextElement.matches('.e-rowdragdrop')) {
                 return nextElement;
             }
             nextElement = isTab ? nextElement.nextElementSibling : nextElement.previousElementSibling;
@@ -3498,7 +3501,7 @@ class GanttChart {
                 if (rowElement) {
                     childElement = isTab ? rowElement.children[0] : rowElement.children[rowElement.children.length - 1];
                     while (childElement) {
-                        if (!childElement.matches('.e-hide')) {
+                        if (!childElement.matches('.e-hide') && !childElement.matches('.e-rowdragdrop')) {
                             return childElement;
                         }
                         childElement = isTab ? childElement.nextElementSibling : childElement.previousElementSibling;
@@ -9093,6 +9096,8 @@ let Gantt = class Gantt extends Component {
         this.needsID = true;
         /** @hidden */
         this.showActiveElement = false;
+        /** @hidden */
+        this.enableHeaderFocus = false;
         /**
          * @private
          */
@@ -18743,6 +18748,7 @@ class Filter$1 {
     }
     updateFilterMenuPosition(element, args) {
         this.parent.element.appendChild(element);
+        element.querySelector('.e-valid-input').focus();
         let targetElement;
         if (this.parent.showColumnMenu) {
             targetElement = document.querySelector('#treeGrid' + this.parent.controlId + '_gridcontrol_colmenu_Filter');

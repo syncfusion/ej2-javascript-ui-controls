@@ -11,7 +11,7 @@ import { Magnification } from './index';
 import { Toolbar } from './index';
 import { ToolbarItem } from './index';
 // tslint:disable-next-line:max-line-length
-import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode } from './base/types';
+import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType } from './base/types';
 import { Annotation } from './index';
 import { LinkAnnotation } from './index';
 import { ThumbnailView } from './index';
@@ -1123,6 +1123,12 @@ export class DistanceSettings extends ChildProperty<DistanceSettings> {
      */
     @Property(40)
     public leaderLength: number;
+
+    /**
+     * Defines the cursor type for distance annotation.
+     */
+    @Property(CursorType.move)
+    public resizeCursorType: CursorType;
 
 }
 
@@ -2493,7 +2499,7 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of distance annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', subject: 'Distance calculation', modifiedDate: '', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Closed', lineHeadEndStyle: 'Closed', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, leaderLength: 40 })
+    @Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', subject: 'Distance calculation', modifiedDate: '', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Closed', lineHeadEndStyle: 'Closed', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, leaderLength: 40, resizeCursorType: CursorType.move })
     public distanceSettings: DistanceSettingsModel;
 
     /**
@@ -3620,7 +3626,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     public fireValidatedFailed(action: string): void {
-        let eventArgs: ValidateFormFieldsArgs = { formField: this.viewerBase.createFormfieldsJsonData(), documentName: this.fileName };
+        // tslint:disable-next-line:max-line-length
+        let eventArgs: ValidateFormFieldsArgs = { formField: this.viewerBase.createFormfieldsJsonData(), documentName: this.fileName, nonFillableFields: this.formFieldsModule.nonFillableFields };
         this.trigger('validateFormFields', eventArgs);
     }
 

@@ -465,7 +465,7 @@ export class Group implements IAction {
         rObj.isExpand = isExpand;
         updatecloneRow(gObj);
         query = gObj.getDataModule().generateQuery(false);
-        query.queries = [];
+        query.queries = gObj.getDataModule().aggregateQuery(gObj.getQuery().clone()).queries;
         let args: NotifyArgs = { requestType: 'virtualscroll', rowObject: rObj };
         dataManager = gObj.getDataModule().getData(args, query.requiresCount());
         dataManager.then((e: ReturnType) => gObj.renderModule.dataManagerSuccess(e, args));

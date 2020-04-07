@@ -647,20 +647,19 @@ describe('Batch Editing module', () => {
         it('tab key --2', () => {
             gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = 'updated';
             gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
-            expect(gridObj.isEdit).toBeTruthy();
+            expect(gridObj.isEdit).toBeFalsy();
         });
 
         it('shift tab key', () => {
             //last action check
-            expect(gridObj.element.querySelector('.e-editedbatchcell').querySelector('.e-field').id).toBe(gridObj.element.id + 'CustomerID');
-            gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = 'updated';
+            expect(gridObj.element.querySelectorAll('tr')[2].querySelectorAll('td')[1].innerText).toBe('updated');
             gridObj.keyboardModule.keyAction({ action: 'shiftTab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
             expect(gridObj.isEdit).toBeTruthy();
         });
 
         it('cell save', (done: Function) => {
             //last action check
-            expect(gridObj.element.querySelector('.e-editedbatchcell').querySelector('.e-field').id).toBe(gridObj.element.id + 'CustomerID');
+            expect(gridObj.focusModule.currentInfo.element.getAttribute('aria-colindex')).toBe('1');
             let cellSave = (args?: any): void => {
                 expect(gridObj.isEdit).toBeTruthy();
                 gridObj.cellSave = null;
@@ -861,7 +860,7 @@ describe('Batch Editing module', () => {
 
         it('cell save', (done: Function) => {
             //last action check
-            expect(gridObj.element.querySelector('.e-editedbatchcell').querySelector('.e-field').id).toBe(gridObj.element.id + 'CustomerID');
+            expect(gridObj.element.querySelectorAll('tr')[3].querySelectorAll('td')[1].innerText).toBe('updated');
             let cellSave = (args?: any): void => {
                 expect(gridObj.isEdit).toBeTruthy();
                 gridObj.cellSave = null;
@@ -869,6 +868,7 @@ describe('Batch Editing module', () => {
             };
             gridObj.cellSave = cellSave;
             //for endedit and batch save while editing
+            gridObj.editCell(2,'CustomerID');
             gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = '';
             (gridObj.editModule as any).editModule.endEdit();
             (gridObj.editModule as any).editModule.batchSave();
@@ -3222,4 +3222,83 @@ describe('EJ2-37546 - While saving the null values numeric type column stores as
         queryCellInfo =null;
     });
 });
+describe('EJ2-36945- pressing tab key in batch edit does not save the cell', () => {
+    let gridObj: Grid;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch', showConfirmDialog :false, newRowPosition:'Bottom' },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', type: 'number', isPrimaryKey: true, visible: true, validationRules: { required: true } },
+                    { field: 'CustomerID', type: 'string',validationRules: { required: true } },
+                    { field: 'EmployeeID', type: 'number', allowEditing: false },
+                    { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
+                    { field: 'ShipCity' },
+                ],
+            }, done);
+    });
+    it('edit cell', (done: Function) => {
+        let cellEdit = (args?: any): void => {
+            expect(gridObj.isEdit).toBeFalsy();
+            gridObj.cellEdit = null;
+            done();
+        };
+        gridObj.cellEdit = cellEdit;
+        gridObj.editModule.editCell(0, 'CustomerID');
+    });
 
+    it('tab key', () => {
+        gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = 'updated';
+        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
+        expect(gridObj.element.querySelectorAll('.e-updatedtd').length).toBe(1);
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null ;
+    });
+});
+
+
+describe('EJ2-37578 - [ObjectObject] while editing the fields  that are undefined=> ', () => {
+    let gridObj: Grid;
+    let newData: Object[] = [{
+        OrderID: 10248, Freight: 32.38, Verified: !0
+    },
+    {
+        OrderID: 10249, CustomerID: 'VICTE', Freight: 11.61, Verified: !1
+    }]
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: newData,
+                allowPaging: true,
+                pageSettings: { pageCount: 5, pageSize:5 },
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right', width: 120 },
+                    { field: 'CustomerID', headerText: 'Customer ID', width: 140 },
+                    { field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit', width: 120, format: 'C2' }
+                ],
+            }, done);
+    });
+    it('cell edit', function (done: Function) {
+        let cellSave = (args?: any): void => {
+            if(args.columnName == "CustomerID"){
+            expect(args.value).toBe(undefined);
+            gridObj.cellSave = null;
+            done();
+            }
+        };
+        gridObj.cellSave = cellSave; 
+        gridObj.editCell(0, "CustomerID");
+        gridObj.editCell(0, "Freight");
+    });
+    afterAll(() => {
+        gridObj.notify('tooltip-destroy', {});
+        destroy(gridObj);
+    });
+});

@@ -1,6 +1,6 @@
 import { Spreadsheet } from '../base/index';
 import { applyMerge, activeCellMergedRange, MergeArgs } from '../../workbook/common/index';
-import { ICellRenderer, hiddenMerge, dialog, locale, CellRenderArgs, checkPrevMerge } from '../common/index';
+import { ICellRenderer, hiddenMerge, dialog, locale, CellRenderArgs, checkPrevMerge, checkMerge } from '../common/index';
 import { Dialog } from '../services/index';
 import { CellModel, getCell, SheetModel, isHiddenCol, isHiddenRow } from '../../workbook/index';
 import { L10n } from '@syncfusion/ej2-base';
@@ -18,7 +18,7 @@ export class Merge {
         this.parent = parent;
         this.addEventListener();
     }
-    private merge(args: { rowIdx?: number, colIdx?: number, showDialog?: boolean }): void {
+    private merge(args: { rowIdx?: number, colIdx?: number, showDialog?: boolean, lastCell?: boolean, element?: Element }): void {
         if (args.showDialog) {
             (this.parent.serviceLocator.getService(dialog) as Dialog).show({
                 target: this.parent.element,
@@ -28,7 +28,7 @@ export class Merge {
             });
             return;
         }
-        (this.parent.serviceLocator.getService('cell') as ICellRenderer).refresh(args.rowIdx, args.colIdx);
+        (this.parent.serviceLocator.getService('cell') as ICellRenderer).refresh(args.rowIdx, args.colIdx, args.lastCell, args.element);
     }
     private hideHandler(args: { rowIdx: number, colIdx: number, model: string, start: number, end: number, isEnd?: boolean,
         hide: boolean }): void {
@@ -75,8 +75,6 @@ export class Merge {
                                 args.rowIdx, args.rowIdx + (mergeArgs.range[2] - args.rowIdx));
                             if (mergeCount > 1) {
                                 args.td.rowSpan = mergeCount; args.td.style.display = '';
-                            } else {
-                                if (args.td.rowSpan) { args.td.removeAttribute('rowSpan'); }
                             }
                             if (cell.colSpan > 1 && !(args.colIdx - 1 > -1 && isHiddenCol(sheet, args.colIdx - 1))) {
                                 mergeCount = cell.colSpan - this.parent.hiddenCount(
@@ -102,8 +100,6 @@ export class Merge {
                             args.colIdx, args.colIdx + (cell.colSpan - 1), 'columns');
                         if (mergeCount > 1) {
                             args.td.colSpan = mergeCount; args.td.style.display = '';
-                        } else {
-                            if (args.td.colSpan) { args.td.removeAttribute('colSpan'); }
                         }
                         if (cell.rowSpan > 1 && !(args.rowIdx - 1 > -1 && isHiddenRow(sheet, args.rowIdx - 1))) {
                             mergeCount = cell.rowSpan - this.parent.hiddenCount(args.rowIdx, args.rowIdx + (cell.rowSpan - 1));
@@ -114,10 +110,43 @@ export class Merge {
             }
         }
     }
+    private checkMerge(args: CellRenderArgs): void {
+        let sheet: SheetModel = this.parent.getActiveSheet();
+        let cell: CellModel = getCell(args.rowIdx, args.colIdx, sheet) || {};
+        if (args.isRow) {
+            if (cell.colSpan === undefined || isHiddenCol(sheet, args.colIdx - 1)) {
+                let mergeArgs: MergeArgs = { range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx] };
+                mergeArgs.range = mergeArgs.range as number[];
+                this.parent.notify(activeCellMergedRange, mergeArgs);
+                if (isHiddenCol(sheet, args.colIdx - 1) && !isHiddenCol(sheet, mergeArgs.range[1])) { return; }
+                cell = getCell(mergeArgs.range[0], mergeArgs.range[1], sheet);
+                let mergeCount: number = (mergeArgs.range[2] - args.rowIdx) + 1 - this.parent.hiddenCount(args.rowIdx, mergeArgs.range[2]);
+                if (mergeCount > 1) {
+                    this.merge({ rowIdx: mergeArgs.range[0], colIdx: mergeArgs.range[1], element: args.td });
+                    args.td.rowSpan = mergeCount;
+                }
+            }
+        } else {
+            if (cell.rowSpan === undefined || isHiddenRow(sheet, args.rowIdx - 1)) {
+                let mergeArgs: MergeArgs = { range: [args.rowIdx, args.colIdx, args.rowIdx, args.colIdx] };
+                mergeArgs.range = mergeArgs.range as number[];
+                this.parent.notify(activeCellMergedRange, mergeArgs);
+                if (isHiddenRow(sheet, args.rowIdx - 1) && !isHiddenRow(sheet, mergeArgs.range[0])) { return; }
+                cell = getCell(mergeArgs.range[0], mergeArgs.range[1], sheet);
+                let mergeCount: number = (mergeArgs.range[3] - args.colIdx) + 1 - this.parent.hiddenCount(
+                    args.colIdx, mergeArgs.range[3], 'columns');
+                if (mergeCount > 1) {
+                    this.merge({ rowIdx: mergeArgs.range[0], colIdx: mergeArgs.range[1], element: args.td });
+                    args.td.colSpan = mergeCount;
+                }
+            }
+        }
+    }
     private addEventListener(): void {
         this.parent.on(applyMerge, this.merge, this);
         this.parent.on(hiddenMerge, this.hideHandler, this);
         this.parent.on(checkPrevMerge, this.checkPrevMerge, this);
+        this.parent.on(checkMerge, this.checkMerge, this);
     }
     /**
      * Destroy merge module.
@@ -131,6 +160,7 @@ export class Merge {
             this.parent.off(applyMerge, this.merge);
             this.parent.off(hiddenMerge, this.hideHandler);
             this.parent.off(checkPrevMerge, this.checkPrevMerge);
+            this.parent.off(checkMerge, this.checkMerge);
         }
     }
     /**

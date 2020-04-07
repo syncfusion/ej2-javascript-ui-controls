@@ -646,7 +646,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public render(): void {
-        this.trigger(events.load, { dataSourceSettings: this.dataSourceSettings }, (observedArgs: LoadEventArgs) => {
+        /* tslint:disable-next-line:max-line-length */
+        this.trigger(events.load, { dataSourceSettings: isBlazor() ? PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings) : this.dataSourceSettings }, (observedArgs: LoadEventArgs) => {
             if (isBlazor()) {
                 observedArgs.dataSourceSettings.dataSource = this.dataSourceSettings.dataSource;
             }
@@ -718,7 +719,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'locale':
-                    this.refresh();
+                    super.refresh();
                     break;
                 case 'dataSourceSettings':
                     if (PivotUtil.isButtonIconRefesh(prop, oldProp, newProp)) {

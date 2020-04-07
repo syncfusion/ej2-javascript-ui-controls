@@ -105,6 +105,7 @@ export let defaultLocale: object = {
     MergeCellsAlert: 'Merging cells will only preserve the top-leftmost(Uppermost) value. Merge anyway?',
     PasteMergeAlert: 'We can"t do that to a merge cell.',
     Borders: 'Borders',
+    SelectBorderOption: 'Select Border Option',
     TopBorders: 'Top Borders',
     LeftBorders: 'Left Borders',
     RightBorders: 'Right Borders',

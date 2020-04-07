@@ -1,5 +1,5 @@
 import { SpreadsheetModel, Spreadsheet, BasicModule } from '../../../src/spreadsheet/index';
-import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
+import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
 import { CellModel, SortEventArgs, SortDescriptor, getCell } from '../../../src/index';
 
@@ -18,9 +18,7 @@ describe('Spreadsheet sorting module ->', () => {
             model = {
                 sheets: [
                     {
-                        range: [
-                            { dataSource: defaultData }
-                        ]
+                        ranges: [{ dataSource: defaultData }]
                     }
                 ]
             };

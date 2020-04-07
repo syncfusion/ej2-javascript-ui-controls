@@ -297,7 +297,7 @@ export class Selection implements IAction {
                 return;
             }
             this.index = index;  this.toggle =  isToggle; this.data =  selectData; this.removed = isRemoved;
-            if (isRowSelected && this.selectionSettings.persistSelection) {
+            if (isRowSelected && this.selectionSettings.persistSelection && !(this.selectionSettings.checkboxMode === 'ResetOnRowClick')) {
                 this.clearSelectedRow(index);
                 isRemoved = true;
                 this.removed = isRemoved;
@@ -305,7 +305,7 @@ export class Selection implements IAction {
             } else if (!isRowSelected && this.selectionSettings.persistSelection) {
                 this.selectRowCallBack();
             }
-            if (!this.selectionSettings.persistSelection) {
+            if (!this.selectionSettings.persistSelection || this.selectionSettings.checkboxMode === 'ResetOnRowClick') {
                 this.selectRowCheck = true;
                 this.clearRow();
             }

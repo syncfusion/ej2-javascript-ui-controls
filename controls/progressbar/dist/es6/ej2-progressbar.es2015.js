@@ -34,6 +34,22 @@ class RectOption extends PathOption {
         this.stroke = (width !== 0 && this.stroke !== '') ? color : 'transparent';
     }
 }
+/** @private */
+class TextOption {
+    constructor(id, fontSize, fontStyle, fontFamily, fontWeight, textAnchor, fill, x, y, width, height) {
+        this.id = id;
+        this['font-size'] = fontSize;
+        this['font-style'] = fontStyle;
+        this['font-family'] = fontFamily;
+        this['font-weight'] = fontWeight;
+        this['text-anchor'] = textAnchor;
+        this.fill = fill;
+        this.x = x;
+        this.y = y;
+        this.width = width ? width : 0;
+        this.height = height ? height : 0;
+    }
+}
 /** calculate the start and end point of circle */
 function degreeToLocation(centerX, centerY, radius, angleInDegrees) {
     let angleInRadians = (angleInDegrees - 90) * (Math.PI / 180);
@@ -204,11 +220,11 @@ function getProgressThemeColor(theme) {
                 backgroundColor: 'transparent',
                 fontColor: '#000000',
                 linearFontFamily: 'Roboto',
-                linearFontSize: 12,
+                linearFontSize: '12',
                 linearFontStyle: 'Regular',
                 circularFontFamily: 'Roboto',
                 circularFontStyle: 'Normal',
-                circularFontSize: 20,
+                circularFontSize: '20',
                 progressOpacity: 1,
                 trackOpacity: 0.26,
                 bufferOpacity: 0.4,
@@ -230,10 +246,10 @@ function getProgressThemeColor(theme) {
                 fontColor: '#000000',
                 linearFontFamily: 'Helvetica',
                 linearFontStyle: 'Regular',
-                linearFontSize: 12,
+                linearFontSize: '12',
                 circularFontFamily: 'Segoe UI',
                 circularFontStyle: 'Normal',
-                circularFontSize: 20,
+                circularFontSize: '20',
                 progressOpacity: 1,
                 trackOpacity: 1,
                 bufferOpacity: 0.44,
@@ -255,10 +271,10 @@ function getProgressThemeColor(theme) {
                 fontColor: '#000000',
                 linearFontFamily: 'Helvetica',
                 linearFontStyle: 'Regular',
-                linearFontSize: 12,
+                linearFontSize: '12',
                 circularFontFamily: 'Helvetica',
                 circularFontStyle: 'Normal',
-                circularFontSize: 20,
+                circularFontSize: '20',
                 progressOpacity: 1,
                 trackOpacity: 1,
                 bufferOpacity: 0.44,
@@ -279,11 +295,11 @@ function getProgressThemeColor(theme) {
                 backgroundColor: 'transparent',
                 fontColor: '#FFFFFF',
                 linearFontFamily: 'Segoe UI',
-                linearFontSize: 12,
+                linearFontSize: '12',
                 linearFontStyle: 'Regular',
                 circularFontFamily: 'Segoe UI',
                 circularFontStyle: 'Normal',
-                circularFontSize: 20,
+                circularFontSize: '20',
                 progressOpacity: 1,
                 trackOpacity: 1,
                 bufferOpacity: 0.35,
@@ -305,10 +321,10 @@ function getProgressThemeColor(theme) {
                 fontColor: '#333333',
                 linearFontFamily: 'Segoe UI',
                 linearFontStyle: 'Regular',
-                linearFontSize: 12,
+                linearFontSize: '12',
                 circularFontFamily: 'Segoe UI',
                 circularFontStyle: 'Normal',
-                circularFontSize: 20,
+                circularFontSize: '20',
                 progressOpacity: 1,
                 trackOpacity: 1,
                 bufferOpacity: 0.3,
@@ -476,9 +492,6 @@ class ProgressAnimation {
                 else {
                     linearPath.setAttribute('width', width);
                 }
-                if (progress.animation.enable) {
-                    progress.labelElement.setAttribute('visibility', 'visible');
-                }
                 progress.trigger('animationComplete', {
                     value: progress.value, trackColor: progress.trackColor,
                     progressColor: progress.progressColor
@@ -520,33 +533,33 @@ class ProgressAnimation {
         });
     }
     /** Circular animation */
-    doCircularAnimation(x, y, radius, start, progressEnd, element, progress, thickness, delay, startValue) {
+    doCircularAnimation(x, y, radius, start, progressEnd, value, element, progress, thickness, delay, startValue) {
         let animation = new Animation({});
         let circularPath = element;
         let pathRadius = radius + (thickness / 2);
-        let value = 0;
-        let totalEnd = (start < Math.abs(progressEnd)) ? Math.abs(progressEnd) : Math.abs(progressEnd) + 360;
-        totalEnd = (totalEnd - start);
-        start += (progress.cornerRadius === 'Round' && totalEnd !== completeAngle) ?
+        let end = 0;
+        let totalEnd;
+        totalEnd = ((value - progress.minimum) / (progress.maximum - progress.minimum)) * progress.totalAngle;
+        totalEnd = (value < progress.minimum || value > progress.maximum) ? 0 : totalEnd;
+        start += (progress.cornerRadius === 'Round' && totalEnd !== completeAngle && totalEnd !== 0) ?
             ((progress.enableRtl) ? (lineCapRadius / 2) * thickness : -(lineCapRadius / 2) * thickness) : 0;
-        totalEnd += (progress.cornerRadius === 'Round' && totalEnd !== completeAngle) ?
+        totalEnd += (progress.cornerRadius === 'Round' && totalEnd !== completeAngle && totalEnd !== 0) ?
             (lineCapRadius / 2) * thickness : 0;
-        progressEnd += (progress.cornerRadius === 'Round' && totalEnd !== completeAngle) ?
+        progressEnd += (progress.cornerRadius === 'Round' && totalEnd !== completeAngle && totalEnd !== 0) ?
             ((progress.enableRtl) ? -(lineCapRadius / 2) * thickness : (lineCapRadius / 2) * thickness) : 0;
+        circularPath.setAttribute('visibility', 'Hidden');
         animation.animate(circularPath, {
             duration: progress.animation.duration,
             delay: delay,
             progress: (args) => {
                 if (args.timeStamp >= args.delay) {
-                    value = effect(args.timeStamp, startValue | start, totalEnd, args.duration, progress.enableRtl);
-                    circularPath.setAttribute('d', getPathArc(x, y, pathRadius, start, value % 360, progress.enableRtl, true));
+                    circularPath.setAttribute('visibility', 'visible');
+                    end = effect(args.timeStamp, startValue | start, totalEnd, args.duration, progress.enableRtl);
+                    circularPath.setAttribute('d', getPathArc(x, y, pathRadius, start, end % 360, progress.enableRtl, true));
                 }
             },
             end: (model) => {
                 circularPath.setAttribute('d', getPathArc(x, y, pathRadius, start, progressEnd, progress.enableRtl, true));
-                if (progress.animation.enable) {
-                    progress.labelElement.setAttribute('visibility', 'visible');
-                }
                 progress.trigger('animationComplete', {
                     value: progress.value, trackColor: progress.trackColor,
                     progressColor: progress.progressColor
@@ -571,13 +584,51 @@ class ProgressAnimation {
             }
         });
     }
+    /** To do the label animation for progress bar */
+    doLabelAnimation(labelPath, start, end, progress, delay) {
+        let animation = new Animation({});
+        let text = labelPath.innerHTML;
+        let value = 0;
+        let valueChanged$$1 = 0;
+        let percentage = 100;
+        labelPath.setAttribute('visibility', 'Hidden');
+        animation.animate(labelPath, {
+            duration: progress.animation.duration,
+            delay: delay,
+            progress: (args) => {
+                if (progress.type === 'Linear') {
+                    if (args.timeStamp >= args.delay) {
+                        labelPath.setAttribute('visibility', 'visible');
+                        value = effect(args.timeStamp, start, end, args.duration, false);
+                        valueChanged$$1 = parseInt(((value / progress.progressRect.width) * percentage).toString(), 10);
+                        labelPath.innerHTML = valueChanged$$1.toString() + '%';
+                    }
+                }
+                else if (progress.type === 'Circular') {
+                    labelPath.setAttribute('visibility', 'visible');
+                    value = effect(args.timeStamp, start, end, args.duration, false);
+                    valueChanged$$1 = parseInt((((value - start) / progress.totalAngle) * percentage).toString(), 10);
+                    labelPath.innerHTML = valueChanged$$1.toString() + '%';
+                }
+            },
+            end: (model) => {
+                labelPath.innerHTML = text;
+            }
+        });
+    }
     /** To do the annotation animation for circular progress bar */
-    doAnnotationAnimation(circularPath, progress, start, progressEnd) {
+    doAnnotationAnimation(circularPath, progress) {
         let animation = new Animation({});
         let value = 0;
+        let percentage = 100;
         let isAnnotation = progress.annotations.length > 0;
         let annotatElementChanged;
         let firstAnnotatElement;
+        let start = progress.startAngle;
+        let totalAngle = progress.totalAngle;
+        let totalEnd;
+        let annotateValueChanged;
+        let annotateValue;
         if (isAnnotation && progress.progressAnnotationModule) {
             firstAnnotatElement = document.getElementById(progress.element.id + 'Annotation0').children[0];
             if (firstAnnotatElement && firstAnnotatElement.children[0]) {
@@ -586,29 +637,22 @@ class ProgressAnimation {
                 }
             }
         }
-        let annotateValueChanged;
-        let totalAngle = progress.totalAngle;
-        let min = progress.minimum;
-        let max = progress.maximum;
-        let end = (start > progressEnd) ? progressEnd + 360 : progressEnd;
-        let totalEnd = (end - start);
+        totalEnd = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * progress.totalAngle;
+        totalEnd = (progress.value < progress.minimum || progress.value > progress.maximum) ? 0 : totalEnd;
+        annotateValue = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * percentage;
+        annotateValue = (progress.value < progress.minimum || progress.value > progress.maximum) ? 0 : Math.round(annotateValue);
         animation.animate(circularPath, {
             duration: progress.animation.duration,
             delay: progress.animation.delay,
             progress: (args) => {
                 if (isAnnotation && annotatElementChanged) {
-                    value = effect(args.timeStamp, start, totalEnd, args.duration, progress.enableRtl);
-                    if (value <= end) {
-                        annotateValueChanged = parseInt((((value - start) / totalAngle) * (max - min) + min).toString(), 10);
-                        annotatElementChanged.innerHTML = annotateValueChanged ? annotateValueChanged.toString() + '%' : '';
-                    }
-                    else {
-                        annotatElementChanged.innerHTML = progress.value + '%';
-                    }
+                    value = effect(args.timeStamp, start, totalEnd, args.duration, false);
+                    annotateValueChanged = parseInt((((value - start) / totalAngle) * percentage).toString(), 10);
+                    annotatElementChanged.innerHTML = annotateValueChanged ? annotateValueChanged.toString() + '%' : '';
                 }
             },
             end: (model) => {
-                annotatElementChanged.innerHTML = progress.value + '%';
+                annotatElementChanged.innerHTML = annotateValue + '%';
             }
         });
     }
@@ -648,7 +692,7 @@ class ProgressAnnotation extends AnnotationBase {
         }
         if (this.progress.animation.enable && !this.progress.isIndeterminate) {
             let annotationElement = document.getElementById(this.progress.element.id + 'Annotation0').children[0];
-            this.animation.doAnnotationAnimation(annotationElement, this.progress, this.progress.startAngle, this.progress.annotationEnd);
+            this.animation.doAnnotationAnimation(annotationElement, this.progress);
         }
     }
     /**
@@ -845,7 +889,7 @@ class Linear {
                 if (progress.segmentCount > 1) {
                     linearProgress.setAttribute('stroke-dasharray', progress.segmentSize);
                 }
-                if (progress.cornerRadius === 'Round') {
+                if (progress.cornerRadius === 'Round' && progressWidth) {
                     linearProgress.setAttribute('stroke-linecap', 'round');
                 }
             }
@@ -859,6 +903,8 @@ class Linear {
                 else {
                     animationdelay = progress.animation.delay;
                 }
+                /** used for label animation delay */
+                this.delay = animationdelay;
                 clipPathLinear = progress.createClipPath(progress.clipPath, progressWidth, null, refresh ? previousWidth : progress.progressRect.x, refresh, (progress.progressThickness || progress.themeStyle.linearProgressThickness));
                 linearProgressGroup.appendChild(progress.clipPath);
                 linearProgress.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippath)');
@@ -905,6 +951,46 @@ class Linear {
             this.animation.doLinearAnimation(clipPathBuffer, progress, progress.animation.delay, 0);
         }
         progress.svgObject.appendChild(linearBufferGroup);
+    }
+    /** Render the Linear Label */
+    renderLinearLabel() {
+        let padding = 10;
+        let linearlabel;
+        let linearValue;
+        let posX;
+        let posY;
+        let end;
+        let argsData;
+        let textSize;
+        let progress = this.progress;
+        let labelValue;
+        let percentage = 100;
+        let option;
+        labelValue = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * percentage;
+        linearValue = (progress.value < progress.minimum || progress.value > progress.maximum) ? 0 : Math.round(labelValue);
+        argsData = {
+            cancel: false, text: progress.label ? progress.label : String(linearValue) + '%', color: progress.labelStyle.color
+        };
+        progress.trigger('textRender', argsData);
+        if (!argsData.cancel) {
+            textSize = measureText(argsData.text, progress.labelStyle);
+            posX = progress.progressRect.width * progress.calculateProgressRange(progress.minimum, progress.maximum, progress.value);
+            if (posX) {
+                posX = (progress.enableRtl) ?
+                    ((progress.progressRect.width - posX) + textSize.width) : posX - padding;
+            }
+            else {
+                posX = (progress.enableRtl) ? (progress.progressRect.width) : (progress.progressRect.x + padding);
+            }
+            posY = progress.progressRect.y + (progress.progressRect.height / 2) + (textSize.height / 4);
+            option = new TextOption(progress.element.id + '_linearLabel', progress.labelStyle.size || progress.themeStyle.linearFontSize, progress.labelStyle.fontStyle || progress.themeStyle.linearFontStyle, progress.labelStyle.fontFamily || progress.themeStyle.linearFontFamily, progress.labelStyle.fontWeight, 'middle', argsData.color || progress.themeStyle.fontColor, posX, posY);
+            linearlabel = progress.renderer.createText(option, argsData.text);
+            progress.svgObject.appendChild(linearlabel);
+            if (progress.animation.enable && !progress.isIndeterminate) {
+                end = progress.progressRect.width * progress.calculateProgressRange(progress.minimum, progress.maximum, progress.value);
+                this.animation.doLabelAnimation(linearlabel, 0, end, progress, this.delay);
+            }
+        }
     }
 }
 
@@ -1000,7 +1086,6 @@ class Circular {
                 circularProgress = this.segment.createCircularSegment(progress, '_CircularProgressSegment', centerX, centerY, radius, progress.argsData.value, progress.themeStyle.progressOpacity, (progress.progressThickness || progress.themeStyle.circularProgressThickness));
             }
             else {
-                progress.annotationEnd = progressEnd;
                 endAngle = ((progress.isIndeterminate) ? (progress.startAngle + ((progress.enableRtl) ? -progress.totalAngle : +progress.totalAngle)) % 360 : progressEnd);
                 circularPath = getPathArc(centerX, centerY, radius, startAngle, endAngle, progress.enableRtl, progress.enablePieProgress);
                 fill = (progress.enablePieProgress) ?
@@ -1026,7 +1111,7 @@ class Circular {
                     }
                     circularProgress.setAttribute('stroke-dasharray', progress.segmentSize);
                 }
-                if (progress.cornerRadius === 'Round') {
+                if (progress.cornerRadius === 'Round' && startAngle !== endAngle) {
                     circularProgress.setAttribute('stroke-linecap', 'round');
                 }
             }
@@ -1037,10 +1122,11 @@ class Circular {
             }
             if (progress.animation.enable && !progress.isIndeterminate) {
                 let circulardelay = (progress.secondaryProgress !== null) ? 300 : progress.animation.delay;
+                this.delay = circulardelay;
                 linearClipPath = progress.createClipPath(progress.clipPath, null, refresh ? previousPath : '', null, refresh);
                 circularProgressGroup.appendChild(progress.clipPath);
                 circularProgress.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippath)');
-                this.animation.doCircularAnimation(centerX, centerY, radius, startAngle, progressEnd, linearClipPath, progress, (progress.progressThickness || progress.themeStyle.circularProgressThickness), circulardelay, refresh ? previousEnd : null);
+                this.animation.doCircularAnimation(centerX, centerY, radius, startAngle, progressEnd, progress.value, linearClipPath, progress, (progress.progressThickness || progress.themeStyle.circularProgressThickness), circulardelay, refresh ? previousEnd : null);
             }
             if (progress.isIndeterminate) {
                 linearClipPath = progress.createClipPath(progress.clipPath, null, refresh ? previousPath : '', null, refresh);
@@ -1092,9 +1178,42 @@ class Circular {
             bufferClipPath = progress.createClipPath(progress.bufferClipPath, null, '', null, false);
             circularBufferGroup.appendChild(progress.bufferClipPath);
             circularBuffer.setAttribute('style', 'clip-path:url(#' + progress.element.id + '_clippathBuffer)');
-            this.animation.doCircularAnimation(centerX, centerY, radius, startAngle, bufferEnd, bufferClipPath, progress, (progress.progressThickness || progress.themeStyle.circularProgressThickness), progress.animation.delay, null);
+            this.animation.doCircularAnimation(centerX, centerY, radius, startAngle, bufferEnd, progress.secondaryProgress, bufferClipPath, progress, (progress.progressThickness || progress.themeStyle.circularProgressThickness), progress.animation.delay, null);
         }
         progress.svgObject.appendChild(circularBufferGroup);
+    }
+    /** To render the circular Label */
+    renderCircularLabel() {
+        let end;
+        let circularLabel;
+        let circularValue;
+        let centerX;
+        let centerY;
+        let argsData;
+        let textSize;
+        let progress = this.progress;
+        let labelValue;
+        let percentage = 100;
+        let option;
+        labelValue = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * percentage;
+        circularValue = (progress.value < progress.minimum || progress.value > progress.maximum) ? 0 : Math.round(labelValue);
+        argsData = {
+            cancel: false, text: progress.label ? progress.label : String(circularValue) + '%', color: progress.labelStyle.color
+        };
+        progress.trigger('textRender', argsData);
+        if (!argsData.cancel) {
+            textSize = measureText(argsData.text, progress.labelStyle);
+            centerX = progress.progressRect.x + (progress.progressRect.width / 2);
+            centerY = progress.progressRect.y + (progress.progressRect.height / 2) + (textSize.height / 2);
+            option = new TextOption(progress.element.id + '_circularLabel', progress.labelStyle.size || progress.themeStyle.circularFontSize, progress.labelStyle.fontStyle || progress.themeStyle.circularFontStyle, progress.labelStyle.fontFamily || progress.themeStyle.circularFontFamily, progress.labelStyle.fontWeight, 'middle', argsData.color || progress.themeStyle.fontColor, centerX, centerY, progress.progressRect.width, progress.progressRect.height);
+            circularLabel = progress.renderer.createText(option, argsData.text);
+            progress.svgObject.appendChild(circularLabel);
+            if (progress.animation.enable && !progress.isIndeterminate) {
+                end = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * progress.totalAngle;
+                end = (progress.value < progress.minimum || progress.value > progress.maximum) ? 0 : end;
+                this.animation.doLabelAnimation(circularLabel, progress.startAngle, end, progress, this.delay);
+            }
+        }
     }
 }
 
@@ -1243,96 +1362,20 @@ let ProgressBar = class ProgressBar extends Component {
         this.element.appendChild(this.svgObject);
     }
     renderLabel() {
-        //let fontsize: string; let fontstyle: string; let fillcolor: string;
-        let textSize;
-        let isAnimation = this.animation.enable;
-        if (this.type === 'Linear' && this.showProgressValue) {
-            let linearlabel;
-            let linearbufferValue;
-            let linearprogresswidth;
-            let progresslabelwidth = this.calculateProgressRange(this.minimum, this.maximum, this.value);
-            if (this.value === this.maximum) {
-                linearbufferValue = 100;
-                linearprogresswidth = (this.progressRect.width * progresslabelwidth) - 10;
-            }
-            if (this.value > this.maximum || this.value < this.minimum || this.value === this.minimum) {
-                linearbufferValue = 0;
-                linearprogresswidth = (this.progressRect.width * progresslabelwidth) + 10;
-            }
-            if (this.value > this.minimum && this.value < this.maximum) {
-                linearbufferValue = Math.round((this.value * 100) / (this.maximum - this.minimum));
-                linearprogresswidth = (this.progressRect.width * progresslabelwidth) - 10;
-            }
-            let argsData = {
-                cancel: false, text: this.label ? this.label : String(linearbufferValue) + '%', color: this.labelStyle.color
-            };
-            this.trigger('textRender', argsData);
-            if (!argsData.cancel) {
-                textSize = measureText(argsData.text, this.labelStyle);
-                let options = {
-                    'id': this.element.id + '_linearLabel',
-                    'font-size': this.labelStyle.size || this.themeStyle.linearFontSize,
-                    'font-style': this.labelStyle.fontStyle || this.themeStyle.linearFontStyle,
-                    'font-family': this.labelStyle.fontFamily || this.themeStyle.linearFontFamily,
-                    'font-weight': this.labelStyle.fontWeight,
-                    'fill': argsData.color || this.themeStyle.fontColor,
-                    'x': linearprogresswidth,
-                    'y': this.progressRect.y + (this.progressRect.height / 2) + (textSize.height / 4),
-                    'text-anchor': 'middle',
-                    'visibility': isAnimation ? 'hidden' : 'visible'
-                };
-                linearlabel = this.renderer.createText(options, argsData.text);
-                this.labelElement = linearlabel;
-                this.svgObject.appendChild(linearlabel);
-            }
+        if (this.type === 'Linear' && this.showProgressValue && !this.isIndeterminate) {
+            this.linear.renderLinearLabel();
         }
-        else if (this.type === 'Circular' && this.showProgressValue) {
-            let circularLabel;
-            let circularbufferValue;
-            let xAxis = (this.progressRect.x + (this.progressRect.width / 2));
-            let yAxis = this.progressRect.y + (this.progressRect.height / 2);
-            if (this.value === this.minimum || this.value > this.maximum) {
-                circularbufferValue = 0;
-            }
-            if (this.value === this.maximum) {
-                circularbufferValue = 100;
-            }
-            if (this.value > this.minimum && this.value < this.maximum) {
-                circularbufferValue = Math.round((this.value * 100) / (this.maximum - this.minimum));
-            }
-            let argsData = {
-                cancel: false, text: this.label ? this.label : String(circularbufferValue) + '%', color: this.labelStyle.color
-            };
-            this.trigger('textRender', argsData);
-            if (!argsData.cancel) {
-                textSize = measureText(argsData.text, this.labelStyle);
-                let options = {
-                    'id': this.element.id + '_circularLabel',
-                    'fill': argsData.color || this.themeStyle.fontColor,
-                    'font-size': this.labelStyle.size || this.themeStyle.circularFontSize,
-                    'font-style': this.labelStyle.fontStyle || this.themeStyle.circularFontStyle,
-                    'font-family': this.labelStyle.fontFamily || this.themeStyle.circularFontFamily,
-                    'font-weight': this.labelStyle.fontWeight,
-                    'height': this.progressRect.height,
-                    'width': this.progressRect.width,
-                    'visibility': isAnimation ? 'hidden' : 'visible',
-                    'x': xAxis,
-                    'y': yAxis + textSize.height / 2,
-                    'text-anchor': 'middle'
-                };
-                circularLabel = this.renderer.createText(options, argsData.text);
-                this.labelElement = circularLabel;
-                this.svgObject.appendChild(circularLabel);
-            }
+        else if (this.type === 'Circular' && this.showProgressValue && !this.isIndeterminate) {
+            this.circular.renderCircularLabel();
         }
     }
     getPathLine(x, width, thickness) {
         let moveTo = (this.enableRtl) ? ((this.cornerRadius === 'Round') ?
             (x + this.progressRect.width) - ((lineCapRadius / 2) * thickness) : (x + this.progressRect.width)) :
             ((this.cornerRadius === 'Round') ? (x + (lineCapRadius / 2) * thickness) : x);
-        let lineTo = (this.enableRtl) ? ((this.cornerRadius === 'Round') ?
+        let lineTo = (this.enableRtl) ? ((this.cornerRadius === 'Round' && width) ?
             (moveTo - width + (lineCapRadius * thickness)) : (moveTo - width)) :
-            ((this.cornerRadius === 'Round') ? (moveTo + width - (lineCapRadius * thickness)) : (moveTo + width));
+            ((this.cornerRadius === 'Round' && width) ? (moveTo + width - (lineCapRadius * thickness)) : (moveTo + width));
         return 'M' + moveTo + ' ' + (this.progressRect.y + (this.progressRect.height / 2)) +
             'L' + lineTo + ' ' + (this.progressRect.y + (this.progressRect.height / 2));
     }
@@ -1519,7 +1562,7 @@ let ProgressBar = class ProgressBar extends Component {
                     this.renderAnnotation();
                     if (this.animation.enable && !this.isIndeterminate) {
                         let annotationElement = document.getElementById(this.element.id + 'Annotation0').children[0];
-                        this.annotateAnimation.doAnnotationAnimation(annotationElement, this, this.startAngle, this.annotationEnd);
+                        this.annotateAnimation.doAnnotationAnimation(annotationElement, this);
                     }
                     break;
                 case 'value':
@@ -1707,5 +1750,5 @@ ProgressBar = __decorate([
  * Progress Bar component export methods
  */
 
-export { ProgressBar, Margin, Font, Animation$1 as Animation, ProgressAnnotationSettings, ProgressAnnotation, Rect, Size, RectOption, degreeToLocation, getPathArc, stringToNumber, effect, annotationRender, getElement$1 as getElement, removeElement, ProgressLocation, ProgressAnimation };
+export { ProgressBar, Margin, Font, Animation$1 as Animation, ProgressAnnotationSettings, ProgressAnnotation, Rect, Size, RectOption, TextOption, degreeToLocation, getPathArc, stringToNumber, effect, annotationRender, getElement$1 as getElement, removeElement, ProgressLocation, ProgressAnimation };
 //# sourceMappingURL=ej2-progressbar.es2015.js.map

@@ -9,7 +9,7 @@ import { Renderer } from './render';
 import { createElement, Browser } from '@syncfusion/ej2-base';
 import {
     Page, Rect, Widget, ListTextElementBox, FieldElementBox, ParagraphWidget, HeaderFooterWidget, EditRangeStartElementBox,
-    CommentElementBox, CommentCharacterElementBox, Padding
+    CommentElementBox, CommentCharacterElementBox, Padding, DropDownFormField, TextFormField, CheckBoxFormField
 } from './page';
 import { DocumentEditor } from '../../document-editor';
 import {
@@ -24,11 +24,12 @@ import { TextPosition } from '../selection/selection-helper';
 import { Zoom } from './zooming';
 import { Dialog, createSpinner } from '@syncfusion/ej2-popups';
 import { ImageResizer } from '../editor/image-resizer';
-import { HeaderFooterType, PageFitType, TableAlignment, ProtectionType } from '../../base/types';
+import { HeaderFooterType, PageFitType, TableAlignment, ProtectionType, FormFieldType } from '../../base/types';
 import { Editor } from '../index';
 import { CaretHeightInfo } from '../editor/editor-helper';
-import { DocumentEditorKeyDownEventArgs, BeforePaneSwitchEventArgs } from '../../base/events-helper';
+import { DocumentEditorKeyDownEventArgs, BeforePaneSwitchEventArgs, FormFieldFillEventArgs } from '../../base/events-helper';
 import { RestrictEditing } from '../restrict-editing/restrict-editing-pane';
+import { FormFieldPopUp } from '../dialogs/form-field-popup';
 
 /** 
  * @private
@@ -317,6 +318,10 @@ export class DocumentHelper {
     /**
      * @private
      */
+    public formFields: FieldElementBox[] = [];
+    /**
+     * @private
+     */
     public editRanges: Dictionary<string, EditRangeStartElementBox[]>;
     private isMouseDownInFooterRegion: boolean = false;
     private pageFitTypeIn: PageFitType = 'None';
@@ -411,6 +416,8 @@ export class DocumentHelper {
      * @private
      */
     public restrictEditingPane: RestrictEditing;
+
+    public formFillPopup: FormFieldPopUp;
     /**
      * @private
      */
@@ -597,6 +604,7 @@ export class DocumentHelper {
         this.bookmarks = new Dictionary<string, BookmarkElementBox>();
         this.editRanges = new Dictionary<string, EditRangeStartElementBox[]>();
         this.isIosDevice = /Mac|iPad|iPod/i.test(navigator.userAgent);
+        this.formFillPopup = new FormFieldPopUp(this.owner);
     }
     private initalizeStyles(): void {
         /* tslint:disable-next-line:max-line-length */
@@ -655,6 +663,7 @@ export class DocumentHelper {
         this.editRanges.clear();
         this.headersFooters = [];
         this.fields = [];
+        this.formFields = [];
         this.currentSelectedComment = undefined;
         for (let i: number = 0; i < this.comments.length; i++) {
             let commentStart: CommentCharacterElementBox = this.comments[i].commentStart;
@@ -678,6 +687,9 @@ export class DocumentHelper {
         this.hashValue = '';
         this.saltValue = '';
         this.userCollection = [];
+        if (this.formFillPopup) {
+            this.formFillPopup.hidePopup();
+        }
     }
     /**
      * @private
@@ -1351,13 +1363,17 @@ export class DocumentHelper {
      * @private
      */
     public onMouseDownInternal = (event: MouseEvent): void => {
-        if ((event.target && (event.target as HTMLElement).classList.contains('e-de-cmt-mark-icon')) || this.isTouchInput ||
+        let target: HTMLElement = event.target as HTMLElement;
+        if ((!isNullOrUndefined(target) && target !== this.viewerContainer) || this.isTouchInput ||
             event.offsetX > (this.visibleBounds.width - (this.visibleBounds.width - this.viewerContainer.clientWidth))
             || event.offsetY > (this.visibleBounds.height - (this.visibleBounds.height - this.viewerContainer.clientHeight))) {
             return;
         }
         if (!isNullOrUndefined(this.selection)) {
             this.updateCursor(event);
+            if (this.formFillPopup) {
+                this.formFillPopup.hidePopup();
+            }
             // tslint:disable-next-line:max-line-length
             if (this.isLeftButtonPressed(event) && !this.owner.isReadOnlyMode && this.owner.enableImageResizerMode && !isNullOrUndefined(this.owner.imageResizerModule.selectedResizeElement)) {
                 this.owner.imageResizerModule.isImageResizing = true;
@@ -1511,6 +1527,28 @@ export class DocumentHelper {
             if (this.selection.checkAndEnableHeaderFooter(cursorPoint, this.owner.viewer.findFocusedPage(cursorPoint, true))) {
                 return;
             }
+            if (!this.isDocumentProtected && this.owner.enableFormField) {
+                let formatType: FormFieldType = this.selection.getFormFieldType();
+                if (formatType) {
+                    if (formatType.toString() !== '') {
+                        this.selection.selectField();
+                    }
+                    switch (formatType) {
+                        case 'Text':
+                            this.owner.textFormFieldDialogModule.show();
+                            break;
+                        case 'CheckBox':
+                            this.owner.checkBoxFormFieldDialogModule.show();
+                            break;
+                        case 'DropDown':
+                            this.owner.dropDownFormFieldDialogModule.show();
+                            break;
+                    }
+                }
+            } else {
+                this.tapCount = 2;
+                return;
+            }
             // tslint:disable-next-line:max-line-length
             if (this.selection.isEmpty && !isNullOrUndefined(this.currentPage) && !isNullOrUndefined(this.owner.selection.start)) {
                 this.owner.selection.selectCurrentWord();
@@ -1524,7 +1562,11 @@ export class DocumentHelper {
      * @param {MouseEvent} event
      * @private
      */
+    // tslint:disable:max-func-body-length
     public onMouseUpInternal = (event: MouseEvent): void => {
+        if (!isNullOrUndefined(event.target) && event.target !== this.viewerContainer) {
+            return;
+        }
         event.preventDefault();
         this.isListTextSelected = false;
         let cursorPoint: Point = new Point(event.offsetX, event.offsetY);
@@ -1562,6 +1604,33 @@ export class DocumentHelper {
                 (((isCtrlkeyPressed && this.owner.useCtrlClickToFollowHyperlink ||
                     !this.owner.useCtrlClickToFollowHyperlink) && this.isLeftButtonPressed(event) === true))) {
                 this.selection.navigateHyperLinkOnEvent(touchPoint, false);
+            }
+            if (this.isLeftButtonPressed(event) && this.isDocumentProtected && this.protectionType === 'FormFieldsOnly' && this.selection) {
+                let formField: FieldElementBox = this.selection.getCurrentFormField();
+                if (formField && formField.formFieldData && formField.formFieldData.enabled) {
+                    let data: FormFieldFillEventArgs = { 'fieldName': formField.formFieldData.name };
+                    if (formField.formFieldData instanceof TextFormField) {
+                        data.value = formField.resultText;
+                    } else if (formField.formFieldData instanceof CheckBoxFormField) {
+                        data.value = formField.formFieldData.checked;
+                    } else {
+                        data.value = (formField.formFieldData as DropDownFormField).selectedIndex;
+                    }
+                    this.owner.trigger('beforeFormFieldFill', data);
+                    if (formField.formFieldData instanceof TextFormField || formField.formFieldData instanceof DropDownFormField) {
+                        this.formFillPopup.showPopUp(formField, touchPoint);
+                    } else {
+                        this.owner.editor.toggleCheckBoxFormField(formField);
+                        this.owner.trigger('afterFormFieldFill', data);
+                    }
+                } else {
+                    this.owner.selection.selectNextFormField();
+                }
+            } else {
+                let formField: FieldElementBox = this.selection.getCurrentFormField();
+                if (formField && formField.formFieldData) {
+                    this.selection.selectField();
+                }
             }
             if (!this.owner.isReadOnlyMode && this.isSelectionInListText(touchPoint)) {
                 this.selection.selectListText();
@@ -2305,6 +2374,9 @@ export class DocumentHelper {
      * @private
      */
     public onKeyDownInternal = (event: KeyboardEvent): void => {
+        if (!isNullOrUndefined(event.target) && (event.target as HTMLElement) !== this.editableDiv) {
+            return;
+        }
         let isHandled: boolean = false;
         let keyEventArgs: DocumentEditorKeyDownEventArgs = { 'event': event, 'isHandled': false, source: this.owner };
         this.owner.trigger('keyDown', keyEventArgs);
@@ -2563,17 +2635,21 @@ export class DocumentHelper {
             resizePosition = resizeObj.resizePosition;
         }
         let lineLeft: number = 0;
+        let formField: FieldElementBox = undefined;
         if (!isNullOrUndefined(widget)) {
             lineLeft = this.selection.getLineStartLeft(widget);
             hyperlinkField = this.selection.getHyperLinkFieldInCurrentSelection(widget, touchPoint);
+            if (isNullOrUndefined(hyperlinkField)) {
+                formField = this.selection.getHyperLinkFieldInCurrentSelection(widget, touchPoint, true);
+            }
             widgetInfo = this.selection.updateTextPositionIn(widget, undefined, 0, touchPoint, true);
             left = this.selection.getLeft(widget);
             top = this.selection.getTop(widget);
             this.selection.setHyperlinkContentToToolTip(hyperlinkField, widget, touchPoint.x);
         }
         let isCtrlkeyPressed: boolean = this.isIosDevice ? event.metaKey : event.ctrlKey;
-        if (!isNullOrUndefined(hyperlinkField) && (isCtrlkeyPressed &&
-            this.owner.useCtrlClickToFollowHyperlink || !this.owner.useCtrlClickToFollowHyperlink)) {
+        if ((!isNullOrUndefined(hyperlinkField) && (isCtrlkeyPressed &&
+            this.owner.useCtrlClickToFollowHyperlink || !this.owner.useCtrlClickToFollowHyperlink)) || formField) {
             div.style.cursor = 'pointer';
             return;
         } else if (touchPoint.x >= lineLeft &&

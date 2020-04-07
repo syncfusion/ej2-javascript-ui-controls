@@ -1651,7 +1651,9 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.setColIndex(this.grid.columns as GridColumnModel[]);
     this.bindGridEvents();
     let headerCheckbox: string = 'headerCheckbox';
-    this.grid.on('colgroup-refresh', this.selectionModule[headerCheckbox], this.selectionModule);
+    if (!isNullOrUndefined(this.selectionModule)) {
+      this.grid.on('colgroup-refresh', this.selectionModule[headerCheckbox], this.selectionModule);
+    }
     for (let i: number = 0; i < this.columns.length; i++) {
       (this.columns[i] as Column).uid = (this.grid.columns[i] as ColumnModel).uid;
     }
@@ -1934,10 +1936,14 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     let editKeyPress: string = 'keyPressed';
     let localobserver: string = 'localObserver';
     let cellEdit: Function;
+    let cellSave: Function;
     let name: string = 'name';
     if (isBlazor() && this.isServerRendered) {
       if (!isNullOrUndefined(this.grid.cellEdit) && this.grid.cellEdit[name] === 'bound triggerEJEvents') {
         cellEdit = this.grid.cellEdit;
+      }
+      if (!isNullOrUndefined(this.grid.cellSave) && this.grid.cellSave[name] === 'bound triggerEJEvents') {
+        cellSave = this.grid.cellSave;
       }
     }
     if (this.editModule && isBlazor() && this.isServerRendered) {
@@ -1954,6 +1960,11 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       }
     };
     this.grid.cellSave = (args: CellSaveArgs): Deferred | void => {
+      if (isBlazor() && this.isServerRendered) {
+        if (cellSave && typeof cellSave === 'function' && cellSave[name] === 'bound triggerEJEvents') {
+          cellSave.apply(this, [args]);
+        }
+      }
       if (this.grid.isContextMenuOpen()) {
         let contextitems: HTMLElement;
         contextitems = <HTMLElement>this.grid.contextMenuModule.contextMenu.element.getElementsByClassName('e-selected')[0];
@@ -2401,10 +2412,14 @@ private getGridEditSettings(): GridEditModel {
   public onPropertyChanged(newProp: TreeGridModel, oldProp: TreeGridModel): void {
     let properties: string[] = Object.keys(newProp);
     let requireRefresh: boolean = false;
+    let preventUpdate: string = 'preventUpdate';
     for (let prop of properties) {
       switch (prop) {
         case 'columns':
-        this.grid.columns = this.getGridColumns(this.columns as Column[]); break;
+          if (!(isBlazor() && this.isServerRendered && this[preventUpdate])) {
+            this.grid.columns = this.getGridColumns(this.columns as Column[]);
+          }
+          break;
         case 'treeColumnIndex':
           this.grid.refreshColumns(); break;
         case 'allowPaging':

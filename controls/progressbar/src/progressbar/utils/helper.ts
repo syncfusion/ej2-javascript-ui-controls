@@ -50,6 +50,37 @@ export class RectOption extends PathOption {
         this.stroke = (width !== 0 && this.stroke !== '') ? color : 'transparent';
     }
 }
+
+/** @private */
+export class TextOption {
+    public id: string;
+    public ['font-size']: string;
+    public ['font-style']: string;
+    public ['font-family']: string;
+    public ['font-weight']: string;
+    public ['text-anchor']: string;
+    public fill: string;
+    public x: number;
+    public y: number;
+    public width: number;
+    public height: number;
+    constructor(
+        id: string, fontSize: string, fontStyle: string, fontFamily: string, fontWeight: string,
+        textAnchor: string, fill: string, x: number, y: number, width?: number, height?: number
+    ) {
+        this.id = id;
+        this['font-size'] = fontSize;
+        this['font-style'] = fontStyle;
+        this['font-family'] = fontFamily;
+        this['font-weight'] = fontWeight;
+        this['text-anchor'] = textAnchor;
+        this.fill = fill;
+        this.x = x;
+        this.y = y;
+        this.width = width ? width : 0;
+        this.height = height ? height : 0;
+    }
+}
 /** calculate the start and end point of circle */
 export function degreeToLocation(centerX: number, centerY: number, radius: number, angleInDegrees: number): object {
     let angleInRadians: number = (angleInDegrees - 90) * (Math.PI / 180);

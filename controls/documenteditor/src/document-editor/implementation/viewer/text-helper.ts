@@ -31,7 +31,22 @@ export class TextHelper {
     private get lineBreakMark(): string {
         return '↲';
     }
-
+    /**
+     * @private
+     */
+    public getEnSpaceCharacter(): string {
+        return String.fromCharCode(8194);
+    }
+    /**
+     * @private
+     */
+    public repeatChar(char: string, count: number): string {
+        let text: string = '';
+        for (let i: number = 0; i < count; i++) {
+            text += char;
+        }
+        return text;
+    }
     /**
      * documentHelper definition
      */
@@ -133,10 +148,10 @@ export class TextHelper {
         // Calculate the text element's baseline offset.
         let textTopVal: number = spanElement.offsetTop;
         let tempDivTopVal: number = tempDiv.offsetTop;
-        let width: number = (parentDiv.offsetWidth - spanElement.offsetWidth);
-        if ((textTopVal - width) === 1) {
-            tempDivTopVal += width;
-        }
+        // let width: number = (parentDiv.offsetWidth - spanElement.offsetWidth);
+        // if ((textTopVal - width) === 1) {
+        //     tempDivTopVal += width;
+        // }
         baselineOffset = tempDivTopVal - textTopVal;
         document.body.removeChild(parentDiv);
         return { 'Height': textHeight, 'BaselineOffset': baselineOffset };
@@ -233,8 +248,9 @@ export class TextHelper {
         let italic: string = '';
         let baselineAlignment: BaselineAlignment = listCharacterFormat.baselineAlignment === 'Normal' ?
             breakCharacterFormat.baselineAlignment : listCharacterFormat.baselineAlignment;
-        bold = listCharacterFormat.bold ? 'bold' : breakCharacterFormat.bold ? 'bold' : '';
-        italic = listCharacterFormat.italic ? 'italic' : breakCharacterFormat.italic ? 'italic' : '';
+        bold = listCharacterFormat.hasValue('bold') ? listCharacterFormat.bold ? 'bold' : '' : breakCharacterFormat.bold ? 'bold' : '';
+        italic = listCharacterFormat.hasValue('italic') ? listCharacterFormat.italic ? 'italic' : ''
+            : breakCharacterFormat.italic ? 'italic' : '';
         format.baselineAlignment = baselineAlignment;
         if (bold) {
             format.bold = true;

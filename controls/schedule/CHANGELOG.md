@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.43 (2020-04-07)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#269264` - An issue with last occurrence of the recurrence event is not rendered on month view has been fixed.
+
 ## 18.1.42 (2020-04-01)
 
 ### Schedule

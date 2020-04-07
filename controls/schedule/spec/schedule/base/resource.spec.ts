@@ -574,15 +574,13 @@ describe('Schedule Resources', () => {
             expect((<Object[]>schObj.resourceCollection.slice(-1)[0].dataSource).length).toEqual(3);
         });
 
-        it('Public method setWorkHours checking with resource', (done: DoneFn) => {
-            schObj.dataBound = () => {
-                expect(schObj.element.querySelectorAll('.e-work-hours[data-group-index="1"]').length).toEqual(0);
-                schObj.setWorkHours(schObj.activeView.renderDates, '07:00', '09:00', 1);
-                expect(schObj.element.querySelectorAll('.e-work-hours[data-group-index="1"]').length).toEqual(28);
-                done();
-            };
+        it('Public method setWorkHours checking with resource', () => {
             schObj.workHours.highlight = false;
             schObj.dataBind();
+            expect(schObj.element.querySelectorAll('.e-work-hours[data-group-index="1"]').length).toEqual(0);
+            schObj.setWorkHours(schObj.activeView.renderDates, '07:00', '09:00', 1);
+            expect(schObj.element.querySelectorAll('.e-work-hours[data-group-index="1"]').length).toEqual(28);
+
         });
     });
 

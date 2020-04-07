@@ -20,9 +20,7 @@ describe('Spreadsheet context menu module ->', () => {
                 model = {
                     sheets: [
                         {
-                            range: [
-                                { dataSource: defaultData }
-                            ]
+                            ranges: [{ dataSource: defaultData }]
                         }
                     ],
                     beforeDataBound: (): void => {

@@ -303,6 +303,8 @@ export class Month extends ViewBase implements IRenderer {
                 let innerText: string =
                     (this.parent.calendarUtil.isMonthStart(td.date) && !this.isCurrentDate(td.date) && !this.parent.isAdaptive) ?
                         this.parent.globalize.formatDate(td.date, { format: 'MMM d', calendar: this.parent.getCalendarMode() }) :
+                        isBlazor() ?
+                            this.parent.globalize.formatDate(td.date, { format: 'd', calendar: this.parent.getCalendarMode() }) :
                         this.parent.globalize.formatDate(td.date, { skeleton: 'd', calendar: this.parent.getCalendarMode() });
                 ele.innerHTML = util.capitalizeFirstWord(innerText, 'single');
                 tdEle.appendChild(ele);

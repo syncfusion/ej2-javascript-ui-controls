@@ -1,7 +1,7 @@
 import { Spreadsheet, SheetModel, OpenFailureArgs } from '../../../../src/index';
 
 /**
- * Spreadsheet default sample
+ * Spreadsheet server sample
  */
 let sheet: SheetModel[] = [{
     rows: [{
@@ -59,8 +59,6 @@ let spreadsheet: Spreadsheet = new Spreadsheet({
     sheets: sheet,
     openUrl: 'https://ej2services.syncfusion.com/development/web-services/api/spreadsheet/open',
     saveUrl: 'https://ej2services.syncfusion.com/development/web-services/api/spreadsheet/save',
-    openFailure: function (args: OpenFailureArgs) {
-        alert(args.statusText);
-    }
+    openFailure: (args: OpenFailureArgs): void => alert(args.statusText)
 });
 spreadsheet.appendTo('#spreadsheet');

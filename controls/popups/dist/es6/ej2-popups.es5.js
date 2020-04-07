@@ -1191,6 +1191,8 @@ var resizeWestWidth;
 var setLeft = true;
 var previousWidth = 0;
 var setWidth = true;
+// tslint:disable-next-line
+var proxy;
 function createResize(args) {
     resizeStart = args.resizeBegin;
     resize = args.resizing;
@@ -1206,7 +1208,12 @@ function createResize(args) {
     minWidth = args.minWidth;
     maxWidth = args.maxWidth;
     maxHeight = args.maxHeight;
-    wireEvents();
+    if (!isNullOrUndefined(args.proxy) && !isNullOrUndefined(args.proxy.dialogOpen) && args.proxy.dialogOpen) {
+        wireEvents(args.proxy);
+    }
+    else {
+        wireEvents();
+    }
 }
 function getDOMElement(element) {
     var domElement;
@@ -1220,13 +1227,17 @@ function getDOMElement(element) {
     }
     return domElement;
 }
-function wireEvents() {
+// tslint:disable-next-line
+function wireEvents(args) {
+    if (isNullOrUndefined(args)) {
+        args = this;
+    }
     var resizers = targetElement.querySelectorAll('.' + RESIZE_HANDLER);
     for (var i = 0; i < resizers.length; i++) {
         selectedHandler = resizers[i];
-        EventHandler.add(selectedHandler, 'mousedown', onMouseDown, this);
+        EventHandler.add(selectedHandler, 'mousedown', onMouseDown, args);
         var eventName = (Browser.info.name === 'msie') ? 'pointerdown' : 'touchstart';
-        EventHandler.add(selectedHandler, eventName, onTouchStart, this);
+        EventHandler.add(selectedHandler, eventName, onTouchStart, args);
     }
 }
 /* istanbul ignore next */
@@ -1242,7 +1253,8 @@ function onMouseDown(e) {
     originalMouseY = e.pageY;
     e.target.classList.add(FOCUSED_HANDLER);
     if (!isNullOrUndefined(resizeStart)) {
-        if (resizeStart(e) === true) {
+        proxy = this;
+        if (resizeStart(e, proxy) === true) {
             return;
         }
     }
@@ -1271,7 +1283,8 @@ function onMouseUp(e) {
         document.body.querySelector('.' + FOCUSED_HANDLER).classList.remove(FOCUSED_HANDLER);
     }
     if (!isNullOrUndefined(resizeEnd)) {
-        resizeEnd(e);
+        proxy = this;
+        resizeEnd(e, proxy);
     }
     EventHandler.remove(document, 'mouseup', onMouseUp);
     EventHandler.remove(document, touchEndEvent, onMouseUp);
@@ -1291,7 +1304,8 @@ function onTouchStart(e) {
     originalMouseX = coordinates.pageX;
     originalMouseY = coordinates.pageY;
     if (!isNullOrUndefined(resizeStart)) {
-        if (resizeStart(e) === true) {
+        proxy = this;
+        if (resizeStart(e, proxy) === true) {
             return;
         }
     }
@@ -1317,7 +1331,8 @@ function onMouseMove(e) {
             }
         }
         if (!isNullOrUndefined(resize)) {
-            resize(e);
+            proxy = this;
+            resize(e, proxy);
         }
         switch (resizeTowards) {
             case 'south':
@@ -1541,7 +1556,7 @@ function resizeEast(e) {
 }
 /* istanbul ignore next */
 function setMinHeight(minimumHeight) {
-    minHeight = minimumHeight;
+    return minimumHeight;
 }
 function removeResize() {
     var handlers = targetElement.querySelectorAll('.' + RESIZE_HANDLER);
@@ -1753,17 +1768,17 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         }
         var headerHeight = parseInt(computedHeaderHeight.slice(0, computedHeaderHeight.indexOf('p')), 10);
         var footerHeight = parseInt(computedFooterHeight.slice(0, computedFooterHeight.indexOf('p')), 10);
-        setMinHeight(headerHeight + 30 + footerHeight);
+        return (setMinHeight(headerHeight + 30 + footerHeight));
     };
-    Dialog.prototype.onResizeStart = function (args) {
-        this.trigger('resizeStart', args);
+    Dialog.prototype.onResizeStart = function (args, dialogObj) {
+        dialogObj.trigger('resizeStart', args);
         return args.cancel;
     };
-    Dialog.prototype.onResizing = function (args) {
-        this.trigger('resizing', args);
+    Dialog.prototype.onResizing = function (args, dialogObj) {
+        dialogObj.trigger('resizing', args);
     };
-    Dialog.prototype.onResizeComplete = function (args) {
-        this.trigger('resizeStop', args);
+    Dialog.prototype.onResizeComplete = function (args, dialogObj) {
+        dialogObj.trigger('resizeStop', args);
     };
     Dialog.prototype.setResize = function () {
         if (this.enableResize) {
@@ -1790,7 +1805,8 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                 boundary: this.target === document.body ? null : this.targetEle,
                 resizeBegin: this.onResizeStart.bind(this),
                 resizeComplete: this.onResizeComplete.bind(this),
-                resizing: this.onResizing.bind(this)
+                resizing: this.onResizing.bind(this),
+                proxy: this
             });
         }
         else {
@@ -1949,7 +1965,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                     preventFocus: false
                 };
                 if (_this.enableResize) {
-                    _this.getMinHeight();
+                    _this.resetResizeIcon();
                 }
                 _this.trigger('open', eventArgs, function (openEventArgs) {
                     if (!openEventArgs.preventFocus) {
@@ -1992,6 +2008,16 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
             }
         }
         this.initialRender = false;
+    };
+    Dialog.prototype.resetResizeIcon = function () {
+        var dialogConHeight = this.getMinHeight();
+        if (this.targetEle.offsetHeight < dialogConHeight) {
+            var className = this.enableRtl ? 'e-south-west' : 'e-south-east';
+            var resizeIcon = this.element.querySelector('.' + className);
+            if (!isNullOrUndefined(resizeIcon)) {
+                resizeIcon.style.bottom = '-' + dialogConHeight.toString() + 'px';
+            }
+        }
     };
     Dialog.prototype.setOverlayZindex = function (zIndexValue) {
         var zIndex;
@@ -2513,7 +2539,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                     }
                     break;
                 case 'target':
-                    this.popupObj.relateTo = newProp.target;
+                    this.setTarget(newProp.target);
                     break;
                 case 'position':
                     this.checkPositionData();
@@ -2534,6 +2560,13 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                     break;
             }
         }
+    };
+    Dialog.prototype.setTarget = function (target) {
+        this.popupObj.relateTo = target;
+        this.target = target;
+        this.targetEle = ((typeof this.target) === 'string') ?
+            document.querySelector(this.target) : this.target;
+        this.setMaxHeight();
     };
     Dialog.prototype.updateIsModal = function () {
         this.element.setAttribute('aria-modal', this.isModal ? 'true' : 'false');
@@ -2585,6 +2618,9 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
      * @memberof dialog
      */
     Dialog.prototype.destroy = function () {
+        if (this.isDestroyed) {
+            return;
+        }
         var classArray = [RTL, MODAL_DLG, DLG_RESIZABLE, DLG_RESTRICT_LEFT_VALUE, FULLSCREEN, DEVICE];
         var attrs = ['role', 'aria-modal', 'aria-labelledby', 'aria-describedby', 'aria-grabbed', 'tabindex', 'style'];
         removeClass([this.targetEle], [DLG_TARGET, SCROLL_DISABLED]);
@@ -2636,6 +2672,9 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         }
         if (!this.isBlazorServerRender()) {
             _super.prototype.destroy.call(this);
+        }
+        else {
+            this.isDestroyed = true;
         }
     };
     /**

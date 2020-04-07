@@ -58,10 +58,10 @@ export interface IProgressStyle {
     fontColor: string;
     linearFontFamily: string;
     linearFontStyle: string;
-    linearFontSize: number;
+    linearFontSize: string;
     circularFontFamily: string;
     circularFontStyle: string;
-    circularFontSize: number;
+    circularFontSize: string;
     progressOpacity: number;
     trackOpacity: number;
     bufferOpacity: number;

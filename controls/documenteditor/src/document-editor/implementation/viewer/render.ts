@@ -31,6 +31,7 @@ export class Renderer {
     private isFieldCode: boolean = false;
     private leftPosition: number = 0;
     private topPosition: number = 0;
+    private isFormField: boolean = false;
     /**
      * Gets page canvas.
      * @private    
@@ -413,8 +414,7 @@ export class Renderer {
         this.renderTableCellOutline(page.documentHelper, cellWidget);
         for (let i: number = 0; i < cellWidget.childWidgets.length; i++) {
             let widget: Widget = cellWidget.childWidgets[i] as Widget;
-            let width: number = cellWidget.width + cellWidget.margin.left - cellWidget.leftBorderWidth;
-            this.clipRect(cellWidget.x, cellWidget.y, this.getScaledValue(width), this.getScaledValue(cellWidget.height));
+            // this.clipRect(cellWidget.x, cellWidget.y, this.getScaledValue(width), this.getScaledValue(cellWidget.height));
             this.renderWidget(page, widget);
             this.pageContext.restore();
         }
@@ -528,16 +528,20 @@ export class Renderer {
         }
     }
 
-
-
     private toSkipFieldCode(element: ElementBox): void {
         if (element instanceof FieldElementBox) {
             if (element.fieldType === 0) {
                 if ((!isNullOrUndefined(element.fieldEnd) || element.hasFieldEnd)) {
                     this.isFieldCode = true;
                 }
+                if (!isNullOrUndefined(element.formFieldData) && element.hasFieldEnd && !isNullOrUndefined(element.fieldEnd)) {
+                    this.isFormField = true;
+                }
             } else if (element.fieldType === 2 || element.fieldType === 1) {
                 this.isFieldCode = false;
+                if (element.fieldType === 1) {
+                    this.isFormField = false;
+                }
             }
         }
     }
@@ -581,8 +585,8 @@ export class Renderer {
         let fontSize: number = format.fontSize === 11 ? breakCharacterFormat.fontSize : format.fontSize;
         // tslint:disable-next-line:max-line-length
         let baselineAlignment: BaselineAlignment = format.baselineAlignment === 'Normal' ? breakCharacterFormat.baselineAlignment : format.baselineAlignment;
-        bold = format.bold ? 'bold' : breakCharacterFormat.bold ? 'bold' : '';
-        italic = format.italic ? 'italic' : breakCharacterFormat.italic ? 'italic' : '';
+        bold = format.hasValue('bold') ? format.bold ? 'bold' : '' : breakCharacterFormat.bold ? 'bold' : '';
+        italic = format.hasValue('italic') ? format.italic ? 'italic' : '' : breakCharacterFormat.italic ? 'italic' : '';
         fontSize = fontSize === 0 ? 0.5 : fontSize / (baselineAlignment === 'Normal' ? 1 : 1.5);
         fontSize = this.isPrinting ? fontSize : fontSize * this.documentHelper.zoomFactor;
         let strikethrough: Strikethrough = format.strikethrough === 'None' ? breakCharacterFormat.strikethrough : format.strikethrough;
@@ -650,6 +654,13 @@ export class Renderer {
             // tslint:disable-next-line:max-line-length
             this.pageContext.fillRect(this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
         }
+        if (this.documentHelper && this.documentHelper.owner.documentEditorSettings
+            && this.documentHelper.owner.documentEditorSettings.formFieldSettings.applyShading && this.isFormField) {
+            this.pageContext.fillStyle = this.documentHelper.owner.documentEditorSettings.formFieldSettings.shadingColor;
+            // tslint:disable-next-line:max-line-length
+            this.pageContext.fillRect(this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width) + 0.5, this.getScaledValue(elementBox.height));
+        }
+
         let color: string = format.fontColor;
         this.pageContext.textBaseline = 'alphabetic';
         let bold: string = '';
@@ -1017,8 +1028,13 @@ export class Renderer {
         this.pageContext.textBaseline = 'top';
         let widgetWidth: number = 0;
         let isClipped: boolean = false;
+        let containerWid: Widget = elementBox.line.paragraph.containerWidget;
+        let isHeightType: boolean = false;
+        if (containerWid instanceof TableCellWidget) {
+            isHeightType = ((containerWid as TableCellWidget).ownerRow.rowFormat.heightType === 'Exactly');
+        }
+
         if (topMargin < 0 || elementBox.line.paragraph.width < elementBox.width) {
-            let containerWid: Widget = elementBox.line.paragraph.containerWidget;
             // if (containerWid instanceof BodyWidget) {
             //     widgetWidth = containerWid.width + containerWid.x;
             // } else 
@@ -1033,6 +1049,10 @@ export class Renderer {
                 // tslint:disable-next-line:max-line-length
                 this.clipRect(left + leftMargin, top + topMargin, this.getScaledValue(widgetWidth), this.getScaledValue(containerWid.height));
             }
+        } else if (isHeightType) {
+            let width: number = containerWid.width + containerWid.margin.left - (containerWid as TableCellWidget).leftBorderWidth;
+            // tslint:disable-next-line:max-line-length
+            this.clipRect(containerWid.x, containerWid.y, this.getScaledValue(width), this.getScaledValue(containerWid.height));
         }
         if (elementBox.isMetaFile) {
             /* tslint:disable:no-empty */
@@ -1160,7 +1180,12 @@ export class Renderer {
         //Specifies the next row is within the current table widget.
         //True means current row is not rendered at page end; Otherwise False.
         let nextRowIsInCurrentTableWidget: boolean = false;
+        let previousCellIndex: number = undefined;
         if (!isNullOrUndefined(nextRow)) {
+            if (nextRow.lastChild) {
+                let lastCellWidget: TableCellWidget = nextRow.lastChild as TableCellWidget;
+                previousCellIndex = lastCellWidget.columnIndex + lastCellWidget.cellFormat.columnSpan;
+            }
             let nextRowWidget: TableRowWidget = undefined;
             // if (viewer.renderedElements.containsKey(nextRow) && viewer.renderedElements.get(nextRow).length > 0) {
             nextRowWidget = nextRow as TableRowWidget;
@@ -1175,7 +1200,8 @@ export class Renderer {
         if (tableCell.ownerTable.tableFormat.cellSpacing > 0 || tableCell.ownerRow.rowIndex === tableCell.ownerTable.childWidgets.length - 1
             || (tableCell.cellFormat.rowSpan > 1
                 && tableCell.ownerRow.rowIndex + tableCell.cellFormat.rowSpan >= tableCell.ownerTable.childWidgets.length) ||
-            !nextRowIsInCurrentTableWidget) {
+            !nextRowIsInCurrentTableWidget || previousCellIndex && nextRow.childWidgets.length < tableCell.ownerRow.childWidgets.length
+            && previousCellIndex < tableCell.columnIndex + tableCell.cellFormat.columnSpan) {
             // tslint:disable-next-line:max-line-length
             border = (tableCell.cellFormat.rowSpan > 1 && tableCell.ownerRow.rowIndex + tableCell.cellFormat.rowSpan === tableCell.ownerTable.childWidgets.length) ?
                 //true part for vertically merged cells specifically.

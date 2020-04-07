@@ -27,7 +27,7 @@ let columns: ColumnModel[] = [
 
 let sheet: SheetModel[] = [{
     name: 'Price Details',
-    range: [{
+    ranges: [{
         dataSource: dataSource,
         startCell: 'A1'
     }],

@@ -22,27 +22,27 @@ function parseValue(type, val, model) {
             break;
         case 'Date':
             tempFormat = model.format;
-            result = intl.formatDate(val, { format: tempFormat, type: type, skeleton: 'yMd' });
+            result = intl.formatDate(val, { format: tempFormat, type: type, skeleton: sf.base.isBlazor() ? 'd' : 'yMd' });
             break;
         case 'DateRange':
             tempFormat = model.format;
             var date = val;
-            result = intl.formatDate(date[0], { format: tempFormat, type: type, skeleton: 'yMd' }) + ' - '
-                + intl.formatDate(date[1], { format: tempFormat, type: type, skeleton: 'yMd' });
+            result = intl.formatDate(date[0], { format: tempFormat, type: type, skeleton: sf.base.isBlazor() ? 'd' : 'yMd' }) + ' - '
+                + intl.formatDate(date[1], { format: tempFormat, type: type, skeleton: sf.base.isBlazor() ? 'd' : 'yMd' });
             break;
         case 'DateTime':
             tempFormat = model.format;
             if (sf.base.isNullOrUndefined(tempFormat) || tempFormat === '') {
-                result = intl.formatDate(val, { format: tempFormat, type: type, skeleton: 'yMd' }) + ' '
-                    + intl.formatDate(val, { format: tempFormat, type: type, skeleton: 'hm' });
+                result = intl.formatDate(val, { format: tempFormat, type: type, skeleton: sf.base.isBlazor() ? 'd' : 'yMd' }) + ' '
+                    + intl.formatDate(val, { format: tempFormat, type: type, skeleton: sf.base.isBlazor() ? 't' : 'hm' });
             }
             else {
-                result = intl.formatDate(val, { format: tempFormat, type: type, skeleton: 'yMd' });
+                result = intl.formatDate(val, { format: tempFormat, type: type, skeleton: sf.base.isBlazor() ? 'd' : 'yMd' });
             }
             break;
         case 'Time':
             tempFormat = model.format;
-            result = intl.formatDate(val, { format: tempFormat, type: type, skeleton: 'hm' });
+            result = intl.formatDate(val, { format: tempFormat, type: type, skeleton: sf.base.isBlazor() ? 't' : 'hm' });
             break;
         case 'Numeric':
             tempFormat = sf.base.isNullOrUndefined(model.format) ? 'n2' :
@@ -1293,6 +1293,9 @@ var InPlaceEditor = /** @class */ (function (_super) {
      */
     InPlaceEditor.prototype.destroy = function () {
         var _this = this;
+        if (this.isDestroyed) {
+            return;
+        }
         this.removeEditor(sf.base.isBlazor());
         if (this.isExtModule) {
             this.notify(destroy, {});
@@ -1307,6 +1310,9 @@ var InPlaceEditor = /** @class */ (function (_super) {
         }
         if (!(sf.base.isBlazor() && this.isServerRendered)) {
             _super.prototype.destroy.call(this);
+        }
+        else {
+            this.isDestroyed = true;
         }
     };
     /**

@@ -12892,7 +12892,7 @@ var ListBox = /** @class */ (function (_super) {
                 if (_this.selectionSettings.showCheckbox) {
                     var ele = li.getElementsByClassName('e-check')[0];
                     if ((!ele && state) || (ele && !state)) {
-                        _this.notify('updatelist', { li: li });
+                        _this.notify('updatelist', { li: li, module: 'listbox' });
                         if (_this.maximumSelectionLength >= _this.list.querySelectorAll('.e-list-item span.e-check').length) {
                             _this.checkMaxSelection();
                         }
@@ -13353,10 +13353,11 @@ var ListBox = /** @class */ (function (_super) {
             }
             if (tListBox.listData.length === 0) {
                 if (sf.base.isBlazor()) {
-                    var textNode = tListBox.ulElement.childNodes[1];
-                    if (textNode) {
-                        textNode.nodeValue = '';
-                    }
+                    tListBox.ulElement.childNodes.forEach(function (elem) {
+                        if (elem.nodeName === '#text') {
+                            elem.nodeValue = '';
+                        }
+                    });
                 }
                 else {
                     tListBox.ulElement.innerHTML = '';
@@ -13448,10 +13449,11 @@ var ListBox = /** @class */ (function (_super) {
         }
         if (tListBox.listData.length === 0) {
             if (sf.base.isBlazor()) {
-                var textNode = tListBox.ulElement.childNodes[1];
-                if (textNode) {
-                    textNode.nodeValue = '';
-                }
+                tListBox.ulElement.childNodes.forEach(function (elem) {
+                    if (elem.nodeName === '#text') {
+                        elem.nodeValue = '';
+                    }
+                });
             }
             else {
                 tListBox.ulElement.innerHTML = '';
@@ -13459,10 +13461,11 @@ var ListBox = /** @class */ (function (_super) {
         }
         if (isRefresh) {
             if (sf.base.isBlazor()) {
-                var textNode = fListBox.ulElement.childNodes[1];
-                if (textNode) {
-                    textNode.nodeValue = '';
-                }
+                fListBox.ulElement.childNodes.forEach(function (elem) {
+                    if (elem.nodeName === '#text') {
+                        elem.nodeValue = '';
+                    }
+                });
             }
             else {
                 fListBox.ulElement.innerHTML = '';
@@ -13803,7 +13806,7 @@ var ListBox = /** @class */ (function (_super) {
                     }
                     if (!isSelect && liselect || isSelect && !liselect && li) {
                         if (_this.selectionSettings.showCheckbox) {
-                            _this.notify('updatelist', { li: li });
+                            _this.notify('updatelist', { li: li, module: 'listbox' });
                         }
                         else {
                             if (isSelect) {

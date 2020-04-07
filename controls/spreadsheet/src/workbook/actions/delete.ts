@@ -155,7 +155,7 @@ export class WorkbookDelete {
     }
     private setDeleteInfo(startIndex: number, endIndex: number, totalKey: string, modelType: string = 'Row'): void {
         let total: number = (endIndex - startIndex) + 1; let newRange: number[] = []; let insertRange: number[];
-        this.parent.getActiveSheet().range.forEach((range: ExtendedRange): void => {
+        this.parent.getActiveSheet().ranges.forEach((range: ExtendedRange): void => {
             if (range.info && startIndex < range.info[totalKey]) {
                 if (range.info[`delete${modelType}Range`]) {
                     range.info[`delete${modelType}Range`].push([startIndex, endIndex]);

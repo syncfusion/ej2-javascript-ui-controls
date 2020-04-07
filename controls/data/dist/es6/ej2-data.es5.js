@@ -2844,10 +2844,10 @@ var JsonAdaptor = /** @__PURE__ @class */ (function (_super) {
         var ds = dm.dataSource.json;
         var i;
         if (typeof value === 'object' && !(value instanceof Date)) {
-            value = value[keyField];
+            value = DataUtil.getObject(keyField, value);
         }
         for (i = 0; i < ds.length; i++) {
-            if (ds[i][keyField] === value) {
+            if (DataUtil.getObject(keyField, ds[i]) === value) {
                 break;
             }
         }
@@ -3172,7 +3172,7 @@ var UrlAdaptor = /** @__PURE__ @class */ (function (_super) {
                 value: value,
                 action: 'update',
                 keyColumn: keyField,
-                key: value[keyField],
+                key: DataUtil.getObject(keyField, value),
                 table: tableName
             }, DataUtil.getAddParams(this, dm, query)))
         };
@@ -4990,7 +4990,7 @@ var DataManager = /** @__PURE__ @class */ (function () {
      */
     DataManager.prototype.remove = function (keyField, value, tableName, query) {
         if (typeof value === 'object') {
-            value = value[keyField];
+            value = DataUtil.getObject(keyField, value);
         }
         if (tableName instanceof Query) {
             query = tableName;

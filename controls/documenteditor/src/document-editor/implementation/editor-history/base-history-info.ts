@@ -8,7 +8,8 @@ import { ModifiedLevel, RowHistoryFormat, TableHistoryInfo, EditRangeInfo } from
 import {
     IWidget, BlockWidget,
     ParagraphWidget, LineWidget, BodyWidget, TableCellWidget,
-    FieldElementBox, TableWidget, TableRowWidget, BookmarkElementBox, HeaderFooterWidget, EditRangeStartElementBox, CommentElementBox
+    FieldElementBox, TableWidget, TableRowWidget, BookmarkElementBox, HeaderFooterWidget,
+    EditRangeStartElementBox, CommentElementBox, CheckBoxFormField
 } from '../viewer/page';
 import { Dictionary } from '../../base/dictionary';
 import { DocumentEditor } from '../../document-editor';
@@ -126,9 +127,27 @@ export class BaseHistoryInfo {
     public setBookmarkInfo(bookmark: BookmarkElementBox): void {
         this.removedNodes.push({ 'bookmark': bookmark, 'startIndex': bookmark.indexInOwner, 'endIndex': bookmark.reference.indexInOwner });
     }
+    /**
+     * @private
+     */
+    public setFormFieldInfo(field: FieldElementBox, value: string | number | boolean): void {
+        this.removedNodes.push({ 'formField': field, 'value': value });
+    }
     public setEditRangeInfo(editStart: EditRangeStartElementBox): void {
         // tslint:disable-next-line:max-line-length
         this.removedNodes.push({ 'editStart': editStart, 'startIndex': editStart.indexInOwner, 'endIndex': editStart.editRangeEnd.indexInOwner });
+    }
+
+    private revertFormField(): void {
+        /* tslint:disable:no-any */
+        let fieldInfo: any = this.removedNodes[0];
+        /* tslint:enable:no-any */
+        let field: FieldElementBox = fieldInfo.formField;
+        if (field.formFieldData instanceof CheckBoxFormField) {
+            this.owner.editorModule.toggleCheckBoxFormField(field, true, fieldInfo.value);
+        } else {
+            this.owner.editorModule.updateFormField(field, fieldInfo.value);
+        }
     }
     private revertBookmark(): void {
         let bookmarkInfo: BookmarkInfo = this.removedNodes[0] as BookmarkInfo;
@@ -136,6 +155,10 @@ export class BaseHistoryInfo {
         if (this.editorHistory.isUndoing) {
             this.documentHelper.bookmarks.add(bookmark.name, bookmark);
             bookmark.line.children.splice(bookmarkInfo.startIndex, 0, bookmark);
+            let previousNode: ElementBox = bookmark.previousNode;
+            if (previousNode instanceof FieldElementBox && !isNullOrUndefined(previousNode.formFieldData)) {
+                previousNode.formFieldData.name = bookmark.name;
+            }
             bookmark.reference.line.children.splice(bookmarkInfo.endIndex, 0, bookmark.reference);
             this.editorHistory.recordChanges(this);
         } else {
@@ -186,6 +209,10 @@ export class BaseHistoryInfo {
      */
     // tslint:disable: max-func-body-length
     public revert(): void {
+        if (this.action === 'UpdateFormField') {
+            this.revertFormField();
+            return;
+        }
         if (this.action === 'DeleteBookmark') {
             this.revertBookmark();
             return;

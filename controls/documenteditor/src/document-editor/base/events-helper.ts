@@ -3,6 +3,30 @@ import { DocumentEditor } from '../document-editor';
 import { DocumentEditorContainer } from '../../document-editor-container';
 
 /** 
+ * This event arguments provides the necessary information about form field fill event.
+ */
+export interface FormFieldFillEventArgs {
+    /**
+     * Specifies form field name.
+     */
+    fieldName?: string;
+    /**
+     * Specifies form field value.
+     */
+    value?: string | boolean | number;
+    /**
+     * Specifies whether form fill action is canceled or not.
+     */
+    isCanceled?: boolean;
+}
+/**
+ * Specified form field data
+ */
+export interface FormData {
+    [key: string]: string | boolean | number;
+}
+
+/** 
  * This event arguments provides the necessary information about documentChange event.
  */
 export interface DocumentChangeEventArgs {

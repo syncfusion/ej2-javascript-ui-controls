@@ -487,9 +487,9 @@ export class DiagramScroller {
             scale.x = (this.viewPortWidth - (margin.left + margin.right)) / (bounds.width);
             scale.y = (this.viewPortHeight - (margin.top + margin.bottom)) / (bounds.height);
             if (!canZoomIn && (((bounds.width - this.horizontalOffset) < this.viewPortWidth) &&
-                (bounds.height - this.verticalOffset) < this.viewPortHeight) || this.currentZoom > 1) {
-                scale.x = Math.min(1, scale.x);
-                scale.y = Math.min(1, scale.y);
+                (bounds.height - this.verticalOffset) < this.viewPortHeight)) {
+                scale.x = Math.min(this.currentZoom, scale.x);
+                scale.y = Math.min(this.currentZoom, scale.y);
             }
             let zoomFactor: number;
             let centerX: number;

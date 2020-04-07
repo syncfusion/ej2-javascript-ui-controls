@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 18.1.43 (2020-04-07)
+
+### PDF Viewer
+
+#### New Features
+
+- `#267524` - Provided the support for feet inch Calibration ratio in PDF Viewer.
+- `#269003` - Exposed the non filled form fields value in the fireValidatedFailed event arguments.
+- `#268276` - Provided the support to customize the annotation resize  cursor type in PDF Viewer.
+- `#268715` - Exposed the 'Not Approved' stamp annotation under dynamic stamp type.
+
+#### Bug Fixes
+
+- `#271163` - Errors will no longer occur when the print module in disabled state.
+- `#268829` - Now, the deleted annotations are removed properly from the PDF document.
+
 ## 18.1.42 (2020-04-01)
 
 ### PDF Viewer

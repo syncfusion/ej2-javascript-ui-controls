@@ -11,7 +11,7 @@ import {
     BlockContainer, BlockWidget, BodyWidget, BookmarkElementBox, CommentElementBox, EditRangeEndElementBox, EditRangeStartElementBox,
     ElementBox, ErrorTextElementBox, FieldElementBox, FieldTextElementBox, HeaderFooterWidget, ImageElementBox, IWidget, LineWidget,
     ListTextElementBox, Margin, Page, ParagraphWidget, Rect, TabElementBox, TableCellWidget, TableRowWidget,
-    TableWidget, TextElementBox, Widget
+    TableWidget, TextElementBox, Widget, CheckBoxFormField, DropDownFormField, FormField
 } from './page';
 import { TextSizeInfo } from './text-helper';
 import { DocumentHelper, LayoutViewer, PageLayoutViewer, WebLayoutViewer } from './viewer';
@@ -527,8 +527,14 @@ export class Layout {
         let text: string = '';
         let index: number = element.indexInOwner;
         if (element instanceof FieldElementBox) {
-            if (element.fieldType === 0 && this.documentHelper.fields.indexOf(element) === -1) {
-                this.documentHelper.fields.push(element);
+            if (element.fieldType === 0) {
+                if (this.documentHelper.fields.indexOf(element) === -1) {
+                    this.documentHelper.fields.push(element);
+                }
+                if (!isNullOrUndefined(element.formFieldData) &&
+                    this.documentHelper.formFields.indexOf(element) === -1) {
+                    this.documentHelper.formFields.push(element);
+                }
             }
             this.layoutFieldCharacters(element);
             if (element.line.isLastLine() && isNullOrUndefined(element.nextNode) && !this.isFieldCode) {
@@ -964,6 +970,9 @@ export class Layout {
     }
     private layoutFieldCharacters(element: FieldElementBox): void {
         if (element.fieldType === 0) {
+            if (!isNullOrUndefined(element.formFieldData) && this.isInitialLoad) {
+                this.checkAndUpdateFieldData(element);
+            }
             if (!this.isFieldCode && (!isNullOrUndefined(element.fieldEnd) || element.hasFieldEnd)) {
                 this.documentHelper.fieldStacks.push(element);
                 this.isFieldCode = true;
@@ -980,6 +989,50 @@ export class Layout {
                 if (element === field.fieldEnd) {
                     this.documentHelper.fieldStacks.pop();
                     this.isFieldCode = false;
+                }
+            }
+        }
+    }
+    private checkAndUpdateFieldData(fieldBegin: FieldElementBox): void {
+        if (fieldBegin.hasFieldEnd && !isNullOrUndefined(fieldBegin.fieldEnd)) {
+            if (isNullOrUndefined(fieldBegin.fieldSeparator)) {
+                let seperator: FieldElementBox = new FieldElementBox(2);
+                seperator.fieldBegin = fieldBegin;
+                seperator.fieldEnd = fieldBegin.fieldEnd;
+                seperator.line = fieldBegin.line;
+                fieldBegin.line.children.splice(fieldBegin.fieldEnd.indexInOwner, 0, seperator);
+                fieldBegin.fieldSeparator = seperator;
+                fieldBegin.fieldEnd.fieldSeparator = seperator;
+            }
+            let previousNode: ElementBox = fieldBegin.fieldEnd.previousNode;
+            if (previousNode instanceof FieldElementBox && previousNode.fieldType === 2) {
+                let formFieldData: FormField = fieldBegin.formFieldData;
+                if (formFieldData instanceof CheckBoxFormField) {
+                    let checkBoxTextElement: TextElementBox = new TextElementBox();
+                    checkBoxTextElement.characterFormat = fieldBegin.characterFormat.cloneFormat();
+                    if (formFieldData.checked) {
+                        checkBoxTextElement.text = String.fromCharCode(9745);
+                    } else {
+                        checkBoxTextElement.text = String.fromCharCode(9744);
+                    }
+                    if (formFieldData.sizeType !== 'Auto') {
+                        checkBoxTextElement.characterFormat.fontSize = fieldBegin.characterFormat.fontSize;
+                    }
+                    checkBoxTextElement.line = fieldBegin.line;
+                    let index: number = fieldBegin.line.children.indexOf(fieldBegin.fieldEnd);
+                    fieldBegin.line.children.splice(index, 0, checkBoxTextElement);
+                } else if (formFieldData instanceof DropDownFormField) {
+                    let dropDownTextElement: TextElementBox = new TextElementBox();
+                    dropDownTextElement.characterFormat = fieldBegin.characterFormat.cloneFormat();
+                    dropDownTextElement.line = fieldBegin.line;
+                    if (formFieldData.dropDownItems.length > 0) {
+                        dropDownTextElement.text = formFieldData.dropDownItems[formFieldData.selectedIndex];
+                    } else {
+                        // tslint:disable-next-line:max-line-length
+                        dropDownTextElement.text = this.documentHelper.textHelper.repeatChar(this.documentHelper.textHelper.getEnSpaceCharacter(), 5);
+                    }
+                    let index: number = fieldBegin.line.children.indexOf(fieldBegin.fieldEnd);
+                    fieldBegin.line.children.splice(index, 0, dropDownTextElement);
                 }
             }
         }
@@ -2175,7 +2228,9 @@ export class Layout {
         let firstLineIndent: number = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent);
         if (!isNullOrUndefined(element) && lineWidget.isFirstLine()) {
             clientWidth = this.viewer.clientArea.x + firstLineIndent;
-            clientActiveX = clientActiveX + firstLineIndent;
+            if (!(element instanceof ListTextElementBox)) {
+                clientActiveX = clientActiveX + firstLineIndent;
+            }
         } else {
             clientWidth = this.viewer.clientArea.x;
         }

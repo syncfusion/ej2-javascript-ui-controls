@@ -3128,9 +3128,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {Element} 
      */
     public getFooterContent(): Element {
-        if (isNullOrUndefined(this.footerElement)) {
             this.footerElement = this.element.getElementsByClassName('e-gridfooter')[0];
-        }
 
         return this.footerElement;
     }
@@ -3140,9 +3138,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {Element} 
      */
     public getFooterContentTable(): Element {
-        if (isNullOrUndefined(this.footerElement)) {
             this.footerElement = this.element.getElementsByClassName('e-gridfooter')[0];
-        }
 
         return <Element>this.footerElement.firstChild.firstChild;
     }
@@ -3233,7 +3229,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
                 let column: Column;
                 if (Object.keys(rowsObject).length) {
                     rowData = rowsObject[0].data;
-                    column = rowsObject[0].cells[isMovable ? cellIndex - frzCols : cellIndex].column as Column;
+                    column = rowsObject[0].cells[isMovable ? cellIndex - frzCols : cellIndex + this.getIndentCount()].column as Column;
                 }
                 args = { cell: cell, cellIndex: cellIndex, row: row, rowIndex: rowIndex, rowData: rowData, column: column, target: target };
             }
@@ -5421,6 +5417,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** 
      * Get all filtered records from the Grid and it returns array of objects for the local dataSource, returns a promise object if the Grid has remote data.
      * @return {Object[] | Promise<Object>} 
+     * @deprecated
      */
     public getFilteredRecords(): Object[] | Promise<Object> {
         if (this.allowFiltering && this.filterSettings.columns.length) {

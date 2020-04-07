@@ -1,5 +1,5 @@
 import { SpreadsheetModel, Spreadsheet, BasicModule } from '../../../src/spreadsheet/index';
-import { SpreadsheetHelper } from "../util/spreadsheethelper.spec";
+import { SpreadsheetHelper } from '../util/spreadsheethelper.spec';
 import { defaultData } from '../util/datasource.spec';
 import { CellModel } from '../../../src';
 
@@ -17,10 +17,8 @@ describe('Spreadsheet formula module ->', () => {
         beforeAll((done: Function) => {
             model = {
                 sheets: [
-                    { 
-                        range: [
-                            { dataSource: defaultData }
-                        ]
+                    {
+                        ranges: [{ dataSource: defaultData }]
                     }
                 ]
             };

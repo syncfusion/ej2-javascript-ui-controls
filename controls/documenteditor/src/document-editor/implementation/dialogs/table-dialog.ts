@@ -124,6 +124,7 @@ export class TableDialog {
      */
     public onCancelButtonClick = (): void => {
         this.documentHelper.dialog.hide();
+        this.documentHelper.updateFocus();
     }
     /**
      * @private

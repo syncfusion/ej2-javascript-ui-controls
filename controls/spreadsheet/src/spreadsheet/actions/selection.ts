@@ -205,13 +205,11 @@ export class Selection {
         let prevIndex: number[] = getRangeIndexes(sheet.selectedRange);
         let mergeArgs: MergeArgs = { range: [rowIdx, colIdx, rowIdx, colIdx] };
         this.parent.notify(activeCellMergedRange, mergeArgs);
-        if (mergeArgs.range[2] === prevIndex[2] && mergeArgs.range[3] === prevIndex[3]) { return; }
         let isScrollDown: boolean = clientY > clientRect.bottom && rowIdx < sheet.rowCount;
         let isScrollUp: boolean = clientY < clientRect.top && rowIdx >= 0 && !this.isColSelected;
         let isScrollRight: boolean = clientX > clientRect.right && colIdx < sheet.colCount;
         let isScrollLeft: boolean = clientX < clientRect.left && colIdx >= 0 && !this.isRowSelected;
         this.clearInterval();
-        if (!this.isColSelected && !this.isRowSelected) { prevIndex = getCellIndexes(sheet.activeCell); }
         if (isScrollDown || isScrollUp || isScrollRight || isScrollLeft) {
             this.scrollInterval = setInterval(() => {
                 if ((isScrollDown || isScrollUp) && !this.isColSelected) {
@@ -230,10 +228,13 @@ export class Selection {
                     }
                     cont.scrollLeft += (isScrollRight ? 1 : -1) * getColumnWidth(sheet, colIdx);
                 }
+                if (!this.isColSelected && !this.isRowSelected) { prevIndex = getCellIndexes(sheet.activeCell); }
                 this.selectRangeByIdx([].concat(prevIndex[0], prevIndex[1], [rowIdx, colIdx]), e);
                 // tslint:disable-next-line
             }, 100);
         } else {
+            if (mergeArgs.range[2] === prevIndex[2] && mergeArgs.range[3] === prevIndex[3]) { return; }
+            if (!this.isColSelected && !this.isRowSelected) { prevIndex = getCellIndexes(sheet.activeCell); }
             this.selectRangeByIdx([].concat(prevIndex[0], prevIndex[1], [rowIdx, colIdx]), e);
         }
     }

@@ -449,6 +449,9 @@ export class Toolbar {
             if (!this.pdfViewer.enableDownload) {
                 this.enableDownloadOption(false);
             }
+            if (!this.pdfViewer.enablePrint) {
+                this.enablePrintOption(false);
+            }
         } else {
             if (this.pdfViewerBase.pageCount === 0) {
                 this.toolbar.enableItems(this.textSearchItem.parentElement, false);

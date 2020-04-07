@@ -4,7 +4,7 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, getComponent, MouseEventArgs, Browser } from '@syncfusion/ej2-base';
 import { Property, ChildProperty, Complex, L10n, closest, extend, isNullOrUndefined, Collection, cldrData } from '@syncfusion/ej2-base';
 import { getInstance, addClass, removeClass, rippleEffect, detach, classList, isBlazor } from '@syncfusion/ej2-base';
-import { Internationalization, DateFormatOptions } from '@syncfusion/ej2-base';
+import { Internationalization, DateFormatOptions, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { QueryBuilderModel, ShowButtonsModel, ColumnsModel, RuleModel } from './query-builder-model';
 import { Button, RadioButton, ChangeEventArgs as ButtonChangeEventArgs, CheckBox } from '@syncfusion/ej2-buttons';
 import { DropDownList, ChangeEventArgs as DropDownChangeEventArgs, FieldSettingsModel, CheckBoxSelection } from '@syncfusion/ej2-dropdowns';
@@ -219,6 +219,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private actionButton: Element;
     private isInitialLoad: boolean;
     private timer: number;
+    private isReadonly: boolean = true;
     /** 
      * Triggers when the component is created.
      * @event
@@ -343,6 +344,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     @Property(false)
     public enableNotCondition: boolean;
     /**
+     * When set to true, the user interactions on the component are disabled.
+     * @default false
+     */
+    @Property(false)
+    public readonly: boolean;
+    /**
      * Defines rules in the QueryBuilder.
      * Specifies the initial rule, which is JSON data.
      * @default {}
@@ -390,6 +397,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 this.columnSort();
                 let columns: ColumnsModel[] = this.columns;
                 for (let i: number = 0, len: number = columns.length; i < len; i++) {
+                    this.updateCustomOperator(columns[i]);
                     if (!columns[i].type) {
                         if (columnKeys.indexOf(columns[i].field) > -1) {
                             value = this.dataColl[0][columns[i].field];
@@ -440,6 +448,22 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         this.fields = { text: 'label', value: 'field', groupBy: 'category' };
                 } else {
                     columns[i].category = this.l10n.getConstant('OtherFields');
+                }
+                this.updateCustomOperator(columns[i]);
+            }
+        }
+    }
+
+    private updateCustomOperator(column: ColumnsModel): void {
+        if (column.operators) {
+            for (let j: number = 0; j < column.operators.length; j++) {
+                let sqlIdx: number = Object.keys(column.operators[j]).indexOf('sqlOperator');
+                if (sqlIdx > -1) {
+                    let operator: { [key: string]: object } = column.operators[j];
+                    let operColl: string[] = Object.keys(operator);
+                    let values: string[] = operColl.map((key: string) => operator[key]).join(',').split(',');
+                    let valueIdx: number = operColl.indexOf('value');
+                    this.operators[values[valueIdx]] = values[sqlIdx];
                 }
             }
         }
@@ -866,10 +890,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         grpLen += 1;
                     }
                 }
-                ruleList.appendChild(groupElem);
-                let level: number[] = this.levelColl[target.id].slice(0);
-                level.push(grpLen);
-                this.levelColl[groupElem.id] = level;
+                ruleList.appendChild(groupElem); let level: number[] = this.levelColl[target.id].slice(0);
+                level.push(grpLen); this.levelColl[groupElem.id] = level;
                 if (!this.isImportRules) {
                     this.addGroups([], target.id.replace(this.element.id + '_', ''));
                     if (isBtnClick) {
@@ -877,8 +899,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     }
                 }
             } else {
-                target.appendChild(groupElem);
-                this.levelColl[groupElem.id] = [0];
+                target.appendChild(groupElem); this.levelColl[groupElem.id] = [0];
             }
             if (this.enableNotCondition) {
                 let tglBtn: Button = new Button({ content: this.l10n.getConstant('NOT'), cssClass: 'e-btn e-small' });
@@ -895,11 +916,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             });
             btnObj.appendTo(groupBtn);
             if (!this.isImportRules) {
-                this.trigger('change', { groupID: target.id.replace(this.element.id + '_', ''), type: 'insertGroup' });
+                let grpId: string = target.id.replace(this.element.id + '_', '');
+                let chgrpId: string = groupElem.id.replace(this.element.id + '_', '');
+                this.trigger('change', { groupID: grpId, type: 'insertGroup', childGroupID: chgrpId });
             }
         }
     }
-
     public notifyChange(value: string | number | boolean | Date | string[] | number[] | Date[], element: Element): void {
         let tempColl: NodeListOf<Element> = closest(element, '.e-rule-value').querySelectorAll('.e-template');
         let filterElem: HTMLElement = closest(element, '.e-rule-container').querySelector('.e-filter-input');
@@ -2046,6 +2068,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 this.addRuleElement(this.element.querySelector('.e-group-container'), {});
             }
             this.notGroupRtl();
+            if (this.readonly) {
+                this.enableReadonly();
+            }
             let buttons: NodeListOf<Element> = this.element.querySelectorAll('label.e-btn');
             let button: HTMLElement;
             for (let i: number = 0; i < buttons.length; i++) {
@@ -2216,6 +2241,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 case 'enableNotCondition':
                     this.onChangeNotGroup();
                     break;
+                case 'readonly':
+                    this.isReadonly = newProp.readonly;
+                    this.enableReadonly();
+                    break;
             }
         }
     }
@@ -2352,10 +2381,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     protected wireEvents(): void {
         let wrapper: Element = this.getWrapper();
         EventHandler.add(wrapper, 'click', this.clickEventHandler, this);
+        EventHandler.add(this.element, 'keydown', this.keyBoardHandler, this);
     }
     protected unWireEvents(): void {
         let wrapper: Element = this.getWrapper();
         EventHandler.remove(wrapper, 'click', this.clickEventHandler);
+        EventHandler.remove(this.element, 'keydown', this.keyBoardHandler);
     }
     private getParentGroup(target: Element| string, isParent ?: boolean): RuleModel {
         let groupLevel: number[] = (target instanceof Element) ? this.levelColl[target.id] : this.levelColl[target];
@@ -2487,17 +2518,34 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         this.isImportRules = false;
     }
 
+    private keyBoardHandler(e: KeyboardEventArgs): void {
+        if (this.readonly && e.keyCode === 38 || e.keyCode === 40 || e.keyCode === 13) {
+            e.preventDefault();
+        }
+    }
+
     private disableRuleCondition(groupElem: Element, rules?: RuleModel): void {
+        if (this.readonly) {
+            return;
+        }
         let count: number = groupElem.querySelector('.e-rule-list').childElementCount;
         let andElem: HTMLInputElement = groupElem.querySelector('.e-btngroup-and');
         let orElem: HTMLInputElement = groupElem.querySelector('.e-btngroup-or');
         if (count > 1) {
             andElem.disabled = false;
             orElem.disabled = false;
+            if (orElem.nextElementSibling.classList.contains('e-disable') || andElem.nextElementSibling.classList.contains('e-disable')) {
+                orElem.classList.remove('e-disable');
+                andElem.classList.remove('e-disable');
+            }
             rules && rules.condition === 'or' ? orElem.checked = true : andElem.checked = true;
         } else {
             andElem.checked = false; andElem.disabled = true;
             orElem.checked = false; orElem.disabled = true;
+            if (rules) {
+                orElem.nextElementSibling.classList.add('e-disable');
+                andElem.nextElementSibling.classList.add('e-disable');
+            }
         }
     }
 
@@ -2753,8 +2801,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         return pred;
     }
     private getLocale(): string {
-        let gregorianFormat: string = '.dates.calendars.gregorian.days.format.short'; let localeString: string = this.locale;
-        let cultureObj: object = getValue('main.' + '' + this.locale + gregorianFormat, cldrData);
+        let gregorianFormat: string = isBlazor() ? '.dates.days.short' : '.dates.calendars.gregorian.days.format.short';
+        let localeString: string = this.locale;
+        let mainVal: string = isBlazor() ? '' : 'main.';
+        let cultureObj: object = getValue(mainVal + '' + this.locale + gregorianFormat, cldrData);
         if (!cultureObj) {
             localeString = 'en';
         }
@@ -2954,6 +3004,99 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         } else {
             this.addRuleElement(parentElem.querySelector('.e-group-container'), rule); //Create group
         }
+    }
+    private enableReadonly(): void {
+        let target: Element = this.element;
+        let elem: NodeListOf<Element> =
+        target.querySelectorAll('.e-dropdownlist, .e-numerictextbox, .e-textbox, .e-datepicker, .e-multiselect .e-lib, .e-radio');
+        for (let i: number = 0; i < elem.length; i++ ) {
+            if (elem[i].classList.contains('e-dropdownlist')) {
+                let dropDownObj: DropDownList = getInstance(elem[i] as HTMLElement, DropDownList) as DropDownList;
+                dropDownObj.readonly = this.isReadonly;
+            } else if (elem[i].classList.contains('e-numerictextbox')) {
+                let numericTextBoxObj: NumericTextBox = getInstance(elem[i] as HTMLElement, NumericTextBox) as NumericTextBox;
+                numericTextBoxObj.readonly = this.isReadonly;
+            } else if (elem[i].classList.contains('e-textbox')) {
+                let textBoxObj: TextBox = getInstance(elem[i] as HTMLElement, TextBox) as TextBox;
+                textBoxObj.readonly = this.isReadonly;
+            } else if (elem[i].classList.contains('e-datepicker')) {
+                let datePickerObj: DatePicker = getInstance(elem[i] as HTMLElement, DatePicker) as DatePicker;
+                datePickerObj.readonly = this.isReadonly;
+            } else if (elem[i].classList.contains('e-multiselect')) {
+                let multiSelectObj: MultiSelect = getInstance(elem[i] as HTMLElement, MultiSelect) as MultiSelect;
+                multiSelectObj.readonly = this.isReadonly;
+            } else if (elem[i].classList.contains('e-radio')) {
+                let radioButtonObj: RadioButton = getInstance(elem[i] as HTMLElement, RadioButton) as RadioButton;
+                if (!radioButtonObj.checked) {
+                    if (this.isReadonly) {
+                        elem[i].parentElement.style.display = 'none';
+                    } else {
+                        elem[i].parentElement.style.display = 'inherit';
+                    }
+                }
+            }
+        }
+        let deleteGroupElems: NodeListOf<Element> = this.element.querySelectorAll('.e-deletegroup');
+        let addRuleGroupElems: NodeListOf<Element> = this.element.querySelectorAll('.e-addrulegroup');
+        let removeRuleElems: NodeListOf<Element> = this.element.querySelectorAll('.e-removerule');
+        if (!this.isReadonly && this.ruleElem.classList.contains('e-readonly')) {
+            this.ruleElem.classList.remove('e-readonly');
+        }
+        let elems: NodeListOf<Element>[] = [deleteGroupElems, addRuleGroupElems, removeRuleElems];
+        for (let i: number = 0; i < elems.length; i++) {
+            elems[i].forEach((elem: Element) => {
+                if (elem.classList.contains('e-readonly')) {
+                    elem.classList.remove('e-readonly');
+                } else {
+                    elem.classList.add('e-readonly');
+                }
+            });
+        }
+        this.enableBtnGroup();
+    }
+    private enableBtnGroup(): void {
+        let elems: NodeListOf<Element> = this.element.querySelectorAll('.e-btngroup-and-lbl, .e-btngroup-or-lbl, .e-qb-toggle');
+        let not: boolean = false;
+        elems.forEach((elem: Element) => {
+            if (elem.classList.contains('e-qb-toggle') && !elem.classList.contains('e-active-toggle')
+            && !elem.classList.contains('e-readonly')) {
+                elem.classList.add('e-readonly');
+                not = false;
+            } else if (elem.classList.contains('e-qb-toggle') && elem.classList.contains('e-not-readonly')) {
+                elem.classList.remove('e-not-readonly');
+            } else if (elem.classList.contains('e-qb-toggle') && elem.classList.contains('e-readonly')) {
+                elem.classList.remove('e-readonly');
+            } else if (elem.classList.contains('e-active-toggle')) {
+                elem.classList.add('e-not-readonly');
+                not = true;
+            } else if ((elem.previousElementSibling as HTMLInputElement).checked || elem.classList.contains('e-readonly')) {
+                elem.classList.remove('e-readonly');
+                if (not) {
+                    if (elem.textContent === 'AND') {
+                        elem.classList.add('e-readonly-and');
+                    } else {
+                        elem.classList.add('e-readonly-or');
+                    }
+                } else {
+                    if (elem.textContent === 'AND' && this.isReadonly) {
+                        elem.classList.remove('e-not');
+                        elem.classList.add('e-readonly-and');
+                    } else {
+                        if (this.enableNotCondition) { elem.classList.add('e-not'); }
+                        elem.classList.remove('e-readonly-and');
+                    }
+                    if (elem.textContent === 'OR' && this.isReadonly) {
+                        elem.classList.add('e-readonly-or-not');
+                    } else {
+                        elem.classList.remove('e-readonly-or-not');
+                    }
+                }
+            } else if (elem.classList.contains('e-disable')) {
+                // do nothing
+            } else {
+                elem.classList.add('e-readonly');
+            }
+        });
     }
     private getSqlString(rules: RuleModel, enableEscape?: boolean, queryStr?: string): string {
         let isRoot: boolean = false;
@@ -3338,6 +3481,7 @@ export interface Validation {
 export interface ChangeEventArgs extends BaseEventArgs {
     groupID: string;
     ruleID?: string;
+    childGroupID?: string;
     value?: string | number | Date | boolean | string[];
     selectedIndex?: number;
     selectedField?: string;

@@ -441,7 +441,7 @@ export class DataManager {
      */
     public remove(keyField: string, value: Object, tableName?: string | Query, query?: Query): Object | Promise<Object> {
         if (typeof value === 'object') {
-            value = (<{ [key: string]: Object }>value)[keyField];
+            value = DataUtil.getObject(keyField, value);
         }
 
         if (tableName instanceof Query) {

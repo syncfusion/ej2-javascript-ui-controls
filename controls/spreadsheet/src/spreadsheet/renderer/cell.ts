@@ -65,8 +65,8 @@ export class CellRenderer implements ICellRenderer {
     }
     private update(args: CellRenderArgs): void {
         if (args.isRefresh) {
-            if (this.checkMerged(args)) { return; }
             if (args.td.rowSpan) { args.td.removeAttribute('rowSpan'); } if (args.td.colSpan) { args.td.removeAttribute('colSpan'); }
+            if (this.checkMerged(args)) { return; }
         }
         if (args.cell && args.cell.formula && !args.cell.value) {
             let isFormula: boolean = checkIsFormula(args.cell.formula);
@@ -171,17 +171,17 @@ export class CellRenderer implements ICellRenderer {
 
     private processTemplates(cell: CellModel, rowIdx: number, colIdx: number): string {
         let sheet: SheetModel = this.parent.getActiveSheet();
-        let rangeSettings: RangeModel[] = sheet.range;
+        let ranges: RangeModel[] = sheet.ranges;
         let range: number[];
-        for (let j: number = 0, len: number = rangeSettings.length; j < len; j++) {
-            if (rangeSettings[j].template) {
-                range = getRangeIndexes(rangeSettings[j].address.length ? rangeSettings[j].address : rangeSettings[j].startCell);
+        for (let j: number = 0, len: number = ranges.length; j < len; j++) {
+            if (ranges[j].template) {
+                range = getRangeIndexes(ranges[j].address.length ? ranges[j].address : ranges[j].startCell);
                 if (range[0] <= rowIdx && range[1] <= colIdx && range[2] >= rowIdx && range[3] >= colIdx) {
                     if (cell) {
-                        return this.compileCellTemplate(rangeSettings[j].template);
+                        return this.compileCellTemplate(ranges[j].template);
                     } else {
                         if (!getCell(rowIdx, colIdx, sheet, true)) {
-                            return this.compileCellTemplate(rangeSettings[j].template);
+                            return this.compileCellTemplate(ranges[j].template);
                         }
                     }
                 }
@@ -266,13 +266,13 @@ export class CellRenderer implements ICellRenderer {
             }
         }
     }
-    public refresh(rowIdx: number, colIdx: number, lastCell?: boolean): void {
+    public refresh(rowIdx: number, colIdx: number, lastCell?: boolean, element?: Element): void {
         let sheet: SheetModel = this.parent.getActiveSheet();
-        if (isHiddenRow(sheet, rowIdx) || isHiddenCol(sheet, colIdx)) { return; }
-        if (!this.parent.scrollSettings.enableVirtualization || (rowIdx >= this.parent.viewport.topIndex && rowIdx <=
+        if (!element && (isHiddenRow(sheet, rowIdx) || isHiddenCol(sheet, colIdx))) { return; }
+        if (element || !this.parent.scrollSettings.enableVirtualization || (rowIdx >= this.parent.viewport.topIndex && rowIdx <=
             this.parent.viewport.bottomIndex && colIdx >= this.parent.viewport.leftIndex && colIdx <=
             this.parent.viewport.rightIndex)) {
-            let cell: HTMLElement = this.parent.getCell(rowIdx, colIdx);
+            let cell: HTMLElement = <HTMLElement>element || this.parent.getCell(rowIdx, colIdx);
             this.update(<CellRenderArgs>{ rowIdx: rowIdx, colIdx: colIdx, td: cell, cell: getCell(
                 rowIdx, colIdx, sheet), lastCell: lastCell, isRefresh: true, isHeightCheckNeeded: true,
                 manualUpdate: true, first: '' });

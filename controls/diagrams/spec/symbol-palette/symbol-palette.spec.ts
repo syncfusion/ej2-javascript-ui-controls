@@ -17,8 +17,7 @@ import {
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
 
 import { MouseEvents } from '../diagram/interaction/mouseevents.spec';
-import { IElement, PointModel, TextElement, StackPanel, DiagramElement, randomId, UserHandleModel } from '../../src/diagram/index';
-import { EJ2Instance } from '@syncfusion/ej2-navigations';
+import { IElement, PointModel, TextElement, StackPanel, DiagramElement, randomId, UserHandleModel } from '../../src/diagram/index'; 
 import { BpmnShapeModel, BpmnSubProcessModel } from "../../src/index";
 Diagram.Inject(BpmnDiagrams);
 SymbolPalette.Inject(BpmnDiagrams);
@@ -324,7 +323,7 @@ describe('Symbol Palette', () => {
 
         it('Checking drag and drop', (done: Function) => {
             palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                let clonedElement: HTMLElement; let diagramElement: any;
                 let position: PointModel = palette['getMousePosition'](e.sender);
                 let target = document.elementFromPoint(position.x, position.y).childNodes[0];
                 let symbols: IElement = palette.symbolTable[target['id']];
@@ -372,7 +371,7 @@ describe('Symbol Palette', () => {
         });
         it('drag and drop annotation node', (done: Function) => {
             palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                let clonedElement: HTMLElement; let diagramElement: any;
                 let position: PointModel = palette['getMousePosition'](e.sender);
                 let target = document.elementFromPoint(position.x, position.y).childNodes[0];
                 let symbols: IElement = palette.symbolTable[target['id']];
@@ -430,7 +429,7 @@ describe('Symbol Palette', () => {
         it('drag and drop annotation processes', (done: Function) => {
             
             palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                let clonedElement: HTMLElement; let diagramElement: any;
                 let position: PointModel = palette['getMousePosition'](e.sender);
                 let target = document.elementFromPoint(position.x, position.y).childNodes[0];
                 let symbols: IElement = palette.symbolTable[target['id']];
@@ -522,7 +521,7 @@ describe('Symbol Palette', () => {
 
         it('Checking dragging Complex Shape', (done: Function) => {
             palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                let clonedElement: HTMLElement; let diagramElement: any;
                 let position: PointModel = palette['getMousePosition'](e.sender);
                 let symbols: IElement = palette.symbolTable['task'];
                 palette['selectedSymbols'] = symbols;
@@ -546,7 +545,7 @@ describe('Symbol Palette', () => {
 
         it('Checking dragging connector', (done: Function) => {
             palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                let clonedElement: HTMLElement; let diagramElement: any;
                 let position: PointModel = palette['getMousePosition'](e.sender);
                 let symbols: IElement = palette.symbolTable['connector1a'];
                 palette['selectedSymbols'] = symbols;
@@ -576,7 +575,7 @@ describe('Symbol Palette', () => {
         });
         it('Checking dragging native node', (done: Function) => {
             palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                let clonedElement: HTMLElement; let diagramElement: any;
                 let position: PointModel = palette['getMousePosition'](e.sender);
                 let symbols: IElement = palette.symbolTable['native'];
                 palette['selectedSymbols'] = symbols;
@@ -604,7 +603,7 @@ describe('Symbol Palette', () => {
         });
         it('Checking dragging html node', (done: Function) => {
             palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                let clonedElement: HTMLElement; let diagramElement: any;
                 let position: PointModel = palette['getMousePosition'](e.sender);
                 let symbols: IElement = palette.symbolTable['html'];
                 palette['selectedSymbols'] = symbols;
@@ -1057,7 +1056,7 @@ describe('Symbol Palette', () => {
             
             setTimeout(function () {
                 palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                    let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                    let clonedElement: HTMLElement; let diagramElement: any;
                     let position: PointModel = palette['getMousePosition'](e.sender);
                     let target = document.elementFromPoint(position.x, position.y).childNodes[0];
                     let symbols: IElement = palette.symbolTable[target['id']];
@@ -1144,7 +1143,7 @@ describe('Symbol Palette', () => {
         });
         it('Checking retaining selection on dragging', (done: Function) => {
             palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                let clonedElement: HTMLElement; let diagramElement: any;
                 let position: PointModel = palette['getMousePosition'](e.sender);
                 let target: ChildNode = document.elementFromPoint(position.x, position.y).childNodes[0];
                 let symbols: IElement = palette.symbolTable['symbol1'];
@@ -1189,7 +1188,7 @@ describe('Symbol Palette', () => {
         });
         it('Checking Esc key pressing inside diagram', (done: Function) => {
             palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                let clonedElement: HTMLElement; let diagramElement: any;
                 let position: PointModel = palette['getMousePosition'](e.sender);
                 let target: ChildNode = document.elementFromPoint(position.x, position.y).childNodes[0];
                 let symbols: IElement = palette.symbolTable['symbol1'];
@@ -1225,7 +1224,7 @@ describe('Symbol Palette', () => {
         });
         it('Checking Esc key pressing inside symbol palette', (done: Function) => {
             palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                let clonedElement: HTMLElement; let diagramElement: any;
                 let position: PointModel = palette['getMousePosition'](e.sender);
                 let target: ChildNode = document.elementFromPoint(position.x, position.y).childNodes[0];
                 let symbols: IElement = palette.symbolTable['symbol1'];
@@ -1308,7 +1307,7 @@ describe('Symbol Palette', () => {
         });
         it('Checking retaining selection on dragging', (done: Function) => {
             palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                let clonedElement: HTMLElement; let diagramElement: any;
                 let position: PointModel = palette['getMousePosition'](e.sender);
                 let target: ChildNode = document.elementFromPoint(position.x, position.y).childNodes[0];
                 let symbols: IElement = palette.symbolTable['symbol1'];
@@ -1388,7 +1387,7 @@ describe('Symbol Palette', () => {
         it('Checking zindex for symbol palette', (done: Function) => {
             
             palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                let clonedElement: HTMLElement; let diagramElement: any;
                 let position: PointModel = palette['getMousePosition'](e.sender);
                 let target: ChildNode = document.elementFromPoint(position.x, position.y).childNodes[0];
                 let symbols: IElement = palette.symbolTable['symbol1'];
@@ -1614,7 +1613,7 @@ describe('Symbol Palette', () => {
 
         it('CR issue for render Highlighter', (done: Function) => {
             palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                let clonedElement: HTMLElement; let diagramElement: any;
                 let position: PointModel = palette['getMousePosition'](e.sender);
                 let target = document.elementFromPoint(position.x, position.y).childNodes[0];
                 let symbols: IElement = palette.symbolTable[target['id']];

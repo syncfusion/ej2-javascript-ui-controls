@@ -2035,30 +2035,22 @@ let ListView = class ListView extends Component {
     }
     renderList(data) {
         this.setViewDataSource(data);
-        if (isBlazor() && this.isServerRendered && !this.enableVirtualization && this.itemReRender) {
-            // tslint:disable
-            this.interopAdaptor.invokeMethodAsync('ListDynamicDataSource', this.localData);
-            this.itemReRender = false;
-            // tslint:enable
-        }
-        else {
-            if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
-                if (this.enableVirtualization) {
-                    if (Object.keys(this.dataSource).length) {
-                        if ((this.template || this.groupTemplate) && !this.virtualizationModule.isNgTemplate()) {
-                            this.listBaseOption.template = null;
-                            this.listBaseOption.groupTemplate = null;
-                            this.listBaseOption.itemCreated = this.virtualizationModule.createUIItem.bind(this.virtualizationModule);
-                        }
-                        this.virtualizationModule.uiVirtualization();
+        if (!isBlazor() || !this.isServerRendered || this.enableVirtualization) {
+            if (this.enableVirtualization) {
+                if (Object.keys(this.dataSource).length) {
+                    if ((this.template || this.groupTemplate) && !this.virtualizationModule.isNgTemplate()) {
+                        this.listBaseOption.template = null;
+                        this.listBaseOption.groupTemplate = null;
+                        this.listBaseOption.itemCreated = this.virtualizationModule.createUIItem.bind(this.virtualizationModule);
                     }
+                    this.virtualizationModule.uiVirtualization();
                 }
-                else {
-                    this.createList();
-                    this.contentContainer = this.createElement('div', { className: classNames.content });
-                    this.element.appendChild(this.contentContainer);
-                    this.renderIntoDom(this.ulElement);
-                }
+            }
+            else {
+                this.createList();
+                this.contentContainer = this.createElement('div', { className: classNames.content });
+                this.element.appendChild(this.contentContainer);
+                this.renderIntoDom(this.ulElement);
             }
         }
     }

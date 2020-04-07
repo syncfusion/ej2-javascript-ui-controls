@@ -12,6 +12,7 @@ import { GridModel } from '../../../src/grid/base/grid-model';
 import { extend } from '@syncfusion/ej2-base';
 import { data } from '../base/datasource.spec';
 import { Edit } from '../../../src/grid/actions/edit';
+import { Sort } from '../../../src/grid/actions/sort';
 import '../../../node_modules/es6-promise/dist/es6-promise'; 
 import { Group } from '../../../src/grid/actions/group';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
@@ -19,8 +20,9 @@ import { Selection } from '../../../src/grid/actions/selection';
 import { Freeze } from '../../../src/grid/actions/freeze';
 import { DataManager, ODataAdaptor, RemoteSaveAdaptor } from '@syncfusion/ej2-data';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
+import { dataBound } from '../../../src';
 
-Grid.Inject(Aggregate, Edit, Group, Toolbar, Selection, Freeze);
+Grid.Inject(Aggregate, Edit, Group, Toolbar, Selection, Freeze, Sort);
 
 
 let createGrid: Function = (options: GridModel, done: Function): Grid => {
@@ -1458,6 +1460,65 @@ describe('Aggregates Functionality testing', () => {
         afterAll(() => {
             destroy(grid);
             grid = null;
+        });
+    });
+    describe('EJ2-37046 when combining Aggregate, Resize and Freeze and calling autoFitColumns() on the same Grid throws script error', () => {
+        let gridObj: Grid;
+        let actionComplete: (e?: any) => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: true,
+                    allowSorting: true,
+                    frozenColumns: 1,
+                    pageSettings: { pageCount: 5 },
+                    columns: [
+                      { field: "CustomerName", headerText: "Customer Name", width: 150 },
+                      { field: "Freight", width: 160, format: "C2", textAlign: "Right" },
+                      { field: "OrderDate", headerText: "Order Date", width: 130, format: "yMd", textAlign: "Right"},
+                      { field: "ShipCountry", headerText: "Ship Country", width: 140 }
+                    ],
+                    aggregates: [
+                      {
+                        columns: [
+                          {
+                            type: "Sum",
+                            field: "Freight",
+                            format: "C2",
+                            footerTemplate: "Sum: ${Sum}"
+                          }
+                        ]
+                      },
+                      {
+                        columns: [
+                          {
+                            type: "Average",
+                            field: "Freight",
+                            format: "C2",
+                            footerTemplate: "Average: ${Average}"
+                          }
+                        ]
+                      }
+                    ],
+                    actionComplete : actionComplete
+                }, done);
+        });
+      
+        it('Query selector check', (done:Function) => {
+            let dataBound = () => gridObj.autoFitColumns();
+            actionComplete = (args: any): void => {
+                expect((gridObj.getFooterContent().querySelector('.e-movablefootercontent').children[0] as any)).toBeDefined();
+                done();
+            }
+            gridObj.dataBound = dataBound;
+            gridObj.actionComplete = actionComplete;
+            let cols: any = gridObj.getHeaderContent().querySelectorAll('.e-headercell');
+            cols[1].click();
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
         });
     });
 

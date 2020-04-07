@@ -1,4 +1,4 @@
-import { TreeView, EJ2Instance } from '../../src/treeview/treeview';
+import { TreeView } from '../../src/treeview/treeview';
 
 let countries: { [key: string]: Object }[] = [
     { id: 1, name: 'Australia', hasChild: true, expanded: true },

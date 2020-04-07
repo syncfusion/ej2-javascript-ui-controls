@@ -129,11 +129,11 @@ export function getCollapsedRowsCount(val: Row<Column>, grid: IGrid): number {
     let dataRowCnt: number = 0;
     let agrCnt: string = 'aggregatesCount';
     if (value === val.data[total]) {
-        if (grid.groupSettings.columns.length && !isNullOrUndefined(val[agrCnt])) {
-            if (grid.groupSettings.columns.length !== 1 && val[agrCnt]) {
+        if (grid.groupSettings.columns.length && !isNullOrUndefined(val[agrCnt]) && val[agrCnt]) {
+            if (grid.groupSettings.columns.length !== 1) {
                 count += (val.indent !== 0 && (value) < 2) ? (val[gSummary] * ((gLen - val.indent) + (gLen - val.indent) * val[agrCnt])) :
                     (val[gSummary] * ((gLen - val.indent) + (gLen - val.indent - 1) * val[agrCnt])) + val[agrCnt];
-            } else if (val[agrCnt] && grid.groupSettings.columns.length === 1) {
+            } else if (grid.groupSettings.columns.length === 1) {
                 count += (val[gSummary] * (gLen - val.indent)) + val[agrCnt];
             }
         } else if (grid.groupSettings.columns.length) {

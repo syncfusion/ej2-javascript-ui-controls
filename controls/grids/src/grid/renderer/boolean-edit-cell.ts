@@ -51,7 +51,7 @@ export class BooleanEditCell implements IEditCell {
         if (getObject(args.column.field, args.rowData)) {
             chkState = JSON.parse(getObject(args.column.field, args.rowData).toString().toLowerCase());
         }
-        if (!isNullOrUndefined(selectChkBox)) {
+        if (!isNullOrUndefined(selectChkBox) && args.column.type === 'checkbox') {
             this.editType = this.parent.editSettings.mode;
             this.editRow = args.row as HTMLElement;
             if (args.requestType !== 'add') {

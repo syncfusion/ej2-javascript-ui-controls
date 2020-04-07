@@ -290,17 +290,17 @@ describe('257171- copy and paste bookmark insert multiple time',()=>{
     it('intial paste bookmark child validation', () => {
         editor.editor.insertText('a');
        editor.editor.paste(pasteData);
-       expect(editor.selection.start.currentWidget.children.length).toBe(10);
+       expect(editor.selection.start.currentWidget.children.length).toBe(6);
     });
     it('After multiple format, paste bookmark validation',()=>{
         editor.selection.handleEndKey();
         editor.editor.onEnter();
         editor.editor.paste(pasteData);
         editor.editor.applyPasteOptions('MergeWithExistingFormatting');
-        expect(editor.selection.start.currentWidget.children.length).toBe(9);
+        expect(editor.selection.start.currentWidget.children.length).toBe(5);
         editor.editor.applyPasteOptions('KeepSourceFormatting');
         editor.editor.applyPasteOptions('MergeWithExistingFormatting');
         editor.editor.applyPasteOptions('KeepSourceFormatting');
-        expect(editor.selection.start.currentWidget.children.length).toBe(9);
+        expect(editor.selection.start.currentWidget.children.length).toBe(5);
     })
 });

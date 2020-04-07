@@ -9,7 +9,9 @@ const HIDESPINNER: string = 'e-hide-spinner';
 const PROGRESS: string = 'e-progress';
 const PROGRESSACTIVE: string = 'e-progress-active';
 const CONTENTCLS: string = 'e-btn-content';
-
+/**
+ * Defines the spin settings.
+ */
 export class SpinSettings extends ChildProperty<SpinSettings> {
     /**
      * Specifies the template content to be displayed in a spinner.
@@ -38,7 +40,9 @@ export class SpinSettings extends ChildProperty<SpinSettings> {
     @Property('Left')
     public position: SpinPosition;
 }
-
+/**
+ * Defines the animation settings.
+ */
 export class AnimationSettings extends ChildProperty<AnimationSettings> {
     /**
      * Specifies the duration taken to animate.
@@ -645,11 +649,17 @@ export class ProgressButton extends Button implements INotifyPropertyChanged {
        this.element.focus();
   }
 }
-
+/**
+ * Defines the spin position of progress button.
+ */
 export type SpinPosition = 'Left' | 'Right' | 'Top' | 'Bottom' | 'Center';
-
+/**
+ * Defines the animation effect of progress button.
+ */
 export type AnimationEffect = 'None' | 'SlideLeft' | 'SlideRight' | 'SlideUp' | 'SlideDown' | 'ZoomIn' | 'ZoomOut';
-
+/**
+ * Interface for progress event arguments.
+ */
 export interface ProgressEventArgs extends BaseEventArgs {
     /**
      * Indicates the current state of progress in percentage.

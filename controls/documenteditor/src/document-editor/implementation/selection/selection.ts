@@ -3,7 +3,8 @@ import {
     Rect, Margin, IWidget, Widget, BodyWidget, TableRowWidget, TableWidget,
     LineWidget, TextElementBox, ListTextElementBox, ImageElementBox, Page, ParagraphWidget, TableCellWidget,
     FieldElementBox, BlockWidget, HeaderFooterWidget, BlockContainer, BookmarkElementBox, ElementBox, HeaderFooters,
-    EditRangeStartElementBox, EditRangeEndElementBox, TabElementBox, CommentElementBox, CommentCharacterElementBox
+    EditRangeStartElementBox, EditRangeEndElementBox, TabElementBox, CommentElementBox, CommentCharacterElementBox,
+    TextFormField, CheckBoxFormField, DropDownFormField
 } from '../viewer/page';
 import {
     ElementInfo, CaretHeightInfo, IndexInfo, SizeInfo,
@@ -19,7 +20,7 @@ import { isNullOrUndefined, createElement, L10n } from '@syncfusion/ej2-base';
 import { Dictionary } from '../../base/dictionary';
 import {
     LineSpacingType, BaselineAlignment, HighlightColor,
-    Strikethrough, Underline, TextAlignment
+    Strikethrough, Underline, TextAlignment, FormFieldType
 } from '../../base/index';
 import { TextPositionInfo, PositionInfo, ParagraphInfo } from '../editor/editor-helper';
 import { WCharacterFormat, WParagraphFormat, WStyle, WParagraphStyle, WSectionFormat } from '../index';
@@ -557,11 +558,22 @@ export class Selection {
     public selectField(): void {
         if (this.isInField) {
             let fieldStart: FieldElementBox = this.getHyperlinkField(true);
-            let fieldEnd: FieldElementBox = fieldStart.fieldEnd;
+            this.selectFieldInternal(fieldStart);
+        }
+    }
+    /**
+     * @private
+     */
+    public selectFieldInternal(fieldStart: FieldElementBox): void {
+        if (fieldStart) {
+            let fieldEnd: ElementBox = fieldStart.fieldEnd;
             let offset: number = fieldStart.line.getOffset(fieldStart, 0);
             let startPosition: TextPosition = new TextPosition(this.owner);
             startPosition.setPositionParagraph(fieldStart.line, offset);
-
+            let isBookmark: boolean = fieldStart.nextNode instanceof BookmarkElementBox;
+            if (isBookmark) {
+                fieldEnd = (fieldStart.nextElement as BookmarkElementBox).reference;
+            }
             let endoffset: number = fieldEnd.line.getOffset(fieldEnd, 1);
             let endPosition: TextPosition = new TextPosition(this.owner);
             endPosition.setPositionParagraph(fieldEnd.line, endoffset);
@@ -1753,6 +1765,12 @@ export class Selection {
         }
         this.checkForCursorVisibility();
     }
+    private handleSpaceBarKey(): void {
+        if (this.owner.documentHelper.isDocumentProtected && this.owner.documentHelper.protectionType === 'FormFieldsOnly'
+            && this.getFormFieldType() === 'CheckBox') {
+            this.owner.editor.toggleCheckBoxFormField(this.getCurrentFormField());
+        }
+    }
     /**
      * Handles tab key.
      * @param isNavigateInCell
@@ -1766,10 +1784,12 @@ export class Selection {
         }
         if (start.paragraph.isInsideTable && this.end.paragraph.isInsideTable && (isNavigateInCell || isShiftTab)) {
             //Perform tab navigation
-            if (isShiftTab) {
-                this.selectPreviousCell();
-            } else {
-                this.selectNextCell();
+            if (!this.owner.documentHelper.isDocumentProtected && !(this.documentHelper.protectionType === 'FormFieldsOnly')) {
+                if (isShiftTab) {
+                    this.selectPreviousCell();
+                } else {
+                    this.selectNextCell();
+                }
             }
         } else if ((isNavigateInCell || isShiftTab) && !isNullOrUndefined(start) && start.offset === this.getStartOffset(start.paragraph)
             && !isNullOrUndefined(start.paragraph.paragraphFormat) && !isNullOrUndefined(start.paragraph.paragraphFormat.listFormat)
@@ -1778,8 +1798,55 @@ export class Selection {
         } else if (!this.owner.isReadOnlyMode) {
             this.owner.editorModule.handleTextInput('\t');
         }
+        if (this.documentHelper.protectionType === 'FormFieldsOnly' && this.documentHelper.formFields.length > 0) {
+            if (isShiftTab) {
+                this.selectPreviousFormField();
+            } else {
+                this.selectNextFormField();
+            }
+        }
         this.checkForCursorVisibility();
     }
+    /**
+     * @private
+     * Navigates to next form field
+     */
+    public selectNextFormField(): void {
+        // tslint:disable-next-line:max-line-length
+        let currentStart: TextPosition = this.owner.selection.end;
+        for (let i: number = 0; i < this.documentHelper.formFields.length; i++) {
+            // tslint:disable-next-line:max-line-length
+            if (!this.documentHelper.formFields[i].formFieldData.enabled) {
+                continue;
+            }
+            let paraIndex: TextPosition = this.owner.selection.getElementPosition(this.documentHelper.formFields[i]).startPosition;
+            if (paraIndex.isExistAfter(currentStart)) {
+                this.selectFieldInternal(this.documentHelper.formFields[i]);
+                break;
+            } else if (i === (this.documentHelper.formFields.length - 1)) {
+                this.selectFieldInternal(this.documentHelper.formFields[0]);
+            }
+        }
+    }
+
+    private selectPreviousFormField(): void {
+        // tslint:disable-next-line:max-line-length
+        let currentStart: TextPosition = this.owner.selection.start;
+        for (let i: number = (this.documentHelper.formFields.length - 1); i >= 0; i--) {
+            // tslint:disable-next-line:max-line-length
+            if (!this.documentHelper.formFields[i].formFieldData.enabled) {
+                continue;
+            }
+            let paraIndex: TextPosition = this.owner.selection.getElementPosition(this.documentHelper.formFields[i]).startPosition;
+            if (paraIndex.isExistBefore(currentStart)) {
+                this.selectFieldInternal(this.documentHelper.formFields[i]);
+                break;
+            } else if (i === 0) {
+                this.selectFieldInternal(this.documentHelper.formFields[(this.documentHelper.formFields.length - 1)]);
+            }
+        }
+    }
+
     private selectPreviousCell(): void {
         let tableCell: TableCellWidget = this.start.paragraph.associatedCell;
         let tableRow: TableRowWidget = tableCell.ownerRow;
@@ -2870,7 +2937,7 @@ export class Selection {
      */
     public isExistBeforeInline(currentInline: ElementBox, inline: ElementBox): boolean {
         if (currentInline.line === inline.line) {
-            return currentInline.line.children.indexOf(currentInline) <
+            return currentInline.line.children.indexOf(currentInline) <=
                 inline.line.children.indexOf(inline);
         }
         if (currentInline.line.paragraph === inline.line.paragraph) {
@@ -2897,10 +2964,15 @@ export class Selection {
      * Return true id current inline is exist after inline
      * @private
      */
-    public isExistAfterInline(currentInline: ElementBox, inline: ElementBox): boolean {
+    public isExistAfterInline(currentInline: ElementBox, inline: ElementBox, isRetrieve?: boolean): boolean {
         if (currentInline.line === inline.line) {
-            return currentInline.line.children.indexOf(currentInline) >
-                inline.line.children.indexOf(inline);
+            if (isRetrieve) {
+                return currentInline.line.children.indexOf(currentInline) >=
+                    inline.line.children.indexOf(inline);
+            } else {
+                return currentInline.line.children.indexOf(currentInline) >
+                    inline.line.children.indexOf(inline);
+            }
         }
         if (currentInline.line.paragraph === inline.line.paragraph) {
             return currentInline.line.paragraph.childWidgets.indexOf(currentInline.line)
@@ -6341,7 +6413,7 @@ export class Selection {
      * @private
      */
     public getCharacterFormat(paragraph: ParagraphWidget, start: TextPosition, end: TextPosition): void {
-        if (paragraph !== start.paragraph && paragraph !== end.paragraph) {
+        if (paragraph !== start.paragraph && paragraph !== end.paragraph && !paragraph.isEmpty()) {
             this.getCharacterFormatInternal(paragraph, this);
             return;
         }
@@ -6705,8 +6777,6 @@ export class Selection {
                 this.owner.contextMenuModule.contextMenuInstance.element.style.display === 'block') {
                 return;
             }
-
-
             if (!this.toolTipElement) {
                 this.toolTipElement = createElement('div', { className: 'e-de-tooltip' });
                 this.documentHelper.viewerContainer.appendChild(this.toolTipElement);
@@ -6720,25 +6790,34 @@ export class Selection {
             }
             let linkText: string = this.getLinkText(fieldBegin);
             this.toolTipElement.innerHTML = linkText + '</br><b>' + toolTipText + '</b>';
-            let widgetTop: number = this.getTop(widget) * this.documentHelper.zoomFactor;
-            let page: Page = this.getPage(widget.paragraph);
-            // tslint:disable-next-line:max-line-length
-            let containerWidth: number = this.documentHelper.viewerContainer.getBoundingClientRect().width + this.documentHelper.viewerContainer.scrollLeft;
-            let left: number = page.boundingRectangle.x + xPos * this.documentHelper.zoomFactor;
-            if ((left + this.toolTipElement.clientWidth + 10) > containerWidth) {
-                left = left - ((this.toolTipElement.clientWidth - (containerWidth - left)) + 15);
-            }
-            let top: number = this.getPageTop(page) + (widgetTop - this.toolTipElement.offsetHeight);
-            top = top > this.documentHelper.viewerContainer.scrollTop ? top : top + widget.height + this.toolTipElement.offsetHeight;
-            this.showToolTip(left, top);
+            let position: Point = this.getTooltipPosition(fieldBegin, xPos, this.toolTipElement, false);
+            this.showToolTip(position.x, position.y);
             if (!isNullOrUndefined(this.toolTipField) && fieldBegin !== this.toolTipField) {
-                this.toolTipObject.position = { X: left, Y: top };
+                this.toolTipObject.position = { X: position.x, Y: position.y };
             }
             this.toolTipObject.show();
             this.toolTipField = fieldBegin;
         } else {
             this.hideToolTip();
         }
+    }
+    /**
+     * @private
+     */
+    public getTooltipPosition(fieldBegin: FieldElementBox, xPos: number, toolTipElement: HTMLElement, isFormField: boolean): Point {
+        let widget: LineWidget = fieldBegin.line;
+        let widgetTop: number = this.getTop(widget) * this.documentHelper.zoomFactor;
+        let page: Page = this.getPage(widget.paragraph);
+        // tslint:disable-next-line:max-line-length
+        let containerWidth: number = this.documentHelper.viewerContainer.getBoundingClientRect().width + this.documentHelper.viewerContainer.scrollLeft;
+        let left: number = page.boundingRectangle.x + xPos * this.documentHelper.zoomFactor;
+        if ((left + toolTipElement.clientWidth + 10) > containerWidth) {
+            left = left - ((toolTipElement.clientWidth - (containerWidth - left)) + 15);
+        }
+        let offsetHeight: number = !isFormField ? toolTipElement.offsetHeight : 0;
+        let top: number = this.getPageTop(page) + (widgetTop - offsetHeight);
+        top = top > this.documentHelper.viewerContainer.scrollTop ? top : top + widget.height + offsetHeight;
+        return new Point(left, top);
     }
     /**
      * @private
@@ -6818,7 +6897,7 @@ export class Selection {
      * Return hyperlink field
      * @private
      */
-    public getHyperLinkFieldInCurrentSelection(widget: LineWidget, cursorPosition: Point): FieldElementBox {
+    public getHyperLinkFieldInCurrentSelection(widget: LineWidget, cursorPosition: Point, isFormField?: boolean): FieldElementBox {
         let inline: ElementBox = undefined;
         let top: number = this.getTop(widget);
         let lineStartLeft: number = this.getLineStartLeft(widget);
@@ -6835,7 +6914,7 @@ export class Selection {
             if (cursorPosition.x <= lineStartLeft + width || cursorPosition.x >= lineStartLeft + width) {
                 //Check if paragraph is within a field result.
                 let checkedFields: FieldElementBox[] = [];
-                let field: FieldElementBox = this.getHyperLinkFields(widget.paragraph, checkedFields);
+                let field: FieldElementBox = this.getHyperLinkFields(widget.paragraph, checkedFields, false, isFormField);
                 checkedFields = [];
                 checkedFields = undefined;
                 return field;
@@ -6859,7 +6938,8 @@ export class Selection {
             if (cursorPosition.x <= left + width) {
                 //Check if inline is within a field result.
                 let checkedFields: FieldElementBox[] = [];
-                let field: FieldElementBox = this.getHyperLinkFieldInternal(inline.line.paragraph, inline, checkedFields);
+                // tslint:disable-next-line:max-line-length
+                let field: FieldElementBox = this.getHyperLinkFieldInternal(inline.line.paragraph, inline, checkedFields, false, isFormField);
                 checkedFields = [];
                 checkedFields = undefined;
                 return field;
@@ -6885,7 +6965,7 @@ export class Selection {
             field = this.getHyperLinkFields(this.end.paragraph as ParagraphWidget, checkedFields, isRetrieve);
         } else {
             let paragraph: ParagraphWidget = inline.line.paragraph;
-            field = this.getHyperLinkFieldInternal(paragraph, inline, checkedFields, isRetrieve);
+            field = this.getHyperLinkFieldInternal(paragraph, inline, checkedFields, isRetrieve, false);
         }
         checkedFields = [];
         return field;
@@ -6893,7 +6973,8 @@ export class Selection {
     /**
      * @private
      */
-    public getHyperLinkFields(paragraph: ParagraphWidget, checkedFields: FieldElementBox[], isRetrieve?: boolean): FieldElementBox {
+    // tslint:disable-next-line:max-line-length
+    public getHyperLinkFields(paragraph: ParagraphWidget, checkedFields: FieldElementBox[], isRetrieve: boolean, checkFormField?: boolean): FieldElementBox {
         for (let i: number = 0; i < this.documentHelper.fields.length; i++) {
             // tslint:disable-next-line:max-line-length
             if (checkedFields.indexOf(this.documentHelper.fields[i]) !== -1 || isNullOrUndefined(this.documentHelper.fields[i].fieldSeparator)) {
@@ -6907,6 +6988,9 @@ export class Selection {
             if ((isRetrieve || (!isRetrieve && field.match('hyperlink '))) && isParagraph) {
                 return this.documentHelper.fields[i];
             }
+            if (isParagraph && checkFormField && this.documentHelper.fields[i].formFieldData) {
+                return this.documentHelper.fields[i];
+            }
         }
         // if (paragraph.containerWidget instanceof BodyWidget && !(paragraph instanceof WHeaderFooter)) {
         //     return this.getHyperLinkFields((paragraph.con as WCompositeNode), checkedFields);
@@ -6918,7 +7002,7 @@ export class Selection {
      * @private
      */
     // tslint:disable-next-line:max-line-length
-    public getHyperLinkFieldInternal(paragraph: Widget, inline: ElementBox, fields: FieldElementBox[], isRetrieve?: boolean): FieldElementBox {
+    public getHyperLinkFieldInternal(paragraph: Widget, inline: ElementBox, fields: FieldElementBox[], isRetrieve: boolean, checkFormField: boolean): FieldElementBox {
         for (let i: number = 0; i < this.documentHelper.fields.length; i++) {
             if (fields.indexOf(this.documentHelper.fields[i]) !== -1 || isNullOrUndefined(this.documentHelper.fields[i].fieldSeparator)) {
                 continue;
@@ -6927,13 +7011,22 @@ export class Selection {
             }
             let fieldCode: string = this.getFieldCode(this.documentHelper.fields[i]);
             fieldCode = fieldCode.trim().toLowerCase();
-            let isInline: boolean = (this.inlineIsInFieldResult(this.documentHelper.fields[i], inline) || this.isImageField());
+            let fieldBegin: FieldElementBox = this.documentHelper.fields[i];
+            let fieldEnd: ElementBox = fieldBegin.fieldEnd;
+            if (isRetrieve && fieldBegin.nextNode instanceof BookmarkElementBox) {
+                fieldEnd = fieldBegin.nextNode.reference;
+            }
+            // tslint:disable-next-line:max-line-length
+            let isInline: boolean = (this.inlineIsInFieldResult(fieldBegin, fieldEnd, fieldBegin.fieldSeparator, inline, isRetrieve) || this.isImageField());
             if ((isRetrieve || (!isRetrieve && fieldCode.match('hyperlink '))) && isInline) {
+                return this.documentHelper.fields[i];
+            }
+            if (isInline && checkFormField && this.documentHelper.fields[i].formFieldData) {
                 return this.documentHelper.fields[i];
             }
         }
         if (paragraph.containerWidget instanceof BodyWidget && !(paragraph instanceof HeaderFooterWidget)) {
-            return this.getHyperLinkFieldInternal(paragraph.containerWidget, inline, fields, isRetrieve);
+            return this.getHyperLinkFieldInternal(paragraph.containerWidget, inline, fields, isRetrieve, checkFormField);
         }
         return undefined;
     }
@@ -6996,10 +7089,11 @@ export class Selection {
      * Return true if inline is in field result
      * @private
      */
-    public inlineIsInFieldResult(fieldBegin: FieldElementBox, inline: ElementBox): boolean {
-        if (!isNullOrUndefined(fieldBegin.fieldEnd) && !isNullOrUndefined(fieldBegin.fieldSeparator)) {
-            if (this.isExistBeforeInline(fieldBegin.fieldSeparator, inline)) {
-                return this.isExistAfterInline(fieldBegin.fieldEnd, inline);
+    // tslint:disable-next-line:max-line-length
+    public inlineIsInFieldResult(fieldBegin: FieldElementBox, fieldEnd: ElementBox, fieldSeparator: FieldElementBox, inline: ElementBox, isRetrieve?: boolean): boolean {
+        if (!isNullOrUndefined(fieldEnd) && !isNullOrUndefined(fieldSeparator)) {
+            if (this.isExistBeforeInline(fieldSeparator, inline)) {
+                return this.isExistAfterInline(fieldEnd, inline, isRetrieve);
             }
         }
         return false;
@@ -7051,6 +7145,46 @@ export class Selection {
             }
         }
         return false;
+    }
+    /**
+     * Return true if selection is in Form field
+     * @private
+     */
+    public isFormField(): boolean {
+        let inline: FieldElementBox = this.getCurrentFormField();
+        if (inline instanceof FieldElementBox && inline.formFieldData) {
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * @private
+     */
+    public getFormFieldType(): FormFieldType {
+        let formField: FieldElementBox = this.getCurrentFormField();
+        if (formField instanceof FieldElementBox) {
+            if (formField.formFieldData instanceof TextFormField) {
+                return 'Text';
+            } else if (formField.formFieldData instanceof CheckBoxFormField) {
+                return 'CheckBox';
+            } else if (formField.formFieldData instanceof DropDownFormField) {
+                return 'DropDown';
+            }
+        }
+        return undefined;
+    }
+
+    /**
+     * Get selected form field type
+     * @private
+     */
+    public getCurrentFormField(): FieldElementBox {
+        let field: FieldElementBox = this.getHyperlinkField(true);
+        if (field instanceof FieldElementBox && field.fieldType === 0 && !isNullOrUndefined(field.formFieldData)) {
+            return field;
+        }
+        return undefined;
     }
     /**
      * @private
@@ -7620,7 +7754,10 @@ export class Selection {
                 //     if (this.owner.acceptTab) {
                 //         this.handleTabKey(true, false);
                 //     }
-                //     break;             
+                //     break;  
+                case 32:
+                    this.handleSpaceBarKey();
+                    break;
                 case 33:
                     event.preventDefault();
                     this.documentHelper.viewerContainer.scrollTop -= this.documentHelper.visibleBounds.height;
@@ -7656,8 +7793,7 @@ export class Selection {
 
             }
         }
-
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.documentHelper.protectionType === 'FormFieldsOnly') {
             this.owner.editorModule.onKeyDownInternal(event, ctrl, shift, alt);
         }
         if (this.owner.searchModule) {

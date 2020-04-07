@@ -870,7 +870,7 @@ export class ResourceBase {
         let target: HTMLElement =
             this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS + ' ' + `[data-group-index="${index}"]` +
                 ' ' + '.' + cls.RESOURCE_TREE_ICON_CLASS) as HTMLElement;
-        if (resourceData.ClassName === cls.RESOURCE_PARENT_CLASS && target) {
+        if (target) {
             if (target.classList.contains(cls.RESOURCE_EXPAND_CLASS) && !hide) {
                 target.click();
             } else if (target.classList.contains(cls.RESOURCE_COLLAPSE_CLASS) && hide) {

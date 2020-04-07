@@ -24,7 +24,7 @@ import { Actions, findToolToActivate, isSelected, getCursor, contains } from './
 import { DiagramAction, KeyModifiers, Keys, DiagramEvent, DiagramTools, RendererAction, DiagramConstraints } from '../enum/enum';
 import { BlazorAction } from '../enum/enum';
 import { isPointOverConnector, findObjectType, insertObject, getObjectFromCollection, getTooltipOffset } from '../utility/diagram-util';
-import { getObjectType, getInOutConnectPorts, removeChildNodes, cloneBlazorObject } from '../utility/diagram-util';
+import { getObjectType, getInOutConnectPorts, removeChildNodes, cloneBlazorObject, checkPort } from '../utility/diagram-util';
 import { canZoomPan, canDraw, canDrag, canZoomTextEdit, canVitualize, canPreventClearSelection } from './../utility/constraints-util';
 import { canMove, canEnablePointerEvents, canSelect, canEnableToolTip } from './../utility/constraints-util';
 import {
@@ -2069,7 +2069,15 @@ class ObjectFinder {
                     outPort = getInOutConnectPorts(objects[i] as Node, false);
                     inPort = getInOutConnectPorts(objects[i] as Node, true);
                     let tool: ConnectTool = (diagram[eventHandler].tool as ConnectTool);
-                    if (objects[i] instanceof Node && ((canOutConnect(objects[i] as NodeModel) || (canPortOutConnect(outPort))) ||
+                    var portElement = this.findTargetElement(objects[i].wrapper, position, undefined);
+
+                    if (action === 'Draw' && portElement && (objects[i] instanceof Node) && !checkPort(objects[i], portElement)) {
+                        if (((tool && tool[endPoint] === 'ConnectorSourceEnd') && !canOutConnect(objects[i] as NodeModel))||
+                        ((tool && tool[endPoint] === 'ConnectorTargetEnd') && !canInConnect(objects[i] as NodeModel))) {
+                            return actualTarget as IElement
+                        }
+                    }
+                    if (objects[i] instanceof Node && ((canOutConnect(objects[i] as NodeModel) || (canPortOutConnect(outPort))||canInConnect(objects[i] as NodeModel)||(canPortInConnect(inPort))) ||
                         (action === 'PortDraw' && (tool instanceof ConnectTool) && tool[endPoint] == 'ConnectorTargetEnd' &&
                             (canInConnect(objects[i] as NodeModel) || (canPortInConnect(inPort)))))) {
                         actualTarget = objects[i];

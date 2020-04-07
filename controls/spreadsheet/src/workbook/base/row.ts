@@ -1,7 +1,6 @@
 import { CellModel, SheetModel } from './index';
 import { RowModel } from './row-model';
-import { ChildProperty, Collection, Property } from '@syncfusion/ej2-base';
-import { Cell } from './cell';
+import { ChildProperty, Property } from '@syncfusion/ej2-base';
 
 /**
  * Configures the Row behavior for the spreadsheet.
@@ -26,7 +25,7 @@ export class Row extends ChildProperty<SheetModel> {
      * Specifies cell and its properties for the row.
      * @default []
      */
-    @Collection([], Cell)
+    @Property([])
     public cells: CellModel[];
 
     /**

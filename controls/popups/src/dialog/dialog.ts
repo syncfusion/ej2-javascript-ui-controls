@@ -779,7 +779,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
     }
 
     /* istanbul ignore next */
-    private getMinHeight(): void {
+    private getMinHeight(): number {
         let computedHeaderHeight: string = '0px';
         let computedFooterHeight: string = '0px';
         if (!isNullOrUndefined(this.element.querySelector('.' + DLG_HEADER_CONTENT))) {
@@ -789,20 +789,20 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         if (!isNullOrUndefined(footerEle)) { computedFooterHeight = getComputedStyle(footerEle).height; }
         let headerHeight: number = parseInt(computedHeaderHeight.slice(0, computedHeaderHeight.indexOf('p')), 10);
         let footerHeight: number = parseInt(computedFooterHeight.slice(0, computedFooterHeight.indexOf('p')), 10);
-        setMinHeight(headerHeight + 30 + footerHeight);
+        return (setMinHeight(headerHeight + 30 + footerHeight));
     }
 
-    private onResizeStart(args: ResizeMouseEventArgs | ResizeTouchEventArgs): boolean {
-        this.trigger('resizeStart', args);
+    private onResizeStart(args: ResizeMouseEventArgs | ResizeTouchEventArgs, dialogObj: Dialog): boolean {
+        dialogObj.trigger('resizeStart', args);
         return args.cancel;
     }
 
-    private onResizing(args: MouseEvent | TouchEvent): void {
-        this.trigger('resizing', args);
+    private onResizing(args: MouseEvent | TouchEvent, dialogObj: Dialog): void {
+        dialogObj.trigger('resizing', args);
     }
 
-    private onResizeComplete(args: MouseEvent | TouchEvent): void {
-        this.trigger('resizeStop', args);
+    private onResizeComplete(args: MouseEvent | TouchEvent, dialogObj: Dialog): void {
+        dialogObj.trigger('resizeStop', args);
     }
 
     private setResize(): void {
@@ -829,7 +829,8 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 boundary: this.target === document.body ? null : this.targetEle,
                 resizeBegin: this.onResizeStart.bind(this),
                 resizeComplete: this.onResizeComplete.bind(this),
-                resizing: this.onResizing.bind(this)
+                resizing: this.onResizing.bind(this),
+                proxy: this
             });
         } else {
             removeResize();
@@ -971,7 +972,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                     target: this.target,
                     preventFocus: false
                 };
-                if (this.enableResize) { this.getMinHeight(); }
+                if (this.enableResize) {
+                    this.resetResizeIcon();
+                }
                 this.trigger('open', eventArgs, (openEventArgs: {[key: string]: object} ) => {
                     if (!openEventArgs.preventFocus) { this.focusContent(); }
                 });
@@ -1002,6 +1005,17 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         this.initialRender = false;
     }
 
+    private resetResizeIcon(): void {
+        let dialogConHeight: number = this.getMinHeight();
+        if (this.targetEle.offsetHeight < dialogConHeight) {
+            let className: string = this.enableRtl ? 'e-south-west' : 'e-south-east';
+            let resizeIcon: HTMLElement = this.element.querySelector('.' + className);
+            if (!isNullOrUndefined(resizeIcon)) {
+                resizeIcon.style.bottom = '-' + dialogConHeight.toString() + 'px';
+            }
+        }
+    }
+
     private setOverlayZindex(zIndexValue?: number): void {
         let zIndex: number;
         if (isNullOrUndefined(zIndexValue)) {
@@ -1030,7 +1044,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         }
     }
 
-    private setPopupPosition() : void {
+    private setPopupPosition(): void {
         this.popupObj.setProperties({
             position: {
                 X: this.position.X, Y: this.position.Y
@@ -1462,7 +1476,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                         this.dragObj.destroy();
                     } break;
                 case 'target':
-                    this.popupObj.relateTo = newProp.target;  break;
+                this.setTarget(newProp.target); break;
                 case 'position':
                     this.checkPositionData();
                     if (this.isModal) {
@@ -1479,6 +1493,14 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                     this.setResize(); break;
             }
         }
+    }
+
+    private setTarget(target: string | HTMLElement): void {
+        this.popupObj.relateTo = target;
+        this.target = target;
+        this.targetEle = ((typeof this.target) === 'string') ?
+            <HTMLElement>document.querySelector(<string>this.target) : <HTMLElement>this.target;
+        this.setMaxHeight();
     }
 
     private updateIsModal(): void {
@@ -1531,6 +1553,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
      * @memberof dialog
      */
     public destroy(): void {
+        if (this.isDestroyed) { return; }
         let classArray: string[] = [RTL, MODAL_DLG, DLG_RESIZABLE, DLG_RESTRICT_LEFT_VALUE, FULLSCREEN, DEVICE];
         let attrs: string[] = ['role', 'aria-modal', 'aria-labelledby', 'aria-describedby', 'aria-grabbed', 'tabindex', 'style'];
         removeClass([this.targetEle], [DLG_TARGET , SCROLL_DISABLED]);
@@ -1574,7 +1597,11 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         for (let i: number = 0; i < attrs.length; i++) {
             this.element.removeAttribute(attrs[i]);
         }
-        if (!this.isBlazorServerRender()) { super.destroy(); }
+        if (!this.isBlazorServerRender()) {
+            super.destroy();
+        } else {
+            this.isDestroyed = true;
+        }
     }
 
     /**

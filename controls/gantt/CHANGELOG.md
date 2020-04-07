@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 18.1.43 (2020-04-07)
+
+### Gantt
+
+#### New Features
+
+- `#269693, #269694` - Provided accessibility support for column header and filter.
+
+#### Bug Fixes
+
+- `#270384` - Prevented event markers, indicators, holidays, baseline consideration for timeline while doing zoom to fit action.
+
 ## 18.1.42 (2020-04-01)
 
 ### Gantt

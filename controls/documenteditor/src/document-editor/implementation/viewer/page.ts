@@ -1,10 +1,11 @@
 import { WTableFormat, WRowFormat, WCellFormat } from '../format/index';
-import { WidthType, WColor, AutoFitType } from '../../base/types';
+import { WidthType, WColor, AutoFitType, TextFormFieldType, CheckBoxSizeType } from '../../base/types';
 import { WListLevel } from '../list/list-level';
 import { WParagraphFormat, WCharacterFormat, WSectionFormat, WBorder, WBorders } from '../format/index';
 import { isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
 import { Dictionary } from '../../base/dictionary';
-import { ElementInfo, HelperMethods, Point, WidthInfo } from '../editor/editor-helper';
+// tslint:disable-next-line:max-line-length
+import { ElementInfo, HelperMethods, Point, WidthInfo, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo } from '../editor/editor-helper';
 import { HeaderFooterType, TabLeader } from '../../base/types';
 import { TextPosition } from '..';
 import { ChartComponent } from '@syncfusion/ej2-office-chart';
@@ -3858,6 +3859,10 @@ export abstract class ElementBox {
                 if (documentHelper.fields.indexOf(fieldBegin) === -1) {
                     documentHelper.fields.push(fieldBegin);
                 }
+                if (!isNullOrUndefined(fieldBegin.formFieldData) &&
+                    documentHelper.formFields.indexOf(fieldBegin) === -1) {
+                    documentHelper.formFields.push(fieldBegin);
+                }
             }
         } else if (this.fieldType === 2) {
             let fieldSeparator: FieldElementBox = this as FieldElementBox;
@@ -4123,6 +4128,10 @@ export class FieldElementBox extends ElementBox {
      * @private
      */
     public hasFieldEnd: boolean = false;
+    /**
+     * @private
+     */
+    public formFieldData: FormField;
     private fieldBeginInternal: FieldElementBox = undefined;
     private fieldSeparatorInternal: FieldElementBox = undefined;
     private fieldEndInternal: FieldElementBox = undefined;
@@ -4145,6 +4154,28 @@ export class FieldElementBox extends ElementBox {
     set fieldEnd(field: FieldElementBox) {
         this.fieldEndInternal = field;
     }
+
+    /**
+     * @private
+     */
+    public get resultText(): string {
+        if (!isNullOrUndefined(this.formFieldData) && this.fieldType === 0 &&
+            !isNullOrUndefined(this.fieldSeparator) && !isNullOrUndefined(this.fieldEnd)) {
+            let textElement: ElementBox = this.fieldSeparator.nextElement;
+            let text: string = '';
+            do {
+                if (textElement instanceof TextElementBox) {
+                    text += textElement.text;
+                }
+                textElement = textElement.nextNode;
+                if (textElement === this.fieldEnd) {
+                    break;
+                }
+            } while (textElement);
+            return text;
+        }
+        return undefined;
+    }
     constructor(type: number) {
         super();
         this.fieldType = type;
@@ -4160,6 +4191,9 @@ export class FieldElementBox extends ElementBox {
      */
     public clone(): FieldElementBox {
         let field: FieldElementBox = new FieldElementBox(this.fieldType);
+        if (this.fieldType === 0 && !isNullOrUndefined(this.formFieldData)) {
+            field.formFieldData = this.formFieldData.clone();
+        }
         field.characterFormat.copyFormat(this.characterFormat);
         if (this.margin) {
             field.margin = this.margin.clone();
@@ -4179,6 +4213,238 @@ export class FieldElementBox extends ElementBox {
         this.fieldEndInternal = undefined;
         this.fieldSeparatorInternal = undefined;
         super.destroy();
+    }
+}
+/** 
+ * @private
+ */
+export abstract class FormField {
+    /*
+     * @private
+     */
+    public name: string = '';
+    /**
+     * @private
+     */
+    public enabled: boolean = true;
+    /**
+     * @private
+     */
+    public helpText: string = '';
+    /**
+     * @private
+     */
+    public statusText: string = '';
+    /**
+     * @private
+     */
+    public abstract clone(): FormField;
+    /**
+     * @private
+     */
+    public abstract getFormFieldInfo(): TextFormFieldInfo | CheckBoxFormFieldInfo | DropDownFormFieldInfo;
+    /**
+     * @private
+     */
+    public abstract copyFieldInfo(info: TextFormFieldInfo | CheckBoxFormFieldInfo | DropDownFormFieldInfo): void;
+}
+/** 
+ * @private
+ */
+export class TextFormField extends FormField {
+    /**
+     * @private
+     */
+    public type: TextFormFieldType = 'Text';
+    /**
+     * @private
+     */
+    public maxLength: number = 0;
+    /**
+     * @private
+     */
+    public defaultValue: string = '';
+    /**
+     * @private
+     */
+    public format: string = '';
+
+    /**
+     * @private
+     */
+    public clone(): TextFormField {
+        let textForm: TextFormField = new TextFormField();
+        textForm.type = this.type;
+        textForm.name = this.name;
+        textForm.enabled = this.enabled;
+        textForm.helpText = this.helpText;
+        textForm.statusText = this.statusText;
+        textForm.maxLength = this.maxLength;
+        textForm.defaultValue = this.defaultValue;
+        textForm.format = this.format;
+        return textForm;
+    }
+    /**
+     * @private
+     */
+    public getFormFieldInfo(): TextFormFieldInfo {
+        let textFormField: TextFormFieldInfo = {
+            defaultValue: this.defaultValue,
+            enabled: this.enabled,
+            format: this.format,
+            helpText: this.helpText,
+            maxLength: this.maxLength,
+            type: this.type
+        };
+        return textFormField;
+    }
+    /**
+     * @private
+     */
+    public copyFieldInfo(info: TextFormFieldInfo): void {
+        if (!isNullOrUndefined(info.defaultValue)) {
+            this.defaultValue = info.defaultValue;
+        }
+        if (!isNullOrUndefined(info.enabled)) {
+            this.enabled = info.enabled;
+        }
+        if (!isNullOrUndefined(info.format)) {
+            this.format = info.format;
+        }
+        if (!isNullOrUndefined(info.helpText)) {
+            this.helpText = info.helpText;
+        }
+        if (!isNullOrUndefined(info.maxLength)) {
+            this.maxLength = info.maxLength;
+        }
+        if (!isNullOrUndefined(info.type)) {
+            this.type = info.type;
+        }
+    }
+}
+/** 
+ * @private
+ */
+export class CheckBoxFormField extends FormField {
+    /**
+     * @private
+     */
+    public sizeType: CheckBoxSizeType = 'Auto';
+    /**
+     * @private
+     */
+    public size: number = 11;
+    /**
+     * @private
+     */
+    public defaultValue: boolean = false;
+    /**
+     * @private
+     */
+    public checked: boolean = false;
+
+    /**
+     * @private
+     */
+    public clone(): CheckBoxFormField {
+        let checkBoxForm: CheckBoxFormField = new CheckBoxFormField();
+        checkBoxForm.name = this.name;
+        checkBoxForm.enabled = this.enabled;
+        checkBoxForm.helpText = this.helpText;
+        checkBoxForm.statusText = this.statusText;
+        checkBoxForm.sizeType = this.sizeType;
+        checkBoxForm.size = this.size;
+        checkBoxForm.defaultValue = this.defaultValue;
+        checkBoxForm.checked = this.checked;
+        return checkBoxForm;
+    }
+
+    /**
+     * @private
+     */
+    public getFormFieldInfo(): CheckBoxFormFieldInfo {
+        let checkBoxFormField: CheckBoxFormFieldInfo = {
+            defaultValue: this.defaultValue,
+            enabled: this.enabled,
+            helpText: this.helpText,
+            size: this.size,
+            sizeType: this.sizeType
+        };
+        return checkBoxFormField;
+    }
+    /**
+     * @private
+     */
+    public copyFieldInfo(info: CheckBoxFormFieldInfo): void {
+        if (!isNullOrUndefined(info.defaultValue)) {
+            this.defaultValue = info.defaultValue;
+            this.checked = info.defaultValue;
+        }
+        if (!isNullOrUndefined(info.enabled)) {
+            this.enabled = info.enabled;
+        }
+        if (!isNullOrUndefined(info.size)) {
+            this.size = info.size;
+        }
+        if (!isNullOrUndefined(info.helpText)) {
+            this.helpText = info.helpText;
+        }
+        if (!isNullOrUndefined(info.sizeType)) {
+            this.sizeType = info.sizeType;
+        }
+    }
+
+}
+/** 
+ * @private
+ */
+export class DropDownFormField extends FormField {
+    /**
+     * @private
+     */
+    public dropDownItems: string[] = [];
+    /**
+     * @private
+     */
+    public selectedIndex: number = 0;
+    /**
+     * @private
+     */
+    public clone(): DropDownFormField {
+        let dropDown: DropDownFormField = new DropDownFormField();
+        dropDown.name = this.name;
+        dropDown.enabled = this.enabled;
+        dropDown.helpText = this.helpText;
+        dropDown.statusText = this.statusText;
+        dropDown.dropDownItems = this.dropDownItems.slice();
+        dropDown.selectedIndex = this.selectedIndex;
+        return dropDown;
+    }
+
+    /**
+     * @private
+     */
+    public getFormFieldInfo(): DropDownFormFieldInfo {
+        let dropDownFormField: DropDownFormFieldInfo = {
+            dropDownItems: this.dropDownItems.slice(),
+            enabled: this.enabled,
+            helpText: this.helpText
+        };
+        return dropDownFormField;
+    }
+    /**
+     * @private
+     */
+    public copyFieldInfo(info: DropDownFormFieldInfo): void {
+        if (!isNullOrUndefined(info.dropDownItems)) {
+            this.dropDownItems = info.dropDownItems;
+        }
+        if (!isNullOrUndefined(info.enabled)) {
+            this.enabled = info.enabled;
+        }
+        if (!isNullOrUndefined(info.helpText)) {
+            this.helpText = info.helpText;
+        }
     }
 }
 /** 

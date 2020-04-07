@@ -80,7 +80,8 @@ export class Toolbar {
         this.toolbar = new tool({
             created: this.create.bind(this),
             enableRtl: this.parent.enableRtl,
-            items: this.getItems()
+            items: this.getItems(),
+            allowKeyboard: false,
         });
         this.toolbar.isStringTemplate = true;
         this.toolbar.appendTo('#' + this.parent.element.id + 'pivot-toolbar');
@@ -951,6 +952,21 @@ export class Toolbar {
             });
             this.reportList.isStringTemplate = true;
             this.reportList.appendTo('#' + this.parent.element.id + '_reportlist');
+        }
+        this.updateItemElements();
+    }
+    private updateItemElements(): void {
+        let itemElements: HTMLElement[] = [].slice.call(this.toolbar.element.querySelectorAll('.e-toolbar-item'));
+        for (let element of itemElements) {
+            if (element.querySelector('button')) {
+                element.querySelector('button').setAttribute('tabindex', '0');
+            }
+            else if (element.querySelector('.e-menu.e-menu-parent')) {
+                element.querySelector('.e-menu.e-menu-parent').setAttribute('tabindex', '-1');
+                if (element.querySelector('.e-menu-item.e-menu-caret-icon')) {
+                    element.querySelector('.e-menu-item.e-menu-caret-icon').setAttribute('tabindex', '0');
+                }
+            }
         }
     }
     private whitespaceRemove(args: BeforeOpenCloseMenuEventArgs): void {

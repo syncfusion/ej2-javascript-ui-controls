@@ -57,10 +57,10 @@ let sheet: SheetModel[] = [{
 let spreadsheet: Spreadsheet = new Spreadsheet({
     sheets: sheet,
     saveUrl: 'http://localhost:57244/Home/Export',
-    beforeSave: (args) => {
+    beforeSave: (args): void => {
         // Code here
     },
-    saveComplete: (args) => {
+    saveComplete: (args): void => {
         if (args.status === 'Failure') {
             alert(args.message);
         }

@@ -136,6 +136,8 @@ export const updateToggle: string = 'updateToggleItem';
 /** @hidden */
 export const protectsheetHandler: string = 'protectsheetHandler';
 /** @hidden */
+export const unprotectsheetHandler: string = 'unprotectsheetHandler';
+/** @hidden */
 export const replaceAllDialog: string = 'replaceAllDialog';
 /** @hidden */
 export const workBookeditAlert: string = 'editAlert';

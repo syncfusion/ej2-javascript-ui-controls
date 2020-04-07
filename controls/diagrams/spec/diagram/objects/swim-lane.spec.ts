@@ -15,8 +15,7 @@ import { Selector } from '../../../src/diagram/objects/node';
 import { Container } from '../../../src/diagram/core/containers/container';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { PhaseModel, LaneModel } from '../../../src/diagram/objects/node-model';
-import { SymbolPalette, SymbolInfo, PaletteModel, } from '../../../src/symbol-palette/index';
-import { EJ2Instance } from '@syncfusion/ej2-navigations';
+import { SymbolPalette, SymbolInfo, PaletteModel, } from '../../../src/symbol-palette/index'; 
 import { IElement, PointModel, NodeConstraints, LineRouting, Connector, DiagramConstraints, AnnotationConstraints } from '../../../src/diagram/index';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { Annotation } from '../../../src/diagram/objects/annotation';
@@ -39,7 +38,7 @@ let palette: SymbolPalette;
 function paletteInitalize(id: string) {
     let clonedElement: HTMLElement;
     palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-        let diagramElement: EJ2Instance;
+        let diagramElement: any;
         let position: PointModel = palette['getMousePosition'](e.sender);
         let symbols: IElement = palette.symbolTable[id];
         palette['selectedSymbols'] = symbols;
@@ -2357,7 +2356,7 @@ describe('Diagram Control', () => {
 
             it('Drag and drop the node from palette to lane', (done: Function) => {
                 palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                    let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                    let clonedElement: HTMLElement; let diagramElement: any;
                     let position: PointModel = palette['getMousePosition'](e.sender);
                     let symbols: IElement = palette.symbolTable['Terminator'];
                     palette['selectedSymbols'] = symbols;
@@ -2384,7 +2383,7 @@ describe('Diagram Control', () => {
             });
             it('Drag and drop the node from palette to lane and ensure single selection', (done: Function) => {
                 palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                    let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                    let clonedElement: HTMLElement; let diagramElement: any;
                     let position: PointModel = palette['getMousePosition'](e.sender);
                     let symbols: IElement = palette.symbolTable['Terminator'];
                     palette['selectedSymbols'] = symbols;
@@ -2412,7 +2411,7 @@ describe('Diagram Control', () => {
             });
             it('Drag and drop the node from palette to diagram and then diagram to lane', (done: Function) => {
                 palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                    let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                    let clonedElement: HTMLElement; let diagramElement: any;
                     let position: PointModel = palette['getMousePosition'](e.sender);
                     let symbols: IElement = palette.symbolTable['Terminator'];
                     palette['selectedSymbols'] = symbols;
@@ -3085,7 +3084,7 @@ describe('Diagram Control', () => {
             });
             it('Drag and drop the node from palette to lane', (done: Function) => {
                 palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                    let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                    let clonedElement: HTMLElement; let diagramElement: any;
                     let position: PointModel = palette['getMousePosition'](e.sender);
                     let symbols: IElement = palette.symbolTable['Terminator'];
                     palette['selectedSymbols'] = symbols;
@@ -3114,7 +3113,7 @@ describe('Diagram Control', () => {
 
             it('Drag and drop the node from palette to diagram and then diagram to lane', (done: Function) => {
                 palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                    let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                    let clonedElement: HTMLElement; let diagramElement: any;
                     let position: PointModel = palette['getMousePosition'](e.sender);
                     let symbols: IElement = palette.symbolTable['Terminator'];
                     palette['selectedSymbols'] = symbols;

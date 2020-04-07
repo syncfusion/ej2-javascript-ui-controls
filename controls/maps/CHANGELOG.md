@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 18.1.43 (2020-04-07)
+
+### Maps
+
+#### Bug Fixes
+
+- `#268755` - `isShapeSelected` property is exposed to check whether the shape is selected or not on the map.
+
 ## 18.1.42 (2020-04-01)
 
 ### Maps

@@ -833,7 +833,7 @@ export interface MemberEditorOpenEventArgs {
     fieldName?: string;
     /** 
      * Defines the filter members of the selected field.
-     * @blazorType Dictionary<string,object>
+     * @blazorType List<MemberItems>
      */
     fieldMembers?: { [key: string]: Object; }[];
     /** Defines selected field's filter settings */
@@ -905,6 +905,31 @@ export interface AggregateMenuOpenEventArgs {
     fieldName?: string;
     /** Defines an option to restrict the conext menu from open. */
     cancel?: boolean;
+}
+
+/**
+ * Defines the filter members information that used to render member filter dialog.
+ */
+export interface MemberItems {
+    /** Defines whether the specific filter member has child(inner level) members or not. */
+    hasChildren?: boolean;
+    /** 
+     * Defines the custom HTML atttribute informations that used to add it specific filter member's DOM element in UI.
+     * @blazorType Dictionary<string, string>
+     */
+    htmlAttributes?: { [key: string]: Object; };
+    /** Defines whether the specific filter member is include or not that used to be display in the pivot table. */
+    isSelected?: boolean;
+    /** Defines the unique name of a specific filter member. */
+    id?: string;
+    /** Defines the parent member's unique name of a specific filter member. */
+    pid?: string;
+    /** Defines the unique caption to a specific member that used to display in the filter dialog. */
+    name?: string;
+    /** Defines the filter member's caption. */
+    caption?: string;
+    /** Defines the unique tag name to a specific member. */
+    tag?: string;
 }
 
 /**

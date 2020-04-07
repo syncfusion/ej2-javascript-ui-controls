@@ -6,7 +6,7 @@ import { MarginModel, AnimationModel, FontModel } from './model/progress-base-mo
 import { Margin, Animation, Font } from './model/progress-base';
 import { ILoadedEventArgs, IProgressStyle, IProgressValueEventArgs } from './model/progress-interface';
 import { ITextRenderEventArgs, IProgressResizeEventArgs, IMouseEventArgs } from './model/progress-interface';
-import { SvgRenderer, PathOption, getElement, measureText } from '@syncfusion/ej2-svg-base';
+import { SvgRenderer, PathOption, getElement } from '@syncfusion/ej2-svg-base';
 import { ProgressType, CornerType, ProgressTheme } from './utils/enum';
 import { getProgressThemeColor } from './utils/theme';
 import { lineCapRadius, completeAngle, valueChanged, progressCompleted } from './model/constant';
@@ -152,7 +152,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
      */
     @Property(0)
     public progressThickness: number;
-    /** 
+    /**
      * pie view
      * @default false
      */
@@ -308,8 +308,6 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     /** @private */
     public secElement: HTMLElement;
     /** @private */
-    public labelElement: Element;
-    /** @private */
     public linear: Linear = new Linear(this);
     /** @private */
     public circular: Circular = new Circular(this);
@@ -319,8 +317,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     public progressAnnotationModule: ProgressAnnotation;
     /** @private */
     // private resizeTo: number;
-    /** @private */
-    public annotationEnd: number;
+
     /**
      * controlRenderedTimeStamp used to avoid inital resize issue while theme change
      */
@@ -463,87 +460,10 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
     }
 
     private renderLabel(): void {
-        //let fontsize: string; let fontstyle: string; let fillcolor: string;
-        let textSize: Size;
-        let isAnimation: boolean = this.animation.enable;
-        if (this.type === 'Linear' && this.showProgressValue) {
-            let linearlabel: Element;
-            let linearbufferValue: number;
-            let linearprogresswidth: number;
-            let progresslabelwidth: number = this.calculateProgressRange(this.minimum, this.maximum, this.value);
-            if (this.value === this.maximum) {
-                linearbufferValue = 100;
-                linearprogresswidth = (this.progressRect.width * progresslabelwidth) - 10;
-            }
-            if (this.value > this.maximum || this.value < this.minimum || this.value === this.minimum) {
-                linearbufferValue = 0;
-                linearprogresswidth = (this.progressRect.width * progresslabelwidth) + 10;
-            }
-            if (this.value > this.minimum && this.value < this.maximum) {
-                linearbufferValue = Math.round((this.value * 100) / (this.maximum - this.minimum));
-                linearprogresswidth = (this.progressRect.width * progresslabelwidth) - 10;
-            }
-            let argsData: ITextRenderEventArgs = {
-                cancel: false, text: this.label ? this.label : String(linearbufferValue) + '%', color: this.labelStyle.color
-            };
-            this.trigger('textRender', argsData);
-            if (!argsData.cancel) {
-                textSize = measureText(argsData.text, this.labelStyle);
-                let options: object = {
-                    'id': this.element.id + '_linearLabel',
-                    'font-size': this.labelStyle.size || this.themeStyle.linearFontSize,
-                    'font-style': this.labelStyle.fontStyle || this.themeStyle.linearFontStyle,
-                    'font-family': this.labelStyle.fontFamily || this.themeStyle.linearFontFamily,
-                    'font-weight': this.labelStyle.fontWeight,
-                    'fill': argsData.color || this.themeStyle.fontColor,
-                    'x': linearprogresswidth,
-                    'y': this.progressRect.y + (this.progressRect.height / 2) + (textSize.height / 4),
-                    'text-anchor': 'middle',
-                    'visibility': isAnimation ? 'hidden' : 'visible'
-                };
-
-                linearlabel = this.renderer.createText(options, argsData.text);
-                this.labelElement = linearlabel;
-                this.svgObject.appendChild(linearlabel);
-            }
-        } else if (this.type === 'Circular' && this.showProgressValue) {
-            let circularLabel: Element;
-            let circularbufferValue: number;
-            let xAxis: number = (this.progressRect.x + (this.progressRect.width / 2));
-            let yAxis: number = this.progressRect.y + (this.progressRect.height / 2);
-            if (this.value === this.minimum || this.value > this.maximum) {
-                circularbufferValue = 0;
-            }
-            if (this.value === this.maximum) {
-                circularbufferValue = 100;
-            }
-            if (this.value > this.minimum && this.value < this.maximum) {
-                circularbufferValue = Math.round((this.value * 100) / (this.maximum - this.minimum));
-            }
-            let argsData: ITextRenderEventArgs = {
-                cancel: false, text: this.label ? this.label : String(circularbufferValue) + '%', color: this.labelStyle.color
-            };
-            this.trigger('textRender', argsData);
-            if (!argsData.cancel) {
-                textSize = measureText(argsData.text, this.labelStyle);
-                let options: object = {
-                    'id': this.element.id + '_circularLabel',
-                    'fill': argsData.color || this.themeStyle.fontColor,
-                    'font-size': this.labelStyle.size || this.themeStyle.circularFontSize,
-                    'font-style': this.labelStyle.fontStyle || this.themeStyle.circularFontStyle,
-                    'font-family': this.labelStyle.fontFamily || this.themeStyle.circularFontFamily,
-                    'font-weight': this.labelStyle.fontWeight,
-                    'height': this.progressRect.height,
-                    'width': this.progressRect.width,
-                    'visibility': isAnimation ? 'hidden' : 'visible',
-                    'x': xAxis,
-                    'y': yAxis + textSize.height / 2,
-                    'text-anchor': 'middle'
-                };
-                circularLabel = this.renderer.createText(options, argsData.text);
-                this.labelElement = circularLabel;
-                this.svgObject.appendChild(circularLabel);
-            }
+        if (this.type === 'Linear' && this.showProgressValue && !this.isIndeterminate) {
+            this.linear.renderLinearLabel();
+        } else if (this.type === 'Circular' && this.showProgressValue && !this.isIndeterminate) {
+            this.circular.renderCircularLabel();
         }
     }
 
@@ -552,9 +472,9 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
         let moveTo: number = (this.enableRtl) ? ((this.cornerRadius === 'Round') ?
             (x + this.progressRect.width) - ((lineCapRadius / 2) * thickness) : (x + this.progressRect.width)) :
             ((this.cornerRadius === 'Round') ? (x + (lineCapRadius / 2) * thickness) : x);
-        let lineTo: number = (this.enableRtl) ? ((this.cornerRadius === 'Round') ?
+        let lineTo: number = (this.enableRtl) ? ((this.cornerRadius === 'Round' && width) ?
             (moveTo - width + (lineCapRadius * thickness)) : (moveTo - width)) :
-            ((this.cornerRadius === 'Round') ? (moveTo + width - (lineCapRadius * thickness)) : (moveTo + width));
+            ((this.cornerRadius === 'Round' && width) ? (moveTo + width - (lineCapRadius * thickness)) : (moveTo + width));
         return 'M' + moveTo + ' ' + (this.progressRect.y + (this.progressRect.height / 2)) +
             'L' + lineTo + ' ' + (this.progressRect.y + (this.progressRect.height / 2));
     }
@@ -771,7 +691,7 @@ export class ProgressBar extends Component<HTMLElement> implements INotifyProper
                     this.renderAnnotation();
                     if (this.animation.enable && !this.isIndeterminate) {
                         let annotationElement: Element = document.getElementById(this.element.id + 'Annotation0').children[0];
-                        this.annotateAnimation.doAnnotationAnimation(annotationElement, this, this.startAngle, this.annotationEnd);
+                        this.annotateAnimation.doAnnotationAnimation(annotationElement, this);
                     }
                     break;
                 case 'value':

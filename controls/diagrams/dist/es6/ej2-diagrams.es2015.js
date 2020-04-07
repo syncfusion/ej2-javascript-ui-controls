@@ -5410,16 +5410,16 @@ function getIntersection(ele, bounds, sPt, tPt, isTar) {
             sPt = Point.transform({ x: sPt.x, y: sPt.y }, angle, Math.max(wrapper.actualSize.width, wrapper.actualSize.height));
         }
     }
+    if ((ele.sourcePadding || ele.targetPadding)) {
+        rect = new Rect(wrapper.bounds.x - padding, wrapper.bounds.y - padding, wrapper.actualSize.width + 2 * padding, wrapper.actualSize.height + 2 * padding);
+    }
     if (wrapper instanceof PathElement && wrapper.data) {
-        segmentPoints = child.getPoints();
+        segmentPoints = rect ? [rect.topLeft, rect.topRight, rect.bottomRight, rect.bottomLeft] : child.getPoints();
         if (((child.data.split('m').length - 1) + (child.data.split('M').length - 1)) === 1) {
             segmentPoints[segmentPoints.length] = segmentPoints[0];
         }
     }
     else {
-        if ((ele.sourcePadding || ele.targetPadding)) {
-            rect = new Rect(wrapper.bounds.x - padding, wrapper.bounds.y - padding, wrapper.actualSize.width + 2 * padding, wrapper.actualSize.height + 2 * padding);
-        }
         segmentPoints = rect ? [rect.topLeft, rect.topRight, rect.bottomRight, rect.bottomLeft] : getPoints(wrapper, wrapper.corners);
         segmentPoints[segmentPoints.length] = segmentPoints[0];
     }
@@ -22802,7 +22802,7 @@ class ConnectorDrawingTool extends ConnectTool {
                 this.drawingObject = this.commandHandler.drawObject(connector);
             }
             args.source = this.drawingObject;
-            if ((args.target || (args.actualObject && checkPort(args.actualObject, args.sourceWrapper)))
+            if ((args.target || (args.actualObject && args.sourceWrapper && checkPort(args.actualObject, args.sourceWrapper)))
                 && (this.endPoint !== 'ConnectorTargetEnd' || (canInConnect(args.target)))) {
                 this.commandHandler.diagram.allowServerDataBinding = false;
                 this.commandHandler.connect(this.endPoint, args);
@@ -26052,7 +26052,14 @@ class ObjectFinder {
                     outPort = getInOutConnectPorts(objects[i], false);
                     inPort = getInOutConnectPorts(objects[i], true);
                     let tool = diagram[eventHandler].tool;
-                    if (objects[i] instanceof Node && ((canOutConnect(objects[i]) || (canPortOutConnect(outPort))) ||
+                    var portElement = this.findTargetElement(objects[i].wrapper, position, undefined);
+                    if (action === 'Draw' && portElement && (objects[i] instanceof Node) && !checkPort(objects[i], portElement)) {
+                        if (((tool && tool[endPoint] === 'ConnectorSourceEnd') && !canOutConnect(objects[i])) ||
+                            ((tool && tool[endPoint] === 'ConnectorTargetEnd') && !canInConnect(objects[i]))) {
+                            return actualTarget;
+                        }
+                    }
+                    if (objects[i] instanceof Node && ((canOutConnect(objects[i]) || (canPortOutConnect(outPort)) || canInConnect(objects[i]) || (canPortInConnect(inPort))) ||
                         (action === 'PortDraw' && (tool instanceof ConnectTool) && tool[endPoint] == 'ConnectorTargetEnd' &&
                             (canInConnect(objects[i]) || (canPortInConnect(inPort)))))) {
                         actualTarget = objects[i];
@@ -30960,9 +30967,9 @@ class DiagramScroller {
             scale.x = (this.viewPortWidth - (margin.left + margin.right)) / (bounds.width);
             scale.y = (this.viewPortHeight - (margin.top + margin.bottom)) / (bounds.height);
             if (!canZoomIn && (((bounds.width - this.horizontalOffset) < this.viewPortWidth) &&
-                (bounds.height - this.verticalOffset) < this.viewPortHeight) || this.currentZoom > 1) {
-                scale.x = Math.min(1, scale.x);
-                scale.y = Math.min(1, scale.y);
+                (bounds.height - this.verticalOffset) < this.viewPortHeight)) {
+                scale.x = Math.min(this.currentZoom, scale.x);
+                scale.y = Math.min(this.currentZoom, scale.y);
             }
             let zoomFactor;
             let centerX;
@@ -33063,7 +33070,7 @@ class Diagram extends Component {
     }
     /**
      * Finds the object that is under the given mouse position
-     * @param {NodeModel[] | ConnectorModel[]} objects - Defines the collection of objects, from which the object has to be found.
+     * @param {NodeModel[] | ConnectorModel[]}objects - Defines the collection of objects, from which the object has to be found.
      * @param {Actions} action - Defines the action, using which the relevant object has to be found.
      * @param {boolean} inAction - Defines the active state of the action.
      */
@@ -33307,7 +33314,7 @@ class Diagram extends Component {
     /**
      * Aligns the group of objects to with reference to the first object in the group
      * @param {NodeModel[] | ConnectorModel[]} objects - Defines the objects that have to be aligned
-     * @param {AlignmentOptions} option - Defines the factor, by which the objects have to be aligned
+     * @param {AlignmentOptions}option - Defines the factor, by which the objects have to be aligned
      */
     align(option, objects, type) {
         this.getBlazorDiagramObjects(objects);
@@ -33340,7 +33347,7 @@ class Diagram extends Component {
     }
     /**
      * Scales the given objects to the size of the first object in the group
-     * @param {NodeModel[] | ConnectorModel[]} objects - Defines the collection of objects that have to be scaled
+     * @param {NodeModel[] | ConnectorModel[]}objects - Defines the collection of objects that have to be scaled
      * @param {SizingOptions} option - Defines whether the node has to be horizontally scaled, vertically scaled or both
      */
     sameSize(option, objects) {
@@ -38701,6 +38708,7 @@ class Diagram extends Component {
                     let nodePreviewSize;
                     let paletteDragSize;
                     if (paletteId) {
+                        // tslint:disable-next-line:no-any
                         let sourceElement = document.getElementById(paletteId).ej2_instances[0];
                         let source = 'sourceElement';
                         this.droppable[source] = sourceElement;

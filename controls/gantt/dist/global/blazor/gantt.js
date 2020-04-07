@@ -732,7 +732,7 @@ var DateProcessor = /** @class */ (function () {
         if (sDate.getTime() < eDate.getTime()) {
             for (var i = 0; i < holidays.length; i++) {
                 var currentHoliday = this.getDateFromFormat(new Date(holidays[i]));
-                if (sDate.getTime() <= currentHoliday.getTime() && eDate.getTime() >= currentHoliday.getTime()) {
+                if (sDate.getTime() <= currentHoliday.getTime() && eDate.getTime() > currentHoliday.getTime()) {
                     if (!this.parent.includeWeekend && this.parent.nonWorkingDayIndex.indexOf(currentHoliday.getDay()) === -1) {
                         holidaysCount += 1;
                     }
@@ -1121,11 +1121,11 @@ var DateProcessor = /** @class */ (function () {
                 addDateToList(maxEndDate);
                 addDateToList(tempStartDate);
                 addDateToList(tempEndDate);
-                if (_this.parent.renderBaseline) {
+                if (_this.parent.renderBaseline && !_this.parent.timelineModule.isZoomToFit) {
                     addDateToList(task.baselineStartDate);
                     addDateToList(task.baselineEndDate);
                 }
-                if (task.indicators && task.indicators.length > 0) {
+                if (task.indicators && task.indicators.length > 0 && !_this.parent.timelineModule.isZoomToFit) {
                     task.indicators.forEach(function (item, index) {
                         addDateToList(_this.getDateFromFormat(item.date));
                     });
@@ -1136,13 +1136,13 @@ var DateProcessor = /** @class */ (function () {
             addDateToList(minStartDate);
             addDateToList(maxEndDate);
             //update schedule dates as per holiday and strip line collection
-            if (this.parent.eventMarkers.length > 0) {
+            if (this.parent.eventMarkers.length > 0 && !this.parent.timelineModule.isZoomToFit) {
                 var eventMarkers = this.parent.eventMarkers;
                 eventMarkers.forEach(function (marker, index) {
                     addDateToList(_this.getDateFromFormat(marker.day));
                 });
             }
-            if (this.parent.totalHolidayDates.length > 0) {
+            if (this.parent.totalHolidayDates.length > 0 && !this.parent.timelineModule.isZoomToFit) {
                 var holidays = this.parent.totalHolidayDates;
                 holidays.forEach(function (holiday, index) {
                     addDateToList(new Date(holiday));
@@ -3419,6 +3419,7 @@ var GanttChart = /** @class */ (function () {
      * @private
      */
     GanttChart.prototype.onTabAction = function (e) {
+        this.parent.treeGrid.grid.enableHeaderFocus = this.parent.enableHeaderFocus;
         var isInEditedState = this.parent.editModule && this.parent.editModule.cellEditModule &&
             this.parent.editModule.cellEditModule.isCellEdit;
         if (!this.parent.showActiveElement && !isInEditedState) {
@@ -3427,10 +3428,12 @@ var GanttChart = /** @class */ (function () {
         var $target = isInEditedState ? e.target.closest('.e-rowcell') : e.target;
         var isTab = (e.action === 'tab') ? true : false;
         var nextElement = this.getNextElement($target, isTab);
-        if ($target.classList.contains('e-rowcell') || $target.closest('.e-chart-row-cell')) {
+        if ($target.classList.contains('e-rowcell') || $target.closest('.e-chart-row-cell') ||
+            $target.classList.contains('e-headercell')) {
             e.preventDefault();
         }
-        if ($target.classList.contains('e-rowcell') && (nextElement && nextElement.classList.contains('e-rowcell'))) {
+        if ($target.classList.contains('e-rowcell') && (nextElement && nextElement.classList.contains('e-rowcell')) ||
+            $target.classList.contains('e-headercell')) {
             this.parent.treeGrid.grid.notify('key-pressed', e);
         }
         if (!isInEditedState) {
@@ -3466,7 +3469,7 @@ var GanttChart = /** @class */ (function () {
     GanttChart.prototype.getNextElement = function ($target, isTab) {
         var nextElement = isTab ? $target.nextElementSibling : $target.previousElementSibling;
         while (nextElement && nextElement.parentElement.classList.contains('e-row')) {
-            if (!nextElement.matches('.e-hide')) {
+            if (!nextElement.matches('.e-hide') && !nextElement.matches('.e-rowdragdrop')) {
                 return nextElement;
             }
             nextElement = isTab ? nextElement.nextElementSibling : nextElement.previousElementSibling;
@@ -3518,7 +3521,7 @@ var GanttChart = /** @class */ (function () {
                 if (rowElement) {
                     childElement = isTab ? rowElement.children[0] : rowElement.children[rowElement.children.length - 1];
                     while (childElement) {
-                        if (!childElement.matches('.e-hide')) {
+                        if (!childElement.matches('.e-hide') && !childElement.matches('.e-rowdragdrop')) {
                             return childElement;
                         }
                         childElement = isTab ? childElement.nextElementSibling : childElement.previousElementSibling;
@@ -9464,6 +9467,8 @@ var Gantt = /** @class */ (function (_super) {
         _this.needsID = true;
         /** @hidden */
         _this.showActiveElement = false;
+        /** @hidden */
+        _this.enableHeaderFocus = false;
         /**
          * @private
          */
@@ -19202,6 +19207,7 @@ var Filter$1 = /** @class */ (function () {
     };
     Filter$$1.prototype.updateFilterMenuPosition = function (element, args) {
         this.parent.element.appendChild(element);
+        element.querySelector('.e-valid-input').focus();
         var targetElement;
         if (this.parent.showColumnMenu) {
             targetElement = document.querySelector('#treeGrid' + this.parent.controlId + '_gridcontrol_colmenu_Filter');

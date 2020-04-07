@@ -213,4 +213,50 @@ describe('Toolbar functionalities', () => {
 
     });
 
+    describe('EJ2-36447 Searching actionBegin , cancel is not working', () => {
+        let gridObj: Grid;
+        let actionBegin: (args?: Object) => void;
+        let actionComplete: (args?: Object) => void;
+        let count: number = 0;
+        let keyup: any = getEventObject('KeyboardEvent', 'keyup');
+        keyup.keyCode = 13;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: true,
+                    allowSorting: true,
+                    clipMode: 'EllipsisWithTooltip',
+                    pageSettings: { pageCount: 5, pageSize: 10 },
+                    toolbar: [ 'Search'],
+                    columns: [
+                        { field: 'OrderID',headerText: 'Order ID', textAlign: 'Right', width: 120 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 140 },
+                        { field: 'Freight', headerText: 'Freight', textAlign: 'Right', width: 120, format: 'C2' },
+                        { field: 'Freight1', headerText: 'Percentage', format: 'P', width: 170, textAlign: 'Right' }
+                        ], 
+                    actionBegin: actionBegin,
+                
+                }, done);
+        });
+        it('Check the search args', (done: Function) => {
+            actionBegin = (args: any): void => {
+                args.cancel = true;
+                count = count + 1;
+                done();
+            }
+            gridObj.actionBegin = actionBegin;
+            let searchElement: HTMLInputElement = <HTMLInputElement>gridObj.toolbarModule.getToolbar().querySelector('#' + gridObj.element.id + '_searchbar');
+            (searchElement).value = '98';
+            (<HTMLInputElement>gridObj.toolbarModule.getToolbar().querySelector('#' + gridObj.element.id + '_searchbar')).focus();
+            keyup.target = searchElement;
+            EventHandler.trigger(searchElement, 'keyup', keyup);
+            expect(count).toBe(1);  
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionBegin = count = actionComplete = null;
+        });
+    });
+
 });

@@ -194,10 +194,9 @@ export class InfiniteScroll implements IAction {
         if (this.parent.infiniteScrollSettings.enableCache
             && this.parent.infiniteScrollSettings.initialBlocks > this.parent.infiniteScrollSettings.maxBlocks) {
             this.parent.infiniteScrollSettings.initialBlocks = this.parent.infiniteScrollSettings.maxBlocks;
-        } else {
-            let pageSize: number = this.parent.pageSettings.pageSize * this.parent.infiniteScrollSettings.initialBlocks;
-            query.page(1, pageSize);
         }
+        let pageSize: number = this.parent.pageSettings.pageSize * this.parent.infiniteScrollSettings.initialBlocks;
+        query.page(1, pageSize);
     }
 
     private infiniteCellFocus(e: CellFocusArgs): void {

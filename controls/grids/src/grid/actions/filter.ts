@@ -689,7 +689,7 @@ export class Filter implements IAction {
             }
         }
 
-        if (e.action === 'escape' && this.filterSettings.type === 'Menu') {
+        if (e.action === 'escape' && this.filterSettings.type === 'Menu' && this.filterModule) {
             this.filterModule.closeDialog();
             gObj.notify(events.restoreFocus, {});
         }

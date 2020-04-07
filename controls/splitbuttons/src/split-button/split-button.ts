@@ -187,7 +187,11 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
             this.element.id = getUniqueID('e-' + this.getModuleName());
         }
     }
-
+    /**
+     * Initialize the Component rendering
+     * @returns void
+     * @private
+     */
     public render(): void {
         if (isBlazor() && this.isServerRendered) {
             buttonObserver.on('component-rendered', this.buttonInstance, this, this.element.id);
@@ -221,12 +225,22 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
         this.wireEvents();
         this.renderComplete();
     }
-
+    /**
+     * Adds a new item to the menu. By default, new item appends to the list as the last item,
+     * but you can insert based on the text parameter.
+     * @param  { ItemModel[] } items - Specifies an array of JSON data.
+     * @param { string } text - Specifies the text to insert the newly added item in the menu.
+     * @returns {void}.
+     */
     public addItems(items: ItemModel[], text?: string): void {
         super.addItems(items, text);
         this.secondaryBtnObj.items = this.items;
     }
-
+    /**
+     * Removes the items from the menu.
+     * @param  { string[] } items - Specifies an array of string to remove the items.
+     * @returns {void}.
+     */
     public removeItems(items: string[]): void {
         super.removeItems(items);
         this.secondaryBtnObj.items = this.items;
@@ -452,7 +466,9 @@ export class SplitButton extends DropDownButton implements INotifyPropertyChange
         this.element.focus();
     }
 }
-
+/**
+ * Interface for Split Button click event arguments.
+ */
 export interface ClickEventArgs extends BaseEventArgs {
     element: Element;
 }
@@ -461,13 +477,13 @@ export interface ClickEventArgs extends BaseEventArgs {
  */
 export class Deferred {
     /**
-     * Resolve a Deferred object and call doneCallbacks with the given args.
-     */
-    public resolve: Function;
-    /**
      * Reject a Deferred object and call failCallbacks with the given args.
      */
     public reject: Function;
+    /**
+     * Resolve a Deferred object and call doneCallbacks with the given args.
+     */
+    public resolve: Function;
     /**
      * Promise is an object that represents a value that may not be available yet, but will be resolved at some point in the future. 
      */
@@ -476,11 +492,11 @@ export class Deferred {
         this.reject = reject;
     });
     /**
-     * Defines the callback function triggers when the Deferred object is resolved.
-     */
-    public then: Function = this.promise.then.bind(this.promise);
-    /**
      * Defines the callback function triggers when the Deferred object is rejected.
      */
     public catch: Function = this.promise.catch.bind(this.promise);
+    /**
+     * Defines the callback function triggers when the Deferred object is resolved.
+     */
+    public then: Function = this.promise.then.bind(this.promise);
 }

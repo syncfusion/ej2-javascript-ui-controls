@@ -110,6 +110,9 @@ export class PaneProperties extends ChildProperty<PaneProperties> {
     public cssClass: string;
 }
 
+/**
+ * Provides information about a SanitizeSelectors.
+ */
 export interface SanitizeSelectors {
     /** Returns the tags. */
     tags?: string[];
@@ -117,6 +120,9 @@ export interface SanitizeSelectors {
     attributes?: SanitizeRemoveAttrs[];
 }
 
+/**
+ * Provides information about a BeforeSanitizeHtml event.
+ */
 export interface BeforeSanitizeHtmlArgs {
     /** Illustrates whether the current action needs to be prevented or not. */
     cancel?: boolean;
@@ -132,6 +138,9 @@ export interface BeforeSanitizeHtmlArgs {
     selectors?: SanitizeSelectors;
 }
 
+/**
+ * Provides information about a SanitizeRemoveAttributes.
+ */
 export interface SanitizeRemoveAttrs {
     /** Defines the attribute name to sanitize */
     attribute?: string;
@@ -210,7 +219,6 @@ export class Splitter extends Component<HTMLElement> {
     private templateElement: HTMLElement[] = [];
     private collapseFlag: Boolean = false;
     private expandFlag: Boolean = true;
-    private isModalChange: Boolean = true;
 
     /**
      * Specifies the height of the Splitter component that accepts both string and number values.
@@ -373,12 +381,7 @@ export class Splitter extends Component<HTMLElement> {
      */
 
     public onPropertyChanged(newProp: SplitterModel, oldProp: SplitterModel): void {
-
         if (!this.element.classList.contains(ROOT)) { return; }
-        if (!this.isModalChange)  {
-            this.isModalChange = true;
-            return;
-        }
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'height':
@@ -801,6 +804,8 @@ export class Splitter extends Component<HTMLElement> {
     }
 
     private isCollapsed(index?: number): void {
+        if (!isNullOrUndefined(index) && this.paneSettings[index].collapsed
+            && isNullOrUndefined(this.allPanes[index].classList.contains(COLLAPSE_PANE))) { return; }
         this.expandFlag = false;
         if (!isNullOrUndefined(index)) {
             this.collapseFlag = true;
@@ -1461,10 +1466,7 @@ export class Splitter extends Component<HTMLElement> {
     }
 
     private updatePaneSettings(index : number , collapsed : boolean) : void {
-        if (!this.checkBlazor()) {
-                this.isModalChange = false ;
-                this.paneSettings[index].collapsed = collapsed;
-        }
+        this.paneSettings[index].collapsed = collapsed;
     }
     private splitterProperty(): void {
         this.splitInstance = {
@@ -2342,6 +2344,9 @@ interface Coordinates {
     y ?: number;
 }
 
+/**
+ * Provides information about a Resize event.
+ */
 export interface ResizeEventArgs {
     /** Contains the root element of resizing pane. */
     element?: HTMLElement;
@@ -2360,6 +2365,9 @@ export interface ResizeEventArgs {
     cancel?: boolean;
 }
 
+/**
+ * Provides information about a Resizing event.
+ */
 export interface ResizingEventArgs {
     /** Contains the root element of resizing pane. */
     element?: HTMLElement;
@@ -2375,6 +2383,9 @@ export interface ResizingEventArgs {
     separator?: HTMLElement;
 }
 
+/**
+ * Provides information about a BeforeExpand event.
+ */
 export interface BeforeExpandEventArgs {
     /**
      * To access root element after control created
@@ -2402,6 +2413,9 @@ export interface BeforeExpandEventArgs {
     cancel?: boolean;
 }
 
+/**
+ * Provides information about a Expanded event.
+ */
 export interface ExpandedEventArgs {
     /**
      * To access root element after control created

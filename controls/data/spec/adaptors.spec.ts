@@ -3506,3 +3506,42 @@ describe('WebApi Adaptor', () => {
     });
 
 }); 
+
+describe('EJ2-37998 - Provide support for delete action while using complex data field as primary key', () => {
+    let complexData: JSON[] = ([
+        { details: { OrderID: 10248 }, CustomerID: 'VINET', EmployeeID: 5, Freight: 32.38, Verified: true },
+        { details: { OrderID: 10249 }, CustomerID: 'AANAR', EmployeeID: 2, Freight: 11.61, Verified: false },
+        { details: { OrderID: 10250 }, CustomerID: 'VICTE', EmployeeID: 7, Freight: 65.83, Verified: true },
+        { details: { OrderID: 10251 }, CustomerID: 'SUPRD', EmployeeID: 7, Freight: 70.63, Verified: false },
+        { details: { OrderID: 10252 }, CustomerID: 'ANDREW', EmployeeID: 8, Freight: 23.63, Verified: true }
+    ] as Object) as JSON[];
+    let dataManager: DataManager;
+    describe('update method with query', () => {
+        let record: Object = { details: { OrderID: 10251 }, CustomerID: 'ANNARS', EmployeeID: 7, Freight: 70.63, Verified: false };
+        let result: Object[];
+        beforeAll((done: Function) => {
+            dataManager = new DataManager(complexData, new Query(), new JsonAdaptor);
+            dataManager.update('details.OrderID', record, new Query());
+            result = dataManager.executeLocal();
+            done();
+        });
+        it('check length of the data', () => {
+            expect(result.length).toBe(5);
+        });
+        it('check data updated properly', () => {
+            expect((<{ [key: string]: any }>result[3])["CustomerID"]).toBe('ANNARS');
+        });
+    });
+    describe('remove method', () => {
+        let result: Object[];
+        beforeAll((done: Function) => {
+            dataManager = new DataManager(complexData, new Query(), new JsonAdaptor);
+            dataManager.remove('details.OrderID', { details: { OrderID: 10249 }, CustomerID: 'AANAR', EmployeeID: 2, Freight: 11.61, Verified: false });
+            result = dataManager.executeLocal();
+            done();
+        });
+        it('check length of the data', () => {
+            expect(result[0]['details']['OrderID']).toBe(10248);
+        });
+    });
+});

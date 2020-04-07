@@ -33,7 +33,7 @@ let rows: RowModel[] = [{
 
 let sheet: SheetModel[] = [{
     name: 'Merge Cells',
-    range: [{ dataSource: dataSource, startCell: 'A3' }],
+    ranges: [{ dataSource: dataSource, startCell: 'A3' }],
     columns: columns,
     rows: rows
 }];

@@ -2863,6 +2863,7 @@ class BarcodeGenerator extends Component {
         return value;
     }
     preRender() {
+        this.element.classList.add('e-barcode');
         this.barcodeRenderer = new BarcodeRenderer(this.element.id, this.mode === 'SVG');
         this.initialize();
         this.initializePrivateVariables();
@@ -2875,7 +2876,6 @@ class BarcodeGenerator extends Component {
             let element = 'barcodeMeasureElement';
             window[element] = null;
         }
-        this.element.classList.add('e-barcode');
     }
     initializePrivateVariables() {
         this.defaultLocale = {};
@@ -6671,11 +6671,11 @@ class QRCodeGenerator extends Component {
         this.element.appendChild(this.barcodeCanvas);
     }
     preRender() {
+        this.element.classList.add('e-qrcode');
         this.barcodeRenderer = new BarcodeRenderer(this.element.id, this.mode === 'SVG');
         this.initialize();
         this.initializePrivateVariables();
         this.setCulture();
-        this.element.classList.add('e-qrcode');
     }
     /**
      * Get the properties to be maintained in the persisted state.
@@ -7639,6 +7639,7 @@ class DataMatrixGenerator extends Component {
         this.trigger(BarcodeEvent[eventName], arg);
     }
     preRender() {
+        this.element.classList.add('e-datamatrix');
         //initialize the data matrix renderer
         this.barcodeRenderer = new BarcodeRenderer(this.element.id, this.mode === 'SVG');
         this.initialize();
@@ -7646,7 +7647,6 @@ class DataMatrixGenerator extends Component {
         this.initializePrivateVariables();
         this.setCulture();
         //set class data matrix renderer
-        this.element.classList.add('e-datamatrix');
     }
     onPropertyChanged(newProp, oldProp) {
         let width;

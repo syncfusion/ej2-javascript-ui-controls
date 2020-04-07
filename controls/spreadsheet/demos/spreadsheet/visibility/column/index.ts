@@ -18,7 +18,7 @@ let rows: RowModel[] = [{ hidden: true }];
 
 let rangeSettings: RangeModel[] = [{ dataSource: dataSource, startCell: 'B2' }];
 
-let sheet: SheetModel[] = [{ name: 'Price Details', columns: columns, selectedRange: 'B2', rows: rows, range: rangeSettings }];
+let sheet: SheetModel[] = [{ name: 'Price Details', columns: columns, selectedRange: 'B2', rows: rows, ranges: rangeSettings }];
 
 let spreadsheetModel: SpreadsheetModel = {
     sheets: sheet,

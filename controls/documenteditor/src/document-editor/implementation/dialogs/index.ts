@@ -17,3 +17,7 @@ export * from './table-options-dialog';
 export * from './cell-options-dialog';
 export * from './styles-dialog';
 export * from './spellCheck-dialog';
+export * from './form-field-check-box-dialog';
+export * from './form-field-text-dialog';
+export * from './form-field-drop-down-dialog';
+export * from './form-field-popup';

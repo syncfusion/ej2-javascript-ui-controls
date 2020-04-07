@@ -14,8 +14,7 @@ import { Selector } from '../../../src/diagram/objects/node';
 import { PointModel } from '../../../src/diagram/primitives/point-model';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { Node, ChildContainer, Html } from '../../../src/diagram/objects/node';
-import { SymbolPalette, SymbolInfo, PaletteModel } from '../../../src/symbol-palette/index';
-import { EJ2Instance } from '@syncfusion/ej2-navigations';
+import { SymbolPalette, SymbolInfo, PaletteModel } from '../../../src/symbol-palette/index'; 
 import { IElement } from '../../../src/diagram/index';
 import { identityMatrix, rotateMatrix, transformPointByMatrix, Matrix } from '../../../src/diagram/primitives/matrix';
 import { profile, inMB, getMemoryProfile } from '../../../spec/common.spec';
@@ -1149,7 +1148,7 @@ describe('Diagram Control', () => {
             diagramCanvas = document.getElementById(diagram.element.id + 'content');
             setTimeout(function () {
                 palette.element['ej2_instances'][1]['helper'] = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
-                    let clonedElement: HTMLElement; let diagramElement: EJ2Instance;
+                    let clonedElement: HTMLElement;  
                     let position: PointModel = palette['getMousePosition'](e.sender);
                     let target = document.elementFromPoint(position.x, position.y).childNodes[0];
                     let symbols: IElement = palette.symbolTable[target['id']];

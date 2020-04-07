@@ -41,10 +41,7 @@ let columns: ColumnModel[] = [
 ];
 
 let sheet: SheetModel[] = [{
-    range: [{
-        dataSource: dataSource,
-        startCell: 'A1'
-    }],
+    ranges: [{ dataSource: dataSource }],
     rowCount: 200,
     colCount: 200,
     columns: columns

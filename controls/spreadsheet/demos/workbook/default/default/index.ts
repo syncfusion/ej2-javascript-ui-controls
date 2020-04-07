@@ -1,3 +1,6 @@
+/**
+ * Workbook sample
+ */
 import { Workbook, CellModel } from './../../../../src/index';
 import { defaultData } from './data';
 import { DataManager, WebApiAdaptor } from '@syncfusion/ej2-data';
@@ -96,7 +99,7 @@ import { DataManager, WebApiAdaptor } from '@syncfusion/ej2-data';
         }]
     });
     let jsonDataBinding: Workbook = new Workbook({
-        sheets: [{ range: [{ dataSource: defaultData, startCell: 'A10' }] }]
+        sheets: [{ ranges: [{ dataSource: defaultData, startCell: 'A10' }] }]
     });
     cellDataBinding.getData('Sheet1!A1:B2').then((value: Map<string, CellModel>) => {
         debugger
@@ -116,13 +119,11 @@ import { DataManager, WebApiAdaptor } from '@syncfusion/ej2-data';
     });
 
     let remoteDataBinding: Workbook = new Workbook({
-        sheets: [{ range: [{ dataSource: remoteData, startCell: 'A1' }] }]
+        sheets: [{ ranges: [{ dataSource: remoteData, startCell: 'A1' }] }]
     });
     remoteDataBinding.getData('Sheet1!A1:B2').then((value: Map<string, CellModel>) => {
         debugger
     }).catch((reason: string) => {
         debugger
     });
-
-    
 }

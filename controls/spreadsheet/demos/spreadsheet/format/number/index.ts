@@ -1,7 +1,7 @@
 import { Spreadsheet, SheetModel, getFormatFromType } from '../../../../src/index';
 
 /**
- * Spreadsheet default sample.
+ * Spreadsheet number formatting sample.
  */
 let sheet: SheetModel[] = [{
     rows: [{
@@ -54,7 +54,7 @@ let sheet: SheetModel[] = [{
         { index: 1, value: 'b6' },
         { index: 2, value: 'c6' },
         { index: 3, value: '3445' },
-        { index: 4, value: 'e6' },]
+        { index: 4, value: 'e6' }]
     }],
     columns: [{
         width: 180
@@ -72,7 +72,7 @@ let sheet: SheetModel[] = [{
 let spreadsheet: Spreadsheet = new Spreadsheet({
     height: '80%',
     sheets: sheet,
-    openUrl: '//localhost:64980/Home/Open',
-    saveUrl: '//localhost:64980/Home/Save'
+    openUrl: 'https://ej2services.syncfusion.com/development/web-services/api/spreadsheet/open',
+    saveUrl: 'https://ej2services.syncfusion.com/development/web-services/api/spreadsheet/save'
 });
 spreadsheet.appendTo('#spreadsheet');

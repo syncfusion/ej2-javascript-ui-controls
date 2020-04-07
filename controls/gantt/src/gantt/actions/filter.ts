@@ -238,6 +238,7 @@ export class Filter {
 
     private updateFilterMenuPosition(element: HTMLElement, args: GroupEventArgs): void {
         this.parent.element.appendChild(element);
+        (element.querySelector('.e-valid-input') as HTMLElement).focus();
         let targetElement: HTMLElement;
         if (this.parent.showColumnMenu) {
             targetElement = document.querySelector('#treeGrid' + this.parent.controlId + '_gridcontrol_colmenu_Filter');

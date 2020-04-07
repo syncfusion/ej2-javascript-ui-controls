@@ -23,100 +23,180 @@ export type HyperlinkType =
  * Enum underline for character format
  */
 export type Underline =
-    // No underline will be drawn.
+    /**
+     * No underline will be drawn.
+     */
     'None' |
-    // Draws single underline.
+    /**
+     * Draws single underline.
+     */
     'Single' |
-    // Draws underline for words only.
+    /**
+     * Draws underline for words only.
+     */
     'Words' |
-    // Draws double underline.
+    /**
+     * Draws double underline.
+     */
     'Double' |
-    // Draws dotted underline.
+    /**
+     * Draws dotted underline.
+     */
     'Dotted' |
-    // Draws thick underline.
+    /**
+     * Draws thick underline.
+     */
     'Thick' |
-    // Draws dash underline.
+    /**
+     * Draws dash underline.
+     */
     'Dash' |
-    // Draws dash long underline.
+    /**
+     * Draws dash long underline.
+     */
     'DashLong' |
-    // Draws dot dash underline.
+    /**
+     * Draws dot dash underline.
+     */
     'DotDash' |
-    // Draws dot dot dash underline.
+    /**
+     * Draws dot dot dash underline.
+     */
     'DotDotDash' |
-    // Draws wavy underline.
+    /**
+     * Draws wavy underline.
+     */
     'Wavy' |
-    // Draws dotted heavy underline.
+    /**
+     *  Draws dotted heavy underline.
+     */
     'DottedHeavy' |
-    // Draws dash heavy underline.
+    /**
+     * Draws dash heavy underline.
+     */
     'DashHeavy' |
-    // Draws dash long heavy underline.
+    /**
+     * Draws dash long heavy underline.
+     */
     'DashLongHeavy' |
-    // Draws dot dash heavy underline.
+    /**
+     * Draws dot dash heavy underline.
+     */
     'DotDashHeavy' |
-    // Draws dot dot dash heavy underline.
+    /**
+     * Draws dot dot dash heavy underline.
+     */
     'DotDotDashHeavy' |
-    // Draws wavy heavy underline.
+    /**
+     * Draws wavy heavy underline.
+     */
     'WavyHeavy' |
-    // Draws wavy double underline.
+    /**
+     * Draws wavy double underline.
+     */
     'WavyDouble';
 
 /**
- * enum strikethrough for character format
+ * Enum strikethrough for character format
  */
 export type Strikethrough =
-    // No strike will be drawn.
+    /**
+     * No strike will be drawn.
+     */
     'None' |
-    // Draws single strike.
+    /**
+     * Draws single strike.
+     */
     'SingleStrike' |
-    // Draws double strike.
+    /**
+     * Draws double strike.
+     */
     'DoubleStrike';
 
 /**
- * enum baseline alignment for character format
+ * Enum baseline alignment for character format
  */
 export type BaselineAlignment =
-    // Specifies the text to be rendered normally.
+    /**
+     * Specifies the text to be rendered normally.
+     */
     'Normal' |
-    // Specifies the text to appear above the baseline of text.
+    /**
+     * Specifies the text to appear above the baseline of text.
+     */
     'Superscript' |
-    // Specifies the text to appear below the baseline of text.
+    /**
+     * Specifies the text to appear below the baseline of text.
+     */
     'Subscript';
 
 /**
- * enum highlight color for character format
+ * Enum highlight color for character format
  */
 export type HighlightColor =
-    // No highlight color will be applied.
+    /**
+     * No highlight color will be applied.
+     */
     'NoColor' |
-    // Highlights the content with yellow (#ffffff00) color.
+    /**
+     * Highlights the content with yellow (#ffffff00) color.
+     */
     'Yellow' |
-    // Highlights the content with bright green (#ff00ff00) color.
+    /**
+     * Highlights the content with bright green (#ff00ff00) color.
+     */
     'BrightGreen' |
-    // Highlights the content with turquoise (#ff00ffff) color.
+    /**
+     * Highlights the content with turquoise (#ff00ffff) color.
+     */
     'Turquoise' |
-    // Highlights the content with pink (#ffff00ff) color.
+    /**
+     * Highlights the content with pink (#ffff00ff) color.
+     */
     'Pink' |
-    // Highlights the content with blue (#ff0000ff) color.
+    /**
+     * Highlights the content with blue (#ff0000ff) color.
+     */
     'Blue' |
-    // Highlights the content with red (#ffff0000) color.
+    /**
+     *  Highlights the content with red (#ffff0000) color.
+     */
     'Red' |
-    // Highlights the content with dark blue (#ff000080) color.
+    /**
+     *  Highlights the content with dark blue (#ff000080) color.
+     */
     'DarkBlue' |
-    // Highlights the content with teal (#ff008080) color.
+    /**
+     * Highlights the content with teal (#ff008080) color.
+     */
     'Teal' |
-    // Highlights the content with green (#ff008000) color.
+    /**
+     * Highlights the content with green (#ff008000) color.
+     */
     'Green' |
-    // Highlights the content with violet (#ff800080) color.
+    /**
+     * Highlights the content with violet (#ff800080) color.
+     */
     'Violet' |
-    // Highlights the content with dark red (#ff800000) color.
+    /**
+     * Highlights the content with dark red (#ff800000) color.
+     */
     'DarkRed' |
-    // Highlights the content with dark yellow (#ff808000)  color.
+    /**
+     * Highlights the content with dark yellow (#ff808000)  color.
+     */
     'DarkYellow' |
-    // Highlights the content with gray 50 (#ff808080) color.
+    /**
+     * Highlights the content with gray 50 (#ff808080) color.
+     */
     'Gray50' |
-    // Highlights the content with gray 25 (#ffc0c0c0) color.
+    /**
+     * Highlights the content with gray 25 (#ffc0c0c0) color.
+     */
     'Gray25' |
-    // Highlights the content with black (#ff000000) color.
+    /**
+     * Highlights the content with black (#ff000000) color.
+     */
     'Black';
 
 /**
@@ -162,445 +242,525 @@ export type TextAlignment =
  * Enum for Header Footer
  */
 export type HeaderFooterType =
-    /// <summary>
-    /// Header for even numbered pages.
-    /// </summary>
+    /**
+     * Header for even numbered pages.
+     */
     'EvenHeader' |
-    /// <summary>
-    /// Header for odd numbered pages.
-    /// </summary>
+    /**
+     * Header for odd numbered pages.
+     */
     'OddHeader' |
-    /// <summary>
-    /// Footer for even numbered pages.
-    /// </summary>
+    /**
+     * Footer for even numbered pages.
+     */
     'EvenFooter' |
-    /// <summary>
-    /// Footer for odd numbered pages.
-    /// </summary>
+    /**
+     * Footer for odd numbered pages.
+     */
     'OddFooter' |
-    /// <summary>
-    /// Header for the first page of the section. 
-    /// </summary>
+    /**
+     * Header for the first page of the section. 
+     */
     'FirstPageHeader' |
-    /// <summary>
-    /// Footer for the first page of the section. 
-    /// </summary>
+    /**
+     * Footer for the first page of the section. 
+     */
     'FirstPageFooter';
 /**
  * Enum for List type
  */
 export type ListType =
+    /**
+     * Specifies the none list type.
+     */
     'None' |
+    /**
+     * Specifies the bullet list type.
+     */
     'Bullet' |
+    /**
+     * Specifies the numbering list type.
+     */
     'Numbering' |
+    /**
+     * Specifies the outline numbering list type.
+     */
     'OutlineNumbering';
 /** 
  * Enum for List Level Pattern
  */
 export type ListLevelPattern =
-    // Specifies the default pattern for the list level.
+    /**
+     * Specifies the default pattern for the list level.
+     */
     'Arabic' |
-    // Specifies the upper roman (I, II, III, ...) pattern for the list level.
+    /**
+     * Specifies the upper roman (I, II, III, ...) pattern for the list level.
+     */
     'UpRoman' |
-    // Specifies the lower roman (i, ii, iii, ...) pattern for the list level.
+    /**
+     * Specifies the lower roman (i, ii, iii, ...) pattern for the list level.
+     */
     'LowRoman' |
-    // Specifies the uppercase letter (A, B, C, ...) pattern for the list level.
+    /**
+     * Specifies the uppercase letter (A, B, C, ...) pattern for the list level.
+     */
     'UpLetter' |
-    // Specifies the lowercase letter (a, b, c, ...) pattern for the list level.
+    /**
+     * Specifies the lowercase letter (a, b, c, ...) pattern for the list level.
+     */
     'LowLetter' |
-    // Specifies the ordinal (1st, 2nd, 3rd, ...) pattern for the list level.
+    /**
+     * Specifies the ordinal (1st, 2nd, 3rd, ...) pattern for the list level.
+     */
     'Ordinal' |
-    // Specifies the numbering (1, 2, 3, ...) pattern for the list level.
+    /**
+     * Specifies the numbering (1, 2, 3, ...) pattern for the list level.
+     */
     'Number' |
-    // Specifies the ordinal text (First, Second, Third, ...) pattern for the list level.
+    /**
+     * Specifies the ordinal text (First, Second, Third, ...) pattern for the list level.
+     */
     'OrdinalText' |
-    // Specifies the leading zero (01, 02, 03, ...) pattern for the list level.
+    /**
+     * Specifies the leading zero (01, 02, 03, ...) pattern for the list level.
+     */
     'LeadingZero' |
-    // Specifies the bullet pattern for the list level.
+    /**
+     * Specifies the bullet pattern for the list level.
+     */
     'Bullet' |
-    // Specifies the far east pattern for the list level.
+    /**
+     * Specifies the far east pattern for the list level.
+     */
     'FarEast' |
-    // Specifies the special pattern for the list level.
+    /**
+     * Specifies the special pattern for the list level.
+     */
     'Special' |
-    // Specifies no pattern for the list level.
+    /**
+     * Specifies no pattern for the list level.
+     */
     'None';
 /**
  * Enum for follow character type
  */
 export type FollowCharacterType =
-    /// <summary>
-    /// Specifies the list value to be followed with a single tab.
-    /// </summary>
+    /**
+     * Specifies the list value to be followed with a single tab.
+     */
     'Tab' |
-    /// <summary>
-    /// Specifies the list value to be followed with a single space.
-    /// </summary>
+    /**
+     * Specifies the list value to be followed with a single space.
+     */
     'Space' |
-    /// <summary>
-    /// Specifies the list value to be followed with no follow character.
-    /// </summary>
+    /**
+     * Specifies the list value to be followed with no follow character.
+     */
     'None';
+/**
+ * Enum for table alignment
+ */
 export type TableAlignment =
-    // Aligns the table to the left.>
+    /**
+     * Aligns the table to the left.
+     */
     'Left' |
-    // Aligns the table to the center.
+    /**
+     * Aligns the table to the center.
+     */
     'Center' |
-    // Aligns the table to the right.
+    /**
+     * Aligns the table to the right.
+     */
     'Right';
+/**
+ * Enum WidthType for table and cells
+ */
 export type WidthType =
-    // Specifies the width to be determined automatically.
+    /**
+     * Specifies the width to be determined automatically.
+     */
     'Auto' |
-    // Specifies the width in percentage.
+    /**
+     * Specifies the width in percentage.
+     */
     'Percent' |
-    // Specifies the width in points.
+    /**
+     * Specifies the width in points.
+     */
     'Point';
+
+/**
+ * Enum for cell vertical alignment.
+ */
 export type CellVerticalAlignment =
-    // Aligns the content to the top.
+    /**
+     * Aligns the content to the top.
+     */
     'Top' |
-    // Aligns the content to the center.
+    /**
+     * Aligns the content to the center.
+     */
     'Center' |
-    // Aligns the content ot the bottom.
+    /**
+     * Aligns the content ot the bottom.
+     */
     'Bottom';
+/**
+ * Enum for row height type
+ */
 export type HeightType =
-    // Specifies the height to be determined automatically.
+    /**
+     * Specifies the height to be determined automatically.
+     */
     'Auto' |
-    // Specifies the least height in points.
+    /**
+     * Specifies the least height in points.
+     */
     'AtLeast' |
-    // Specifies the exact height in points.
+    /**
+     * Specifies the exact height in points.
+     */
     'Exactly';
+/**
+ * Enum for line style
+ */
 export type LineStyle =
-    /// <summary>
-    /// No border.
-    /// </summary>
+    /**
+     * No border.
+     */
     'None' |
-    /// <summary>
-    /// A single solid line.
-    /// </summary>
+    /**
+     * A single solid line.
+     */
     'Single' |
-    /// <summary>
-    /// Dots.
-    /// </summary>
+    /**
+     * Dots.
+     */
     'Dot' |
-    /// <summary>
-    /// A dash followed by a small gap.
-    /// </summary>
+    /**
+     * A dash followed by a small gap.
+     */
     'DashSmallGap' |
-    /// <summary>
-    /// A dash followed by a large gap.
-    /// </summary>
+    /**
+     * A dash followed by a large gap.
+     */
     'DashLargeGap' | //dashed
-    /// <summary>
-    /// A dash followed by a dot.
-    /// </summary>
+    /**
+     * A dash followed by a dot.
+     */
     'DashDot' | //dotDash
-    /// <summary>
-    /// A dash followed by two dots.
-    /// </summary>
+    /**
+     * A dash followed by two dots.
+     */
     'DashDotDot' | //dotDotDash
-    /// <summary>
-    /// Double solid lines.
-    /// </summary>
+    /**
+     * Double solid lines.
+     */
     'Double' |
-    /// <summary>
-    /// Three solid thin lines.
-    /// </summary>
+    /**
+     * Three solid thin lines.
+     */
     'Triple' |
-    /// <summary>
-    /// An internal single thin solid line surrounded by a single thick solid line with 
-    /// a small gap between them.
-    /// </summary>
+    /**
+     * An internal single thin solid line surrounded by a single thick solid line with 
+     * a small gap between them.
+     */
     'ThinThickSmallGap' |
-    /// <summary>
-    /// An internal single thick solid line surrounded by a single thin solid line with
-    /// a small gap between them.
-    /// </summary>
+    /**
+     * An internal single thick solid line surrounded by a single thin solid line with
+     * a small gap between them.
+     */
     'ThickThinSmallGap' |
-    /// <summary>
-    /// An internal single thin solid line surrounded by a single thick solid line surrounded
-    /// by a single thin solid line with a small gap between all lines.
-    /// </summary>
+    /**
+     * An internal single thin solid line surrounded by a single thick solid line surrounded
+     * by a single thin solid line with a small gap between all lines.
+     */
     'ThinThickThinSmallGap' |
-    /// <summary>
-    /// An internal single thin solid line surrounded by a single thick solid line with
-    /// a medium gap between them.
-    /// </summary>
+    /**
+     * An internal single thin solid line surrounded by a single thick solid line with
+     * a medium gap between them.
+     */
     'ThinThickMediumGap' |
-    /// <summary>
-    /// An internal single thick solid line surrounded by a single thin solid line with
-    /// a medium gap between them.
-    /// </summary>
+    /**
+     * An internal single thick solid line surrounded by a single thin solid line with
+     * a medium gap between them.
+     */
     'ThickThinMediumGap' |
-    /// <summary>
-    /// An internal single thin solid line surrounded by a single thick solid line surrounded
-    /// by a single thin solid line with a medium gap between all lines.
-    /// </summary>
+    /**
+     * An internal single thin solid line surrounded by a single thick solid line surrounded
+     * by a single thin solid line with a medium gap between all lines.
+     */
     'ThinThickThinMediumGap' |
-    /// <summary>
-    /// An internal single thin solid line surrounded by a single thick solid line with
-    /// a large gap between them.
-    /// </summary>
+    /**
+     * An internal single thin solid line surrounded by a single thick solid line with
+     * a large gap between them.
+     */
     'ThinThickLargeGap' |
-    /// <summary>
-    /// An internal single thick solid line surrounded by a single thin solid line with
-    /// a large gap between them.
-    /// </summary>
+    /**
+     * An internal single thick solid line surrounded by a single thin solid line with
+     * a large gap between them.
+     */
     'ThickThinLargeGap' |
-    /// <summary>
-    /// An internal single thin solid line surrounded by a single thick solid line surrounded
-    /// by a single thin solid line with a large gap between all lines.
-    /// </summary>
+    /**
+     * An internal single thin solid line surrounded by a single thick solid line surrounded
+     * by a single thin solid line with a large gap between all lines.
+     */
     'ThinThickThinLargeGap' |
-    /// <summary>
-    /// A single wavy solid line.
-    /// </summary>
+    /**
+     * A single wavy solid line.
+     */
     'SingleWavy' | //wave.
-    /// <summary>
-    /// Double wavy solid lines.
-    /// </summary>
+    /**
+     * Double wavy solid lines.
+     */
     'DoubleWavy' | //doubleWave.
-    /// <summary>
-    /// A dash followed by a dot stroke, thus rendering a border similar to a barber
-    /// pole.
-    /// </summary>
+    /**
+     * A dash followed by a dot stroke, thus rendering a border similar to a barber
+     * pole.
+     */
     'DashDotStroked' |
-    /// <summary>
-    /// The border appears to have a 3-D embossed look.
-    /// </summary>
+    /**
+     * The border appears to have a 3-D embossed look.
+     */
     'Emboss3D' |
-    /// <summary>
-    /// The border appears to have a 3-D engraved look.
-    /// </summary>
+    /**
+     * The border appears to have a 3-D engraved look.
+     */
     'Engrave3D' |
-    /// <summary>
-    /// The border appears to be outset.
-    /// </summary>
+    /**
+     * The border appears to be outset.
+     */
     'Outset' |
-    /// <summary>
-    /// The border appears to be inset.
-    /// </summary>
+    /**
+     * The border appears to be inset.
+     */
     'Inset' |
-    /// <summary>
-    /// Additional enums supported in Microsoft word in the XML level as well as by DocIO.
-    /// </summary>
+    /**
+     * Additional enums supported in Microsoft word in the XML level as well as by DocIO.
+     */
     'Thick' |
-    /// <summary>
-    /// Cleared border.
-    /// </summary>
+    /**
+     * Cleared border.
+     */
     'Cleared';
 
-
+/**
+ * Enum for texture style
+ */
 export type TextureStyle =
-    /// <summary>
-    ///  No shading
-    /// </summary>
+    /**
+     *  No shading
+     */
     'TextureNone' |
-    /// <summary>
-    /// 2.5 percent shading.
-    /// </summary>
+    /**
+     * 2.5 percent shading.
+     */
     'Texture2Pt5Percent' |
-    /// <summary>
-    /// 5 percent shading.
-    /// </summary>
+    /**
+     * 5 percent shading.
+     */
     'Texture5Percent' |
-    /// <summary>
-    /// 7.5 percent shading.
-    /// </summary>
+    /**
+     * 7.5 percent shading.
+     */
     'Texture7Pt5Percent' |
-    /// <summary>
-    /// 10 percent shading.
-    /// </summary>
+    /**
+     * 10 percent shading.
+     */
     'Texture10Percent' |
-    /// <summary>
-    /// 12.5 percent shading.
-    /// </summary>
+    /**
+     * 12.5 percent shading.
+     */
     'Texture12Pt5Percent' |
-    /// <summary>
-    /// 15 percent shading.
-    /// </summary>
+    /**
+     * 15 percent shading.
+     */
     'Texture15Percent' |
-    /// <summary>
-    /// 17.5 percent shading.
-    /// </summary>
+    /**
+     * 17.5 percent shading.
+     */
     'Texture17Pt5Percent' |
-    /// <summary>
-    /// 20 percent shading.
-    /// </summary>
+    /**
+     * 20 percent shading.
+     */
     'Texture20Percent' |
-    /// <summary>
-    /// 22.5 percent shading.
-    /// </summary>
+    /**
+     * 22.5 percent shading.
+     */
     'Texture22Pt5Percent' |
-    /// <summary>
-    /// 25 percent shading.
-    /// </summary>
+    /**
+     * 25 percent shading.
+     */
     'Texture25Percent' |
-    /// <summary>
-    /// 27.5 percent shading.
-    /// </summary>
+    /**
+     * 27.5 percent shading.
+     */
     'Texture27Pt5Percent' |
-    /// <summary>
-    /// 30 percent shading.
-    /// </summary>
+    /**
+     * 30 percent shading.
+     */
     'Texture30Percent' |
-    /// <summary>
-    /// 32.5 percent shading.
-    /// </summary>
+    /**
+     * 32.5 percent shading.
+     */
     'Texture32Pt5Percent' |
-    /// <summary>
-    /// 35 percent shading.
-    /// </summary>
+    /**
+     * 35 percent shading.
+     */
     'Texture35Percent' |
-    /// <summary>
-    /// 37.5 percent shading.
-    /// </summary>
+    /**
+     * 37.5 percent shading.
+     */
     'Texture37Pt5Percent' |
-    /// <summary>
-    /// 40 percent shading.
-    /// </summary>
+    /**
+     * 40 percent shading.
+     */
     'Texture40Percent' |
-    /// <summary>
-    /// 42.5 percent shading.
-    /// </summary>
+    /**
+     * 42.5 percent shading.
+     */
     'Texture42Pt5Percent' |
-    /// <summary>
-    /// 45 percent shading.
-    /// </summary>
+    /**
+     * 45 percent shading.
+     */
     'Texture45Percent' |
-    /// <summary>
-    /// 47.5 percent shading.
-    /// </summary>
+    /**
+     * 47.5 percent shading.
+     */
     'Texture47Pt5Percent' |
-    /// <summary>
-    /// 50 percent shading.
-    /// </summary>
+    /**
+     * 50 percent shading.
+     */
     'Texture50Percent' |
-    /// <summary>
-    /// 52.5 percent shading.
-    /// </summary>
+    /**
+     * 52.5 percent shading.
+     */
     'Texture52Pt5Percent' |
-    /// <summary>
-    /// 55 percent shading.
-    /// </summary>
+    /**
+     * 55 percent shading.
+     */
     'Texture55Percent' |
-    /// <summary>
-    /// 57.5 percent shading.
-    /// </summary>
+    /**
+     * 57.5 percent shading.
+     */
     'Texture57Pt5Percent' |
-    /// <summary>
-    /// 60 percent shading.
-    /// </summary>
+    /**
+     * 60 percent shading.
+     */
     'Texture60Percent' |
-    /// <summary>
-    /// 62.5 percent shading.
-    /// </summary>
+    /**
+     * 62.5 percent shading.
+     */
     'Texture62Pt5Percent' |
-    /// <summary>
-    /// 65 percent shading.
-    /// </summary>
+    /**
+     * 65 percent shading.
+     */
     'Texture65Percent' |
-    /// <summary>
-    /// 67.5 percent shading.
-    /// </summary>
+    /**
+     * 67.5 percent shading.
+     */
     'Texture67Pt5Percent' |
-    /// <summary>
-    /// 70 percent shading.
-    /// </summary>
+    /**
+     * 70 percent shading.
+     */
     'Texture70Percent' |
-    /// <summary>
-    /// 72.5 percent shading.
-    /// </summary>
+    /**
+     * 72.5 percent shading.
+     */
     'Texture72Pt5Percent' |
-    /// <summary>
-    /// 75 percent shading.
-    /// </summary>
+    /**
+     * 75 percent shading.
+     */
     'Texture75Percent' |
-    /// <summary>
-    /// 77.5 percent shading.
-    /// </summary>
+    /**
+     * 77.5 percent shading.
+     */
     'Texture77Pt5Percent' |
-    /// <summary>
-    /// 80 percent shading.
-    /// </summary>
+    /**
+     * 80 percent shading.
+     */
     'Texture80Percent' |
-    /// <summary>
-    /// 82.5 percent shading.
-    /// </summary>
+    /**
+     * 82.5 percent shading.
+     */
     'Texture82Pt5Percent' |
-    /// <summary>
-    /// 85 percent shading.
-    /// </summary>
+    /**
+     * 85 percent shading.
+     */
     'Texture85Percent' |
-    /// <summary>
-    /// 87.5 percent shading.
-    /// </summary>
+    /**
+     * 87.5 percent shading.
+     */
     'Texture87Pt5Percent' |
-    /// <summary>
-    /// 90 percent shading.
-    /// </summary>
+    /**
+     * 90 percent shading.
+     */
     'Texture90Percent' |
-    /// <summary>
-    /// 92.5 percent shading.
-    /// </summary>
+    /**
+     * 92.5 percent shading.
+     */
     'Texture92Pt5Percent' |
-    /// <summary>
-    /// 95 percent shading.
-    /// </summary>
+    /**
+     * 95 percent shading.
+     */
     'Texture95Percent' |
-    /// <summary>
-    /// 97.5 percent shading.
-    /// </summary>
+    /**
+     * 97.5 percent shading.
+     */
     'Texture97Pt5Percent' |
-    /// <summary>
-    /// Solid shading.
-    /// </summary>
+    /**
+     * Solid shading.
+     */
     'TextureSolid' |
-    /// <summary>
-    /// Dark horizontal shading.
-    /// </summary>
+    /**
+     * Dark horizontal shading.
+     */
     'TextureDarkHorizontal' |
-    /// <summary>
-    /// Dark vertical shading.
-    /// </summary>
+    /**
+     * Dark vertical shading.
+     */
     'TextureDarkVertical' |
-    /// <summary>
-    /// Dark diagonal down shading.
-    /// </summary>
+    /**
+     * Dark diagonal down shading.
+     */
     'TextureDarkDiagonalDown' |
-    /// <summary>
-    /// Dark diagonal up shading.
-    /// </summary>
+    /**
+     * Dark diagonal up shading.
+     */
     'TextureDarkDiagonalUp' |
-    /// <summary>
-    /// Dark horizontal cross shading.
-    /// </summary>
+    /**
+     * Dark horizontal cross shading.
+     */
     'TextureDarkCross' |
-    /// <summary>
-    /// Dark diagonal cross shading.
-    /// </summary>
+    /**
+     * Dark diagonal cross shading.
+     */
     'TextureDarkDiagonalCross' |
-    /// <summary>
-    /// Horizontal shading.
-    /// </summary>
+    /**
+     * Horizontal shading.
+     */
     'TextureHorizontal' |
-    /// <summary>
-    /// Vertical shading.
-    /// </summary>
+    /**
+     * Vertical shading.
+     */
     'TextureVertical' |
-    /// <summary>
-    /// Diagonal down shading.
-    /// </summary>
+    /**
+     * Diagonal down shading.
+     */
     'TextureDiagonalDown' |
-    /// <summary>
-    /// Diagonal up shading.
-    /// </summary>
+    /**
+     * Diagonal up shading.
+     */
     'TextureDiagonalUp' |
-    /// <summary>
-    /// Horizontal cross shading.
-    /// </summary>
+    /**
+     * Horizontal cross shading.
+     */
     'TextureCross' |
-    /// <summary>
-    /// Diagonal cross shading.
-    /// </summary>
+    /**
+     * Diagonal cross shading.
+     */
     'TextureDiagonalCross';
 
 /**
@@ -627,13 +787,21 @@ export type FormatType =
  * Enum for find option
  */
 export type FindOption =
-    // Specifies default find option; Uses case-independent, arbitrary character boundaries.
+    /**
+     * Specifies default find option; Uses case-independent, arbitrary character boundaries.
+     */
     'None' |
-    // Specifies the find option to match whole words only.
+    /**
+     * Specifies the find option to match whole words only.
+     */
     'WholeWord' |
-    // Specifies the find option to match case sensitive.
+    /**
+     * Specifies the find option to match case sensitive.
+     */
     'CaseSensitive' |
-    // Specifies the find option to match case sensitive and whole words.
+    /**
+     * Specifies the find option to match case sensitive and whole words.
+     */
     'CaseSensitiveWholeWord';
 
 /**
@@ -645,26 +813,50 @@ export interface WColor {
     g: number;
     b: number;
 }
+
+/**
+ * Enum for outline level
+ */
 export type OutlineLevel =
-    /// Outline level 1.
+    /**
+     * Outline level 1.
+     */
     'Level1' |
-    /// Outline level 2.
+    /**
+     * Outline level 2.
+     */
     'Level2' |
-    /// Outline level 3.
+    /**
+     * Outline level 3.
+     */
     'Level3' |
-    /// Outline level 4.
+    /**
+     * Outline level 4.
+     */
     'Level4' |
-    /// Outline level 5.
+    /**
+     * Outline level 5.
+     */
     'Level5' |
-    /// Outline level 6.
+    /**
+     * Outline level 6.
+     */
     'Level6' |
-    /// Outline level 7.
+    /**
+     * Outline level 7.
+     */
     'Level7' |
-    /// Outline level 8.
+    /**
+     * Outline level 8.
+     */
     'Level8' |
-    /// Outline level 9.
+    /**
+     * Outline level 9.
+     */
     'Level9' |
-    /// No outline level.
+    /**
+     *  No outline level.
+     */
     'BodyText';
 
 /**
@@ -686,10 +878,14 @@ export type StyleType =
  */
 export type RowPlacement =
 
-    //Places the row above.
+    /**
+     * Places the row above.
+     */
     'Above' |
 
-    //Places the row below.
+    /**
+     * Places the row below.
+     */
     'Below';
 
 /**
@@ -697,10 +893,14 @@ export type RowPlacement =
  * @private
  */
 export type ColumnPlacement =
-    // Places the column left.
+    /**
+     * Places the column left.
+     */
     'Left' |
 
-    // Places the column right.
+    /**
+     * Places the column right.
+     */
     'Right';
 
 /**
@@ -773,33 +973,61 @@ export type PageFitType =
  * Specifies the context type at selection.
  */
 export type ContextType =
-    //Specified the curret context is in text
+    /**
+     * Specified the curret context is in text.
+     */
     'Text' |
-    //Specified the curret context is in image
+    /**
+     * Specified the curret context is in image.
+     */
     'Image' |
-    //Specified this curretn context is in list 
+    /**
+     * Specified this curretn context is in list.
+     */
     'List' |
-    //Specified the curret context is in text which is inside table
+    /**
+     * Specified the curret context is in text which is inside table.
+     */
     'TableText' |
-    //Specified the curret context is in image which is inside table
+    /**
+     * Specified the curret context is in image which is inside table.
+     */
     'TableImage' |
-    //Specified the curret context is in text which is inside header
+    /**
+     * Specified the curret context is in text which is inside header.
+     */
     'HeaderText' |
-    //Specified the curret context is in image which is inside header
+    /**
+     * Specified the curret context is in image which is inside header.
+     */
     'HeaderImage' |
-    //Specified the curret context is in text which is inside table & is in header region
+    /**
+     * Specified the curret context is in text which is inside table & is in header region.
+     */
     'HeaderTableText' |
-    //Specified the curret context is in text which is inside table & is in header region
+    /**
+     * Specified the curret context is in text which is inside table & is in header region.
+     */
     'HeaderTableImage' |
-    //Specified the curret context is in text which is inside footer
+    /**
+     * Specified the curret context is in text which is inside footer.
+     */
     'FooterText' |
-    //Specified the curret context is in image which is inside footer
+    /**
+     * Specified the curret context is in image which is inside footer.
+     */
     'FooterImage' |
-    //Specified the curret context is in text which is inside table & is in footer region
+    /**
+     * Specified the curret context is in text which is inside table & is in footer region.
+     */
     'FooterTableText' |
-    //Specified the curret context is in image which is inside table & is in footer region
+    /**
+     * Specified the curret context is in image which is inside table & is in footer region.
+     */
     'FooterTableImage' |
-    //Current context is in table of contents
+    /**
+     * Current context is in table of contents.
+     */
     'TableOfContents';
 
 /**
@@ -905,8 +1133,8 @@ export type DialogType =
     'TableOptions';
 
 /**
- * @private
  * Action type
+ * @private
  */
 export type Action = 'Insert' | 'Delete' | 'BackSpace' | 'Selection' | 'MultiSelection' | 'Enter' | 'ImageResizing'
     | 'ReplaceAll' | 'Cut' | 'CharacterFormat' |
@@ -930,6 +1158,7 @@ export type Action = 'Insert' | 'Delete' | 'BackSpace' | 'Selection' | 'MultiSel
     | 'List'
     | 'InsertRowAbove'
     | 'InsertRowBelow'
+    | 'InsertTableBelow'
     | 'DeleteTable'
     | 'DeleteRow'
     | 'DeleteColumn'
@@ -951,20 +1180,39 @@ export type Action = 'Insert' | 'Delete' | 'BackSpace' | 'Selection' | 'MultiSel
     | 'ListCharacterFormat' | 'ContinueNumbering' | 'RestartNumbering' | 'ListSelect' | 'Shading' | 'Borders' | 'TOC' | 'StyleName'
     | 'ApplyStyle' | 'SectionBreak' | 'PageBreak' | 'IMEInput' | 'TableAutoFitToContents' | 'TableAutoFitToWindow' | 'TableFixedColumnWidth'
     | 'ParagraphBidi' | 'TableBidi' | 'ContextualSpacing' | 'RestrictEditing' | 'RemoveEditRange' | 'InsertComment' | 'DeleteComment'
-    | 'RemoveInline' | 'DeleteAllComments' | 'InsertCommentWidget' | 'DeleteCommentWidget';
+    | 'RemoveInline' | 'DeleteAllComments' | 'InsertCommentWidget' | 'DeleteCommentWidget' | 'FormField' | 'UpdateFormField';
+/**
+ * Enum for direction
+ */
 export type BiDirectionalOverride =
+    /**
+     * None
+     */
     'None' |
-    //Left to Right
+    /**
+     * Left to Right
+     */
     'LTR' |
-    // Right to left
+    /**
+     * Right to left
+     */
     'RTL';
 
+/**
+ * Enum for table auto fit type
+ */
 export type AutoFitType =
-    /// Fit the contents respect to contents.
+    /**
+     * Fit the contents respect to contents.
+     */
     'FitToContents' |
-    /// Fit the contents respect to window/pageWidth.
+    /**
+     * Fit the contents respect to window/pageWidth.
+     */
     'FitToWindow' |
-    /// Fit the contents respect to fixed column width.
+    /**
+     * Fit the contents respect to fixed column width.
+     */
     'FixedColumnWidth';
 
 /**
@@ -972,20 +1220,47 @@ export type AutoFitType =
  * @private
  */
 export type ProtectionType =
-    /// Do not apply protection to the document.
+    /**
+     * Do not apply protection to the document.
+     */
     'NoProtection' |
-    /// Allow read-only access to the document.
-    'ReadOnly';
+    /**
+     * Allow read-only access to the document.
+     */
+    'ReadOnly'|
+    /**
+     * Allow form filling only.
+     */
+    'FormFieldsOnly';
 
+/**
+ * Specifies the paste options
+ */
 export type PasteOptions =
+    /**
+     * Apply source formatting options.
+     */
     'KeepSourceFormatting' |
+    /**
+     * Merge with existing formatting.
+     */
     'MergeWithExistingFormatting' |
+    /**
+     * Keep text only.
+     */
     'KeepTextOnly';
 
+/**
+ * Specifies the layout type
+ */
 export type LayoutType =
-    // Specifies the content to be displayed in multiple pages.
+    /**
+     * Specifies the content to be displayed in multiple pages.
+     */
     'Pages' |
-    // Specifies the content to be displayed continuously in single page.
+    /**
+     * Specifies the content to be displayed continuously in single page.
+     */
     'Continuous';
 
 
@@ -993,22 +1268,99 @@ export type LayoutType =
  * Defines Predefined toolbar items.
  */
 export type ToolbarItem =
-'New' |
-'Open' |
-'Separator' |
-'Undo' |
-'Redo' |
-'Comments'|
-'Image' |
-'Table' |
-'Hyperlink' |
-'Bookmark' |
-'TableOfContents' |
-'Header' |
-'Footer' |
-'PageSetup'|
-'PageNumber'|
-'Break'|
-'Find'|
-'LocalClipboard'|
-'RestrictEditing';
+    /**
+     * New option in the toolbar item.
+     */
+    'New' |
+    /**
+     * Open option in the toolbar item.
+     */
+    'Open' |
+    /**
+     * Seperator in the toolbar item.
+     */
+    'Separator' |
+    /**
+     * Undo option in the toolbar item.
+     */
+    'Undo' |
+    /**
+     * Redo option in the toolbar item.
+     */
+    'Redo' |
+    /**
+     * Comments option in the toolbar item.
+     */
+    'Comments' |
+    /**
+     * Insert image option in the toolbar item.
+     */
+    'Image' |
+    /**
+     * Insert Table option in the toolbar item.
+     */
+    'Table' |
+    /**
+     * Hyperlink option in the toolbar item.
+     */
+    'Hyperlink' |
+    /**
+     * Bookmark option in the toolbar item.
+     */
+    'Bookmark' |
+    /**
+     * Table of Contents in the toolbar item.
+     */
+    'TableOfContents' |
+    /**
+     * Header option in the toolbar item.
+     */
+    'Header' |
+    /**
+     * Footer option in the toolbar item.
+     */
+    'Footer' |
+    /**
+     * PageSetup option in the toolbar item.
+     */
+    'PageSetup' |
+    /**
+     * Insert page number option in the toolbar item.
+     */
+    'PageNumber' |
+    /**
+     * Break option in the toolbar item.
+     */
+    'Break' |
+    /**
+     * Find option in the toolbar item.
+     */
+    'Find' |
+    /**
+     * Local clipboard option in the toolbar item.
+     */
+    'LocalClipboard' |
+    /**
+     * RestrictEditing option in the toolbar item.
+     */
+    'RestrictEditing'|
+    /**
+     * Form fiels option in the toolbar item..
+     */
+    'FormFields';
+
+/**
+ * Specifies the type of Text formField
+ * @private
+ */
+export type TextFormFieldType = 'Text' | 'Number' | 'Date';
+/**
+ * Specifies the type of Checkbox formField size
+ * @private
+ */
+export type CheckBoxSizeType = 'Auto' | 'Exactly';
+/**
+ * Specifies the type of FormField
+ * @private
+ */
+export type FormFieldType = 'Text' | 'CheckBox' | 'DropDown';

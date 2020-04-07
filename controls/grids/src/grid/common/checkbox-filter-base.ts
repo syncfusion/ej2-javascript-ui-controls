@@ -136,7 +136,7 @@ export class CheckBoxFilterBase {
 
     private foreignFilter(args: { filterCollection?: PredicateModel[] }, value: string): void {
         let operator: string = this.options.isRemote ?
-            (this.options.column.type === 'string' ? 'contains' : 'equal') : (this.options.column.type ? 'startswith' : 'contains');
+            (this.options.column.type === 'string' ? 'contains' : 'equal') : (this.options.column.type ? 'contains' : 'equal');
         let initalPredicate: Predicate =
             new Predicate(this.options.column.foreignKeyValue, operator, value, true, this.options.ignoreAccent);
         this.foreignKeyFilter(args, [args.filterCollection], initalPredicate);
@@ -341,7 +341,7 @@ export class CheckBoxFilterBase {
 
     private btnClick(e: MouseEvent): void {
         if (this.filterState) {
-            if ((<Element>e.target).tagName.toLowerCase() === 'input') {
+            if ((<Element>e.target).tagName.toLowerCase() === 'input' && (<Element>e.target).classList.contains('e-searchinput')) {
                 let value: string = (<HTMLInputElement>e.target).value;
                 if (this.options.column.type === 'boolean') {
                     if (value !== undefined &&
@@ -366,6 +366,10 @@ export class CheckBoxFilterBase {
                 value ? this.isForeignColumn(this.options.column as Column) ? this.foreignFilter(args, value) :
                     this.options.handler(args) : this.closeDialog();
             } else {
+                if ((<{ keyCode?: number }>e).keyCode === 13) {
+                    this.fltrBtnHandler();
+            } else {
+
                 let text: string = (e.target as HTMLElement).firstChild.textContent.toLowerCase();
                 if (this.getLocalizedLabel(this.isExcel ? 'OKButton' : 'FilterButton').toLowerCase() === text) {
                     this.fltrBtnHandler();
@@ -373,6 +377,7 @@ export class CheckBoxFilterBase {
                     this.clearFilter();
                 }
             }
+        }
             this.closeDialog();
         } else if (!((<Element>e.target).tagName.toLowerCase() === 'input')) {
             this.clearFilter();
@@ -485,7 +490,7 @@ export class CheckBoxFilterBase {
         foreignQuery.queries = [];
         let parsed: string | number | Date | boolean = (this.options.type !== 'string' && parseFloat(val)) ? parseFloat(val) : val;
         let operator: string = this.options.isRemote ?
-            (this.options.type === 'string' ? 'contains' : 'equal') : (this.options.type ? 'startswith' : 'contains');
+            (this.options.type === 'string' ? 'contains' : 'equal') : (this.options.type ? 'contains' : 'equal');
         let matchCase: boolean = true;
         let ignoreAccent: boolean = this.options.ignoreAccent;
         let field: string = this.isForeignColumn(column) ? column.foreignKeyValue : column.field;
@@ -981,7 +986,11 @@ export class CheckBoxFilterBase {
     }
     private static getCaseValue(filter: PredicateModel): boolean {
         if (isNullOrUndefined(filter.matchCase)) {
-            return true;
+            if (filter.type === 'string' || isNullOrUndefined(filter.type) && typeof (filter.value) === 'string') {
+                return false;
+            } else {
+                return true;
+            }
         } else {
             return filter.matchCase;
         }

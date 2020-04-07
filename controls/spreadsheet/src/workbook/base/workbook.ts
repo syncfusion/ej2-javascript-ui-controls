@@ -10,7 +10,7 @@ import * as events from '../common/event';
 import { CellStyleModel, DefineNameModel, HyperlinkModel, insertModel, InsertDeleteModelArgs, getAddressInfo } from '../common/index';
 import { setCellFormat, sheetCreated, deleteModel, ModelType, ProtectSettingsModel, ValidationModel, setLockCells } from '../common/index';
 import { BeforeSaveEventArgs, SaveCompleteEventArgs, BeforeCellFormatArgs, SaveOptions, SetCellFormatArgs } from '../common/interface';
-import { SortOptions, BeforeSortEventArgs, SortEventArgs, FindOptions, CellInfoEventArgs } from '../common/index';
+import { SortOptions, BeforeSortEventArgs, SortEventArgs, FindOptions, CellInfoEventArgs, UnprotectArgs } from '../common/index';
 import { FilterEventArgs, FilterOptions, BeforeFilterEventArgs, setMerge, MergeType, MergeArgs } from '../common/index';
 import { getCell, skipDefaultValue, setCell, wrap as wrapText } from './cell';
 import { DataBind, setRow, setColumn } from '../index';
@@ -837,11 +837,22 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Protect the active sheet based on the protect sheetings.
+     * @param sheet - Specifies the sheet to protect.
      * @param protectSettings - Specifies the protect settings of the sheet.
      */
-    public protectSheet(sheetIndex?: number | string, protectSettings?: ProtectSettingsModel): void {
+    public protectSheet(sheet?: number | string, protectSettings?: ProtectSettingsModel): void {
       this.notify(events.protectsheetHandler, protectSettings);
     }
+
+    /**
+     * Protect the active sheet based on the protect sheetings.
+     * @param sheet - Specifies the sheet to protect.
+     * @param protectSettings - Specifies the protect settings of the sheet.
+     */
+    public unprotectSheet(sheet: number): void {
+        let args: UnprotectArgs = { sheet: sheet};
+        this.notify(events.unprotectsheetHandler, args);
+      }
 
     /**
      * Sorts the range of cells in the active Spreadsheet.

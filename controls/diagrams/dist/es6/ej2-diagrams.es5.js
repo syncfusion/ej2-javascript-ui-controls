@@ -5729,16 +5729,16 @@ function getIntersection(ele, bounds, sPt, tPt, isTar) {
             sPt = Point.transform({ x: sPt.x, y: sPt.y }, angle_3, Math.max(wrapper.actualSize.width, wrapper.actualSize.height));
         }
     }
+    if ((ele.sourcePadding || ele.targetPadding)) {
+        rect = new Rect(wrapper.bounds.x - padding, wrapper.bounds.y - padding, wrapper.actualSize.width + 2 * padding, wrapper.actualSize.height + 2 * padding);
+    }
     if (wrapper instanceof PathElement && wrapper.data) {
-        segmentPoints = child.getPoints();
+        segmentPoints = rect ? [rect.topLeft, rect.topRight, rect.bottomRight, rect.bottomLeft] : child.getPoints();
         if (((child.data.split('m').length - 1) + (child.data.split('M').length - 1)) === 1) {
             segmentPoints[segmentPoints.length] = segmentPoints[0];
         }
     }
     else {
-        if ((ele.sourcePadding || ele.targetPadding)) {
-            rect = new Rect(wrapper.bounds.x - padding, wrapper.bounds.y - padding, wrapper.actualSize.width + 2 * padding, wrapper.actualSize.height + 2 * padding);
-        }
         segmentPoints = rect ? [rect.topLeft, rect.topRight, rect.bottomRight, rect.bottomLeft] : getPoints(wrapper, wrapper.corners);
         segmentPoints[segmentPoints.length] = segmentPoints[0];
     }
@@ -23905,7 +23905,7 @@ var ConnectorDrawingTool = /** @__PURE__ @class */ (function (_super) {
                 this.drawingObject = this.commandHandler.drawObject(connector);
             }
             args.source = this.drawingObject;
-            if ((args.target || (args.actualObject && checkPort(args.actualObject, args.sourceWrapper)))
+            if ((args.target || (args.actualObject && args.sourceWrapper && checkPort(args.actualObject, args.sourceWrapper)))
                 && (this.endPoint !== 'ConnectorTargetEnd' || (canInConnect(args.target)))) {
                 this.commandHandler.diagram.allowServerDataBinding = false;
                 this.commandHandler.connect(this.endPoint, args);
@@ -27212,7 +27212,14 @@ var ObjectFinder = /** @__PURE__ @class */ (function () {
                     outPort = getInOutConnectPorts(objects[i], false);
                     inPort = getInOutConnectPorts(objects[i], true);
                     var tool = diagram[eventHandler].tool;
-                    if (objects[i] instanceof Node && ((canOutConnect(objects[i]) || (canPortOutConnect(outPort))) ||
+                    var portElement = this.findTargetElement(objects[i].wrapper, position, undefined);
+                    if (action === 'Draw' && portElement && (objects[i] instanceof Node) && !checkPort(objects[i], portElement)) {
+                        if (((tool && tool[endPoint] === 'ConnectorSourceEnd') && !canOutConnect(objects[i])) ||
+                            ((tool && tool[endPoint] === 'ConnectorTargetEnd') && !canInConnect(objects[i]))) {
+                            return actualTarget;
+                        }
+                    }
+                    if (objects[i] instanceof Node && ((canOutConnect(objects[i]) || (canPortOutConnect(outPort)) || canInConnect(objects[i]) || (canPortInConnect(inPort))) ||
                         (action === 'PortDraw' && (tool instanceof ConnectTool) && tool[endPoint] == 'ConnectorTargetEnd' &&
                             (canInConnect(objects[i]) || (canPortInConnect(inPort)))))) {
                         actualTarget = objects[i];
@@ -27271,12 +27278,12 @@ var ObjectFinder = /** @__PURE__ @class */ (function () {
                     if (objects[i] instanceof Connector) {
                         var objj1 = objects[i - 1];
                         if (objects[i - 1] instanceof Node && objj1.ports) {
-                            var portElement = this.findTargetElement(objj1.wrapper, position, undefined);
-                            if ((portElement && (portElement.id.match('_icon_content_shape$') || portElement.id.match('_icon_content_rect$')))) {
+                            var portElement_1 = this.findTargetElement(objj1.wrapper, position, undefined);
+                            if ((portElement_1 && (portElement_1.id.match('_icon_content_shape$') || portElement_1.id.match('_icon_content_rect$')))) {
                                 return objj1;
                             }
                             for (var j = 0; j < objj1.ports.length; j++) {
-                                if (portElement && portElement.id.match('_' + objj1.ports[j].id + '$')) {
+                                if (portElement_1 && portElement_1.id.match('_' + objj1.ports[j].id + '$')) {
                                     if (canDraw(objj1.ports[j], diagram)) {
                                         return objj1;
                                     }
@@ -27304,8 +27311,8 @@ var ObjectFinder = /** @__PURE__ @class */ (function () {
             else if (action === 'Pan' || action === 'LayoutAnimation') {
                 for (var i = objects.length - 1; i >= 0; i--) {
                     if (objects[i] instanceof Node || objects[i] instanceof Connector) {
-                        var portElement = this.findTargetElement(objects[i].wrapper, position, undefined);
-                        if ((action === 'Pan') || ((portElement && (portElement.id.match('_icon_content_shape$') || portElement.id.match('_icon_content_rect$'))))) {
+                        var portElement_2 = this.findTargetElement(objects[i].wrapper, position, undefined);
+                        if ((action === 'Pan') || ((portElement_2 && (portElement_2.id.match('_icon_content_shape$') || portElement_2.id.match('_icon_content_rect$'))))) {
                             return objects[i];
                         }
                     }
@@ -32240,9 +32247,9 @@ var DiagramScroller = /** @__PURE__ @class */ (function () {
             scale.x = (this.viewPortWidth - (margin.left + margin.right)) / (bounds.width);
             scale.y = (this.viewPortHeight - (margin.top + margin.bottom)) / (bounds.height);
             if (!canZoomIn && (((bounds.width - this.horizontalOffset) < this.viewPortWidth) &&
-                (bounds.height - this.verticalOffset) < this.viewPortHeight) || this.currentZoom > 1) {
-                scale.x = Math.min(1, scale.x);
-                scale.y = Math.min(1, scale.y);
+                (bounds.height - this.verticalOffset) < this.viewPortHeight)) {
+                scale.x = Math.min(this.currentZoom, scale.x);
+                scale.y = Math.min(this.currentZoom, scale.y);
             }
             var zoomFactor = void 0;
             var centerX = void 0;
@@ -34444,7 +34451,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Finds the object that is under the given mouse position
-     * @param {NodeModel[] | ConnectorModel[]} objects - Defines the collection of objects, from which the object has to be found.
+     * @param {NodeModel[] | ConnectorModel[]}objects - Defines the collection of objects, from which the object has to be found.
      * @param {Actions} action - Defines the action, using which the relevant object has to be found.
      * @param {boolean} inAction - Defines the active state of the action.
      */
@@ -34688,7 +34695,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     /**
      * Aligns the group of objects to with reference to the first object in the group
      * @param {NodeModel[] | ConnectorModel[]} objects - Defines the objects that have to be aligned
-     * @param {AlignmentOptions} option - Defines the factor, by which the objects have to be aligned
+     * @param {AlignmentOptions}option - Defines the factor, by which the objects have to be aligned
      */
     Diagram.prototype.align = function (option, objects, type) {
         this.getBlazorDiagramObjects(objects);
@@ -34721,7 +34728,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Scales the given objects to the size of the first object in the group
-     * @param {NodeModel[] | ConnectorModel[]} objects - Defines the collection of objects that have to be scaled
+     * @param {NodeModel[] | ConnectorModel[]}objects - Defines the collection of objects that have to be scaled
      * @param {SizingOptions} option - Defines whether the node has to be horizontally scaled, vertically scaled or both
      */
     Diagram.prototype.sameSize = function (option, objects) {
@@ -40165,6 +40172,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                     var nodePreviewSize = void 0;
                     var paletteDragSize = void 0;
                     if (paletteId) {
+                        // tslint:disable-next-line:no-any
                         var sourceElement = document.getElementById(paletteId).ej2_instances[0];
                         var source = 'sourceElement';
                         _this.droppable[source] = sourceElement;

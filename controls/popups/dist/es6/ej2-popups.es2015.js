@@ -1159,6 +1159,8 @@ let resizeWestWidth;
 let setLeft = true;
 let previousWidth = 0;
 let setWidth = true;
+// tslint:disable-next-line
+let proxy;
 function createResize(args) {
     resizeStart = args.resizeBegin;
     resize = args.resizing;
@@ -1174,7 +1176,12 @@ function createResize(args) {
     minWidth = args.minWidth;
     maxWidth = args.maxWidth;
     maxHeight = args.maxHeight;
-    wireEvents();
+    if (!isNullOrUndefined(args.proxy) && !isNullOrUndefined(args.proxy.dialogOpen) && args.proxy.dialogOpen) {
+        wireEvents(args.proxy);
+    }
+    else {
+        wireEvents();
+    }
 }
 function getDOMElement(element) {
     let domElement;
@@ -1188,13 +1195,17 @@ function getDOMElement(element) {
     }
     return domElement;
 }
-function wireEvents() {
+// tslint:disable-next-line
+function wireEvents(args) {
+    if (isNullOrUndefined(args)) {
+        args = this;
+    }
     let resizers = targetElement.querySelectorAll('.' + RESIZE_HANDLER);
     for (let i = 0; i < resizers.length; i++) {
         selectedHandler = resizers[i];
-        EventHandler.add(selectedHandler, 'mousedown', onMouseDown, this);
+        EventHandler.add(selectedHandler, 'mousedown', onMouseDown, args);
         let eventName = (Browser.info.name === 'msie') ? 'pointerdown' : 'touchstart';
-        EventHandler.add(selectedHandler, eventName, onTouchStart, this);
+        EventHandler.add(selectedHandler, eventName, onTouchStart, args);
     }
 }
 /* istanbul ignore next */
@@ -1210,7 +1221,8 @@ function onMouseDown(e) {
     originalMouseY = e.pageY;
     e.target.classList.add(FOCUSED_HANDLER);
     if (!isNullOrUndefined(resizeStart)) {
-        if (resizeStart(e) === true) {
+        proxy = this;
+        if (resizeStart(e, proxy) === true) {
             return;
         }
     }
@@ -1239,7 +1251,8 @@ function onMouseUp(e) {
         document.body.querySelector('.' + FOCUSED_HANDLER).classList.remove(FOCUSED_HANDLER);
     }
     if (!isNullOrUndefined(resizeEnd)) {
-        resizeEnd(e);
+        proxy = this;
+        resizeEnd(e, proxy);
     }
     EventHandler.remove(document, 'mouseup', onMouseUp);
     EventHandler.remove(document, touchEndEvent, onMouseUp);
@@ -1259,7 +1272,8 @@ function onTouchStart(e) {
     originalMouseX = coordinates.pageX;
     originalMouseY = coordinates.pageY;
     if (!isNullOrUndefined(resizeStart)) {
-        if (resizeStart(e) === true) {
+        proxy = this;
+        if (resizeStart(e, proxy) === true) {
             return;
         }
     }
@@ -1285,7 +1299,8 @@ function onMouseMove(e) {
             }
         }
         if (!isNullOrUndefined(resize)) {
-            resize(e);
+            proxy = this;
+            resize(e, proxy);
         }
         switch (resizeTowards) {
             case 'south':
@@ -1509,7 +1524,7 @@ function resizeEast(e) {
 }
 /* istanbul ignore next */
 function setMinHeight(minimumHeight) {
-    minHeight = minimumHeight;
+    return minimumHeight;
 }
 function removeResize() {
     let handlers = targetElement.querySelectorAll('.' + RESIZE_HANDLER);
@@ -1696,17 +1711,17 @@ let Dialog = class Dialog extends Component {
         }
         let headerHeight = parseInt(computedHeaderHeight.slice(0, computedHeaderHeight.indexOf('p')), 10);
         let footerHeight = parseInt(computedFooterHeight.slice(0, computedFooterHeight.indexOf('p')), 10);
-        setMinHeight(headerHeight + 30 + footerHeight);
+        return (setMinHeight(headerHeight + 30 + footerHeight));
     }
-    onResizeStart(args) {
-        this.trigger('resizeStart', args);
+    onResizeStart(args, dialogObj) {
+        dialogObj.trigger('resizeStart', args);
         return args.cancel;
     }
-    onResizing(args) {
-        this.trigger('resizing', args);
+    onResizing(args, dialogObj) {
+        dialogObj.trigger('resizing', args);
     }
-    onResizeComplete(args) {
-        this.trigger('resizeStop', args);
+    onResizeComplete(args, dialogObj) {
+        dialogObj.trigger('resizeStop', args);
     }
     setResize() {
         if (this.enableResize) {
@@ -1733,7 +1748,8 @@ let Dialog = class Dialog extends Component {
                 boundary: this.target === document.body ? null : this.targetEle,
                 resizeBegin: this.onResizeStart.bind(this),
                 resizeComplete: this.onResizeComplete.bind(this),
-                resizing: this.onResizing.bind(this)
+                resizing: this.onResizing.bind(this),
+                proxy: this
             });
         }
         else {
@@ -1890,7 +1906,7 @@ let Dialog = class Dialog extends Component {
                     preventFocus: false
                 };
                 if (this.enableResize) {
-                    this.getMinHeight();
+                    this.resetResizeIcon();
                 }
                 this.trigger('open', eventArgs, (openEventArgs) => {
                     if (!openEventArgs.preventFocus) {
@@ -1933,6 +1949,16 @@ let Dialog = class Dialog extends Component {
             }
         }
         this.initialRender = false;
+    }
+    resetResizeIcon() {
+        let dialogConHeight = this.getMinHeight();
+        if (this.targetEle.offsetHeight < dialogConHeight) {
+            let className = this.enableRtl ? 'e-south-west' : 'e-south-east';
+            let resizeIcon = this.element.querySelector('.' + className);
+            if (!isNullOrUndefined(resizeIcon)) {
+                resizeIcon.style.bottom = '-' + dialogConHeight.toString() + 'px';
+            }
+        }
     }
     setOverlayZindex(zIndexValue) {
         let zIndex;
@@ -2450,7 +2476,7 @@ let Dialog = class Dialog extends Component {
                     }
                     break;
                 case 'target':
-                    this.popupObj.relateTo = newProp.target;
+                    this.setTarget(newProp.target);
                     break;
                 case 'position':
                     this.checkPositionData();
@@ -2471,6 +2497,13 @@ let Dialog = class Dialog extends Component {
                     break;
             }
         }
+    }
+    setTarget(target) {
+        this.popupObj.relateTo = target;
+        this.target = target;
+        this.targetEle = ((typeof this.target) === 'string') ?
+            document.querySelector(this.target) : this.target;
+        this.setMaxHeight();
     }
     updateIsModal() {
         this.element.setAttribute('aria-modal', this.isModal ? 'true' : 'false');
@@ -2522,6 +2555,9 @@ let Dialog = class Dialog extends Component {
      * @memberof dialog
      */
     destroy() {
+        if (this.isDestroyed) {
+            return;
+        }
         let classArray = [RTL, MODAL_DLG, DLG_RESIZABLE, DLG_RESTRICT_LEFT_VALUE, FULLSCREEN, DEVICE];
         let attrs = ['role', 'aria-modal', 'aria-labelledby', 'aria-describedby', 'aria-grabbed', 'tabindex', 'style'];
         removeClass([this.targetEle], [DLG_TARGET, SCROLL_DISABLED]);
@@ -2573,6 +2609,9 @@ let Dialog = class Dialog extends Component {
         }
         if (!this.isBlazorServerRender()) {
             super.destroy();
+        }
+        else {
+            this.isDestroyed = true;
         }
     }
     /**

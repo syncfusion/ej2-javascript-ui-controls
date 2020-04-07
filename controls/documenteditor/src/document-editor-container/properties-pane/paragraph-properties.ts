@@ -414,7 +414,7 @@ export class Paragraph {
             this.style.open = this.updateOptions;
             this.style.itemTemplate = '<span style="${Style}">${StyleName}</span>';
             this.style.footerTemplate = '<span class="e-de-ctnr-dropdown-ftr">'
-            + this.localObj.getConstant('Manage Styles') + '...' + '</span>';
+                + this.localObj.getConstant('Manage Styles') + '...' + '</span>';
             this.style.isStringTemplate = true;
         }
         this.style.appendTo(selectElement);
@@ -735,7 +735,7 @@ export class Paragraph {
                 this.style.value = style;
                 this.style.dataBind();
             } else {
-                this.style.value = '';
+                this.style.value = null;
             }
             classList(this.leftAlignment, [], ['e-btn-toggle']);
             classList(this.rightAlignment, [], ['e-btn-toggle']);

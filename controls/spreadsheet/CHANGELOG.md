@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 18.1.43 (2020-04-07)
+
+### Spreadsheet
+
+#### Breaking Changes
+
+- API name changes.
+
+Old Property | New Property
+-----|-----
+`rangeSettings` | `ranges`
+
 ## 18.1.42 (2020-04-01)
 
 ### Spreadsheet

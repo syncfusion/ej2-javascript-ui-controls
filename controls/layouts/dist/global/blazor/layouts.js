@@ -133,7 +133,6 @@ var Splitter = /** @class */ (function (_super) {
         _this.templateElement = [];
         _this.collapseFlag = false;
         _this.expandFlag = true;
-        _this.isModalChange = true;
         return _this;
     }
     /**
@@ -145,10 +144,6 @@ var Splitter = /** @class */ (function (_super) {
      */
     Splitter.prototype.onPropertyChanged = function (newProp, oldProp) {
         if (!this.element.classList.contains(ROOT)) {
-            return;
-        }
-        if (!this.isModalChange) {
-            this.isModalChange = true;
             return;
         }
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
@@ -561,6 +556,10 @@ var Splitter = /** @class */ (function (_super) {
     };
     Splitter.prototype.isCollapsed = function (index) {
         var _this = this;
+        if (!sf.base.isNullOrUndefined(index) && this.paneSettings[index].collapsed
+            && sf.base.isNullOrUndefined(this.allPanes[index].classList.contains(COLLAPSE_PANE))) {
+            return;
+        }
         this.expandFlag = false;
         if (!sf.base.isNullOrUndefined(index)) {
             this.collapseFlag = true;
@@ -1204,10 +1203,7 @@ var Splitter = /** @class */ (function (_super) {
         return eventArgs;
     };
     Splitter.prototype.updatePaneSettings = function (index, collapsed) {
-        if (!this.checkBlazor()) {
-            this.isModalChange = false;
-            this.paneSettings[index].collapsed = collapsed;
-        }
+        this.paneSettings[index].collapsed = collapsed;
     };
     Splitter.prototype.splitterProperty = function () {
         this.splitInstance = {

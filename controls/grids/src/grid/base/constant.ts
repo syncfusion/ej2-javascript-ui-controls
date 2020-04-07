@@ -416,3 +416,5 @@ export const removeInfiniteRows: string = 'remove-infinite-rows';
 export const setInfiniteCache: string = 'set-infinite-cache';
 /** @hidden */
 export const initialCollapse: string = 'initial-collapse';
+/** @hidden */
+export const getAggregateQuery: string = 'get-aggregate-query';

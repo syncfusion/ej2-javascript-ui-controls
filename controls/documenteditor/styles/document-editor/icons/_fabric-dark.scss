@@ -93,6 +93,15 @@
       content: '\e829';
     }
 
+    .e-de-save-icon::before {
+      content: '\e614';
+      font-family: 'e-icons';
+    }
+
+    .e-de-cancel-icon::before {
+      content: '\ebe8';
+      font-family: 'e-icons';
+    }
   }
 
   .e-de-table-properties-alignment:hover {

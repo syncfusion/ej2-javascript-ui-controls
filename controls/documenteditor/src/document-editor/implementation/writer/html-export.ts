@@ -219,7 +219,8 @@ export class HtmlExport {
             } else if (inline.hasOwnProperty('fieldType')) {
                 if (inline.fieldType === 0) {
                     let fieldCode: any = paragraph.inlines[i + 1];
-                    if (!isNullOrUndefined(fieldCode) && (fieldCode.text.indexOf('TOC') >= 0 || fieldCode.text.indexOf('HYPERLINK') >= 0)) {
+                    if (!isNullOrUndefined(fieldCode) && !isNullOrUndefined(fieldCode.text) &&
+                        (fieldCode.text.indexOf('TOC') >= 0 || fieldCode.text.indexOf('HYPERLINK') >= 0)) {
                         this.fieldCheck = 1;
                         let tagAttributes: string[] = [];
                         tagAttributes.push('style="' + this.serializeInlineStyle(inline.characterFormat, '') + '"');

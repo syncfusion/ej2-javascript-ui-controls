@@ -5,12 +5,13 @@ import {
     IWidget, ParagraphWidget, LineWidget, ElementBox, TextElementBox, Margin, Page, ImageElementBox,
     BlockWidget, BlockContainer, BodyWidget, TableWidget, TableCellWidget, TableRowWidget, Widget, ListTextElementBox,
     BookmarkElementBox, HeaderFooterWidget, FieldTextElementBox, TabElementBox, EditRangeStartElementBox, EditRangeEndElementBox,
-    CommentElementBox, CommentCharacterElementBox
+    CommentElementBox, CommentCharacterElementBox, CheckBoxFormField, DropDownFormField, TextFormField, FormField
 } from '../viewer/page';
 import { WCharacterFormat } from '../format/character-format';
 import {
     ElementInfo, HelperMethods, CellInfo, HyperlinkTextInfo,
-    ParagraphInfo, LineInfo, IndexInfo, BlockInfo, CellCountInfo, PositionInfo, Base64
+    ParagraphInfo, LineInfo, IndexInfo, BlockInfo, CellCountInfo, PositionInfo, Base64,
+    TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo
 } from './editor-helper';
 import { isNullOrUndefined, Browser, classList, L10n } from '@syncfusion/ej2-base';
 import {
@@ -39,13 +40,12 @@ import { Dictionary } from '../../base/dictionary';
 import { WParagraphStyle } from '../format/style';
 import {
     TableAlignment, WidthType, HeightType, CellVerticalAlignment, BorderType, LineStyle,
-    TabLeader, OutlineLevel, AutoFitType, ProtectionType, PasteOptions
+    TabLeader, OutlineLevel, AutoFitType, ProtectionType, PasteOptions, FormFieldType, TextFormFieldType
 } from '../../base/types';
 import { DocumentEditor } from '../../document-editor';
 import { showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
 import { DialogUtility } from '@syncfusion/ej2-popups';
 import { DocumentHelper } from '../viewer';
-
 /** 
  * Editor module 
  */
@@ -60,6 +60,7 @@ export class Editor {
     private endParagraph: ParagraphWidget = undefined;
     private removeEditRange: boolean = false;
     private currentProtectionType: ProtectionType;
+    private formFieldCounter: number = 1;
     /**
      * @private
      */
@@ -106,8 +107,8 @@ export class Editor {
      * @private
      */
     get restrictEditing(): boolean {
-        return this.documentHelper.isDocumentProtected && this.documentHelper.protectionType === 'ReadOnly'
-            && !this.selection.isSelectionIsAtEditRegion(false);
+        return this.documentHelper.isDocumentProtected && (this.documentHelper.protectionType === 'ReadOnly'
+            && !this.selection.isSelectionIsAtEditRegion(false) || this.documentHelper.protectionType === 'FormFieldsOnly');
     }
     /* tslint:disable:no-any */
     public copiedContent: any = '';
@@ -2236,6 +2237,7 @@ export class Editor {
         this.initInsertInline(separator);
         return begin;
     }
+
     private unLinkFieldCharacter(inline: ElementBox): void {
         if (inline instanceof FieldElementBox && inline.fieldType === 0) {
             if (inline.fieldEnd) {
@@ -2265,6 +2267,10 @@ export class Editor {
                 let fieldIndex: number = this.documentHelper.fields.indexOf(inline.fieldBegin);
                 if (fieldIndex !== -1) {
                     this.documentHelper.fields.splice(fieldIndex, 1);
+                }
+                let formFieldIndex: number = this.documentHelper.formFields.indexOf(inline.fieldBegin);
+                if (formFieldIndex !== -1) {
+                    this.documentHelper.formFields.splice(formFieldIndex, 1);
                 }
                 inline.fieldBegin = undefined;
             }
@@ -2939,6 +2945,7 @@ export class Editor {
             this.viewer.owner.parser.addCustomStyles(pasteContent);
             for (let i: number = 0; i < pasteContent.sections.length; i++) {
                 let parser: SfdtReader = this.documentHelper.owner.parser;
+                parser.isPaste = true;
                 if (!this.isPasteListUpdated && !isNullOrUndefined(pasteContent.lists)) {
                     if (this.documentHelper.lists.length > 0) {
                         this.updatePasteContent(pasteContent, i);
@@ -2952,6 +2959,7 @@ export class Editor {
                     }
                 }
                 parser.parseBody(pasteContent.sections[i].blocks, widgets);
+                parser.isPaste = false;
             }
         }
 
@@ -3176,7 +3184,7 @@ export class Editor {
         let insertIndex: number = table.getIndex();
         if (moveRows) {
             //Moves the rows to table.
-            for (let i: number = 0, index: number = 0; i < table.childWidgets.length; i++, index++) {
+            for (let i: number = 0, index: number = 0; i < table.childWidgets.length; i++ , index++) {
                 let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
                 newTable.childWidgets.splice(index, 0, row);
                 row.containerWidget = newTable;
@@ -3739,22 +3747,25 @@ export class Editor {
         return { count, cellFormats };
     }
     private insertTableRows(table: TableWidget, prevBlock: TableWidget): void {
-        this.initHistory('InsertRowBelow');
+        this.initHistory('InsertTableBelow');
         table.containerWidget = prevBlock.containerWidget;
         prevBlock = prevBlock.combineWidget(this.owner.viewer) as TableWidget;
-        if (this.editorHistory) {
-            let clonedTable: TableWidget = this.cloneTableToHistoryInfo(prevBlock);
-        }
+        // if (this.editorHistory) {
+        //     let clonedTable: TableWidget = this.cloneTableToHistoryInfo(prevBlock);
+        // }
         let row: TableRowWidget = prevBlock.childWidgets[prevBlock.childWidgets.length - 1] as TableRowWidget;
         prevBlock.insertTableRowsInternal(table.childWidgets as TableRowWidget[], prevBlock.childWidgets.length);
         let paragraph: ParagraphWidget = this.selection.getFirstParagraph(row.nextWidget.childWidgets[0] as TableCellWidget);
+        if (this.checkInsertPosition(this.selection)) {
+            this.updateHistoryPosition(this.selection.getHierarchicalIndex(paragraph, '0'), true);
+        }
         prevBlock.isDefaultFormatUpdated = false;
         this.documentHelper.layout.reLayoutTable(prevBlock);
-        this.selection.selectParagraphInternal(paragraph, true);
+        this.selection.start.setPosition(paragraph.firstChild as LineWidget, true);
         if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
-            this.updateHistoryPosition(this.selection.start, true);
             this.updateHistoryPosition(this.selection.end, false);
         }
+        this.selection.end.setPosition(paragraph.firstChild as LineWidget, true);
         this.reLayout(this.selection);
     }
     /**
@@ -7666,6 +7677,9 @@ export class Editor {
                     this.documentHelper.bookmarks.remove(collection[i] as string);
                 } else {
                     this.documentHelper.fields.splice(i, 1);
+                    if (this.documentHelper.formFields.indexOf(element as FieldElementBox) !== -1) {
+                        this.documentHelper.formFields.splice(this.documentHelper.formFields.indexOf(element as FieldElementBox), 1);
+                    }
                 }
                 i--;
             }
@@ -7679,6 +7693,9 @@ export class Editor {
         if (node instanceof FieldElementBox && node.fieldType === 0) {
             if (this.documentHelper.fields.indexOf(node) !== -1) {
                 this.documentHelper.fields.splice(this.documentHelper.fields.indexOf(node), 1);
+            }
+            if (this.documentHelper.formFields.indexOf(node) !== -1) {
+                this.documentHelper.formFields.splice(this.documentHelper.formFields.indexOf(node), 1);
             }
         }
         if (this.editorHistory && !isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo)) {
@@ -8437,7 +8454,7 @@ export class Editor {
             }
             this.initComplexHistory('PageBreak');
             this.onEnter(true);
-            if (this.editorHistory && this.editorHistory.currentHistoryInfo != null) {
+            if (this.editorHistory && this.editorHistory.currentHistoryInfo !== null) {
                 this.editorHistory.updateComplexHistory();
             }
             this.selection.checkForCursorVisibility();
@@ -8773,49 +8790,13 @@ export class Editor {
         if (inline instanceof FieldElementBox && inline.fieldType === 2) {
             if (HelperMethods.isLinkedFieldCharacter(inline)) {
                 let begin: FieldElementBox = inline.fieldBegin;
-                let end: FieldElementBox = inline.fieldEnd;
+                let end: ElementBox = inline.fieldEnd;
+                if (begin.nextNode instanceof BookmarkElementBox) {
+                    end = begin.nextNode.reference;
+                }
                 selection.start.setPositionParagraph(begin.line, begin.line.getOffset(begin, 0));
                 selection.end.setPositionParagraph(end.line, end.line.getOffset(end, 0) + 1);
                 selection.fireSelectionChanged(true);
-                return;
-            }
-        }
-        if (inline instanceof FieldElementBox && inline.fieldType === 1) {
-            let prevInline: ElementBox = selection.getPreviousValidElement(inline);
-            if (prevInline instanceof FieldElementBox) {
-                inline = (prevInline as FieldElementBox).fieldBegin;
-                paragraph = inline.line.paragraph;
-                offset = inline.line.getOffset(inline, 0);
-                selection.end.setPositionParagraph(inline.line, offset); //Selects the entire field.
-                selection.fireSelectionChanged(true);
-                return;
-            } else if (prevInline !== inline) {
-                inline = prevInline; //Updates the offset to delete next content.
-                paragraph = inline.line.paragraph;
-                offset = inline.line.getOffset(inline, inline.length);
-            }
-        }
-        if (inline instanceof EditRangeStartElementBox || inline instanceof EditRangeEndElementBox) {
-            if ((inline.nextNode instanceof EditRangeEndElementBox && (inline as EditRangeStartElementBox).editRangeEnd === inline.nextNode)
-                || (inline.previousNode instanceof EditRangeStartElementBox
-                    && (inline as EditRangeEndElementBox).editRangeStart === inline.previousNode)) {
-                return;
-            }
-            if (inline instanceof EditRangeStartElementBox && !(inline.previousNode instanceof EditRangeEndElementBox)) {
-                return;
-            }
-            if (inline instanceof EditRangeEndElementBox) {
-                inline = inline.previousNode;
-                paragraph = inline.line.paragraph;
-                offset = inline.line.getOffset(inline, inline.length);
-            }
-            if (inline.length === 1 && inline.nextNode instanceof EditRangeEndElementBox
-                && inline.previousNode instanceof EditRangeStartElementBox) {
-                let start: EditRangeStartElementBox = inline.previousNode;
-                let end: EditRangeEndElementBox = inline.nextNode;
-                selection.start.setPositionParagraph(start.line, start.line.getOffset(start, 0));
-                selection.end.setPositionParagraph(end.line, end.line.getOffset(end, 0) + 1);
-                this.removeWholeElement(selection);
                 return;
             }
         }
@@ -8846,6 +8827,49 @@ export class Editor {
                 let begin: BookmarkElementBox = inline.previousNode;
                 let end: BookmarkElementBox = inline.nextNode;
                 selection.start.setPositionParagraph(begin.line, begin.line.getOffset(begin, 0));
+                selection.end.setPositionParagraph(end.line, end.line.getOffset(end, 0) + 1);
+                this.removeWholeElement(selection);
+                return;
+            }
+        }
+        if (inline instanceof FieldElementBox && inline.fieldType === 1) {
+            let prevInline: ElementBox = selection.getPreviousValidElement(inline);
+            if (prevInline instanceof FieldElementBox) {
+                inline = (prevInline as FieldElementBox).fieldBegin;
+                paragraph = inline.line.paragraph;
+                offset = inline.line.getOffset(inline, 0);
+                if (inline.nextNode instanceof BookmarkElementBox) {
+                    let start: BookmarkElementBox = inline.nextNode.reference;
+                    selection.start.setPositionParagraph(start.line, start.line.getOffset(start, 0));
+                }
+                selection.end.setPositionParagraph(inline.line, offset); //Selects the entire field.
+                selection.fireSelectionChanged(true);
+                return;
+            } else if (prevInline !== inline) {
+                inline = prevInline; //Updates the offset to delete next content.
+                paragraph = inline.line.paragraph;
+                offset = inline.line.getOffset(inline, inline.length);
+            }
+        }
+        if (inline instanceof EditRangeStartElementBox || inline instanceof EditRangeEndElementBox) {
+            if ((inline.nextNode instanceof EditRangeEndElementBox && (inline as EditRangeStartElementBox).editRangeEnd === inline.nextNode)
+                || (inline.previousNode instanceof EditRangeStartElementBox
+                    && (inline as EditRangeEndElementBox).editRangeStart === inline.previousNode)) {
+                return;
+            }
+            if (inline instanceof EditRangeStartElementBox && !(inline.previousNode instanceof EditRangeEndElementBox)) {
+                return;
+            }
+            if (inline instanceof EditRangeEndElementBox) {
+                inline = inline.previousNode;
+                paragraph = inline.line.paragraph;
+                offset = inline.line.getOffset(inline, inline.length);
+            }
+            if (inline.length === 1 && inline.nextNode instanceof EditRangeEndElementBox
+                && inline.previousNode instanceof EditRangeStartElementBox) {
+                let start: EditRangeStartElementBox = inline.previousNode;
+                let end: EditRangeEndElementBox = inline.nextNode;
+                selection.start.setPositionParagraph(start.line, start.line.getOffset(start, 0));
                 selection.end.setPositionParagraph(end.line, end.line.getOffset(end, 0) + 1);
                 this.removeWholeElement(selection);
                 return;
@@ -9926,6 +9950,11 @@ export class Editor {
      * @private
      */
     public deleteBookmarkInternal(bookmark: BookmarkElementBox): void {
+        let previousNode: ElementBox = bookmark.previousNode;
+        if (previousNode instanceof FieldElementBox && previousNode.fieldType === 0
+            && !isNullOrUndefined(previousNode.formFieldData)) {
+            previousNode.formFieldData.name = '';
+        }
         this.documentHelper.bookmarks.remove(bookmark.name);
         bookmark.line.children.splice(bookmark.indexInOwner, 1);
         bookmark.reference.line.children.splice(bookmark.reference.indexInOwner, 1);
@@ -11672,6 +11701,9 @@ export class Editor {
         this.documentHelper.isDocumentProtected = true;
         this.documentHelper.protectionType = protectionType;
         this.selection.highlightEditRegion();
+        if (this.editorHistory) {
+            this.editorHistory.destroy();
+        }
     }
 
     /**
@@ -11762,7 +11794,373 @@ export class Editor {
         this.selection.fireSelectionChanged(false);
         this.selection.skipEditRangeRetrieval = false;
     }
-    //Restrict editing implementation end
+    /**
+     * Insert specified form field at current selection.
+     * @param type Form field type
+     */
+    public insertFormField(type: FormFieldType): void {
+        if (isNullOrUndefined(this.selection.start)) {
+            return;
+        }
+        this.initHistory('InsertHyperlink');
+        let isRemoved: boolean = true;
+        if (!this.selection.isEmpty) {
+            isRemoved = this.removeSelectedContents(this.selection);
+        }
+        if (isRemoved) {
+            this.insertFormFieldInternal(type);
+        }
+    }
+
+    private insertFormFieldInternal(type: FormFieldType): void {
+        this.updateInsertPosition();
+        let element: ElementBox[] = [];
+        let temp: WCharacterFormat = this.getCharacterFormat(this.selection);
+        let format: WCharacterFormat = new WCharacterFormat(undefined);
+        format.copyFormat(temp);
+        let fieldBegin: FieldElementBox = new FieldElementBox(0);
+        fieldBegin.formFieldData = this.getFormFieldData(type);
+        fieldBegin.characterFormat.copyFormat(format);
+        element.push(fieldBegin);
+        let bookmark: BookmarkElementBox = new BookmarkElementBox(0);
+        bookmark.characterFormat.copyFormat(format);
+        fieldBegin.formFieldData.name = this.getBookmarkName(type, 'Insert', this.formFieldCounter);
+        bookmark.name = fieldBegin.formFieldData.name;
+        element.push(bookmark);
+        let span: TextElementBox = new TextElementBox();
+        span.text = this.getFormFieldCode(type);
+        element.push(span);
+        let fieldSeparator: FieldElementBox = new FieldElementBox(2);
+        element.push(fieldSeparator);
+        let result: TextElementBox = new TextElementBox();
+        if (type === 'CheckBox') {
+            result.text = String.fromCharCode(9744);
+        } else {
+            result.text = this.documentHelper.textHelper.repeatChar(this.documentHelper.textHelper.getEnSpaceCharacter(), 5);
+        }
+        result.characterFormat.copyFormat(format);
+        element.push(result);
+        let fieldEnd: FieldElementBox = new FieldElementBox(1);
+        fieldEnd.characterFormat.copyFormat(format);
+        element.push(fieldEnd);
+        let bookmarkEnd: BookmarkElementBox = new BookmarkElementBox(1);
+        bookmarkEnd.characterFormat.copyFormat(format);
+        bookmarkEnd.name = fieldBegin.formFieldData.name;
+        bookmarkEnd.reference = bookmark;
+        bookmark.reference = bookmarkEnd;
+        element.push(bookmarkEnd);
+        this.insertElement(element);
+        let paragraph: ParagraphWidget = this.selection.start.paragraph;
+        fieldEnd.linkFieldCharacter(this.documentHelper);
+        if (this.documentHelper.fields.indexOf(fieldBegin) === -1) {
+            this.documentHelper.fields.push(fieldBegin);
+        }
+        if (this.documentHelper.formFields.indexOf(fieldBegin) === -1) {
+            this.documentHelper.formFields.push(fieldBegin);
+        }
+        let offset: number = bookmarkEnd.line.getOffset(bookmarkEnd, 1);
+        this.selection.selects(bookmarkEnd.line, offset, true);
+        this.updateEndPosition();
+        this.reLayout(this.selection, true);
+    }
+
+    private getFormFieldData(type: FormFieldType): FormField {
+        switch (type) {
+            case 'Text':
+                return new TextFormField();
+            case 'CheckBox':
+                return new CheckBoxFormField();
+            case 'DropDown':
+                return new DropDownFormField();
+        }
+    }
+    /**
+     * @private
+     */
+    public setFormField(field: FieldElementBox, info: TextFormFieldInfo | CheckBoxFormFieldInfo | DropDownFormFieldInfo): void {
+        let type: FormFieldType;
+        let formField: FormField;
+        if (!isNullOrUndefined((info as TextFormFieldInfo).format)) {
+            type = 'Text';
+            formField = new TextFormField();
+        } else if (!isNullOrUndefined((info as CheckBoxFormFieldInfo).sizeType)) {
+            type = 'CheckBox';
+            formField = new CheckBoxFormField();
+        } else if (!isNullOrUndefined((info as DropDownFormFieldInfo).dropDownItems)) {
+            type = 'DropDown';
+            formField = new DropDownFormField();
+        }
+        if (!isNullOrUndefined(type) && !isNullOrUndefined(formField)) {
+            formField.name = field.formFieldData.name;
+            formField.copyFieldInfo(info);
+            this.editFormField(type, formField);
+        }
+    }
+    /**
+     * @private
+     */
+    public editFormField(type: FormFieldType, formData: FormField): boolean {
+        let begin: FieldElementBox = this.selection.getCurrentFormField();
+        if (isNullOrUndefined(begin) || isNullOrUndefined(begin.formFieldData)) {
+            return false;
+        }
+        this.initComplexHistory('FormField');
+        let bookmarkStart: BookmarkElementBox;
+        let bookmarkEnd: BookmarkElementBox;
+        if (formData.name !== '') {
+            if (begin.formFieldData.name !== formData.name &&
+                this.documentHelper.bookmarks.containsKey(formData.name)) {
+                this.deleteBookmark(formData.name);
+            }
+            bookmarkStart = new BookmarkElementBox(0);
+            bookmarkStart.name = formData.name;
+            bookmarkEnd = new BookmarkElementBox(1);
+            bookmarkEnd.name = formData.name;
+            bookmarkStart.reference = bookmarkEnd;
+            bookmarkEnd.reference = bookmarkStart;
+        }
+
+        this.initHistory('InsertHyperlink');
+        this.editHyperlinkInternal = isNullOrUndefined(this.editorHistory)
+            || (this.editorHistory && isNullOrUndefined(this.editorHistory.currentBaseHistoryInfo));
+        // Preserves the character format for hyperlink field.
+        let temp: WCharacterFormat = begin.characterFormat.cloneFormat();
+        let format: WCharacterFormat = new WCharacterFormat();
+        format.copyFormat(temp);
+        let textFormat: WCharacterFormat = begin.fieldSeparator.nextElement.characterFormat.cloneFormat();
+        let currentOffset: number = begin.line.getOffset(begin, 0);
+        this.selection.start.setPositionParagraph(begin.line, currentOffset);
+        let endElement: ElementBox = begin.fieldEnd;
+        if (begin.nextNode && begin.nextNode instanceof BookmarkElementBox) {
+            endElement = begin.nextNode.reference;
+        }
+        currentOffset = endElement.line.getOffset(endElement, 1);
+        this.selection.end.setPositionParagraph(endElement.line, currentOffset);
+        this.deleteSelectedContents(this.selection, false);
+
+        this.updateInsertPosition();
+        let element: ElementBox[] = [];
+        let fieldBegin: FieldElementBox = new FieldElementBox(0);
+        fieldBegin.formFieldData = formData;
+        element.push(fieldBegin);
+        fieldBegin.characterFormat.copyFormat(format);
+        if (!isNullOrUndefined(bookmarkStart)) {
+            element.push(bookmarkStart);
+        }
+        let span: TextElementBox = new TextElementBox();
+        span.text = this.getFormFieldCode(type);
+        element.push(span);
+        let fieldSeparator: FieldElementBox = new FieldElementBox(2);
+        fieldSeparator.characterFormat.copyFormat(format);
+        element.push(fieldSeparator);
+        span = new TextElementBox();
+        span.characterFormat.copyFormat(textFormat);
+        span.text = this.getDefaultText(formData);
+        if (type === 'CheckBox') {
+            span.characterFormat = fieldBegin.characterFormat.cloneFormat();
+            if ((formData as CheckBoxFormField).sizeType === 'Exactly') {
+                span.characterFormat.fontSize = (formData as CheckBoxFormField).size;
+            }
+        } else if (formData instanceof TextFormField) {
+            if (formData.type === 'Text') {
+                span.text = HelperMethods.formatText(formData.format, formData.defaultValue);
+            } else if (formData.type === 'Number') {
+                span.text = HelperMethods.formatNumber(formData.format, formData.defaultValue);
+            } else {
+                span.text = HelperMethods.formatDate(formData.format, formData.defaultValue);
+            }
+        }
+        element.push(span);
+        let fieldEnd: FieldElementBox = new FieldElementBox(1);
+        fieldEnd.characterFormat.copyFormat(format);
+        element.push(fieldEnd);
+        let lastElement: ElementBox = fieldEnd;
+        if (!isNullOrUndefined(bookmarkEnd)) {
+            lastElement = bookmarkEnd;
+            element.push(bookmarkEnd);
+        }
+        this.insertElement(element);
+        let paragraph: ParagraphWidget = this.selection.start.paragraph;
+        fieldEnd.linkFieldCharacter(this.documentHelper);
+        if (this.documentHelper.fields.indexOf(fieldBegin) === -1) {
+            this.documentHelper.fields.push(fieldBegin);
+        }
+        let offset: number = lastElement.line.getOffset(lastElement, 1);
+        this.selection.selects(lastElement.line, offset, true);
+        this.updateEndPosition();
+        if (this.editorHistory && this.editorHistory.currentBaseHistoryInfo) {
+            this.editorHistory.updateHistory();
+        }
+        if (this.editorHistory && this.editorHistory.currentHistoryInfo) {
+            this.editorHistory.updateComplexHistory();
+        }
+        this.reLayout(this.selection, true);
+        this.editHyperlinkInternal = false;
+        this.nodes = [];
+        return true;
+    }
+
+    private getDefaultText(formField: FormField): string {
+        let defaultText: string = '';
+        if (formField instanceof CheckBoxFormField) {
+            defaultText = formField.defaultValue ? String.fromCharCode(9745) : String.fromCharCode(9744);
+        } else if (formField instanceof DropDownFormField) {
+            if (formField.dropDownItems.length > 0) {
+                defaultText = formField.dropDownItems[0];
+            } else {
+                defaultText = this.documentHelper.textHelper.repeatChar(this.documentHelper.textHelper.getEnSpaceCharacter(), 5);
+            }
+        } else if (formField instanceof TextFormField) {
+            if (formField.defaultValue! !== '') {
+                defaultText = formField.defaultValue;
+            } else {
+                defaultText = this.documentHelper.textHelper.repeatChar(this.documentHelper.textHelper.getEnSpaceCharacter(), 5);
+            }
+        }
+        return defaultText;
+    }
+
+    private getFormFieldCode(type: FormFieldType): string {
+        switch (type) {
+            case 'Text':
+                return 'FORMTEXT';
+            case 'CheckBox':
+                return 'FORMCHECKBOX';
+            case 'DropDown':
+                return 'FORMDROPDOWN';
+        }
+    }
+
+    /**
+     * @private 
+     */
+    public toggleCheckBoxFormField(field: FieldElementBox, reset?: boolean, value?: boolean): void {
+        let formFieldData: FormField = field.formFieldData;
+        if (formFieldData instanceof CheckBoxFormField && formFieldData.enabled) {
+            this.initHistory('UpdateFormField');
+            if (this.editorHistory) {
+                let currentValue: string | boolean | number;
+                if (formFieldData instanceof CheckBoxFormField) {
+                    currentValue = formFieldData.checked;
+                }
+                this.editorHistory.currentBaseHistoryInfo.setFormFieldInfo(field, currentValue);
+                this.editorHistory.updateHistory();
+            }
+            if (reset) {
+                (formFieldData as CheckBoxFormField).checked = value;
+            } else {
+                (formFieldData as CheckBoxFormField).checked = !(formFieldData as CheckBoxFormField).checked;
+            }
+            let separator: FieldElementBox = field.fieldSeparator;
+            let checkBoxTextElement: TextElementBox = separator.nextNode as TextElementBox;
+            if ((formFieldData as CheckBoxFormField).checked) {
+                checkBoxTextElement.text = String.fromCharCode(9745);
+            } else {
+                checkBoxTextElement.text = String.fromCharCode(9744);
+            }
+            this.owner.documentHelper.layout.reLayoutParagraph(field.line.paragraph, 0, 0);
+            this.reLayout(this.selection, false);
+        }
+    }
+    /**
+     * @private
+     */
+    public updateFormField(field: FieldElementBox, value: string | number, reset?: boolean): void {
+        let formFieldData: FormField = field.formFieldData;
+        if (formFieldData) {
+            this.initHistory('UpdateFormField');
+            if (this.editorHistory) {
+                let currentValue: string | boolean | number;
+                if (formFieldData instanceof TextFormField) {
+                    currentValue = field.resultText;
+                } else if (formFieldData instanceof DropDownFormField) {
+                    currentValue = formFieldData.selectedIndex;
+                }
+                this.editorHistory.currentBaseHistoryInfo.setFormFieldInfo(field, currentValue);
+                this.editorHistory.updateHistory();
+            }
+            this.updateFormFieldInternal(field, formFieldData, value, reset);
+        }
+    }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line:max-line-length
+    public updateFormFieldInternal(field: FieldElementBox, formFieldData: FormField, value: string | number, reset?: boolean): void {
+        if (formFieldData instanceof TextFormField) {
+            if (reset && value === '') {
+                value = this.getDefaultText(formFieldData) as string;
+            }
+            let formattedText: string = value as string;
+            let type: TextFormFieldType = formFieldData.type;
+            if (type === 'Text') {
+                formattedText = HelperMethods.formatText(formFieldData.format, value as string);
+            }
+            this.updateFormFieldResult(field, formattedText);
+        } else if (formFieldData instanceof DropDownFormField) {
+            let text: string = formFieldData.dropDownItems[value as number];
+            formFieldData.selectedIndex = value as number;
+            this.updateFormFieldResult(field, text);
+        }
+        let endoffset: number = field.fieldEnd.line.getOffset(field.fieldEnd, 1);
+        let startPos: TextPosition = new TextPosition(this.owner);
+        startPos.setPositionParagraph(field.fieldEnd.line, endoffset);
+        //selects the field range
+        this.documentHelper.selection.selectRange(startPos, startPos);
+        this.reLayout(this.selection, false);
+    }
+    private updateFormFieldResult(field: FieldElementBox, value: string): void {
+        let textElement: ElementBox = field.fieldSeparator.nextNode;
+        while (!(textElement instanceof TextElementBox)) {
+            textElement = textElement.nextNode;
+            if (textElement === field.fieldEnd) {
+                break;
+            }
+        }
+        if (textElement instanceof TextElementBox) {
+            textElement.text = value;
+            textElement = textElement.nextNode;
+            do {
+                let index: number = field.line.children.indexOf(textElement);
+                if (textElement instanceof TextElementBox) {
+                    textElement = textElement.nextNode;
+                    field.line.children.splice(index, 1);
+                } else {
+                    if (textElement === field.fieldEnd) {
+                        break;
+                    }
+                    textElement = textElement.nextNode;
+                }
+            } while (textElement !== field.fieldEnd);
+        }
+        this.owner.documentHelper.layout.reLayoutParagraph(field.line.paragraph, 0, 0);
+    }
+    /**
+     * @private
+     */
+    private checkBookmarkAvailability(name: string, action: string): boolean {
+        let bookmarkCol: Dictionary<string, BookmarkElementBox> = this.documentHelper.bookmarks;
+        for (let i: number = 0; i < bookmarkCol.length; i++) {
+            if (bookmarkCol.containsKey(name)) {
+                return false;
+            }
+        }
+        return true;
+    }
+    /**
+     * @private
+     */
+    private getBookmarkName(type: string, action: string, count: number): string {
+        let name: string;
+        let available: boolean = false;
+        while (available === false) {
+            name = type + count;
+            available = this.checkBookmarkAvailability(name, action);
+            count = count + 1;
+        }
+        return name;
+    }
+
 }
 /**
  * @private

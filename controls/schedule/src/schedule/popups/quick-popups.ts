@@ -560,11 +560,19 @@ export class QuickPopups {
     private getPopupHeader(headerType: TemplateType, headerData: { [key: string]: Object }): HTMLElement {
         let headerTemplate: HTMLElement = createElement('div', { className: cls.POPUP_HEADER_CLASS });
         if (this.isQuickTemplate(headerType) && this.parent.quickInfoTemplates.header) {
-            let headerArgs: Object = extend({}, headerData, { elementType: headerType.toLowerCase() }, true);
+            let headerArgs: Object = extend(
+                {},
+                headerData,
+                !isBlazor() ? { elementType: headerType.toLowerCase() } :
+                {   elementType: headerType.toLowerCase(),
+                    startTimeValue: util.addLocalOffset(headerData[this.parent.eventFields.startTime] as Date),
+                    endTimeValue: util.addLocalOffset(headerData[this.parent.eventFields.endTime] as Date)
+                },
+                true
+            );
             let templateId: string = this.parent.element.id;
-            let templateArgs: Object = util.addLocalOffsetToEvent(headerArgs as { [key: string]: Object }, this.parent.eventFields);
             let headerTemp: HTMLElement[] = [].slice.call(
-                this.parent.getQuickInfoTemplatesHeader()(templateArgs, this.parent, 'header', templateId + '_headerTemplate', false));
+                this.parent.getQuickInfoTemplatesHeader()(headerArgs, this.parent, 'header', templateId + '_headerTemplate', false));
             append([].slice.call(headerTemp), headerTemplate);
         } else {
             let header: string;
@@ -592,11 +600,18 @@ export class QuickPopups {
     private getPopupContent(type: TemplateType, args: CellClickEventArgs | EventClickArgs, data: { [key: string]: Object }): HTMLElement {
         let contentTemplate: HTMLElement = createElement('div', { className: cls.POPUP_CONTENT_CLASS });
         if (this.isQuickTemplate(type) && this.parent.quickInfoTemplates.content) {
-            let contentArgs: Object = extend({}, data, { elementType: type.toLowerCase() }, true);
+            let contentArgs: Object = extend(
+                {},
+                data,
+                !isBlazor() ? { elementType: type.toLowerCase() } :
+                {   elementType: type.toLowerCase(),
+                    startTimeValue: util.addLocalOffset(data[this.parent.eventFields.startTime] as Date),
+                    endTimeValue: util.addLocalOffset(data[this.parent.eventFields.endTime] as Date)
+                },
+                true);
             let templateId: string = this.parent.element.id;
-            let templateArgs: Object = util.addLocalOffsetToEvent(contentArgs as { [key: string]: Object }, this.parent.eventFields);
             let contentTemp: HTMLElement[] = [].slice.call(
-                this.parent.getQuickInfoTemplatesContent()(templateArgs, this.parent, 'content', templateId + '_contentTemplate', false));
+                this.parent.getQuickInfoTemplatesContent()(contentArgs, this.parent, 'content', templateId + '_contentTemplate', false));
             append([].slice.call(contentTemp), contentTemplate);
         } else {
             let content: string;
@@ -654,11 +669,19 @@ export class QuickPopups {
     private getPopupFooter(footerType: TemplateType, footerData: { [key: string]: Object }): HTMLElement {
         let footerTemplate: HTMLElement = createElement('div', { className: cls.POPUP_FOOTER_CLASS });
         if (this.isQuickTemplate(footerType) && this.parent.quickInfoTemplates.footer) {
-            let footerArgs: Object = extend({}, footerData, { elementType: footerType.toLowerCase() }, true);
+            let footerArgs: Object = extend(
+                {},
+                footerData,
+                !isBlazor() ? { elementType: footerType.toLowerCase() } :
+                {   elementType: footerType.toLowerCase(),
+                    startTimeValue: util.addLocalOffset(footerData[this.parent.eventFields.startTime] as Date),
+                    endTimeValue: util.addLocalOffset(footerData[this.parent.eventFields.endTime] as Date)
+                },
+                true
+                );
             let templateId: string = this.parent.element.id;
-            let templateArgs: Object = util.addLocalOffsetToEvent(footerArgs as { [key: string]: Object }, this.parent.eventFields);
             let footerTemp: HTMLElement[] = [].slice.call(
-                this.parent.getQuickInfoTemplatesFooter()(templateArgs, this.parent, 'footer', templateId + '_footerTemplate', false));
+                this.parent.getQuickInfoTemplatesFooter()(footerArgs, this.parent, 'footer', templateId + '_footerTemplate', false));
             append([].slice.call(footerTemp), footerTemplate);
         } else {
             let footer: string;

@@ -342,6 +342,7 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
     }
 
     protected preRender(): void {
+        this.element.classList.add('e-barcode');
         this.barcodeRenderer = new BarcodeRenderer(this.element.id, this.mode === 'SVG');
         this.initialize();
         this.initializePrivateVariables();
@@ -354,7 +355,6 @@ export class BarcodeGenerator extends Component<HTMLElement> implements INotifyP
             let element: string = 'barcodeMeasureElement';
             window[element] = null;
         }
-        this.element.classList.add('e-barcode');
     }
 
 

@@ -1,7 +1,7 @@
 /**
  * Spreadsheet default sample
  */
-import { Spreadsheet, SheetModel, ColumnModel, CellSaveEventArgs, CellRenderEventArgs, Range, CellEditEventArgs, ValueChangedArgs, getData, CellModel, BeforeSelectEventArgs, getRangeIndexes } from '../../../../src/index';
+import { Spreadsheet, SheetModel, ColumnModel, CellSaveEventArgs, CellRenderEventArgs, CellEditEventArgs, getRangeIndexes } from '../../../../src/index';
 import { enableRipple } from '@syncfusion/ej2-base';
 import { switchTheme } from '../../../common/switch-theme';
 import { defaultData as dataSource } from '../../../common/data-source';
@@ -30,7 +30,7 @@ let columns: ColumnModel[] = [
 ];
 
 let sheet: SheetModel[] = [{
-    range: [{
+    ranges: [{
         dataSource: dataSource,
         startCell: 'A2',
         template: '<button class="e-button-template">BUTTON</button>',
@@ -39,35 +39,35 @@ let sheet: SheetModel[] = [{
     name: 'Button',
     columns: columns
 }, {
-    range: [{
+    ranges: [{
         dataSource: dataSource,
         startCell: 'A2',
         template: '<input type="text" class="e-ddb-template" tabindex="1" />',
         address: 'A3:D100'
     }], name: 'Dropdown', columns: columns
 }, {
-    range: [{
+    ranges: [{
         dataSource: dataSource,
         startCell: 'A2',
         template: '<input type="check" class="e-checkbox-template" />',
         address: 'A3:D100'
     }], name: 'Checkbox', columns: columns
 }, {
-    range: [{
+    ranges: [{
         dataSource: dataSource,
         startCell: 'A2',
         template: '<input type="text" class="e-datepicker-template" />',
         address: 'A3:D100'
     }], name: 'Datepicker', columns: columns
 }, {
-    range: [{
+    ranges: [{
         dataSource: dataSource,
         startCell: 'A2',
         template: '<input type="text" class="e-autocomplete-template" tabindex="1" />',
         address: 'A3:D100'
     }], name: 'Auto Complete', columns: columns
 }, {
-    range: [{
+    ranges: [{
         dataSource: dataSource,
         startCell: 'A1',
         template: '<input type="text" class="e-textbox-template" />',
@@ -85,8 +85,8 @@ let spreadsheet: Spreadsheet = new Spreadsheet({
     openUrl: 'https://ej2services.syncfusion.com/production/web-services/api/spreadsheet/open',
     saveUrl: 'https://ej2services.syncfusion.com/production/web-services/api/spreadsheet/save',
     cellSave: (evt: CellSaveEventArgs) => {
-        if (evt.address == "Button!K1") {
-            spreadsheet.sheets[0].range = [{
+        if (evt.address === 'Button!K1') {
+            spreadsheet.sheets[0].ranges = [{
                 dataSource: dataSource,
                 startCell: 'A2',
                 template: '<input type="check" class="e-checkbox-template" />',
@@ -96,16 +96,12 @@ let spreadsheet: Spreadsheet = new Spreadsheet({
         }
     },
     created: (evt: Event) => {
-        spreadsheet.autoFit("1:100");
+        spreadsheet.autoFit('1:100');
     },
     cellEdit: (evt: CellEditEventArgs) => {
         // if(evt.element.cl)
         console.log(evt);
     },
-    // created:(evt: Event) => {
-    //     spreadsheet
-    // },
-
     beforeCellRender: (evt: CellRenderEventArgs) => {
         if (evt.element.children.length) {
             let template: string = evt.element.children[0].className;
@@ -126,7 +122,7 @@ let spreadsheet: Spreadsheet = new Spreadsheet({
                             if (evt.cell) {
                                 evt.cell.value = args.value.toString();
                             } else {
-                                let range: number[] = getRangeIndexes(evt.address)
+                                let range: number[] = getRangeIndexes(evt.address);
                                 spreadsheet.sheets[spreadsheet.activeSheetIndex].rows[range[0]].cells[range[1]] = { value: args.value.toString() };
                             }
                         }
@@ -145,7 +141,7 @@ let spreadsheet: Spreadsheet = new Spreadsheet({
                 case 'e-datepicker-template':
                     let dpValue: Date;
                     if (evt.cell) {
-                        dpValue = !Number(evt.cell.value) ? new Date(evt.cell.value) : null
+                        dpValue = !Number(evt.cell.value) ? new Date(evt.cell.value) : null;
                     }
                     new DatePicker({
                         value: dpValue,

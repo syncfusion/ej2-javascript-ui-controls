@@ -319,10 +319,10 @@ export class JsonAdaptor extends Adaptor {
         let ds: Object[] = dm.dataSource.json;
         let i: number;
         if (typeof value === 'object' && !(value instanceof Date)) {
-            value = (value as { [key: string]: Object })[keyField];
+            value = DataUtil.getObject(keyField, value);
         }
         for (i = 0; i < ds.length; i++) {
-            if ((ds[i] as { [key: string]: Object })[keyField] === value) { break; }
+            if (DataUtil.getObject(keyField, ds[i]) === value) { break; }
         }
 
         return i !== ds.length ? ds.splice(i, 1) : null;
@@ -659,7 +659,7 @@ export class UrlAdaptor extends Adaptor {
                 value: value,
                 action: 'update',
                 keyColumn: keyField,
-                key: value[keyField],
+                key: DataUtil.getObject(keyField, value),
                 table: tableName
             },                          DataUtil.getAddParams(this, dm, query)))
         };

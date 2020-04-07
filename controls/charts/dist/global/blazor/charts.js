@@ -3583,7 +3583,7 @@ function animateRedrawElement(element, duration, start, end, x, y) {
     });
 }
 /** @private */
-function textElement$1(renderer, option, font, color, parent, isMinus, redraw, isAnimate, forceAnimate, animateDuration, seriesClipRect, labelSize, isRotatedLabelIntersect) {
+function textElement$1(renderer, option, font, color, parent, isMinus, redraw, isAnimate, forceAnimate, animateDuration, seriesClipRect, labelSize, isRotatedLabelIntersect, isCanvas) {
     if (isMinus === void 0) { isMinus = false; }
     if (forceAnimate === void 0) { forceAnimate = false; }
     var renderOptions = {};
@@ -3592,6 +3592,8 @@ function textElement$1(renderer, option, font, color, parent, isMinus, redraw, i
     //let renderer: SvgRenderer = new SvgRenderer('');
     var text;
     var height;
+    var dy;
+    var label;
     renderOptions = {
         'id': option.id,
         'x': option.x,
@@ -3612,11 +3614,18 @@ function textElement$1(renderer, option, font, color, parent, isMinus, redraw, i
     if (typeof option.text !== 'string' && option.text.length > 1) {
         for (var i = 1, len = option.text.length; i < len; i++) {
             height = (sf.svgbase.measureText(option.text[i], font).height);
-            tspanElement = renderer.createTSpan({
-                'x': option.x, 'id': option.id,
-                'y': (option.y) + ((isMinus) ? -(i * height) : (i * height))
-            }, isMinus ? option.text[option.text.length - (i + 1)] : option.text[i]);
-            htmlObject.appendChild(tspanElement);
+            dy = (option.y) + ((isMinus) ? -(i * height) : (i * height));
+            label = isMinus ? option.text[option.text.length - (i + 1)] : option.text[i];
+            if (isCanvas) {
+                tspanElement = renderer.createText(renderOptions, label, null, null, dy, true);
+            }
+            else {
+                tspanElement = renderer.createTSpan({
+                    'x': option.x, 'id': option.id,
+                    'y': dy
+                }, label);
+                htmlObject.appendChild(tspanElement);
+            }
         }
     }
     if (!isRotatedLabelIntersect) {
@@ -24852,7 +24861,7 @@ var MultiLevelLabel = /** @class */ (function () {
                             textWrap(argsData.text, gap, argsData.textStyle) : textTrim(gap, argsData.text, argsData.textStyle);
                         options.x = options.x - padding / 2;
                     }
-                    textElement$1(_this.chart.renderer, options, argsData.textStyle, argsData.textStyle.color || _this.chart.themeStyle.axisLabel, _this.labelElement, false, _this.chart.redraw, true);
+                    textElement$1(_this.chart.renderer, options, argsData.textStyle, argsData.textStyle.color || _this.chart.themeStyle.axisLabel, _this.labelElement, false, _this.chart.redraw, true, null, null, null, null, null, _this.chart.enableCanvas);
                     if (multiLevel.border.width > 0 && multiLevel.border.type !== 'WithoutBorder') {
                         pathRect = _this.renderXAxisLabelBorder(level, endX - startX - padding, axis, startX, startY, labelSize, options, axisRect, argsData.alignment, pathRect, isOutside, opposedPosition, pointIndex);
                         // fix for generating seperate rect 
@@ -24861,11 +24870,15 @@ var MultiLevelLabel = /** @class */ (function () {
                             pointIndex++;
                         }
                     }
-                    _this.multiElements.appendChild(_this.labelElement);
+                    if (!_this.chart.enableCanvas) {
+                        _this.multiElements.appendChild(_this.labelElement);
+                    }
                 }
             });
         });
-        parent.appendChild(this.multiElements);
+        if (!this.chart.enableCanvas) {
+            parent.appendChild(this.multiElements);
+        }
     };
     /**
      * render x axis multi level labels border
@@ -24896,7 +24909,7 @@ var MultiLevelLabel = /** @class */ (function () {
                 path += 'M ' + x + ' ' + y + ' L ' + x + ' ' + (y + height) + ' M ' + (x + width) + ' '
                     + y + ' L ' + (x + width) + ' ' + (y + height);
                 path += (borderType !== 'WithoutTopandBottomBorder') ? (' L' + ' ' + (x) + ' ' + (y + height) + ' ') : ' ';
-                path += (borderType === 'Rectangle') ? (' M ' + x + ' ' + y + ' L ' + (x + width) + ' ' + y) : ' ';
+                path += (borderType === 'Rectangle') ? ('M ' + x + ' ' + y + ' L ' + (x + width) + ' ' + y) : ' ';
                 break;
             case 'Brace':
                 if (alignment === 'Near') {
@@ -25031,7 +25044,9 @@ var MultiLevelLabel = /** @class */ (function () {
                             pointIndex++;
                         }
                     }
-                    _this.multiElements.appendChild(_this.labelElement);
+                    if (!_this.chart.enableCanvas) {
+                        _this.multiElements.appendChild(_this.labelElement);
+                    }
                 }
             });
         });
@@ -25119,15 +25134,17 @@ var MultiLevelLabel = /** @class */ (function () {
             'id': axisId,
             'clip-path': 'url(#' + clipId + ')'
         });
-        this.multiElements.appendChild(appendClipElement(this.chart.redraw, {
-            'id': clipId,
-            'x': x,
-            'y': y,
-            'width': width,
-            'height': height,
-            'fill': 'white',
-            'stroke-width': 1, 'stroke': 'Gray'
-        }, this.chart.renderer));
+        if (!this.chart.enableCanvas) {
+            this.multiElements.appendChild(appendClipElement(this.chart.redraw, {
+                'id': clipId,
+                'x': x,
+                'y': y,
+                'width': width,
+                'height': height,
+                'fill': 'white',
+                'stroke-width': 1, 'stroke': 'Gray'
+            }, this.chart.renderer));
+        }
     };
     /**
      * create borer element

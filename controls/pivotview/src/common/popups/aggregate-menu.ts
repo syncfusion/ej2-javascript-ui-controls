@@ -62,7 +62,7 @@ export class AggregateMenu {
             if (!observedArgs.cancel) {
                 this.summaryTypes = observedArgs.aggregateTypes;
                 this.createContextMenu(isStringField);
-                this.currentMenu = args.currentTarget as Element;
+                this.currentMenu = args.target as Element;
                 let pos: OffsetPosition = this.currentMenu.getBoundingClientRect();
                 if (this.parent.enableRtl) {
                     this.menuInfo[isStringField].open(pos.top + (window.scrollY || document.documentElement.scrollTop), pos.left - 105);

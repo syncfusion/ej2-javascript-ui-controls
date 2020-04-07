@@ -1,7 +1,7 @@
 /**
- * Spreadsheet default sample
+ * Spreadsheet filtering sample
  */
-import { Spreadsheet, SheetModel, ColumnModel, initiateFilterUI } from './../../../../src/index';
+import { Spreadsheet, SheetModel, ColumnModel } from './../../../../src/index';
 import { enableRipple } from '@syncfusion/ej2-base';
 import { switchTheme } from '../../../common/switch-theme';
 import { defaultData as dataSource, getTradeData } from './../../../common/data-source';
@@ -28,7 +28,7 @@ let columns: ColumnModel[] = [
 
 let sheet: SheetModel[] = [
     {
-        range: [{
+        ranges: [{
             dataSource: dataSource,
             startCell: 'A1'
         }],
@@ -36,7 +36,7 @@ let sheet: SheetModel[] = [
         columns: columns
     },
     {
-        range: [{
+        ranges: [{
             dataSource: new DataManager(getTradeData(30)),
             startCell: 'A1'
         }],
@@ -56,10 +56,7 @@ let spreadsheet: Spreadsheet = new Spreadsheet({
     },
     openUrl: 'https://ej2services.syncfusion.com/development/web-services/api/spreadsheet/open',
     saveUrl: 'https://ej2services.syncfusion.com/development/web-services/api/spreadsheet/save',
-    allowFiltering: true,
-    dataBound: function () {
-
-    }
+    allowFiltering: true
 });
 
 spreadsheet.appendTo('#spreadsheet');
@@ -72,15 +69,13 @@ function onResize(): void {
 }
 
 switchTheme('#select-theme', spreadsheet);
-document.getElementById("btn").addEventListener('click', filter);
-document.getElementById("btn1").addEventListener('click', clearFilter);
+document.getElementById('btn').addEventListener('click', filter);
+document.getElementById('btn1').addEventListener('click', clearFilter);
 
-function filter() { // check in Sheet 1
-    debugger;
+function filter () { // check in Sheet 1
     spreadsheet.applyFilter();
 }
 
-function clearFilter() { //Check in Sheet 2
-    debugger;
+function clearFilter () { //Check in Sheet 2
     spreadsheet.clearFilter();
 }

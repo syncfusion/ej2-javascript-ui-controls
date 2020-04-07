@@ -258,9 +258,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     //tslint:disable:max-line-length
     /**    
      * Defines toolbar items for DocumentEditorContainer.
-     * @default ['New','Open','Separator','Undo','Redo','Separator','Image','Table','Hyperlink','Bookmark','Comments','TableOfContents','Separator','Header','Footer','PageSetup','PageNumber','Break','Separator','Find','Separator','LocalClipboard','RestrictEditing']
+     * @default ['New','Open','Separator','Undo','Redo','Separator','Image','Table','Hyperlink','Bookmark','Comments','TableOfContents','Separator','Header','Footer','PageSetup','PageNumber','Break','Separator','Find','Separator','LocalClipboard','RestrictEditing','Separator','FormFields']
      */
-    @Property(['New', 'Open', 'Separator', 'Undo', 'Redo', 'Separator', 'Image', 'Table', 'Hyperlink', 'Bookmark', 'Comments', 'TableOfContents', 'Separator', 'Header', 'Footer', 'PageSetup', 'PageNumber', 'Break', 'Separator', 'Find', 'Separator', 'LocalClipboard', 'RestrictEditing'])
+    @Property(['New', 'Open', 'Separator', 'Undo', 'Redo', 'Separator', 'Image', 'Table', 'Hyperlink', 'Bookmark', 'Comments', 'TableOfContents', 'Separator', 'Header', 'Footer', 'PageSetup', 'PageNumber', 'Break', 'Separator', 'Find', 'Separator', 'LocalClipboard', 'RestrictEditing', 'Separator', 'FormFields'])
     public toolbarItems: (CustomToolbarItemModel | ToolbarItem)[];
     //tslint:enable:max-line-length
     /**
@@ -441,7 +441,11 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'New comment': 'New comment',
         'Comments': 'Comments',
         'Print layout': 'Print layout',
-        'Web layout': 'Web layout'
+        'Web layout': 'Web layout',
+        'Form Fields': 'Form Fields',
+        'Text Form': 'Text Form',
+        'Check Box': 'Check Box',
+        'DropDown': 'Drop-Down'
     };
 
     /**
@@ -822,7 +826,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         if (this.restrictEditing || this.textProperties === undefined) {
             return;
         }
-        let isProtectedDocument: boolean = this.documentEditor.documentHelper.protectionType === 'ReadOnly';
+        let isProtectedDocument: boolean = this.documentEditor.documentHelper.protectionType !== 'NoProtection';
         let allowFormatting: boolean = isProtectedDocument && this.documentEditor.documentHelper.restrictFormatting;
         let isSelectionInProtectecRegion: boolean = this.documentEditor.editor.restrictEditing;
 
@@ -873,7 +877,8 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         }
         this.previousContext = this.documentEditor.selection.contextType;
         if (this.toolbarModule && this.toolbarModule.toolbar) {
-            this.toolbarModule.enableDisableInsertComment(!this.documentEditor.enableHeaderAndFooter && this.enableComment);
+            // tslint:disable-next-line:max-line-length
+            this.toolbarModule.enableDisableInsertComment(!this.documentEditor.enableHeaderAndFooter && this.enableComment && !this.documentEditor.isReadOnlyMode);
         }
     }
     /**

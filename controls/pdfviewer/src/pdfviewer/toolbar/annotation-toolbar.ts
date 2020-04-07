@@ -293,6 +293,7 @@ export class AnnotationToolbar {
                             { text: 'Received' },
                             { text: 'Approved' },
                             { text: 'Confidential' },
+                            { text: 'Not Approved' },
                         ]
                     },
                     {

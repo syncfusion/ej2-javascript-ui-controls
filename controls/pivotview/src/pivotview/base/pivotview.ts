@@ -2181,7 +2181,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             createSpinner({ target: this.element }, this.createElement);
         }
         let loadArgs: LoadEventArgs = {
-            dataSourceSettings: this.dataSourceSettings as IDataOptions,
+            /* tslint:disable-next-line:max-line-length */
+            dataSourceSettings: isBlazor() ? PivotUtil.getClonedDataSourceSettings(this.dataSourceSettings) : this.dataSourceSettings as IDataOptions,
             pivotview: isBlazor() ? undefined : this,
             fieldsType: {}
         };
@@ -4653,8 +4654,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                 remove(this.element.querySelector('#' + this.element.id + '_chart'));
             }
         }
-        if (this.grid && this.grid.contextMenuModule) {
-            this.grid.contextMenuModule.destroy();
+        if (this.grid) {
+            this.grid.destroy();
             if (this.grid.isDestroyed && this.element.querySelector('#' + this.element.id + '_grid')) {
                 remove(this.element.querySelector('#' + this.element.id + '_grid'));
             }
@@ -4667,8 +4668,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             if (this.element.querySelector('.e-spinner-pane')) {
                 remove(this.element.querySelector('.e-spinner-pane'));
             }
-            if (this.showFieldList && this.element.querySelector('#' + this.element.id + '_PivotFieldList')) {
-                remove(this.element.querySelector('#' + this.element.id + '_PivotFieldList'));
+            if (this.showFieldList && document.querySelector('#' + this.element.id + '_PivotFieldList')) {
+                remove(document.querySelector('#' + this.element.id + '_PivotFieldList'));
             }
         }
         removeClass([this.element], cls.ROOT);

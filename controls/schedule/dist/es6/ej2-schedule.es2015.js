@@ -5641,10 +5641,13 @@ class QuickPopups {
     getPopupHeader(headerType, headerData) {
         let headerTemplate = createElement('div', { className: POPUP_HEADER_CLASS });
         if (this.isQuickTemplate(headerType) && this.parent.quickInfoTemplates.header) {
-            let headerArgs = extend({}, headerData, { elementType: headerType.toLowerCase() }, true);
+            let headerArgs = extend({}, headerData, !isBlazor() ? { elementType: headerType.toLowerCase() } :
+                { elementType: headerType.toLowerCase(),
+                    startTimeValue: addLocalOffset(headerData[this.parent.eventFields.startTime]),
+                    endTimeValue: addLocalOffset(headerData[this.parent.eventFields.endTime])
+                }, true);
             let templateId = this.parent.element.id;
-            let templateArgs = addLocalOffsetToEvent(headerArgs, this.parent.eventFields);
-            let headerTemp = [].slice.call(this.parent.getQuickInfoTemplatesHeader()(templateArgs, this.parent, 'header', templateId + '_headerTemplate', false));
+            let headerTemp = [].slice.call(this.parent.getQuickInfoTemplatesHeader()(headerArgs, this.parent, 'header', templateId + '_headerTemplate', false));
             append([].slice.call(headerTemp), headerTemplate);
         }
         else {
@@ -5672,10 +5675,13 @@ class QuickPopups {
     getPopupContent(type, args, data) {
         let contentTemplate = createElement('div', { className: POPUP_CONTENT_CLASS });
         if (this.isQuickTemplate(type) && this.parent.quickInfoTemplates.content) {
-            let contentArgs = extend({}, data, { elementType: type.toLowerCase() }, true);
+            let contentArgs = extend({}, data, !isBlazor() ? { elementType: type.toLowerCase() } :
+                { elementType: type.toLowerCase(),
+                    startTimeValue: addLocalOffset(data[this.parent.eventFields.startTime]),
+                    endTimeValue: addLocalOffset(data[this.parent.eventFields.endTime])
+                }, true);
             let templateId = this.parent.element.id;
-            let templateArgs = addLocalOffsetToEvent(contentArgs, this.parent.eventFields);
-            let contentTemp = [].slice.call(this.parent.getQuickInfoTemplatesContent()(templateArgs, this.parent, 'content', templateId + '_contentTemplate', false));
+            let contentTemp = [].slice.call(this.parent.getQuickInfoTemplatesContent()(contentArgs, this.parent, 'content', templateId + '_contentTemplate', false));
             append([].slice.call(contentTemp), contentTemplate);
         }
         else {
@@ -5733,10 +5739,13 @@ class QuickPopups {
     getPopupFooter(footerType, footerData) {
         let footerTemplate = createElement('div', { className: POPUP_FOOTER_CLASS });
         if (this.isQuickTemplate(footerType) && this.parent.quickInfoTemplates.footer) {
-            let footerArgs = extend({}, footerData, { elementType: footerType.toLowerCase() }, true);
+            let footerArgs = extend({}, footerData, !isBlazor() ? { elementType: footerType.toLowerCase() } :
+                { elementType: footerType.toLowerCase(),
+                    startTimeValue: addLocalOffset(footerData[this.parent.eventFields.startTime]),
+                    endTimeValue: addLocalOffset(footerData[this.parent.eventFields.endTime])
+                }, true);
             let templateId = this.parent.element.id;
-            let templateArgs = addLocalOffsetToEvent(footerArgs, this.parent.eventFields);
-            let footerTemp = [].slice.call(this.parent.getQuickInfoTemplatesFooter()(templateArgs, this.parent, 'footer', templateId + '_footerTemplate', false));
+            let footerTemp = [].slice.call(this.parent.getQuickInfoTemplatesFooter()(footerArgs, this.parent, 'footer', templateId + '_footerTemplate', false));
             append([].slice.call(footerTemp), footerTemplate);
         }
         else {
@@ -7069,6 +7078,8 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
             locale: this.locale,
             min: this.minDate,
             max: this.maxDate,
+            format: (isNullOrUndefined(this.dateFormat) ?
+                this.getFormat('dateFormats') : this.dateFormat),
             change: (args) => {
                 if (args.value) {
                     self.triggerChangeEvent();
@@ -7076,6 +7087,24 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
             }
         });
         this.untilDateObj.appendTo(this.element.querySelector('.' + UNTILDATE));
+    }
+    getFormat(formatType) {
+        if (isBlazor()) {
+            if (formatType === 'dateFormats') {
+                return IntlBase.compareBlazorDateFormats({ skeleton: 'd' }, this.locale).format;
+            }
+            return IntlBase.compareBlazorDateFormats({ skeleton: 't' }, this.locale).format;
+        }
+        let format;
+        if (this.locale === 'en' || this.locale === 'en-US') {
+            format = getValue(formatType + '.short', getDefaultDateObject(this.getCalendarMode()));
+        }
+        else {
+            format = getValue(
+            // tslint:disable-next-line:max-line-length
+            'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.' + formatType + '.short', cldrData);
+        }
+        return format;
     }
     dayButtonRender() {
         let btns = [].slice.call(this.element.querySelectorAll('.' + DAYWRAPPER + ' button'));
@@ -7635,6 +7664,9 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
                 case 'frequencies':
                 case 'firstDayOfWeek':
                     this.refresh();
+                    break;
+                case 'dateFormat':
+                    this.untilDateObj.setProperties({ format: newProp.dateFormat });
                     break;
             }
         }
@@ -11495,7 +11527,7 @@ class ResourceBase {
         }
         let target = this.parent.element.querySelector('.' + RESOURCE_COLUMN_WRAP_CLASS + ' ' + `[data-group-index="${index}"]` +
             ' ' + '.' + RESOURCE_TREE_ICON_CLASS);
-        if (resourceData.ClassName === RESOURCE_PARENT_CLASS && target) {
+        if (target) {
             if (target.classList.contains(RESOURCE_EXPAND_CLASS) && !hide) {
                 target.click();
             }
@@ -11872,6 +11904,7 @@ let Schedule = class Schedule extends Component {
         this.viewCollections = [];
         let viewName;
         let selectedView;
+        let prevIndex = this.viewIndex;
         let count = 0;
         this.viewIndex = -1;
         for (let view of this.views) {
@@ -11912,7 +11945,8 @@ let Schedule = class Schedule extends Component {
         }
         if (this.viewIndex === -1) {
             let currentIndex = this.getViewIndex(this.currentView);
-            this.viewIndex = (currentIndex === -1) ? 0 : currentIndex;
+            this.viewIndex = ((typeof this.views[0] !== 'string') && (!isNullOrUndefined(prevIndex) && prevIndex !== -1)) ? prevIndex :
+                (currentIndex === -1) ? 0 : currentIndex;
         }
     }
     /** @hidden */
@@ -12508,7 +12542,7 @@ let Schedule = class Schedule extends Component {
     /** @hidden */
     getAnnocementString(event, subject) {
         let recordSubject = (subject || (event[this.eventFields.subject] || this.eventSettings.fields.subject.default));
-        let skeleton = isBlazor() ? 'R' : 'full';
+        let skeleton = isBlazor() ? 'F' : 'full';
         let startDateText = this.globalize.formatDate(event[this.eventFields.startTime], {
             type: 'dateTime', skeleton: skeleton, calendar: this.getCalendarMode()
         });
@@ -18526,7 +18560,9 @@ class Month extends ViewBase {
                 ele.setAttribute('title', capitalizeFirstWord(title, 'multiple'));
                 let innerText = (this.parent.calendarUtil.isMonthStart(td.date) && !this.isCurrentDate(td.date) && !this.parent.isAdaptive) ?
                     this.parent.globalize.formatDate(td.date, { format: 'MMM d', calendar: this.parent.getCalendarMode() }) :
-                    this.parent.globalize.formatDate(td.date, { skeleton: 'd', calendar: this.parent.getCalendarMode() });
+                    isBlazor() ?
+                        this.parent.globalize.formatDate(td.date, { format: 'd', calendar: this.parent.getCalendarMode() }) :
+                        this.parent.globalize.formatDate(td.date, { skeleton: 'd', calendar: this.parent.getCalendarMode() });
                 ele.innerHTML = capitalizeFirstWord(innerText, 'single');
                 tdEle.appendChild(ele);
             }

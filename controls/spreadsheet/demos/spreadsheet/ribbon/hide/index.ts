@@ -1,5 +1,5 @@
 /**
- * Spreadsheet default sample
+ * Spreadsheet ribbon hide sample
  */
 import { Spreadsheet, SheetModel, ColumnModel } from './../../../../src/index';
 import { enableRipple } from '@syncfusion/ej2-base';
@@ -26,42 +26,26 @@ let columns: ColumnModel[] = [
 ];
 
 let sheet: SheetModel[] = [{
-    range: [{
-        dataSource: dataSource,
-        startCell: 'A1'
-    }],
-    rowCount: 200,
+    ranges: [{ dataSource: dataSource }],
     columns: columns
 },
 {
     state: 'VeryHidden',
-    range: [{
-        dataSource: dataSource,
-        startCell: 'A1'
-    }],
-    rowCount: 200,
+    ranges: [{ dataSource: dataSource }],
     columns: columns
 },
 {
     state: 'Hidden',
-    range: [{
-        dataSource: dataSource,
-        startCell: 'A1'
-    }],
-    rowCount: 200,
+    ranges: [{ dataSource: dataSource }],
     columns: columns
 }];
 
 let spreadsheet: Spreadsheet = new Spreadsheet({
     sheets: sheet,
-    beforeDataBound: (): void => {
-        if (spreadsheet.sheets[spreadsheet.activeSheetIndex].name === 'Price Details') {
-            spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1');
-        }
-    },
     openUrl: 'https://ej2services.syncfusion.com/production/web-services/api/spreadsheet/open',
     saveUrl: 'https://ej2services.syncfusion.com/production/web-services/api/spreadsheet/save',
     created: (): void => {
+        spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1');
         spreadsheet.hideRibbonTabs(['Formulas', 'Insert']);
         spreadsheet.addRibbonTabs([{ header: { text: 'Custom' }, content: [{ text: 'Custom', tooltipText: 'Custom Btn' }] }], 'View');
         spreadsheet.hideToolbarItems('Home', [0, 1, 2, 4, 14, 15, 22, 23, 24]);

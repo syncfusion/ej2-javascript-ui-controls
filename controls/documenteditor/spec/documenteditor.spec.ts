@@ -1,7 +1,7 @@
 import { DocumentEditor } from '../src/document-editor/document-editor';
 import {
-    Margin, Page, TableWidget, ImageElementBox, TableRowWidget,
-    TableCellWidget, BodyWidget, ParagraphWidget, LineWidget, ElementBox, TextElementBox, XmlHttpRequestHandler, DocumentHelper
+    Margin, Page, TableWidget, ImageElementBox, TableRowWidget, TextFormField, CheckBoxFormField, DropDownFormField, FieldElementBox,
+    TableCellWidget, BodyWidget, ParagraphWidget, LineWidget, ElementBox, TextElementBox, XmlHttpRequestHandler, DocumentHelper, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo
 } from '../src/index';
 import { createElement, Browser } from '@syncfusion/ej2-base';
 import { Layout } from '../src/document-editor/implementation/viewer/layout';
@@ -155,7 +155,7 @@ describe('DocumentEditor', () => {
     });
 
     describe('Disposing method validation', () => {
-         it('page destroy validation', () => {
+        it('page destroy validation', () => {
             let page: Page = new Page(undefined);
             page.bodyWidgets = undefined;
             expect(() => { page.destroy() }).not.toThrowError();
@@ -1535,4 +1535,108 @@ describe('Enable comment checking in docmenteitor', () => {
         expect(editor.documentHelper.comments.length).toBe(0);
     })
 
+});
+describe('Form field API validation', () => {
+    let documentEditor: DocumentEditor;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        documentEditor = new DocumentEditor({ enableEditor: true, isReadOnly: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        (documentEditor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (documentEditor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (documentEditor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (documentEditor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        documentEditor.appendTo("#container");
+    });
+    afterAll((done) => {
+        documentEditor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        documentEditor = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('get form field names', () => {
+        documentEditor.editor.insertFormField('Text');
+        documentEditor.editor.insertFormField('CheckBox');
+        documentEditor.editor.insertFormField('DropDown');
+        (documentEditor.documentHelper.formFields[0].formFieldData as TextFormField).name = 'Text1';
+        documentEditor.editor.updateFormField(documentEditor.documentHelper.formFields[0], 'TEXT', true);
+        (documentEditor.documentHelper.formFields[1].formFieldData as CheckBoxFormField).name = 'Checkbox1';
+        (documentEditor.documentHelper.formFields[2].formFieldData as DropDownFormField).name = 'Dropdown1';
+        documentEditor.getFormFieldNames();
+        expect((documentEditor.documentHelper.formFields[0].formFieldData as TextFormField).name).toBe('Text1');
+        expect((documentEditor.documentHelper.formFields[1].formFieldData as CheckBoxFormField).name).toBe('Checkbox1');
+        expect((documentEditor.documentHelper.formFields[2].formFieldData as DropDownFormField).name).toBe('Dropdown1');
+    })
+    it('get form fields', () => {
+        (documentEditor.documentHelper.formFields[0].formFieldData as TextFormField).name = 'Text1';
+        (documentEditor.documentHelper.formFields[1].formFieldData as CheckBoxFormField).name = 'Checkbox1';
+        (documentEditor.documentHelper.formFields[2].formFieldData as DropDownFormField).name = 'Dropdown1';
+        (documentEditor.documentHelper.formFields[2].formFieldData as DropDownFormField).selectedIndex = 0;
+        documentEditor.getFormFieldInfo('Dropdown1');
+        expect((documentEditor.documentHelper.formFields[2].formFieldData as DropDownFormField).name).toBe('Dropdown1');
+        expect((documentEditor.documentHelper.formFields[2].formFieldData as DropDownFormField).selectedIndex).toBe(0);
+    })
+    it('set form fields', () => {
+        (documentEditor.documentHelper.formFields[0].formFieldData as TextFormField).name = 'Text1';
+        (documentEditor.documentHelper.formFields[0].formFieldData as TextFormField).defaultValue = 'check';
+        (documentEditor.documentHelper.formFields[0].formFieldData as TextFormField).format = 'Uppercase';
+        (documentEditor.documentHelper.formFields[0].formFieldData as TextFormField).enabled = true;
+        (documentEditor.documentHelper.formFields[1].formFieldData as CheckBoxFormField).name = 'Checkbox1';
+        (documentEditor.documentHelper.formFields[2].formFieldData as DropDownFormField).name = 'Dropdown1';
+        let textInfo: TextFormFieldInfo | CheckBoxFormFieldInfo | DropDownFormFieldInfo = documentEditor.getFormFieldInfo('Text1');
+        documentEditor.setFormFieldInfo('Text1', textInfo);
+        expect((documentEditor.documentHelper.formFields[2].formFieldData as TextFormField).defaultValue).toBe('check');
+        expect((documentEditor.documentHelper.formFields[2].formFieldData as TextFormField).format).toBe('Uppercase');
+        expect((documentEditor.documentHelper.formFields[2].formFieldData as TextFormField).enabled).toBe(true);
+    })
+    it('reset form fields', () => {
+        (documentEditor.documentHelper.formFields[2].formFieldData as TextFormField).name = 'Text1';
+        (documentEditor.documentHelper.formFields[2].formFieldData as TextFormField).defaultValue = '';
+        (documentEditor.documentHelper.formFields[0].formFieldData as CheckBoxFormField).name = 'Checkbox1';
+        (documentEditor.documentHelper.formFields[0].formFieldData as CheckBoxFormField).checked = false;
+        (documentEditor.documentHelper.formFields[1].formFieldData as DropDownFormField).name = 'Dropdown1';
+        (documentEditor.documentHelper.formFields[1].formFieldData as DropDownFormField).selectedIndex = 0;
+        (documentEditor.documentHelper.formFields[1].formFieldData as DropDownFormField).dropDownItems = ['one', 'two', 'three'];
+        documentEditor.resetFormFields();
+        expect((documentEditor.documentHelper.formFields[2].formFieldData as TextFormField).defaultValue).toBe('');
+        expect((documentEditor.documentHelper.formFields[0].formFieldData as CheckBoxFormField).checked).toBe(false);
+        expect((documentEditor.documentHelper.formFields[1].formFieldData as DropDownFormField).selectedIndex).toBe(0);
+    })
+    it('export form fields', () => {
+        let formData: any = documentEditor.exportFormData();
+        let text: string = (documentEditor.documentHelper.formFields[2].formFieldData as TextFormField).defaultValue;
+        expect(formData[2][(documentEditor.documentHelper.formFields[2].formFieldData as TextFormField).name]).toBe(text);
+        let checked: boolean = (documentEditor.documentHelper.formFields[0].formFieldData as CheckBoxFormField).checked;
+        expect(formData[0][(documentEditor.documentHelper.formFields[0].formFieldData as CheckBoxFormField).name]).toBe(checked);
+        let index: number = (documentEditor.documentHelper.formFields[1].formFieldData as DropDownFormField).selectedIndex;
+        expect(formData[1][(documentEditor.documentHelper.formFields[1].formFieldData as DropDownFormField).name]).toBe(index);
+    })
+    it('import form fields', () => {
+        let formData: any = documentEditor.exportFormData();
+        let formfield: FieldElementBox[] = documentEditor.documentHelper.formFields;
+        documentEditor.editor.updateFormField(formfield[2], 'result', true);
+        documentEditor.importFormData(formData);
+        let text: string = formData[2][(documentEditor.documentHelper.formFields[2].formFieldData as TextFormField).name];
+        expect((documentEditor.documentHelper.formFields[2].formFieldData as TextFormField).defaultValue).toBe(text);
+        let checked: boolean = formData[0][(documentEditor.documentHelper.formFields[0].formFieldData as CheckBoxFormField).name];
+        expect((documentEditor.documentHelper.formFields[0].formFieldData as CheckBoxFormField).checked).toBe(checked);
+        let index: number = formData[1][(documentEditor.documentHelper.formFields[1].formFieldData as DropDownFormField).name];
+        expect((documentEditor.documentHelper.formFields[1].formFieldData as DropDownFormField).selectedIndex).toBe(index);
+    })
+    it('set checkbox form fields', () => {
+        (documentEditor.documentHelper.formFields[0].formFieldData as CheckBoxFormField).size = 11;
+        (documentEditor.documentHelper.formFields[0].formFieldData as CheckBoxFormField).sizeType = 'Auto';
+        let checkboxInfo: TextFormFieldInfo | CheckBoxFormFieldInfo | DropDownFormFieldInfo = documentEditor.getFormFieldInfo('Checkbox1');
+        documentEditor.setFormFieldInfo('Checkbox1', checkboxInfo);
+        expect((documentEditor.documentHelper.formFields[2].formFieldData as CheckBoxFormField).size).toBe(11);
+        expect((documentEditor.documentHelper.formFields[2].formFieldData as CheckBoxFormField).sizeType).toBe('Auto');
+    })
+    it('set dropdown form fields', () => {
+        let dropdownInfo: TextFormFieldInfo | CheckBoxFormFieldInfo | DropDownFormFieldInfo = documentEditor.getFormFieldInfo('Dropdown1');
+        documentEditor.setFormFieldInfo('Dropdown1', dropdownInfo);
+        expect((documentEditor.documentHelper.formFields[2].formFieldData as DropDownFormField).selectedIndex).toBe(0);
+    })
 });

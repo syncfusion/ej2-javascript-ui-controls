@@ -1,5 +1,5 @@
 /**
- * Spreadsheet default sample
+ * Spreadsheet ribbon add sample
  */
 import { Spreadsheet, SheetModel, ColumnModel, MenuSelectEventArgs } from './../../../../src/index';
 import { enableRipple } from '@syncfusion/ej2-base';
@@ -26,25 +26,18 @@ let columns: ColumnModel[] = [
 ];
 
 let sheet: SheetModel[] = [{
-    name: 'PriceDetails',
-    range: [{
-        dataSource: dataSource,
-        startCell: 'A1'
-    }],
+    name: 'Price Details',
+    ranges: [{ dataSource: dataSource }],
     rowCount: 200,
     columns: columns
 }];
 
 let spreadsheet: Spreadsheet = new Spreadsheet({
     sheets: sheet,
-    beforeDataBound: (): void => {
-        if (spreadsheet.sheets[spreadsheet.activeSheetIndex].name === 'Sheet1') {
-            spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1');
-        }
-    },
     openUrl: 'https://ej2services.syncfusion.com/production/web-services/api/spreadsheet/open',
     saveUrl: 'https://ej2services.syncfusion.com/production/web-services/api/spreadsheet/save',
     created: (): void => {
+        spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1');
         spreadsheet.addToolbarItems('Home', [{ type: 'Separator' }, { text: 'Custom', tooltipText: 'Custom Btn' }], 2);
         spreadsheet.addToolbarItems('Formulas', [{ type: 'Separator' }, { text: 'Custom Formulas', tooltipText: 'Custom Formulas' }], 2);
         spreadsheet.addFileMenuItems([{ text: 'Export', iconCss: 'e-save e-icons' }], 'Save As');

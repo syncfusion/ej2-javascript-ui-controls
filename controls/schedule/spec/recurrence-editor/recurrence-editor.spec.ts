@@ -253,6 +253,10 @@ describe('Recurrence Editor Base Module', () => {
             expect((<any>schObj).untilDateObj.minDate.getTime()).toBe(start.getTime());
             expect((<any>schObj).untilDateObj.maxDate.getTime()).toBe(end.getTime());
         });
+        it('ensuring the property changes for date format', () => {
+            schObj.setProperties({ dateFormat: "yyyy/MM/dd" });
+            expect((<any>schObj).untilDateObj.format).toBe("yyyy/MM/dd");
+        });
         it('ensuring the property channge option-value', () => {
             schObj.setProperties({ value: 'FREQ=DAILY;INTERVAL=2;' });
             expect(schObj.element.querySelectorAll('.e-editor>.e-hide-recurrence-element').length).not.toBe(4);

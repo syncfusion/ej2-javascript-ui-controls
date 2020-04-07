@@ -4098,10 +4098,11 @@ var Marker = /** @class */ (function () {
         var eventArgs = {
             cancel: false, name: markerClusterClick, data: options, maps: this.maps,
             target: target, x: e.clientX, y: e.clientY,
-            latitude: options.data["latitude"] || options.data["Latitude"], longitude: options.data["longitude"] || options.data["Longitude"]
+            latitude: options.data["latitude"] || options.data["Latitude"], longitude: options.data["longitude"] || options.data["Longitude"],
+            markerClusterCollection: options['markCollection']
         };
         if (this.maps.isBlazor) {
-            var maps = eventArgs.maps, data = eventArgs.data, latitude = eventArgs.latitude, longitude = eventArgs.longitude, blazorEventArgs = __rest$1(eventArgs, ["maps", "data", "latitude", "longitude"]);
+            var maps = eventArgs.maps, latitude = eventArgs.latitude, longitude = eventArgs.longitude, blazorEventArgs = __rest$1(eventArgs, ["maps", "latitude", "longitude"]);
             eventArgs = blazorEventArgs;
         }
         this.maps.trigger(markerClusterClick, eventArgs);
@@ -4114,6 +4115,7 @@ var Marker = /** @class */ (function () {
         var index = parseInt(id[1].split('_')[0], 10);
         var layer = this.maps.layers[index];
         var data;
+        var markCollection = [];
         var clusterCollection = [];
         var marker$$1;
         if (target.indexOf('_MarkerIndex_') > -1) {
@@ -4143,6 +4145,10 @@ var Marker = /** @class */ (function () {
                         for (var _i = 0, indexes_1 = indexes; _i < indexes_1.length; _i++) {
                             var i = indexes_1[_i];
                             collection_1.push({ data: marker$$1.dataSource[i], index: i });
+                            if (this.maps.isBlazor) {
+                                marker$$1.dataSource[i]["text"] = "";
+                            }
+                            markCollection.push(marker$$1.dataSource[i]);
                         }
                         isClusterSame = false;
                     }
@@ -4152,7 +4158,7 @@ var Marker = /** @class */ (function () {
                         isClusterSame: isClusterSame
                     });
                 }
-                return { marker: marker$$1, data: data, clusterCollection: clusterCollection };
+                return { marker: marker$$1, data: data, clusterCollection: clusterCollection, markCollection: markCollection };
             }
         }
         return null;
@@ -5441,11 +5447,8 @@ var LayerPanel = /** @class */ (function () {
         }
         xcount += xLeft + xRight;
         if (zoomType === 'Pan') {
-            if (this.horizontalPanXCount !== xcount) {
-                xcount = this.horizontalPanXCount;
-                this.horizontalPan = false;
-                return null;
-            }
+            xcount = (this.horizontalPanXCount >= xcount) ? this.horizontalPanXCount : xcount;
+            this.horizontalPan = false;
         }
         else {
             this.horizontalPanXCount = xcount;
@@ -5539,6 +5542,7 @@ var LayerPanel = /** @class */ (function () {
                 }
                 if (element1) {
                     element1.style.zIndex = '0';
+                    element1.style.visibility = 'hidden';
                 }
                 var animateElement;
                 if (!document.getElementById('animated_tiles') && element) {
@@ -6186,6 +6190,17 @@ var Maps = /** @class */ (function (_super) {
         sf.base.setValue('mergePersistData', _this.mergePersistMapsData, _this);
         return _this;
     }
+    Object.defineProperty(Maps.prototype, "isShapeSelected", {
+        /**
+         * Specifies whether the shape is selected in the maps or not..
+         */
+        get: function () {
+            return this.mapSelect;
+        },
+        enumerable: true,
+        configurable: true
+    });
+    
     /**
      * To manage persist maps data
      */
@@ -10601,6 +10616,7 @@ var Selection = /** @class */ (function () {
                 this.selectionType = 'navigationline';
             }
             if (this.selectionsettings.enable) {
+                this.maps.mapSelect = targetElement ? true : false;
                 if (this.maps.legendSettings.visible && targetElement.id.indexOf('_MarkerIndex_') === -1) {
                     this.maps.legendModule.shapeHighLightAndSelection(targetElement, data, this.selectionsettings, 'selection', layerIndex);
                 }
@@ -11061,6 +11077,9 @@ var MapsTooltip = /** @class */ (function () {
                 this.removeTooltip();
             }
         }
+        else {
+            this.removeTooltip();
+        }
     };
     /**
      * To get content for the current toolitp
@@ -11449,6 +11468,9 @@ var Zoom = /** @class */ (function () {
         var x = this.maps.translatePoint.x;
         var y = this.maps.translatePoint.y;
         this.maps.zoomShapeCollection = [];
+        if (document.getElementById(this.maps.element.id + '_mapsTooltip')) {
+            removeElement(this.maps.element.id + '_mapsTooltip');
+        }
         if (this.layerCollectionEle) {
             for (var i_1 = 0; i_1 < this.layerCollectionEle.childElementCount; i_1++) {
                 var layerElement = this.layerCollectionEle.childNodes[i_1];
@@ -12024,9 +12046,7 @@ var Zoom = /** @class */ (function () {
             };
             map.trigger(pan, panArgs);
             map.mapLayerPanel.generateTiles(map.tileZoomLevel, map.tileTranslatePoint, 'Pan');
-            if (map.mapLayerPanel.horizontalPan) {
-                this.applyTransform();
-            }
+            this.applyTransform();
         }
         map.zoomTranslatePoint = map.translatePoint;
         this.mouseDownPoints = this.mouseMovePoints;

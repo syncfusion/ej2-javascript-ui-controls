@@ -3845,5 +3845,32 @@ describe('TimePicker', () => {
             expect(timepicker.inputWrapper.container.classList.contains('custom-class-two')).toBe(true);
         });   
     });
+    describe('EJ2-36789', function () {
+        let timepicker:any;
+        beforeEach(function () {
+            let ele: HTMLElement = createElement('input', { id: 'date' });
+                document.body.appendChild(ele);
+        });
+        afterEach(function () {
+            if (timepicker) {
+                timepicker.destroy();
+            }
+            document.body.innerHTML = '';
+        });
+        it('Input focus checking on focus out the control in close event', function () {
+            timepicker = new TimePicker({
+                close: function(args: any) {
+                    this.focusOut();
+                }
+            });
+            timepicker.appendTo('#date');
+            timepicker.show();
+            expect(timepicker.inputWrapper.container.classList.contains('e-input-focus')).toBe(true);
+            expect(timepicker.inputElement.value === "").toBe(true);
+            timepicker.liCollections[0].click();
+            expect(timepicker.inputElement.value === "").toBe(false);
+            expect(timepicker.inputWrapper.container.classList.contains('e-input-focus')).toBe(false);
+        });
+    });
 });
 

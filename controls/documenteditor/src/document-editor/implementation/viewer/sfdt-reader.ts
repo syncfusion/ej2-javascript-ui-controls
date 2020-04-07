@@ -12,7 +12,7 @@ import {
     BookmarkElementBox, FieldTextElementBox, TabElementBox, EditRangeStartElementBox, EditRangeEndElementBox,
     ChartElementBox, ChartCategoryAxis, ChartLegend, ChartLayout, ChartTitleArea, ChartDataFormat,
     ChartDataTable, ChartArea, ChartCategory, ChartData, ChartSeries, ChartDataLabels, ChartTrendLines, ChartSeriesFormat, ElementBox,
-    CommentCharacterElementBox, CommentElementBox
+    CommentCharacterElementBox, CommentElementBox, FormField, TextFormField, CheckBoxFormField, DropDownFormField
 } from './page';
 import { HelperMethods } from '../editor/editor-helper';
 import { Dictionary } from '../../base/dictionary';
@@ -30,6 +30,10 @@ export class SfdtReader {
     private isPageBreakInsideTable: boolean = false;
     private editableRanges: Dictionary<string, EditRangeStartElementBox>;
     private isParseHeader: boolean = false;
+    /**
+     * @private
+     */
+    public isPaste: boolean = false;
 
     private get isPasting(): boolean {
         return this.viewer && this.viewer.owner.isPastingContent;
@@ -574,6 +578,32 @@ export class SfdtReader {
                 this.applyCharacterStyle(inline, fieldBegin);
                 fieldBegin.fieldCodeType = inline.fieldCodeType;
                 fieldBegin.hasFieldEnd = inline.hasFieldEnd;
+                if (inline.hasOwnProperty('formFieldData')) {
+                    let formFieldData: FormField;
+                    if (inline.formFieldData.hasOwnProperty('textInput')) {
+                        formFieldData = new TextFormField();
+                        (formFieldData as TextFormField).type = inline.formFieldData.textInput.type;
+                        (formFieldData as TextFormField).maxLength = inline.formFieldData.textInput.maxLength;
+                        (formFieldData as TextFormField).defaultValue = inline.formFieldData.textInput.defaultValue;
+                        (formFieldData as TextFormField).format = inline.formFieldData.textInput.format;
+                    } else if (inline.formFieldData.hasOwnProperty('checkBox')) {
+                        formFieldData = new CheckBoxFormField();
+                        (formFieldData as CheckBoxFormField).sizeType = inline.formFieldData.checkBox.sizeType;
+                        (formFieldData as CheckBoxFormField).size = inline.formFieldData.checkBox.size;
+                        (formFieldData as CheckBoxFormField).defaultValue = inline.formFieldData.checkBox.defaultValue;
+                        (formFieldData as CheckBoxFormField).checked = inline.formFieldData.checkBox.checked;
+                    } else {
+                        formFieldData = new DropDownFormField();
+                        (formFieldData as DropDownFormField).dropDownItems = inline.formFieldData.dropDownList.dropDownItems;
+                        (formFieldData as DropDownFormField).selectedIndex = inline.formFieldData.dropDownList.selectedIndex;
+                    }
+                    formFieldData.name = inline.formFieldData.name;
+                    formFieldData.enabled = inline.formFieldData.enabled;
+                    formFieldData.helpText = inline.formFieldData.helpText;
+                    formFieldData.statusText = inline.formFieldData.statusText;
+                    fieldBegin.formFieldData = formFieldData;
+                    this.documentHelper.formFields.push(fieldBegin);
+                }
                 this.documentHelper.fieldStacks.push(fieldBegin);
                 fieldBegin.line = lineWidget;
                 this.documentHelper.fields.push(fieldBegin);
@@ -619,7 +649,7 @@ export class SfdtReader {
                 }
                 field.line = lineWidget;
                 lineWidget.children.push(field);
-            } else if (inline.hasOwnProperty('bookmarkType')) {
+            } else if (inline.hasOwnProperty('bookmarkType') && !this.isPaste) {
                 let bookmark: BookmarkElementBox = undefined;
                 bookmark = new BookmarkElementBox(inline.bookmarkType);
                 bookmark.name = inline.name;

@@ -998,6 +998,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         this.viewCollections = [];
         let viewName: string;
         let selectedView: string;
+        let prevIndex: number = this.viewIndex;
         let count: number = 0;
         this.viewIndex = -1;
         for (let view of this.views) {
@@ -1036,7 +1037,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         }
         if (this.viewIndex === -1) {
             let currentIndex: number = this.getViewIndex(this.currentView);
-            this.viewIndex = (currentIndex === -1) ? 0 : currentIndex;
+            this.viewIndex = ((typeof this.views[0] !== 'string') && (!isNullOrUndefined(prevIndex) && prevIndex !== -1)) ? prevIndex :
+                (currentIndex === -1) ? 0 : currentIndex;
         }
     }
 
@@ -1673,7 +1675,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     /** @hidden */
     public getAnnocementString(event: { [key: string]: Object }, subject?: string): string {
         let recordSubject: string = (subject || (event[this.eventFields.subject] || this.eventSettings.fields.subject.default)) as string;
-        let skeleton: string = isBlazor() ? 'R' : 'full';
+        let skeleton: string = isBlazor() ? 'F' : 'full';
         let startDateText: string = this.globalize.formatDate(event[this.eventFields.startTime] as Date, {
             type: 'dateTime', skeleton: skeleton, calendar: this.getCalendarMode()
         });

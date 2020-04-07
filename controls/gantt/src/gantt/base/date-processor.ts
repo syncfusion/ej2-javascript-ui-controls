@@ -626,7 +626,7 @@ export class DateProcessor {
         if (sDate.getTime() < eDate.getTime()) {
             for (let i: number = 0; i < holidays.length; i++) {
                 let currentHoliday: Date = this.getDateFromFormat(new Date(holidays[i]));
-                if (sDate.getTime() <= currentHoliday.getTime() && eDate.getTime() >= currentHoliday.getTime()) {
+                if (sDate.getTime() <= currentHoliday.getTime() && eDate.getTime() > currentHoliday.getTime()) {
                     if (!this.parent.includeWeekend && this.parent.nonWorkingDayIndex.indexOf(currentHoliday.getDay()) === -1) {
                         holidaysCount += 1;
                     } else if (this.parent.includeWeekend) {
@@ -987,11 +987,11 @@ export class DateProcessor {
                 addDateToList(maxEndDate);
                 addDateToList(tempStartDate);
                 addDateToList(tempEndDate);
-                if (this.parent.renderBaseline) {
+                if (this.parent.renderBaseline && !this.parent.timelineModule.isZoomToFit) {
                     addDateToList(task.baselineStartDate);
                     addDateToList(task.baselineEndDate);
                 }
-                if (task.indicators && task.indicators.length > 0) {
+                if (task.indicators && task.indicators.length > 0 && !this.parent.timelineModule.isZoomToFit) {
                     task.indicators.forEach((item: IIndicator, index: number) => {
                         addDateToList(this.getDateFromFormat(item.date));
                     });
@@ -1002,13 +1002,13 @@ export class DateProcessor {
             addDateToList(minStartDate);
             addDateToList(maxEndDate);
             //update schedule dates as per holiday and strip line collection
-            if (this.parent.eventMarkers.length > 0) {
+            if (this.parent.eventMarkers.length > 0 && !this.parent.timelineModule.isZoomToFit) {
                 let eventMarkers: EventMarkerModel[] = this.parent.eventMarkers;
                 eventMarkers.forEach((marker: EventMarkerModel, index: number) => {
                     addDateToList(this.getDateFromFormat(marker.day));
                 });
             }
-            if (this.parent.totalHolidayDates.length > 0) {
+            if (this.parent.totalHolidayDates.length > 0 && !this.parent.timelineModule.isZoomToFit) {
                 let holidays: number[] = this.parent.totalHolidayDates;
                 holidays.forEach((holiday: number, index: number) => {
                     addDateToList(new Date(holiday));

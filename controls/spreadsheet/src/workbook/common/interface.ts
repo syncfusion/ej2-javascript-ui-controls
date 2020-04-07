@@ -305,3 +305,7 @@ export interface MergeArgs {
     preventRefresh?: boolean;
     refreshRibbon?: boolean;
 }
+/** @hidden */
+export interface UnprotectArgs {
+   sheet?: number;
+}

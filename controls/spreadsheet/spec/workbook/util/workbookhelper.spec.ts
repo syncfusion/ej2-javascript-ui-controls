@@ -1,5 +1,4 @@
 
-import { TestHelper } from '../../common/helper.spec';
 import { WorkbookModel, Workbook } from '../../../src/workbook/index';
 
 /**
@@ -12,11 +11,11 @@ export class WorkbookHelper {
         this.instance = new Workbook(model);
     }
 
-    getInstance(): Workbook {
+    public getInstance(): Workbook {
         return this.instance;
     }
 
-    setModel(property: any, value: any, dataBind: boolean = true): void {
+    public setModel(property: any, value: any, dataBind: boolean = true): void {
         let inst: Workbook = this.getInstance();
         inst[property] = value;
         if (dataBind) {
@@ -24,11 +23,11 @@ export class WorkbookHelper {
         }
     }
 
-    getModel(property: any) {
+    public getModel(property: any) {
         return this.getInstance()[property];
     }
 
-    invoke(fName: string, args: any[] = []): any {
+    public invoke(fName: string, args: any[] = []): any {
         let inst: Workbook = this.getInstance();
         return inst[fName].call(inst, ...args);
     }

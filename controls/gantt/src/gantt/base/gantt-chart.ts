@@ -670,6 +670,7 @@ export class GanttChart {
      * @private
      */
     public onTabAction(e: KeyboardEventArgs): void {
+        this.parent.treeGrid.grid.enableHeaderFocus = this.parent.enableHeaderFocus;
         let isInEditedState: boolean = this.parent.editModule && this.parent.editModule.cellEditModule &&
             this.parent.editModule.cellEditModule.isCellEdit;
         if (!this.parent.showActiveElement && !isInEditedState) {
@@ -678,10 +679,12 @@ export class GanttChart {
         let $target: Element = isInEditedState ? (e.target as Element).closest('.e-rowcell') : e.target as Element;
         let isTab: boolean = (e.action === 'tab') ? true : false;
         let nextElement: Element = this.getNextElement($target, isTab);
-        if ($target.classList.contains('e-rowcell') || $target.closest('.e-chart-row-cell')) {
+        if ($target.classList.contains('e-rowcell') || $target.closest('.e-chart-row-cell') ||
+            $target.classList.contains('e-headercell')) {
             e.preventDefault();
         }
-        if ($target.classList.contains('e-rowcell') && (nextElement && nextElement.classList.contains('e-rowcell'))) {
+        if ($target.classList.contains('e-rowcell') && (nextElement && nextElement.classList.contains('e-rowcell')) ||
+            $target.classList.contains('e-headercell')) {
             this.parent.treeGrid.grid.notify('key-pressed', e);
         }
         if (!isInEditedState) {
@@ -715,7 +718,7 @@ export class GanttChart {
     private getNextElement($target: Element, isTab: boolean): Element {
         let nextElement: Element = isTab ? $target.nextElementSibling : $target.previousElementSibling;
         while (nextElement && nextElement.parentElement.classList.contains('e-row')) {
-            if (!nextElement.matches('.e-hide')) {
+            if (!nextElement.matches('.e-hide') && !nextElement.matches('.e-rowdragdrop')) {
                 return nextElement;
             }
             nextElement = isTab ? nextElement.nextElementSibling : nextElement.previousElementSibling;
@@ -760,7 +763,7 @@ export class GanttChart {
                 if (rowElement) {
                     childElement = isTab ? rowElement.children[0] : rowElement.children[rowElement.children.length - 1];
                     while (childElement) {
-                        if (!childElement.matches('.e-hide')) {
+                        if (!childElement.matches('.e-hide') && !childElement.matches('.e-rowdragdrop')) {
                             return childElement;
                         }
                         childElement = isTab ? childElement.nextElementSibling : childElement.previousElementSibling;

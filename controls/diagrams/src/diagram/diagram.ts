@@ -82,7 +82,7 @@ import { HistoryEntry, History } from './diagram/history';
 import { UndoRedo } from './objects/undo-redo';
 import { ConnectorEditing } from './interaction/connector-editing';
 import { Ruler } from '../ruler/index';
-import { BeforeOpenCloseMenuEventArgs, MenuEventArgs, EJ2Instance } from '@syncfusion/ej2-navigations';
+import { BeforeOpenCloseMenuEventArgs, MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { setAttributeSvg, setAttributeHtml, measureHtmlText, removeElement, createMeasureElements, getDomIndex } from './utility/dom-util';
 import { getDiagramElement, getScrollerWidth, getHTMLLayer } from './utility/dom-util';
 import { getBackgroundLayer, createHtmlElement, createSvgElement, getNativeLayerSvg } from './utility/dom-util';
@@ -2842,7 +2842,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Finds the object that is under the given mouse position
-     * @param {NodeModel[] | ConnectorModel[]} objects - Defines the collection of objects, from which the object has to be found.
+     * @param {NodeModel[] | ConnectorModel[]}objects - Defines the collection of objects, from which the object has to be found.
      * @param {Actions} action - Defines the action, using which the relevant object has to be found.
      * @param {boolean} inAction - Defines the active state of the action.
      */
@@ -3105,7 +3105,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * Aligns the group of objects to with reference to the first object in the group
      * @param {NodeModel[] | ConnectorModel[]} objects - Defines the objects that have to be aligned
-     * @param {AlignmentOptions} option - Defines the factor, by which the objects have to be aligned
+     * @param {AlignmentOptions}option - Defines the factor, by which the objects have to be aligned
      */
     public align(option: AlignmentOptions, objects?: (NodeModel | ConnectorModel)[], type?: AlignmentMode): void {
         this.getBlazorDiagramObjects(objects);
@@ -3140,7 +3140,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
     /**
      * Scales the given objects to the size of the first object in the group
-     * @param {NodeModel[] | ConnectorModel[]} objects - Defines the collection of objects that have to be scaled
+     * @param {NodeModel[] | ConnectorModel[]}objects - Defines the collection of objects that have to be scaled
      * @param {SizingOptions} option - Defines whether the node has to be horizontally scaled, vertically scaled or both
      */
     public sameSize(option: SizingOptions, objects?: (NodeModel | ConnectorModel)[]): void {
@@ -7391,7 +7391,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
                     // Header - constraints
                     let headerNode: NodeModel = this.nameTable[actualObject.id + shape.header.id];
-                    headerNode.constraints = (!newSelectConstraints) ? headerNode.constraints & ~NodeConstraints.Select :
+                    headerNode.constraints = (!newSelectConstraints ) ? headerNode.constraints & ~NodeConstraints.Select :
                         headerNode.constraints | NodeConstraints.Select;
 
                     // Phase - Constraints
@@ -7399,7 +7399,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     if (shape.phaseSize > 0) {
                         for (let i: number = 0; i < shape.phases.length; i++) {
                             phaseNode = this.nameTable[actualObject.id + shape.phases[i].id + '_header'];
-                            phaseNode.constraints = (!newSelectConstraints) ? phaseNode.constraints & ~NodeConstraints.Select :
+                            phaseNode.constraints = (!newSelectConstraints ) ? phaseNode.constraints & ~NodeConstraints.Select :
                                 phaseNode.constraints | NodeConstraints.Select;
                         }
                     }
@@ -7410,11 +7410,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     for (let i: number = 0; i < shape.lanes.length; i++) {
                         for (let l: number = 0; l < value; l++) {
                             laneNode = this.nameTable[actualObject.id + shape.lanes[i].id + l];
-                            laneNode.constraints = (!newSelectConstraints) ? laneNode.constraints & ~NodeConstraints.Select :
+                            laneNode.constraints = (!newSelectConstraints ) ? laneNode.constraints & ~NodeConstraints.Select :
                                 laneNode.constraints | NodeConstraints.Select;
                             if (l === 0) {
                                 laneHeader = this.nameTable[actualObject.id + shape.lanes[i].id + '_' + l + '_header']
-                                laneHeader.constraints = (!newSelectConstraints) ? laneHeader.constraints & ~NodeConstraints.Select :
+                                laneHeader.constraints = (!newSelectConstraints ) ? laneHeader.constraints & ~NodeConstraints.Select :
                                     laneHeader.constraints | NodeConstraints.Select;
                             }
                         }
@@ -8543,7 +8543,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     let nodeDragSize: SymbolSizeModel; let nodePreviewSize: SymbolSizeModel; let paletteDragSize: SymbolSizeModel;
 
                     if (paletteId) {
-                        let sourceElement: Object = (document.getElementById(paletteId) as EJ2Instance).ej2_instances[0];
+                         // tslint:disable-next-line:no-any
+                        let sourceElement: Object = (document.getElementById(paletteId) as any).ej2_instances[0];
                         let source: string = 'sourceElement';
                         this.droppable[source] = sourceElement;
                         let selectedSymbols: string = 'selectedSymbols';

@@ -341,6 +341,9 @@ export class Zoom {
         let x: number = this.maps.translatePoint.x;
         let y: number = this.maps.translatePoint.y;
         let collection: Object[] = []; this.maps.zoomShapeCollection = [];
+        if (document.getElementById(this.maps.element.id + '_mapsTooltip')) {
+          removeElement(this.maps.element.id + '_mapsTooltip');
+        }
         if (this.layerCollectionEle) {
             for (let i: number = 0; i < this.layerCollectionEle.childElementCount; i++) {
                 let layerElement: Element = this.layerCollectionEle.childNodes[i] as Element;
@@ -899,9 +902,7 @@ export class Zoom {
             };
             map.trigger(pan, panArgs);
             map.mapLayerPanel.generateTiles(map.tileZoomLevel, map.tileTranslatePoint, 'Pan');
-            if (map.mapLayerPanel.horizontalPan) {
-                this.applyTransform();
-            }
+            this.applyTransform();
         }
         map.zoomTranslatePoint = map.translatePoint;
         this.mouseDownPoints = this.mouseMovePoints;

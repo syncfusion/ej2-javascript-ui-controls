@@ -42,7 +42,7 @@ export class ProgressAnnotation extends AnnotationBase {
         }
         if (this.progress.animation.enable && !this.progress.isIndeterminate) {
             let annotationElement: Element = document.getElementById(this.progress.element.id + 'Annotation0').children[0];
-            this.animation.doAnnotationAnimation(annotationElement, this.progress, this.progress.startAngle, this.progress.annotationEnd);
+            this.animation.doAnnotationAnimation(annotationElement, this.progress);
         }
     }
     /**

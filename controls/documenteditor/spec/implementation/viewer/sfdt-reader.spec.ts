@@ -4,7 +4,7 @@ import { createElement } from '@syncfusion/ej2-base';
 import { TestHelper } from '../../test-helper.spec';
 import { Editor } from '../../../src/document-editor/implementation/editor/editor';
 import { Selection } from '../../../src/document-editor/implementation/selection/selection';
-import { TextElementBox, BodyWidget, ParagraphWidget, LineWidget, EditRangeStartElementBox, EditRangeEndElementBox, FieldElementBox } from '../../../src/document-editor/implementation/viewer/page';
+import { TextElementBox, BodyWidget, ParagraphWidget, LineWidget, EditRangeStartElementBox, EditRangeEndElementBox, FieldElementBox, TextFormField, CheckBoxFormField, DropDownFormField } from '../../../src/document-editor/implementation/viewer/page';
 
 
 let charParaBidi: any = { "sections": [{ "blocks": [{ "characterFormat": { "bidi": true }, "paragraphFormat": { "styleName": "Normal" }, "inlines": [{ "text": "???", "characterFormat": { "bidi": true } }] }, { "paragraphFormat": { "styleName": "Normal" }, "inlines": [{ "text": "Second column", "characterFormat": { "bdo": "RTL" } }, { "name": "_GoBack", "bookmarkType": 0 }, { "name": "_GoBack", "bookmarkType": 1 }, { "text": " ", "characterFormat": { "bdo": "RTL" } }, { "text": "?", "characterFormat": { "bdo": "RTL" } }] }, { "paragraphFormat": { "styleName": "Normal", "bidi": true }, "inlines": [{ "text": "Third column " }] }, { "paragraphFormat": { "styleName": "Normal" }, "inlines": [{ "text": "Second Page" }] }, { "paragraphFormat": { "styleName": "Normal" }, "inlines": [] }, { "paragraphFormat": { "styleName": "Normal", "bidi": true }, "inlines": [{ "text": "ssASasAS" }] }], "headersFooters": {}, "sectionFormat": { "headerDistance": 36.0, "footerDistance": 36.0, "pageWidth": 612.0, "pageHeight": 792.0, "leftMargin": 72.0, "rightMargin": 72.0, "topMargin": 72.0, "bottomMargin": 72.0, "differentFirstPage": false, "differentOddAndEvenPages": false, "bidi": true } }], "characterFormat": { "fontSize": 11.0, "fontFamily": "Calibri" }, "paragraphFormat": { "afterSpacing": 8.0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple" }, "background": { "color": "#FFFFFFFF" }, "styles": [{ "type": "Paragraph", "name": "Normal", "next": "Normal" }, { "type": "Character", "name": "Default Paragraph Font" }, { "type": "Character", "name": "Line Number", "basedOn": "Default Paragraph Font" }, { "type": "Paragraph", "name": "Header", "basedOn": "Normal", "link": "Header Char", "paragraphFormat": { "afterSpacing": 0.0, "lineSpacing": 1.0, "lineSpacingType": "Multiple", "tabs": [{ "tabJustification": "Center", "position": 234.0, "tabLeader": "None", "deletePosition": 0.0 }, { "tabJustification": "Right", "position": 468.0, "tabLeader": "None", "deletePosition": 0.0 }] } }, { "type": "Character", "name": "Header Char", "basedOn": "Default Paragraph Font" }, { "type": "Paragraph", "name": "Footer", "basedOn": "Normal", "link": "Footer Char", "paragraphFormat": { "afterSpacing": 0.0, "lineSpacing": 1.0, "lineSpacingType": "Multiple", "tabs": [{ "tabJustification": "Center", "position": 234.0, "tabLeader": "None", "deletePosition": 0.0 }, { "tabJustification": "Right", "position": 468.0, "tabLeader": "None", "deletePosition": 0.0 }] } }, { "type": "Character", "name": "Footer Char", "basedOn": "Default Paragraph Font" }] };
@@ -1049,5 +1049,451 @@ describe("Paste style Validation", () => {
         expect(editor.documentHelper.styles.length).toBe(16);
         editor.editor.pasteFormattedContent(json);
         expect(editor.documentHelper.styles.length).toBe(16);
+    });
+});
+let formFieldData: any = {
+    "sections": [
+      {
+        "blocks": [
+          {
+            "paragraphFormat": { "styleName": "Normal" },
+            "inlines": [
+              { "text": "Drop-down" },
+              {
+                "hasFieldEnd": true,
+                "formFieldData": {
+                  "name": "",
+                  "enabled": true,
+                  "helpText": "",
+                  "statusText": "",
+                  "dropDownList": {
+                    "dropDownItems": [ "option3", "option4", "option5" ],
+                    "selectedIndex": 0
+                  }
+                },
+                "fieldType": 0
+              },
+              { "text": " FORMDROPDOWN " },
+              { "fieldType": 2 },
+              { "fieldType": 1 }
+            ]
+          },
+          {
+            "paragraphFormat": { "styleName": "Normal" },
+            "inlines": [
+              { "text": "Name :" },
+              {
+                "hasFieldEnd": true,
+                "formFieldData": {
+                  "name": "Text1",
+                  "enabled": true,
+                  "helpText": "",
+                  "statusText": "",
+                  "textInput": {
+                    "type": "Text",
+                    "maxLength": 0,
+                    "defaultValue": "SYNCFUSION",
+                    "format": ""
+                  }
+                },
+                "fieldType": 0
+              },
+              {
+                "name": "Text1",
+                "bookmarkType": 0
+              },
+              { "text": " FORMTEXT " },
+              { "fieldType": 2 },
+              { "text": "SYNCFUSION" },
+              { "fieldType": 1 },
+              {
+                "name": "_GoBack",
+                "bookmarkType": 0
+              },
+              {
+                "name": "Text1",
+                "bookmarkType": 1
+              },
+              {
+                "name": "_GoBack",
+                "bookmarkType": 1
+              }
+            ]
+          },
+          {
+            "paragraphFormat": { "styleName": "Normal" },
+            "inlines": [
+              { "text": "Check " },
+              { "text": "box :" },
+              {
+                "hasFieldEnd": true,
+                "formFieldData": {
+                  "name": "Check1",
+                  "enabled": true,
+                  "helpText": "",
+                  "statusText": "",
+                  "checkBox": {
+                    "size": 20,
+                    "defaultValue": false
+                  }
+                },
+                "fieldType": 0
+              },
+              {
+                "name": "Check1",
+                "bookmarkType": 0
+              },
+              { "text": " FORMCHECKBOX " },
+              { "fieldType": 2 },
+              { "fieldType": 1 },
+              {
+                "name": "Check1",
+                "bookmarkType": 1
+              }
+            ]
+          },
+          {
+            "paragraphFormat": { "styleName": "Normal" },
+            "inlines": [
+              { "text": " Drop-down" },
+              {
+                "hasFieldEnd": true,
+                "formFieldData": {
+                  "name": "Dropdown1",
+                  "enabled": true,
+                  "helpText": "",
+                  "statusText": "",
+                  "dropDownList": {
+                    "dropDownItems": [ "option3", "option4", "option5" ],
+                    "selectedIndex": 0
+                  }
+                },
+                "fieldType": 0
+              },
+              {
+                "name": "Dropdown1",
+                "bookmarkType": 0
+              },
+              { "text": " FORMDROPDOWN " },
+              { "fieldType": 2 },
+              { "fieldType": 1 },
+              {
+                "name": "Dropdown1",
+                "bookmarkType": 1
+              }
+            ]
+          },
+          {
+            "paragraphFormat": { "styleName": "Normal" },
+            "inlines": []
+          },
+          {
+            "paragraphFormat": { "styleName": "Normal" },
+            "inlines": []
+          },
+          {
+            "paragraphFormat": { "styleName": "Normal" },
+            "inlines": [
+              { "text": "Drop-down" },
+              {
+                "hasFieldEnd": true,
+                "formFieldData": {
+                  "name": "",
+                  "enabled": true,
+                  "helpText": "",
+                  "statusText": "",
+                  "dropDownList": {
+                    "dropDownItems": [ "option3", "option5", "option4" ],
+                    "selectedIndex": 0
+                  }
+                },
+                "fieldType": 0
+              },
+              { "text": " FORMDROPDOWN " },
+              { "fieldType": 1 }
+            ]
+          },
+          {
+            "paragraphFormat": { "styleName": "Normal" },
+            "inlines": [
+              { "text": "Name :" },
+              {
+                "hasFieldEnd": true,
+                "formFieldData": {
+                  "name": "",
+                  "enabled": true,
+                  "helpText": "",
+                  "statusText": "",
+                  "textInput": {
+                    "type": "Text",
+                    "maxLength": 0,
+                    "defaultValue": "5,000",
+                    "format": "#,##0"
+                  }
+                },
+                "fieldType": 0
+              },
+              { "text": " FORMTEXT " },
+              { "fieldType": 2 },
+              { "text": "5,000" },
+              { "fieldType": 1 }
+            ]
+          },
+          {
+            "paragraphFormat": { "styleName": "Normal" },
+            "inlines": [
+              { "text": "Check " },
+              { "text": "box :" },
+              {
+                "hasFieldEnd": true,
+                "formFieldData": {
+                  "name": "Check1",
+                  "enabled": true,
+                  "helpText": "",
+                  "statusText": "",
+                  "checkBox": {
+                    "size": 20,
+                    "defaultValue": true
+                  }
+                },
+                "fieldType": 0
+              },
+              { "text": " FORMCHECKBOX " },
+              { "fieldType": 2 },
+              { "fieldType": 1 }
+            ]
+          },
+          {
+            "paragraphFormat": { "styleName": "Normal" },
+            "inlines": [
+              { "text": " Drop-down" },
+              {
+                "hasFieldEnd": true,
+                "formFieldData": {
+                  "name": "Dropdown1",
+                  "enabled": true,
+                  "helpText": "",
+                  "statusText": "",
+                  "dropDownList": {
+                    "dropDownItems": [ "option3", "option4", "option5" ],
+                    "selectedIndex": 0
+                  }
+                },
+                "fieldType": 0
+              },
+              { "text": " FORMDROPDOWN " },
+              { "fieldType": 2 },
+              { "fieldType": 1 }
+            ]
+          },
+          {
+            "paragraphFormat": { "styleName": "Normal" },
+            "inlines": []
+          },
+          {
+            "paragraphFormat": { "styleName": "Normal" },
+            "inlines": [
+              { "text": "Drop-down" },
+              {
+                "hasFieldEnd": true,
+                "formFieldData": {
+                  "name": "",
+                  "enabled": true,
+                  "helpText": "",
+                  "statusText": "",
+                  "dropDownList": {
+                    "dropDownItems": [ "option3", "option4", "option5" ],
+                    "selectedIndex": 0
+                  }
+                },
+                "fieldType": 0
+              },
+              { "text": " FORMDROPDOWN " },
+              { "fieldType": 2 },
+              { "fieldType": 1 }
+            ]
+          },
+          {
+            "paragraphFormat": { "styleName": "Normal" },
+            "inlines": [
+              { "text": "Name :" },
+              {
+                "hasFieldEnd": true,
+                "formFieldData": {
+                  "name": "",
+                  "enabled": true,
+                  "helpText": "",
+                  "statusText": "",
+                  "textInput": {
+                    "type": "Text",
+                    "maxLength": 0,
+                    "defaultValue": "5/6/2020",
+                    "format": "M/d/yyyy"
+                  }
+                },
+                "fieldType": 0
+              },
+              { "text": " FORMTEXT " },
+              { "fieldType": 2 },
+              { "text": "5/6/2020" },
+              { "fieldType": 1 }
+            ]
+          },
+          {
+            "paragraphFormat": { "styleName": "Normal" },
+            "inlines": [
+              { "text": "Check " },
+              { "text": "box :" },
+              {
+                "hasFieldEnd": true,
+                "formFieldData": {
+                  "name": "",
+                  "enabled": true,
+                  "helpText": "",
+                  "statusText": "",
+                  "checkBox": {
+                    "size": 20,
+                    "defaultValue": false
+                  }
+                },
+                "fieldType": 0
+              },
+              { "text": " FORMCHECKBOX " },
+              { "fieldType": 1 }
+            ]
+          },
+          {
+            "paragraphFormat": { "styleName": "Normal" },
+            "inlines": [
+              { "text": " Drop-down" },
+              {
+                "hasFieldEnd": true,
+                "formFieldData": {
+                  "name": "Dropdown1",
+                  "enabled": true,
+                  "helpText": "",
+                  "statusText": "",
+                  "dropDownList": {
+                    "dropDownItems": [ "option3", "option4", "option5" ],
+                    "selectedIndex": 0
+                  }
+                },
+                "fieldType": 0
+              },
+              { "text": " FORMDROPDOWN " },
+              { "fieldType": 2 },
+              { "fieldType": 1 }
+            ]
+          },
+          {
+            "paragraphFormat": { "styleName": "Normal" },
+            "inlines": []
+          },
+          {
+            "paragraphFormat": { "styleName": "Normal" },
+            "inlines": []
+          },
+          {
+            "paragraphFormat": { "styleName": "Normal" },
+            "inlines": []
+          }
+        ],
+        "headersFooters": {},
+        "sectionFormat": {
+          "headerDistance": 36.0,
+          "footerDistance": 36.0,
+          "pageWidth": 612.0,
+          "pageHeight": 792.0,
+          "leftMargin": 72.0,
+          "rightMargin": 72.0,
+          "topMargin": 72.0,
+          "bottomMargin": 72.0,
+          "differentFirstPage": false,
+          "differentOddAndEvenPages": false,
+          "bidi": false,
+          "restartPageNumbering": false,
+          "pageStartingNumber": 0
+        }
+      }
+    ],
+    "characterFormat": {
+      "fontSize": 11.0,
+      "fontFamily": "Calibri",
+      "fontSizeBidi": 11.0,
+      "fontFamilyBidi": "Arial"
+    },
+    "paragraphFormat": {
+      "afterSpacing": 8.0,
+      "lineSpacing": 1.0791666507720947,
+      "lineSpacingType": "Multiple"
+    },
+    "background": { "color": "#FFFFFFFF" },
+    "styles": [
+      {
+        "type": "Paragraph",
+        "name": "Normal",
+        "next": "Normal"
+      },
+      {
+        "type": "Character",
+        "name": "Default Paragraph Font"
+      }
+    ],
+    "defaultTabWidth": 36.0,
+    "formatting": false,
+    "protectionType": "NoProtection",
+    "enforcement": false
+  };
+  describe('form field validation', () => {
+    let editor: DocumentEditor;
+    let documentHelper:DocumentHelper;
+    let sections: BodyWidget[];
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({});
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+        editor.open(formFieldData);
+    });
+    afterAll((done): void => {
+        documentHelper.destroy();
+        documentHelper = undefined;
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            done();
+        }, 500);
+    });
+    it('Text formfield validation', () => {
+        let lineWidget: LineWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
+        let fieldElement: FieldElementBox = lineWidget.children[1] as FieldElementBox;
+        let formFieldData: TextFormField = new TextFormField();
+        fieldElement.formFieldData = formFieldData;
+        expect((fieldElement.formFieldData as TextFormField).type).toBe('Text');
+        expect((fieldElement.formFieldData as TextFormField).maxLength).toBe(0);
+        expect((fieldElement.formFieldData as TextFormField).defaultValue).toBe('');
+        expect((fieldElement.formFieldData as TextFormField).format).toBeNull;
+    });
+    it('Checkbox formfield validation', () => {
+        let lineWidget: LineWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
+        let fieldElement: FieldElementBox = lineWidget.children[2] as FieldElementBox;
+        let formFieldData: TextFormField = new TextFormField();
+        fieldElement.formFieldData = formFieldData;
+        expect((fieldElement.formFieldData as CheckBoxFormField).size).toBe(undefined);
+       // expect((fieldElement.formFieldData as CheckBoxFormField).defaultValue).toBe('');
+    });
+    it('Dropdown formfield validation', () => {
+        let lineWidget: LineWidget = (editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget;
+        let fieldElement: FieldElementBox = lineWidget.children[0] as FieldElementBox;
+        let formFieldData: TextFormField = new TextFormField();
+        fieldElement.formFieldData = formFieldData;
+        expect((fieldElement.formFieldData as DropDownFormField).selectedIndex).toBe(undefined);
+        expect((fieldElement.formFieldData as DropDownFormField).dropDownItems).toString;
     });
 });

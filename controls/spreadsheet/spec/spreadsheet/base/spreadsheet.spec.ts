@@ -36,10 +36,7 @@ describe('Spreadsheet base module ->', () => {
             };
             model = {
                 sheets: [{
-                    range: [{
-                        dataSource: defaultData,
-                        startCell: 'A1'
-                    }]
+                    ranges: [{ dataSource: defaultData }]
                 }],
                 dataBound: dataBound
             };
@@ -201,10 +198,7 @@ describe('Spreadsheet base module ->', () => {
             };
             model = {
                 sheets: [{
-                    range: [{
-                        dataSource: defaultData,
-                        startCell: 'A1'
-                    }],
+                    ranges: [{ dataSource: defaultData }],
                     columns: [
                         {
                             width: 130
@@ -239,10 +233,7 @@ describe('Spreadsheet base module ->', () => {
             };
             model = {
                 sheets: [{
-                    range: [{
-                        dataSource: defaultData,
-                        startCell: 'A1'
-                    }],
+                    ranges: [{ dataSource: defaultData }],
                     columns: [
                         {
                             width: 130
@@ -256,10 +247,7 @@ describe('Spreadsheet base module ->', () => {
                     ]
                 },
                 {
-                    range: [{
-                        dataSource: defaultData,
-                        startCell: 'A1'
-                    }]
+                    ranges: [{ dataSource: defaultData }]
                 }
                 ],
                 definedNames: [
@@ -295,9 +283,7 @@ describe('Spreadsheet base module ->', () => {
             };
             model = {
                 sheets: [{
-                    range: [{
-                        dataSource: defaultData
-                    }]
+                    ranges: [{ dataSource: defaultData }]
                 }],
                 dataBound: dataBound
             };
@@ -319,9 +305,7 @@ describe('Spreadsheet base module ->', () => {
             };
             model = {
                 sheets: [{
-                    range: [{
-                        dataSource: defaultData
-                    }]
+                    ranges: [{ dataSource: defaultData }]
                 }],
                 dataBound: dataBound
             };
@@ -340,9 +324,7 @@ describe('Spreadsheet base module ->', () => {
         //     };
         //     model = {
         //         sheets: [{
-        //             range: [{
-        //                 dataSource: defaultData
-        //             }]
+        //             ranges: [{ dataSource: defaultData }]
         //         }],
         //         scrollSettings: {
         //             enableVirtualization: false
@@ -364,9 +346,7 @@ describe('Spreadsheet base module ->', () => {
         //     };
         //     model = {
         //         sheets: [{
-        //             range: [{
-        //                 dataSource: defaultData
-        //             }]
+        //             ranges: [{ dataSource: defaultData }]
         //         }],
         //         scrollSettings: {
         //             enableVirtualization: false
@@ -399,14 +379,10 @@ describe('Spreadsheet base module ->', () => {
             model = {
                 sheets: [
                     {
-                        range: [
-                            { dataSource: defaultData }
-                        ]
+                        ranges: [{ dataSource: defaultData }]
                     },
                     {
-                        range: [
-                            { dataSource: productData }
-                        ]
+                        ranges: [{ dataSource: productData }]
                     }
                 ]
             };
@@ -472,9 +448,7 @@ describe('Spreadsheet base module ->', () => {
             model = {
                 sheets: [
                     {
-                        range: [
-                            { dataSource: defaultData }
-                        ]
+                        ranges: [{ dataSource: defaultData }]
                     }
                 ]
             };
@@ -723,9 +697,7 @@ describe('Spreadsheet base module ->', () => {
             model = {
                 sheets: [
                     {
-                        range: [
-                            { dataSource: defaultData }
-                        ]
+                        ranges: [{ dataSource: defaultData }]
                     }
                 ]
             };

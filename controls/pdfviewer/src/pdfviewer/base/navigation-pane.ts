@@ -1040,7 +1040,9 @@ export class NavigationPane {
 
     private bookmarkButtonOnClick = (event: MouseEvent): void => {
         let proxy: NavigationPane = this;
-        document.getElementById(this.pdfViewer.element.id + '_thumbnail_view').style.display = 'none';
+        if (document.getElementById(this.pdfViewer.element.id + '_thumbnail_view')) {
+            document.getElementById(this.pdfViewer.element.id + '_thumbnail_view').style.display = 'none';
+        }
         this.removeThumbnailSelectionIconTheme();
         this.sideBarTitle.textContent = this.pdfViewer.localeObj.getConstant('Bookmarks');
         this.sideBarContent.setAttribute('aria-label', 'Bookmark View Panel');

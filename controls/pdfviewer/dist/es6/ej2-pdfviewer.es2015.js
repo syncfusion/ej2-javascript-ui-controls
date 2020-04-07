@@ -6806,7 +6806,7 @@ class Annotation {
         let overlappedCollection = [];
         // tslint:disable-next-line
         let overlappedAnnotations = this.getOverlappedAnnotations(annotation, pageNumber);
-        if (overlappedAnnotations[0].subject === 'Volume calculation') {
+        if (overlappedAnnotations && overlappedAnnotations.length > 0 && overlappedAnnotations[0].subject === 'Volume calculation') {
             annotSettings.calibrate = overlappedAnnotations[0].calibrate;
         }
         if (overlappedAnnotations && overlappedAnnotations.length > 0) {
@@ -10732,7 +10732,7 @@ class MeasureAnnotation {
         let element = createElement('div');
         let elementID = this.pdfViewer.element.id;
         // tslint:disable-next-line:max-line-length
-        let items = [{ text: 'pt' }, { text: 'in' }, { text: 'mm' }, { text: 'cm' }, { text: 'p' }, { text: 'ft' }];
+        let items = [{ text: 'pt' }, { text: 'in' }, { text: 'mm' }, { text: 'cm' }, { text: 'p' }, { text: 'ft' }, { text: 'ft_in' }];
         let labelText = createElement('div', { id: elementID + '_scale_ratio_label', className: 'e-pv-scale-ratio-text' });
         labelText.textContent = this.pdfViewer.localeObj.getConstant('Scale Ratio');
         element.appendChild(labelText);
@@ -11087,7 +11087,12 @@ class MeasureAnnotation {
     }
     getCurrentRatio(ratioString) {
         let stringArray = ratioString.split(' ');
-        return parseFloat(stringArray[3]) / parseFloat(stringArray[0]);
+        if (stringArray[3] === '=') {
+            return parseFloat(stringArray[4]) / parseFloat(stringArray[0]);
+        }
+        else {
+            return parseFloat(stringArray[3]) / parseFloat(stringArray[0]);
+        }
     }
     /**
      * @private
@@ -11096,6 +11101,23 @@ class MeasureAnnotation {
         // tslint:disable-next-line
         let values = this.getCurrentValues(id, pageNumber);
         let area = this.getArea(points, values.factor) * values.ratio;
+        if (values.unit === 'ft_in') {
+            // tslint:disable-next-line
+            let calculateValue = Math.round(area * 100) / 100;
+            if (calculateValue >= 12) {
+                calculateValue = (Math.round(calculateValue / 12 * 100) / 100).toString();
+                calculateValue = calculateValue.split('.');
+                if (calculateValue[1]) {
+                    return (calculateValue[0] + ' sq ft ' + calculateValue[1] + ' in');
+                }
+                else {
+                    return (calculateValue[0] + ' sq ft 00 in');
+                }
+            }
+            else {
+                return (Math.round(area * 100) / 100) + ' sq in';
+            }
+        }
         return (Math.round(area * 100) / 100) + ' sq ' + values.unit;
     }
     getArea(points, factor) {
@@ -11117,6 +11139,23 @@ class MeasureAnnotation {
         let depth = values.depth ? values.depth : this.volumeDepth;
         let area = this.getArea(points, values.factor);
         let volume = area * ((depth * this.convertUnitToPoint(values.unit)) * values.factor) * values.ratio;
+        if (values.unit === 'ft_in') {
+            // tslint:disable-next-line
+            let calculateValue = Math.round(volume * 100) / 100;
+            if (calculateValue >= 12) {
+                calculateValue = (Math.round(calculateValue / 12 * 100) / 100).toString();
+                calculateValue = calculateValue.split('.');
+                if (calculateValue[1]) {
+                    return (calculateValue[0] + ' cu ft ' + calculateValue[1] + ' in');
+                }
+                else {
+                    return (calculateValue[0] + ' cu ft 00 in');
+                }
+            }
+            else {
+                return (Math.round(volume * 100) / 100) + ' cu in';
+            }
+        }
         return (Math.round(volume * 100) / 100) + ' cu ' + values.unit;
     }
     /**
@@ -11147,11 +11186,34 @@ class MeasureAnnotation {
             case 'ft':
                 factor = 1 / 864;
                 break;
+            case 'ft_in':
+                factor = 1 / 72;
+                break;
         }
         return factor;
     }
     convertPointToUnits(factor, value, unit) {
-        let convertedValue = Math.round((value * factor) * 100) / 100 + ' ' + unit;
+        let convertedValue;
+        if (unit === 'ft_in') {
+            // tslint:disable-next-line
+            let calculateValue = Math.round((value * factor) * 100) / 100;
+            if (calculateValue >= 12) {
+                calculateValue = (Math.round(calculateValue / 12 * 100) / 100).toString();
+                calculateValue = calculateValue.split('.');
+                if (calculateValue[1]) {
+                    convertedValue = calculateValue[0] + ' ft ' + calculateValue[1] + ' in';
+                }
+                else {
+                    convertedValue = calculateValue[0] + ' ft 00 in';
+                }
+            }
+            else {
+                convertedValue = Math.round((value * factor) * 100) / 100 + '  in';
+            }
+        }
+        else {
+            convertedValue = Math.round((value * factor) * 100) / 100 + ' ' + unit;
+        }
         return convertedValue;
     }
     convertUnitToPoint(unit) {
@@ -11174,6 +11236,9 @@ class MeasureAnnotation {
                 break;
             case 'ft':
                 factor = 864;
+                break;
+            case 'ft_in':
+                factor = 72;
                 break;
         }
         return factor;
@@ -12701,6 +12766,16 @@ class StampAnnotation {
                         // tslint:disable-next-line:max-line-length
                         pathdata: 'M13.71,0,12.63,6.9,12,6.73c0-.41,0-.66,0-.73s0-.18,0-.32a6.16,6.16,0,0,0-.79-3.47,2.37,2.37,0,0,0-2-1.14c-1.64,0-3.07,1.51-4.29,4.55a22,22,0,0,0-1.64,8.29c0,2,.34,3.44,1,4.2A3,3,0,0,0,6.5,19.24a4.08,4.08,0,0,0,2.93-1.43,10.47,10.47,0,0,0,1.5-2.09l.64.65A8.84,8.84,0,0,1,9,19.72a5.24,5.24,0,0,1-3.08,1.09,5.16,5.16,0,0,1-4.21-2.08A8.68,8.68,0,0,1,0,13.16,16.5,16.5,0,0,1,2.55,3.92Q5.1,0,8.61,0a6.35,6.35,0,0,1,2.25.43,6.62,6.62,0,0,0,1.38.43.55.55,0,0,0,.5-.23A2.61,2.61,0,0,0,13.06,0ZM27.49,7.11a17.19,17.19,0,0,1-2.61,9.07q-2.77,4.61-6.39,4.6a4.42,4.42,0,0,1-3.7-1.92,8.47,8.47,0,0,1-1.43-5.14A17.31,17.31,0,0,1,16,4.53C17.88,1.51,20,0,22.25,0A4.53,4.53,0,0,1,26,1.92,8.27,8.27,0,0,1,27.49,7.11ZM24.42,4.6a5.71,5.71,0,0,0-.53-2.55A1.76,1.76,0,0,0,22.24,1q-2.65,0-4.45,6.54a31.93,31.93,0,0,0-1.37,8.26A8.15,8.15,0,0,0,16.67,18c.34,1.19,1,1.78,1.85,1.78a2.9,2.9,0,0,0,2.28-1.29,15.85,15.85,0,0,0,2.13-4.93A34.08,34.08,0,0,0,24,8.71,28.5,28.5,0,0,0,24.42,4.6ZM42.75,1.3l.3-.06V.48H38.69v.76a2.55,2.55,0,0,1,1.16.33,1.8,1.8,0,0,1,.51,1.48,10.11,10.11,0,0,1-.13,1.34c-.06.41-.14.87-.24,1.39l-1.65,8.34L33.73.48H29.45v.76a2.66,2.66,0,0,1,1,.24,1.88,1.88,0,0,1,.65,1.06l.09.3L28.81,15a20.72,20.72,0,0,1-1,3.61,1.61,1.61,0,0,1-1.19.9v.76h4.42v-.76a2.55,2.55,0,0,1-1.13-.32,1.67,1.67,0,0,1-.56-1.44,7.13,7.13,0,0,1,.05-.79c.06-.43.17-1.09.34-2L31.89,4.38l5.52,16.33h.52l3-15a22.58,22.58,0,0,1,.87-3.42A1.42,1.42,0,0,1,42.75,1.3ZM55.53.48H44.23v.76a3.63,3.63,0,0,1,1.26.3c.19.13.29.42.29.9a7.08,7.08,0,0,1-.09,1c0,.2-.08.44-.13.71L43,17.34a3.47,3.47,0,0,1-.59,1.58,1.91,1.91,0,0,1-1.13.54v.76h6.29v-.76a2.13,2.13,0,0,1-1-.19A1.23,1.23,0,0,1,46,18.1c0-.1,0-.21,0-.31s0-.23.05-.35l1.4-7.21a3.15,3.15,0,0,1,2.37.64A3.21,3.21,0,0,1,50.38,13c0,.11,0,.28,0,.49s0,.46-.06.75l.58.14,1.58-8.07-.59-.1a5.79,5.79,0,0,1-1.43,2.59,6.17,6.17,0,0,1-2.77.52l1.26-6.54a2.06,2.06,0,0,1,.42-1.08,1.39,1.39,0,0,1,1-.26c1.62,0,2.7.51,3.24,1.54a7.11,7.11,0,0,1,.49,3l.57.13Zm3.69,17.71c0-.08,0-.17,0-.27s0-.2,0-.3l.17-1L62.06,3.36a3.44,3.44,0,0,1,.59-1.6,2,2,0,0,1,1.12-.52V.48H57.44v.76a3.47,3.47,0,0,1,1.26.31c.2.13.3.44.3.94a4.25,4.25,0,0,1-.06.67c0,.26-.09.57-.17,1L56.16,17.35a3.52,3.52,0,0,1-.6,1.59,2,2,0,0,1-1.12.52v.76h6.33v-.76a3.3,3.3,0,0,1-1.26-.32C59.32,19,59.22,18.69,59.22,18.19Zm18-9.51a13,13,0,0,1-2.42,7.84,8.31,8.31,0,0,1-7,3.7H61.6v-.76a2,2,0,0,0,1-.41,3.14,3.14,0,0,0,.73-1.71L65.93,4.11c.08-.38.13-.69.17-1a4.36,4.36,0,0,0,.06-.67c0-.5-.1-.81-.3-.94a3.47,3.47,0,0,0-1.26-.31V.48h6.17A5.52,5.52,0,0,1,75.53,2.7,9.91,9.91,0,0,1,77.17,8.68ZM74,6.87a9.22,9.22,0,0,0-.53-3.48,2.91,2.91,0,0,0-2.87-2,1.12,1.12,0,0,0-.93.31,1.81,1.81,0,0,0-.35.83l-2.93,14.9a3,3,0,0,0-.05.39c0,.11,0,.21,0,.3a1.17,1.17,0,0,0,.25.84,1.3,1.3,0,0,0,.92.26q3.8,0,5.49-5.42A23.26,23.26,0,0,0,74,6.87Zm11.3,11.65a6.72,6.72,0,0,1-3.29.75,1.3,1.3,0,0,1-1-.26,1,1,0,0,1-.23-.66,3.28,3.28,0,0,1,0-.39,4.88,4.88,0,0,1,.08-.51l1.4-7.2a3.73,3.73,0,0,1,2.43.57A2.87,2.87,0,0,1,85.43,13c0,.14,0,.31,0,.51s0,.45-.06.73l.59.14,1.57-8.07-.59-.1a5.79,5.79,0,0,1-1.46,2.61,6.5,6.5,0,0,1-2.89.51l1.26-6.56a2.41,2.41,0,0,1,.41-1.06c.16-.19.52-.28,1.08-.28,1.65,0,2.75.5,3.29,1.51a7,7,0,0,1,.5,3l.57.13.9-5.6H79.14v.76a3.35,3.35,0,0,1,1.26.31c.19.13.29.44.29.94a5,5,0,0,1-.07.7c0,.28-.09.58-.15.92L77.86,17.35a3.52,3.52,0,0,1-.6,1.59,2,2,0,0,1-1.13.52v.76H87.91l1.25-5.74-.52-.13A7.69,7.69,0,0,1,85.34,18.52ZM105.8,1.24V.48h-4.37v.76a2.55,2.55,0,0,1,1.16.33,1.77,1.77,0,0,1,.52,1.48A10.58,10.58,0,0,1,103,4.39c-.06.41-.13.87-.23,1.39l-1.66,8.34L96.47.48H92.19v.76a2.61,2.61,0,0,1,1,.24,1.83,1.83,0,0,1,.65,1.06l.1.3L91.55,15a19,19,0,0,1-1,3.61,1.61,1.61,0,0,1-1.19.9v.76h4.42v-.76a2.59,2.59,0,0,1-1.13-.32,1.67,1.67,0,0,1-.56-1.44,7.13,7.13,0,0,1,0-.79c.06-.43.17-1.09.35-2L94.63,4.38l5.52,16.33h.53l2.95-15a22.93,22.93,0,0,1,.86-3.42,1.42,1.42,0,0,1,1-1Zm11.4,4.9L118,.48H106.28l-.82,5,.55.2a8,8,0,0,1,1.87-3.16,3.7,3.7,0,0,1,2.7-1.06l-3.12,15.85a2.94,2.94,0,0,1-.87,1.85,2.48,2.48,0,0,1-1.34.26v.76h7v-.76a4.24,4.24,0,0,1-1.43-.3c-.23-.13-.34-.45-.34-.95a2.26,2.26,0,0,1,0-.26c0-.09,0-.2,0-.33l.18-1,3-15.1a2.73,2.73,0,0,1,1.79.63c.75.7,1.13,2,1.17,3.94Zm3.57,12.05c0-.08,0-.17,0-.27s0-.2,0-.3l.17-1,2.62-13.24a3.44,3.44,0,0,1,.59-1.6,2,2,0,0,1,1.12-.52V.48H119v.76a3.47,3.47,0,0,1,1.26.31c.2.13.3.44.3.94a4.25,4.25,0,0,1-.06.67c0,.26-.09.57-.17,1l-2.61,13.24a3.52,3.52,0,0,1-.6,1.59,2,2,0,0,1-1.12.52v.76h6.33v-.76a3.36,3.36,0,0,1-1.26-.32C120.87,19,120.77,18.69,120.77,18.19Zm28.86-3.71-1.24,5.74H130.3v-.71a2.48,2.48,0,0,0,1.3-.41,1.64,1.64,0,0,0,.37-1.29c0-.22,0-.75-.11-1.58,0-.17-.08-.89-.21-2.15h-4.58l-1.24,3a5.1,5.1,0,0,0-.22.66,2.45,2.45,0,0,0-.1.69c0,.41.09.67.26.78a3.05,3.05,0,0,0,1.11.3v.71h-4.17v-.71a2.66,2.66,0,0,0,.87-.53,5.79,5.79,0,0,0,.92-1.56L132.39.07h.55L135,17a5.53,5.53,0,0,0,.5,2.08,1.67,1.67,0,0,0,1.14.46v0a1.93,1.93,0,0,0,1.12-.52,3.52,3.52,0,0,0,.6-1.6l2.61-13.23c.08-.38.13-.69.17-1a4.36,4.36,0,0,0,.06-.67c0-.5-.1-.81-.3-.94a3.47,3.47,0,0,0-1.26-.31V.48h6.73v.76a3.23,3.23,0,0,0-1.49.48,3.06,3.06,0,0,0-.64,1.64l-2.77,14.08c0,.16-.05.3-.07.44s0,.29,0,.47a.79.79,0,0,0,.31.71,1.55,1.55,0,0,0,.87.21,6.83,6.83,0,0,0,3.79-1,8.42,8.42,0,0,0,2.81-3.88ZM131.5,12.91l-.78-7.18-3.14,7.18Z',
                         opacity: 1, strokeColor: '', fillColor: '#192760', width: 127.70402, height: 55.84601, stampFillColor: '#dce3ef', stampStrokeColor: '',
+                    };
+                }
+                break;
+            case 'Not Approved':
+                {
+                    stampCollection = {
+                        iconName: 'Not Approved',
+                        // tslint:disable-next-line:max-line-length
+                        pathdata: 'M0,19.46a1.56,1.56,0,0,0,1.16-.9A19.84,19.84,0,0,0,2.1,15L4.42,2.84l-.09-.3a1.82,1.82,0,0,0-.64-1.06,2.41,2.41,0,0,0-1-.24V.48H6.88l4.49,13.64L13,5.78c.09-.52.17-1,.22-1.39a10.11,10.11,0,0,0,.13-1.34,1.83,1.83,0,0,0-.49-1.48,2.49,2.49,0,0,0-1.13-.33V.48H16v.76l-.29.06a1.42,1.42,0,0,0-1,1,23.7,23.7,0,0,0-.84,3.42L11,20.71h-.51L5.1,4.38,3,15c-.17.87-.28,1.53-.33,2a5.32,5.32,0,0,0,0,.79,1.69,1.69,0,0,0,.54,1.44,2.48,2.48,0,0,0,1.1.32v.76H0ZM17.73,4.53C19.54,1.51,21.55,0,23.79,0a4.4,4.4,0,0,1,3.66,1.92,8.52,8.52,0,0,1,1.43,5.19,17.56,17.56,0,0,1-2.53,9.07q-2.7,4.61-6.21,4.6a4.24,4.24,0,0,1-3.6-1.92,8.6,8.6,0,0,1-1.39-5.14A17.68,17.68,0,0,1,17.73,4.53ZM18.37,18c.33,1.19.93,1.78,1.8,1.78a2.83,2.83,0,0,0,2.22-1.29,16.41,16.41,0,0,0,2.06-4.93,35.53,35.53,0,0,0,1.06-4.83A28.26,28.26,0,0,0,25.9,4.6a5.86,5.86,0,0,0-.52-2.55A1.7,1.7,0,0,0,23.78,1Q21.2,1,19.45,7.53a33,33,0,0,0-1.33,8.26A8.15,8.15,0,0,0,18.37,18Zm11.08,1.48a2.34,2.34,0,0,0,1.3-.26,3,3,0,0,0,.85-1.85l3-15.85A3.54,3.54,0,0,0,32,2.56a8,8,0,0,0-1.82,3.16l-.53-.2.8-5H41.81l-.74,5.66-.54-.07c0-1.92-.41-3.24-1.13-3.94a2.6,2.6,0,0,0-1.74-.63L34.79,16.6l-.17,1a2.43,2.43,0,0,0,0,.33,2.26,2.26,0,0,0,0,.26c0,.5.11.82.33.95a3.94,3.94,0,0,0,1.39.3v.76H29.45Zm26.65.76H50.18v-.71a2.28,2.28,0,0,0,1.25-.41,1.64,1.64,0,0,0,.37-1.29c0-.22,0-.75-.11-1.58,0-.17-.08-.89-.2-2.15H47l-1.2,3c-.08.2-.15.42-.22.66a2.84,2.84,0,0,0-.09.69c0,.41.08.67.25.78a2.91,2.91,0,0,0,1.08.3v.71H42.79v-.71a2.44,2.44,0,0,0,.85-.53,5.59,5.59,0,0,0,.9-1.56L52.21.07h.53l2,16.88A5.46,5.46,0,0,0,55.2,19a1.36,1.36,0,0,0,.9.43Zm-4.76-7.31-.76-7.18-3,7.18Zm4.95,6.53a1.82,1.82,0,0,0,1-.5,3.56,3.56,0,0,0,.58-1.59L60.42,4.11c.06-.3.1-.6.15-.9a5.46,5.46,0,0,0,.06-.72c0-.52-.13-.86-.4-1a2.88,2.88,0,0,0-1.1-.23V.48h5.93a5,5,0,0,1,2.5.57c1.26.73,1.9,2.07,1.9,4a5.81,5.81,0,0,1-1.54,4.22,5.32,5.32,0,0,1-4,1.58l-.59,0-1.2-.11L61,16.6l-.17,1a2.72,2.72,0,0,0,0,.3,2.81,2.81,0,0,0,0,.29c0,.5.09.81.28.94a3.26,3.26,0,0,0,1.23.31v.76h-6Zm6-9.67.38.06H63a3,3,0,0,0,1.62-.36,2.87,2.87,0,0,0,1-1.18,7.28,7.28,0,0,0,.6-2,11.67,11.67,0,0,0,.22-2,4.4,4.4,0,0,0-.41-2,1.44,1.44,0,0,0-1.39-.79.71.71,0,0,0-.65.28,3.7,3.7,0,0,0-.32,1Zm5.61,9.69A1.86,1.86,0,0,0,69,18.94a3.54,3.54,0,0,0,.59-1.59L72.15,4.11q.09-.45.15-.9a5.73,5.73,0,0,0,.07-.72,1.1,1.1,0,0,0-.41-1,2.88,2.88,0,0,0-1.1-.23V.48h5.93a5,5,0,0,1,2.5.57c1.27.73,1.9,2.07,1.9,4a5.77,5.77,0,0,1-1.54,4.22,5.31,5.31,0,0,1-4,1.58l-.6,0-1.2-.11L72.74,16.6l-.17,1a2.72,2.72,0,0,0,0,.3c0,.1,0,.19,0,.29,0,.5.1.81.29.94a3.15,3.15,0,0,0,1.23.31v.76h-6.1Zm6.12-9.69.38.06h.33a3,3,0,0,0,1.62-.36,3,3,0,0,0,1-1.18,7.67,7.67,0,0,0,.59-2,11.67,11.67,0,0,0,.22-2,4.4,4.4,0,0,0-.41-2,1.43,1.43,0,0,0-1.38-.79.73.73,0,0,0-.66.28,3.7,3.7,0,0,0-.32,1Zm5.57,9.69a1.9,1.9,0,0,0,1.09-.52,3.56,3.56,0,0,0,.58-1.59L83.84,4.11c0-.27.09-.51.13-.71a7.08,7.08,0,0,0,.09-1c0-.47-.1-.77-.28-.9a3.53,3.53,0,0,0-1.22-.3V.48h5.68a6.57,6.57,0,0,1,3,.53q1.92,1,1.92,3.75a6.79,6.79,0,0,1-.32,2,5.23,5.23,0,0,1-1.08,1.9,4.56,4.56,0,0,1-1.25,1,11.62,11.62,0,0,1-1.33.52c.07.3.12.49.14.57l1.59,6.66a4.07,4.07,0,0,0,.69,1.7,1.72,1.72,0,0,0,1.13.41v.76H88.52l-2.23-9.76h-.58L84.49,16.6l-.17,1a1,1,0,0,0,0,.25,2.62,2.62,0,0,0,0,.28c0,.53.09.86.26,1a3.11,3.11,0,0,0,1.24.32v.76H79.63ZM87.55,9.3A2.59,2.59,0,0,0,89,8.17a7.24,7.24,0,0,0,.66-1.62A8.18,8.18,0,0,0,90,4.29a4.32,4.32,0,0,0-.43-2,1.5,1.5,0,0,0-1.45-.81.71.71,0,0,0-.62.26,2.78,2.78,0,0,0-.33,1.05L85.91,9.5A6.63,6.63,0,0,0,87.55,9.3Zm8.72-4.77Q99,0,102.32,0A4.37,4.37,0,0,1,106,1.92a8.46,8.46,0,0,1,1.44,5.19,17.58,17.58,0,0,1-2.54,9.07q-2.7,4.61-6.21,4.6a4.27,4.27,0,0,1-3.6-1.92,8.67,8.67,0,0,1-1.38-5.14A17.68,17.68,0,0,1,96.27,4.53ZM96.9,18c.33,1.19.93,1.78,1.8,1.78a2.83,2.83,0,0,0,2.22-1.29A16.63,16.63,0,0,0,103,13.54a37.1,37.1,0,0,0,1.06-4.83,29.49,29.49,0,0,0,.38-4.11,5.86,5.86,0,0,0-.51-2.55A1.71,1.71,0,0,0,102.31,1C100.6,1,99.15,3.17,98,7.53a33.42,33.42,0,0,0-1.33,8.26A8.57,8.57,0,0,0,96.9,18ZM114.35.48v.76a2.57,2.57,0,0,0-1.08.17,1.07,1.07,0,0,0-.5,1,2.53,2.53,0,0,0,0,.28,2.64,2.64,0,0,0,0,.28l1.07,11.76L117.77,6c.31-.71.59-1.41.84-2.11A5.25,5.25,0,0,0,119,2.19a.85.85,0,0,0-.38-.81,3.09,3.09,0,0,0-.95-.14V.48h4v.76a2.08,2.08,0,0,0-.73.45,5.35,5.35,0,0,0-.82,1.4l-7.79,17.69h-.66L110,5.74A22,22,0,0,0,109.46,2c-.16-.39-.58-.62-1.28-.71V.48Zm5.15,19a1.83,1.83,0,0,0,1.08-.52,3.42,3.42,0,0,0,.59-1.59l2.54-13.24c.06-.34.11-.64.15-.92a4.83,4.83,0,0,0,.06-.7c0-.5-.09-.81-.28-.94a3.14,3.14,0,0,0-1.22-.31V.48h11.12l-.87,5.6L132.11,6a7,7,0,0,0-.49-3c-.52-1-1.59-1.51-3.19-1.51-.55,0-.9.09-1.06.28A2.44,2.44,0,0,0,127,2.74L125.76,9.3a6.21,6.21,0,0,0,2.81-.51A6,6,0,0,0,130,6.18l.58.1L129,14.35l-.56-.14c0-.28,0-.52,0-.73s0-.37,0-.51a2.92,2.92,0,0,0-.61-2.15,3.55,3.55,0,0,0-2.37-.57l-1.36,7.2a4.79,4.79,0,0,0-.07.51,3.28,3.28,0,0,0,0,.39,1,1,0,0,0,.22.66,1.24,1.24,0,0,0,.93.26,6.43,6.43,0,0,0,3.21-.75,7.67,7.67,0,0,0,3.21-4.17l.5.13-1.22,5.74H119.5Zm12.79,0a1.87,1.87,0,0,0,1-.41,3.23,3.23,0,0,0,.71-1.71L136.5,4.11c.07-.38.13-.69.17-1a5.89,5.89,0,0,0,.05-.67c0-.5-.1-.81-.29-.94a3.32,3.32,0,0,0-1.22-.31V.48h6a5.35,5.35,0,0,1,4.63,2.22,10.11,10.11,0,0,1,1.58,6,13.3,13.3,0,0,1-2.34,7.84,8,8,0,0,1-6.86,3.7h-5.93ZM143.87,3.39a2.84,2.84,0,0,0-2.79-2,1.08,1.08,0,0,0-.91.31,1.93,1.93,0,0,0-.34.83L137,17.44a3.1,3.1,0,0,0-.06.39c0,.11,0,.21,0,.3a1.22,1.22,0,0,0,.24.84,1.26,1.26,0,0,0,.9.26q3.67,0,5.33-5.42a23.91,23.91,0,0,0,1-6.94A9.45,9.45,0,0,0,143.87,3.39Z',
+                        opacity: 1, strokeColor: '', fillColor: '#8a251a', width: 127.70402, height: 55.84601, stampFillColor: '#f6dedd', stampStrokeColor: ''
                     };
                 }
                 break;
@@ -16372,7 +16447,9 @@ class NavigationPane {
         };
         this.bookmarkButtonOnClick = (event) => {
             let proxy = this;
-            document.getElementById(this.pdfViewer.element.id + '_thumbnail_view').style.display = 'none';
+            if (document.getElementById(this.pdfViewer.element.id + '_thumbnail_view')) {
+                document.getElementById(this.pdfViewer.element.id + '_thumbnail_view').style.display = 'none';
+            }
             this.removeThumbnailSelectionIconTheme();
             this.sideBarTitle.textContent = this.pdfViewer.localeObj.getConstant('Bookmarks');
             this.sideBarContent.setAttribute('aria-label', 'Bookmark View Panel');
@@ -22257,10 +22334,20 @@ class PdfViewerBase {
         }
         else if (this.tool instanceof ConnectTool) {
             if (this.tool.endPoint && this.tool.endPoint.indexOf('Leader0')) {
-                eventTarget.style.cursor = 'nw-resize';
+                if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Distance') {
+                    eventTarget.style.cursor = this.pdfViewer.distanceSettings.resizeCursorType;
+                }
+                else {
+                    eventTarget.style.cursor = 'nw-resize';
+                }
             }
             else if (this.tool.endPoint && this.tool.endPoint.indexOf('Leader1')) {
-                eventTarget.style.cursor = 'ne-resize';
+                if (this.pdfViewer.selectedItems.annotations[0].shapeAnnotationType === 'Distance') {
+                    eventTarget.style.cursor = this.pdfViewer.distanceSettings.resizeCursorType;
+                }
+                else {
+                    eventTarget.style.cursor = 'ne-resize';
+                }
             }
             else if (this.tool.endPoint && this.tool.endPoint.indexOf('ConnectorSegmentPoint')) {
                 eventTarget.style.cursor = 'sw-resize';
@@ -24716,6 +24803,29 @@ var AnnotationResizerLocation;
     AnnotationResizerLocation[AnnotationResizerLocation["Corners"] = 1] = "Corners";
     AnnotationResizerLocation[AnnotationResizerLocation["Edges"] = 2] = "Edges";
 })(AnnotationResizerLocation || (AnnotationResizerLocation = {}));
+/**
+ * Enum for cursor type
+ */
+var CursorType;
+(function (CursorType) {
+    CursorType["auto"] = "auto";
+    CursorType["crossHair"] = "crosshair";
+    CursorType["e_resize"] = "e-resize";
+    CursorType["ew_resize"] = "ew-resize";
+    CursorType["grab"] = "grab";
+    CursorType["grabbing"] = "grabbing";
+    CursorType["move"] = "move";
+    CursorType["n_resize"] = "n-resize";
+    CursorType["ne_resize"] = "ne-resize";
+    CursorType["ns_resize"] = "ns-resize";
+    CursorType["nw_resize"] = "nw-resize";
+    CursorType["pointer"] = "pointer";
+    CursorType["s_resize"] = "s-resize";
+    CursorType["se_resize"] = "se-resize";
+    CursorType["sw_resize"] = "sw-resize";
+    CursorType["text"] = "text";
+    CursorType["w_resize"] = "w-resize";
+})(CursorType || (CursorType = {}));
 
 /**
  * @hidden
@@ -27419,6 +27529,9 @@ class Toolbar$1 {
             if (!this.pdfViewer.enableDownload) {
                 this.enableDownloadOption(false);
             }
+            if (!this.pdfViewer.enablePrint) {
+                this.enablePrintOption(false);
+            }
         }
         else {
             if (this.pdfViewerBase.pageCount === 0) {
@@ -28654,6 +28767,7 @@ class AnnotationToolbar {
                             { text: 'Received' },
                             { text: 'Approved' },
                             { text: 'Confidential' },
+                            { text: 'Not Approved' },
                         ]
                     },
                     {
@@ -31305,7 +31419,7 @@ class Drawing {
         let index = obj.pageIndex;
         for (let i = 0; i < this.pdfViewer.annotations.length; i++) {
             let annotation = this.pdfViewer.annotations[i];
-            if (annotation.id === obj.id) {
+            if (annotation.id === obj.id || annotation.wrapper.id === obj.id) {
                 this.pdfViewer.annotations.splice(i, 1);
                 let objects = this.getPageObjects(obj.pageIndex);
                 for (let j = 0; j < objects.length; j++) {
@@ -33977,6 +34091,9 @@ __decorate$2([
 __decorate$2([
     Property(40)
 ], DistanceSettings.prototype, "leaderLength", void 0);
+__decorate$2([
+    Property(CursorType.move)
+], DistanceSettings.prototype, "resizeCursorType", void 0);
 /**
  * The `PerimeterSettings` module is used to provide the properties to perimeter calibrate annotation.
  */
@@ -35136,7 +35253,8 @@ let PdfViewer = class PdfViewer extends Component {
      * @private
      */
     fireValidatedFailed(action) {
-        let eventArgs = { formField: this.viewerBase.createFormfieldsJsonData(), documentName: this.fileName };
+        // tslint:disable-next-line:max-line-length
+        let eventArgs = { formField: this.viewerBase.createFormfieldsJsonData(), documentName: this.fileName, nonFillableFields: this.formFieldsModule.nonFillableFields };
         this.trigger('validateFormFields', eventArgs);
     }
     /**
@@ -35792,7 +35910,7 @@ __decorate$2([
     Property({ opacity: 1, author: 'Guest', modifiedDate: '', width: 0, height: 0, left: 0, top: 0, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false })
 ], PdfViewer.prototype, "customStampSettings", void 0);
 __decorate$2([
-    Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', subject: 'Distance calculation', modifiedDate: '', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Closed', lineHeadEndStyle: 'Closed', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, leaderLength: 40 })
+    Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', subject: 'Distance calculation', modifiedDate: '', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Closed', lineHeadEndStyle: 'Closed', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, leaderLength: 40, resizeCursorType: CursorType.move })
 ], PdfViewer.prototype, "distanceSettings", void 0);
 __decorate$2([
     Property({ opacity: 1, fillColor: '#ffffff00', strokeColor: '#ff0000', author: 'Guest', subject: 'Perimeter calculation', modifiedDate: '', thickness: 1, borderDashArray: 0, lineHeadStartStyle: 'Open', lineHeadEndStyle: 'Open', minHeight: 0, minWidth: 0, maxWidth: 0, maxHeight: 0, isLock: false, annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges } })
@@ -39803,6 +39921,11 @@ class FormFields {
         // tslint:disable-next-line
         this.maintanMinTabindex = {};
         this.isSignatureField = false;
+        /**
+         * @private
+         */
+        // tslint:disable-next-line
+        this.nonFillableFields = {};
         this.pdfViewer = viewer;
         this.pdfViewerBase = base;
     }
@@ -39871,12 +39994,20 @@ class FormFields {
             if (currentData.Name === 'Textbox' || currentData.Name === 'Password' || currentData.Multiline) {
                 if (currentData.Text === '' || currentData.Text === null) {
                     this.pdfViewerBase.validateForm = true;
+                    this.nonFillableFields[currentData.FieldName] = currentData.Text;
+                }
+                else {
+                    delete (this.nonFillableFields[currentData.FieldName]);
                 }
                 datas[currentData.FieldName] = currentData.Text;
             }
             else if (currentData.Name === 'RadioButton' && currentData.Selected) {
                 if (currentData.Selected === false) {
                     this.pdfViewerBase.validateForm = true;
+                    this.nonFillableFields[currentData.GroupName] = currentData.Value;
+                }
+                else {
+                    delete (this.nonFillableFields[currentData.GroupName]);
                 }
                 datas[currentData.GroupName] = currentData.Value;
             }
@@ -39889,6 +40020,10 @@ class FormFields {
             else if (currentData.Name === 'DropDown') {
                 if (currentData.SelectedValue === '') {
                     this.pdfViewerBase.validateForm = true;
+                    this.nonFillableFields[currentData.Text] = currentData.SelectedValue;
+                }
+                else {
+                    delete (this.nonFillableFields[currentData.Text]);
                 }
                 datas[currentData.Text] = currentData.SelectedValue;
             }
@@ -39910,6 +40045,10 @@ class FormFields {
                 let csData = splitArrayCollection(collectionData);
                 if (currentData.Value === null || currentData.Value === '') {
                     this.pdfViewerBase.validateForm = true;
+                    this.nonFillableFields[currentData.FieldName] = JSON.stringify(csData);
+                }
+                else {
+                    delete (this.nonFillableFields[currentData.FieldName]);
                 }
                 datas[currentData.FieldName] = JSON.stringify(csData);
             }
@@ -40569,5 +40708,5 @@ class FormFields {
  * export PDF viewer modules
  */
 
-export { Annotation, LinkAnnotation, TextMarkupAnnotation, MeasureAnnotation, ShapeAnnotation, StampAnnotation, StickyNotesAnnotation, FreeTextAnnotation, InputElement, NavigationPane, PdfViewerBase, TextLayer, ContextMenu$1 as ContextMenu, FontStyle, AnnotationResizerLocation, AjaxHandler, Signature, Magnification, Navigation, ThumbnailView, Toolbar$1 as Toolbar, AnnotationToolbar, ToolbarSettings, AjaxRequestSettings, CustomStampItem, AnnotationToolbarSettings, ServerActionSettings, StrikethroughSettings, UnderlineSettings, HighlightSettings, LineSettings, ArrowSettings, RectangleSettings, CircleSettings, ShapeLabelSettings, PolygonSettings, StampSettings, CustomStampSettings, DistanceSettings, PerimeterSettings, AreaSettings, RadiusSettings, VolumeSettings, StickyNotesSettings, MeasurementSettings, FreeTextSettings, AnnotationSelectorSettings, TextSearchColorSettings, HandWrittenSignatureSettings, AnnotationSettings, DocumentTextCollectionSettings, TextDataSettings, RectangleBounds, TileRenderingSettings, PdfViewer, BookmarkView, TextSelection, TextSearch, Print, FormFields, Drawing, findActiveElement, findObjectsUnderMouse, findObjectUnderMouse, CalculateLeaderPoints, findElementUnderMouse, insertObject, findTargetShapeElement, findObjects, findActivePage, ActiveElements, getConnectorPoints, getSegmentPath, updateSegmentElement, getSegmentElement, updateDecoratorElement, getDecoratorElement, clipDecorators, clipDecorator, initDistanceLabel, updateDistanceLabel, updateRadiusLabel, initPerimeterLabel, updatePerimeterLabel, removePerimeterLabel, updateCalibrateLabel, getPolygonPath, textElement, initLeaders, initLeader, isPointOverConnector, findNearestPoint, getDecoratorShape, renderAdornerLayer, createSvg, isLineShapes, setElementStype, findPointsLength, findPerimeterLength, getBaseShapeAttributes, getFunction, cloneObject, cloneArray, getInternalProperties, isLeader, PdfBounds, PdfFont, PdfAnnotationBase, ZOrderPageTable, Selector, ToolBase, SelectTool, MoveTool, StampTool, ConnectTool, ResizeTool, NodeDrawingTool, PolygonDrawingTool, LineTool, RotateTool };
+export { Annotation, LinkAnnotation, TextMarkupAnnotation, MeasureAnnotation, ShapeAnnotation, StampAnnotation, StickyNotesAnnotation, FreeTextAnnotation, InputElement, NavigationPane, PdfViewerBase, TextLayer, ContextMenu$1 as ContextMenu, FontStyle, AnnotationResizerLocation, CursorType, AjaxHandler, Signature, Magnification, Navigation, ThumbnailView, Toolbar$1 as Toolbar, AnnotationToolbar, ToolbarSettings, AjaxRequestSettings, CustomStampItem, AnnotationToolbarSettings, ServerActionSettings, StrikethroughSettings, UnderlineSettings, HighlightSettings, LineSettings, ArrowSettings, RectangleSettings, CircleSettings, ShapeLabelSettings, PolygonSettings, StampSettings, CustomStampSettings, DistanceSettings, PerimeterSettings, AreaSettings, RadiusSettings, VolumeSettings, StickyNotesSettings, MeasurementSettings, FreeTextSettings, AnnotationSelectorSettings, TextSearchColorSettings, HandWrittenSignatureSettings, AnnotationSettings, DocumentTextCollectionSettings, TextDataSettings, RectangleBounds, TileRenderingSettings, PdfViewer, BookmarkView, TextSelection, TextSearch, Print, FormFields, Drawing, findActiveElement, findObjectsUnderMouse, findObjectUnderMouse, CalculateLeaderPoints, findElementUnderMouse, insertObject, findTargetShapeElement, findObjects, findActivePage, ActiveElements, getConnectorPoints, getSegmentPath, updateSegmentElement, getSegmentElement, updateDecoratorElement, getDecoratorElement, clipDecorators, clipDecorator, initDistanceLabel, updateDistanceLabel, updateRadiusLabel, initPerimeterLabel, updatePerimeterLabel, removePerimeterLabel, updateCalibrateLabel, getPolygonPath, textElement, initLeaders, initLeader, isPointOverConnector, findNearestPoint, getDecoratorShape, renderAdornerLayer, createSvg, isLineShapes, setElementStype, findPointsLength, findPerimeterLength, getBaseShapeAttributes, getFunction, cloneObject, cloneArray, getInternalProperties, isLeader, PdfBounds, PdfFont, PdfAnnotationBase, ZOrderPageTable, Selector, ToolBase, SelectTool, MoveTool, StampTool, ConnectTool, ResizeTool, NodeDrawingTool, PolygonDrawingTool, LineTool, RotateTool };
 //# sourceMappingURL=ej2-pdfviewer.es2015.js.map

@@ -9,7 +9,7 @@ import { Page } from '../../../src/grid/actions/page';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
 import { Freeze } from '../../../src/grid/actions/freeze';
 import { Selection } from '../../../src/grid/actions/selection';
-import { filterData } from '../base/datasource.spec';
+import { filterData, customerData} from '../base/datasource.spec';
 import { createGrid, destroy, getKeyUpObj, getClickObj, getKeyActionObj } from '../base/specutil.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { Edit } from '../../../src/grid/actions/edit';
@@ -2192,6 +2192,72 @@ describe('Checkbox Filter module => ', () => {
         afterAll(function () {
             destroy(gridObj);
             gridObj = actionComplete = null;
+        });
+    });
+    
+    describe('EJ2-37831 checkbox filtering with enter key', () => {
+        let gridObj: Grid;
+        let actionBegin: () => void;     
+        let checkBoxFilter: Element; 
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowFiltering: true,
+                    filterSettings: { type: 'CheckBox' },
+                    columns: [{ field: 'OrderID',headerText:'OrderID',visible: true },
+                    { field: 'CustomerID',headerText:'CustomerName'},
+                    { field: 'Freight', format: 'C2',headerText:'Freight' },
+                    { field: 'Verified',headerText:'Verified' }
+                    ],
+                    actionBegin: actionBegin,
+                    actionComplete: actionComplete
+                }, done);
+        });
+        
+        it('OrderID filter dialog open testing', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if(args.requestType === 'filterafteropen'){          
+                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');      
+                    done();
+                }   
+            };
+            gridObj.actionComplete = actionComplete;        
+            (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('OrderID').querySelector('.e-filtermenudiv')));
+        });
+        it('Filter OrderID testing', () => {   
+            actionComplete = (args?: any): void => {               
+                expect(gridObj.filterSettings.columns.length).toBe(1);                                               
+            };                    
+            (checkBoxFilter.querySelectorAll('.e-checkbox-wrapper')[0] as any).click();           
+            (checkBoxFilter.querySelectorAll('.e-checkbox-wrapper')[1] as any).click(); 
+            gridObj.keyboardModule.keyAction({ action: 'enter', target: checkBoxFilter.querySelectorAll('.e-checkbox-wrapper')[1] } as any);                        
+        });
+        it('CustomerID filter dialog open testing', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if(args.requestType === 'filterafteropen'){          
+                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter'); 
+                    done();     
+                }
+            };
+            gridObj.actionComplete = actionComplete;        
+            (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('CustomerID').querySelector('.e-filtermenudiv')));
+        });
+        it('Filter CustomerID testing', () => {   
+            actionComplete = (args?: any): void => {               
+                expect(gridObj.filterSettings.columns.length).toBe(2);                                               
+            };           
+            let searchElement : any = gridObj.element.querySelector('.e-searchinput');
+            searchElement.value = 'ER';
+            (checkBoxFilter.querySelectorAll('.e-checkbox-wrapper')[0] as any).click();           
+            (checkBoxFilter.querySelectorAll('.e-checkbox-wrapper')[1] as any).click(); 
+            gridObj.keyboardModule.keyAction({ action: 'enter', target: checkBoxFilter.querySelectorAll('.e-checkbox-wrapper')[1] } as any);                        
+        }); 
+           
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = checkBoxFilter = actionBegin = actionComplete = null;
         });
     });
 });

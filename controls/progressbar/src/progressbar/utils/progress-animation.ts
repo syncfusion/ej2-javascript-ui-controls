@@ -40,9 +40,6 @@ export class ProgressAnimation {
                 } else {
                     linearPath.setAttribute('width', width);
                 }
-                if (progress.animation.enable) {
-                    progress.labelElement.setAttribute('visibility', 'visible');
-                }
                 progress.trigger('animationComplete', {
                     value: progress.value, trackColor: progress.trackColor,
                     progressColor: progress.progressColor
@@ -86,35 +83,35 @@ export class ProgressAnimation {
 
     /** Circular animation */
     public doCircularAnimation(
-        x: number, y: number, radius: number, start: number, progressEnd: number,
+        x: number, y: number, radius: number, start: number, progressEnd: number, value: number,
         element: Element, progress: ProgressBar, thickness: number, delay: number, startValue?: number
     ): void {
         let animation: Animation = new Animation({});
         let circularPath: HTMLElement = <HTMLElement>element;
         let pathRadius: number = radius + (thickness / 2);
-        let value: number = 0;
-        let totalEnd: number = (start < Math.abs(progressEnd)) ? Math.abs(progressEnd) : Math.abs(progressEnd) + 360;
-        totalEnd = (totalEnd - start);
-        start += (progress.cornerRadius === 'Round' && totalEnd !== completeAngle) ?
+        let end: number = 0;
+        let totalEnd: number;
+        totalEnd = ((value - progress.minimum) / (progress.maximum - progress.minimum)) * progress.totalAngle;
+        totalEnd = (value < progress.minimum || value > progress.maximum) ? 0 : totalEnd;
+        start += (progress.cornerRadius === 'Round' && totalEnd !== completeAngle && totalEnd !== 0) ?
             ((progress.enableRtl) ? (lineCapRadius / 2) * thickness : -(lineCapRadius / 2) * thickness) : 0;
-        totalEnd += (progress.cornerRadius === 'Round' && totalEnd !== completeAngle) ?
+        totalEnd += (progress.cornerRadius === 'Round' && totalEnd !== completeAngle && totalEnd !== 0) ?
             (lineCapRadius / 2) * thickness : 0;
-        progressEnd += (progress.cornerRadius === 'Round' && totalEnd !== completeAngle) ?
+        progressEnd += (progress.cornerRadius === 'Round' && totalEnd !== completeAngle && totalEnd !== 0) ?
             ((progress.enableRtl) ? -(lineCapRadius / 2) * thickness : (lineCapRadius / 2) * thickness) : 0;
+        circularPath.setAttribute('visibility', 'Hidden');
         animation.animate(circularPath, {
             duration: progress.animation.duration,
             delay: delay,
             progress: (args: AnimationOptions): void => {
                 if (args.timeStamp >= args.delay) {
-                    value = effect(args.timeStamp, startValue | start, totalEnd, args.duration, progress.enableRtl);
-                    circularPath.setAttribute('d', getPathArc(x, y, pathRadius, start, value % 360, progress.enableRtl, true));
+                    circularPath.setAttribute('visibility', 'visible');
+                    end = effect(args.timeStamp, startValue | start, totalEnd, args.duration, progress.enableRtl);
+                    circularPath.setAttribute('d', getPathArc(x, y, pathRadius, start, end % 360, progress.enableRtl, true));
                 }
             },
             end: (model: AnimationOptions) => {
                 circularPath.setAttribute('d', getPathArc(x, y, pathRadius, start, progressEnd, progress.enableRtl, true));
-                if (progress.animation.enable) {
-                    progress.labelElement.setAttribute('visibility', 'visible');
-                }
                 progress.trigger('animationComplete', {
                     value: progress.value, trackColor: progress.trackColor,
                     progressColor: progress.progressColor
@@ -146,13 +143,51 @@ export class ProgressAnimation {
         });
     }
 
+    /** To do the label animation for progress bar */
+    public doLabelAnimation(labelPath: Element, start: number, end: number, progress: ProgressBar, delay: number): void {
+        let animation: Animation = new Animation({});
+        let text: string = labelPath.innerHTML;
+        let value: number = 0;
+        let valueChanged: number = 0;
+        let percentage: number = 100;
+        labelPath.setAttribute('visibility', 'Hidden');
+        animation.animate(<HTMLElement>labelPath, {
+            duration: progress.animation.duration,
+            delay: delay,
+            progress: (args: AnimationOptions): void => {
+                if (progress.type === 'Linear') {
+                    if (args.timeStamp >= args.delay) {
+                        labelPath.setAttribute('visibility', 'visible');
+                        value = effect(args.timeStamp, start, end, args.duration, false);
+                        valueChanged = parseInt(((value / progress.progressRect.width) * percentage).toString(), 10);
+                        labelPath.innerHTML = valueChanged.toString() + '%';
+                    }
+                } else if (progress.type === 'Circular') {
+                    labelPath.setAttribute('visibility', 'visible');
+                    value = effect(args.timeStamp, start, end, args.duration, false);
+                    valueChanged = parseInt((((value - start) / progress.totalAngle) * percentage).toString(), 10);
+                    labelPath.innerHTML = valueChanged.toString() + '%';
+                }
+            },
+            end: (model: AnimationOptions) => {
+                labelPath.innerHTML = text;
+            }
+        });
+    }
+
     /** To do the annotation animation for circular progress bar */
-    public doAnnotationAnimation(circularPath: Element, progress: ProgressBar, start: number, progressEnd: number): void {
+    public doAnnotationAnimation(circularPath: Element, progress: ProgressBar): void {
         let animation: Animation = new Animation({});
         let value: number = 0;
+        let percentage: number = 100;
         let isAnnotation: boolean = progress.annotations.length > 0;
         let annotatElementChanged: Element;
         let firstAnnotatElement: Element;
+        let start: number = progress.startAngle;
+        let totalAngle: number = progress.totalAngle;
+        let totalEnd: number;
+        let annotateValueChanged: number;
+        let annotateValue: number;
         if (isAnnotation && progress.progressAnnotationModule) {
             firstAnnotatElement = document.getElementById(progress.element.id + 'Annotation0').children[0];
             if (firstAnnotatElement && firstAnnotatElement.children[0]) {
@@ -161,28 +196,22 @@ export class ProgressAnimation {
                 }
             }
         }
-        let annotateValueChanged: number;
-        let totalAngle: number = progress.totalAngle;
-        let min: number = progress.minimum;
-        let max: number = progress.maximum;
-        let end: number = (start > progressEnd) ? progressEnd + 360 : progressEnd;
-        let totalEnd: number = (end - start);
+        totalEnd = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * progress.totalAngle;
+        totalEnd = (progress.value < progress.minimum || progress.value > progress.maximum) ? 0 : totalEnd;
+        annotateValue = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * percentage;
+        annotateValue = (progress.value < progress.minimum || progress.value > progress.maximum) ? 0 : Math.round(annotateValue);
         animation.animate(<HTMLElement>circularPath, {
             duration: progress.animation.duration,
             delay: progress.animation.delay,
             progress: (args: AnimationOptions): void => {
                 if (isAnnotation && annotatElementChanged) {
-                    value = effect(args.timeStamp, start, totalEnd, args.duration, progress.enableRtl);
-                    if (value <= end) {
-                        annotateValueChanged = parseInt((((value - start) / totalAngle) * (max - min) + min).toString(), 10);
-                        annotatElementChanged.innerHTML = annotateValueChanged ? annotateValueChanged.toString() + '%' : '';
-                    } else {
-                        annotatElementChanged.innerHTML = progress.value + '%';
-                    }
+                    value = effect(args.timeStamp, start, totalEnd, args.duration, false);
+                    annotateValueChanged = parseInt((((value - start) / totalAngle) * percentage).toString(), 10);
+                    annotatElementChanged.innerHTML = annotateValueChanged ? annotateValueChanged.toString() + '%' : '';
                 }
             },
             end: (model: AnimationOptions) => {
-                annotatElementChanged.innerHTML = progress.value + '%';
+                annotatElementChanged.innerHTML = annotateValue + '%';
             }
         });
     }

@@ -1,6 +1,8 @@
 import { ProgressBar } from '../../progressbar';
 import { ProgressAnimation } from '../utils/progress-animation';
-import { PathOption, getElement } from '@syncfusion/ej2-svg-base';
+import { TextOption } from '../utils/helper';
+import { PathOption, getElement, Size, measureText } from '@syncfusion/ej2-svg-base';
+import { ITextRenderEventArgs } from '../model/progress-interface';
 import { Segment } from './segment-progress';
 
 /**
@@ -8,6 +10,7 @@ import { Segment } from './segment-progress';
  */
 export class Linear {
     private progress: ProgressBar;
+    private delay: number;
     private segment: Segment = new Segment();
     private animation: ProgressAnimation = new ProgressAnimation();
     constructor(progress: ProgressBar) {
@@ -95,7 +98,7 @@ export class Linear {
                 if (progress.segmentCount > 1) {
                     linearProgress.setAttribute('stroke-dasharray', progress.segmentSize);
                 }
-                if (progress.cornerRadius === 'Round') {
+                if (progress.cornerRadius === 'Round' && progressWidth) {
                     linearProgress.setAttribute('stroke-linecap', 'round');
                 }
             }
@@ -110,6 +113,8 @@ export class Linear {
                 } else {
                     animationdelay = progress.animation.delay;
                 }
+                /** used for label animation delay */
+                this.delay = animationdelay;
                 clipPathLinear = progress.createClipPath(
                     progress.clipPath, progressWidth, null, refresh ? previousWidth : progress.progressRect.x, refresh,
                     (progress.progressThickness || progress.themeStyle.linearProgressThickness)
@@ -174,5 +179,50 @@ export class Linear {
             this.animation.doLinearAnimation(clipPathBuffer, progress, progress.animation.delay, 0);
         }
         progress.svgObject.appendChild(linearBufferGroup);
+    }
+
+    /** Render the Linear Label */
+    public renderLinearLabel(): void {
+        let padding: number = 10;
+        let linearlabel: Element;
+        let linearValue: number;
+        let posX: number;
+        let posY: number;
+        let end: number;
+        let argsData: ITextRenderEventArgs;
+        let textSize: Size;
+        let progress: ProgressBar = this.progress;
+        let labelValue: number;
+        let percentage: number = 100;
+        let option: TextOption;
+        labelValue = ((progress.value - progress.minimum) / (progress.maximum - progress.minimum)) * percentage;
+        linearValue = (progress.value < progress.minimum || progress.value > progress.maximum) ? 0 : Math.round(labelValue);
+        argsData = {
+            cancel: false, text: progress.label ? progress.label : String(linearValue) + '%', color: progress.labelStyle.color
+        };
+        progress.trigger('textRender', argsData);
+        if (!argsData.cancel) {
+            textSize = measureText(argsData.text, progress.labelStyle);
+            posX = progress.progressRect.width * progress.calculateProgressRange(progress.minimum, progress.maximum, progress.value);
+            if (posX) {
+                posX = (progress.enableRtl) ?
+                    ((progress.progressRect.width - posX) + textSize.width) : posX - padding;
+            } else {
+                posX = (progress.enableRtl) ? (progress.progressRect.width) : (progress.progressRect.x + padding);
+            }
+            posY = progress.progressRect.y + (progress.progressRect.height / 2) + (textSize.height / 4);
+            option = new TextOption(
+                progress.element.id + '_linearLabel', progress.labelStyle.size || progress.themeStyle.linearFontSize,
+                progress.labelStyle.fontStyle || progress.themeStyle.linearFontStyle,
+                progress.labelStyle.fontFamily || progress.themeStyle.linearFontFamily,
+                progress.labelStyle.fontWeight, 'middle', argsData.color || progress.themeStyle.fontColor, posX, posY
+            );
+            linearlabel = progress.renderer.createText(option, argsData.text);
+            progress.svgObject.appendChild(linearlabel);
+            if (progress.animation.enable && !progress.isIndeterminate) {
+                end = progress.progressRect.width * progress.calculateProgressRange(progress.minimum, progress.maximum, progress.value);
+                this.animation.doLabelAnimation(linearlabel, 0, end, progress, this.delay);
+            }
+        }
     }
 }

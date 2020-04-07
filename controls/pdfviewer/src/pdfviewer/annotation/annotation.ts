@@ -3049,7 +3049,7 @@ export class Annotation {
         let overlappedCollection: any = [];
         // tslint:disable-next-line
         let overlappedAnnotations: any = this.getOverlappedAnnotations(annotation, pageNumber);
-        if (overlappedAnnotations[0].subject === 'Volume calculation') {
+        if (overlappedAnnotations && overlappedAnnotations.length > 0 && overlappedAnnotations[0].subject === 'Volume calculation') {
             annotSettings.calibrate = overlappedAnnotations[0].calibrate;
         }
         if (overlappedAnnotations && overlappedAnnotations.length > 0) {

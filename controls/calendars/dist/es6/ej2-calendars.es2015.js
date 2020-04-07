@@ -5614,7 +5614,9 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                     let startDate = this.globalize.parseDate(range[0].trim(), dateOptions);
                     let endDate = this.globalize.parseDate(range[1].trim(), dateOptions);
                     if (!isNullOrUndefined(startDate) && !isNaN(+startDate) && !isNullOrUndefined(endDate) && !isNaN(+endDate)) {
+                        let prevStartVal = this.startValue;
                         this.startValue = startDate;
+                        let prevEndVal = this.endValue;
                         this.endValue = endDate;
                         this.setValue();
                         this.refreshControl();
@@ -5629,6 +5631,12 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
                             this.trigger('blur', blurArguments);
                         }
                         this.updateHiddenInput();
+                        // For Mobile mode, when a value is present and choose another range and click on console
+                        // when popup is open, two startvalues and end values are updated in the popup.
+                        if (this.isMobile && this.isPopupOpen()) {
+                            this.startValue = prevStartVal;
+                            this.endValue = prevEndVal;
+                        }
                         return;
                     }
                     else {
@@ -8091,7 +8099,9 @@ let DateRangePicker = class DateRangePicker extends CalendarBase {
         if (!isNullOrUndefined(this.endValue) && !isNullOrUndefined(this.startValue)) {
             isStartDisabled = this.isDateDisabled(this.startValue);
             isEndDisabled = this.isDateDisabled(this.endValue);
-            this.currentDate = null;
+            if (!this.isPopupOpen()) {
+                this.currentDate = null;
+            }
             this.setValue();
         }
         return (isStartDisabled || isEndDisabled);
@@ -9828,7 +9838,6 @@ let TimePicker = class TimePicker extends Component {
                         }
                     }
                     this.hide();
-                    addClass([this.inputWrapper.container], FOCUS);
                     this.isNavigate = false;
                     if (this.isPopupOpen()) {
                         event.stopPropagation();
@@ -9866,7 +9875,6 @@ let TimePicker = class TimePicker extends Component {
         this.setSelection(li, event);
         if (li && li.classList.contains(LISTCLASS$1)) {
             this.hide();
-            addClass([this.inputWrapper.container], FOCUS);
         }
     }
     closePopup(delay, e) {
@@ -10872,7 +10880,8 @@ let TimePicker = class TimePicker extends Component {
         }
         else if (target !== this.inputElement) {
             if (!Browser.isDevice) {
-                this.isPreventBlur = (Browser.isIE || Browser.info.name === 'edge') && (document.activeElement === this.inputElement);
+                this.isPreventBlur = (Browser.isIE || Browser.info.name === 'edge') && (document.activeElement === this.inputElement)
+                    && (target === this.popupWrapper);
             }
         }
     }
@@ -10949,6 +10958,7 @@ let TimePicker = class TimePicker extends Component {
     focusOut() {
         if (document.activeElement === this.inputElement) {
             this.inputElement.blur();
+            removeClass([this.inputWrapper.container], [FOCUS]);
             let blurArguments = {
                 model: this.isBlazorServer ? null : this
             };
@@ -12036,7 +12046,6 @@ let DateTimePicker = class DateTimePicker extends DatePicker {
     changeEvent(e) {
         if ((this.value && this.value.valueOf()) !== (this.previousDateTime && +this.previousDateTime.valueOf())) {
             super.changeEvent(e);
-            this.inputElement.focus();
             this.valueWithMinutes = this.value;
             this.setInputValue('date');
             this.previousDateTime = this.value && new Date(+this.value);

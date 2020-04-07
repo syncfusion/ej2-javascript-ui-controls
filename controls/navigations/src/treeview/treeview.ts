@@ -83,10 +83,14 @@ interface ResultData {
     result: { [key: string]: Object }[];
 }
 
-export interface EJ2Instance extends HTMLElement {
+interface EJ2Instance extends HTMLElement {
     ej2_instances: Object[];
 }
 
+
+ /** 
+  * Interface for NodeExpand event arguments. 
+  */
 export interface NodeExpandEventArgs {
     /**
      * If you want to cancel this event then, set cancel as true. Otherwise, false.
@@ -109,6 +113,9 @@ export interface NodeExpandEventArgs {
     event: MouseEvent | KeyboardEventArgs | TapEventArgs;
 }
 
+/** 
+ * Interface for NodeSelect event arguments.
+ */
 export interface NodeSelectEventArgs {
     /**
      * Return the name of action like select or un-select.
@@ -133,6 +140,9 @@ export interface NodeSelectEventArgs {
     nodeData: { [key: string]: Object };
 }
 
+/** 
+ * Interface for NodeCheck event arguments.
+ */
 export interface NodeCheckEventArgs {
     /**
      * Return the name of action like check or un-check.
@@ -157,6 +167,9 @@ export interface NodeCheckEventArgs {
     data: { [key: string]: Object }[];
 }
 
+/** 
+ * Interface for NodeEdit event arguments.
+ */
 export interface NodeEditEventArgs {
     /**
      * If you want to cancel this event then, set cancel as true. Otherwise, false.
@@ -185,6 +198,9 @@ export interface NodeEditEventArgs {
     innerHtml: string;
 }
 
+/** 
+ * Interface for DragAndDrop event arguments.
+ */
 export interface DragAndDropEventArgs {
     /**
      * If you want to cancel this event then, set cancel as true. Otherwise, false.
@@ -248,6 +264,9 @@ export interface DragAndDropEventArgs {
     preventTargetExpand?: boolean;
 }
 
+/** 
+ * Interface for DrawNode event arguments.
+ */
 export interface DrawNodeEventArgs {
     /**
      * Return the current rendering node.
@@ -264,6 +283,9 @@ export interface DrawNodeEventArgs {
     text: string;
 }
 
+/** 
+ * Interface for NodeClick event arguments.
+ */
 export interface NodeClickEventArgs {
     /**
      * Return the actual event.
@@ -275,6 +297,9 @@ export interface NodeClickEventArgs {
     node: HTMLLIElement;
 }
 
+/** 
+ * Interface for NodeKeyPress event arguments.
+ */
 export interface NodeKeyPressEventArgs {
     /**
      * If you want to cancel this event then, set cancel as true. Otherwise, false.
@@ -291,6 +316,9 @@ export interface NodeKeyPressEventArgs {
     node: HTMLLIElement;
 }
 
+/** 
+ * Interface for DataBound event arguments.
+ */
 export interface DataBoundEventArgs {
     /**
      * Return the TreeView data.
@@ -299,6 +327,9 @@ export interface DataBoundEventArgs {
     data: { [key: string]: Object }[];
 }
 
+/** 
+ * Interface for DataSourceChanged event arguments.
+ */
 export interface DataSourceChangedEventArgs {
     /**
      * Return the updated TreeView data. The data source will be updated after performing some operation like
@@ -309,7 +340,7 @@ export interface DataSourceChangedEventArgs {
     data: { [key: string]: Object }[];
 }
 
-export interface ItemCreatedArgs {
+ interface ItemCreatedArgs {
     curData: { [key: string]: Object };
     item: HTMLElement;
     options: ListBaseOptions;
@@ -317,16 +348,43 @@ export interface ItemCreatedArgs {
     fields: FieldsMapping;
 }
 
+/** 
+ * Interface that holds the node details.
+ */
 export interface NodeData {
+    /**
+     * Specifies the ID field mapped in dataSource.
+     */
     id: string;
+    /**
+     * Specifies the mapping field for text displayed as TreeView node's display text.
+     */
     text: string;
+    /**
+     * Specifies the parent ID field mapped in dataSource.
+     */
     parentID: string;
+    /**
+     * Specifies the mapping field for selected state of the TreeView node.
+     */
     selected: boolean;
+    /**
+     * Specifies the mapping field for expand state of the TreeView node.
+     */
     expanded: boolean;
+    /**
+     * Specifies the field for checked state of the TreeView node.
+     */
     isChecked: string;
+    /**
+     * Specifies the mapping field for hasChildren to check whether a node has child nodes or not.
+     */
     hasChildren: boolean;
 }
 
+/** 
+ * Interface for Failure event arguments
+ */
 export interface FailureEventArgs {
     /** Defines the error information. */
     error?: Error;
@@ -441,8 +499,14 @@ export class FieldsSettings extends ChildProperty<FieldsSettings> {
 
 }
 
+/**
+ * Defines the expand type of the TreeView node.
+ */
 export type ExpandOnSettings = 'Auto' | 'Click' | 'DblClick' | 'None';
 
+/**
+ * Defines the sorting order type for TreeView.
+ */
 export type SortOrder = 'None' | 'Ascending' | 'Descending';
 
 /**

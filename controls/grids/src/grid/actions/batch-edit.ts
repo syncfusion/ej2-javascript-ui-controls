@@ -1,7 +1,7 @@
 import { extend, addClass, removeClass, setValue, isBlazor } from '@syncfusion/ej2-base';
 import { remove, classList, updateBlazorTemplate, blazorTemplates, resetBlazorTemplate } from '@syncfusion/ej2-base';
 import { FormValidator } from '@syncfusion/ej2-inputs';
-import { isNullOrUndefined, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, KeyboardEventArgs, isUndefined } from '@syncfusion/ej2-base';
 import { IGrid, BeforeBatchAddArgs, BeforeBatchDeleteArgs, BeforeBatchSaveArgs } from '../base/interface';
 import { BatchAddArgs, CellEditArgs, CellSaveArgs, CellFocusArgs, BatchCancelArgs } from '../base/interface';
 import { CellType } from '../base/enum';
@@ -168,6 +168,10 @@ export class BatchEdit {
             switch (e.keyArgs.action) {
                 case 'tab':
                 case 'shiftTab':
+                    let col: Column = this.parent.getColumns()[e.indexes[1]] ;
+                    if (col && !this.parent.isEdit) {
+                        this.editCell(e.indexes[0], col.field);
+                    }
                     if (isEdit || this.parent.isLastCellPrimaryKey) {
                         this.editCellFromIndex(rowIndex, cellIndex);
                     }
@@ -347,19 +351,6 @@ export class BatchEdit {
         if (this.parent.isEdit && this.validateFormObj()) {
             return;
         }
-        if (isBlazor() && this.parent.isServerRendered) {
-            let content: Element =  this.parent.getContent();
-            this.closeForm();
-            removeClass(content.querySelectorAll('.e-updatedtd'), ['e-updatedtd']);
-            if (content.querySelector('.e-insertedrow, .e-hiddenrow')) {
-                removeClass(content.querySelectorAll('.e-hiddenrow'), ['e-hiddenrow']);
-                let insertedRow: Element[] = [].slice.call(content.querySelectorAll('.e-insertedrow'));
-                for (let i: number = 0; i < insertedRow.length; i++) {
-                    insertedRow[i].remove();
-                }
-            }
-            this.refreshRowIdx();
-        }
         this.batchSave();
     }
 
@@ -422,6 +413,19 @@ export class BatchEdit {
         gObj.trigger(events.beforeBatchSave, args, (beforeBatchSaveArgs: BeforeBatchSaveArgs) => {
             if (beforeBatchSaveArgs.cancel) {
                 return;
+            }
+            if (isBlazor() && this.parent.isServerRendered) {
+                let content: Element =  this.parent.getContent();
+                this.closeForm();
+                removeClass(content.querySelectorAll('.e-updatedtd'), ['e-updatedtd']);
+                if (content.querySelector('.e-insertedrow, .e-hiddenrow')) {
+                    removeClass(content.querySelectorAll('.e-hiddenrow'), ['e-hiddenrow']);
+                    let insertedRow: Element[] = [].slice.call(content.querySelectorAll('.e-insertedrow'));
+                    for (let i: number = 0; i < insertedRow.length; i++) {
+                        insertedRow[i].remove();
+                    }
+                }
+                this.refreshRowIdx();
             }
             gObj.showSpinner();
             gObj.notify(events.bulkSave, { changes: changes, original: original });
@@ -797,8 +801,8 @@ export class BatchEdit {
         if (isBlazor() && col.template && !isAdd) {
             resetBlazorTemplate(this.parent.element.id + col.uid, 'Template', index);
         }
-        if (gObj.editSettings.allowEditing && col.allowEditing) {
-            if (!checkEdit) {
+        if (gObj.editSettings.allowEditing ) {
+            if (!checkEdit && col.allowEditing) {
                 this.editCellExtend(index, field, isAdd);
             } else if (checkEdit) {
                 this.editNext = true;
@@ -1049,7 +1053,7 @@ export class BatchEdit {
         let cloneEditedData: Object = extend({}, editedData);
         editedData = extend({}, editedData, this.cellDetails.rowData);
         let value: string = getObject(column.field, cloneEditedData);
-        if (!isNullOrUndefined(column.field)) {
+        if (!isNullOrUndefined(column.field) && !isUndefined(value)) {
             setValue(column.field, value, editedData);
         }
         let args: CellSaveArgs = {
@@ -1139,7 +1143,9 @@ export class BatchEdit {
                 if (this.cellDetails.rowIndex === this.index && this.cellDetails.column.field === this.field) {
                     return;
                 }
-                this.editCellExtend(this.index, this.field, this.isAdd);
+                let col: Column = gObj.getColumnByField(this.field);
+                if (col && col.allowEditing) {
+                this.editCellExtend(this.index, this.field, this.isAdd); }
             }
         };
     }
