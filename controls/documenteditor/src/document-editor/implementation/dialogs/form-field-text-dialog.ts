@@ -211,10 +211,8 @@ export class TextFormFieldDialog {
      */
     public changeTypeDropDown(args: ChangeEventArgs): void {
         if (args.isInteracted) {
-            setTimeout(() => {
-                this.defaultTextInput.value = '';
-                this.textFormatDropDown.value = '';
-            });
+            this.defaultTextInput.value = '';
+            this.textFormatDropDown.value = '';
         }
         if (args.value === 'Regular text') {
             this.defaultTextLabel.innerHTML = this.localObj.getConstant('Default text');
@@ -277,22 +275,23 @@ export class TextFormFieldDialog {
     }
 
     private updateFormats(value: string): string {
-        if (!isNullOrUndefined(this.textFormatDropDown.value)) {
-            if (this.typeDropDown.value === 'Regular text') {
-                return HelperMethods.formatText(this.textFormatDropDown.value.toString(), value);
-            }
-            if (this.typeDropDown.value === 'Number') {
-                let data: string = HelperMethods.formatNumber(this.textFormatDropDown.value.toString(), value);
-                if (!(data.toString() === 'NaN')) {
-                    return data;
-                }
-                return '';
-            }
-            if (this.typeDropDown.value === 'Date') {
-                return HelperMethods.formatDate(this.textFormatDropDown.value.toString(), value);
-            }
+        let format: string = isNullOrUndefined(this.textFormatDropDown.value) ? '' : this.textFormatDropDown.value.toString();
+
+        if (this.typeDropDown.value === 'Regular text') {
+            return HelperMethods.formatText(format, value);
         }
-        return undefined;
+        if (this.typeDropDown.value === 'Number') {
+            let data: string = HelperMethods.formatNumber(format, value);
+            if (!(data.toString() === 'NaN')) {
+                return data;
+            }
+            return '';
+        }
+        if (this.typeDropDown.value === 'Date') {
+            return HelperMethods.formatDate(format, value);
+        }
+
+        return '';
     }
 
     /**
@@ -306,9 +305,12 @@ export class TextFormFieldDialog {
      * @private
      */
     public isValidDateFormat(): boolean {
-        let date: Date = new Date(this.defaultTextInput.value);
-        if (isNaN(date.getDate())) {
-            return false;
+        let value: string = this.defaultTextInput.value;
+        if (value !== '') {
+            let date: Date = new Date(value);
+            if (isNaN(date.getDate())) {
+                return false;
+            }
         }
         return true;
     }

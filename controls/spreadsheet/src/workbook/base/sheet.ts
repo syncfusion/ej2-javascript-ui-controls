@@ -6,7 +6,7 @@ import { ColumnModel } from './column-model';
 import { processIdx } from './data';
 import { SheetState, ProtectSettingsModel } from '../common/index';
 import { ProtectSettings } from '../common/index';
-import { isUndefined, ChildProperty, Property, Complex } from '@syncfusion/ej2-base';
+import { isUndefined, isNullOrUndefined, ChildProperty, Property, Complex } from '@syncfusion/ej2-base';
 import { WorkbookModel } from './workbook-model';
 
 /**
@@ -246,13 +246,15 @@ export class Sheet extends ChildProperty<WorkbookModel> {
 }
 
 /**
- * To get sheet index from address.
+ * To get sheet index from name.
  * @hidden
  */
-export function getSheetIndex(context: Workbook, name: string): number {
+export function getSheetIndex(context: Workbook, sheet?: string | number): number {
+    if (isNullOrUndefined(sheet)) { return context.activeSheetIndex; }
+    if (typeof(sheet) === 'number') { return sheet; }
     let idx: number;
     for (let i: number = 0; i < context.sheets.length; i++) {
-        if (context.sheets[i].name.toLowerCase() === name.toLowerCase()) {
+        if (context.sheets[i].name.toLowerCase() === sheet.toLowerCase()) {
             idx = i;
             break;
         }
@@ -314,11 +316,9 @@ export function getSelectedRange(sheet: SheetModel): string {
     return sheet && sheet.selectedRange || 'A1';
 }
 
-/**
- * @hidden
- */
-export function getSheet(context: Workbook, idx: number): SheetModel {
-    return context.sheets[idx];
+/** @hidden */
+export function getSheet(context: Workbook, sheet?: string | number): SheetModel {
+    return context.sheets[getSheetIndex(context, sheet) || 0];
 }
 
 /**

@@ -1943,7 +1943,8 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                 isNavigation && this.liCollections.length === 0) || this.isRequested) {
                 return;
             }
-            if (isTabAction && this.isPopupOpen || e.action === 'escape') {
+            if ((isTabAction && this.getModuleName() !== 'autocomplete') && this.isPopupOpen
+                || e.action === 'escape') {
                 e.preventDefault();
             }
             this.isSelected = e.action === 'escape' ? false : this.isSelected;
@@ -2015,14 +2016,27 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                 case 'enter':
                     this.selectCurrentItem(e);
                     break;
-                case 'escape':
                 case 'tab':
+                    this.selectCurrentValueOnTab(e);
+                    break;
+                case 'escape':
                 case 'close':
                     if (this.isPopupOpen) {
                         this.hidePopup(e);
                         this.focusDropDown(e);
                     }
                     break;
+            }
+        }
+    };
+    DropDownList.prototype.selectCurrentValueOnTab = function (e) {
+        if (this.getModuleName() === 'autocomplete') {
+            this.selectCurrentItem(e);
+        }
+        else {
+            if (this.isPopupOpen) {
+                this.hidePopup(e);
+                this.focusDropDown(e);
             }
         }
     };
@@ -2513,7 +2527,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                 e.preventDefault();
                 break;
             case 9: //tab 
-                if (this.isPopupOpen) {
+                if (this.isPopupOpen && this.getModuleName() !== 'autocomplete') {
                     e.preventDefault();
                 }
                 break;
@@ -4030,18 +4044,6 @@ var __decorate$2 = (undefined && undefined.__decorate) || function (decorators, 
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
-/**
- * The Dropdown Tree control allows you to select single or multiple values from hierarchical data in a tree-like structure.
- * It has several out-of-the-box features, such as data binding, check boxes, templates,
- * UI customization, accessibility, and preselected values.
- * ```html
- * <input type="text" tabindex="1" id="tree"> </input>
- * ```
- * ```typescript
- *   let dropDownTreeObj:DropDownTree = new DropDownTree();
- *   dropDownTreeObj.appendTo("#list");
- * ```
- */
 var RTL = 'e-rtl';
 var DROPDOWNTREE = 'e-ddt';
 var HIDDENELEMENT = 'e-ddt-hidden';
@@ -4149,6 +4151,18 @@ var TreeSettings = /** @__PURE__ @class */ (function (_super) {
     ], TreeSettings.prototype, "loadOnDemand", void 0);
     return TreeSettings;
 }(ChildProperty));
+/**
+ * The Dropdown Tree control allows you to select single or multiple values from hierarchical data in a tree-like structure.
+ * It has several out-of-the-box features, such as data binding, check boxes, templates, filter,
+ * UI customization, accessibility, and preselected values.
+ * ```html
+ *  <input type="text" id="tree"></input>
+ * ```
+ * ```typescript
+ *  let ddtObj: DropDownTree = new DropDownTree();
+ *  ddtObj.appendTo("#tree");
+ * ```
+ */
 var DropDownTree = /** @__PURE__ @class */ (function (_super) {
     __extends$2(DropDownTree, _super);
     function DropDownTree(options, element) {
@@ -7541,7 +7555,8 @@ var AutoComplete = /** @__PURE__ @class */ (function (_super) {
         if (!this.isValidLI(li)) {
             return;
         }
-        if (!isNullOrUndefined(e) && e.type === 'keydown' && e.action !== 'enter' && this.isValidLI(li)) {
+        if (!isNullOrUndefined(e) && e.type === 'keydown' && e.action !== 'enter'
+            && e.action !== 'tab' && this.isValidLI(li)) {
             var value = this.getFormattedValue(li.getAttribute('data-value'));
             this.activeIndex = this.getIndexByValue(value);
             if (this.isServerBlazor) {
@@ -8258,7 +8273,6 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         var valuecheck = [];
         if (isBlazor() && this.isServerRendered && this.isDynamicDataChange && this.value !== null && this.value.length > 0) {
             var items = [];
-            this.isDynamicDataChange = false;
             for (var k = 0; k < this.value.length; k++) {
                 var itemsData = this.getDataByValue(this.value[k]);
                 if (itemsData) {
@@ -8286,6 +8300,11 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             this.updateActionList(ulElement, list, e);
+        }
+        if (isBlazor() && this.isServerRendered && this.isDynamicDataChange && this.value && this.value.length > 0) {
+            this.updateVal(this.value, null, 'value');
+            this.addValidInputClass();
+            this.isDynamicDataChange = false;
         }
     };
     MultiSelect.prototype.updateActionList = function (ulElement, list, e, isUpdated) {
@@ -8657,8 +8676,8 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         }
         this.inputFocus = false;
         this.overAllWrapper.classList.remove(FOCUS);
+        this.refreshListItems(null);
         if (this.mode !== 'Box' && this.mode !== 'CheckBox') {
-            this.refreshListItems(null);
             this.updateDelimView();
         }
         if (this.changeOnBlur) {
@@ -10982,9 +11001,9 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             this.mainList = null;
             this.mainData = null;
             this.isFirstClick = false;
+            this.isDynamicDataChange = true;
         }
         if (this.getModuleName() === 'multiselect') {
-            this.isDynamicDataChange = true;
             this.filterAction = false;
             this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp);
         }

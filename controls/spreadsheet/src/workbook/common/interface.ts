@@ -276,6 +276,7 @@ export interface InsertDeleteModelArgs {
     columnCellsModel?: RowModel[];
     activeSheetIndex?: number;
     checkCount?: number;
+    sheet?: number;
 }
 
 /**

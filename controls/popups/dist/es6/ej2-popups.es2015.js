@@ -1176,7 +1176,7 @@ function createResize(args) {
     minWidth = args.minWidth;
     maxWidth = args.maxWidth;
     maxHeight = args.maxHeight;
-    if (!isNullOrUndefined(args.proxy) && !isNullOrUndefined(args.proxy.dialogOpen) && args.proxy.dialogOpen) {
+    if (args.proxy && args.proxy.element && args.proxy.element.classList.contains('e-dialog')) {
         wireEvents(args.proxy);
     }
     else {
@@ -2503,6 +2503,9 @@ let Dialog = class Dialog extends Component {
         this.target = target;
         this.targetEle = ((typeof this.target) === 'string') ?
             document.querySelector(this.target) : this.target;
+        if (this.dragObj) {
+            this.dragObj.dragArea = this.targetEle;
+        }
         this.setMaxHeight();
     }
     updateIsModal() {
@@ -3582,11 +3585,13 @@ let Tooltip = class Tooltip extends Component {
             if (this.isServerRender()) {
                 this.ctrlId = this.element.id;
                 this.tooltipEle = document.querySelector('#' + this.ctrlId + '_content');
-                this.tooltipEle.setAttribute('style', 'width:' + formatUnit(this.width) +
-                    ';height:' + formatUnit(this.height) + ';position:absolute;');
-                this.beforeRenderBlazor(this.contentTargetValue, this);
-                this.afterRenderBlazor(this.contentTargetValue, this.contentEvent, this.contentAnimation, this);
-                this.contentTargetValue = this.contentEvent = this.contentAnimation = null;
+                if (this.tooltipEle) {
+                    this.tooltipEle.setAttribute('style', 'width:' + formatUnit(this.width) +
+                        ';height:' + formatUnit(this.height) + ';position:absolute;');
+                    this.beforeRenderBlazor(this.contentTargetValue, this);
+                    this.afterRenderBlazor(this.contentTargetValue, this.contentEvent, this.contentAnimation, this);
+                    this.contentTargetValue = this.contentEvent = this.contentAnimation = null;
+                }
             }
         }
     }
@@ -3759,38 +3764,59 @@ let Tooltip = class Tooltip extends Component {
         //if (isNullOrUndefined(target)) { return; }
         this.trigger('beforeClose', this.tooltipEventArgs, (observedArgs) => {
             if (!observedArgs.cancel) {
-                this.clearTemplate();
-                if (target) {
-                    this.restoreElement(target);
-                }
-                this.isHidden = true;
-                let closeAnimation = {
-                    name: hideAnimation.effect,
-                    duration: hideAnimation.duration,
-                    delay: hideAnimation.delay,
-                    timingFunction: 'easeIn'
-                };
-                if (hideAnimation.effect === 'None') {
-                    closeAnimation = undefined;
-                }
-                if (this.closeDelay > 0) {
-                    let hide = () => {
-                        if (this.popupObj) {
-                            this.popupObj.hide(closeAnimation);
-                        }
-                    };
-                    this.hideTimer = setTimeout(hide, this.closeDelay);
+                if (this.isServerRender()) {
+                    this.blazorHide(hideAnimation, target);
                 }
                 else {
-                    if (this.popupObj) {
-                        this.popupObj.hide(closeAnimation);
-                    }
+                    this.popupHide(hideAnimation, target);
                 }
             }
             else {
                 this.isHidden = false;
             }
         });
+    }
+    /* istanbul ignore next */
+    blazorHide(hideAnimation, target) {
+        let proxy = this;
+        let hide = () => {
+            proxy.popupHide(hideAnimation, target);
+        };
+        if (this.popupObj) {
+            this.popupHide(hideAnimation, target);
+        }
+        else {
+            setTimeout(hide, 200);
+        }
+    }
+    popupHide(hideAnimation, target) {
+        this.clearTemplate();
+        if (target) {
+            this.restoreElement(target);
+        }
+        this.isHidden = true;
+        let closeAnimation = {
+            name: hideAnimation.effect,
+            duration: hideAnimation.duration,
+            delay: hideAnimation.delay,
+            timingFunction: 'easeIn'
+        };
+        if (hideAnimation.effect === 'None') {
+            closeAnimation = undefined;
+        }
+        if (this.closeDelay > 0) {
+            let hide = () => {
+                if (this.popupObj) {
+                    this.popupObj.hide(closeAnimation);
+                }
+            };
+            this.hideTimer = setTimeout(hide, this.closeDelay);
+        }
+        else {
+            if (this.popupObj) {
+                this.popupObj.hide(closeAnimation);
+            }
+        }
     }
     restoreElement(target) {
         this.unwireMouseEvents(target);
@@ -3947,6 +3973,9 @@ let Tooltip = class Tooltip extends Component {
                 }
                 else {
                     EventHandler.add(this.element, 'mouseover', this.targetHover, this);
+                    if (this.isServerRender() && !this.isSticky) {
+                        EventHandler.add(this.element, 'mouseleave', this.onMouseOut, this);
+                    }
                 }
             }
         }
@@ -3978,7 +4007,9 @@ let Tooltip = class Tooltip extends Component {
                     EventHandler.add(target, 'blur', this.onMouseOut, this);
                 }
                 if (e.type === 'mouseover') {
-                    EventHandler.add(target, 'mouseleave', this.onMouseOut, this);
+                    if (!this.isServerRender()) {
+                        EventHandler.add(target, 'mouseleave', this.onMouseOut, this);
+                    }
                 }
             }
             if (this.mouseTrail) {
@@ -4011,6 +4042,9 @@ let Tooltip = class Tooltip extends Component {
                 }
                 else {
                     EventHandler.remove(this.element, 'mouseover', this.targetHover);
+                    if (this.isServerRender() && !this.isSticky) {
+                        EventHandler.remove(this.element, 'mouseleave', this.onMouseOut);
+                    }
                 }
             }
         }
@@ -4037,7 +4071,9 @@ let Tooltip = class Tooltip extends Component {
                     EventHandler.remove(target, 'blur', this.onMouseOut);
                 }
                 if (opensOn === 'Hover' && !Browser.isDevice) {
-                    EventHandler.remove(target, 'mouseleave', this.onMouseOut);
+                    if (!this.isServerRender()) {
+                        EventHandler.remove(target, 'mouseleave', this.onMouseOut);
+                    }
                 }
             }
         }

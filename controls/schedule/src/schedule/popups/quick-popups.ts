@@ -147,6 +147,9 @@ export class QuickPopups {
             cancelButton.setAttribute('aria-label', this.l10n.getConstant('series'));
             cancelButton.setAttribute('aria-label', cancelButton.innerHTML);
         }
+        if (this.quickDialog.element.querySelector('.e-dlg-closeicon-btn')) {
+            this.quickDialog.element.querySelector('.e-dlg-closeicon-btn').setAttribute('title', this.l10n.getConstant('close'));
+        }
     }
 
     private renderButton(className: string, iconName: string, isDisabled: boolean, element: HTMLButtonElement, clickEvent: Function): void {

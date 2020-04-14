@@ -154,10 +154,3 @@ export interface IMDKeyboardEvent {
      */
     event: KeyboardEventArgs;
 }
-
-/**
- * @deprecated
- */
-export interface ITextArea extends HTMLTextAreaElement {
-    selectionDirection: string;
-}

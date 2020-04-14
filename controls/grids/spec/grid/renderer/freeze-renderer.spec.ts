@@ -4,7 +4,7 @@
 import { Grid } from '../../../src/grid/base/grid';
 import { Column } from '../../../src/grid/models';
 import { createElement, remove, EmitType } from '@syncfusion/ej2-base';
-import { data } from '../base/datasource.spec';
+import { data, employeeData } from '../base/datasource.spec';
 import { Freeze } from '../../../src/grid/actions/freeze';
 import { Aggregate } from '../../../src/grid/actions/aggregate';
 import { Edit } from '../../../src/grid/actions/edit';
@@ -446,6 +446,44 @@ describe('Freeze render module', () => {
             };
             gridObj.dataBound = dataB;
             gridObj.refreshColumns();
+        });
+        afterAll(() => {
+            gridObj['freezeModule'].destroy();
+            destroy(gridObj);
+        });
+    });
+
+    describe(' EJ2-36046=> movable header misalignment with textwrap', () => {
+        let gridObj: Grid;
+        let dBound: () => void;
+        let selectedRowIndex: number;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: employeeData,
+                    allowTextWrap: true,
+                    frozenColumns: 2,
+                    gridLines: "Both",
+                    columns: [
+                        {
+                            field: "FirstName", headerText: 'First Name', textAlign: 'Center',
+                            width: 150
+                        },
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                        { field: 'Title', headerText: 'Title', width: 70 },
+                        {
+                            field: 'HireDate', headerText: 'Hire Date', textAlign: 'Right',
+                            width: 135, format: { skeleton: 'yMd', type: 'date' }
+                        },
+                        { field: 'ReportsTo', headerText: 'Reports To', width: 120, textAlign: 'Right' }
+                    ],
+                    width: 'auto',
+                    height: 359
+                }, done);
+        });
+        it('Ensure header padding', function (done) {
+            expect((gridObj.getHeaderContent() as any).style.paddingRight).not.toBe("");
+            done();
         });
         afterAll(() => {
             gridObj['freezeModule'].destroy();

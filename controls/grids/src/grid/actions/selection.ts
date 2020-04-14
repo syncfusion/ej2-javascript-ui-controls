@@ -329,12 +329,20 @@ export class Selection implements IAction {
             this.selectRowIndex(index);
         }
         if (!isToggle) {
-            args = {
-                data: selectData, rowIndex: index,
-                row: selectedRow, previousRow: gObj.getRowByIndex(this.prevRowIndex),
-                previousRowIndex: this.prevRowIndex, target: this.actualTarget, isInteracted: this.isInteracted
-            };
-            args = this.addMovableArgs(args, selectedMovableRow);
+            let isHybrid: string = 'isHybrid';
+            if (!isBlazor() || this.parent.isJsComponent || this.parent[isHybrid]) {
+                args = {
+                    data: selectData, rowIndex: index,
+                    row: selectedRow, previousRow: gObj.getRowByIndex(this.prevRowIndex),
+                    previousRowIndex: this.prevRowIndex, target: this.actualTarget, isInteracted: this.isInteracted
+                };
+                args = this.addMovableArgs(args, selectedMovableRow);
+            } else {
+                args = {
+                    data: selectData, rowIndex: index,
+                    previousRowIndex: this.prevRowIndex, isInteracted: this.isInteracted
+                };
+            }
             this.onActionComplete(args, events.rowSelected);
         }
         if (isBlazor() && this.parent.isServerRendered && this.parent.enableVirtualization) {
@@ -406,14 +414,23 @@ export class Selection implements IAction {
                 if (frzCols) { this.updateRowSelection(gObj.getMovableRowByIndex(rowIndex), rowIndex); }
                 this.updateRowProps(rowIndex);
             }
-            args = {
-                rowIndexes: rowIndexes, row: selectedRow, rowIndex: rowIndex, target: this.actualTarget,
-                prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
-                data: isBlazor() ? selectedData : this.getSelectedRecords(), isInteracted: this.isInteracted
-            };
-            args = this.addMovableArgs(args, selectedMovableRow);
+            let isHybrid: string = 'isHybrid';
+            if (!isBlazor() || this.parent.isJsComponent || this.parent[isHybrid]) {
+                args = {
+                    rowIndexes: rowIndexes, row: selectedRow, rowIndex: rowIndex, target: this.actualTarget,
+                    prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
+                    data: isBlazor() ? selectedData : this.getSelectedRecords(), isInteracted: this.isInteracted
+                };
+                args = this.addMovableArgs(args, selectedMovableRow);
+            } else {
+                args = {
+                    rowIndexes: rowIndexes, rowIndex: rowIndex, previousRowIndex: this.prevRowIndex,
+                    data: isBlazor() ? selectedData : this.getSelectedRecords(), isInteracted: this.isInteracted
+                };
+            }
             if (this.isRowSelected) {
-            this.onActionComplete(args, events.rowSelected); }
+                this.onActionComplete(args, events.rowSelected);
+            }
         });
     }
 
@@ -479,12 +496,20 @@ export class Selection implements IAction {
                 });
             }
             if (!isUnSelected) {
-                args = {
-                    data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this.actualTarget,
-                    prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
-                    foreignKeyData: rowObj.foreignKeyData, isInteracted: this.isInteracted
-                };
-                args = this.addMovableArgs(args, selectedMovableRow);
+                let isHybrid: string = 'isHybrid';
+                if (!isBlazor() || this.parent.isJsComponent || this.parent[isHybrid]) {
+                    args = {
+                        data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this.actualTarget,
+                        prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
+                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this.isInteracted
+                    };
+                    args = this.addMovableArgs(args, selectedMovableRow);
+                } else {
+                    args = {
+                        data: rowObj.data, rowIndex: rowIndex, previousRowIndex: this.prevRowIndex,
+                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this.isInteracted
+                    };
+                }
                 this.onActionComplete(args, events.rowSelected);
             }
             this.isInteracted = false;
@@ -748,11 +773,14 @@ export class Selection implements IAction {
             let rowDeselectObj: Object = {
                 rowIndex: rowIndex, data: this.selectionSettings.persistSelection && this.parent.checkAllRows === 'Uncheck' ?
                  this.persistSelectedData : data, foreignKeyData: foreignKeyData,
-                cancel: false, target: this.actualTarget, isInteracted: this.isInteracted
+                cancel: false, isInteracted: this.isInteracted
             };
-            if (!isBlazor() || this.parent.isJsComponent) {
+            let isHybrid: string = 'isHybrid';
+            if (!isBlazor() || this.parent.isJsComponent || this.parent[isHybrid]) {
                 let rowInString: string = 'row';
+                let target: string = 'target';
                 rowDeselectObj[rowInString] = row;
+                rowDeselectObj[target] = this.actualTarget;
             } else {
                 let rowIndex: string = 'rowIndex';
                 let data: string = 'data';
@@ -760,7 +788,8 @@ export class Selection implements IAction {
                 rowDeselectObj[data] = rowDeselectObj[data][rowDeselectObj[data].length - 1];
             }
             this.parent.trigger(
-                type, this.parent.getFrozenColumns() ? { ...rowDeselectObj, ...{ mRow: mRow } } : rowDeselectObj,
+                type, (!isBlazor() || this.parent.isJsComponent) && this.parent.getFrozenColumns() !== 0 ?
+                { ...rowDeselectObj, ...{ mRow: mRow } } : rowDeselectObj,
                 (args: Object) => {
                     this.isCancelDeSelect = args[cancl];
                     if (!this.isCancelDeSelect || (!this.isInteracted && !this.checkSelectAllClicked)) {
@@ -866,15 +895,19 @@ export class Selection implements IAction {
                 this.updateCellSelection(selectedCell, cellIndex.rowIndex, cellIndex.cellIndex);
             }
             if (!isToggle) {
-                let args: Object = {
-                    data: selectedData, cellIndex: cellIndex, currentCell: selectedCell,
-                    selectedRowCellIndex: this.selectedRowCellIndexes,
-                    previousRowCell: this.prevECIdxs ?
-                        this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
-                };
-                if (!isBlazor()) {
+                let args: Object;
+                let isHybrid: string = 'isHybrid';
+                if (!isBlazor() || this.parent.isJsComponent || this.parent[isHybrid]) {
+                    args = {
+                        data: selectedData, cellIndex: cellIndex, currentCell: selectedCell,
+                        selectedRowCellIndex: this.selectedRowCellIndexes,
+                        previousRowCell: this.prevECIdxs ?
+                            this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
+                    };
                     let previousRowCellIndex: string = 'previousRowCellIndex';
                     args[previousRowCellIndex] = this.prevECIdxs;
+                } else {
+                    args = { data: selectedData, cellIndex: cellIndex, selectedRowCellIndex: this.selectedRowCellIndexes };
                 }
                 this.updateCellProps(cellIndex, cellIndex);
                 this.onActionComplete(args, events.cellSelected);
@@ -960,14 +993,18 @@ export class Selection implements IAction {
                 this.selectedRowCellIndexes.push({ rowIndex: i, cellIndexes: cellIndexes });
             }
 
-            let cellSelectedArgs: Object = {
-                data: selectedData, cellIndex: edIndex, currentCell: gObj.getCellFromIndex(edIndex.rowIndex, edIndex.cellIndex),
-                selectedRowCellIndex: this.selectedRowCellIndexes,
-                previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
-            };
-            if (!isBlazor()) {
+            let cellSelectedArgs: Object;
+            let isHybrid: string = 'isHybrid';
+            if (!isBlazor() || this.parent.isJsComponent || this.parent[isHybrid]) {
+                cellSelectedArgs = {
+                    data: selectedData, cellIndex: edIndex, currentCell: gObj.getCellFromIndex(edIndex.rowIndex, edIndex.cellIndex),
+                    selectedRowCellIndex: this.selectedRowCellIndexes,
+                    previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
+                };
                 let previousRowCellIndex: string = 'previousRowCellIndex';
                 cellSelectedArgs[previousRowCellIndex] = this.prevECIdxs;
+            } else {
+                cellSelectedArgs = { data: selectedData, cellIndex: edIndex, selectedRowCellIndex: this.selectedRowCellIndexes };
             }
             this.onActionComplete(cellSelectedArgs, events.cellSelected);
             this.updateCellProps(stIndex, edIndex);
@@ -992,15 +1029,22 @@ export class Selection implements IAction {
         if (this.isSingleSel() || !this.isCellType() || this.isEditing()) {
             return;
         }
-        let cellSelectArgs: Object = {
-            data: selectedData, cellIndex: rowCellIndexes[0].cellIndexes[0],
-            currentCell: selectedCell, isCtrlPressed: this.isMultiCtrlRequest,
-            isShiftPressed: this.isMultiShiftRequest,
-            previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
-        };
-        if (!isBlazor()) {
+        let cellSelectArgs: Object;
+        let isHybrid: string = 'isHybrid';
+        if (!isBlazor() || this.parent.isJsComponent || this.parent[isHybrid]) {
+            cellSelectArgs = {
+                data: selectedData, cellIndex: rowCellIndexes[0].cellIndexes[0],
+                currentCell: selectedCell, isCtrlPressed: this.isMultiCtrlRequest,
+                isShiftPressed: this.isMultiShiftRequest,
+                previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
+            };
             let previousRowCellIndex: string = 'previousRowCellIndex';
             cellSelectArgs[previousRowCellIndex] = this.prevECIdxs;
+        } else {
+            cellSelectArgs = {
+                data: selectedData, cellIndex: rowCellIndexes[0].cellIndexes[0],
+                isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest
+            };
         }
         this.onActionBegin(cellSelectArgs, events.cellSelecting);
         for (let i: number = 0, len: number = rowCellIndexes.length; i < len; i++) {
@@ -1025,14 +1069,18 @@ export class Selection implements IAction {
         this.updateCellProps(
             { rowIndex: rowCellIndexes[0].rowIndex, cellIndex: rowCellIndexes[0].cellIndexes[0] },
             { rowIndex: rowCellIndexes[0].rowIndex, cellIndex: rowCellIndexes[0].cellIndexes[0] });
-        let cellSelectedArgs: Object = {
-            data: selectedData, cellIndex: rowCellIndexes[0].cellIndexes[0],
-            currentCell: selectedCell, selectedRowCellIndex: this.selectedRowCellIndexes,
-            previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
-        };
-        if (!isBlazor()) {
+        let cellSelectedArgs: Object;
+        if (!isBlazor() || this.parent.isJsComponent || this.parent[isHybrid]) {
+            cellSelectedArgs = {
+                data: selectedData, cellIndex: rowCellIndexes[0].cellIndexes[0],
+                currentCell: selectedCell, selectedRowCellIndex: this.selectedRowCellIndexes,
+                previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
+            };
             let previousRowCellIndex: string = 'previousRowCellIndex';
             cellSelectedArgs[previousRowCellIndex] = this.prevECIdxs;
+        } else {
+            cellSelectedArgs = { data: selectedData, cellIndex: rowCellIndexes[0].cellIndexes[0],
+                                 selectedRowCellIndex: this.selectedRowCellIndexes };
         }
         this.onActionComplete(cellSelectedArgs, events.cellSelected);
     }
@@ -1054,6 +1102,7 @@ export class Selection implements IAction {
         this.currentIndex = cellIndexes[0].rowIndex;
         let cncl: string = 'cancel';
         let selectedData: Object = this.getCurrentBatchRecordChanges()[this.currentIndex];
+        let isHybrid: string = 'isHybrid';
         if (this.isSingleSel() || !this.isCellType() || this.isEditing()) {
             return;
         }
@@ -1068,8 +1117,7 @@ export class Selection implements IAction {
         for (let cellIndex of cellIndexes) {
             for (let i: number = 0, len: number = this.selectedRowCellIndexes.length; i < len; i++) {
                 if (this.selectedRowCellIndexes[i].rowIndex === cellIndex.rowIndex) {
-                    index = i;
-                    break;
+                    index = i; break;
                 }
             }
             selectedCell = this.getSelectedMovableCell(cellIndex);
@@ -1079,16 +1127,22 @@ export class Selection implements IAction {
             }
             foreignKeyData.push(rowObj.cells[frzCols && cellIndexes[0].cellIndex >= frzCols
                 ? cellIndex.cellIndex - frzCols : cellIndex.cellIndex].foreignKeyData);
-            let args: Object = {
-                cancel: false, data: selectedData, cellIndex: cellIndexes[0],
-                isShiftPressed: this.isMultiShiftRequest,
-                currentCell: selectedCell, isCtrlPressed: this.isMultiCtrlRequest,
-                previousRowCell: this.prevECIdxs ?
-                    gObj.getCellFromIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined,
-            };
-            if (!isBlazor()) {
+            let args: Object;
+            if (!isBlazor() || this.parent.isJsComponent || this.parent[isHybrid]) {
+                args = {
+                    cancel: false, data: selectedData, cellIndex: cellIndexes[0],
+                    isShiftPressed: this.isMultiShiftRequest,
+                    currentCell: selectedCell, isCtrlPressed: this.isMultiCtrlRequest,
+                    previousRowCell: this.prevECIdxs ?
+                        gObj.getCellFromIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined,
+                };
                 let previousRowCellIndex: string = 'previousRowCellIndex';
                 args[previousRowCellIndex] = this.prevECIdxs;
+            } else {
+                args = {
+                    cancel: false, data: selectedData, cellIndex: cellIndexes[0],
+                    isShiftPressed: this.isMultiShiftRequest, isCtrlPressed: this.isMultiCtrlRequest
+                };
             }
             let isUnSelected: boolean = index > -1;
             if (isUnSelected) {
@@ -1121,14 +1175,17 @@ export class Selection implements IAction {
                 this.updateCellSelection(selectedCell, cellIndex.rowIndex, cellIndex.cellIndex);
             }
             if (!isUnSelected) {
-                let cellSelectedArgs: Object = {
-                    data: selectedData, cellIndex: cellIndexes[0], currentCell: selectedCell,
-                    previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) :
-                        undefined, selectedRowCellIndex: this.selectedRowCellIndexes
-                };
-                if (!isBlazor()) {
+                let cellSelectedArgs: Object;
+                if (!isBlazor() || this.parent.isJsComponent || this.parent[isHybrid]) {
+                    cellSelectedArgs = {
+                        data: selectedData, cellIndex: cellIndexes[0], currentCell: selectedCell,
+                        previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) :
+                            undefined, selectedRowCellIndex: this.selectedRowCellIndexes
+                    };
                     let previousRowCellIndex: string = 'previousRowCellIndex';
                     cellSelectedArgs[previousRowCellIndex] = this.prevECIdxs;
+                } else {
+                    cellSelectedArgs = { data: selectedData, cellIndex: cellIndexes[0], selectedRowCellIndex: this.selectedRowCellIndexes };
                 }
                 this.onActionComplete(cellSelectedArgs, events.cellSelected);
             }
@@ -2510,7 +2567,7 @@ export class Selection implements IAction {
             if (e.container.isHeader && (e.element.tagName === 'TD' || closest(e.element, '.e-rowcell'))) {
                 let thLen: number = this.parent.getHeaderTable().querySelector('thead').childElementCount;
                 rowIndex -= thLen;
-                prev.rowIndex = prev.rowIndex ? prev.rowIndex - thLen : null;
+                prev.rowIndex = !isNullOrUndefined(prev.rowIndex) ? prev.rowIndex - thLen : null;
             } else {
                 rowIndex += this.parent.frozenRows;
                 prev.rowIndex = prev.rowIndex === 0 || !isNullOrUndefined(prev.rowIndex) ? prev.rowIndex + this.parent.frozenRows : null;
@@ -2518,7 +2575,11 @@ export class Selection implements IAction {
         }
         if (this.parent.getFrozenColumns()) {
             let cIdx: number = Number(e.element.getAttribute('aria-colindex'));
-            prev.cellIndex = prev.cellIndex ? (prev.cellIndex === cellIndex ? cIdx : cIdx - 1) : null;
+            let selectedIndexes: ISelectedCell[] = this.parent.getSelectedRowCellIndexes();
+            if (selectedIndexes.length && prev.cellIndex === 0) {
+                prev.cellIndex = selectedIndexes[selectedIndexes.length - 1].cellIndexes[0];
+            }
+            prev.cellIndex = !isNullOrUndefined(prev.cellIndex) ? (prev.cellIndex === cellIndex ? cIdx : cIdx - 1) : null;
             cellIndex = cIdx;
         }
         if (headerAction || (['ctrlPlusA', 'escape'].indexOf(e.keyArgs.action) === -1 && e.keyArgs.action !== 'space' &&

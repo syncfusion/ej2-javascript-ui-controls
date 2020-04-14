@@ -2706,7 +2706,7 @@ describe('Grid Touch Selection', () => {
             gridObj.cellSelected = undefined;
             let args: any = { action: 'leftArrow', preventDefault: preventDefault };
             gridObj.keyboardModule.keyAction(args);
-            expect(gridObj.getRows()[0].children[1].classList.contains('e-cellselectionbackground')).toBeFalsy();
+            expect(gridObj.getRows()[0].children[1].classList.contains('e-cellselectionbackground')).toBeTruthy();
             expect(gridObj.getRows()[0].children[1].hasAttribute('aria-selected')).toBeTruthy();
             expect(gridObj.getRows()[0].children[1].hasAttribute('aria-label')).toBeTruthy();
         });
@@ -4131,5 +4131,37 @@ describe('isInteracted property in rowSelecting and rowSelected events testing',
         destroy(gridObj);
         gridObj = rowSelecting = null;
         gridObj = rowSelected = null;
+    });
+});
+
+describe('EJ2-38505 - Grid cell selection will be cleared when we press the left arrow', () => {
+    let gridObj: Grid;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                columns: [{ field: 'OrderID' }, { field: 'CustomerID' }, { field: 'EmployeeID' }, { field: 'Freight' },
+                { field: 'ShipCity' }],
+                frozenColumns: 2,
+                frozenRows: 2,
+                allowSelection: true,
+                selectionSettings: { type: 'Single', mode: 'Cell' },
+            }, done);
+    });
+
+    it('Ensure selection while pressing left arrow after selecting first cell in first row', () => {
+        let args: any = { action: 'leftArrow', preventDefault: preventDefault };
+        gridObj.selectionModule.selectCell({ rowIndex: 2, cellIndex: 0 }, true);
+        gridObj.keyboardModule.keyAction(args);
+        gridObj.keyboardModule.keyAction(args);
+        gridObj.keyboardModule.keyAction(args);
+        let rows: Element[] = gridObj.getRows();
+        expect(rows[2].firstElementChild.classList.contains('e-cellselectionbackground')).toBeTruthy();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
     });
 });

@@ -2,7 +2,6 @@ import { KeyboardEvents, KeyboardEventArgs, closest, addClass, removeClass } fro
 import { PivotCommon } from '../base/pivot-common';
 import * as cls from '../base/css-constant';
 import { Dialog } from '@syncfusion/ej2-popups';
-import { EJ2Instance } from '@syncfusion/ej2-navigations';
 import { PivotView } from '../../pivotview';
 
 /**
@@ -182,7 +181,8 @@ export class CommonKeyboardInteraction {
         let target: Element = e.target as Element;
         if (target && closest(target, '.e-popup.e-popup-open')) {
             /* tslint:disable-next-line:max-line-length */
-            let dialogInstance: Dialog = ((<HTMLElement>closest(target, '.e-popup.e-popup-open')) as EJ2Instance).ej2_instances[0] as Dialog;
+            /* tslint:disable-next-line:no-any */
+            let dialogInstance: Dialog = ((<HTMLElement>closest(target, '.e-popup.e-popup-open')) as any).ej2_instances[0] as Dialog;
             if (dialogInstance && !dialogInstance.closeOnEscape) {
                 dialogInstance.hide();
                 e.preventDefault();

@@ -155,7 +155,7 @@ export class FormFieldPopUp {
     private applyDropDownFormFieldValue = (): void => {
         this.owner.editor.updateFormField(this.formField, this.ddlInstance.index);
         // tslint:disable-next-line:max-line-length
-        this.owner.trigger('afterFieldFill', { 'fieldName': this.formField.formFieldData.name, value: (this.formField.formFieldData as DropDownFormField).selectedIndex, isCanceled: false });
+        this.owner.trigger('afterFormFieldFill', { 'fieldName': this.formField.formFieldData.name, value: (this.formField.formFieldData as DropDownFormField).selectedIndex, isCanceled: false });
         this.hidePopup();
     }
 
@@ -227,7 +227,7 @@ export class FormFieldPopUp {
                     });
                 }
                 let left: number = this.owner.selection.getLeftInternal(formField.line, formField, 0);
-                let lineHeight: number = formField.line.height;
+                let lineHeight: number = formField.line.height * this.owner.documentHelper.zoomFactor;
                 let position: Point = this.owner.selection.getTooltipPosition(formField, left, this.target, true);
                 if (!this.popupObject) {
                     this.popupObject = new Popup(this.target, {
@@ -240,6 +240,7 @@ export class FormFieldPopUp {
                 this.target.style.display = 'block';
                 this.popupObject.show();
             }
+            this.owner.documentHelper.isFormFilling = true;
         }
     }
     /**
@@ -263,6 +264,7 @@ export class FormFieldPopUp {
      * @private
      */
     public hidePopup = (): void => {
+        this.owner.documentHelper.isFormFilling = false;
         this.formField = undefined;
         if (this.target) {
             this.target.style.display = 'none';

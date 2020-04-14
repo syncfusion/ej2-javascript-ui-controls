@@ -365,6 +365,7 @@ export class FontDialog {
     public onCancelButtonClick = (): void => {
         this.documentHelper.dialog.hide();
         this.unWireEventsAndBindings();
+        this.documentHelper.updateFocus();
     }
     /**
      * @private
@@ -405,7 +406,7 @@ export class FontDialog {
         } else {
             this.documentHelper.owner.styleDialogModule.updateCharacterFormat();
         }
-        this.documentHelper.dialog.hide();
+        this.documentHelper.hideDialog();
     }
     /**
      * Applies character format 

@@ -1615,7 +1615,8 @@ export class Ribbon {
         }
     }
     private updateMergeItem(e: MouseEvent & TouchEvent): void {
-        if (e.type === 'mousemove' || e.type === 'pointermove' || (e.shiftKey && e.type === 'mousedown')) {
+        if (e.type === 'mousemove' || e.type === 'pointermove' || (e.shiftKey && e.type === 'mousedown') ||
+            (e.target && closest(e.target as Element, '.e-header-cell'))) {
             let indexes: number[] = getRangeIndexes(this.parent.getActiveSheet().selectedRange);
             if ((indexes[1] !== indexes[3] || indexes[0] !== indexes[2]) && !this.parent.getActiveSheet().isProtected) {
                 this.enableToolbarItems([{ tab: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('Home'),

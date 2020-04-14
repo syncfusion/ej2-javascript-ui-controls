@@ -794,7 +794,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         grpBodyElem.appendChild(rulesElem);
         groupElem.appendChild(grpBodyElem);
         // create button group in OR and AND process
-        glueElem = this.createElement('div', { attrs: { class: 'e-btn-group' } });
+        glueElem = this.createElement('div', { attrs: { class: 'e-lib e-btn-group' } });
         if (this.enableNotCondition) {
             inputElem = this.createElement('button', { attrs: { type: 'button', class: 'e-qb-toggle' }});
             glueElem.appendChild(inputElem);
@@ -802,12 +802,12 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         inputElem = this.createElement('input', { attrs: { type: 'radio', class: 'e-btngroup-and', value: 'AND' } });
         inputElem.setAttribute('checked', 'true');
         glueElem.appendChild(inputElem);
-        labelElem = this.createElement('label', { attrs: { class: 'e-btn e-btngroup-and-lbl e-small' },
+        labelElem = this.createElement('label', { attrs: { class: 'e-lib e-btn e-btngroup-and-lbl e-small' },
         innerHTML: this.l10n.getConstant('AND') });
         glueElem.appendChild(labelElem);
         inputElem = this.createElement('input', { attrs: { type: 'radio', class: 'e-btngroup-or', value: 'OR' } });
         glueElem.appendChild(inputElem);
-        labelElem = this.createElement('label', { attrs: { class: 'e-btn e-btngroup-or-lbl e-small' },
+        labelElem = this.createElement('label', { attrs: { class: 'e-lib e-btn e-btngroup-or-lbl e-small' },
         innerHTML: this.l10n.getConstant('OR') });
         glueElem.appendChild(labelElem);
         groupHdrElem.appendChild(glueElem);
@@ -2211,6 +2211,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     break;
                 case 'dataSource':
                     this.dataSource = newProp.dataSource;
+                    this.refresh();
                     break;
                 case 'columns':
                     this.columns = newProp.columns;
@@ -2534,17 +2535,18 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         if (count > 1) {
             andElem.disabled = false;
             orElem.disabled = false;
-            if (orElem.nextElementSibling.classList.contains('e-disable') || andElem.nextElementSibling.classList.contains('e-disable')) {
-                orElem.classList.remove('e-disable');
-                andElem.classList.remove('e-disable');
+            if (orElem.nextElementSibling.classList.contains('e-btn-disable') ||
+            andElem.nextElementSibling.classList.contains('e-btn-disable')) {
+                orElem.nextElementSibling.classList.remove('e-btn-disable');
+                andElem.nextElementSibling.classList.remove('e-btn-disable');
             }
             rules && rules.condition === 'or' ? orElem.checked = true : andElem.checked = true;
         } else {
             andElem.checked = false; andElem.disabled = true;
             orElem.checked = false; orElem.disabled = true;
             if (rules) {
-                orElem.nextElementSibling.classList.add('e-disable');
-                andElem.nextElementSibling.classList.add('e-disable');
+                orElem.nextElementSibling.classList.add('e-btn-disable');
+                andElem.nextElementSibling.classList.add('e-btn-disable');
             }
         }
     }
@@ -3091,7 +3093,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         elem.classList.remove('e-readonly-or-not');
                     }
                 }
-            } else if (elem.classList.contains('e-disable')) {
+            } else if (elem.classList.contains('e-btn-disable')) {
                 // do nothing
             } else {
                 elem.classList.add('e-readonly');

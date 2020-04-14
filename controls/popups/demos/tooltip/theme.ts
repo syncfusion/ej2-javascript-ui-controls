@@ -7,9 +7,9 @@ let tooltipElement: HTMLElement = document.createElement('div');
 tooltipElement.innerHTML = '<b>Environmentally friendly</b> or environment-friendly, (also referred to as eco-friendly, nature-friendly, and green) are marketing and sustainability terms referring to goods and services, laws, guidelines and policies that inflict reduced, minimal, or no harm upon ecosystems or the environment.';
 let tooltip1: Tooltip = new Tooltip({
     content: tooltipElement,
-    height: '100px',
-    opensOn: 'Click',
+    height: '70px',
     target: '#staticlink',
+    showTipPointer: true,
     width: '300px',
     animation: {
         open: { effect: 'None', duration: 0, delay: 0 },

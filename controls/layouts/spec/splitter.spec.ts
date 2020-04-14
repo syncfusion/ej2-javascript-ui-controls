@@ -5286,4 +5286,65 @@ describe('Splitter Control', () => {
             expect(isNullOrUndefined(splitterObj.nextPane)).toBe(true);
          });
     });
+    describe('splitter other pane sizes not updated when update size dynamically', () => {
+        let splitterObj: any;
+        beforeAll((): void => {
+        let element: HTMLElement = createElement('div', { id: 'default'});
+        let child1: HTMLElement = createElement('div');
+        let child2: HTMLElement = createElement('div');
+        element.appendChild(child1);
+        element.appendChild(child2);
+        document.body.appendChild(element);
+        });
+        afterAll((): void => {
+        document.body.innerHTML = '';
+        });
+        it('Check flexible pane size -Pixel -Two Flexible pane', function () {
+            splitterObj = new Splitter({ width: '500px',height : '300px',orientation : 'Vertical', paneSettings: [{ size: '100px', content: 'First Pane', collapsible: true }, { content: 'Middle Pane' }, { content: 'Last Pane' }] });
+            splitterObj.appendTo(document.getElementById('default'));
+            expect(splitterObj.allPanes[0].style.flexBasis).toBe('100px');
+            expect(splitterObj.allPanes[1].style.flexBasis).toBe('');
+            expect(splitterObj.allPanes[2].style.flexBasis).toBe('');
+            splitterObj.paneSettings[0].size = '200px';
+            splitterObj.dataBind();
+            expect(splitterObj.allPanes[0].style.flexBasis).toBe('200px');
+            splitterObj.destroy();
+        });
+        it('Check flexible pane size -Pixel -one flexible pane', function () {
+            splitterObj = new Splitter({ width: '500px',height : '300px', orientation : 'Vertical', paneSettings: [{ size: '100px', content: 'First Pane', collapsible: true }, { size: '100px', content: 'Middle Pane' }, { content: 'Last Pane' }] });
+            splitterObj.appendTo(document.getElementById('default'));
+            expect(splitterObj.allPanes[0].style.flexBasis).toBe('100px');
+            expect(splitterObj.allPanes[1].style.flexBasis).toBe('100px');
+            expect(splitterObj.allPanes[2].style.flexBasis).toBe('');
+            splitterObj.paneSettings[0].size = '200px';
+            splitterObj.dataBind();
+            expect(splitterObj.allPanes[0].style.flexBasis).toBe('200px');
+            expect(splitterObj.allPanes[1].style.flexBasis).toBe('100px');
+            splitterObj.destroy();
+        });
+        it('Check flexible pane size -Percentage - Two flexible pane', function () {
+            splitterObj = new Splitter({ width: '500px',height : '300px', orientation : 'Vertical',paneSettings: [{ size: '30%', content: 'First Pane', collapsible: true }, { content: 'Middle Pane' }, { content: 'Last Pane' }] });
+            splitterObj.appendTo(document.getElementById('default'));
+            expect(splitterObj.allPanes[0].style.flexBasis).toBe('30%');
+            expect(splitterObj.allPanes[1].style.flexBasis).toBe('');
+            expect(splitterObj.allPanes[2].style.flexBasis).toBe('');
+            splitterObj.paneSettings[0].size = '50%';
+            splitterObj.dataBind();
+            expect(splitterObj.allPanes[0].style.flexBasis).toBe('50%');
+            splitterObj.destroy();
+        });
+        it('Check flexible pane size -Percentage - one flexible pane', function () {
+            splitterObj = new Splitter({ width: '500px',height : '300px',orientation : 'Vertical', paneSettings: [{ size: '30%', content: 'First Pane', collapsible: true }, { size: '20%', content: 'Middle Pane' }, { content: 'Last Pane' }] });
+            splitterObj.appendTo(document.getElementById('default'));
+            expect(splitterObj.allPanes[0].style.flexBasis).toBe('30%');
+            expect(splitterObj.allPanes[1].style.flexBasis).toBe('20%');
+            expect(splitterObj.allPanes[2].style.flexBasis).toBe('');
+            splitterObj.paneSettings[0].size = '50%';
+            splitterObj.dataBind();
+            expect(splitterObj.allPanes[0].style.flexBasis).toBe('50%');
+            expect(splitterObj.allPanes[1].style.flexBasis).toBe('20%');
+            splitterObj.destroy();
+        });
+    });
+
  });

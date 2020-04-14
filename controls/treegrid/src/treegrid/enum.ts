@@ -6,10 +6,13 @@
  * * None - Specifies the filter type as check box.
  */
 export type FilterHierarchyMode =
-     /** Defines FilterHiearchyMode as Parent */
+      /** Shows filtered records with its Parent records */
       'Parent' |
+      /** Shows filtered records with its Child records */
       'Child' |
+      /** Shows filtered records with its Parent and Child records */
       'Both' |
+      /** Shows only filetred records */
       'None';
 
 /**
@@ -68,8 +71,9 @@ export enum ToolbarItem {
  * * Root - Specifies the PageSizeMode as Root
  */
 export type PageSizeMode =
+    /**  Defines the pageSizeMode as All */
     'All' |
-    // Record count in a page is based on zero level parent records*/
+    /**  Defines the pageSizeMode as Root */
     'Root';
 
 /**

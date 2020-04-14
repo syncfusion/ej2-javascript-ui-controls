@@ -133,6 +133,7 @@ export interface ViewsModel {
      *  this property. It usually accepts the integer values, whereby 0 is always denoted as Sunday, 1 as Monday and so on.
      * @default 0
      * @blazorType double?
+     * @aspDefaultValue null
      */
     firstDayOfWeek?: number;
 

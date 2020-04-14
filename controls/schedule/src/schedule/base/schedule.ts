@@ -1067,6 +1067,10 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             enableCompactView: this.group.enableCompactView
         };
         let workDays: number[] = this.viewCollections[this.viewIndex].workDays ? [] : this.workDays;
+        if (Object.keys(this.viewCollections[this.viewIndex]).indexOf('firstDayOfWeek') > -1 &&
+            isNullOrUndefined(this.viewCollections[this.viewIndex].firstDayOfWeek)) {
+            delete this.viewCollections[this.viewIndex].firstDayOfWeek;
+        }
         let scheduleOptions: ViewsModel = {
             dateFormat: this.dateFormat,
             endHour: this.endHour,
@@ -1162,7 +1166,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             cldrObj = <string[]>(getValue(nameSpace + type, getDefaultDateObject(this.getCalendarMode())));
         } else {
             nameSpace = isBlazor() ? '' + this.locale + '.dates.days.' + type :
-            'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.days.format.' + type;
+                'main.' + '' + this.locale + '.dates.calendars.' + this.getCalendarMode() + '.days.format.' + type;
             cldrObj = <string[]>(
                 getValue(nameSpace, cldrData));
         }

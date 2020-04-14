@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.1.44 (2020-04-14)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#270801` - Issue on end date calculations gets resolved.
+- `#270563` - Console error throws while taskbar resizing with use of taskbar template has been fixed.
+
 ## 18.1.43 (2020-04-07)
 
 ### Gantt

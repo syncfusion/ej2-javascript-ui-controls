@@ -6,6 +6,7 @@ import { SmithchartSeriesModel } from '../../smithchart/series/series-model';
 import { ClosestPoint, Point, SmithchartRect } from '../../smithchart/utils/utils';
 import { Tooltip } from '@syncfusion/ej2-svg-base';
 import { isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
+import { ISmithChartTooltipEventArgs, ISmithChartPoint } from '../model/interface';
 
 /**
  * To render tooltip
@@ -39,10 +40,10 @@ export class TooltipRender {
             if (closestPoint.location && series.tooltip.visible && series.visibility === 'visible') {
                 this.createTooltip(smithchart, e, closestPoint.index, seriesIndex, series);
                 break;
-            } else if (this.tooltipElement && this.tooltipElement.enable && !series.tooltip.template) {
-                this.tooltipElement.fadeOut();
-                this.tooltipElement.enable = false;
-            } else if (series.tooltip.template) {
+            } else if (this.tooltipElement) {
+                if (this.tooltipElement.enable && !series.tooltip.template) {
+                    this.tooltipElement.enable = false;
+                }
                 this.tooltipElement.fadeOut();
             }
         }
@@ -58,44 +59,59 @@ export class TooltipRender {
 
     private createTooltip(
         smithchart: Smithchart, e: PointerEvent, pointindex: number, seriesindex: number, series: SmithchartSeriesModel): void {
-        let pointX: number = series.points[pointindex].resistance;
-        let pointY: number = series.points[pointindex].reactance;
+        let currentPoint: ISmithChartPoint = series.points[pointindex];
+        let pointX: number = currentPoint.resistance;
+        let pointY: number = currentPoint.reactance;
+        let tooltip: string[] = currentPoint.tooltip ? [currentPoint.tooltip] : null;
         let tooltipText: string[] = [pointX + ' ' + ':' + ' ' + '<b>' + pointY + '</b>'];
-        let markerHeight: number = smithchart.series[seriesindex].marker.height / 2;
-        let div: Element = document.getElementById(smithchart.element.id + '_smithchart_tooltip_div');
-        if (isNullOrUndefined(div)) {
-            div = createElement('div', {
-                id: smithchart.element.id + '_smithchart_tooltip_div',
-                styles: 'pointer-events: none; position: absolute;z-index:1;'
-            });
-            document.getElementById(smithchart.element.id + '_Secondary_Element').appendChild(div);
-        }
-        this.tooltipElement = new Tooltip({
-            enable: true,
-            header: '<b>' + series.name + '</b>',
-            content: tooltipText,
-            border: series.tooltip.border,
-            fill: smithchart.themeStyle.tooltipFill,
-            data: { reactance: pointY },
+        let argsData: ISmithChartTooltipEventArgs = {
+            cancel: false, name: 'tooltipRender',
+            text: tooltip || tooltipText,
+            headerText: '<b>' + series.name + '</b>',
             template: series.tooltip.template,
-            location: {
-                x: this.locationX + smithchart.element.offsetLeft,
-                y: this.locationY - markerHeight + smithchart.element.offsetTop
-            },
-            shared: false,
-            areaBounds: new SmithchartRect(
-                smithchart.bounds.x, smithchart.bounds.y,
-                smithchart.bounds.width, smithchart.bounds.height),
-            palette: [series.fill || smithchart.seriesColors[seriesindex % smithchart.seriesColors.length]],
-            shapes: ['Circle'],
-            availableSize: smithchart.availableSize,
-            theme: smithchart.theme,
-            blazorTemplate: { name: 'TooltipTemplate', parent: smithchart.series[seriesindex].tooltip }
-        });
-        this.tooltipElement.opacity = smithchart.themeStyle.tooltipFillOpacity || this.tooltipElement.opacity;
-        this.tooltipElement.textStyle.fontFamily = smithchart.themeStyle.fontFamily || 'Roboto, Segoe UI, Noto, Sans-serif';
-        this.tooltipElement.textStyle.opacity = smithchart.themeStyle.tooltipTextOpacity || this.tooltipElement.textStyle.opacity;
-        this.tooltipElement.appendTo(div as HTMLElement);
+            point: currentPoint
+        };
+
+
+        let smithChartTooltipSuccess: Function = (argsData: ISmithChartTooltipEventArgs) => {
+            let markerHeight: number = smithchart.series[seriesindex].marker.height / 2;
+            let div: Element = document.getElementById(smithchart.element.id + '_smithchart_tooltip_div');
+            if (isNullOrUndefined(div)) {
+                div = createElement('div', {
+                    id: smithchart.element.id + '_smithchart_tooltip_div',
+                    styles: 'pointer-events: none; position: absolute;z-index:1;'
+                });
+                document.getElementById(smithchart.element.id + '_Secondary_Element').appendChild(div);
+            }
+            this.tooltipElement = new Tooltip({
+                enable: true,
+                header: argsData.headerText,
+                content: argsData.text,
+                border: series.tooltip.border,
+                fill: smithchart.themeStyle.tooltipFill,
+                data: currentPoint,
+                template: argsData.template,
+                location: {
+                    x: this.locationX + smithchart.element.offsetLeft,
+                    y: this.locationY - markerHeight + smithchart.element.offsetTop
+                },
+                shared: false,
+                areaBounds: new SmithchartRect(
+                    smithchart.bounds.x, smithchart.bounds.y,
+                    smithchart.bounds.width, smithchart.bounds.height),
+                palette: [series.fill || smithchart.seriesColors[seriesindex % smithchart.seriesColors.length]],
+                shapes: ['Circle'],
+                availableSize: smithchart.availableSize,
+                theme: smithchart.theme,
+                blazorTemplate: { name: 'TooltipTemplate', parent: smithchart.series[seriesindex].tooltip }
+            });
+            this.tooltipElement.opacity = smithchart.themeStyle.tooltipFillOpacity || this.tooltipElement.opacity;
+            this.tooltipElement.textStyle.fontFamily = smithchart.themeStyle.fontFamily || 'Roboto, Segoe UI, Noto, Sans-serif';
+            this.tooltipElement.textStyle.opacity = smithchart.themeStyle.tooltipTextOpacity || this.tooltipElement.textStyle.opacity;
+            this.tooltipElement.appendTo(div as HTMLElement);
+        };
+        smithChartTooltipSuccess.bind(this, smithchart);
+        smithchart.trigger('tooltipRender', argsData, smithChartTooltipSuccess);
     }
     private closestPointXY(smithchart: Smithchart, x: number, y: number, series: SmithchartSeriesModel, seriesindex: number): ClosestPoint {
         let pointIndex: number;

@@ -35,6 +35,7 @@ const SECTION_BREAK: string = '_section_break';
 const READ_ONLY: string = '_read_only';
 const PROTECTIONS: string = '_protections';
 const FORM_FIELDS_ID: string = '_form_fields';
+const UPDATE_FIELDS_ID: string = '_update_fields';
 const TEXT_FORM: string = '_text_form';
 const CHECKBOX: string = '_checkbox';
 const DROPDOWN: string = '_dropdown';
@@ -423,6 +424,13 @@ export class Toolbar {
                         text: this.onWrapText(locale.getConstant('Form Fields')), cssClass: className + ' e-de-formfields'
                     });
                     break;
+                case 'UpdateFields':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-update-field', tooltipText: locale.getConstant('Update cross reference fields'),
+                        id: id + UPDATE_FIELDS_ID, text: this.onWrapText(locale.getConstant('Update Fields')),
+                        cssClass: className + ' e-de-formfields'
+                    });
+                    break;
                 default:
                     //Here we need to process the items
                     toolbarItems.push(tItem[i]);
@@ -481,6 +489,9 @@ export class Toolbar {
                 break;
             case id + CLIPBOARD_ID:
                 this.toggleLocalPaste(args.item.id);
+                break;
+            case id + UPDATE_FIELDS_ID:
+                this.documentEditor.updateFields();
                 break;
             default:
                 this.container.trigger('toolbarClick', args);
@@ -615,7 +626,8 @@ export class Toolbar {
         for (let item of this.toolbar.items) {
             let itemId: string = item.id;
             if (itemId !== id + NEW_ID && itemId !== id + OPEN_ID && itemId !== id + FIND_ID &&
-                itemId !== id + CLIPBOARD_ID && itemId !== id + RESTRICT_EDITING_ID && item.type !== 'Separator') {
+                itemId !== id + CLIPBOARD_ID && itemId !== id + RESTRICT_EDITING_ID && itemId !== id + UPDATE_FIELDS_ID
+                && item.type !== 'Separator') {
                 if (enable && this.isCommentEditing && itemId === id + COMMENT_ID) {
                     continue;
                 }

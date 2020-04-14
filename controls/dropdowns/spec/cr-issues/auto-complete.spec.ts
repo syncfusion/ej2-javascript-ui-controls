@@ -682,4 +682,54 @@ describe('AutoComplete', () => {
             }, 400);
         });
     });
+    describe('EJ2CORE-353-Tab Key support', () => {
+        let e: any = { preventDefault: function () { }, target: null };
+        let autocompleteObj: any;
+        let autocompleteEle: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'auto' });
+        let countries: { [key: string]: Object; }[] = [
+            { Name: 'Australia', Code: 'AU' },
+            { Name: 'Bermuda', Code: 'BM' },
+            { Name: 'Canada', Code: 'CA' },
+            { Name: 'Cameroon', Code: 'CM' },
+            { Name: 'Denmark', Code: 'DK' },
+            { Name: 'France', Code: 'FR' },
+            { Name: 'Finland', Code: 'FI' },
+            { Name: 'Germany', Code: 'DE' },
+            { Name: 'Greenland', Code: 'GL' },
+            { Name: 'Hong Kong', Code: 'HK' },
+            { Name: 'India', Code: 'IN' },
+            { Name: 'Italy', Code: 'IT' },
+            { Name: 'Japan', Code: 'JP' },
+            { Name: 'Mexico', Code: 'MX' },
+            { Name: 'Norway', Code: 'NO' },
+            { Name: 'Poland', Code: 'PL' },
+            { Name: 'Switzerland', Code: 'CH' },
+            { Name: 'United Kingdom', Code: 'GB' },
+            { Name: 'United States', Code: 'US' }
+        ];
+        beforeAll(() => {
+            document.body.appendChild(autocompleteEle);
+        });
+        afterAll(() => {
+            autocompleteObj.destroy();
+            autocompleteEle.remove();
+        });
+
+        it('check the autocomplete vzalue without space added in the select element', (done) => {
+            autocompleteObj = new AutoComplete({
+                dataSource: countries,
+                fields: { value: 'Name' }
+            });
+            autocompleteObj.appendTo(autocompleteEle);
+            autocompleteObj.showPopup();
+            setTimeout(() => {
+                expect(autocompleteObj.isPopupOpen).toBe(true);
+                e.keycode = "40"
+                e.action="down"
+                autocompleteObj.keyActionHandler(e);
+                done();
+            }, 400)
+        });
+    });
+
 });

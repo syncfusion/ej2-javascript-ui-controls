@@ -65,7 +65,7 @@ export function createResize(args: ResizeArgs): void {
     minWidth = args.minWidth;
     maxWidth = args.maxWidth;
     maxHeight = args.maxHeight;
-    if (!isNOU(args.proxy) && !isNOU(args.proxy.dialogOpen) && args.proxy.dialogOpen) {
+    if (args.proxy && args.proxy.element && args.proxy.element.classList.contains('e-dialog')) {
         wireEvents(args.proxy);
     } else {
         wireEvents();

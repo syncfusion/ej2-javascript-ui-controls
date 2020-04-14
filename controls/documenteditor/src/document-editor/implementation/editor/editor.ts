@@ -1257,6 +1257,19 @@ export class Editor {
                     this.handleDelete();
                     event.preventDefault();
                     break;
+                case 32:
+                    this.selection.handleSpaceBarKey();
+                    break;
+                case 120:
+                    let textPosition: TextPosition = this.selection.getDocumentEnd();
+                    textPosition.offset = (this.selection.getDocumentEnd().offset + 1);
+                    if (this.selection.start.isAtSamePosition(this.selection.getDocumentStart()) &&
+                        this.selection.end.isAtSamePosition(textPosition)) {
+                        this.owner.updateFields();
+                    } else {
+                        this.selection.updateRefField();
+                    }
+                    break;
 
             }
         }
@@ -3013,7 +3026,9 @@ export class Editor {
                     if (characterFormat.italic) {
                         lineWidget.children[k].characterFormat.italic = characterFormat.italic;
                     }
-
+                    if (characterFormat.underline !== 'None') {
+                        lineWidget.children[k].characterFormat.underline = characterFormat.underline;
+                    }
                 }
             }
         } else {
@@ -3051,7 +3066,10 @@ export class Editor {
         }
         this.isSkipHistory = false;
     }
-    private pasteContents(content: any, currentFormat?: WParagraphFormat): void {
+    /**
+     * @private
+     */
+    public pasteContents(content: any, currentFormat?: WParagraphFormat): void {
         if (typeof (content) !== 'string') {
             this.copiedContent = content;
         }
@@ -11962,12 +11980,14 @@ export class Editor {
                 span.characterFormat.fontSize = (formData as CheckBoxFormField).size;
             }
         } else if (formData instanceof TextFormField) {
-            if (formData.type === 'Text') {
-                span.text = HelperMethods.formatText(formData.format, formData.defaultValue);
-            } else if (formData.type === 'Number') {
-                span.text = HelperMethods.formatNumber(formData.format, formData.defaultValue);
-            } else {
-                span.text = HelperMethods.formatDate(formData.format, formData.defaultValue);
+            if (formData.defaultValue !== '') {
+                if (formData.type === 'Text') {
+                    span.text = HelperMethods.formatText(formData.format, formData.defaultValue);
+                } else if (formData.type === 'Number') {
+                    span.text = HelperMethods.formatNumber(formData.format, formData.defaultValue);
+                } else {
+                    span.text = HelperMethods.formatDate(formData.format, formData.defaultValue);
+                }
             }
         }
         element.push(span);

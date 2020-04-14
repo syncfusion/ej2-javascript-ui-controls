@@ -949,7 +949,8 @@ export class DropDownList extends DropDownBase implements IInput {
                 isNavigation && this.liCollections.length === 0) || this.isRequested) {
                 return;
             }
-            if (isTabAction && this.isPopupOpen || e.action === 'escape') { e.preventDefault(); }
+            if ((isTabAction && this.getModuleName() !== 'autocomplete') && this.isPopupOpen
+            || e.action === 'escape') { e.preventDefault(); }
             this.isSelected = e.action === 'escape' ? false : this.isSelected;
             this.isTyped = (isNavigation || e.action === 'escape') ? false : this.isTyped;
             switch (e.action) {
@@ -1012,14 +1013,27 @@ export class DropDownList extends DropDownBase implements IInput {
                 case 'enter':
                     this.selectCurrentItem(e);
                     break;
-                case 'escape':
                 case 'tab':
-                case 'close':
+                    this.selectCurrentValueOnTab(e);
+                    break;
+                    case 'escape':
+                    case 'close':
                     if (this.isPopupOpen) {
                         this.hidePopup(e);
                         this.focusDropDown(e);
                     }
                     break;
+            }
+        }
+    }
+
+    protected selectCurrentValueOnTab(e: KeyboardEventArgs): void {
+        if (this.getModuleName() === 'autocomplete') {
+            this.selectCurrentItem(e);
+        } else {
+            if (this.isPopupOpen) {
+                this.hidePopup(e);
+                this.focusDropDown(e);
             }
         }
     }
@@ -1505,7 +1519,7 @@ export class DropDownList extends DropDownBase implements IInput {
                 e.preventDefault();
                 break;
             case 9: //tab 
-                if (this.isPopupOpen) {
+                if (this.isPopupOpen && this.getModuleName() !== 'autocomplete') {
                     e.preventDefault();
                 }
                 break;

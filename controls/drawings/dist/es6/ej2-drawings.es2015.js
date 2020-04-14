@@ -978,12 +978,46 @@ function measurePath(data) {
         }
         else {
             window[path][data] = bounds = element.getBBox();
+            if ((bounds.x === 0 || bounds.y === 0) && (bounds.width === 0 || bounds.height === 0)) {
+                window[path][data] = bounds = getBBox(data);
+            }
         }
         let svgBounds = new Rect(bounds.x, bounds.y, bounds.width, bounds.height);
         window[measureElement].style.visibility = 'hidden';
         return svgBounds;
     }
     return new Rect(0, 0, 0, 0);
+}
+// tslint:disable-next-line
+function getBBox(path) {
+    let xmin = 0;
+    let xmax = 0;
+    let ymin = 0;
+    let ymax = 0;
+    // tslint:disable-next-line
+    let currentValue;
+    // tslint:disable-next-line
+    let currentpath = path;
+    currentpath = currentpath.replace(/[a-z].*/g, ' ').replace(/[\sA-Z]+/gi, ' ').trim().split(' ');
+    for (let i = 0; i < currentpath.length; i++) {
+        if (currentpath[i].length > 1) {
+            currentValue = currentpath[i].split(',');
+            xmin = xmax = currentValue[0];
+            ymin = ymax = currentValue[1];
+        }
+    }
+    for (let i = 0; i < currentpath.length; i++) {
+        currentValue = currentpath[i].split(',');
+        if (!currentValue[1]) {
+            currentValue[0] = xmin;
+            currentValue[1] = ymin;
+        }
+        xmin = Math.min(xmin, currentValue[0]);
+        xmax = Math.max(xmax, currentValue[0]);
+        ymin = Math.min(ymin, currentValue[1]);
+        ymax = Math.max(ymax, currentValue[1]);
+    }
+    return { x: xmin, y: ymin, width: xmax - xmin, height: ymax - ymin };
 }
 function getTextOptions(element, maxWidth) {
     let options = {

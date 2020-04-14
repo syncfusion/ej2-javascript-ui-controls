@@ -211,12 +211,13 @@ let Splitter = class Splitter extends Component {
                 flexCount++;
             }
             else if (this.paneSettings[i].size) {
-                staticPaneWidth = this.paneSettings[i].size && this.paneSettings[i].size.indexOf('%') > -1 ?
-                    (parseInt(newValSize, 10) / 100) * this.element.offsetWidth : this.allPanes[index].offsetWidth;
+                staticPaneWidth = this.orientation === 'Horizontal' ? this.allPanes[index].offsetWidth : this.allPanes[index].offsetHeight;
             }
         }
-        staticPaneWidth = (this.allBars[0].offsetWidth * this.allBars.length) + staticPaneWidth;
-        let flexPaneWidth = this.element.offsetWidth - staticPaneWidth;
+        staticPaneWidth = this.orientation === 'Horizontal' ? (this.allBars[0].offsetWidth * this.allBars.length) + staticPaneWidth :
+            (this.allBars[0].offsetHeight * this.allBars.length) + staticPaneWidth;
+        let flexPaneWidth = (this.orientation === 'Horizontal' ? this.element.offsetWidth : this.element.offsetHeight)
+            - staticPaneWidth - (this.border * 2);
         let avgDiffWidth = flexPaneWidth / flexPaneIndexes.length;
         for (let j = 0; j < flexPaneIndexes.length; j++) {
             this.allPanes[flexPaneIndexes[j]].style.flexBasis = avgDiffWidth + 'px';
@@ -2092,6 +2093,7 @@ const preventSelect = 'e-prevent';
 const dragging = 'e-dragging';
 const drag = 'e-drag';
 const resize = 'e-resize';
+const resizeicon = 'e-dl-icon';
 const responsive = 'e-responsive';
 const east = 'e-east';
 const west = 'e-west';
@@ -3961,7 +3963,7 @@ let DashboardLayout = class DashboardLayout extends Component {
             else {
                 addClassValue = double;
             }
-            addClass([spanEle], [addClassValue, this.availableClasses[j], resize]);
+            addClass([spanEle], [addClassValue, this.availableClasses[j], resize, resizeicon]);
         }
     }
     setXYAttributes(element, panelModel) {

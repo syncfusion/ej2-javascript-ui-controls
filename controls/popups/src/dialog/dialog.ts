@@ -1500,6 +1500,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         this.target = target;
         this.targetEle = ((typeof this.target) === 'string') ?
             <HTMLElement>document.querySelector(<string>this.target) : <HTMLElement>this.target;
+        if (this.dragObj) {
+            this.dragObj.dragArea = this.targetEle;
+        }
         this.setMaxHeight();
     }
 

@@ -592,6 +592,17 @@ export class PdfViewerBase {
         }
         this.mobileScrollerContainer.addEventListener('touchmove', this.viewerContainerOnScroll.bind(this), true);
     }
+
+    /**
+     * @private
+     */
+    public relativePosition(e: MouseEvent): PointModel {
+        // tslint:disable-next-line
+        let currentRect: any = this.viewerContainer.getBoundingClientRect();
+        let left: number = e.clientX - currentRect.left;
+        let top: number = e.clientY - currentRect.top;
+        return { x: left, y: top };
+    }
     // tslint:disable-next-line
     private setMaximumHeight(element: any): void {
         if (!Browser.isDevice) {
@@ -1236,8 +1247,10 @@ export class PdfViewerBase {
         if (this.renderedPagesList) {
             this.renderedPagesList = [];
         }
-        while (this.pageContainer.hasChildNodes()) {
-            this.pageContainer.removeChild(this.pageContainer.lastChild);
+        if (this.pageContainer) {
+            while (this.pageContainer.hasChildNodes()) {
+                this.pageContainer.removeChild(this.pageContainer.lastChild);
+            }
         }
         if (this.pageCount > 0) {
             this.unloadDocument(this);
@@ -5191,11 +5204,15 @@ export class PdfViewerBase {
                         // tslint:disable-next-line
                         let currentPosition : any = this.getMousePosition(event);
                         // tslint:disable-next-line
+                        let relativePosition: any = this.relativePosition(event);
+                        // tslint:disable-next-line
+                        let viewerPositions: any = { left: relativePosition.x, top: relativePosition.y }
+                        // tslint:disable-next-line
                         let mousePositions: any = { left: currentPosition.x, top: currentPosition.y };
                         // tslint:disable-next-line
                         let annotationSettings: any = { opacity: currentObject.opacity, fillColor: currentObject.fillColor, strokeColor: currentObject.strokeColor, thicknes: currentObject.thickness, author: currentObject.author, subject: currentObject.subject, modifiedDate: currentObject.modifiedDate};
                         // tslint:disable-next-line:max-line-length
-                        this.pdfViewer.fireAnnotationMouseover(currentObject.annotName, currentObject.pageIndex, currentObject.shapeAnnotationType as AnnotationType, currentObject.bounds, annotationSettings, mousePositions);
+                        this.pdfViewer.fireAnnotationMouseover(currentObject.annotName, currentObject.pageIndex, currentObject.shapeAnnotationType as AnnotationType, currentObject.bounds, annotationSettings, mousePositions, viewerPositions);
                     } else {
                         eventTarget.style.cursor = 'grab';
                     }
@@ -5215,11 +5232,15 @@ export class PdfViewerBase {
                     // tslint:disable-next-line
                     let currentPosition : any = this.getMousePosition(event);
                     // tslint:disable-next-line
+                    let relativePosition: any = this.relativePosition(event);
+                    // tslint:disable-next-line
+                    let viewerPositions: any = { left: relativePosition.x, top: relativePosition.y };
+                    // tslint:disable-next-line
                     let mousePositions: any = { left: currentPosition.x, top: currentPosition.y };
                     // tslint:disable-next-line
                     let annotationSettings: any = { opacity: currentObject.opacity, fillColor: currentObject.fillColor, strokeColor: currentObject.strokeColor, thicknes: currentObject.thickness, author: currentObject.author, subject: currentObject.subject, modifiedDate: currentObject.modifiedDate};
                     // tslint:disable-next-line:max-line-length
-                    this.pdfViewer.fireAnnotationMouseover(currentObject.annotName, currentObject.pageIndex, currentObject.shapeAnnotationType as AnnotationType, currentObject.bounds, annotationSettings, mousePositions);
+                    this.pdfViewer.fireAnnotationMouseover(currentObject.annotName, currentObject.pageIndex, currentObject.shapeAnnotationType as AnnotationType, currentObject.bounds, annotationSettings, mousePositions, viewerPositions);
                 } else {
                     eventTarget.style.cursor = 'default';
                 }

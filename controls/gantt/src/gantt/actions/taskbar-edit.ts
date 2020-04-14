@@ -996,19 +996,25 @@ export class TaskbarEdit {
                 leftLabelContainer.style.width = (item.left - (width / 2)) + 'px';
                 rightLabelContainer.style.left = (item.left + (width / 2)) + 'px';
             } else if (this.taskBarEditAction === 'ProgressResizing') {
-                traceChildProgressBar.style.width = item.progressWidth + 'px';
-                traceChildProgressBar.style.borderBottomRightRadius = this.progressBorderRadius + 'px';
-                traceChildProgressBar.style.borderTopRightRadius = this.progressBorderRadius + 'px';
                 traceChildTaskBar.style.left = (item.left + item.progressWidth - 10) + 'px';
-                childProgressResizer.style.left = item.progressWidth - 8 + 'px';
+                if (!isNullOrUndefined(traceChildProgressBar)) {
+                    traceChildProgressBar.style.width = item.progressWidth + 'px';
+                    traceChildProgressBar.style.borderBottomRightRadius = this.progressBorderRadius + 'px';
+                    traceChildProgressBar.style.borderTopRightRadius = this.progressBorderRadius + 'px';
+                    childProgressResizer.style.left = item.progressWidth - 8 + 'px';
+                }
             } else if (this.taskBarEditAction === 'RightResizing') {
                 traceChildTaskBar.style.width = (width) + 'px';
-                traceChildProgressBar.style.width = (item.progressWidth) + 'px';
-                taskBarRightResizer.style.left = rightResizer + 'px';
-                childProgressResizer.style.left = (item.progressWidth - 10) + 'px';
+                if (!isNullOrUndefined(traceChildProgressBar)) {
+                    traceChildProgressBar.style.width = (item.progressWidth) + 'px';
+                    taskBarRightResizer.style.left = rightResizer + 'px';
+                    childProgressResizer.style.left = (item.progressWidth - 10) + 'px';
+                }
             } else if (this.taskBarEditAction === 'ParentDrag') {
                 traceParentTaskBar.style.width = (width) + 'px';
-                traceParentProgressBar.style.width = (item.progressWidth) + 'px';
+                if (!isNullOrUndefined(traceChildProgressBar)) {
+                    traceParentProgressBar.style.width = (item.progressWidth) + 'px';
+                }
             } else if (this.taskBarEditAction === 'ParentResizing') {
                 manualParentTaskbar.style.width = manualTaskbar.style.width = (item.width) + 'px';
                 manualParentRight.style.left = (item.width - manualParentLeft.offsetLeft) + 'px';

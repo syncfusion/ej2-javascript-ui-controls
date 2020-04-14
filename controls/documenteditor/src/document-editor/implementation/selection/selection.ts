@@ -691,6 +691,10 @@ export class Selection {
      * @private
      */
     public fireRequestNavigate(fieldBegin: FieldElementBox): void {
+        let code: string = this.getFieldCode(fieldBegin);
+        if (code.toLowerCase().indexOf('ref ') === 0 && !code.match('\\h')) {
+            return;
+        }
         let hyperlink: Hyperlink = new Hyperlink(fieldBegin, this);
         let eventArgs: RequestNavigateEventArgs = {
             isHandled: false,
@@ -1765,7 +1769,10 @@ export class Selection {
         }
         this.checkForCursorVisibility();
     }
-    private handleSpaceBarKey(): void {
+    /**
+     * @private
+     */
+    public handleSpaceBarKey(): void {
         if (this.owner.documentHelper.isDocumentProtected && this.owner.documentHelper.protectionType === 'FormFieldsOnly'
             && this.getFormFieldType() === 'CheckBox') {
             this.owner.editor.toggleCheckBoxFormField(this.getCurrentFormField());
@@ -6761,7 +6768,11 @@ export class Selection {
             if (hyperlink.localReference[0] === '_' && (isNullOrUndefined(link) || link.length === 0)) {
                 link = 'Current Document';
             } else {
-                link += '#' + hyperlink.localReference;
+                if (hyperlink.isCrossRef) {
+                    link += hyperlink.localReference;
+                } else {
+                    link += '#' + hyperlink.localReference;
+                }
             }
         }
         hyperlink.destroy();
@@ -6771,7 +6782,7 @@ export class Selection {
      * Set Hyperlink content to tool tip element
      * @private
      */
-    public setHyperlinkContentToToolTip(fieldBegin: FieldElementBox, widget: LineWidget, xPos: number): void {
+    public setHyperlinkContentToToolTip(fieldBegin: FieldElementBox, widget: LineWidget, xPos: number, isFormField?: boolean): void {
         if (fieldBegin) {
             if (this.owner.contextMenuModule &&
                 this.owner.contextMenuModule.contextMenuInstance.element.style.display === 'block') {
@@ -6789,7 +6800,16 @@ export class Selection {
                 toolTipText = 'Ctrl+' + toolTipText;
             }
             let linkText: string = this.getLinkText(fieldBegin);
-            this.toolTipElement.innerHTML = linkText + '</br><b>' + toolTipText + '</b>';
+            if (isFormField) {
+                let helpText: string = fieldBegin.formFieldData.helpText;
+                if (isNullOrUndefined(helpText) || helpText === '') {
+                    return;
+                }
+                this.toolTipElement.innerHTML = helpText;
+            } else {
+                this.toolTipElement.innerHTML = linkText + '</br><b>' + toolTipText + '</b>';
+            }
+
             let position: Point = this.getTooltipPosition(fieldBegin, xPos, this.toolTipElement, false);
             this.showToolTip(position.x, position.y);
             if (!isNullOrUndefined(this.toolTipField) && fieldBegin !== this.toolTipField) {
@@ -6991,6 +7011,9 @@ export class Selection {
             if (isParagraph && checkFormField && this.documentHelper.fields[i].formFieldData) {
                 return this.documentHelper.fields[i];
             }
+            if ((isRetrieve || (!isRetrieve && field.match('ref '))) && isParagraph) {
+                return this.documentHelper.fields[i];
+            }
         }
         // if (paragraph.containerWidget instanceof BodyWidget && !(paragraph instanceof WHeaderFooter)) {
         //     return this.getHyperLinkFields((paragraph.con as WCompositeNode), checkedFields);
@@ -7022,6 +7045,9 @@ export class Selection {
                 return this.documentHelper.fields[i];
             }
             if (isInline && checkFormField && this.documentHelper.fields[i].formFieldData) {
+                return this.documentHelper.fields[i];
+            }
+            if ((isRetrieve || (!isRetrieve && fieldCode.match('ref '))) && isInline) {
                 return this.documentHelper.fields[i];
             }
         }
@@ -7154,6 +7180,23 @@ export class Selection {
         let inline: FieldElementBox = this.getCurrentFormField();
         if (inline instanceof FieldElementBox && inline.formFieldData) {
             return true;
+        }
+        return false;
+    }
+    /**
+     * Return true if selection is in reference field
+     * @private
+     */
+    public isReferenceField(field?: FieldElementBox): boolean {
+        if (isNullOrUndefined(field)) {
+            field = this.getHyperlinkField(true);
+        }
+        if (field) {
+            let fieldCode: string = this.getFieldCode(field);
+            fieldCode = fieldCode.toLowerCase();
+            if (field instanceof FieldElementBox && fieldCode.match('ref ')) {
+                return true;
+            }
         }
         return false;
     }
@@ -7360,7 +7403,6 @@ export class Selection {
         } finally {
             window.getSelection().removeAllRanges();
             div.parentNode.removeChild(div);
-            this.documentHelper.viewerContainer.focus();
         }
         return copySuccess;
     }
@@ -7755,9 +7797,6 @@ export class Selection {
                 //         this.handleTabKey(true, false);
                 //     }
                 //     break;  
-                case 32:
-                    this.handleSpaceBarKey();
-                    break;
                 case 33:
                     event.preventDefault();
                     this.documentHelper.viewerContainer.scrollTop -= this.documentHelper.visibleBounds.height;
@@ -7790,11 +7829,14 @@ export class Selection {
                     this.handleDownKey();
                     event.preventDefault();
                     break;
-
             }
         }
-        if (!this.owner.isReadOnlyMode || this.documentHelper.protectionType === 'FormFieldsOnly') {
+        if (!this.owner.isReadOnlyMode) {
             this.owner.editorModule.onKeyDownInternal(event, ctrl, shift, alt);
+        } else if (this.documentHelper.isDocumentProtected && this.documentHelper.protectionType === 'FormFieldsOnly') {
+            if (event.keyCode === 9 || event.keyCode === 32) {
+                this.owner.editorModule.onKeyDownInternal(event, ctrl, shift, alt);
+            }
         }
         if (this.owner.searchModule) {
             // tslint:disable-next-line:max-line-length
@@ -8372,6 +8414,56 @@ export class Selection {
         return { 'startPosition': startPosition, 'endPosition': undefined };
     }
     //Restrict editing implementation ends
+    /**
+     * Update ref field.
+     * @private
+     */
+    public updateRefField(field?: FieldElementBox): void {
+        if (isNullOrUndefined(field)) {
+            field = this.getHyperlinkField(true);
+        }
+        if (!isNullOrUndefined(field)) {
+            if (!this.isReferenceField(field)) {
+                return;
+            }
+            let fieldCode: string = this.getFieldCode(field);
+            fieldCode = fieldCode.trim();
+            if (fieldCode.toLowerCase().indexOf('ref') === 0) {
+                let code: string[] = fieldCode.split(' ');
+                if (code.length > 1) {
+                    let bookmarkId: string = code[1];
+                    if (this.documentHelper.bookmarks.containsKey(bookmarkId)) {
+                        let start: TextPosition = this.start;
+                        let end: TextPosition = this.end;
+                        if (!this.isForward) {
+                            start = this.end;
+                            end = this.start;
+                        }
+                        let bookmarkStart: ElementBox = this.documentHelper.bookmarks.get(bookmarkId);
+                        let bookmarkEnd: ElementBox = (bookmarkStart as BookmarkElementBox).reference;
+                        let previousNode: ElementBox = bookmarkStart.previousNode;
+                        if (previousNode instanceof FieldElementBox && previousNode.fieldType === 0
+                            && !isNullOrUndefined(previousNode.formFieldData)) {
+                            bookmarkStart = previousNode.fieldSeparator;
+                            bookmarkEnd = previousNode.fieldEnd;
+                        }
+                        let offset: number = bookmarkStart.line.getOffset(bookmarkStart, 1);
+                        start.setPositionParagraph(bookmarkStart.line, offset);
+                        end.setPositionParagraph(bookmarkEnd.line, bookmarkEnd.line.getOffset(bookmarkEnd, 0));
+                        /* tslint:disable:no-any */
+                        // tslint:disable-next-line:max-line-length
+                        let documentContent: any = this.owner.sfdtExportModule.write(start.currentWidget, start.offset, end.currentWidget, end.offset, false, true);
+                        let startElement: FieldElementBox = field.fieldSeparator;
+                        let endElement: FieldElementBox = field.fieldEnd;
+                        start.setPositionParagraph(startElement.line, startElement.line.getOffset(startElement, 1));
+                        end.setPositionParagraph(endElement.line, endElement.line.getOffset(endElement, 0));
+                        this.owner.editor.pasteContents(documentContent);
+                    }
+                }
+            }
+        }
+
+    }
 }
 /**
  *  Specifies the settings for selection.

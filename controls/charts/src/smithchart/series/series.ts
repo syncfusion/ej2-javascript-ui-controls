@@ -8,6 +8,7 @@ import {SeriesTooltipBorderModel, SeriesTooltipModel} from '../series/series-mod
 import { SmithchartFont} from '../utils/utils';
 import { SmithchartFontModel} from '../utils/utils-model';
 import { Theme } from '../model/theme';
+import { ISmithChartPoint } from '../model/interface';
 
 export class SeriesTooltipBorder extends ChildProperty<SeriesTooltipBorder> {
 
@@ -233,7 +234,7 @@ export class SmithchartSeries extends ChildProperty<SmithchartSeries> {
  * @default []
  */
 @Property([])
-public points: { resistance: number,  reactance: number}[];
+public points: ISmithChartPoint[];
 
 /**
  * resistance name for dataSource
@@ -250,6 +251,14 @@ public resistance: string;
 
 @Property('')
 public reactance: string;
+
+/**
+ * tooltip mapping name for the series
+ * @default ''
+ */
+
+@Property('')
+public tooltipMappingName: string;
 /**
  *  Specifies the dataSource
  * @default null

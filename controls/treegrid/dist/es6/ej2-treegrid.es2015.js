@@ -783,11 +783,13 @@ class Selection {
             }
             length = childRecords.length;
             for (let count = 0; count < length; count++) {
-                if (childRecords[count].hasChildRecords) {
-                    this.traverSelection(childRecords[count], checkboxState, true);
-                }
-                else {
-                    this.updateSelectedItems(childRecords[count], checkboxState);
+                if (!childRecords[count].isSummaryRow) {
+                    if (childRecords[count].hasChildRecords) {
+                        this.traverSelection(childRecords[count], checkboxState, true);
+                    }
+                    else {
+                        this.updateSelectedItems(childRecords[count], checkboxState);
+                    }
                 }
             }
         }
@@ -821,11 +823,13 @@ class Selection {
                 let currentRecord = getParentData(this.parent, childRecords[i].uniqueID);
                 let checkBoxRecord = (isBlazor() && this.parent.dataSource[adaptorName] === 'BlazorAdaptor') ?
                     childRecord[0] : currentRecord;
-                if (checkBoxRecord.checkboxState === 'indeterminate') {
-                    indeter++;
-                }
-                else if (checkBoxRecord.checkboxState === 'check') {
-                    checkChildRecords++;
+                if (!isNullOrUndefined(checkBoxRecord)) {
+                    if (checkBoxRecord.checkboxState === 'indeterminate') {
+                        indeter++;
+                    }
+                    else if (checkBoxRecord.checkboxState === 'check') {
+                        checkChildRecords++;
+                    }
                 }
             }
             if (indeter > 0 || (checkChildRecords > 0 && checkChildRecords !== length)) {
@@ -964,11 +968,14 @@ class Selection {
         if (isCheckboxcolumn(this.parent)) {
             if (this.parent.autoCheckHierarchy) {
                 if ((requestType === 'sorting' || requestType === 'paging')) {
+                    let rows = this.parent.grid.getRows();
                     childData = this.parent.getCurrentViewRecords();
                     childLength = childData.length;
                     this.selectedIndexes = [];
                     for (let i = 0; i < childLength; i++) {
-                        this.updateSelectedItems(childData[i], childData[i].checkboxState, true);
+                        if (!rows[i].classList.contains('e-summaryrow')) {
+                            this.updateSelectedItems(childData[i], childData[i].checkboxState, true);
+                        }
                     }
                 }
                 else if (requestType === 'delete' || args.action === 'add') {

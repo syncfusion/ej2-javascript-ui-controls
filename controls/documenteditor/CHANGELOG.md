@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 18.1.44 (2020-04-14)
+
+### Document Editor
+
+#### New Features
+
+- Added support for Legacy Form Fields.
+- Added support for updating bookmark cross reference fields.
+
+#### Bug Fixes
+
+- `#269397` - Context menu position is now update properly.
+- `#269546` - Resolved key navigation issue when paragraph contains page break.
+- `#269778` - $ symbol is now search properly when text contains $ symbol.
+- `#269893` - Focus is in document editor after dialog gets closed.
+
 ## 18.1.43 (2020-04-07)
 
 ### Document Editor

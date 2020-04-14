@@ -2,9 +2,39 @@
 
 ## [Unreleased]
 
+## 18.1.44 (2020-04-14)
+
+### Chart
+
+#### Bug Fixes
+
+- `#269131` - Y Axis labels overlapped with the grid lines issue has been fixed.
+- `#268698` - Legend click event argument null issue has been fixed.
+
+### Accumulation chart
+
+#### Bug Fixes
+
+- `#271120` - Data labels are displayed even when its y value is zero issue has been fixed.
+- `#152613` - Accumulation chart data label position is not proper when using template issue is fixed.
+
+### Smith Chart
+
+#### Bug Fixes
+
+- `#152336` - Tooltip template issue fixed.
+- `#269225` - Provided event support for before rendering of tooltip
+
 ## 18.1.43 (2020-04-07)
 
 ### Chart
+
+#### Bug Fixes
+
+- `#269627` - Logarithmic scale does not work with small values issue has been fixed.
+- `#151645` - Error bar value is not updated dynamically issue has fixed.
+
+### Accumulation chart
 
 #### Bug Fixes
 

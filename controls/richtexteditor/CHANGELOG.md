@@ -6,6 +6,14 @@
 
 ### RichTextEditor
 
+#### Bug Fixes
+
+- `267874`, `269214`, `271199` - Resolved the compilation error with typescript version 3.8.3
+
+## 18.1.42 (2020-04-01)
+
+### RichTextEditor
+
 #### New Features
 
 - `#266522` - Provided scrollable option support to the toolbar by setting toolbar type as `Scrollable` in Rich Text Editor.

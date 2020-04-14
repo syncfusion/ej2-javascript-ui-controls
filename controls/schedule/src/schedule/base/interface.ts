@@ -282,6 +282,8 @@ export interface DragEventArgs extends BaseEventArgs {
     startTime?: Date;
     /** Returns the end time of the clone element. */
     endTime?: Date;
+    /** Returns the target element on which the event is dropped. */
+    target?: HTMLElement;
     /** Returns the group index of the clone element. */
     groupIndex?: number;
     /** Defines the selectors to cancel the drop on selector target. */

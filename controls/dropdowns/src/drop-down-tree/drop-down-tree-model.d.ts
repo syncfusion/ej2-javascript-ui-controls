@@ -195,11 +195,11 @@ export interface DropDownTreeModel extends ComponentModel{
      * The **TreeFilterType** and its supported data types are,
      * 
      * <table> 
-     * <th> 
-     * <td colSpan=1 rowSpan=1> 
-     * TreeFilterType<br/></td><td colSpan=1 rowSpan=1> 
-     * Description<br/></td><td colSpan=1 rowSpan=1> 
-     * Supported Types<br/></td></th> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1><b> 
+     * TreeFilterType</b></td><td colSpan=1 rowSpan=1><b> 
+     * Description</b></td><td colSpan=1 rowSpan=1><b> 
+     * Supported Types</b></td></tr> 
      * <tr> 
      * <td colSpan=1 rowSpan=1> 
      * StartsWith<br/></td><td colSpan=1 rowSpan=1> 
@@ -208,16 +208,17 @@ export interface DropDownTreeModel extends ComponentModel{
      * <tr> 
      * <td colSpan=1 rowSpan=1> 
      * EndsWith<br/></td><td colSpan=1 rowSpan=1> 
-     * Checks whether a value ends with specified value.<br/><br/></td><td colSpan=1 rowSpan=1> 
-     * <br/>String<br/></td></tr> 
+     * Checks whether a value ends with specified value.<br/></td><td colSpan=1 rowSpan=1> 
+     * String<br/></td></tr> 
      * <tr> 
      * <td colSpan=1 rowSpan=1> 
      * Contains<br/></td><td colSpan=1 rowSpan=1> 
-     * Checks whether a value contains with specified value.<br/><br/></td><td colSpan=1 rowSpan=1> 
-     * <br/>String<br/></td></tr> 
+     * Checks whether a value contains with specified value.<br/></td><td colSpan=1 rowSpan=1> 
+     * String<br/></td></tr> 
      * </table>
      * 
-     * The default value set to **StartsWith**, all the suggestion items which contain typed characters to listed in the suggestion popup.
+     * The default value set to **StartsWith**, all the suggestion items which starts with typed characters to listed in the
+     * suggestion popup.
      * @default 'StartsWith'
      */
     filterType?: TreeFilterType;

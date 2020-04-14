@@ -155,7 +155,7 @@ export class BookmarkDialog {
     }
     private addBookmark = (): void => {
         this.documentHelper.owner.editorModule.insertBookmark((this.textBoxInput as HTMLInputElement).value);
-        this.documentHelper.dialog.hide();
+        this.documentHelper.hideDialog();
     }
     /* tslint:disable:no-any */
     private selectHandler = (args: any): void => {
@@ -171,7 +171,7 @@ export class BookmarkDialog {
         this.enableOrDisableButton();
     }
     private removeObjects(): void {
-        this.documentHelper.dialog.hide();
+        this.documentHelper.hideDialog();
     }
 
     private gotoBookmark = (): void => {

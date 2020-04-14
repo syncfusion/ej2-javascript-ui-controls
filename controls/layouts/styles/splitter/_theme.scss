@@ -30,7 +30,7 @@
           color: $splitbar-icon-color;
         }
 
-        .e-navigate-arrow {
+        .e-navigate-arrow:not(.e-icon-hidden) {
           background-color: transparent;
           border-color: transparent;
           color: transparent;

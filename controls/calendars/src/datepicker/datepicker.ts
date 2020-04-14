@@ -407,7 +407,9 @@ export class DatePicker extends Calendar implements IInput {
         this.initialize();
         this.bindEvents();
         this.renderComplete();
-        this.setTimeZone(this.serverTimezoneOffset);
+        if (!this.isBlazorServer) {
+            this.setTimeZone(this.serverTimezoneOffset);
+        }
     }
     protected setTimeZone(offsetValue: number ): void {
         if (!isNullOrUndefined(this.serverTimezoneOffset) && this.value) {

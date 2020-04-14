@@ -1,6 +1,6 @@
 import { Spreadsheet } from '../base/index';
 import { IRowRenderer, ICellRenderer, CellRenderArgs, skipHiddenIdx } from '../common/index';
-import { getRowHeight, SheetModel, getCell, isHiddenRow } from '../../workbook/base/index';
+import { getRowHeight, SheetModel, getCell, isHiddenRow, isHiddenCol } from '../../workbook/base/index';
 import { attributes } from '@syncfusion/ej2-base';
 import { getCellAddress } from '../../workbook/common/index';
 
@@ -47,12 +47,12 @@ export class RowRenderer implements IRowRenderer {
             row.appendChild(this.cellRenderer.renderRowHeader(index));
         } else {
             row = this.render(index);
-            let len: number = this.parent.viewport.leftIndex + this.parent.viewport.colCount + (this.parent.getThreshold('col') * 2);
-            for (let i: number = this.parent.viewport.leftIndex; i <= len; i++) {
+            for (let i: number = this.parent.viewport.leftIndex; i <= this.parent.viewport.rightIndex; i++) {
+                if (isHiddenCol(sheet, i)) { continue; }
                 row.appendChild(this.cellRenderer.render(<CellRenderArgs>{ colIdx: i, rowIdx: index, cell: getCell(index, i, sheet),
-                    address: getCellAddress(index, i), lastCell: i === len, row: row, hRow: hRow, isHeightCheckNeeded: true, pRow: pRow,
-                    first: index === this.parent.viewport.topIndex && skipHiddenIdx(sheet, index, true) !== skipHiddenIdx(sheet, 0, true) ?
-                    'Row' : '' }));
+                    address: getCellAddress(index, i), lastCell: i === this.parent.viewport.rightIndex, row: row, hRow: hRow,
+                    isHeightCheckNeeded: true, pRow: pRow, first: index === this.parent.viewport.topIndex && skipHiddenIdx(
+                    sheet, index, true) !== skipHiddenIdx(sheet, 0, true) ? 'Row' : '' }));
             }
         }
         return row;

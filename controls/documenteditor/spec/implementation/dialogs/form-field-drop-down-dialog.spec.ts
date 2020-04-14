@@ -8,7 +8,6 @@ import { DropDownFormFieldDialog } from '../../../src/document-editor/implementa
 
 describe('Form field Dropdown dialog', () => {
     let editor: DocumentEditor;
-    let documentHelper: DocumentHelper;
     let dialog: DropDownFormFieldDialog;
     beforeAll((): void => {
         editor = undefined;

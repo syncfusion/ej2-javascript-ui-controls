@@ -10398,7 +10398,8 @@ var InsertHtml = /** @class */ (function () {
     InsertHtml.removeEmptyElements = function (element) {
         var emptyElements = element.querySelectorAll(':empty');
         for (var i = 0; i < emptyElements.length; i++) {
-            if (emptyElements[i].tagName !== 'IMG' && emptyElements[i].tagName !== 'BR') {
+            if (emptyElements[i].tagName !== 'IMG' && emptyElements[i].tagName !== 'BR' &&
+                emptyElements[i].tagName !== 'IFRAME') {
                 var detachableElement = this.findDetachEmptyElem(emptyElements[i]);
                 if (!sf.base.isNullOrUndefined(detachableElement)) {
                     sf.base.detach(detachableElement);
@@ -19871,11 +19872,13 @@ var RichTextEditor = /** @class */ (function (_super) {
         if (this.editorMode === 'HTML') {
             switch (command) {
                 case 'insertHTML':
-                    if (typeof value === 'string') {
-                        value = this.htmlEditorModule.sanitizeHelper(value);
-                    }
-                    else {
-                        value = this.htmlEditorModule.sanitizeHelper(value.outerHTML);
+                    if (this.enableHtmlSanitizer) {
+                        if (typeof value === 'string') {
+                            value = this.htmlEditorModule.sanitizeHelper(value);
+                        }
+                        else {
+                            value = this.htmlEditorModule.sanitizeHelper(value.outerHTML);
+                        }
                     }
                     break;
                 case 'insertTable':
@@ -19890,7 +19893,10 @@ var RichTextEditor = /** @class */ (function (_super) {
                             src: value.url
                         }
                     });
-                    var imageValue = this.htmlEditorModule.sanitizeHelper(temp.outerHTML);
+                    var imageValue = temp.outerHTML;
+                    if (this.enableHtmlSanitizer) {
+                        imageValue = this.htmlEditorModule.sanitizeHelper(temp.outerHTML);
+                    }
                     var url = (imageValue !== '' && (this.createElement('div', {
                         innerHTML: imageValue
                     }).firstElementChild).getAttribute('src')) || null;
@@ -19911,7 +19917,10 @@ var RichTextEditor = /** @class */ (function (_super) {
                             href: value.url
                         }
                     });
-                    var linkValue = this.htmlEditorModule.sanitizeHelper(tempNode.outerHTML);
+                    var linkValue = tempNode.outerHTML;
+                    if (this.enableHtmlSanitizer) {
+                        linkValue = this.htmlEditorModule.sanitizeHelper(tempNode.outerHTML);
+                    }
                     var href = (linkValue !== '' && (this.createElement('div', {
                         innerHTML: linkValue
                     }).firstElementChild).getAttribute('href')) || null;

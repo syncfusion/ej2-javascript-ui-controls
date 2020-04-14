@@ -86,6 +86,7 @@
 
       .e-spin-bootstrap4 {
         @include boot4-spinner-rotate;
+        border-radius: 50%;
         display: block;
         margin: 0 auto;
 

@@ -320,14 +320,18 @@ export class FreezeRender extends HeaderRender implements IRenderer {
         let movableContentHeight: number = this.parent.element.querySelector('.e-movablecontent').getBoundingClientRect().height;
         let movableContent: HTMLElement = this.parent.element.querySelector('.e-movablecontent') as HTMLElement;
         let frozenContent: HTMLElement = this.parent.element.querySelector('.e-frozencontent') as HTMLElement;
+        let contentScrollWidth: number = this.parent.getContent().scrollWidth;
+        let contentTableScrollWidth: number = this.parent.element.querySelector('.e-movablecontent table').scrollWidth +
+            this.parent.getContentTable().scrollWidth;
         if (movableContent.scrollWidth - movableContent.clientWidth) {
             frozenContent.style.height = movableContentHeight -
                 height + 'px';
             frozenContent.style.borderBottom = '';
         } else {
             frozenContent.style.height = movableContentHeight + 'px';
-            if ((frozenContent.scrollHeight <= frozenContent.clientHeight) ||
-                (movableContent.scrollHeight <= movableContent.clientHeight)) {
+            if (((frozenContent.scrollHeight <= frozenContent.clientHeight) ||
+                (movableContent.scrollHeight <= movableContent.clientHeight))
+                && contentScrollWidth === contentTableScrollWidth) {
                 this.parent.scrollModule.removePadding();
             }
             frozenContent.style.borderBottom = '0px';

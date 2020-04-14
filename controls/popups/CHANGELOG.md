@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.44 (2020-04-14)
+
+### Tooltip
+
+#### Bug Fixes
+
+- `#272201` - The issue with tooltip popup element not hide properly has been resolved.
+
 ## 18.1.43 (2020-04-07)
 
 ### Dialog

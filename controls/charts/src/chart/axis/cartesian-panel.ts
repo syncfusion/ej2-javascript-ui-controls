@@ -742,6 +742,7 @@ export class CartesianAxisLayoutPanel {
         let labelElement: Element = chart.renderer.createGroup({ id: chart.element.id + 'AxisLabels' + index });
         let scrollBarHeight: number = isNullOrUndefined(axis.crossesAt) ? axis.scrollBarHeight * (isOpposed ? 1 : -1) : 0;
         let textHeight: number;
+        let textPadding: number;
         for (let i: number = 0, len: number = axis.visibleLabels.length; i < len; i++) {
             isAxisBreakLabel = isBreakLabel(axis.visibleLabels[i].originalText);
             pointX = isLabelInside ? (rect.x - padding) : (rect.x + padding + scrollBarHeight);
@@ -749,8 +750,9 @@ export class CartesianAxisLayoutPanel {
             pointY = (valueToCoefficient(axis.visibleLabels[i].value, axis) * rect.height) + (chart.stockChart ? 7 : 0);
             pointY = Math.floor((pointY * -1) + (rect.y + rect.height));
             textHeight = ((elementSize.height / 8) * axis.visibleLabels[i].text.length / 2);
-            pointY = (isAxisBreakLabel ? (axis.labelPosition === 'Inside' ? (pointY - (elementSize.height / 2) - textHeight - 5) :
-             (pointY - textHeight)) : (axis.labelPosition === 'Inside' ? (pointY - 5) :  pointY + (elementSize.height / 4)));
+            textPadding = ((elementSize.height / 4) * 3) + 3;
+            pointY = (isAxisBreakLabel ? (axis.labelPosition === 'Inside' ? (pointY - (elementSize.height / 2) - textHeight + textPadding)
+            : (pointY - textHeight)) : (axis.labelPosition === 'Inside' ? (pointY + textPadding) :  pointY + (elementSize.height / 4)));
             options = new TextOption(
                 chart.element.id + index + '_AxisLabel_' + i, pointX, pointY,
                 anchor, axis.visibleLabels[i].text);

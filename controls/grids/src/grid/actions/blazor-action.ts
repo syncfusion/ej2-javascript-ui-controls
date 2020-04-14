@@ -11,6 +11,7 @@ import { AggregateRow } from '../models/aggregate';
 import { DataUtil } from '@syncfusion/ej2-data';
 import { VirtualContentRenderer } from '../renderer/virtual-content-renderer';
 import { SortSettingsModel, GroupSettingsModel } from '../base/grid-model';
+import { PageSettingsModel } from '../models/models';
 
 export const gridObserver: Observer = new Observer();
 
@@ -370,15 +371,18 @@ export class BlazorAction {
         let gObj: IGrid = this.parent;
         let bulkChanges: string = 'bulkChanges';
         let parseArgs: IGrid = JSON.parse(args);
-        let persistArgs: {filterSettings: Object, groupSettings: GroupSettingsModel, pageSettings: Object, sortSettings: SortSettingsModel,
-            searchSettings: Object, columns: Object} = {filterSettings: parseArgs.filterSettings, groupSettings: parseArgs.groupSettings,
-                                                        pageSettings: parseArgs.pageSettings, sortSettings: parseArgs.sortSettings,
-                                                        searchSettings: parseArgs.searchSettings, columns: parseArgs.columns};
+        let persistArgs: {filterSettings: Object, groupSettings: GroupSettingsModel, pageSettings: PageSettingsModel,
+            sortSettings: SortSettingsModel, searchSettings: Object, columns: Object} = {filterSettings: parseArgs.filterSettings,
+                groupSettings: parseArgs.groupSettings, pageSettings: parseArgs.pageSettings, sortSettings: parseArgs.sortSettings,
+                searchSettings: parseArgs.searchSettings, columns: parseArgs.columns};
         if (!persistArgs.sortSettings.columns) {
             persistArgs.sortSettings.columns = [];
         }
         if (!persistArgs.groupSettings.columns) {
             persistArgs.groupSettings.columns = [];
+        }
+        if (!persistArgs.pageSettings.currentPage) {
+            gObj.pageSettings.currentPage = 1;
         }
         for (let i: number = 0; i < gObj.columns.length; i++) {
             if (gObj.groupSettings.columns.indexOf((gObj.columns[i] as Column).field) > -1) {

@@ -1209,7 +1209,7 @@ function createResize(args) {
     minWidth = args.minWidth;
     maxWidth = args.maxWidth;
     maxHeight = args.maxHeight;
-    if (!sf.base.isNullOrUndefined(args.proxy) && !sf.base.isNullOrUndefined(args.proxy.dialogOpen) && args.proxy.dialogOpen) {
+    if (args.proxy && args.proxy.element && args.proxy.element.classList.contains('e-dialog')) {
         wireEvents(args.proxy);
     }
     else {
@@ -2567,6 +2567,9 @@ var Dialog = /** @class */ (function (_super) {
         this.target = target;
         this.targetEle = ((typeof this.target) === 'string') ?
             document.querySelector(this.target) : this.target;
+        if (this.dragObj) {
+            this.dragObj.dragArea = this.targetEle;
+        }
         this.setMaxHeight();
     };
     Dialog.prototype.updateIsModal = function () {
@@ -3673,11 +3676,13 @@ var Tooltip = /** @class */ (function (_super) {
             if (this.isServerRender()) {
                 this.ctrlId = this.element.id;
                 this.tooltipEle = document.querySelector('#' + this.ctrlId + '_content');
-                this.tooltipEle.setAttribute('style', 'width:' + sf.base.formatUnit(this.width) +
-                    ';height:' + sf.base.formatUnit(this.height) + ';position:absolute;');
-                this.beforeRenderBlazor(this.contentTargetValue, this);
-                this.afterRenderBlazor(this.contentTargetValue, this.contentEvent, this.contentAnimation, this);
-                this.contentTargetValue = this.contentEvent = this.contentAnimation = null;
+                if (this.tooltipEle) {
+                    this.tooltipEle.setAttribute('style', 'width:' + sf.base.formatUnit(this.width) +
+                        ';height:' + sf.base.formatUnit(this.height) + ';position:absolute;');
+                    this.beforeRenderBlazor(this.contentTargetValue, this);
+                    this.afterRenderBlazor(this.contentTargetValue, this.contentEvent, this.contentAnimation, this);
+                    this.contentTargetValue = this.contentEvent = this.contentAnimation = null;
+                }
             }
         }
     };
@@ -3852,38 +3857,60 @@ var Tooltip = /** @class */ (function (_super) {
         //if (isNullOrUndefined(target)) { return; }
         this.trigger('beforeClose', this.tooltipEventArgs, function (observedArgs) {
             if (!observedArgs.cancel) {
-                _this.clearTemplate();
-                if (target) {
-                    _this.restoreElement(target);
-                }
-                _this.isHidden = true;
-                var closeAnimation_1 = {
-                    name: hideAnimation.effect,
-                    duration: hideAnimation.duration,
-                    delay: hideAnimation.delay,
-                    timingFunction: 'easeIn'
-                };
-                if (hideAnimation.effect === 'None') {
-                    closeAnimation_1 = undefined;
-                }
-                if (_this.closeDelay > 0) {
-                    var hide = function () {
-                        if (_this.popupObj) {
-                            _this.popupObj.hide(closeAnimation_1);
-                        }
-                    };
-                    _this.hideTimer = setTimeout(hide, _this.closeDelay);
+                if (_this.isServerRender()) {
+                    _this.blazorHide(hideAnimation, target);
                 }
                 else {
-                    if (_this.popupObj) {
-                        _this.popupObj.hide(closeAnimation_1);
-                    }
+                    _this.popupHide(hideAnimation, target);
                 }
             }
             else {
                 _this.isHidden = false;
             }
         });
+    };
+    /* istanbul ignore next */
+    Tooltip.prototype.blazorHide = function (hideAnimation, target) {
+        var proxy = this;
+        var hide = function () {
+            proxy.popupHide(hideAnimation, target);
+        };
+        if (this.popupObj) {
+            this.popupHide(hideAnimation, target);
+        }
+        else {
+            setTimeout(hide, 200);
+        }
+    };
+    Tooltip.prototype.popupHide = function (hideAnimation, target) {
+        var _this = this;
+        this.clearTemplate();
+        if (target) {
+            this.restoreElement(target);
+        }
+        this.isHidden = true;
+        var closeAnimation = {
+            name: hideAnimation.effect,
+            duration: hideAnimation.duration,
+            delay: hideAnimation.delay,
+            timingFunction: 'easeIn'
+        };
+        if (hideAnimation.effect === 'None') {
+            closeAnimation = undefined;
+        }
+        if (this.closeDelay > 0) {
+            var hide = function () {
+                if (_this.popupObj) {
+                    _this.popupObj.hide(closeAnimation);
+                }
+            };
+            this.hideTimer = setTimeout(hide, this.closeDelay);
+        }
+        else {
+            if (this.popupObj) {
+                this.popupObj.hide(closeAnimation);
+            }
+        }
     };
     Tooltip.prototype.restoreElement = function (target) {
         this.unwireMouseEvents(target);
@@ -4041,6 +4068,9 @@ var Tooltip = /** @class */ (function (_super) {
                 }
                 else {
                     sf.base.EventHandler.add(this.element, 'mouseover', this.targetHover, this);
+                    if (this.isServerRender() && !this.isSticky) {
+                        sf.base.EventHandler.add(this.element, 'mouseleave', this.onMouseOut, this);
+                    }
                 }
             }
         }
@@ -4073,7 +4103,9 @@ var Tooltip = /** @class */ (function (_super) {
                     sf.base.EventHandler.add(target, 'blur', this.onMouseOut, this);
                 }
                 if (e.type === 'mouseover') {
-                    sf.base.EventHandler.add(target, 'mouseleave', this.onMouseOut, this);
+                    if (!this.isServerRender()) {
+                        sf.base.EventHandler.add(target, 'mouseleave', this.onMouseOut, this);
+                    }
                 }
             }
             if (this.mouseTrail) {
@@ -4107,6 +4139,9 @@ var Tooltip = /** @class */ (function (_super) {
                 }
                 else {
                     sf.base.EventHandler.remove(this.element, 'mouseover', this.targetHover);
+                    if (this.isServerRender() && !this.isSticky) {
+                        sf.base.EventHandler.remove(this.element, 'mouseleave', this.onMouseOut);
+                    }
                 }
             }
         }
@@ -4135,7 +4170,9 @@ var Tooltip = /** @class */ (function (_super) {
                     sf.base.EventHandler.remove(target, 'blur', this.onMouseOut);
                 }
                 if (opensOn === 'Hover' && !sf.base.Browser.isDevice) {
-                    sf.base.EventHandler.remove(target, 'mouseleave', this.onMouseOut);
+                    if (!this.isServerRender()) {
+                        sf.base.EventHandler.remove(target, 'mouseleave', this.onMouseOut);
+                    }
                 }
             }
         }

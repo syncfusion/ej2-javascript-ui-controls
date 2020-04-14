@@ -157,7 +157,7 @@ export class ContextMenu {
             },
             {
                 text: localValue.getConstant('Update Field'),
-                iconCss: 'e-icons e-de-update_field',
+                iconCss: 'e-icons e-de-update-field',
                 id: id + CONTEXTMENU_UPDATE_FIELD
             },
             {
@@ -377,7 +377,11 @@ export class ContextMenu {
                 }
                 break;
             case id + CONTEXTMENU_UPDATE_FIELD:
-                if (!this.documentHelper.owner.isReadOnlyMode) {
+                let isReadOnly: boolean = this.documentHelper.owner.isReadOnlyMode;
+                if (this.documentHelper.selection.isReferenceField() && (!isReadOnly ||
+                    (isReadOnly && this.documentHelper.protectionType === 'FormFieldsOnly'))) {
+                    this.documentHelper.selection.updateRefField();
+                } else if (!this.documentHelper.owner.isReadOnlyMode) {
                     this.documentHelper.owner.editorModule.updateToc();
                 }
                 break;
@@ -592,8 +596,8 @@ export class ContextMenu {
             xPos = point.x;
             yPos = point.y;
         } else {
-            yPos = (event as MouseEvent).y;
-            xPos = (event as MouseEvent).x;
+            yPos = (event as MouseEvent).y + document.body.scrollTop + document.documentElement.scrollTop;
+            xPos = (event as MouseEvent).x + document.body.scrollLeft + document.documentElement.scrollLeft;
         }
         if (this.showHideElements(this.documentHelper.selection)) {
             if (isTouch) {
@@ -716,11 +720,19 @@ export class ContextMenu {
         deleteTable.style.display = 'none';
         tableProperties.style.display = 'none';
         updateField.style.display = 'none';
+        let field: FieldElementBox = selection.getHyperlinkField();
+        let isCrossRefField: boolean = false;
+        if (field instanceof FieldElementBox && selection.isReferenceField(field)) {
+            isCrossRefField = true;
+        }
+        if (field instanceof FieldElementBox && isCrossRefField &&
+            (this.documentHelper.protectionType === 'FormFieldsOnly' || !this.documentHelper.owner.isReadOnlyMode)) {
+            updateField.style.display = 'block';
+        }
         editField.style.display = 'none';
         continueNumbering.style.display = 'none';
         restartAt.style.display = 'none';
         (restartAt.nextSibling as HTMLElement).style.display = 'none';
-
         let isSelectionEmpty: boolean = selection.isEmpty;
         classList(cut, isSelectionEmpty ? ['e-disabled'] : [], !isSelectionEmpty ? ['e-disabled'] : []);
         classList(copy, isSelectionEmpty ? ['e-disabled'] : [], !isSelectionEmpty ? ['e-disabled'] : []);
@@ -743,7 +755,6 @@ export class ContextMenu {
         (paste.nextSibling as HTMLElement).style.display = 'block';
         classList(insertTable, ['e-blankicon'], []);
         classList(deleteTable, ['e-blankicon'], []);
-        classList(updateField, ['e-blankicon'], []);
         classList(editField, ['e-blankicon'], []);
         classList(autoFitTable, ['e-blankicon'], []);
         let enablePaste: boolean = (owner.enableLocalPaste && !isNullOrUndefined(owner.editor.copiedData));
@@ -770,8 +781,7 @@ export class ContextMenu {
                     hyperlink.classList.remove('e-disabled');
                 }
             }
-            let field: FieldElementBox = selection.getHyperlinkField();
-            if (field instanceof FieldElementBox && !selection.isImageField()) {
+            if (field instanceof FieldElementBox && !selection.isImageField() && !isCrossRefField) {
                 openHyperlink.style.display = 'block';
                 copyHyperlink.style.display = 'block';
                 if (owner.hyperlinkDialogModule) {
@@ -780,6 +790,7 @@ export class ContextMenu {
                 removeHyperlink.style.display = 'block';
                 (removeHyperlink.nextSibling as HTMLElement).style.display = 'block';
                 isDialogHidden = true;
+                properties.style.display = 'none';
             } else {
                 if (owner.hyperlinkDialogModule) {
                     hyperlink.style.display = 'block';
@@ -790,6 +801,10 @@ export class ContextMenu {
             if (selection.isFormField() && this.documentHelper.owner.enableFormField) {
                 hyperlink.style.display = 'none';
                 properties.style.display = 'block';
+            }
+            if (field instanceof FieldElementBox && isCrossRefField) {
+                hyperlink.style.display = 'none';
+                updateField.style.display = 'block';
             }
         }
         if (this.documentHelper.owner.selection.start.paragraph.isInsideTable

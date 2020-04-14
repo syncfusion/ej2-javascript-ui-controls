@@ -1,5 +1,5 @@
 import { remove, createElement, closest, formatUnit, Browser, KeyboardEventArgs, extend } from '@syncfusion/ej2-base';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, removeClass } from '@syncfusion/ej2-base';
 import { DataManager } from '@syncfusion/ej2-data';
 import { IGrid, IRenderer, NotifyArgs, VirtualInfo, IModelGenerator, InterSection } from '../base/interface';
 import { Column } from '../models/column';
@@ -968,17 +968,27 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
                 }
                 if (width > gObj.width) {
                     this.setDisplayNone(tr, idx, displayVal, rows);
-                    this.virtualEle.setWrapperWidth(width + '');
-                    this.vgenerator.refreshColOffsets();
+                    if (this.parent.enableColumnVirtualization) {
+                        this.virtualEle.setWrapperWidth(width + '');
+                    }
                     this.refreshVirtualElement();
                 } else {
-                    this.refreshContentRows({ requestType: 'refresh' });
+                    needFullRefresh = true;
                 }
             }
             if (!this.parent.invokedFromMedia && column.hideAtMedia) {
                 this.parent.updateMediaColumns(column);
             }
             this.parent.invokedFromMedia = false;
+        }
+        if (isBlazor() && this.parent.isServerRendered && needFullRefresh) {
+            let inViewIdx: number[] = (<{inViewIndexes?: number[]}>this.parent).inViewIndexes;
+            let translateX: number = this.getColumnOffset(inViewIdx[0] - 1);
+            let width: string = this.getColumnOffset(inViewIdx[inViewIdx.length - 1]) - translateX + '';
+            this.parent.notify('refresh-virtual-indices', { requestType: 'virtualScrollRefresh',
+            startColumnIndex: inViewIdx[0], endColumnIndex: inViewIdx[inViewIdx.length - 1], axis: 'X',
+            VTablewidth: width, translateX: translateX});
+            this.parent.notify('setcolumnstyles', {});
         }
         if (needFullRefresh) {
             this.refreshContentRows({ requestType: 'refresh' });
@@ -1057,6 +1067,7 @@ export class VirtualHeaderRenderer extends HeaderRender implements IRenderer {
         let gObj: IGrid = this.parent;
         let displayVal: string;
         let idx: number;
+        let needFullRefresh: boolean;
 
         for (let c: number = 0, clen: number = columns.length; c < clen; c++) {
             let column: Column = columns[c];
@@ -1076,9 +1087,12 @@ export class VirtualHeaderRenderer extends HeaderRender implements IRenderer {
                     this.virtualEle.setWrapperWidth(tablewidth + '');
                     this.gen.refreshColOffsets();
                 } else {
-                    this.refreshUI();
+                    needFullRefresh = true;
                 }
             } else {
+                needFullRefresh = true;
+            }
+            if (needFullRefresh) {
                 this.refreshUI();
             }
         }
@@ -1089,6 +1103,9 @@ export class VirtualHeaderRenderer extends HeaderRender implements IRenderer {
             if (ele.querySelector('[e-mappinguid]') &&
                 ele.querySelector('[e-mappinguid]').getAttribute('e-mappinguid') === col.uid) {
                 setStyleAttribute(<HTMLElement>ele, { 'display': displayVal });
+                if (displayVal === '') {
+                    removeClass([ele], 'e-hide');
+                }
                 break;
             }
         }

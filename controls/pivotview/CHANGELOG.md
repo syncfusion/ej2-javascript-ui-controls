@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.44 (2020-04-14)
+
+### Pivot Table
+
+#### Bug Fixes
+
+- `#266106` - Improved the data refresh on virtual scrolling.
+
 ## 18.1.36-beta (2020-03-19)
 
 ### Pivot Table

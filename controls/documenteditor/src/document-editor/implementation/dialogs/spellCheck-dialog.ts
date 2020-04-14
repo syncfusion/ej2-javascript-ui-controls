@@ -48,7 +48,7 @@ export class SpellCheckDialog {
      */
     public onCancelButtonClick = (): void => {
         this.documentHelper.clearSelectionHighlight();
-        this.documentHelper.dialog.hide();
+        this.documentHelper.hideDialog();
     }
     /**
      * @private
@@ -75,7 +75,7 @@ export class SpellCheckDialog {
         }
 
         if (this.parent.spellChecker.errorWordCollection.length === 0) {
-            this.documentHelper.dialog.hide();
+            this.documentHelper.hideDialog();
         }
     }
 

@@ -1,5 +1,5 @@
 import { MarkdownParser } from './../base/markdown-parser';
-import { IMarkdownSubCommands, IMDFormats, ITextArea } from './../base/interface';
+import { IMarkdownSubCommands, IMDFormats } from './../base/interface';
 import { MarkdownSelection } from './markdown-selection';
 import { extend } from '@syncfusion/ej2-base';
 import * as EVENTS from './../../common/constant';
@@ -204,7 +204,7 @@ export class MDFormats {
         let format: string = 'p';
         let configKey: string[] = Object.keys(this.syntax);
         let keys: string[] = Object.keys(this.syntax);
-        let direction: string = (this.parent.element as ITextArea).selectionDirection;
+        let direction: string = (this.parent.element as HTMLTextAreaElement).selectionDirection;
         let checkLine: string = direction === 'backward' ? lines[0].text as string : lines[lines.length - 1].text as string;
         for (let i: number = 0; !documentNode && i < keys.length; i++) {
             if (keys[i] !== 'pre' && this.selection.isStartWith(checkLine, this.syntax[keys[i]])) {

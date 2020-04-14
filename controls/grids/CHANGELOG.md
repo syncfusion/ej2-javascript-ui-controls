@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 18.1.44 (2020-04-14)
+
+### Grid
+
+#### Bug Fixes
+
+- `#271625, #272096` -  Frozen Grid cell selection issue has been fixed.
+- `#271625` - Grid resize cursor issue with stacked header has been fixed.
+- `#271240` - Batch editing `cellSaved` event after escape key issue has been fixed.
+- `#260390` - Header misalignment in auto wrap enabled Grid with frozen columns has been fixed.
+
+#### New Features
+
+- `#256907` - Provided support to filter array values.
+
 ## 18.1.43 (2020-04-07)
 
 ### Grid
@@ -11,7 +26,7 @@
 - `#268095` - Undefined value is saved as [Object Object] in batch editing has been fixed.
 - `#266864` - Error in Angular Production build with toolbar search is enabled in Grid has been fixed.
 - `#268842` - Empty summary value issue when collapse the record has been fixed.
-- `#270597` - Validation message position issue has been fixed.
+- `#270597, #271625` - Validation message position issue has been fixed.
 - `#268807` - ResetOnRowClick now works properly with persist selection.
 - `#270585` - recordClick event issue after grouping has been resolved.
 - `#258489, #268908` - Saving the cell through tab key issue in batch edit has been fixed.

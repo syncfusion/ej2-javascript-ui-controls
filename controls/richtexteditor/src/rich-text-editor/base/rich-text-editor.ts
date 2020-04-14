@@ -1126,10 +1126,12 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.editorMode === 'HTML') {
             switch (command) {
                 case 'insertHTML':
-                    if (typeof value === 'string') {
-                        value = this.htmlEditorModule.sanitizeHelper(value);
-                    } else {
-                        value = this.htmlEditorModule.sanitizeHelper((value as HTMLElement).outerHTML);
+                    if (this.enableHtmlSanitizer) {
+                        if (typeof value === 'string') {
+                            value = this.htmlEditorModule.sanitizeHelper(value);
+                        } else {
+                            value = this.htmlEditorModule.sanitizeHelper((value as HTMLElement).outerHTML);
+                        }
                     }
                     break;
                 case 'insertTable':
@@ -1144,7 +1146,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                             src: (value as IImageCommandsArgs).url as string
                         }
                     });
-                    let imageValue: string = this.htmlEditorModule.sanitizeHelper(temp.outerHTML);
+                    let imageValue: string = temp.outerHTML;
+                    if (this.enableHtmlSanitizer) {
+                        imageValue = this.htmlEditorModule.sanitizeHelper(temp.outerHTML);
+                    }
                     let url: string = (imageValue !== '' && (this.createElement('div', {
                         innerHTML: imageValue
                     }).firstElementChild).getAttribute('src')) || null;
@@ -1165,7 +1170,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
                             href: (value as ILinkCommandsArgs).url as string
                         }
                     });
-                    let linkValue: string = this.htmlEditorModule.sanitizeHelper(tempNode.outerHTML);
+                    let linkValue: string = tempNode.outerHTML;
+                    if (this.enableHtmlSanitizer) {
+                        linkValue = this.htmlEditorModule.sanitizeHelper(tempNode.outerHTML);
+                    }
                     let href: string = (linkValue !== '' && (this.createElement('div', {
                         innerHTML: linkValue
                     }).firstElementChild).getAttribute('href')) || null;

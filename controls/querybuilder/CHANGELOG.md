@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.44 (2020-04-14)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- Compatibility with EJ1 issues has been resolved.
+
 ## 18.1.43 (2020-04-07)
 
 ### QueryBuilder

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.44 (2020-04-14)
+
+### ListBox
+
+#### New Features
+
+- Provided `beforeDragStart` event.
+
 ## 18.1.43 (2020-04-07)
 
 ### ListView

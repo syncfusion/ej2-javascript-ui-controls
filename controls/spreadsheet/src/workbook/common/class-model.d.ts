@@ -220,4 +220,10 @@ export interface ValidationModel {
      */
     inCellDropDown?: boolean;
 
+    /**
+     * specifies to allow Highlight Invalid Data.
+     * @default false
+     */
+    isHighlighted?: boolean;
+
 }

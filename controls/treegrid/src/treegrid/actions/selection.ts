@@ -206,10 +206,12 @@ export class Selection {
         }
         length = childRecords.length;
         for (let count: number = 0; count < length; count++) {
-          if (childRecords[count].hasChildRecords) {
-            this.traverSelection(childRecords[count], checkboxState, true);
-          } else {
-            this.updateSelectedItems(childRecords[count], checkboxState);
+          if (!childRecords[count].isSummaryRow) {
+            if (childRecords[count].hasChildRecords) {
+              this.traverSelection(childRecords[count], checkboxState, true);
+            } else {
+              this.updateSelectedItems(childRecords[count], checkboxState);
+            }
           }
         }
       }
@@ -243,10 +245,12 @@ export class Selection {
           let currentRecord: ITreeData = getParentData(this.parent, childRecords[i].uniqueID);
           let checkBoxRecord: ITreeData = (isBlazor() && this.parent.dataSource[adaptorName] === 'BlazorAdaptor') ?
               childRecord[0] : currentRecord;
-          if (checkBoxRecord.checkboxState === 'indeterminate') {
-            indeter++;
-          } else if (checkBoxRecord.checkboxState === 'check') {
-            checkChildRecords++;
+          if (!isNullOrUndefined(checkBoxRecord)) {
+            if (checkBoxRecord.checkboxState === 'indeterminate') {
+              indeter++;
+            } else if (checkBoxRecord.checkboxState === 'check') {
+              checkChildRecords++;
+            }
           }
         }
         if (indeter > 0 || (checkChildRecords > 0 && checkChildRecords !== length)) {
@@ -379,11 +383,14 @@ export class Selection {
       if (isCheckboxcolumn(this.parent)) {
         if (this.parent.autoCheckHierarchy) {
           if ((requestType === 'sorting' || requestType === 'paging')) {
+            let rows: Element[] = this.parent.grid.getRows();
             childData = this.parent.getCurrentViewRecords();
             childLength = childData.length;
             this.selectedIndexes = [];
             for (let i: number = 0; i < childLength; i++) {
-              this.updateSelectedItems(childData[i], childData[i].checkboxState, true);
+              if (!rows[i].classList.contains('e-summaryrow')) {
+                this.updateSelectedItems(childData[i], childData[i].checkboxState, true);
+              }
             }
           } else if (requestType === 'delete' || args.action === 'add') {
             let updatedData: ITreeData[] = [];

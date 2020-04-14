@@ -941,7 +941,9 @@ export class BatchEdit {
             if (!currentRowObj.changes) {
                 currentRowObj.changes = extend({}, {}, rowObj.data, true);
             }
+            if (!isNullOrUndefined(field)) {
             setValue(field, value, currentRowObj.changes);
+            }
             let movableRowObject: Row<Column>;
             if (isBlazor() && this.parent.isServerRendered && (parentsUntil(td, 'e-movableheader') ||
             parentsUntil(td, 'e-movablecontent'))) {
@@ -1037,15 +1039,15 @@ export class BatchEdit {
         }
     }
 
-    public saveCell(isForceSave?: boolean): void {
-        if (this.preventSaveCell) { return; }
+    public escapeCellEdit(): void {
+        let args: CellSaveArgs = this.generateCellArgs();
+        args.value = args.previousValue;
+        this.successCallBack(args, args.cell.parentElement, args.column)(args);
+    }
+
+    private generateCellArgs(): Object {
         let gObj: IGrid = this.parent;
-        if (!isForceSave && (!gObj.isEdit || this.validateFormObj())) {
-            return;
-        }
-        this.preventSaveCell = true;
         this.parent.element.classList.remove('e-editing');
-        let tr: Element = parentsUntil(this.form, 'e-row');
         let column: Column = this.cellDetails.column;
         let obj: Object = {};
         obj[column.field] = this.cellDetails.rowData[column.field];
@@ -1060,20 +1062,40 @@ export class BatchEdit {
             columnName: column.field,
             value: getObject(column.field, editedData),
             rowData: this.cellDetails.rowData,
+            column: column,
             previousValue: this.cellDetails.value,
-            isForeignKey: this.cellDetails.isForeignKey, cancel: false
+            isForeignKey: this.cellDetails.isForeignKey,
+            cancel: false
         };
+
         if (!isBlazor() || this.parent.isJsComponent) {
             args.cell = this.form.parentElement;
             args.columnObject = column;
         }
+        return args;
+    }
+
+    public saveCell(isForceSave?: boolean): void {
+        if (this.preventSaveCell) { return; }
+        let gObj: IGrid = this.parent;
+        if (!isForceSave && (!gObj.isEdit || this.validateFormObj())) {
+            return;
+        }
+        this.preventSaveCell = true;
+        let args: CellSaveArgs = this.generateCellArgs();
+        let tr: Element = isBlazor() ? parentsUntil(this.form, 'e-row') : args.cell.parentElement;
+        let col: Column = isBlazor() ? this.cellDetails.column : args.column;
+        if (isBlazor()) {
+            delete args.column;
+        }
         if (!isForceSave) {
-            gObj.trigger(events.cellSave, args, this.successCallBack(args, tr, column));
-            gObj.notify(events.batchForm, {formObj: this.form});
+            gObj.trigger(events.cellSave, args, this.successCallBack(args, tr, col));
+            gObj.notify(events.batchForm, { formObj: this.form });
         } else {
-            this.successCallBack(args, tr, column)(args);
+            this.successCallBack(args, tr, col)(args);
         }
     }
+
 
     private successCallBack(cellSaveArgs: CellSaveArgs, tr: Element, column: Column): Function {
         return (cellSaveArgs: CellSaveArgs) => {
@@ -1114,7 +1136,7 @@ export class BatchEdit {
                 || (isNullOrUndefined(cellSaveArgs.value) && isNullOrUndefined(this.cellDetails.value) &&
                     !cellSaveArgs.cell.parentElement.classList.contains('e-insertedrow'))) {
                 cellSaveArgs.cell.classList.remove('e-updatedtd');
-                if (isBlazor() && gObj.isServerRendered && cellSaveArgs.value.toString() ===
+                if (isBlazor() && gObj.isServerRendered && (!isNullOrUndefined(cellSaveArgs.value) ? cellSaveArgs.value : '').toString() ===
                 (!isNullOrUndefined(this.cellDetails.value) ? this.cellDetails.value : '').toString()) {
                     if (this.cloneCell[`${this.cellDetails.rowIndex}${cellSaveArgs.columnObject.index}`].
                         classList.contains('e-selectionbackground')) {

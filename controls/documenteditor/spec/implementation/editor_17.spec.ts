@@ -66,7 +66,7 @@ describe('Open restrict document with para mark at end of table cell', () => {
         }, 1000);
     });
     it('Document open', () => {
-        expect(()=>{ editor.open(restrictJson)}).not.toThrowError();
+        expect(() => { editor.open(restrictJson) }).not.toThrowError();
     });
     it('insert text at non-editable region', () => {
         let currentLineLength: number = editor.selection.start.currentWidget.children.length;
@@ -74,7 +74,7 @@ describe('Open restrict document with para mark at end of table cell', () => {
         expect(editor.selection.start.currentWidget.children.length).toBe(currentLineLength);
     });
     it('insert text at editable region', () => {
-        editor.selection.select('0;0;0;0;0;6','0;0;0;0;0;6');
+        editor.selection.select('0;0;0;0;0;6', '0;0;0;0;0;6');
         let currentLineLength: number = editor.selection.start.currentWidget.children.length;
         editor.editor.handleTextInput('s');
         expect(editor.selection.start.currentWidget.children.length).not.toBe(currentLineLength);
@@ -111,7 +111,7 @@ describe('Apply character format validation', () => {
         editor.selection.handleControlLeftKey();
         editor.selection.handleControlLeftKey();
         editor.selection.selectCurrentWord();
-        editor.selection.characterFormat.bold=true;
+        editor.selection.characterFormat.bold = true;
         expect(editor.selection.characterFormat.bold).toBe(true);
     });
     it('Bold property for multiple different inline', () => {
@@ -120,7 +120,7 @@ describe('Apply character format validation', () => {
         editor.selection.handleLeftKey();
         editor.selection.handleShiftEndKey();
         editor.selection.handleShiftLeftKey();
-        editor.selection.characterFormat.bold=true;
+        editor.selection.characterFormat.bold = true;
         expect(editor.selection.characterFormat.bold).toBe(true);
     });
     it('Undo after bold', () => {
@@ -130,5 +130,54 @@ describe('Apply character format validation', () => {
     it('Redo after bold', () => {
         editor.editorHistory.redo();
         expect(editor.selection.characterFormat.bold).toBe(true);
+    });
+});
+
+/**
+ * Paste match formatting validation
+ */
+
+let pasteString: string = '{"sections":[{"blocks":[{"characterFormat":{"bold":true,"italic":true,"underline":"Single","strikethrough":"None","fontSize":11,"fontFamily":"Calibri","fontColor":"#ED7D31FF","bidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"},"paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"beforeSpacing":0,"afterSpacing":8,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"BodyText","textAlignment":"Left","styleName":"Normal","bidi":false,"contextualSpacing":false},"inlines":[{"text":"Source format","characterFormat":{"bold":true,"italic":true,"underline":"Single","strikethrough":"None","fontSize":11,"fontFamily":"Calibri","fontColor":"#ED7D31FF","bidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"}}]}],"headersFooters":{},"sectionFormat":{"headerDistance":36,"footerDistance":36,"pageWidth":612,"pageHeight":792,"leftMargin":72,"rightMargin":72,"topMargin":72,"bottomMargin":72,"differentFirstPage":false,"differentOddAndEvenPages":false,"bidi":false,"restartPageNumbering":false,"pageStartingNumber":0}}],"paragraphFormat":{"leftIndent":0,"rightIndent":0,"afterSpacing":8,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","textAlignment":"Left"},"background":{"color":"#FFFFFFFF"},"styles":[{"type":"Paragraph","name":"Normal","next":"Normal","characterFormat":{"bold":false,"italic":false,"strikethrough":"None","fontSize":11,"fontFamily":"Calibri","fontColor":"#00000000","bidi":false,"fontSizeBidi":11,"fontFamilyBidi":"Calibri"},"paragraphFormat":{"leftIndent":0,"rightIndent":0,"afterSpacing":8,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","textAlignment":"Left"}},{"type":"Character","name":"Default Paragraph Font"}],"defaultTabWidth":35.400001525878906,"formatting":false,"protectionType":"NoProtection","enforcement":false,"dontUseHTMLParagraphAutoSpacing":false}';
+
+describe('Paste formatting with underline validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableLocalPaste: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Merge formatting', () => {
+        editor.editor.insertText('Sample');
+        editor.selection.handleLeftKey();
+        editor.selection.handleLeftKey();
+        editor.editor.paste(pasteString, 'MergeWithExistingFormatting');
+        editor.selection.handleLeftKey();
+        editor.selection.handleLeftKey();
+        expect(editor.selection.characterFormat.underline).toBe('Single');
+    });
+    it('undo after merge formatting', () => {
+        editor.editorHistory.undo();
+        expect(editor.selection.characterFormat.underline).toBe('None');
+    });
+    it('redo after merge formatting', () => {
+        editor.editorHistory.redo();
+        editor.selection.handleLeftKey();
+        expect(editor.selection.characterFormat.underline).toBe('Single');
     });
 });

@@ -44,6 +44,13 @@
     color: $dialog-active-icon-color;
   }
 
+  .e-dialog .e-btn.e-dlg-closeicon-btn:active span,
+  .e-dialog .e-btn.e-dlg-closeicon-btn:focus span {
+    border-radius: 50%;
+    color: $dialog-active-icon-color;
+    opacity: 1;
+  }
+
   .e-icon-dlg-close:active {
     border-radius: 50%;
     color: $dialog-active-icon-color;

@@ -82,9 +82,61 @@ describe('Insert table', () => {
         editor.editorHistory.redo();
         expect(editor.selection.start.paragraph.previousWidget instanceof TableWidget).toBe(true);
     });
-    it('Multiple undo and redo after insertTable',()=>{
+    it('Multiple undo and redo after insertTable', () => {
         editor.editorHistory.undo();
         editor.editorHistory.redo();
         expect(editor.selection.start.paragraph.previousWidget instanceof TableWidget).toBe(true);
+    });
+});
+
+/**
+ * Insert text before page break validation
+ */
+
+describe('Insert text after page break', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableLocalPaste: false });
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('In non-empty paragraph insert text and page break validation', () => {
+        editor.editor.insertText('sample');
+        editor.editorModule.insertPageBreak();
+        editor.editor.insertText('s');
+        editor.selection.handleUpKey();
+        editor.editor.insertText('s');
+        expect(editor.documentHelper.pages.indexOf(editor.documentHelper.currentPage)).toBe(0);
+    });
+    it('In empty paragraph insert text and page break validation', () => {
+        editor.editorModule.insertPageBreak();
+        editor.editor.insertText('sample');
+        editor.selection.handleUpKey();
+        editor.editor.insertText('s');
+        expect(editor.documentHelper.pages.indexOf(editor.documentHelper.currentPage)).toBe(0);
+    });
+    it('undo after insert text', () => {
+        editor.editorHistory.undo();
+        expect(editor.selection.start.currentWidget.children.length).toBe(1);
+    });
+    it('redo after insert text', () => {
+        editor.editorHistory.redo();
+        expect(editor.selection.start.currentWidget.children.length).toBe(2);
     });
 });

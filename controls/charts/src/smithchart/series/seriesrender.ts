@@ -32,11 +32,13 @@ export class SeriesRender {
         let dataArray: object[] = <object[]>series.dataSource;
         let resistance: string = series.resistance;
         let reactance: string = series.reactance;
+        let tooltip: string = series.tooltipMappingName;
         series.points = [];
         for (let i: number = 0; i < dataArray.length; i++) {
             series.points.push({
                 resistance: dataArray[i][resistance],
-                reactance: dataArray[i][reactance]
+                reactance: dataArray[i][reactance],
+                tooltip: dataArray[i][tooltip]
             });
         }
     }

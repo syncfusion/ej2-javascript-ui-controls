@@ -176,7 +176,7 @@ export class Legend extends BaseLegend {
         let legend: LegendOptions = this.legendCollections[seriesIndex];
         let changeDetection: string = 'isProtectedOnChange';
         let legendClickArgs: ILegendClickEventArgs =  { legendText: legend.text, legendShape: legend.shape,
-            chart: chart, series: series, name: legendClick, cancel: false
+            chart: chart.isBlazor ? {} as Chart : chart, series: series, name: legendClick, cancel: false
                 };
         this.chart.trigger(legendClick, legendClickArgs);
         series.legendShape = legendClickArgs.legendShape;

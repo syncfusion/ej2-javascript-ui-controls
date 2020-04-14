@@ -3868,8 +3868,20 @@ let Sortable = Sortable_1 = class Sortable extends Base {
         };
         this.onDragStart = (e) => {
             this.target = this.getSortableElement(e.target);
+            let cancelDrag = false;
             this.target.classList.add('e-grabbed');
             this.curTarget = this.target;
+            e.helper = document.getElementsByClassName('e-sortableclone')[0];
+            let args = { cancel: false, element: this.element, target: this.target };
+            this.trigger('beforeDragStart', args, (observedArgs) => {
+                if (observedArgs.cancel) {
+                    cancelDrag = observedArgs.cancel;
+                    this.onDragStop(e);
+                }
+            });
+            if (cancelDrag) {
+                return;
+            }
             if (isBlazor) {
                 this.trigger('dragStart', { event: e.event, element: this.element, target: this.target,
                     bindEvents: e.bindEvents, dragElement: e.dragElement });
@@ -4088,6 +4100,9 @@ __decorate$1([
 __decorate$1([
     Event()
 ], Sortable.prototype, "drag", void 0);
+__decorate$1([
+    Event()
+], Sortable.prototype, "beforeDragStart", void 0);
 __decorate$1([
     Event()
 ], Sortable.prototype, "dragStart", void 0);

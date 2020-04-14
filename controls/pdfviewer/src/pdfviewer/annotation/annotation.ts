@@ -2925,7 +2925,7 @@ export class Annotation {
             setting.borderDashArray = pdfAnnotationBase.borderDashArray;
         }
         let labelSettings: ShapeLabelSettingsModel;
-        if (this.pdfViewer.enableShapeLabel) {
+        if (this.pdfViewer.enableShapeLabel && pdfAnnotationBase.shapeAnnotationType !== 'HandWrittenSignature') {
             labelSettings = {
                 // tslint:disable-next-line:max-line-length
                 fontColor: pdfAnnotationBase.fontColor, fontSize: pdfAnnotationBase.fontSize, fontFamily: pdfAnnotationBase.fontFamily,

@@ -479,6 +479,7 @@ export class ShapeAnnotation {
         if (pageAnnotations != null && annotationBase) {
             for (let i: number = 0; i < pageAnnotations.length; i++) {
                 if (annotationBase.id === pageAnnotations[i].id) {
+                    let date: Date = new Date();
                     if (property === 'bounds') {
                         if (pageAnnotations[i].shapeAnnotationType === 'Line') {
                             pageAnnotations[i].vertexPoints = annotationBase.vertexPoints;
@@ -512,42 +513,33 @@ export class ShapeAnnotation {
                             // tslint:disable-next-line:max-line-length
                             pageAnnotations[i].labelBounds = { left: labelLeft, top: labelTop, width: labelWidth, height: labelHeight, right: 0, bottom: 0 };
                         }
-                        let date: Date = new Date();
                         pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'fill') {
                         pageAnnotations[i].fillColor = annotationBase.wrapper.children[0].style.fill;
-                        let date: Date = new Date();
                         pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'stroke') {
                         pageAnnotations[i].strokeColor = annotationBase.wrapper.children[0].style.strokeColor;
-                        let date: Date = new Date();
                         pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'opacity') {
                         pageAnnotations[i].opacity = annotationBase.wrapper.children[0].style.opacity;
-                        let date: Date = new Date();
                         pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'thickness') {
                         pageAnnotations[i].thickness = annotationBase.wrapper.children[0].style.strokeWidth;
-                        let date: Date = new Date();
                         pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'dashArray') {
                         pageAnnotations[i].borderDashArray = annotationBase.wrapper.children[0].style.strokeDashArray;
                         pageAnnotations[i].borderStyle = annotationBase.borderStyle;
-                        let date: Date = new Date();
                         pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'startArrow') {
                         // tslint:disable-next-line:max-line-length
                         pageAnnotations[i].lineHeadStart = this.pdfViewer.annotation.getArrowTypeForCollection(annotationBase.sourceDecoraterShapes);
-                        let date: Date = new Date();
                         pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'endArrow') {
                         // tslint:disable-next-line:max-line-length
                         pageAnnotations[i].lineHeadEnd = this.pdfViewer.annotation.getArrowTypeForCollection(annotationBase.taregetDecoraterShapes);
-                        let date: Date = new Date();
                         pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'notes') {
                         pageAnnotations[i].note = annotationBase.notes;
-                        let date: Date = new Date();
                         pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'delete') {
                         currentAnnotObject = pageAnnotations.splice(i, 1)[0];
@@ -555,11 +547,14 @@ export class ShapeAnnotation {
                     } else if (property === 'labelContent') {
                         pageAnnotations[i].note = annotationBase.labelContent;
                         pageAnnotations[i].labelContent = annotationBase.labelContent;
-                        let date: Date = new Date();
                         pageAnnotations[i].modifiedDate = date.toLocaleString();
                         break;
                     } else if (property === 'fontColor') {
                         pageAnnotations[i].fontColor = annotationBase.fontColor;
+                        pageAnnotations[i].modifiedDate = date.toLocaleString();
+                    } else if (property === 'fontSize') {
+                        pageAnnotations[i].fontSize = annotationBase.fontSize;
+                        pageAnnotations[i].modifiedDate = date.toLocaleString();
                     }
                 }
             }

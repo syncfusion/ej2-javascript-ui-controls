@@ -106,6 +106,9 @@ export class EventWindow {
         }
         this.dialogObject = new Dialog(dialogModel, this.element);
         this.dialogObject.isStringTemplate = true;
+        if (this.dialogObject.element.querySelector('.e-dlg-closeicon-btn')) {
+            this.dialogObject.element.querySelector('.e-dlg-closeicon-btn').setAttribute('title', this.l10n.getConstant('close'));
+        }
         addClass([this.element.parentElement], cls.EVENT_WINDOW_DIALOG_CLASS + '-container');
         if (this.parent.isAdaptive) {
             EventHandler.add(this.element.querySelector('.' + cls.EVENT_WINDOW_BACK_ICON_CLASS), 'click', this.dialogClose, this);
@@ -324,11 +327,15 @@ export class EventWindow {
         let titleLocationDiv: HTMLElement = this.createDivElement(cls.EVENT_WINDOW_TITLE_LOCATION_DIV_CLASS);
         parentDiv.appendChild(titleLocationDiv);
         titleLocationDiv.appendChild(this.renderTextBox(cls.SUBJECT_CLASS));
+        titleLocationDiv.querySelector('.' + cls.SUBJECT_CLASS).setAttribute('title', this.parent.editorTitles.subject);
         titleLocationDiv.appendChild(this.renderTextBox(cls.LOCATION_CLASS));
+        titleLocationDiv.querySelector('.' + cls.LOCATION_CLASS).setAttribute('title', this.parent.editorTitles.location);
         let startEndDateTimeDiv: HTMLElement = this.createDivElement(cls.EVENT_WINDOW_START_END_DIV_CLASS);
         parentDiv.appendChild(startEndDateTimeDiv);
         startEndDateTimeDiv.appendChild(this.renderDateTimePicker(cls.EVENT_WINDOW_START_CLASS, this.onTimeChange.bind(this)));
+        startEndDateTimeDiv.querySelector('.' + cls.EVENT_WINDOW_START_CLASS).setAttribute('title', this.parent.editorTitles.startTime);
         startEndDateTimeDiv.appendChild(this.renderDateTimePicker(cls.EVENT_WINDOW_END_CLASS));
+        startEndDateTimeDiv.querySelector('.' + cls.EVENT_WINDOW_END_CLASS).setAttribute('title', this.parent.editorTitles.endTime);
         let allDayTimezoneDiv: HTMLElement = this.createDivElement(cls.EVENT_WINDOW_ALLDAY_TZ_DIV_CLASS);
         parentDiv.appendChild(allDayTimezoneDiv);
         allDayTimezoneDiv.appendChild(this.renderCheckBox(cls.EVENT_WINDOW_ALL_DAY_CLASS));
@@ -365,6 +372,7 @@ export class EventWindow {
         }
         let description: HTMLElement = this.createDivElement(cls.DESCRIPTION_CLASS + '-row');
         description.appendChild(this.renderTextBox(cls.DESCRIPTION_CLASS));
+        description.querySelector('.' + cls.DESCRIPTION_CLASS).setAttribute('title', this.parent.editorTitles.description);
         parentDiv.appendChild(description);
         let submit: HTMLElement = createElement('button', { attrs: { type: 'hidden', title: 'submit', style: 'display:none' } });
         parentDiv.appendChild(submit);
@@ -1301,7 +1309,7 @@ export class EventWindow {
 
     public setDefaultValueToObject(eventObj: { [key: string]: Object }): void {
         if (!isNullOrUndefined(eventObj[this.fields.subject])) {
-            eventObj[this.fields.subject] = eventObj[this.fields.subject] || this.parent.eventSettings.fields.subject.default;
+            eventObj[this.fields.subject] = eventObj[this.fields.subject] || this.l10n.getConstant('addTitle');
         }
         if (!isNullOrUndefined(eventObj[this.fields.location])) {
             eventObj[this.fields.location] = eventObj[this.fields.location] || this.parent.eventSettings.fields.location.default;

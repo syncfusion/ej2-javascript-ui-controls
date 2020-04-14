@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { LayoutViewer, PageLayoutViewer, Editor, Selection, EditorHistory, Page, ParagraphWidget, DocumentHelper } from '../../src/index';
+import { LayoutViewer, PageLayoutViewer, Editor, Selection, EditorHistory, Page, ParagraphWidget, DocumentHelper, FieldElementBox, TextElementBox, SfdtExport } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
 /**
  * Layout Spec
@@ -3511,6 +3511,110 @@ let sfdt: object = {
     ]
 };
 
+let crossRefSfdt: object = {
+    "sections": [
+        {
+            "blocks": [
+                {
+                    "paragraphFormat": {
+                        "styleName": "Normal"
+                    },
+                    "inlines": [
+                        {
+                            "hasFieldEnd": true,
+                            "fieldType": 0
+                        },
+                        {
+                            "text": " REF Syncfusion \\h "
+                        },
+                        {
+                            "fieldType": 2
+                        },
+                        {
+                            "text": "Syncfusion"
+                        },
+                        {
+                            "fieldType": 1
+                        }
+                    ]
+                },
+                {
+                    "paragraphFormat": {
+                        "styleName": "Normal"
+                    },
+                    "inlines": [
+                        {
+                            "name": "Syncfusion",
+                            "bookmarkType": 0
+                        },
+                        {
+                            "text": "Sync"
+                        },
+                        {
+                            "name": "_GoBack",
+                            "bookmarkType": 0
+                        },
+                        {
+                            "name": "Syncfusion",
+                            "bookmarkType": 1
+                        },
+                        {
+                            "name": "_GoBack",
+                            "bookmarkType": 1
+                        }
+                    ]
+                }
+            ],
+            "headersFooters": {},
+            "sectionFormat": {
+                "headerDistance": 36.0,
+                "footerDistance": 36.0,
+                "pageWidth": 612.0,
+                "pageHeight": 792.0,
+                "leftMargin": 72.0,
+                "rightMargin": 72.0,
+                "topMargin": 72.0,
+                "bottomMargin": 72.0,
+                "differentFirstPage": false,
+                "differentOddAndEvenPages": false,
+                "bidi": false,
+                "restartPageNumbering": false,
+                "pageStartingNumber": 0
+            }
+        }
+    ],
+    "characterFormat": {
+        "fontSize": 11.0,
+        "fontFamily": "Calibri",
+        "fontSizeBidi": 11.0,
+        "fontFamilyBidi": "Arial"
+    },
+    "paragraphFormat": {
+        "afterSpacing": 8.0,
+        "lineSpacing": 1.0791666507720947,
+        "lineSpacingType": "Multiple"
+    },
+    "background": {
+        "color": "#FFFFFFFF"
+    },
+    "styles": [
+        {
+            "type": "Paragraph",
+            "name": "Normal",
+            "next": "Normal"
+        },
+        {
+            "type": "Character",
+            "name": "Default Paragraph Font"
+        }
+    ],
+    "defaultTabWidth": 36.0,
+    "formatting": false,
+    "protectionType": "NoProtection",
+    "enforcement": false,
+    "dontUseHTMLParagraphAutoSpacing": false
+}
+
 describe('Insert page break history preservation', () => {
     let editor: DocumentEditor = undefined;
     let documentHelper: DocumentHelper;
@@ -3651,5 +3755,43 @@ describe('Empty Header footer validation', () => {
         expect((page.bodyWidgets[0].firstChild as ParagraphWidget).y).toBe(page.headerWidget.y + page.headerWidget.height);
         editor.selection.disableHeaderFooter();
         expect((page.bodyWidgets[0].firstChild as ParagraphWidget).y).toBe(page.headerWidget.y + page.headerWidget.height);
+    });
+});
+
+describe('F9 key press Validation', () => {
+    let editor: DocumentEditor = undefined;
+    let documentHelper: DocumentHelper;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Selection, Editor, SfdtExport);
+        editor = new DocumentEditor({ isReadOnly: false, enableEditor: true });
+        documentHelper = editor.documentHelper;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(() => {
+            done();
+        }, 750);
+    });
+    it('F9 key press', () => {
+        editor.open(JSON.stringify(crossRefSfdt));
+        let field: FieldElementBox =  editor.documentHelper.fields[0];
+        let textElement: TextElementBox = field.line.children[3] as TextElementBox;
+        expect(textElement.text).toBe('Syncfusion');
+        let event: any = {
+            preventDefault: function () { return false },
+            which: 120
+        }
+        editor.selection.moveToNextCharacter();
+        editor.editor.onKeyDownInternal(event, false, false, false);
+        expect((field.line.children[3] as TextElementBox).text).toBe('Sync');
     });
 });

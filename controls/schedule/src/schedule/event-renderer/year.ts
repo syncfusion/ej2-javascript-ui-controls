@@ -80,6 +80,7 @@ export class YearEvent extends TimelineEvent {
             let isSpannedCollection: Object[] = [];
             while (monthStart.getTime() <= monthEnd.getTime()) {
                 let leftValue: number;
+                let rightValue: number;
                 if (this.parent.activeViewOptions.orientation === 'Vertical') {
                     let wrapper: Element = wrapperCollection[dayIndex];
                     let eventWrapper: HTMLElement = wrapper.querySelector('.' + cls.APPOINTMENT_WRAPPER_CLASS) as HTMLElement;
@@ -87,9 +88,10 @@ export class YearEvent extends TimelineEvent {
                         eventWrapper = createElement('div', { className: cls.APPOINTMENT_WRAPPER_CLASS });
                         wrapper.appendChild(eventWrapper);
                     }
-                    leftValue = row * this.cellWidth;
+                    this.parent.enableRtl ? (rightValue = row * this.cellWidth) : (leftValue = row * this.cellWidth);
                 } else {
-                    leftValue = ((dayIndex + monthStart.getDate()) - 1) * this.cellWidth;
+                    this.parent.enableRtl ? (rightValue = ((dayIndex + monthStart.getDate()) - 1) * this.cellWidth) :
+                        (leftValue = ((dayIndex + monthStart.getDate()) - 1) * this.cellWidth);
                 }
                 let dayStart: Date = util.resetTime(new Date(monthStart.getTime()));
                 let dayEnd: Date = util.addDays(new Date(dayStart.getTime()), 1);
@@ -107,11 +109,11 @@ export class YearEvent extends TimelineEvent {
                         if (isRendered.length > 0 || isSpanned.length > 0) { continue; }
                     }
                     if (this.cellHeight > availedHeight) {
-                        this.renderEvent(eventWrapper, eventData, row, leftValue, overlapIndex, dayIndex);
+                        this.renderEvent(eventWrapper, eventData, row, leftValue, rightValue, overlapIndex, dayIndex);
                         isSpannedCollection.push(eventData);
                     } else {
                         let moreIndex: number = this.parent.activeViewOptions.orientation === 'Horizontal' ? row : dayIndex;
-                        this.renderMoreIndicatior(eventWrapper, count - index, dayStart, moreIndex, leftValue, dayEvents);
+                        this.renderMoreIndicatior(eventWrapper, count - index, dayStart, moreIndex, leftValue, rightValue, dayEvents);
                         if (this.parent.activeViewOptions.orientation === 'Horizontal') {
                             for (let a: number = index; a < dayEvents.length; a++) {
                                 let moreData: { [key: string]: Object } =
@@ -132,7 +134,8 @@ export class YearEvent extends TimelineEvent {
         }
     }
 
-    private renderEvent(wrapper: HTMLElement, eventData: Object, row: number, left: number, overlapCount: number, rowIndex?: number): void {
+    private renderEvent(
+        wrapper: HTMLElement, eventData: Object, row: number, left: number, right: number, overlapCount: number, rowIndex?: number): void {
         let eventObj: { [key: string]: Object } = this.isSpannedEvent(eventData as { [key: string]: Object }, row);
         let wrap: HTMLElement = this.createEventElement(eventObj);
         let width: number;
@@ -147,7 +150,10 @@ export class YearEvent extends TimelineEvent {
             width = this.cellWidth;
             top = (this.cellHeight * rowIndex) + this.cellHeader + (this.eventHeight * overlapCount) + EVENT_GAP;
         }
-        setStyleAttribute(wrap, { 'width': width + 'px', 'height': this.eventHeight + 'px', 'left': left + 'px', 'top': top + 'px' });
+        setStyleAttribute(wrap, {
+            'width': width + 'px', 'height': this.eventHeight + 'px', 'left': left + 'px',
+            'right': right + 'px', 'top': top + 'px'
+        });
         let args: EventRenderedArgs = { data: eventObj, element: wrap, cancel: false, type: 'event' };
         this.parent.trigger(events.eventRendered, args, (eventArgs: EventRenderedArgs) => {
             if (!eventArgs.cancel) {
@@ -160,13 +166,15 @@ export class YearEvent extends TimelineEvent {
         });
     }
 
-    private renderMoreIndicatior(wrapper: HTMLElement, count: number, startDate: Date, row: number, left: number, events: Object[]): void {
+    private renderMoreIndicatior(
+        wrapper: HTMLElement, count: number, startDate: Date, row: number, left: number, right: number, events: Object[]): void {
         let endDate: Date = util.addDays(new Date(startDate.getTime()), 1);
         let moreIndicator: HTMLElement = this.getMoreIndicatorElement(count, startDate, endDate);
         let rowTr: HTMLElement = this.parent.element.querySelector(`.e-content-wrap tr:nth-child(${row + 1})`) as HTMLElement;
         let top: number = rowTr.offsetTop + (this.cellHeight - this.moreIndicatorHeight);
         left = (Math.floor(left / this.cellWidth) * this.cellWidth);
-        setStyleAttribute(moreIndicator, { 'width': this.cellWidth + 'px', 'left': left + 'px', 'top': top + 'px' });
+        right = (Math.floor(right / this.cellWidth) * this.cellWidth);
+        setStyleAttribute(moreIndicator, { 'width': this.cellWidth + 'px', 'left': left + 'px', 'right': right + 'px', 'top': top + 'px' });
         wrapper.appendChild(moreIndicator);
         EventHandler.add(moreIndicator, 'click', this.moreIndicatorClick, this);
     }

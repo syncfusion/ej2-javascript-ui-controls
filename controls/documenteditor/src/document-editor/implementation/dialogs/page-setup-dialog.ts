@@ -455,6 +455,7 @@ export class PageSetupDialog {
     public onCancelButtonClick = (): void => {
         this.documentHelper.dialog.hide();
         this.unWireEventsAndBindings();
+        this.documentHelper.updateFocus();
     }
     /**
      * @private
@@ -480,7 +481,7 @@ export class PageSetupDialog {
         sectionFormat.headerDistance = this.headerBox.value;
         sectionFormat.footerDistance = this.footerBox.value;
         this.documentHelper.owner.editorModule.onApplySectionFormat(undefined, sectionFormat);
-        this.documentHelper.dialog.hide();
+        this.documentHelper.hideDialog();
     }
     /**
      * @private

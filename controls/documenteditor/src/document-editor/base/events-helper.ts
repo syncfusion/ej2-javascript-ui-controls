@@ -19,11 +19,20 @@ export interface FormFieldFillEventArgs {
      */
     isCanceled?: boolean;
 }
+
 /**
  * Specified form field data
  */
-export interface FormData {
-    [key: string]: string | boolean | number;
+export interface FormFieldData {
+    /**
+     * Specifies form field name.
+     */
+    fieldName: string;
+    /**
+     * Specifies form field data.
+     */
+    value: string | boolean | number;
+
 }
 
 /** 

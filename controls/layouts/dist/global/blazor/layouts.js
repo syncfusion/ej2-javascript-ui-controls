@@ -234,12 +234,13 @@ var Splitter = /** @class */ (function (_super) {
                 flexCount++;
             }
             else if (this.paneSettings[i].size) {
-                staticPaneWidth = this.paneSettings[i].size && this.paneSettings[i].size.indexOf('%') > -1 ?
-                    (parseInt(newValSize, 10) / 100) * this.element.offsetWidth : this.allPanes[index].offsetWidth;
+                staticPaneWidth = this.orientation === 'Horizontal' ? this.allPanes[index].offsetWidth : this.allPanes[index].offsetHeight;
             }
         }
-        staticPaneWidth = (this.allBars[0].offsetWidth * this.allBars.length) + staticPaneWidth;
-        var flexPaneWidth = this.element.offsetWidth - staticPaneWidth;
+        staticPaneWidth = this.orientation === 'Horizontal' ? (this.allBars[0].offsetWidth * this.allBars.length) + staticPaneWidth :
+            (this.allBars[0].offsetHeight * this.allBars.length) + staticPaneWidth;
+        var flexPaneWidth = (this.orientation === 'Horizontal' ? this.element.offsetWidth : this.element.offsetHeight)
+            - staticPaneWidth - (this.border * 2);
         var avgDiffWidth = flexPaneWidth / flexPaneIndexes.length;
         for (var j = 0; j < flexPaneIndexes.length; j++) {
             this.allPanes[flexPaneIndexes[j]].style.flexBasis = avgDiffWidth + 'px';
@@ -2135,6 +2136,7 @@ var preventSelect = 'e-prevent';
 var dragging = 'e-dragging';
 var drag = 'e-drag';
 var resize = 'e-resize';
+var resizeicon = 'e-dl-icon';
 var responsive = 'e-responsive';
 var east = 'e-east';
 var west = 'e-west';
@@ -4034,7 +4036,7 @@ var DashboardLayout = /** @class */ (function (_super) {
             else {
                 addClassValue = double;
             }
-            sf.base.addClass([spanEle], [addClassValue, this.availableClasses[j], resize]);
+            sf.base.addClass([spanEle], [addClassValue, this.availableClasses[j], resize, resizeicon]);
         }
     };
     DashboardLayout.prototype.setXYAttributes = function (element, panelModel) {

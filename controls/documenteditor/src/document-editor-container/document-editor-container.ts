@@ -260,7 +260,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * Defines toolbar items for DocumentEditorContainer.
      * @default ['New','Open','Separator','Undo','Redo','Separator','Image','Table','Hyperlink','Bookmark','Comments','TableOfContents','Separator','Header','Footer','PageSetup','PageNumber','Break','Separator','Find','Separator','LocalClipboard','RestrictEditing','Separator','FormFields']
      */
-    @Property(['New', 'Open', 'Separator', 'Undo', 'Redo', 'Separator', 'Image', 'Table', 'Hyperlink', 'Bookmark', 'Comments', 'TableOfContents', 'Separator', 'Header', 'Footer', 'PageSetup', 'PageNumber', 'Break', 'Separator', 'Find', 'Separator', 'LocalClipboard', 'RestrictEditing', 'Separator', 'FormFields'])
+    @Property(['New', 'Open', 'Separator', 'Undo', 'Redo', 'Separator', 'Image', 'Table', 'Hyperlink', 'Bookmark', 'Comments', 'TableOfContents', 'Separator', 'Header', 'Footer', 'PageSetup', 'PageNumber', 'Break', 'Separator', 'Find', 'Separator', 'LocalClipboard', 'RestrictEditing', 'Separator', 'FormFields', 'UpdateFields'])
     public toolbarItems: (CustomToolbarItemModel | ToolbarItem)[];
     //tslint:enable:max-line-length
     /**
@@ -445,7 +445,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         'Form Fields': 'Form Fields',
         'Text Form': 'Text Form',
         'Check Box': 'Check Box',
-        'DropDown': 'Drop-Down'
+        'DropDown': 'Drop-Down',
+        'Update Fields': 'Update Fields',
+        'Update cross reference fields': 'Update cross reference fields'
     };
 
     /**

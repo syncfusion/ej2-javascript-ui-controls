@@ -7698,11 +7698,22 @@ var Render = /** @__PURE__ @class */ (function () {
             integrateModel = this.frameEmptyColumns();
         }
         if (integrateModel.length > 1) {
-            integrateModel[integrateModel.length - 1].minWidth = integrateModel[integrateModel.length - 1].width;
-            integrateModel[integrateModel.length - 1].width = 'auto';
+            var lastColumn = integrateModel[integrateModel.length - 1];
+            lastColumn.minWidth = lastColumn.width;
+            lastColumn.width = 'auto';
+            if (lastColumn.columns && lastColumn.columns.length > 0 && !this.parent.allowPdfExport) {
+                this.configLastColumnWidth(lastColumn.columns[lastColumn.columns.length - 1]);
+            }
         }
         this.parent.triggerColumnRenderEvent(integrateModel);
         return integrateModel;
+    };
+    Render.prototype.configLastColumnWidth = function (column) {
+        column.minWidth = column.width;
+        column.width = "auto";
+        if (column.columns && column.columns.length > 0) {
+            this.configLastColumnWidth(column.columns[column.columns.length - 1]);
+        }
     };
     /** @hidden */
     Render.prototype.setSavedWidth = function (column, width) {
@@ -8025,6 +8036,7 @@ var CommonKeyboardInteraction = /** @__PURE__ @class */ (function () {
         var target = e.target;
         if (target && closest(target, '.e-popup.e-popup-open')) {
             /* tslint:disable-next-line:max-line-length */
+            /* tslint:disable-next-line:no-any */
             var dialogInstance = closest(target, '.e-popup.e-popup-open').ej2_instances[0];
             if (dialogInstance && !dialogInstance.closeOnEscape) {
                 dialogInstance.hide();
@@ -9787,7 +9799,9 @@ var FilterDialog = /** @__PURE__ @class */ (function () {
                             var inputObj1 = void 0;
                             var inputObj2 = void 0;
                             if (type === 'value') {
+                                /* tslint:disable-next-line:no-any */
                                 inputObj1 = inputDiv1.ej2_instances[0];
+                                /* tslint:disable-next-line:no-any */
                                 inputObj2 = inputDiv2.ej2_instances[0];
                                 if (inputObj1) {
                                     inputObj1.value = filterObj_1.value1 ? parseInt(filterObj_1.value1, 10) : undefined;
@@ -9797,7 +9811,9 @@ var FilterDialog = /** @__PURE__ @class */ (function () {
                                 }
                             }
                             else {
+                                /* tslint:disable-next-line:no-any */
                                 inputObj1 = inputDiv1.ej2_instances[0];
+                                /* tslint:disable-next-line:no-any */
                                 inputObj2 = inputDiv2.ej2_instances[0];
                                 if (inputObj1) {
                                     inputObj1.value = filterObj_1.value1 ? filterObj_1.value1 : '';
@@ -9988,6 +10004,7 @@ var FilterDialog = /** @__PURE__ @class */ (function () {
     FilterDialog.prototype.updateInputValues = function (element, type, inputDiv1, inputDiv2) {
         var value1;
         var value2;
+        /* tslint:disable:no-any */
         if (type === 'date') {
             var inputObj1 = inputDiv1.ej2_instances[0];
             var inputObj2 = inputDiv2.ej2_instances[0];
@@ -10000,6 +10017,7 @@ var FilterDialog = /** @__PURE__ @class */ (function () {
             value1 = inputObj1.value;
             value2 = inputObj2.value;
         }
+        /* tslint:enable:no-any */
         setStyleAndAttributes(element, { 'data-value1': value1, 'data-value2': value2 });
     };
     FilterDialog.prototype.validateTreeNode = function (e) {
@@ -19974,7 +19992,7 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         /** @hidden */
         _this_1.horizontalScrollScale = 1;
         /** @hidden */
-        _this_1.scrollerBrowserLimit = 500000;
+        _this_1.scrollerBrowserLimit = 8000000;
         /** @hidden */
         _this_1.lastSortInfo = {};
         /** @hidden */
@@ -20073,6 +20091,12 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
             this.engineModule = new PivotEngine();
         }
         this.isAdaptive = Browser.isDevice;
+        if (Browser.isIE || Browser.info.name === 'edge') {
+            this.scrollerBrowserLimit = 1500000;
+        }
+        else if (Browser.info.name === 'chrome') {
+            this.scrollerBrowserLimit = 15000000;
+        }
         this.isTouchMode = closest(this.element, 'e-bigger') ? true : false;
         this.initProperties();
         this.renderToolTip();
@@ -20810,10 +20834,8 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
                     }
                     if (newProp.dataSourceSettings && Object.keys(newProp.dataSourceSettings).length === 1
                         && Object.keys(newProp.dataSourceSettings)[0] === 'dataSource') {
-                        if (!(isBlazor() && this.enableVirtualization)) {
-                            this.engineModule.fieldList = null;
-                            this.refreshData();
-                        }
+                        this.engineModule.fieldList = null;
+                        this.refreshData();
                     }
                     else {
                         if (PivotUtil.isButtonIconRefesh(prop, oldProp, newProp)) {
@@ -30022,7 +30044,6 @@ var GroupingBar = /** @__PURE__ @class */ (function () {
                             this.setColWidth(gridColumn[cCnt].columns, valueColWidth);
                         }
                         else {
-                            gridColumn[cCnt].width = valueColWidth;
                             if (gridColumn[cCnt].width !== 'auto') {
                                 /* tslint:disable:no-any */
                                 var levelName = gridColumn[cCnt].customAttributes ?
@@ -30076,7 +30097,12 @@ var GroupingBar = /** @__PURE__ @class */ (function () {
                 this.setColWidth(columns[cCnt].columns, width);
             }
             else {
-                columns[cCnt].width = width;
+                if (columns[cCnt].width != "auto") {
+                    columns[cCnt].width = width;
+                }
+                else {
+                    columns[cCnt].minWidth = width;
+                }
             }
         }
     };

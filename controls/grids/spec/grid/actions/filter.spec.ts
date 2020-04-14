@@ -2163,4 +2163,109 @@ describe('Check for case sensitive ', ()=>{
         });
     });
 
+    describe('FilterbyColumn method for multiple data values with foreignKeyColumn and normal Columns ==>', () => {
+        let gridObj: Grid;
+        let actionComplete: (args: any) => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: normalData,
+                    allowFiltering: true,
+                    filterSettings: { type: 'Menu' },
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 120, foreignKeyField: 'CustomerName', foreignKeyValue: 'ShipCountry', dataSource: foreigndata },
+                        { field: 'Freight', headerText: 'Freight', width: 120 },
+                        { field: 'ShipName', headerText: 'Ship Name', width: 170 },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 120 }
+                    ],
+                    actionComplete: actionComplete
+                }, done);
+        });
+        it('Filtering the  multiple Foreignkey value using single method', (done: Function) => {
+            actionComplete = (args: any) => {
+                if (args.requestType == 'filtering') {
+                    expect(args.rows.length).toBe(3);
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.filterByColumn("CustomerID", "contains", ["fra", "ger"]);
+        });
+        it('Filtering the  multiple OrderID value using single method', (done: Function) => {
+            actionComplete = (args: any) => {
+                if (args.requestType == 'filtering') {
+                    expect(args.rows.length).toBe(2);
+                    done();
+                }
+            };
+            gridObj.clearFiltering();
+            gridObj.actionComplete = actionComplete;
+            gridObj.filterByColumn("OrderID", "equal", [10248, 10249]);;
+        });
+        it('Filtering the  multiple ShipName value ', (done: Function) => {
+            actionComplete = (args: any) => {
+                if (args.requestType == 'filtering') {
+                    expect(args.rows.length).toBe(2);
+                    done();
+                }
+            };
+            gridObj.clearFiltering();
+            gridObj.actionComplete = actionComplete;
+            gridObj.filterByColumn("ShipName", "contains", ["vin", "tom"]);;
+        });
+        it('Filtering the  multiple value  in Excel filter ', (done: Function) => {
+            actionComplete = (args: any) => {
+                if (args.requestType == 'filtering') {
+                    expect(args.rows.length).toBe(2);
+                    done();
+                }
+            };
+            gridObj.clearFiltering();
+            gridObj.filterSettings.type = "Excel";
+            gridObj.actionComplete = actionComplete;
+            gridObj.filterByColumn("ShipName", "contains", ["vin", "tom"]);;
+        });
+        it('Filtering the  multiple value  in FilterBar filter ', (done: Function) => {
+            actionComplete = (args: any) => {
+                if (args.requestType == 'filtering') {
+                    expect(args.rows.length).toBe(2);
+                    done();
+                }
+            };
+            gridObj.clearFiltering();
+            gridObj.filterSettings.type = "FilterBar";
+            gridObj.actionComplete = actionComplete;
+            gridObj.filterByColumn("ShipName", "contains", ["vin", "tom"]);;
+        });
+        it('Filtering the  multiple value  in CheckBox filter ', (done: Function) => {
+            actionComplete = (args: any) => {
+                if (args.requestType == 'filtering') {
+                    expect(args.rows.length).toBe(4);
+                    done();
+                }
+            };
+            gridObj.clearFiltering();
+            gridObj.filterSettings.type = "CheckBox";
+            gridObj.actionComplete = actionComplete;
+            gridObj.filterByColumn("ShipName", "contains", ["vin", "tom", "han"]);;
+        });
+        it('Filtering the  single value  ', (done: Function) => {
+            actionComplete = (args: any) => {
+                if (args.requestType == 'filtering') {
+                    expect(args.rows.length).toBe(1);
+                    done();
+                }
+            };
+            gridObj.clearFiltering();
+            gridObj.filterSettings.type = "FilterBar";
+            gridObj.actionComplete = actionComplete;
+            gridObj.filterByColumn("ShipName", "contains", "vin");;
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+            actionComplete = null;
+        });
+    });
 });

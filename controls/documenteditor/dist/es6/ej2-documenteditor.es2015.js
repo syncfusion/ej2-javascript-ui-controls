@@ -3067,6 +3067,9 @@ class HelperMethods {
         if (value.toString() === 'NaN') {
             return '';
         }
+        if (format === '') {
+            format = '0';
+        }
         numberFormat = { format: format };
         formattedValue = intl.formatNumber(numberValue, numberFormat);
         return formattedValue;
@@ -3079,6 +3082,12 @@ class HelperMethods {
         let intl = new Internationalization();
         let formattedValue;
         let date = new Date(value);
+        if (isNaN(date.getDate())) {
+            return '';
+        }
+        if (format === '') {
+            return value;
+        }
         if (format.indexOf('am/pm') !== -1) {
             format = format.replace(/am\/pm/gi, 'a');
         }
@@ -13199,7 +13208,7 @@ class FormFieldPopUp {
         this.applyDropDownFormFieldValue = () => {
             this.owner.editor.updateFormField(this.formField, this.ddlInstance.index);
             // tslint:disable-next-line:max-line-length
-            this.owner.trigger('afterFieldFill', { 'fieldName': this.formField.formFieldData.name, value: this.formField.formFieldData.selectedIndex, isCanceled: false });
+            this.owner.trigger('afterFormFieldFill', { 'fieldName': this.formField.formFieldData.name, value: this.formField.formFieldData.selectedIndex, isCanceled: false });
             this.hidePopup();
         };
         this.enableDisableDatePickerOkButton = (args) => {
@@ -13230,6 +13239,7 @@ class FormFieldPopUp {
          * @private
          */
         this.hidePopup = () => {
+            this.owner.documentHelper.isFormFilling = false;
             this.formField = undefined;
             if (this.target) {
                 this.target.style.display = 'none';
@@ -13399,7 +13409,7 @@ class FormFieldPopUp {
                     });
                 }
                 let left = this.owner.selection.getLeftInternal(formField.line, formField, 0);
-                let lineHeight = formField.line.height;
+                let lineHeight = formField.line.height * this.owner.documentHelper.zoomFactor;
                 let position = this.owner.selection.getTooltipPosition(formField, left, this.target, true);
                 if (!this.popupObject) {
                     this.popupObject = new Popup(this.target, {
@@ -13412,6 +13422,7 @@ class FormFieldPopUp {
                 this.target.style.display = 'block';
                 this.popupObject.show();
             }
+            this.owner.documentHelper.isFormFilling = true;
         }
     }
 }
@@ -13668,6 +13679,10 @@ class DocumentHelper {
          * @private
          */
         this.isIosDevice = false;
+        /**
+         * @private
+         */
+        this.isFormFilling = false;
         this.onIframeLoad = () => {
             if (!isNullOrUndefined(this.iframe) && this.iframe.contentDocument.body.children.length === 0) {
                 this.initIframeContent();
@@ -13973,6 +13988,9 @@ class DocumentHelper {
          * @private
          */
         this.onMouseMoveInternal = (event) => {
+            if (!isNullOrUndefined(event.target) && event.target !== this.viewerContainer) {
+                return;
+            }
             event.preventDefault();
             if (!isNullOrUndefined(this.selection)) {
                 //For image Resizing
@@ -14054,6 +14072,9 @@ class DocumentHelper {
          * @private
          */
         this.onDoubleTap = (event) => {
+            if (!isNullOrUndefined(event.target) && event.target !== this.viewerContainer) {
+                return;
+            }
             if (!isNullOrUndefined(this.selection)) {
                 this.isTouchInput = false;
                 let cursorPoint = new Point(event.offsetX, event.offsetY);
@@ -14159,11 +14180,10 @@ class DocumentHelper {
                         }
                         else {
                             this.owner.editor.toggleCheckBoxFormField(formField);
+                            data.value = formField.formFieldData.checked;
+                            data.isCanceled = false;
                             this.owner.trigger('afterFormFieldFill', data);
                         }
-                    }
-                    else {
-                        this.owner.selection.selectNextFormField();
                     }
                 }
                 else {
@@ -15052,6 +15072,13 @@ class DocumentHelper {
         }
     }
     /**
+     * @private
+     */
+    hideDialog() {
+        this.dialog.hide();
+        this.updateFocus();
+    }
+    /**
      * Initializes dialog template.
      */
     initDialog2(isRtl) {
@@ -15874,10 +15901,22 @@ class DocumentHelper {
             if (isNullOrUndefined(hyperlinkField)) {
                 formField = this.selection.getHyperLinkFieldInCurrentSelection(widget, touchPoint, true);
             }
+            if (!isNullOrUndefined(hyperlinkField)) {
+                let code = this.selection.getFieldCode(hyperlinkField);
+                if (code.toLowerCase().indexOf('ref ') === 0 && !code.match('\\h')) {
+                    hyperlinkField = undefined;
+                }
+            }
             widgetInfo = this.selection.updateTextPositionIn(widget, undefined, 0, touchPoint, true);
             left = this.selection.getLeft(widget);
             top = this.selection.getTop(widget);
-            this.selection.setHyperlinkContentToToolTip(hyperlinkField, widget, touchPoint.x);
+            if (isNullOrUndefined(hyperlinkField) && !isNullOrUndefined(formField) && this.isDocumentProtected &&
+                this.protectionType === 'FormFieldsOnly' && !this.isFormFilling) {
+                this.selection.setHyperlinkContentToToolTip(formField, widget, touchPoint.x, true);
+            }
+            else {
+                this.selection.setHyperlinkContentToToolTip(hyperlinkField, widget, touchPoint.x, false);
+            }
         }
         let isCtrlkeyPressed = this.isIosDevice ? event.metaKey : event.ctrlKey;
         if ((!isNullOrUndefined(hyperlinkField) && (isCtrlkeyPressed &&
@@ -23929,7 +23968,7 @@ class ContextMenu$1 {
             },
             {
                 text: localValue.getConstant('Update Field'),
-                iconCss: 'e-icons e-de-update_field',
+                iconCss: 'e-icons e-de-update-field',
                 id: id + CONTEXTMENU_UPDATE_FIELD
             },
             {
@@ -24151,7 +24190,12 @@ class ContextMenu$1 {
                 }
                 break;
             case id + CONTEXTMENU_UPDATE_FIELD:
-                if (!this.documentHelper.owner.isReadOnlyMode) {
+                let isReadOnly = this.documentHelper.owner.isReadOnlyMode;
+                if (this.documentHelper.selection.isReferenceField() && (!isReadOnly ||
+                    (isReadOnly && this.documentHelper.protectionType === 'FormFieldsOnly'))) {
+                    this.documentHelper.selection.updateRefField();
+                }
+                else if (!this.documentHelper.owner.isReadOnlyMode) {
                     this.documentHelper.owner.editorModule.updateToc();
                 }
                 break;
@@ -24324,8 +24368,8 @@ class ContextMenu$1 {
             yPos = point.y;
         }
         else {
-            yPos = event.y;
-            xPos = event.x;
+            yPos = event.y + document.body.scrollTop + document.documentElement.scrollTop;
+            xPos = event.x + document.body.scrollLeft + document.documentElement.scrollLeft;
         }
         if (this.showHideElements(this.documentHelper.selection)) {
             if (isTouch) {
@@ -24449,6 +24493,15 @@ class ContextMenu$1 {
         deleteTable.style.display = 'none';
         tableProperties.style.display = 'none';
         updateField.style.display = 'none';
+        let field = selection.getHyperlinkField();
+        let isCrossRefField = false;
+        if (field instanceof FieldElementBox && selection.isReferenceField(field)) {
+            isCrossRefField = true;
+        }
+        if (field instanceof FieldElementBox && isCrossRefField &&
+            (this.documentHelper.protectionType === 'FormFieldsOnly' || !this.documentHelper.owner.isReadOnlyMode)) {
+            updateField.style.display = 'block';
+        }
         editField.style.display = 'none';
         continueNumbering.style.display = 'none';
         restartAt.style.display = 'none';
@@ -24476,7 +24529,6 @@ class ContextMenu$1 {
         paste.nextSibling.style.display = 'block';
         classList(insertTable, ['e-blankicon'], []);
         classList(deleteTable, ['e-blankicon'], []);
-        classList(updateField, ['e-blankicon'], []);
         classList(editField, ['e-blankicon'], []);
         classList(autoFitTable, ['e-blankicon'], []);
         let enablePaste = (owner.enableLocalPaste && !isNullOrUndefined(owner.editor.copiedData));
@@ -24505,8 +24557,7 @@ class ContextMenu$1 {
                     hyperlink.classList.remove('e-disabled');
                 }
             }
-            let field = selection.getHyperlinkField();
-            if (field instanceof FieldElementBox && !selection.isImageField()) {
+            if (field instanceof FieldElementBox && !selection.isImageField() && !isCrossRefField) {
                 openHyperlink.style.display = 'block';
                 copyHyperlink.style.display = 'block';
                 if (owner.hyperlinkDialogModule) {
@@ -24515,6 +24566,7 @@ class ContextMenu$1 {
                 removeHyperlink.style.display = 'block';
                 removeHyperlink.nextSibling.style.display = 'block';
                 isDialogHidden = true;
+                properties.style.display = 'none';
             }
             else {
                 if (owner.hyperlinkDialogModule) {
@@ -24526,6 +24578,10 @@ class ContextMenu$1 {
             if (selection.isFormField() && this.documentHelper.owner.enableFormField) {
                 hyperlink.style.display = 'none';
                 properties.style.display = 'block';
+            }
+            if (field instanceof FieldElementBox && isCrossRefField) {
+                hyperlink.style.display = 'none';
+                updateField.style.display = 'block';
             }
         }
         if (this.documentHelper.owner.selection.start.paragraph.isInsideTable
@@ -25829,13 +25885,15 @@ class SfdtReader {
         }
     }
     parseTabStop(wTabs, tabs) {
-        for (let i = 0; i < wTabs.length; i++) {
-            let tabStop = new WTabStop();
-            tabStop.position = wTabs[i].position;
-            tabStop.tabLeader = wTabs[i].tabLeader;
-            tabStop.deletePosition = wTabs[i].deletePosition;
-            tabStop.tabJustification = wTabs[i].tabJustification;
-            tabs.push(tabStop);
+        if (wTabs) {
+            for (let i = 0; i < wTabs.length; i++) {
+                let tabStop = new WTabStop();
+                tabStop.position = wTabs[i].position;
+                tabStop.tabLeader = wTabs[i].tabLeader;
+                tabStop.deletePosition = wTabs[i].deletePosition;
+                tabStop.tabJustification = wTabs[i].tabJustification;
+                tabs.push(tabStop);
+            }
         }
     }
     validateImageUrl(imagestr) {
@@ -29585,7 +29643,9 @@ class TextPosition {
             if (!isNullOrUndefined(previousParagraph)) {
                 if (!positionAtStart) {
                     this.currentWidget = previousParagraph.childWidgets[previousParagraph.childWidgets.length - 1];
-                    this.offset = this.currentWidget.getEndOffset();
+                    // line end with page break and updating offset before page break.
+                    // tslint:disable-next-line:max-line-length
+                    this.offset = this.currentWidget.isEndsWithPageBreak ? this.currentWidget.getEndOffset() - 1 : this.currentWidget.getEndOffset();
                 }
                 else {
                     this.currentWidget = previousParagraph.firstChild;
@@ -30598,6 +30658,11 @@ class TextPosition {
         }
         //Moves till the Up/Down selection width.
         let top = selection.getTop(prevLine);
+        // Here, updating the left position when line widget end with page break
+        // to update cursor before page break
+        if (this.currentWidget.isEndsWithPageBreak && this.offset === this.currentWidget.getEndOffset() - 1) {
+            left = this.location.x;
+        }
         selection.updateTextPositionWidget(prevLine, new Point(left, top), this, false);
     }
     /**
@@ -31170,10 +31235,15 @@ class Hyperlink {
         this.linkInternal = '';
         this.localRef = '';
         this.opensNewWindow = false;
+        this.isCrossRefField = false;
         let fieldCode = selection.getFieldCode(fieldBeginAdv);
         let lowercase = fieldCode.toLowerCase();
         if (lowercase.substring(0, 9) === 'hyperlink') {
-            this.parseFieldValues(fieldCode.substring(9).trim(), selection);
+            this.parseFieldValues(fieldCode.substring(9).trim(), true);
+        }
+        else if ((lowercase.indexOf('ref ') === 0 && lowercase.match('\\h'))) {
+            this.parseFieldValues(fieldCode.substring(4).trim(), false);
+            this.isCrossRefField = true;
         }
     }
     /**
@@ -31201,39 +31271,50 @@ class Hyperlink {
         return this.typeInternal;
     }
     /**
+     * @private
+     */
+    get isCrossRef() {
+        return this.isCrossRefField;
+    }
+    /**
      * Parse field values
      * @param  {string} value
      * @returns Void
      */
-    parseFieldValues(value, selection) {
+    parseFieldValues(value, isHyperlink) {
         let codes = value.split(' ');
         let isLocalRef = false;
-        for (let i = 0; i < codes.length; i++) {
-            let code = codes[i];
-            if (code.length < 1) {
-                continue;
-            }
-            if (code === '\\t' || code === '\\l') {
-                isLocalRef = true;
-            }
-            else if (code === '\\n') {
-                this.opensNewWindow = true;
-            }
-            else {
-                code = this.parseFieldValue(code, code[0] === '\"' ? '\"' : undefined);
-                if (isLocalRef) {
-                    this.localRef = code;
-                    isLocalRef = false;
+        if (isHyperlink) {
+            for (let i = 0; i < codes.length; i++) {
+                let code = codes[i];
+                if (code.length < 1) {
+                    continue;
+                }
+                if (code === '\\t' || code === '\\l') {
+                    isLocalRef = true;
+                }
+                else if (code === '\\n') {
+                    this.opensNewWindow = true;
                 }
                 else {
-                    this.linkInternal = code;
+                    code = this.parseFieldValue(code, code[0] === '\"' ? '\"' : undefined, isHyperlink);
+                    if (isLocalRef) {
+                        this.localRef = code;
+                        isLocalRef = false;
+                    }
+                    else {
+                        this.linkInternal = code;
+                    }
                 }
             }
         }
+        else {
+            this.localRef = codes[0];
+        }
         this.setLinkType();
     }
-    parseFieldValue(value, endChar) {
-        value = value.substring(1);
+    parseFieldValue(value, endChar, isHyperlink) {
+        value = isHyperlink ? value.substring(1) : value.substring(0);
         let endIndex = endChar ? value.indexOf(endChar) : -1;
         if (endIndex < 0) {
             endIndex = value.length;
@@ -31944,6 +32025,10 @@ class Selection {
      * @private
      */
     fireRequestNavigate(fieldBegin) {
+        let code = this.getFieldCode(fieldBegin);
+        if (code.toLowerCase().indexOf('ref ') === 0 && !code.match('\\h')) {
+            return;
+        }
         let hyperlink = new Hyperlink(fieldBegin, this);
         let eventArgs = {
             isHandled: false,
@@ -33036,6 +33121,9 @@ class Selection {
         }
         this.checkForCursorVisibility();
     }
+    /**
+     * @private
+     */
     handleSpaceBarKey() {
         if (this.owner.documentHelper.isDocumentProtected && this.owner.documentHelper.protectionType === 'FormFieldsOnly'
             && this.getFormFieldType() === 'CheckBox') {
@@ -38229,7 +38317,12 @@ class Selection {
                 link = 'Current Document';
             }
             else {
-                link += '#' + hyperlink.localReference;
+                if (hyperlink.isCrossRef) {
+                    link += hyperlink.localReference;
+                }
+                else {
+                    link += '#' + hyperlink.localReference;
+                }
             }
         }
         hyperlink.destroy();
@@ -38239,7 +38332,7 @@ class Selection {
      * Set Hyperlink content to tool tip element
      * @private
      */
-    setHyperlinkContentToToolTip(fieldBegin, widget, xPos) {
+    setHyperlinkContentToToolTip(fieldBegin, widget, xPos, isFormField) {
         if (fieldBegin) {
             if (this.owner.contextMenuModule &&
                 this.owner.contextMenuModule.contextMenuInstance.element.style.display === 'block') {
@@ -38257,7 +38350,16 @@ class Selection {
                 toolTipText = 'Ctrl+' + toolTipText;
             }
             let linkText = this.getLinkText(fieldBegin);
-            this.toolTipElement.innerHTML = linkText + '</br><b>' + toolTipText + '</b>';
+            if (isFormField) {
+                let helpText = fieldBegin.formFieldData.helpText;
+                if (isNullOrUndefined(helpText) || helpText === '') {
+                    return;
+                }
+                this.toolTipElement.innerHTML = helpText;
+            }
+            else {
+                this.toolTipElement.innerHTML = linkText + '</br><b>' + toolTipText + '</b>';
+            }
             let position = this.getTooltipPosition(fieldBegin, xPos, this.toolTipElement, false);
             this.showToolTip(position.x, position.y);
             if (!isNullOrUndefined(this.toolTipField) && fieldBegin !== this.toolTipField) {
@@ -38451,6 +38553,9 @@ class Selection {
             if (isParagraph && checkFormField && this.documentHelper.fields[i].formFieldData) {
                 return this.documentHelper.fields[i];
             }
+            if ((isRetrieve || (!isRetrieve && field.match('ref '))) && isParagraph) {
+                return this.documentHelper.fields[i];
+            }
         }
         // if (paragraph.containerWidget instanceof BodyWidget && !(paragraph instanceof WHeaderFooter)) {
         //     return this.getHyperLinkFields((paragraph.con as WCompositeNode), checkedFields);
@@ -38482,6 +38587,9 @@ class Selection {
                 return this.documentHelper.fields[i];
             }
             if (isInline && checkFormField && this.documentHelper.fields[i].formFieldData) {
+                return this.documentHelper.fields[i];
+            }
+            if ((isRetrieve || (!isRetrieve && fieldCode.match('ref '))) && isInline) {
                 return this.documentHelper.fields[i];
             }
         }
@@ -38616,6 +38724,23 @@ class Selection {
         let inline = this.getCurrentFormField();
         if (inline instanceof FieldElementBox && inline.formFieldData) {
             return true;
+        }
+        return false;
+    }
+    /**
+     * Return true if selection is in reference field
+     * @private
+     */
+    isReferenceField(field) {
+        if (isNullOrUndefined(field)) {
+            field = this.getHyperlinkField(true);
+        }
+        if (field) {
+            let fieldCode = this.getFieldCode(field);
+            fieldCode = fieldCode.toLowerCase();
+            if (field instanceof FieldElementBox && fieldCode.match('ref ')) {
+                return true;
+            }
         }
         return false;
     }
@@ -38822,7 +38947,6 @@ class Selection {
         finally {
             window.getSelection().removeAllRanges();
             div.parentNode.removeChild(div);
-            this.documentHelper.viewerContainer.focus();
         }
         return copySuccess;
     }
@@ -39221,9 +39345,6 @@ class Selection {
                 //         this.handleTabKey(true, false);
                 //     }
                 //     break;  
-                case 32:
-                    this.handleSpaceBarKey();
-                    break;
                 case 33:
                     event.preventDefault();
                     this.documentHelper.viewerContainer.scrollTop -= this.documentHelper.visibleBounds.height;
@@ -39258,8 +39379,13 @@ class Selection {
                     break;
             }
         }
-        if (!this.owner.isReadOnlyMode || this.documentHelper.protectionType === 'FormFieldsOnly') {
+        if (!this.owner.isReadOnlyMode) {
             this.owner.editorModule.onKeyDownInternal(event, ctrl, shift, alt);
+        }
+        else if (this.documentHelper.isDocumentProtected && this.documentHelper.protectionType === 'FormFieldsOnly') {
+            if (event.keyCode === 9 || event.keyCode === 32) {
+                this.owner.editorModule.onKeyDownInternal(event, ctrl, shift, alt);
+            }
         }
         if (this.owner.searchModule) {
             // tslint:disable-next-line:max-line-length
@@ -39834,6 +39960,56 @@ class Selection {
         startPosition.setPositionParagraph(element.line, offset);
         return { 'startPosition': startPosition, 'endPosition': undefined };
     }
+    //Restrict editing implementation ends
+    /**
+     * Update ref field.
+     * @private
+     */
+    updateRefField(field) {
+        if (isNullOrUndefined(field)) {
+            field = this.getHyperlinkField(true);
+        }
+        if (!isNullOrUndefined(field)) {
+            if (!this.isReferenceField(field)) {
+                return;
+            }
+            let fieldCode = this.getFieldCode(field);
+            fieldCode = fieldCode.trim();
+            if (fieldCode.toLowerCase().indexOf('ref') === 0) {
+                let code = fieldCode.split(' ');
+                if (code.length > 1) {
+                    let bookmarkId = code[1];
+                    if (this.documentHelper.bookmarks.containsKey(bookmarkId)) {
+                        let start = this.start;
+                        let end = this.end;
+                        if (!this.isForward) {
+                            start = this.end;
+                            end = this.start;
+                        }
+                        let bookmarkStart = this.documentHelper.bookmarks.get(bookmarkId);
+                        let bookmarkEnd = bookmarkStart.reference;
+                        let previousNode = bookmarkStart.previousNode;
+                        if (previousNode instanceof FieldElementBox && previousNode.fieldType === 0
+                            && !isNullOrUndefined(previousNode.formFieldData)) {
+                            bookmarkStart = previousNode.fieldSeparator;
+                            bookmarkEnd = previousNode.fieldEnd;
+                        }
+                        let offset = bookmarkStart.line.getOffset(bookmarkStart, 1);
+                        start.setPositionParagraph(bookmarkStart.line, offset);
+                        end.setPositionParagraph(bookmarkEnd.line, bookmarkEnd.line.getOffset(bookmarkEnd, 0));
+                        /* tslint:disable:no-any */
+                        // tslint:disable-next-line:max-line-length
+                        let documentContent = this.owner.sfdtExportModule.write(start.currentWidget, start.offset, end.currentWidget, end.offset, false, true);
+                        let startElement = field.fieldSeparator;
+                        let endElement = field.fieldEnd;
+                        start.setPositionParagraph(startElement.line, startElement.line.getOffset(startElement, 1));
+                        end.setPositionParagraph(endElement.line, endElement.line.getOffset(endElement, 0));
+                        this.owner.editor.pasteContents(documentContent);
+                    }
+                }
+            }
+        }
+    }
 }
 
 /**
@@ -39873,11 +40049,11 @@ class TextSearch {
             textToFind = textToFind.split('\\').join('\\\\');
         }
         // tslint:disable-next-line:max-line-length
-        if (textToFind.indexOf('(') > -1 || textToFind.indexOf(')') > -1 || textToFind.indexOf('.') > -1 || textToFind.indexOf('[') > -1 || textToFind.indexOf(']') > -1) {
+        if (textToFind.indexOf('(') > -1 || textToFind.indexOf(')') > -1 || textToFind.indexOf('.') > -1 || textToFind.indexOf('[') > -1 || textToFind.indexOf(']') > -1 || textToFind.indexOf('$') > -1) {
             let text = '';
             for (let i = 0; i < textToFind.length; i++) {
                 // tslint:disable-next-line:max-line-length
-                if (textToFind[i] === '(' || textToFind[i] === ')' || textToFind[i] === '.' || textToFind[i] === '[' || textToFind[i] === ']') {
+                if (textToFind[i] === '(' || textToFind[i] === ')' || textToFind[i] === '.' || textToFind[i] === '[' || textToFind[i] === ']' || textToFind[i] === '$') {
                     text += '\\' + textToFind[i];
                 }
                 else {
@@ -44328,6 +44504,20 @@ class Editor {
                     this.handleDelete();
                     event.preventDefault();
                     break;
+                case 32:
+                    this.selection.handleSpaceBarKey();
+                    break;
+                case 120:
+                    let textPosition = this.selection.getDocumentEnd();
+                    textPosition.offset = (this.selection.getDocumentEnd().offset + 1);
+                    if (this.selection.start.isAtSamePosition(this.selection.getDocumentStart()) &&
+                        this.selection.end.isAtSamePosition(textPosition)) {
+                        this.owner.updateFields();
+                    }
+                    else {
+                        this.selection.updateRefField();
+                    }
+                    break;
             }
         }
     }
@@ -46120,6 +46310,9 @@ class Editor {
                     if (characterFormat.italic) {
                         lineWidget.children[k].characterFormat.italic = characterFormat.italic;
                     }
+                    if (characterFormat.underline !== 'None') {
+                        lineWidget.children[k].characterFormat.underline = characterFormat.underline;
+                    }
                 }
             }
         }
@@ -46158,6 +46351,9 @@ class Editor {
         }
         this.isSkipHistory = false;
     }
+    /**
+     * @private
+     */
     pasteContents(content, currentFormat) {
         if (typeof (content) !== 'string') {
             this.copiedContent = content;
@@ -55301,14 +55497,16 @@ class Editor {
             }
         }
         else if (formData instanceof TextFormField) {
-            if (formData.type === 'Text') {
-                span.text = HelperMethods.formatText(formData.format, formData.defaultValue);
-            }
-            else if (formData.type === 'Number') {
-                span.text = HelperMethods.formatNumber(formData.format, formData.defaultValue);
-            }
-            else {
-                span.text = HelperMethods.formatDate(formData.format, formData.defaultValue);
+            if (formData.defaultValue !== '') {
+                if (formData.type === 'Text') {
+                    span.text = HelperMethods.formatText(formData.format, formData.defaultValue);
+                }
+                else if (formData.type === 'Number') {
+                    span.text = HelperMethods.formatNumber(formData.format, formData.defaultValue);
+                }
+                else {
+                    span.text = HelperMethods.formatDate(formData.format, formData.defaultValue);
+                }
             }
         }
         element.push(span);
@@ -64095,6 +64293,7 @@ class SfdtExport {
         this.writeInlineStyles = undefined;
         this.editRangeId = -1;
         this.isExport = true;
+        this.checkboxOrDropdown = false;
         this.documentHelper = documentHelper;
     }
     get viewer() {
@@ -64143,11 +64342,11 @@ class SfdtExport {
             }
         }
     }
-    // tslint:disable-next-line:max-line-length
     /**
      * @private
      */
-    write(line, startOffset, endLine, endOffset, writeInlineStyles) {
+    // tslint:disable-next-line:max-line-length
+    write(line, startOffset, endLine, endOffset, writeInlineStyles, isExport) {
         if (writeInlineStyles) {
             this.writeInlineStyles = true;
         }
@@ -64155,6 +64354,9 @@ class SfdtExport {
         this.updateEditRangeId();
         if (line instanceof LineWidget && endLine instanceof LineWidget) {
             this.isExport = false;
+            if (!isNullOrUndefined(isExport)) {
+                this.isExport = isExport;
+            }
             // For selection
             let startPara = line.paragraph;
             let endPara = endLine.paragraph;
@@ -64364,18 +64566,31 @@ class SfdtExport {
     }
     writeInlines(paragraph, line, inlines) {
         let lineWidget = line.clone();
+        let isformField = false;
         let bidi = paragraph.paragraphFormat.bidi;
         if (bidi || this.documentHelper.layout.isContainsRtl(lineWidget)) {
             this.documentHelper.layout.reArrangeElementsForRtl(lineWidget, bidi);
         }
         for (let i = 0; i < lineWidget.children.length; i++) {
             let element = lineWidget.children[i];
+            if (this.isExport && this.checkboxOrDropdown) {
+                if (isformField && element instanceof TextElementBox) {
+                    continue;
+                }
+                if (element instanceof FieldElementBox && element.fieldType === 2) {
+                    isformField = true;
+                }
+            }
             if (element instanceof ListTextElementBox) {
                 continue;
             }
             let inline = this.writeInline(element);
             if (!isNullOrUndefined(inline)) {
                 inlines.push(inline);
+            }
+            if (this.isExport && element instanceof FieldElementBox && element.fieldType === 1) {
+                isformField = false;
+                this.checkboxOrDropdown = false;
             }
         }
     }
@@ -64401,6 +64616,7 @@ class SfdtExport {
                     }
                     else if (element.formFieldData instanceof CheckBoxFormField) {
                         inline.formFieldData.checkBox = {};
+                        this.checkboxOrDropdown = true;
                         inline.formFieldData.checkBox.sizeType = element.formFieldData.sizeType;
                         inline.formFieldData.checkBox.size = element.formFieldData.size;
                         inline.formFieldData.checkBox.defaultValue = element.formFieldData.defaultValue;
@@ -64408,6 +64624,7 @@ class SfdtExport {
                     }
                     else {
                         inline.formFieldData.dropDownList = {};
+                        this.checkboxOrDropdown = true;
                         inline.formFieldData.dropDownList.dropdownItems = element.formFieldData.dropDownItems;
                         inline.formFieldData.dropDownList.selectedIndex = element.formFieldData.selectedIndex;
                     }
@@ -65141,6 +65358,7 @@ class HyperlinkDialog {
         this.onCancelButtonClick = () => {
             this.documentHelper.dialog.hide();
             this.clearValue();
+            this.documentHelper.updateFocus();
         };
         /**
          * @private
@@ -65321,7 +65539,7 @@ class HyperlinkDialog {
             isBookmark = true;
         }
         if (address === '') {
-            this.documentHelper.dialog.hide();
+            this.documentHelper.hideDialog();
             return;
         }
         if (displayText === '' && address !== '') {
@@ -65337,7 +65555,7 @@ class HyperlinkDialog {
             let remove = this.documentHelper.selection.text !== displayText && !this.displayTextBox.disabled;
             this.documentHelper.owner.editorModule.insertHyperlinkInternal(address, displayText, remove, isBookmark);
         }
-        this.documentHelper.dialog.hide();
+        this.documentHelper.hideDialog();
         this.navigationUrl = undefined;
     }
     /* tslint:enable:no-any */
@@ -65408,7 +65626,7 @@ class TableDialog {
             if (!(isNullOrUndefined(rowCount) && isNullOrUndefined(columnCount))) {
                 this.documentHelper.owner.editor.insertTable(rowCount, columnCount);
             }
-            this.documentHelper.dialog.hide();
+            this.documentHelper.hideDialog();
         };
         this.documentHelper = documentHelper;
     }
@@ -65492,6 +65710,7 @@ class TableDialog {
         this.columnValueTexBox.value = 2;
         this.documentHelper.dialog.close = this.documentHelper.updateFocus;
         this.documentHelper.dialog.dataBind();
+        this.columnValueTexBox.focusIn();
         this.documentHelper.dialog.show();
     }
     /**
@@ -65550,7 +65769,7 @@ class BookmarkDialog {
         };
         this.addBookmark = () => {
             this.documentHelper.owner.editorModule.insertBookmark(this.textBoxInput.value);
-            this.documentHelper.dialog.hide();
+            this.documentHelper.hideDialog();
         };
         /* tslint:disable:no-any */
         this.selectHandler = (args) => {
@@ -65686,7 +65905,7 @@ class BookmarkDialog {
         this.enableOrDisableButton();
     }
     removeObjects() {
-        this.documentHelper.dialog.hide();
+        this.documentHelper.hideDialog();
     }
     /**
      * @private
@@ -65746,6 +65965,7 @@ class TableOfContentsDialog {
         this.onCancelButtonClick = () => {
             this.documentHelper.dialog2.hide();
             this.unWireEventsAndBindings();
+            this.documentHelper.updateFocus();
         };
         /* tslint:disable:no-any */
         this.selectHandler = (args) => {
@@ -65916,6 +66136,7 @@ class TableOfContentsDialog {
             this.applyLevelSetting(tocSettings);
             this.documentHelper.owner.editorModule.insertTableOfContents(tocSettings);
             this.documentHelper.dialog2.hide();
+            this.documentHelper.updateFocus();
         };
         /**
          * @private
@@ -66544,6 +66765,7 @@ class PageSetupDialog {
         this.onCancelButtonClick = () => {
             this.documentHelper.dialog.hide();
             this.unWireEventsAndBindings();
+            this.documentHelper.updateFocus();
         };
         /**
          * @private
@@ -66569,7 +66791,7 @@ class PageSetupDialog {
             sectionFormat.headerDistance = this.headerBox.value;
             sectionFormat.footerDistance = this.footerBox.value;
             this.documentHelper.owner.editorModule.onApplySectionFormat(undefined, sectionFormat);
-            this.documentHelper.dialog.hide();
+            this.documentHelper.hideDialog();
         };
         /**
          * @private
@@ -67380,7 +67602,7 @@ class ParagraphDialog {
             else {
                 this.documentHelper.owner.styleDialogModule.updateParagraphFormat();
             }
-            this.documentHelper.dialog.hide();
+            this.documentHelper.hideDialog();
         };
         /**
          * @private
@@ -67395,8 +67617,7 @@ class ParagraphDialog {
             this.lineSpacingIn = undefined;
             this.lineSpacingType = undefined;
             this.paragraphFormat = undefined;
-            this.documentHelper.dialog.hide();
-            this.documentHelper.updateFocus();
+            this.documentHelper.hideDialog();
         };
         this.documentHelper = documentHelper;
     }
@@ -68649,7 +68870,7 @@ class StyleDialog {
                     name = styleName;
                     this.documentHelper.owner.editorModule.applyStyle(name);
                 }
-                this.documentHelper.dialog.hide();
+                this.documentHelper.hideDialog();
             }
             else {
                 throw new Error('Enter valid Style name');
@@ -68687,7 +68908,7 @@ class StyleDialog {
             if (!this.isEdit && this.style) {
                 this.style.destroy();
             }
-            this.documentHelper.dialog.hide();
+            this.documentHelper.hideDialog();
         };
         /**
          * @private
@@ -69413,7 +69634,7 @@ class BulletsAndNumberingDialog {
             this.abstractList.levels.push(listLevel);
             this.listFormat.listLevelNumber = 0;
             this.listFormat.list.abstractList = this.abstractList;
-            this.documentHelper.dialog.hide();
+            this.documentHelper.hideDialog();
         };
         this.documentHelper = documentHelper;
     }
@@ -69770,6 +69991,7 @@ class FontDialog {
         this.onCancelButtonClick = () => {
             this.documentHelper.dialog.hide();
             this.unWireEventsAndBindings();
+            this.documentHelper.updateFocus();
         };
         /**
          * @private
@@ -69812,7 +70034,7 @@ class FontDialog {
             else {
                 this.documentHelper.owner.styleDialogModule.updateCharacterFormat();
             }
-            this.documentHelper.dialog.hide();
+            this.documentHelper.hideDialog();
         };
         this.fontSizeUpdate = (args) => {
             this.fontSize = args.value;
@@ -73364,6 +73586,7 @@ class StylesDialog {
     }
     hideObjects() {
         this.documentHelper.dialog.hide();
+        this.documentHelper.updateFocus();
     }
     /**
      * @private
@@ -73390,7 +73613,7 @@ class SpellCheckDialog {
          */
         this.onCancelButtonClick = () => {
             this.documentHelper.clearSelectionHighlight();
-            this.documentHelper.dialog.hide();
+            this.documentHelper.hideDialog();
         };
         /**
          * @private
@@ -73498,7 +73721,7 @@ class SpellCheckDialog {
             }
         }
         if (this.parent.spellChecker.errorWordCollection.length === 0) {
-            this.documentHelper.dialog.hide();
+            this.documentHelper.hideDialog();
         }
     }
     /**
@@ -73656,6 +73879,9 @@ class SpellCheckDialog {
 /* tslint:disable:no-any */
 class CheckBoxFormFieldDialog {
     constructor(owner) {
+        /**
+         * @private
+         */
         this.changeBidirectional = (event) => {
             if (event.value === 'exact') {
                 this.autoButton.checked = !this.exactButton.checked;
@@ -73666,6 +73892,9 @@ class CheckBoxFormFieldDialog {
                 this.exactlyNumber.enabled = false;
             }
         };
+        /**
+         * @private
+         */
         this.changeBidirect = (event) => {
             if (event.value === 'check') {
                 this.notCheckedButton.checked = !this.checkedButton.checked;
@@ -74183,10 +74412,8 @@ class TextFormFieldDialog {
      */
     changeTypeDropDown(args) {
         if (args.isInteracted) {
-            setTimeout(() => {
-                this.defaultTextInput.value = '';
-                this.textFormatDropDown.value = '';
-            });
+            this.defaultTextInput.value = '';
+            this.textFormatDropDown.value = '';
         }
         if (args.value === 'Regular text') {
             this.defaultTextLabel.innerHTML = this.localObj.getConstant('Default text');
@@ -74245,30 +74472,32 @@ class TextFormFieldDialog {
         }
     }
     updateFormats(value) {
-        if (!isNullOrUndefined(this.textFormatDropDown.value)) {
-            if (this.typeDropDown.value === 'Regular text') {
-                return HelperMethods.formatText(this.textFormatDropDown.value.toString(), value);
-            }
-            if (this.typeDropDown.value === 'Number') {
-                let data = HelperMethods.formatNumber(this.textFormatDropDown.value.toString(), value);
-                if (!(data.toString() === 'NaN')) {
-                    return data;
-                }
-                return '';
-            }
-            if (this.typeDropDown.value === 'Date') {
-                return HelperMethods.formatDate(this.textFormatDropDown.value.toString(), value);
-            }
+        let format = isNullOrUndefined(this.textFormatDropDown.value) ? '' : this.textFormatDropDown.value.toString();
+        if (this.typeDropDown.value === 'Regular text') {
+            return HelperMethods.formatText(format, value);
         }
-        return undefined;
+        if (this.typeDropDown.value === 'Number') {
+            let data = HelperMethods.formatNumber(format, value);
+            if (!(data.toString() === 'NaN')) {
+                return data;
+            }
+            return '';
+        }
+        if (this.typeDropDown.value === 'Date') {
+            return HelperMethods.formatDate(format, value);
+        }
+        return '';
     }
     /**
      * @private
      */
     isValidDateFormat() {
-        let date = new Date(this.defaultTextInput.value);
-        if (isNaN(date.getDate())) {
-            return false;
+        let value = this.defaultTextInput.value;
+        if (value !== '') {
+            let date = new Date(value);
+            if (isNaN(date.getDate())) {
+                return false;
+            }
         }
         return true;
     }
@@ -78139,21 +78368,23 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
     }
     /**
      * Import form field values.
+     * @param - formDate  - { FormFieldData[] }
      */
     importFormData(formData) {
         let formField = this.documentHelper.formFields;
         for (let i = 0; i < formData.length; i++) {
-            let fieldName = Object.keys(formData[i])[0];
+            let formFieldData = formData[i];
+            let fieldName = formFieldData.fieldName;
             for (let j = 0; j < formField.length; j++) {
                 if (formField[j].formFieldData.name === fieldName) {
                     if (formField[j].formFieldData instanceof CheckBoxFormField) {
-                        this.editor.toggleCheckBoxFormField(formField[j], true, formData[i][fieldName]);
+                        this.editor.toggleCheckBoxFormField(formField[j], true, formFieldData.value);
                     }
                     else if (formField[j].formFieldData instanceof TextFormField) {
-                        this.editor.updateFormField(formField[j], formData[i][fieldName]);
+                        this.editor.updateFormField(formField[j], formFieldData.value);
                     }
                     else if (formField[j].formFieldData instanceof DropDownFormField) {
-                        this.editor.updateFormField(formField[j], formData[i][fieldName]);
+                        this.editor.updateFormField(formField[j], formFieldData.value);
                     }
                 }
             }
@@ -78161,17 +78392,18 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
     }
     /**
      * Export form field values.
-     * @returns - {FormData[]}
+     * @returns - { FormFieldData[] }
      */
     exportFormData() {
         let data = [];
         let formField = this.documentHelper.formFields;
         for (let i = 0; i < formField.length; i++) {
             if (formField[i].formFieldData.name !== '') {
-                let formData = {};
+                let formData = { fieldName: '', value: '' };
+                formData.fieldName = formField[i].formFieldData.name;
                 if (formField[i].formFieldData instanceof CheckBoxFormField) {
                     // tslint:disable-next-line:max-line-length
-                    formData[formField[i].formFieldData.name] = formField[i].formFieldData.checked;
+                    formData.value = formField[i].formFieldData.checked;
                 }
                 else if (formField[i].formFieldData instanceof TextFormField) {
                     let resultText = formField[i].resultText;
@@ -78179,16 +78411,29 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
                     if (resultText.replace(rex, '') === '') {
                         resultText = '';
                     }
-                    formData[formField[i].formFieldData.name] = resultText;
+                    formData.value = resultText;
                 }
                 else if (formField[i].formFieldData instanceof DropDownFormField) {
                     // tslint:disable-next-line:max-line-length
-                    formData[formField[i].formFieldData.name] = formField[i].formFieldData.selectedIndex;
+                    formData.value = formField[i].formFieldData.selectedIndex;
                 }
                 data.push(formData);
             }
         }
         return data;
+    }
+    /**
+     * Updated fields in document.
+     * Currently cross reference field only supported.
+     */
+    updateFields() {
+        for (let i = 0; i < this.documentHelper.fields.length; i++) {
+            let field = this.documentHelper.fields[i];
+            let code = this.selection.getFieldCode(field);
+            if (code.toLowerCase().trim().indexOf('ref ') === 0) {
+                this.selection.updateRefField(field);
+            }
+        }
     }
     /**
      * Shifts the focus to the document.
@@ -78805,6 +79050,7 @@ const SECTION_BREAK = '_section_break';
 const READ_ONLY = '_read_only';
 const PROTECTIONS = '_protections';
 const FORM_FIELDS_ID = '_form_fields';
+const UPDATE_FIELDS_ID = '_update_fields';
 const TEXT_FORM = '_text_form';
 const CHECKBOX = '_checkbox';
 const DROPDOWN = '_dropdown';
@@ -79164,6 +79410,13 @@ class Toolbar$1 {
                         text: this.onWrapText(locale.getConstant('Form Fields')), cssClass: className + ' e-de-formfields'
                     });
                     break;
+                case 'UpdateFields':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-update-field', tooltipText: locale.getConstant('Update cross reference fields'),
+                        id: id + UPDATE_FIELDS_ID, text: this.onWrapText(locale.getConstant('Update Fields')),
+                        cssClass: className + ' e-de-formfields'
+                    });
+                    break;
                 default:
                     //Here we need to process the items
                     toolbarItems.push(tItem[i]);
@@ -79222,6 +79475,9 @@ class Toolbar$1 {
                 break;
             case id + CLIPBOARD_ID:
                 this.toggleLocalPaste(args.item.id);
+                break;
+            case id + UPDATE_FIELDS_ID:
+                this.documentEditor.updateFields();
                 break;
             default:
                 this.container.trigger('toolbarClick', args);
@@ -79368,7 +79624,8 @@ class Toolbar$1 {
         for (let item of this.toolbar.items) {
             let itemId = item.id;
             if (itemId !== id + NEW_ID && itemId !== id + OPEN_ID && itemId !== id + FIND_ID &&
-                itemId !== id + CLIPBOARD_ID && itemId !== id + RESTRICT_EDITING_ID && item.type !== 'Separator') {
+                itemId !== id + CLIPBOARD_ID && itemId !== id + RESTRICT_EDITING_ID && itemId !== id + UPDATE_FIELDS_ID
+                && item.type !== 'Separator') {
                 if (enable && this.isCommentEditing && itemId === id + COMMENT_ID) {
                     continue;
                 }
@@ -82808,7 +83065,9 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
             'Form Fields': 'Form Fields',
             'Text Form': 'Text Form',
             'Check Box': 'Check Box',
-            'DropDown': 'Drop-Down'
+            'DropDown': 'Drop-Down',
+            'Update Fields': 'Update Fields',
+            'Update cross reference fields': 'Update cross reference fields'
         };
     }
     /**
@@ -83429,7 +83688,7 @@ __decorate$1([
     Property({ import: 'Import', systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing' })
 ], DocumentEditorContainer.prototype, "serverActionSettings", void 0);
 __decorate$1([
-    Property(['New', 'Open', 'Separator', 'Undo', 'Redo', 'Separator', 'Image', 'Table', 'Hyperlink', 'Bookmark', 'Comments', 'TableOfContents', 'Separator', 'Header', 'Footer', 'PageSetup', 'PageNumber', 'Break', 'Separator', 'Find', 'Separator', 'LocalClipboard', 'RestrictEditing', 'Separator', 'FormFields'])
+    Property(['New', 'Open', 'Separator', 'Undo', 'Redo', 'Separator', 'Image', 'Table', 'Hyperlink', 'Bookmark', 'Comments', 'TableOfContents', 'Separator', 'Header', 'Footer', 'PageSetup', 'PageNumber', 'Break', 'Separator', 'Find', 'Separator', 'LocalClipboard', 'RestrictEditing', 'Separator', 'FormFields', 'UpdateFields'])
 ], DocumentEditorContainer.prototype, "toolbarItems", void 0);
 __decorate$1([
     Property([])

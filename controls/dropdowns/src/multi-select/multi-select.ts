@@ -916,7 +916,6 @@ export class MultiSelect extends DropDownBase implements IInput {
         let valuecheck: string[] = [];
         if (isBlazor() && this.isServerRendered && this.isDynamicDataChange && this.value !== null && this.value.length > 0) {
             let items: { [key: string]: Object }[] = [];
-            this.isDynamicDataChange = false;
             for (let k: number = 0; k < this.value.length; k++) {
             let itemsData: string | number | boolean | {[key: string]: Object} = this.getDataByValue(this.value[k]);
                 if (itemsData) {
@@ -947,6 +946,11 @@ export class MultiSelect extends DropDownBase implements IInput {
             });
         } else {
             this.updateActionList(ulElement, list, e);
+        }
+        if (isBlazor() && this.isServerRendered && this.isDynamicDataChange && this.value && this.value.length > 0) {
+            this.updateVal(this.value, null, 'value');
+            this.addValidInputClass();
+            this.isDynamicDataChange = false;
         }
     }
 
@@ -1313,8 +1317,8 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         this.inputFocus = false;
         this.overAllWrapper.classList.remove(FOCUS);
+        this.refreshListItems(null);
         if (this.mode !== 'Box' && this.mode !== 'CheckBox') {
-            this.refreshListItems(null);
             this.updateDelimView();
         }
         if (this.changeOnBlur) {
@@ -3563,9 +3567,9 @@ export class MultiSelect extends DropDownBase implements IInput {
             this.mainList = null;
             this.mainData = null;
             this.isFirstClick = false;
+            this.isDynamicDataChange = true;
         }
         if (this.getModuleName() === 'multiselect') {
-            this.isDynamicDataChange = true;
             this.filterAction = false;
             this.setUpdateInitial(['fields', 'query', 'dataSource'], newProp as { [key: string]: string; });
         }

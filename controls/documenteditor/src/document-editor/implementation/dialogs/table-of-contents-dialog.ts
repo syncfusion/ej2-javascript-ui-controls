@@ -475,6 +475,7 @@ export class TableOfContentsDialog {
     public onCancelButtonClick = (): void => {
         this.documentHelper.dialog2.hide();
         this.unWireEventsAndBindings();
+        this.documentHelper.updateFocus();
     }
     /* tslint:disable:no-any */
     private selectHandler = (args: any): void => {
@@ -748,6 +749,7 @@ export class TableOfContentsDialog {
         this.applyLevelSetting(tocSettings);
         this.documentHelper.owner.editorModule.insertTableOfContents(tocSettings);
         this.documentHelper.dialog2.hide();
+        this.documentHelper.updateFocus();
     }
     /**
      * @private

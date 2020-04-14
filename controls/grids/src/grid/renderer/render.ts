@@ -401,12 +401,12 @@ export class Render {
             }
             if (!isNullOrUndefined(value)) {
                 this.isColTypeDef = true;
-                if (!columns[i].type) {
+                if (!columns[i].type || (isBlazor() && this.parent.isServerRendered && columns[i].type === 'none')) {
                     columns[i].type = value.getDay ? (value.getHours() > 0 || value.getMinutes() > 0 ||
                         value.getSeconds() > 0 || value.getMilliseconds() > 0 ? 'datetime' : 'date') : typeof (value);
                 }
             } else {
-                columns[i].type = columns[i].type || null;
+                columns[i].type = columns[i].type || (isBlazor() && this.parent.isServerRendered ? 'none' : null);
             }
             let valueFormatter: ValueFormatter = new ValueFormatter();
             if (columns[i].format && ((<DateFormatOptions>columns[i].format).skeleton || (<DateFormatOptions>columns[i].format).format)) {

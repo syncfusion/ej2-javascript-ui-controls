@@ -2404,6 +2404,7 @@ export class Calendar extends CalendarBase {
      */
     public onPropertyChanged(newProp: CalendarModel, oldProp: CalendarModel): void {
         this.effect = '';
+        this.rangeValidation(this.min, this.max);
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'value':

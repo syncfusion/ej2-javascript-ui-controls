@@ -35,6 +35,7 @@ export class SfdtExport {
     private editRangeId: number = -1;
     private isExport: boolean = true;
     private documentHelper: DocumentHelper;
+    private checkboxOrDropdown: boolean = false;
     /**
      * documentHelper definition
      */
@@ -88,11 +89,11 @@ export class SfdtExport {
             }
         }
     }
-    // tslint:disable-next-line:max-line-length
     /** 
      * @private
      */
-    public write(line?: LineWidget, startOffset?: number, endLine?: LineWidget, endOffset?: number, writeInlineStyles?: boolean): any {
+    // tslint:disable-next-line:max-line-length
+    public write(line?: LineWidget, startOffset?: number, endLine?: LineWidget, endOffset?: number, writeInlineStyles?: boolean, isExport?: boolean): any {
         if (writeInlineStyles) {
             this.writeInlineStyles = true;
         }
@@ -100,6 +101,9 @@ export class SfdtExport {
         this.updateEditRangeId();
         if (line instanceof LineWidget && endLine instanceof LineWidget) {
             this.isExport = false;
+            if (!isNullOrUndefined(isExport)) {
+                this.isExport = isExport;
+            }
             // For selection
             let startPara: ParagraphWidget = line.paragraph;
             let endPara: ParagraphWidget = endLine.paragraph;
@@ -307,18 +311,31 @@ export class SfdtExport {
     }
     private writeInlines(paragraph: ParagraphWidget, line: LineWidget, inlines: any): void {
         let lineWidget: LineWidget = line.clone();
+        let isformField: boolean = false;
         let bidi: boolean = paragraph.paragraphFormat.bidi;
         if (bidi || this.documentHelper.layout.isContainsRtl(lineWidget)) {
             this.documentHelper.layout.reArrangeElementsForRtl(lineWidget, bidi);
         }
         for (let i: number = 0; i < lineWidget.children.length; i++) {
             let element: ElementBox = lineWidget.children[i];
+            if (this.isExport && this.checkboxOrDropdown) {
+                if (isformField && element instanceof TextElementBox) {
+                    continue;
+                }
+                if (element instanceof FieldElementBox && element.fieldType === 2) {
+                    isformField = true;
+                }
+            }
             if (element instanceof ListTextElementBox) {
                 continue;
             }
             let inline: any = this.writeInline(element);
             if (!isNullOrUndefined(inline)) {
                 inlines.push(inline);
+            }
+            if (this.isExport && element instanceof FieldElementBox && element.fieldType === 1) {
+                isformField = false;
+                this.checkboxOrDropdown = false;
             }
         }
     }
@@ -343,12 +360,14 @@ export class SfdtExport {
                         inline.formFieldData.textInput.format = (element.formFieldData as TextFormField).format;
                     } else if (element.formFieldData instanceof CheckBoxFormField) {
                         inline.formFieldData.checkBox = {};
+                        this.checkboxOrDropdown = true;
                         inline.formFieldData.checkBox.sizeType = (element.formFieldData as CheckBoxFormField).sizeType;
                         inline.formFieldData.checkBox.size = (element.formFieldData as CheckBoxFormField).size;
                         inline.formFieldData.checkBox.defaultValue = (element.formFieldData as CheckBoxFormField).defaultValue;
                         inline.formFieldData.checkBox.checked = (element.formFieldData as CheckBoxFormField).checked;
                     } else {
                         inline.formFieldData.dropDownList = {};
+                        this.checkboxOrDropdown = true;
                         inline.formFieldData.dropDownList.dropdownItems = (element.formFieldData as DropDownFormField).dropDownItems;
                         inline.formFieldData.dropDownList.selectedIndex = (element.formFieldData as DropDownFormField).selectedIndex;
                     }

@@ -1787,4 +1787,68 @@ describe('MultiSelect', () => {
             Browser.userAgent = temp;
         });
     });
+    describe('EJ2-38397', () => {
+        let listObj: MultiSelect;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
+        let sportsData: any[] =  [
+            { Id: 'Game1', Game: 'American Football' },
+            { Id: 'Game2', Game: 'Badminton' },
+            { Id: 'Game3', Game: 'Basketball' },
+            { Id: 'Game4', Game: 'Cricket' },
+            { Id: 'Game5', Game: 'Football' },
+            { Id: 'Game6', Game: 'Golf' },
+            { Id: 'Game7', Game: 'Hockey' },
+            { Id: 'Game8', Game: 'Rugby' },
+            { Id: 'Game9', Game: 'Snooker' },
+            { Id: 'Game10', Game: 'Tennis' }
+        ];
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+            }
+        });
+        it('getDataByValue returns null in Box mode testcase', () => {
+            listObj = new MultiSelect({
+                dataSource: sportsData,
+                popupHeight: "auto",
+                fields: { text: 'Game', value: 'Id' },
+                mode: 'Box',
+                allowFiltering: true,
+                change: function(e){
+                    expect(this.getDataByValue(e.value[0]) !== null).toBe(true);
+                },
+            });
+            listObj.appendTo(element);
+            listObj.showPopup();
+            expect((<any>listObj).isPopupOpen()).toBe(true);
+            // Enter Key to select value
+            keyboardEventArgs.keyCode = 13;
+            keyboardEventArgs.altKey = false;
+            (<any>listObj).onKeyDown(keyboardEventArgs);
+            if (!(<any>listObj).isPopupOpen()) {
+                listObj.showPopup(); 
+            }
+            (<any>listObj).inputFocus = true;
+            // Filter the popup with b
+            (<any>listObj).inputElement.value = "b";
+            keyboardEventArgs.keyCode = 66;
+            keyboardEventArgs.altKey = false;
+            (<any>listObj).keyDownStatus = true;
+            (<any>listObj).onInput();
+            (<any>listObj).KeyUp(keyboardEventArgs);
+            // Tab key to focus out (hides popup)
+            keyboardEventArgs.keyCode = 9;
+            keyboardEventArgs.altKey = false;
+            (<any>listObj).keyDownStatus = true;
+            (<any>listObj).onInput();
+            (<any>listObj).onKeyDown(keyboardEventArgs);
+            // COntrol Focus out
+            (<any>listObj).inputElement.blur();
+            (<any>listObj).onBlur();
+        });
+    });
 });

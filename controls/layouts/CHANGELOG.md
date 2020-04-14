@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 18.1.44 (2020-04-14)
+
+### Splitter
+
+#### Bug Fixes
+
+- `#269482` - Resolved the expand and collapse icons hidden issue when panes are expanded or collapsed.
+
+### Dashboard Layout
+
+#### Bug Fixes
+
+- `#271938` - The issue with the Dashboard Layout resize icon style overrides the RTE component image style has been resolved.
+
 ## 17.4.51 (2020-02-25)
 
 ### Splitter

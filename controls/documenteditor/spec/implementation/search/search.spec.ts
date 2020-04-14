@@ -139,3 +139,49 @@ describe('search rtl text', () => {
     });
 
 });
+
+
+// Text search with $symbol validation
+
+describe('Find and find all with $ validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, Search, EditorHistory);
+        editor = new DocumentEditor({
+            enableEditor: true, enableSelection: true, isReadOnly: false, enableSearch: true, enableEditorHistory: true
+        });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        document.body.removeChild(document.getElementById('container'));
+        editor.destroy();
+        editor = undefined;
+        setTimeout(function () {
+            done();
+        }, 750);
+    });
+    it('Find $symbol validation', () => {
+        let text: string = 'Adventure Works Cycles, $4000 fictitious company on which $4000 AdventureWorks sample databases are based, is a large, multinational manufacturing company. $4000 company manufactures and sells metal and composite bicycles to North American, European and Asian commercial markets. While its base operation is located in Bo$4000ll, Washington with 290 employees, several regional sales teams are located throughout $4000ir market base.';
+        editor.editor.insertText(text);
+        editor.search.find('$4000');
+        expect(editor.selection.text).toBe('$4000');
+    });
+    it('Replace after find $symbol validation', () => {
+        editor.editor.insertText('sample');
+        editor.editorHistory.undo();
+        expect(editor.selection.text).toBe('$4000');
+    });
+    it('find all validation', () => {
+        editor.openBlank();
+        let text: string = 'Adventure Works Cycles, $4000 fictitious company on which $4000 AdventureWorks sample databases are based, is a large, multinational manufacturing company. $4000 company manufactures and sells metal and composite bicycles to North American, European and Asian commercial markets. While its base operation is located in Bo$4000ll, Washington with 290 employees, several regional sales teams are located throughout $4000ir market base.';
+        editor.editor.insertText(text);
+        editor.search.findAll('$4000');
+        expect(editor.selection.text).toBe('$4000');
+    });
+});

@@ -84,6 +84,13 @@ export class AnnotationToolbar {
     private isCurrentAnnotationOpacitySet: boolean = false;
     private isStampBtnVisible: boolean = false;
     private isShapeBtnVisible: boolean = false;
+    private isSignatureBtnVisible: boolean = false;
+    private isFontFamilyToolVisible: boolean = false;
+    private isFontSizeToolVisible: boolean = false;
+    private isFontAlignToolVisible: boolean = false;
+    private isFontColorToolVisible: boolean = false;
+    private isFontStylesToolVisible: boolean = false;
+    private isCommentPanelBtnVisible: boolean = false;
     private isFreeTextBtnVisible: boolean = false;
     private isCalibrateBtnVisible: boolean = false;
     private isStrokeColorToolVisible: boolean = false;
@@ -1846,24 +1853,31 @@ export class AnnotationToolbar {
 }
 
     private showSeparator(): void {
-        if ((!this.isHighlightBtnVisible && !this.isUnderlineBtnVisible && !this.isStrikethroughBtnVisible)
-            || !this.isShapeBtnVisible) {
+        if ((!this.isHighlightBtnVisible && !this.isUnderlineBtnVisible && !this.isStrikethroughBtnVisible)) {
             this.applyHideToToolbar(false, 3, 3);
         }
-        if (!this.isShapeBtnVisible || !this.isCalibrateBtnVisible) {
+        if (!this.isShapeBtnVisible) {
             this.applyHideToToolbar(false, 5, 5);
         }
-        if (!this.isCalibrateBtnVisible || !this.isStampBtnVisible) {
+        if (!this.isCalibrateBtnVisible) {
             this.applyHideToToolbar(false, 7, 7);
         }
-        // tslint:disable-next-line:max-line-length
-        if (!this.isStampBtnVisible || (!this.isColorToolVisible && !this.isStrokeColorToolVisible && !this.isThicknessToolVisible && !this.isOpacityToolVisible)) {
+        if (!this.isFreeTextBtnVisible) {
             this.applyHideToToolbar(false, 9, 9);
         }
+        if (!this.isStampBtnVisible) {
+            this.applyHideToToolbar(false, 11, 11);
+        }
+        if (!this.isSignatureBtnVisible) {
+            this.applyHideToToolbar(false, 13, 13);
+        }
         // tslint:disable-next-line:max-line-length
-        if ((!this.isColorToolVisible && !this.isStrokeColorToolVisible && !this.isThicknessToolVisible && !this.isOpacityToolVisible) && (!this.isHighlightBtnVisible &&
-            !this.isUnderlineBtnVisible && !this.isStrikethroughBtnVisible) && !this.isShapeBtnVisible && !this.isCalibrateBtnVisible && !this.isStampBtnVisible || !this.isDeleteAnnotationToolVisible) {
-            this.applyHideToToolbar(false, 14, 14);
+        if (!this.isFontFamilyToolVisible && !this.isFontSizeToolVisible && !this.isFontColorToolVisible && !this.isFontAlignToolVisible && !this.isFontStylesToolVisible) {
+            this.applyHideToToolbar(false, 19, 19);
+        }
+        // tslint:disable-next-line:max-line-length
+        if ((!this.isColorToolVisible && !this.isStrokeColorToolVisible && !this.isThicknessToolVisible && !this.isOpacityToolVisible) || !this.isDeleteAnnotationToolVisible) {
+            this.applyHideToToolbar(false, 24, 24);
         }
     }
 
@@ -1902,50 +1916,57 @@ export class AnnotationToolbar {
         this.applyHideToToolbar(isShow, 10, 10);
     }
     private showSignatureTool(isShow: boolean): void {
+        this.isSignatureBtnVisible = isShow;
         this.applyHideToToolbar(isShow, 12, 12);
     }
     private showFontFamilyAnnotationTool(isShow: boolean): void {
-        this.applyHideToToolbar(isShow, 13, 13);
-    }
-    private showFontSizeAnnotationTool(isShow: boolean): void {
+        this.isFontFamilyToolVisible = isShow;
         this.applyHideToToolbar(isShow, 14, 14);
     }
-    private showFontAlignAnnotationTool(isShow: boolean): void {
+    private showFontSizeAnnotationTool(isShow: boolean): void {
+        this.isFontSizeToolVisible = isShow;
         this.applyHideToToolbar(isShow, 15, 15);
     }
-    private showFontColorAnnotationTool(isShow: boolean): void {
+    private showFontAlignAnnotationTool(isShow: boolean): void {
+        this.isFontAlignToolVisible = isShow;
         this.applyHideToToolbar(isShow, 16, 16);
     }
-    private showFontStylesAnnotationTool(isShow: boolean): void {
+    private showFontColorAnnotationTool(isShow: boolean): void {
+        this.isFontColorToolVisible = isShow;
         this.applyHideToToolbar(isShow, 17, 17);
+    }
+    private showFontStylesAnnotationTool(isShow: boolean): void {
+        this.isFontStylesToolVisible = isShow;
+        this.applyHideToToolbar(isShow, 18, 18);
     }
     private showColorEditTool(isShow: boolean): void {
         this.isColorToolVisible = isShow;
-        this.applyHideToToolbar(isShow, 19, 19);
+        this.applyHideToToolbar(isShow, 20, 20);
     }
 
     private showStrokeColorEditTool(isShow: boolean): void {
         this.isStrokeColorToolVisible = isShow;
-        this.applyHideToToolbar(isShow, 20, 20);
+        this.applyHideToToolbar(isShow, 21, 21);
     }
 
     private showThicknessEditTool(isShow: boolean): void {
         this.isThicknessToolVisible = isShow;
-        this.applyHideToToolbar(isShow, 21, 21);
+        this.applyHideToToolbar(isShow, 22, 22);
     }
 
     private showOpacityEditTool(isShow: boolean): void {
         this.isOpacityToolVisible = isShow;
-        this.applyHideToToolbar(isShow, 22, 22);
+        this.applyHideToToolbar(isShow, 23, 23);
     }
 
     private showAnnotationDeleteTool(isShow: boolean): void {
         this.isDeleteAnnotationToolVisible = isShow;
-        this.applyHideToToolbar(isShow, 24, 24);
+        this.applyHideToToolbar(isShow, 25, 25);
     }
 
     private showCommentPanelTool(isShow: boolean): void {
-        this.applyHideToToolbar(isShow, 25, 25);
+        this.isCommentPanelBtnVisible = isShow;
+        this.applyHideToToolbar(isShow, 26, 26);
     }
 
     private applyHideToToolbar(show: boolean, startIndex: number, endIndex: number): void {

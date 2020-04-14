@@ -3941,8 +3941,20 @@ var Sortable = /** @__PURE__ @class */ (function (_super) {
         };
         _this.onDragStart = function (e) {
             _this.target = _this.getSortableElement(e.target);
+            var cancelDrag = false;
             _this.target.classList.add('e-grabbed');
             _this.curTarget = _this.target;
+            e.helper = document.getElementsByClassName('e-sortableclone')[0];
+            var args = { cancel: false, element: _this.element, target: _this.target };
+            _this.trigger('beforeDragStart', args, function (observedArgs) {
+                if (observedArgs.cancel) {
+                    cancelDrag = observedArgs.cancel;
+                    _this.onDragStop(e);
+                }
+            });
+            if (cancelDrag) {
+                return;
+            }
             if (isBlazor) {
                 _this.trigger('dragStart', { event: e.event, element: _this.element, target: _this.target,
                     bindEvents: e.bindEvents, dragElement: e.dragElement });
@@ -4166,6 +4178,9 @@ var Sortable = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Event()
     ], Sortable.prototype, "drag", void 0);
+    __decorate$1([
+        Event()
+    ], Sortable.prototype, "beforeDragStart", void 0);
     __decorate$1([
         Event()
     ], Sortable.prototype, "dragStart", void 0);

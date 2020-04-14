@@ -3,7 +3,7 @@ import { Query, DataManager, Predicate, Deferred, UrlAdaptor } from '@syncfusion
 import { IDataProcessor, IGrid, DataStateChangeEventArgs, DataSourceChangedEventArgs, PendingState } from '../base/interface';
 import { ReturnType } from '../base/type';
 import { SearchSettingsModel, PredicateModel, SortDescriptorModel } from '../base/grid-model';
-import { setFormatter, getDatePredicate, isGroupAdaptive, getColumnByForeignKeyValue, refreshFilteredColsUid } from '../base/util';
+import { setFormatter, isGroupAdaptive, getColumnByForeignKeyValue, refreshFilteredColsUid } from '../base/util';
 import { AggregateRowModel, AggregateColumnModel } from '../models/models';
 import * as events from '../base/constant';
 import { ValueFormatter } from '../services/value-formatter';
@@ -246,7 +246,6 @@ export class Data implements IDataProcessor {
     protected filterQuery(query: Query, column?: PredicateModel[], skipFoerign?: boolean): Query {
         let gObj: IGrid = this.parent;
         let predicateList: Predicate[] = [];
-        let fPredicate: { predicate?: Predicate } = {};
         let actualFilter: PredicateModel[] = [];
         let foreignColumn: Column[] = this.parent.getForeignKeyColumns();
         if (gObj.allowFiltering && gObj.filterSettings.columns.length) {
@@ -255,51 +254,41 @@ export class Data implements IDataProcessor {
             for (let col of gObj.getColumns() as Column[]) {
                 colType[col.field] = col.filter.type ? col.filter.type : gObj.filterSettings.type;
             }
-            let checkBoxCols: PredicateModel[] = [];
+            let foreignCols: PredicateModel[] = [];
             let defaultFltrCols: PredicateModel[] = [];
             for (let col of columns) {
-                if (colType[col.field] === 'CheckBox' || colType[col.field] === 'Excel') {
-                    checkBoxCols.push(col);
+                if (col.isForeignKey) {
+                    foreignCols.push(col);
                 } else {
                     defaultFltrCols.push(col);
                 }
             }
-            if (checkBoxCols.length) {
-                let excelPredicate: Predicate = CheckBoxFilterBase.getPredicate(checkBoxCols);
-                for (let prop of Object.keys(excelPredicate)) {
-                    let col: Column;
-                    if (this.parent.getColumnByField(prop).isForeignColumn()) {
-                        col = getColumnByForeignKeyValue(prop, foreignColumn);
-                    }
-                    if (!col) {
-                        this.parent.log('initial_action', {moduleName: 'filter', columnName: prop});
-                    }
-                    if (col && !skipFoerign) {
-                        predicateList = this.fGeneratePredicate(col, predicateList);
-                        actualFilter.push(col);
-                    } else {
-                        predicateList.push(<Predicate>excelPredicate[prop]);
+            if (defaultFltrCols.length) {
+                if (gObj.filterSettings.type === 'FilterBar' || gObj.filterSettings.type === 'Menu') {
+                    for (let i: number = 0, len: number = defaultFltrCols.length; i < len; i++) {
+                        defaultFltrCols[i].uid = defaultFltrCols[i].uid ||
+                            this.parent.grabColumnByFieldFromAllCols(defaultFltrCols[i].field).uid;
                     }
                 }
+                let excelPredicate: Predicate = CheckBoxFilterBase.getPredicate(defaultFltrCols);
+                for (let prop of Object.keys(excelPredicate)) {
+                    predicateList.push(<Predicate>excelPredicate[prop]);
+                }
             }
-            if (defaultFltrCols.length) {
-                for (let col of defaultFltrCols) {
+            if (foreignCols.length) {
+                for (let col of foreignCols) {
                     col.uid = col.uid || this.parent.grabColumnByFieldFromAllCols(col.field).uid;
                     let column: Column = this.parent.grabColumnByUidFromAllCols(col.uid);
                     if (!column) {
-                        this.parent.log('initial_action', {moduleName: 'filter', columnName: col.field});
+                        this.parent.log('initial_action', { moduleName: 'filter', columnName: col.field });
                     }
-                    let sType: string = column.type;
                     if (column.isForeignColumn() && getColumnByForeignKeyValue(col.field, foreignColumn) && !skipFoerign) {
                         actualFilter.push(col);
                         predicateList = this.fGeneratePredicate(column, predicateList);
                     } else {
-                        if (sType !== 'date' && sType !== 'datetime') {
-                            predicateList.push(new Predicate(
-                                col.field, col.operator, col.value, !col.matchCase, this.parent.filterSettings.ignoreAccent
-                            ));
-                        } else {
-                            predicateList.push(getDatePredicate(col, sType));
+                        let excelPredicate: Predicate = CheckBoxFilterBase.getPredicate(columns);
+                        for (let prop of Object.keys(excelPredicate)) {
+                            predicateList.push(<Predicate>excelPredicate[prop]);
                         }
                     }
                 }

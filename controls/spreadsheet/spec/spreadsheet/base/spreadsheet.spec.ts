@@ -421,7 +421,7 @@ describe('Spreadsheet base module ->', () => {
                     } else {
                         expect(helper.getModel('activeSheetIndex')).toBe(1);
                         let td: HTMLTableCellElement = helper.invoke('getCell', [0, 0]);
-                        expect(td.textContent).toBe('ProductID');
+                        expect(td.textContent).toBe('Product Id');
                         helper.setModel('activeSheetIndex', 0);
                     }
                 }, 30);

@@ -356,7 +356,6 @@ export class GroupingBar implements IAction {
                         if ((gridColumn[cCnt] as Column).columns) {
                             this.setColWidth((gridColumn[cCnt] as Column).columns as Column[], valueColWidth);
                         } else {
-                            (gridColumn[cCnt] as Column).width = valueColWidth;
                             if ((gridColumn[cCnt] as Column).width !== 'auto') {
                                 /* tslint:disable:no-any */
                                 let levelName: string = gridColumn[cCnt].customAttributes ?
@@ -403,10 +402,15 @@ export class GroupingBar implements IAction {
     }
     private setColWidth(columns: Column[], width: number): void {
         for (let cCnt: number = 0; cCnt < columns.length; cCnt++) {
-            if ((columns[cCnt] as Column).columns) {
-                this.setColWidth((columns[cCnt] as Column).columns as Column[], width);
-            } else {
-                (columns[cCnt] as Column).width = width;
+            if (columns[cCnt].columns) {
+                this.setColWidth(columns[cCnt].columns as Column[], width);
+            }
+            else {
+                if (columns[cCnt].width != "auto") {
+                    columns[cCnt].width = width;
+                } else {
+                    columns[cCnt].minWidth = width;
+                }
             }
         }
     }

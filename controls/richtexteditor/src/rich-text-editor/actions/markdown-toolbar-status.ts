@@ -85,7 +85,7 @@ export class MarkdownToolbarStatus {
     private currentFormat(lines: { [key: string]: string | number }[], documentNode: Node): string {
         let format: string = 'p';
         let keys: string[] = Object.keys(this.parent.formatter.formatTags);
-        let direction: string = (this.element as ITextAreaElement).selectionDirection;
+        let direction: string = (this.element as HTMLTextAreaElement).selectionDirection;
         let checkLine: string = direction === 'backward' ? lines[0].text as string : lines[lines.length - 1].text as string;
         for (let i: number = 0; !documentNode && i < keys.length; i++) {
             if (keys[i] !== 'pre' && this.selection.isStartWith(checkLine, this.parent.formatter.formatTags[keys[i]])) {
@@ -134,11 +134,4 @@ export class MarkdownToolbarStatus {
     private multiCharRegx(cmd: string): RegExp {
         return new RegExp('(\\' + cmd + ')', 'g');
     }
-}
-/** 
- * @hidden
- * @deprecated
- */
-export interface ITextAreaElement extends HTMLTextAreaElement {
-    selectionDirection: string;
 }

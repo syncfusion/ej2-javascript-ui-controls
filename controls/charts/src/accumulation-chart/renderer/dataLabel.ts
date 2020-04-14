@@ -714,6 +714,15 @@ export class AccumulationDataLabel extends AccumulationBase {
         childElement.style.top = (point.labelRegion.y) + 'px';
         childElement.style.color = labelColor ||
             this.getSaturatedColor(point, fill);
+        if (this.accumulation.isBlazor) {
+            let position: string = this.isCircular() ? (point.labelRegion.x >= this.center.x) ? 'InsideRight' : 'InsideLeft' :
+                (point.labelRegion.x >= point.region.x) ? 'InsideRight' : 'InsideLeft';
+            if (position === 'InsideRight') {
+                childElement.style.transform = 'translate(0%, -50%)';
+            } else {
+                childElement.style.transform = 'translate(-100%, -50%)';
+            }
+        }
         if (childElement.childElementCount) {
             appendChildElement(false, parent, childElement, redraw, true, 'left', 'top');
             this.doTemplateAnimation(this.accumulation, childElement);

@@ -7574,11 +7574,22 @@ class Render {
             integrateModel = this.frameEmptyColumns();
         }
         if (integrateModel.length > 1) {
-            integrateModel[integrateModel.length - 1].minWidth = integrateModel[integrateModel.length - 1].width;
-            integrateModel[integrateModel.length - 1].width = 'auto';
+            let lastColumn = integrateModel[integrateModel.length - 1];
+            lastColumn.minWidth = lastColumn.width;
+            lastColumn.width = 'auto';
+            if (lastColumn.columns && lastColumn.columns.length > 0 && !this.parent.allowPdfExport) {
+                this.configLastColumnWidth(lastColumn.columns[lastColumn.columns.length - 1]);
+            }
         }
         this.parent.triggerColumnRenderEvent(integrateModel);
         return integrateModel;
+    }
+    configLastColumnWidth(column) {
+        column.minWidth = column.width;
+        column.width = "auto";
+        if (column.columns && column.columns.length > 0) {
+            this.configLastColumnWidth(column.columns[column.columns.length - 1]);
+        }
     }
     /** @hidden */
     setSavedWidth(column, width) {
@@ -7900,6 +7911,7 @@ class CommonKeyboardInteraction {
         let target = e.target;
         if (target && closest(target, '.e-popup.e-popup-open')) {
             /* tslint:disable-next-line:max-line-length */
+            /* tslint:disable-next-line:no-any */
             let dialogInstance = closest(target, '.e-popup.e-popup-open').ej2_instances[0];
             if (dialogInstance && !dialogInstance.closeOnEscape) {
                 dialogInstance.hide();
@@ -9628,7 +9640,9 @@ class FilterDialog {
                             let inputObj1;
                             let inputObj2;
                             if (type === 'value') {
+                                /* tslint:disable-next-line:no-any */
                                 inputObj1 = inputDiv1.ej2_instances[0];
+                                /* tslint:disable-next-line:no-any */
                                 inputObj2 = inputDiv2.ej2_instances[0];
                                 if (inputObj1) {
                                     inputObj1.value = filterObj.value1 ? parseInt(filterObj.value1, 10) : undefined;
@@ -9638,7 +9652,9 @@ class FilterDialog {
                                 }
                             }
                             else {
+                                /* tslint:disable-next-line:no-any */
                                 inputObj1 = inputDiv1.ej2_instances[0];
+                                /* tslint:disable-next-line:no-any */
                                 inputObj2 = inputDiv2.ej2_instances[0];
                                 if (inputObj1) {
                                     inputObj1.value = filterObj.value1 ? filterObj.value1 : '';
@@ -9828,6 +9844,7 @@ class FilterDialog {
     updateInputValues(element, type, inputDiv1, inputDiv2) {
         let value1;
         let value2;
+        /* tslint:disable:no-any */
         if (type === 'date') {
             let inputObj1 = inputDiv1.ej2_instances[0];
             let inputObj2 = inputDiv2.ej2_instances[0];
@@ -9840,6 +9857,7 @@ class FilterDialog {
             value1 = inputObj1.value;
             value2 = inputObj2.value;
         }
+        /* tslint:enable:no-any */
         setStyleAndAttributes(element, { 'data-value1': value1, 'data-value2': value2 });
     }
     validateTreeNode(e) {
@@ -19339,7 +19357,7 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         /** @hidden */
         this.horizontalScrollScale = 1;
         /** @hidden */
-        this.scrollerBrowserLimit = 500000;
+        this.scrollerBrowserLimit = 8000000;
         /** @hidden */
         this.lastSortInfo = {};
         /** @hidden */
@@ -19436,6 +19454,12 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             this.engineModule = new PivotEngine();
         }
         this.isAdaptive = Browser.isDevice;
+        if (Browser.isIE || Browser.info.name === 'edge') {
+            this.scrollerBrowserLimit = 1500000;
+        }
+        else if (Browser.info.name === 'chrome') {
+            this.scrollerBrowserLimit = 15000000;
+        }
         this.isTouchMode = closest(this.element, 'e-bigger') ? true : false;
         this.initProperties();
         this.renderToolTip();
@@ -20170,10 +20194,8 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                     }
                     if (newProp.dataSourceSettings && Object.keys(newProp.dataSourceSettings).length === 1
                         && Object.keys(newProp.dataSourceSettings)[0] === 'dataSource') {
-                        if (!(isBlazor() && this.enableVirtualization)) {
-                            this.engineModule.fieldList = null;
-                            this.refreshData();
-                        }
+                        this.engineModule.fieldList = null;
+                        this.refreshData();
                     }
                     else {
                         if (PivotUtil.isButtonIconRefesh(prop, oldProp, newProp)) {
@@ -29258,7 +29280,6 @@ class GroupingBar {
                             this.setColWidth(gridColumn[cCnt].columns, valueColWidth);
                         }
                         else {
-                            gridColumn[cCnt].width = valueColWidth;
                             if (gridColumn[cCnt].width !== 'auto') {
                                 /* tslint:disable:no-any */
                                 let levelName = gridColumn[cCnt].customAttributes ?
@@ -29312,7 +29333,12 @@ class GroupingBar {
                 this.setColWidth(columns[cCnt].columns, width);
             }
             else {
-                columns[cCnt].width = width;
+                if (columns[cCnt].width != "auto") {
+                    columns[cCnt].width = width;
+                }
+                else {
+                    columns[cCnt].minWidth = width;
+                }
             }
         }
     }

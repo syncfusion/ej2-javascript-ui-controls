@@ -1,4 +1,4 @@
-import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';import { SmithchartFont} from '../utils/utils';import { SmithchartFontModel} from '../utils/utils-model';import { Theme } from '../model/theme';
+import { Property, Complex, ChildProperty} from '@syncfusion/ej2-base';import { SmithchartFont} from '../utils/utils';import { SmithchartFontModel} from '../utils/utils-model';import { Theme } from '../model/theme';import { ISmithChartPoint } from '../model/interface';
 
 /**
  * Interface for a class SeriesTooltipBorder
@@ -237,7 +237,7 @@ export interface SmithchartSeriesModel {
  * points for series.
  * @default []
  */
-    points?: { resistance: number,  reactance: number}[];
+    points?: ISmithChartPoint[];
 
     /**
  * resistance name for dataSource
@@ -252,6 +252,13 @@ export interface SmithchartSeriesModel {
  */
 
     reactance?: string;
+
+    /**
+ * tooltip mapping name for the series
+ * @default ''
+ */
+
+    tooltipMappingName?: string;
 
     /**
  *  Specifies the dataSource

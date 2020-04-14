@@ -1622,11 +1622,23 @@ export class Render {
             integrateModel = this.frameEmptyColumns();
         }
         if (integrateModel.length > 1) {
-            integrateModel[integrateModel.length - 1].minWidth = integrateModel[integrateModel.length - 1].width;
-            integrateModel[integrateModel.length - 1].width = 'auto';
+            let lastColumn: ColumnModel = integrateModel[integrateModel.length - 1];
+            lastColumn.minWidth = lastColumn.width;
+            lastColumn.width = 'auto';
+            if (lastColumn.columns && lastColumn.columns.length > 0 && !this.parent.allowPdfExport) {
+                this.configLastColumnWidth((lastColumn.columns as ColumnModel[])[lastColumn.columns.length - 1]);
+            }
         }
         this.parent.triggerColumnRenderEvent(integrateModel);
         return integrateModel;
+    }
+
+    private configLastColumnWidth(column: ColumnModel) {
+        column.minWidth = column.width;
+        column.width = "auto";
+        if (column.columns && column.columns.length > 0) {
+            this.configLastColumnWidth((column.columns as ColumnModel[])[column.columns.length - 1]);
+        }
     }
 
     /** @hidden */

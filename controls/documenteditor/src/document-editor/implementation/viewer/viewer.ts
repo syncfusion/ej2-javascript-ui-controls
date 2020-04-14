@@ -445,6 +445,10 @@ export class DocumentHelper {
      */
     public resizerTimer: number;
     /**
+     * @private
+     */
+    public isFormFilling: boolean = false;
+    /**
      * Gets visible bounds.
      * @private
      */
@@ -1144,6 +1148,13 @@ export class DocumentHelper {
         }
     }
     /**
+     * @private
+     */
+    public hideDialog(): void {
+        this.dialog.hide();
+        this.updateFocus();
+    }
+    /**
      * Initializes dialog template.
      */
     private initDialog2(isRtl?: boolean): void {
@@ -1431,6 +1442,9 @@ export class DocumentHelper {
      * @private
      */
     public onMouseMoveInternal = (event: MouseEvent): void => {
+        if (!isNullOrUndefined(event.target) && event.target !== this.viewerContainer) {
+            return;
+        }
         event.preventDefault();
         if (!isNullOrUndefined(this.selection)) {
             //For image Resizing
@@ -1521,6 +1535,9 @@ export class DocumentHelper {
      * @private
      */
     public onDoubleTap = (event: MouseEvent): void => {
+        if (!isNullOrUndefined(event.target) && event.target !== this.viewerContainer) {
+            return;
+        }
         if (!isNullOrUndefined(this.selection)) {
             this.isTouchInput = false;
             let cursorPoint: Point = new Point(event.offsetX, event.offsetY);
@@ -1621,10 +1638,10 @@ export class DocumentHelper {
                         this.formFillPopup.showPopUp(formField, touchPoint);
                     } else {
                         this.owner.editor.toggleCheckBoxFormField(formField);
+                        data.value = (formField.formFieldData as CheckBoxFormField).checked;
+                        data.isCanceled = false;
                         this.owner.trigger('afterFormFieldFill', data);
                     }
-                } else {
-                    this.owner.selection.selectNextFormField();
                 }
             } else {
                 let formField: FieldElementBox = this.selection.getCurrentFormField();
@@ -2636,16 +2653,28 @@ export class DocumentHelper {
         }
         let lineLeft: number = 0;
         let formField: FieldElementBox = undefined;
+        let referenceField: FieldElementBox = undefined;
         if (!isNullOrUndefined(widget)) {
             lineLeft = this.selection.getLineStartLeft(widget);
             hyperlinkField = this.selection.getHyperLinkFieldInCurrentSelection(widget, touchPoint);
             if (isNullOrUndefined(hyperlinkField)) {
                 formField = this.selection.getHyperLinkFieldInCurrentSelection(widget, touchPoint, true);
             }
+            if (!isNullOrUndefined(hyperlinkField)) {
+                let code: string = this.selection.getFieldCode(hyperlinkField);
+                if (code.toLowerCase().indexOf('ref ') === 0 && !code.match('\\h')) {
+                    hyperlinkField = undefined;
+                }
+            }
             widgetInfo = this.selection.updateTextPositionIn(widget, undefined, 0, touchPoint, true);
             left = this.selection.getLeft(widget);
             top = this.selection.getTop(widget);
-            this.selection.setHyperlinkContentToToolTip(hyperlinkField, widget, touchPoint.x);
+            if (isNullOrUndefined(hyperlinkField) && !isNullOrUndefined(formField) && this.isDocumentProtected &&
+                this.protectionType === 'FormFieldsOnly' && !this.isFormFilling) {
+                this.selection.setHyperlinkContentToToolTip(formField, widget, touchPoint.x, true);
+            } else {
+                this.selection.setHyperlinkContentToToolTip(hyperlinkField, widget, touchPoint.x, false);
+            }
         }
         let isCtrlkeyPressed: boolean = this.isIosDevice ? event.metaKey : event.ctrlKey;
         if ((!isNullOrUndefined(hyperlinkField) && (isCtrlkeyPressed &&

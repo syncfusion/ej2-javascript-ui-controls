@@ -484,7 +484,7 @@ export class ParagraphDialog {
         } else {
             this.documentHelper.owner.styleDialogModule.updateParagraphFormat();
         }
-        this.documentHelper.dialog.hide();
+        this.documentHelper.hideDialog();
     }
     /**
      * Applies Paragraph Format 
@@ -523,8 +523,7 @@ export class ParagraphDialog {
         this.lineSpacingIn = undefined;
         this.lineSpacingType = undefined;
         this.paragraphFormat = undefined;
-        this.documentHelper.dialog.hide();
-        this.documentHelper.updateFocus();
+        this.documentHelper.hideDialog();
     }
     /**
      * @private

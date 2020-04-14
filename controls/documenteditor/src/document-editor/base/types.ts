@@ -1345,9 +1345,13 @@ export type ToolbarItem =
      */
     'RestrictEditing'|
     /**
-     * Form fiels option in the toolbar item..
+     * Form fiels option in the toolbar item.
      */
-    'FormFields';
+    'FormFields'|
+    /**
+     * Update fields options in toolbar item.
+     */
+    'UpdateFields';
 
 /**
  * Specifies the type of Text formField

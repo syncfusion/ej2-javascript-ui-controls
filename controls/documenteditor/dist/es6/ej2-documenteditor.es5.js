@@ -3283,6 +3283,9 @@ var HelperMethods = /** @__PURE__ @class */ (function () {
         if (value.toString() === 'NaN') {
             return '';
         }
+        if (format === '') {
+            format = '0';
+        }
         numberFormat = { format: format };
         formattedValue = intl.formatNumber(numberValue, numberFormat);
         return formattedValue;
@@ -3295,6 +3298,12 @@ var HelperMethods = /** @__PURE__ @class */ (function () {
         var intl = new Internationalization();
         var formattedValue;
         var date = new Date(value);
+        if (isNaN(date.getDate())) {
+            return '';
+        }
+        if (format === '') {
+            return value;
+        }
         if (format.indexOf('am/pm') !== -1) {
             format = format.replace(/am\/pm/gi, 'a');
         }
@@ -13768,7 +13777,7 @@ var FormFieldPopUp = /** @__PURE__ @class */ (function () {
         this.applyDropDownFormFieldValue = function () {
             _this.owner.editor.updateFormField(_this.formField, _this.ddlInstance.index);
             // tslint:disable-next-line:max-line-length
-            _this.owner.trigger('afterFieldFill', { 'fieldName': _this.formField.formFieldData.name, value: _this.formField.formFieldData.selectedIndex, isCanceled: false });
+            _this.owner.trigger('afterFormFieldFill', { 'fieldName': _this.formField.formFieldData.name, value: _this.formField.formFieldData.selectedIndex, isCanceled: false });
             _this.hidePopup();
         };
         this.enableDisableDatePickerOkButton = function (args) {
@@ -13799,6 +13808,7 @@ var FormFieldPopUp = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.hidePopup = function () {
+            _this.owner.documentHelper.isFormFilling = false;
             _this.formField = undefined;
             if (_this.target) {
                 _this.target.style.display = 'none';
@@ -13969,7 +13979,7 @@ var FormFieldPopUp = /** @__PURE__ @class */ (function () {
                     });
                 }
                 var left = this.owner.selection.getLeftInternal(formField.line, formField, 0);
-                var lineHeight = formField.line.height;
+                var lineHeight = formField.line.height * this.owner.documentHelper.zoomFactor;
                 var position = this.owner.selection.getTooltipPosition(formField, left, this.target, true);
                 if (!this.popupObject) {
                     this.popupObject = new Popup(this.target, {
@@ -13982,6 +13992,7 @@ var FormFieldPopUp = /** @__PURE__ @class */ (function () {
                 this.target.style.display = 'block';
                 this.popupObject.show();
             }
+            this.owner.documentHelper.isFormFilling = true;
         }
     };
     return FormFieldPopUp;
@@ -14253,6 +14264,10 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.isIosDevice = false;
+        /**
+         * @private
+         */
+        this.isFormFilling = false;
         this.onIframeLoad = function () {
             if (!isNullOrUndefined(_this.iframe) && _this.iframe.contentDocument.body.children.length === 0) {
                 _this.initIframeContent();
@@ -14558,6 +14573,9 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.onMouseMoveInternal = function (event) {
+            if (!isNullOrUndefined(event.target) && event.target !== _this.viewerContainer) {
+                return;
+            }
             event.preventDefault();
             if (!isNullOrUndefined(_this.selection)) {
                 //For image Resizing
@@ -14639,6 +14657,9 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.onDoubleTap = function (event) {
+            if (!isNullOrUndefined(event.target) && event.target !== _this.viewerContainer) {
+                return;
+            }
             if (!isNullOrUndefined(_this.selection)) {
                 _this.isTouchInput = false;
                 var cursorPoint = new Point(event.offsetX, event.offsetY);
@@ -14744,11 +14765,10 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
                         }
                         else {
                             _this.owner.editor.toggleCheckBoxFormField(formField);
+                            data.value = formField.formFieldData.checked;
+                            data.isCanceled = false;
                             _this.owner.trigger('afterFormFieldFill', data);
                         }
-                    }
-                    else {
-                        _this.owner.selection.selectNextFormField();
                     }
                 }
                 else {
@@ -15690,6 +15710,13 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
         }
     };
     /**
+     * @private
+     */
+    DocumentHelper.prototype.hideDialog = function () {
+        this.dialog.hide();
+        this.updateFocus();
+    };
+    /**
      * Initializes dialog template.
      */
     DocumentHelper.prototype.initDialog2 = function (isRtl) {
@@ -16513,10 +16540,22 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
             if (isNullOrUndefined(hyperlinkField)) {
                 formField = this.selection.getHyperLinkFieldInCurrentSelection(widget, touchPoint, true);
             }
+            if (!isNullOrUndefined(hyperlinkField)) {
+                var code = this.selection.getFieldCode(hyperlinkField);
+                if (code.toLowerCase().indexOf('ref ') === 0 && !code.match('\\h')) {
+                    hyperlinkField = undefined;
+                }
+            }
             widgetInfo = this.selection.updateTextPositionIn(widget, undefined, 0, touchPoint, true);
             left = this.selection.getLeft(widget);
             top = this.selection.getTop(widget);
-            this.selection.setHyperlinkContentToToolTip(hyperlinkField, widget, touchPoint.x);
+            if (isNullOrUndefined(hyperlinkField) && !isNullOrUndefined(formField) && this.isDocumentProtected &&
+                this.protectionType === 'FormFieldsOnly' && !this.isFormFilling) {
+                this.selection.setHyperlinkContentToToolTip(formField, widget, touchPoint.x, true);
+            }
+            else {
+                this.selection.setHyperlinkContentToToolTip(hyperlinkField, widget, touchPoint.x, false);
+            }
         }
         var isCtrlkeyPressed = this.isIosDevice ? event.metaKey : event.ctrlKey;
         if ((!isNullOrUndefined(hyperlinkField) && (isCtrlkeyPressed &&
@@ -25303,7 +25342,7 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
             },
             {
                 text: localValue.getConstant('Update Field'),
-                iconCss: 'e-icons e-de-update_field',
+                iconCss: 'e-icons e-de-update-field',
                 id: id + CONTEXTMENU_UPDATE_FIELD
             },
             {
@@ -25525,7 +25564,12 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
                 }
                 break;
             case id + CONTEXTMENU_UPDATE_FIELD:
-                if (!this.documentHelper.owner.isReadOnlyMode) {
+                var isReadOnly = this.documentHelper.owner.isReadOnlyMode;
+                if (this.documentHelper.selection.isReferenceField() && (!isReadOnly ||
+                    (isReadOnly && this.documentHelper.protectionType === 'FormFieldsOnly'))) {
+                    this.documentHelper.selection.updateRefField();
+                }
+                else if (!this.documentHelper.owner.isReadOnlyMode) {
                     this.documentHelper.owner.editorModule.updateToc();
                 }
                 break;
@@ -25698,8 +25742,8 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
             yPos = point.y;
         }
         else {
-            yPos = event.y;
-            xPos = event.x;
+            yPos = event.y + document.body.scrollTop + document.documentElement.scrollTop;
+            xPos = event.x + document.body.scrollLeft + document.documentElement.scrollLeft;
         }
         if (this.showHideElements(this.documentHelper.selection)) {
             if (isTouch) {
@@ -25823,6 +25867,15 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         deleteTable.style.display = 'none';
         tableProperties.style.display = 'none';
         updateField.style.display = 'none';
+        var field = selection.getHyperlinkField();
+        var isCrossRefField = false;
+        if (field instanceof FieldElementBox && selection.isReferenceField(field)) {
+            isCrossRefField = true;
+        }
+        if (field instanceof FieldElementBox && isCrossRefField &&
+            (this.documentHelper.protectionType === 'FormFieldsOnly' || !this.documentHelper.owner.isReadOnlyMode)) {
+            updateField.style.display = 'block';
+        }
         editField.style.display = 'none';
         continueNumbering.style.display = 'none';
         restartAt.style.display = 'none';
@@ -25850,7 +25903,6 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
         paste.nextSibling.style.display = 'block';
         classList(insertTable, ['e-blankicon'], []);
         classList(deleteTable, ['e-blankicon'], []);
-        classList(updateField, ['e-blankicon'], []);
         classList(editField, ['e-blankicon'], []);
         classList(autoFitTable, ['e-blankicon'], []);
         var enablePaste = (owner.enableLocalPaste && !isNullOrUndefined(owner.editor.copiedData));
@@ -25879,8 +25931,7 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
                     hyperlink.classList.remove('e-disabled');
                 }
             }
-            var field = selection.getHyperlinkField();
-            if (field instanceof FieldElementBox && !selection.isImageField()) {
+            if (field instanceof FieldElementBox && !selection.isImageField() && !isCrossRefField) {
                 openHyperlink.style.display = 'block';
                 copyHyperlink.style.display = 'block';
                 if (owner.hyperlinkDialogModule) {
@@ -25889,6 +25940,7 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
                 removeHyperlink.style.display = 'block';
                 removeHyperlink.nextSibling.style.display = 'block';
                 isDialogHidden = true;
+                properties.style.display = 'none';
             }
             else {
                 if (owner.hyperlinkDialogModule) {
@@ -25900,6 +25952,10 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
             if (selection.isFormField() && this.documentHelper.owner.enableFormField) {
                 hyperlink.style.display = 'none';
                 properties.style.display = 'block';
+            }
+            if (field instanceof FieldElementBox && isCrossRefField) {
+                hyperlink.style.display = 'none';
+                updateField.style.display = 'block';
             }
         }
         if (this.documentHelper.owner.selection.start.paragraph.isInsideTable
@@ -27212,13 +27268,15 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
         }
     };
     SfdtReader.prototype.parseTabStop = function (wTabs, tabs) {
-        for (var i = 0; i < wTabs.length; i++) {
-            var tabStop = new WTabStop();
-            tabStop.position = wTabs[i].position;
-            tabStop.tabLeader = wTabs[i].tabLeader;
-            tabStop.deletePosition = wTabs[i].deletePosition;
-            tabStop.tabJustification = wTabs[i].tabJustification;
-            tabs.push(tabStop);
+        if (wTabs) {
+            for (var i = 0; i < wTabs.length; i++) {
+                var tabStop = new WTabStop();
+                tabStop.position = wTabs[i].position;
+                tabStop.tabLeader = wTabs[i].tabLeader;
+                tabStop.deletePosition = wTabs[i].deletePosition;
+                tabStop.tabJustification = wTabs[i].tabJustification;
+                tabs.push(tabStop);
+            }
         }
     };
     SfdtReader.prototype.validateImageUrl = function (imagestr) {
@@ -31234,7 +31292,9 @@ var TextPosition = /** @__PURE__ @class */ (function () {
             if (!isNullOrUndefined(previousParagraph)) {
                 if (!positionAtStart) {
                     this.currentWidget = previousParagraph.childWidgets[previousParagraph.childWidgets.length - 1];
-                    this.offset = this.currentWidget.getEndOffset();
+                    // line end with page break and updating offset before page break.
+                    // tslint:disable-next-line:max-line-length
+                    this.offset = this.currentWidget.isEndsWithPageBreak ? this.currentWidget.getEndOffset() - 1 : this.currentWidget.getEndOffset();
                 }
                 else {
                     this.currentWidget = previousParagraph.firstChild;
@@ -32247,6 +32307,11 @@ var TextPosition = /** @__PURE__ @class */ (function () {
         }
         //Moves till the Up/Down selection width.
         var top = selection.getTop(prevLine);
+        // Here, updating the left position when line widget end with page break
+        // to update cursor before page break
+        if (this.currentWidget.isEndsWithPageBreak && this.offset === this.currentWidget.getEndOffset() - 1) {
+            left = this.location.x;
+        }
         selection.updateTextPositionWidget(prevLine, new Point(left, top), this, false);
     };
     /**
@@ -32829,10 +32894,15 @@ var Hyperlink = /** @__PURE__ @class */ (function () {
         this.linkInternal = '';
         this.localRef = '';
         this.opensNewWindow = false;
+        this.isCrossRefField = false;
         var fieldCode = selection.getFieldCode(fieldBeginAdv);
         var lowercase = fieldCode.toLowerCase();
         if (lowercase.substring(0, 9) === 'hyperlink') {
-            this.parseFieldValues(fieldCode.substring(9).trim(), selection);
+            this.parseFieldValues(fieldCode.substring(9).trim(), true);
+        }
+        else if ((lowercase.indexOf('ref ') === 0 && lowercase.match('\\h'))) {
+            this.parseFieldValues(fieldCode.substring(4).trim(), false);
+            this.isCrossRefField = true;
         }
     }
     Object.defineProperty(Hyperlink.prototype, "navigationLink", {
@@ -32871,40 +32941,55 @@ var Hyperlink = /** @__PURE__ @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(Hyperlink.prototype, "isCrossRef", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.isCrossRefField;
+        },
+        enumerable: true,
+        configurable: true
+    });
     /**
      * Parse field values
      * @param  {string} value
      * @returns Void
      */
-    Hyperlink.prototype.parseFieldValues = function (value, selection) {
+    Hyperlink.prototype.parseFieldValues = function (value, isHyperlink) {
         var codes = value.split(' ');
         var isLocalRef = false;
-        for (var i = 0; i < codes.length; i++) {
-            var code = codes[i];
-            if (code.length < 1) {
-                continue;
-            }
-            if (code === '\\t' || code === '\\l') {
-                isLocalRef = true;
-            }
-            else if (code === '\\n') {
-                this.opensNewWindow = true;
-            }
-            else {
-                code = this.parseFieldValue(code, code[0] === '\"' ? '\"' : undefined);
-                if (isLocalRef) {
-                    this.localRef = code;
-                    isLocalRef = false;
+        if (isHyperlink) {
+            for (var i = 0; i < codes.length; i++) {
+                var code = codes[i];
+                if (code.length < 1) {
+                    continue;
+                }
+                if (code === '\\t' || code === '\\l') {
+                    isLocalRef = true;
+                }
+                else if (code === '\\n') {
+                    this.opensNewWindow = true;
                 }
                 else {
-                    this.linkInternal = code;
+                    code = this.parseFieldValue(code, code[0] === '\"' ? '\"' : undefined, isHyperlink);
+                    if (isLocalRef) {
+                        this.localRef = code;
+                        isLocalRef = false;
+                    }
+                    else {
+                        this.linkInternal = code;
+                    }
                 }
             }
         }
+        else {
+            this.localRef = codes[0];
+        }
         this.setLinkType();
     };
-    Hyperlink.prototype.parseFieldValue = function (value, endChar) {
-        value = value.substring(1);
+    Hyperlink.prototype.parseFieldValue = function (value, endChar, isHyperlink) {
+        value = isHyperlink ? value.substring(1) : value.substring(0);
         var endIndex = endChar ? value.indexOf(endChar) : -1;
         if (endIndex < 0) {
             endIndex = value.length;
@@ -33710,6 +33795,10 @@ var Selection = /** @__PURE__ @class */ (function () {
      * @private
      */
     Selection.prototype.fireRequestNavigate = function (fieldBegin) {
+        var code = this.getFieldCode(fieldBegin);
+        if (code.toLowerCase().indexOf('ref ') === 0 && !code.match('\\h')) {
+            return;
+        }
         var hyperlink = new Hyperlink(fieldBegin, this);
         var eventArgs = {
             isHandled: false,
@@ -34802,6 +34891,9 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
         this.checkForCursorVisibility();
     };
+    /**
+     * @private
+     */
     Selection.prototype.handleSpaceBarKey = function () {
         if (this.owner.documentHelper.isDocumentProtected && this.owner.documentHelper.protectionType === 'FormFieldsOnly'
             && this.getFormFieldType() === 'CheckBox') {
@@ -39996,7 +40088,12 @@ var Selection = /** @__PURE__ @class */ (function () {
                 link = 'Current Document';
             }
             else {
-                link += '#' + hyperlink.localReference;
+                if (hyperlink.isCrossRef) {
+                    link += hyperlink.localReference;
+                }
+                else {
+                    link += '#' + hyperlink.localReference;
+                }
             }
         }
         hyperlink.destroy();
@@ -40006,7 +40103,7 @@ var Selection = /** @__PURE__ @class */ (function () {
      * Set Hyperlink content to tool tip element
      * @private
      */
-    Selection.prototype.setHyperlinkContentToToolTip = function (fieldBegin, widget, xPos) {
+    Selection.prototype.setHyperlinkContentToToolTip = function (fieldBegin, widget, xPos, isFormField) {
         if (fieldBegin) {
             if (this.owner.contextMenuModule &&
                 this.owner.contextMenuModule.contextMenuInstance.element.style.display === 'block') {
@@ -40024,7 +40121,16 @@ var Selection = /** @__PURE__ @class */ (function () {
                 toolTipText = 'Ctrl+' + toolTipText;
             }
             var linkText = this.getLinkText(fieldBegin);
-            this.toolTipElement.innerHTML = linkText + '</br><b>' + toolTipText + '</b>';
+            if (isFormField) {
+                var helpText = fieldBegin.formFieldData.helpText;
+                if (isNullOrUndefined(helpText) || helpText === '') {
+                    return;
+                }
+                this.toolTipElement.innerHTML = helpText;
+            }
+            else {
+                this.toolTipElement.innerHTML = linkText + '</br><b>' + toolTipText + '</b>';
+            }
             var position = this.getTooltipPosition(fieldBegin, xPos, this.toolTipElement, false);
             this.showToolTip(position.x, position.y);
             if (!isNullOrUndefined(this.toolTipField) && fieldBegin !== this.toolTipField) {
@@ -40218,6 +40324,9 @@ var Selection = /** @__PURE__ @class */ (function () {
             if (isParagraph && checkFormField && this.documentHelper.fields[i].formFieldData) {
                 return this.documentHelper.fields[i];
             }
+            if ((isRetrieve || (!isRetrieve && field.match('ref '))) && isParagraph) {
+                return this.documentHelper.fields[i];
+            }
         }
         // if (paragraph.containerWidget instanceof BodyWidget && !(paragraph instanceof WHeaderFooter)) {
         //     return this.getHyperLinkFields((paragraph.con as WCompositeNode), checkedFields);
@@ -40249,6 +40358,9 @@ var Selection = /** @__PURE__ @class */ (function () {
                 return this.documentHelper.fields[i];
             }
             if (isInline && checkFormField && this.documentHelper.fields[i].formFieldData) {
+                return this.documentHelper.fields[i];
+            }
+            if ((isRetrieve || (!isRetrieve && fieldCode.match('ref '))) && isInline) {
                 return this.documentHelper.fields[i];
             }
         }
@@ -40383,6 +40495,23 @@ var Selection = /** @__PURE__ @class */ (function () {
         var inline = this.getCurrentFormField();
         if (inline instanceof FieldElementBox && inline.formFieldData) {
             return true;
+        }
+        return false;
+    };
+    /**
+     * Return true if selection is in reference field
+     * @private
+     */
+    Selection.prototype.isReferenceField = function (field) {
+        if (isNullOrUndefined(field)) {
+            field = this.getHyperlinkField(true);
+        }
+        if (field) {
+            var fieldCode = this.getFieldCode(field);
+            fieldCode = fieldCode.toLowerCase();
+            if (field instanceof FieldElementBox && fieldCode.match('ref ')) {
+                return true;
+            }
         }
         return false;
     };
@@ -40589,7 +40718,6 @@ var Selection = /** @__PURE__ @class */ (function () {
         finally {
             window.getSelection().removeAllRanges();
             div.parentNode.removeChild(div);
-            this.documentHelper.viewerContainer.focus();
         }
         return copySuccess;
     };
@@ -40988,9 +41116,6 @@ var Selection = /** @__PURE__ @class */ (function () {
                 //         this.handleTabKey(true, false);
                 //     }
                 //     break;  
-                case 32:
-                    this.handleSpaceBarKey();
-                    break;
                 case 33:
                     event.preventDefault();
                     this.documentHelper.viewerContainer.scrollTop -= this.documentHelper.visibleBounds.height;
@@ -41025,8 +41150,13 @@ var Selection = /** @__PURE__ @class */ (function () {
                     break;
             }
         }
-        if (!this.owner.isReadOnlyMode || this.documentHelper.protectionType === 'FormFieldsOnly') {
+        if (!this.owner.isReadOnlyMode) {
             this.owner.editorModule.onKeyDownInternal(event, ctrl, shift, alt);
+        }
+        else if (this.documentHelper.isDocumentProtected && this.documentHelper.protectionType === 'FormFieldsOnly') {
+            if (event.keyCode === 9 || event.keyCode === 32) {
+                this.owner.editorModule.onKeyDownInternal(event, ctrl, shift, alt);
+            }
         }
         if (this.owner.searchModule) {
             // tslint:disable-next-line:max-line-length
@@ -41602,6 +41732,56 @@ var Selection = /** @__PURE__ @class */ (function () {
         startPosition.setPositionParagraph(element.line, offset);
         return { 'startPosition': startPosition, 'endPosition': undefined };
     };
+    //Restrict editing implementation ends
+    /**
+     * Update ref field.
+     * @private
+     */
+    Selection.prototype.updateRefField = function (field) {
+        if (isNullOrUndefined(field)) {
+            field = this.getHyperlinkField(true);
+        }
+        if (!isNullOrUndefined(field)) {
+            if (!this.isReferenceField(field)) {
+                return;
+            }
+            var fieldCode = this.getFieldCode(field);
+            fieldCode = fieldCode.trim();
+            if (fieldCode.toLowerCase().indexOf('ref') === 0) {
+                var code = fieldCode.split(' ');
+                if (code.length > 1) {
+                    var bookmarkId = code[1];
+                    if (this.documentHelper.bookmarks.containsKey(bookmarkId)) {
+                        var start = this.start;
+                        var end = this.end;
+                        if (!this.isForward) {
+                            start = this.end;
+                            end = this.start;
+                        }
+                        var bookmarkStart = this.documentHelper.bookmarks.get(bookmarkId);
+                        var bookmarkEnd = bookmarkStart.reference;
+                        var previousNode = bookmarkStart.previousNode;
+                        if (previousNode instanceof FieldElementBox && previousNode.fieldType === 0
+                            && !isNullOrUndefined(previousNode.formFieldData)) {
+                            bookmarkStart = previousNode.fieldSeparator;
+                            bookmarkEnd = previousNode.fieldEnd;
+                        }
+                        var offset = bookmarkStart.line.getOffset(bookmarkStart, 1);
+                        start.setPositionParagraph(bookmarkStart.line, offset);
+                        end.setPositionParagraph(bookmarkEnd.line, bookmarkEnd.line.getOffset(bookmarkEnd, 0));
+                        /* tslint:disable:no-any */
+                        // tslint:disable-next-line:max-line-length
+                        var documentContent = this.owner.sfdtExportModule.write(start.currentWidget, start.offset, end.currentWidget, end.offset, false, true);
+                        var startElement = field.fieldSeparator;
+                        var endElement = field.fieldEnd;
+                        start.setPositionParagraph(startElement.line, startElement.line.getOffset(startElement, 1));
+                        end.setPositionParagraph(endElement.line, endElement.line.getOffset(endElement, 0));
+                        this.owner.editor.pasteContents(documentContent);
+                    }
+                }
+            }
+        }
+    };
     return Selection;
 }());
 
@@ -41642,11 +41822,11 @@ var TextSearch = /** @__PURE__ @class */ (function () {
             textToFind = textToFind.split('\\').join('\\\\');
         }
         // tslint:disable-next-line:max-line-length
-        if (textToFind.indexOf('(') > -1 || textToFind.indexOf(')') > -1 || textToFind.indexOf('.') > -1 || textToFind.indexOf('[') > -1 || textToFind.indexOf(']') > -1) {
+        if (textToFind.indexOf('(') > -1 || textToFind.indexOf(')') > -1 || textToFind.indexOf('.') > -1 || textToFind.indexOf('[') > -1 || textToFind.indexOf(']') > -1 || textToFind.indexOf('$') > -1) {
             var text = '';
             for (var i = 0; i < textToFind.length; i++) {
                 // tslint:disable-next-line:max-line-length
-                if (textToFind[i] === '(' || textToFind[i] === ')' || textToFind[i] === '.' || textToFind[i] === '[' || textToFind[i] === ']') {
+                if (textToFind[i] === '(' || textToFind[i] === ')' || textToFind[i] === '.' || textToFind[i] === '[' || textToFind[i] === ']' || textToFind[i] === '$') {
                     text += '\\' + textToFind[i];
                 }
                 else {
@@ -46187,6 +46367,20 @@ var Editor = /** @__PURE__ @class */ (function () {
                     this.handleDelete();
                     event.preventDefault();
                     break;
+                case 32:
+                    this.selection.handleSpaceBarKey();
+                    break;
+                case 120:
+                    var textPosition = this.selection.getDocumentEnd();
+                    textPosition.offset = (this.selection.getDocumentEnd().offset + 1);
+                    if (this.selection.start.isAtSamePosition(this.selection.getDocumentStart()) &&
+                        this.selection.end.isAtSamePosition(textPosition)) {
+                        this.owner.updateFields();
+                    }
+                    else {
+                        this.selection.updateRefField();
+                    }
+                    break;
             }
         }
     };
@@ -47987,6 +48181,9 @@ var Editor = /** @__PURE__ @class */ (function () {
                     if (characterFormat.italic) {
                         lineWidget.children[k].characterFormat.italic = characterFormat.italic;
                     }
+                    if (characterFormat.underline !== 'None') {
+                        lineWidget.children[k].characterFormat.underline = characterFormat.underline;
+                    }
                 }
             }
         }
@@ -48025,6 +48222,9 @@ var Editor = /** @__PURE__ @class */ (function () {
         }
         this.isSkipHistory = false;
     };
+    /**
+     * @private
+     */
     Editor.prototype.pasteContents = function (content, currentFormat) {
         if (typeof (content) !== 'string') {
             this.copiedContent = content;
@@ -57173,14 +57373,16 @@ var Editor = /** @__PURE__ @class */ (function () {
             }
         }
         else if (formData instanceof TextFormField) {
-            if (formData.type === 'Text') {
-                span.text = HelperMethods.formatText(formData.format, formData.defaultValue);
-            }
-            else if (formData.type === 'Number') {
-                span.text = HelperMethods.formatNumber(formData.format, formData.defaultValue);
-            }
-            else {
-                span.text = HelperMethods.formatDate(formData.format, formData.defaultValue);
+            if (formData.defaultValue !== '') {
+                if (formData.type === 'Text') {
+                    span.text = HelperMethods.formatText(formData.format, formData.defaultValue);
+                }
+                else if (formData.type === 'Number') {
+                    span.text = HelperMethods.formatNumber(formData.format, formData.defaultValue);
+                }
+                else {
+                    span.text = HelperMethods.formatDate(formData.format, formData.defaultValue);
+                }
             }
         }
         element.push(span);
@@ -66129,6 +66331,7 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
         this.writeInlineStyles = undefined;
         this.editRangeId = -1;
         this.isExport = true;
+        this.checkboxOrDropdown = false;
         this.documentHelper = documentHelper;
     }
     Object.defineProperty(SfdtExport.prototype, "viewer", {
@@ -66181,11 +66384,11 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
             }
         }
     };
-    // tslint:disable-next-line:max-line-length
     /**
      * @private
      */
-    SfdtExport.prototype.write = function (line, startOffset, endLine, endOffset, writeInlineStyles) {
+    // tslint:disable-next-line:max-line-length
+    SfdtExport.prototype.write = function (line, startOffset, endLine, endOffset, writeInlineStyles, isExport) {
         if (writeInlineStyles) {
             this.writeInlineStyles = true;
         }
@@ -66193,6 +66396,9 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
         this.updateEditRangeId();
         if (line instanceof LineWidget && endLine instanceof LineWidget) {
             this.isExport = false;
+            if (!isNullOrUndefined(isExport)) {
+                this.isExport = isExport;
+            }
             // For selection
             var startPara = line.paragraph;
             var endPara = endLine.paragraph;
@@ -66402,18 +66608,31 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
     };
     SfdtExport.prototype.writeInlines = function (paragraph, line, inlines) {
         var lineWidget = line.clone();
+        var isformField = false;
         var bidi = paragraph.paragraphFormat.bidi;
         if (bidi || this.documentHelper.layout.isContainsRtl(lineWidget)) {
             this.documentHelper.layout.reArrangeElementsForRtl(lineWidget, bidi);
         }
         for (var i = 0; i < lineWidget.children.length; i++) {
             var element = lineWidget.children[i];
+            if (this.isExport && this.checkboxOrDropdown) {
+                if (isformField && element instanceof TextElementBox) {
+                    continue;
+                }
+                if (element instanceof FieldElementBox && element.fieldType === 2) {
+                    isformField = true;
+                }
+            }
             if (element instanceof ListTextElementBox) {
                 continue;
             }
             var inline = this.writeInline(element);
             if (!isNullOrUndefined(inline)) {
                 inlines.push(inline);
+            }
+            if (this.isExport && element instanceof FieldElementBox && element.fieldType === 1) {
+                isformField = false;
+                this.checkboxOrDropdown = false;
             }
         }
     };
@@ -66439,6 +66658,7 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
                     }
                     else if (element.formFieldData instanceof CheckBoxFormField) {
                         inline.formFieldData.checkBox = {};
+                        this.checkboxOrDropdown = true;
                         inline.formFieldData.checkBox.sizeType = element.formFieldData.sizeType;
                         inline.formFieldData.checkBox.size = element.formFieldData.size;
                         inline.formFieldData.checkBox.defaultValue = element.formFieldData.defaultValue;
@@ -66446,6 +66666,7 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
                     }
                     else {
                         inline.formFieldData.dropDownList = {};
+                        this.checkboxOrDropdown = true;
                         inline.formFieldData.dropDownList.dropdownItems = element.formFieldData.dropDownItems;
                         inline.formFieldData.dropDownList.selectedIndex = element.formFieldData.selectedIndex;
                     }
@@ -67181,6 +67402,7 @@ var HyperlinkDialog = /** @__PURE__ @class */ (function () {
         this.onCancelButtonClick = function () {
             _this.documentHelper.dialog.hide();
             _this.clearValue();
+            _this.documentHelper.updateFocus();
         };
         /**
          * @private
@@ -67361,7 +67583,7 @@ var HyperlinkDialog = /** @__PURE__ @class */ (function () {
             isBookmark = true;
         }
         if (address === '') {
-            this.documentHelper.dialog.hide();
+            this.documentHelper.hideDialog();
             return;
         }
         if (displayText === '' && address !== '') {
@@ -67377,7 +67599,7 @@ var HyperlinkDialog = /** @__PURE__ @class */ (function () {
             var remove = this.documentHelper.selection.text !== displayText && !this.displayTextBox.disabled;
             this.documentHelper.owner.editorModule.insertHyperlinkInternal(address, displayText, remove, isBookmark);
         }
-        this.documentHelper.dialog.hide();
+        this.documentHelper.hideDialog();
         this.navigationUrl = undefined;
     };
     /* tslint:enable:no-any */
@@ -67450,7 +67672,7 @@ var TableDialog = /** @__PURE__ @class */ (function () {
             if (!(isNullOrUndefined(rowCount) && isNullOrUndefined(columnCount))) {
                 _this.documentHelper.owner.editor.insertTable(rowCount, columnCount);
             }
-            _this.documentHelper.dialog.hide();
+            _this.documentHelper.hideDialog();
         };
         this.documentHelper = documentHelper;
     }
@@ -67534,6 +67756,7 @@ var TableDialog = /** @__PURE__ @class */ (function () {
         this.columnValueTexBox.value = 2;
         this.documentHelper.dialog.close = this.documentHelper.updateFocus;
         this.documentHelper.dialog.dataBind();
+        this.columnValueTexBox.focusIn();
         this.documentHelper.dialog.show();
     };
     /**
@@ -67594,7 +67817,7 @@ var BookmarkDialog = /** @__PURE__ @class */ (function () {
         };
         this.addBookmark = function () {
             _this.documentHelper.owner.editorModule.insertBookmark(_this.textBoxInput.value);
-            _this.documentHelper.dialog.hide();
+            _this.documentHelper.hideDialog();
         };
         /* tslint:disable:no-any */
         this.selectHandler = function (args) {
@@ -67730,7 +67953,7 @@ var BookmarkDialog = /** @__PURE__ @class */ (function () {
         this.enableOrDisableButton();
     };
     BookmarkDialog.prototype.removeObjects = function () {
-        this.documentHelper.dialog.hide();
+        this.documentHelper.hideDialog();
     };
     /**
      * @private
@@ -67792,6 +68015,7 @@ var TableOfContentsDialog = /** @__PURE__ @class */ (function () {
         this.onCancelButtonClick = function () {
             _this.documentHelper.dialog2.hide();
             _this.unWireEventsAndBindings();
+            _this.documentHelper.updateFocus();
         };
         /* tslint:disable:no-any */
         this.selectHandler = function (args) {
@@ -67962,6 +68186,7 @@ var TableOfContentsDialog = /** @__PURE__ @class */ (function () {
             _this.applyLevelSetting(tocSettings);
             _this.documentHelper.owner.editorModule.insertTableOfContents(tocSettings);
             _this.documentHelper.dialog2.hide();
+            _this.documentHelper.updateFocus();
         };
         /**
          * @private
@@ -68592,6 +68817,7 @@ var PageSetupDialog = /** @__PURE__ @class */ (function () {
         this.onCancelButtonClick = function () {
             _this.documentHelper.dialog.hide();
             _this.unWireEventsAndBindings();
+            _this.documentHelper.updateFocus();
         };
         /**
          * @private
@@ -68617,7 +68843,7 @@ var PageSetupDialog = /** @__PURE__ @class */ (function () {
             sectionFormat.headerDistance = _this.headerBox.value;
             sectionFormat.footerDistance = _this.footerBox.value;
             _this.documentHelper.owner.editorModule.onApplySectionFormat(undefined, sectionFormat);
-            _this.documentHelper.dialog.hide();
+            _this.documentHelper.hideDialog();
         };
         /**
          * @private
@@ -69430,7 +69656,7 @@ var ParagraphDialog = /** @__PURE__ @class */ (function () {
             else {
                 _this.documentHelper.owner.styleDialogModule.updateParagraphFormat();
             }
-            _this.documentHelper.dialog.hide();
+            _this.documentHelper.hideDialog();
         };
         /**
          * @private
@@ -69445,8 +69671,7 @@ var ParagraphDialog = /** @__PURE__ @class */ (function () {
             _this.lineSpacingIn = undefined;
             _this.lineSpacingType = undefined;
             _this.paragraphFormat = undefined;
-            _this.documentHelper.dialog.hide();
-            _this.documentHelper.updateFocus();
+            _this.documentHelper.hideDialog();
         };
         this.documentHelper = documentHelper;
     }
@@ -70745,7 +70970,7 @@ var StyleDialog = /** @__PURE__ @class */ (function () {
                     name_1 = styleName;
                     _this.documentHelper.owner.editorModule.applyStyle(name_1);
                 }
-                _this.documentHelper.dialog.hide();
+                _this.documentHelper.hideDialog();
             }
             else {
                 throw new Error('Enter valid Style name');
@@ -70783,7 +71008,7 @@ var StyleDialog = /** @__PURE__ @class */ (function () {
             if (!_this.isEdit && _this.style) {
                 _this.style.destroy();
             }
-            _this.documentHelper.dialog.hide();
+            _this.documentHelper.hideDialog();
         };
         /**
          * @private
@@ -71513,7 +71738,7 @@ var BulletsAndNumberingDialog = /** @__PURE__ @class */ (function () {
             _this.abstractList.levels.push(listLevel);
             _this.listFormat.listLevelNumber = 0;
             _this.listFormat.list.abstractList = _this.abstractList;
-            _this.documentHelper.dialog.hide();
+            _this.documentHelper.hideDialog();
         };
         this.documentHelper = documentHelper;
     }
@@ -71873,6 +72098,7 @@ var FontDialog = /** @__PURE__ @class */ (function () {
         this.onCancelButtonClick = function () {
             _this.documentHelper.dialog.hide();
             _this.unWireEventsAndBindings();
+            _this.documentHelper.updateFocus();
         };
         /**
          * @private
@@ -71915,7 +72141,7 @@ var FontDialog = /** @__PURE__ @class */ (function () {
             else {
                 _this.documentHelper.owner.styleDialogModule.updateCharacterFormat();
             }
-            _this.documentHelper.dialog.hide();
+            _this.documentHelper.hideDialog();
         };
         this.fontSizeUpdate = function (args) {
             _this.fontSize = args.value;
@@ -75502,6 +75728,7 @@ var StylesDialog = /** @__PURE__ @class */ (function () {
     };
     StylesDialog.prototype.hideObjects = function () {
         this.documentHelper.dialog.hide();
+        this.documentHelper.updateFocus();
     };
     /**
      * @private
@@ -75530,7 +75757,7 @@ var SpellCheckDialog = /** @__PURE__ @class */ (function () {
          */
         this.onCancelButtonClick = function () {
             _this.documentHelper.clearSelectionHighlight();
-            _this.documentHelper.dialog.hide();
+            _this.documentHelper.hideDialog();
         };
         /**
          * @private
@@ -75642,7 +75869,7 @@ var SpellCheckDialog = /** @__PURE__ @class */ (function () {
             }
         }
         if (this.parent.spellChecker.errorWordCollection.length === 0) {
-            this.documentHelper.dialog.hide();
+            this.documentHelper.hideDialog();
         }
     };
     /**
@@ -75803,6 +76030,9 @@ var SpellCheckDialog = /** @__PURE__ @class */ (function () {
 var CheckBoxFormFieldDialog = /** @__PURE__ @class */ (function () {
     function CheckBoxFormFieldDialog(owner) {
         var _this = this;
+        /**
+         * @private
+         */
         this.changeBidirectional = function (event) {
             if (event.value === 'exact') {
                 _this.autoButton.checked = !_this.exactButton.checked;
@@ -75813,6 +76043,9 @@ var CheckBoxFormFieldDialog = /** @__PURE__ @class */ (function () {
                 _this.exactlyNumber.enabled = false;
             }
         };
+        /**
+         * @private
+         */
         this.changeBidirect = function (event) {
             if (event.value === 'check') {
                 _this.notCheckedButton.checked = !_this.checkedButton.checked;
@@ -76340,12 +76573,9 @@ var TextFormFieldDialog = /** @__PURE__ @class */ (function () {
      * @private
      */
     TextFormFieldDialog.prototype.changeTypeDropDown = function (args) {
-        var _this = this;
         if (args.isInteracted) {
-            setTimeout(function () {
-                _this.defaultTextInput.value = '';
-                _this.textFormatDropDown.value = '';
-            });
+            this.defaultTextInput.value = '';
+            this.textFormatDropDown.value = '';
         }
         if (args.value === 'Regular text') {
             this.defaultTextLabel.innerHTML = this.localObj.getConstant('Default text');
@@ -76404,30 +76634,32 @@ var TextFormFieldDialog = /** @__PURE__ @class */ (function () {
         }
     };
     TextFormFieldDialog.prototype.updateFormats = function (value) {
-        if (!isNullOrUndefined(this.textFormatDropDown.value)) {
-            if (this.typeDropDown.value === 'Regular text') {
-                return HelperMethods.formatText(this.textFormatDropDown.value.toString(), value);
-            }
-            if (this.typeDropDown.value === 'Number') {
-                var data = HelperMethods.formatNumber(this.textFormatDropDown.value.toString(), value);
-                if (!(data.toString() === 'NaN')) {
-                    return data;
-                }
-                return '';
-            }
-            if (this.typeDropDown.value === 'Date') {
-                return HelperMethods.formatDate(this.textFormatDropDown.value.toString(), value);
-            }
+        var format = isNullOrUndefined(this.textFormatDropDown.value) ? '' : this.textFormatDropDown.value.toString();
+        if (this.typeDropDown.value === 'Regular text') {
+            return HelperMethods.formatText(format, value);
         }
-        return undefined;
+        if (this.typeDropDown.value === 'Number') {
+            var data = HelperMethods.formatNumber(format, value);
+            if (!(data.toString() === 'NaN')) {
+                return data;
+            }
+            return '';
+        }
+        if (this.typeDropDown.value === 'Date') {
+            return HelperMethods.formatDate(format, value);
+        }
+        return '';
     };
     /**
      * @private
      */
     TextFormFieldDialog.prototype.isValidDateFormat = function () {
-        var date = new Date(this.defaultTextInput.value);
-        if (isNaN(date.getDate())) {
-            return false;
+        var value = this.defaultTextInput.value;
+        if (value !== '') {
+            var date = new Date(value);
+            if (isNaN(date.getDate())) {
+                return false;
+            }
         }
         return true;
     };
@@ -80438,21 +80670,23 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Import form field values.
+     * @param - formDate  - { FormFieldData[] }
      */
     DocumentEditor.prototype.importFormData = function (formData) {
         var formField = this.documentHelper.formFields;
         for (var i = 0; i < formData.length; i++) {
-            var fieldName = Object.keys(formData[i])[0];
+            var formFieldData = formData[i];
+            var fieldName = formFieldData.fieldName;
             for (var j = 0; j < formField.length; j++) {
                 if (formField[j].formFieldData.name === fieldName) {
                     if (formField[j].formFieldData instanceof CheckBoxFormField) {
-                        this.editor.toggleCheckBoxFormField(formField[j], true, formData[i][fieldName]);
+                        this.editor.toggleCheckBoxFormField(formField[j], true, formFieldData.value);
                     }
                     else if (formField[j].formFieldData instanceof TextFormField) {
-                        this.editor.updateFormField(formField[j], formData[i][fieldName]);
+                        this.editor.updateFormField(formField[j], formFieldData.value);
                     }
                     else if (formField[j].formFieldData instanceof DropDownFormField) {
-                        this.editor.updateFormField(formField[j], formData[i][fieldName]);
+                        this.editor.updateFormField(formField[j], formFieldData.value);
                     }
                 }
             }
@@ -80460,17 +80694,18 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Export form field values.
-     * @returns - {FormData[]}
+     * @returns - { FormFieldData[] }
      */
     DocumentEditor.prototype.exportFormData = function () {
         var data = [];
         var formField = this.documentHelper.formFields;
         for (var i = 0; i < formField.length; i++) {
             if (formField[i].formFieldData.name !== '') {
-                var formData = {};
+                var formData = { fieldName: '', value: '' };
+                formData.fieldName = formField[i].formFieldData.name;
                 if (formField[i].formFieldData instanceof CheckBoxFormField) {
                     // tslint:disable-next-line:max-line-length
-                    formData[formField[i].formFieldData.name] = formField[i].formFieldData.checked;
+                    formData.value = formField[i].formFieldData.checked;
                 }
                 else if (formField[i].formFieldData instanceof TextFormField) {
                     var resultText = formField[i].resultText;
@@ -80478,16 +80713,29 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
                     if (resultText.replace(rex, '') === '') {
                         resultText = '';
                     }
-                    formData[formField[i].formFieldData.name] = resultText;
+                    formData.value = resultText;
                 }
                 else if (formField[i].formFieldData instanceof DropDownFormField) {
                     // tslint:disable-next-line:max-line-length
-                    formData[formField[i].formFieldData.name] = formField[i].formFieldData.selectedIndex;
+                    formData.value = formField[i].formFieldData.selectedIndex;
                 }
                 data.push(formData);
             }
         }
         return data;
+    };
+    /**
+     * Updated fields in document.
+     * Currently cross reference field only supported.
+     */
+    DocumentEditor.prototype.updateFields = function () {
+        for (var i = 0; i < this.documentHelper.fields.length; i++) {
+            var field = this.documentHelper.fields[i];
+            var code = this.selection.getFieldCode(field);
+            if (code.toLowerCase().trim().indexOf('ref ') === 0) {
+                this.selection.updateRefField(field);
+            }
+        }
     };
     /**
      * Shifts the focus to the document.
@@ -81122,6 +81370,7 @@ var SECTION_BREAK = '_section_break';
 var READ_ONLY = '_read_only';
 var PROTECTIONS = '_protections';
 var FORM_FIELDS_ID = '_form_fields';
+var UPDATE_FIELDS_ID = '_update_fields';
 var TEXT_FORM = '_text_form';
 var CHECKBOX = '_checkbox';
 var DROPDOWN = '_dropdown';
@@ -81486,6 +81735,13 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
                         text: this.onWrapText(locale.getConstant('Form Fields')), cssClass: className + ' e-de-formfields'
                     });
                     break;
+                case 'UpdateFields':
+                    toolbarItems.push({
+                        prefixIcon: 'e-de-update-field', tooltipText: locale.getConstant('Update cross reference fields'),
+                        id: id + UPDATE_FIELDS_ID, text: this.onWrapText(locale.getConstant('Update Fields')),
+                        cssClass: className + ' e-de-formfields'
+                    });
+                    break;
                 default:
                     //Here we need to process the items
                     toolbarItems.push(tItem[i]);
@@ -81544,6 +81800,9 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
                 break;
             case id + CLIPBOARD_ID:
                 this.toggleLocalPaste(args.item.id);
+                break;
+            case id + UPDATE_FIELDS_ID:
+                this.documentEditor.updateFields();
                 break;
             default:
                 this.container.trigger('toolbarClick', args);
@@ -81694,7 +81953,8 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
             var item = _a[_i];
             var itemId = item.id;
             if (itemId !== id + NEW_ID && itemId !== id + OPEN_ID && itemId !== id + FIND_ID &&
-                itemId !== id + CLIPBOARD_ID && itemId !== id + RESTRICT_EDITING_ID && item.type !== 'Separator') {
+                itemId !== id + CLIPBOARD_ID && itemId !== id + RESTRICT_EDITING_ID && itemId !== id + UPDATE_FIELDS_ID
+                && item.type !== 'Separator') {
                 if (enable && this.isCommentEditing && itemId === id + COMMENT_ID) {
                     continue;
                 }
@@ -85231,7 +85491,9 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
             'Form Fields': 'Form Fields',
             'Text Form': 'Text Form',
             'Check Box': 'Check Box',
-            'DropDown': 'Drop-Down'
+            'DropDown': 'Drop-Down',
+            'Update Fields': 'Update Fields',
+            'Update cross reference fields': 'Update cross reference fields'
         };
         return _this;
     }
@@ -85862,7 +86124,7 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
         Property({ import: 'Import', systemClipboard: 'SystemClipboard', spellCheck: 'SpellCheck', restrictEditing: 'RestrictEditing' })
     ], DocumentEditorContainer.prototype, "serverActionSettings", void 0);
     __decorate$1([
-        Property(['New', 'Open', 'Separator', 'Undo', 'Redo', 'Separator', 'Image', 'Table', 'Hyperlink', 'Bookmark', 'Comments', 'TableOfContents', 'Separator', 'Header', 'Footer', 'PageSetup', 'PageNumber', 'Break', 'Separator', 'Find', 'Separator', 'LocalClipboard', 'RestrictEditing', 'Separator', 'FormFields'])
+        Property(['New', 'Open', 'Separator', 'Undo', 'Redo', 'Separator', 'Image', 'Table', 'Hyperlink', 'Bookmark', 'Comments', 'TableOfContents', 'Separator', 'Header', 'Footer', 'PageSetup', 'PageNumber', 'Break', 'Separator', 'Find', 'Separator', 'LocalClipboard', 'RestrictEditing', 'Separator', 'FormFields', 'UpdateFields'])
     ], DocumentEditorContainer.prototype, "toolbarItems", void 0);
     __decorate$1([
         Property([])

@@ -129,6 +129,7 @@ export class StylesDialog {
     }
     private hideObjects(): void {
         this.documentHelper.dialog.hide();
+        this.documentHelper.updateFocus();
     }
 
     private addNewStyles = (): void => {

@@ -132,6 +132,15 @@ Smithchart.Inject(TooltipRender);
             };
             smithchart.refresh();
         });
+        it('tooltip checking with template', (done: Function) => {
+            smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
+                let element: Element = document.getElementById('container_Series0_Points8_Marker8');
+                trigger.mousemoveEvent(element, 0, 0, 50, 255);
+                done();
+            };
+            smithchart.series[0].tooltipMappingName = 'reactance';
+            smithchart.refresh();
+        });
         // it('tooltip checking with mouse up on touchmove', (done: Function) => {
         //     smithchart.loaded = (args: ISmithchartLoadedEventArgs) => {
         //         let element: Element = document.getElementById(smithchart.element.id + '_series0_points');

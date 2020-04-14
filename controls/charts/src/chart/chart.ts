@@ -3310,8 +3310,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                             series.marker || series.emptyPointSettings || series.type || series.boxPlotMode || series.showMean)) {
                                     blazorProp = true;
                             }
-                            if (series && (series.dataSource || series.query || series.xName || series.yName || series.size ||
-                                series.high || series.low || series.open || series.close || series.fill || series.name || blazorProp)) {
+                            if (series && (series.dataSource || series.query || series.errorBar || series.xName ||
+                                series.yName || series.size || series.high || series.low || series.open || series.close ||
+                                series.fill || series.name || blazorProp)) {
                                 extend(this.getVisibleSeries(this.visibleSeries, i), series, null, true);
                                 seriesRefresh = true;
                             }

@@ -430,7 +430,7 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     /** @hidden */
     public horizontalScrollScale: number = 1;
     /** @hidden */
-    public scrollerBrowserLimit: number = 500000;
+    public scrollerBrowserLimit: number = 8000000;
     /** @hidden */
     public lastSortInfo: ISort = {};
     /** @hidden */
@@ -1602,6 +1602,11 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             this.engineModule = new PivotEngine();
         }
         this.isAdaptive = Browser.isDevice;
+        if (Browser.isIE || Browser.info.name === 'edge') {
+            this.scrollerBrowserLimit = 1500000;
+        } else if (Browser.info.name === 'chrome') {
+            this.scrollerBrowserLimit = 15000000;
+        }
         this.isTouchMode = closest(this.element, 'e-bigger') ? true : false;
         this.initProperties();
         this.renderToolTip();
@@ -2345,10 +2350,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                     }
                     if (newProp.dataSourceSettings && Object.keys(newProp.dataSourceSettings).length === 1
                         && Object.keys(newProp.dataSourceSettings)[0] === 'dataSource') {
-                        if (!(isBlazor() && this.enableVirtualization)) {
-                            this.engineModule.fieldList = null;
-                            this.refreshData();
-                        }
+                        this.engineModule.fieldList = null;
+                        this.refreshData();
                     } else {
                         if (PivotUtil.isButtonIconRefesh(prop, oldProp, newProp)) {
                             if (this.showGroupingBar && this.groupingBarModule) {

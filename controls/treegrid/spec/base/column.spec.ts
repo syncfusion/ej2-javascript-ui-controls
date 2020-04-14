@@ -3,6 +3,7 @@ import { createGrid, destroy } from './treegridutil.spec';
 import { sampleData, projectData } from './datasource.spec';
 import { PageEventArgs, QueryCellInfoEventArgs, doesImplementInterface, RowDataBoundEventArgs } from '@syncfusion/ej2-grids';
 import { Column, ColumnModel } from '../../src';
+import { ITreeData } from '../../src/treegrid/base/interface';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 
 /**
@@ -215,3 +216,62 @@ describe('TreeGrid Column Module', () => {
 });
 });
 
+describe('Checkbox Column', () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        autoCheckHierarchy: true,
+        selectionSettings: { type: 'Multiple', mode: 'Row', persistSelection: true, checkboxOnly: true },
+        columns: [
+          { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, showCheckbox: true, textAlign: 'Right', width: 100 },
+          { field: 'taskName', headerText: 'Task Name', width: 250 },
+          { field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 135 },
+          { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 90 },
+          { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 90 }
+        ],
+        aggregates: [{
+          showChildSummary: true,
+          columns: [
+              {
+                  type: 'Max',
+                  field: 'duration',
+                  columnName: 'duration',
+                  footerTemplate: 'Maximum: ${Max}'
+              },
+              {
+                  type: 'Min',
+                  field: 'progress',
+                  columnName: 'progress',
+                  footerTemplate: 'Minimum: ${Min}'
+              }
+          ]
+      }]
+      },
+      done
+    );
+  });
+  it('Intremediate state for parent checkbox by child checkbox enabled', () => {
+    (<HTMLElement>gridObj.getRows()[1].querySelectorAll('.e-treecheckselect')[0]).click();
+    expect((<ITreeData>gridObj.getCurrentViewRecords()[1]).checkboxState).toBe("check");
+    expect((<ITreeData>gridObj.getCurrentViewRecords()[0]).checkboxState).toBe("indeterminate");
+  });
+  it('Header checkbox check state', () => {
+    (<HTMLElement>gridObj.getRows()[1].querySelectorAll('.e-treecheckselect')[0]).click();
+    (<HTMLElement>gridObj.element.querySelectorAll('.e-treeselectall')[0]).click();
+    expect((<ITreeData>gridObj.getCurrentViewRecords()[0]).checkboxState).toBe("check");
+    expect((<ITreeData>gridObj.getCurrentViewRecords()[6]).checkboxState).toBe("check");
+  });
+  it('Header checkbox uncheck state', () => {
+    (<HTMLElement>gridObj.element.querySelectorAll('.e-treeselectall')[0]).click();
+    expect((<ITreeData>gridObj.getCurrentViewRecords()[0]).checkboxState).toBe("uncheck");
+    expect((<ITreeData>gridObj.getCurrentViewRecords()[6]).checkboxState).toBe("uncheck");
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});

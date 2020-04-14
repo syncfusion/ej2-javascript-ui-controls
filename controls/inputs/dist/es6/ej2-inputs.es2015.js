@@ -92,7 +92,7 @@ var Input;
         if (inputValue !== '' && !isNullOrUndefined(inputValue)) {
             inputElement.parentElement.classList.add('e-valid-input');
         }
-        else if (floatLabelType !== 'Always') {
+        else if (floatLabelType !== 'Always' && inputElement.parentElement) {
             inputElement.parentElement.classList.remove('e-valid-input');
         }
     }
@@ -914,6 +914,7 @@ let NumericTextBox = class NumericTextBox extends Component {
                 }
                 if (this.element.getAttribute('value') || this.value) {
                     this.element.setAttribute('value', this.element.value);
+                    this.hiddenInput.setAttribute('value', this.hiddenInput.value);
                 }
             }
             this.renderComplete();

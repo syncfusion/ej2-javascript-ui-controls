@@ -230,7 +230,10 @@ export class CheckBoxFormFieldDialog {
         }
     }
 
-    private changeBidirectional = (event: ChangeArgs): void => {
+    /**
+     * @private
+     */
+    public changeBidirectional = (event: ChangeArgs): void => {
         if (event.value === 'exact') {
             this.autoButton.checked = !this.exactButton.checked;
             this.exactlyNumber.enabled = true;
@@ -239,7 +242,10 @@ export class CheckBoxFormFieldDialog {
             this.exactlyNumber.enabled = false;
         }
     }
-    private changeBidirect = (event: ChangeArgs): void => {
+    /**
+     * @private
+     */
+    public changeBidirect = (event: ChangeArgs): void => {
         if (event.value === 'check') {
             this.notCheckedButton.checked = !this.checkedButton.checked;
         } else {

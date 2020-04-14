@@ -5315,6 +5315,9 @@ var QuickPopups = /** @class */ (function () {
             cancelButton.setAttribute('aria-label', this.l10n.getConstant('series'));
             cancelButton.setAttribute('aria-label', cancelButton.innerHTML);
         }
+        if (this.quickDialog.element.querySelector('.e-dlg-closeicon-btn')) {
+            this.quickDialog.element.querySelector('.e-dlg-closeicon-btn').setAttribute('title', this.l10n.getConstant('close'));
+        }
     };
     QuickPopups.prototype.renderButton = function (className, iconName, isDisabled, element, clickEvent) {
         var buttonObj = new sf.buttons.Button({
@@ -7434,7 +7437,7 @@ var RecurrenceEditor = /** @class */ (function (_super) {
             '</div><div class="' + INPUTWARAPPER + ' ' +
             INTERVALCLASS + ' ' + FORMRIGHT + '"><table  class="' + RECURRENCETABLE + ' ' + REPEATCONTENTWRAPPER + '"><tr>' +
             '<td><input type="text" tabindex="0" class="' + REPEATINTERVAL +
-            '"title="' + this.localeObj.getConstant('repeatInterval') + '" /></td>' +
+            '"title="' + this.localeObj.getConstant('repeatEvery') + '" /></td>' +
             '<td><span class="' + REPEATCONTENT + '"></span></td>' +
             '</tr></table></div><div class="' + INPUTWARAPPERSIDE + ' ' + DAYWRAPPER + ' ' + FORMLEFT + '">' +
             '<div class=' + WEEKEXPANDERLABEL + '>' + this.localeObj.getConstant(ON$1) + '</div>' +
@@ -7458,7 +7461,7 @@ var RecurrenceEditor = /** @class */ (function (_super) {
             '</div></td>' +
             '<td colspan="2"><div class="' + INPUTWARAPPER + ' ' + MONTHDAYELEMENT + '">' +
             '<input type="text" tabindex="0" class="' + MONTHDAYWRAPPER + '"title="' +
-            this.localeObj.getConstant('monthExpander') + '" />' +
+            this.localeObj.getConstant('on') + '" />' +
             '</div></td></tr>' +
             '<tr><td>' +
             '<div class="' + INPUTWARAPPER + ' ' + MONTHEXPANDERCHECKBOXWRAPPER + '" style="min-width: 30px;margin-bottom:18px;">' +
@@ -7901,6 +7904,9 @@ var EventWindow = /** @class */ (function () {
         }
         this.dialogObject = new sf.popups.Dialog(dialogModel, this.element);
         this.dialogObject.isStringTemplate = true;
+        if (this.dialogObject.element.querySelector('.e-dlg-closeicon-btn')) {
+            this.dialogObject.element.querySelector('.e-dlg-closeicon-btn').setAttribute('title', this.l10n.getConstant('close'));
+        }
         sf.base.addClass([this.element.parentElement], EVENT_WINDOW_DIALOG_CLASS + '-container');
         if (this.parent.isAdaptive) {
             sf.base.EventHandler.add(this.element.querySelector('.' + EVENT_WINDOW_BACK_ICON_CLASS), 'click', this.dialogClose, this);
@@ -8110,11 +8116,15 @@ var EventWindow = /** @class */ (function () {
         var titleLocationDiv = this.createDivElement(EVENT_WINDOW_TITLE_LOCATION_DIV_CLASS);
         parentDiv.appendChild(titleLocationDiv);
         titleLocationDiv.appendChild(this.renderTextBox(SUBJECT_CLASS));
+        titleLocationDiv.querySelector('.' + SUBJECT_CLASS).setAttribute('title', this.parent.editorTitles.subject);
         titleLocationDiv.appendChild(this.renderTextBox(LOCATION_CLASS));
+        titleLocationDiv.querySelector('.' + LOCATION_CLASS).setAttribute('title', this.parent.editorTitles.location);
         var startEndDateTimeDiv = this.createDivElement(EVENT_WINDOW_START_END_DIV_CLASS);
         parentDiv.appendChild(startEndDateTimeDiv);
         startEndDateTimeDiv.appendChild(this.renderDateTimePicker(EVENT_WINDOW_START_CLASS, this.onTimeChange.bind(this)));
+        startEndDateTimeDiv.querySelector('.' + EVENT_WINDOW_START_CLASS).setAttribute('title', this.parent.editorTitles.startTime);
         startEndDateTimeDiv.appendChild(this.renderDateTimePicker(EVENT_WINDOW_END_CLASS));
+        startEndDateTimeDiv.querySelector('.' + EVENT_WINDOW_END_CLASS).setAttribute('title', this.parent.editorTitles.endTime);
         var allDayTimezoneDiv = this.createDivElement(EVENT_WINDOW_ALLDAY_TZ_DIV_CLASS);
         parentDiv.appendChild(allDayTimezoneDiv);
         allDayTimezoneDiv.appendChild(this.renderCheckBox(EVENT_WINDOW_ALL_DAY_CLASS));
@@ -8153,6 +8163,7 @@ var EventWindow = /** @class */ (function () {
         }
         var description = this.createDivElement(DESCRIPTION_CLASS + '-row');
         description.appendChild(this.renderTextBox(DESCRIPTION_CLASS));
+        description.querySelector('.' + DESCRIPTION_CLASS).setAttribute('title', this.parent.editorTitles.description);
         parentDiv.appendChild(description);
         var submit = sf.base.createElement('button', { attrs: { type: 'hidden', title: 'submit', style: 'display:none' } });
         parentDiv.appendChild(submit);
@@ -9080,7 +9091,7 @@ var EventWindow = /** @class */ (function () {
     };
     EventWindow.prototype.setDefaultValueToObject = function (eventObj) {
         if (!sf.base.isNullOrUndefined(eventObj[this.fields.subject])) {
-            eventObj[this.fields.subject] = eventObj[this.fields.subject] || this.parent.eventSettings.fields.subject.default;
+            eventObj[this.fields.subject] = eventObj[this.fields.subject] || this.l10n.getConstant('addTitle');
         }
         if (!sf.base.isNullOrUndefined(eventObj[this.fields.location])) {
             eventObj[this.fields.location] = eventObj[this.fields.location] || this.parent.eventSettings.fields.location.default;
@@ -10069,6 +10080,12 @@ var Crud = /** @class */ (function () {
             addedRecords: args.editParms.addedRecords, changedRecords: args.editParms.changedRecords,
             deletedRecords: args.editParms.deletedRecords
         };
+        if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj && this.parent.dragAndDropModule.actionObj.element) {
+            this.parent.dragAndDropModule.actionObj.element.style.display = 'none';
+        }
+        if (this.parent.resizeModule && this.parent.resizeModule.actionObj && this.parent.resizeModule.actionObj.element) {
+            this.parent.resizeModule.actionObj.element.style.display = 'none';
+        }
         if (this.parent.dataModule.dataManager.dataSource.offline) {
             this.parent.trigger(actionComplete, actionArgs, function (offlineArgs) {
                 if (!offlineArgs.cancel) {
@@ -12411,6 +12428,10 @@ var Schedule = /** @class */ (function (_super) {
             enableCompactView: this.group.enableCompactView
         };
         var workDays = this.viewCollections[this.viewIndex].workDays ? [] : this.workDays;
+        if (Object.keys(this.viewCollections[this.viewIndex]).indexOf('firstDayOfWeek') > -1 &&
+            sf.base.isNullOrUndefined(this.viewCollections[this.viewIndex].firstDayOfWeek)) {
+            delete this.viewCollections[this.viewIndex].firstDayOfWeek;
+        }
         var scheduleOptions = {
             dateFormat: this.dateFormat,
             endHour: this.endHour,
@@ -14675,7 +14696,7 @@ var MonthEvent = /** @class */ (function (_super) {
         }
         this.sortByDateTime(eventsList);
         this.sortByDateTime(blockList);
-        this.cellWidth = this.workCells.slice(-1)[0].offsetWidth;
+        this.cellWidth = this.workCells.slice(-1)[0].getBoundingClientRect().width;
         this.cellHeight = this.workCells.slice(-1)[0].offsetHeight;
         this.dateRender = dateRender;
         var filteredDates = this.getRenderedDates(dateRender);
@@ -16833,6 +16854,10 @@ var DragAndDrop = /** @class */ (function (_super) {
         this.parent.trigger(dragStart, dragArgs, function (dragEventArgs) {
             if (dragEventArgs.cancel || (!sf.base.isNullOrUndefined(_this.actionObj.element) &&
                 sf.base.isNullOrUndefined(_this.actionObj.element.parentElement))) {
+                var dragObj = _this.actionObj.element.ej2_instances[0];
+                if (!sf.base.isNullOrUndefined(dragObj)) {
+                    dragObj.intDestroy(e.event);
+                }
                 _this.actionObj.action = '';
                 _this.removeCloneElementClasses();
                 _this.removeCloneElement();
@@ -16983,7 +17008,8 @@ var DragAndDrop = /** @class */ (function (_super) {
         if (this.isAllowDrop(e)) {
             return;
         }
-        var dragArgs = { cancel: false, data: this.getChangedData(), event: e, element: this.actionObj.element };
+        var dragArgs = { cancel: false, data: this.getChangedData(),
+            event: e, element: this.actionObj.element, target: e.target };
         this.parent.trigger(dragStop, dragArgs, function (dragEventArgs) {
             if (dragEventArgs.cancel) {
                 return;
@@ -21153,6 +21179,7 @@ var YearEvent = /** @class */ (function (_super) {
             var isSpannedCollection = [];
             while (monthStart.getTime() <= monthEnd.getTime()) {
                 var leftValue = void 0;
+                var rightValue = void 0;
                 if (this.parent.activeViewOptions.orientation === 'Vertical') {
                     var wrapper_1 = wrapperCollection[dayIndex];
                     var eventWrapper_1 = wrapper_1.querySelector('.' + APPOINTMENT_WRAPPER_CLASS);
@@ -21160,10 +21187,11 @@ var YearEvent = /** @class */ (function (_super) {
                         eventWrapper_1 = sf.base.createElement('div', { className: APPOINTMENT_WRAPPER_CLASS });
                         wrapper_1.appendChild(eventWrapper_1);
                     }
-                    leftValue = row * this.cellWidth;
+                    this.parent.enableRtl ? (rightValue = row * this.cellWidth) : (leftValue = row * this.cellWidth);
                 }
                 else {
-                    leftValue = ((dayIndex + monthStart.getDate()) - 1) * this.cellWidth;
+                    this.parent.enableRtl ? (rightValue = ((dayIndex + monthStart.getDate()) - 1) * this.cellWidth) :
+                        (leftValue = ((dayIndex + monthStart.getDate()) - 1) * this.cellWidth);
                 }
                 var dayStart = resetTime(new Date(monthStart.getTime()));
                 var dayEnd = addDays(new Date(dayStart.getTime()), 1);
@@ -21185,12 +21213,12 @@ var YearEvent = /** @class */ (function (_super) {
                         }
                     }
                     if (this_1.cellHeight > availedHeight) {
-                        this_1.renderEvent(eventWrapper, eventData, row, leftValue, overlapIndex, dayIndex);
+                        this_1.renderEvent(eventWrapper, eventData, row, leftValue, rightValue, overlapIndex, dayIndex);
                         isSpannedCollection.push(eventData);
                     }
                     else {
                         var moreIndex = this_1.parent.activeViewOptions.orientation === 'Horizontal' ? row : dayIndex;
-                        this_1.renderMoreIndicatior(eventWrapper, count - index, dayStart, moreIndex, leftValue, dayEvents);
+                        this_1.renderMoreIndicatior(eventWrapper, count - index, dayStart, moreIndex, leftValue, rightValue, dayEvents);
                         if (this_1.parent.activeViewOptions.orientation === 'Horizontal') {
                             for (var a = index; a < dayEvents.length; a++) {
                                 var moreData = sf.base.extend({}, dayEvents[a], { Index: overlapIndex + a }, true);
@@ -21215,7 +21243,7 @@ var YearEvent = /** @class */ (function (_super) {
             }
         }
     };
-    YearEvent.prototype.renderEvent = function (wrapper, eventData, row, left, overlapCount, rowIndex) {
+    YearEvent.prototype.renderEvent = function (wrapper, eventData, row, left, right, overlapCount, rowIndex) {
         var _this = this;
         var eventObj = this.isSpannedEvent(eventData, row);
         var wrap = this.createEventElement(eventObj);
@@ -21232,7 +21260,10 @@ var YearEvent = /** @class */ (function (_super) {
             width = this.cellWidth;
             top = (this.cellHeight * rowIndex) + this.cellHeader + (this.eventHeight * overlapCount) + EVENT_GAP$2;
         }
-        sf.base.setStyleAttribute(wrap, { 'width': width + 'px', 'height': this.eventHeight + 'px', 'left': left + 'px', 'top': top + 'px' });
+        sf.base.setStyleAttribute(wrap, {
+            'width': width + 'px', 'height': this.eventHeight + 'px', 'left': left + 'px',
+            'right': right + 'px', 'top': top + 'px'
+        });
         var args = { data: eventObj, element: wrap, cancel: false, type: 'event' };
         this.parent.trigger(eventRendered, args, function (eventArgs) {
             if (!eventArgs.cancel) {
@@ -21244,13 +21275,14 @@ var YearEvent = /** @class */ (function (_super) {
             }
         });
     };
-    YearEvent.prototype.renderMoreIndicatior = function (wrapper, count, startDate, row, left, events) {
+    YearEvent.prototype.renderMoreIndicatior = function (wrapper, count, startDate, row, left, right, events) {
         var endDate = addDays(new Date(startDate.getTime()), 1);
         var moreIndicator = this.getMoreIndicatorElement(count, startDate, endDate);
         var rowTr = this.parent.element.querySelector(".e-content-wrap tr:nth-child(" + (row + 1) + ")");
         var top = rowTr.offsetTop + (this.cellHeight - this.moreIndicatorHeight);
         left = (Math.floor(left / this.cellWidth) * this.cellWidth);
-        sf.base.setStyleAttribute(moreIndicator, { 'width': this.cellWidth + 'px', 'left': left + 'px', 'top': top + 'px' });
+        right = (Math.floor(right / this.cellWidth) * this.cellWidth);
+        sf.base.setStyleAttribute(moreIndicator, { 'width': this.cellWidth + 'px', 'left': left + 'px', 'right': right + 'px', 'top': top + 'px' });
         wrapper.appendChild(moreIndicator);
         sf.base.EventHandler.add(moreIndicator, 'click', this.moreIndicatorClick, this);
     };

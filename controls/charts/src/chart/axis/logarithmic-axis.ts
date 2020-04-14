@@ -48,7 +48,7 @@ export class Logarithmic extends Double {
         this.min = this.min < 0 ? 0 : this.min;
         let logStart: number = logBase(<number>this.min, axis.logBase);
         logStart = isFinite(logStart) ? logStart : <number>this.min;
-        let logEnd: number = logBase(<number>this.max, axis.logBase);
+        let logEnd: number = this.max === 1 ? 1 : logBase(<number>this.max, axis.logBase);
         logEnd = isFinite(logStart) ? logEnd : <number>this.max;
         this.min = Math.floor(logStart / 1);
         this.max = Math.ceil(logEnd / 1);

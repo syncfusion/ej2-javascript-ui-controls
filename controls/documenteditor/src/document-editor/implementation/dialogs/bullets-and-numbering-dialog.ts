@@ -353,7 +353,7 @@ export class BulletsAndNumberingDialog {
         this.abstractList.levels.push(listLevel);
         this.listFormat.listLevelNumber = 0;
         this.listFormat.list.abstractList = this.abstractList;
-        this.documentHelper.dialog.hide();
+        this.documentHelper.hideDialog();
     }
     /**
      * @private

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.44 (2020-04-14)
+
+### TextBox
+
+#### Bug Fixes
+
+- Issue with "destroy throws error in IE" has been resolved.
+
 ## 18.1.43 (2020-04-07)
 
 ### TextBox

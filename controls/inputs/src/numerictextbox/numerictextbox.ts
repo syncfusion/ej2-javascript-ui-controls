@@ -400,6 +400,7 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                 }
                 if (this.element.getAttribute('value') || this.value) {
                     this.element.setAttribute('value', this.element.value);
+                    this.hiddenInput.setAttribute('value', this.hiddenInput.value);
                 }
             }
             this.renderComplete();

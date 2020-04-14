@@ -393,6 +393,9 @@ export class HelperMethods {
         if (value.toString() === 'NaN') {
             return '';
         }
+        if (format === '') {
+            format = '0';
+        }
         numberFormat = { format: format };
         formattedValue = intl.formatNumber(numberValue, numberFormat);
         return formattedValue;
@@ -406,6 +409,12 @@ export class HelperMethods {
         let intl: Internationalization = new Internationalization();
         let formattedValue: string;
         let date: Date = new Date(value);
+        if (isNaN(date.getDate())) {
+            return '';
+        }
+        if (format === '') {
+            return value;
+        }
         if (format.indexOf('am/pm') !== -1) {
             format = format.replace(/am\/pm/gi, 'a');
         }

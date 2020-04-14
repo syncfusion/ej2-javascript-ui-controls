@@ -5,7 +5,7 @@ import {
 import { PivotCommon } from '../base/pivot-common';
 import * as cls from '../base/css-constant';
 import {
-    TreeView, NodeCheckEventArgs, Tab, TabItemModel, EJ2Instance, NodeClickEventArgs,
+    TreeView, NodeCheckEventArgs, Tab, TabItemModel, NodeClickEventArgs,
     NodeExpandEventArgs, NodeSelectEventArgs
 } from '@syncfusion/ej2-navigations';
 import { Dialog } from '@syncfusion/ej2-popups';
@@ -775,8 +775,10 @@ export class FilterDialog {
                             let inputObj1: MaskedTextBox | NumericTextBox;
                             let inputObj2: MaskedTextBox | NumericTextBox;
                             if (type === 'value') {
-                                inputObj1 = ((<HTMLElement>inputDiv1) as EJ2Instance).ej2_instances[0] as NumericTextBox;
-                                inputObj2 = ((<HTMLElement>inputDiv2) as EJ2Instance).ej2_instances[0] as NumericTextBox;
+                                /* tslint:disable-next-line:no-any */
+                                inputObj1 = ((<HTMLElement>inputDiv1) as any).ej2_instances[0] as NumericTextBox;
+                                /* tslint:disable-next-line:no-any */
+                                inputObj2 = ((<HTMLElement>inputDiv2) as any).ej2_instances[0] as NumericTextBox;
                                 if (inputObj1) {
                                     inputObj1.value = filterObj.value1 ? parseInt(filterObj.value1 as string, 10) : undefined;
                                 }
@@ -784,8 +786,10 @@ export class FilterDialog {
                                     inputObj2.value = filterObj.value2 ? parseInt(filterObj.value2 as string, 10) : undefined;
                                 }
                             } else {
-                                inputObj1 = ((<HTMLElement>inputDiv1) as EJ2Instance).ej2_instances[0] as MaskedTextBox;
-                                inputObj2 = ((<HTMLElement>inputDiv2) as EJ2Instance).ej2_instances[0] as MaskedTextBox;
+                                /* tslint:disable-next-line:no-any */
+                                inputObj1 = ((<HTMLElement>inputDiv1) as any).ej2_instances[0] as MaskedTextBox;
+                                /* tslint:disable-next-line:no-any */
+                                inputObj2 = ((<HTMLElement>inputDiv2) as any).ej2_instances[0] as MaskedTextBox;
                                 if (inputObj1) {
                                     inputObj1.value = filterObj.value1 ? filterObj.value1 as string : '';
                                 }
@@ -962,17 +966,19 @@ export class FilterDialog {
     private updateInputValues(element: Element, type: string, inputDiv1: HTMLInputElement, inputDiv2: HTMLInputElement): void {
         let value1: string;
         let value2: string;
+        /* tslint:disable:no-any */
         if (type === 'date') {
-            let inputObj1: DateTimePicker = ((<HTMLElement>inputDiv1) as EJ2Instance).ej2_instances[0] as DateTimePicker;
-            let inputObj2: DateTimePicker = ((<HTMLElement>inputDiv2) as EJ2Instance).ej2_instances[0] as DateTimePicker;
+            let inputObj1: DateTimePicker = ((<HTMLElement>inputDiv1) as any).ej2_instances[0] as DateTimePicker;
+            let inputObj2: DateTimePicker = ((<HTMLElement>inputDiv2) as any).ej2_instances[0] as DateTimePicker;
             value1 = !isNullOrUndefined(inputObj1.value) ? inputObj1.value.toString() : '';
             value2 = !isNullOrUndefined(inputObj2.value) ? inputObj2.value.toString() : '';
         } else {
-            let inputObj1: MaskedTextBox = ((<HTMLElement>inputDiv1) as EJ2Instance).ej2_instances[0] as MaskedTextBox;
-            let inputObj2: MaskedTextBox = ((<HTMLElement>inputDiv2) as EJ2Instance).ej2_instances[0] as MaskedTextBox;
+            let inputObj1: MaskedTextBox = ((<HTMLElement>inputDiv1) as any).ej2_instances[0] as MaskedTextBox;
+            let inputObj2: MaskedTextBox = ((<HTMLElement>inputDiv2) as any).ej2_instances[0] as MaskedTextBox;
             value1 = inputObj1.value;
             value2 = inputObj2.value;
         }
+        /* tslint:enable:no-any */
         setStyleAndAttributes(element, { 'data-value1': value1, 'data-value2': value2 });
     }
     private validateTreeNode(e: NodeCheckEventArgs): void {

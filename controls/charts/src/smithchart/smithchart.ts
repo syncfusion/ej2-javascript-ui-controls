@@ -12,7 +12,7 @@ import { SmithchartAxisModel } from '../smithchart/axis/axis-model';
 import { TooltipRender } from '../smithchart/series/tooltip';
 import { ISmithchartLoadedEventArgs, ISmithchartLoadEventArgs, ISmithchartThemeStyle } from '../smithchart/model/interface';
 import { ISmithchartLegendRenderEventArgs, ITitleRenderEventArgs, ISubTitleRenderEventArgs } from '../smithchart/model/interface';
-import { ISmithchartAxisLabelRenderEventArgs, ISmithchartPrintEventArgs } from '../smithchart/model/interface';
+import { ISmithchartAxisLabelRenderEventArgs, ISmithchartPrintEventArgs, ISmithChartTooltipEventArgs } from '../smithchart/model/interface';
 import { ISmithchartSeriesRenderEventArgs, ISmithchartAnimationCompleteEventArgs } from '../smithchart/model/interface';
 import { ISmithchartTextRenderEventArgs } from '../smithchart/model/interface';
 import { getThemeColor } from '../smithchart/model/theme';
@@ -281,6 +281,14 @@ export class Smithchart extends Component<HTMLElement> implements INotifyPropert
 
     @Event()
     public seriesRender: EmitType<ISmithchartSeriesRenderEventArgs>;
+
+    /**
+     * Triggers before the tooltip rendering
+     * @event
+     */
+
+    @Event()
+    public tooltipRender: EmitType<ISmithChartTooltipEventArgs>;
 
     /** @private */
     public isBlazor: boolean;

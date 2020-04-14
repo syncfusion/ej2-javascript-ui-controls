@@ -59,6 +59,12 @@ export class Sortable extends Base<HTMLElement>  implements INotifyPropertyChang
     @Event()
     public drag: Function;
     /**
+     * Specifies the callback function for beforeDragStart event.
+     * @event
+     */
+    @Event()
+    public beforeDragStart: Function;
+    /**
      * Specifies the callback function for dragStart event.
      * @event
      */
@@ -218,10 +224,22 @@ export class Sortable extends Base<HTMLElement>  implements INotifyPropertyChang
     private getSortableElement(element: HTMLElement, instance: Sortable = this): HTMLElement {
         return closest(element, `.${instance.itemClass}`) as HTMLElement;
     }
-    private onDragStart: Function = (e: { target: HTMLElement, event: MouseEventArgs } & BlazorDragEventArgs) => {
+    private onDragStart: Function = (e: { target: HTMLElement, event: MouseEventArgs, helper: Element } & BlazorDragEventArgs) => {
         this.target = this.getSortableElement(e.target);
+        let cancelDrag: boolean = false;
         this.target.classList.add('e-grabbed');
         this.curTarget =  this.target;
+        e.helper = document.getElementsByClassName('e-sortableclone')[0];
+        let args: object = { cancel: false, element: this.element, target: this.target };
+        this.trigger('beforeDragStart', args, (observedArgs: BeforeDragEventArgs) => {
+            if (observedArgs.cancel) {
+                cancelDrag = observedArgs.cancel;
+                this.onDragStop(e);
+            }
+        });
+        if (cancelDrag) {
+            return;
+        }
         if (isBlazor) {
             this.trigger('dragStart', { event: e.event, element: this.element, target: this.target,
                 bindEvents: e.bindEvents, dragElement: e.dragElement });
@@ -362,4 +380,9 @@ export interface DropEventArgs {
     helper: Element;
     cancel?: boolean;
     handled?: boolean;
+}
+
+export interface BeforeDragEventArgs {
+    cancel?: boolean;
+    target: Element;
 }

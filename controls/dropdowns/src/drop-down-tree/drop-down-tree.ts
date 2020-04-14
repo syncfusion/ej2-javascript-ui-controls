@@ -10,18 +10,6 @@ import { updateBlazorTemplate, resetBlazorTemplate, isBlazor} from '@syncfusion/
 import { TreeView, NodeSelectEventArgs, DataBoundEventArgs, FieldsSettingsModel, NodeClickEventArgs } from '@syncfusion/ej2-navigations';
 import { NodeCheckEventArgs, FailureEventArgs} from '@syncfusion/ej2-navigations';
 import { DropDownTreeModel, FieldsModel, TreeSettingsModel } from './drop-down-tree-model';
-/**
- * The Dropdown Tree control allows you to select single or multiple values from hierarchical data in a tree-like structure.
- * It has several out-of-the-box features, such as data binding, check boxes, templates,
- * UI customization, accessibility, and preselected values.
- * ```html
- * <input type="text" tabindex="1" id="tree"> </input>
- * ```
- * ```typescript
- *   let dropDownTreeObj:DropDownTree = new DropDownTree();
- *   dropDownTreeObj.appendTo("#list");
- * ```
- */
 
 const RTL: string = 'e-rtl';
 const DROPDOWNTREE: string = 'e-ddt';
@@ -307,6 +295,19 @@ export type SortOrder = 'None' | 'Ascending' | 'Descending';
 
 export type ExpandOn = 'Auto' | 'Click' | 'DblClick' | 'None';
 
+/**
+ * The Dropdown Tree control allows you to select single or multiple values from hierarchical data in a tree-like structure.
+ * It has several out-of-the-box features, such as data binding, check boxes, templates, filter,
+ * UI customization, accessibility, and preselected values.
+ * ```html
+ *  <input type="text" id="tree"></input>
+ * ```
+ * ```typescript
+ *  let ddtObj: DropDownTree = new DropDownTree();
+ *  ddtObj.appendTo("#tree");
+ * ```
+ */
+
 @NotifyPropertyChanges
 export class DropDownTree extends Component<HTMLElement> implements INotifyPropertyChanged {
     private inputEle: HTMLInputElement;
@@ -450,11 +451,11 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
      * The **TreeFilterType** and its supported data types are,
      * 
      * <table> 
-     * <th> 
-     * <td colSpan=1 rowSpan=1> 
-     * TreeFilterType<br/></td><td colSpan=1 rowSpan=1> 
-     * Description<br/></td><td colSpan=1 rowSpan=1> 
-     * Supported Types<br/></td></th> 
+     * <tr> 
+     * <td colSpan=1 rowSpan=1><b> 
+     * TreeFilterType</b></td><td colSpan=1 rowSpan=1><b> 
+     * Description</b></td><td colSpan=1 rowSpan=1><b> 
+     * Supported Types</b></td></tr> 
      * <tr> 
      * <td colSpan=1 rowSpan=1> 
      * StartsWith<br/></td><td colSpan=1 rowSpan=1> 
@@ -463,16 +464,17 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
      * <tr> 
      * <td colSpan=1 rowSpan=1> 
      * EndsWith<br/></td><td colSpan=1 rowSpan=1> 
-     * Checks whether a value ends with specified value.<br/><br/></td><td colSpan=1 rowSpan=1> 
-     * <br/>String<br/></td></tr> 
+     * Checks whether a value ends with specified value.<br/></td><td colSpan=1 rowSpan=1> 
+     * String<br/></td></tr> 
      * <tr> 
      * <td colSpan=1 rowSpan=1> 
      * Contains<br/></td><td colSpan=1 rowSpan=1> 
-     * Checks whether a value contains with specified value.<br/><br/></td><td colSpan=1 rowSpan=1> 
-     * <br/>String<br/></td></tr> 
+     * Checks whether a value contains with specified value.<br/></td><td colSpan=1 rowSpan=1> 
+     * String<br/></td></tr> 
      * </table>
      * 
-     * The default value set to **StartsWith**, all the suggestion items which contain typed characters to listed in the suggestion popup.
+     * The default value set to **StartsWith**, all the suggestion items which starts with typed characters to listed in the
+     * suggestion popup.
      * @default 'StartsWith'
      */
     @Property('StartsWith')

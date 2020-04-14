@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.44 (2020-04-14)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+`#I271476` - Issue with Highlighted cells get changed while scrolling down when data is validated has been fixed.
+
 ## 18.1.43 (2020-04-07)
 
 ### Spreadsheet

@@ -621,7 +621,7 @@ export class StyleDialog {
                 name = styleName;
                 this.documentHelper.owner.editorModule.applyStyle(name);
             }
-            this.documentHelper.dialog.hide();
+            this.documentHelper.hideDialog();
         } else {
             throw new Error('Enter valid Style name');
         }
@@ -859,7 +859,7 @@ export class StyleDialog {
         if (!this.isEdit && this.style) {
             this.style.destroy();
         }
-        this.documentHelper.dialog.hide();
+        this.documentHelper.hideDialog();
     }
     /**
      * @private

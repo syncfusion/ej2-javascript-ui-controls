@@ -38,6 +38,12 @@ export class Crud {
             addedRecords: args.editParms.addedRecords, changedRecords: args.editParms.changedRecords,
             deletedRecords: args.editParms.deletedRecords
         };
+        if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj && this.parent.dragAndDropModule.actionObj.element) {
+            this.parent.dragAndDropModule.actionObj.element.style.display = 'none';
+        }
+        if (this.parent.resizeModule && this.parent.resizeModule.actionObj && this.parent.resizeModule.actionObj.element) {
+            this.parent.resizeModule.actionObj.element.style.display = 'none';
+        }
         if (this.parent.dataModule.dataManager.dataSource.offline) {
             this.parent.trigger(events.actionComplete, actionArgs, (offlineArgs: ActionEventArgs) => {
                 if (!offlineArgs.cancel) {

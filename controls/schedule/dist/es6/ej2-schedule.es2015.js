@@ -5235,6 +5235,9 @@ class QuickPopups {
             cancelButton.setAttribute('aria-label', this.l10n.getConstant('series'));
             cancelButton.setAttribute('aria-label', cancelButton.innerHTML);
         }
+        if (this.quickDialog.element.querySelector('.e-dlg-closeicon-btn')) {
+            this.quickDialog.element.querySelector('.e-dlg-closeicon-btn').setAttribute('title', this.l10n.getConstant('close'));
+        }
     }
     renderButton(className, iconName, isDisabled, element, clickEvent) {
         let buttonObj = new Button({
@@ -7313,7 +7316,7 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
             '</div><div class="' + INPUTWARAPPER + ' ' +
             INTERVALCLASS + ' ' + FORMRIGHT + '"><table  class="' + RECURRENCETABLE + ' ' + REPEATCONTENTWRAPPER + '"><tr>' +
             '<td><input type="text" tabindex="0" class="' + REPEATINTERVAL +
-            '"title="' + this.localeObj.getConstant('repeatInterval') + '" /></td>' +
+            '"title="' + this.localeObj.getConstant('repeatEvery') + '" /></td>' +
             '<td><span class="' + REPEATCONTENT + '"></span></td>' +
             '</tr></table></div><div class="' + INPUTWARAPPERSIDE + ' ' + DAYWRAPPER + ' ' + FORMLEFT + '">' +
             '<div class=' + WEEKEXPANDERLABEL + '>' + this.localeObj.getConstant(ON$1) + '</div>' +
@@ -7337,7 +7340,7 @@ let RecurrenceEditor = class RecurrenceEditor extends Component {
             '</div></td>' +
             '<td colspan="2"><div class="' + INPUTWARAPPER + ' ' + MONTHDAYELEMENT + '">' +
             '<input type="text" tabindex="0" class="' + MONTHDAYWRAPPER + '"title="' +
-            this.localeObj.getConstant('monthExpander') + '" />' +
+            this.localeObj.getConstant('on') + '" />' +
             '</div></td></tr>' +
             '<tr><td>' +
             '<div class="' + INPUTWARAPPER + ' ' + MONTHEXPANDERCHECKBOXWRAPPER + '" style="min-width: 30px;margin-bottom:18px;">' +
@@ -7774,6 +7777,9 @@ class EventWindow {
         }
         this.dialogObject = new Dialog(dialogModel, this.element);
         this.dialogObject.isStringTemplate = true;
+        if (this.dialogObject.element.querySelector('.e-dlg-closeicon-btn')) {
+            this.dialogObject.element.querySelector('.e-dlg-closeicon-btn').setAttribute('title', this.l10n.getConstant('close'));
+        }
         addClass([this.element.parentElement], EVENT_WINDOW_DIALOG_CLASS + '-container');
         if (this.parent.isAdaptive) {
             EventHandler.add(this.element.querySelector('.' + EVENT_WINDOW_BACK_ICON_CLASS), 'click', this.dialogClose, this);
@@ -7981,11 +7987,15 @@ class EventWindow {
         let titleLocationDiv = this.createDivElement(EVENT_WINDOW_TITLE_LOCATION_DIV_CLASS);
         parentDiv.appendChild(titleLocationDiv);
         titleLocationDiv.appendChild(this.renderTextBox(SUBJECT_CLASS));
+        titleLocationDiv.querySelector('.' + SUBJECT_CLASS).setAttribute('title', this.parent.editorTitles.subject);
         titleLocationDiv.appendChild(this.renderTextBox(LOCATION_CLASS));
+        titleLocationDiv.querySelector('.' + LOCATION_CLASS).setAttribute('title', this.parent.editorTitles.location);
         let startEndDateTimeDiv = this.createDivElement(EVENT_WINDOW_START_END_DIV_CLASS);
         parentDiv.appendChild(startEndDateTimeDiv);
         startEndDateTimeDiv.appendChild(this.renderDateTimePicker(EVENT_WINDOW_START_CLASS, this.onTimeChange.bind(this)));
+        startEndDateTimeDiv.querySelector('.' + EVENT_WINDOW_START_CLASS).setAttribute('title', this.parent.editorTitles.startTime);
         startEndDateTimeDiv.appendChild(this.renderDateTimePicker(EVENT_WINDOW_END_CLASS));
+        startEndDateTimeDiv.querySelector('.' + EVENT_WINDOW_END_CLASS).setAttribute('title', this.parent.editorTitles.endTime);
         let allDayTimezoneDiv = this.createDivElement(EVENT_WINDOW_ALLDAY_TZ_DIV_CLASS);
         parentDiv.appendChild(allDayTimezoneDiv);
         allDayTimezoneDiv.appendChild(this.renderCheckBox(EVENT_WINDOW_ALL_DAY_CLASS));
@@ -8023,6 +8033,7 @@ class EventWindow {
         }
         let description = this.createDivElement(DESCRIPTION_CLASS + '-row');
         description.appendChild(this.renderTextBox(DESCRIPTION_CLASS));
+        description.querySelector('.' + DESCRIPTION_CLASS).setAttribute('title', this.parent.editorTitles.description);
         parentDiv.appendChild(description);
         let submit = createElement('button', { attrs: { type: 'hidden', title: 'submit', style: 'display:none' } });
         parentDiv.appendChild(submit);
@@ -8935,7 +8946,7 @@ class EventWindow {
     }
     setDefaultValueToObject(eventObj) {
         if (!isNullOrUndefined(eventObj[this.fields.subject])) {
-            eventObj[this.fields.subject] = eventObj[this.fields.subject] || this.parent.eventSettings.fields.subject.default;
+            eventObj[this.fields.subject] = eventObj[this.fields.subject] || this.l10n.getConstant('addTitle');
         }
         if (!isNullOrUndefined(eventObj[this.fields.location])) {
             eventObj[this.fields.location] = eventObj[this.fields.location] || this.parent.eventSettings.fields.location.default;
@@ -9830,6 +9841,12 @@ class Crud {
             addedRecords: args.editParms.addedRecords, changedRecords: args.editParms.changedRecords,
             deletedRecords: args.editParms.deletedRecords
         };
+        if (this.parent.dragAndDropModule && this.parent.dragAndDropModule.actionObj && this.parent.dragAndDropModule.actionObj.element) {
+            this.parent.dragAndDropModule.actionObj.element.style.display = 'none';
+        }
+        if (this.parent.resizeModule && this.parent.resizeModule.actionObj && this.parent.resizeModule.actionObj.element) {
+            this.parent.resizeModule.actionObj.element.style.display = 'none';
+        }
         if (this.parent.dataModule.dataManager.dataSource.offline) {
             this.parent.trigger(actionComplete, actionArgs, (offlineArgs) => {
                 if (!offlineArgs.cancel) {
@@ -11974,6 +11991,10 @@ let Schedule = class Schedule extends Component {
             enableCompactView: this.group.enableCompactView
         };
         let workDays = this.viewCollections[this.viewIndex].workDays ? [] : this.workDays;
+        if (Object.keys(this.viewCollections[this.viewIndex]).indexOf('firstDayOfWeek') > -1 &&
+            isNullOrUndefined(this.viewCollections[this.viewIndex].firstDayOfWeek)) {
+            delete this.viewCollections[this.viewIndex].firstDayOfWeek;
+        }
         let scheduleOptions = {
             dateFormat: this.dateFormat,
             endHour: this.endHour,
@@ -14198,7 +14219,7 @@ class MonthEvent extends EventBase {
         }
         this.sortByDateTime(eventsList);
         this.sortByDateTime(blockList);
-        this.cellWidth = this.workCells.slice(-1)[0].offsetWidth;
+        this.cellWidth = this.workCells.slice(-1)[0].getBoundingClientRect().width;
         this.cellHeight = this.workCells.slice(-1)[0].offsetHeight;
         this.dateRender = dateRender;
         let filteredDates = this.getRenderedDates(dateRender);
@@ -16242,6 +16263,10 @@ class DragAndDrop extends ActionBase {
         this.parent.trigger(dragStart, dragArgs, (dragEventArgs) => {
             if (dragEventArgs.cancel || (!isNullOrUndefined(this.actionObj.element) &&
                 isNullOrUndefined(this.actionObj.element.parentElement))) {
+                let dragObj = this.actionObj.element.ej2_instances[0];
+                if (!isNullOrUndefined(dragObj)) {
+                    dragObj.intDestroy(e.event);
+                }
                 this.actionObj.action = '';
                 this.removeCloneElementClasses();
                 this.removeCloneElement();
@@ -16391,7 +16416,8 @@ class DragAndDrop extends ActionBase {
         if (this.isAllowDrop(e)) {
             return;
         }
-        let dragArgs = { cancel: false, data: this.getChangedData(), event: e, element: this.actionObj.element };
+        let dragArgs = { cancel: false, data: this.getChangedData(),
+            event: e, element: this.actionObj.element, target: e.target };
         this.parent.trigger(dragStop, dragArgs, (dragEventArgs) => {
             if (dragEventArgs.cancel) {
                 return;
@@ -20351,6 +20377,7 @@ class YearEvent extends TimelineEvent {
             let isSpannedCollection = [];
             while (monthStart.getTime() <= monthEnd.getTime()) {
                 let leftValue;
+                let rightValue;
                 if (this.parent.activeViewOptions.orientation === 'Vertical') {
                     let wrapper = wrapperCollection[dayIndex];
                     let eventWrapper = wrapper.querySelector('.' + APPOINTMENT_WRAPPER_CLASS);
@@ -20358,10 +20385,11 @@ class YearEvent extends TimelineEvent {
                         eventWrapper = createElement('div', { className: APPOINTMENT_WRAPPER_CLASS });
                         wrapper.appendChild(eventWrapper);
                     }
-                    leftValue = row * this.cellWidth;
+                    this.parent.enableRtl ? (rightValue = row * this.cellWidth) : (leftValue = row * this.cellWidth);
                 }
                 else {
-                    leftValue = ((dayIndex + monthStart.getDate()) - 1) * this.cellWidth;
+                    this.parent.enableRtl ? (rightValue = ((dayIndex + monthStart.getDate()) - 1) * this.cellWidth) :
+                        (leftValue = ((dayIndex + monthStart.getDate()) - 1) * this.cellWidth);
                 }
                 let dayStart = resetTime(new Date(monthStart.getTime()));
                 let dayEnd = addDays(new Date(dayStart.getTime()), 1);
@@ -20379,12 +20407,12 @@ class YearEvent extends TimelineEvent {
                         }
                     }
                     if (this.cellHeight > availedHeight) {
-                        this.renderEvent(eventWrapper, eventData, row, leftValue, overlapIndex, dayIndex);
+                        this.renderEvent(eventWrapper, eventData, row, leftValue, rightValue, overlapIndex, dayIndex);
                         isSpannedCollection.push(eventData);
                     }
                     else {
                         let moreIndex = this.parent.activeViewOptions.orientation === 'Horizontal' ? row : dayIndex;
-                        this.renderMoreIndicatior(eventWrapper, count - index, dayStart, moreIndex, leftValue, dayEvents);
+                        this.renderMoreIndicatior(eventWrapper, count - index, dayStart, moreIndex, leftValue, rightValue, dayEvents);
                         if (this.parent.activeViewOptions.orientation === 'Horizontal') {
                             for (let a = index; a < dayEvents.length; a++) {
                                 let moreData = extend({}, dayEvents[a], { Index: overlapIndex + a }, true);
@@ -20403,7 +20431,7 @@ class YearEvent extends TimelineEvent {
             }
         }
     }
-    renderEvent(wrapper, eventData, row, left, overlapCount, rowIndex) {
+    renderEvent(wrapper, eventData, row, left, right, overlapCount, rowIndex) {
         let eventObj = this.isSpannedEvent(eventData, row);
         let wrap = this.createEventElement(eventObj);
         let width;
@@ -20419,7 +20447,10 @@ class YearEvent extends TimelineEvent {
             width = this.cellWidth;
             top = (this.cellHeight * rowIndex) + this.cellHeader + (this.eventHeight * overlapCount) + EVENT_GAP$2;
         }
-        setStyleAttribute(wrap, { 'width': width + 'px', 'height': this.eventHeight + 'px', 'left': left + 'px', 'top': top + 'px' });
+        setStyleAttribute(wrap, {
+            'width': width + 'px', 'height': this.eventHeight + 'px', 'left': left + 'px',
+            'right': right + 'px', 'top': top + 'px'
+        });
         let args = { data: eventObj, element: wrap, cancel: false, type: 'event' };
         this.parent.trigger(eventRendered, args, (eventArgs) => {
             if (!eventArgs.cancel) {
@@ -20431,13 +20462,14 @@ class YearEvent extends TimelineEvent {
             }
         });
     }
-    renderMoreIndicatior(wrapper, count, startDate, row, left, events) {
+    renderMoreIndicatior(wrapper, count, startDate, row, left, right, events) {
         let endDate = addDays(new Date(startDate.getTime()), 1);
         let moreIndicator = this.getMoreIndicatorElement(count, startDate, endDate);
         let rowTr = this.parent.element.querySelector(`.e-content-wrap tr:nth-child(${row + 1})`);
         let top = rowTr.offsetTop + (this.cellHeight - this.moreIndicatorHeight);
         left = (Math.floor(left / this.cellWidth) * this.cellWidth);
-        setStyleAttribute(moreIndicator, { 'width': this.cellWidth + 'px', 'left': left + 'px', 'top': top + 'px' });
+        right = (Math.floor(right / this.cellWidth) * this.cellWidth);
+        setStyleAttribute(moreIndicator, { 'width': this.cellWidth + 'px', 'left': left + 'px', 'right': right + 'px', 'top': top + 'px' });
         wrapper.appendChild(moreIndicator);
         EventHandler.add(moreIndicator, 'click', this.moreIndicatorClick, this);
     }

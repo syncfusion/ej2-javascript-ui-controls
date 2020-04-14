@@ -22,7 +22,7 @@ let dataManager: DataManager = new DataManager({
 let spreadsheet: Spreadsheet = new Spreadsheet({
     sheets: [{
         ranges: [{
-            dataSource: dataManager, startCell: 'A1',
+            dataSource: dataManager,
             query: new Query().select(['OrderID', 'CustomerID', 'EmployeeID', 'ShipVia', 'Freight', 'ShipRegion', 'ShipCountry'])
         }]
     }]

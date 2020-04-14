@@ -1243,13 +1243,15 @@ export class SfdtReader {
     }
 
     private parseTabStop(wTabs: any, tabs: WTabStop[]): void {
-        for (let i: number = 0; i < wTabs.length; i++) {
-            let tabStop: WTabStop = new WTabStop();
-            tabStop.position = wTabs[i].position;
-            tabStop.tabLeader = wTabs[i].tabLeader;
-            tabStop.deletePosition = wTabs[i].deletePosition;
-            tabStop.tabJustification = wTabs[i].tabJustification;
-            tabs.push(tabStop);
+        if (wTabs) {
+            for (let i: number = 0; i < wTabs.length; i++) {
+                let tabStop: WTabStop = new WTabStop();
+                tabStop.position = wTabs[i].position;
+                tabStop.tabLeader = wTabs[i].tabLeader;
+                tabStop.deletePosition = wTabs[i].deletePosition;
+                tabStop.tabJustification = wTabs[i].tabJustification;
+                tabs.push(tabStop);
+            }
         }
     }
 

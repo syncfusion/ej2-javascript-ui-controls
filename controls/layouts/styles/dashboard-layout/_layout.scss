@@ -27,7 +27,7 @@
         border: $panel-hover-border;
 
         & .e-panel-container {
-          & .e-resize {
+          & .e-resize.e-dl-icon {
             display: block;
           }
         }
@@ -38,7 +38,7 @@
       }
 
       & .e-panel-container {
-        & .e-resize {
+        & .e-resize.e-dl-icon {
           display: none;
         }
       }

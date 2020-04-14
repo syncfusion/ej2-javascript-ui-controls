@@ -3,10 +3,10 @@ import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Eve
 import { isNullOrUndefined, L10n, EmitType, Browser } from '@syncfusion/ej2-base';
 import { Save } from '@syncfusion/ej2-file-utils';
 // tslint:disable-next-line:max-line-length
-import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle, BeforePaneSwitchEventArgs, LayoutType, FormFieldFillEventArgs } from './index';
+import { DocumentChangeEventArgs, ViewChangeEventArgs, ZoomFactorChangeEventArgs, StyleType, WStyle, BeforePaneSwitchEventArgs, LayoutType, FormFieldFillEventArgs, FormFieldData } from './index';
 import { SelectionChangeEventArgs, RequestNavigateEventArgs, ContentChangeEventArgs, DocumentEditorKeyDownEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs } from './index';
 import { LayoutViewer, PageLayoutViewer, WebLayoutViewer, BulletsAndNumberingDialog } from './index';
-import { Print, SearchResultsChangeEventArgs, FormData } from './index';
+import { Print, SearchResultsChangeEventArgs } from './index';
 import { Page, BodyWidget, ParagraphWidget } from './index';
 import { WSectionFormat, WParagraphFormat, WCharacterFormat } from './index';
 import { SfdtReader } from './index';
@@ -28,7 +28,7 @@ import { PageSetupDialog, ParagraphDialog, ListDialog, StyleDialog, FontDialog }
 import { TablePropertiesDialog, BordersAndShadingDialog, CellOptionsDialog, TableOptionsDialog } from './index';
 import { SpellChecker } from './implementation/spell-check/spell-checker';
 import { SpellCheckDialog } from './implementation/dialogs/spellCheck-dialog';
- // tslint:disable-next-line:max-line-length
+// tslint:disable-next-line:max-line-length
 import { DocumentEditorModel, ServerActionSettingsModel, DocumentEditorSettingsModel, FormFieldSettingsModel } from './document-editor-model';
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties, DocumentHelper } from './index';
 import { PasteOptions } from './index';
@@ -1813,7 +1813,7 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                 if (formFields[i].formFieldData instanceof TextFormField) {
                     this.editor.updateFormField(formFields[i], (formFields[i].formFieldData as TextFormField).defaultValue, true);
                 } else if (formFields[i].formFieldData instanceof CheckBoxFormField) {
-                     // tslint:disable-next-line:max-line-length
+                    // tslint:disable-next-line:max-line-length
                     this.editor.toggleCheckBoxFormField(formFields[i], true, (formFields[i].formFieldData as CheckBoxFormField).defaultValue);
                 } else if (formFields[i].formFieldData instanceof DropDownFormField) {
                     this.editor.updateFormField(formFields[i], 0, true);
@@ -1822,20 +1822,22 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
     /**
-     * Import form field values.  
+     * Import form field values.
+     * @param - formDate  - { FormFieldData[] }
      */
-    public importFormData(formData: FormData[]): void {
+    public importFormData(formData: FormFieldData[]): void {
         let formField: FieldElementBox[] = this.documentHelper.formFields;
         for (let i: number = 0; i < formData.length; i++) {
-            let fieldName: string = Object.keys(formData[i])[0];
+            let formFieldData: FormFieldData = formData[i];
+            let fieldName: string = formFieldData.fieldName;
             for (let j: number = 0; j < formField.length; j++) {
                 if (formField[j].formFieldData.name === fieldName) {
                     if (formField[j].formFieldData instanceof CheckBoxFormField) {
-                        this.editor.toggleCheckBoxFormField(formField[j], true, formData[i][fieldName] as boolean);
+                        this.editor.toggleCheckBoxFormField(formField[j], true, formFieldData.value as boolean);
                     } else if (formField[j].formFieldData instanceof TextFormField) {
-                        this.editor.updateFormField(formField[j], formData[i][fieldName] as string);
+                        this.editor.updateFormField(formField[j], formFieldData.value as string);
                     } else if (formField[j].formFieldData instanceof DropDownFormField) {
-                        this.editor.updateFormField(formField[j], formData[i][fieldName] as number);
+                        this.editor.updateFormField(formField[j], formFieldData.value as number);
                     }
                 }
             }
@@ -1843,32 +1845,46 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     }
     /**
      * Export form field values.
-     * @returns - {FormData[]}
+     * @returns - { FormFieldData[] }
      */
-    public exportFormData(): FormData[] {
-        let data: FormData[] = [];
+    public exportFormData(): FormFieldData[] {
+        let data: FormFieldData[] = [];
         let formField: FieldElementBox[] = this.documentHelper.formFields;
         for (let i: number = 0; i < formField.length; i++) {
             if (formField[i].formFieldData.name !== '') {
-                let formData: FormData = {};
+                let formData: FormFieldData = { fieldName: '', value: '' };
+                formData.fieldName = (formField[i].formFieldData as TextFormField).name;
                 if (formField[i].formFieldData instanceof CheckBoxFormField) {
                     // tslint:disable-next-line:max-line-length
-                    formData[(formField[i].formFieldData as CheckBoxFormField).name] = (formField[i].formFieldData as CheckBoxFormField).checked;
+                    formData.value = (formField[i].formFieldData as CheckBoxFormField).checked;
                 } else if (formField[i].formFieldData instanceof TextFormField) {
                     let resultText: string = formField[i].resultText;
                     let rex: RegExp = new RegExp(this.documentHelper.textHelper.getEnSpaceCharacter(), 'gi');
                     if (resultText.replace(rex, '') === '') {
                         resultText = '';
                     }
-                    formData[(formField[i].formFieldData as TextFormField).name] = resultText;
+                    formData.value = resultText;
                 } else if (formField[i].formFieldData instanceof DropDownFormField) {
                     // tslint:disable-next-line:max-line-length
-                    formData[(formField[i].formFieldData as DropDownFormField).name] = (formField[i].formFieldData as DropDownFormField).selectedIndex;
+                    formData.value = (formField[i].formFieldData as DropDownFormField).selectedIndex;
                 }
                 data.push(formData);
             }
         }
         return data;
+    }
+    /**
+     * Updated fields in document.
+     * Currently cross reference field only supported.
+     */
+    public updateFields(): void {
+        for (let i: number = 0; i < this.documentHelper.fields.length; i++) {
+            let field: FieldElementBox = this.documentHelper.fields[i];
+            let code: string = this.selection.getFieldCode(field);
+            if (code.toLowerCase().trim().indexOf('ref ') === 0) {
+                this.selection.updateRefField(field);
+            }
+        }
     }
     /**
      * Shifts the focus to the document.
@@ -2257,21 +2273,21 @@ export class ServerActionSettings extends ChildProperty<ServerActionSettings> {
 export class FormFieldSettings extends ChildProperty<FormFieldSettings> {
 
     /**
-     * Specifies the system clipboard action of Document Editor.
+     * Get or Set form fields shading color.
      * @default '#cfcfcf'
      */
     @Property('#cfcfcf')
     public shadingColor: string;
 
     /**
-     * Specifies the spell check action of Document Editor.
-     * @default 'SpellCheck'
+     * Get or Set whether apply shadings for field or not. 
+     * @default true
      */
     @Property(true)
     public applyShading: boolean;
 
     /**
-     * Specifies the restrict editing encryption/decryption action of Document Editor.
+     * Get or Set field selection color. 
      * @default '#cccccc'
      */
     @Property('#cccccc')

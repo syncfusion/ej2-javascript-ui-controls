@@ -20,7 +20,7 @@ export class FocusStrategy {
     public swap: SwapInfo = {};
     public content: IFocus; public header: IFocus; public active: IFocus;
     public fContent: IFocus; public fHeader: IFocus;
-    private forget: boolean = true;
+    private forget: boolean = false;
     private skipFocus: boolean = true;
     private focusByClick: boolean = false;
     private passiveHandler: EventListener;
@@ -441,7 +441,7 @@ export class FocusStrategy {
 
     public getPrevIndexes(): IIndex {
         let forget: boolean = this.forget; this.forget = false;
-        return forget ? { rowIndex: null, cellIndex: null } : this.prevIndexes;
+        return forget || !Object.keys(this.prevIndexes).length ? { rowIndex: null, cellIndex: null } : this.prevIndexes;
     }
 
     public forgetPrevious(): void {
@@ -792,7 +792,8 @@ export class ContentFocus implements IFocus {
         if (!cell) { return true; }
         return e.action === 'enter' || e.action === 'shiftEnter' ?
             cell.classList.contains('e-rowcell') && !cell.classList.contains('e-unboundcell')
-            && !cell.classList.contains('e-templatecell') && !cell.classList.contains('e-detailcell') : true;
+            && (!cell.classList.contains('e-templatecell') || cell.classList.contains('e-editedbatchcell'))
+            && !cell.classList.contains('e-detailcell') : true;
     }
 }
 /**

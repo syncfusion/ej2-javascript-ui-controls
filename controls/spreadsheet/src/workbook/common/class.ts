@@ -248,5 +248,12 @@ export class Validation extends ChildProperty<Validation> {
     @Property(true)
     public inCellDropDown: boolean;
 
+    /**
+     * specifies to allow Highlight Invalid Data.
+     * @default false
+     */
+    @Property(false)
+    public isHighlighted: boolean;
+
 }
 

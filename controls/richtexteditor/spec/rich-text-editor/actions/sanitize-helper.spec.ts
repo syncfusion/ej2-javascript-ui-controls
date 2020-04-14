@@ -576,4 +576,23 @@ describe('Sanitize Html Helper', () => {
             destroy(rteObj);
         });
     });
+
+    describe('enableHtmlSanitizer is set to false when insertHTML is used in execueCommand', () => {
+        let rteObj: RichTextEditor;
+        beforeAll(() => {
+            rteObj = renderRTE({
+                value: '<p>syncfusion RTE</p>',
+                enableHtmlSanitizer: false,
+            });
+        });
+
+        it('check the script with args.helper null', () => {
+            rteObj.executeCommand('insertHTML', "<div style='position: relative;width: 100%;height: 0;padding-bottom: 50%;'><iframe frameborder='0' scrolling='no' marginheight='0' marginwidth='0' style='position: absolute;top: 0;left: 0;width: 100%;height: 100%;' frameborder='0' type='text/html' src='https://www.youtube.com/embed/tgbNymZ7vqY?fs=1'></iframe></div>");
+            expect(rteObj.inputElement.innerHTML === '<div style="position: relative;width: 100%;height: 0;padding-bottom: 50%;"><iframe frameborder="0" scrolling="no" marginheight="0" marginwidth="0" style="position: absolute;top: 0;left: 0;width: 100%;height: 100%;" type="text/html" src="https://www.youtube.com/embed/tgbNymZ7vqY?fs=1"></iframe></div><p>syncfusion RTE</p>').toBe(true);
+        });
+
+        afterAll(() => {
+            destroy(rteObj);
+        });
+    });
 });

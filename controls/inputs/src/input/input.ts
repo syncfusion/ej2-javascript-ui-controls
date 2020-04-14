@@ -99,7 +99,7 @@ export namespace Input {
         let inputValue: string = inputElement.value;
         if (inputValue !== '' && !isNullOrUndefined(inputValue)) {
             inputElement.parentElement.classList.add('e-valid-input');
-        } else if (floatLabelType !== 'Always') {
+        } else if (floatLabelType !== 'Always' && inputElement.parentElement) {
             inputElement.parentElement.classList.remove('e-valid-input');
         }
     }

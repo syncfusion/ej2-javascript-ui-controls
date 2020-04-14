@@ -131,7 +131,8 @@
     }
 
     input[readonly],
-    .e-dropdowntree {
+    .e-dropdowntree,
+    input[readonly].e-input {
       pointer-events: none;
 
       &.e-chip-input {

@@ -732,7 +732,10 @@ export class Edit implements IAction {
                 break;
             case 'escape':
                 if (this.parent.isEdit) {
-                    this.closeEdit();
+                    if (this.parent.editSettings.mode === 'Batch') {
+                        this.editModule.escapeCellEdit();
+                    } else {
+                        this.closeEdit(); }
                 }
                 break;
         }

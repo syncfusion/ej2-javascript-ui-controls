@@ -108,7 +108,7 @@ export class MonthEvent extends EventBase {
         }
         this.sortByDateTime(eventsList);
         this.sortByDateTime(blockList);
-        this.cellWidth = this.workCells.slice(-1)[0].offsetWidth;
+        this.cellWidth = this.workCells.slice(-1)[0].getBoundingClientRect().width;
         this.cellHeight = this.workCells.slice(-1)[0].offsetHeight;
         this.dateRender = dateRender;
         let filteredDates: Date[] = this.getRenderedDates(dateRender);

@@ -33,7 +33,8 @@ export class DataBind {
      * Update given data source to sheet.
      */
     // tslint:disable-next-line
-    private updateSheetFromDataSourceHandler(args: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel>, rangeSettingCount?: number[] }): void {
+    private updateSheetFromDataSourceHandler(args: { sheet: ExtendedSheet, indexes: number[], promise: Promise<CellModel>, rangeSettingCount?: number[],
+        skipModelUpdate?: boolean }): void {
         let cell: CellModel; let flds: string[]; let sCellIdx: number[];
         let result: Object[]; let remoteUrl: string; let isLocal: boolean; let dataManager: DataManager;
         let requestedRange: boolean[] = []; let sRanges: number[] = []; let rowIdx: number;
@@ -80,7 +81,7 @@ export class DataBind {
                     let query: Query = (range.query ? range.query : new Query()).clone();
                     dataManager.executeQuery(query.range(sRange, eRange >= count ? eRange : eRange + 1)
                         .requiresCount()).then((e: ReturnOption) => {
-                            if (!this.parent || this.parent.isDestroyed) { return; }
+                            if (!this.parent || this.parent.isDestroyed || args.skipModelUpdate) { return; }
                             result = (e.result && e.result.result ? e.result.result : e.result) as Object[];
                             sCellIdx = getRangeIndexes(range.startCell);
                             sRowIdx = sCellIdx[0]; sColIdx = sCellIdx[1];

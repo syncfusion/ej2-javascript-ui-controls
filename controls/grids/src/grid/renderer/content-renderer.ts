@@ -72,10 +72,11 @@ export class ContentRender implements IRenderer {
             }
             this.parent.notify(events.contentReady, { rows: rows, args: arg });
             if (this.isLoaded) {
-                this.parent.trigger(events.dataBound, {});
-                if (this.parent.allowTextWrap) {
-                    this.parent.notify(events.freezeRender, { case: 'textwrap' });
-                }
+                this.parent.trigger(events.dataBound, {}, () => {
+                    if (this.parent.allowTextWrap) {
+                        this.parent.notify(events.freezeRender, { case: 'textwrap' });
+                    }
+                });
             }
             if (arg) {
                 let action: string = (arg.requestType || '').toLowerCase() + '-complete';
@@ -258,7 +259,9 @@ export class ContentRender implements IRenderer {
             let arg: object = extend({ rows: this.rows }, args);
             if (this.getTable().querySelector('.e-emptyrow')) {
                 remove(this.getTable().querySelector('.e-emptyrow'));
-                remove(this.getTable().querySelectorAll('.e-table > tbody')[1]);
+                if (!isNullOrUndefined(this.getTable().querySelectorAll('.e-table > tbody')[1])) {
+                    remove(this.getTable().querySelectorAll('.e-table > tbody')[1]);
+                }
             }
             this.parent.notify('contentcolgroup', {});
             this.rafCallback(arg)();
@@ -271,8 +274,8 @@ export class ContentRender implements IRenderer {
             }
             if (!(this.parent.isCheckBoxSelection || this.parent.selectionSettings.type === 'Multiple')
             || (!this.parent.isPersistSelection && !this.parent.enableVirtualization)) {
-                if (this.parent.editSettings.mode === 'Normal') {
-                    let rowIndex: string = 'editRowIndex';
+                let rowIndex: string = 'editRowIndex';
+                if (this.parent.editSettings.mode === 'Normal' && !isNullOrUndefined(args[rowIndex])) {
                     this.parent.selectRow(args[rowIndex]);
                 }
             }

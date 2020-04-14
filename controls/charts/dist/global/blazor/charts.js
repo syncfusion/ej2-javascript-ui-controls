@@ -4546,6 +4546,7 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
         var labelElement = chart.renderer.createGroup({ id: chart.element.id + 'AxisLabels' + index });
         var scrollBarHeight = sf.base.isNullOrUndefined(axis.crossesAt) ? axis.scrollBarHeight * (isOpposed ? 1 : -1) : 0;
         var textHeight;
+        var textPadding;
         for (var i = 0, len = axis.visibleLabels.length; i < len; i++) {
             isAxisBreakLabel = isBreakLabel(axis.visibleLabels[i].originalText);
             pointX = isLabelInside ? (rect.x - padding) : (rect.x + padding + scrollBarHeight);
@@ -4553,8 +4554,9 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
             pointY = (valueToCoefficient(axis.visibleLabels[i].value, axis) * rect.height) + (chart.stockChart ? 7 : 0);
             pointY = Math.floor((pointY * -1) + (rect.y + rect.height));
             textHeight = ((elementSize.height / 8) * axis.visibleLabels[i].text.length / 2);
-            pointY = (isAxisBreakLabel ? (axis.labelPosition === 'Inside' ? (pointY - (elementSize.height / 2) - textHeight - 5) :
-                (pointY - textHeight)) : (axis.labelPosition === 'Inside' ? (pointY - 5) : pointY + (elementSize.height / 4)));
+            textPadding = ((elementSize.height / 4) * 3) + 3;
+            pointY = (isAxisBreakLabel ? (axis.labelPosition === 'Inside' ? (pointY - (elementSize.height / 2) - textHeight + textPadding)
+                : (pointY - textHeight)) : (axis.labelPosition === 'Inside' ? (pointY + textPadding) : pointY + (elementSize.height / 4)));
             options = new sf.svgbase.TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, anchor, axis.visibleLabels[i].text);
             if (axis.edgeLabelPlacement) {
                 switch (axis.edgeLabelPlacement) {
@@ -10044,8 +10046,9 @@ var Chart = /** @class */ (function (_super) {
                                 series.marker || series.emptyPointSettings || series.type || series.boxPlotMode || series.showMean)) {
                                 blazorProp = true;
                             }
-                            if (series && (series.dataSource || series.query || series.xName || series.yName || series.size ||
-                                series.high || series.low || series.open || series.close || series.fill || series.name || blazorProp)) {
+                            if (series && (series.dataSource || series.query || series.errorBar || series.xName ||
+                                series.yName || series.size || series.high || series.low || series.open || series.close ||
+                                series.fill || series.name || blazorProp)) {
                                 sf.base.extend(this.getVisibleSeries(this.visibleSeries, i), series, null, true);
                                 seriesRefresh = true;
                             }
@@ -11090,7 +11093,7 @@ var Logarithmic = /** @class */ (function (_super) {
         this.min = this.min < 0 ? 0 : this.min;
         var logStart = logBase(this.min, axis.logBase);
         logStart = isFinite(logStart) ? logStart : this.min;
-        var logEnd = logBase(this.max, axis.logBase);
+        var logEnd = this.max === 1 ? 1 : logBase(this.max, axis.logBase);
         logEnd = isFinite(logStart) ? logEnd : this.max;
         this.min = Math.floor(logStart / 1);
         this.max = Math.ceil(logEnd / 1);
@@ -23722,7 +23725,7 @@ var Legend = /** @class */ (function (_super) {
         var legend = this.legendCollections[seriesIndex];
         var changeDetection = 'isProtectedOnChange';
         var legendClickArgs = { legendText: legend.text, legendShape: legend.shape,
-            chart: chart, series: series, name: legendClick, cancel: false
+            chart: chart.isBlazor ? {} : chart, series: series, name: legendClick, cancel: false
         };
         this.chart.trigger(legendClick, legendClickArgs);
         series.legendShape = legendClickArgs.legendShape;
@@ -26634,7 +26637,9 @@ var AccumulationSeries = /** @class */ (function (_super) {
         for (var _i = 0, _a = this.points; _i < _a.length; _i++) {
             var point = _a[_i];
             if (point.visible) {
-                accumulation.accumulationDataLabelModule.renderDataLabel(point, this.dataLabel, datalabelGroup, this.points, this.index, element, redraw);
+                if ((point.y !== 0) || (point.y === 0 && this.emptyPointSettings.mode === 'Zero')) {
+                    accumulation.accumulationDataLabelModule.renderDataLabel(point, this.dataLabel, datalabelGroup, this.points, this.index, element, redraw);
+                }
             }
         }
         if (this.dataLabel.template !== null && element.childElementCount) {
@@ -30046,6 +30051,16 @@ var AccumulationDataLabel = /** @class */ (function (_super) {
         childElement.style.top = (point.labelRegion.y) + 'px';
         childElement.style.color = labelColor ||
             this.getSaturatedColor(point, fill);
+        if (this.accumulation.isBlazor) {
+            var position = this.isCircular() ? (point.labelRegion.x >= this.center.x) ? 'InsideRight' : 'InsideLeft' :
+                (point.labelRegion.x >= point.region.x) ? 'InsideRight' : 'InsideLeft';
+            if (position === 'InsideRight') {
+                childElement.style.transform = 'translate(0%, -50%)';
+            }
+            else {
+                childElement.style.transform = 'translate(-100%, -50%)';
+            }
+        }
         if (childElement.childElementCount) {
             appendChildElement(false, parent, childElement, redraw, true, 'left', 'top');
             this.doTemplateAnimation(this.accumulation, childElement);
@@ -39882,6 +39897,9 @@ var SmithchartSeries = /** @class */ (function (_super) {
         sf.base.Property('')
     ], SmithchartSeries.prototype, "reactance", void 0);
     __decorate$20([
+        sf.base.Property('')
+    ], SmithchartSeries.prototype, "tooltipMappingName", void 0);
+    __decorate$20([
         sf.base.Property(null)
     ], SmithchartSeries.prototype, "dataSource", void 0);
     __decorate$20([
@@ -41466,11 +41484,13 @@ var SeriesRender = /** @class */ (function () {
         var dataArray = series.dataSource;
         var resistance = series.resistance;
         var reactance = series.reactance;
+        var tooltip = series.tooltipMappingName;
         series.points = [];
         for (var i = 0; i < dataArray.length; i++) {
             series.points.push({
                 resistance: dataArray[i][resistance],
-                reactance: dataArray[i][reactance]
+                reactance: dataArray[i][reactance],
+                tooltip: dataArray[i][tooltip]
             });
         }
     };
@@ -42373,6 +42393,9 @@ var Smithchart = /** @class */ (function (_super) {
     __decorate$15([
         sf.base.Event()
     ], Smithchart.prototype, "seriesRender", void 0);
+    __decorate$15([
+        sf.base.Event()
+    ], Smithchart.prototype, "tooltipRender", void 0);
     Smithchart = __decorate$15([
         sf.base.NotifyPropertyChanges
     ], Smithchart);
@@ -42409,11 +42432,10 @@ var TooltipRender = /** @class */ (function () {
                 this.createTooltip(smithchart, e, closestPoint.index, seriesIndex, series);
                 break;
             }
-            else if (this.tooltipElement && this.tooltipElement.enable && !series.tooltip.template) {
-                this.tooltipElement.fadeOut();
-                this.tooltipElement.enable = false;
-            }
-            else if (series.tooltip.template) {
+            else if (this.tooltipElement) {
+                if (this.tooltipElement.enable && !series.tooltip.template) {
+                    this.tooltipElement.enable = false;
+                }
                 this.tooltipElement.fadeOut();
             }
         }
@@ -42426,42 +42448,56 @@ var TooltipRender = /** @class */ (function () {
         this.mouseY = (pageY - rect.top) - Math.max(svgRect.top - rect.top, 0);
     };
     TooltipRender.prototype.createTooltip = function (smithchart, e, pointindex, seriesindex, series) {
-        var pointX = series.points[pointindex].resistance;
-        var pointY = series.points[pointindex].reactance;
+        var _this = this;
+        var currentPoint = series.points[pointindex];
+        var pointX = currentPoint.resistance;
+        var pointY = currentPoint.reactance;
+        var tooltip = currentPoint.tooltip ? [currentPoint.tooltip] : null;
         var tooltipText = [pointX + ' ' + ':' + ' ' + '<b>' + pointY + '</b>'];
-        var markerHeight = smithchart.series[seriesindex].marker.height / 2;
-        var div = document.getElementById(smithchart.element.id + '_smithchart_tooltip_div');
-        if (sf.base.isNullOrUndefined(div)) {
-            div = sf.base.createElement('div', {
-                id: smithchart.element.id + '_smithchart_tooltip_div',
-                styles: 'pointer-events: none; position: absolute;z-index:1;'
-            });
-            document.getElementById(smithchart.element.id + '_Secondary_Element').appendChild(div);
-        }
-        this.tooltipElement = new sf.svgbase.Tooltip({
-            enable: true,
-            header: '<b>' + series.name + '</b>',
-            content: tooltipText,
-            border: series.tooltip.border,
-            fill: smithchart.themeStyle.tooltipFill,
-            data: { reactance: pointY },
+        var argsData = {
+            cancel: false, name: 'tooltipRender',
+            text: tooltip || tooltipText,
+            headerText: '<b>' + series.name + '</b>',
             template: series.tooltip.template,
-            location: {
-                x: this.locationX + smithchart.element.offsetLeft,
-                y: this.locationY - markerHeight + smithchart.element.offsetTop
-            },
-            shared: false,
-            areaBounds: new SmithchartRect(smithchart.bounds.x, smithchart.bounds.y, smithchart.bounds.width, smithchart.bounds.height),
-            palette: [series.fill || smithchart.seriesColors[seriesindex % smithchart.seriesColors.length]],
-            shapes: ['Circle'],
-            availableSize: smithchart.availableSize,
-            theme: smithchart.theme,
-            blazorTemplate: { name: 'TooltipTemplate', parent: smithchart.series[seriesindex].tooltip }
-        });
-        this.tooltipElement.opacity = smithchart.themeStyle.tooltipFillOpacity || this.tooltipElement.opacity;
-        this.tooltipElement.textStyle.fontFamily = smithchart.themeStyle.fontFamily || 'Roboto, Segoe UI, Noto, Sans-serif';
-        this.tooltipElement.textStyle.opacity = smithchart.themeStyle.tooltipTextOpacity || this.tooltipElement.textStyle.opacity;
-        this.tooltipElement.appendTo(div);
+            point: currentPoint
+        };
+        var smithChartTooltipSuccess = function (argsData) {
+            var markerHeight = smithchart.series[seriesindex].marker.height / 2;
+            var div = document.getElementById(smithchart.element.id + '_smithchart_tooltip_div');
+            if (sf.base.isNullOrUndefined(div)) {
+                div = sf.base.createElement('div', {
+                    id: smithchart.element.id + '_smithchart_tooltip_div',
+                    styles: 'pointer-events: none; position: absolute;z-index:1;'
+                });
+                document.getElementById(smithchart.element.id + '_Secondary_Element').appendChild(div);
+            }
+            _this.tooltipElement = new sf.svgbase.Tooltip({
+                enable: true,
+                header: argsData.headerText,
+                content: argsData.text,
+                border: series.tooltip.border,
+                fill: smithchart.themeStyle.tooltipFill,
+                data: currentPoint,
+                template: argsData.template,
+                location: {
+                    x: _this.locationX + smithchart.element.offsetLeft,
+                    y: _this.locationY - markerHeight + smithchart.element.offsetTop
+                },
+                shared: false,
+                areaBounds: new SmithchartRect(smithchart.bounds.x, smithchart.bounds.y, smithchart.bounds.width, smithchart.bounds.height),
+                palette: [series.fill || smithchart.seriesColors[seriesindex % smithchart.seriesColors.length]],
+                shapes: ['Circle'],
+                availableSize: smithchart.availableSize,
+                theme: smithchart.theme,
+                blazorTemplate: { name: 'TooltipTemplate', parent: smithchart.series[seriesindex].tooltip }
+            });
+            _this.tooltipElement.opacity = smithchart.themeStyle.tooltipFillOpacity || _this.tooltipElement.opacity;
+            _this.tooltipElement.textStyle.fontFamily = smithchart.themeStyle.fontFamily || 'Roboto, Segoe UI, Noto, Sans-serif';
+            _this.tooltipElement.textStyle.opacity = smithchart.themeStyle.tooltipTextOpacity || _this.tooltipElement.textStyle.opacity;
+            _this.tooltipElement.appendTo(div);
+        };
+        smithChartTooltipSuccess.bind(this, smithchart);
+        smithchart.trigger('tooltipRender', argsData, smithChartTooltipSuccess);
     };
     TooltipRender.prototype.closestPointXY = function (smithchart, x, y, series, seriesindex) {
         var pointIndex;

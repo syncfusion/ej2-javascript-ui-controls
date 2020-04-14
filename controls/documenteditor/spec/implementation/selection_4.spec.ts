@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
-import { LayoutViewer, PageLayoutViewer, TablePropertiesDialog, DocumentHelper } from '../../src/index';
-
+import { LayoutViewer, PageLayoutViewer, TablePropertiesDialog, DocumentHelper, 
+FieldElementBox, TextElementBox, SfdtExport, BookmarkElementBox } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
 import { createElement } from '@syncfusion/ej2-base';
 import { Editor } from '../../src/index';
@@ -349,8 +349,6 @@ describe('Selection public API validation', () => {
         expect(editor.selection.text).toBe('Hello world');
     });
 });
-
-
 describe('Selection extension in backward selection', () => {
     let editor: DocumentEditor = undefined;
     let documentHelper: DocumentHelper;
@@ -403,4 +401,62 @@ describe('Selection extension in backward selection', () => {
         editor.selection.handleDownKey();
         expect(editor.selection.characterFormat.highlightColor).toBe('Yellow');
     })
+});
+let refField: any = { "sections": [{ "sectionFormat": { "pageWidth": 612, "pageHeight": 792, "leftMargin": 72, "rightMargin": 72, "topMargin": 72, "bottomMargin": 72, "differentFirstPage": false, "differentOddAndEvenPages": false, "headerDistance": 36, "footerDistance": 36, "bidi": false }, "blocks": [{ "paragraphFormat": { "styleName": "Normal", "listFormat": {} }, "characterFormat": {}, "inlines": [{ "characterFormat": {}, "bookmarkType": 0, "name": "Table" }, { "characterFormat": {}, "fieldType": 0, "hasFieldEnd": true }, { "characterFormat": {}, "text": " REF check \\h " }, { "characterFormat": {}, "fieldType": 2 }, { "characterFormat": {}, "text": "evidence" }, { "characterFormat": {}, "fieldType": 1 }, { "characterFormat": {}, "bookmarkType": 0, "name": "_GoBack" }, { "characterFormat": {}, "bookmarkType": 1, "name": "_GoBack" }, { "characterFormat": {}, "text": " is a written, drawn, presented, or memorialized representation of thought. The word originates " }, { "characterFormat": {}, "text": "from the Latin documen" }, { "characterFormat": {}, "text": "t" }, { "characterFormat": {}, "text": ", which denotes a \"teaching\" or \"lesson\": the verb " }, { "characterFormat": {}, "text": "doceō" }, { "characterFormat": {}, "text": " denotes \"to teach\". In " }, { "characterFormat": {}, "text": "the past, the word was usually used to denote a written proof useful as " }, { "characterFormat": {}, "bookmarkType": 0, "name": "check" }, { "characterFormat": {}, "text": "evidence" }, { "characterFormat": {}, "bookmarkType": 1, "name": "check" }, { "characterFormat": {}, "text": " of a truth or fact." }, { "characterFormat": {}, "bookmarkType": 1, "name": "Table" }] }], "headersFooters": {} }], "characterFormat": { "bold": false, "italic": false, "fontSize": 11, "fontFamily": "Calibri", "underline": "None", "strikethrough": "None", "baselineAlignment": "Normal", "highlightColor": "NoColor", "fontColor": "#000000", "fontSizeBidi": 11, "fontFamilyBidi": "Arial" }, "paragraphFormat": { "leftIndent": 0, "rightIndent": 0, "firstLineIndent": 0, "textAlignment": "Left", "beforeSpacing": 0, "afterSpacing": 8, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple", "listFormat": {}, "bidi": false }, "defaultTabWidth": 36, "enforcement": false, "hashValue": "", "saltValue": "", "formatting": false, "protectionType": "NoProtection", "dontUseHTMLParagraphAutoSpacing": false, "styles": [{ "name": "Normal", "type": "Paragraph", "paragraphFormat": { "listFormat": {} }, "characterFormat": {}, "next": "Normal" }, { "name": "Heading 1", "type": "Paragraph", "paragraphFormat": { "beforeSpacing": 5, "afterSpacing": 5, "lineSpacing": 1, "lineSpacingType": "Multiple", "outlineLevel": "Level1", "listFormat": {} }, "characterFormat": { "bold": true, "fontSize": 24, "fontFamily": "Times New Roman", "boldBidi": true, "fontSizeBidi": 24, "fontFamilyBidi": "Times New Roman" }, "basedOn": "Normal", "link": "Heading 1 Char", "next": "Heading 1" }, { "name": "Heading 1 Char", "type": "Character", "characterFormat": { "bold": true, "fontSize": 24, "fontFamily": "Times New Roman", "boldBidi": true, "fontSizeBidi": 24, "fontFamilyBidi": "Times New Roman" }, "basedOn": "Default Paragraph Font" }, { "name": "Default Paragraph Font", "type": "Character", "characterFormat": {} }, { "name": "Heading 2", "type": "Paragraph", "paragraphFormat": { "beforeSpacing": 5, "afterSpacing": 5, "lineSpacing": 1, "lineSpacingType": "Multiple", "outlineLevel": "Level2", "listFormat": {} }, "characterFormat": { "bold": true, "fontSize": 18, "fontFamily": "Times New Roman", "boldBidi": true, "fontSizeBidi": 18, "fontFamilyBidi": "Times New Roman" }, "basedOn": "Normal", "link": "Heading 2 Char", "next": "Heading 2" }, { "name": "Heading 2 Char", "type": "Character", "characterFormat": { "bold": true, "fontSize": 18, "fontFamily": "Times New Roman", "boldBidi": true, "fontSizeBidi": 18, "fontFamilyBidi": "Times New Roman" }, "basedOn": "Default Paragraph Font" }, { "name": "Normal (Web)", "type": "Paragraph", "paragraphFormat": { "beforeSpacing": 5, "afterSpacing": 5, "lineSpacing": 1, "lineSpacingType": "Multiple", "listFormat": {} }, "characterFormat": { "fontSize": 12, "fontFamily": "Times New Roman", "fontSizeBidi": 12, "fontFamilyBidi": "Times New Roman" }, "basedOn": "Normal", "next": "Normal (Web)" }, { "name": "Caption", "type": "Paragraph", "paragraphFormat": { "afterSpacing": 10, "lineSpacing": 1, "lineSpacingType": "Multiple", "listFormat": {} }, "characterFormat": { "italic": true, "fontSize": 9, "fontColor": "#44546AFF", "italicBidi": true, "fontSizeBidi": 9 }, "basedOn": "Normal", "next": "Normal" }, { "name": "Heading 3", "type": "Paragraph", "paragraphFormat": { "leftIndent": 0, "rightIndent": 0, "firstLineIndent": 0, "textAlignment": "Left", "beforeSpacing": 2, "afterSpacing": 0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple", "outlineLevel": "Level3", "listFormat": {} }, "characterFormat": { "fontSize": 12, "fontFamily": "Calibri Light", "fontColor": "#1F3763" }, "basedOn": "Normal", "link": "Heading 3 Char", "next": "Normal" }, { "name": "Heading 3 Char", "type": "Character", "characterFormat": { "fontSize": 12, "fontFamily": "Calibri Light", "fontColor": "#1F3763" }, "basedOn": "Default Paragraph Font" }, { "name": "Heading 4", "type": "Paragraph", "paragraphFormat": { "leftIndent": 0, "rightIndent": 0, "firstLineIndent": 0, "textAlignment": "Left", "beforeSpacing": 2, "afterSpacing": 0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple", "outlineLevel": "Level4", "listFormat": {} }, "characterFormat": { "italic": true, "fontFamily": "Calibri Light", "fontColor": "#2F5496" }, "basedOn": "Normal", "link": "Heading 4 Char", "next": "Normal" }, { "name": "Heading 4 Char", "type": "Character", "characterFormat": { "italic": true, "fontFamily": "Calibri Light", "fontColor": "#2F5496" }, "basedOn": "Default Paragraph Font" }, { "name": "Heading 5", "type": "Paragraph", "paragraphFormat": { "leftIndent": 0, "rightIndent": 0, "firstLineIndent": 0, "textAlignment": "Left", "beforeSpacing": 2, "afterSpacing": 0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple", "outlineLevel": "Level5", "listFormat": {} }, "characterFormat": { "fontFamily": "Calibri Light", "fontColor": "#2F5496" }, "basedOn": "Normal", "link": "Heading 5 Char", "next": "Normal" }, { "name": "Heading 5 Char", "type": "Character", "characterFormat": { "fontFamily": "Calibri Light", "fontColor": "#2F5496" }, "basedOn": "Default Paragraph Font" }, { "name": "Heading 6", "type": "Paragraph", "paragraphFormat": { "leftIndent": 0, "rightIndent": 0, "firstLineIndent": 0, "textAlignment": "Left", "beforeSpacing": 2, "afterSpacing": 0, "lineSpacing": 1.0791666507720947, "lineSpacingType": "Multiple", "outlineLevel": "Level6", "listFormat": {} }, "characterFormat": { "fontFamily": "Calibri Light", "fontColor": "#1F3763" }, "basedOn": "Normal", "link": "Heading 6 Char", "next": "Normal" }, { "name": "Heading 6 Char", "type": "Character", "characterFormat": { "fontFamily": "Calibri Light", "fontColor": "#1F3763" }, "basedOn": "Default Paragraph Font" }], "lists": [], "abstractLists": [], "comments": [] };
+describe('Update Reference field', () => {
+    let editor: DocumentEditor = undefined;
+    let documentHelper: DocumentHelper;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, SfdtExport);
+        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+        editor.open(JSON.stringify(refField));
+    });
+    afterAll((done) => {
+        document.body.removeChild(document.getElementById('container'));
+        editor.destroy();
+        editor = undefined;
+        documentHelper = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('update Reference field', () => {
+        let refText: string;
+        let text: string;
+        for (let i: number = 0; i < editor.documentHelper.fields.length; i++) {
+            let field: FieldElementBox = editor.documentHelper.fields[i];
+            let fieldCode: string = editor.documentHelper.selection.getFieldCode(field);
+            fieldCode = fieldCode.trim();
+            if (fieldCode.toLowerCase().indexOf('ref') === 0) {
+                editor.documentHelper.selection.updateRefField(field);
+                refText = (field.fieldSeparator.nextNode as TextElementBox).text;
+            }
+            let bookmark: BookmarkElementBox = editor.documentHelper.bookmarks.get('check');
+            text = (bookmark.nextNode as TextElementBox).text;
+        }
+        expect(refText).toBe(text);
+    });
+    it('update Reference field after updation', () => {
+        let referenceText: string;
+        for (let i: number = 0; i < editor.documentHelper.fields.length; i++) {
+            let field: FieldElementBox = editor.documentHelper.fields[i];
+            let fieldCode: string = editor.documentHelper.selection.getFieldCode(field);
+            fieldCode = fieldCode.trim();
+            if (fieldCode.toLowerCase().indexOf('ref') === 0) {
+                let bookmark: BookmarkElementBox = editor.documentHelper.bookmarks.get('check');
+                (bookmark.nextNode as TextElementBox).text = 'checked';
+                editor.documentHelper.selection.updateRefField(field);
+                referenceText = (field.fieldSeparator.nextNode as TextElementBox).text;
+            }
+        }
+        expect(referenceText).toBe('checked');
+    });
 });

@@ -1056,56 +1056,47 @@ var Data = /** @class */ (function () {
                 var col = _a[_i];
                 colType[col.field] = col.filter.type ? col.filter.type : gObj.filterSettings.type;
             }
-            var checkBoxCols = [];
+            var foreignCols = [];
             var defaultFltrCols = [];
             for (var _b = 0, columns_1 = columns; _b < columns_1.length; _b++) {
                 var col = columns_1[_b];
-                if (colType[col.field] === 'CheckBox' || colType[col.field] === 'Excel') {
-                    checkBoxCols.push(col);
+                if (col.isForeignKey) {
+                    foreignCols.push(col);
                 }
                 else {
                     defaultFltrCols.push(col);
                 }
             }
-            if (checkBoxCols.length) {
-                var excelPredicate = CheckBoxFilterBase.getPredicate(checkBoxCols);
-                for (var _c = 0, _d = Object.keys(excelPredicate); _c < _d.length; _c++) {
-                    var prop = _d[_c];
-                    var col = void 0;
-                    if (this.parent.getColumnByField(prop).isForeignColumn()) {
-                        col = getColumnByForeignKeyValue(prop, foreignColumn);
-                    }
-                    if (!col) {
-                        this.parent.log('initial_action', { moduleName: 'filter', columnName: prop });
-                    }
-                    if (col && !skipFoerign) {
-                        predicateList = this.fGeneratePredicate(col, predicateList);
-                        actualFilter.push(col);
-                    }
-                    else {
-                        predicateList.push(excelPredicate[prop]);
+            if (defaultFltrCols.length) {
+                if (gObj.filterSettings.type === 'FilterBar' || gObj.filterSettings.type === 'Menu') {
+                    for (var i = 0, len = defaultFltrCols.length; i < len; i++) {
+                        defaultFltrCols[i].uid = defaultFltrCols[i].uid ||
+                            this.parent.grabColumnByFieldFromAllCols(defaultFltrCols[i].field).uid;
                     }
                 }
+                var excelPredicate = CheckBoxFilterBase.getPredicate(defaultFltrCols);
+                for (var _c = 0, _d = Object.keys(excelPredicate); _c < _d.length; _c++) {
+                    var prop = _d[_c];
+                    predicateList.push(excelPredicate[prop]);
+                }
             }
-            if (defaultFltrCols.length) {
-                for (var _e = 0, defaultFltrCols_1 = defaultFltrCols; _e < defaultFltrCols_1.length; _e++) {
-                    var col = defaultFltrCols_1[_e];
+            if (foreignCols.length) {
+                for (var _e = 0, foreignCols_1 = foreignCols; _e < foreignCols_1.length; _e++) {
+                    var col = foreignCols_1[_e];
                     col.uid = col.uid || this.parent.grabColumnByFieldFromAllCols(col.field).uid;
                     var column_1 = this.parent.grabColumnByUidFromAllCols(col.uid);
                     if (!column_1) {
                         this.parent.log('initial_action', { moduleName: 'filter', columnName: col.field });
                     }
-                    var sType = column_1.type;
                     if (column_1.isForeignColumn() && getColumnByForeignKeyValue(col.field, foreignColumn) && !skipFoerign) {
                         actualFilter.push(col);
                         predicateList = this.fGeneratePredicate(column_1, predicateList);
                     }
                     else {
-                        if (sType !== 'date' && sType !== 'datetime') {
-                            predicateList.push(new sf.data.Predicate(col.field, col.operator, col.value, !col.matchCase, this.parent.filterSettings.ignoreAccent));
-                        }
-                        else {
-                            predicateList.push(getDatePredicate(col, sType));
+                        var excelPredicate = CheckBoxFilterBase.getPredicate(columns);
+                        for (var _f = 0, _g = Object.keys(excelPredicate); _f < _g.length; _f++) {
+                            var prop = _g[_f];
+                            predicateList.push(excelPredicate[prop]);
                         }
                     }
                 }
@@ -1948,7 +1939,12 @@ var SummaryModelGenerator = /** @class */ (function () {
         }
         var row = new Row({ data: data, attributes: { class: 'e-summaryrow' } });
         row.cells = tmp;
-        row.uid = getUid('grid-row');
+        if (sf.base.isBlazor() && this.parent.isServerRendered && !sf.base.isNullOrUndefined(parentUid)) {
+            row.uid = this.parent.getRowUid('grid-row');
+        }
+        else {
+            row.uid = getUid('grid-row');
+        }
         row.parentUid = parentUid;
         row.visible = tmp.some(function (cell) { return cell.isDataCell && cell.visible; });
         return row;
@@ -2332,10 +2328,11 @@ var ContentRender = /** @class */ (function () {
                 }
                 _this.parent.notify(contentReady, { rows: rows, args: arg });
                 if (_this.isLoaded) {
-                    _this.parent.trigger(dataBound, {});
-                    if (_this.parent.allowTextWrap) {
-                        _this.parent.notify(freezeRender, { case: 'textwrap' });
-                    }
+                    _this.parent.trigger(dataBound, {}, function () {
+                        if (_this.parent.allowTextWrap) {
+                            _this.parent.notify(freezeRender, { case: 'textwrap' });
+                        }
+                    });
                 }
                 if (arg) {
                     var action = (arg.requestType || '').toLowerCase() + '-complete';
@@ -2514,7 +2511,9 @@ var ContentRender = /** @class */ (function () {
             var arg = sf.base.extend({ rows: this.rows }, args);
             if (this.getTable().querySelector('.e-emptyrow')) {
                 sf.base.remove(this.getTable().querySelector('.e-emptyrow'));
-                sf.base.remove(this.getTable().querySelectorAll('.e-table > tbody')[1]);
+                if (!sf.base.isNullOrUndefined(this.getTable().querySelectorAll('.e-table > tbody')[1])) {
+                    sf.base.remove(this.getTable().querySelectorAll('.e-table > tbody')[1]);
+                }
             }
             this.parent.notify('contentcolgroup', {});
             this.rafCallback(arg)();
@@ -2527,8 +2526,8 @@ var ContentRender = /** @class */ (function () {
             }
             if (!(this.parent.isCheckBoxSelection || this.parent.selectionSettings.type === 'Multiple')
                 || (!this.parent.isPersistSelection && !this.parent.enableVirtualization)) {
-                if (this.parent.editSettings.mode === 'Normal') {
-                    var rowIndex = 'editRowIndex';
+                var rowIndex = 'editRowIndex';
+                if (this.parent.editSettings.mode === 'Normal' && !sf.base.isNullOrUndefined(args[rowIndex])) {
                     this.parent.selectRow(args[rowIndex]);
                 }
             }
@@ -5030,13 +5029,13 @@ var Render = /** @class */ (function () {
             }
             if (!sf.base.isNullOrUndefined(value)) {
                 this.isColTypeDef = true;
-                if (!columns[i].type) {
+                if (!columns[i].type || (sf.base.isBlazor() && this.parent.isServerRendered && columns[i].type === 'none')) {
                     columns[i].type = value.getDay ? (value.getHours() > 0 || value.getMinutes() > 0 ||
                         value.getSeconds() > 0 || value.getMilliseconds() > 0 ? 'datetime' : 'date') : typeof (value);
                 }
             }
             else {
-                columns[i].type = columns[i].type || null;
+                columns[i].type = columns[i].type || (sf.base.isBlazor() && this.parent.isServerRendered ? 'none' : null);
             }
             var valueFormatter = new ValueFormatter();
             if (columns[i].format && (columns[i].format.skeleton || columns[i].format.format)) {
@@ -5699,7 +5698,7 @@ var FocusStrategy = /** @class */ (function () {
         this.currentInfo = {};
         this.oneTime = true;
         this.swap = {};
-        this.forget = true;
+        this.forget = false;
         this.skipFocus = true;
         this.focusByClick = false;
         this.prevIndexes = {};
@@ -6138,7 +6137,7 @@ var FocusStrategy = /** @class */ (function () {
     FocusStrategy.prototype.getPrevIndexes = function () {
         var forget = this.forget;
         this.forget = false;
-        return forget ? { rowIndex: null, cellIndex: null } : this.prevIndexes;
+        return forget || !Object.keys(this.prevIndexes).length ? { rowIndex: null, cellIndex: null } : this.prevIndexes;
     };
     FocusStrategy.prototype.forgetPrevious = function () {
         this.forget = true;
@@ -6495,7 +6494,8 @@ var ContentFocus = /** @class */ (function () {
         }
         return e.action === 'enter' || e.action === 'shiftEnter' ?
             cell.classList.contains('e-rowcell') && !cell.classList.contains('e-unboundcell')
-                && !cell.classList.contains('e-templatecell') && !cell.classList.contains('e-detailcell') : true;
+                && (!cell.classList.contains('e-templatecell') || cell.classList.contains('e-editedbatchcell'))
+                && !cell.classList.contains('e-detailcell') : true;
     };
     return ContentFocus;
 }());
@@ -7049,12 +7049,21 @@ var Selection = /** @class */ (function () {
             this.selectRowIndex(index);
         }
         if (!isToggle) {
-            args = {
-                data: selectData, rowIndex: index,
-                row: selectedRow, previousRow: gObj.getRowByIndex(this.prevRowIndex),
-                previousRowIndex: this.prevRowIndex, target: this.actualTarget, isInteracted: this.isInteracted
-            };
-            args = this.addMovableArgs(args, selectedMovableRow);
+            var isHybrid = 'isHybrid';
+            if (!sf.base.isBlazor() || this.parent.isJsComponent || this.parent[isHybrid]) {
+                args = {
+                    data: selectData, rowIndex: index,
+                    row: selectedRow, previousRow: gObj.getRowByIndex(this.prevRowIndex),
+                    previousRowIndex: this.prevRowIndex, target: this.actualTarget, isInteracted: this.isInteracted
+                };
+                args = this.addMovableArgs(args, selectedMovableRow);
+            }
+            else {
+                args = {
+                    data: selectData, rowIndex: index,
+                    previousRowIndex: this.prevRowIndex, isInteracted: this.isInteracted
+                };
+            }
             this.onActionComplete(args, rowSelected);
         }
         if (sf.base.isBlazor() && this.parent.isServerRendered && this.parent.enableVirtualization) {
@@ -7130,12 +7139,21 @@ var Selection = /** @class */ (function () {
                 }
                 _this.updateRowProps(rowIndex);
             }
-            args = {
-                rowIndexes: rowIndexes, row: selectedRow, rowIndex: rowIndex, target: _this.actualTarget,
-                prevRow: gObj.getRows()[_this.prevRowIndex], previousRowIndex: _this.prevRowIndex,
-                data: sf.base.isBlazor() ? selectedData : _this.getSelectedRecords(), isInteracted: _this.isInteracted
-            };
-            args = _this.addMovableArgs(args, selectedMovableRow);
+            var isHybrid = 'isHybrid';
+            if (!sf.base.isBlazor() || _this.parent.isJsComponent || _this.parent[isHybrid]) {
+                args = {
+                    rowIndexes: rowIndexes, row: selectedRow, rowIndex: rowIndex, target: _this.actualTarget,
+                    prevRow: gObj.getRows()[_this.prevRowIndex], previousRowIndex: _this.prevRowIndex,
+                    data: sf.base.isBlazor() ? selectedData : _this.getSelectedRecords(), isInteracted: _this.isInteracted
+                };
+                args = _this.addMovableArgs(args, selectedMovableRow);
+            }
+            else {
+                args = {
+                    rowIndexes: rowIndexes, rowIndex: rowIndex, previousRowIndex: _this.prevRowIndex,
+                    data: sf.base.isBlazor() ? selectedData : _this.getSelectedRecords(), isInteracted: _this.isInteracted
+                };
+            }
             if (_this.isRowSelected) {
                 _this.onActionComplete(args, rowSelected);
             }
@@ -7206,12 +7224,21 @@ var Selection = /** @class */ (function () {
                 });
             }
             if (!isUnSelected) {
-                args = {
-                    data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this_1.actualTarget,
-                    prevRow: gObj.getRows()[this_1.prevRowIndex], previousRowIndex: this_1.prevRowIndex,
-                    foreignKeyData: rowObj.foreignKeyData, isInteracted: this_1.isInteracted
-                };
-                args = this_1.addMovableArgs(args, selectedMovableRow);
+                var isHybrid = 'isHybrid';
+                if (!sf.base.isBlazor() || this_1.parent.isJsComponent || this_1.parent[isHybrid]) {
+                    args = {
+                        data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this_1.actualTarget,
+                        prevRow: gObj.getRows()[this_1.prevRowIndex], previousRowIndex: this_1.prevRowIndex,
+                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this_1.isInteracted
+                    };
+                    args = this_1.addMovableArgs(args, selectedMovableRow);
+                }
+                else {
+                    args = {
+                        data: rowObj.data, rowIndex: rowIndex, previousRowIndex: this_1.prevRowIndex,
+                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this_1.isInteracted
+                    };
+                }
                 this_1.onActionComplete(args, rowSelected);
             }
             this_1.isInteracted = false;
@@ -7480,11 +7507,14 @@ var Selection = /** @class */ (function () {
             var rowDeselectObj = {
                 rowIndex: rowIndex, data: this.selectionSettings.persistSelection && this.parent.checkAllRows === 'Uncheck' ?
                     this.persistSelectedData : data, foreignKeyData: foreignKeyData$$1,
-                cancel: false, target: this.actualTarget, isInteracted: this.isInteracted
+                cancel: false, isInteracted: this.isInteracted
             };
-            if (!sf.base.isBlazor() || this.parent.isJsComponent) {
+            var isHybrid = 'isHybrid';
+            if (!sf.base.isBlazor() || this.parent.isJsComponent || this.parent[isHybrid]) {
                 var rowInString = 'row';
+                var target_2 = 'target';
                 rowDeselectObj[rowInString] = row;
+                rowDeselectObj[target_2] = this.actualTarget;
             }
             else {
                 var rowIndex_2 = 'rowIndex';
@@ -7492,7 +7522,7 @@ var Selection = /** @class */ (function () {
                 rowDeselectObj[rowIndex_2] = rowDeselectObj[rowIndex_2][rowDeselectObj[rowIndex_2].length - 1];
                 rowDeselectObj[data_2] = rowDeselectObj[data_2][rowDeselectObj[data_2].length - 1];
             }
-            this.parent.trigger(type, this.parent.getFrozenColumns() ? __assign({}, rowDeselectObj, { mRow: mRow }) : rowDeselectObj, function (args) {
+            this.parent.trigger(type, (!sf.base.isBlazor() || this.parent.isJsComponent) && this.parent.getFrozenColumns() !== 0 ? __assign({}, rowDeselectObj, { mRow: mRow }) : rowDeselectObj, function (args) {
                 _this.isCancelDeSelect = args[cancl_1];
                 if (!_this.isCancelDeSelect || (!_this.isInteracted && !_this.checkSelectAllClicked)) {
                     _this.updatePersistCollection(row[0], false);
@@ -7594,15 +7624,20 @@ var Selection = /** @class */ (function () {
                 _this.updateCellSelection(selectedCell, cellIndex.rowIndex, cellIndex.cellIndex);
             }
             if (!isToggle) {
-                var args = {
-                    data: selectedData, cellIndex: cellIndex, currentCell: selectedCell,
-                    selectedRowCellIndex: _this.selectedRowCellIndexes,
-                    previousRowCell: _this.prevECIdxs ?
-                        _this.getCellIndex(_this.prevECIdxs.rowIndex, _this.prevECIdxs.cellIndex) : undefined
-                };
-                if (!sf.base.isBlazor()) {
+                var args = void 0;
+                var isHybrid = 'isHybrid';
+                if (!sf.base.isBlazor() || _this.parent.isJsComponent || _this.parent[isHybrid]) {
+                    args = {
+                        data: selectedData, cellIndex: cellIndex, currentCell: selectedCell,
+                        selectedRowCellIndex: _this.selectedRowCellIndexes,
+                        previousRowCell: _this.prevECIdxs ?
+                            _this.getCellIndex(_this.prevECIdxs.rowIndex, _this.prevECIdxs.cellIndex) : undefined
+                    };
                     var previousRowCellIndex = 'previousRowCellIndex';
                     args[previousRowCellIndex] = _this.prevECIdxs;
+                }
+                else {
+                    args = { data: selectedData, cellIndex: cellIndex, selectedRowCellIndex: _this.selectedRowCellIndexes };
                 }
                 _this.updateCellProps(cellIndex, cellIndex);
                 _this.onActionComplete(args, cellSelected);
@@ -7691,14 +7726,19 @@ var Selection = /** @class */ (function () {
                 }
                 _this.selectedRowCellIndexes.push({ rowIndex: i, cellIndexes: cellIndexes });
             }
-            var cellSelectedArgs = {
-                data: selectedData, cellIndex: edIndex, currentCell: gObj.getCellFromIndex(edIndex.rowIndex, edIndex.cellIndex),
-                selectedRowCellIndex: _this.selectedRowCellIndexes,
-                previousRowCell: _this.prevECIdxs ? _this.getCellIndex(_this.prevECIdxs.rowIndex, _this.prevECIdxs.cellIndex) : undefined
-            };
-            if (!sf.base.isBlazor()) {
+            var cellSelectedArgs;
+            var isHybrid = 'isHybrid';
+            if (!sf.base.isBlazor() || _this.parent.isJsComponent || _this.parent[isHybrid]) {
+                cellSelectedArgs = {
+                    data: selectedData, cellIndex: edIndex, currentCell: gObj.getCellFromIndex(edIndex.rowIndex, edIndex.cellIndex),
+                    selectedRowCellIndex: _this.selectedRowCellIndexes,
+                    previousRowCell: _this.prevECIdxs ? _this.getCellIndex(_this.prevECIdxs.rowIndex, _this.prevECIdxs.cellIndex) : undefined
+                };
                 var previousRowCellIndex = 'previousRowCellIndex';
                 cellSelectedArgs[previousRowCellIndex] = _this.prevECIdxs;
+            }
+            else {
+                cellSelectedArgs = { data: selectedData, cellIndex: edIndex, selectedRowCellIndex: _this.selectedRowCellIndexes };
             }
             _this.onActionComplete(cellSelectedArgs, cellSelected);
             _this.updateCellProps(stIndex, edIndex);
@@ -7724,15 +7764,23 @@ var Selection = /** @class */ (function () {
         if (this.isSingleSel() || !this.isCellType() || this.isEditing()) {
             return;
         }
-        var cellSelectArgs = {
-            data: selectedData, cellIndex: rowCellIndexes[0].cellIndexes[0],
-            currentCell: selectedCell, isCtrlPressed: this.isMultiCtrlRequest,
-            isShiftPressed: this.isMultiShiftRequest,
-            previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
-        };
-        if (!sf.base.isBlazor()) {
+        var cellSelectArgs;
+        var isHybrid = 'isHybrid';
+        if (!sf.base.isBlazor() || this.parent.isJsComponent || this.parent[isHybrid]) {
+            cellSelectArgs = {
+                data: selectedData, cellIndex: rowCellIndexes[0].cellIndexes[0],
+                currentCell: selectedCell, isCtrlPressed: this.isMultiCtrlRequest,
+                isShiftPressed: this.isMultiShiftRequest,
+                previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
+            };
             var previousRowCellIndex = 'previousRowCellIndex';
             cellSelectArgs[previousRowCellIndex] = this.prevECIdxs;
+        }
+        else {
+            cellSelectArgs = {
+                data: selectedData, cellIndex: rowCellIndexes[0].cellIndexes[0],
+                isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest
+            };
         }
         this.onActionBegin(cellSelectArgs, cellSelecting);
         for (var i = 0, len = rowCellIndexes.length; i < len; i++) {
@@ -7757,14 +7805,19 @@ var Selection = /** @class */ (function () {
             }
         }
         this.updateCellProps({ rowIndex: rowCellIndexes[0].rowIndex, cellIndex: rowCellIndexes[0].cellIndexes[0] }, { rowIndex: rowCellIndexes[0].rowIndex, cellIndex: rowCellIndexes[0].cellIndexes[0] });
-        var cellSelectedArgs = {
-            data: selectedData, cellIndex: rowCellIndexes[0].cellIndexes[0],
-            currentCell: selectedCell, selectedRowCellIndex: this.selectedRowCellIndexes,
-            previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
-        };
-        if (!sf.base.isBlazor()) {
+        var cellSelectedArgs;
+        if (!sf.base.isBlazor() || this.parent.isJsComponent || this.parent[isHybrid]) {
+            cellSelectedArgs = {
+                data: selectedData, cellIndex: rowCellIndexes[0].cellIndexes[0],
+                currentCell: selectedCell, selectedRowCellIndex: this.selectedRowCellIndexes,
+                previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined
+            };
             var previousRowCellIndex = 'previousRowCellIndex';
             cellSelectedArgs[previousRowCellIndex] = this.prevECIdxs;
+        }
+        else {
+            cellSelectedArgs = { data: selectedData, cellIndex: rowCellIndexes[0].cellIndexes[0],
+                selectedRowCellIndex: this.selectedRowCellIndexes };
         }
         this.onActionComplete(cellSelectedArgs, cellSelected);
     };
@@ -7785,6 +7838,7 @@ var Selection = /** @class */ (function () {
         this.currentIndex = cellIndexes[0].rowIndex;
         var cncl = 'cancel';
         var selectedData = this.getCurrentBatchRecordChanges()[this.currentIndex];
+        var isHybrid = 'isHybrid';
         if (this.isSingleSel() || !this.isCellType() || this.isEditing()) {
             return;
         }
@@ -7811,16 +7865,23 @@ var Selection = /** @class */ (function () {
             }
             foreignKeyData$$1.push(rowObj.cells[frzCols && cellIndexes[0].cellIndex >= frzCols
                 ? cellIndex.cellIndex - frzCols : cellIndex.cellIndex].foreignKeyData);
-            var args = {
-                cancel: false, data: selectedData, cellIndex: cellIndexes[0],
-                isShiftPressed: this.isMultiShiftRequest,
-                currentCell: selectedCell, isCtrlPressed: this.isMultiCtrlRequest,
-                previousRowCell: this.prevECIdxs ?
-                    gObj.getCellFromIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined,
-            };
-            if (!sf.base.isBlazor()) {
+            var args = void 0;
+            if (!sf.base.isBlazor() || this.parent.isJsComponent || this.parent[isHybrid]) {
+                args = {
+                    cancel: false, data: selectedData, cellIndex: cellIndexes[0],
+                    isShiftPressed: this.isMultiShiftRequest,
+                    currentCell: selectedCell, isCtrlPressed: this.isMultiCtrlRequest,
+                    previousRowCell: this.prevECIdxs ?
+                        gObj.getCellFromIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) : undefined,
+                };
                 var previousRowCellIndex = 'previousRowCellIndex';
                 args[previousRowCellIndex] = this.prevECIdxs;
+            }
+            else {
+                args = {
+                    cancel: false, data: selectedData, cellIndex: cellIndexes[0],
+                    isShiftPressed: this.isMultiShiftRequest, isCtrlPressed: this.isMultiCtrlRequest
+                };
             }
             var isUnSelected = index > -1;
             if (isUnSelected) {
@@ -7851,14 +7912,18 @@ var Selection = /** @class */ (function () {
                 this.updateCellSelection(selectedCell, cellIndex.rowIndex, cellIndex.cellIndex);
             }
             if (!isUnSelected) {
-                var cellSelectedArgs = {
-                    data: selectedData, cellIndex: cellIndexes[0], currentCell: selectedCell,
-                    previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) :
-                        undefined, selectedRowCellIndex: this.selectedRowCellIndexes
-                };
-                if (!sf.base.isBlazor()) {
+                var cellSelectedArgs = void 0;
+                if (!sf.base.isBlazor() || this.parent.isJsComponent || this.parent[isHybrid]) {
+                    cellSelectedArgs = {
+                        data: selectedData, cellIndex: cellIndexes[0], currentCell: selectedCell,
+                        previousRowCell: this.prevECIdxs ? this.getCellIndex(this.prevECIdxs.rowIndex, this.prevECIdxs.cellIndex) :
+                            undefined, selectedRowCellIndex: this.selectedRowCellIndexes
+                    };
                     var previousRowCellIndex = 'previousRowCellIndex';
                     cellSelectedArgs[previousRowCellIndex] = this.prevECIdxs;
+                }
+                else {
+                    cellSelectedArgs = { data: selectedData, cellIndex: cellIndexes[0], selectedRowCellIndex: this.selectedRowCellIndexes };
                 }
                 this.onActionComplete(cellSelectedArgs, cellSelected);
             }
@@ -9180,7 +9245,7 @@ var Selection = /** @class */ (function () {
             if (e.container.isHeader && (e.element.tagName === 'TD' || sf.base.closest(e.element, '.e-rowcell'))) {
                 var thLen = this.parent.getHeaderTable().querySelector('thead').childElementCount;
                 rowIndex -= thLen;
-                prev.rowIndex = prev.rowIndex ? prev.rowIndex - thLen : null;
+                prev.rowIndex = !sf.base.isNullOrUndefined(prev.rowIndex) ? prev.rowIndex - thLen : null;
             }
             else {
                 rowIndex += this.parent.frozenRows;
@@ -9189,7 +9254,11 @@ var Selection = /** @class */ (function () {
         }
         if (this.parent.getFrozenColumns()) {
             var cIdx = Number(e.element.getAttribute('aria-colindex'));
-            prev.cellIndex = prev.cellIndex ? (prev.cellIndex === cellIndex ? cIdx : cIdx - 1) : null;
+            var selectedIndexes = this.parent.getSelectedRowCellIndexes();
+            if (selectedIndexes.length && prev.cellIndex === 0) {
+                prev.cellIndex = selectedIndexes[selectedIndexes.length - 1].cellIndexes[0];
+            }
+            prev.cellIndex = !sf.base.isNullOrUndefined(prev.cellIndex) ? (prev.cellIndex === cellIndex ? cIdx : cIdx - 1) : null;
             cellIndex = cIdx;
         }
         if (headerAction || (['ctrlPlusA', 'escape'].indexOf(e.keyArgs.action) === -1 && e.keyArgs.action !== 'space' &&
@@ -10836,14 +10905,17 @@ var BlazorAction = /** @class */ (function () {
         var gObj = this.parent;
         var bulkChanges = 'bulkChanges';
         var parseArgs = JSON.parse(args);
-        var persistArgs = { filterSettings: parseArgs.filterSettings, groupSettings: parseArgs.groupSettings,
-            pageSettings: parseArgs.pageSettings, sortSettings: parseArgs.sortSettings,
+        var persistArgs = { filterSettings: parseArgs.filterSettings,
+            groupSettings: parseArgs.groupSettings, pageSettings: parseArgs.pageSettings, sortSettings: parseArgs.sortSettings,
             searchSettings: parseArgs.searchSettings, columns: parseArgs.columns };
         if (!persistArgs.sortSettings.columns) {
             persistArgs.sortSettings.columns = [];
         }
         if (!persistArgs.groupSettings.columns) {
             persistArgs.groupSettings.columns = [];
+        }
+        if (!persistArgs.pageSettings.currentPage) {
+            gObj.pageSettings.currentPage = 1;
         }
         for (var i = 0; i < gObj.columns.length; i++) {
             if (gObj.groupSettings.columns.indexOf(gObj.columns[i].field) > -1) {
@@ -12421,6 +12493,9 @@ var Grid = /** @class */ (function (_super) {
      * @return {Element[]}
      */
     Grid.prototype.getDataRows = function () {
+        if (sf.base.isNullOrUndefined(this.getContentTable().querySelector('tbody'))) {
+            return [];
+        }
         var rows = [].slice.call(this.getContentTable().querySelector('tbody').children);
         if (this.frozenRows) {
             var freezeRows = [].slice.call(this.getHeaderTable().querySelector('tbody').children);
@@ -12521,8 +12596,8 @@ var Grid = /** @class */ (function (_super) {
         mTr = !sf.base.isNullOrUndefined(movableSelectedRow) ? this.element.querySelector('[data-uid=' + movableSelectedRow[rowuID] + ']') : null;
         if (!sf.base.isNullOrUndefined(tr)) {
             sf.base.setValue(field, value, selectedRow[rowData]);
-            var td = !sf.base.isNullOrUndefined(tr.childNodes[fieldIdx]) ?
-                tr.childNodes[fieldIdx] : mTr.childNodes[fieldIdx - this.frozenColumns];
+            var td = !sf.base.isNullOrUndefined(tr[cells][fieldIdx]) ?
+                tr[cells][fieldIdx] : mTr[cells][fieldIdx - this.frozenColumns];
             if (!sf.base.isNullOrUndefined(td)) {
                 var sRow = selectedRow[cells][fieldIdx];
                 var mRow = void 0;
@@ -26813,18 +26888,28 @@ var VirtualContentRenderer = /** @class */ (function (_super) {
                 }
                 if (width > gObj.width) {
                     this.setDisplayNone(tr, idx, displayVal, rows);
-                    this.virtualEle.setWrapperWidth(width + '');
-                    this.vgenerator.refreshColOffsets();
+                    if (this.parent.enableColumnVirtualization) {
+                        this.virtualEle.setWrapperWidth(width + '');
+                    }
                     this.refreshVirtualElement();
                 }
                 else {
-                    this.refreshContentRows({ requestType: 'refresh' });
+                    needFullRefresh = true;
                 }
             }
             if (!this.parent.invokedFromMedia && column.hideAtMedia) {
                 this.parent.updateMediaColumns(column);
             }
             this.parent.invokedFromMedia = false;
+        }
+        if (sf.base.isBlazor() && this.parent.isServerRendered && needFullRefresh) {
+            var inViewIdx = this.parent.inViewIndexes;
+            var translateX = this.getColumnOffset(inViewIdx[0] - 1);
+            var width = this.getColumnOffset(inViewIdx[inViewIdx.length - 1]) - translateX + '';
+            this.parent.notify('refresh-virtual-indices', { requestType: 'virtualScrollRefresh',
+                startColumnIndex: inViewIdx[0], endColumnIndex: inViewIdx[inViewIdx.length - 1], axis: 'X',
+                VTablewidth: width, translateX: translateX });
+            this.parent.notify('setcolumnstyles', {});
         }
         if (needFullRefresh) {
             this.refreshContentRows({ requestType: 'refresh' });
@@ -26901,6 +26986,7 @@ var VirtualHeaderRenderer = /** @class */ (function (_super) {
         var gObj = this.parent;
         var displayVal;
         var idx;
+        var needFullRefresh;
         for (var c = 0, clen = columns.length; c < clen; c++) {
             var column = columns[c];
             idx = gObj.getNormalizedColumnIndex(column.uid);
@@ -26920,10 +27006,13 @@ var VirtualHeaderRenderer = /** @class */ (function (_super) {
                     this.gen.refreshColOffsets();
                 }
                 else {
-                    this.refreshUI();
+                    needFullRefresh = true;
                 }
             }
             else {
+                needFullRefresh = true;
+            }
+            if (needFullRefresh) {
                 this.refreshUI();
             }
         }
@@ -26934,6 +27023,9 @@ var VirtualHeaderRenderer = /** @class */ (function (_super) {
             if (ele.querySelector('[e-mappinguid]') &&
                 ele.querySelector('[e-mappinguid]').getAttribute('e-mappinguid') === col.uid) {
                 sf.base.setStyleAttribute(ele, { 'display': displayVal });
+                if (displayVal === '') {
+                    sf.base.removeClass([ele], 'e-hide');
+                }
                 break;
             }
         }
@@ -29518,7 +29610,9 @@ var BatchEdit = /** @class */ (function () {
             if (!currentRowObj.changes) {
                 currentRowObj.changes = sf.base.extend({}, {}, rowObj.data, true);
             }
-            sf.base.setValue(field, value, currentRowObj.changes);
+            if (!sf.base.isNullOrUndefined(field)) {
+                sf.base.setValue(field, value, currentRowObj.changes);
+            }
             var movableRowObject = void 0;
             if (sf.base.isBlazor() && this.parent.isServerRendered && (parentsUntil(td, 'e-movableheader') ||
                 parentsUntil(td, 'e-movablecontent'))) {
@@ -29613,17 +29707,14 @@ var BatchEdit = /** @class */ (function () {
             }
         }
     };
-    BatchEdit.prototype.saveCell = function (isForceSave) {
-        if (this.preventSaveCell) {
-            return;
-        }
+    BatchEdit.prototype.escapeCellEdit = function () {
+        var args = this.generateCellArgs();
+        args.value = args.previousValue;
+        this.successCallBack(args, args.cell.parentElement, args.column)(args);
+    };
+    BatchEdit.prototype.generateCellArgs = function () {
         var gObj = this.parent;
-        if (!isForceSave && (!gObj.isEdit || this.validateFormObj())) {
-            return;
-        }
-        this.preventSaveCell = true;
         this.parent.element.classList.remove('e-editing');
-        var tr = parentsUntil(this.form, 'e-row');
         var column = this.cellDetails.column;
         var obj = {};
         obj[column.field] = this.cellDetails.rowData[column.field];
@@ -29638,19 +29729,38 @@ var BatchEdit = /** @class */ (function () {
             columnName: column.field,
             value: getObject(column.field, editedData),
             rowData: this.cellDetails.rowData,
+            column: column,
             previousValue: this.cellDetails.value,
-            isForeignKey: this.cellDetails.isForeignKey, cancel: false
+            isForeignKey: this.cellDetails.isForeignKey,
+            cancel: false
         };
         if (!sf.base.isBlazor() || this.parent.isJsComponent) {
             args.cell = this.form.parentElement;
             args.columnObject = column;
         }
+        return args;
+    };
+    BatchEdit.prototype.saveCell = function (isForceSave) {
+        if (this.preventSaveCell) {
+            return;
+        }
+        var gObj = this.parent;
+        if (!isForceSave && (!gObj.isEdit || this.validateFormObj())) {
+            return;
+        }
+        this.preventSaveCell = true;
+        var args = this.generateCellArgs();
+        var tr = sf.base.isBlazor() ? parentsUntil(this.form, 'e-row') : args.cell.parentElement;
+        var col = sf.base.isBlazor() ? this.cellDetails.column : args.column;
+        if (sf.base.isBlazor()) {
+            delete args.column;
+        }
         if (!isForceSave) {
-            gObj.trigger(cellSave, args, this.successCallBack(args, tr, column));
+            gObj.trigger(cellSave, args, this.successCallBack(args, tr, col));
             gObj.notify(batchForm, { formObj: this.form });
         }
         else {
-            this.successCallBack(args, tr, column)(args);
+            this.successCallBack(args, tr, col)(args);
         }
     };
     BatchEdit.prototype.successCallBack = function (cellSaveArgs, tr, column) {
@@ -29694,7 +29804,7 @@ var BatchEdit = /** @class */ (function () {
                 || (sf.base.isNullOrUndefined(cellSaveArgs.value) && sf.base.isNullOrUndefined(_this.cellDetails.value) &&
                     !cellSaveArgs.cell.parentElement.classList.contains('e-insertedrow'))) {
                 cellSaveArgs.cell.classList.remove('e-updatedtd');
-                if (sf.base.isBlazor() && gObj.isServerRendered && cellSaveArgs.value.toString() ===
+                if (sf.base.isBlazor() && gObj.isServerRendered && (!sf.base.isNullOrUndefined(cellSaveArgs.value) ? cellSaveArgs.value : '').toString() ===
                     (!sf.base.isNullOrUndefined(_this.cellDetails.value) ? _this.cellDetails.value : '').toString()) {
                     if (_this.cloneCell["" + _this.cellDetails.rowIndex + cellSaveArgs.columnObject.index].
                         classList.contains('e-selectionbackground')) {
@@ -30555,7 +30665,12 @@ var Edit = /** @class */ (function () {
                 break;
             case 'escape':
                 if (this.parent.isEdit) {
-                    this.closeEdit();
+                    if (this.parent.editSettings.mode === 'Batch') {
+                        this.editModule.escapeCellEdit();
+                    }
+                    else {
+                        this.closeEdit();
+                    }
                 }
                 break;
         }
@@ -35181,6 +35296,9 @@ var FreezeRender = /** @class */ (function (_super) {
         var movableContentHeight = this.parent.element.querySelector('.e-movablecontent').getBoundingClientRect().height;
         var movableContent = this.parent.element.querySelector('.e-movablecontent');
         var frozenContent = this.parent.element.querySelector('.e-frozencontent');
+        var contentScrollWidth = this.parent.getContent().scrollWidth;
+        var contentTableScrollWidth = this.parent.element.querySelector('.e-movablecontent table').scrollWidth +
+            this.parent.getContentTable().scrollWidth;
         if (movableContent.scrollWidth - movableContent.clientWidth) {
             frozenContent.style.height = movableContentHeight -
                 height + 'px';
@@ -35188,8 +35306,9 @@ var FreezeRender = /** @class */ (function (_super) {
         }
         else {
             frozenContent.style.height = movableContentHeight + 'px';
-            if ((frozenContent.scrollHeight <= frozenContent.clientHeight) ||
-                (movableContent.scrollHeight <= movableContent.clientHeight)) {
+            if (((frozenContent.scrollHeight <= frozenContent.clientHeight) ||
+                (movableContent.scrollHeight <= movableContent.clientHeight))
+                && contentScrollWidth === contentTableScrollWidth) {
                 this.parent.scrollModule.removePadding();
             }
             frozenContent.style.borderBottom = '0px';

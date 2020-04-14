@@ -1707,6 +1707,8 @@ export interface CellEditSameArgs extends ICancel {
     value?: string;
     /** Defines isForeignKey option value. */
     isForeignKey?: boolean;
+    /** Defines the Column Object */
+    column?: Column;
 
 }
 
@@ -1780,6 +1782,7 @@ export interface IEdit {
     updateCell?(rowIndex: number, field: string, value: string | number | boolean | Date): void;
     updateRow?(index: number, data: Object): void;
     saveCell?(isForceSave?: boolean): void;
+    escapeCellEdit?() : void;
     addCancelWhilePaging?(): void;
     args?: { requestType?: string };
     isAdded?: boolean;

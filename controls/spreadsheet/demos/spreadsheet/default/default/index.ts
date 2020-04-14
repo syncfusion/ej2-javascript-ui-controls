@@ -27,21 +27,16 @@ let columns: ColumnModel[] = [
 
 let sheet: SheetModel[] = [{
     name: 'Price Details',
-    ranges: [{
-        dataSource: dataSource,
-        startCell: 'A1'
-    }],
+    ranges: [{ dataSource: dataSource }],
     rowCount: 200,
-    columns: columns,
-    rows: [{ index: 3, cells: [{ wrap: true }]}]
+    columns: columns
 }];
 
 let spreadsheet: Spreadsheet = new Spreadsheet({
     sheets: sheet,
-    beforeDataBound: (): void => {
-        if (spreadsheet.sheets[spreadsheet.activeSheetIndex].name === 'Price Details') {
-            spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1');
-        }
+    created: (): void => {
+        spreadsheet.cellFormat({ fontWeight: 'bold', textAlign: 'center' }, 'A1:H1');
+        // spreadsheet.addCustomFunction('customFunc', 'fn')
     },
     openUrl: 'https://ej2services.syncfusion.com/production/web-services/api/spreadsheet/open',
     saveUrl: 'https://ej2services.syncfusion.com/production/web-services/api/spreadsheet/save',
@@ -57,10 +52,6 @@ let spreadsheet: Spreadsheet = new Spreadsheet({
     },
     openComplete: (args: Object) => {
         console.log(args);
-    },
-    created: (): void => {
-       // spreadsheet.addCustomFunction('customFunc', 'fn')
-       //console.log('called');
     }
 });
 
@@ -79,7 +70,6 @@ window.addEventListener('resize', onResize);
        return val;
     });
     console.log(values);
-    
     //console.log('custom fun');
 }
 function onResize(): void {

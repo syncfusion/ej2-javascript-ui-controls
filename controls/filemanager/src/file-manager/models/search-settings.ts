@@ -1,4 +1,7 @@
 import { Property, ChildProperty } from '@syncfusion/ej2-base';
+/**
+ * Specifies the filter type for Search settings of the File Manager.
+ */
 export type FilterType = 'contains' | 'startsWith' | 'endsWith';
 
 /**

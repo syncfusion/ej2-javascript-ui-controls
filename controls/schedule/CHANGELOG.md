@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.44 (2020-04-14)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#F152481` - An issue in `ASP core and mvc` with the property `firstDayOfWeek` has been resolved.
+
 ## 18.1.43 (2020-04-07)
 
 ### Schedule
@@ -9,6 +17,8 @@
 #### Bug Fixes
 
 - `#269264` - An issue with last occurrence of the recurrence event is not rendered on month view has been fixed.
+- `#269022` - In timeline views, an issue with appointments is positioned in the wrong place when browser zooming is set at 75% and 67% has been fixed.
+- `#151925` - An issue with locale words are not translated properly has been fixed.
 
 ## 18.1.42 (2020-04-01)
 

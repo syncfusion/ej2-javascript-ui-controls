@@ -165,7 +165,7 @@ export class SheetTabs {
         this.parent.element.focus();
     }
 
-    private insertSheetTab(args: { startIdx: number, endIdx: number }): void {
+    private insertSheetTab(args: { startIdx: number, endIdx: number, isAction: boolean }): void {
         this.dropDownInstance.items[this.tabInstance.selectedItem].iconCss = '';
         for (let i: number = args.startIdx; i <= args.endIdx; i++) {
             let sheetName: string = this.parent.sheets[i].name;
@@ -174,7 +174,7 @@ export class SheetTabs {
         }
         this.dropDownInstance.items[args.startIdx].iconCss = 'e-selected-icon e-icons';
         this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
-        this.updateSheetTab({ idx: args.startIdx });
+        if (args.isAction) { this.updateSheetTab({ idx: args.startIdx }); }
     }
 
     private updateSheetTab(args: { idx: number, name?: string }): void {

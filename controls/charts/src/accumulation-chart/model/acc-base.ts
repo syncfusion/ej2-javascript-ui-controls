@@ -818,10 +818,12 @@ export class AccumulationSeries extends ChildProperty<AccumulationSeries> {
         });
         for (let point of this.points) {
             if (point.visible) {
-                accumulation.accumulationDataLabelModule.renderDataLabel(
-                    point, this.dataLabel, datalabelGroup, this.points, this.index, element,
-                    redraw
-                );
+                if ((point.y !== 0) || (point.y === 0 && this.emptyPointSettings.mode === 'Zero')) {
+                    accumulation.accumulationDataLabelModule.renderDataLabel(
+                        point, this.dataLabel, datalabelGroup, this.points, this.index, element,
+                        redraw
+                    );
+                }
             }
         }
         if (this.dataLabel.template !== null && element.childElementCount) {

@@ -361,7 +361,8 @@ export class AutoComplete extends ComboBox {
         if (!this.isValidLI(li)) {
             return;
         }
-        if (!isNullOrUndefined(e) && e.type === 'keydown' && (e as KeyboardEventArgs).action !== 'enter' && this.isValidLI(li)) {
+        if (!isNullOrUndefined(e) && e.type === 'keydown' && (e as KeyboardEventArgs).action !== 'enter'
+        && (e as KeyboardEventArgs).action !== 'tab' && this.isValidLI(li)) {
             let value: string | number | boolean = this.getFormattedValue(li.getAttribute('data-value'));
             this.activeIndex = this.getIndexByValue(value);
             if (this.isServerBlazor) { this.removeHover(); }

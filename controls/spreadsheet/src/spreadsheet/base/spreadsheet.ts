@@ -951,6 +951,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
 
     /**
      * Used to resize the Spreadsheet.
+     * @returns void
      */
     public resize(): void {
         this.renderModule.setSheetPanelSize();
@@ -1066,9 +1067,9 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
 
     /**
      * Set the height of row. 
-     * @param {number} height? - Specifies height needs to be updated. If not specified, it will set the default height 20.
-     * @param {number} rowIndex? - Specifies the row index. If not specified, it will consider the first row.
-     * @param {number} sheetIndex? - Specifies the sheetIndex. If not specified, it will consider the active sheet.
+     * @param {number} height - Specifies height needs to be updated. If not specified, it will set the default height 20.
+     * @param {number} rowIndex - Specifies the row index. If not specified, it will consider the first row.
+     * @param {number} sheetIndex - Specifies the sheetIndex. If not specified, it will consider the active sheet.
      */
     public setRowHeight(height: number | string = 20, rowIndex: number = 0, sheetIndex?: number): void {
         let sheet: SheetModel = isNullOrUndefined(sheetIndex) ? this.getActiveSheet() : this.sheets[sheetIndex - 1];
@@ -1351,21 +1352,41 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
         }
     }
 
-    /** @hidden */
-    public hideRow(startIndex: number, endIndex: number = startIndex, hide: boolean = true): void {
-        if (this.renderModule) {
+    /**
+     * Used to hide/show the rows in spreadsheet.
+     * @param {number} startIndex - Specifies the start row index.
+     * @param {number} endIndex - Specifies the end row index.
+     * @param {boolean} hide - To hide/show the rows in specified range.
+     * @param {string | number} sheet - Specifies the sheet name or index. By default it sets to active sheet index.
+     * @returns void
+     */
+    public hideRow(startIndex: number, endIndex?: number, hide?: boolean, sheet?: string | number): void {
+        if (isNullOrUndefined(endIndex)) { endIndex = startIndex; }
+        if (isNullOrUndefined(hide)) { hide = true; }
+        sheet = getSheetIndex(this, sheet) || 0;
+        if (this.renderModule && sheet === this.activeSheetIndex) {
             this.notify(hideShow, <HideShowEventArgs>{ startIndex: startIndex, endIndex: endIndex, hide: hide });
         } else {
-            super.hideRow(startIndex, endIndex, hide);
+            super.hideRow(startIndex, endIndex, hide, sheet);
         }
     }
 
-    /** @hidden */
-    public hideColumn(startIndex: number, endIndex: number = startIndex, hide: boolean = true): void {
-        if (this.renderModule) {
+    /**
+     * Used to hide/show the columns in spreadsheet.
+     * @param {number} startIndex - Specifies the start column index.
+     * @param {number} endIndex - Specifies the end column index.
+     * @param {boolean} hide - Set `true` / `false` to hide / show the columns.
+     * @param {string | number} sheet - Specifies the sheet name or index. By default it sets to active sheet index.
+     * @returns void
+     */
+    public hideColumn(startIndex: number, endIndex?: number, hide?: boolean, sheet?: string | number): void {
+        if (isNullOrUndefined(endIndex)) { endIndex = startIndex; }
+        if (isNullOrUndefined(hide)) { hide = true; }
+        sheet = getSheetIndex(this, sheet) || 0;
+        if (this.renderModule && sheet === this.activeSheetIndex) {
             this.notify(hideShow, <HideShowEventArgs>{ startIndex: startIndex, endIndex: endIndex, hide: hide, isCol: true });
         } else {
-            super.hideColumn(startIndex, endIndex, hide);
+            super.hideColumn(startIndex, endIndex, hide, sheet);
         }
     }
 
@@ -1737,8 +1758,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * To enable / disable file menu items.
      * @param {string[]} items - Items that needs to be enabled / disabled.
-     * @param {boolean} enable? - Set `true` / `false` to enable / disable the menu items.
-     * @param {boolean} isUniqueId? - Set `true` if the given file menu items `text` is a unique id.
+     * @param {boolean} enable - Set `true` / `false` to enable / disable the menu items.
+     * @param {boolean} isUniqueId - Set `true` if the given file menu items `text` is a unique id.
      * @returns void.
      */
     public enableFileMenuItems(items: string[], enable: boolean = true, isUniqueId?: boolean): void {
@@ -1748,8 +1769,8 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * To show/hide the file menu items in Spreadsheet ribbon.
      * @param {string[]} items - Specifies the file menu items text which is to be show/hide.
-     * @param {boolean} hide? - Set `true` / `false` to hide / show the file menu items.
-     * @param {boolean} isUniqueId? - Set `true` if the given file menu items `text` is a unique id.
+     * @param {boolean} hide - Set `true` / `false` to hide / show the file menu items.
+     * @param {boolean} isUniqueId - Set `true` if the given file menu items `text` is a unique id.
      * @returns void.
      */
     public hideFileMenuItems(items: string[], hide: boolean = true, isUniqueId?: boolean): void {
@@ -1760,9 +1781,9 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * To add custom file menu items.
      * @param {MenuItemModel[]} items - Specifies the ribbon file menu items to be inserted.
      * @param {string} text - Specifies the existing file menu item text before / after which the new file menu items to be inserted.
-     * @param {boolean} insertAfter? - Set `false` if the `items` need to be inserted before the `text`.
+     * @param {boolean} insertAfter - Set `false` if the `items` need to be inserted before the `text`.
      * By default, `items` are added after the `text`.
-     * @param {boolean} isUniqueId? - Set `true` if the given file menu items `text` is a unique id.
+     * @param {boolean} isUniqueId - Set `true` if the given file menu items `text` is a unique id.
      * @returns void.
      */
     public addFileMenuItems(items: MenuItemModel[], text: string, insertAfter: boolean = true, isUniqueId?: boolean): void {
@@ -1772,7 +1793,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * To show/hide the existing ribbon tabs.
      * @param {string[]} tabs - Specifies the tab header text which needs to be shown/hidden.
-     * @param {boolean} hide? - Set `true` / `false` to hide / show the ribbon tabs.
+     * @param {boolean} hide - Set `true` / `false` to hide / show the ribbon tabs.
      * @returns void.
      */
     public hideRibbonTabs(tabs: string[], hide: boolean = true): void {
@@ -1782,7 +1803,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * To enable / disable the existing ribbon tabs.
      * @param {string[]} tabs - Specifies the tab header text which needs to be enabled / disabled.
-     * @param {boolean} enable? - Set `true` / `false` to enable / disable the ribbon tabs.
+     * @param {boolean} enable - Set `true` / `false` to enable / disable the ribbon tabs.
      * @returns void.
      */
     public enableRibbonTabs(tabs: string[], enable: boolean = true): void {
@@ -1792,7 +1813,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * To add custom ribbon tabs.
      * @param {RibbonItemModel[]} items - Specifies the ribbon tab items to be inserted.
-     * @param {string} insertBefore? - Specifies the existing ribbon header text before which the new tabs will be inserted.
+     * @param {string} insertBefore - Specifies the existing ribbon header text before which the new tabs will be inserted.
      * If not specified, the new tabs will be inserted at the end.
      * @returns void.
      */
@@ -1803,9 +1824,9 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     /**
      * Enables or disables the specified ribbon toolbar items or all ribbon items.
      * @param {string} tab - Specifies the ribbon tab header text under which the toolbar items need to be enabled / disabled.
-     * @param {string[]} items? - Specifies the toolbar item indexes / unique id's which needs to be enabled / disabled.
+     * @param {string[]} items - Specifies the toolbar item indexes / unique id's which needs to be enabled / disabled.
      * If it is not specified the entire toolbar items will be enabled / disabled.
-     * @param  {boolean} enable? - Boolean value that determines whether the toolbar items should be enabled or disabled.
+     * @param  {boolean} enable - Boolean value that determines whether the toolbar items should be enabled or disabled.
      * @returns void.
      */
     public enableToolbarItems(tab: string, items?: number[] | string[], enable?: boolean): void {
@@ -1816,7 +1837,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * To show/hide the existing Spreadsheet ribbon toolbar items.
      * @param {string} tab - Specifies the ribbon tab header text under which the specified items needs to be hidden / shown.
      * @param {string[]} indexes - Specifies the toolbar indexes which needs to be shown/hidden from UI.
-     * @param {boolean} hide? - Set `true` / `false` to hide / show the toolbar items.
+     * @param {boolean} hide - Set `true` / `false` to hide / show the toolbar items.
      * @returns void.
      */
     public hideToolbarItems(tab: string, indexes: number[], hide: boolean = true): void {
@@ -1827,7 +1848,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * To add the custom items in Spreadsheet ribbon toolbar.
      * @param {string} tab - Specifies the ribbon tab header text under which the specified items will be inserted.
      * @param {ItemModel[]} items - Specifies the ribbon toolbar items that needs to be inserted.
-     * @param {number} index? - Specifies the index text before which the new items will be inserted.
+     * @param {number} index - Specifies the index text before which the new items will be inserted.
      * If not specified, the new items will be inserted at the end of the toolbar.
      * @returns void.
      */

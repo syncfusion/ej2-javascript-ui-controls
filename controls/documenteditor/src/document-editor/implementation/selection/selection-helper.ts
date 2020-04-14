@@ -572,7 +572,9 @@ export class TextPosition {
             if (!isNullOrUndefined(previousParagraph)) {
                 if (!positionAtStart) {
                     this.currentWidget = previousParagraph.childWidgets[previousParagraph.childWidgets.length - 1] as LineWidget;
-                    this.offset = this.currentWidget.getEndOffset();
+                    // line end with page break and updating offset before page break.
+                    // tslint:disable-next-line:max-line-length
+                    this.offset = this.currentWidget.isEndsWithPageBreak ? this.currentWidget.getEndOffset() - 1 : this.currentWidget.getEndOffset();
                 } else {
                     this.currentWidget = previousParagraph.firstChild as LineWidget;
                     this.offset = this.selection.getStartLineOffset(this.currentWidget);
@@ -1528,6 +1530,11 @@ export class TextPosition {
         }
         //Moves till the Up/Down selection width.
         let top: number = selection.getTop(prevLine);
+        // Here, updating the left position when line widget end with page break
+        // to update cursor before page break
+        if (this.currentWidget.isEndsWithPageBreak && this.offset === this.currentWidget.getEndOffset() - 1) {
+            left = this.location.x;
+        }
         selection.updateTextPositionWidget(prevLine, new Point(left, top), this, false);
     }
     /**
@@ -2081,6 +2088,7 @@ export class Hyperlink {
     private localRef: string = '';
     private typeInternal: HyperlinkType;
     private opensNewWindow: boolean = false;
+    private isCrossRefField: boolean = false;
     /**
      * Gets navigation link.
      * @returns string
@@ -2105,11 +2113,20 @@ export class Hyperlink {
     get linkType(): HyperlinkType {
         return this.typeInternal;
     }
+    /**
+     * @private
+     */
+    get isCrossRef(): boolean {
+        return this.isCrossRefField;
+    }
     constructor(fieldBeginAdv: FieldElementBox, selection: Selection) {
         let fieldCode: string = selection.getFieldCode(fieldBeginAdv);
         let lowercase: string = fieldCode.toLowerCase();
         if (lowercase.substring(0, 9) === 'hyperlink') {
-            this.parseFieldValues(fieldCode.substring(9).trim(), selection);
+            this.parseFieldValues(fieldCode.substring(9).trim(), true);
+        } else if ((lowercase.indexOf('ref ') === 0 && lowercase.match('\\h'))) {
+            this.parseFieldValues(fieldCode.substring(4).trim(), false);
+            this.isCrossRefField = true;
         }
     }
     /**
@@ -2117,32 +2134,36 @@ export class Hyperlink {
      * @param  {string} value
      * @returns Void
      */
-    private parseFieldValues(value: string, selection: Selection): void {
+    private parseFieldValues(value: string, isHyperlink: boolean): void {
         let codes: string[] = value.split(' ');
         let isLocalRef: boolean = false;
-        for (let i: number = 0; i < codes.length; i++) {
-            let code: string = codes[i];
-            if (code.length < 1) {
-                continue;
-            }
-            if (code === '\\t' || code === '\\l') {
-                isLocalRef = true;
-            } else if (code === '\\n') {
-                this.opensNewWindow = true;
-            } else {
-                code = this.parseFieldValue(code, code[0] === '\"' ? '\"' : undefined);
-                if (isLocalRef) {
-                    this.localRef = code;
-                    isLocalRef = false;
+        if (isHyperlink) {
+            for (let i: number = 0; i < codes.length; i++) {
+                let code: string = codes[i];
+                if (code.length < 1) {
+                    continue;
+                }
+                if (code === '\\t' || code === '\\l') {
+                    isLocalRef = true;
+                } else if (code === '\\n') {
+                    this.opensNewWindow = true;
                 } else {
-                    this.linkInternal = code;
+                    code = this.parseFieldValue(code, code[0] === '\"' ? '\"' : undefined, isHyperlink);
+                    if (isLocalRef) {
+                        this.localRef = code;
+                        isLocalRef = false;
+                    } else {
+                        this.linkInternal = code;
+                    }
                 }
             }
+        } else {
+            this.localRef = codes[0];
         }
         this.setLinkType();
     }
-    private parseFieldValue(value: string, endChar?: string): string {
-        value = value.substring(1);
+    private parseFieldValue(value: string, endChar: string, isHyperlink?: boolean): string {
+        value = isHyperlink ? value.substring(1) : value.substring(0);
         let endIndex: number = endChar ? value.indexOf(endChar) : -1;
         if (endIndex < 0) {
             endIndex = value.length;

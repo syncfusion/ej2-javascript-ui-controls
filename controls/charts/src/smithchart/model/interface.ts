@@ -121,6 +121,17 @@ export interface ISmithchartLegendRenderEventArgs extends ISmithchartEventArgs {
     shape: string;
 }
 
+export interface ISmithChartTooltipEventArgs extends ISmithchartEventArgs {
+    /** Defines the tooltip text */
+    text: string[];
+    /** Defines the headerText of tooltip */
+    headerText: string;
+    /** Defines point of the tooltip */
+    point: ISmithChartPoint;
+    /** template */
+    template: string;
+}
+
 
 /** @private */
 export interface ISmithchartFontMapping {
@@ -129,6 +140,13 @@ export interface ISmithchartFontMapping {
     fontWeight?: string;
     fontStyle?: string;
     fontFamily?: string;
+}
+
+
+export interface ISmithChartPoint {
+    reactance: number;
+    resistance: number;
+    tooltip?: string;
 }
 
 export interface ISmithchartThemeStyle {

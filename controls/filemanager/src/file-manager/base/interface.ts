@@ -14,15 +14,27 @@ import { Uploader } from '@syncfusion/ej2-inputs';
 import { BreadCrumbBar } from '../actions';
 import { PositionModel } from '@syncfusion/ej2-base/src/draggable-model';
 
+/**
+ * Defines the view type of the FileManager.
+ */
 export type ViewType = 'LargeIcons' | 'Details';
+/**
+ * Defines the files sorting order in FileManager.
+ */
 export type SortOrder = 'Ascending' | 'Descending';
+/**
+ * Defines the Toolbar items of the FileManager.
+ */
 export type ToolBarItems = 'NewFolder' | 'Upload' | 'Cut' | 'Copy' | 'Paste' | 'Delete' | 'Download'
     | 'Rename' | 'SortBy' | 'Refresh' | 'Selection' | 'View' | 'Details';
+/**
+ * Defines the Context menu items for the FileManager.
+ */
 export type MenuItems = 'NewFolder' | 'Upload' | 'Cut' | 'Copy' | 'Paste' | 'Delete' | 'Download'
     | 'Rename' | 'SortBy' | 'Refresh' | 'SelectAll' | 'View' | 'Details' | 'Open';
 
 /**
- * Interfaces for File Manager
+ * Interfaces for File Manager Toolbar items.
  */
 export interface IToolBarItems {
     template?: string;
@@ -80,7 +92,9 @@ export interface SearchArgs {
     error?: Object[];
     details?: Object;
 }
-
+/**
+ * Interfaces for File details.
+ */
 export interface FileDetails {
     created?: string;
     isFile: boolean;
@@ -100,7 +114,7 @@ export interface DownloadArgs {
 }
 
 /**
- * Drag Event arguments
+ * Interface for Drag Event arguments
  */
 export interface FileDragEventArgs {
     /**
@@ -124,7 +138,9 @@ export interface FileDragEventArgs {
      */
     cancel?: Boolean;
 }
-
+/**
+ * Interface for BeforeSend event arguments.
+ */
 export interface BeforeSendEventArgs {
     /**
      * Return the name of the AJAX action will be performed.
@@ -139,7 +155,9 @@ export interface BeforeSendEventArgs {
      */
     cancel?: boolean;
 }
-
+/**
+ * Interface for BeforeDownload event arguments.
+ */
 export interface BeforeDownloadEventArgs {
     /**
      * Specifies the data to be sent to server.
@@ -150,7 +168,9 @@ export interface BeforeDownloadEventArgs {
      */
     cancel?: boolean;
 }
-
+/**
+ * Interface for BeforeImageLoad event arguments.
+ */
 export interface BeforeImageLoadEventArgs {
     /**
      * Return the current rendering image item as an array of JSON object.
@@ -161,7 +181,9 @@ export interface BeforeImageLoadEventArgs {
      */
     imageUrl?: string;
 }
-
+/**
+ * Interface for Success event arguments.
+ */
 export interface SuccessEventArgs {
     /**
      * Return the name of the AJAX action will be performed.
@@ -172,7 +194,9 @@ export interface SuccessEventArgs {
      */
     result?: Object;
 }
-
+/**
+ * Interface for Failure event arguments.
+ */
 export interface FailureEventArgs {
     /**
      * Return the name of the AJAX action will be performed.
@@ -183,7 +207,9 @@ export interface FailureEventArgs {
      */
     error?: Object;
 }
-
+/**
+ * Interface for FileLoad event arguments.
+ */
 export interface FileLoadEventArgs {
     /**
      * Return the current rendering item.
@@ -198,7 +224,9 @@ export interface FileLoadEventArgs {
      */
     module?: string;
 }
-
+/**
+ * Interface for FileOpen event arguments.
+ */
 export interface FileOpenEventArgs {
     /**
      * If you want to cancel this event then, set cancel to true. Otherwise, false.
@@ -213,7 +241,9 @@ export interface FileOpenEventArgs {
      */
     module?: string;
 }
-
+/**
+ * Interface for PopupOpenClose event arguments.
+ */
 export interface PopupOpenCloseEventArgs {
     /**
      * Returns the current dialog component instance.
@@ -228,7 +258,9 @@ export interface PopupOpenCloseEventArgs {
      */
     popupName: string;
 }
-
+/**
+ * Interface for BeforePopupOpenClose event arguments.
+ */
 export interface BeforePopupOpenCloseEventArgs {
     /**
      * Returns the current dialog component instance.
@@ -243,7 +275,9 @@ export interface BeforePopupOpenCloseEventArgs {
      */
     cancel: boolean;
 }
-
+/**
+ * Interface for FileSelect event arguments.
+ */
 export interface FileSelectEventArgs {
     /**
      * Return the name of action like select or unselect.
@@ -258,6 +292,9 @@ export interface FileSelectEventArgs {
      */
     isInteracted?: boolean;
 }
+/**
+ * Interface for FileSelection event arguments.
+ */
 export interface FileSelectionEventArgs {
     /**
      * Return the name of action like select or unselect.
@@ -280,6 +317,9 @@ export interface FileSelectionEventArgs {
      */
     target?: Element;
 }
+/**
+ * Interface for ToolbarCreate event arguments.
+ */
 export interface ToolbarCreateEventArgs {
     /**
      * Return an array of items that is used to configure toolbar content.
@@ -287,7 +327,9 @@ export interface ToolbarCreateEventArgs {
      */
     items: ItemModel[];
 }
-
+/**
+ * Interface for ToolbarClick event arguments.
+ */
 export interface ToolbarClickEventArgs {
     /**
      * If you want to cancel this event then, set cancel to true. Otherwise, false.
@@ -303,7 +345,9 @@ export interface ToolbarClickEventArgs {
      */
     item: ItemModel;
 }
-
+/**
+ * Interface for MenuClick event arguments.
+ */
 export interface MenuClickEventArgs {
     /**
      * If you want to cancel this event then, set cancel to true. Otherwise, false.
@@ -323,7 +367,9 @@ export interface MenuClickEventArgs {
      */
     item?: MenuItemModel;
 }
-
+/**
+ * Interface for MenuOpen event arguments.
+ */
 export interface MenuOpenEventArgs {
     /**
      * If you want to cancel this event then, set cancel to true. Otherwise, false.
@@ -360,7 +406,9 @@ export interface MenuOpenEventArgs {
      */
     menuType?: string;
 }
-
+/**
+ * Interface for UploadListCreate event arguments.
+ */
 export interface UploadListCreateArgs {
     /**
      * Return the current file item element.
@@ -379,7 +427,9 @@ export interface UploadListCreateArgs {
      */
     isPreload: boolean;
 }
-
+/**
+ * Interface for File information.
+ */
 export interface FileInfo {
     /**
      * Returns the upload file name.
@@ -414,7 +464,9 @@ export interface FileInfo {
      */
     fileSource?: string;
 }
-
+/**
+ * Interface for Validation messages.
+ */
 export interface ValidationMessages {
     /**
      * Returns the minimum file size validation message, if selected file size is less than the specified minFileSize property.

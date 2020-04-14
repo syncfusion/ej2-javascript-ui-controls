@@ -3250,6 +3250,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {Element[]} 
      */
     public getDataRows(): Element[] {
+        if (isNullOrUndefined(this.getContentTable().querySelector('tbody'))) { return []; }
         let rows: HTMLElement[] = [].slice.call(this.getContentTable().querySelector('tbody').children);
         if (this.frozenRows) {
             let freezeRows: HTMLElement[] = [].slice.call(this.getHeaderTable().querySelector('tbody').children);
@@ -3356,8 +3357,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         mTr = !isNullOrUndefined(movableSelectedRow) ? this.element.querySelector('[data-uid=' + movableSelectedRow[rowuID] + ']') : null;
         if (!isNullOrUndefined(tr)) {
             setValue(field, value, selectedRow[rowData]);
-            let td: Element = !isNullOrUndefined(tr.childNodes[fieldIdx] as Element) ?
-                tr.childNodes[fieldIdx] as Element : mTr.childNodes[fieldIdx - this.frozenColumns] as Element;
+            let td: Element = !isNullOrUndefined(tr[cells][fieldIdx] as Element) ?
+                tr[cells][fieldIdx] as Element : mTr[cells][fieldIdx - this.frozenColumns] as Element;
             if (!isNullOrUndefined(td)) {
                 let sRow: Cell<Column> = selectedRow[cells][fieldIdx];
                 let mRow: Cell<Column>;

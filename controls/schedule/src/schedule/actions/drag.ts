@@ -1,6 +1,6 @@
 import { createElement, closest, Draggable, extend, formatUnit, isNullOrUndefined, BlazorDragEventArgs } from '@syncfusion/ej2-base';
 import { addClass, remove, removeClass, setStyleAttribute, isBlazor, getElement } from '@syncfusion/ej2-base';
-import { DragEventArgs, TdData } from '../base/interface';
+import { DragEventArgs, TdData, EJ2Instance } from '../base/interface';
 import { ActionBase } from '../actions/action-base';
 import * as events from '../base/constant';
 import * as util from '../base/util';
@@ -121,7 +121,7 @@ export class DragAndDrop extends ActionBase {
         this.actionObj.cellHeight = workCell.offsetHeight;
     }
 
-    private dragStart(e: MouseEvent & TouchEvent & BlazorDragEventArgs): void {
+    private dragStart(e: MouseEvent & TouchEvent & BlazorDragEventArgs & DragEventArgs): void {
         let eventGuid: string = this.actionObj.element.getAttribute('data-guid');
         this.actionObj.event = this.parent.eventBase.getEventByGuid(eventGuid) as { [key: string]: Object };
         let eventObj: { [key: string]: Object } = extend({}, this.actionObj.event, null, true) as { [key: string]: Object };
@@ -138,6 +138,10 @@ export class DragAndDrop extends ActionBase {
         this.parent.trigger(events.dragStart, dragArgs, (dragEventArgs: DragEventArgs) => {
             if (dragEventArgs.cancel || (!isNullOrUndefined(this.actionObj.element) &&
                 isNullOrUndefined(this.actionObj.element.parentElement))) {
+                let dragObj: Draggable = (this.actionObj.element as EJ2Instance).ej2_instances[0] as Draggable;
+                if (!isNullOrUndefined(dragObj)) {
+                    dragObj.intDestroy((e as DragEventArgs).event as MouseEvent & TouchEvent);
+                }
                 this.actionObj.action = '';
                 this.removeCloneElementClasses();
                 this.removeCloneElement();
@@ -288,7 +292,8 @@ export class DragAndDrop extends ActionBase {
         if (this.isAllowDrop(e)) {
             return;
         }
-        let dragArgs: DragEventArgs = { cancel: false, data: this.getChangedData(), event: e, element: this.actionObj.element };
+        let dragArgs: DragEventArgs = { cancel: false, data: this.getChangedData(),
+            event: e, element: this.actionObj.element, target: e.target as HTMLElement };
         this.parent.trigger(events.dragStop, dragArgs, (dragEventArgs: DragEventArgs) => {
             if (dragEventArgs.cancel) {
                 return;

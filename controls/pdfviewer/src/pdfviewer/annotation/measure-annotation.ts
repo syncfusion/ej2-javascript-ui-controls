@@ -747,7 +747,7 @@ export class MeasureAnnotation {
         let element: HTMLElement = createElement('div');
         let elementID: string = this.pdfViewer.element.id;
         // tslint:disable-next-line:max-line-length
-        let items: { [key: string]: Object }[] = [{ text: 'pt' }, { text: 'in' }, { text: 'mm' }, { text: 'cm' }, { text: 'p' }, { text: 'ft' }, { text: 'ft_in' }];
+        let items: { [key: string]: Object }[] = [{ text: 'pt' }, { text: 'in' }, { text: 'mm' }, { text: 'cm' }, { text: 'p' }, { text: 'ft' }, { text: 'ft_in' }, { text: 'm' }];
         let labelText: HTMLElement = createElement('div', { id: elementID + '_scale_ratio_label', className: 'e-pv-scale-ratio-text' });
         labelText.textContent = this.pdfViewer.localeObj.getConstant('Scale Ratio');
         element.appendChild(labelText);
@@ -911,6 +911,7 @@ export class MeasureAnnotation {
         if (pageAnnotations != null && annotationBase) {
             for (let i: number = 0; i < pageAnnotations.length; i++) {
                 if (annotationBase.id === pageAnnotations[i].id) {
+                    let date: Date = new Date();
                     if (property === 'bounds') {
                         this.pdfViewer.annotationModule.stickyNotesAnnotationModule.updateAnnotationModifiedDate(annotationBase, true);
                         if (pageAnnotations[i].shapeAnnotationType === 'Line' || pageAnnotations[i].shapeAnnotationType === 'Polyline') {
@@ -927,46 +928,36 @@ export class MeasureAnnotation {
                             // tslint:disable-next-line:max-line-length
                             pageAnnotations[i].labelBounds = this.pdfViewer.annotationModule.inputElementModule.calculateLabelBounds(annotationBase.wrapper.bounds);
                         }
-                        let date: Date = new Date();
                         pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'fill') {
                         pageAnnotations[i].fillColor = annotationBase.wrapper.children[0].style.fill;
-                        let date: Date = new Date();
                         pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'stroke') {
                         pageAnnotations[i].strokeColor = annotationBase.wrapper.children[0].style.strokeColor;
-                        let date: Date = new Date();
                         pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'opacity') {
                         pageAnnotations[i].opacity = annotationBase.wrapper.children[0].style.opacity;
-                        let date: Date = new Date();
                         pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'thickness') {
                         pageAnnotations[i].thickness = annotationBase.wrapper.children[0].style.strokeWidth;
-                        let date: Date = new Date();
                         pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'dashArray') {
                         pageAnnotations[i].borderDashArray = annotationBase.wrapper.children[0].style.strokeDashArray;
                         pageAnnotations[i].borderStyle = annotationBase.borderStyle;
-                        let date: Date = new Date();
                         pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'startArrow') {
                         // tslint:disable-next-line:max-line-length
                         pageAnnotations[i].lineHeadStart = this.pdfViewer.annotation.getArrowTypeForCollection(annotationBase.sourceDecoraterShapes);
-                        let date: Date = new Date();
                         pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'endArrow') {
                         // tslint:disable-next-line:max-line-length
                         pageAnnotations[i].lineHeadEnd = this.pdfViewer.annotation.getArrowTypeForCollection(annotationBase.taregetDecoraterShapes);
-                        let date: Date = new Date();
                         pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'leaderLength') {
                         pageAnnotations[i].leaderLength = annotationBase.leaderHeight;
-                        let date: Date = new Date();
                         pageAnnotations[i].modifiedDate = date.toLocaleString();
                     } else if (property === 'notes') {
                         pageAnnotations[i].note = annotationBase.notes;
-                        let date: Date = new Date();
                         pageAnnotations[i].modifiedDate = date.toLocaleString();
                         if (pageAnnotations[i].enableShapeLabel === true) {
                             pageAnnotations[i].labelContent = annotationBase.notes;
@@ -977,11 +968,14 @@ export class MeasureAnnotation {
                     } else if (property === 'labelContent') {
                         pageAnnotations[i].note = annotationBase.labelContent;
                         pageAnnotations[i].labelContent = annotationBase.labelContent;
-                        let date: Date = new Date();
                         pageAnnotations[i].modifiedDate = date.toLocaleString();
                         break;
                     } else if (property === 'fontColor') {
                         pageAnnotations[i].fontColor = annotationBase.fontColor;
+                        pageAnnotations[i].modifiedDate = date.toLocaleString();
+                    } else if (property === 'fontSize') {
+                        pageAnnotations[i].fontSize = annotationBase.fontSize;
+                        pageAnnotations[i].modifiedDate = date.toLocaleString();
                     }
                 }
             }
@@ -1128,6 +1122,9 @@ export class MeasureAnnotation {
                 return (Math.round(area * 100) / 100) + ' sq in';
            }
         }
+        if (values.unit === 'm') {
+            return ((area * 100) / 100) + ' sq ' + values.unit;
+        }
         return (Math.round(area * 100) / 100) + ' sq ' + values.unit;
     }
 
@@ -1201,6 +1198,9 @@ export class MeasureAnnotation {
             case 'ft_in':
                 factor = 1 / 72;
                 break;
+            case 'm':
+                factor = (1 / 2834.64567);
+                break;
         }
         return factor;
     }
@@ -1250,6 +1250,9 @@ export class MeasureAnnotation {
                 break;
             case 'ft_in':
                 factor = 72;
+                break;
+            case 'm':
+                factor = 2834.64567;
                 break;
         }
         return factor;

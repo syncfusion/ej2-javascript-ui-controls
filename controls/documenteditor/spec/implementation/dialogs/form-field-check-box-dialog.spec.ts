@@ -5,10 +5,10 @@ import { TestHelper } from '../../test-helper.spec';
 import { Editor } from '../../../src/index';
 import { Selection } from '../../../src/index';
 import { CheckBoxFormFieldDialog } from '../../../src/document-editor/implementation/dialogs/form-field-check-box-dialog';
+import { ChangeEventArgs } from '@syncfusion/ej2-buttons';
 
 describe('Form field CheckBox dialog', () => {
     let editor: DocumentEditor;
-    let documentHelper: DocumentHelper;
     let dialog: CheckBoxFormFieldDialog;
     beforeAll((): void => {
         editor = undefined;
@@ -69,5 +69,27 @@ describe('Form field CheckBox dialog', () => {
         expect(fieldData.helpText).toBe((dialog as any).tooltipInputText.value);
         expect(fieldData.name).toBe((dialog as any).bookmarkInputText.value);
         expect(fieldData.enabled).toBe((dialog as any).checBoxEnableElement.checked);
+    });
+    it('Change Bidrirectional - Form field Checkbox Dialog', () => {
+        (dialog as any).exactButton.checked = true;
+        let event: any = {};
+        event.value = 'exact';
+        dialog.changeBidirectional(event as ChangeEventArgs);
+        expect((dialog as any).autoButton.checked).toBe(false);
+        event.value = '';
+        (dialog as any).exactButton.checked = false;
+        dialog.changeBidirectional(event as ChangeEventArgs);
+        expect((dialog as any).exactButton.checked).toBe(true);
+    });
+    it('Change Bidrirect - Form field Checkbox Dialog', () => {
+        (dialog as any).checkedButton.checked = true;
+        let event: any = {};
+        event.value = 'check';
+        dialog.changeBidirect(event as ChangeEventArgs);
+        expect((dialog as any).notCheckedButton.checked).toBe(false);
+        event.value = '';
+        (dialog as any).checkedButton.checked = false;
+        dialog.changeBidirect(event as ChangeEventArgs);
+        expect((dialog as any).checkedButton.checked).toBe(true);
     });
 });

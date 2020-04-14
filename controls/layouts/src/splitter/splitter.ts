@@ -473,12 +473,13 @@ export class Splitter extends Component<HTMLElement> {
                 flexPaneIndexes[flexCount] = i;
                 flexCount++;
             } else if (this.paneSettings[i].size) {
-                staticPaneWidth = this.paneSettings[i].size && this.paneSettings[i].size.indexOf('%') > -1 ?
-                 (parseInt(newValSize , 10) / 100) * this.element.offsetWidth : this.allPanes[index].offsetWidth;
+                staticPaneWidth = this.orientation === 'Horizontal' ? this.allPanes[index].offsetWidth : this.allPanes[index].offsetHeight ;
             }
         }
-        staticPaneWidth = (this.allBars[0].offsetWidth * this.allBars.length) + staticPaneWidth;
-        let flexPaneWidth: number = this.element.offsetWidth - staticPaneWidth;
+        staticPaneWidth = this.orientation === 'Horizontal' ? (this.allBars[0].offsetWidth * this.allBars.length) + staticPaneWidth :
+        (this.allBars[0].offsetHeight * this.allBars.length) + staticPaneWidth ;
+        let flexPaneWidth: number = (this.orientation === 'Horizontal' ? this.element.offsetWidth : this.element.offsetHeight)
+         - staticPaneWidth - (this.border * 2);
         let avgDiffWidth: number = flexPaneWidth / flexPaneIndexes.length;
         for (let j: number = 0; j < flexPaneIndexes.length; j++) {
             this.allPanes[flexPaneIndexes[j]].style.flexBasis = avgDiffWidth + 'px';

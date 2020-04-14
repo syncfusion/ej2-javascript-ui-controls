@@ -796,6 +796,9 @@ export class DataValidation {
         }
         errorMsg = l10n.getConstant('ValidationError');
         if (isValidate) {
+            if (cell && cell.validation && cell.validation.isHighlighted) {
+                cell.validation.isHighlighted = false;
+            }
             let style: CellStyleModel = this.parent.getCellStyleValue(['backgroundColor', 'color'], [args.range[0], args.range[1]]);
             this.parent.notify(applyCellFormat, <CellFormatArgs>{
                 style: style, rowIdx: args.range[0],

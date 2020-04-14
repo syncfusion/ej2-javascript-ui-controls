@@ -52,8 +52,9 @@ export class WorkbookDelete {
                             mergeArgs = null;
                         }
                     }
-                    if (args.model.rows[curIdx].cells[i] && args.model.rows[curIdx].cells[i].rowSpan !== undefined &&
-                        args.model.rows[curIdx].cells[i].rowSpan < 0 && args.model.rows[curIdx].cells[i].colSpan === undefined) {
+                    if (args.model.rows[curIdx] && args.model.rows[curIdx].cells[i] && args.model.rows[curIdx].cells[i].rowSpan !==
+                        undefined && args.model.rows[curIdx].cells[i].rowSpan < 0 && args.model.rows[curIdx].cells[i].colSpan ===
+                        undefined) {
                         if (!mergeArgs) {
                             mergeArgs = { range: [curIdx, i, curIdx, i] }; this.parent.notify(activeCellMergedRange, mergeArgs);
                         }

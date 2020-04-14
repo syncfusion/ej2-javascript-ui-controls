@@ -11,6 +11,7 @@ const dragging: string = 'e-dragging';
 const draggable: string = 'e-draggable';
 const drag: string = 'e-drag';
 const resize: string = 'e-resize';
+const resizeicon: string = 'e-dl-icon';
 const responsive: string = 'e-responsive';
 const east: string = 'e-east';
 const west: string = 'e-west';
@@ -2228,7 +2229,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
             } else {
                 addClassValue = double;
             }
-            addClass([spanEle], [addClassValue, this.availableClasses[j], resize]);
+            addClass([spanEle], [addClassValue, this.availableClasses[j], resize, resizeicon]);
         }
     }
     protected setXYAttributes(element: HTMLElement, panelModel: PanelModel): void {

@@ -162,6 +162,7 @@ export class HyperlinkDialog {
     public onCancelButtonClick = (): void => {
         this.documentHelper.dialog.hide();
         this.clearValue();
+        this.documentHelper.updateFocus();
     }
     /**
      * @private
@@ -232,7 +233,7 @@ export class HyperlinkDialog {
             isBookmark = true;
         }
         if (address === '') {
-            this.documentHelper.dialog.hide();
+            this.documentHelper.hideDialog();
             return;
         }
         if (displayText === '' && address !== '') {
@@ -247,7 +248,7 @@ export class HyperlinkDialog {
             let remove: boolean = this.documentHelper.selection.text !== displayText && !this.displayTextBox.disabled;
             this.documentHelper.owner.editorModule.insertHyperlinkInternal(address, displayText, remove, isBookmark);
         }
-        this.documentHelper.dialog.hide();
+        this.documentHelper.hideDialog();
         this.navigationUrl = undefined;
     }
     /* tslint:disable:no-any */

@@ -177,11 +177,14 @@ export class Selection {
                         this.startCell = [0, 0];
                         this.selectRangeByIdx([].concat(this.startCell, [sheet.rowCount - 1, sheet.colCount - 1]), e);
                     } else if (!(e.target as Element).classList.contains('e-main-content')) {
+                        let triggerCellChange: boolean = this.isRowSelected || this.isColSelected;
+                        this.isRowSelected = false; this.isColSelected = false;
                         if (!e.shiftKey || mode === 'Single') {
                             this.startCell = [rowIdx, colIdx];
                         }
                         this.selectRangeByIdx(
-                            [].concat(this.startCell ? this.startCell : getCellIndexes(sheet.activeCell), [rowIdx, colIdx]), e);
+                            [].concat(this.startCell ? this.startCell : getCellIndexes(sheet.activeCell), [rowIdx, colIdx]), e, null, null,
+                            null, null, triggerCellChange);
                     }
                     if (this.parent.isMobileView()) {
                         this.parent.element.classList.add('e-mobile-focused');
@@ -327,7 +330,7 @@ export class Selection {
 
     private selectRangeByIdx(
         range: number[], e?: MouseEvent, isScrollRefresh?: boolean,
-        isActCellChanged?: boolean, isInit?: boolean, skipChecking?: boolean): void {
+        isActCellChanged?: boolean, isInit?: boolean, skipChecking?: boolean, triggerCellChange?: boolean): void {
         let ele: HTMLElement = this.getSelectionElement();
         let sheet: SheetModel = this.parent.getActiveSheet();
         let mergeArgs: MergeArgs = { range: range, isActiveCell: false, skipChecking: skipChecking };
@@ -348,7 +351,7 @@ export class Selection {
         this.UpdateRowColSelected(range);
         this.highlightHdr(range);
         if (!isScrollRefresh && !(e && (e.type === 'mousemove' || isTouchMove(e)))) {
-            this.updateActiveCell(isActCellChanged ? getRangeIndexes(sheet.activeCell) : range, isInit);
+            this.updateActiveCell(isActCellChanged ? getRangeIndexes(sheet.activeCell) : range, isInit, triggerCellChange);
         }
         if (isNullOrUndefined(e)) { e = <MouseEvent>{ type: 'mousedown' }; }
         this.parent.notify(selectionComplete, e);
@@ -360,7 +363,7 @@ export class Selection {
         this.isColSelected = (indexes[0] === 0 && indexes[2] === sheet.rowCount - 1);
     }
 
-    private updateActiveCell(range: number[], isInit?: boolean): void {
+    private updateActiveCell(range: number[], isInit?: boolean, triggerEvent?: boolean): void {
         let sheet: SheetModel = this.parent.getActiveSheet();
         let topLeftIdx: number[] = getRangeIndexes(sheet.topLeftCell); let rowIdx: number; let colIdx: number; let cell: CellModel;
         if (this.isColSelected) {
@@ -376,10 +379,11 @@ export class Selection {
         if (sheet.activeCell !== getCellAddress(range[0], range[1]) || isInit) {
             sheet.activeCell = getCellAddress(range[0], range[1]);
             locateElem(this.getActiveCell(), range, sheet, this.parent.enableRtl, this.getOffset(range[2], range[3]));
-            this.parent.notify(activeCellChanged, null);
+            triggerEvent = true;
         } else {
             locateElem(this.getActiveCell(), range, sheet, this.parent.enableRtl, this.getOffset(range[2], range[3]));
         }
+        if (triggerEvent) { this.parent.notify(activeCellChanged, null); }
     }
 
     private getOffset(rowIdx: number, colIdx: number): { left: IOffset, top: IOffset } {

@@ -2194,6 +2194,7 @@ var Calendar = /** @__PURE__ @class */ (function (_super) {
      */
     Calendar.prototype.onPropertyChanged = function (newProp, oldProp) {
         this.effect = '';
+        this.rangeValidation(this.min, this.max);
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {
             var prop = _a[_i];
             switch (prop) {
@@ -2988,7 +2989,9 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         this.initialize();
         this.bindEvents();
         this.renderComplete();
-        this.setTimeZone(this.serverTimezoneOffset);
+        if (!this.isBlazorServer) {
+            this.setTimeZone(this.serverTimezoneOffset);
+        }
     };
     DatePicker.prototype.setTimeZone = function (offsetValue) {
         if (!isNullOrUndefined(this.serverTimezoneOffset) && this.value) {

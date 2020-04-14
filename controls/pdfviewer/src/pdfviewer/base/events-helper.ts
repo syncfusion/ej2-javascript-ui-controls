@@ -621,6 +621,14 @@ export interface AnnotationMouseoverEventArgs extends BaseEventArgs {
      * Defines the mouseover y position with respect to page container.
      */
     pageY: number;
+    /**
+     * Defines the mouseover x position with respect to viewer container.
+     */
+    X: number;
+    /**
+     * Defines the mouseover y position with respect to viewer container.
+     */
+    Y: number;
 }
 
 /**

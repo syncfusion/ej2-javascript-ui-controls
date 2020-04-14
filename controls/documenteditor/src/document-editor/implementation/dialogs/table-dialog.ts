@@ -107,6 +107,7 @@ export class TableDialog {
         this.columnValueTexBox.value = 2;
         this.documentHelper.dialog.close = this.documentHelper.updateFocus;
         this.documentHelper.dialog.dataBind();
+        this.columnValueTexBox.focusIn();
         this.documentHelper.dialog.show();
     }
     /**
@@ -135,7 +136,7 @@ export class TableDialog {
         if (!(isNullOrUndefined(rowCount) && isNullOrUndefined(columnCount))) {
             this.documentHelper.owner.editor.insertTable(rowCount, columnCount);
         }
-        this.documentHelper.dialog.hide();
+        this.documentHelper.hideDialog();
     }
     /**
      * @private

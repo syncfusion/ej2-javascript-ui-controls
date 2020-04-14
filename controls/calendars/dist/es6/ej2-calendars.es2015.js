@@ -2173,6 +2173,7 @@ let Calendar = class Calendar extends CalendarBase {
      */
     onPropertyChanged(newProp, oldProp) {
         this.effect = '';
+        this.rangeValidation(this.min, this.max);
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'value':
@@ -2949,7 +2950,9 @@ let DatePicker = class DatePicker extends Calendar {
         this.initialize();
         this.bindEvents();
         this.renderComplete();
-        this.setTimeZone(this.serverTimezoneOffset);
+        if (!this.isBlazorServer) {
+            this.setTimeZone(this.serverTimezoneOffset);
+        }
     }
     setTimeZone(offsetValue) {
         if (!isNullOrUndefined(this.serverTimezoneOffset) && this.value) {

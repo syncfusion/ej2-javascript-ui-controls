@@ -10297,7 +10297,8 @@ class InsertHtml {
     static removeEmptyElements(element) {
         let emptyElements = element.querySelectorAll(':empty');
         for (let i = 0; i < emptyElements.length; i++) {
-            if (emptyElements[i].tagName !== 'IMG' && emptyElements[i].tagName !== 'BR') {
+            if (emptyElements[i].tagName !== 'IMG' && emptyElements[i].tagName !== 'BR' &&
+                emptyElements[i].tagName !== 'IFRAME') {
                 let detachableElement = this.findDetachEmptyElem(emptyElements[i]);
                 if (!isNullOrUndefined(detachableElement)) {
                     detach(detachableElement);
@@ -19616,11 +19617,13 @@ let RichTextEditor = class RichTextEditor extends Component {
         if (this.editorMode === 'HTML') {
             switch (command) {
                 case 'insertHTML':
-                    if (typeof value === 'string') {
-                        value = this.htmlEditorModule.sanitizeHelper(value);
-                    }
-                    else {
-                        value = this.htmlEditorModule.sanitizeHelper(value.outerHTML);
+                    if (this.enableHtmlSanitizer) {
+                        if (typeof value === 'string') {
+                            value = this.htmlEditorModule.sanitizeHelper(value);
+                        }
+                        else {
+                            value = this.htmlEditorModule.sanitizeHelper(value.outerHTML);
+                        }
                     }
                     break;
                 case 'insertTable':
@@ -19635,7 +19638,10 @@ let RichTextEditor = class RichTextEditor extends Component {
                             src: value.url
                         }
                     });
-                    let imageValue = this.htmlEditorModule.sanitizeHelper(temp.outerHTML);
+                    let imageValue = temp.outerHTML;
+                    if (this.enableHtmlSanitizer) {
+                        imageValue = this.htmlEditorModule.sanitizeHelper(temp.outerHTML);
+                    }
                     let url = (imageValue !== '' && (this.createElement('div', {
                         innerHTML: imageValue
                     }).firstElementChild).getAttribute('src')) || null;
@@ -19656,7 +19662,10 @@ let RichTextEditor = class RichTextEditor extends Component {
                             href: value.url
                         }
                     });
-                    let linkValue = this.htmlEditorModule.sanitizeHelper(tempNode.outerHTML);
+                    let linkValue = tempNode.outerHTML;
+                    if (this.enableHtmlSanitizer) {
+                        linkValue = this.htmlEditorModule.sanitizeHelper(tempNode.outerHTML);
+                    }
                     let href = (linkValue !== '' && (this.createElement('div', {
                         innerHTML: linkValue
                     }).firstElementChild).getAttribute('href')) || null;

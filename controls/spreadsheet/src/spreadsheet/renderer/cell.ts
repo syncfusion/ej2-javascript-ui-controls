@@ -158,6 +158,10 @@ export class CellRenderer implements ICellRenderer {
             }
             this.parent.notify(createHyperlinkElement, { cell: args.cell, td: args.td, rowIdx: args.rowIdx, colIdx: args.colIdx });
         }
+        if (args.cell && args.cell.validation && args.cell.validation.isHighlighted) {
+            args.td.style.backgroundColor = '#ffff00';
+            args.td.style.color = '#ff0000';
+        }
     }
     private checkMerged(args: CellRenderArgs): boolean {
         if (args.cell && (args.cell.colSpan < 0 || args.cell.rowSpan < 0)) {
