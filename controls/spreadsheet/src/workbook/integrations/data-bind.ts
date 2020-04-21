@@ -75,7 +75,8 @@ export class DataBind {
                 } else if (eRange > count) {
                     eRange = count;
                 }
-                this.requestedInfo.push({ deferred: deferred, indexes: args.indexes, isNotLoaded: loadedInfo.isNotLoaded });
+                this.requestedInfo.push({ deferred: deferred, indexes: args.indexes, isNotLoaded: loadedInfo.isNotLoaded,
+                    sheetId: args.sheet.id });
                 if (sRange >= 0 && loadedInfo.isNotLoaded && !isEndReached) {
                     sRanges[k] = sRange; requestedRange.push(false);
                     let query: Query = (range.query ? range.query : new Query()).clone();
@@ -169,22 +170,22 @@ export class DataBind {
                                     });
                                     //}
                                 }
-                                this.checkResolve(args.indexes);
+                                this.checkResolve(args.indexes, args.sheet.id);
                             }
                         });
                 } else if (k === 0 && requestedRange.indexOf(false) === -1) {
-                    this.checkResolve(args.indexes);
+                    this.checkResolve(args.indexes, args.sheet.id);
                 }
             }
         } else { deferred.resolve(); }
     }
 
-    private checkResolve(indexes: number[]): void {
+    private checkResolve(indexes: number[], sheetId: number): void {
         let resolved: boolean;
         let isSameRng: boolean;
         let cnt: number = 0;
         this.requestedInfo.forEach((info: RequestedInfo, idx: number) => {
-            isSameRng = JSON.stringify(info.indexes) === JSON.stringify(indexes);
+            isSameRng = JSON.stringify(info.indexes) === JSON.stringify(indexes) && sheetId === info.sheetId;
             if (isSameRng || resolved) {
                 if (idx === 0) {
                     info.deferred.resolve();
@@ -360,4 +361,5 @@ interface RequestedInfo {
   indexes: number[];
   isLoaded?: boolean;
   isNotLoaded?: boolean;
+  sheetId?: number;
 }

@@ -117,7 +117,7 @@ export interface DocumentEditorContainerModel extends ComponentModel{
      * Triggers when toolbar item is clicked.
      * @event
      * @blazorproperty 'OnToolbarClick'
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.ClickEventArgs
+     * @blazorType Syncfusion.Blazor.Navigations.ClickEventArgs
      */
     toolbarClick?: EmitType<ClickEventArgs>;
 

@@ -1,7 +1,8 @@
-import { Workbook, RowModel, CellModel, getCell, setCell } from '../base/index';
+import { Workbook, RowModel, CellModel, getCell, setCell, Cell } from '../base/index';
 import { deleteModel, deleteAction, InsertDeleteModelArgs, updateUsedRange, ExtendedRange, MergeArgs } from '../../workbook/common/index';
-import { activeCellMergedRange, setMerge } from '../../workbook/common/index';
+import { activeCellMergedRange, setMerge, updateSheetFromDataSource } from '../../workbook/common/index';
 import { SheetModel } from '../../workbook/base/index';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * The `WorkbookDelete` module is used to delete cells, rows, columns and sheets from workbook.
@@ -15,6 +16,28 @@ export class WorkbookDelete {
     constructor(parent: Workbook) {
         this.parent = parent;
         this.addEventListener();
+    }
+    private delete(args: InsertDeleteModelArgs): void {
+        if (!isNullOrUndefined(args.sheet) && args.modelType !== 'Sheet' && args.sheet !== this.parent.activeSheetIndex) {
+            args.model = args.model as SheetModel;
+            for (let i: number = 0, len: number = args.model.ranges.length; i < len; i++) {
+                if (args.model.ranges[i].dataSource) {
+                    let deleteArgs: { promise?: Promise<Cell>, indexes: number[], sheet: SheetModel, skipModelUpdate?: boolean } = {
+                        promise: new Promise((resolve: Function, reject: Function) => { resolve((() => { /** */ })()); }), sheet: args.model
+                        , indexes: [0, 0, 1048576, 16384]
+                    };
+                    this.parent.notify(updateSheetFromDataSource, deleteArgs);
+                    deleteArgs.promise.then(() => {
+                        args.model = this.parent.sheets[args.sheet]; this.deleteModel(args);
+                        deleteArgs.skipModelUpdate = true;
+                    });
+                    return;
+                }
+            }
+            this.deleteModel(args);
+        } else {
+            this.deleteModel(args);
+        }
     }
     // tslint:disable-next-line
     private deleteModel(args: InsertDeleteModelArgs): void {
@@ -171,7 +194,7 @@ export class WorkbookDelete {
         });
     }
     private addEventListener(): void {
-        this.parent.on(deleteModel, this.deleteModel, this);
+        this.parent.on(deleteModel, this.delete, this);
     }
     /**
      * Destroy workbook delete module.
@@ -182,7 +205,7 @@ export class WorkbookDelete {
     }
     private removeEventListener(): void {
         if (!this.parent.isDestroyed) {
-            this.parent.off(deleteModel, this.deleteModel);
+            this.parent.off(deleteModel, this.delete);
         }
     }
     /**

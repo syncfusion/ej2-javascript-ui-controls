@@ -1927,7 +1927,7 @@ let Dialog = class Dialog extends Component {
                 if (!isNullOrUndefined(activeEle) && !isNullOrUndefined((activeEle).blur)) {
                     activeEle.blur();
                 }
-                if (!isNullOrUndefined(this.storeActiveElement)) {
+                if (!isNullOrUndefined(this.storeActiveElement) && !isNullOrUndefined(this.storeActiveElement.focus)) {
                     this.storeActiveElement.focus();
                 }
             }
@@ -2156,7 +2156,7 @@ let Dialog = class Dialog extends Component {
         this.element.style.display = display;
         if (Browser.isIE && this.height === 'auto' && !isNullOrUndefined(this.contentEle)
             && this.element.offsetHeight < this.contentEle.offsetHeight) {
-            this.element.style.height = '100%';
+            this.element.style.height = 'inherit';
         }
     }
     setEnableRTL() {
@@ -2505,6 +2505,9 @@ let Dialog = class Dialog extends Component {
             document.querySelector(this.target) : this.target;
         if (this.dragObj) {
             this.dragObj.dragArea = this.targetEle;
+        }
+        if (this.isModal) {
+            this.updateIsModal();
         }
         this.setMaxHeight();
     }

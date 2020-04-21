@@ -87,3 +87,9 @@ export function pixelToPoint(value: number): number {
 export function pointToPixel(value: number): number {
     return (value * 92) / 76;
 }
+
+let uid: number = 0;
+/** @hidden */
+export function getUid(): number {
+    return uid++;
+}

@@ -54,6 +54,7 @@ export class DropDownEditCell implements IEditCell {
                 sortOrder: 'Ascending'
             },
             args.column.edit.params));
+        this.obj.query.params = this.parent.query.params;
         if (isBlazor()) {
             this.obj.locale = this.parent.locale;
         }

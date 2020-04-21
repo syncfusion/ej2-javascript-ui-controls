@@ -1,4 +1,4 @@
-import { extend, Internationalization } from '@syncfusion/ej2-base';
+import { extend, Internationalization, KeyboardEventArgs } from '@syncfusion/ej2-base';
 import { IGrid, IEditCell } from '../base/interface';
 import { Column } from '../models/column';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
@@ -18,6 +18,15 @@ export class NumericEditCell implements IEditCell {
         this.parent = parent;
     }
 
+    private keyEventHandler(args: KeyboardEventArgs): void {
+        if (args.keyCode === 13 || args.keyCode === 9 ) {
+            let evt: Event = document.createEvent('HTMLEvents');
+            evt.initEvent('change', false, true);
+            /* tslint:disable-next-line:no-any */
+            (this as any).dispatchEvent(evt);
+          }
+    }
+
     public create(args: { column: Column, value: string }): Element {
         let complexFieldName: string = getComplexFieldID(args.column.field);
         this.instances = new Internationalization(this.parent.locale);
@@ -30,9 +39,7 @@ export class NumericEditCell implements IEditCell {
     }
 
     public read(element: Element): number {
-        let value: number = this.instances.getNumberParser({ format: 'n' })((<HTMLInputElement>element).value);
-        /* tslint:disable:no-string-literal */
-        return (this.obj['trimValue'])(value);
+        return this.obj.value;
     }
 
     public write(args: { rowData: Object, element: Element, column: Column, row: HTMLElement, requestType: string }): void {
@@ -50,10 +57,12 @@ export class NumericEditCell implements IEditCell {
             col.edit.params));
         args.element.setAttribute('name', getComplexFieldID(args.column.field));
         this.obj.appendTo(args.element as HTMLElement);
+        this.obj.element.addEventListener('keydown', this.keyEventHandler);
     }
 
     public destroy(): void {
         if (this.obj && !this.obj.isDestroyed) {
+            this.obj.element.removeEventListener('keydown', this.keyEventHandler);
             this.obj.destroy();
         }
     }

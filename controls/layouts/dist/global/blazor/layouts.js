@@ -257,9 +257,7 @@ var Splitter = /** @class */ (function (_super) {
         }
         var name = sf.base.Browser.info.name;
         var css = (name === 'msie') ? 'e-ie' : '';
-        if (!this.checkBlazor()) {
-            this.setCssClass(this.element, css);
-        }
+        this.setCssClass(this.element, css);
         if (sf.base.Browser.isDevice) {
             sf.base.addClass([this.element], SPLIT_TOUCH);
         }
@@ -813,10 +811,12 @@ var Splitter = /** @class */ (function (_super) {
                 }
                 if (this.checkBlazor()) {
                     proxy = this;
-                    separator = this.element.getElementsByClassName('e-split-bar')[i];
-                    if (this.checkBlazor()) {
-                        this.allBars.push(separator);
+                    for (var j = 0; j < this.element.children.length; j++) {
+                        if (this.element.children[j].classList.contains(SPLIT_BAR)) {
+                            separator = this.element.children[j];
+                        }
                     }
+                    this.allBars.push(separator);
                     this.updateIconClass();
                 }
                 if (!this.checkBlazor()) {

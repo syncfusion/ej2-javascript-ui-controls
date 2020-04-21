@@ -482,6 +482,7 @@ export class Legend {
             document.getElementById(targetElement.id + '_Text');
         let collection: object[] = this.maps.legendModule.legendCollection;
         let length: number;
+        let multiSelectEnable: boolean = this.maps.layers[collection[0]['data'][0]['layerIndex']].selectionSettings.enableMultiSelect;
         let selectLength: number = 0;
         let interactProcess: boolean = true;
         let idIndex: number = parseFloat(targetElement.id.charAt(targetElement.id.length - 1));
@@ -496,7 +497,6 @@ export class Legend {
             return null;
         }
         if (value === 'selection') {
-            let multiSelectEnable: boolean = this.maps.layers[collection[0]['data'][0]['layerIndex']].selectionSettings.enableMultiSelect;
             this.shapeHighlightCollection = [];
             if (!this.maps.shapeSelections && !multiSelectEnable) {
                 this.removeAllSelections();
@@ -513,6 +513,16 @@ export class Legend {
                         this.maps.legendSelectionCollection.splice(k, 1);
                         this.maps.legendSelection = this.maps.legendSelectionCollection.length > 0 ? false : true;
                         break;
+                    } else if (!multiSelectEnable) {
+                        if (this.maps.legendSelectionCollection.length > 1) {
+                            for (let z : number = 0; z < this.maps.legendSelectionCollection.length; z++) {
+                                this.removeLegendSelectionCollection(this.maps.legendSelectionCollection[z]['legendElement']);
+                            }
+                            this.maps.legendSelectionCollection = [];
+                        } else {
+                            this.removeLegendSelectionCollection(this.maps.legendSelectionCollection[k]['legendElement']);
+                            this.maps.legendSelectionCollection.splice(k, 1);
+                        }
                     }
                 }
             }
@@ -594,7 +604,16 @@ export class Legend {
                                         this.pushCollection(
                                             targetElement, this.maps.legendSelectionCollection, collection[i],
                                             layer.shapeSettings as ShapeSettings);
-                                        this.maps.selectedLegendElementId.push(i);
+                                        if (multiSelectEnable) {
+                                            this.maps.selectedLegendElementId.push(i);
+                                        } else {
+                                            if (this.maps.selectedLegendElementId.length === 0) {
+                                                this.maps.selectedLegendElementId.push(i);
+                                            } else {
+                                                this.maps.selectedLegendElementId = [];
+                                                this.maps.selectedLegendElementId.push(i);
+                                            }
+                                        }
                                     }
                                     selectLength = this.maps.legendSelectionCollection.length;
                                     let legendSelectionColor: string;
@@ -1354,7 +1373,7 @@ export class Legend {
                         range = false;
                         let rangeValue: number = data[colorValuePath];
                         for (let z: number = 0; z < colorMapping.length; z++) {
-                            if (!isNullOrUndefined(rangeValue) && rangeValue !== 0) {
+                            if (!isNullOrUndefined(rangeValue) && !isNaN(rangeValue)) {
                                 if (rangeValue >= colorMapping[z].from && rangeValue <= colorMapping[z].to) {
                                     range = true;
                                 }

@@ -1,7 +1,7 @@
 import { createElement, Browser, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { CheckBox, ChangeEventArgs } from '@syncfusion/ej2-buttons';
 import { PdfViewer, PdfViewerBase, AjaxHandler, TileRenderingSettingsModel } from '../index';
-import { DocumentTextCollectionSettingsModel } from '../pdfviewer-model';
+import { DocumentTextCollectionSettingsModel, RectangleBoundsModel } from '../pdfviewer-model';
 
 /**
  * TextSearch module
@@ -60,6 +60,7 @@ export class TextSearch {
      */
     public isTextRetrieved: boolean = false;
     private isTextSearched: boolean = false;
+    private isTextSearchEventTriggered: boolean = false;
 
     /**
      * @private
@@ -216,6 +217,8 @@ export class TextSearch {
             this.isTextSearch = true;
             this.searchPageIndex = this.pdfViewerBase.currentPageNumber - 1;
             this.searchCount = 0;
+            this.isTextSearchEventTriggered = false;
+            this.pdfViewer.fireTextSearchStart(inputString, this.isMatchCase);
             if (this.pdfViewer.isExtractText) {
                 if (this.isTextRetrieved) {
                     for (let i: number = 0; i < this.pdfViewerBase.pageCount; i++) {
@@ -308,6 +311,12 @@ export class TextSearch {
                 if (!isSinglePageSearch) {
                     this.createRequestForSearch(pageIndex);
                 }
+            }
+        }
+        if (this.pdfViewerBase.pageCount === (this.searchMatches && this.searchMatches.length)) {
+            if (!this.isTextSearchEventTriggered) {
+                this.isTextSearchEventTriggered = true;
+                this.pdfViewer.fireTextSearchComplete(this.searchString, this.isMatchCase);
             }
         }
     }
@@ -614,6 +623,8 @@ export class TextSearch {
             if (className === 'e-pv-search-text-highlight') {
                 // tslint:disable-next-line:max-line-length
                 textDiv.style.backgroundColor = (this.pdfViewer.textSearchColorSettings.currentOccurrence === '') ? '#fdd835' : this.pdfViewer.textSearchColorSettings.currentOccurrence;
+                let bounds: RectangleBoundsModel  = { left: left, top: top, width: width, height: height };
+                this.pdfViewer.fireTextSearchHighlight(this.searchString, this.isMatchCase, bounds, (pageIndex + 1));
             } else if (className === 'e-pv-search-text-highlightother') {
                 // tslint:disable-next-line:max-line-length
                 textDiv.style.backgroundColor = (this.pdfViewer.textSearchColorSettings.otherOccurrence === '') ? '#8b4c12' : this.pdfViewer.textSearchColorSettings.otherOccurrence;

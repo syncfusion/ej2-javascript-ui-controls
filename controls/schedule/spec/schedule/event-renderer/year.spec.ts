@@ -136,7 +136,7 @@ describe('Year and TimelineYear View Event Render Module', () => {
         it('DOM elements checking', () => {
             let monthHeader: NodeListOf<Element> = schObj.element.querySelectorAll('.e-month-header');
             expect(monthHeader.length).toEqual(12);
-            let headerCells: NodeListOf<Element> = schObj.element.querySelectorAll('.e-header-cells');
+            let headerCells: NodeListOf<Element> = schObj.element.querySelectorAll('.e-date-header-wrap .e-header-cells');
             expect(headerCells.length).toEqual(36);
             let totalWorkCells: NodeListOf<Element> = schObj.element.querySelectorAll('.e-work-cells');
             expect(totalWorkCells.length).toEqual(432);
@@ -175,6 +175,38 @@ describe('Year and TimelineYear View Event Render Module', () => {
         });
     });
 
+    describe('Testing the timelineyear view rendering with resource in default orientation', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let model: ScheduleModel = {
+                width: '500px', height: '550px', selectedDate: new Date(2019, 0, 1),
+                views: [
+                    { option: 'TimelineDay' },
+                    { option: 'TimelineYear', isSelected: true },
+                    { option: 'TimelineYear', displayName: 'Vertical', orientation: 'Vertical' }
+                ]
+            };
+            schObj = util.createGroupSchedule(2, model, timelineResourceData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('DOM elements checking', () => {
+            let resourceCells: NodeListOf<Element> = schObj.element.querySelectorAll('.e-date-header-wrap .e-resource-cells');
+            expect(resourceCells.length).toEqual(5);
+            let headerCells: NodeListOf<Element> = schObj.element.querySelectorAll('.e-date-header-wrap .e-header-cells');
+            expect(headerCells.length).toEqual(0);
+            let totalWorkCells: NodeListOf<Element> = schObj.element.querySelectorAll('.e-work-cells');
+            expect(totalWorkCells.length).toEqual(36);
+            let currentMonthCells: NodeListOf<Element> = schObj.element.querySelectorAll('.e-work-cells:not(.e-other-month)');
+            expect(currentMonthCells.length).toEqual(36);
+            let otherMonthCells: NodeListOf<Element> = schObj.element.querySelectorAll('.e-work-cells.e-other-month');
+            expect(otherMonthCells.length).toEqual(0);
+        });
+    });
+
     describe('Testing the timelineyear view rendering with vertical orientation', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
@@ -197,7 +229,7 @@ describe('Year and TimelineYear View Event Render Module', () => {
         it('DOM elements checking', () => {
             let monthHeader: NodeListOf<Element> = schObj.element.querySelectorAll('.e-month-header');
             expect(monthHeader.length).toEqual(36);
-            let headerCells: NodeListOf<Element> = schObj.element.querySelectorAll('.e-header-cells');
+            let headerCells: NodeListOf<Element> = schObj.element.querySelectorAll('.e-date-header-wrap .e-header-cells');
             expect(headerCells.length).toEqual(12);
             let totalWorkCells: NodeListOf<Element> = schObj.element.querySelectorAll('.e-work-cells');
             expect(totalWorkCells.length).toEqual(432);
@@ -223,10 +255,47 @@ describe('Year and TimelineYear View Event Render Module', () => {
         });
     });
 
+    describe('Testing the timelineyear view rendering with resource in vertical orientation', () => {
+        let schObj: Schedule;
+        beforeAll((done: Function) => {
+            let model: ScheduleModel = {
+                width: '500px', height: '550px', selectedDate: new Date(2019, 0, 1),
+                views: [
+                    { option: 'TimelineDay' },
+                    { option: 'TimelineYear', displayName: 'Horizontal' },
+                    { option: 'TimelineYear', displayName: 'Vertical', orientation: 'Vertical', isSelected: true }
+                ]
+            };
+            schObj = util.createGroupSchedule(2, model, timelineResourceData, done);
+        });
+
+        afterAll(() => {
+            util.destroy(schObj);
+        });
+
+        it('DOM elements checking', () => {
+            let resourceCells: NodeListOf<Element> = schObj.element.querySelectorAll('.e-resource-column-wrap .e-resource-cells');
+            expect(resourceCells.length).toEqual(5);
+            let headerCells: NodeListOf<Element> = schObj.element.querySelectorAll('.e-date-header-wrap .e-header-cells');
+            expect(headerCells.length).toEqual(12);
+            let totalWorkCells: NodeListOf<Element> = schObj.element.querySelectorAll('.e-work-cells');
+            expect(totalWorkCells.length).toEqual(60);
+            let currentMonthCells: NodeListOf<Element> = schObj.element.querySelectorAll('.e-work-cells:not(.e-other-month)');
+            expect(currentMonthCells.length).toEqual(60);
+            let otherMonthCells: NodeListOf<Element> = schObj.element.querySelectorAll('.e-work-cells.e-other-month');
+            expect(otherMonthCells.length).toEqual(0);
+        });
+    });
+
     describe('Testing the long spanned event in timeline year view horizontal orientation', () => {
         let schObj: Schedule;
         beforeAll((done: Function) => {
-            let yearData: Object[] = [{ Id: 1, StartTime: new Date(2019, 1, 1, 10, 0, 0), EndTime: new Date(2019, 5, 1, 10, 0, 0), IsAllDay: true }];
+            let yearData: Object[] = [{
+                Id: 1,
+                StartTime: new Date(2019, 1, 1, 10, 0, 0),
+                EndTime: new Date(2019, 5, 1, 10, 0, 0),
+                IsAllDay: true
+            }];
             let model: ScheduleModel = {
                 width: '500px', selectedDate: new Date(2019, 0, 1),
                 views: [
@@ -241,9 +310,9 @@ describe('Year and TimelineYear View Event Render Module', () => {
             util.destroy(schObj);
         });
 
-        it('Testing long spanned event in horizontal year view'), () => {
-            expect(schObj.element.querySelectorAll('[data-id="Appointment_1"]').length).toEqual(4);
-        };
+        it('Testing long spanned event in horizontal year view', () => {
+            expect(schObj.element.querySelectorAll('[data-id="Appointment_1"]').length).toEqual(5);
+        });
     });
 
 

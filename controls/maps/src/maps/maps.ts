@@ -688,6 +688,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     public initialCheck: boolean = true;
     /** @private */
     public applyZoomReset: boolean = false;
+    /** @private */
+    public markerClusterExpandCheck: boolean = false;
 
     /**
      * Constructor for creating the widget
@@ -1047,7 +1049,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         if (document.getElementById(this.element.id + '_Legend_Border')) {
             document.getElementById(this.element.id + '_Legend_Border').style.pointerEvents = 'none';
         }
-        let templateElements: HTMLCollectionOf<Element> = document.getElementsByClassName('template');
+        let templateElements: HTMLCollectionOf<Element> = document.getElementsByClassName(this.element.id + '_template');
         if (!isNullOrUndefined(templateElements) && templateElements.length > 0 &&
             getElementByID(this.element.id + '_Layer_Collections') && this.layers[this.layers.length - 1].layerType !== 'OSM') {
             for (let i: number = 0; i < templateElements.length; i++) {
@@ -1308,7 +1310,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 latitude: latitude, longitude: longitude
             };
             this.trigger('click', eventArgs, (mouseArgs: IMouseEventArgs) => {
-                if (targetEle.id.indexOf('shapeIndex') > -1 || targetEle.id.indexOf('Tile') > -1) {
+                if (targetEle.id.indexOf('shapeIndex') > -1) {
                     if (this.markerModule && this.markerModule.sameMarkerData.length > 0 &&
                         (this.zoomModule ? this.zoomModule.isSingleClick : true)) {
                         mergeSeparateCluster(this.markerModule.sameMarkerData, this, getElement(this.element.id + '_Markers_Group'));
@@ -1338,6 +1340,10 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                     if (!shapeSelectedEventArgs.cancel && this.selectionModule && !isNullOrUndefined(this.shapeSelected)) {
                         customizeStyle(this.selectionModule.selectionType + 'selectionMap',
                                        this.selectionModule.selectionType + 'selectionMapStyle', shapeSelectedEventArgs);
+                    } else if (shapeSelectedEventArgs.cancel && this.selectionModule
+                        && isNullOrUndefined(shapeSelectedEventArgs['data'])) {
+                        removeClass(targetEle);
+                        this.selectionModule.removedSelectionList(targetEle);
                     }
                 }
             });
@@ -1605,8 +1611,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @param name - Specifies the name of the shape that is selected.
      * @param enable - Specifies the shape selection to be enabled.
      */
-    public shapeSelection(layerIndex: number, propertyName: string, name: string, enable?: boolean): void {
+    public shapeSelection(layerIndex: number, propertyName: string | string[], name: string, enable?: boolean): void {
         let targetEle: Element;
+        let popertyNameArray: string[] = Array.isArray(propertyName) ? propertyName : Array(propertyName);
         if (isNullOrUndefined(enable)) {
             enable = true;
         }
@@ -1622,54 +1629,60 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             let data: object;
             let shapeData: Object[] = <Object[]>this.layers[layerIndex].shapeData['features'];
             for (let i: number = 0; i < shapeData.length; i++) {
-                if (shapeData[i]['properties'][propertyName] === name) {
-                    let k: number = checkShapeDataFields(
-                        <Object[]>this.layers[layerIndex].dataSource, shapeData[i]['properties'],
-                        this.layers[layerIndex].shapeDataPath, this.layers[layerIndex].shapePropertyPath,
-                        this.layers[layerIndex]);
-                    targetId = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_' +
-                        (k ? k.toString() : 'undefined');
-                    targetEle = getElement(targetId);
-                    if (isNullOrUndefined(k) && isNullOrUndefined(targetEle)) {
-                        targetId = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_null';
+                for (let j: number = 0; j < (<string[]>popertyNameArray).length; j++) {
+                    let propertyName : string = !isNullOrUndefined(shapeData[i]['properties'][popertyNameArray[j]])
+                    && isNaN(shapeData[i]['properties'][popertyNameArray[j]]) ?
+                    shapeData[i]['properties'][popertyNameArray[j]].toLowerCase() : shapeData[i]['properties'][popertyNameArray[j]];
+                    let shapeName : string = !isNullOrUndefined(name) ? name.toLowerCase() : name;
+                    if (propertyName === shapeName) {
+                        let k: number = checkShapeDataFields(
+                            <Object[]>this.layers[layerIndex].dataSource, shapeData[i]['properties'],
+                            this.layers[layerIndex].shapeDataPath, this.layers[layerIndex].shapePropertyPath,
+                            this.layers[layerIndex]);
+                        targetId = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_' +
+                            (!isNullOrUndefined(k) ? k.toString() : 'undefined');
                         targetEle = getElement(targetId);
-                    }
-                    shapeIndex = parseInt(targetEle.id.split('_shapeIndex_')[1].split('_')[0], 10);
-                    shapeDataValue = this.layers[layerIndex].shapeData['features']['length'] > shapeIndex ?
-                        this.layers[layerIndex].shapeData['features'][shapeIndex]['properties'] : null;
-                    dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
-                    data = isNullOrUndefined(dataIndex) ? null : this.layers[layerIndex].dataSource[dataIndex];
-                    if (enable) {
-                        triggerItemSelectionEvent(selectionsettings, this, targetEle, shapeDataValue, data);
-                        this.shapeSelectionClass = getElement('ShapeselectionMap');
-                        if (this.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1) {
-                            this.legendModule.shapeHighLightAndSelection(
-                                targetEle, data, selectionsettings, 'selection', layerIndex);
+                        if (isNullOrUndefined(k) && isNullOrUndefined(targetEle)) {
+                            targetId = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_null';
+                            targetEle = getElement(targetId);
                         }
-                        let shapeToggled: boolean = this.legendSettings.visible ? this.legendModule.shapeToggled : true;
-                        if (shapeToggled) {
-                            targetEle.setAttribute('class', 'ShapeselectionMapStyle');
-                            if (this.selectedElementId.indexOf(targetEle.getAttribute('id')) === -1) {
-                                this.selectedElementId.push(targetEle.getAttribute('id'));
+                        shapeIndex = parseInt(targetEle.id.split('_shapeIndex_')[1].split('_')[0], 10);
+                        shapeDataValue = this.layers[layerIndex].shapeData['features']['length'] > shapeIndex ?
+                            this.layers[layerIndex].shapeData['features'][shapeIndex]['properties'] : null;
+                        dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
+                        data = isNullOrUndefined(dataIndex) ? null : this.layers[layerIndex].dataSource[dataIndex];
+                        if (enable) {
+                            triggerItemSelectionEvent(selectionsettings, this, targetEle, shapeDataValue, data);
+                            this.shapeSelectionClass = getElement('ShapeselectionMap');
+                            if (this.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1) {
+                                this.legendModule.shapeHighLightAndSelection(
+                                    targetEle, data, selectionsettings, 'selection', layerIndex);
                             }
-                            if (!selectionsettings.enableMultiSelect) { return; }
-                        }
-                    } else {
-                        this.legendSelection = (!selectionsettings.enableMultiSelect && !this.legendSelection) ?
-                            true : this.legendSelection;
-                        if (this.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1 &&
-                            targetEle.getAttribute('class') === 'ShapeselectionMapStyle') {
-                            this.legendModule.shapeHighLightAndSelection(
-                                targetEle, data, selectionsettings, 'selection', layerIndex);
-                        }
-                        let shapeToggled: boolean = this.legendSettings.visible ? this.legendModule.shapeToggled : true;
-                        if (shapeToggled) {
-                            removeClass(targetEle);
-                            let selectedElementIdIndex: number = this.selectedElementId.indexOf(targetEle.getAttribute('id'));
-                            if (selectedElementIdIndex !== -1) {
-                                this.selectedElementId.splice(selectedElementIdIndex, 1);
-                                if (!selectionsettings.enableMultiSelect && this.legendSelection && this.selectedElementId.length > 0) {
-                                    this.removeShapeSelection();
+                            let shapeToggled: boolean = this.legendSettings.visible ? this.legendModule.shapeToggled : true;
+                            if (shapeToggled) {
+                                targetEle.setAttribute('class', 'ShapeselectionMapStyle');
+                                if (this.selectedElementId.indexOf(targetEle.getAttribute('id')) === -1) {
+                                    this.selectedElementId.push(targetEle.getAttribute('id'));
+                                }
+                                if (!selectionsettings.enableMultiSelect) { return; }
+                            }
+                        } else {
+                            this.legendSelection = (!selectionsettings.enableMultiSelect && !this.legendSelection) ?
+                                true : this.legendSelection;
+                            if (this.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1 &&
+                                targetEle.getAttribute('class') === 'ShapeselectionMapStyle') {
+                                this.legendModule.shapeHighLightAndSelection(
+                                    targetEle, data, selectionsettings, 'selection', layerIndex);
+                            }
+                            let shapeToggled: boolean = this.legendSettings.visible ? this.legendModule.shapeToggled : true;
+                            if (shapeToggled) {
+                                removeClass(targetEle);
+                                let selectedElementIdIndex: number = this.selectedElementId.indexOf(targetEle.getAttribute('id'));
+                                if (selectedElementIdIndex !== -1) {
+                                    this.selectedElementId.splice(selectedElementIdIndex, 1);
+                                    if (!selectionsettings.enableMultiSelect && this.legendSelection && this.selectedElementId.length > 0) {
+                                        this.removeShapeSelection();
+                                    }
                                 }
                             }
                         }

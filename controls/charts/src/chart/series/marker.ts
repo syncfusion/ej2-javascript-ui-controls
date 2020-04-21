@@ -37,7 +37,7 @@ export class Marker extends MarkerExplode {
         let redraw: boolean = series.chart.redraw;
         this.createElement(series, redraw);
         for (let point of series.points) {
-            if (point.visible && point.symbolLocations.length) {
+            if (point.visible && point.symbolLocations && point.symbolLocations.length) {
                 point.symbolLocations.map((location: ChartLocation, index: number) => {
                     this.renderMarker(series, point, location, index, redraw);
                 });

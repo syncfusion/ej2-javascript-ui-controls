@@ -460,7 +460,7 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
     public textAlign: string;
 
     /**
-     * Represents the unique Name of the annotation 
+     * Represents the unique Name of the annotation
      * @default ''
      */
     @Property('')
@@ -500,6 +500,13 @@ export class PdfAnnotationBase extends ChildProperty<PdfAnnotationBase> {
      */
     @Property(false)
     public isLock: boolean;
+
+    /**
+     * specifies the particular annotation mode.
+     * @default 'UI Drawn Annotation'
+     */
+    @Property('UI Drawn Annotation')
+    public annotationAddMode: string;
 
     /**
      * specifies the default settings of the annotation.

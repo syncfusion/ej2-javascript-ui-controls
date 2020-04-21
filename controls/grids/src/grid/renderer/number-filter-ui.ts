@@ -4,7 +4,7 @@ import { FilterSettings } from '../base/grid';
 import { NumericTextBox } from '@syncfusion/ej2-inputs';
 import { ServiceLocator } from '../services/service-locator';
 import { Filter } from '../actions/filter';
-import { extend } from '@syncfusion/ej2-base';
+import { extend, isUndefined } from '@syncfusion/ej2-base';
 
 /**
  * `numberfilterui` render number column.
@@ -31,7 +31,8 @@ export class NumberFilterUI implements IFilterMUI {
         args.target.appendChild(this.instance);
         this.numericTxtObj = new NumericTextBox(extend(
             {
-                format: args.column.format as string,
+                format: typeof(args.column.format) === 'string' || isUndefined(args.column.format) ? args.column.format :
+                args.column.format.format,
                 locale: this.parent.locale,
                 cssClass: 'e-popup-flmenu',
                 placeholder: args.localizeText.getConstant('EnterValue'),

@@ -11,7 +11,7 @@ import { addRibbonTabs, addToolbarItems, hideFileMenuItems, addFileMenuItems, hi
 import { MenuEventArgs, BeforeOpenCloseMenuEventArgs, ClickEventArgs, Toolbar, Menu, MenuItemModel } from '@syncfusion/ej2-navigations';
 import { ItemModel as TlbItemModel } from '@syncfusion/ej2-navigations';
 import { SelectingEventArgs } from '@syncfusion/ej2-navigations';
-import { ColorPicker, ColorPickerEventArgs, TextBox, ModeSwitchEventArgs } from '@syncfusion/ej2-inputs';
+import { ColorPicker, ColorPickerEventArgs, ModeSwitchEventArgs } from '@syncfusion/ej2-inputs';
 import { extend, L10n, isNullOrUndefined, getComponent, closest, detach, selectAll, select, EventHandler } from '@syncfusion/ej2-base';
 import { SheetModel, getCellIndexes, CellModel, getFormatFromType, getTypeFromFormat, setCell, RowModel } from '../../workbook/index';
 import { DropDownButton, OpenCloseMenuEventArgs, SplitButton, ClickEventArgs as BtnClickEventArgs } from '@syncfusion/ej2-splitbuttons';
@@ -766,29 +766,38 @@ export class Ribbon {
         return this.findDdb.element;
     }
     private findToolDlg(): void {
+        let countArgs: { [key: string]: string };
         if (isNullOrUndefined(this.parent.element.querySelector('.e-findtool-dlg'))) {
             let toolbarObj: Toolbar;
-            let findTextElement: HTMLElement = this.parent.createElement('div');
+            let findTextElement: HTMLElement = this.parent.createElement('div', { className: 'e-input-group'});
             let findTextInput: HTMLElement = this.parent.createElement('input', {
-                className: 'e-input e-text-findNext-short', attrs: { 'type': 'Text' , value: this.findValue }
+                className: 'e-input e-text-findNext-short', attrs: { 'type': 'Text' , value: this.findValue },
             });
+            findTextInput.setAttribute('placeholder', 'FindValue');
+            let findSpan: HTMLElement = this.parent.createElement('span', { className: 'e-input-group-icon'});
             findTextInput.onkeyup = (): void => {
-                let countArgs: { [key: string]: string } = { countOpt: 'count', findCount: '' };
+                countArgs = { countOpt: 'count', findCount: '' };
                 this.parent.notify(findHandler, { countArgs: countArgs });
+                findSpan.textContent = countArgs.findCount;
+                let totalCount: string[] = countArgs.findCount.split('of');
                 let element: HTMLInputElement = document.querySelector('.e-text-findNext-short') as HTMLInputElement;
                 let value: string = element.value;
                 let nextElement: HTMLElement = document.querySelector('.e-findRib-next') as HTMLElement;
                 let prevElement: HTMLElement = document.querySelector('.e-findRib-prev') as HTMLElement;
-                if (isNullOrUndefined(value) || (value === '') || (countArgs.findCount === '0of0')) {
+                if (isNullOrUndefined(value) || (value === '') || (totalCount[1] === '0')) {
                     toolbarObj.enableItems(nextElement, false); toolbarObj.enableItems(prevElement, false);
-                } else if (!isNullOrUndefined(value) || (countArgs.findCount !== '0of0')) {
+                } else if (!isNullOrUndefined(value) || (totalCount[1] !== '0')) {
                     toolbarObj.enableItems(nextElement, true); toolbarObj.enableItems(prevElement, true);
                 }
             };
             findTextInput.onkeydown = (e: KeyboardEvent): void => {
-                this.findOnKeyDown(e);
+                countArgs = { countOpt: 'count', findCount: '' };
+                this.parent.notify(findHandler, { countArgs: countArgs });
+                let count: string = countArgs.findCount;
+                this.findOnKeyDown(e, count);
             };
             findTextElement.appendChild(findTextInput);
+            findTextElement.appendChild(findSpan);
             let toolItemModel: TlbItemModel[] = [
                 { type: 'Input', template: findTextElement },
                 {
@@ -814,7 +823,6 @@ export class Ribbon {
                     }
                 }, width: 'auto', height: 'auto', items: toolItemModel, cssClass: 'e-find-toolObj'
             });
-            let l10n: L10n = this.parent.serviceLocator.getService(locale);
             let toolbarElement: HTMLElement = this.parent.createElement('div', { className: 'e-find-toolbar' });
             let dialogDiv: HTMLElement = this.parent.createElement('div', { className: 'e-dlg-div' });
             this.findDialog = new FindDialog({
@@ -822,9 +830,6 @@ export class Ribbon {
                 allowDragging: true, target: this.parent.element.querySelector('.e-main-panel') as HTMLElement,
                 beforeOpen: (): void => {
                     EventHandler.add(document, 'click', this.closeDialog, this);
-                    let findTextBox: TextBox = new TextBox({ placeholder: l10n.getConstant('FindValue') });
-                    findTextBox.createElement = this.parent.createElement;
-                    findTextBox.appendTo(findTextInput);
                 },
                 open: (): void => {
                     this.textFocus(toolbarObj.element);
@@ -861,8 +866,10 @@ export class Ribbon {
             }
         }
     }
-    private findOnKeyDown(e: KeyboardEvent): void {
+    private findOnKeyDown(e: KeyboardEvent, count: string): void {
         if ((document.querySelector('.e-text-findNext-short') as HTMLInputElement).value) {
+            let totalCount: string[] = count.split('of');
+            if (totalCount[1] !== '0') {
             if (e.shiftKey) {
                 if (e.keyCode === 13) {
                     let buttonArgs: object = { findOption: 'prev' };
@@ -873,6 +880,7 @@ export class Ribbon {
                 this.parent.notify(findHandler, buttonArg);
             }
         }
+    }
     }
     private closeDialog(e: MouseEvent & TouchEvent): void {
         if ((closest(e.target as Element, '.e-findRib-close')) || (!closest(e.target as Element, '.e-spreadsheet'))) {
@@ -888,6 +896,7 @@ export class Ribbon {
         element.addEventListener('focus', (): void => {
             let elements: HTMLInputElement = document.querySelector('.e-text-findNext-short');
             elements.focus();
+            elements.classList.add('e-input-focus');
             (elements).setSelectionRange(0, elements.value.length);
         });
     }

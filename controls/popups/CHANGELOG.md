@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.45 (2020-04-21)
+
+### Dialog
+
+#### Bug Fixes
+
+- `#269987` - Resolved the dialog target is not working properly when updating the target property dynamically.
+
 ## 18.1.44 (2020-04-14)
 
 ### Tooltip

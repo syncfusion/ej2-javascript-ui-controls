@@ -6,7 +6,7 @@ import { NodeCutter } from './nodecutter';
 import { InsertMethods } from './insert-methods';
 import { IsFormatted } from './isformatted';
 import { isIDevice, setEditFrameFocus } from '../../common/util';
-import { isNullOrUndefined, Browser } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, Browser } from '@syncfusion/ej2-base';
 
 export class SelectionCommands {
     /**
@@ -23,7 +23,8 @@ export class SelectionCommands {
             let isFormatted: IsFormatted = new IsFormatted();
             let range: Range = domSelection.getRange(docElement);
             let save: NodeSelection = domSelection.save(range, docElement);
-            let nodes: Node[] = domSelection.getSelectionNodeCollection(range);
+            let nodes: Node[] = range.collapsed ? domSelection.getSelectionNodeCollection(range) :
+            domSelection.getSelectionNodeCollectionBr(range);
             let isCollapsed: boolean = false;
             let isFormat: boolean = false;
             let isCursor: boolean = false;
@@ -124,27 +125,32 @@ export class SelectionCommands {
                 nodeIndex.push(domSelection.getIndex(cloneNode));
                 cloneNode = cloneNode.parentNode;
             } while (cloneNode && (cloneNode !== formatNode));
-            cloneNode = splitNode = (isCursor && (formatNode.textContent.length - 1) === range.startOffset) ?
-            nodeCutter.SplitNode(range, formatNode as HTMLElement, true) as HTMLElement
-            : nodeCutter.GetSpliceNode(range, formatNode as HTMLElement) as HTMLElement;
+            if (nodes[index].nodeName !== 'BR') {
+                cloneNode = splitNode = (isCursor && (formatNode.textContent.length - 1) === range.startOffset) ?
+                nodeCutter.SplitNode(range, formatNode as HTMLElement, true) as HTMLElement
+                : nodeCutter.GetSpliceNode(range, formatNode as HTMLElement) as HTMLElement;
+            }
             if (!isCursor) {
                 while (cloneNode && cloneNode.childNodes.length > 0 && ((nodeIndex.length - 1) >= 0)
                     && (cloneNode.childNodes.length > nodeIndex[nodeIndex.length - 1])) {
                     cloneNode = cloneNode.childNodes[nodeIndex[nodeIndex.length - 1]];
                     nodeIndex.pop();
                 }
-                if (cloneNode.nodeType === 3 && !(isCursor && cloneNode.nodeValue === '')) {
-                    nodes[index] = cloneNode;
-                } else {
-                    let divNode: HTMLDivElement = document.createElement('div');
-                    divNode.innerHTML = '&#8203;';
-                    if (cloneNode.nodeType !== 3) {
-                        cloneNode.insertBefore(divNode.firstChild, cloneNode.firstChild);
-                        nodes[index] = cloneNode.firstChild;
+
+                if (nodes[index].nodeName !== 'BR') {
+                    if (cloneNode.nodeType === 3 && !(isCursor && cloneNode.nodeValue === '')) {
+                        nodes[index] = cloneNode;
                     } else {
-                        cloneNode.parentNode.insertBefore(divNode.firstChild, cloneNode);
-                        nodes[index] = cloneNode.previousSibling;
-                        cloneNode.parentNode.removeChild(cloneNode);
+                        let divNode: HTMLDivElement = document.createElement('div');
+                        divNode.innerHTML = '&#8203;';
+                        if (cloneNode.nodeType !== 3) {
+                            cloneNode.insertBefore(divNode.firstChild, cloneNode.firstChild);
+                            nodes[index] = cloneNode.firstChild;
+                        } else {
+                            cloneNode.parentNode.insertBefore(divNode.firstChild, cloneNode);
+                            nodes[index] = cloneNode.previousSibling;
+                            cloneNode.parentNode.removeChild(cloneNode);
+                        }
                     }
                 }
             } else {
@@ -164,11 +170,11 @@ export class SelectionCommands {
             if (format === 'fontsize') {
                 let liElement: HTMLElement = nodes[index].parentElement;
                 let parentElement: HTMLElement = nodes[index].parentElement;
-                while (!isNullOrUndefined(parentElement) && parentElement.tagName.toLowerCase() !== 'li') {
+                while (!isNOU(parentElement) && parentElement.tagName.toLowerCase() !== 'li') {
                     parentElement = parentElement.parentElement;
                     liElement = parentElement;
                 }
-                if (!isNullOrUndefined(liElement) && liElement.tagName.toLowerCase() === 'li' &&
+                if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li' &&
                     liElement.textContent.trim() === nodes[index].textContent.trim()) {
                     liElement.style.fontSize = value;
                 }
@@ -191,8 +197,10 @@ export class SelectionCommands {
         value: string): Node {
         if (!isCursor) {
             if ((formatNode === null && isFormat) || isFontStyle) {
-                nodes[index] = nodeCutter.GetSpliceNode(range, nodes[index] as HTMLElement);
-                nodes[index].textContent = nodeCutter.TrimLineBreak((nodes[index] as Text).textContent);
+                if (nodes[index].nodeName !== 'BR') {
+                    nodes[index] = nodeCutter.GetSpliceNode(range, nodes[index] as HTMLElement);
+                    nodes[index].textContent = nodeCutter.TrimLineBreak((nodes[index] as Text).textContent);
+                }
                 if (format === 'uppercase' || format === 'lowercase') {
                     nodes[index].textContent = (format === 'uppercase') ? nodes[index].textContent.toLocaleUpperCase()
                         : nodes[index].textContent.toLocaleLowerCase();
@@ -201,11 +209,11 @@ export class SelectionCommands {
                     if (format === 'fontsize') {
                         let liElement: HTMLElement = nodes[index].parentElement;
                         let parentElement: HTMLElement = nodes[index].parentElement;
-                        while (!isNullOrUndefined(parentElement) && parentElement.tagName.toLowerCase() !== 'li') {
+                        while (!isNOU(parentElement) && parentElement.tagName.toLowerCase() !== 'li') {
                             parentElement = parentElement.parentElement;
                             liElement = parentElement;
                         }
-                        if (!isNullOrUndefined(liElement) && liElement.tagName.toLowerCase() === 'li' &&
+                        if (!isNOU(liElement) && liElement.tagName.toLowerCase() === 'li' &&
                             liElement.textContent.trim() === nodes[index].textContent.trim()) {
                             liElement.style.fontSize = value;
                         }
@@ -229,8 +237,9 @@ export class SelectionCommands {
         return nodes[index];
     }
     private static applyStyles(nodes: Node[], index: number, element: HTMLElement): Node {
-        nodes[index] = (index === (nodes.length - 1)) ? InsertMethods.Wrap(nodes[index] as HTMLElement, element)
-            : InsertMethods.WrapBefore(nodes[index] as Text, element, true);
+        nodes[index] = (index === (nodes.length - 1)) || nodes[index].nodeName === 'BR' ?
+        InsertMethods.Wrap(nodes[index] as HTMLElement, element)
+        : InsertMethods.WrapBefore(nodes[index] as Text, element, true);
         nodes[index] = this.getChildNode(nodes[index], element);
         return nodes[index];
     }

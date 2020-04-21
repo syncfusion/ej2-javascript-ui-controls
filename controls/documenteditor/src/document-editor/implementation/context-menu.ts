@@ -507,7 +507,7 @@ export class ContextMenu {
      * @param {boolean} isEnable - To hide existing menu item and show custom menu item alone
      * @param {boolean} isBottom - To show the custom menu item in bottom of the existing item
      * @returns {void}
-     * @blazorArgsType items|List<Syncfusion.EJ2.Blazor.Navigations.MenuItem>,isEnable|Boolean,isBottom|Boolean
+     * @blazorArgsType items|List<Syncfusion.Blazor.Navigations.MenuItemModel>,isEnable|Boolean,isBottom|Boolean
      */
     public addCustomMenu(items: MenuItemModel[], isEnable?: boolean, isBottom?: boolean): void {
         let menuItems: MenuItemModel[] = JSON.parse(JSON.stringify(items));
@@ -766,7 +766,7 @@ export class ContextMenu {
             let start: TextPosition = selection.start;
             let end: TextPosition = selection.end;
             if (selection.contextType === 'List'
-                && owner.editorModule.getListLevel(start.paragraph).listLevelPattern !== 'Bullet') {
+                && owner.selection.getListLevel(start.paragraph).listLevelPattern !== 'Bullet') {
                 continueNumbering.style.display = 'block';
                 restartAt.style.display = 'block';
                 (restartAt.nextSibling as HTMLElement).style.display = 'block';

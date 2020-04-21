@@ -230,8 +230,8 @@ public isRemote(): boolean {
    * Function to manipulate datasource
    * @hidden
    */
-  private collectExpandingRecs(rowDetails: {record: ITreeData,
-    rows: HTMLTableRowElement[], parentRow: HTMLTableRowElement}): void {
+  private collectExpandingRecs(rowDetails: {record: ITreeData, rows: HTMLTableRowElement[], parentRow: HTMLTableRowElement},
+                               isChild?: boolean): void {
     let gridRows: HTMLTableRowElement[] = this.parent.getRows();
     if (this.parent.rowTemplate) {
       let rows: HTMLCollection = (this.parent.getContentTable() as HTMLTableElement).rows;
@@ -239,10 +239,11 @@ public isRemote(): boolean {
     }
     let childRecord: ITreeData;
     let adaptorName: string = 'adaptorName';
-    let args: RowExpandedEventArgs = {row: rowDetails.parentRow, data: rowDetails.record};
     let clientRender: string = 'isClientRender';
     if (rowDetails.rows.length > 0) {
-      rowDetails.record.expanded = true;
+      if (!isChild) {
+        rowDetails.record.expanded = true;
+      }
       for (let i: number = 0; i < rowDetails.rows.length; i++) {
         if (isBlazor() && this.parent.isServerRendered) {
           removeClass([rowDetails.rows[i]], 'e-treerowcollapsed');
@@ -253,12 +254,12 @@ public isRemote(): boolean {
         if ((isBlazor() && (this.parent.dataSource[adaptorName] === 'BlazorAdaptor' && !this.parent[clientRender]))
             || this.parent.loadChildOnDemand) {
           let targetEle: Element = rowDetails.rows[i].getElementsByClassName('e-treegridcollapse')[0];
-          if (!isNullOrUndefined(targetEle)) {
+          childRecord = this.parent.rowTemplate ? this.parent.grid.getCurrentViewRecords()[rowDetails.rows[i].rowIndex] :
+              this.parent.grid.getRowObjectFromUID(rowDetails.rows[i].getAttribute('data-Uid')).data;
+          if (!isNullOrUndefined(targetEle) && childRecord.expanded) {
             addClass([targetEle], 'e-treegridexpand');
             removeClass([targetEle], 'e-treegridcollapse');
           }
-          childRecord = this.parent.rowTemplate ? this.parent.grid.getCurrentViewRecords()[rowDetails.rows[i].rowIndex] :
-              this.parent.grid.getRowObjectFromUID(rowDetails.rows[i].getAttribute('data-Uid')).data;
           let childRows: HTMLTableRowElement[] = [];
           childRows = gridRows.filter(
             (r: HTMLTableRowElement) =>
@@ -266,8 +267,8 @@ public isRemote(): boolean {
                 '.e-gridrowindex' + childRecord.index + 'level' + (childRecord.level + 1)
               )
           );
-          if (childRows.length) {
-            this.collectExpandingRecs({ record: childRecord, rows: childRows, parentRow: rowDetails.parentRow });
+          if (childRows.length && childRecord.expanded) {
+            this.collectExpandingRecs({ record: childRecord, rows: childRows, parentRow: rowDetails.parentRow }, true);
           }
         }
         let expandingTd: Element = rowDetails.rows[i].querySelector('.e-detailrowcollapse');
@@ -276,6 +277,13 @@ public isRemote(): boolean {
         }
       }
     } else {
+      this.fetchRemoteChildData({record: rowDetails.record, rows: rowDetails.rows, parentRow: rowDetails.parentRow});
+    }
+  }
+
+  private fetchRemoteChildData(rowDetails: { record: ITreeData, rows: HTMLTableRowElement[], parentRow: HTMLTableRowElement },
+                               isChild?: boolean): void {
+      let args: RowExpandedEventArgs = {row: rowDetails.parentRow, data: rowDetails.record};
       let dm: DataManager = <DataManager>this.parent.dataSource;
       let qry: Query = this.parent.grid.getDataModule().generateQuery();
       let clonequries: QueryOptions[] = qry.queries.filter((e: QueryOptions) => e.fn !== 'onPage' && e.fn !== 'onWhere');
@@ -302,13 +310,11 @@ public isRemote(): boolean {
           // delete result[r].parentItem.childRecords;
           if ((result[r][this.parent.hasChildMapping] || this.parentItems.indexOf(result[r][this.parent.idMapping]) !== -1)
              && !(haveChild && !haveChild[r])) {
-            result[r].hasChildRecords = true;
-            result[r].expanded = false;
+            result[r].hasChildRecords = true; result[r].expanded = false;
           }
           datas.splice(inx + r + 1, 0, result[r]);
         }
-        setValue('result', datas, e);
-        setValue('action', 'beforecontentrender', e);
+        setValue('result', datas, e); setValue('action', 'beforecontentrender', e);
         this.parent.trigger(events.actionComplete, e);
         hideSpinner(this.parent.element);
         if (this.parent.grid.aggregates.length > 0 && !this.parent.enableVirtualization) {
@@ -330,7 +336,6 @@ public isRemote(): boolean {
         getValue('grid.renderModule', this.parent).dataManagerSuccess(e, virtualArgs);
         this.parent.trigger(events.expanded, args);
       });
-    }
   }
 
   private remoteVirtualAction(virtualArgs: NotifyArgs): void {

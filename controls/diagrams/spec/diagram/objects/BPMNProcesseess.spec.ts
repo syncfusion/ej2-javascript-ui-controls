@@ -217,6 +217,7 @@ describe('Diagram Control', () => {
             let resize = node.wrapper.bounds;
             mouseEvents.clickEvent(diagramCanvas, resize.center.x, resize.center.y);
             mouseEvents.dragAndDropEvent(diagramCanvas, resize.center.x, resize.center.y, resize.center.x + 400, resize.center.y + 400);
+            console.log()
             expect(!diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds)).toBe(true);
             done();
         });

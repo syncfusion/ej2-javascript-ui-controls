@@ -15,7 +15,7 @@ import {
     SelectionRowFormat, SelectionSectionFormat, SelectionTableFormat, SelectionImageFormat
 } from './selection-format';
 import { TextSizeInfo } from '../viewer/text-helper';
-import { PageLayoutViewer, LayoutViewer, DocumentHelper, WebLayoutViewer } from '../index';
+import { PageLayoutViewer, LayoutViewer, DocumentHelper, WebLayoutViewer, WListLevel, WList } from '../index';
 import { isNullOrUndefined, createElement, L10n } from '@syncfusion/ej2-base';
 import { Dictionary } from '../../base/dictionary';
 import {
@@ -133,6 +133,8 @@ export class Selection {
      * @private
      */
     public editRegionHighlighters: Dictionary<LineWidget, SelectionWidgetInfo[]> = undefined;
+
+    private isSelectList: boolean = false;
     /**
      * @private
      */
@@ -2531,6 +2533,24 @@ export class Selection {
         }
         return listTextElement;
 
+    }
+    /**
+     * @private
+     */
+    public getListLevel(paragraph: ParagraphWidget): WListLevel {
+        let currentList: WList = undefined;
+        let listLevelNumber: number = 0;
+        if (!isNullOrUndefined(paragraph.paragraphFormat) && !isNullOrUndefined(paragraph.paragraphFormat.listFormat)) {
+            currentList = this.documentHelper.getListById(paragraph.paragraphFormat.listFormat.listId);
+            listLevelNumber = paragraph.paragraphFormat.listFormat.listLevelNumber;
+        }
+        if (!isNullOrUndefined(currentList) &&
+            !isNullOrUndefined(this.documentHelper.getAbstractListById(currentList.abstractListId))
+            // && !isNullOrUndefined(this.documentHelper.getAbstractListById(currentList.abstractListId).levels.getItem(listLevelNumber))) {
+            && !isNullOrUndefined(this.documentHelper.getAbstractListById(currentList.abstractListId).levels)) {
+            return this.documentHelper.layout.getListLevel(currentList, listLevelNumber);
+        }
+        return undefined;
     }
     /**
      * @private
@@ -6298,6 +6318,14 @@ export class Selection {
             return;
         }
         let para: ParagraphWidget = start.paragraph as ParagraphWidget;
+        if (start.paragraph === end.paragraph && this.isSelectList) {
+            let listLevel: WListLevel = this.getListLevel(start.paragraph);
+            // let breakCharacterFormat: WCharacterFormat = start.paragraph.characterFormat;
+            if (listLevel.characterFormat.uniqueCharacterFormat) {
+                this.characterFormat.copyFormat(listLevel.characterFormat);
+            }
+            return;
+        }
         if (start.offset === this.getParagraphLength(para) && !this.isEmpty) {
             para = this.getNextParagraphBlock(para) as ParagraphWidget;
         }
@@ -7252,6 +7280,7 @@ export class Selection {
                 && end.offset === this.getLineLength(lastParagraph.lastChild as LineWidget) + 1));
 
     }
+
     /**
      * Select List Text
      * @private
@@ -7262,7 +7291,9 @@ export class Selection {
         let selectionIndex: string = lineWidget.getHierarchicalIndex(endOffset);
         let startPosition: TextPosition = this.getTextPosition(selectionIndex);
         let endPosition: TextPosition = this.getTextPosition(selectionIndex);
+        this.isSelectList = true;
         this.selectRange(startPosition, endPosition);
+        this.isSelectList = false;
         this.highlightListText(this.documentHelper.selectionLineWidget);
         this.contextTypeInternal = 'List';
     }

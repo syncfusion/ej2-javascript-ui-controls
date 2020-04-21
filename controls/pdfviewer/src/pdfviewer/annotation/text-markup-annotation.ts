@@ -39,6 +39,7 @@ export interface ITextMarkupAnnotation {
     annotNameCollection?: any[];
     // tslint:disable-next-line
     annotpageNumbers?: any[];
+    annotationAddMode: string;
 }
 
 /**
@@ -92,6 +93,10 @@ export class TextMarkupAnnotation {
     /**
      * @private
      */
+    public annotationAddMode: string;
+    /**
+     * @private
+     */
     public strikethroughOpacity: number;
     /**
      * @private
@@ -140,6 +145,10 @@ export class TextMarkupAnnotation {
     /**
      * @private
      */
+    public annotationClickPosition: object = {};
+    /**
+     * @private
+     */
     constructor(pdfViewer: PdfViewer, viewerBase: PdfViewerBase) {
         this.pdfViewer = pdfViewer;
         this.pdfViewerBase = viewerBase;
@@ -149,6 +158,7 @@ export class TextMarkupAnnotation {
         this.highlightOpacity = pdfViewer.highlightSettings.opacity;
         this.underlineOpacity = pdfViewer.underlineSettings.opacity;
         this.strikethroughOpacity = pdfViewer.strikethroughSettings.opacity;
+        this.annotationAddMode = 'UI Drawn Annotation';
     }
     /**
      * @private
@@ -455,6 +465,8 @@ export class TextMarkupAnnotation {
                     let annotation: any = annotations[i];
                     let annotationObject: ITextMarkupAnnotation = null;
                     if (annotation.TextMarkupAnnotationType) {
+                        // tslint:disable-next-line:max-line-length
+                        annotation.annotationAddMode = this.pdfViewer.annotationModule.findAnnotationMode(annotation, pageNumber, annotation.AnnotType);
                         if (!annotation.Author) {
                             // tslint:disable-next-line:max-line-length
                             annotation.Author = this.pdfViewer.annotationModule.updateAnnotationAuthor('textMarkup', annotation.TextMarkupAnnotationType);
@@ -468,7 +480,7 @@ export class TextMarkupAnnotation {
                             // tslint:disable-next-line:max-line-length
                             annotName: annotation.AnnotName, comments: this.pdfViewer.annotationModule.getAnnotationComments(annotation.Comments, annotation, annotation.Author), review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author }, shapeAnnotationType: 'textMarkup', pageNumber: pageNumber,
                             textMarkupContent: '', textMarkupStartIndex: 0, textMarkupEndIndex: 0, annotationSelectorSettings: this.getSettings(annotation),
-                            customData: this.pdfViewer.annotation.getCustomData(annotation)
+                            customData: this.pdfViewer.annotation.getCustomData(annotation), annotationAddMode: annotation.annotationAddMode
                         };
                         if (annotation.IsMultiSelect) {
                             annotationObject.annotNameCollection = annotation.AnnotNameCollection;
@@ -1666,6 +1678,10 @@ export class TextMarkupAnnotation {
             this.clearCurrentSelectedAnnotation();
             let currentAnnot: ITextMarkupAnnotation = this.getCurrentMarkupAnnotation(event.clientX, event.clientY, pageNumber, canvas);
             if (currentAnnot && !window.getSelection().toString()) {
+                let canvasParentPosition: ClientRect = canvas.parentElement.getBoundingClientRect();
+                let leftClickPosition: number = event.clientX - canvasParentPosition.left;
+                let topClickPosition: number = event.clientY - canvasParentPosition.top;
+                this.annotationClickPosition = { x: leftClickPosition, y: topClickPosition };
                 this.selectAnnotation(currentAnnot, canvas, pageNumber, event);
                 this.currentTextMarkupAnnotation = currentAnnot;
                 this.selectTextMarkupCurrentPage = pageNumber;
@@ -1716,6 +1732,10 @@ export class TextMarkupAnnotation {
             // tslint:disable-next-line:max-line-length
             let currentAnnot: ITextMarkupAnnotation = this.getCurrentMarkupAnnotation(event.touches[0].clientX, event.touches[0].clientY, pageNumber, touchCanvas);
             if (currentAnnot) {
+                let canvasParentPosition: ClientRect = touchCanvas.parentElement.getBoundingClientRect();
+                let leftClickPosition: number = event.touches[0].clientX - canvasParentPosition.left;
+                let topClickPosition: number = event.touches[0].clientY - canvasParentPosition.top;
+                this.annotationClickPosition = { x: leftClickPosition, y: topClickPosition };
                 this.selectAnnotation(currentAnnot, touchCanvas, pageNumber, event);
                 this.currentTextMarkupAnnotation = currentAnnot;
                 this.selectTextMarkupCurrentPage = pageNumber;
@@ -2148,7 +2168,7 @@ export class TextMarkupAnnotation {
             annotName: annotationName, comments: [], review: { state: '', stateModel: '', author: author, modifiedDate: modifiedDate }, shapeAnnotationType: 'textMarkup', pageNumber: pageNumber,
                // tslint:disable-next-line:max-line-length
             textMarkupContent: textContent, textMarkupStartIndex: startIndex, textMarkupEndIndex: endIndex, isMultiSelect: isMultiSelect, annotationSelectorSettings: this.getSelector(type),
-            customData: this.pdfViewer.annotation.getTextMarkupData(subject)
+            customData: this.pdfViewer.annotation.getTextMarkupData(subject), annotationAddMode: this.annotationAddMode
         };
         if (isMultiSelect) {
             this.multiPageCollection.push(annotation);
@@ -2227,6 +2247,7 @@ export class TextMarkupAnnotation {
             // tslint:disable-next-line:max-line-length
             textMarkupEndIndex: 0, annotationSelectorSettings: this.getSettings(annotation), customData: this.pdfViewer.annotation.getCustomData(annotation),
             isMultiSelect: annotation.IsMultiSelect, annotNameCollection: annotation.AnnotNameCollection, annotpageNumbers: annotation.AnnotpageNumbers,
+            annotationAddMode: this.annotationAddMode
         };
         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_textMarkup');
     }
@@ -2252,6 +2273,7 @@ export class TextMarkupAnnotation {
     public clear(): void {
         this.selectTextMarkupCurrentPage = null;
         this.currentTextMarkupAnnotation = null;
+        this.annotationClickPosition = null;
         window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_annotations_textMarkup');
     }
 }

@@ -805,8 +805,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                             if (sli) {
                                 sli.setAttribute('aria-expanded', 'false');
                                 sli.classList.remove(SELECTED);
-                                sli.classList.add(FOCUSED);
-                                (sli as HTMLElement).focus();
+                                if (liElem) {
+                                    sli.classList.add(FOCUSED);
+                                    (sli as HTMLElement).focus();
+                                }
                             }
                         }
                     }
@@ -1442,6 +1444,7 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
                                 this.isClosed = true;
                                 this.keyType = 'click';
                                 this.closeMenu(culIdx + 1, e);
+                                this.setLISelected(cli);
                             }
                         }
                         if (!this.isClosed) {
@@ -1513,6 +1516,53 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
             }
         }
         return null;
+    }
+
+    /**
+     * This method is used to get the index of the menu item in the Menu based on the argument.
+     * @param item - item be passed to get the index.
+     * @param id - id to be passed to update the item.
+     * @param isUniqueId - Set `true` if it is a unique id.
+     * @returns void
+     */
+    public getItemIndex(item: MenuItem, id?: string, isUniqueId?: boolean): number[] {
+        let idx: string = id ? id : item.id;
+        let isText: boolean = (isUniqueId === false) ? false : true;
+        let navIdx: number[] = this.getIndex(idx, isText);
+        return navIdx;
+    }
+
+    /**
+     * This method is used to set the menu item in the Menu based on the argument.
+     * @param item - item need to be updated.
+     * @param id - id to be passed to update the item.
+     * @param isUniqueId - Set `true` if it is a unique id.
+     * @returns void
+     */
+    public setItem(item: MenuItem, id?: string, isUniqueId?: boolean): void {
+        let idx: string = id ? id : item.id;
+        let isText: boolean = (isUniqueId === false) ? false : true;
+        let navIdx: number[] = this.getIndex(idx, isText);
+        let items: MenuItemModel [] = this.items;
+        switch (navIdx.length) {
+            case 1:
+                items[navIdx[0]].iconCss = item.iconCss;
+                items[navIdx[0]].id = item.id;
+                items[navIdx[0]].text = item.text;
+                items[navIdx[0]].url = item.url;
+                items[navIdx[0]].separator = item.separator;
+                items[navIdx[0]].items = item.items;
+                break;
+            case 2:
+                items[navIdx[0]].items[navIdx[1]] = item;
+                break;
+            case 3:
+                items[navIdx[0]].items[navIdx[1]].items[navIdx[2]] = item;
+                break;
+            case 4:
+                items[navIdx[0]].items[navIdx[1]].items[navIdx[2]].items[navIdx[3]] = item;
+                break;
+        }
     }
 
     private getItem(navIdx: number[]): MenuItemModel {
@@ -1657,7 +1707,10 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         let key: string = Object.keys((<objColl>newProp.items)[idx]).pop();
         if (key === 'items') {
             let item: MenuItemModel = (<objColl>newProp.items)[idx];
-            this.getChangedItemIndex(item, index, Number(Object.keys(item.items).pop()));
+            let popStr: string = Object.keys(item.items).pop();
+            if (popStr) {
+                this.getChangedItemIndex(item, index, Number(popStr));
+            }
         } else {
             if (key === 'isParentArray' && index.length > 1) {
                 index.pop();

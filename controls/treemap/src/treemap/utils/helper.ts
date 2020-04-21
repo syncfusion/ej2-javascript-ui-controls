@@ -719,13 +719,35 @@ export function orderByArea(a: number, b: number): number {
     return -1;
 }
 
+export function maintainSelection(treemap: TreeMap, element: Element, className: string): void {
+    let elementId: string[] = treemap.levelSelection;
+    if (elementId) {
+        for (let index: number = 0; index < elementId.length; index++) {
+            if (element.getAttribute('id') === elementId[index]) {
+                if (element.childElementCount > 0) {
+                    element.children[0].setAttribute('class', className);
+                    applyOptions(
+                        element.childNodes[0] as SVGPathElement,
+                        {
+                            border: treemap.selectionSettings.border, fill: treemap.selectionSettings.fill,
+                            opacity: treemap.selectionSettings.opacity
+                        }
+                    );
+                }
+            } else {
+                element.setAttribute('class', '');
+                }
+        }
+    }
+}
 
 export function removeClassNames(elements: HTMLCollection, type: string, treemap: TreeMap): void {
     let opacity: string; let process: boolean = true; let element: SVGPathElement;
     let stroke: string; let strokeWidth: string; let fill: string;
     let options: Object = {};
     for (let j: number = 0; j < elements.length; j++) {
-        element = elements[j].childNodes[0] as SVGPathElement;
+        element = isNullOrUndefined(elements[j].childNodes[0] as SVGPathElement) ? elements[j] as SVGPathElement :
+        elements[j].childNodes[0] as SVGPathElement;
         options = treemap.layout.renderItems[element.id.split('_')[6]]['options'];
         applyOptions(element, options);
         elements[j].classList.remove(type);

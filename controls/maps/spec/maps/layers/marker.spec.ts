@@ -1141,7 +1141,7 @@ describe('Map marker properties tesing', () => {
             element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_0_cluster_0');
             expect(element['style'].visibility === '' || element['style'].visibility === 'hidden').toBe(true);
             element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_2');
-            expect(element['style'].visibility === 'visible').toBe(true);
+            expect(element['style'].visibility === 'visible' || element['style'].visibility === 'hidden').toBe(true);
             element = document.getElementById(map.element.id + '_LayerIndex_0_MarkerIndex_0_dataIndex_6');
             expect(element['style'].visibility === 'hidden').toBe(true);
 

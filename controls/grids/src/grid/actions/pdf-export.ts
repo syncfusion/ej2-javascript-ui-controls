@@ -1,6 +1,6 @@
 import {
     IGrid, PdfExportProperties, PdfHeader, PdfFooter, PdfHeaderFooterContent,
-    PdfTheme, PdfThemeStyle, PdfBorder, PdfQueryCellInfoEventArgs, ExportDetailDataBoundEventArgs
+    PdfTheme, PdfThemeStyle, PdfBorder, PdfQueryCellInfoEventArgs, ExportDetailDataBoundEventArgs, ExportGroupCaptionEventArgs
 } from '../base/interface';
 import { Column } from './../models/column';
 import { Row } from './../models/row';
@@ -407,8 +407,8 @@ export class PdfExport {
             };
             /* tslint:disable-next-line:max-line-length */
             let value: string = this.parent.getColumnByField(dataSourceItems.field).headerText + ': ' + (!col.enableGroupByFormat ? this.exportValueFormatter.formatCellValue(args) : dataSourceItems.key) + ' - ' + dataSourceItems.count + (dataSource.count > 1 ? ' items' : ' item');
-            let cArgs: { captionText: string } = { captionText: value };
-            this.parent.trigger(events.exportGroupCaption, cArgs, (cArgs: { captionText: string }) => {
+            let cArgs: ExportGroupCaptionEventArgs = { captionText: value, type: 'PDF' };
+            this.parent.trigger(events.exportGroupCaption, cArgs, (cArgs: ExportGroupCaptionEventArgs) => {
                 row.cells.getCell(groupIndex).value = cArgs.captionText;
                 row.cells.getCell(groupIndex + 1).style.stringFormat = new PdfStringFormat(PdfTextAlignment.Left);
                 row.style.setBorder(border);
@@ -448,6 +448,10 @@ export class PdfExport {
                                allowHorizontalOverflow: boolean, eCols: Column[]): PdfGrid {
         let columnCount: number = gridColumn.length + childLevels;
         let depth: number = measureColumnDepth(eCols);
+        let index: number = this.parent.getIndentCount();
+        if (this.parent.allowGrouping) {
+            index = this.parent.groupSettings.columns.length;
+        }
         let cols: Column[] | string[] | ColumnModel[] = eCols;
         pdfGrid.columns.add(columnCount);
         pdfGrid.headers.add(rows.length);
@@ -496,7 +500,7 @@ export class PdfExport {
                     colIndex = colIndex + newSpanCnt - 1;
                 } else if (cols[i].visible) {
                     spanCnt++;
-                    applyTextAndSpan(rowIndex, i + colIndex, cols[i] as Column, depth, 0);
+                    applyTextAndSpan(rowIndex, i + colIndex + index, cols[i] as Column, depth, 0);
                 }
             }
             return spanCnt;

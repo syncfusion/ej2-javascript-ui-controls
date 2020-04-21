@@ -1139,11 +1139,31 @@ function orderByArea(a, b) {
     }
     return -1;
 }
+function maintainSelection(treemap, element, className) {
+    let elementId = treemap.levelSelection;
+    if (elementId) {
+        for (let index = 0; index < elementId.length; index++) {
+            if (element.getAttribute('id') === elementId[index]) {
+                if (element.childElementCount > 0) {
+                    element.children[0].setAttribute('class', className);
+                    applyOptions(element.childNodes[0], {
+                        border: treemap.selectionSettings.border, fill: treemap.selectionSettings.fill,
+                        opacity: treemap.selectionSettings.opacity
+                    });
+                }
+            }
+            else {
+                element.setAttribute('class', '');
+            }
+        }
+    }
+}
 function removeClassNames(elements, type, treemap) {
     let element;
     let options = {};
     for (let j = 0; j < elements.length; j++) {
-        element = elements[j].childNodes[0];
+        element = isNullOrUndefined(elements[j].childNodes[0]) ? elements[j] :
+            elements[j].childNodes[0];
         options = treemap.layout.renderItems[element.id.split('_')[6]]['options'];
         applyOptions(element, options);
         elements[j].classList.remove(type);
@@ -1903,6 +1923,7 @@ class LayoutPanel {
                     }
                     itemGroup.setAttribute('aria-label', item['name']);
                     itemGroup.setAttribute('tabindex', (this.treemap.tabIndex + i + 2).toString());
+                    maintainSelection(this.treemap, itemGroup, 'treeMapSelection');
                     this.layoutGroup.appendChild(itemGroup);
                 }
             });
@@ -2314,6 +2335,8 @@ let TreeMap = class TreeMap extends Component {
         this.drilledItems = [];
         /** @private */
         this.isHierarchicalData = false;
+        /** @private */
+        this.levelSelection = [];
     }
     preRender() {
         this.isBlazor = isBlazor();
@@ -4615,6 +4638,7 @@ class TreeMapSelection {
         let eventArgs;
         let eventBlazorArgs;
         let treemap = this.treemap;
+        treemap.levelSelection = [];
         let items = [];
         let targetId = targetEle.id;
         let labelText = targetEle.innerHTML;
@@ -4659,6 +4683,7 @@ class TreeMapSelection {
                     item = treemap.layout.renderItems[element.id.split('_')[6]];
                     if (orders.indexOf(item['levelOrderName']) > -1) {
                         selectionElements.push(element);
+                        treemap.levelSelection.push(element.id);
                         items.push(item);
                     }
                 }
@@ -5009,5 +5034,5 @@ class TreeMapTooltip {
  * exporting all modules from tree map index
  */
 
-export { TreeMap, LevelsData, Border, Margin, Font, CommonTitleSettings, SubTitleSettings, TitleSettings, ColorMapping, LegendSettings, InitialDrillSettings, LeafItemSettings, TooltipSettings, SelectionSettings, HighlightSettings, LevelSettings, load, loaded, beforePrint, itemRendering, drillStart, drillEnd, itemSelected, itemHighlight, tooltipRendering, itemClick, itemMove, click, doubleClick, rightClick, mouseMove, legendItemRendering, legendRendering, resize, defaultFont, Theme, getThemeStyle, Size, stringToNumber, Rect, RectOption, PathOption, measureText, TextOption, textTrim, Location, findPosition, createTextStyle, renderTextElement, getElement, itemsToOrder, isContainsData, findChildren, findHightLightItems, getTemplateFunction, convertElement, findLabelLocation, measureElement, getArea, getShortestEdge, convertToContainer, convertToRect, getMousePosition, colorMap, deSaturationColor, colorCollections, rgbToHex, getColorByValue, getGradientColor, getPercentageColor, getPercentage, wordWrap, textWrap, hide, orderByArea, removeClassNames, applyOptions, textFormatter, formatValue, ColorValue, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, drawSymbol, renderLegendShape, isParentItem, TreeMapAjax, removeShape, removeLegend, setColor, removeSelectionWithHighlight, getLegendIndex, pushCollection, ExportUtils, TreeMapLegend, LayoutPanel, TreeMapHighlight, TreeMapSelection, TreeMapTooltip };
+export { TreeMap, LevelsData, Border, Margin, Font, CommonTitleSettings, SubTitleSettings, TitleSettings, ColorMapping, LegendSettings, InitialDrillSettings, LeafItemSettings, TooltipSettings, SelectionSettings, HighlightSettings, LevelSettings, load, loaded, beforePrint, itemRendering, drillStart, drillEnd, itemSelected, itemHighlight, tooltipRendering, itemClick, itemMove, click, doubleClick, rightClick, mouseMove, legendItemRendering, legendRendering, resize, defaultFont, Theme, getThemeStyle, Size, stringToNumber, Rect, RectOption, PathOption, measureText, TextOption, textTrim, Location, findPosition, createTextStyle, renderTextElement, getElement, itemsToOrder, isContainsData, findChildren, findHightLightItems, getTemplateFunction, convertElement, findLabelLocation, measureElement, getArea, getShortestEdge, convertToContainer, convertToRect, getMousePosition, colorMap, deSaturationColor, colorCollections, rgbToHex, getColorByValue, getGradientColor, getPercentageColor, getPercentage, wordWrap, textWrap, hide, orderByArea, maintainSelection, removeClassNames, applyOptions, textFormatter, formatValue, ColorValue, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, drawSymbol, renderLegendShape, isParentItem, TreeMapAjax, removeShape, removeLegend, setColor, removeSelectionWithHighlight, getLegendIndex, pushCollection, ExportUtils, TreeMapLegend, LayoutPanel, TreeMapHighlight, TreeMapSelection, TreeMapTooltip };
 //# sourceMappingURL=ej2-treemap.es2015.js.map

@@ -89,5 +89,8 @@ export let defaultLocale: Object = {
     'Button-Replace': 'Replace',
     'Button-Skip': 'Skip',
     'ApplyAll-Label': 'Do this for all current items',
-    'KB': 'KB'
+    'KB': 'KB',
+    'Access-Message': '{0} is not accessible. You need permission to perform the {1} action.',
+    'Network-Error': 'NetworkError: Failed to send on XMLHTTPRequest: Failed to load',
+    'Server-Error': 'ServerError: Invalid response from'
 };

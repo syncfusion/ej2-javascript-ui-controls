@@ -846,7 +846,7 @@ export class ResourceBase {
         this.refreshLayout(true);
     }
 
-    private getIndexFromResourceId(id: string | number, name: string, resourceData?: ResourcesModel): number {
+    public getIndexFromResourceId(id: string | number, name: string, resourceData?: ResourcesModel): number {
         let resource: { [key: string]: Object } = (resourceData.dataSource as Object[]).filter((e: { [key: string]: Object }) =>
             e[resourceData.idField] === id)[0] as { [key: string]: Object };
         return (this.lastResourceLevel.map((e: TdData) => e.resourceData).indexOf(resource));

@@ -249,6 +249,7 @@ export class Selection implements IAction {
         let selectData: Object;
         let isRemoved: boolean = false;
         if (gObj.enableVirtualization && index > -1) {
+            this.parent.notify(events.selectVirtualRow, { selectedIndex: index });
             if (selectedRow && gObj.getRowObjectFromUID(selectedRow.getAttribute('data-uid'))) {
                 selectData = gObj.getRowObjectFromUID(selectedRow.getAttribute('data-uid')).data;
             } else {
@@ -256,7 +257,6 @@ export class Selection implements IAction {
                 if (prevSelectedData.length > 0) {
                     this.clearRowSelection();
                 }
-                this.parent.notify(events.selectVirtualRow, { selectedIndex: index });
                 return;
             }
         } else {
@@ -269,20 +269,29 @@ export class Selection implements IAction {
             return;
         }
         let isRowSelected: boolean = selectedRow.hasAttribute('aria-selected');
-        this.actualTarget = this.isInteracted ? this.actualTarget : null;
+        this.activeTarget();
         isToggle = !isToggle ? isToggle :
             !this.selectedRowIndexes.length ? false :
                 (this.selectedRowIndexes.length === 1 ? (index === this.selectedRowIndexes[0]) : false);
         let args: Object;
         let can: string = 'cancel';
         if (!isToggle) {
-            args = {
-                data: selectData, rowIndex: index, isCtrlPressed: this.isMultiCtrlRequest,
-                isShiftPressed: this.isMultiShiftRequest, row: selectedRow,
-                previousRow: gObj.getRowByIndex(this.prevRowIndex),
-                previousRowIndex: this.prevRowIndex, target: this.actualTarget, cancel: false, isInteracted: this.isInteracted
-            };
-            args = this.addMovableArgs(args, selectedMovableRow);
+            let isHybrid: string = 'isHybrid';
+            if (!isBlazor() || this.parent.isJsComponent || this.parent[isHybrid]) {
+                args = {
+                    data: selectData, rowIndex: index, isCtrlPressed: this.isMultiCtrlRequest,
+                    isShiftPressed: this.isMultiShiftRequest, row: selectedRow,
+                    previousRow: gObj.getRowByIndex(this.prevRowIndex),
+                    previousRowIndex: this.prevRowIndex, target: this.actualTarget, cancel: false, isInteracted: this.isInteracted
+                };
+                args = this.addMovableArgs(args, selectedMovableRow);
+            } else {
+                args = {
+                    data: selectData, rowIndex: index, isCtrlPressed: this.isMultiCtrlRequest,
+                    isShiftPressed: this.isMultiShiftRequest, previousRowIndex: this.prevRowIndex,
+                    cancel: false, isInteracted: this.isInteracted
+                };
+            }
             this.parent.trigger(events.rowSelecting, this.fDataUpdate(args),
                                 this.rowSelectingCallBack(args, isToggle, index, selectData, isRemoved, isRowSelected, can));
         } else {
@@ -294,6 +303,7 @@ export class Selection implements IAction {
                                  isRowSelected: boolean, can: string): Function {
         return (args: Object) => {
             if (!isNullOrUndefined(args) && args[can] === true) {
+                this.disableInteracted();
                 return;
             }
             this.index = index;  this.toggle =  isToggle; this.data =  selectData; this.removed = isRemoved;
@@ -389,16 +399,29 @@ export class Selection implements IAction {
         if (!this.isRowType() || this.isEditing()) {
             return;
         }
-        let args: Object = {
-            cancel: false,
-            rowIndexes: rowIndexes, row: selectedRow, rowIndex: rowIndex, target: this.actualTarget,
-            prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
-            isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
-            data: selectedData
-        };
-        args = this.addMovableArgs(args, selectedMovableRow);
+        let isHybrid: string = 'isHybrid';
+        this.activeTarget();
+        let args: Object;
+        if (!isBlazor() || this.parent.isJsComponent || this.parent[isHybrid]) {
+            args = {
+                cancel: false,
+                rowIndexes: rowIndexes, row: selectedRow, rowIndex: rowIndex, target: this.actualTarget,
+                prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
+                isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
+                data: selectedData
+            };
+            args = this.addMovableArgs(args, selectedMovableRow);
+        } else {
+            args  = {
+                cancel: false,
+                rowIndexes: rowIndexes, rowIndex: rowIndex, previousRowIndex: this.prevRowIndex,
+                isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
+                data: selectedData
+            };
+        }
         this.parent.trigger(events.rowSelecting, this.fDataUpdate(args), (args: Object) => {
             if (!isNullOrUndefined(args) && args[can] === true) {
+                this.disableInteracted();
                 return;
             }
             this.clearRow();
@@ -476,16 +499,28 @@ export class Selection implements IAction {
                     events.rowDeselected, [rowIndex], [rowObj.data], [selectedRow], [rowObj.foreignKeyData], target, [selectedMovableRow]);
                 this.isInteracted = false;
             } else {
-                args = {
-                    cancel: false,
-                    data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this.actualTarget,
-                    prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
-                    isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
-                    foreignKeyData: rowObj.foreignKeyData, isInteracted: this.isInteracted
-                };
-                args = this.addMovableArgs(args, selectedMovableRow);
+                let isHybrid: string = 'isHybrid';
+                this.activeTarget();
+                if (!isBlazor() || this.parent.isJsComponent || this.parent[isHybrid]) {
+                    args = {
+                        cancel: false,
+                        data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this.actualTarget,
+                        prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
+                        isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
+                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this.isInteracted
+                    };
+                    args = this.addMovableArgs(args, selectedMovableRow);
+                } else {
+                    args = {
+                        cancel: false,
+                        data: rowObj.data, rowIndex: rowIndex, previousRowIndex: this.prevRowIndex,
+                        isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
+                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this.isInteracted
+                    };
+                }
                 this.parent.trigger(events.rowSelecting, this.fDataUpdate(args), (args: Object) => {
                     if (!isNullOrUndefined(args) && args[can] === true) {
+                        this.disableInteracted();
                         return;
                     }
                     if (this.isSingleSel()) {
@@ -647,7 +682,6 @@ export class Selection implements IAction {
             if (span.classList.contains('e-rowselect')) {
                 span.classList.remove('e-spanclicked');
             }
-            this.isInteracted = false;
             if (this.parent.isPersistSelection) {
                 this.persistSelectedData = [];
                 this.selectedRowState = {};
@@ -656,6 +690,7 @@ export class Selection implements IAction {
             this.clearCellSelection();
             this.prevRowIndex = undefined;
             this.enableSelectMultiTouch = false;
+            this.isInteracted = false;
         }
     }
 
@@ -779,8 +814,15 @@ export class Selection implements IAction {
             if (!isBlazor() || this.parent.isJsComponent || this.parent[isHybrid]) {
                 let rowInString: string = 'row';
                 let target: string = 'target';
+                let rowidx: string = 'rowIndex';
+                let rowidxex: string = 'rowIndexes';
                 rowDeselectObj[rowInString] = row;
                 rowDeselectObj[target] = this.actualTarget;
+                let isHeaderCheckBxClick: boolean = this.actualTarget && !isNullOrUndefined(closest(this.actualTarget, 'thead'));
+                if (isHeaderCheckBxClick) {
+                    rowDeselectObj[rowidx] = rowIndex[0];
+                    rowDeselectObj[rowidxex] = rowIndex;
+                }
             } else {
                 let rowIndex: string = 'rowIndex';
                 let data: string = 'data';
@@ -2857,5 +2899,13 @@ export class Selection implements IAction {
         this.parent.isSelectedRowIndexUpdating = true;
         this.parent.selectedRowIndex = index;
     }
+
+    private disableInteracted(): void {
+        this.isInteracted = false;
+    }
+
+    private activeTarget(): void {
+      this.actualTarget = this.isInteracted ? this.actualTarget : null;
+  }
 
 }

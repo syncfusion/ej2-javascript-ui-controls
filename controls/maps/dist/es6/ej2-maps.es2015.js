@@ -881,7 +881,7 @@ function clusterSeparate(sameMarkerData, maps, markerElement, isDom) {
     let options;
     let connectorLine = maps.layers[layerIndex].markerClusterSettings.connectorLineSettings;
     options = {
-        d: path, id: maps.element.id + '_markerClusterConnectorLine', stroke: connectorLine.color,
+        d: path, id: maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_dataIndex_' + dataIndex + '_markerClusterConnectorLine', stroke: connectorLine.color,
         opacity: connectorLine.opacity, 'stroke-width': connectorLine.width
     };
     markerElement = isDom ? getElementFunction(maps.element.id + '_Markers_Group') : markerElement;
@@ -3602,7 +3602,7 @@ class Marker {
         });
         let markerTemplateEle = createElement('div', {
             id: this.maps.element.id + '_LayerIndex_' + layerIndex + '_Markers_Template_Group',
-            className: 'template',
+            className: this.maps.element.id + '_template',
             styles: 'overflow: hidden; position: absolute;pointer-events: none;' +
                 'top:' + this.maps.mapAreaRect.y + 'px;' +
                 'left:' + this.maps.mapAreaRect.x + 'px;' +
@@ -3879,11 +3879,15 @@ class Marker {
                 this.maps.mapsTooltipModule.tooltipTargetID.indexOf('_MarkerIndex_') > -1) {
                 removeElement(this.maps.element.id + '_mapsTooltip');
             }
-            if (this.sameMarkerData.length > 0) {
+            if (this.sameMarkerData.length > 0 && !this.maps.markerClusterExpandCheck) {
+                this.maps.markerClusterExpandCheck = true;
                 mergeSeparateCluster(this.sameMarkerData, this.maps, this.markerSVGObject);
             }
-            this.sameMarkerData = options.clusterCollection;
-            clusterSeparate(this.sameMarkerData, this.maps, this.markerSVGObject, true);
+            else {
+                this.sameMarkerData = options.clusterCollection;
+                this.maps.markerClusterExpandCheck = false;
+                clusterSeparate(this.sameMarkerData, this.maps, this.markerSVGObject, true);
+            }
         }
         let eventArgs = {
             cancel: false, name: markerClusterClick, data: options, maps: this.maps,
@@ -4722,7 +4726,7 @@ class LayerPanel {
         let colors = shapeSettings.palette.length > 1 ? shapeSettings.palette : getShapeColor(this.mapObject.theme);
         let labelTemplateEle = createElement('div', {
             id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_Label_Template_Group',
-            className: 'template',
+            className: this.mapObject.element.id + '_template',
             styles: 'pointer-events: none; overflow: hidden; position: absolute;' +
                 'top:' + this.mapObject.mapAreaRect.y + 'px;' +
                 'left:' + this.mapObject.mapAreaRect.x + 'px;' +
@@ -5312,13 +5316,13 @@ class LayerPanel {
                 }
                 let animateElement;
                 if (!document.getElementById('animated_tiles') && element) {
-                    animateElement = createElement('div', { id: 'animated_tiles' });
+                    animateElement = createElement('div', { id: this.mapObject.element.id + '_animated_tiles' });
                     element.appendChild(animateElement);
                 }
                 else {
                     if (type !== 'Pan' && element1 && element) {
                         element1.appendChild(element.children[0]);
-                        animateElement = createElement('div', { id: 'animated_tiles' });
+                        animateElement = createElement('div', { id: this.mapObject.element.id + '_animated_tiles' });
                         element.appendChild(animateElement);
                     }
                     else {
@@ -5928,6 +5932,8 @@ let Maps = class Maps extends Component {
         this.initialCheck = true;
         /** @private */
         this.applyZoomReset = false;
+        /** @private */
+        this.markerClusterExpandCheck = false;
         setValue('mergePersistData', this.mergePersistMapsData, this);
     }
     /**
@@ -6272,7 +6278,7 @@ let Maps = class Maps extends Component {
         if (document.getElementById(this.element.id + '_Legend_Border')) {
             document.getElementById(this.element.id + '_Legend_Border').style.pointerEvents = 'none';
         }
-        let templateElements = document.getElementsByClassName('template');
+        let templateElements = document.getElementsByClassName(this.element.id + '_template');
         if (!isNullOrUndefined(templateElements) && templateElements.length > 0 &&
             getElementByID(this.element.id + '_Layer_Collections') && this.layers[this.layers.length - 1].layerType !== 'OSM') {
             for (let i = 0; i < templateElements.length; i++) {
@@ -6518,7 +6524,7 @@ let Maps = class Maps extends Component {
                 latitude: latitude, longitude: longitude
             };
             this.trigger('click', eventArgs, (mouseArgs) => {
-                if (targetEle.id.indexOf('shapeIndex') > -1 || targetEle.id.indexOf('Tile') > -1) {
+                if (targetEle.id.indexOf('shapeIndex') > -1) {
                     if (this.markerModule && this.markerModule.sameMarkerData.length > 0 &&
                         (this.zoomModule ? this.zoomModule.isSingleClick : true)) {
                         mergeSeparateCluster(this.markerModule.sameMarkerData, this, getElement(this.element.id + '_Markers_Group'));
@@ -6544,6 +6550,11 @@ let Maps = class Maps extends Component {
                     let shapeSelectedEventArgs = triggerShapeEvent(targetId, this.layers[layerIndex].selectionSettings, this, shapeSelected);
                     if (!shapeSelectedEventArgs.cancel && this.selectionModule && !isNullOrUndefined(this.shapeSelected)) {
                         customizeStyle(this.selectionModule.selectionType + 'selectionMap', this.selectionModule.selectionType + 'selectionMapStyle', shapeSelectedEventArgs);
+                    }
+                    else if (shapeSelectedEventArgs.cancel && this.selectionModule
+                        && isNullOrUndefined(shapeSelectedEventArgs['data'])) {
+                        removeClass(targetEle);
+                        this.selectionModule.removedSelectionList(targetEle);
                     }
                 }
             });
@@ -6791,6 +6802,7 @@ let Maps = class Maps extends Component {
      */
     shapeSelection(layerIndex, propertyName, name, enable) {
         let targetEle;
+        let popertyNameArray = Array.isArray(propertyName) ? propertyName : Array(propertyName);
         if (isNullOrUndefined(enable)) {
             enable = true;
         }
@@ -6806,52 +6818,58 @@ let Maps = class Maps extends Component {
             let data;
             let shapeData = this.layers[layerIndex].shapeData['features'];
             for (let i = 0; i < shapeData.length; i++) {
-                if (shapeData[i]['properties'][propertyName] === name) {
-                    let k = checkShapeDataFields(this.layers[layerIndex].dataSource, shapeData[i]['properties'], this.layers[layerIndex].shapeDataPath, this.layers[layerIndex].shapePropertyPath, this.layers[layerIndex]);
-                    targetId = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_' +
-                        (k ? k.toString() : 'undefined');
-                    targetEle = getElement(targetId);
-                    if (isNullOrUndefined(k) && isNullOrUndefined(targetEle)) {
-                        targetId = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_null';
+                for (let j = 0; j < popertyNameArray.length; j++) {
+                    let propertyName = !isNullOrUndefined(shapeData[i]['properties'][popertyNameArray[j]])
+                        && isNaN(shapeData[i]['properties'][popertyNameArray[j]]) ?
+                        shapeData[i]['properties'][popertyNameArray[j]].toLowerCase() : shapeData[i]['properties'][popertyNameArray[j]];
+                    let shapeName = !isNullOrUndefined(name) ? name.toLowerCase() : name;
+                    if (propertyName === shapeName) {
+                        let k = checkShapeDataFields(this.layers[layerIndex].dataSource, shapeData[i]['properties'], this.layers[layerIndex].shapeDataPath, this.layers[layerIndex].shapePropertyPath, this.layers[layerIndex]);
+                        targetId = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_' +
+                            (!isNullOrUndefined(k) ? k.toString() : 'undefined');
                         targetEle = getElement(targetId);
-                    }
-                    shapeIndex = parseInt(targetEle.id.split('_shapeIndex_')[1].split('_')[0], 10);
-                    shapeDataValue = this.layers[layerIndex].shapeData['features']['length'] > shapeIndex ?
-                        this.layers[layerIndex].shapeData['features'][shapeIndex]['properties'] : null;
-                    dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
-                    data = isNullOrUndefined(dataIndex) ? null : this.layers[layerIndex].dataSource[dataIndex];
-                    if (enable) {
-                        triggerItemSelectionEvent(selectionsettings, this, targetEle, shapeDataValue, data);
-                        this.shapeSelectionClass = getElement('ShapeselectionMap');
-                        if (this.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1) {
-                            this.legendModule.shapeHighLightAndSelection(targetEle, data, selectionsettings, 'selection', layerIndex);
+                        if (isNullOrUndefined(k) && isNullOrUndefined(targetEle)) {
+                            targetId = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_null';
+                            targetEle = getElement(targetId);
                         }
-                        let shapeToggled = this.legendSettings.visible ? this.legendModule.shapeToggled : true;
-                        if (shapeToggled) {
-                            targetEle.setAttribute('class', 'ShapeselectionMapStyle');
-                            if (this.selectedElementId.indexOf(targetEle.getAttribute('id')) === -1) {
-                                this.selectedElementId.push(targetEle.getAttribute('id'));
+                        shapeIndex = parseInt(targetEle.id.split('_shapeIndex_')[1].split('_')[0], 10);
+                        shapeDataValue = this.layers[layerIndex].shapeData['features']['length'] > shapeIndex ?
+                            this.layers[layerIndex].shapeData['features'][shapeIndex]['properties'] : null;
+                        dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
+                        data = isNullOrUndefined(dataIndex) ? null : this.layers[layerIndex].dataSource[dataIndex];
+                        if (enable) {
+                            triggerItemSelectionEvent(selectionsettings, this, targetEle, shapeDataValue, data);
+                            this.shapeSelectionClass = getElement('ShapeselectionMap');
+                            if (this.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1) {
+                                this.legendModule.shapeHighLightAndSelection(targetEle, data, selectionsettings, 'selection', layerIndex);
                             }
-                            if (!selectionsettings.enableMultiSelect) {
-                                return;
+                            let shapeToggled = this.legendSettings.visible ? this.legendModule.shapeToggled : true;
+                            if (shapeToggled) {
+                                targetEle.setAttribute('class', 'ShapeselectionMapStyle');
+                                if (this.selectedElementId.indexOf(targetEle.getAttribute('id')) === -1) {
+                                    this.selectedElementId.push(targetEle.getAttribute('id'));
+                                }
+                                if (!selectionsettings.enableMultiSelect) {
+                                    return;
+                                }
                             }
                         }
-                    }
-                    else {
-                        this.legendSelection = (!selectionsettings.enableMultiSelect && !this.legendSelection) ?
-                            true : this.legendSelection;
-                        if (this.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1 &&
-                            targetEle.getAttribute('class') === 'ShapeselectionMapStyle') {
-                            this.legendModule.shapeHighLightAndSelection(targetEle, data, selectionsettings, 'selection', layerIndex);
-                        }
-                        let shapeToggled = this.legendSettings.visible ? this.legendModule.shapeToggled : true;
-                        if (shapeToggled) {
-                            removeClass(targetEle);
-                            let selectedElementIdIndex = this.selectedElementId.indexOf(targetEle.getAttribute('id'));
-                            if (selectedElementIdIndex !== -1) {
-                                this.selectedElementId.splice(selectedElementIdIndex, 1);
-                                if (!selectionsettings.enableMultiSelect && this.legendSelection && this.selectedElementId.length > 0) {
-                                    this.removeShapeSelection();
+                        else {
+                            this.legendSelection = (!selectionsettings.enableMultiSelect && !this.legendSelection) ?
+                                true : this.legendSelection;
+                            if (this.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1 &&
+                                targetEle.getAttribute('class') === 'ShapeselectionMapStyle') {
+                                this.legendModule.shapeHighLightAndSelection(targetEle, data, selectionsettings, 'selection', layerIndex);
+                            }
+                            let shapeToggled = this.legendSettings.visible ? this.legendModule.shapeToggled : true;
+                            if (shapeToggled) {
+                                removeClass(targetEle);
+                                let selectedElementIdIndex = this.selectedElementId.indexOf(targetEle.getAttribute('id'));
+                                if (selectedElementIdIndex !== -1) {
+                                    this.selectedElementId.splice(selectedElementIdIndex, 1);
+                                    if (!selectionsettings.enableMultiSelect && this.legendSelection && this.selectedElementId.length > 0) {
+                                        this.removeShapeSelection();
+                                    }
                                 }
                             }
                         }
@@ -8710,6 +8728,7 @@ class Legend {
             document.getElementById(targetElement.id + '_Text');
         let collection = this.maps.legendModule.legendCollection;
         let length;
+        let multiSelectEnable = this.maps.layers[collection[0]['data'][0]['layerIndex']].selectionSettings.enableMultiSelect;
         let selectLength = 0;
         let interactProcess = true;
         let idIndex = parseFloat(targetElement.id.charAt(targetElement.id.length - 1));
@@ -8724,7 +8743,6 @@ class Legend {
             return null;
         }
         if (value === 'selection') {
-            let multiSelectEnable = this.maps.layers[collection[0]['data'][0]['layerIndex']].selectionSettings.enableMultiSelect;
             this.shapeHighlightCollection = [];
             if (!this.maps.shapeSelections && !multiSelectEnable) {
                 this.removeAllSelections();
@@ -8740,6 +8758,18 @@ class Legend {
                         this.maps.legendSelectionCollection.splice(k, 1);
                         this.maps.legendSelection = this.maps.legendSelectionCollection.length > 0 ? false : true;
                         break;
+                    }
+                    else if (!multiSelectEnable) {
+                        if (this.maps.legendSelectionCollection.length > 1) {
+                            for (let z = 0; z < this.maps.legendSelectionCollection.length; z++) {
+                                this.removeLegendSelectionCollection(this.maps.legendSelectionCollection[z]['legendElement']);
+                            }
+                            this.maps.legendSelectionCollection = [];
+                        }
+                        else {
+                            this.removeLegendSelectionCollection(this.maps.legendSelectionCollection[k]['legendElement']);
+                            this.maps.legendSelectionCollection.splice(k, 1);
+                        }
                     }
                 }
             }
@@ -8814,7 +8844,18 @@ class Legend {
                                     this.maps.legendSelectionClass = module;
                                     if (j === 0) {
                                         this.pushCollection(targetElement, this.maps.legendSelectionCollection, collection[i], layer.shapeSettings);
-                                        this.maps.selectedLegendElementId.push(i);
+                                        if (multiSelectEnable) {
+                                            this.maps.selectedLegendElementId.push(i);
+                                        }
+                                        else {
+                                            if (this.maps.selectedLegendElementId.length === 0) {
+                                                this.maps.selectedLegendElementId.push(i);
+                                            }
+                                            else {
+                                                this.maps.selectedLegendElementId = [];
+                                                this.maps.selectedLegendElementId.push(i);
+                                            }
+                                        }
                                     }
                                     selectLength = this.maps.legendSelectionCollection.length;
                                     let legendSelectionColor;
@@ -9529,7 +9570,7 @@ class Legend {
                         range = false;
                         let rangeValue = data[colorValuePath];
                         for (let z = 0; z < colorMapping.length; z++) {
-                            if (!isNullOrUndefined(rangeValue) && rangeValue !== 0) {
+                            if (!isNullOrUndefined(rangeValue) && !isNaN(rangeValue)) {
                                 if (rangeValue >= colorMapping[z].from && rangeValue <= colorMapping[z].to) {
                                     range = true;
                                 }
@@ -10439,6 +10480,7 @@ class Selection {
     // }
     /**
      * Get module name.
+     * @private
      */
     removedSelectionList(targetElement) {
         if (this.selectionType === 'Shape') {

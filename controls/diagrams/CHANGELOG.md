@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.45 (2020-04-21)
+
+### Diagram
+
+#### Bug Fixes
+
+- `#270667` - The issue with "Prevent line routing for straight connector" has been fixed.
+
 ## 18.1.43 (2020-04-07)
 
 ### Diagram

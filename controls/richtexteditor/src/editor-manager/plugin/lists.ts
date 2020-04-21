@@ -8,7 +8,7 @@ import { DOMNode, markerClassName } from './dom-node';
 import * as EVENTS from './../../common/constant';
 import { setStyleAttribute } from '@syncfusion/ej2-base';
 import { isIDevice, setEditFrameFocus } from '../../common/util';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, closest } from '@syncfusion/ej2-base';
 
 /**
  * Lists internal component
@@ -93,8 +93,8 @@ export class Lists {
         let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
         let startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
         let endNode: Element = this.parent.domNode.getSelectedNode(range.endContainer as Element, range.endOffset);
-        if (startNode === endNode && startNode.tagName === 'LI' && startNode.textContent.trim() === '' &&
-        startNode.textContent.charCodeAt(0) === 65279) {
+        if (startNode === endNode && !isNullOrUndefined(closest(startNode, 'li')) &&
+        startNode.textContent.trim() === '' && startNode.textContent.charCodeAt(0) === 65279) {
             startNode.textContent = '';
         }
     }

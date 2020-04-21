@@ -1304,6 +1304,8 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
     public singleClickTimer: number = 0;
     /** @private */
     public chartAreaType: string = 'Cartesian';
+    /** @private */
+    public isRtlEnabled: boolean = document.body.getAttribute('dir') === 'rtl';
     /**
      * `markerModule` is used to manipulate and add marker to the series.
      * @private
@@ -1829,6 +1831,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
          * Issue: Zoomkit not visible after performing refresh()
          * Fix: this method called without checking `zoomModule.isZoomed`
          */
+        if (this.chartAreaType === 'PolarRadar') {
+            return;
+        }
         if (!this.redraw && this.zoomModule && (!this.zoomSettings.enablePan || this.zoomModule.performedUI)) {
             this.zoomModule.applyZoomToolkit(this, this.axisCollections);
         }

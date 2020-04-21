@@ -938,12 +938,14 @@ var Double = /** @class */ (function () {
             max: axis.actualRange.max, min: axis.actualRange.min,
             delta: axis.actualRange.delta, interval: axis.actualRange.interval
         };
-        var isLazyLoad = sf.base.isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
-        if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
-            axis.calculateVisibleRange(size);
-            axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming && axis.valueType !== 'Category') ?
-                this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size)
-                : axis.visibleRange.interval;
+        if (this.chart.chartAreaType === 'Cartesian') {
+            var isLazyLoad = sf.base.isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
+            if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
+                axis.calculateVisibleRange(size);
+                axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming && axis.valueType !== 'Category') ?
+                    this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size)
+                    : axis.visibleRange.interval;
+            }
         }
         axis.triggerRangeRender(this.chart, axis.visibleRange.min, axis.visibleRange.max, axis.visibleRange.interval);
     };
@@ -956,7 +958,9 @@ var Double = /** @class */ (function () {
         axis.visibleLabels = [];
         var tempInterval = axis.visibleRange.min;
         var labelStyle;
-        if (axis.zoomFactor < 1 || axis.zoomPosition > 0 || this.paddingInterval) {
+        var controlName = chart.getModuleName();
+        var isPolarRadar = controlName === 'chart' && chart.chartAreaType === 'PolarRadar';
+        if (!isPolarRadar && (axis.zoomFactor < 1 || axis.zoomPosition > 0 || this.paddingInterval)) {
             tempInterval = axis.visibleRange.min - (axis.visibleRange.min % axis.visibleRange.interval);
         }
         var format = this.getFormat(axis);
@@ -2072,6 +2076,9 @@ var Axis = /** @class */ (function (_super) {
     __decorate$2([
         sf.base.Property(false)
     ], Axis.prototype, "enableTrim", void 0);
+    __decorate$2([
+        sf.base.Property(5)
+    ], Axis.prototype, "labelPadding", void 0);
     __decorate$2([
         sf.base.Complex({}, MajorTickLines)
     ], Axis.prototype, "majorTickLines", void 0);
@@ -4535,14 +4542,16 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
         var pointX = 0;
         var pointY = 0;
         var elementSize;
+        var labelSpace = axis.labelPadding;
         var options;
         var isAxisBreakLabel;
         var isLabelInside = axis.labelPosition === 'Inside';
         var isOpposed = axis.opposedPosition;
         var tickSpace = axis.labelPosition === axis.tickPosition ? axis.majorTickLines.height : 0;
-        var padding = tickSpace + this.padding + axis.lineStyle.width * 0.5;
+        var padding = tickSpace + labelSpace + axis.lineStyle.width * 0.5;
         padding = (axis.opposedPosition) ? padding : -padding;
         var anchor = ((isOpposed && isLabelInside) || (!isOpposed && !isLabelInside)) ? 'end' : 'start';
+        anchor = chart.isRtlEnabled ? ((axis.opposedPosition) ? 'end' : 'start') : anchor;
         var labelElement = chart.renderer.createGroup({ id: chart.element.id + 'AxisLabels' + index });
         var scrollBarHeight = sf.base.isNullOrUndefined(axis.crossesAt) ? axis.scrollBarHeight * (isOpposed ? 1 : -1) : 0;
         var textHeight;
@@ -4843,13 +4852,15 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
         var chart = this.chart;
         var pointX = 0;
         var pointY = 0;
+        var labelSpace = axis.labelPadding;
         var elementSize;
         var labelPadding;
+        var anchor;
         var labelElement = chart.renderer.createGroup({ id: chart.element.id + 'AxisLabels' + index });
         var islabelInside = axis.labelPosition === 'Inside';
         var isOpposed = axis.opposedPosition;
         var tickSpace = axis.labelPosition === axis.tickPosition ? axis.majorTickLines.height : 0;
-        var padding = tickSpace + this.padding + axis.lineStyle.width * 0.5;
+        var padding = tickSpace + labelSpace + axis.lineStyle.width * 0.5;
         var rotateSize;
         var diffHeight;
         var angle = axis.angle % 360;
@@ -4889,7 +4900,8 @@ var CartesianAxisLayoutPanel = /** @class */ (function () {
                     padding + scrollBarHeight + (angle ? (axis.maxLabelSize.height * 0.5) : (3 * (elementSize.height / 4)));
                 pointY = (rect.y + (labelPadding * label.index));
             }
-            options = new sf.svgbase.TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, '');
+            anchor = chart.isRtlEnabled ? 'end' : '';
+            options = new sf.svgbase.TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, anchor);
             if (axis.edgeLabelPlacement) {
                 switch (axis.edgeLabelPlacement) {
                     case 'None':
@@ -6909,7 +6921,7 @@ var Marker = /** @class */ (function (_super) {
         var redraw = series.chart.redraw;
         this.createElement(series, redraw);
         var _loop_1 = function (point) {
-            if (point.visible && point.symbolLocations.length) {
+            if (point.visible && point.symbolLocations && point.symbolLocations.length) {
                 point.symbolLocations.map(function (location, index) {
                     _this.renderMarker(series, point, location, index, redraw);
                 });
@@ -7351,7 +7363,8 @@ var BaseLegend = /** @class */ (function () {
             var legendSeriesGroup = void 0; // legendItem group for each series group element
             var start = void 0; // starting shape center x,y position && to resolve lint error used new line for declaration
             start = new ChartLocation(legendBounds.x + padding + (legend.shapeWidth / 2), legendBounds.y + padding + this.maxItemHeight / 2);
-            var textOptions = new sf.svgbase.TextOption('', start.x, start.y, 'start');
+            var anchor = chart.isRtlEnabled ? 'end' : 'start';
+            var textOptions = new sf.svgbase.TextOption('', start.x, start.y, anchor);
             //  initialization for totalPages legend click totalpage again calculate
             this.totalPages = this.totalPages = (this.isChartControl || this.isBulletChartControl) ? this.totalPages : 0;
             var textPadding = legend.shapePadding + padding + legend.shapeWidth;
@@ -8224,6 +8237,8 @@ var Chart = /** @class */ (function (_super) {
         _this.singleClickTimer = 0;
         /** @private */
         _this.chartAreaType = 'Cartesian';
+        /** @private */
+        _this.isRtlEnabled = document.body.getAttribute('dir') === 'rtl';
         _this.chartid = 57723;
         sf.base.setValue('mergePersistData', _this.mergePersistChartData, _this);
         return _this;
@@ -8661,6 +8676,9 @@ var Chart = /** @class */ (function (_super) {
          * Issue: Zoomkit not visible after performing refresh()
          * Fix: this method called without checking `zoomModule.isZoomed`
          */
+        if (this.chartAreaType === 'PolarRadar') {
+            return;
+        }
         if (!this.redraw && this.zoomModule && (!this.zoomSettings.enablePan || this.zoomModule.performedUI)) {
             this.zoomModule.applyZoomToolkit(this, this.axisCollections);
         }
@@ -12045,7 +12063,7 @@ var ColumnBase = /** @class */ (function () {
         series.isRectSeries = true;
         var visibleSeries = series.chart.visibleSeries;
         var seriesSpacing = series.chart.enableSideBySidePlacement ? series.columnSpacing : 0; // Column Spacing
-        var pointSpacing = (series.columnWidth === null) ? ((series.type === 'Histogram') ? 1 : 0.7) :
+        var pointSpacing = (series.columnWidth === null || isNaN(+series.columnWidth)) ? ((series.type === 'Histogram') ? 1 : 0.7) :
             series.columnWidth; // Column width
         var minimumPointDelta = getMinPointsDelta(series.xAxis, visibleSeries);
         var width = minimumPointDelta * pointSpacing;
@@ -12309,45 +12327,47 @@ var ColumnBase = /** @class */ (function () {
             }
         }
         var value;
-        element.style.visibility = 'hidden';
-        new sf.base.Animation({}).animate(element, {
-            duration: duration,
-            delay: option.delay,
-            progress: function (args) {
-                if (args.timeStamp >= args.delay) {
-                    element.style.visibility = 'visible';
-                    if (!series.chart.requireInvertedAxis) {
-                        elementHeight = elementHeight ? elementHeight : 1;
-                        value = effect(args.timeStamp - args.delay, 0, elementHeight, args.duration);
-                        element.setAttribute('transform', 'translate(' + centerX + ' ' + centerY +
-                            ') scale(1,' + (value / elementHeight) + ') translate(' + (-centerX) + ' ' + (-centerY) + ')');
+        if (!sf.base.isNullOrUndefined(element)) {
+            element.style.visibility = 'hidden';
+            new sf.base.Animation({}).animate(element, {
+                duration: duration,
+                delay: option.delay,
+                progress: function (args) {
+                    if (args.timeStamp >= args.delay) {
+                        element.style.visibility = 'visible';
+                        if (!series.chart.requireInvertedAxis) {
+                            elementHeight = elementHeight ? elementHeight : 1;
+                            value = effect(args.timeStamp - args.delay, 0, elementHeight, args.duration);
+                            element.setAttribute('transform', 'translate(' + centerX + ' ' + centerY +
+                                ') scale(1,' + (value / elementHeight) + ') translate(' + (-centerX) + ' ' + (-centerY) + ')');
+                        }
+                        else {
+                            elementWidth = elementWidth ? elementWidth : 1;
+                            value = effect(args.timeStamp - args.delay, 0, elementWidth, args.duration);
+                            element.setAttribute('transform', 'translate(' + centerX + ' ' + centerY +
+                                ') scale(' + (value / elementWidth) + ', 1) translate(' + (-centerX) + ' ' + (-centerY) + ')');
+                        }
                     }
-                    else {
-                        elementWidth = elementWidth ? elementWidth : 1;
-                        value = effect(args.timeStamp - args.delay, 0, elementWidth, args.duration);
-                        element.setAttribute('transform', 'translate(' + centerX + ' ' + centerY +
-                            ') scale(' + (value / elementWidth) + ', 1) translate(' + (-centerX) + ' ' + (-centerY) + ')');
-                    }
-                }
-            },
-            end: function (model) {
-                element.setAttribute('transform', 'translate(0,0)');
-                var seriesElement = series.seriesElement;
-                if (element === seriesElement.lastElementChild || point.index === series.points.length - 1 ||
-                    (series.type === 'Waterfall' && element === seriesElement.children[seriesElement.childElementCount - 2])) {
-                    series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
-                    if (series.type === 'Waterfall') {
-                        var rectElements = seriesElement.childNodes;
-                        for (var i = 0; i < rectElements.length; i++) {
-                            if (rectElements[i].id.indexOf('Connector') !== -1) {
-                                rectElements[i].style.visibility = 'visible';
-                                rectElements[i].setAttribute('transform', 'translate(0,0)');
+                },
+                end: function (model) {
+                    element.setAttribute('transform', 'translate(0,0)');
+                    var seriesElement = series.seriesElement;
+                    if (element === seriesElement.lastElementChild || point.index === series.points.length - 1 ||
+                        (series.type === 'Waterfall' && element === seriesElement.children[seriesElement.childElementCount - 2])) {
+                        series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
+                        if (series.type === 'Waterfall') {
+                            var rectElements = seriesElement.childNodes;
+                            for (var i = 0; i < rectElements.length; i++) {
+                                if (rectElements[i].id.indexOf('Connector') !== -1) {
+                                    rectElements[i].style.visibility = 'visible';
+                                    rectElements[i].setAttribute('transform', 'translate(0,0)');
+                                }
                             }
                         }
                     }
                 }
-            }
-        });
+            });
+        }
     };
     /**
      * To get rounded rect path direction
@@ -25239,11 +25259,31 @@ var MultiLevelLabel = /** @class */ (function () {
 function createScrollSvg(scrollbar, renderer) {
     var rect = scrollbar.axis.rect;
     var isHorizontalAxis = scrollbar.axis.orientation === 'Horizontal';
+    var enablePadding = false;
+    var markerHeight = 5;
+    var yMin;
+    for (var _i = 0, _a = scrollbar.axis.series; _i < _a.length; _i++) {
+        var tempSeries = _a[_i];
+        if (tempSeries.marker.height > markerHeight) {
+            markerHeight = tempSeries.marker.height;
+        }
+    }
+    for (var _b = 0, _c = scrollbar.axis.series; _b < _c.length; _b++) {
+        var tempSeries = _c[_b];
+        yMin = tempSeries.yMin.toString();
+        enablePadding = (tempSeries.yData).some(function (yData) {
+            return yData === yMin;
+        });
+        if (enablePadding) {
+            break;
+        }
+    }
     scrollbar.svgObject = renderer.createSvg({
         id: scrollbar.component.element.id + '_' + 'scrollBar_svg' + scrollbar.axis.name,
         width: scrollbar.isVertical ? scrollbar.height : scrollbar.width,
         height: scrollbar.isVertical ? scrollbar.width : scrollbar.height,
-        style: 'position: absolute;top: ' + ((scrollbar.axis.opposedPosition && isHorizontalAxis ? -16 : 0) + rect.y) + 'px;left: ' +
+        style: 'position: absolute;top: ' + ((scrollbar.axis.opposedPosition && isHorizontalAxis ? -16 :
+            (enablePadding ? markerHeight : 0)) + rect.y) + 'px;left: ' +
             (((scrollbar.axis.opposedPosition && !isHorizontalAxis ? 16 : 0) + rect.x) - (scrollbar.isVertical ? scrollbar.height : 0))
             + 'px;cursor:auto;'
     });

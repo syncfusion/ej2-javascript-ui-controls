@@ -185,7 +185,10 @@ export class EditRender {
                 input = this.parent.createElement('span', {attrs: {'e-mappinguid': col.uid}});
                 let tempID: string = this.parent.element.id + col.uid + 'editTemplate';
                 let tempData: object = extend({}, {}, args.rowData, true);
-                appendChildren(input, col.getEditTemplate()(tempData, this.parent, 'editTemplate', tempID));
+                let template: Element[] | NodeList = col.getEditTemplate()(tempData, this.parent, 'editTemplate', tempID);
+                /* tslint:disable-next-line:no-any */
+                (this.parent as any).isReact && this.parent.editSettings.mode === 'Batch' ?
+                setTimeout(() => { appendChildren(input, template); }) : appendChildren(input, template);
                 if (isBlazor()) {
                     let setRules: Function = (ruleColumn: Column) => {
                         let column: Column = ruleColumn;

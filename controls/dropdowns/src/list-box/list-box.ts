@@ -369,8 +369,12 @@ export class ListBox extends DropDownBase {
         this.renderComplete();
     }
 
-     private updateBlazorListData(data: { [key: string]: Object }[] | string[] | boolean[] | number[]): void {
-        this.sortedData = this.jsonData = this.listData = data;
+     private updateBlazorListData(data: { [key: string]: Object }[] | string[] | boolean[] | number[], isDataSource: boolean): void {
+        if (isDataSource) {
+            this.mainList = this.ulElement = this.list.querySelector('ul');
+        } else {
+            this.sortedData = this.jsonData = this.listData = data;
+        }
     }
     private initWrapper(): void {
         let hiddenSelect: Element = this.createElement('select', { className: 'e-hidden-select', attrs: { 'multiple': '' } });

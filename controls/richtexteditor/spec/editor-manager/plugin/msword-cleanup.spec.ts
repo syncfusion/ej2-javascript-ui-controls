@@ -688,20 +688,12 @@ Symbol'><span style='mso-list:Ignore'>·<span style='font:7.0pt &quot;Times New 
       }
       let pastedElem: any = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = true;
-      let expectedElem: string = `<table border="1" cellspacing="0" cellpadding="0" style="border:none;"><tbody><tr><td width="54" valign="top" style="width:40.25pt;border:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:
-      normal;"><b><span style="font-size:14.0pt;">No.</span></b></p></td><td width="186" valign="top" style="width:139.5pt;border:solid windowtext 1.0pt;
-      border-left:none;padding:0in 5.4pt 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:
-      normal;"><b><span style="font-size:14.0pt;">Present form</span></b></p></td><td width="174" valign="top" style="width:130.5pt;border:solid windowtext 1.0pt;
-      border-left:none;padding:0in 5.4pt 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:
-      normal;"><b><span style="font-size:14.0pt;">Past form</span></b></p></td><td width="210" valign="top" style="width:157.25pt;border:solid windowtext 1.0pt;
-      border-left:none;padding:0in 5.4pt 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:
-      normal;"><b><span style="font-size:14.0pt;">Past participle form</span></b></p></td></tr><tr><td width="54" valign="top" style="width:40.25pt;border:solid windowtext 1.0pt;
-      border-top:none;
-      padding:0in 5.4pt 0in 5.4pt;"><ol level="1" style="list-style: decimal;"><li><p><span style="font-size:14.0pt;">&nbsp;</span></p></li></ol></td><td width="186" valign="top" style="width:139.5pt;border-top:none;border-left:
-      none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:
-      normal;"><span style="font-size:14.0pt;">Bring</span></p></td><td width="174" valign="top" style="width:130.5pt;border-top:none;border-left:
-      none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;"><br></td><td width="210" valign="top" style="width:157.25pt;border-top:none;border-left:
-      none;border-bottom:solid windowtext 1.0pt;border-right:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;"><br></td></tr></tbody></table><p>13</p>`;
+      let expectedElem: string = `<table border="1" cellspacing="0" cellpadding="0" style="border:none;" class="e-rte-table"><tbody><tr><td width="54" valign="top" style="width: 40.25pt; padding: 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:
+      normal;"><b><span style="font-size:14.0pt;">No.</span></b></p></td><td width="186" valign="top" style="width: 139.5pt; padding: 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:
+      normal;"><b><span style="font-size:14.0pt;">Present form</span></b></p></td><td width="174" valign="top" style="width: 130.5pt; padding: 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:
+      normal;"><b><span style="font-size:14.0pt;">Past form</span></b></p></td><td width="210" valign="top" style="width: 157.25pt; padding: 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:
+      normal;"><b><span style="font-size:14.0pt;">Past participle form</span></b></p></td></tr><tr><td width="54" valign="top" style="width: 40.25pt; padding: 0in 5.4pt;"><ol level="1" style="list-style: decimal;"><li><p><span style="font-size:14.0pt;">&nbsp;</span></p></li></ol></td><td width="186" valign="top" style="width: 139.5pt; padding: 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:
+      normal;"><span style="font-size:14.0pt;">Bring</span></p></td><td width="174" valign="top" style="width: 130.5pt; padding: 0in 5.4pt;"><br></td><td width="210" valign="top" style="width: 157.25pt; padding: 0in 5.4pt;"><br></td></tr></tbody></table><p>13</p>`;
       if (pastedElem.trim().replace(/>\s+</g, '><') !== expectedElem) {
         expected = false;
       }
@@ -1062,8 +1054,111 @@ ul
       }
       let pastedElem: string = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = false;
-      let expectedElem: string = `<table border="0" cellpadding="0" cellspacing="0" width="425"><tbody><tr height="19"><td height="19" width="233">Hauptansicht
+      let expectedElem: string = `<table cellpadding="0" cellspacing="0" width="425" class="e-rte-table"><tbody><tr height="19"><td height="19" width="233">Hauptansicht
       mit Panelverwaltung</td><td align="right" width="64">10</td><td align="right" width="64">84</td><td align="right" width="64">0</td></tr><tr height="19"><td height="19">Bericht</td><td align="right">20</td><td align="right">168</td><td align="right">0</td></tr><tr height="19"><td height="19">Filterauswahl</td><td align="right">5</td><td align="right">42</td><td align="right">0</td></tr></tbody></table><p>15</p>`;
+      if (pastedElem.trim().replace(/>\s+</g, '><') === expectedElem) {
+        expected = true;
+      }
+      expect(expected).toBe(true);
+      done();
+    }, 100);
+  });
+
+  it('Paste table from Excel', (done) => {
+    let localElem: string = `<html xmlns:v="urn:schemas-microsoft-com:vml"
+    xmlns:o="urn:schemas-microsoft-com:office:office"
+    xmlns:x="urn:schemas-microsoft-com:office:excel"
+    xmlns="http://www.w3.org/TR/REC-html40">
+    
+    <head>
+    <meta http-equiv=Content-Type content="text/html; charset=utf-8">
+    <meta name=ProgId content=Excel.Sheet>
+    <meta name=Generator content="Microsoft Excel 15">
+    <link id=Main-File rel=Main-File
+    href="file:///C:/Users/REVANT~1/AppData/Local/Temp/msohtmlclip1/01/clip.htm">
+    <link rel=File-List
+    href="file:///C:/Users/REVANT~1/AppData/Local/Temp/msohtmlclip1/01/clip_filelist.xml">
+    <style>
+    <!--table
+      {mso-displayed-decimal-separator:"\.";
+      mso-displayed-thousand-separator:"\,";}
+    @page
+      {margin:.75in .7in .75in .7in;
+      mso-header-margin:.3in;
+      mso-footer-margin:.3in;}
+    tr
+      {mso-height-source:auto;}
+    col
+      {mso-width-source:auto;}
+    br
+      {mso-data-placement:same-cell;}
+    td
+      {padding-top:1px;
+      padding-right:1px;
+      padding-left:1px;
+      mso-ignore:padding;
+      color:black;
+      font-size:11.0pt;
+      font-weight:400;
+      font-style:normal;
+      text-decoration:none;
+      font-family:Calibri, sans-serif;
+      mso-font-charset:0;
+      mso-number-format:General;
+      text-align:general;
+      vertical-align:bottom;
+      border:none;
+      mso-background-source:auto;
+      mso-pattern:auto;
+      mso-protection:locked visible;
+      white-space:nowrap;
+      mso-rotate:0;}
+    -->
+    </style>
+    </head>
+    
+    <body link="#0563C1" vlink="#954F72">
+    
+    <table border=0 cellpadding=0 cellspacing=0 width=192 style='border-collapse:
+     collapse;width:144pt'>
+    <!--StartFragment-->
+     <col width=64 span=3 style='width:48pt'>
+     <tr height=19 style='height:14.5pt'>
+      <td height=19 width=64 style='height:14.5pt;width:48pt'>cell A1</td>
+      <td width=64 style='width:48pt'>cell B1</td>
+      <td width=64 style='width:48pt'>cell C1</td>
+     </tr>
+     <tr height=19 style='height:14.5pt'>
+      <td height=19 style='height:14.5pt'>cell A2</td>
+      <td></td>
+      <td>cell C2</td>
+     </tr>
+    <!--EndFragment-->
+    </table>
+    
+    </body>
+    
+    </html>`;
+    rteObj.value = '<p>table</p>';
+    rteObj.dataBind();
+    keyBoardEvent.clipboardData = {
+      getData: () => {
+        return localElem;
+      },
+      items: []
+    };
+    setCursorPoint((rteObj as any).inputElement.firstElementChild, 0);
+    rteObj.onPaste(keyBoardEvent);
+    setTimeout(() => {
+      if (rteObj.pasteCleanupSettings.prompt) {
+        let cleanFormat: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_REMOVE_FORMAT);
+        cleanFormat[0].click();
+        let pasteOK: any = document.getElementById(rteObj.getID() + '_pasteCleanupDialog').getElementsByClassName(CLS_RTE_PASTE_OK);
+        pasteOK[0].click();
+      }
+      let pastedElem: string = (rteObj as any).inputElement.innerHTML;
+      let expected: boolean = false;
+      let expectedElem: string = `<table cellpadding="0" cellspacing="0" width="192" class="e-rte-table"><tbody><tr height="19"><td height="19" width="64">cell A1</td><td width="64">cell B1</td><td width="64">cell C1</td></tr><tr height="19"><td height="19">cell A2</td><td></td><td>cell C2</td></tr></tbody></table><p>table</p>`;
       if (pastedElem.trim().replace(/>\s+</g, '><') === expectedElem) {
         expected = true;
       }
@@ -1109,7 +1204,7 @@ mso-hansi-font-family:Calibri;mso-bidi-font-family:Calibri'><span style='mso-lis
       }
       let pastedElem: any = (rteObj as any).inputElement.innerHTML;
       let expected: boolean = true;
-      let expectedElem: string = `<ul level="1" style="list-style: disc;"><li><p>Para 1 </p></li></ul><p><br></p><h1>Head 1 </h1><table border="1" cellspacing="0" cellpadding="0" style="border:none;"><tbody><tr><td width="312" valign="top" style="width:233.75pt;border:solid windowtext 1.0pt;padding:0in 5.4pt 0in 5.4pt;"><p style="margin-top:0in;margin-right:0in;margin-bottom:0in;margin-left:1.0in;margin-bottom:.0001pt;line-height:normal;">T-1</p></td><td width="312" valign="top" style="width:233.75pt;border:solid windowtext 1.0pt;border-left:none;padding:0in 5.4pt 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:normal;">T-2</p></td><td width="312" valign="top" style="width:233.75pt;border:solid windowtext 1.0pt; border-left:none;padding:0in 5.4pt 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:normal;">T-3 </p></td></tr></tbody></table><p>16</p>`
+      let expectedElem: string = `<ul level="1" style="list-style: disc;"><li><p>Para 1 </p></li></ul><p><br></p><h1>Head 1 </h1><table border="1" cellspacing="0" cellpadding="0" style="border:none;" class="e-rte-table"><tbody><tr><td width="312" valign="top" style="width: 233.75pt; padding: 0in 5.4pt;"><p style="margin-top:0in;margin-right:0in;margin-bottom:0in;margin-left:1.0in;margin-bottom:.0001pt;line-height:normal;">T-1</p></td><td width="312" valign="top" style="width: 233.75pt; padding: 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:normal;">T-2</p></td><td width="312" valign="top" style="width: 233.75pt; padding: 0in 5.4pt;"><p style="margin-bottom:0in;margin-bottom:.0001pt;line-height:normal;">T-3 </p></td></tr></tbody></table><p>16</p>`
       if (pastedElem.trim().replace(/>\s+</g, '><') !== expectedElem) {
         expected = false;
       }

@@ -549,8 +549,8 @@ export class ChartRows {
         this.parent.editModule.taskbarEditModule.taskBarEditAction === 'ParentResizing' ?
          true : false;
         let template: string = '<div class="' + cls.taskBarMainContainer + ' ' +
-            this.parent.getUnscheduledTaskClass(data.ganttProperties) + '" ' +
-            ((data.ganttProperties.cssClass) ? data.ganttProperties.cssClass : '') +
+            this.parent.getUnscheduledTaskClass(data.ganttProperties) + ' ' +
+            ((data.ganttProperties.cssClass) ? data.ganttProperties.cssClass : '') + '" ' +
             ' tabindex="-1" style="' + ((data.ganttProperties.isMilestone && !manualParent) ?
              ('width:' + this.milestoneHeight + 'px;height:' +
                 this.milestoneHeight + 'px;margin-top:' + this.milestoneMarginTop + 'px;left:' + (data.ganttProperties.left -

@@ -180,12 +180,12 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private groupElem;
     private dataColl;
     private dataManager;
-    private fields;
     private selectedColumn;
     private actionButton;
     private isInitialLoad;
     private timer;
     private isReadonly;
+    private fields;
     /**
      * Triggers when the component is created.
      * @event

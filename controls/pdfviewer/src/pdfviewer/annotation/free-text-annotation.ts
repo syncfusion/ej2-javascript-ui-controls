@@ -277,6 +277,7 @@ export class FreeTextAnnotation {
                 for (let i: number = 0; i < shapeAnnotations.length; i++) {
                     // tslint:disable-next-line
                     let annotation: any = shapeAnnotations[i];
+                    annotation.annotationAddMode = this.pdfViewer.annotationModule.findAnnotationMode(annotation, pageNumber, annotation.AnnotType);
                     if (annotation.AnnotType) {
                         let vertexPoints: IPoint[] = null;
                         if (annotation.VertexPoints) {
@@ -308,7 +309,7 @@ export class FreeTextAnnotation {
                             // tslint:disable-next-line:max-line-length
                             font: { isBold: annotation.Font.Bold, isItalic: annotation.Font.Italic, isStrikeout: annotation.Font.Strikeout, isUnderline: annotation.Font.Underline },
                             annotationSelectorSettings: this.getSettings(annotation), annotationSettings: annotation.AnnotationSettings,
-                            customData: this.pdfViewer.annotation.getCustomData(annotation)
+                            customData: this.pdfViewer.annotation.getCustomData(annotation), annotationAddMode: annotation.annotationAddMode
                         };
                         if (isImportAction) {
                             annot.id = annotation.AnnotName;

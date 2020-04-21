@@ -154,7 +154,8 @@ export class Table {
                 event.preventDefault();
                 break;
         }
-        if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection) && this.contentModule) {
+        if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection) && this.contentModule
+        && event.code !== 'KeyK') {
             let range: Range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
             let selection: NodeSelection = this.parent.formatter.editorManager.nodeSelection.save(range, this.contentModule.getDocument());
             let ele: HTMLElement = this.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range)[0] as HTMLElement;

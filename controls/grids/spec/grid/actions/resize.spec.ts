@@ -993,4 +993,38 @@ describe('Resize module', () => {
             gridObj = null;
         });
     });
+
+    describe('considering maxwidth in autofit column', () => {
+        let gridObj: any;
+        beforeAll((done: Function) => {
+            let data1: object[] = [
+                {
+                    OrderID: 10248, About: 'Anne has a BA degree in English from St. Lawrence College.  She is fluent in French and German', EmployeeID: 5,
+                    ShipCity: 'Reims', Freight: 32.38,
+                },]
+            gridObj = createGrid(
+                {
+                    allowResizing: true,
+                    allowRowDragAndDrop: true,
+                    dataSource: data1,
+                    columns: [{ field: 'OrderID', headerText: 'OrderID', width: 140 },
+                    { field: 'About', headerText: 'About', width: 140, maxWidth: 300, minWidth: 200, autofit: true },
+                    { field: 'EmployeeID', headerText: 'EmployeeID', width: 130 },
+                    { field: 'Freight', headerText: 'Freight', width: 150, allowResizing: false },
+                    { field: 'ShipCity', headerText: 'ShipCity', width: 150 }
+                    ],
+                }, done);
+        });
+
+        it('Column width after resize', () => {
+            gridObj.autoFitColumns('About');
+            expect((gridObj.getColumns()[1] as Column).width).toBe(300);
+        })
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
+
 });

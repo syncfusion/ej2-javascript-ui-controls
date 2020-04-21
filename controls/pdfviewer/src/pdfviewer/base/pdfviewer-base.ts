@@ -116,6 +116,10 @@ export class PdfViewerBase {
      * @private
      */
     public pageGap: number = 8;
+    /**
+     * @private
+     */
+    public signatureAdded: boolean = false;
     private pageLeft: number = 5;
     private sessionLimit: number = 1000;
     private pageStopValue: number = 300;
@@ -562,7 +566,9 @@ export class PdfViewerBase {
      */
     public initiatePageRender(documentData: string, password: string): void {
         this.documentId = this.createGUID();
-        this.viewerContainer.scrollTop = 0;
+        if (this.viewerContainer) {
+            this.viewerContainer.scrollTop = 0;
+        }
         this.showLoadingIndicator(true);
         this.hashId = ' ';
         this.isFileName = false;
@@ -774,21 +780,6 @@ export class PdfViewerBase {
             if (this.pdfViewer.toolbarModule) {
                 this.pdfViewer.toolbarModule.updateToolbarItems();
             }
-        }
-        if (this.pdfViewer.thumbnailViewModule && !Browser.isDevice) {
-            this.pdfViewer.thumbnailViewModule.createRequestForThumbnails();
-        }
-        if (this.pdfViewer.bookmarkViewModule) {
-            this.pdfViewer.bookmarkViewModule.createRequestForBookmarks();
-        }
-        if (this.pdfViewer.annotationModule) {
-            if (this.pdfViewer.toolbarModule) {
-                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.initializeAcccordionContainer();
-            }
-            if (this.pdfViewer.isCommandPanelOpen) {
-                this.pdfViewer.annotation.showCommentsPanel();
-            }
-            this.pdfViewer.annotationModule.stickyNotesAnnotationModule.createRequestForComments();
         }
         // tslint:disable-next-line:max-line-length
         if (this.pdfViewer.enableTextMarkupResizer && this.pdfViewer.annotationModule && this.pdfViewer.annotation.textMarkupAnnotationModule) {
@@ -2492,6 +2483,7 @@ export class PdfViewerBase {
     private onWindowMouseUp = (event: MouseEvent): any => {
         this.isFreeTextContextMenu = false;
         this.isNewStamp = false;
+        this.signatureAdded = false;
         // tslint:disable-next-line:max-line-length
         if (this.pdfViewer.enableTextMarkupResizer && this.pdfViewer.annotationModule && this.pdfViewer.annotation.textMarkupAnnotationModule) {
             // tslint:disable-next-line
@@ -2563,6 +2555,7 @@ export class PdfViewerBase {
     }
 
     private onWindowTouchEnd = (event: TouchEvent): void => {
+        this.signatureAdded = false;
         // tslint:disable-next-line:max-line-length
         if (!this.pdfViewer.element.contains(event.target as HTMLElement) && !this.contextMenuModule.contextMenuElement.contains(event.target as HTMLElement)) {
             if (this.pdfViewer.textSelectionModule && !this.isTextSelectionDisabled) {
@@ -3166,6 +3159,7 @@ export class PdfViewerBase {
                             this.showPageLoadingIndicator(pageIndex, false);
                             if (isNaN(data.tileX) && isNaN(data.tileY)) {
                                 if (pageIndex === 0 && this.isDocumentLoaded) {
+                                    this.renderPDFInformations();
                                     this.isInitialLoaded = true;
                                     // tslint:disable-next-line
                                     let pageData: any = window.sessionStorage.getItem(this.documentId + '_pagedata');
@@ -3255,6 +3249,7 @@ export class PdfViewerBase {
                             context.drawImage(image, 0, 0, canvas.width, canvas.height);
                             this.showPageLoadingIndicator(pageIndex, false);
                             if (pageIndex === 0 && this.isDocumentLoaded) {
+                                this.renderPDFInformations();
                                 this.isInitialLoaded = true;
                                 // tslint:disable-next-line
                                 let pageData: any = window.sessionStorage.getItem(this.documentId + '_pagedata');
@@ -3514,6 +3509,24 @@ export class PdfViewerBase {
         this.renderPageCanvas(pageDiv, pageWidth, pageHeight, pageNumber, 'block');
         if (Browser.isDevice && !this.isThumb) {
             this.updateMobileScrollerPosition();
+        }
+    }
+
+    private renderPDFInformations(): void {
+        if (this.pdfViewer.thumbnailViewModule && !Browser.isDevice) {
+            this.pdfViewer.thumbnailViewModule.createRequestForThumbnails();
+        }
+        if (this.pdfViewer.bookmarkViewModule) {
+            this.pdfViewer.bookmarkViewModule.createRequestForBookmarks();
+        }
+        if (this.pdfViewer.annotationModule) {
+            if (this.pdfViewer.toolbarModule) {
+                this.pdfViewer.annotationModule.stickyNotesAnnotationModule.initializeAcccordionContainer();
+            }
+            if (this.pdfViewer.isCommandPanelOpen) {
+                this.pdfViewer.annotation.showCommentsPanel();
+            }
+            this.pdfViewer.annotationModule.stickyNotesAnnotationModule.createRequestForComments();
         }
     }
 
@@ -5223,7 +5236,9 @@ export class PdfViewerBase {
                     let currentObject: PdfAnnotationBaseModel = obj as PdfAnnotationBaseModel;
                     // tslint:disable-next-line
                     let annotationObject: any = (this.pdfViewer.nameTable as any)[currentObject.id];
-                    annotationObject.annotationSettings.isLock = JSON.parse(annotationObject.annotationSettings.isLock);
+                    if (annotationObject.shapeAnnotationType !== 'HandWrittenSignature') {
+                        annotationObject.annotationSettings.isLock = JSON.parse(annotationObject.annotationSettings.isLock);
+                    }
                     if (annotationObject.annotationSettings.isLock) {
                         eventTarget.style.cursor = 'default';
                     } else {
@@ -5411,6 +5426,7 @@ export class PdfViewerBase {
                 signObject = this.pdfViewer.selectedItems.annotations[0];
             }
             if (signObject) {
+                this.signatureAdded = true;
                 this.signatureModule.storeSignatureData(signObject.pageIndex, signObject);
                 // tslint:disable-next-line
                 let bounds: any = { left: signObject.bounds.x, top: signObject.bounds.y, width: signObject.bounds.width, height: signObject.bounds.height };
@@ -5474,6 +5490,7 @@ export class PdfViewerBase {
             this.isAnnotationMouseMove = false;
             this.tool.mouseDown(this.eventArgs);
             this.isAnnotationDrawn = true;
+            this.signatureAdded = true;
         }
         if (this.pdfViewer.annotation) {
             this.pdfViewer.annotation.onAnnotationMouseDown();

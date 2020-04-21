@@ -329,7 +329,7 @@ export class LayerPanel {
         let colors: string[] = shapeSettings.palette.length > 1 ? shapeSettings.palette : getShapeColor(this.mapObject.theme);
         let labelTemplateEle: HTMLElement = createElement('div', {
             id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_Label_Template_Group',
-            className: 'template',
+            className: this.mapObject.element.id + '_template',
             styles: 'pointer-events: none; overflow: hidden; position: absolute;' +
                 'top:' + this.mapObject.mapAreaRect.y + 'px;' +
                 'left:' + this.mapObject.mapAreaRect.x + 'px;' +
@@ -941,12 +941,12 @@ export class LayerPanel {
                 }
                 let animateElement: HTMLElement;
                 if (!document.getElementById('animated_tiles') && element) {
-                    animateElement = createElement('div', { id: 'animated_tiles' });
+                    animateElement = createElement('div', { id: this.mapObject.element.id + '_animated_tiles' });
                     element.appendChild(animateElement);
                 } else {
                     if (type !== 'Pan' && element1 && element) {
                         element1.appendChild(element.children[0]);
-                        animateElement = createElement('div', { id: 'animated_tiles' });
+                        animateElement = createElement('div', { id: this.mapObject.element.id + '_animated_tiles' });
                         element.appendChild(animateElement);
                     } else {
                         animateElement = element ? element.children[0] as HTMLElement : null;

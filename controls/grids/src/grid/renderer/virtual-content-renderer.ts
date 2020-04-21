@@ -614,11 +614,14 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
 
     private dataBound(): void {
         if (this.isSelection && this.activeKey !== 'upArrow' && this.activeKey !== 'downArrow') {
-            this.isSelection = false;
             this.parent.selectRow(this.selectedRowIndex);
         } else if (!isBlazor()) {
             this.activeKey = this.empty as string;
         }
+    }
+
+    private rowSelected(): void {
+        this.isSelection = false;
     }
 
     public eventListener(action: string): void {
@@ -626,6 +629,7 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
         this.parent.addEventListener(events.dataBound, this.dataBound.bind(this));
         this.parent.addEventListener(events.actionBegin, this.actionBegin.bind(this));
         this.parent.addEventListener(events.actionComplete, this.actionComplete.bind(this));
+        this.parent.addEventListener(events.rowSelected, this.rowSelected.bind(this));
         this.parent[action](refreshVirtualBlock, this.refreshContentRows, this);
         this.parent[action](events.selectVirtualRow, this.selectVirtualRow, this);
         this.parent[action](events.virtaulCellFocus, this.virtualCellFocus, this);
@@ -1000,15 +1004,20 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     private selectVirtualRow(args: { selectedIndex: number }): void {
         if (this.activeKey !== 'upArrow' && this.activeKey !== 'downArrow'
             && !this.requestTypes.some((value: string) => value === this.requestType)) {
-            this.isSelection = true;
-            this.selectedRowIndex = args.selectedIndex;
-            let page: number = Math.ceil((args.selectedIndex + 1) / this.parent.pageSettings.pageSize);
-            let blockIndexes: number[] = this.vgenerator.getBlockIndexes(page);
-            let scrollTop: number = this.offsets[blockIndexes[0] - 1];
             let ele: Element = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent()
                 : (this.parent.getContent() as HTMLElement).firstElementChild;
-            if (!isNullOrUndefined(scrollTop)) {
-                ele.scrollTop = scrollTop;
+            let selectedRow: Element = this.parent.getRowByIndex(args.selectedIndex);
+            let rectTop: number = selectedRow ? selectedRow.getBoundingClientRect().top : 0;
+            let rowHeight: number = this.parent.getRowHeight();
+            let eleOffsHeight: number = (ele as HTMLElement).offsetHeight;
+            if (!selectedRow || (rectTop < rowHeight || rectTop > eleOffsHeight)) {
+                this.isSelection = true;
+                this.selectedRowIndex = args.selectedIndex;
+                let viewPortCount: number = Math.floor(eleOffsHeight / rowHeight);
+                let scrollTop: number = (args.selectedIndex - viewPortCount) * rowHeight;
+                if (!isNullOrUndefined(scrollTop)) {
+                    ele.scrollTop = scrollTop;
+                }
             }
         }
         this.requestType = this.empty as string;

@@ -1305,7 +1305,7 @@ export class PivotChartSeriesBorder {
      /**
       * Allows to set the width of the border in pixels.
       * @default 1
-      * @blazorType int
+      * @blazorType double
       */
      @Property(1)
      public width: number;

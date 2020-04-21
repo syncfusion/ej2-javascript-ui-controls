@@ -1140,6 +1140,8 @@ export interface HeaderCellInfoEventArgs {
 export interface ExportGroupCaptionEventArgs {
     /** Defines the group caption text. */
     captionText?: string;
+    /** Defines the export type. */
+    type?: string;
 }
 
 export interface QueryCellInfoEventArgs {

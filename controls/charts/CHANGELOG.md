@@ -2,6 +2,17 @@
 
 ## [Unreleased]
 
+## 18.1.45 (2020-04-21)
+
+### Chart
+
+#### Bug Fixes
+
+- `#271540` - Chart zooming maintained while switch chart type from column to polar issue fixed.
+- `#270524` - chart is broken when use `dir="rtl"` to the body tag issue fixed.
+- `#270548` - While enabling scrollbar half of marker gets hidden issue fixed.
+- `#271515` - Column chart is now working fine with column width is zero.
+
 ## 18.1.44 (2020-04-14)
 
 ### Chart
@@ -24,6 +35,12 @@
 
 - `#152336` - Tooltip template issue fixed.
 - `#269225` - Provided event support for before rendering of tooltip
+
+### Chart
+
+#### Bug Fixes
+
+- `#255275` - While disabling some series console error occurs issue has been fixed.
 
 ## 18.1.43 (2020-04-07)
 

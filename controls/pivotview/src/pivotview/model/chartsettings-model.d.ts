@@ -1152,7 +1152,7 @@ export interface PivotChartSeriesBorderModel {
     /**
       * Allows to set the width of the border in pixels.
       * @default 1
-      * @blazorType int
+      * @blazorType double
       */
     width?: number;
 

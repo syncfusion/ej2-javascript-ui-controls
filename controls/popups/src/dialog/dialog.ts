@@ -986,7 +986,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
                 this.trigger('close', this.closeArgs);
                 let activeEle: HTMLElement = document.activeElement as HTMLElement;
                 if (!isNullOrUndefined(activeEle) && !isNullOrUndefined((activeEle).blur)) { activeEle.blur(); }
-                if (!isNullOrUndefined(this.storeActiveElement)) { this.storeActiveElement.focus(); }
+                if (!isNullOrUndefined(this.storeActiveElement) && !isNullOrUndefined(this.storeActiveElement.focus)) {
+                    this.storeActiveElement.focus();
+                }
             }
         });
         this.positionChange();
@@ -1204,7 +1206,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         this.element.style.display = display;
         if (Browser.isIE && this.height === 'auto' && !isNullOrUndefined(this.contentEle)
             && this.element.offsetHeight < this.contentEle.offsetHeight) {
-            this.element.style.height = '100%';
+            this.element.style.height = 'inherit';
         }
     }
 
@@ -1502,6 +1504,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
             <HTMLElement>document.querySelector(<string>this.target) : <HTMLElement>this.target;
         if (this.dragObj) {
             this.dragObj.dragArea = this.targetEle;
+        }
+        if (this.isModal) {
+            this.updateIsModal();
         }
         this.setMaxHeight();
     }

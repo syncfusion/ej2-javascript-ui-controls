@@ -3932,7 +3932,7 @@ export class CommandHandler {
             this.diagram.lineRoutingModule.renderVirtualRegion(this.diagram, true);
             for (let i: number = 0; i < connectors.length; i++) {
                 let connector: Object = this.diagram.nameTable[connectors[i]];
-                if (connector instanceof Connector) {
+                if (connector instanceof Connector && connector.type === 'Orthogonal') {
                     if (isBlazor()) {
                         previousConnectorObject.push(cloneObject(connector, undefined, undefined, true));
                     }

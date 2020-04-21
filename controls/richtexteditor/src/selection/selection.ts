@@ -177,6 +177,15 @@ export class NodeSelection {
     }
 
     /**
+     * getSelectionNodeCollection along with BR node method
+     * @hidden
+     * @deprecated
+     */
+    public getSelectionNodeCollectionBr(range: Range): Node[] {
+        return this.getSelectionNodesBr(this.getNodeCollection(range));
+    }
+
+    /**
      * getParentNodes method
      * @hidden
      * @deprecated
@@ -187,6 +196,25 @@ export class NodeSelection {
         for (let index: number = 0; index < nodeCollection.length; index++) {
             if (nodeCollection[index].nodeType !== 3 || (nodeCollection[index].textContent.trim() === '' ||
             (nodeCollection[index].textContent.length === 1 && nodeCollection[index].textContent.match(regEx)))) {
+                nodeCollection.splice(index, 1);
+                index--;
+            }
+        }
+        return nodeCollection.reverse();
+    }
+
+    /**
+     * Get selection text nodes with br method.
+     * @hidden
+     * @deprecated
+     */
+    public getSelectionNodesBr(nodeCollection: Node[]): Node[] {
+        nodeCollection = nodeCollection.reverse();
+        let regEx: RegExp = new RegExp(String.fromCharCode(8203), 'g');
+        for (let index: number = 0; index < nodeCollection.length; index++) {
+            if (nodeCollection[index].nodeName !== 'BR' &&
+            (nodeCollection[index].nodeType !== 3 || (nodeCollection[index].textContent.trim() === '' ||
+            (nodeCollection[index].textContent.length === 1 && nodeCollection[index].textContent.match(regEx))))) {
                 nodeCollection.splice(index, 1);
                 index--;
             }

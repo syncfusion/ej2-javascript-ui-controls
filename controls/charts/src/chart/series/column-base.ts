@@ -1,4 +1,4 @@
-import { Animation, AnimationOptions } from '@syncfusion/ej2-base';
+import { Animation, AnimationOptions, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { DoubleRange } from '../utils/double-range';
 import { appendChildElement, redrawElement, pathAnimation, valueToCoefficient, getVisiblePoints } from '../../common/utils/helper';
 import { getAnimationFunction, getPoint, ChartLocation, getMinPointsDelta } from '../../common/utils/helper';
@@ -32,7 +32,7 @@ export class ColumnBase {
         series.isRectSeries = true;
         let visibleSeries: Series[] = series.chart.visibleSeries;
         let seriesSpacing: number = series.chart.enableSideBySidePlacement ? series.columnSpacing : 0; // Column Spacing
-        let pointSpacing: number = (series.columnWidth === null) ? ((series.type === 'Histogram') ? 1 : 0.7) :
+        let pointSpacing: number = (series.columnWidth === null || isNaN(+series.columnWidth)) ? ((series.type === 'Histogram') ? 1 : 0.7) :
             series.columnWidth; // Column width
         let minimumPointDelta: number = getMinPointsDelta(series.xAxis, visibleSeries);
         let width: number = minimumPointDelta * pointSpacing;
@@ -302,44 +302,46 @@ export class ColumnBase {
         }
 
         let value: number;
-        element.style.visibility = 'hidden';
-        new Animation({}).animate(element, {
-            duration: duration,
-            delay: option.delay,
-            progress: (args: AnimationOptions): void => {
-                if (args.timeStamp >= args.delay) {
-                    element.style.visibility = 'visible';
-                    if (!series.chart.requireInvertedAxis) {
-                        elementHeight = elementHeight ? elementHeight : 1;
-                        value = effect(args.timeStamp - args.delay, 0, elementHeight, args.duration);
-                        element.setAttribute('transform', 'translate(' + centerX + ' ' + centerY +
-                            ') scale(1,' + (value / elementHeight) + ') translate(' + (-centerX) + ' ' + (-centerY) + ')');
-                    } else {
-                        elementWidth = elementWidth ? elementWidth : 1;
-                        value = effect(args.timeStamp - args.delay, 0, elementWidth, args.duration);
-                        element.setAttribute('transform', 'translate(' + centerX + ' ' + centerY +
-                            ') scale(' + (value / elementWidth) + ', 1) translate(' + (-centerX) + ' ' + (-centerY) + ')');
+        if (!isNullOrUndefined(element)) {
+            element.style.visibility = 'hidden';
+            new Animation({}).animate(element, {
+                duration: duration,
+                delay: option.delay,
+                progress: (args: AnimationOptions): void => {
+                    if (args.timeStamp >= args.delay) {
+                        element.style.visibility = 'visible';
+                        if (!series.chart.requireInvertedAxis) {
+                            elementHeight = elementHeight ? elementHeight : 1;
+                            value = effect(args.timeStamp - args.delay, 0, elementHeight, args.duration);
+                            element.setAttribute('transform', 'translate(' + centerX + ' ' + centerY +
+                                ') scale(1,' + (value / elementHeight) + ') translate(' + (-centerX) + ' ' + (-centerY) + ')');
+                        } else {
+                            elementWidth = elementWidth ? elementWidth : 1;
+                            value = effect(args.timeStamp - args.delay, 0, elementWidth, args.duration);
+                            element.setAttribute('transform', 'translate(' + centerX + ' ' + centerY +
+                                ') scale(' + (value / elementWidth) + ', 1) translate(' + (-centerX) + ' ' + (-centerY) + ')');
+                        }
                     }
-                }
-            },
-            end: (model: AnimationOptions) => {
-                element.setAttribute('transform', 'translate(0,0)');
-                let seriesElement: Element = series.seriesElement;
-                if (element === seriesElement.lastElementChild || point.index === series.points.length - 1 ||
-                    (series.type === 'Waterfall' && element === seriesElement.children[seriesElement.childElementCount - 2])) {
-                    series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
-                    if (series.type === 'Waterfall') {
-                        let rectElements: NodeList = seriesElement.childNodes;
-                        for (let i: number = 0; i < rectElements.length; i++) {
-                            if ((rectElements[i] as HTMLElement).id.indexOf('Connector') !== -1) {
-                                (rectElements[i] as HTMLElement).style.visibility = 'visible';
-                                (rectElements[i] as HTMLElement).setAttribute('transform', 'translate(0,0)');
+                },
+                end: (model: AnimationOptions) => {
+                    element.setAttribute('transform', 'translate(0,0)');
+                    let seriesElement: Element = series.seriesElement;
+                    if (element === seriesElement.lastElementChild || point.index === series.points.length - 1 ||
+                        (series.type === 'Waterfall' && element === seriesElement.children[seriesElement.childElementCount - 2])) {
+                        series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
+                        if (series.type === 'Waterfall') {
+                            let rectElements: NodeList = seriesElement.childNodes;
+                            for (let i: number = 0; i < rectElements.length; i++) {
+                                if ((rectElements[i] as HTMLElement).id.indexOf('Connector') !== -1) {
+                                    (rectElements[i] as HTMLElement).style.visibility = 'visible';
+                                    (rectElements[i] as HTMLElement).setAttribute('transform', 'translate(0,0)');
+                                }
                             }
                         }
                     }
                 }
-            }
-        });
+            });
+        }
     }
     /**
      * To get rounded rect path direction

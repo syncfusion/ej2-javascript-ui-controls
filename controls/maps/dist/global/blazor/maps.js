@@ -930,7 +930,7 @@ function clusterSeparate(sameMarkerData, maps, markerElement, isDom) {
     var options;
     var connectorLine = maps.layers[layerIndex].markerClusterSettings.connectorLineSettings;
     options = {
-        d: path, id: maps.element.id + '_markerClusterConnectorLine', stroke: connectorLine.color,
+        d: path, id: maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_dataIndex_' + dataIndex + '_markerClusterConnectorLine', stroke: connectorLine.color,
         opacity: connectorLine.opacity, 'stroke-width': connectorLine.width
     };
     markerElement = isDom ? getElementFunction(maps.element.id + '_Markers_Group') : markerElement;
@@ -3812,7 +3812,7 @@ var Marker = /** @class */ (function () {
         });
         var markerTemplateEle = sf.base.createElement('div', {
             id: this.maps.element.id + '_LayerIndex_' + layerIndex + '_Markers_Template_Group',
-            className: 'template',
+            className: this.maps.element.id + '_template',
             styles: 'overflow: hidden; position: absolute;pointer-events: none;' +
                 'top:' + this.maps.mapAreaRect.y + 'px;' +
                 'left:' + this.maps.mapAreaRect.x + 'px;' +
@@ -4089,11 +4089,15 @@ var Marker = /** @class */ (function () {
                 this.maps.mapsTooltipModule.tooltipTargetID.indexOf('_MarkerIndex_') > -1) {
                 removeElement(this.maps.element.id + '_mapsTooltip');
             }
-            if (this.sameMarkerData.length > 0) {
+            if (this.sameMarkerData.length > 0 && !this.maps.markerClusterExpandCheck) {
+                this.maps.markerClusterExpandCheck = true;
                 mergeSeparateCluster(this.sameMarkerData, this.maps, this.markerSVGObject);
             }
-            this.sameMarkerData = options.clusterCollection;
-            clusterSeparate(this.sameMarkerData, this.maps, this.markerSVGObject, true);
+            else {
+                this.sameMarkerData = options.clusterCollection;
+                this.maps.markerClusterExpandCheck = false;
+                clusterSeparate(this.sameMarkerData, this.maps, this.markerSVGObject, true);
+            }
         }
         var eventArgs = {
             cancel: false, name: markerClusterClick, data: options, maps: this.maps,
@@ -4940,7 +4944,7 @@ var LayerPanel = /** @class */ (function () {
         var colors = shapeSettings.palette.length > 1 ? shapeSettings.palette : getShapeColor(this.mapObject.theme);
         var labelTemplateEle = sf.base.createElement('div', {
             id: this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_Label_Template_Group',
-            className: 'template',
+            className: this.mapObject.element.id + '_template',
             styles: 'pointer-events: none; overflow: hidden; position: absolute;' +
                 'top:' + this.mapObject.mapAreaRect.y + 'px;' +
                 'left:' + this.mapObject.mapAreaRect.x + 'px;' +
@@ -5546,13 +5550,13 @@ var LayerPanel = /** @class */ (function () {
                 }
                 var animateElement;
                 if (!document.getElementById('animated_tiles') && element) {
-                    animateElement = sf.base.createElement('div', { id: 'animated_tiles' });
+                    animateElement = sf.base.createElement('div', { id: _this.mapObject.element.id + '_animated_tiles' });
                     element.appendChild(animateElement);
                 }
                 else {
                     if (type !== 'Pan' && element1 && element) {
                         element1.appendChild(element.children[0]);
-                        animateElement = sf.base.createElement('div', { id: 'animated_tiles' });
+                        animateElement = sf.base.createElement('div', { id: _this.mapObject.element.id + '_animated_tiles' });
                         element.appendChild(animateElement);
                     }
                     else {
@@ -6187,6 +6191,8 @@ var Maps = /** @class */ (function (_super) {
         _this.initialCheck = true;
         /** @private */
         _this.applyZoomReset = false;
+        /** @private */
+        _this.markerClusterExpandCheck = false;
         sf.base.setValue('mergePersistData', _this.mergePersistMapsData, _this);
         return _this;
     }
@@ -6539,7 +6545,7 @@ var Maps = /** @class */ (function (_super) {
         if (document.getElementById(this.element.id + '_Legend_Border')) {
             document.getElementById(this.element.id + '_Legend_Border').style.pointerEvents = 'none';
         }
-        var templateElements = document.getElementsByClassName('template');
+        var templateElements = document.getElementsByClassName(this.element.id + '_template');
         if (!sf.base.isNullOrUndefined(templateElements) && templateElements.length > 0 &&
             getElementByID(this.element.id + '_Layer_Collections') && this.layers[this.layers.length - 1].layerType !== 'OSM') {
             for (var i = 0; i < templateElements.length; i++) {
@@ -6787,7 +6793,7 @@ var Maps = /** @class */ (function (_super) {
                 latitude: latitude, longitude: longitude
             };
             this.trigger('click', eventArgs_1, function (mouseArgs) {
-                if (targetEle.id.indexOf('shapeIndex') > -1 || targetEle.id.indexOf('Tile') > -1) {
+                if (targetEle.id.indexOf('shapeIndex') > -1) {
                     if (_this.markerModule && _this.markerModule.sameMarkerData.length > 0 &&
                         (_this.zoomModule ? _this.zoomModule.isSingleClick : true)) {
                         mergeSeparateCluster(_this.markerModule.sameMarkerData, _this, getElement(_this.element.id + '_Markers_Group'));
@@ -6813,6 +6819,11 @@ var Maps = /** @class */ (function (_super) {
                     var shapeSelectedEventArgs = triggerShapeEvent(targetId, _this.layers[layerIndex_1].selectionSettings, _this, shapeSelected);
                     if (!shapeSelectedEventArgs.cancel && _this.selectionModule && !sf.base.isNullOrUndefined(_this.shapeSelected)) {
                         customizeStyle(_this.selectionModule.selectionType + 'selectionMap', _this.selectionModule.selectionType + 'selectionMapStyle', shapeSelectedEventArgs);
+                    }
+                    else if (shapeSelectedEventArgs.cancel && _this.selectionModule
+                        && sf.base.isNullOrUndefined(shapeSelectedEventArgs['data'])) {
+                        removeClass(targetEle);
+                        _this.selectionModule.removedSelectionList(targetEle);
                     }
                 }
             });
@@ -7062,6 +7073,7 @@ var Maps = /** @class */ (function (_super) {
      */
     Maps.prototype.shapeSelection = function (layerIndex, propertyName, name, enable) {
         var targetEle;
+        var popertyNameArray = Array.isArray(propertyName) ? propertyName : Array(propertyName);
         if (sf.base.isNullOrUndefined(enable)) {
             enable = true;
         }
@@ -7077,52 +7089,58 @@ var Maps = /** @class */ (function (_super) {
             var data = void 0;
             var shapeData = this.layers[layerIndex].shapeData['features'];
             for (var i = 0; i < shapeData.length; i++) {
-                if (shapeData[i]['properties'][propertyName] === name) {
-                    var k = checkShapeDataFields(this.layers[layerIndex].dataSource, shapeData[i]['properties'], this.layers[layerIndex].shapeDataPath, this.layers[layerIndex].shapePropertyPath, this.layers[layerIndex]);
-                    targetId = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_' +
-                        (k ? k.toString() : 'undefined');
-                    targetEle = getElement(targetId);
-                    if (sf.base.isNullOrUndefined(k) && sf.base.isNullOrUndefined(targetEle)) {
-                        targetId = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_null';
+                for (var j = 0; j < popertyNameArray.length; j++) {
+                    var propertyName_1 = !sf.base.isNullOrUndefined(shapeData[i]['properties'][popertyNameArray[j]])
+                        && isNaN(shapeData[i]['properties'][popertyNameArray[j]]) ?
+                        shapeData[i]['properties'][popertyNameArray[j]].toLowerCase() : shapeData[i]['properties'][popertyNameArray[j]];
+                    var shapeName = !sf.base.isNullOrUndefined(name) ? name.toLowerCase() : name;
+                    if (propertyName_1 === shapeName) {
+                        var k = checkShapeDataFields(this.layers[layerIndex].dataSource, shapeData[i]['properties'], this.layers[layerIndex].shapeDataPath, this.layers[layerIndex].shapePropertyPath, this.layers[layerIndex]);
+                        targetId = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_' +
+                            (!sf.base.isNullOrUndefined(k) ? k.toString() : 'undefined');
                         targetEle = getElement(targetId);
-                    }
-                    shapeIndex = parseInt(targetEle.id.split('_shapeIndex_')[1].split('_')[0], 10);
-                    shapeDataValue = this.layers[layerIndex].shapeData['features']['length'] > shapeIndex ?
-                        this.layers[layerIndex].shapeData['features'][shapeIndex]['properties'] : null;
-                    dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
-                    data = sf.base.isNullOrUndefined(dataIndex) ? null : this.layers[layerIndex].dataSource[dataIndex];
-                    if (enable) {
-                        triggerItemSelectionEvent(selectionsettings, this, targetEle, shapeDataValue, data);
-                        this.shapeSelectionClass = getElement('ShapeselectionMap');
-                        if (this.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1) {
-                            this.legendModule.shapeHighLightAndSelection(targetEle, data, selectionsettings, 'selection', layerIndex);
+                        if (sf.base.isNullOrUndefined(k) && sf.base.isNullOrUndefined(targetEle)) {
+                            targetId = this.element.id + '_' + 'LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_null';
+                            targetEle = getElement(targetId);
                         }
-                        var shapeToggled = this.legendSettings.visible ? this.legendModule.shapeToggled : true;
-                        if (shapeToggled) {
-                            targetEle.setAttribute('class', 'ShapeselectionMapStyle');
-                            if (this.selectedElementId.indexOf(targetEle.getAttribute('id')) === -1) {
-                                this.selectedElementId.push(targetEle.getAttribute('id'));
+                        shapeIndex = parseInt(targetEle.id.split('_shapeIndex_')[1].split('_')[0], 10);
+                        shapeDataValue = this.layers[layerIndex].shapeData['features']['length'] > shapeIndex ?
+                            this.layers[layerIndex].shapeData['features'][shapeIndex]['properties'] : null;
+                        dataIndex = parseInt(targetEle.id.split('_dataIndex_')[1].split('_')[0], 10);
+                        data = sf.base.isNullOrUndefined(dataIndex) ? null : this.layers[layerIndex].dataSource[dataIndex];
+                        if (enable) {
+                            triggerItemSelectionEvent(selectionsettings, this, targetEle, shapeDataValue, data);
+                            this.shapeSelectionClass = getElement('ShapeselectionMap');
+                            if (this.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1) {
+                                this.legendModule.shapeHighLightAndSelection(targetEle, data, selectionsettings, 'selection', layerIndex);
                             }
-                            if (!selectionsettings.enableMultiSelect) {
-                                return;
+                            var shapeToggled = this.legendSettings.visible ? this.legendModule.shapeToggled : true;
+                            if (shapeToggled) {
+                                targetEle.setAttribute('class', 'ShapeselectionMapStyle');
+                                if (this.selectedElementId.indexOf(targetEle.getAttribute('id')) === -1) {
+                                    this.selectedElementId.push(targetEle.getAttribute('id'));
+                                }
+                                if (!selectionsettings.enableMultiSelect) {
+                                    return;
+                                }
                             }
                         }
-                    }
-                    else {
-                        this.legendSelection = (!selectionsettings.enableMultiSelect && !this.legendSelection) ?
-                            true : this.legendSelection;
-                        if (this.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1 &&
-                            targetEle.getAttribute('class') === 'ShapeselectionMapStyle') {
-                            this.legendModule.shapeHighLightAndSelection(targetEle, data, selectionsettings, 'selection', layerIndex);
-                        }
-                        var shapeToggled = this.legendSettings.visible ? this.legendModule.shapeToggled : true;
-                        if (shapeToggled) {
-                            removeClass(targetEle);
-                            var selectedElementIdIndex = this.selectedElementId.indexOf(targetEle.getAttribute('id'));
-                            if (selectedElementIdIndex !== -1) {
-                                this.selectedElementId.splice(selectedElementIdIndex, 1);
-                                if (!selectionsettings.enableMultiSelect && this.legendSelection && this.selectedElementId.length > 0) {
-                                    this.removeShapeSelection();
+                        else {
+                            this.legendSelection = (!selectionsettings.enableMultiSelect && !this.legendSelection) ?
+                                true : this.legendSelection;
+                            if (this.legendSettings.visible && targetEle.id.indexOf('_MarkerIndex_') === -1 &&
+                                targetEle.getAttribute('class') === 'ShapeselectionMapStyle') {
+                                this.legendModule.shapeHighLightAndSelection(targetEle, data, selectionsettings, 'selection', layerIndex);
+                            }
+                            var shapeToggled = this.legendSettings.visible ? this.legendModule.shapeToggled : true;
+                            if (shapeToggled) {
+                                removeClass(targetEle);
+                                var selectedElementIdIndex = this.selectedElementId.indexOf(targetEle.getAttribute('id'));
+                                if (selectedElementIdIndex !== -1) {
+                                    this.selectedElementId.splice(selectedElementIdIndex, 1);
+                                    if (!selectionsettings.enableMultiSelect && this.legendSelection && this.selectedElementId.length > 0) {
+                                        this.removeShapeSelection();
+                                    }
                                 }
                             }
                         }
@@ -9003,6 +9021,7 @@ var Legend = /** @class */ (function () {
             document.getElementById(targetElement.id + '_Text');
         var collection = this.maps.legendModule.legendCollection;
         var length;
+        var multiSelectEnable = this.maps.layers[collection[0]['data'][0]['layerIndex']].selectionSettings.enableMultiSelect;
         var selectLength = 0;
         var interactProcess = true;
         var idIndex = parseFloat(targetElement.id.charAt(targetElement.id.length - 1));
@@ -9017,7 +9036,6 @@ var Legend = /** @class */ (function () {
             return null;
         }
         if (value === 'selection') {
-            var multiSelectEnable = this.maps.layers[collection[0]['data'][0]['layerIndex']].selectionSettings.enableMultiSelect;
             this.shapeHighlightCollection = [];
             if (!this.maps.shapeSelections && !multiSelectEnable) {
                 this.removeAllSelections();
@@ -9033,6 +9051,18 @@ var Legend = /** @class */ (function () {
                         this.maps.legendSelectionCollection.splice(k, 1);
                         this.maps.legendSelection = this.maps.legendSelectionCollection.length > 0 ? false : true;
                         break;
+                    }
+                    else if (!multiSelectEnable) {
+                        if (this.maps.legendSelectionCollection.length > 1) {
+                            for (var z = 0; z < this.maps.legendSelectionCollection.length; z++) {
+                                this.removeLegendSelectionCollection(this.maps.legendSelectionCollection[z]['legendElement']);
+                            }
+                            this.maps.legendSelectionCollection = [];
+                        }
+                        else {
+                            this.removeLegendSelectionCollection(this.maps.legendSelectionCollection[k]['legendElement']);
+                            this.maps.legendSelectionCollection.splice(k, 1);
+                        }
                     }
                 }
             }
@@ -9107,7 +9137,18 @@ var Legend = /** @class */ (function () {
                                     this.maps.legendSelectionClass = module;
                                     if (j === 0) {
                                         this.pushCollection(targetElement, this.maps.legendSelectionCollection, collection[i], layer.shapeSettings);
-                                        this.maps.selectedLegendElementId.push(i);
+                                        if (multiSelectEnable) {
+                                            this.maps.selectedLegendElementId.push(i);
+                                        }
+                                        else {
+                                            if (this.maps.selectedLegendElementId.length === 0) {
+                                                this.maps.selectedLegendElementId.push(i);
+                                            }
+                                            else {
+                                                this.maps.selectedLegendElementId = [];
+                                                this.maps.selectedLegendElementId.push(i);
+                                            }
+                                        }
                                     }
                                     selectLength = this.maps.legendSelectionCollection.length;
                                     var legendSelectionColor = void 0;
@@ -9830,7 +9871,7 @@ var Legend = /** @class */ (function () {
                         range_1 = false;
                         var rangeValue = data[colorValuePath];
                         for (var z = 0; z < colorMapping.length; z++) {
-                            if (!sf.base.isNullOrUndefined(rangeValue) && rangeValue !== 0) {
+                            if (!sf.base.isNullOrUndefined(rangeValue) && !isNaN(rangeValue)) {
                                 if (rangeValue >= colorMapping[z].from && rangeValue <= colorMapping[z].to) {
                                     range_1 = true;
                                 }
@@ -10750,6 +10791,7 @@ var Selection = /** @class */ (function () {
     // }
     /**
      * Get module name.
+     * @private
      */
     Selection.prototype.removedSelectionList = function (targetElement) {
         if (this.selectionType === 'Shape') {

@@ -16198,6 +16198,7 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
         var scrollTop = this.owner.viewer.containerTop;
         var scrollLeft = this.owner.viewer.containerLeft;
         var pageHeight = this.visibleBounds.height;
+        this.updateFocus();
         var caretInfo = this.selection.updateCaretSize(this.owner.selection.end, true);
         var topMargin = caretInfo.topMargin;
         var caretHeight = caretInfo.height;
@@ -17340,10 +17341,12 @@ var PageLayoutViewer = /** @__PURE__ @class */ (function (_super) {
             var index = this.getHeaderFooter(type);
             var headerFooter = this.documentHelper.headersFooters[sectionIndex][index];
             if (!headerFooter) {
-                if (this.documentHelper.headersFooters[0][index]) {
-                    headerFooter = this.documentHelper.headersFooters[0][index];
+                var currentSecIndex = sectionIndex > 0 ? sectionIndex - 1 : sectionIndex;
+                while (!headerFooter && currentSecIndex !== -1 && this.documentHelper.headersFooters[currentSecIndex][index]) {
+                    headerFooter = this.documentHelper.headersFooters[currentSecIndex][index];
+                    currentSecIndex--;
                 }
-                else {
+                if (!headerFooter) {
                     headerFooter = this.createHeaderFooterWidget(type);
                     headerFooter.isEmpty = true;
                 }
@@ -25699,7 +25702,7 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
      * @param {boolean} isEnable - To hide existing menu item and show custom menu item alone
      * @param {boolean} isBottom - To show the custom menu item in bottom of the existing item
      * @returns {void}
-     * @blazorArgsType items|List<Syncfusion.EJ2.Blazor.Navigations.MenuItem>,isEnable|Boolean,isBottom|Boolean
+     * @blazorArgsType items|List<Syncfusion.Blazor.Navigations.MenuItemModel>,isEnable|Boolean,isBottom|Boolean
      */
     ContextMenu$$1.prototype.addCustomMenu = function (items, isEnable, isBottom) {
         var menuItems = JSON.parse(JSON.stringify(items));
@@ -25915,7 +25918,7 @@ var ContextMenu$1 = /** @__PURE__ @class */ (function () {
             var start = selection.start;
             var end = selection.end;
             if (selection.contextType === 'List'
-                && owner.editorModule.getListLevel(start.paragraph).listLevelPattern !== 'Bullet') {
+                && owner.selection.getListLevel(start.paragraph).listLevelPattern !== 'Bullet') {
                 continueNumbering.style.display = 'block';
                 restartAt.style.display = 'block';
                 restartAt.nextSibling.style.display = 'block';
@@ -33135,6 +33138,7 @@ var Selection = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.editRegionHighlighters = undefined;
+        this.isSelectList = false;
         /**
          * @private
          */
@@ -35672,6 +35676,24 @@ var Selection = /** @__PURE__ @class */ (function () {
             }
         }
         return listTextElement;
+    };
+    /**
+     * @private
+     */
+    Selection.prototype.getListLevel = function (paragraph) {
+        var currentList = undefined;
+        var listLevelNumber = 0;
+        if (!isNullOrUndefined(paragraph.paragraphFormat) && !isNullOrUndefined(paragraph.paragraphFormat.listFormat)) {
+            currentList = this.documentHelper.getListById(paragraph.paragraphFormat.listFormat.listId);
+            listLevelNumber = paragraph.paragraphFormat.listFormat.listLevelNumber;
+        }
+        if (!isNullOrUndefined(currentList) &&
+            !isNullOrUndefined(this.documentHelper.getAbstractListById(currentList.abstractListId))
+            // && !isNullOrUndefined(this.documentHelper.getAbstractListById(currentList.abstractListId).levels.getItem(listLevelNumber))) {
+            && !isNullOrUndefined(this.documentHelper.getAbstractListById(currentList.abstractListId).levels)) {
+            return this.documentHelper.layout.getListLevel(currentList, listLevelNumber);
+        }
+        return undefined;
     };
     /**
      * @private
@@ -39595,6 +39617,14 @@ var Selection = /** @__PURE__ @class */ (function () {
             return;
         }
         var para = start.paragraph;
+        if (start.paragraph === end.paragraph && this.isSelectList) {
+            var listLevel = this.getListLevel(start.paragraph);
+            // let breakCharacterFormat: WCharacterFormat = start.paragraph.characterFormat;
+            if (listLevel.characterFormat.uniqueCharacterFormat) {
+                this.characterFormat.copyFormat(listLevel.characterFormat);
+            }
+            return;
+        }
         if (start.offset === this.getParagraphLength(para) && !this.isEmpty) {
             para = this.getNextParagraphBlock(para);
         }
@@ -40576,7 +40606,9 @@ var Selection = /** @__PURE__ @class */ (function () {
         var selectionIndex = lineWidget.getHierarchicalIndex(endOffset);
         var startPosition = this.getTextPosition(selectionIndex);
         var endPosition = this.getTextPosition(selectionIndex);
+        this.isSelectList = true;
         this.selectRange(startPosition, endPosition);
+        this.isSelectList = false;
         this.highlightListText(this.documentHelper.selectionLineWidget);
         this.contextTypeInternal = 'List';
     };
@@ -48230,6 +48262,7 @@ var Editor = /** @__PURE__ @class */ (function () {
             this.copiedContent = content;
         }
         this.pasteContentsInternal(this.getBlocks(content), currentFormat);
+        this.isInsertField = false;
     };
     Editor.prototype.pasteContentsInternal = function (widgets, currentFormat) {
         this.isPaste = true;
@@ -48521,7 +48554,7 @@ var Editor = /** @__PURE__ @class */ (function () {
                 }
             }
             else if (indexInInline === 0) {
-                if (isRtl && bidi && this.isInsertField) {
+                if (isRtl && bidi && (this.isInsertField || this.isPaste)) {
                     insertIndex++;
                 }
                 else if (isNullOrUndefined(curInline.previousNode)) {
@@ -48532,7 +48565,7 @@ var Editor = /** @__PURE__ @class */ (function () {
                 insertIndex++;
                 var prevElement = new TextElementBox();
                 prevElement.characterFormat.copyFormat(curInline.characterFormat);
-                if (bidi && this.isInsertField && isRtl) {
+                if (bidi && (this.isInsertField || this.isPaste) && isRtl) {
                     prevElement.text = curInline.text.slice(0, indexInInline);
                     curInline.text = curInline.text.substring(indexInInline);
                 }
@@ -48556,6 +48589,13 @@ var Editor = /** @__PURE__ @class */ (function () {
             insertIndex++;
         }
         if (paragraphFormat) {
+            // If paragraph direction is right to left and paste paragraph with LTR direction
+            // Considered new paragraph also RTL
+            if (paragraph.paragraphFormat.bidi === true) {
+                this.isInsertField = true;
+                paragraphFormat.bidi = true;
+                paragraphFormat.textAlignment = paragraph.paragraphFormat.textAlignment;
+            }
             paragraph.paragraphFormat.copyFormat(paragraphFormat);
         }
         // tslint:disable-next-line:max-line-length
@@ -50073,7 +50113,7 @@ var Editor = /** @__PURE__ @class */ (function () {
      */
     // tslint:disable-next-line:max-line-length
     Editor.prototype.applyCharacterFormatForListText = function (selection, property, values, update) {
-        var listLevel = this.getListLevel(selection.start.paragraph);
+        var listLevel = selection.getListLevel(selection.start.paragraph);
         if (isNullOrUndefined(listLevel)) {
             return;
         }
@@ -50142,27 +50182,9 @@ var Editor = /** @__PURE__ @class */ (function () {
             endPositionInternal = selection.start;
         }
         this.initHistoryPosition(selection, startPositionInternal);
-        var listLevel = this.getListLevel(selection.start.paragraph);
+        var listLevel = selection.getListLevel(selection.start.paragraph);
         this.applyCharFormatValue(listLevel.characterFormat, property, value, update);
         this.startSelectionReLayouting(startPositionInternal.paragraph, selection, startPositionInternal, endPositionInternal);
-    };
-    /**
-     * @private
-     */
-    Editor.prototype.getListLevel = function (paragraph) {
-        var currentList = undefined;
-        var listLevelNumber = 0;
-        if (!isNullOrUndefined(paragraph.paragraphFormat) && !isNullOrUndefined(paragraph.paragraphFormat.listFormat)) {
-            currentList = this.documentHelper.getListById(paragraph.paragraphFormat.listFormat.listId);
-            listLevelNumber = paragraph.paragraphFormat.listFormat.listLevelNumber;
-        }
-        if (!isNullOrUndefined(currentList) &&
-            !isNullOrUndefined(this.documentHelper.getAbstractListById(currentList.abstractListId))
-            // && !isNullOrUndefined(this.documentHelper.getAbstractListById(currentList.abstractListId).levels.getItem(listLevelNumber))) {
-            && !isNullOrUndefined(this.documentHelper.getAbstractListById(currentList.abstractListId).levels)) {
-            return this.documentHelper.layout.getListLevel(currentList, listLevelNumber);
-        }
-        return undefined;
     };
     Editor.prototype.updateInsertPosition = function () {
         var selection = this.documentHelper.selection;
@@ -50702,7 +50724,13 @@ var Editor = /** @__PURE__ @class */ (function () {
             index = inlineObj.index;
             var characterFormat = lineWidget.paragraph.characterFormat;
             if (!isNullOrUndefined(inline)) {
-                if (!this.selection.isEmpty && index === inline.length) {
+                if (this.selection.isEmpty && this.selection.contextType === 'List') {
+                    var listLevel = this.selection.getListLevel(this.selection.start.paragraph);
+                    if (listLevel.characterFormat.uniqueCharacterFormat) {
+                        characterFormat = listLevel.characterFormat;
+                    }
+                }
+                else if (!this.selection.isEmpty && index === inline.length) {
                     characterFormat = isNullOrUndefined(inline.nextNode) ? lineWidget.paragraph.characterFormat
                         : inline.nextNode.characterFormat;
                 }
@@ -51533,7 +51561,7 @@ var Editor = /** @__PURE__ @class */ (function () {
             if (paragraph.previousRenderedWidget instanceof ParagraphWidget) {
                 if (!isNullOrUndefined(paragraph.previousRenderedWidget.paragraphFormat.listFormat)
                     && paragraph.previousRenderedWidget.paragraphFormat.listFormat.listId !== -1) {
-                    var listLevel = this.getListLevel(paragraph.previousRenderedWidget);
+                    var listLevel = this.selection.getListLevel(paragraph.previousRenderedWidget);
                     if (levelNumber === 0) {
                         return paragraph.previousRenderedWidget.paragraphFormat;
                     }
@@ -53451,7 +53479,12 @@ var Editor = /** @__PURE__ @class */ (function () {
                 this.addRemovedNodes(lineWidget.children[i]);
                 lineWidget.children.splice(i, 1);
                 if (isBidi) {
-                    i++;
+                    if (this.isSkipHistory) {
+                        i--;
+                    }
+                    else {
+                        i++;
+                    }
                 }
                 // }
             }
@@ -85934,7 +85967,7 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
             if (isInHeaderFooter && this.showHeaderProperties) {
                 this.showProperties('headerfooter');
             }
-            else if (currentContext.indexOf('Text') >= 0
+            else if (currentContext.indexOf('Text') >= 0 || currentContext.indexOf('List') >= 0
                 && currentContext.indexOf('Table') < 0) {
                 this.showProperties('text');
             }

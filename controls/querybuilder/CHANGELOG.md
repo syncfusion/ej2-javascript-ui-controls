@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.45 (2020-04-21)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- Issue with grouping after refreshing QueryBuilder has been resolved.
+
 ## 18.1.44 (2020-04-14)
 
 ### QueryBuilder

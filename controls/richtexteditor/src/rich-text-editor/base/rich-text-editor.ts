@@ -764,6 +764,13 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
      */
     @Event()
     public imageRemoving: EmitType<RemovingEventArgs>;
+    /**
+     * Event triggers when the selected image is cleared from the Rich Text Editor Content.
+     * @event
+     * @blazorProperty 'ImageDelete'
+     */
+    @Event()
+    public afterImageDelete: EmitType<Object>;
     /** 
      * Triggers when the Rich Text Editor is rendered.
      * @event 
@@ -1257,7 +1264,8 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.formatter.getUndoRedoStack().length === 0) {
             this.formatter.saveData();
         }
-        if ((e as KeyboardEventArgs).action && (e as KeyboardEventArgs).action !== 'paste' || e.which === 9) {
+        if ((e as KeyboardEventArgs).action !== 'insert-link' &&
+        ((e as KeyboardEventArgs).action && (e as KeyboardEventArgs).action !== 'paste' || e.which === 9)) {
             this.formatter.process(this, null, e);
             switch ((e as KeyboardEventArgs).action) {
                 case 'toolbar-focus':
@@ -2392,9 +2400,11 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         }
     }
     private setAutoHeight(element: HTMLElement): void {
-        element.style.height = '';
-        element.style.height = this.inputElement.scrollHeight + 'px';
-        element.style.overflow = 'hidden';
+        if (!isNOU(element)) {
+            element.style.height = '';
+            element.style.height = this.inputElement.scrollHeight + 'px';
+            element.style.overflow = 'hidden';
+        }
     }
     private wireEvents(): void {
         this.element.addEventListener('focusin', this.onFocusHandler, true);

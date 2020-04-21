@@ -234,9 +234,7 @@ let Splitter = class Splitter extends Component {
         }
         let name = Browser.info.name;
         let css = (name === 'msie') ? 'e-ie' : '';
-        if (!this.checkBlazor()) {
-            this.setCssClass(this.element, css);
-        }
+        this.setCssClass(this.element, css);
         if (Browser.isDevice) {
             addClass([this.element], SPLIT_TOUCH);
         }
@@ -788,10 +786,12 @@ let Splitter = class Splitter extends Component {
                 }
                 if (this.checkBlazor()) {
                     proxy = this;
-                    separator = this.element.getElementsByClassName('e-split-bar')[i];
-                    if (this.checkBlazor()) {
-                        this.allBars.push(separator);
+                    for (let j = 0; j < this.element.children.length; j++) {
+                        if (this.element.children[j].classList.contains(SPLIT_BAR)) {
+                            separator = this.element.children[j];
+                        }
                     }
+                    this.allBars.push(separator);
                     this.updateIconClass();
                 }
                 if (!this.checkBlazor()) {

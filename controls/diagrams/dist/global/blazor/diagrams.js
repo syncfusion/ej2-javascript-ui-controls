@@ -11455,7 +11455,7 @@ function updateConnectorsProperties(connectors, diagram) {
         }
         for (var i = 0; i < connectors.length; i++) {
             edges = diagram.getObject(connectors[i]);
-            if (diagram.lineRoutingModule && (diagram.constraints & exports.DiagramConstraints.LineRouting)) {
+            if (diagram.lineRoutingModule && (diagram.constraints & exports.DiagramConstraints.LineRouting) && edges.type === 'Orthogonal') {
                 diagram.lineRoutingModule.refreshConnectorSegments(diagram, edges, true);
             }
             else {
@@ -31346,7 +31346,7 @@ var CommandHandler = /** @class */ (function () {
             this.diagram.lineRoutingModule.renderVirtualRegion(this.diagram, true);
             for (var i = 0; i < connectors.length; i++) {
                 var connector = this.diagram.nameTable[connectors[i]];
-                if (connector instanceof Connector) {
+                if (connector instanceof Connector && connector.type === 'Orthogonal') {
                     if (sf.base.isBlazor()) {
                         previousConnectorObject.push(cloneObject(connector, undefined, undefined, true));
                     }
@@ -39509,8 +39509,8 @@ var Diagram = /** @class */ (function (_super) {
                 actualObject.flip = newProp.flip;
                 flipConnector(actualObject);
             }
-            if (this.lineRoutingModule && this.diagramActions && (this.constraints & exports.DiagramConstraints.LineRouting) &&
-                !(this.diagramActions & exports.DiagramAction.ToolAction)) {
+            if (actualObject.type === 'Orthogonal' && this.lineRoutingModule && this.diagramActions &&
+                (this.constraints & exports.DiagramConstraints.LineRouting) && !(this.diagramActions & exports.DiagramAction.ToolAction)) {
                 this.lineRoutingModule.renderVirtualRegion(this, true);
                 this.lineRoutingModule.refreshConnectorSegments(this, actualObject, false);
             }

@@ -375,6 +375,9 @@ export class Signature {
             let canvass: any = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + currentAnnotation.pageIndex);
             // tslint:disable-next-line
             this.pdfViewer.renderDrawing(canvass as any, currentAnnotation.pageIndex);
+            this.pdfViewerBase.signatureAdded = true;
+            // tslint:disable-next-line:max-line-length
+            this.pdfViewer.fireSignatureAdd(currentAnnotation.pageIndex, currentAnnotation.signatureName, currentAnnotation.shapeAnnotationType, currentAnnotation.bounds, currentAnnotation.opacity, currentAnnotation.strokeColor, currentAnnotation.thickness);
             this.storeSignatureData(currentAnnotation.pageIndex, annot);
             this.pdfViewerBase.currentSignatureAnnot = null;
             this.pdfViewerBase.signatureCount++;

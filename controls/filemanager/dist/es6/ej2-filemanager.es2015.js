@@ -1457,8 +1457,11 @@ function doDownloadFiles(parent, data, newIds) {
 }
 function createDeniedDialog(parent, data, action) {
     let message = getValue('message', getValue('permission', data));
-    message = (message === '') ? '"' + getValue('name', data) + '" is not accessible. you need permission to perform the ' +
-        action + ' action.' : message;
+    if (message === '') {
+        message = getLocaleText(parent, 'Access-Message');
+        message.replace('{0}', getValue('name', data));
+        message.replace('{1}', action);
+    }
     let response = {
         error: {
             code: '401',
@@ -1632,7 +1635,7 @@ function createAjax(parent, data, fn, event, operation, targetPath) {
                         let result = {
                             error: {
                                 fileExists: null,
-                                message: 'ServerError: Invalid response from ' + parent.ajaxSettings.url,
+                                message: getLocaleText(parent, 'Server-Error') + ' ' + parent.ajaxSettings.url,
                                 code: '406',
                             },
                             files: null,
@@ -1702,7 +1705,7 @@ function createAjax(parent, data, fn, event, operation, targetPath) {
                         files: null,
                         error: {
                             code: '404',
-                            message: 'NetworkError: Failed to send on XMLHTTPRequest: Failed to load ' + parent.ajaxSettings.url,
+                            message: getLocaleText(parent, 'Network-Error') + ' ' + parent.ajaxSettings.url,
                             fileExists: null
                         },
                     };
@@ -5193,7 +5196,10 @@ let defaultLocale = {
     'Button-Replace': 'Replace',
     'Button-Skip': 'Skip',
     'ApplyAll-Label': 'Do this for all current items',
-    'KB': 'KB'
+    'KB': 'KB',
+    'Access-Message': '{0} is not accessible. You need permission to perform the {1} action.',
+    'Network-Error': 'NetworkError: Failed to send on XMLHTTPRequest: Failed to load',
+    'Server-Error': 'ServerError: Invalid response from'
 };
 
 var __decorate$8 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {

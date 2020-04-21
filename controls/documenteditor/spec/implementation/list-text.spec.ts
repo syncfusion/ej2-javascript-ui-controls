@@ -219,15 +219,15 @@ describe('Apply Character Format -bold validation of selection context type is L
         editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.selection.characterFormat.bold = true;
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.bold).toBe(true);
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.bold).toBe(true);
     });
     it('undo after bold apply at list text', () => {
         editor.editorHistory.undo();
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.bold).toBe(false);
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.bold).toBe(false);
     });
     it('redo after bold apply at list text', () => {
         editor.editorHistory.redo();
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.bold).toBe(true);
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.bold).toBe(true);
     });
     it('Multiple undo and redo after bold at list text', () => {
         let i: number = 0;
@@ -237,7 +237,7 @@ describe('Apply Character Format -bold validation of selection context type is L
             i++;
         }
         editor.editorHistory.undo();
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.bold).toBe(false);
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.bold).toBe(false);
     });
 });
 
@@ -276,15 +276,15 @@ describe('Apply Character Format -Italic validation of selection context type is
         editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.selection.characterFormat.italic = true;
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.italic).toBe(true);
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.italic).toBe(true);
     });
     it('undo after italic apply at list text', () => {
         editor.editorHistory.undo();
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.italic).toBe(false);
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.italic).toBe(false);
     });
     it('redo after italic apply at list text', () => {
         editor.editorHistory.redo();
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.italic).toBe(true);
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.italic).toBe(true);
     });
     it('Multiple undo and redo after italic at list text', () => {
         let i: number = 0;
@@ -294,7 +294,7 @@ describe('Apply Character Format -Italic validation of selection context type is
             i++;
         }
         editor.editorHistory.undo();
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.italic).toBe(false);
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.italic).toBe(false);
     });
 });
 
@@ -333,15 +333,15 @@ describe('Apply Character Format -Underline validation of selection context type
         editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.selection.characterFormat.underline = 'Single';
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.underline).toBe('Single');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.underline).toBe('Single');
     });
     it('undo after Underline apply at list text', () => {
         editor.editorHistory.undo();
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.underline).toBe('None');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.underline).toBe('None');
     });
     it('redo after Underline apply at list text', () => {
         editor.editorHistory.redo();
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.underline).toBe('Single');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.underline).toBe('Single');
     });
     it('Multiple undo and redo after Underline at list text', () => {
         let i: number = 0;
@@ -351,7 +351,7 @@ describe('Apply Character Format -Underline validation of selection context type
             i++;
         }
         editor.editorHistory.undo();
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.underline).toBe('None');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.underline).toBe('None');
     });
 });
 
@@ -390,15 +390,15 @@ describe('Apply Character Format -Strikethrough validation of selection context 
         editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.selection.characterFormat.strikethrough = 'SingleStrike';
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.strikethrough).toBe('SingleStrike');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.strikethrough).toBe('SingleStrike');
     });
     it('undo after Strikethrough apply at list text', () => {
         editor.editorHistory.undo();
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.strikethrough).toBe('None');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.strikethrough).toBe('None');
     });
     it('redo after Strikethrough apply at list text', () => {
         editor.editorHistory.redo();
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.strikethrough).toBe('SingleStrike');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.strikethrough).toBe('SingleStrike');
     });
     it('Multiple undo and redo after Strikethrough at list text', () => {
         let i: number = 0;
@@ -408,7 +408,7 @@ describe('Apply Character Format -Strikethrough validation of selection context 
             i++;
         }
         editor.editorHistory.undo();
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.strikethrough).toBe('None');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.strikethrough).toBe('None');
     });
 });
 
@@ -447,15 +447,15 @@ describe('Apply Character Format -BaselineAlignment validation of selection cont
         editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.selection.characterFormat.baselineAlignment = 'Superscript';
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.baselineAlignment).toBe('Superscript');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.baselineAlignment).toBe('Superscript');
     });
     it('undo after BaselineAlignment apply at list text', () => {
         editor.editorHistory.undo();
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.baselineAlignment).toBe('Normal');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.baselineAlignment).toBe('Normal');
     });
     it('redo after BaselineAlignment apply at list text', () => {
         editor.editorHistory.redo();
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.baselineAlignment).toBe('Superscript');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.baselineAlignment).toBe('Superscript');
     });
     it('Multiple undo and redo after BaselineAlignment at list text', () => {
         let i: number = 0;
@@ -465,7 +465,7 @@ describe('Apply Character Format -BaselineAlignment validation of selection cont
             i++;
         }
         editor.editorHistory.undo();
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.baselineAlignment).toBe('Normal');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.baselineAlignment).toBe('Normal');
     });
 });
 
@@ -504,15 +504,15 @@ describe('Apply Character Format -Fontsize validation of selection context type 
         editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.selection.characterFormat.fontSize = 20;
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.fontSize).toBe(20);
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontSize).toBe(20);
     });
     it('undo after FontSize apply at list text', () => {
         editor.editorHistory.undo();
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.fontSize).toBe(11);
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontSize).toBe(11);
     });
     it('redo after FontSize apply at list text', () => {
         editor.editorHistory.redo();
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.fontSize).toBe(20);
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontSize).toBe(20);
     });
     it('Multiple undo and redo after FontSize at list text', () => {
         let i: number = 0;
@@ -522,7 +522,7 @@ describe('Apply Character Format -Fontsize validation of selection context type 
             i++;
         }
         editor.editorHistory.undo();
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.fontSize).toBe(11);
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontSize).toBe(11);
     });
 });
 
@@ -562,15 +562,15 @@ describe('Apply Character Format -FontFamily validation of selection context typ
         editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.selection.characterFormat.fontFamily = 'Arial';
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.fontFamily).toBe('Arial');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontFamily).toBe('Arial');
     });
     it('undo after FontSize apply at list text', () => {
         editor.editorHistory.undo();
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.fontFamily).toBe('Calibri');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontFamily).toBe('Calibri');
     });
     it('redo after FontSize apply at list text', () => {
         editor.editorHistory.redo();
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.fontFamily).toBe('Arial');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontFamily).toBe('Arial');
     });
     it('Multiple undo and redo after FontSize at list text', () => {
         let i: number = 0;
@@ -580,7 +580,7 @@ describe('Apply Character Format -FontFamily validation of selection context typ
             i++;
         }
         editor.editorHistory.undo();
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.fontFamily).toBe('Calibri');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontFamily).toBe('Calibri');
     });
 });
 
@@ -619,15 +619,15 @@ describe('Apply Character Format -FontColor validation of selection context type
         editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.selection.characterFormat.fontColor = 'Pink';
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('Pink');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('Pink');
     });
     it('undo after FontColor apply at list text', () => {
         editor.editorHistory.undo();
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('#000000');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('#000000');
     });
     it('redo after FontColor apply at list text', () => {
         editor.editorHistory.redo();
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('Pink');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('Pink');
     });
     it('Multiple undo and redo after FontColor at list text', () => {
         let i: number = 0;
@@ -637,7 +637,7 @@ describe('Apply Character Format -FontColor validation of selection context type
             i++;
         }
         editor.editorHistory.undo();
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('#000000');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('#000000');
     });
 });
 
@@ -676,15 +676,15 @@ describe('Apply Character Format -FontColor validation of selection context type
         editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.selection.characterFormat.fontColor = 'Pink';
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('Pink');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('Pink');
     });
     it('undo after FontColor apply at list text', () => {
         editor.editorHistory.undo();
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('#000000');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('#000000');
     });
     it('redo after FontColor apply at list text', () => {
         editor.editorHistory.redo();
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('Pink');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('Pink');
     });
     it('Multiple undo and redo after FontColor at list text', () => {
         let i: number = 0;
@@ -694,7 +694,7 @@ describe('Apply Character Format -FontColor validation of selection context type
             i++;
         }
         editor.editorHistory.undo();
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('#000000');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.fontColor).toBe('#000000');
     });
 });
 
@@ -733,15 +733,15 @@ describe('Apply Character Format -Highlight Color validation of selection contex
         editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.selection.characterFormat.highlightColor = 'Yellow';
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.highlightColor).toBe('Yellow');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.highlightColor).toBe('Yellow');
     });
     it('undo after FontColor apply at list text', () => {
         editor.editorHistory.undo();
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.highlightColor).toBe('NoColor');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.highlightColor).toBe('NoColor');
     });
     it('redo after FontColor apply at list text', () => {
         editor.editorHistory.redo();
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.highlightColor).toBe('Yellow');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.highlightColor).toBe('Yellow');
     });
     it('Multiple undo and redo after FontColor at list text', () => {
         let i: number = 0;
@@ -751,7 +751,7 @@ describe('Apply Character Format -Highlight Color validation of selection contex
             i++;
         }
         editor.editorHistory.undo();
-        expect(editor.editor.getListLevel(editor.selection.start.paragraph).characterFormat.highlightColor).toBe('NoColor');
+        expect(editor.selection.getListLevel(editor.selection.start.paragraph).characterFormat.highlightColor).toBe('NoColor');
     });
 });
 
@@ -1202,4 +1202,111 @@ describe('List continue numbering validation', () => {
         let paragraph: any = editor.selection.start.paragraph.bodyWidget;
         expect(paragraph.childWidgets[3].childWidgets[0].children[0].text).toBe('3.');
     });
+});
+
+/**
+ * Selection list text format retieval validation
+ */
+
+describe('Character retrieval validation', () => {
+    let editor: DocumentEditor;
+    let documentHelper: DocumentHelper;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
+        editor.acceptTab = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+    });
+    afterAll((done): void => {
+        documentHelper.destroy();
+        documentHelper = undefined;
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Font family at list text validation', () => {
+        editor.openBlank();
+        editor.editorModule.insertText('1');
+        editor.editorModule.insertText('.');
+        editor.editorModule.insertText(' ');
+        editor.editorModule.insertText('Sample');
+        editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
+        editor.selection.selectListText();
+        editor.selection.characterFormat.fontFamily='Arial';
+        editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
+        editor.selection.selectListText();
+        expect(editor.selection.characterFormat.fontFamily).toBe('Arial');
+    });
+    it('Font size validation', () => {
+       
+        editor.selection.characterFormat.fontSize=12;
+        editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
+        editor.selection.selectListText();
+        expect(editor.selection.characterFormat.fontSize).toBe(12);
+    });
+    it('Bold validation', () => {
+        
+        editor.selection.characterFormat.bold=true;
+        editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
+        editor.selection.selectListText();
+        expect(editor.selection.characterFormat.bold).toBe(true);
+    });
+});
+
+
+let listText:any={"sections":[{"sectionFormat":{"pageWidth":612,"pageHeight":792,"leftMargin":72,"rightMargin":72,"topMargin":72,"bottomMargin":72,"differentFirstPage":false,"differentOddAndEvenPages":false,"headerDistance":36,"footerDistance":36,"bidi":false},"blocks":[{"paragraphFormat":{"styleName":"List Paragraph","listFormat":{"listId":0,"listLevelNumber":0}},"characterFormat":{"bold":true,"boldBidi":true},"inlines":[{"characterFormat":{},"text":"asdasdasda"},{"characterFormat":{},"bookmarkType":0,"name":"_GoBack"},{"characterFormat":{},"bookmarkType":1,"name":"_GoBack"}]}],"headersFooters":{"header":{"blocks":[{"paragraphFormat":{"styleName":"Header","listFormat":{}},"characterFormat":{},"inlines":[]}]},"footer":{"blocks":[{"paragraphFormat":{"styleName":"Footer","listFormat":{}},"characterFormat":{},"inlines":[]}]},"evenHeader":{"blocks":[{"paragraphFormat":{"styleName":"Header","listFormat":{}},"characterFormat":{},"inlines":[]}]},"evenFooter":{"blocks":[{"paragraphFormat":{"styleName":"Footer","listFormat":{}},"characterFormat":{},"inlines":[]}]},"firstPageHeader":{"blocks":[{"paragraphFormat":{"styleName":"Header","listFormat":{}},"characterFormat":{},"inlines":[]}]},"firstPageFooter":{"blocks":[{"paragraphFormat":{"styleName":"Footer","listFormat":{}},"characterFormat":{},"inlines":[]}]}}}],"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000","fontSizeBidi":11,"fontFamilyBidi":"Arial"},"paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":0,"afterSpacing":8,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","listFormat":{},"bidi":false},"defaultTabWidth":35.400001525878906,"enforcement":false,"hashValue":"","saltValue":"","formatting":false,"protectionType":"NoProtection","dontUseHTMLParagraphAutoSpacing":false,"styles":[{"name":"Normal","type":"Paragraph","paragraphFormat":{"listFormat":{}},"characterFormat":{},"next":"Normal"},{"name":"Default Paragraph Font","type":"Character","characterFormat":{}},{"name":"Header","type":"Paragraph","paragraphFormat":{"afterSpacing":0,"lineSpacing":1,"lineSpacingType":"Multiple","listFormat":{},"tabs":[{"position":225.64999389648438,"deletePosition":0,"tabJustification":"Center","tabLeader":"None"},{"position":451.29998779296875,"deletePosition":0,"tabJustification":"Right","tabLeader":"None"}]},"characterFormat":{},"basedOn":"Normal","link":"Header Char","next":"Header"},{"name":"Header Char","type":"Character","characterFormat":{},"basedOn":"Default Paragraph Font"},{"name":"Footer","type":"Paragraph","paragraphFormat":{"afterSpacing":0,"lineSpacing":1,"lineSpacingType":"Multiple","listFormat":{},"tabs":[{"position":225.64999389648438,"deletePosition":0,"tabJustification":"Center","tabLeader":"None"},{"position":451.29998779296875,"deletePosition":0,"tabJustification":"Right","tabLeader":"None"}]},"characterFormat":{},"basedOn":"Normal","link":"Footer Char","next":"Footer"},{"name":"Footer Char","type":"Character","characterFormat":{},"basedOn":"Default Paragraph Font"},{"name":"List Paragraph","type":"Paragraph","paragraphFormat":{"leftIndent":36,"listFormat":{},"contextualSpacing":true},"characterFormat":{},"basedOn":"Normal","next":"List Paragraph"},{"name":"Heading 1","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":12,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level1","listFormat":{}},"characterFormat":{"fontSize":16,"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Normal","link":"Heading 1 Char","next":"Normal"},{"name":"Heading 1 Char","type":"Character","characterFormat":{"fontSize":16,"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Default Paragraph Font"},{"name":"Heading 2","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level2","listFormat":{}},"characterFormat":{"fontSize":13,"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Normal","link":"Heading 2 Char","next":"Normal"},{"name":"Heading 2 Char","type":"Character","characterFormat":{"fontSize":13,"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Default Paragraph Font"},{"name":"Heading 3","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level3","listFormat":{}},"characterFormat":{"fontSize":12,"fontFamily":"Calibri Light","fontColor":"#1F3763"},"basedOn":"Normal","link":"Heading 3 Char","next":"Normal"},{"name":"Heading 3 Char","type":"Character","characterFormat":{"fontSize":12,"fontFamily":"Calibri Light","fontColor":"#1F3763"},"basedOn":"Default Paragraph Font"},{"name":"Heading 4","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level4","listFormat":{}},"characterFormat":{"italic":true,"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Normal","link":"Heading 4 Char","next":"Normal"},{"name":"Heading 4 Char","type":"Character","characterFormat":{"italic":true,"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Default Paragraph Font"},{"name":"Heading 5","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level5","listFormat":{}},"characterFormat":{"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Normal","link":"Heading 5 Char","next":"Normal"},{"name":"Heading 5 Char","type":"Character","characterFormat":{"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Default Paragraph Font"},{"name":"Heading 6","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level6","listFormat":{}},"characterFormat":{"fontFamily":"Calibri Light","fontColor":"#1F3763"},"basedOn":"Normal","link":"Heading 6 Char","next":"Normal"},{"name":"Heading 6 Char","type":"Character","characterFormat":{"fontFamily":"Calibri Light","fontColor":"#1F3763"},"basedOn":"Default Paragraph Font"}],"lists":[{"abstractListId":0,"levelOverrides":[],"listId":0}],"abstractLists":[{"abstractListId":0,"levels":[{"characterFormat":{"italic":true,"fontColor":"#A5A5A5FF","italicBidi":true,"fontFamilyBidi":"Arial"},"paragraphFormat":{"leftIndent":36,"firstLineIndent":-18,"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"%1.","restartLevel":0,"startAt":1},{"characterFormat":{},"paragraphFormat":{"leftIndent":72,"firstLineIndent":-18,"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"LowLetter","numberFormat":"%2.","restartLevel":1,"startAt":1},{"characterFormat":{},"paragraphFormat":{"leftIndent":108,"firstLineIndent":-9,"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"LowRoman","numberFormat":"%3.","restartLevel":2,"startAt":1},{"characterFormat":{},"paragraphFormat":{"leftIndent":144,"firstLineIndent":-18,"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"%4.","restartLevel":3,"startAt":1},{"characterFormat":{},"paragraphFormat":{"leftIndent":180,"firstLineIndent":-18,"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"LowLetter","numberFormat":"%5.","restartLevel":4,"startAt":1},{"characterFormat":{},"paragraphFormat":{"leftIndent":216,"firstLineIndent":-9,"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"LowRoman","numberFormat":"%6.","restartLevel":5,"startAt":1},{"characterFormat":{},"paragraphFormat":{"leftIndent":252,"firstLineIndent":-18,"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"Arabic","numberFormat":"%7.","restartLevel":6,"startAt":1},{"characterFormat":{},"paragraphFormat":{"leftIndent":288,"firstLineIndent":-18,"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"LowLetter","numberFormat":"%8.","restartLevel":7,"startAt":1},{"characterFormat":{},"paragraphFormat":{"leftIndent":324,"firstLineIndent":-9,"listFormat":{}},"followCharacter":"Tab","listLevelPattern":"LowRoman","numberFormat":"%9.","restartLevel":8,"startAt":1}]}],"comments":[]};
+describe('List text format validation in loaded document', () => {
+    let editor: DocumentEditor;
+    let documentHelper: DocumentHelper;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableSelection: true, enableEditorHistory: true });
+        editor.acceptTab = true;
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+        editor.open(JSON.stringify(listText));
+    });
+    afterAll((done): void => {
+        documentHelper.destroy();
+        documentHelper = undefined;
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('italic apply validation', () => {
+        editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
+        editor.selection.selectListText();
+        expect(editor.selection.characterFormat.italic).toBe(true);
+        editor.selection.characterFormat.italic=false;
+        editor.selection.selectListText();
+        expect(editor.selection.characterFormat.italic).toBe(false);
+    });
+    it('bold apply validation', () => {
+        editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
+        editor.selection.selectListText();
+        expect(editor.selection.characterFormat.bold).toBe(false);
+        editor.selection.characterFormat.bold=true;
+        editor.selection.selectListText();
+        expect(editor.selection.characterFormat.bold).toBe(true);
+    });
+   
 });

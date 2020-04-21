@@ -991,6 +991,105 @@ describe('Batch Edit module', () => {
     });
   });
 
+  describe(' Batch  Delete cancel checking', () => {
+    let gridObj: TreeGrid;
+    
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          allowPaging: true,
+          editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, mode: "Batch", newRowPosition: "Child" },
+          allowSorting: true,
+          allowFiltering: true,
+          treeColumnIndex: 1,
+          toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+          columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+          { field: 'taskName', headerText: 'Task Name' },
+          { field: 'progress', headerText: 'Progress' },
+          { field: 'startDate', headerText: 'Start Date' }
+          ]
+        },
+        done
+      );
+    });
+    it('Batch Delete cancel action ', () => {
+      let childRecords: string = 'childRecords';
+      gridObj.selectRow(6);
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_delete' } });
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_cancel' } });
+      gridObj.element.querySelector('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm').querySelectorAll('button')[0].click();
+      expect(gridObj.getCurrentViewRecords()[0][childRecords].length === 4).toBe(true);
+     });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+  describe('While delete all records then add record showing script error', () => {
+    let gridObj: TreeGrid;
+    let actionComplete: () => void;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          editSettings: { allowEditing: true, allowDeleting: true, allowAdding: true, mode: "Batch" },
+          allowSorting: true,
+          allowFiltering: true,
+          treeColumnIndex: 1,
+          toolbar: ['Add', 'Update', 'Delete', 'Cancel'],
+          columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+          { field: 'taskName', headerText: 'Task Name' },
+          { field: 'progress', headerText: 'Progress' },
+          { field: 'startDate', headerText: 'Start Date' }
+          ]
+        },
+        done
+      );
+    });
+    it('Delete all records then add new record', (done: Function) => {
+      actionComplete = (args?: Object): void => {
+        if (args['requestType'] == "batchSave"  ) {
+          expect(gridObj.getBatchChanges()[addedRecords].length === 1).toBe(true);
+        }
+         done();
+      }
+       gridObj.selectRow(0);
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_delete' } });      
+      gridObj.selectRow(6);
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_delete' } });      
+      gridObj.selectRow(12);
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_delete' } });      
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+      gridObj.element.querySelector('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm').querySelectorAll('button')[0].click();
+      let addedRecords = 'addedRecords';
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+      (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 40;
+      let event: MouseEvent = new MouseEvent('dblclick', {
+        'view': window,
+        'bubbles': true,
+        'cancelable': true
+      });
+      gridObj.getCellFromIndex(0, 1).dispatchEvent(event);
+      gridObj.grid.actionComplete = actionComplete;
+     (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+    });
+      
+   it('Add - Batch Editing', () => {
+      let addedRecords = 'addedRecords';
+      gridObj.grid.actionComplete = actionComplete;
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+      (gridObj.element.querySelector('.e-editedbatchcell').querySelector('input') as any).value = 41;
+      (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+      gridObj.element.querySelector('#' + gridObj.element.id + '_gridcontrol' + 'EditConfirm').querySelectorAll('button')[0].click();
+      expect(gridObj.getBatchChanges()[addedRecords].length === 1).toBe(true); 
+    }); 
+     afterAll(() => {
+      destroy(gridObj);
+    });
+  }); 
   it('memory leak', () => {
     profile.sample();
     let average: any = inMB(profile.averageChange)

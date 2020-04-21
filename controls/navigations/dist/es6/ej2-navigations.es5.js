@@ -1527,8 +1527,10 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                             if (sli_1) {
                                 sli_1.setAttribute('aria-expanded', 'false');
                                 sli_1.classList.remove(SELECTED);
-                                sli_1.classList.add(FOCUSED);
-                                sli_1.focus();
+                                if (liElem) {
+                                    sli_1.classList.add(FOCUSED);
+                                    sli_1.focus();
+                                }
                             }
                         }
                     }
@@ -2186,6 +2188,7 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
                                 this.isClosed = true;
                                 this.keyType = 'click';
                                 this.closeMenu(culIdx + 1, e);
+                                this.setLISelected(cli);
                             }
                         }
                         if (!this.isClosed) {
@@ -2260,6 +2263,51 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
             }
         }
         return null;
+    };
+    /**
+     * This method is used to get the index of the menu item in the Menu based on the argument.
+     * @param item - item be passed to get the index.
+     * @param id - id to be passed to update the item.
+     * @param isUniqueId - Set `true` if it is a unique id.
+     * @returns void
+     */
+    MenuBase.prototype.getItemIndex = function (item, id, isUniqueId) {
+        var idx = id ? id : item.id;
+        var isText = (isUniqueId === false) ? false : true;
+        var navIdx = this.getIndex(idx, isText);
+        return navIdx;
+    };
+    /**
+     * This method is used to set the menu item in the Menu based on the argument.
+     * @param item - item need to be updated.
+     * @param id - id to be passed to update the item.
+     * @param isUniqueId - Set `true` if it is a unique id.
+     * @returns void
+     */
+    MenuBase.prototype.setItem = function (item, id, isUniqueId) {
+        var idx = id ? id : item.id;
+        var isText = (isUniqueId === false) ? false : true;
+        var navIdx = this.getIndex(idx, isText);
+        var items = this.items;
+        switch (navIdx.length) {
+            case 1:
+                items[navIdx[0]].iconCss = item.iconCss;
+                items[navIdx[0]].id = item.id;
+                items[navIdx[0]].text = item.text;
+                items[navIdx[0]].url = item.url;
+                items[navIdx[0]].separator = item.separator;
+                items[navIdx[0]].items = item.items;
+                break;
+            case 2:
+                items[navIdx[0]].items[navIdx[1]] = item;
+                break;
+            case 3:
+                items[navIdx[0]].items[navIdx[1]].items[navIdx[2]] = item;
+                break;
+            case 4:
+                items[navIdx[0]].items[navIdx[1]].items[navIdx[2]].items[navIdx[3]] = item;
+                break;
+        }
     };
     MenuBase.prototype.getItem = function (navIdx) {
         navIdx = navIdx.slice();
@@ -2408,7 +2456,10 @@ var MenuBase = /** @__PURE__ @class */ (function (_super) {
         var key = Object.keys(newProp.items[idx]).pop();
         if (key === 'items') {
             var item = newProp.items[idx];
-            this.getChangedItemIndex(item, index, Number(Object.keys(item.items).pop()));
+            var popStr = Object.keys(item.items).pop();
+            if (popStr) {
+                this.getChangedItemIndex(item, index, Number(popStr));
+            }
         }
         else {
             if (key === 'isParentArray' && index.length > 1) {
@@ -5333,6 +5384,9 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
             this.initialize();
             this.renderControl();
         }
+        else {
+            this.wireFocusEvents();
+        }
         this.wireEvents();
         this.renderComplete();
     };
@@ -5359,6 +5413,18 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
             !(isBlazor() && !this.isStringTemplate)) ? select('div', this.element) : null;
         this.renderItems();
         this.initItemExpand();
+    };
+    Accordion.prototype.wireFocusEvents = function () {
+        var acrdItem = [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM$1));
+        for (var _i = 0, acrdItem_1 = acrdItem; _i < acrdItem_1.length; _i++) {
+            var item = acrdItem_1[_i];
+            var headerEle = item.querySelector('.' + CLS_HEADER);
+            if (item.childElementCount > 0 && headerEle) {
+                EventHandler.clearEvents(headerEle);
+                EventHandler.add(headerEle, 'focus', this.focusIn, this);
+                EventHandler.add(headerEle, 'blur', this.focusOut, this);
+            }
+        }
     };
     Accordion.prototype.unwireEvents = function () {
         EventHandler.remove(this.element, 'click', this.clickHandler);
@@ -6317,6 +6383,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
             switch (prop) {
                 case 'items':
                     if (this.isServerRendered) {
+                        this.wireFocusEvents();
                         break;
                     }
                     if (!(newProp.items instanceof Array && oldProp.items instanceof Array)) {

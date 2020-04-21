@@ -2269,6 +2269,7 @@ export class DocumentHelper {
         let scrollTop: number = this.owner.viewer.containerTop;
         let scrollLeft: number = this.owner.viewer.containerLeft;
         let pageHeight: number = this.visibleBounds.height;
+        this.updateFocus();
         let caretInfo: CaretHeightInfo = this.selection.updateCaretSize(this.owner.selection.end, true);
         let topMargin: number = caretInfo.topMargin;
         let caretHeight: number = caretInfo.height;
@@ -3456,9 +3457,12 @@ export class PageLayoutViewer extends LayoutViewer {
             let index: number = this.getHeaderFooter(type);
             let headerFooter: HeaderFooterWidget = this.documentHelper.headersFooters[sectionIndex][index];
             if (!headerFooter) {
-                if (this.documentHelper.headersFooters[0][index]) {
-                    headerFooter = this.documentHelper.headersFooters[0][index];
-                } else {
+                let currentSecIndex: number = sectionIndex > 0 ? sectionIndex - 1 : sectionIndex;
+                while (!headerFooter && currentSecIndex !== -1 && this.documentHelper.headersFooters[currentSecIndex][index]) {
+                    headerFooter = this.documentHelper.headersFooters[currentSecIndex][index];
+                    currentSecIndex--;
+                }
+                if (!headerFooter) {
                     headerFooter = this.createHeaderFooterWidget(type);
                     headerFooter.isEmpty = true;
                 }

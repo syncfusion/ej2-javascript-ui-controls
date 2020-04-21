@@ -124,6 +124,7 @@ export class StampAnnotation {
             for (let s: number = 0; s < stampAnnotations.length; s++) {
                 // tslint:disable-next-line
                 let annotation: any = stampAnnotations[s];
+                annotation.annotationAddMode = this.pdfViewer.annotationModule.findAnnotationMode(annotation, pageNumber, annotation.AnnotType);
                 // tslint:disable-next-line
                 let Apperance: any = annotation['Apperarance'];
                 // tslint:disable-next-line
@@ -445,7 +446,8 @@ export class StampAnnotation {
                 // tslint:disable-next-line:max-line-length
                 shapeAnnotationType: 'Stamp', strokeColor: annotation.strokeColor, fillColor: annotation.fillColor, opacity: annotation.Opacity, stampFillColor: annotation.stampFillColor, stampStrokeColor: annotation.stampStrokeColor, rotateAngle: annotation.RotateAngle, isDynamicStamp: this.pdfViewerBase.isDynamicStamp, dynamicText: this.dynamicText, annotName: annotation.AnnotName, notes: annotation.Note,
                 comments: annotation.Comments, review: { state: annotation.State, stateModel: annotation.StateModel, modifiedDate: annotation.ModifiedDate, author: annotation.Author }, subject: annotation.iconName,
-                annotationSelectorSettings: annotation.AnnotationSelectorSettings,  annotationSettings: annotation.AnnotationSettings
+                annotationSelectorSettings: annotation.AnnotationSelectorSettings,  annotationSettings: annotation.AnnotationSettings,
+                annotationAddMode: existingAnnotation.annotationAddMode
             };
             annotationObject = {
                 // tslint:disable-next-line:max-line-length
@@ -630,8 +632,7 @@ export class StampAnnotation {
             // tslint:disable-next-line:max-line-length
             id: 'stamp' + this.pdfViewerBase.customStampCount, bounds: { x: position.left, y: position.top, width: position.width, height: position.height }, pageIndex: pageIndex, data: image.src, modifiedDate: modifiedDate,
             shapeAnnotationType: 'Image', opacity: opacity, rotateAngle: RotationAngle, annotName: annotationName, comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: author },
-            annotationSettings: annotationSettings
-
+            annotationSettings: annotationSettings, annotationAddMode: annotation.annotationAddMode
         };
         this.currentStampAnnotation = annot;
         // tslint:disable-next-line
@@ -1247,4 +1248,73 @@ export class StampAnnotation {
         }
         return dynamicText;
     }
+    // tslint:disable-next-line
+    private getAnnotations(pageIndex: number, shapeAnnotations: any[]): any[] {
+            // tslint:disable-next-line
+            let annotationCollection: any[];
+            // tslint:disable-next-line
+            let storeObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_stamp');
+            if (this.pdfViewerBase.isStorageExceed) {
+                storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_stamp'];
+            }
+            if (storeObject) {
+                let annotObject: IPageAnnotations[] = JSON.parse(storeObject);
+                let index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageIndex);
+                if (annotObject[index]) {
+                    annotationCollection = annotObject[index].annotations;
+                } else {
+                    annotationCollection = shapeAnnotations;
+                }
+            } else {
+                annotationCollection = shapeAnnotations;
+            }
+            return annotationCollection;
+    }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public modifyInCollection(property: string, pageNumber: number, annotationBase: any): IStampAnnotation {
+        this.pdfViewerBase.isDocumentEdited = true;
+        let currentAnnotObject: IStampAnnotation = null;
+        let pageAnnotations: IStampAnnotation[] = this.getAnnotations(pageNumber, null);
+        if (pageAnnotations != null && annotationBase) {
+            for (let i: number = 0; i < pageAnnotations.length; i++) {
+                if (annotationBase.annotName === pageAnnotations[i].annotName) {
+                    if (property === 'bounds') {
+                        // tslint:disable-next-line:max-line-length
+                        pageAnnotations[i].bounds = { left: annotationBase.bounds.x, top: annotationBase.bounds.y, width: annotationBase.bounds.width, height: annotationBase.bounds.height };
+                        let date: Date = new Date();
+                        pageAnnotations[i].modifiedDate = date.toLocaleString();
+                    }
+                }
+            }
+            this.manageAnnotations(pageAnnotations, pageNumber);
+        }
+        return currentAnnotObject;
+    }
+    private manageAnnotations(pageAnnotations: IStampAnnotation[], pageNumber: number): void {
+        // tslint:disable-next-line
+        let storeObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_stamp');
+        if (this.pdfViewerBase.isStorageExceed) {
+            storeObject = this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_stamp'];
+        }
+        if (storeObject) {
+            let annotObject: IPageAnnotations[] = JSON.parse(storeObject);
+            if (!this.pdfViewerBase.isStorageExceed) {
+                window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_annotations_stamp');
+            }
+            let index: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageNumber);
+            if (annotObject[index]) {
+                annotObject[index].annotations = pageAnnotations;
+            }
+            let annotationStringified: string = JSON.stringify(annotObject);
+            if (this.pdfViewerBase.isStorageExceed) {
+                this.pdfViewerBase.annotationStorage[this.pdfViewerBase.documentId + '_annotations_stamp'] = annotationStringified;
+            } else {
+                window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_annotations_stamp', annotationStringified);
+            }
+        }
+    }
+
 }

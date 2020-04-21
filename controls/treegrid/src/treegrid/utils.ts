@@ -123,12 +123,12 @@ export function isOffline(parent: TreeGrid) : boolean {
 
 export function extendArray(array: Object[]): Object[] {
   let objArr: Object[] = []; let obj: Object ; let keys: string[];
-  for (let i: number = 0; i < array.length; i++) {
-    keys = Object.keys(array[i]); obj = {};
-    for (let j: number = 0; j < keys.length; j++) {
+  for (let i: number = 0; array && i < array.length; i++) {
+     keys = Object.keys(array[i]); obj = {};
+     for (let j: number = 0; j < keys.length; j++) {
       obj[keys[j]] = array[i][keys[j]];
-    }
-    objArr.push(obj);
+     }
+     objArr.push(obj);
   }
   return objArr;
 }

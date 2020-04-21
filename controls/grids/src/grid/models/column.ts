@@ -433,7 +433,7 @@ export class Column {
         if (this.type === 'none') {
             this.type = (isBlazor() && !isNullOrUndefined(this.template) && isNullOrUndefined(this.field)) ? 'none' : null;
         } else if (this.type) {
-            this.type = this.type ? this.type.toLowerCase() : this.type;
+            this.type = typeof(this.type) === 'string' ? this.type.toLowerCase() : undefined;
         }
         if (this.editType) {
             this.editType = this.editType.toLowerCase();

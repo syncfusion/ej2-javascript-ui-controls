@@ -742,6 +742,10 @@ var ListBase;
                     className: cssClass.text, innerHTML: text,
                     attrs: (ariaAttributes.itemText !== '' ? { role: ariaAttributes.itemText } : {})
                 }));
+                if (options && options.enableHtmlSanitizer) {
+                    var textElement = innerDiv.querySelector('.' + cssClass.text);
+                    textElement.innerText = SanitizeHtmlHelper.sanitize(text);
+                }
             }
             li.appendChild(innerDiv);
         }
@@ -2151,6 +2155,9 @@ var ListView = /** @__PURE__ @class */ (function (_super) {
         if (!(isBlazor() && this.isServerRendered)) {
             this.element.innerHTML = '';
             _super.prototype.destroy.call(this);
+        }
+        else {
+            this.element.style.display = 'none';
         }
     };
     /**

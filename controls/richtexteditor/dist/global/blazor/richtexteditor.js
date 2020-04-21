@@ -499,6 +499,11 @@ var imageRemoving = 'imageRemoving';
  * @hidden
  * @deprecated
  */
+var afterImageDelete = 'afterImageDelete';
+/**
+ * @hidden
+ * @deprecated
+ */
 var drop = 'drop';
 /**
  * @hidden
@@ -1004,6 +1009,11 @@ var CLS_CUSTOM_TILE = 'e-custom-tile';
  * @deprecated
  */
 var CLS_NOCOLOR_ITEM = 'e-nocolor-item';
+/**
+ * @hidden
+ * @deprecated
+ */
+var CLS_TABLE = 'e-rte-table';
 /**
  * @hidden
  * @deprecated
@@ -8138,6 +8148,14 @@ var NodeSelection = /** @class */ (function () {
         return this.getSelectionNodes(this.getNodeCollection(range));
     };
     /**
+     * getSelectionNodeCollection along with BR node method
+     * @hidden
+     * @deprecated
+     */
+    NodeSelection.prototype.getSelectionNodeCollectionBr = function (range) {
+        return this.getSelectionNodesBr(this.getNodeCollection(range));
+    };
+    /**
      * getParentNodes method
      * @hidden
      * @deprecated
@@ -8148,6 +8166,24 @@ var NodeSelection = /** @class */ (function () {
         for (var index = 0; index < nodeCollection.length; index++) {
             if (nodeCollection[index].nodeType !== 3 || (nodeCollection[index].textContent.trim() === '' ||
                 (nodeCollection[index].textContent.length === 1 && nodeCollection[index].textContent.match(regEx)))) {
+                nodeCollection.splice(index, 1);
+                index--;
+            }
+        }
+        return nodeCollection.reverse();
+    };
+    /**
+     * Get selection text nodes with br method.
+     * @hidden
+     * @deprecated
+     */
+    NodeSelection.prototype.getSelectionNodesBr = function (nodeCollection) {
+        nodeCollection = nodeCollection.reverse();
+        var regEx = new RegExp(String.fromCharCode(8203), 'g');
+        for (var index = 0; index < nodeCollection.length; index++) {
+            if (nodeCollection[index].nodeName !== 'BR' &&
+                (nodeCollection[index].nodeType !== 3 || (nodeCollection[index].textContent.trim() === '' ||
+                    (nodeCollection[index].textContent.length === 1 && nodeCollection[index].textContent.match(regEx))))) {
                 nodeCollection.splice(index, 1);
                 index--;
             }
@@ -9025,6 +9061,19 @@ function updateTextNode$1(value) {
                 isPreviousInlineElem = false;
             }
         }
+        var tableElm = resultElm.querySelectorAll('table');
+        for (var i = 0; i < tableElm.length; i++) {
+            if (tableElm[i].getAttribute('border') === '0') {
+                tableElm[i].removeAttribute('border');
+            }
+            var tdElm = tableElm[i].querySelectorAll('td');
+            for (var j = 0; j < tdElm.length; j++) {
+                tdElm[j].style.removeProperty('border');
+            }
+            if (!tableElm[i].classList.contains(CLS_TABLE)) {
+                tableElm[i].classList.add(CLS_TABLE);
+            }
+        }
         var imageElm = resultElm.querySelectorAll('img');
         for (var i = 0; i < imageElm.length; i++) {
             if (!imageElm[i].classList.contains(CLS_RTE_IMAGE)) {
@@ -9115,8 +9164,8 @@ var Lists = /** @class */ (function () {
         var range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
         var startNode = this.parent.domNode.getSelectedNode(range.startContainer, range.startOffset);
         var endNode = this.parent.domNode.getSelectedNode(range.endContainer, range.endOffset);
-        if (startNode === endNode && startNode.tagName === 'LI' && startNode.textContent.trim() === '' &&
-            startNode.textContent.charCodeAt(0) === 65279) {
+        if (startNode === endNode && !sf.base.isNullOrUndefined(sf.base.closest(startNode, 'li')) &&
+            startNode.textContent.trim() === '' && startNode.textContent.charCodeAt(0) === 65279) {
             startNode.textContent = '';
         }
     };
@@ -10399,7 +10448,7 @@ var InsertHtml = /** @class */ (function () {
         var emptyElements = element.querySelectorAll(':empty');
         for (var i = 0; i < emptyElements.length; i++) {
             if (emptyElements[i].tagName !== 'IMG' && emptyElements[i].tagName !== 'BR' &&
-                emptyElements[i].tagName !== 'IFRAME') {
+                emptyElements[i].tagName !== 'IFRAME' && emptyElements[i].tagName !== 'TD') {
                 var detachableElement = this.findDetachEmptyElem(emptyElements[i]);
                 if (!sf.base.isNullOrUndefined(detachableElement)) {
                     sf.base.detach(detachableElement);
@@ -11803,7 +11852,8 @@ var SelectionCommands = /** @class */ (function () {
             var isFormatted = new IsFormatted();
             var range = domSelection.getRange(docElement);
             var save = domSelection.save(range, docElement);
-            var nodes = domSelection.getSelectionNodeCollection(range);
+            var nodes = range.collapsed ? domSelection.getSelectionNodeCollection(range) :
+                domSelection.getSelectionNodeCollectionBr(range);
             var isCollapsed = false;
             var isFormat = false;
             var isCursor = false;
@@ -11863,29 +11913,33 @@ var SelectionCommands = /** @class */ (function () {
                 nodeIndex.push(domSelection.getIndex(cloneNode));
                 cloneNode = cloneNode.parentNode;
             } while (cloneNode && (cloneNode !== formatNode));
-            cloneNode = splitNode = (isCursor && (formatNode.textContent.length - 1) === range.startOffset) ?
-                nodeCutter.SplitNode(range, formatNode, true)
-                : nodeCutter.GetSpliceNode(range, formatNode);
+            if (nodes[index].nodeName !== 'BR') {
+                cloneNode = splitNode = (isCursor && (formatNode.textContent.length - 1) === range.startOffset) ?
+                    nodeCutter.SplitNode(range, formatNode, true)
+                    : nodeCutter.GetSpliceNode(range, formatNode);
+            }
             if (!isCursor) {
                 while (cloneNode && cloneNode.childNodes.length > 0 && ((nodeIndex.length - 1) >= 0)
                     && (cloneNode.childNodes.length > nodeIndex[nodeIndex.length - 1])) {
                     cloneNode = cloneNode.childNodes[nodeIndex[nodeIndex.length - 1]];
                     nodeIndex.pop();
                 }
-                if (cloneNode.nodeType === 3 && !(isCursor && cloneNode.nodeValue === '')) {
-                    nodes[index] = cloneNode;
-                }
-                else {
-                    var divNode = document.createElement('div');
-                    divNode.innerHTML = '&#8203;';
-                    if (cloneNode.nodeType !== 3) {
-                        cloneNode.insertBefore(divNode.firstChild, cloneNode.firstChild);
-                        nodes[index] = cloneNode.firstChild;
+                if (nodes[index].nodeName !== 'BR') {
+                    if (cloneNode.nodeType === 3 && !(isCursor && cloneNode.nodeValue === '')) {
+                        nodes[index] = cloneNode;
                     }
                     else {
-                        cloneNode.parentNode.insertBefore(divNode.firstChild, cloneNode);
-                        nodes[index] = cloneNode.previousSibling;
-                        cloneNode.parentNode.removeChild(cloneNode);
+                        var divNode = document.createElement('div');
+                        divNode.innerHTML = '&#8203;';
+                        if (cloneNode.nodeType !== 3) {
+                            cloneNode.insertBefore(divNode.firstChild, cloneNode.firstChild);
+                            nodes[index] = cloneNode.firstChild;
+                        }
+                        else {
+                            cloneNode.parentNode.insertBefore(divNode.firstChild, cloneNode);
+                            nodes[index] = cloneNode.previousSibling;
+                            cloneNode.parentNode.removeChild(cloneNode);
+                        }
                     }
                 }
             }
@@ -11921,8 +11975,10 @@ var SelectionCommands = /** @class */ (function () {
     SelectionCommands.insertFormat = function (docElement, nodes, index, formatNode, isCursor, isFormat, isFontStyle, range, nodeCutter, format, value) {
         if (!isCursor) {
             if ((formatNode === null && isFormat) || isFontStyle) {
-                nodes[index] = nodeCutter.GetSpliceNode(range, nodes[index]);
-                nodes[index].textContent = nodeCutter.TrimLineBreak(nodes[index].textContent);
+                if (nodes[index].nodeName !== 'BR') {
+                    nodes[index] = nodeCutter.GetSpliceNode(range, nodes[index]);
+                    nodes[index].textContent = nodeCutter.TrimLineBreak(nodes[index].textContent);
+                }
                 if (format === 'uppercase' || format === 'lowercase') {
                     nodes[index].textContent = (format === 'uppercase') ? nodes[index].textContent.toLocaleUpperCase()
                         : nodes[index].textContent.toLocaleLowerCase();
@@ -11964,7 +12020,8 @@ var SelectionCommands = /** @class */ (function () {
         return nodes[index];
     };
     SelectionCommands.applyStyles = function (nodes, index, element) {
-        nodes[index] = (index === (nodes.length - 1)) ? InsertMethods.Wrap(nodes[index], element)
+        nodes[index] = (index === (nodes.length - 1)) || nodes[index].nodeName === 'BR' ?
+            InsertMethods.Wrap(nodes[index], element)
             : InsertMethods.WrapBefore(nodes[index], element, true);
         nodes[index] = this.getChildNode(nodes[index], element);
         return nodes[index];
@@ -12831,7 +12888,8 @@ var MsWordPaste = /** @class */ (function () {
     MsWordPaste.prototype.removeEmptyElements = function (element) {
         var emptyElements = element.querySelectorAll(':empty');
         for (var i = 0; i < emptyElements.length; i++) {
-            if (emptyElements[i].tagName !== 'IMG' && emptyElements[i].tagName !== 'BR') {
+            if (emptyElements[i].tagName !== 'IMG' && emptyElements[i].tagName !== 'BR' &&
+                emptyElements[i].tagName !== 'IFRAME' && emptyElements[i].tagName !== 'TD') {
                 var detachableElement = this.findDetachEmptyElem(emptyElements[i]);
                 if (!sf.base.isNullOrUndefined(detachableElement)) {
                     sf.base.detach(detachableElement);
@@ -15760,7 +15818,19 @@ var Link = /** @class */ (function () {
         if (proxy.parent.formatter.getUndoRedoStack().length === 0) {
             proxy.parent.formatter.saveData();
         }
-        this.selfLink.parent.formatter.process(this.selfLink.parent, this.args, this.args.originalEvent, value);
+        var argsValue;
+        if (this.args.code === 'KeyK') {
+            var originalEvent = this.args;
+            sf.base.extend(this.args, { item: { command: 'Links', subCommand: 'CreateLink' }, originalEvent: originalEvent }, true);
+            var argsVal = {
+                item: { command: 'Links', subCommand: 'CreateLink' }, originalEvent: originalEvent
+            };
+            argsValue = argsVal;
+        }
+        else {
+            argsValue = this.args;
+        }
+        this.selfLink.parent.formatter.process(this.selfLink.parent, argsValue, this.args.originalEvent, value);
         this.selfLink.parent.contentModule.getEditPanel().focus();
     };
     Link.prototype.isUrl = function (url) {
@@ -15870,8 +15940,10 @@ var Link = /** @class */ (function () {
  */
 var Image = /** @class */ (function () {
     function Image(parent, serviceLocator) {
+        this.isImgUploaded = false;
         this.pageX = null;
         this.pageY = null;
+        this.deletedImg = [];
         this.parent = parent;
         this.rteID = parent.element.id;
         this.i10n = serviceLocator.getService('rteLocale');
@@ -15884,6 +15956,7 @@ var Image = /** @class */ (function () {
             return;
         }
         this.parent.on(keyDown, this.onKeyDown, this);
+        this.parent.on(keyUp, this.onKeyUp, this);
         this.parent.on(insertImage, this.insertImage, this);
         this.parent.on(insertCompleted, this.showImageQuickToolbar, this);
         this.parent.on(imageToolbarAction, this.onToolbarAction, this);
@@ -15904,6 +15977,7 @@ var Image = /** @class */ (function () {
             return;
         }
         this.parent.off(keyDown, this.onKeyDown);
+        this.parent.off(keyUp, this.onKeyUp);
         this.parent.off(insertImage, this.insertImage);
         this.parent.off(insertCompleted, this.showImageQuickToolbar);
         this.parent.off(imageCaption, this.caption);
@@ -16337,7 +16411,28 @@ var Image = /** @class */ (function () {
         var save;
         var selectNodeEle;
         var selectParentEle;
-        if (!sf.base.isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection)) {
+        this.deletedImg = [];
+        if (this.parent.editorMode === 'HTML' && ((originalEvent.which === 8 && originalEvent.code === 'Backspace') ||
+            (originalEvent.which === 46 && originalEvent.code === 'Delete'))) {
+            var range_1 = this.parent.getRange();
+            var isCursor = range_1.startContainer === range_1.endContainer && range_1.startOffset === range_1.endOffset;
+            if ((originalEvent.which === 8 && originalEvent.code === 'Backspace' && isCursor)) {
+                this.checkImageBack(range_1);
+            }
+            else if ((originalEvent.which === 46 && originalEvent.code === 'Delete' && isCursor)) {
+                this.checkImageDel(range_1);
+            }
+            else if (!isCursor) {
+                var nodes = this.parent.formatter.editorManager.nodeSelection.getNodeCollection(range_1);
+                for (var i = 0; i < nodes.length; i++) {
+                    if (nodes[i].nodeName === 'IMG') {
+                        this.deletedImg.push(nodes[i]);
+                    }
+                }
+            }
+        }
+        if (!sf.base.isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection) &&
+            originalEvent.code !== 'KeyK') {
             range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
             save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument());
             selectNodeEle = this.parent.formatter.editorManager.nodeSelection.getNodeCollection(range);
@@ -16404,6 +16499,37 @@ var Image = /** @class */ (function () {
                 }
                 originalEvent.preventDefault();
                 break;
+        }
+    };
+    Image.prototype.onKeyUp = function (event) {
+        if (!sf.base.isNullOrUndefined(this.deletedImg) && this.deletedImg.length > 0) {
+            for (var i = 0; i < this.deletedImg.length; i++) {
+                var args = {
+                    img: this.deletedImg[i],
+                    src: this.deletedImg[i].getAttribute('src')
+                };
+                this.parent.trigger(afterImageDelete, args);
+            }
+        }
+    };
+    Image.prototype.checkImageBack = function (range) {
+        if (range.startContainer.nodeName === '#text' && range.startOffset === 0 &&
+            !sf.base.isNullOrUndefined(range.startContainer.previousSibling) && range.startContainer.previousSibling.nodeName === 'IMG') {
+            this.deletedImg.push(range.startContainer.previousSibling);
+        }
+        else if (range.startContainer.nodeName !== '#text' && !sf.base.isNullOrUndefined(range.startContainer.childNodes[range.startOffset - 1]) &&
+            range.startContainer.childNodes[range.startOffset - 1].nodeName === 'IMG') {
+            this.deletedImg.push(range.startContainer.childNodes[range.startOffset - 1]);
+        }
+    };
+    Image.prototype.checkImageDel = function (range) {
+        if (range.startContainer.nodeName === '#text' && range.startOffset === range.startContainer.textContent.length &&
+            !sf.base.isNullOrUndefined(range.startContainer.nextSibling) && range.startContainer.nextSibling.nodeName === 'IMG') {
+            this.deletedImg.push(range.startContainer.nextSibling);
+        }
+        else if (range.startContainer.nodeName !== '#text' && !sf.base.isNullOrUndefined(range.startContainer.childNodes[range.startOffset]) &&
+            range.startContainer.childNodes[range.startOffset].nodeName === 'IMG') {
+            this.deletedImg.push(range.startContainer.childNodes[range.startOffset]);
         }
     };
     Image.prototype.alignmentSelect = function (e) {
@@ -16722,6 +16848,7 @@ var Image = /** @class */ (function () {
         if (e.selectNode[0].nodeName !== 'IMG') {
             return;
         }
+        var args = { img: e.selectNode[0] };
         if (this.parent.formatter.getUndoRedoStack().length === 0) {
             this.parent.formatter.saveData();
         }
@@ -16738,6 +16865,7 @@ var Image = /** @class */ (function () {
             this.quickToolObj.imageQTBar.hidePopup();
         }
         this.cancelResizeAction();
+        this.parent.trigger(afterImageDelete, args);
     };
     Image.prototype.caption = function (e) {
         var selectNode = e.selectNode[0];
@@ -16891,6 +17019,9 @@ var Image = /** @class */ (function () {
             target: (sf.base.Browser.isDevice) ? document.body : this.parent.element,
             animationSettings: { effect: 'None' },
             close: function (event) {
+                if (_this.isImgUploaded) {
+                    _this.uploadObj.removing();
+                }
                 _this.parent.isBlur = false;
                 if (event && event.event.returnValue) {
                     if (_this.parent.editorMode === 'HTML') {
@@ -16950,6 +17081,9 @@ var Image = /** @class */ (function () {
     Image.prototype.cancelDialog = function (e) {
         this.parent.isBlur = false;
         this.dialogObj.hide({ returnValue: true });
+        if (this.isImgUploaded) {
+            this.uploadObj.removing();
+        }
     };
     Image.prototype.onDocumentClick = function (e) {
         var target = e.target;
@@ -16992,6 +17126,7 @@ var Image = /** @class */ (function () {
     };
     Image.prototype.insertImageUrl = function (e) {
         var proxy = this.selfImage;
+        proxy.isImgUploaded = false;
         var url = proxy.inputUrl.value;
         if (proxy.parent.formatter.getUndoRedoStack().length === 0) {
             proxy.parent.formatter.saveData();
@@ -17128,8 +17263,7 @@ var Image = /** @class */ (function () {
         });
         span.appendChild(spanMsg);
         var btnEle = this.parent.createElement('button', {
-            className: 'e-browsebtn', id: this.rteID + '_insertImage',
-            attrs: { autofocus: 'true', type: 'button' }
+            className: 'e-browsebtn', id: this.rteID + '_insertImage', attrs: { autofocus: 'true', type: 'button' }
         });
         span.appendChild(btnEle);
         uploadParentEle.appendChild(span);
@@ -17150,6 +17284,7 @@ var Image = /** @class */ (function () {
             dropArea: span, multiple: false, enableRtl: this.parent.enableRtl,
             allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
             selected: function (e) {
+                proxy.isImgUploaded = true;
                 _this.parent.trigger(imageSelected, e, function (e) {
                     _this.checkExtension(e.filesData[0]);
                     altText = e.filesData[0].name;
@@ -17201,6 +17336,7 @@ var Image = /** @class */ (function () {
             },
             removing: function () {
                 _this.parent.trigger(imageRemoving, e, function (e) {
+                    proxy.isImgUploaded = false;
                     proxy.inputUrl.removeAttribute('disabled');
                     if (proxy.uploadUrl) {
                         proxy.uploadUrl.url = '';
@@ -17938,7 +18074,8 @@ var Table = /** @class */ (function () {
                 event.preventDefault();
                 break;
         }
-        if (!sf.base.isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection) && this.contentModule) {
+        if (!sf.base.isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection) && this.contentModule
+            && event.code !== 'KeyK') {
             var range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
             var selection = this.parent.formatter.editorManager.nodeSelection.save(range, this.contentModule.getDocument());
             var ele = this.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range)[0];
@@ -20000,7 +20137,8 @@ var RichTextEditor = /** @class */ (function (_super) {
         if (this.formatter.getUndoRedoStack().length === 0) {
             this.formatter.saveData();
         }
-        if (e.action && e.action !== 'paste' || e.which === 9) {
+        if (e.action !== 'insert-link' &&
+            (e.action && e.action !== 'paste' || e.which === 9)) {
             this.formatter.process(this, null, e);
             switch (e.action) {
                 case 'toolbar-focus':
@@ -21163,9 +21301,11 @@ var RichTextEditor = /** @class */ (function (_super) {
         }
     };
     RichTextEditor.prototype.setAutoHeight = function (element) {
-        element.style.height = '';
-        element.style.height = this.inputElement.scrollHeight + 'px';
-        element.style.overflow = 'hidden';
+        if (!sf.base.isNullOrUndefined(element)) {
+            element.style.height = '';
+            element.style.height = this.inputElement.scrollHeight + 'px';
+            element.style.overflow = 'hidden';
+        }
     };
     RichTextEditor.prototype.wireEvents = function () {
         this.element.addEventListener('focusin', this.onFocusHandler, true);
@@ -21426,6 +21566,9 @@ var RichTextEditor = /** @class */ (function (_super) {
     ], RichTextEditor.prototype, "imageRemoving", void 0);
     __decorate$1([
         sf.base.Event()
+    ], RichTextEditor.prototype, "afterImageDelete", void 0);
+    __decorate$1([
+        sf.base.Event()
     ], RichTextEditor.prototype, "created", void 0);
     __decorate$1([
         sf.base.Event()
@@ -21642,6 +21785,7 @@ exports.imageUploading = imageUploading;
 exports.imageUploadSuccess = imageUploadSuccess;
 exports.imageUploadFailed = imageUploadFailed;
 exports.imageRemoving = imageRemoving;
+exports.afterImageDelete = afterImageDelete;
 exports.drop = drop;
 exports.xhtmlValidation = xhtmlValidation;
 exports.CLS_RTE = CLS_RTE;
@@ -21743,6 +21887,7 @@ exports.CLS_RTE_DIALOG_UPLOAD = CLS_RTE_DIALOG_UPLOAD;
 exports.CLS_RTE_RES_CNT = CLS_RTE_RES_CNT;
 exports.CLS_CUSTOM_TILE = CLS_CUSTOM_TILE;
 exports.CLS_NOCOLOR_ITEM = CLS_NOCOLOR_ITEM;
+exports.CLS_TABLE = CLS_TABLE;
 exports.CLS_TABLE_BORDER = CLS_TABLE_BORDER;
 exports.CLS_RTE_TABLE_RESIZE = CLS_RTE_TABLE_RESIZE;
 exports.getIndex = getIndex;

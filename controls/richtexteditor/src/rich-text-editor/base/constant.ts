@@ -497,6 +497,11 @@ export const imageRemoving: string = 'imageRemoving';
  * @hidden
  * @deprecated
  */
+export const afterImageDelete: string = 'afterImageDelete';
+/** 
+ * @hidden
+ * @deprecated
+ */
 export const drop: string = 'drop';
 /** 
  * @hidden

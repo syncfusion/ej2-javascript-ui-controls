@@ -742,6 +742,10 @@ exports.cssClass = {
                     className: exports.cssClass.text, innerHTML: text,
                     attrs: (ariaAttributes.itemText !== '' ? { role: ariaAttributes.itemText } : {})
                 }));
+                if (options && options.enableHtmlSanitizer) {
+                    var textElement = innerDiv.querySelector('.' + exports.cssClass.text);
+                    textElement.innerText = sf.base.SanitizeHtmlHelper.sanitize(text);
+                }
             }
             li.appendChild(innerDiv);
         }
@@ -2151,6 +2155,9 @@ var ListView = /** @class */ (function (_super) {
         if (!(sf.base.isBlazor() && this.isServerRendered)) {
             this.element.innerHTML = '';
             _super.prototype.destroy.call(this);
+        }
+        else {
+            this.element.style.display = 'none';
         }
     };
     /**

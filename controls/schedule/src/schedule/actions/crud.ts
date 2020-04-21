@@ -400,6 +400,9 @@ export class Crud {
                     let deletedEvents: Object[] = eventCollections.follow.concat(eventCollections.occurrence);
                     switch (action) {
                         case 'EditSeries':
+                            if (childEvent[fields.startTime] > parentEvent[fields.startTime]) {
+                                this.processRecurrenceRule(parentEvent, childEvent);
+                            }
                             childEvent[fields.id] = parentEvent[fields.id];
                             childEvent[fields.recurrenceID] = null;
                             childEvent[fields.followingID] = null;

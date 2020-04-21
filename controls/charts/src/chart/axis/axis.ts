@@ -704,6 +704,14 @@ export class Axis extends ChildProperty<Axis> {
     public enableTrim: boolean;
 
     /**
+     * Specifies the labelPadding from axis
+     * @default 5
+     */
+
+    @Property(5)
+    public labelPadding: number;
+
+    /**
      * Options for customizing major tick lines.
      */
 

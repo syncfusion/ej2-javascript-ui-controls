@@ -214,12 +214,13 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private groupElem: Element;
     private dataColl: object[];
     private dataManager: DataManager;
-    private fields: Object;
     private selectedColumn: ColumnsModel;
     private actionButton: Element;
     private isInitialLoad: boolean;
     private timer: number;
     private isReadonly: boolean = true;
+    private fields: Object = { text: 'label', value: 'field' };
+
     /** 
      * Triggers when the component is created.
      * @event
@@ -389,7 +390,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private initialize(): void {
         if (this.dataColl.length) {
             let columnKeys: string[] = Object.keys(this.dataColl[0]);
-            let cols: ColumnsModel[] = [];
+            let cols: ColumnsModel[] = []; let categories: string[] = [];
             let type: string; let groupBy: boolean = false;
             let isDate: boolean = false; let value: string | number | boolean | Object;
             let validateObj: Validation = {isRequired: true, min: 0, max: Number.MAX_VALUE};
@@ -421,8 +422,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     } else {
                         columns[i].category = this.l10n.getConstant('OtherFields');
                     }
+                    if (categories.indexOf(columns[i].category) < 0) {
+                        categories.push(columns[i].category);
+                    }
                 }
-                if (groupBy) {
+                if (groupBy && (categories.length > 1 || categories[0] !== this.l10n.getConstant('OtherFields'))) {
                     this.fields = { text: 'label', value: 'field', groupBy: 'category' };
                 }
             } else {
@@ -445,7 +449,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             let columns: ColumnsModel[] = this.columns;
             for (let i: number = 0, len: number = columns.length; i < len; i++) {
                 if (columns[i].category) {
-                        this.fields = { text: 'label', value: 'field', groupBy: 'category' };
+                    this.fields = { text: 'label', value: 'field', groupBy: 'category' };
                 } else {
                     columns[i].category = this.l10n.getConstant('OtherFields');
                 }
@@ -2334,7 +2338,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             isnull: 'IS NULL', isnotnull: 'IS NOT NULL', isempty: 'IS EMPTY', isnotempty: 'IS NOT EMPTY', notstartswith: 'NOT LIKE',
             notendswith: 'NOT LIKE', notcontains: 'NOT LIKE'
         };
-        this.fields =  { text: 'label', value: 'field' };
+        if (!this.fields) {
+            this.fields = { text: 'label', value: 'field'};
+        }
     }
 
     protected render(): void {

@@ -428,6 +428,8 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       this.initializeItemTemplate();
       this.initialize();
       this.renderControl();
+    } else {
+      this.wireFocusEvents();
     }
     this.wireEvents();
     this.renderComplete();
@@ -455,6 +457,17 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       !(isBlazor() && !this.isStringTemplate)) ? <HTEle>select('div', this.element) : null;
     this.renderItems();
     this.initItemExpand();
+  }
+  private wireFocusEvents(): void {
+    let acrdItem: HTEle[] = [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM));
+    for (let item of acrdItem) {
+      let headerEle: Element = item.querySelector('.' + CLS_HEADER);
+      if (item.childElementCount > 0 && headerEle) {
+        EventHandler.clearEvents(headerEle);
+        EventHandler.add(headerEle, 'focus', this.focusIn, this);
+        EventHandler.add(headerEle, 'blur', this.focusOut, this);
+      }
+    }
   }
   private unwireEvents(): void {
     EventHandler.remove(this.element, 'click', this.clickHandler);
@@ -1227,7 +1240,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       eleHeader.setAttribute('aria-disabled', 'true');
       eleHeader.removeAttribute('tabindex');
     }
-}
+  }
   /**
    * Refresh the Accordion component.
    * @returns void.
@@ -1302,7 +1315,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
         }
       }
     } else if (!isNOU(ctn)) {
-      isExpand ?  this.expand(ctn) : this.collapse(ctn);
+      isExpand ? this.expand(ctn) : this.collapse(ctn);
     }
   }
   private destroyItems(): void {
@@ -1352,6 +1365,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
       switch (prop) {
         case 'items':
           if (this.isServerRendered) {
+            this.wireFocusEvents();
             break;
           }
           if (!(newProp.items instanceof Array && oldProp.items instanceof Array)) {

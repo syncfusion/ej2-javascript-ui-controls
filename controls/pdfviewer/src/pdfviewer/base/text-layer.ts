@@ -164,7 +164,7 @@ export class TextLayer {
     }
 
     private setTextElementProperties(textDiv: HTMLElement): void {
-        textDiv.style.fontFamily = 'sans-serif';
+        textDiv.style.fontFamily = 'serif';
         textDiv.style.transformOrigin = '0%';
     }
     /**

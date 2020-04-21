@@ -447,6 +447,56 @@ describe('insert Link', () => {
         });
     });
 
+describe('IE 11 insert link', () => {
+    let rteEle: HTMLElement;
+    let rteObj: RichTextEditor;
+    let defaultUA: string = navigator.userAgent;
+    beforeAll(() => {
+        Browser.userAgent = 'Mozilla/5.0 (Windows NT 10.0; WOW64; Trident/7.0; Touch; .NET4.0C; .NET4.0E; .NET CLR 2.0.50727; .NET CLR 3.0.30729; .NET CLR 3.5.30729; Tablet PC 2.0; rv:11.0) like Gecko';
+        rteObj = renderRTE({ value: '<p>test</p>' });
+        rteEle = rteObj.element;
+    });
+    afterAll(() => {
+        Browser.userAgent = defaultUA;
+        destroy(rteObj);
+    });
+    it('IE 11 insert link iframe', () => {
+        rteObj.iframeSettings.enable = true;
+        rteObj.dataBind();
+        let args: any = { preventDefault: function () { }, originalEvent: { target: rteObj.toolbarModule.getToolbarElement() }, item: { command: 'Links', subCommand: 'CreateLink' } };
+        let event: any = { preventDefault: function () { } };
+        let range: any = new NodeSelection().getRange(document);
+        let save: any = new NodeSelection().save(range, document);
+        let selectParent: any = new NodeSelection().getParentNodeCollection(range)
+        let selectNode: any = new NodeSelection().getNodeCollection(range);
+        let evnArg = {
+            target: '', args: args, event: MouseEvent, selfLink: (<any>rteObj).linkModule, selection: save,
+            selectParent: selectParent, selectNode: selectNode
+        };
+        (<any>rteObj).linkModule.linkDialog(evnArg);
+        expect((<any>rteObj).linkModule.dialogObj.headerEle.innerHTML === 'Insert Link').toBe(true);
+        (<any>rteObj).linkModule.dialogObj.contentEle.querySelector('.e-rte-linkurl').value = 'http://www.google.com';
+        evnArg.target = (<any>rteObj).linkModule.dialogObj.primaryButtonEle;
+        (<any>rteObj).linkModule.dialogObj.primaryButtonEle.click(evnArg);
+        (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+        range = new NodeSelection().getRange(document);
+        save = new NodeSelection().save(range, document);
+        args = {
+            item: { url: 'https://www.google.com/', selection: save, target: '_blank' },
+            preventDefault: function () { }
+        };
+        (<any>rteObj).formatter.editorManager.linkObj.createLink(args);
+        let trg: any = <HTMLElement>rteEle.querySelectorAll(".e-content")[0];
+        let eventsArgs: any = { target: document, preventDefault: function () { } };
+        (rteObj.contentModule.getEditPanel() as HTMLElement).focus();
+        let clickEvent: any = document.createEvent("MouseEvents");
+        eventsArgs = { pageX: 50, pageY: 300, target: selectParent[0], preventDefault: function () { } };
+        clickEvent.initEvent("mousedown", false, true);
+        trg.dispatchEvent(clickEvent);
+        (<any>rteObj).formatter.editorManager.linkObj.openLink(args);
+    });
+});
+
     describe('link dialog open - Short cut key', () => {
         let rteObj: RichTextEditor;
         beforeAll(() => {

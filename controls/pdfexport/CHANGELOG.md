@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 18.1.44 (2020-04-14)
+## 18.1.45 (2020-04-21)
+
+### Pdf Export
+
+#### Bug Fixes
+
+- Rendering issue with exceeded image into PDF export is fixed.
+
+## 18.1.36-beta (2020-03-19)
 
 ### Pdf Export
 

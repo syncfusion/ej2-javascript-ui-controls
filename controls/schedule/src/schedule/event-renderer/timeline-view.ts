@@ -181,7 +181,14 @@ export class TimelineEvent extends MonthEvent {
                 let resourceCell: HTMLElement = this.parent.element.querySelector
                     ('.' + cls.RESOURCE_COLUMN_TABLE_CLASS + ' ' + 'tbody td[data-group-index="' +
                         cell.getAttribute('data-group-index') + '"]') as HTMLElement;
-                setStyleAttribute(resourceCell, { 'height': height + 'px' });
+                if (resourceCell) {
+                    setStyleAttribute(resourceCell, { 'height': height + 'px' });
+                }
+            }
+            let monthHeader: HTMLElement = this.parent.element.querySelector('.e-month-header-wrapper table tr:nth-child(' +
+                ((cell.parentElement as HTMLTableRowElement).rowIndex + 1) + ') td') as HTMLElement;
+            if (monthHeader) {
+                setStyleAttribute(monthHeader, { 'height': height + 'px' });
             }
         }
     }

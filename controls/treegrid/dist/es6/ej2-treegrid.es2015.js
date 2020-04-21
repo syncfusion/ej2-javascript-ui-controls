@@ -567,7 +567,7 @@ function extendArray(array) {
     let objArr = [];
     let obj;
     let keys;
-    for (let i = 0; i < array.length; i++) {
+    for (let i = 0; array && i < array.length; i++) {
         keys = Object.keys(array[i]);
         obj = {};
         for (let j = 0; j < keys.length; j++) {
@@ -1286,6 +1286,10 @@ class Render {
             grid.getColumnIndexByUid(args.column.uid) === this.parent.frozenColumns + 1) {
             addClass([args.cell], 'e-gridrowindex' + index + 'level' + data.level);
         }
+        else if (this.parent.frozenColumns <= this.parent.treeColumnIndex &&
+            grid.getColumnIndexByUid(args.column.uid) === this.parent.frozenColumns - 1) {
+            addClass([args.cell], 'e-gridrowindex' + index + 'level' + data.level);
+        }
         if (!isNullOrUndefined(column) && column.showCheckbox) {
             this.parent.notify('columnCheckbox', args);
             if (this.parent.allowTextWrap) {
@@ -1548,7 +1552,7 @@ class DataManipulation {
      * Function to manipulate datasource
      * @hidden
      */
-    collectExpandingRecs(rowDetails) {
+    collectExpandingRecs(rowDetails, isChild) {
         let gridRows = this.parent.getRows();
         if (this.parent.rowTemplate) {
             let rows = this.parent.getContentTable().rows;
@@ -1556,10 +1560,11 @@ class DataManipulation {
         }
         let childRecord;
         let adaptorName = 'adaptorName';
-        let args = { row: rowDetails.parentRow, data: rowDetails.record };
         let clientRender = 'isClientRender';
         if (rowDetails.rows.length > 0) {
-            rowDetails.record.expanded = true;
+            if (!isChild) {
+                rowDetails.record.expanded = true;
+            }
             for (let i = 0; i < rowDetails.rows.length; i++) {
                 if (isBlazor() && this.parent.isServerRendered) {
                     removeClass([rowDetails.rows[i]], 'e-treerowcollapsed');
@@ -1571,16 +1576,16 @@ class DataManipulation {
                 if ((isBlazor() && (this.parent.dataSource[adaptorName] === 'BlazorAdaptor' && !this.parent[clientRender]))
                     || this.parent.loadChildOnDemand) {
                     let targetEle = rowDetails.rows[i].getElementsByClassName('e-treegridcollapse')[0];
-                    if (!isNullOrUndefined(targetEle)) {
+                    childRecord = this.parent.rowTemplate ? this.parent.grid.getCurrentViewRecords()[rowDetails.rows[i].rowIndex] :
+                        this.parent.grid.getRowObjectFromUID(rowDetails.rows[i].getAttribute('data-Uid')).data;
+                    if (!isNullOrUndefined(targetEle) && childRecord.expanded) {
                         addClass([targetEle], 'e-treegridexpand');
                         removeClass([targetEle], 'e-treegridcollapse');
                     }
-                    childRecord = this.parent.rowTemplate ? this.parent.grid.getCurrentViewRecords()[rowDetails.rows[i].rowIndex] :
-                        this.parent.grid.getRowObjectFromUID(rowDetails.rows[i].getAttribute('data-Uid')).data;
                     let childRows = [];
                     childRows = gridRows.filter((r) => r.querySelector('.e-gridrowindex' + childRecord.index + 'level' + (childRecord.level + 1)));
-                    if (childRows.length) {
-                        this.collectExpandingRecs({ record: childRecord, rows: childRows, parentRow: rowDetails.parentRow });
+                    if (childRows.length && childRecord.expanded) {
+                        this.collectExpandingRecs({ record: childRecord, rows: childRows, parentRow: rowDetails.parentRow }, true);
                     }
                 }
                 let expandingTd = rowDetails.rows[i].querySelector('.e-detailrowcollapse');
@@ -1590,61 +1595,65 @@ class DataManipulation {
             }
         }
         else {
-            let dm = this.parent.dataSource;
-            let qry = this.parent.grid.getDataModule().generateQuery();
-            let clonequries = qry.queries.filter((e) => e.fn !== 'onPage' && e.fn !== 'onWhere');
-            qry.queries = clonequries;
-            qry.isCountRequired = true;
-            qry.where(this.parent.parentIdMapping, 'equal', rowDetails.record[this.parent.idMapping]);
-            showSpinner(this.parent.element);
-            dm.executeQuery(qry).then((e) => {
-                let datas = this.parent.grid.currentViewData;
-                let inx = datas.indexOf(rowDetails.record);
-                let haveChild = getObject('actual.nextLevel', e);
-                let result = e.result;
-                rowDetails.record.childRecords = result;
-                for (let r = 0; r < result.length; r++) {
-                    result[r].taskData = extend({}, result[r]);
-                    result[r].level = rowDetails.record.level + 1;
-                    result[r].index = Math.ceil(Math.random() * 1000);
-                    let parentData = extend({}, rowDetails.record);
-                    delete parentData.childRecords;
-                    result[r].parentItem = parentData;
-                    result[r].parentUniqueID = rowDetails.record.uniqueID;
-                    result[r].uniqueID = getUid(this.parent.element.id + '_data_');
-                    setValue('uniqueIDCollection.' + result[r].uniqueID, result[r], this.parent);
-                    // delete result[r].parentItem.childRecords;
-                    if ((result[r][this.parent.hasChildMapping] || this.parentItems.indexOf(result[r][this.parent.idMapping]) !== -1)
-                        && !(haveChild && !haveChild[r])) {
-                        result[r].hasChildRecords = true;
-                        result[r].expanded = false;
-                    }
-                    datas.splice(inx + r + 1, 0, result[r]);
-                }
-                setValue('result', datas, e);
-                setValue('action', 'beforecontentrender', e);
-                this.parent.trigger(actionComplete, e);
-                hideSpinner(this.parent.element);
-                if (this.parent.grid.aggregates.length > 0 && !this.parent.enableVirtualization) {
-                    let gridQuery = getObject('query', e);
-                    let result = 'result';
-                    if (isNullOrUndefined(gridQuery)) {
-                        gridQuery = getValue('grid.renderModule.data', this.parent).aggregateQuery(new Query());
-                    }
-                    if (!isNullOrUndefined(gridQuery)) {
-                        let summaryQuery = gridQuery.queries.filter((q) => q.fn === 'onAggregates');
-                        e[result] = this.parent.summaryModule.calculateSummaryValue(summaryQuery, e[result], true);
-                    }
-                }
-                e.count = this.parent.grid.pageSettings.totalRecordsCount;
-                let virtualArgs = {};
-                if (this.parent.enableVirtualization) {
-                    this.remoteVirtualAction(virtualArgs);
-                }
-                getValue('grid.renderModule', this.parent).dataManagerSuccess(e, virtualArgs);
-                this.parent.trigger(expanded, args);
-            });
+            this.fetchRemoteChildData({ record: rowDetails.record, rows: rowDetails.rows, parentRow: rowDetails.parentRow });
         }
+    }
+    fetchRemoteChildData(rowDetails, isChild) {
+        let args = { row: rowDetails.parentRow, data: rowDetails.record };
+        let dm = this.parent.dataSource;
+        let qry = this.parent.grid.getDataModule().generateQuery();
+        let clonequries = qry.queries.filter((e) => e.fn !== 'onPage' && e.fn !== 'onWhere');
+        qry.queries = clonequries;
+        qry.isCountRequired = true;
+        qry.where(this.parent.parentIdMapping, 'equal', rowDetails.record[this.parent.idMapping]);
+        showSpinner(this.parent.element);
+        dm.executeQuery(qry).then((e) => {
+            let datas = this.parent.grid.currentViewData;
+            let inx = datas.indexOf(rowDetails.record);
+            let haveChild = getObject('actual.nextLevel', e);
+            let result = e.result;
+            rowDetails.record.childRecords = result;
+            for (let r = 0; r < result.length; r++) {
+                result[r].taskData = extend({}, result[r]);
+                result[r].level = rowDetails.record.level + 1;
+                result[r].index = Math.ceil(Math.random() * 1000);
+                let parentData = extend({}, rowDetails.record);
+                delete parentData.childRecords;
+                result[r].parentItem = parentData;
+                result[r].parentUniqueID = rowDetails.record.uniqueID;
+                result[r].uniqueID = getUid(this.parent.element.id + '_data_');
+                setValue('uniqueIDCollection.' + result[r].uniqueID, result[r], this.parent);
+                // delete result[r].parentItem.childRecords;
+                if ((result[r][this.parent.hasChildMapping] || this.parentItems.indexOf(result[r][this.parent.idMapping]) !== -1)
+                    && !(haveChild && !haveChild[r])) {
+                    result[r].hasChildRecords = true;
+                    result[r].expanded = false;
+                }
+                datas.splice(inx + r + 1, 0, result[r]);
+            }
+            setValue('result', datas, e);
+            setValue('action', 'beforecontentrender', e);
+            this.parent.trigger(actionComplete, e);
+            hideSpinner(this.parent.element);
+            if (this.parent.grid.aggregates.length > 0 && !this.parent.enableVirtualization) {
+                let gridQuery = getObject('query', e);
+                let result = 'result';
+                if (isNullOrUndefined(gridQuery)) {
+                    gridQuery = getValue('grid.renderModule.data', this.parent).aggregateQuery(new Query());
+                }
+                if (!isNullOrUndefined(gridQuery)) {
+                    let summaryQuery = gridQuery.queries.filter((q) => q.fn === 'onAggregates');
+                    e[result] = this.parent.summaryModule.calculateSummaryValue(summaryQuery, e[result], true);
+                }
+            }
+            e.count = this.parent.grid.pageSettings.totalRecordsCount;
+            let virtualArgs = {};
+            if (this.parent.enableVirtualization) {
+                this.remoteVirtualAction(virtualArgs);
+            }
+            getValue('grid.renderModule', this.parent).dataManagerSuccess(e, virtualArgs);
+            this.parent.trigger(expanded, args);
+        });
     }
     remoteVirtualAction(virtualArgs) {
         virtualArgs.requestType = 'refresh';
@@ -2606,8 +2615,12 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         }
         this.grid.query.queries = [];
         let isJsComponent = 'isJsComponent';
+        let isHybrid = 'isHybrid';
         if (!this.isServerRendered) {
             this.grid[isJsComponent] = true;
+        }
+        else {
+            this.grid[isHybrid] = true;
         }
         this.setBlazorGUID();
         this.setColIndex(this.grid.columns);
@@ -2753,7 +2766,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         };
         this.grid.rowDeselected = (args) => {
             this.selectedRowIndex = this.grid.selectedRowIndex;
-            if (isBlazor() && !this.isServerRendered) {
+            if (isBlazor()) {
                 let data = 'data';
                 let rowIndex = 'rowIndex';
                 let row = 'row';
@@ -4503,7 +4516,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             }
         }
         else {
-            this.collapseRemoteChild(rows);
+            this.collapseRemoteChild({ record: record, rows: rows });
             this.trigger(collapsed, args);
         }
     }
@@ -4520,7 +4533,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         let displayAction = (action === 'expand') ? 'table-row' : 'none';
         let index = childRecords[0].parentItem.index;
         let rows = gridRows.filter((r) => r.querySelector('.e-gridrowindex' + record.index + 'level' + (record.level + 1)));
-        if (this.frozenRows > 0) {
+        if (this.frozenRows || this.frozenColumns || this.getFrozenColumns()) {
             movableRows = this.getMovableRows().filter((r) => r.querySelector('.e-gridrowindex' + record.index + 'level' + (record.level + 1)));
         }
         for (let i = 0; i < rows.length; i++) {
@@ -4570,16 +4583,13 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             }
         }
     }
-    collapseRemoteChild(rows) {
-        let rData;
+    collapseRemoteChild(rowDetails, isChild) {
+        if (!isChild) {
+            rowDetails.record.expanded = false;
+        }
+        let rows = rowDetails.rows;
+        let childRecord;
         for (let i = 0; i < rows.length; i++) {
-            if (this.rowTemplate) {
-                rData = this.grid.getCurrentViewRecords()[rows[i].rowIndex];
-            }
-            else {
-                rData = this.grid.getRowObjectFromUID(rows[i].getAttribute('data-Uid')).data;
-            }
-            rData.expanded = false;
             if (isBlazor() && this.isServerRendered) {
                 removeClass([rows[i]], 'e-treerowexpanded');
                 addClass([rows[i]], 'e-treerowcollapsed');
@@ -4593,16 +4603,22 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             }
             if (rows[i].querySelector('.e-treecolumn-container .e-treegridexpand')) {
                 let expandElement = rows[i].querySelector('.e-treecolumn-container .e-treegridexpand');
-                removeClass([expandElement], 'e-treegridexpand');
-                addClass([expandElement], 'e-treegridcollapse');
+                childRecord = this.rowTemplate ? this.grid.getCurrentViewRecords()[rows[i].rowIndex] :
+                    this.grid.getRowObjectFromUID(rows[i].getAttribute('data-Uid')).data;
+                if (!isNullOrUndefined(expandElement) && childRecord.expanded) {
+                    removeClass([expandElement], 'e-treegridexpand');
+                    addClass([expandElement], 'e-treegridcollapse');
+                }
                 let cRow = [];
                 let eRows = this.getRows();
                 for (let i = 0; i < eRows.length; i++) {
-                    if (eRows[i].querySelector('.e-gridrowindex' + rData.index + 'level' + (rData.level + 1))) {
+                    if (eRows[i].querySelector('.e-gridrowindex' + childRecord.index + 'level' + (childRecord.level + 1))) {
                         cRow.push(eRows[i]);
                     }
                 }
-                this.collapseRemoteChild(cRow);
+                if (cRow.length && childRecord.expanded) {
+                    this.collapseRemoteChild({ record: childRecord, rows: cRow }, true);
+                }
             }
         }
     }
@@ -7956,7 +7972,8 @@ class BatchEdit {
                             updateParentRow(primaryKey, added.parentItem, 'add', this.parent, this.isSelfReference, added);
                         }
                     }
-                    else if (this.parent.editSettings.newRowPosition === 'Above' || this.parent.editSettings.newRowPosition === 'Below') {
+                    else if ((this.parent.editSettings.newRowPosition === 'Above' || this.parent.editSettings.newRowPosition === 'Below')
+                        && !isNullOrUndefined(this.batchRecords[this.addRowIndex])) {
                         added.level = this.batchRecords[this.addRowIndex][level];
                         if (added.level && this.selectedIndex > -1) {
                             added.parentItem = parentRecord;
@@ -8172,7 +8189,9 @@ class BatchEdit {
                         .indexOf(this.batchDeletedRecords[i][parentItem][primaryKey]);
                     let positionIndex = this.batchDeletedRecords[i][indexvalue] === 0 ? this.batchDeletedRecords[i][indexvalue] :
                         this.batchDeletedRecords[i][indexvalue] - 1;
-                    currentViewRecords[index][childRecords].splice(positionIndex, 0, this.batchDeletedRecords[i]);
+                    if (!isNullOrUndefined(currentViewRecords[index])) {
+                        currentViewRecords[index][childRecords].splice(positionIndex, 0, this.batchDeletedRecords[i]);
+                    }
                 }
             }
         }
@@ -8686,7 +8705,7 @@ class Edit$1 {
                 this.parent.editSettings.newRowPosition === 'Child')
                 && this.selectedIndex > -1) {
                 position = 'after';
-                if (records[index].expanded) {
+                if (records[index].expanded && !isNullOrUndefined(records[index])) {
                     if (this.parent.editSettings.mode === 'Batch' && (this.parent.getBatchChanges()[this.addedRecords].length > 1
                         || this.parent.getBatchChanges()[this.deletedRecords].length)) {
                         index += findChildrenRecords(records[index]).length;

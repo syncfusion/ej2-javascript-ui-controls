@@ -502,6 +502,11 @@ const imageRemoving = 'imageRemoving';
  * @hidden
  * @deprecated
  */
+const afterImageDelete = 'afterImageDelete';
+/**
+ * @hidden
+ * @deprecated
+ */
 const drop = 'drop';
 /**
  * @hidden
@@ -1007,6 +1012,11 @@ const CLS_CUSTOM_TILE = 'e-custom-tile';
  * @deprecated
  */
 const CLS_NOCOLOR_ITEM = 'e-nocolor-item';
+/**
+ * @hidden
+ * @deprecated
+ */
+const CLS_TABLE = 'e-rte-table';
 /**
  * @hidden
  * @deprecated
@@ -8047,6 +8057,14 @@ class NodeSelection {
         return this.getSelectionNodes(this.getNodeCollection(range));
     }
     /**
+     * getSelectionNodeCollection along with BR node method
+     * @hidden
+     * @deprecated
+     */
+    getSelectionNodeCollectionBr(range) {
+        return this.getSelectionNodesBr(this.getNodeCollection(range));
+    }
+    /**
      * getParentNodes method
      * @hidden
      * @deprecated
@@ -8057,6 +8075,24 @@ class NodeSelection {
         for (let index = 0; index < nodeCollection.length; index++) {
             if (nodeCollection[index].nodeType !== 3 || (nodeCollection[index].textContent.trim() === '' ||
                 (nodeCollection[index].textContent.length === 1 && nodeCollection[index].textContent.match(regEx)))) {
+                nodeCollection.splice(index, 1);
+                index--;
+            }
+        }
+        return nodeCollection.reverse();
+    }
+    /**
+     * Get selection text nodes with br method.
+     * @hidden
+     * @deprecated
+     */
+    getSelectionNodesBr(nodeCollection) {
+        nodeCollection = nodeCollection.reverse();
+        let regEx = new RegExp(String.fromCharCode(8203), 'g');
+        for (let index = 0; index < nodeCollection.length; index++) {
+            if (nodeCollection[index].nodeName !== 'BR' &&
+                (nodeCollection[index].nodeType !== 3 || (nodeCollection[index].textContent.trim() === '' ||
+                    (nodeCollection[index].textContent.length === 1 && nodeCollection[index].textContent.match(regEx))))) {
                 nodeCollection.splice(index, 1);
                 index--;
             }
@@ -8932,6 +8968,19 @@ function updateTextNode$1(value) {
                 isPreviousInlineElem = false;
             }
         }
+        let tableElm = resultElm.querySelectorAll('table');
+        for (let i = 0; i < tableElm.length; i++) {
+            if (tableElm[i].getAttribute('border') === '0') {
+                tableElm[i].removeAttribute('border');
+            }
+            let tdElm = tableElm[i].querySelectorAll('td');
+            for (let j = 0; j < tdElm.length; j++) {
+                tdElm[j].style.removeProperty('border');
+            }
+            if (!tableElm[i].classList.contains(CLS_TABLE)) {
+                tableElm[i].classList.add(CLS_TABLE);
+            }
+        }
         let imageElm = resultElm.querySelectorAll('img');
         for (let i = 0; i < imageElm.length; i++) {
             if (!imageElm[i].classList.contains(CLS_RTE_IMAGE)) {
@@ -9022,8 +9071,8 @@ class Lists {
         let range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
         let startNode = this.parent.domNode.getSelectedNode(range.startContainer, range.startOffset);
         let endNode = this.parent.domNode.getSelectedNode(range.endContainer, range.endOffset);
-        if (startNode === endNode && startNode.tagName === 'LI' && startNode.textContent.trim() === '' &&
-            startNode.textContent.charCodeAt(0) === 65279) {
+        if (startNode === endNode && !isNullOrUndefined(closest(startNode, 'li')) &&
+            startNode.textContent.trim() === '' && startNode.textContent.charCodeAt(0) === 65279) {
             startNode.textContent = '';
         }
     }
@@ -10298,7 +10347,7 @@ class InsertHtml {
         let emptyElements = element.querySelectorAll(':empty');
         for (let i = 0; i < emptyElements.length; i++) {
             if (emptyElements[i].tagName !== 'IMG' && emptyElements[i].tagName !== 'BR' &&
-                emptyElements[i].tagName !== 'IFRAME') {
+                emptyElements[i].tagName !== 'IFRAME' && emptyElements[i].tagName !== 'TD') {
                 let detachableElement = this.findDetachEmptyElem(emptyElements[i]);
                 if (!isNullOrUndefined(detachableElement)) {
                     detach(detachableElement);
@@ -11691,7 +11740,8 @@ class SelectionCommands {
             let isFormatted = new IsFormatted();
             let range = domSelection.getRange(docElement);
             let save = domSelection.save(range, docElement);
-            let nodes = domSelection.getSelectionNodeCollection(range);
+            let nodes = range.collapsed ? domSelection.getSelectionNodeCollection(range) :
+                domSelection.getSelectionNodeCollectionBr(range);
             let isCollapsed = false;
             let isFormat = false;
             let isCursor = false;
@@ -11751,29 +11801,33 @@ class SelectionCommands {
                 nodeIndex.push(domSelection.getIndex(cloneNode));
                 cloneNode = cloneNode.parentNode;
             } while (cloneNode && (cloneNode !== formatNode));
-            cloneNode = splitNode = (isCursor && (formatNode.textContent.length - 1) === range.startOffset) ?
-                nodeCutter.SplitNode(range, formatNode, true)
-                : nodeCutter.GetSpliceNode(range, formatNode);
+            if (nodes[index].nodeName !== 'BR') {
+                cloneNode = splitNode = (isCursor && (formatNode.textContent.length - 1) === range.startOffset) ?
+                    nodeCutter.SplitNode(range, formatNode, true)
+                    : nodeCutter.GetSpliceNode(range, formatNode);
+            }
             if (!isCursor) {
                 while (cloneNode && cloneNode.childNodes.length > 0 && ((nodeIndex.length - 1) >= 0)
                     && (cloneNode.childNodes.length > nodeIndex[nodeIndex.length - 1])) {
                     cloneNode = cloneNode.childNodes[nodeIndex[nodeIndex.length - 1]];
                     nodeIndex.pop();
                 }
-                if (cloneNode.nodeType === 3 && !(isCursor && cloneNode.nodeValue === '')) {
-                    nodes[index] = cloneNode;
-                }
-                else {
-                    let divNode = document.createElement('div');
-                    divNode.innerHTML = '&#8203;';
-                    if (cloneNode.nodeType !== 3) {
-                        cloneNode.insertBefore(divNode.firstChild, cloneNode.firstChild);
-                        nodes[index] = cloneNode.firstChild;
+                if (nodes[index].nodeName !== 'BR') {
+                    if (cloneNode.nodeType === 3 && !(isCursor && cloneNode.nodeValue === '')) {
+                        nodes[index] = cloneNode;
                     }
                     else {
-                        cloneNode.parentNode.insertBefore(divNode.firstChild, cloneNode);
-                        nodes[index] = cloneNode.previousSibling;
-                        cloneNode.parentNode.removeChild(cloneNode);
+                        let divNode = document.createElement('div');
+                        divNode.innerHTML = '&#8203;';
+                        if (cloneNode.nodeType !== 3) {
+                            cloneNode.insertBefore(divNode.firstChild, cloneNode.firstChild);
+                            nodes[index] = cloneNode.firstChild;
+                        }
+                        else {
+                            cloneNode.parentNode.insertBefore(divNode.firstChild, cloneNode);
+                            nodes[index] = cloneNode.previousSibling;
+                            cloneNode.parentNode.removeChild(cloneNode);
+                        }
                     }
                 }
             }
@@ -11809,8 +11863,10 @@ class SelectionCommands {
     static insertFormat(docElement, nodes, index, formatNode, isCursor, isFormat, isFontStyle, range, nodeCutter, format, value) {
         if (!isCursor) {
             if ((formatNode === null && isFormat) || isFontStyle) {
-                nodes[index] = nodeCutter.GetSpliceNode(range, nodes[index]);
-                nodes[index].textContent = nodeCutter.TrimLineBreak(nodes[index].textContent);
+                if (nodes[index].nodeName !== 'BR') {
+                    nodes[index] = nodeCutter.GetSpliceNode(range, nodes[index]);
+                    nodes[index].textContent = nodeCutter.TrimLineBreak(nodes[index].textContent);
+                }
                 if (format === 'uppercase' || format === 'lowercase') {
                     nodes[index].textContent = (format === 'uppercase') ? nodes[index].textContent.toLocaleUpperCase()
                         : nodes[index].textContent.toLocaleLowerCase();
@@ -11852,7 +11908,8 @@ class SelectionCommands {
         return nodes[index];
     }
     static applyStyles(nodes, index, element) {
-        nodes[index] = (index === (nodes.length - 1)) ? InsertMethods.Wrap(nodes[index], element)
+        nodes[index] = (index === (nodes.length - 1)) || nodes[index].nodeName === 'BR' ?
+            InsertMethods.Wrap(nodes[index], element)
             : InsertMethods.WrapBefore(nodes[index], element, true);
         nodes[index] = this.getChildNode(nodes[index], element);
         return nodes[index];
@@ -12710,7 +12767,8 @@ class MsWordPaste {
     removeEmptyElements(element) {
         let emptyElements = element.querySelectorAll(':empty');
         for (let i = 0; i < emptyElements.length; i++) {
-            if (emptyElements[i].tagName !== 'IMG' && emptyElements[i].tagName !== 'BR') {
+            if (emptyElements[i].tagName !== 'IMG' && emptyElements[i].tagName !== 'BR' &&
+                emptyElements[i].tagName !== 'IFRAME' && emptyElements[i].tagName !== 'TD') {
                 let detachableElement = this.findDetachEmptyElem(emptyElements[i]);
                 if (!isNullOrUndefined(detachableElement)) {
                     detach(detachableElement);
@@ -15658,7 +15716,19 @@ class Link {
         if (proxy.parent.formatter.getUndoRedoStack().length === 0) {
             proxy.parent.formatter.saveData();
         }
-        this.selfLink.parent.formatter.process(this.selfLink.parent, this.args, this.args.originalEvent, value);
+        let argsValue;
+        if (this.args.code === 'KeyK') {
+            let originalEvent = this.args;
+            extend(this.args, { item: { command: 'Links', subCommand: 'CreateLink' }, originalEvent: originalEvent }, true);
+            let argsVal = {
+                item: { command: 'Links', subCommand: 'CreateLink' }, originalEvent: originalEvent
+            };
+            argsValue = argsVal;
+        }
+        else {
+            argsValue = this.args;
+        }
+        this.selfLink.parent.formatter.process(this.selfLink.parent, argsValue, this.args.originalEvent, value);
         this.selfLink.parent.contentModule.getEditPanel().focus();
     }
     isUrl(url) {
@@ -15767,8 +15837,10 @@ class Link {
  */
 class Image {
     constructor(parent, serviceLocator) {
+        this.isImgUploaded = false;
         this.pageX = null;
         this.pageY = null;
+        this.deletedImg = [];
         this.parent = parent;
         this.rteID = parent.element.id;
         this.i10n = serviceLocator.getService('rteLocale');
@@ -15781,6 +15853,7 @@ class Image {
             return;
         }
         this.parent.on(keyDown, this.onKeyDown, this);
+        this.parent.on(keyUp, this.onKeyUp, this);
         this.parent.on(insertImage, this.insertImage, this);
         this.parent.on(insertCompleted, this.showImageQuickToolbar, this);
         this.parent.on(imageToolbarAction, this.onToolbarAction, this);
@@ -15801,6 +15874,7 @@ class Image {
             return;
         }
         this.parent.off(keyDown, this.onKeyDown);
+        this.parent.off(keyUp, this.onKeyUp);
         this.parent.off(insertImage, this.insertImage);
         this.parent.off(insertCompleted, this.showImageQuickToolbar);
         this.parent.off(imageCaption, this.caption);
@@ -16232,7 +16306,28 @@ class Image {
         let save;
         let selectNodeEle;
         let selectParentEle;
-        if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection)) {
+        this.deletedImg = [];
+        if (this.parent.editorMode === 'HTML' && ((originalEvent.which === 8 && originalEvent.code === 'Backspace') ||
+            (originalEvent.which === 46 && originalEvent.code === 'Delete'))) {
+            let range = this.parent.getRange();
+            let isCursor = range.startContainer === range.endContainer && range.startOffset === range.endOffset;
+            if ((originalEvent.which === 8 && originalEvent.code === 'Backspace' && isCursor)) {
+                this.checkImageBack(range);
+            }
+            else if ((originalEvent.which === 46 && originalEvent.code === 'Delete' && isCursor)) {
+                this.checkImageDel(range);
+            }
+            else if (!isCursor) {
+                let nodes = this.parent.formatter.editorManager.nodeSelection.getNodeCollection(range);
+                for (let i = 0; i < nodes.length; i++) {
+                    if (nodes[i].nodeName === 'IMG') {
+                        this.deletedImg.push(nodes[i]);
+                    }
+                }
+            }
+        }
+        if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection) &&
+            originalEvent.code !== 'KeyK') {
             range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
             save = this.parent.formatter.editorManager.nodeSelection.save(range, this.parent.contentModule.getDocument());
             selectNodeEle = this.parent.formatter.editorManager.nodeSelection.getNodeCollection(range);
@@ -16299,6 +16394,37 @@ class Image {
                 }
                 originalEvent.preventDefault();
                 break;
+        }
+    }
+    onKeyUp(event) {
+        if (!isNullOrUndefined(this.deletedImg) && this.deletedImg.length > 0) {
+            for (let i = 0; i < this.deletedImg.length; i++) {
+                let args = {
+                    img: this.deletedImg[i],
+                    src: this.deletedImg[i].getAttribute('src')
+                };
+                this.parent.trigger(afterImageDelete, args);
+            }
+        }
+    }
+    checkImageBack(range) {
+        if (range.startContainer.nodeName === '#text' && range.startOffset === 0 &&
+            !isNullOrUndefined(range.startContainer.previousSibling) && range.startContainer.previousSibling.nodeName === 'IMG') {
+            this.deletedImg.push(range.startContainer.previousSibling);
+        }
+        else if (range.startContainer.nodeName !== '#text' && !isNullOrUndefined(range.startContainer.childNodes[range.startOffset - 1]) &&
+            range.startContainer.childNodes[range.startOffset - 1].nodeName === 'IMG') {
+            this.deletedImg.push(range.startContainer.childNodes[range.startOffset - 1]);
+        }
+    }
+    checkImageDel(range) {
+        if (range.startContainer.nodeName === '#text' && range.startOffset === range.startContainer.textContent.length &&
+            !isNullOrUndefined(range.startContainer.nextSibling) && range.startContainer.nextSibling.nodeName === 'IMG') {
+            this.deletedImg.push(range.startContainer.nextSibling);
+        }
+        else if (range.startContainer.nodeName !== '#text' && !isNullOrUndefined(range.startContainer.childNodes[range.startOffset]) &&
+            range.startContainer.childNodes[range.startOffset].nodeName === 'IMG') {
+            this.deletedImg.push(range.startContainer.childNodes[range.startOffset]);
         }
     }
     alignmentSelect(e) {
@@ -16614,6 +16740,7 @@ class Image {
         if (e.selectNode[0].nodeName !== 'IMG') {
             return;
         }
+        let args = { img: e.selectNode[0] };
         if (this.parent.formatter.getUndoRedoStack().length === 0) {
             this.parent.formatter.saveData();
         }
@@ -16630,6 +16757,7 @@ class Image {
             this.quickToolObj.imageQTBar.hidePopup();
         }
         this.cancelResizeAction();
+        this.parent.trigger(afterImageDelete, args);
     }
     caption(e) {
         let selectNode = e.selectNode[0];
@@ -16781,6 +16909,9 @@ class Image {
             target: (Browser.isDevice) ? document.body : this.parent.element,
             animationSettings: { effect: 'None' },
             close: (event) => {
+                if (this.isImgUploaded) {
+                    this.uploadObj.removing();
+                }
                 this.parent.isBlur = false;
                 if (event && event.event.returnValue) {
                     if (this.parent.editorMode === 'HTML') {
@@ -16840,6 +16971,9 @@ class Image {
     cancelDialog(e) {
         this.parent.isBlur = false;
         this.dialogObj.hide({ returnValue: true });
+        if (this.isImgUploaded) {
+            this.uploadObj.removing();
+        }
     }
     onDocumentClick(e) {
         let target = e.target;
@@ -16882,6 +17016,7 @@ class Image {
     }
     insertImageUrl(e) {
         let proxy = this.selfImage;
+        proxy.isImgUploaded = false;
         let url = proxy.inputUrl.value;
         if (proxy.parent.formatter.getUndoRedoStack().length === 0) {
             proxy.parent.formatter.saveData();
@@ -17017,8 +17152,7 @@ class Image {
         });
         span.appendChild(spanMsg);
         let btnEle = this.parent.createElement('button', {
-            className: 'e-browsebtn', id: this.rteID + '_insertImage',
-            attrs: { autofocus: 'true', type: 'button' }
+            className: 'e-browsebtn', id: this.rteID + '_insertImage', attrs: { autofocus: 'true', type: 'button' }
         });
         span.appendChild(btnEle);
         uploadParentEle.appendChild(span);
@@ -17039,6 +17173,7 @@ class Image {
             dropArea: span, multiple: false, enableRtl: this.parent.enableRtl,
             allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
             selected: (e) => {
+                proxy.isImgUploaded = true;
                 this.parent.trigger(imageSelected, e, (e) => {
                     this.checkExtension(e.filesData[0]);
                     altText = e.filesData[0].name;
@@ -17090,6 +17225,7 @@ class Image {
             },
             removing: () => {
                 this.parent.trigger(imageRemoving, e, (e) => {
+                    proxy.isImgUploaded = false;
                     proxy.inputUrl.removeAttribute('disabled');
                     if (proxy.uploadUrl) {
                         proxy.uploadUrl.url = '';
@@ -17820,7 +17956,8 @@ class Table {
                 event.preventDefault();
                 break;
         }
-        if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection) && this.contentModule) {
+        if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection) && this.contentModule
+            && event.code !== 'KeyK') {
             let range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
             let selection = this.parent.formatter.editorManager.nodeSelection.save(range, this.contentModule.getDocument());
             let ele = this.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range)[0];
@@ -19745,7 +19882,8 @@ let RichTextEditor = class RichTextEditor extends Component {
         if (this.formatter.getUndoRedoStack().length === 0) {
             this.formatter.saveData();
         }
-        if (e.action && e.action !== 'paste' || e.which === 9) {
+        if (e.action !== 'insert-link' &&
+            (e.action && e.action !== 'paste' || e.which === 9)) {
             this.formatter.process(this, null, e);
             switch (e.action) {
                 case 'toolbar-focus':
@@ -20902,9 +21040,11 @@ let RichTextEditor = class RichTextEditor extends Component {
         }
     }
     setAutoHeight(element) {
-        element.style.height = '';
-        element.style.height = this.inputElement.scrollHeight + 'px';
-        element.style.overflow = 'hidden';
+        if (!isNullOrUndefined(element)) {
+            element.style.height = '';
+            element.style.height = this.inputElement.scrollHeight + 'px';
+            element.style.overflow = 'hidden';
+        }
     }
     wireEvents() {
         this.element.addEventListener('focusin', this.onFocusHandler, true);
@@ -21166,6 +21306,9 @@ __decorate$1([
 ], RichTextEditor.prototype, "imageRemoving", void 0);
 __decorate$1([
     Event()
+], RichTextEditor.prototype, "afterImageDelete", void 0);
+__decorate$1([
+    Event()
 ], RichTextEditor.prototype, "created", void 0);
 __decorate$1([
     Event()
@@ -21245,5 +21388,5 @@ RichTextEditor = __decorate$1([
  * Rich Text Editor component exported items
  */
 
-export { Toolbar$1 as Toolbar, KeyboardEvents$1 as KeyboardEvents, BaseToolbar, BaseQuickToolbar, QuickToolbar, Count, ColorPickerInput, MarkdownToolbarStatus, ExecCommandCallBack, ToolbarAction, MarkdownEditor, HtmlEditor, PasteCleanup, Resize, DropDownButtons, FullScreen, setAttributes, HtmlToolbarStatus, XhtmlValidation, HTMLFormatter, Formatter, MarkdownFormatter, ContentRender, Render, ToolbarRenderer, Link, Image, ViewSource, Table, DialogRenderer, IframeContentRender, MarkdownRender, PopupRenderer, RichTextEditor, RenderType, ToolbarType, executeGroup, created, destroyed, load, initialLoad, initialEnd, iframeMouseDown, destroy, toolbarClick, toolbarRefresh, refreshBegin, toolbarUpdated, bindOnEnd, renderColorPicker, htmlToolbarClick, markdownToolbarClick, destroyColorPicker, modelChanged, keyUp, keyDown, mouseUp, toolbarCreated, toolbarRenderComplete, enableFullScreen, disableFullScreen, dropDownSelect, beforeDropDownItemRender, execCommandCallBack, imageToolbarAction, linkToolbarAction, resizeStart, onResize, resizeStop, undo, redo, insertLink, unLink, editLink, openLink, actionBegin, actionComplete, toolbarStatusUpdate, actionSuccess, updateToolbarItem, insertImage, insertCompleted, imageLeft, imageRight, imageCenter, imageBreak, imageInline, imageLink, imageAlt, imageDelete, imageCaption, imageSize, sourceCode, updateSource, toolbarOpen, beforeDropDownOpen, selectionSave, selectionRestore, expandPopupClick, count, contentFocus, contentBlur, mouseDown, sourceCodeMouseDown, editAreaClick, scroll, contentscroll, colorPickerChanged, tableColorPickerChanged, focusChange, selectAll$1 as selectAll, selectRange, getSelectedHtml, renderInlineToolbar, paste, imgModule, rtlMode, createTable, docClick, tableToolbarAction, checkUndo, readOnlyMode, pasteClean, beforeDialogOpen, dialogOpen, dialogClose, beforeQuickToolbarOpen, quickToolbarOpen, quickToolbarClose, popupHide, imageSelected, imageUploading, imageUploadSuccess, imageUploadFailed, imageRemoving, drop, xhtmlValidation, CLS_RTE, CLS_RTL, CLS_CONTENT, CLS_DISABLED, CLS_SCRIPT_SHEET, CLS_STYLE_SHEET, CLS_TOOLBAR, CLS_TB_FIXED, CLS_TB_FLOAT, CLS_TB_ABS_FLOAT, CLS_INLINE, CLS_TB_INLINE, CLS_RTE_EXPAND_TB, CLS_FULL_SCREEN, CLS_QUICK_TB, CLS_POP, CLS_QUICK_POP, CLS_QUICK_DROPDOWN, CLS_IMAGE_POP, CLS_INLINE_POP, CLS_INLINE_DROPDOWN, CLS_DROPDOWN_POPUP, CLS_DROPDOWN_ICONS, CLS_DROPDOWN_ITEMS, CLS_DROPDOWN_BTN, CLS_RTE_CONTENT, CLS_TB_ITEM, CLS_TB_EXTENDED, CLS_TB_WRAP, CLS_POPUP, CLS_SEPARATOR, CLS_MINIMIZE, CLS_MAXIMIZE, CLS_BACK, CLS_SHOW, CLS_HIDE, CLS_VISIBLE, CLS_FOCUS, CLS_RM_WHITE_SPACE, CLS_IMGRIGHT, CLS_IMGLEFT, CLS_IMGCENTER, CLS_IMGBREAK, CLS_CAPTION, CLS_RTE_CAPTION, CLS_CAPINLINE, CLS_IMGINLINE, CLS_COUNT, CLS_WARNING, CLS_ERROR, CLS_ICONS, CLS_ACTIVE, CLS_EXPAND_OPEN, CLS_RTE_ELEMENTS, CLS_TB_BTN, CLS_HR_SEPARATOR, CLS_TB_IOS_FIX, CLS_TB_STATIC, CLS_FORMATS_TB_BTN, CLS_FONT_NAME_TB_BTN, CLS_FONT_SIZE_TB_BTN, CLS_FONT_COLOR_TARGET, CLS_BACKGROUND_COLOR_TARGET, CLS_COLOR_CONTENT, CLS_FONT_COLOR_DROPDOWN, CLS_BACKGROUND_COLOR_DROPDOWN, CLS_COLOR_PALETTE, CLS_FONT_COLOR_PICKER, CLS_BACKGROUND_COLOR_PICKER, CLS_RTE_READONLY, CLS_TABLE_SEL, CLS_TB_DASH_BOR, CLS_TB_ALT_BOR, CLS_TB_COL_RES, CLS_TB_ROW_RES, CLS_TB_BOX_RES, CLS_RTE_HIDDEN, CLS_RTE_PASTE_KEEP_FORMAT, CLS_RTE_PASTE_REMOVE_FORMAT, CLS_RTE_PASTE_PLAIN_FORMAT, CLS_RTE_PASTE_OK, CLS_RTE_PASTE_CANCEL, CLS_RTE_DIALOG_MIN_HEIGHT, CLS_RTE_RES_HANDLE, CLS_RTE_RES_EAST, CLS_RTE_IMAGE, CLS_RESIZE, CLS_IMG_FOCUS, CLS_RTE_DRAG_IMAGE, CLS_RTE_UPLOAD_POPUP, CLS_POPUP_OPEN, CLS_IMG_RESIZE, CLS_DROPAREA, CLS_IMG_INNER, CLS_UPLOAD_FILES, CLS_RTE_DIALOG_UPLOAD, CLS_RTE_RES_CNT, CLS_CUSTOM_TILE, CLS_NOCOLOR_ITEM, CLS_TABLE_BORDER, CLS_RTE_TABLE_RESIZE, getIndex, hasClass, getDropDownValue, isIDevice, getFormattedFontSize, pageYOffset, getTooltipText, setToolbarStatus, getCollection, getTBarItemsIndex, updateUndoRedoStatus, dispatchEvent, parseHtml, getTextNodesUnder, toObjectLowerCase, getEditValue, updateTextNode, isEditableValueEmpty, decode, sanitizeHelper, convertToBlob, ServiceLocator, RendererFactory, EditorManager, IMAGE, TABLE, LINK, INSERT_ROW, INSERT_COLUMN, DELETEROW, DELETECOLUMN, REMOVETABLE, TABLEHEADER, TABLE_VERTICAL_ALIGN, ALIGNMENT_TYPE, INDENT_TYPE, DEFAULT_TAG, BLOCK_TAGS, IGNORE_BLOCK_TAGS, TABLE_BLOCK_TAGS, SELECTION_TYPE, INSERTHTML_TYPE, INSERT_TEXT_TYPE, CLEAR_TYPE, CLASS_IMAGE_RIGHT, CLASS_IMAGE_LEFT, CLASS_IMAGE_CENTER, CLASS_IMAGE_BREAK, CLASS_CAPTION, CLASS_RTE_CAPTION, CLASS_CAPTION_INLINE, CLASS_IMAGE_INLINE, Lists, markerClassName, DOMNode, Alignments, Indents, Formats, LinkCommand, InsertMethods, InsertTextExec, InsertHtmlExec, InsertHtml, IsFormatted, MsWordPaste, NodeCutter, ImageCommand, SelectionCommands, SelectionBasedExec, ClearFormatExec, UndoRedoManager, TableCommand, statusCollection, ToolbarStatus, NodeSelection, MarkdownParser, LISTS_COMMAND, selectionCommand, LINK_COMMAND, CLEAR_COMMAND, MD_TABLE, ClearFormat, MDLists, MDFormats, MarkdownSelection, UndoRedoCommands, MDSelectionFormats, MDLink, MDTable, markdownFormatTags, markdownSelectionTags, markdownListsTags, htmlKeyConfig, markdownKeyConfig, pasteCleanupGroupingTags, listConversionFilters, selfClosingTags, KEY_DOWN, ACTION, FORMAT_TYPE, KEY_DOWN_HANDLER, LIST_TYPE, KEY_UP_HANDLER, KEY_UP, MODEL_CHANGED_PLUGIN, MODEL_CHANGED, MS_WORD_CLEANUP_PLUGIN, MS_WORD_CLEANUP };
+export { Toolbar$1 as Toolbar, KeyboardEvents$1 as KeyboardEvents, BaseToolbar, BaseQuickToolbar, QuickToolbar, Count, ColorPickerInput, MarkdownToolbarStatus, ExecCommandCallBack, ToolbarAction, MarkdownEditor, HtmlEditor, PasteCleanup, Resize, DropDownButtons, FullScreen, setAttributes, HtmlToolbarStatus, XhtmlValidation, HTMLFormatter, Formatter, MarkdownFormatter, ContentRender, Render, ToolbarRenderer, Link, Image, ViewSource, Table, DialogRenderer, IframeContentRender, MarkdownRender, PopupRenderer, RichTextEditor, RenderType, ToolbarType, executeGroup, created, destroyed, load, initialLoad, initialEnd, iframeMouseDown, destroy, toolbarClick, toolbarRefresh, refreshBegin, toolbarUpdated, bindOnEnd, renderColorPicker, htmlToolbarClick, markdownToolbarClick, destroyColorPicker, modelChanged, keyUp, keyDown, mouseUp, toolbarCreated, toolbarRenderComplete, enableFullScreen, disableFullScreen, dropDownSelect, beforeDropDownItemRender, execCommandCallBack, imageToolbarAction, linkToolbarAction, resizeStart, onResize, resizeStop, undo, redo, insertLink, unLink, editLink, openLink, actionBegin, actionComplete, toolbarStatusUpdate, actionSuccess, updateToolbarItem, insertImage, insertCompleted, imageLeft, imageRight, imageCenter, imageBreak, imageInline, imageLink, imageAlt, imageDelete, imageCaption, imageSize, sourceCode, updateSource, toolbarOpen, beforeDropDownOpen, selectionSave, selectionRestore, expandPopupClick, count, contentFocus, contentBlur, mouseDown, sourceCodeMouseDown, editAreaClick, scroll, contentscroll, colorPickerChanged, tableColorPickerChanged, focusChange, selectAll$1 as selectAll, selectRange, getSelectedHtml, renderInlineToolbar, paste, imgModule, rtlMode, createTable, docClick, tableToolbarAction, checkUndo, readOnlyMode, pasteClean, beforeDialogOpen, dialogOpen, dialogClose, beforeQuickToolbarOpen, quickToolbarOpen, quickToolbarClose, popupHide, imageSelected, imageUploading, imageUploadSuccess, imageUploadFailed, imageRemoving, afterImageDelete, drop, xhtmlValidation, CLS_RTE, CLS_RTL, CLS_CONTENT, CLS_DISABLED, CLS_SCRIPT_SHEET, CLS_STYLE_SHEET, CLS_TOOLBAR, CLS_TB_FIXED, CLS_TB_FLOAT, CLS_TB_ABS_FLOAT, CLS_INLINE, CLS_TB_INLINE, CLS_RTE_EXPAND_TB, CLS_FULL_SCREEN, CLS_QUICK_TB, CLS_POP, CLS_QUICK_POP, CLS_QUICK_DROPDOWN, CLS_IMAGE_POP, CLS_INLINE_POP, CLS_INLINE_DROPDOWN, CLS_DROPDOWN_POPUP, CLS_DROPDOWN_ICONS, CLS_DROPDOWN_ITEMS, CLS_DROPDOWN_BTN, CLS_RTE_CONTENT, CLS_TB_ITEM, CLS_TB_EXTENDED, CLS_TB_WRAP, CLS_POPUP, CLS_SEPARATOR, CLS_MINIMIZE, CLS_MAXIMIZE, CLS_BACK, CLS_SHOW, CLS_HIDE, CLS_VISIBLE, CLS_FOCUS, CLS_RM_WHITE_SPACE, CLS_IMGRIGHT, CLS_IMGLEFT, CLS_IMGCENTER, CLS_IMGBREAK, CLS_CAPTION, CLS_RTE_CAPTION, CLS_CAPINLINE, CLS_IMGINLINE, CLS_COUNT, CLS_WARNING, CLS_ERROR, CLS_ICONS, CLS_ACTIVE, CLS_EXPAND_OPEN, CLS_RTE_ELEMENTS, CLS_TB_BTN, CLS_HR_SEPARATOR, CLS_TB_IOS_FIX, CLS_TB_STATIC, CLS_FORMATS_TB_BTN, CLS_FONT_NAME_TB_BTN, CLS_FONT_SIZE_TB_BTN, CLS_FONT_COLOR_TARGET, CLS_BACKGROUND_COLOR_TARGET, CLS_COLOR_CONTENT, CLS_FONT_COLOR_DROPDOWN, CLS_BACKGROUND_COLOR_DROPDOWN, CLS_COLOR_PALETTE, CLS_FONT_COLOR_PICKER, CLS_BACKGROUND_COLOR_PICKER, CLS_RTE_READONLY, CLS_TABLE_SEL, CLS_TB_DASH_BOR, CLS_TB_ALT_BOR, CLS_TB_COL_RES, CLS_TB_ROW_RES, CLS_TB_BOX_RES, CLS_RTE_HIDDEN, CLS_RTE_PASTE_KEEP_FORMAT, CLS_RTE_PASTE_REMOVE_FORMAT, CLS_RTE_PASTE_PLAIN_FORMAT, CLS_RTE_PASTE_OK, CLS_RTE_PASTE_CANCEL, CLS_RTE_DIALOG_MIN_HEIGHT, CLS_RTE_RES_HANDLE, CLS_RTE_RES_EAST, CLS_RTE_IMAGE, CLS_RESIZE, CLS_IMG_FOCUS, CLS_RTE_DRAG_IMAGE, CLS_RTE_UPLOAD_POPUP, CLS_POPUP_OPEN, CLS_IMG_RESIZE, CLS_DROPAREA, CLS_IMG_INNER, CLS_UPLOAD_FILES, CLS_RTE_DIALOG_UPLOAD, CLS_RTE_RES_CNT, CLS_CUSTOM_TILE, CLS_NOCOLOR_ITEM, CLS_TABLE, CLS_TABLE_BORDER, CLS_RTE_TABLE_RESIZE, getIndex, hasClass, getDropDownValue, isIDevice, getFormattedFontSize, pageYOffset, getTooltipText, setToolbarStatus, getCollection, getTBarItemsIndex, updateUndoRedoStatus, dispatchEvent, parseHtml, getTextNodesUnder, toObjectLowerCase, getEditValue, updateTextNode, isEditableValueEmpty, decode, sanitizeHelper, convertToBlob, ServiceLocator, RendererFactory, EditorManager, IMAGE, TABLE, LINK, INSERT_ROW, INSERT_COLUMN, DELETEROW, DELETECOLUMN, REMOVETABLE, TABLEHEADER, TABLE_VERTICAL_ALIGN, ALIGNMENT_TYPE, INDENT_TYPE, DEFAULT_TAG, BLOCK_TAGS, IGNORE_BLOCK_TAGS, TABLE_BLOCK_TAGS, SELECTION_TYPE, INSERTHTML_TYPE, INSERT_TEXT_TYPE, CLEAR_TYPE, CLASS_IMAGE_RIGHT, CLASS_IMAGE_LEFT, CLASS_IMAGE_CENTER, CLASS_IMAGE_BREAK, CLASS_CAPTION, CLASS_RTE_CAPTION, CLASS_CAPTION_INLINE, CLASS_IMAGE_INLINE, Lists, markerClassName, DOMNode, Alignments, Indents, Formats, LinkCommand, InsertMethods, InsertTextExec, InsertHtmlExec, InsertHtml, IsFormatted, MsWordPaste, NodeCutter, ImageCommand, SelectionCommands, SelectionBasedExec, ClearFormatExec, UndoRedoManager, TableCommand, statusCollection, ToolbarStatus, NodeSelection, MarkdownParser, LISTS_COMMAND, selectionCommand, LINK_COMMAND, CLEAR_COMMAND, MD_TABLE, ClearFormat, MDLists, MDFormats, MarkdownSelection, UndoRedoCommands, MDSelectionFormats, MDLink, MDTable, markdownFormatTags, markdownSelectionTags, markdownListsTags, htmlKeyConfig, markdownKeyConfig, pasteCleanupGroupingTags, listConversionFilters, selfClosingTags, KEY_DOWN, ACTION, FORMAT_TYPE, KEY_DOWN_HANDLER, LIST_TYPE, KEY_UP_HANDLER, KEY_UP, MODEL_CHANGED_PLUGIN, MODEL_CHANGED, MS_WORD_CLEANUP_PLUGIN, MS_WORD_CLEANUP };
 //# sourceMappingURL=ej2-richtexteditor.es2015.js.map

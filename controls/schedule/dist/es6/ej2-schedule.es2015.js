@@ -4470,25 +4470,19 @@ class EventBase {
         return target;
     }
     getGroupIndexFromEvent(eventData) {
-        let groupOrder = [];
-        let groupIndex = 0;
-        for (let resourceData of this.parent.resourceBase.resourceCollection) {
-            groupOrder.push(eventData[resourceData.field]);
-        }
-        this.parent.resourceBase.lastResourceLevel.forEach((resource) => {
-            let count;
-            let order = resource.groupOrder;
-            order.forEach((resIndex, index) => {
-                let resValue = (groupOrder[index] instanceof Array) ? groupOrder[index][index] : groupOrder[index];
-                if (resValue === resIndex) {
-                    count = count ? count + 1 : 1;
-                }
-            });
-            if (order.length === count) {
-                groupIndex = resource.groupIndex;
+        let levelName = name || this.parent.resourceCollection.slice(-1)[0].name;
+        let levelIndex = this.parent.resourceCollection.length - 1;
+        let idField = this.parent.resourceCollection.slice(-1)[0].field;
+        let id = ((eventData[idField] instanceof Array) ?
+            eventData[idField][0] : eventData[idField]);
+        let resource = this.parent.resourceCollection.filter((e, index) => {
+            if (e.name === levelName) {
+                levelIndex = index;
+                return e;
             }
-        });
-        return groupIndex;
+            return null;
+        })[0];
+        return this.parent.resourceBase.getIndexFromResourceId(id, levelName, resource);
     }
     isAllDayAppointment(event) {
         let fieldMapping = this.parent.eventFields;
@@ -5393,7 +5387,8 @@ class QuickPopups {
     showQuickDialog(popupType, eventData) {
         this.quickDialog.dataBind();
         let eventProp = {
-            type: popupType, cancel: false, data: eventData || this.parent.activeEventData.event, element: this.quickDialog.element
+            type: popupType, cancel: false, data: extend({}, (eventData || this.parent.activeEventData.event), null, true),
+            element: this.quickDialog.element
         };
         this.parent.trigger(popupOpen, eventProp, (popupArgs) => {
             if (!popupArgs.cancel) {
@@ -6093,7 +6088,7 @@ class QuickPopups {
         let isEventPopup = this.quickPopup.element.querySelector('.' + EVENT_POPUP_CLASS);
         let popupType = this.parent.isAdaptive ? isEventPopup ? 'ViewEventInfo' : 'EditEventInfo' : 'QuickInfo';
         let eventProp = {
-            type: popupType, cancel: false, data: this.getDataFromTarget(target),
+            type: popupType, cancel: false, data: extend({}, this.getDataFromTarget(target), null, true),
             target: target, element: this.quickPopup.element
         };
         this.parent.trigger(popupOpen, eventProp, (popupArgs) => {
@@ -8206,7 +8201,7 @@ class EventWindow {
                 for (let j = 0; j < args.value.length; j++) {
                     let resourceModel = resourceCollection[i + 1];
                     let filter = resourceModel.dataSource.filter((data) => data[resourceModel.groupIDField] === args.value[j])[0];
-                    let groupId = filter[resourceCollection[i + 1].idField];
+                    let groupId = filter[resourceCollection[i + 1].groupIDField];
                     let filterRes = this.filterDatasource(i, groupId);
                     datasource = datasource.concat(filterRes);
                 }
@@ -10205,6 +10200,9 @@ class Crud {
                     let deletedEvents = eventCollections.follow.concat(eventCollections.occurrence);
                     switch (action) {
                         case 'EditSeries':
+                            if (childEvent[fields.startTime] > parentEvent[fields.startTime]) {
+                                this.processRecurrenceRule(parentEvent, childEvent);
+                            }
                             childEvent[fields.id] = parentEvent[fields.id];
                             childEvent[fields.recurrenceID] = null;
                             childEvent[fields.followingID] = null;
@@ -15304,7 +15302,14 @@ class TimelineEvent extends MonthEvent {
             if (this.parent.activeViewOptions.group.resources.length > 0) {
                 let resourceCell = this.parent.element.querySelector('.' + RESOURCE_COLUMN_TABLE_CLASS + ' ' + 'tbody td[data-group-index="' +
                     cell.getAttribute('data-group-index') + '"]');
-                setStyleAttribute(resourceCell, { 'height': height + 'px' });
+                if (resourceCell) {
+                    setStyleAttribute(resourceCell, { 'height': height + 'px' });
+                }
+            }
+            let monthHeader = this.parent.element.querySelector('.e-month-header-wrapper table tr:nth-child(' +
+                (cell.parentElement.rowIndex + 1) + ') td');
+            if (monthHeader) {
+                setStyleAttribute(monthHeader, { 'height': height + 'px' });
             }
         }
     }
@@ -19861,7 +19866,7 @@ class TimelineHeaderRow {
             let jsDate = +new Date(1970, 0, 1);
             let tzOffsetDiff = d.getTimezoneOffset() - new Date(1970, 0, 1).getTimezoneOffset();
             let key = Math.ceil(((((+d - jsDate) - (tzOffsetDiff * 60 * 1000)) / MS_PER_DAY) + new Date(jsDate).getDay() + 1) / 7);
-            if (this.parent.firstDayOfWeek && this.parent.firstDayOfWeek > new Date(d).getDay()) {
+            if (this.parent.firstDayOfWeek && this.parent.firstDayOfWeek > new Date(+d).getDay()) {
                 key = key - 1;
             }
             result[key] = result[key] || [];
@@ -20325,14 +20330,21 @@ class YearEvent extends TimelineEvent {
     }
     renderAppointments() {
         this.fields = this.parent.eventFields;
-        let eventWrapper = [].slice.call(this.parent.element.querySelectorAll('.' + APPOINTMENT_WRAPPER_CLASS));
+        let elementSelector = '.' + APPOINTMENT_WRAPPER_CLASS + ',.' + MORE_INDICATOR_CLASS;
+        let eventWrapper = [].slice.call(this.parent.element.querySelectorAll(elementSelector));
         [].slice.call(eventWrapper).forEach((node) => remove(node));
         this.renderedEvents = [];
         if (this.parent.currentView !== 'TimelineYear') {
             this.yearViewEvents();
         }
         else {
-            this.timelineYearViewEvents();
+            this.removeCellHeight();
+            if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
+                this.timelineResourceEvents();
+            }
+            else {
+                this.timelineYearViewEvents();
+            }
         }
         this.parent.notify(contentReady, {});
     }
@@ -20362,13 +20374,13 @@ class YearEvent extends TimelineEvent {
     timelineYearViewEvents() {
         let workCell = this.parent.element.querySelector('.' + WORK_CELLS_CLASS);
         this.cellWidth = workCell.offsetWidth;
-        this.cellHeight = workCell.offsetHeight;
         this.cellHeader = getOuterHeight(workCell.querySelector('.' + DATE_HEADER_CLASS));
         let eventTable = this.parent.element.querySelector('.' + EVENT_TABLE_CLASS);
         this.eventHeight = getElementHeightFromClass(eventTable, APPOINTMENT_CLASS);
         let wrapperCollection = [].slice.call(this.parent.element.querySelectorAll('.' + APPOINTMENT_CONTAINER_CLASS));
         for (let row = 0; row < 12; row++) {
             let wrapper = wrapperCollection[row];
+            let td = row + 1;
             let eventWrapper = createElement('div', { className: APPOINTMENT_WRAPPER_CLASS });
             wrapper.appendChild(eventWrapper);
             let monthStart = new Date(this.parent.selectedDate.getFullYear(), row, 1);
@@ -20380,6 +20392,7 @@ class YearEvent extends TimelineEvent {
                 let rightValue;
                 if (this.parent.activeViewOptions.orientation === 'Vertical') {
                     let wrapper = wrapperCollection[dayIndex];
+                    td = dayIndex + 1;
                     let eventWrapper = wrapper.querySelector('.' + APPOINTMENT_WRAPPER_CLASS);
                     if (!eventWrapper) {
                         eventWrapper = createElement('div', { className: APPOINTMENT_WRAPPER_CLASS });
@@ -20391,6 +20404,8 @@ class YearEvent extends TimelineEvent {
                     this.parent.enableRtl ? (rightValue = ((dayIndex + monthStart.getDate()) - 1) * this.cellWidth) :
                         (leftValue = ((dayIndex + monthStart.getDate()) - 1) * this.cellWidth);
                 }
+                let rowTd = this.parent.element.querySelector(`.e-content-wrap tr:nth-child(${td}) td`);
+                this.cellHeight = rowTd.offsetHeight;
                 let dayStart = resetTime(new Date(monthStart.getTime()));
                 let dayEnd = addDays(new Date(dayStart.getTime()), 1);
                 let dayEvents = this.parent.eventBase.filterEvents(dayStart, dayEnd);
@@ -20406,13 +20421,15 @@ class YearEvent extends TimelineEvent {
                             continue;
                         }
                     }
-                    if (this.cellHeight > availedHeight) {
-                        this.renderEvent(eventWrapper, eventData, row, leftValue, rightValue, overlapIndex, dayIndex);
+                    let isRowAutoHeight = this.parent.rowAutoHeight && this.parent.activeViewOptions.orientation === 'Horizontal';
+                    if (isRowAutoHeight || this.cellHeight > availedHeight) {
+                        this.renderEvent(eventWrapper, eventData, row, leftValue, rightValue, dayIndex);
+                        this.updateCellHeight(rowTd, availedHeight);
                         isSpannedCollection.push(eventData);
                     }
                     else {
                         let moreIndex = this.parent.activeViewOptions.orientation === 'Horizontal' ? row : dayIndex;
-                        this.renderMoreIndicatior(eventWrapper, count - index, dayStart, moreIndex, leftValue, rightValue, dayEvents);
+                        this.renderMoreIndicatior(eventWrapper, count - index, dayStart, moreIndex, leftValue, rightValue);
                         if (this.parent.activeViewOptions.orientation === 'Horizontal') {
                             for (let a = index; a < dayEvents.length; a++) {
                                 let moreData = extend({}, dayEvents[a], { Index: overlapIndex + a }, true);
@@ -20431,25 +20448,86 @@ class YearEvent extends TimelineEvent {
             }
         }
     }
-    renderEvent(wrapper, eventData, row, left, right, overlapCount, rowIndex) {
+    timelineResourceEvents() {
+        let workCell = this.parent.element.querySelector('.' + WORK_CELLS_CLASS);
+        this.cellWidth = workCell.offsetWidth;
+        this.cellHeader = 0;
+        let eventTable = this.parent.element.querySelector('.' + EVENT_TABLE_CLASS);
+        this.eventHeight = getElementHeightFromClass(eventTable, APPOINTMENT_CLASS);
+        let wrapperCollection = [].slice.call(this.parent.element.querySelectorAll('.' + APPOINTMENT_CONTAINER_CLASS));
+        let resources = this.parent.uiStateValues.isGroupAdaptive ?
+            [this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex]] : this.parent.resourceBase.lastResourceLevel;
+        if (this.parent.activeViewOptions.orientation === 'Horizontal') {
+            for (let month = 0; month < 12; month++) {
+                resources.forEach((resource, index) => {
+                    this.renderedEvents = [];
+                    this.renderResourceEvent(wrapperCollection[index], resource, month, index);
+                });
+            }
+        }
+        else {
+            resources.forEach((resource, index) => {
+                this.renderedEvents = [];
+                for (let month = 0; month < 12; month++) {
+                    this.renderResourceEvent(wrapperCollection[index], resource, month, index);
+                }
+            });
+        }
+    }
+    renderResourceEvent(wrapper, resource, month, index) {
+        let eventWrapper = createElement('div', { className: APPOINTMENT_WRAPPER_CLASS });
+        wrapper.appendChild(eventWrapper);
+        let monthStart = firstDateOfMonth(new Date(this.parent.selectedDate.getFullYear(), month, 1));
+        let monthEnd = addDays(lastDateOfMonth(new Date(monthStart.getTime())), 1);
+        let eventDatas = this.parent.eventBase.filterEvents(monthStart, monthEnd, undefined, resource);
+        let rowIndex = this.parent.activeViewOptions.orientation === 'Vertical' ? index : month;
+        let td = this.parent.element.querySelector(`.e-content-wrap tr:nth-child(${rowIndex + 1}) td`);
+        this.cellHeight = td.offsetHeight;
+        for (let a = 0; a < eventDatas.length; a++) {
+            let data = eventDatas[a];
+            let eventData = extend({}, data, null, true);
+            let overlapIndex = this.getIndex(eventData[this.fields.startTime]);
+            eventData.Index = overlapIndex;
+            let availedHeight = this.cellHeader + (this.eventHeight * (a + 1)) + EVENT_GAP$2 + this.moreIndicatorHeight;
+            let leftValue = (this.parent.activeViewOptions.orientation === 'Vertical') ?
+                month * this.cellWidth : index * this.cellWidth;
+            if (this.parent.rowAutoHeight || this.cellHeight > availedHeight) {
+                this.renderEvent(eventWrapper, eventData, month, leftValue, null, index);
+                this.updateCellHeight(td, availedHeight);
+            }
+            else {
+                let moreIndex = this.parent.activeViewOptions.orientation === 'Horizontal' ? month : index;
+                this.renderMoreIndicatior(eventWrapper, eventDatas.length - a, monthStart, moreIndex, leftValue, index);
+                if (this.parent.activeViewOptions.orientation === 'Horizontal') {
+                    for (let i = index; i < eventDatas.length; i++) {
+                        let moreData = extend({}, eventDatas[i], { Index: overlapIndex + i }, true);
+                        this.renderedEvents.push(moreData);
+                    }
+                }
+                break;
+            }
+        }
+    }
+    renderEvent(wrapper, eventData, row, left, right, rowIndex) {
         let eventObj = this.isSpannedEvent(eventData, row);
         let wrap = this.createEventElement(eventObj);
         let width;
-        let top;
+        let index;
         if (eventObj[this.fields.isAllDay]) {
             eventObj[this.fields.endTime] = new Date(eventObj[this.fields.startTime].getTime());
         }
         if (this.parent.activeViewOptions.orientation === 'Horizontal') {
+            index = row + 1;
             width = eventObj.isSpanned.count * this.cellWidth;
-            top = this.cellHeader + (this.eventHeight * overlapCount) + EVENT_GAP$2 + (this.cellHeight * row);
         }
         else {
+            index = rowIndex + 1;
             width = this.cellWidth;
-            top = (this.cellHeight * rowIndex) + this.cellHeader + (this.eventHeight * overlapCount) + EVENT_GAP$2;
         }
+        let rowTd = this.parent.element.querySelector(`.e-content-wrap tr:nth-child(${index}) td`);
+        let top = rowTd.offsetTop + this.cellHeader + (this.eventHeight * eventObj.Index) + EVENT_GAP$2;
         setStyleAttribute(wrap, {
-            'width': width + 'px', 'height': this.eventHeight + 'px', 'left': left + 'px',
-            'right': right + 'px', 'top': top + 'px'
+            'width': width + 'px', 'height': this.eventHeight + 'px', 'left': left + 'px', 'right': right + 'px', 'top': top + 'px'
         });
         let args = { data: eventObj, element: wrap, cancel: false, type: 'event' };
         this.parent.trigger(eventRendered, args, (eventArgs) => {
@@ -20462,7 +20540,7 @@ class YearEvent extends TimelineEvent {
             }
         });
     }
-    renderMoreIndicatior(wrapper, count, startDate, row, left, right, events) {
+    renderMoreIndicatior(wrapper, count, startDate, row, left, right, index) {
         let endDate = addDays(new Date(startDate.getTime()), 1);
         let moreIndicator = this.getMoreIndicatorElement(count, startDate, endDate);
         let rowTr = this.parent.element.querySelector(`.e-content-wrap tr:nth-child(${row + 1})`);
@@ -20470,6 +20548,9 @@ class YearEvent extends TimelineEvent {
         left = (Math.floor(left / this.cellWidth) * this.cellWidth);
         right = (Math.floor(right / this.cellWidth) * this.cellWidth);
         setStyleAttribute(moreIndicator, { 'width': this.cellWidth + 'px', 'left': left + 'px', 'right': right + 'px', 'top': top + 'px' });
+        if (!isNullOrUndefined(index)) {
+            moreIndicator.setAttribute('data-group-index', index.toString());
+        }
         wrapper.appendChild(moreIndicator);
         EventHandler.add(moreIndicator, 'click', this.moreIndicatorClick, this);
     }
@@ -20545,7 +20626,7 @@ class YearEvent extends TimelineEvent {
         let eventData = extend({}, eventObj, null, true);
         let eventStart = eventData[this.fields.startTime];
         let eventEnd = eventData[this.fields.endTime];
-        let isSpanned = { isLeft: false, isRight: false };
+        let isSpanned = { isLeft: false, isRight: false, count: 1 };
         if (eventStart.getTime() < monthStart.getTime()) {
             eventData[this.fields.startTime] = monthStart;
             isSpanned.isLeft = true;
@@ -20554,8 +20635,10 @@ class YearEvent extends TimelineEvent {
             eventData[this.fields.endTime] = monthEnd;
             isSpanned.isRight = true;
         }
-        isSpanned.count = Math.ceil((eventData[this.fields.endTime].getTime() -
-            eventData[this.fields.startTime].getTime()) / MS_PER_DAY);
+        if (this.parent.activeViewOptions.group.resources.length === 0) {
+            isSpanned.count = Math.ceil((eventData[this.fields.endTime].getTime() -
+                eventData[this.fields.startTime].getTime()) / MS_PER_DAY);
+        }
         eventData.isSpanned = isSpanned;
         return eventData;
     }
@@ -20570,6 +20653,13 @@ class YearEvent extends TimelineEvent {
             }
         }
         return appointmentsList;
+    }
+    removeCellHeight() {
+        let elementSelector = `.${MONTH_HEADER_WRAPPER} tbody tr,.${RESOURCE_COLUMN_TABLE_CLASS} tbody tr,.${CONTENT_TABLE_CLASS} tbody tr`;
+        let rows = [].slice.call(this.element.querySelectorAll(elementSelector));
+        for (let row of rows) {
+            row.firstElementChild.style.height = '';
+        }
     }
 }
 
@@ -20758,6 +20848,9 @@ class Year extends ViewBase {
         let count;
         if (type === 'row') {
             count = this.parent.activeViewOptions.orientation === 'Horizontal' ? monthCount : maxCount;
+            if (!this.parent.activeViewOptions.timeScale.enable && this.parent.activeViewOptions.orientation === 'Vertical') {
+                count = 1;
+            }
         }
         else {
             count = this.parent.activeViewOptions.orientation === 'Horizontal' ? maxCount : monthCount;
@@ -20781,9 +20874,10 @@ class Year extends ViewBase {
         if (headerWrapper) {
             headerWrapper.firstElementChild.scrollLeft = target.scrollLeft;
         }
-        let monthWrapper = this.element.querySelector('.' + MONTH_HEADER_WRAPPER);
-        if (monthWrapper) {
-            monthWrapper.scrollTop = target.scrollTop;
+        let scrollTopSelector = `.${MONTH_HEADER_WRAPPER},.${RESOURCE_COLUMN_WRAP_CLASS}`;
+        let scrollTopElement = this.element.querySelector(scrollTopSelector);
+        if (scrollTopElement) {
+            scrollTopElement.scrollTop = target.scrollTop;
         }
     }
     onScrollUiUpdate(args) {
@@ -20796,15 +20890,14 @@ class Year extends ViewBase {
         if (contentWrapper) {
             contentWrapper.style.height = formatUnit(height);
         }
-        let leftPanelElement = this.element.querySelector('.' + MONTH_HEADER_WRAPPER);
+        let leftPanelSelector = `.${MONTH_HEADER_WRAPPER},.${RESOURCE_COLUMN_WRAP_CLASS}`;
+        let leftPanelElement = this.element.querySelector(leftPanelSelector);
         if (leftPanelElement) {
             leftPanelElement.style.height = formatUnit(height - this.getScrollXIndent(contentWrapper));
         }
         if (!this.parent.isAdaptive && headerWrapper) {
             let scrollBarWidth = getScrollBarWidth();
             // tslint:disable:no-any
-            headerWrapper.firstElementChild.style[args.cssProperties.rtlBorder] = '';
-            headerWrapper.style[args.cssProperties.rtlPadding] = '';
             if (contentWrapper.offsetWidth - contentWrapper.clientWidth > 0) {
                 headerWrapper.firstElementChild.style[args.cssProperties.border] = scrollBarWidth > 0 ? '1px' : '0px';
                 headerWrapper.style[args.cssProperties.padding] = scrollBarWidth > 0 ? scrollBarWidth - 1 + 'px' : '0px';
@@ -20815,6 +20908,7 @@ class Year extends ViewBase {
             }
             // tslint:enable:no-any
         }
+        this.setColWidth(this.getContentAreaElement());
     }
     startDate() {
         let startDate = new Date(this.parent.selectedDate.getFullYear(), 0, 1);
@@ -20825,7 +20919,11 @@ class Year extends ViewBase {
         return addDays(getWeekLastDate(endDate, this.parent.firstDayOfWeek), 1);
     }
     getEndDateFromStartDate(start) {
-        return addDays(new Date(start.getTime()), 1);
+        let date = new Date(start.getTime());
+        if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
+            date = lastDateOfMonth(date);
+        }
+        return addDays(new Date(date.getTime()), 1);
     }
     getNextPreviousDate(type) {
         return addYears(this.parent.selectedDate, ((type === 'next') ? 1 : -1));
@@ -20912,58 +21010,140 @@ class TimelineYear extends Year {
     renderHeader(headerWrapper) {
         let tr = createElement('tr');
         headerWrapper.appendChild(tr);
-        tr.appendChild(createElement('td', { className: LEFT_INDENT_CLASS }));
+        if (this.parent.activeViewOptions.orientation === 'Vertical' && this.parent.activeViewOptions.group.resources.length > 0 &&
+            !this.parent.uiStateValues.isGroupAdaptive) {
+            this.parent.resourceBase.renderResourceHeaderIndent(tr);
+        }
+        else {
+            let leftHeaderCells = createElement('td', { className: LEFT_INDENT_CLASS });
+            tr.appendChild(leftHeaderCells);
+            leftHeaderCells.appendChild(this.renderResourceHeader(LEFT_INDENT_WRAP_CLASS));
+        }
         let td = createElement('td');
         tr.appendChild(td);
         let container = createElement('div', { className: DATE_HEADER_CONTAINER_CLASS });
         td.appendChild(container);
-        let wrapper = createElement('div', { className: DATE_HEADER_WRAP_CLASS });
-        container.appendChild(wrapper);
-        let table = this.createTableLayout();
-        wrapper.appendChild(table);
-        table.appendChild(this.createTableColGroup(this.columnCount));
-        let innerTr = createElement('tr');
-        table.querySelector('tbody').appendChild(innerTr);
-        for (let column = 0; column < this.columnCount; column++) {
-            let innerTd = createElement('td', { className: HEADER_CELLS_CLASS });
-            if (this.parent.activeViewOptions.orientation === 'Horizontal') {
-                innerTd.innerHTML = `<span>${this.parent.getDayNames('abbreviated')[column % 7]}</span>`;
-            }
-            else {
-                let date = new Date(this.parent.selectedDate.getFullYear(), column, 1);
-                innerTd.innerHTML = `<span>${this.getMonthName(date)}</span>`;
-                innerTd.setAttribute('data-date', date.getTime().toString());
-            }
-            innerTr.appendChild(innerTd);
-            this.parent.trigger(renderCell, { elementType: 'headerCells', element: innerTd });
+        if (this.parent.activeViewOptions.orientation === 'Horizontal' && this.parent.activeViewOptions.group.resources.length > 0 &&
+            !this.parent.uiStateValues.isGroupAdaptive) {
+            container.appendChild(this.renderResourceHeader(DATE_HEADER_WRAP_CLASS));
+            this.columnCount = this.colLevels.slice(-1)[0].length;
         }
+        else {
+            let wrapper = createElement('div', { className: DATE_HEADER_WRAP_CLASS });
+            container.appendChild(wrapper);
+            let table = this.createTableLayout();
+            wrapper.appendChild(table);
+            table.appendChild(this.createTableColGroup(this.columnCount));
+            let innerTr = createElement('tr');
+            table.querySelector('tbody').appendChild(innerTr);
+            for (let column = 0; column < this.columnCount; column++) {
+                let innerTd = createElement('td', { className: HEADER_CELLS_CLASS });
+                if (this.parent.activeViewOptions.orientation === 'Horizontal') {
+                    innerTd.innerHTML = `<span>${this.parent.getDayNames('abbreviated')[column % 7]}</span>`;
+                }
+                else {
+                    let date = new Date(this.parent.selectedDate.getFullYear(), column, 1);
+                    innerTd.innerHTML = `<span>${this.getMonthName(date)}</span>`;
+                    innerTd.setAttribute('data-date', date.getTime().toString());
+                }
+                innerTr.appendChild(innerTd);
+                this.parent.trigger(renderCell, { elementType: 'headerCells', element: innerTd });
+            }
+        }
+    }
+    renderResourceHeader(className) {
+        let wrap = createElement('div', { className: className });
+        let tbl = this.createTableLayout();
+        wrap.appendChild(tbl);
+        let trEle = createElement('tr');
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            this.colLevels = this.generateColumnLevels();
+        }
+        else {
+            let colData = [{ className: [HEADER_CELLS_CLASS], type: 'headerCell' }];
+            this.colLevels = [colData];
+        }
+        for (let col of this.colLevels) {
+            let ntr = trEle.cloneNode();
+            let count = className === DATE_HEADER_WRAP_CLASS ? col : [col[0]];
+            for (let c of count) {
+                let tdEle = createElement('td');
+                if (c.className) {
+                    addClass([tdEle], c.className);
+                }
+                if (className === DATE_HEADER_WRAP_CLASS) {
+                    if (c.template) {
+                        append(c.template, tdEle);
+                    }
+                    if (c.colSpan) {
+                        tdEle.setAttribute('colspan', c.colSpan.toString());
+                    }
+                    this.setResourceHeaderContent(tdEle, c);
+                }
+                let args = { elementType: c.type, element: tdEle, date: c.date, groupIndex: c.groupIndex };
+                this.parent.trigger(renderCell, args);
+                ntr.appendChild(tdEle);
+            }
+            tbl.querySelector('tbody').appendChild(ntr);
+        }
+        if (className === DATE_HEADER_WRAP_CLASS) {
+            tbl.appendChild(this.createTableColGroup(this.colLevels.slice(-1)[0].length));
+        }
+        return wrap;
     }
     renderContent(contentWrapper) {
         let tr = createElement('tr');
         contentWrapper.appendChild(tr);
         let firstTd = createElement('td');
         let lastTd = createElement('td');
-        append([firstTd, lastTd], tr);
-        let monthWrapper = createElement('div', { className: MONTH_HEADER_WRAPPER });
-        firstTd.appendChild(monthWrapper);
-        monthWrapper.appendChild(this.createTableLayout());
+        let tdCollection = [];
+        let monthTBody;
+        if (this.parent.activeViewOptions.orientation === 'Vertical' && this.parent.activeViewOptions.group.resources.length > 0 &&
+            !this.parent.uiStateValues.isGroupAdaptive) {
+            tdCollection.push(firstTd);
+            firstTd.appendChild(this.parent.resourceBase.createResourceColumn());
+            this.rowCount = this.parent.resourceBase.lastResourceLevel.length;
+        }
+        else {
+            tdCollection.push(firstTd);
+            let monthWrapper = createElement('div', { className: MONTH_HEADER_WRAPPER });
+            firstTd.appendChild(monthWrapper);
+            monthWrapper.appendChild(this.createTableLayout());
+            monthTBody = monthWrapper.querySelector('tbody');
+        }
+        tdCollection.push(lastTd);
+        append(tdCollection, tr);
         let content = createElement('div', { className: CONTENT_WRAP_CLASS });
         lastTd.appendChild(content);
-        content.appendChild(this.createTableLayout(CONTENT_TABLE_CLASS));
+        let contentTable = this.createTableLayout(CONTENT_TABLE_CLASS);
+        content.appendChild(contentTable);
         let eventWrapper = createElement('div', { className: EVENT_TABLE_CLASS });
         content.appendChild(eventWrapper);
-        let monthTBody = monthWrapper.querySelector('tbody');
-        let contentTBody = content.querySelector('tbody');
+        let contentTBody = contentTable.querySelector('tbody');
+        if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
+            if (this.parent.rowAutoHeight) {
+                addClass([contentTable], AUTO_HEIGHT);
+            }
+            let colCount = this.parent.activeViewOptions.orientation === 'Horizontal' ? this.colLevels.slice(-1)[0].length : 12;
+            contentTable.appendChild(this.createTableColGroup(colCount));
+            this.renderResourceContent(eventWrapper, monthTBody, contentTBody);
+        }
+        else {
+            contentTable.appendChild(this.createTableColGroup(this.columnCount));
+            this.renderDefaultContent(eventWrapper, monthTBody, contentTBody);
+        }
+    }
+    renderDefaultContent(wrapper, monthBody, contentBody) {
         for (let month = 0; month < this.rowCount; month++) {
-            eventWrapper.appendChild(createElement('div', { className: APPOINTMENT_CONTAINER_CLASS }));
+            wrapper.appendChild(createElement('div', { className: APPOINTMENT_CONTAINER_CLASS }));
             let monthDate = new Date(this.parent.selectedDate.getFullYear(), month, 1);
             let monthStart = this.parent.calendarUtil.getMonthStartDate(new Date(monthDate.getTime()));
             let monthEnd = this.parent.calendarUtil.getMonthEndDate(new Date(monthDate.getTime()));
             let tr = createElement('tr', { attrs: { 'role': 'row' } });
             let monthTr = tr.cloneNode();
-            monthTBody.appendChild(monthTr);
+            monthBody.appendChild(monthTr);
             let contentTr = tr.cloneNode();
-            contentTBody.appendChild(contentTr);
+            contentBody.appendChild(contentTr);
             let monthTd = createElement('td', { className: MONTH_HEADER_CLASS, attrs: { 'role': 'gridcell' } });
             if (this.parent.activeViewOptions.orientation === 'Horizontal') {
                 monthTd.setAttribute('data-date', monthDate.getTime().toString());
@@ -21035,6 +21215,63 @@ class TimelineYear extends Year {
                 }
                 this.parent.trigger(renderCell, { elementType: 'workCells', element: td, date: date });
             }
+        }
+    }
+    renderResourceContent(wrapper, monthBody, contentBody) {
+        for (let row = 0; row < this.rowCount; row++) {
+            wrapper.appendChild(createElement('div', { className: APPOINTMENT_CONTAINER_CLASS }));
+            let tr = createElement('tr', { attrs: { 'role': 'row' } });
+            contentBody.appendChild(tr);
+            let resData;
+            if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
+                resData = this.parent.resourceBase.lastResourceLevel[row];
+            }
+            let monthDate = new Date(this.parent.selectedDate.getFullYear(), row, 1);
+            let date = this.parent.calendarUtil.getMonthStartDate(new Date(monthDate.getTime()));
+            if (this.parent.activeViewOptions.orientation === 'Horizontal') {
+                let monthTr = tr.cloneNode();
+                monthBody.appendChild(monthTr);
+                let monthTd = createElement('td', {
+                    className: MONTH_HEADER_CLASS,
+                    innerHTML: `<span>${this.getMonthName(monthDate)}</span>`,
+                    attrs: { 'role': 'gridcell', 'data-date': date.getTime().toString() }
+                });
+                monthTr.appendChild(monthTd);
+            }
+            for (let month = 0; month < this.columnCount; month++) {
+                let classList$$1 = [];
+                let groupIndex = row;
+                if (this.parent.activeViewOptions.orientation === 'Vertical') {
+                    classList$$1 = classList$$1.concat(resData.className);
+                    if (classList$$1.indexOf(RESOURCE_PARENT_CLASS) > -1) {
+                        classList$$1.push(RESOURCE_GROUP_CELLS_CLASS);
+                    }
+                    else {
+                        classList$$1.push(WORKDAY_CLASS);
+                    }
+                    monthDate = new Date(this.parent.selectedDate.getFullYear(), month, 1);
+                    date = this.parent.calendarUtil.getMonthStartDate(new Date(monthDate.getTime()));
+                }
+                else {
+                    groupIndex = this.colLevels.slice(-1)[0][month].groupIndex;
+                    classList$$1.push(WORKDAY_CLASS);
+                }
+                let td = createElement('td', {
+                    className: WORK_CELLS_CLASS,
+                    attrs: {
+                        'role': 'gridcell', 'aria-selected': 'false',
+                        'data-date': date.getTime().toString()
+                    }
+                });
+                addClass([td], classList$$1);
+                td.setAttribute('data-group-index', groupIndex.toString());
+                this.wireEvents(td, 'cell');
+                tr.appendChild(td);
+                this.parent.trigger(renderCell, { elementType: 'workCells', element: td, date: date });
+            }
+        }
+        if (this.parent.activeViewOptions.orientation === 'Vertical') {
+            this.collapseRows(this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS));
         }
     }
 }

@@ -7878,8 +7878,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 }
             }
             if (newProp.flip !== undefined) { actualObject.flip = newProp.flip; flipConnector(actualObject); }
-            if (this.lineRoutingModule && this.diagramActions && (this.constraints & DiagramConstraints.LineRouting) &&
-                !(this.diagramActions & DiagramAction.ToolAction)) {
+            if (actualObject.type === 'Orthogonal' && this.lineRoutingModule && this.diagramActions &&
+                (this.constraints & DiagramConstraints.LineRouting) && !(this.diagramActions & DiagramAction.ToolAction)) {
                 this.lineRoutingModule.renderVirtualRegion(this, true);
                 this.lineRoutingModule.refreshConnectorSegments(this, actualObject, false);
             }

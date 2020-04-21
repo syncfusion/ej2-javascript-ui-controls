@@ -2268,4 +2268,45 @@ describe('Check for case sensitive ', ()=>{
             actionComplete = null;
         });
     });
+    describe('EJ2-38480 - Filterbar focusing is not workig properly, while using checkboxmode as resetonrowclick', () => {
+        let gridObj: Grid;
+        let actionComplete: (args: any) => void;
+        let filterBarEle: HTMLInputElement;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: normalData,
+                    allowFiltering: true,
+                    selectionSettings: { checkboxMode: 'ResetOnRowClick' },
+                    columns: [
+                        { type: 'CheckBox', width: 120 },
+                        { field: 'OrderID', headerText: 'Order ID', width: 120 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 120 },
+                        { field: 'Freight', headerText: 'Freight', width: 120 }
+                    ],
+                    actionComplete: actionComplete
+                }, done);
+        });
+        it('Ensure filterbar input element focus', (done: Function) => {
+            actionComplete = function (args) {
+                let fieldName: string = args.currentFilterObject.field;
+                let input = (gridObj.filterModule as any).getFilterBarElement(fieldName);
+                expect(input.classList.contains('e-focus')).toBeTruthy();
+                expect(input.selectionEnd).toBe(5);
+                expect(input.selectionEnd).not.toBe(0);
+                args.actionComplete = null;
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.dataBind();
+            filterBarEle = gridObj.element.querySelector('#CustomerID_filterBarcell');
+            gridObj.focusModule.onClick({ target: filterBarEle }, true);
+            filterColumn(gridObj, 'CustomerID', 'VINET');
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+            actionComplete = null;
+        });
+    });
 });

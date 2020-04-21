@@ -121,4 +121,17 @@ export class ByteArray {
     public get count(): number {
         return this.buffer.byteLength;
     }
+    /**
+     * 'readNextTwoBytes' stream 
+     * @hidden
+     * @private
+     */
+    public readNextTwoBytes(stream: ByteArray): number {
+        let data : number = stream.readByte(this.position);
+        this.position++;
+        data <<= 8;
+        data |= stream.readByte(this.position);
+        this.position++;
+        return data;
+    }
 }

@@ -433,7 +433,7 @@ export class SheetTabs {
         this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
         this.tabInstance.removeTab(activeSheetIdx);
         let activeIndex: number = this.parent.skipHiddenSheets(this.tabInstance.selectedItem);
-        this.parent.activeSheetIndex = activeIndex;
+        this.parent.setProperties({ 'activeSheetIndex': activeIndex }, true);
         this.parent.renderModule.refreshSheet();
         this.tabInstance.selectedItem = activeIndex; this.tabInstance.dataBind();
         this.updateDropDownItems(activeIndex);

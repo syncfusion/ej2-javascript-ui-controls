@@ -233,6 +233,7 @@ export class TreeMapSelection {
         let eventArgs: IItemSelectedEventArgs;
         let eventBlazorArgs: Object;
         let treemap: TreeMap = this.treemap;
+        treemap.levelSelection = [];
         let items: Object[] = []; let targetId: string = targetEle.id; let labelText : string = targetEle.innerHTML;
         let item: Object; let selectionElements: Element[] = []; let opacity: string;
         let treeMapElement: Element; let element: Element; let orders: string[];
@@ -274,6 +275,7 @@ export class TreeMapSelection {
                     item = treemap.layout.renderItems[element.id.split('_')[6]];
                     if (orders.indexOf(item['levelOrderName']) > -1) {
                         selectionElements.push(element);
+                        treemap.levelSelection.push(element.id);
                         items.push(item);
                     }
                 }

@@ -148,7 +148,10 @@ export class Render {
         if (this.parent.frozenColumns > this.parent.treeColumnIndex &&
             grid.getColumnIndexByUid(args.column.uid) === this.parent.frozenColumns + 1) {
                 addClass([args.cell], 'e-gridrowindex' + index + 'level' + data.level);
-        }
+        } else if (this.parent.frozenColumns <= this.parent.treeColumnIndex &&
+            grid.getColumnIndexByUid(args.column.uid) === this.parent.frozenColumns - 1) {
+                addClass([args.cell], 'e-gridrowindex' + index + 'level' + data.level);
+            }
         if (!isNullOrUndefined(column) && column.showCheckbox) {
             this.parent.notify('columnCheckbox', args);
             if (this.parent.allowTextWrap) {

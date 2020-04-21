@@ -189,7 +189,7 @@ export class NormalEdit {
     protected updateRow(index: number, data: Object): void {
         let gObj: IGrid = this.parent;
         let args: SaveEventArgs = {
-            requestType: 'save', type: events.actionBegin, data: data, cancel: false,
+            requestType: 'save', action: 'edit', type: events.actionBegin, data: data, cancel: false,
             previousData: gObj.getCurrentViewRecords()[index],
             row: gObj.getRowByIndex(index)
         };

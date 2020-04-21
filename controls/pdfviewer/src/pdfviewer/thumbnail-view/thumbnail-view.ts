@@ -229,7 +229,7 @@ export class ThumbnailView {
                 // tslint:disable-next-line:max-line-length
                 this.thumbnailImage = createElement('img', { id: this.pdfViewer.element.id + '_thumbnail_image_' + i, className: 'e-pv-thumbnail-image' }) as HTMLImageElement;
                 this.thumbnailImage.src = data.thumbnailImage[i];
-                if (this.pdfViewerBase.pageSize[i].height < this.pdfViewerBase.pageSize[i].width) {
+                if (this.pdfViewerBase.pageSize[i] && (this.pdfViewerBase.pageSize[i].height < this.pdfViewerBase.pageSize[i].width)) {
                     this.thumbnailImage.style.height = '86px';
                     this.thumbnailImage.style.width = '126px';
                     thumbnail.style.height = '100px';

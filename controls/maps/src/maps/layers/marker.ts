@@ -48,7 +48,7 @@ export class Marker {
         });
         let markerTemplateEle: HTMLElement = createElement('div', {
             id: this.maps.element.id + '_LayerIndex_' + layerIndex + '_Markers_Template_Group',
-            className: 'template',
+            className: this.maps.element.id + '_template',
             styles: 'overflow: hidden; position: absolute;pointer-events: none;' +
                 'top:' + this.maps.mapAreaRect.y + 'px;' +
                 'left:' + this.maps.mapAreaRect.x + 'px;' +
@@ -323,11 +323,14 @@ export class Marker {
                 this.maps.mapsTooltipModule.tooltipTargetID.indexOf('_MarkerIndex_') > -1) {
                 removeElement(this.maps.element.id + '_mapsTooltip');
             }
-            if (this.sameMarkerData.length > 0) {
+            if (this.sameMarkerData.length > 0 && !this.maps.markerClusterExpandCheck) {
+              this.maps.markerClusterExpandCheck = true;
                 mergeSeparateCluster(this.sameMarkerData, this.maps, this.markerSVGObject);
-            }
-            this.sameMarkerData = options.clusterCollection;
-            clusterSeparate(this.sameMarkerData, this.maps, this.markerSVGObject, true);
+            }  else {
+                this.sameMarkerData = options.clusterCollection;
+                this.maps.markerClusterExpandCheck = false;
+                clusterSeparate(this.sameMarkerData, this.maps, this.markerSVGObject, true);
+                }
         }
         let eventArgs: IMarkerClusterClickEventArgs = {
             cancel: false, name: markerClusterClick, data: options, maps: this.maps,

@@ -1,6 +1,6 @@
 import {
     IGrid, ExcelExportProperties, ExcelHeader, ExcelFooter, ExcelRow,
-    ExcelCell, ExcelTheme, ExcelHeaderQueryCellInfoEventArgs, ExcelStyle, ExportDetailDataBoundEventArgs
+    ExcelCell, ExcelTheme, ExcelHeaderQueryCellInfoEventArgs, ExcelStyle, ExportDetailDataBoundEventArgs, ExportGroupCaptionEventArgs
 } from '../base/interface';
 import * as events from '../base/constant';
 import { Workbook, Worksheets, Worksheet, Column as ExcelColumn } from '@syncfusion/ej2-excel-export';
@@ -393,13 +393,16 @@ export class ExcelExport {
                 isForeignKey: col.isForeignColumn(),
             };
 
-            cell.value = gObj.getColumnByField(item.field).headerText +
+            let value: string = gObj.getColumnByField(item.field).headerText +
             ': ' + (!col.enableGroupByFormat ? this.exportValueFormatter.formatCellValue(args) : item.key) + ' - ';
             if (item.count > 1) {
-                cell.value += item.count + ' items';
+                value += item.count + ' items';
             } else {
-                cell.value += item.count + ' item';
+                value += item.count + ' item';
             }
+            let cArgs: ExportGroupCaptionEventArgs = { captionText: value, type: this.isCsvExport ? 'CSV' : 'Excel' };
+            this.parent.trigger(events.exportGroupCaption, cArgs);
+            cell.value = cArgs.captionText;
             cell.style = this.getCaptionThemeStyle(this.theme);
             let captionModelGen: CaptionSummaryModelGenerator = new CaptionSummaryModelGenerator(gObj);
             let groupCaptionSummaryRows: Row<AggregateColumnModel>[] = captionModelGen.generateRows(item);

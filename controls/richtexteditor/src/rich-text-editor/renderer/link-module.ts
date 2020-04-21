@@ -1,4 +1,4 @@
-import { EventHandler, detach, L10n, isNullOrUndefined, KeyboardEventArgs, select, isBlazor } from '@syncfusion/ej2-base';
+import { EventHandler, detach, L10n, isNullOrUndefined, KeyboardEventArgs, select, isBlazor, extend } from '@syncfusion/ej2-base';
 import { closest, addClass, removeClass, Browser } from '@syncfusion/ej2-base';
 import { IRichTextEditor, NotifyArgs, IRenderer, IImageNotifyArgs, IToolbarItemModel, IShowPopupArgs } from './../base/interface';
 import { IDropDownItemModel } from './../base/interface';
@@ -291,7 +291,7 @@ export class Link {
         }
     }
 
-    private insertlink(e: MouseEvent): void {
+    private insertlink(e: MouseEvent | KeyboardEvent): void {
         let linkEle: HTMLElement = (this as NotifyArgs).selfLink.dialogObj.element as HTMLElement;
         let linkUrl: string = (linkEle.querySelector('.e-rte-linkurl') as HTMLInputElement).value;
         let linkText: string = (linkEle.querySelector('.e-rte-linkText') as HTMLInputElement).value;
@@ -336,8 +336,21 @@ export class Link {
         if (proxy.parent.formatter.getUndoRedoStack().length === 0) {
             proxy.parent.formatter.saveData();
         }
+        let argsValue: KeyboardEvent | MouseEvent | ClickEventArgs | ClipboardEvent | TouchEvent | Object;
+        if (((this as NotifyArgs).args as KeyboardEvent).code === 'KeyK') {
+            let originalEvent: KeyboardEventArgs = (this as NotifyArgs).args as KeyboardEventArgs;
+            extend(
+            (this as NotifyArgs).args,
+            { item: { command: 'Links', subCommand: 'CreateLink' } as IToolbarItemModel, originalEvent: originalEvent },
+            true);
+            let argsVal: Object = {
+            item: { command: 'Links', subCommand: 'CreateLink' } as IToolbarItemModel, originalEvent: originalEvent };
+            argsValue = argsVal;
+        } else {
+            argsValue = (this as NotifyArgs).args;
+        }
         (this as NotifyArgs).selfLink.parent.formatter.process(
-            (this as NotifyArgs).selfLink.parent, (this as NotifyArgs).args,
+            (this as NotifyArgs).selfLink.parent, argsValue,
             ((this as NotifyArgs).args as ClickEventArgs).originalEvent, value);
         ((this as NotifyArgs).selfLink.parent.contentModule.getEditPanel() as HTMLElement).focus();
     }

@@ -1004,7 +1004,7 @@ export function clusterSeparate(sameMarkerData: MarkerClusterData[], maps: Maps,
     let options: PathOption;
     let connectorLine: ConnectorLineSettingsModel = maps.layers[layerIndex].markerClusterSettings.connectorLineSettings;
     options = {
-        d: path, id: maps.element.id + '_markerClusterConnectorLine', stroke: connectorLine.color,
+        d: path, id: maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex + '_dataIndex_' + dataIndex + '_markerClusterConnectorLine', stroke: connectorLine.color,
         opacity: connectorLine.opacity, 'stroke-width': connectorLine.width
     } as PathOption;
     markerElement = isDom ? getElementFunction(maps.element.id + '_Markers_Group') : markerElement;

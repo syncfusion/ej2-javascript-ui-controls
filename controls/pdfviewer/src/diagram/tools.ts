@@ -1688,7 +1688,14 @@ export class RotateTool extends ToolBase {
 
     /**   @private  */
     public mouseDown(args: MouseEventArgs): void {
-        this.undoElement = cloneObject(args.source);
+        let nodeMouseDown: PdfAnnotationBaseModel = cloneObject(args.source);
+        this.undoElement = {
+            bounds: {
+                x: nodeMouseDown.wrapper.offsetX, y: nodeMouseDown.wrapper.offsetY,
+                width: nodeMouseDown.wrapper.actualSize.width, height: nodeMouseDown.wrapper.actualSize.height
+            }, rotateAngle: nodeMouseDown.rotateAngle
+            // tslint:disable-next-line
+        } as any;
         super.mouseDown(args);
     }
 
@@ -1696,15 +1703,26 @@ export class RotateTool extends ToolBase {
     public mouseUp(args: MouseEventArgs): void {
         let object: PdfAnnotationBaseModel | SelectorModel;
         object = args.source as PdfAnnotationBaseModel | Selector;
+        // tslint:disable-next-line
+        let newShapeObject: any;
         if (this.undoElement.rotateAngle !== object.wrapper.rotateAngle) {
             let oldValue: SelectorModel = { rotateAngle: object.wrapper.rotateAngle };
             let obj: SelectorModel;
             obj = cloneObject(args.source);
              // tslint:disable-next-line
-             let currentSelector : any = (args.source as Selector).annotations[0].annotationSelectorSettings;
+            let currentSelector : any = (args.source as Selector).annotations[0].annotationSelectorSettings;
             this.commandHandler.renderSelector(this.pdfViewerBase.activeElements.activePageID, currentSelector);
+            newShapeObject = {
+            bounds: {
+                x: args.source.wrapper.offsetX, y: args.source.wrapper.offsetY,
+                width: args.source.wrapper.actualSize.width, height: args.source.wrapper.actualSize.height
+            }, rotateAngle: args.source.wrapper.rotateAngle
+        };
         }
+        // tslint:disable-next-line
+        this.commandHandler.annotation.addAction((this as any).pageIndex, null, args.source, 'Rotate', '', this.undoElement as any, newShapeObject);
         this.commandHandler.annotation.stampAnnotationModule.updateSessionStorage(args.source, null, 'Rotate');
+        this.commandHandler.annotation.stickyNotesAnnotationModule.updateStickyNotes(args.source, null);
         super.mouseUp(args);
     }
 

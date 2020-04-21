@@ -7321,6 +7321,14 @@ let AutoComplete = class AutoComplete extends ComboBox {
             }
         }
         if (!isNullOrUndefined(this.suggestionCount)) {
+            // Since defualt value of suggestioncount is 20, checked the condition
+            if (this.suggestionCount !== 20) {
+                for (let queryElements = 0; queryElements < filterQuery.queries.length; queryElements++) {
+                    if (filterQuery.queries[queryElements].fn === 'onTake') {
+                        filterQuery.queries.splice(queryElements, 1);
+                    }
+                }
+            }
             filterQuery.take(this.suggestionCount);
         }
         return filterQuery;
@@ -7447,7 +7455,12 @@ let AutoComplete = class AutoComplete extends ComboBox {
         if (isNullOrUndefined(fields.itemCreated)) {
             fields.itemCreated = (e) => {
                 if (this.highlight) {
-                    highlightSearch(e.item, this.queryString, this.ignoreCase, this.filterType);
+                    if (this.element.tagName === this.getNgDirective() && this.itemTemplate) {
+                        setTimeout(() => { highlightSearch(e.item, this.queryString, this.ignoreCase, this.filterType); }, 0);
+                    }
+                    else {
+                        highlightSearch(e.item, this.queryString, this.ignoreCase, this.filterType);
+                    }
                 }
             };
         }
@@ -12074,8 +12087,13 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
         }
         this.renderComplete();
     }
-    updateBlazorListData(data) {
-        this.sortedData = this.jsonData = this.listData = data;
+    updateBlazorListData(data, isDataSource) {
+        if (isDataSource) {
+            this.mainList = this.ulElement = this.list.querySelector('ul');
+        }
+        else {
+            this.sortedData = this.jsonData = this.listData = data;
+        }
     }
     initWrapper() {
         let hiddenSelect = this.createElement('select', { className: 'e-hidden-select', attrs: { 'multiple': '' } });

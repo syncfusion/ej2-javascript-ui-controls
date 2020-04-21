@@ -423,7 +423,7 @@ export class Edit {
                     this.parent.editSettings.newRowPosition === 'Child')
           && this.selectedIndex > -1) {
           position = 'after';
-          if ((records[index] as ITreeData).expanded) {
+          if ((records[index] as ITreeData).expanded && !isNullOrUndefined(records[index])) {
             if (this.parent.editSettings.mode === 'Batch' && (this.parent.getBatchChanges()[this.addedRecords].length > 1
                 || this.parent.getBatchChanges()[this.deletedRecords].length)) {
                 index += findChildrenRecords(records[index]).length;

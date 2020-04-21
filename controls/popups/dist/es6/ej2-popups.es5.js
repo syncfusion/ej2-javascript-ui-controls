@@ -1986,7 +1986,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
                 if (!isNullOrUndefined(activeEle) && !isNullOrUndefined((activeEle).blur)) {
                     activeEle.blur();
                 }
-                if (!isNullOrUndefined(_this.storeActiveElement)) {
+                if (!isNullOrUndefined(_this.storeActiveElement) && !isNullOrUndefined(_this.storeActiveElement.focus)) {
                     _this.storeActiveElement.focus();
                 }
             }
@@ -2217,7 +2217,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         this.element.style.display = display;
         if (Browser.isIE && this.height === 'auto' && !isNullOrUndefined(this.contentEle)
             && this.element.offsetHeight < this.contentEle.offsetHeight) {
-            this.element.style.height = '100%';
+            this.element.style.height = 'inherit';
         }
     };
     Dialog.prototype.setEnableRTL = function () {
@@ -2568,6 +2568,9 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
             document.querySelector(this.target) : this.target;
         if (this.dragObj) {
             this.dragObj.dragArea = this.targetEle;
+        }
+        if (this.isModal) {
+            this.updateIsModal();
         }
         this.setMaxHeight();
     };

@@ -739,6 +739,10 @@ var ListBase;
                     className: cssClass.text, innerHTML: text,
                     attrs: (ariaAttributes.itemText !== '' ? { role: ariaAttributes.itemText } : {})
                 }));
+                if (options && options.enableHtmlSanitizer) {
+                    let textElement = innerDiv.querySelector('.' + cssClass.text);
+                    textElement.innerText = SanitizeHtmlHelper.sanitize(text);
+                }
             }
             li.appendChild(innerDiv);
         }
@@ -2114,6 +2118,9 @@ let ListView = class ListView extends Component {
         if (!(isBlazor() && this.isServerRendered)) {
             this.element.innerHTML = '';
             super.destroy();
+        }
+        else {
+            this.element.style.display = 'none';
         }
     }
     /**

@@ -1,5 +1,5 @@
 import { addClass, detach, EventHandler, L10n, isNullOrUndefined, KeyboardEventArgs, select, isBlazor } from '@syncfusion/ej2-base';
-import { Browser, closest, removeClass } from '@syncfusion/ej2-base';
+import { Browser, closest, removeClass, isNullOrUndefined as isNOU } from '@syncfusion/ej2-base';
 import { IImageCommandsArgs, IRenderer, IDropDownItemModel, IToolbarItemModel, OffsetPosition,
     ImageDragEvent, ActionBeginEventArgs } from '../base/interface';
 import { IRichTextEditor, IImageNotifyArgs, NotifyArgs, IShowPopupArgs, ResizeArgs } from '../base/interface';
@@ -39,9 +39,11 @@ export class Image {
     private imgDupPos: { [key: string]: number | string };
     private resizeBtnStat: { [key: string]: boolean };
     private imgEle: HTMLImageElement;
+    private isImgUploaded: boolean = false;
     private pageX: number = null;
     private pageY: number = null;
     private dialogRenderObj: DialogRenderer;
+    private deletedImg: Node[] = [];
     constructor(parent?: IRichTextEditor, serviceLocator?: ServiceLocator) {
         this.parent = parent;
         this.rteID = parent.element.id;
@@ -54,6 +56,7 @@ export class Image {
     protected addEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.on(events.keyDown, this.onKeyDown, this);
+        this.parent.on(events.keyUp, this.onKeyUp, this);
         this.parent.on(events.insertImage, this.insertImage, this);
         this.parent.on(events.insertCompleted, this.showImageQuickToolbar, this);
         this.parent.on(events.imageToolbarAction, this.onToolbarAction, this);
@@ -73,6 +76,7 @@ export class Image {
     protected removeEventListener(): void {
         if (this.parent.isDestroyed) { return; }
         this.parent.off(events.keyDown, this.onKeyDown);
+        this.parent.off(events.keyUp, this.onKeyUp);
         this.parent.off(events.insertImage, this.insertImage);
         this.parent.off(events.insertCompleted, this.showImageQuickToolbar);
         this.parent.off(events.imageCaption, this.caption);
@@ -478,7 +482,26 @@ export class Image {
         let save: NodeSelection;
         let selectNodeEle: Node[];
         let selectParentEle: Node[];
-        if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection)) {
+        this.deletedImg = [];
+        if (this.parent.editorMode === 'HTML' && ((originalEvent.which === 8 && originalEvent.code === 'Backspace') ||
+        (originalEvent.which === 46 && originalEvent.code === 'Delete'))) {
+            let range: Range = this.parent.getRange();
+            let isCursor: boolean = range.startContainer === range.endContainer && range.startOffset === range.endOffset;
+            if ((originalEvent.which === 8 && originalEvent.code === 'Backspace' && isCursor)) {
+                this.checkImageBack(range);
+            } else if ((originalEvent.which === 46 && originalEvent.code === 'Delete' && isCursor)) {
+                this.checkImageDel(range);
+            } else if (!isCursor) {
+                let nodes: Node[] = this.parent.formatter.editorManager.nodeSelection.getNodeCollection(range);
+                for (let i: number = 0; i < nodes.length; i++) {
+                    if (nodes[i].nodeName === 'IMG') {
+                        this.deletedImg.push(nodes[i]);
+                    }
+                }
+            }
+        }
+        if (!isNullOrUndefined(this.parent.formatter.editorManager.nodeSelection) &&
+        originalEvent.code !== 'KeyK') {
             range = this.parent.formatter.editorManager.nodeSelection.getRange(this.parent.contentModule.getDocument());
             save = this.parent.formatter.editorManager.nodeSelection.save(
                 range, this.parent.contentModule.getDocument());
@@ -547,6 +570,35 @@ export class Image {
                 }
                 originalEvent.preventDefault();
                 break;
+        }
+    }
+    private onKeyUp(event: NotifyArgs): void {
+        if (!isNOU(this.deletedImg) && this.deletedImg.length > 0) {
+            for (let i: number = 0; i < this.deletedImg.length; i++) {
+                let args: object = {
+                    img: this.deletedImg[i],
+                    src: (this.deletedImg[i] as HTMLElement).getAttribute('src')
+                };
+                this.parent.trigger(events.afterImageDelete, args);
+            }
+        }
+    }
+    private checkImageBack(range: Range): void {
+        if (range.startContainer.nodeName === '#text' && range.startOffset === 0 &&
+        !isNOU(range.startContainer.previousSibling) && range.startContainer.previousSibling.nodeName === 'IMG') {
+            this.deletedImg.push(range.startContainer.previousSibling);
+        } else if (range.startContainer.nodeName !== '#text' && !isNOU(range.startContainer.childNodes[range.startOffset - 1]) &&
+        range.startContainer.childNodes[range.startOffset - 1].nodeName === 'IMG') {
+            this.deletedImg.push(range.startContainer.childNodes[range.startOffset - 1]);
+        }
+    }
+    private checkImageDel(range: Range): void {
+        if (range.startContainer.nodeName === '#text' && range.startOffset === range.startContainer.textContent.length &&
+        !isNOU(range.startContainer.nextSibling) && range.startContainer.nextSibling.nodeName === 'IMG') {
+            this.deletedImg.push(range.startContainer.nextSibling);
+        } else if (range.startContainer.nodeName !== '#text' && !isNOU(range.startContainer.childNodes[range.startOffset]) &&
+        range.startContainer.childNodes[range.startOffset].nodeName === 'IMG') {
+            this.deletedImg.push(range.startContainer.childNodes[range.startOffset]);
         }
     }
     private alignmentSelect(e: ClickEventArgs): void {
@@ -858,6 +910,7 @@ export class Image {
         if (e.selectNode[0].nodeName !== 'IMG') {
             return;
         }
+        let args: object = { img: e.selectNode[0] };
         if (this.parent.formatter.getUndoRedoStack().length === 0) {
             this.parent.formatter.saveData();
         }
@@ -876,6 +929,7 @@ export class Image {
             this.quickToolObj.imageQTBar.hidePopup();
         }
         this.cancelResizeAction();
+        this.parent.trigger(events.afterImageDelete, args);
     }
     private caption(e: IImageNotifyArgs): void {
         let selectNode: HTMLElement = e.selectNode[0] as HTMLElement;
@@ -1030,6 +1084,9 @@ export class Image {
             target: (Browser.isDevice) ? document.body : this.parent.element,
             animationSettings: { effect: 'None' },
             close: (event: { [key: string]: object }) => {
+                if (this.isImgUploaded) {
+                    this.uploadObj.removing();
+                }
                 this.parent.isBlur = false;
                 if (event && (event.event as { [key: string]: string }).returnValue) {
                     if (this.parent.editorMode === 'HTML') {
@@ -1086,6 +1143,9 @@ export class Image {
     private cancelDialog(e: MouseEvent): void {
         this.parent.isBlur = false;
         this.dialogObj.hide({ returnValue: true } as Event);
+        if (this.isImgUploaded) {
+            this.uploadObj.removing();
+        }
     }
 
     private onDocumentClick(e: MouseEvent): void {
@@ -1132,6 +1192,7 @@ export class Image {
 
     private insertImageUrl(e: MouseEvent): void {
         let proxy: Image = (this as IImageNotifyArgs).selfImage;
+        proxy.isImgUploaded = false;
         let url: string = (proxy.inputUrl as HTMLInputElement).value;
         if (proxy.parent.formatter.getUndoRedoStack().length === 0) {
             proxy.parent.formatter.saveData();
@@ -1272,8 +1333,7 @@ export class Image {
         });
         span.appendChild(spanMsg);
         let btnEle: HTMLElement = this.parent.createElement('button', {
-            className: 'e-browsebtn', id: this.rteID + '_insertImage',
-            attrs: { autofocus: 'true', type: 'button' }
+            className: 'e-browsebtn', id: this.rteID + '_insertImage', attrs: { autofocus: 'true', type: 'button' }
         });
         span.appendChild(btnEle); uploadParentEle.appendChild(span);
         let browserMsg: string = this.i10n.getConstant('browse');
@@ -1290,6 +1350,7 @@ export class Image {
             dropArea: span, multiple: false, enableRtl: this.parent.enableRtl,
             allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
             selected: (e: SelectedEventArgs) => {
+                proxy.isImgUploaded = true;
                 this.parent.trigger(events.imageSelected, e, (e: SelectedEventArgs) => {
                     this.checkExtension(e.filesData[0]); altText = e.filesData[0].name;
                     if (this.parent.editorMode === 'HTML' && isNullOrUndefined(this.parent.insertImageSettings.path)) {
@@ -1341,6 +1402,7 @@ export class Image {
             },
             removing: () => {
                 this.parent.trigger(events.imageRemoving, e, (e: RemovingEventArgs) => {
+                    proxy.isImgUploaded = false;
                     proxy.inputUrl.removeAttribute('disabled'); if (proxy.uploadUrl) { proxy.uploadUrl.url = ''; }
                     (this.dialogObj.getButtons(0) as Button).element.removeAttribute('disabled');
                 });

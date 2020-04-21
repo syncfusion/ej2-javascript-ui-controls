@@ -31,6 +31,8 @@ export class ColumnChooser implements IAction {
     public getShowHideService: ShowHide;
     private showColumn: string[] = [];
     private hideColumn: string[] = [];
+    private changedColumns: string[] = [];
+    private unchangedColumns: string[] = [];
     private mainDiv: HTMLElement;
     private innerDiv: HTMLElement;
     private ulElement: HTMLElement;
@@ -38,6 +40,7 @@ export class ColumnChooser implements IAction {
     private dlghide: boolean = false;
     private initialOpenDlg: boolean = true;
     private stateChangeColumns: Column[] = [];
+    private changedStateColumns: Column[] = [];
     private dlgDiv: HTMLElement;
     private isInitialOpen: boolean = false;
     private isCustomizeOpenCC: boolean = false;
@@ -361,30 +364,48 @@ export class ColumnChooser implements IAction {
     private confirmDlgBtnClick(args: Object): void {
         this.parent.notify(events.columnChooserOpened, { event: args, dialog: this.dlgObj });
         this.stateChangeColumns = [];
-        let uncheckedLength: number =  this.ulElement.querySelector('.e-uncheck') &&
-        this.ulElement.querySelectorAll('.e-uncheck:not(.e-selectall)').length;
+        this.changedStateColumns = [];
+        this.changedColumns = (this.changedColumns.length > 0) ? this.changedColumns : this.unchangedColumns;
+        this.changedColumnState(this.changedColumns);
+        let uncheckedLength: number = this.ulElement.querySelector('.e-uncheck') &&
+            this.ulElement.querySelectorAll('.e-uncheck:not(.e-selectall)').length;
         if (!isNullOrUndefined(args)) {
             if (uncheckedLength < this.parent.getColumns().length) {
-                this.parent.trigger(events.actionBegin, {requestType: 'columnstate'});
-                if (this.hideColumn.length) {
-                    this.columnStateChange(this.hideColumn, false);
-                }
-                if (this.showColumn.length) {
-                    this.columnStateChange(this.showColumn, true);
-                }
-                let params: { requestType: string, element?: Element, position?: Object, columns?: Column[], dialogInstance: Dialog } = {
-                    requestType: 'columnstate', element: this.parent.element,
-                    columns: this.stateChangeColumns as Column[],
-                    dialogInstance: isBlazor() && !this.parent.isJsComponent ? null : this.dlgObj
-                };
-                this.parent.trigger(events.actionComplete, params);
-                if (isBlazor()) {
-                    params.dialogInstance = this.dlgObj;
-                }
-                this.getShowHideService.setVisible(this.stateChangeColumns);
-                this.clearActions();
-                this.parent.notify(events.tooltipDestroy, { module: 'edit' });
+                let chooserArgs: Object = { requestType: 'columnstate', columns: this.changedStateColumns, cancel: false };
+                let cancel: string = 'cancel';
+                this.parent.trigger(events.actionBegin, chooserArgs, (columnChooserArgs: Object) => {
+                    if (columnChooserArgs[cancel]) {
+                        this.showColumn = [];
+                        this.hideColumn = [];
+                        this.hideDialog();
+                        return;
+                    }
+                    if (this.hideColumn.length) {
+                        this.columnStateChange(this.hideColumn, false);
+                    }
+                    if (this.showColumn.length) {
+                        this.columnStateChange(this.showColumn, true);
+                    }
+                    let params: {
+                        requestType: string, position?: Object, columns?: Column[]
+                    } = {
+                        requestType: 'columnstate',
+                        columns: this.changedStateColumns as Column[]
+                    };
+                    this.parent.trigger(events.actionComplete, params);
+                    this.getShowHideService.setVisible(this.stateChangeColumns, this.changedStateColumns);
+                    this.clearActions();
+                    this.parent.notify(events.tooltipDestroy, { module: 'edit' });
+                });
             }
+        }
+    }
+
+    private changedColumnState(changedColumns: string[]): void {
+        for (let index: number = 0; index < changedColumns.length; index++) {
+            let colUid: string = changedColumns[index];
+            let currentCol: Column = this.parent.getColumnByUid(colUid);
+            isBlazor() ? this.changedStateColumns.push(JSON.parse(JSON.stringify(currentCol))) : this.changedStateColumns.push(currentCol);
         }
     }
 
@@ -407,7 +428,7 @@ export class ColumnChooser implements IAction {
         this.addcancelIcon();
     }
 
-    private checkstatecolumn(isChecked: boolean, coluid: string): void {
+    private checkstatecolumn(isChecked: boolean, coluid: string, selectAll: boolean = false): void {
         if (isChecked) {
             if (this.hideColumn.indexOf(coluid) !== -1) {
                 this.hideColumn.splice(this.hideColumn.indexOf(coluid), 1);
@@ -422,6 +443,17 @@ export class ColumnChooser implements IAction {
             if (this.hideColumn.indexOf(coluid) === -1) {
                 this.hideColumn.push(coluid);
             }
+        }
+        if (selectAll) {
+            if (!isChecked) {
+                this.changedColumns.push(coluid);
+            } else {
+                this.unchangedColumns.push(coluid);
+            }
+        } else if (this.changedColumns.indexOf(coluid) !== -1) {
+            this.changedColumns.splice(this.changedColumns.indexOf(coluid), 1);
+        } else {
+            this.changedColumns.push(coluid);
         }
     }
 
@@ -505,9 +537,11 @@ export class ColumnChooser implements IAction {
             let columnUid: string = parentsUntil(elem, 'e-ccheck').getAttribute('uid');
             let column: Column[] =  this.parent.getColumns();
             if (columnUid === 'grid-selectAll') {
+                this.changedColumns = [];
+                this.unchangedColumns = [];
                 for (let i: number = 0; i < column.length; i++) {
                     if (column[i].showInColumnChooser) {
-                        this.checkstatecolumn(checkstate, column[i].uid);
+                        this.checkstatecolumn(checkstate, column[i].uid, true);
                     }
                 }
             } else {

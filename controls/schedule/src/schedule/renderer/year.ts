@@ -210,6 +210,9 @@ export class Year extends ViewBase implements IRenderer {
         let count: number;
         if (type === 'row') {
             count = this.parent.activeViewOptions.orientation === 'Horizontal' ? monthCount : maxCount;
+            if (!this.parent.activeViewOptions.timeScale.enable && this.parent.activeViewOptions.orientation === 'Vertical') {
+                count = 1;
+            }
         } else {
             count = this.parent.activeViewOptions.orientation === 'Horizontal' ? maxCount : monthCount;
         }
@@ -235,9 +238,10 @@ export class Year extends ViewBase implements IRenderer {
         if (headerWrapper) {
             (<HTMLElement>headerWrapper.firstElementChild).scrollLeft = target.scrollLeft;
         }
-        let monthWrapper: HTMLElement = this.element.querySelector('.' + cls.MONTH_HEADER_WRAPPER) as HTMLElement;
-        if (monthWrapper) {
-            monthWrapper.scrollTop = target.scrollTop;
+        let scrollTopSelector: string = `.${cls.MONTH_HEADER_WRAPPER},.${cls.RESOURCE_COLUMN_WRAP_CLASS}`;
+        let scrollTopElement: HTMLElement = this.element.querySelector(scrollTopSelector) as HTMLElement;
+        if (scrollTopElement) {
+            scrollTopElement.scrollTop = target.scrollTop;
         }
     }
 
@@ -251,15 +255,14 @@ export class Year extends ViewBase implements IRenderer {
         if (contentWrapper) {
             contentWrapper.style.height = formatUnit(height);
         }
-        let leftPanelElement: HTMLElement = this.element.querySelector('.' + cls.MONTH_HEADER_WRAPPER) as HTMLElement;
+        let leftPanelSelector: string = `.${cls.MONTH_HEADER_WRAPPER},.${cls.RESOURCE_COLUMN_WRAP_CLASS}`;
+        let leftPanelElement: HTMLElement = this.element.querySelector(leftPanelSelector) as HTMLElement;
         if (leftPanelElement) {
             leftPanelElement.style.height = formatUnit(height - this.getScrollXIndent(contentWrapper));
         }
         if (!this.parent.isAdaptive && headerWrapper) {
             let scrollBarWidth: number = util.getScrollBarWidth();
             // tslint:disable:no-any
-            (headerWrapper.firstElementChild as HTMLElement).style[<any>args.cssProperties.rtlBorder] = '';
-            headerWrapper.style[<any>args.cssProperties.rtlPadding] = '';
             if (contentWrapper.offsetWidth - contentWrapper.clientWidth > 0) {
                 (headerWrapper.firstElementChild as HTMLElement).style[<any>args.cssProperties.border] = scrollBarWidth > 0 ? '1px' : '0px';
                 headerWrapper.style[<any>args.cssProperties.padding] = scrollBarWidth > 0 ? scrollBarWidth - 1 + 'px' : '0px';
@@ -269,6 +272,7 @@ export class Year extends ViewBase implements IRenderer {
             }
             // tslint:enable:no-any
         }
+        this.setColWidth(this.getContentAreaElement());
     }
 
     public startDate(): Date {
@@ -282,7 +286,11 @@ export class Year extends ViewBase implements IRenderer {
     }
 
     public getEndDateFromStartDate(start: Date): Date {
-        return util.addDays(new Date(start.getTime()), 1);
+        let date: Date = new Date(start.getTime());
+        if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
+            date = util.lastDateOfMonth(date);
+        }
+        return util.addDays(new Date(date.getTime()), 1);
     }
 
     public getNextPreviousDate(type: string): Date {

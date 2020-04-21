@@ -517,25 +517,19 @@ export class EventBase {
     }
 
     public getGroupIndexFromEvent(eventData: { [key: string]: Object }): number {
-        let groupOrder: Object[] = [];
-        let groupIndex: number = 0;
-        for (let resourceData of this.parent.resourceBase.resourceCollection) {
-            groupOrder.push(eventData[resourceData.field]);
-        }
-        this.parent.resourceBase.lastResourceLevel.forEach((resource: TdData) => {
-            let count: number;
-            let order: Object[] = resource.groupOrder;
-            order.forEach((resIndex: Object, index: number) => {
-                let resValue: Object = (groupOrder[index] instanceof Array) ? (<Object[]>groupOrder[index])[index] : groupOrder[index];
-                if (resValue === resIndex) {
-                    count = count ? count + 1 : 1;
-                }
-            });
-            if (order.length === count) {
-                groupIndex = resource.groupIndex;
+        let levelName: string = name || this.parent.resourceCollection.slice(-1)[0].name;
+        let levelIndex: number = this.parent.resourceCollection.length - 1;
+        let idField: string = this.parent.resourceCollection.slice(-1)[0].field;
+        let id: number = ((eventData[idField] instanceof Array) ?
+            (eventData[idField] as { [key: string]: Object })[0] : eventData[idField]) as number;
+        let resource: ResourcesModel = this.parent.resourceCollection.filter((e: ResourcesModel, index: number) => {
+            if (e.name === levelName) {
+                levelIndex = index;
+                return e;
             }
-        });
-        return groupIndex;
+            return null;
+        })[0];
+        return this.parent.resourceBase.getIndexFromResourceId(id, levelName, resource);
     }
 
     public isAllDayAppointment(event: { [key: string]: Object }): boolean {

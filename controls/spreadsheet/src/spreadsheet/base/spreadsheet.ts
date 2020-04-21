@@ -22,7 +22,7 @@ import { SheetModel, getColumnsWidth, getSheetIndex, WorkbookHyperlink, Hyperlin
 import { BeforeHyperlinkArgs, AfterHyperlinkArgs, getCellAddress, FindOptions, ValidationModel } from './../../workbook/common/index';
 import { activeCellChanged, BeforeCellFormatArgs, afterHyperlinkCreate, getColIndex, CellStyleModel } from './../../workbook/index';
 import { BeforeSaveEventArgs, SaveCompleteEventArgs, WorkbookInsert, WorkbookDelete, WorkbookMerge } from './../../workbook/index';
-import { getSheetNameFromAddress, DataBind, CellModel, beforeHyperlinkCreate } from './../../workbook/index';
+import { getSheetNameFromAddress, DataBind, CellModel, beforeHyperlinkCreate, WorkbookFindAndReplace } from './../../workbook/index';
 import { BeforeSortEventArgs, SortOptions, sortComplete, SortEventArgs } from './../../workbook/index';
 import { getSheetIndexFromId, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat, WorkbookSort } from './../../workbook/index';
 import { FilterOptions, FilterEventArgs, ProtectSettingsModel, findKeyUp } from './../../workbook/index';
@@ -639,7 +639,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
             Save, NumberFormat, CellFormat, Formula, WrapText, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat,
             WorkbookNumberFormat, WorkbookFormula, Sort, WorkbookSort, Resize, UndoRedo, WorkbookFilter, Filter, SpreadsheetHyperlink,
             WorkbookHyperlink, Insert, Delete, WorkbookInsert, WorkbookDelete, DataValidation, WorkbookDataValidation,
-            ProtectSheet, FindAndReplace, Merge, WorkbookMerge
+            ProtectSheet, FindAndReplace, Merge, WorkbookMerge, WorkbookFindAndReplace
         );
         if (element) {
             this.appendTo(element);

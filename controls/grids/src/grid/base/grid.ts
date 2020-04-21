@@ -1990,7 +1990,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers when click on context menu.
      * @event
      * @blazorProperty 'ContextMenuItemClicked'
-     * @blazorType Syncfusion.Blazor.Navigations.MenuEventArgs
+     * @blazorType ContextMenuClickEventArgs
      */
     @Event()
     public contextMenuClick: EmitType<MenuEventArgs>;
@@ -2007,7 +2007,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * Triggers when click on column menu.
      * @event
      * @blazorProperty 'ColumnMenuItemClicked'
-     * @blazorType Syncfusion.Blazor.Navigations.MenuEventArgs
+     * @blazorType ColumnMenuClickEventArgs
      */
     @Event()
     public columnMenuClick: EmitType<MenuEventArgs>;
@@ -2073,7 +2073,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     public dataSourceChanged: EmitType<DataSourceChangedEventArgs>;
 
     /**
-     * Triggers before exporting each caption row to PDF document. You can also customize the export caption row values.
+     * Triggers before exporting each caption row to PDF/Excel/CSV document. You can also customize the export caption row values.
      * @event
      * @deprecated 
      */
@@ -2566,7 +2566,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         let checkboxColumn: Column[] = this.getColumns().filter((col: Column) => col.type === 'checkbox');
         if (checkboxColumn.length && this.selectionSettings.checkboxMode === 'ResetOnRowClick') {
             this.isCheckBoxSelection = false;
-            this.refreshHeader();
         }
     }
 

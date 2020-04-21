@@ -1,4 +1,4 @@
-import { EventHandler, detach, formatUnit, Browser, closest, classList, isBlazor } from '@syncfusion/ej2-base';
+import { EventHandler, detach, formatUnit, Browser, closest, classList, isBlazor, extend } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { IGrid, IAction, ResizeArgs } from '../base/interface';
 import { ColumnWidthService } from '../services/width-controller';
@@ -159,6 +159,9 @@ export class Resize implements IAction {
         let columnbyindex: Column = gObj.getColumns()[columnIndexByField];
         let result: Boolean;
         let width: string = columnbyindex.width = formatUnit(Math.max(wHeader, wContent, wFooter));
+        if (parseInt(width, 10) > columnbyindex.maxWidth) {
+            columnbyindex.width = columnbyindex.maxWidth;
+        }
         this.widthService.setColumnWidth(gObj.getColumns()[columnIndexByField] as Column);
         result = gObj.getColumns().some((x: Column) => x.width === null || x.width === undefined || (x.width as string).length <= 0);
         if (result === false) {
@@ -369,10 +372,13 @@ export class Resize implements IAction {
                 EventHandler.add(document, Browser.touchStartEvent, this.removeHelper, this);
                 EventHandler.add(this.helper, Browser.touchStartEvent, this.resizeStart, this);
             } else {
-                let args: ResizeArgs = {
-                    e: isBlazor() && !this.parent.isJsComponent ? null : e,
-                    column: this.column
-                };
+                let args: ResizeArgs;
+                if (!isBlazor() || this.parent.isJsComponent) {
+                    args = { e : e, column: this.column };
+                } else {
+                    let clonedColumn: Column = extend({}, this.column) as Column;
+                    args = { column: clonedColumn };
+                }
                 this.parent.trigger(events.resizeStart, args, (args: ResizeArgs) => {
                     if (args.cancel || this.parent.isEdit) {
                         this.cancelResizeAction();
@@ -516,10 +522,13 @@ export class Resize implements IAction {
         EventHandler.remove(document, Browser.touchEndEvent, this.resizeEnd);
         this.updateCursor('remove');
         detach(this.helper);
-        let args: ResizeArgs = {
-            e: isBlazor() && !this.parent.isJsComponent ? null : e,
-            column: this.column
-        };
+        let args: ResizeArgs;
+        if (!isBlazor() || this.parent.isJsComponent) {
+            args = { e : e, column: this.column };
+        } else {
+            let clonedColumn: Column = extend({}, this.column) as Column;
+            args = { column: clonedColumn };
+        }
         let content: HTMLElement = this.parent.getContent().querySelector('.e-content');
         let cTable: HTMLElement = content.querySelector('.e-movablecontent') ? content.querySelector('.e-movablecontent') : content;
         if (cTable.scrollHeight >= cTable.clientHeight) {

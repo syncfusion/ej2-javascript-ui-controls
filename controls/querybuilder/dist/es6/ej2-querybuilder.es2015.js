@@ -110,6 +110,7 @@ let QueryBuilder = class QueryBuilder extends Component {
     constructor(options, element) {
         super(options, element);
         this.isReadonly = true;
+        this.fields = { text: 'label', value: 'field' };
     }
     getPersistData() {
         return this.addOnPersist(['rule']);
@@ -140,6 +141,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         if (this.dataColl.length) {
             let columnKeys = Object.keys(this.dataColl[0]);
             let cols = [];
+            let categories = [];
             let type;
             let groupBy = false;
             let isDate = false;
@@ -175,8 +177,11 @@ let QueryBuilder = class QueryBuilder extends Component {
                     else {
                         columns[i].category = this.l10n.getConstant('OtherFields');
                     }
+                    if (categories.indexOf(columns[i].category) < 0) {
+                        categories.push(columns[i].category);
+                    }
                 }
-                if (groupBy) {
+                if (groupBy && (categories.length > 1 || categories[0] !== this.l10n.getConstant('OtherFields'))) {
                     this.fields = { text: 'label', value: 'field', groupBy: 'category' };
                 }
             }
@@ -2243,7 +2248,9 @@ let QueryBuilder = class QueryBuilder extends Component {
             isnull: 'IS NULL', isnotnull: 'IS NOT NULL', isempty: 'IS EMPTY', isnotempty: 'IS NOT EMPTY', notstartswith: 'NOT LIKE',
             notendswith: 'NOT LIKE', notcontains: 'NOT LIKE'
         };
-        this.fields = { text: 'label', value: 'field' };
+        if (!this.fields) {
+            this.fields = { text: 'label', value: 'field' };
+        }
     }
     render() {
         this.levelColl = {};

@@ -2,6 +2,35 @@
 
 ## [Unreleased]
 
+## 18.1.45 (2020-04-21)
+
+### PDF Viewer
+
+#### New Features
+
+- `#267283` - Provided the support to identify the imported annotation and drawn annotation
+- `#268736` - Exposed the text search events in PDF Viewer.
+- `#258786` - Exposed the signature Select event in PDF Viewer.
+
+#### Bug Fixes
+
+- `#272053` - The annotation bounds value is now preserved properly in annotation events.
+- `#269001` - Improved the page rendering behaviour in PDF Viewer.
+
+## 18.1.44 (2020-04-14)
+
+### PDF Viewer
+
+#### New Features
+
+- `#263306` - Provided the support for Meter Calibration ratio in PDF Viewer.
+- `#271053` - Provided the support to enable and disable the multiline annotations in overlapping collections.
+
+#### Bug Fixes
+
+- `#271180` - Free Text Annotation and annotation label text position updated properly in downloaded rotational documents.
+- `#F153036` - Now, Annotation toolbar separator shown properly when hiding some annotation toolbar items.
+
 ## 18.1.43 (2020-04-07)
 
 ### PDF Viewer

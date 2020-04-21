@@ -840,12 +840,14 @@ class Double {
             max: axis.actualRange.max, min: axis.actualRange.min,
             delta: axis.actualRange.delta, interval: axis.actualRange.interval
         };
-        let isLazyLoad = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
-        if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
-            axis.calculateVisibleRange(size);
-            axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming && axis.valueType !== 'Category') ?
-                this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size)
-                : axis.visibleRange.interval;
+        if (this.chart.chartAreaType === 'Cartesian') {
+            let isLazyLoad = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
+            if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
+                axis.calculateVisibleRange(size);
+                axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming && axis.valueType !== 'Category') ?
+                    this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size)
+                    : axis.visibleRange.interval;
+            }
         }
         axis.triggerRangeRender(this.chart, axis.visibleRange.min, axis.visibleRange.max, axis.visibleRange.interval);
     }
@@ -858,7 +860,9 @@ class Double {
         axis.visibleLabels = [];
         let tempInterval = axis.visibleRange.min;
         let labelStyle;
-        if (axis.zoomFactor < 1 || axis.zoomPosition > 0 || this.paddingInterval) {
+        let controlName = chart.getModuleName();
+        let isPolarRadar = controlName === 'chart' && chart.chartAreaType === 'PolarRadar';
+        if (!isPolarRadar && (axis.zoomFactor < 1 || axis.zoomPosition > 0 || this.paddingInterval)) {
             tempInterval = axis.visibleRange.min - (axis.visibleRange.min % axis.visibleRange.interval);
         }
         let format = this.getFormat(axis);
@@ -1875,6 +1879,9 @@ __decorate$2([
 __decorate$2([
     Property(false)
 ], Axis.prototype, "enableTrim", void 0);
+__decorate$2([
+    Property(5)
+], Axis.prototype, "labelPadding", void 0);
 __decorate$2([
     Complex({}, MajorTickLines)
 ], Axis.prototype, "majorTickLines", void 0);
@@ -4273,14 +4280,16 @@ class CartesianAxisLayoutPanel {
         let pointX = 0;
         let pointY = 0;
         let elementSize;
+        let labelSpace = axis.labelPadding;
         let options;
         let isAxisBreakLabel;
         let isLabelInside = axis.labelPosition === 'Inside';
         let isOpposed = axis.opposedPosition;
         let tickSpace = axis.labelPosition === axis.tickPosition ? axis.majorTickLines.height : 0;
-        let padding = tickSpace + this.padding + axis.lineStyle.width * 0.5;
+        let padding = tickSpace + labelSpace + axis.lineStyle.width * 0.5;
         padding = (axis.opposedPosition) ? padding : -padding;
         let anchor = ((isOpposed && isLabelInside) || (!isOpposed && !isLabelInside)) ? 'end' : 'start';
+        anchor = chart.isRtlEnabled ? ((axis.opposedPosition) ? 'end' : 'start') : anchor;
         let labelElement = chart.renderer.createGroup({ id: chart.element.id + 'AxisLabels' + index });
         let scrollBarHeight = isNullOrUndefined(axis.crossesAt) ? axis.scrollBarHeight * (isOpposed ? 1 : -1) : 0;
         let textHeight;
@@ -4581,13 +4590,15 @@ class CartesianAxisLayoutPanel {
         let chart = this.chart;
         let pointX = 0;
         let pointY = 0;
+        let labelSpace = axis.labelPadding;
         let elementSize;
         let labelPadding;
+        let anchor;
         let labelElement = chart.renderer.createGroup({ id: chart.element.id + 'AxisLabels' + index });
         let islabelInside = axis.labelPosition === 'Inside';
         let isOpposed = axis.opposedPosition;
         let tickSpace = axis.labelPosition === axis.tickPosition ? axis.majorTickLines.height : 0;
-        let padding = tickSpace + this.padding + axis.lineStyle.width * 0.5;
+        let padding = tickSpace + labelSpace + axis.lineStyle.width * 0.5;
         let rotateSize;
         let diffHeight;
         let angle = axis.angle % 360;
@@ -4627,7 +4638,8 @@ class CartesianAxisLayoutPanel {
                     padding + scrollBarHeight + (angle ? (axis.maxLabelSize.height * 0.5) : (3 * (elementSize.height / 4)));
                 pointY = (rect.y + (labelPadding * label.index));
             }
-            options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, '');
+            anchor = chart.isRtlEnabled ? 'end' : '';
+            options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, anchor);
             if (axis.edgeLabelPlacement) {
                 switch (axis.edgeLabelPlacement) {
                     case 'None':
@@ -6534,7 +6546,7 @@ class Marker extends MarkerExplode {
         let redraw = series.chart.redraw;
         this.createElement(series, redraw);
         for (let point of series.points) {
-            if (point.visible && point.symbolLocations.length) {
+            if (point.visible && point.symbolLocations && point.symbolLocations.length) {
                 point.symbolLocations.map((location, index) => {
                     this.renderMarker(series, point, location, index, redraw);
                 });
@@ -6948,7 +6960,8 @@ class BaseLegend {
             let legendSeriesGroup; // legendItem group for each series group element
             let start; // starting shape center x,y position && to resolve lint error used new line for declaration
             start = new ChartLocation(legendBounds.x + padding + (legend.shapeWidth / 2), legendBounds.y + padding + this.maxItemHeight / 2);
-            let textOptions = new TextOption('', start.x, start.y, 'start');
+            let anchor = chart.isRtlEnabled ? 'end' : 'start';
+            let textOptions = new TextOption('', start.x, start.y, anchor);
             //  initialization for totalPages legend click totalpage again calculate
             this.totalPages = this.totalPages = (this.isChartControl || this.isBulletChartControl) ? this.totalPages : 0;
             let textPadding = legend.shapePadding + padding + legend.shapeWidth;
@@ -7774,6 +7787,8 @@ let Chart = class Chart extends Component {
         this.singleClickTimer = 0;
         /** @private */
         this.chartAreaType = 'Cartesian';
+        /** @private */
+        this.isRtlEnabled = document.body.getAttribute('dir') === 'rtl';
         this.chartid = 57723;
         setValue('mergePersistData', this.mergePersistChartData, this);
     }
@@ -8201,6 +8216,9 @@ let Chart = class Chart extends Component {
          * Issue: Zoomkit not visible after performing refresh()
          * Fix: this method called without checking `zoomModule.isZoomed`
          */
+        if (this.chartAreaType === 'PolarRadar') {
+            return;
+        }
         if (!this.redraw && this.zoomModule && (!this.zoomSettings.enablePan || this.zoomModule.performedUI)) {
             this.zoomModule.applyZoomToolkit(this, this.axisCollections);
         }
@@ -11446,7 +11464,7 @@ class ColumnBase {
         series.isRectSeries = true;
         let visibleSeries = series.chart.visibleSeries;
         let seriesSpacing = series.chart.enableSideBySidePlacement ? series.columnSpacing : 0; // Column Spacing
-        let pointSpacing = (series.columnWidth === null) ? ((series.type === 'Histogram') ? 1 : 0.7) :
+        let pointSpacing = (series.columnWidth === null || isNaN(+series.columnWidth)) ? ((series.type === 'Histogram') ? 1 : 0.7) :
             series.columnWidth; // Column width
         let minimumPointDelta = getMinPointsDelta(series.xAxis, visibleSeries);
         let width = minimumPointDelta * pointSpacing;
@@ -11707,45 +11725,47 @@ class ColumnBase {
             }
         }
         let value;
-        element.style.visibility = 'hidden';
-        new Animation({}).animate(element, {
-            duration: duration,
-            delay: option.delay,
-            progress: (args) => {
-                if (args.timeStamp >= args.delay) {
-                    element.style.visibility = 'visible';
-                    if (!series.chart.requireInvertedAxis) {
-                        elementHeight = elementHeight ? elementHeight : 1;
-                        value = effect(args.timeStamp - args.delay, 0, elementHeight, args.duration);
-                        element.setAttribute('transform', 'translate(' + centerX + ' ' + centerY +
-                            ') scale(1,' + (value / elementHeight) + ') translate(' + (-centerX) + ' ' + (-centerY) + ')');
+        if (!isNullOrUndefined(element)) {
+            element.style.visibility = 'hidden';
+            new Animation({}).animate(element, {
+                duration: duration,
+                delay: option.delay,
+                progress: (args) => {
+                    if (args.timeStamp >= args.delay) {
+                        element.style.visibility = 'visible';
+                        if (!series.chart.requireInvertedAxis) {
+                            elementHeight = elementHeight ? elementHeight : 1;
+                            value = effect(args.timeStamp - args.delay, 0, elementHeight, args.duration);
+                            element.setAttribute('transform', 'translate(' + centerX + ' ' + centerY +
+                                ') scale(1,' + (value / elementHeight) + ') translate(' + (-centerX) + ' ' + (-centerY) + ')');
+                        }
+                        else {
+                            elementWidth = elementWidth ? elementWidth : 1;
+                            value = effect(args.timeStamp - args.delay, 0, elementWidth, args.duration);
+                            element.setAttribute('transform', 'translate(' + centerX + ' ' + centerY +
+                                ') scale(' + (value / elementWidth) + ', 1) translate(' + (-centerX) + ' ' + (-centerY) + ')');
+                        }
                     }
-                    else {
-                        elementWidth = elementWidth ? elementWidth : 1;
-                        value = effect(args.timeStamp - args.delay, 0, elementWidth, args.duration);
-                        element.setAttribute('transform', 'translate(' + centerX + ' ' + centerY +
-                            ') scale(' + (value / elementWidth) + ', 1) translate(' + (-centerX) + ' ' + (-centerY) + ')');
-                    }
-                }
-            },
-            end: (model) => {
-                element.setAttribute('transform', 'translate(0,0)');
-                let seriesElement = series.seriesElement;
-                if (element === seriesElement.lastElementChild || point.index === series.points.length - 1 ||
-                    (series.type === 'Waterfall' && element === seriesElement.children[seriesElement.childElementCount - 2])) {
-                    series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
-                    if (series.type === 'Waterfall') {
-                        let rectElements = seriesElement.childNodes;
-                        for (let i = 0; i < rectElements.length; i++) {
-                            if (rectElements[i].id.indexOf('Connector') !== -1) {
-                                rectElements[i].style.visibility = 'visible';
-                                rectElements[i].setAttribute('transform', 'translate(0,0)');
+                },
+                end: (model) => {
+                    element.setAttribute('transform', 'translate(0,0)');
+                    let seriesElement = series.seriesElement;
+                    if (element === seriesElement.lastElementChild || point.index === series.points.length - 1 ||
+                        (series.type === 'Waterfall' && element === seriesElement.children[seriesElement.childElementCount - 2])) {
+                        series.chart.trigger('animationComplete', { series: series.chart.isBlazor ? {} : series });
+                        if (series.type === 'Waterfall') {
+                            let rectElements = seriesElement.childNodes;
+                            for (let i = 0; i < rectElements.length; i++) {
+                                if (rectElements[i].id.indexOf('Connector') !== -1) {
+                                    rectElements[i].style.visibility = 'visible';
+                                    rectElements[i].setAttribute('transform', 'translate(0,0)');
+                                }
                             }
                         }
                     }
                 }
-            }
-        });
+            });
+        }
     }
     /**
      * To get rounded rect path direction
@@ -23750,11 +23770,29 @@ class MultiLevelLabel {
 function createScrollSvg(scrollbar, renderer) {
     let rect = scrollbar.axis.rect;
     let isHorizontalAxis = scrollbar.axis.orientation === 'Horizontal';
+    let enablePadding = false;
+    let markerHeight = 5;
+    let yMin;
+    for (let tempSeries of scrollbar.axis.series) {
+        if (tempSeries.marker.height > markerHeight) {
+            markerHeight = tempSeries.marker.height;
+        }
+    }
+    for (let tempSeries of scrollbar.axis.series) {
+        yMin = tempSeries.yMin.toString();
+        enablePadding = (tempSeries.yData).some((yData) => {
+            return yData === yMin;
+        });
+        if (enablePadding) {
+            break;
+        }
+    }
     scrollbar.svgObject = renderer.createSvg({
         id: scrollbar.component.element.id + '_' + 'scrollBar_svg' + scrollbar.axis.name,
         width: scrollbar.isVertical ? scrollbar.height : scrollbar.width,
         height: scrollbar.isVertical ? scrollbar.width : scrollbar.height,
-        style: 'position: absolute;top: ' + ((scrollbar.axis.opposedPosition && isHorizontalAxis ? -16 : 0) + rect.y) + 'px;left: ' +
+        style: 'position: absolute;top: ' + ((scrollbar.axis.opposedPosition && isHorizontalAxis ? -16 :
+            (enablePadding ? markerHeight : 0)) + rect.y) + 'px;left: ' +
             (((scrollbar.axis.opposedPosition && !isHorizontalAxis ? 16 : 0) + rect.x) - (scrollbar.isVertical ? scrollbar.height : 0))
             + 'px;cursor:auto;'
     });

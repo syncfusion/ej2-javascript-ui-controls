@@ -1496,7 +1496,7 @@ export interface GridModel extends ComponentModel{
      * Triggers when click on context menu.
      * @event
      * @blazorProperty 'ContextMenuItemClicked'
-     * @blazorType Syncfusion.Blazor.Navigations.MenuEventArgs
+     * @blazorType ContextMenuClickEventArgs
      */
     contextMenuClick?: EmitType<MenuEventArgs>;
 
@@ -1511,7 +1511,7 @@ export interface GridModel extends ComponentModel{
      * Triggers when click on column menu.
      * @event
      * @blazorProperty 'ColumnMenuItemClicked'
-     * @blazorType Syncfusion.Blazor.Navigations.MenuEventArgs
+     * @blazorType ColumnMenuClickEventArgs
      */
     columnMenuClick?: EmitType<MenuEventArgs>;
 
@@ -1569,7 +1569,7 @@ export interface GridModel extends ComponentModel{
     dataSourceChanged?: EmitType<DataSourceChangedEventArgs>;
 
     /**
-     * Triggers before exporting each caption row to PDF document. You can also customize the export caption row values.
+     * Triggers before exporting each caption row to PDF/Excel/CSV document. You can also customize the export caption row values.
      * @event
      * @deprecated 
      */

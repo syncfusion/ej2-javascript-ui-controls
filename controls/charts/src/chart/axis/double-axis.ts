@@ -275,12 +275,14 @@ export class Double {
             max: axis.actualRange.max, min: axis.actualRange.min,
             delta: axis.actualRange.delta, interval: axis.actualRange.interval
         };
-        let isLazyLoad : boolean = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
-        if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad ) {
-            axis.calculateVisibleRange(size);
-            axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming && axis.valueType !== 'Category') ?
-                this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size)
-                : axis.visibleRange.interval;
+        if (this.chart.chartAreaType === 'Cartesian') {
+            let isLazyLoad: boolean = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
+            if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
+                axis.calculateVisibleRange(size);
+                axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming && axis.valueType !== 'Category') ?
+                    this.calculateNumericNiceInterval(axis, axis.doubleRange.delta, size)
+                    : axis.visibleRange.interval;
+            }
         }
         axis.triggerRangeRender(this.chart, axis.visibleRange.min, axis.visibleRange.max, axis.visibleRange.interval);
     }
@@ -296,7 +298,9 @@ export class Double {
         axis.visibleLabels = [];
         let tempInterval: number = axis.visibleRange.min;
         let labelStyle: Font;
-        if (axis.zoomFactor < 1 || axis.zoomPosition > 0 || this.paddingInterval) {
+        let controlName: string = chart.getModuleName();
+        let isPolarRadar: boolean = controlName === 'chart' && (chart as Chart).chartAreaType === 'PolarRadar';
+        if (!isPolarRadar && (axis.zoomFactor < 1 || axis.zoomPosition > 0 || this.paddingInterval)) {
             tempInterval = axis.visibleRange.min - (axis.visibleRange.min % axis.visibleRange.interval);
         }
         let format: string = this.getFormat(axis);

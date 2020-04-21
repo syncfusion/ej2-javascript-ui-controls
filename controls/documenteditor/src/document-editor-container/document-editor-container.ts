@@ -136,7 +136,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * Triggers when toolbar item is clicked.
      * @event
      * @blazorproperty 'OnToolbarClick'
-     * @blazorType Syncfusion.EJ2.Blazor.Navigations.ClickEventArgs
+     * @blazorType Syncfusion.Blazor.Navigations.ClickEventArgs
      */
     @Event()
     public toolbarClick: EmitType<ClickEventArgs>;
@@ -866,7 +866,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             this.propertiesPaneContainer.style.display = 'block';
             if (isInHeaderFooter && this.showHeaderProperties) {
                 this.showProperties('headerfooter');
-            } else if (currentContext.indexOf('Text') >= 0
+            } else if (currentContext.indexOf('Text') >= 0 || currentContext.indexOf('List') >= 0
                 && currentContext.indexOf('Table') < 0) {
                 this.showProperties('text');
             } else if (currentContext.indexOf('Image') >= 0) {

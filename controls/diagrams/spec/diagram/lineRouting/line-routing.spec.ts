@@ -7067,4 +7067,44 @@ describe('Diagram Control', () => {
             done();
         });
     });
+    describe('Line Routing - Straight segment', () => {
+
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramRoutingStraight' });
+            document.body.appendChild(ele);
+
+            nodes = [
+                {
+                    id: 'node1', width: 100, height: 60, offsetX: 100, offsetY: 100
+                },
+                {
+                    id: 'node2', width: 100, offsetX: 300, offsetY: 100
+                }
+            ]
+
+            connectors = [{
+                id: 'Connector1', sourceID: 'node1', targetID: 'node2'
+            }]
+
+            diagram = new Diagram({
+                width: 600, height: 600,
+                connectors: connectors, nodes: nodes,
+                constraints: DiagramConstraints.Default | DiagramConstraints.LineRouting                
+            });
+            diagram.appendTo('#diagramRoutingStraight');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('Line routing - Straight Segment Connector', (done: Function) => {
+            expect(diagram.connectors[0].targetPoint.x == 250).toBe(true);
+            diagram.nodes[1].offsetX += 10;
+            diagram.dataBind();
+            expect(diagram.connectors[0].targetPoint.x == 260).toBe(true);
+            done();
+        });
+    });
 });

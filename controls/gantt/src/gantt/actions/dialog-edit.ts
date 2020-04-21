@@ -1,4 +1,4 @@
-import { remove, extend, isNullOrUndefined, createElement, L10n, getValue, closest, isBlazor } from '@syncfusion/ej2-base';
+import { remove, extend, isNullOrUndefined, createElement, L10n, getValue, setValue, closest, isBlazor } from '@syncfusion/ej2-base';
 import { DataManager, DataUtil } from '@syncfusion/ej2-data';
 import { Dialog, PositionDataModel, DialogModel } from '@syncfusion/ej2-popups';
 import { Tab, TabModel, TabItemModel, SelectEventArgs } from '@syncfusion/ej2-navigations';
@@ -26,6 +26,7 @@ import {
     TreeGridModel, ColumnModel as TreeGridColumnModel,
     TreeGrid, Selection, Filter, Edit as TreeGridEdit
 } from '@syncfusion/ej2-treegrid';
+import { getUid } from '../base/utils';
 interface EJ2Instance extends HTMLElement {
     ej2_instances: Object[];
 }
@@ -962,7 +963,7 @@ export class DialogEdit {
 
     private getPredecessorModel(fields: string[]): Object {
         if (isNullOrUndefined(fields) || fields.length === 0) {
-            fields = ['ID', 'Name', 'Type', 'Offset'];
+            fields = ['ID', 'Name', 'Type', 'Offset', 'UniqueId'];
         }
         let inputModel: GridModel = {};
         inputModel.editSettings = { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' };
@@ -1006,6 +1007,11 @@ export class DialogEdit {
                 column = {
                     field: 'offset', headerText: this.localeObj.getConstant('offset'), editType: 'stringedit',
                     defaultValue: '0 days', validationRules: { required: true }, width: '100px'
+                };
+                columns.push(column);
+            } else if (fields[i].toLowerCase() === 'uniqueid') {
+                column = {
+                    field: 'uniqueId', isPrimaryKey: true, visible: false, defaultValue: getUid().toString()
                 };
                 columns.push(column);
             }
@@ -1210,6 +1216,9 @@ export class DialogEdit {
         let columns: GridColumnModel[] = <GridColumnModel[]>gridModel.columns;
         columns[1].edit = {
             write: (args: CObject): void => {
+                if (getValue('requestType', args) === 'add') {
+                    setValue('rowData.uniqueId', getUid(), args);
+                }
                 let field: string = 'name';
                 let autoObj: ComboBox = new ComboBox({
                     dataSource: new DataManager(this.preTableCollection),
@@ -1413,6 +1422,7 @@ export class DialogEdit {
                     let offset: number = Math.abs(predecessor[i].offset);
                     let offsetUnit: string = predecessor[i].offsetUnit;
                     preData.offset = this.parent.dataOperation.getDurationString(offset, offsetUnit);
+                    preData.uniqueId = getUid();
                     preDataCollection.push(preData);
                 }
             }
@@ -1615,7 +1625,7 @@ export class DialogEdit {
         if (gridObj.isEdit) {
             gridObj.endEdit();
         }
-        let dataSource: IPreData[] = <IPreData[]>gridObj.currentViewData;
+        let dataSource: IPreData[] = <IPreData[]>gridObj.dataSource;
         let predecessorName: string[] = [];
         let newValues: IPredecessor[] = [];
         let predecessorString: string = '';
@@ -1719,4 +1729,5 @@ export interface IPreData {
     name?: string;
     type?: string;
     offset?: string;
+    uniqueId?: number;
 }

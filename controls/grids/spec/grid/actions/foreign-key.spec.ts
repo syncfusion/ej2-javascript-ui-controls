@@ -27,6 +27,13 @@ import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
  * Foreign key column feature test cases
  */
 Grid.Inject(Page, Edit, Filter, ForeignKey, ExcelExport, Aggregate, Group, Sort, PdfExport);
+export function getClickObj(target: Element, ctrlKey?: boolean, shiftKey?: boolean): any {
+    let preventDefault = () => { };
+    return {
+        target: target, shiftKey: shiftKey, ctrlKey: ctrlKey,
+        preventDefault: preventDefault, type: 'click', clientX: 1, clientY: 1
+    };
+}
 describe('Foreign Key =>', () => {
     let gridObj: Grid;
     beforeAll((done: Function) => {
@@ -475,4 +482,49 @@ describe('Foreign Key =>', () => {
             gridObj = fKeyDataStateChange = null;
         });
      });
+});
+
+describe('EJ2-38633 - additional params issue =>', () => {
+    let gridObj: Grid;
+    beforeAll((done: Function) => {
+        let options: Object = {
+            dataSource: fdata,
+            allowFiltering: true,
+            filterSettings: { type: 'Excel' },
+            allowPaging: true,
+            editSettings: { allowEditing: true },
+            columns: [
+                { field: 'OrderID', width: 120 },
+                { field: 'ShipCity', width: 120, dataSource: [] },
+                { field: 'CustomerID', width: 100, foreignKeyValue: 'City', dataSource: fCustomerData },
+            ]
+        };
+        gridObj = createGrid(options, done);
+        gridObj.query = new Query().addParams('id', '3');
+    });
+    it('EJ2-38633 - Add params is not sent in the request while on filtering on foreignKey column', (done: Function) => {
+        gridObj.actionComplete = (args: any) => {
+            if (args.requestType === 'filterchoicerequest') {
+                expect((gridObj.filterModule as any).filterModule.excelFilterBase.foreignKeyQuery.params.length).toBe(1);
+                gridObj.actionComplete = null;
+                done();
+            }
+        }
+        (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('CustomerID').querySelector('.e-filtermenudiv')));
+    });
+    it('EJ2-38633 - Add params is not sent in the request while on editing on foreignKey column', (done: Function) => {
+        gridObj.actionComplete = (args: any) => {
+            if (args.requestType === 'beginEdit') {
+                expect(args.form.querySelector('.e-dropdownlist').ej2_instances[0].query.params.length).toBe(1);
+                gridObj.actionComplete = null;
+                done();
+            }
+        }
+        gridObj.selectRow(1);
+        gridObj.startEdit();
+    });
+    afterAll((done) => {
+        destroy(gridObj);
+        gridObj = null;
+    });
 });

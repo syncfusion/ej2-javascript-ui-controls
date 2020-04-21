@@ -264,7 +264,6 @@ export class Drawing {
                     content.width = obj.bounds.width + 20;
                     content.height = obj.bounds.height + 20;
                     content.style.opacity = obj.opacity;
-                    content.rotateAngle = obj.rotateAngle;
                     canvas.children.push(content1);
                 } else {
                     canvas.horizontalAlignment = 'Left';
@@ -300,7 +299,6 @@ export class Drawing {
                     content.minWidth = pathContent1.width / 2;
                     content.minHeight = pathContent1.height / 2;
                     content.style.opacity = obj.opacity;
-                    content.rotateAngle = obj.rotateAngle;
                     canvas.children.push(content1);
                     canvas.minHeight = content.minHeight + 20;
                     canvas.minWidth = content.minWidth + 20;
@@ -796,6 +794,9 @@ export class Drawing {
                                             undefined, undefined, undefined, node.shapeAnnotationType === 'Stamp', false, node.shapeAnnotationType === 'Path', (node.shapeAnnotationType === 'FreeText' || node.shapeAnnotationType === 'HandWrittenSignature' || node.shapeAnnotationType === 'Image' ), currentSelector);
                                     }
                                 }
+                            }
+                            if (!this.pdfViewer.viewerBase.isNewSignatureAdded && node.shapeAnnotationType === 'HandWrittenSignature') {
+                                this.pdfViewer.annotationModule.selectSignature(node.signatureName, node.pageIndex, node);
                             }
                             if (node.annotName !== '') {
                                 if (helper && (node === helper)) {

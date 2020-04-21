@@ -2,7 +2,7 @@ import { TreeMap } from '../treemap';
 import {
     Rect, itemsToOrder, TextOption, Size, measureText, textTrim, hide, wordWrap, textWrap,
     getTemplateFunction, convertElement, findLabelLocation, PathOption, textFormatter, ColorValue, colorNameToHex, convertHexToColor,
-    colorMap, measureElement, convertToContainer, convertToRect, getShortestEdge, getArea, orderByArea, isParentItem
+    colorMap, measureElement, convertToContainer, convertToRect, getShortestEdge, getArea, orderByArea, isParentItem, maintainSelection
 } from '../utils/helper';
 import { isNullOrUndefined, createElement, extend, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
@@ -502,6 +502,7 @@ export class LayoutPanel {
                     }
                     itemGroup.setAttribute('aria-label', item['name']);
                     itemGroup.setAttribute('tabindex', (this.treemap.tabIndex + i + 2).toString());
+                    maintainSelection(this.treemap, itemGroup, 'treeMapSelection');
                     this.layoutGroup.appendChild(itemGroup);
                 }
             });

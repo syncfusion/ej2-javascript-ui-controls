@@ -160,7 +160,8 @@ export class BatchEdit {
                           }
                           updateParentRow(primaryKey, added.parentItem, 'add', this.parent, this.isSelfReference, added);
                       }
-                  } else if (this.parent.editSettings.newRowPosition === 'Above' || this.parent.editSettings.newRowPosition === 'Below') {
+                  } else if ((this.parent.editSettings.newRowPosition === 'Above' || this.parent.editSettings.newRowPosition === 'Below')
+                                && !isNullOrUndefined(this.batchRecords[this.addRowIndex])) {
                     added.level = this.batchRecords[this.addRowIndex][level];
                     if (added.level && this.selectedIndex > -1) {
                       added.parentItem = parentRecord;
@@ -368,7 +369,9 @@ export class BatchEdit {
                   .indexOf(this.batchDeletedRecords[i][parentItem][primaryKey]);
           let positionIndex: number = this.batchDeletedRecords[i][indexvalue] === 0 ? this.batchDeletedRecords[i][indexvalue] :
                                       this.batchDeletedRecords[i][indexvalue] - 1;
-          currentViewRecords[index][childRecords].splice(positionIndex, 0, this.batchDeletedRecords[i]);
+          if (!isNullOrUndefined(currentViewRecords[index])) {
+            currentViewRecords[index][childRecords].splice(positionIndex, 0, this.batchDeletedRecords[i]);
+          }
         }
       }
     }

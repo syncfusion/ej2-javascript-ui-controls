@@ -282,7 +282,20 @@ export class ContextMenu implements IAction {
         }
         args.column = this.targetColumn;
         args.rowInfo = this.targetRowdata;
-        this.parent.trigger(events.contextMenuClick, args);
+        if (isBlazor()) {
+            let contextMenuClickArgs: ContextMenuClickEventArgs = args.rowInfo.row ?
+                {
+                    element: args.element, item: args.item, event: args.event, column: this.targetColumn, rowInfo: {
+                        rowData:
+                            this.targetRowdata.rowData, rowIndex: this.targetRowdata.rowIndex, cellIndex: this.targetRowdata.cellIndex
+                    }
+                }
+                : this.targetColumn ? { element: args.element, item: args.item, event: args.event, column: this.targetColumn }
+                    : { element: args.element, item: args.item, event: args.event };
+            this.parent.trigger(events.contextMenuClick, contextMenuClickArgs);
+        } else {
+            this.parent.trigger(events.contextMenuClick, args);
+        }
     }
 
     private contextMenuOnClose(args: OpenCloseMenuEventArgs): void {

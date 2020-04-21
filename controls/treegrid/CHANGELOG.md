@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.45 (2020-04-21)
+
+### TreeGrid
+
+#### Bug Fixes
+
+- `#272409`- Expand Collapse works fine when number of frozen columns is less than `treeColumnIndex`.
+
 ## 18.1.43 (2020-04-07)
 
 ### TreeGrid

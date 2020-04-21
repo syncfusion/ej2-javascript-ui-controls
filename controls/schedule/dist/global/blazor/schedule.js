@@ -4512,26 +4512,19 @@ var EventBase = /** @class */ (function () {
         return target;
     };
     EventBase.prototype.getGroupIndexFromEvent = function (eventData) {
-        var groupOrder = [];
-        var groupIndex = 0;
-        for (var _i = 0, _a = this.parent.resourceBase.resourceCollection; _i < _a.length; _i++) {
-            var resourceData = _a[_i];
-            groupOrder.push(eventData[resourceData.field]);
-        }
-        this.parent.resourceBase.lastResourceLevel.forEach(function (resource) {
-            var count;
-            var order = resource.groupOrder;
-            order.forEach(function (resIndex, index) {
-                var resValue = (groupOrder[index] instanceof Array) ? groupOrder[index][index] : groupOrder[index];
-                if (resValue === resIndex) {
-                    count = count ? count + 1 : 1;
-                }
-            });
-            if (order.length === count) {
-                groupIndex = resource.groupIndex;
+        var levelName = name || this.parent.resourceCollection.slice(-1)[0].name;
+        var levelIndex = this.parent.resourceCollection.length - 1;
+        var idField = this.parent.resourceCollection.slice(-1)[0].field;
+        var id = ((eventData[idField] instanceof Array) ?
+            eventData[idField][0] : eventData[idField]);
+        var resource = this.parent.resourceCollection.filter(function (e, index) {
+            if (e.name === levelName) {
+                levelIndex = index;
+                return e;
             }
-        });
-        return groupIndex;
+            return null;
+        })[0];
+        return this.parent.resourceBase.getIndexFromResourceId(id, levelName, resource);
     };
     EventBase.prototype.isAllDayAppointment = function (event) {
         var fieldMapping = this.parent.eventFields;
@@ -5474,7 +5467,8 @@ var QuickPopups = /** @class */ (function () {
         var _this = this;
         this.quickDialog.dataBind();
         var eventProp = {
-            type: popupType, cancel: false, data: eventData || this.parent.activeEventData.event, element: this.quickDialog.element
+            type: popupType, cancel: false, data: sf.base.extend({}, (eventData || this.parent.activeEventData.event), null, true),
+            element: this.quickDialog.element
         };
         this.parent.trigger(popupOpen, eventProp, function (popupArgs) {
             if (!popupArgs.cancel) {
@@ -6183,7 +6177,7 @@ var QuickPopups = /** @class */ (function () {
         var isEventPopup = this.quickPopup.element.querySelector('.' + EVENT_POPUP_CLASS);
         var popupType = this.parent.isAdaptive ? isEventPopup ? 'ViewEventInfo' : 'EditEventInfo' : 'QuickInfo';
         var eventProp = {
-            type: popupType, cancel: false, data: this.getDataFromTarget(target),
+            type: popupType, cancel: false, data: sf.base.extend({}, this.getDataFromTarget(target), null, true),
             target: target, element: this.quickPopup.element
         };
         this.parent.trigger(popupOpen, eventProp, function (popupArgs) {
@@ -8339,7 +8333,7 @@ var EventWindow = /** @class */ (function () {
                     var filter = resourceModel.dataSource.filter(function (data) {
                         return data[resourceModel.groupIDField] === args.value[j];
                     })[0];
-                    var groupId = filter[resourceCollection[i + 1].idField];
+                    var groupId = filter[resourceCollection[i + 1].groupIDField];
                     var filterRes = this_1.filterDatasource(i, groupId);
                     datasource = datasource.concat(filterRes);
                 };
@@ -10466,6 +10460,9 @@ var Crud = /** @class */ (function () {
                     var deletedEvents = eventCollections.follow.concat(eventCollections.occurrence);
                     switch (action) {
                         case 'EditSeries':
+                            if (childEvent[fields_2.startTime] > parentEvent[fields_2.startTime]) {
+                                _this.processRecurrenceRule(parentEvent, childEvent);
+                            }
                             childEvent[fields_2.id] = parentEvent[fields_2.id];
                             childEvent[fields_2.recurrenceID] = null;
                             childEvent[fields_2.followingID] = null;
@@ -15840,7 +15837,14 @@ var TimelineEvent = /** @class */ (function (_super) {
             if (this.parent.activeViewOptions.group.resources.length > 0) {
                 var resourceCell = this.parent.element.querySelector('.' + RESOURCE_COLUMN_TABLE_CLASS + ' ' + 'tbody td[data-group-index="' +
                     cell.getAttribute('data-group-index') + '"]');
-                sf.base.setStyleAttribute(resourceCell, { 'height': height + 'px' });
+                if (resourceCell) {
+                    sf.base.setStyleAttribute(resourceCell, { 'height': height + 'px' });
+                }
+            }
+            var monthHeader = this.parent.element.querySelector('.e-month-header-wrapper table tr:nth-child(' +
+                (cell.parentElement.rowIndex + 1) + ') td');
+            if (monthHeader) {
+                sf.base.setStyleAttribute(monthHeader, { 'height': height + 'px' });
             }
         }
     };
@@ -20608,7 +20612,7 @@ var TimelineHeaderRow = /** @class */ (function () {
             var jsDate = +new Date(1970, 0, 1);
             var tzOffsetDiff = d.getTimezoneOffset() - new Date(1970, 0, 1).getTimezoneOffset();
             var key = Math.ceil(((((+d - jsDate) - (tzOffsetDiff * 60 * 1000)) / MS_PER_DAY) + new Date(jsDate).getDay() + 1) / 7);
-            if (this.parent.firstDayOfWeek && this.parent.firstDayOfWeek > new Date(d).getDay()) {
+            if (this.parent.firstDayOfWeek && this.parent.firstDayOfWeek > new Date(+d).getDay()) {
                 key = key - 1;
             }
             result[key] = result[key] || [];
@@ -21127,14 +21131,21 @@ var YearEvent = /** @class */ (function (_super) {
     }
     YearEvent.prototype.renderAppointments = function () {
         this.fields = this.parent.eventFields;
-        var eventWrapper = [].slice.call(this.parent.element.querySelectorAll('.' + APPOINTMENT_WRAPPER_CLASS));
+        var elementSelector = '.' + APPOINTMENT_WRAPPER_CLASS + ',.' + MORE_INDICATOR_CLASS;
+        var eventWrapper = [].slice.call(this.parent.element.querySelectorAll(elementSelector));
         [].slice.call(eventWrapper).forEach(function (node) { return sf.base.remove(node); });
         this.renderedEvents = [];
         if (this.parent.currentView !== 'TimelineYear') {
             this.yearViewEvents();
         }
         else {
-            this.timelineYearViewEvents();
+            this.removeCellHeight();
+            if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
+                this.timelineResourceEvents();
+            }
+            else {
+                this.timelineYearViewEvents();
+            }
         }
         this.parent.notify(contentReady, {});
     };
@@ -21164,13 +21175,13 @@ var YearEvent = /** @class */ (function (_super) {
     YearEvent.prototype.timelineYearViewEvents = function () {
         var workCell = this.parent.element.querySelector('.' + WORK_CELLS_CLASS);
         this.cellWidth = workCell.offsetWidth;
-        this.cellHeight = workCell.offsetHeight;
         this.cellHeader = getOuterHeight(workCell.querySelector('.' + DATE_HEADER_CLASS));
         var eventTable = this.parent.element.querySelector('.' + EVENT_TABLE_CLASS);
         this.eventHeight = getElementHeightFromClass(eventTable, APPOINTMENT_CLASS);
         var wrapperCollection = [].slice.call(this.parent.element.querySelectorAll('.' + APPOINTMENT_CONTAINER_CLASS));
         for (var row = 0; row < 12; row++) {
             var wrapper = wrapperCollection[row];
+            var td = row + 1;
             var eventWrapper = sf.base.createElement('div', { className: APPOINTMENT_WRAPPER_CLASS });
             wrapper.appendChild(eventWrapper);
             var monthStart = new Date(this.parent.selectedDate.getFullYear(), row, 1);
@@ -21182,6 +21193,7 @@ var YearEvent = /** @class */ (function (_super) {
                 var rightValue = void 0;
                 if (this.parent.activeViewOptions.orientation === 'Vertical') {
                     var wrapper_1 = wrapperCollection[dayIndex];
+                    td = dayIndex + 1;
                     var eventWrapper_1 = wrapper_1.querySelector('.' + APPOINTMENT_WRAPPER_CLASS);
                     if (!eventWrapper_1) {
                         eventWrapper_1 = sf.base.createElement('div', { className: APPOINTMENT_WRAPPER_CLASS });
@@ -21193,6 +21205,8 @@ var YearEvent = /** @class */ (function (_super) {
                     this.parent.enableRtl ? (rightValue = ((dayIndex + monthStart.getDate()) - 1) * this.cellWidth) :
                         (leftValue = ((dayIndex + monthStart.getDate()) - 1) * this.cellWidth);
                 }
+                var rowTd = this.parent.element.querySelector(".e-content-wrap tr:nth-child(" + td + ") td");
+                this.cellHeight = rowTd.offsetHeight;
                 var dayStart = resetTime(new Date(monthStart.getTime()));
                 var dayEnd = addDays(new Date(dayStart.getTime()), 1);
                 var dayEvents = this.parent.eventBase.filterEvents(dayStart, dayEnd);
@@ -21212,13 +21226,15 @@ var YearEvent = /** @class */ (function (_super) {
                             return "continue";
                         }
                     }
-                    if (this_1.cellHeight > availedHeight) {
-                        this_1.renderEvent(eventWrapper, eventData, row, leftValue, rightValue, overlapIndex, dayIndex);
+                    var isRowAutoHeight = this_1.parent.rowAutoHeight && this_1.parent.activeViewOptions.orientation === 'Horizontal';
+                    if (isRowAutoHeight || this_1.cellHeight > availedHeight) {
+                        this_1.renderEvent(eventWrapper, eventData, row, leftValue, rightValue, dayIndex);
+                        this_1.updateCellHeight(rowTd, availedHeight);
                         isSpannedCollection.push(eventData);
                     }
                     else {
                         var moreIndex = this_1.parent.activeViewOptions.orientation === 'Horizontal' ? row : dayIndex;
-                        this_1.renderMoreIndicatior(eventWrapper, count - index, dayStart, moreIndex, leftValue, rightValue, dayEvents);
+                        this_1.renderMoreIndicatior(eventWrapper, count - index, dayStart, moreIndex, leftValue, rightValue);
                         if (this_1.parent.activeViewOptions.orientation === 'Horizontal') {
                             for (var a = index; a < dayEvents.length; a++) {
                                 var moreData = sf.base.extend({}, dayEvents[a], { Index: overlapIndex + a }, true);
@@ -21243,26 +21259,91 @@ var YearEvent = /** @class */ (function (_super) {
             }
         }
     };
-    YearEvent.prototype.renderEvent = function (wrapper, eventData, row, left, right, overlapCount, rowIndex) {
+    YearEvent.prototype.timelineResourceEvents = function () {
+        var _this = this;
+        var workCell = this.parent.element.querySelector('.' + WORK_CELLS_CLASS);
+        this.cellWidth = workCell.offsetWidth;
+        this.cellHeader = 0;
+        var eventTable = this.parent.element.querySelector('.' + EVENT_TABLE_CLASS);
+        this.eventHeight = getElementHeightFromClass(eventTable, APPOINTMENT_CLASS);
+        var wrapperCollection = [].slice.call(this.parent.element.querySelectorAll('.' + APPOINTMENT_CONTAINER_CLASS));
+        var resources = this.parent.uiStateValues.isGroupAdaptive ?
+            [this.parent.resourceBase.lastResourceLevel[this.parent.uiStateValues.groupIndex]] : this.parent.resourceBase.lastResourceLevel;
+        if (this.parent.activeViewOptions.orientation === 'Horizontal') {
+            var _loop_2 = function (month) {
+                resources.forEach(function (resource, index) {
+                    _this.renderedEvents = [];
+                    _this.renderResourceEvent(wrapperCollection[index], resource, month, index);
+                });
+            };
+            for (var month = 0; month < 12; month++) {
+                _loop_2(month);
+            }
+        }
+        else {
+            resources.forEach(function (resource, index) {
+                _this.renderedEvents = [];
+                for (var month = 0; month < 12; month++) {
+                    _this.renderResourceEvent(wrapperCollection[index], resource, month, index);
+                }
+            });
+        }
+    };
+    YearEvent.prototype.renderResourceEvent = function (wrapper, resource, month, index) {
+        var eventWrapper = sf.base.createElement('div', { className: APPOINTMENT_WRAPPER_CLASS });
+        wrapper.appendChild(eventWrapper);
+        var monthStart = firstDateOfMonth(new Date(this.parent.selectedDate.getFullYear(), month, 1));
+        var monthEnd = addDays(lastDateOfMonth(new Date(monthStart.getTime())), 1);
+        var eventDatas = this.parent.eventBase.filterEvents(monthStart, monthEnd, undefined, resource);
+        var rowIndex = this.parent.activeViewOptions.orientation === 'Vertical' ? index : month;
+        var td = this.parent.element.querySelector(".e-content-wrap tr:nth-child(" + (rowIndex + 1) + ") td");
+        this.cellHeight = td.offsetHeight;
+        for (var a = 0; a < eventDatas.length; a++) {
+            var data = eventDatas[a];
+            var eventData = sf.base.extend({}, data, null, true);
+            var overlapIndex = this.getIndex(eventData[this.fields.startTime]);
+            eventData.Index = overlapIndex;
+            var availedHeight = this.cellHeader + (this.eventHeight * (a + 1)) + EVENT_GAP$2 + this.moreIndicatorHeight;
+            var leftValue = (this.parent.activeViewOptions.orientation === 'Vertical') ?
+                month * this.cellWidth : index * this.cellWidth;
+            if (this.parent.rowAutoHeight || this.cellHeight > availedHeight) {
+                this.renderEvent(eventWrapper, eventData, month, leftValue, null, index);
+                this.updateCellHeight(td, availedHeight);
+            }
+            else {
+                var moreIndex = this.parent.activeViewOptions.orientation === 'Horizontal' ? month : index;
+                this.renderMoreIndicatior(eventWrapper, eventDatas.length - a, monthStart, moreIndex, leftValue, index);
+                if (this.parent.activeViewOptions.orientation === 'Horizontal') {
+                    for (var i = index; i < eventDatas.length; i++) {
+                        var moreData = sf.base.extend({}, eventDatas[i], { Index: overlapIndex + i }, true);
+                        this.renderedEvents.push(moreData);
+                    }
+                }
+                break;
+            }
+        }
+    };
+    YearEvent.prototype.renderEvent = function (wrapper, eventData, row, left, right, rowIndex) {
         var _this = this;
         var eventObj = this.isSpannedEvent(eventData, row);
         var wrap = this.createEventElement(eventObj);
         var width;
-        var top;
+        var index;
         if (eventObj[this.fields.isAllDay]) {
             eventObj[this.fields.endTime] = new Date(eventObj[this.fields.startTime].getTime());
         }
         if (this.parent.activeViewOptions.orientation === 'Horizontal') {
+            index = row + 1;
             width = eventObj.isSpanned.count * this.cellWidth;
-            top = this.cellHeader + (this.eventHeight * overlapCount) + EVENT_GAP$2 + (this.cellHeight * row);
         }
         else {
+            index = rowIndex + 1;
             width = this.cellWidth;
-            top = (this.cellHeight * rowIndex) + this.cellHeader + (this.eventHeight * overlapCount) + EVENT_GAP$2;
         }
+        var rowTd = this.parent.element.querySelector(".e-content-wrap tr:nth-child(" + index + ") td");
+        var top = rowTd.offsetTop + this.cellHeader + (this.eventHeight * eventObj.Index) + EVENT_GAP$2;
         sf.base.setStyleAttribute(wrap, {
-            'width': width + 'px', 'height': this.eventHeight + 'px', 'left': left + 'px',
-            'right': right + 'px', 'top': top + 'px'
+            'width': width + 'px', 'height': this.eventHeight + 'px', 'left': left + 'px', 'right': right + 'px', 'top': top + 'px'
         });
         var args = { data: eventObj, element: wrap, cancel: false, type: 'event' };
         this.parent.trigger(eventRendered, args, function (eventArgs) {
@@ -21275,7 +21356,7 @@ var YearEvent = /** @class */ (function (_super) {
             }
         });
     };
-    YearEvent.prototype.renderMoreIndicatior = function (wrapper, count, startDate, row, left, right, events) {
+    YearEvent.prototype.renderMoreIndicatior = function (wrapper, count, startDate, row, left, right, index) {
         var endDate = addDays(new Date(startDate.getTime()), 1);
         var moreIndicator = this.getMoreIndicatorElement(count, startDate, endDate);
         var rowTr = this.parent.element.querySelector(".e-content-wrap tr:nth-child(" + (row + 1) + ")");
@@ -21283,6 +21364,9 @@ var YearEvent = /** @class */ (function (_super) {
         left = (Math.floor(left / this.cellWidth) * this.cellWidth);
         right = (Math.floor(right / this.cellWidth) * this.cellWidth);
         sf.base.setStyleAttribute(moreIndicator, { 'width': this.cellWidth + 'px', 'left': left + 'px', 'right': right + 'px', 'top': top + 'px' });
+        if (!sf.base.isNullOrUndefined(index)) {
+            moreIndicator.setAttribute('data-group-index', index.toString());
+        }
         wrapper.appendChild(moreIndicator);
         sf.base.EventHandler.add(moreIndicator, 'click', this.moreIndicatorClick, this);
     };
@@ -21358,7 +21442,7 @@ var YearEvent = /** @class */ (function (_super) {
         var eventData = sf.base.extend({}, eventObj, null, true);
         var eventStart = eventData[this.fields.startTime];
         var eventEnd = eventData[this.fields.endTime];
-        var isSpanned = { isLeft: false, isRight: false };
+        var isSpanned = { isLeft: false, isRight: false, count: 1 };
         if (eventStart.getTime() < monthStart.getTime()) {
             eventData[this.fields.startTime] = monthStart;
             isSpanned.isLeft = true;
@@ -21367,8 +21451,10 @@ var YearEvent = /** @class */ (function (_super) {
             eventData[this.fields.endTime] = monthEnd;
             isSpanned.isRight = true;
         }
-        isSpanned.count = Math.ceil((eventData[this.fields.endTime].getTime() -
-            eventData[this.fields.startTime].getTime()) / MS_PER_DAY);
+        if (this.parent.activeViewOptions.group.resources.length === 0) {
+            isSpanned.count = Math.ceil((eventData[this.fields.endTime].getTime() -
+                eventData[this.fields.startTime].getTime()) / MS_PER_DAY);
+        }
         eventData.isSpanned = isSpanned;
         return eventData;
     };
@@ -21384,6 +21470,14 @@ var YearEvent = /** @class */ (function (_super) {
             }
         }
         return appointmentsList;
+    };
+    YearEvent.prototype.removeCellHeight = function () {
+        var elementSelector = "." + MONTH_HEADER_WRAPPER + " tbody tr,." + RESOURCE_COLUMN_TABLE_CLASS + " tbody tr,." + CONTENT_TABLE_CLASS + " tbody tr";
+        var rows = [].slice.call(this.element.querySelectorAll(elementSelector));
+        for (var _i = 0, rows_1 = rows; _i < rows_1.length; _i++) {
+            var row = rows_1[_i];
+            row.firstElementChild.style.height = '';
+        }
     };
     return YearEvent;
 }(TimelineEvent));
@@ -21592,6 +21686,9 @@ var Year = /** @class */ (function (_super) {
         var count;
         if (type === 'row') {
             count = this.parent.activeViewOptions.orientation === 'Horizontal' ? monthCount : maxCount;
+            if (!this.parent.activeViewOptions.timeScale.enable && this.parent.activeViewOptions.orientation === 'Vertical') {
+                count = 1;
+            }
         }
         else {
             count = this.parent.activeViewOptions.orientation === 'Horizontal' ? maxCount : monthCount;
@@ -21615,9 +21712,10 @@ var Year = /** @class */ (function (_super) {
         if (headerWrapper) {
             headerWrapper.firstElementChild.scrollLeft = target.scrollLeft;
         }
-        var monthWrapper = this.element.querySelector('.' + MONTH_HEADER_WRAPPER);
-        if (monthWrapper) {
-            monthWrapper.scrollTop = target.scrollTop;
+        var scrollTopSelector = "." + MONTH_HEADER_WRAPPER + ",." + RESOURCE_COLUMN_WRAP_CLASS;
+        var scrollTopElement = this.element.querySelector(scrollTopSelector);
+        if (scrollTopElement) {
+            scrollTopElement.scrollTop = target.scrollTop;
         }
     };
     Year.prototype.onScrollUiUpdate = function (args) {
@@ -21630,15 +21728,14 @@ var Year = /** @class */ (function (_super) {
         if (contentWrapper) {
             contentWrapper.style.height = sf.base.formatUnit(height);
         }
-        var leftPanelElement = this.element.querySelector('.' + MONTH_HEADER_WRAPPER);
+        var leftPanelSelector = "." + MONTH_HEADER_WRAPPER + ",." + RESOURCE_COLUMN_WRAP_CLASS;
+        var leftPanelElement = this.element.querySelector(leftPanelSelector);
         if (leftPanelElement) {
             leftPanelElement.style.height = sf.base.formatUnit(height - this.getScrollXIndent(contentWrapper));
         }
         if (!this.parent.isAdaptive && headerWrapper) {
             var scrollBarWidth = getScrollBarWidth();
             // tslint:disable:no-any
-            headerWrapper.firstElementChild.style[args.cssProperties.rtlBorder] = '';
-            headerWrapper.style[args.cssProperties.rtlPadding] = '';
             if (contentWrapper.offsetWidth - contentWrapper.clientWidth > 0) {
                 headerWrapper.firstElementChild.style[args.cssProperties.border] = scrollBarWidth > 0 ? '1px' : '0px';
                 headerWrapper.style[args.cssProperties.padding] = scrollBarWidth > 0 ? scrollBarWidth - 1 + 'px' : '0px';
@@ -21649,6 +21746,7 @@ var Year = /** @class */ (function (_super) {
             }
             // tslint:enable:no-any
         }
+        this.setColWidth(this.getContentAreaElement());
     };
     Year.prototype.startDate = function () {
         var startDate = new Date(this.parent.selectedDate.getFullYear(), 0, 1);
@@ -21659,7 +21757,11 @@ var Year = /** @class */ (function (_super) {
         return addDays(getWeekLastDate(endDate, this.parent.firstDayOfWeek), 1);
     };
     Year.prototype.getEndDateFromStartDate = function (start) {
-        return addDays(new Date(start.getTime()), 1);
+        var date = new Date(start.getTime());
+        if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
+            date = lastDateOfMonth(date);
+        }
+        return addDays(new Date(date.getTime()), 1);
     };
     Year.prototype.getNextPreviousDate = function (type) {
         return addYears(this.parent.selectedDate, ((type === 'next') ? 1 : -1));
@@ -21762,58 +21864,142 @@ var TimelineYear = /** @class */ (function (_super) {
     TimelineYear.prototype.renderHeader = function (headerWrapper) {
         var tr = sf.base.createElement('tr');
         headerWrapper.appendChild(tr);
-        tr.appendChild(sf.base.createElement('td', { className: LEFT_INDENT_CLASS }));
+        if (this.parent.activeViewOptions.orientation === 'Vertical' && this.parent.activeViewOptions.group.resources.length > 0 &&
+            !this.parent.uiStateValues.isGroupAdaptive) {
+            this.parent.resourceBase.renderResourceHeaderIndent(tr);
+        }
+        else {
+            var leftHeaderCells = sf.base.createElement('td', { className: LEFT_INDENT_CLASS });
+            tr.appendChild(leftHeaderCells);
+            leftHeaderCells.appendChild(this.renderResourceHeader(LEFT_INDENT_WRAP_CLASS));
+        }
         var td = sf.base.createElement('td');
         tr.appendChild(td);
         var container = sf.base.createElement('div', { className: DATE_HEADER_CONTAINER_CLASS });
         td.appendChild(container);
-        var wrapper = sf.base.createElement('div', { className: DATE_HEADER_WRAP_CLASS });
-        container.appendChild(wrapper);
-        var table = this.createTableLayout();
-        wrapper.appendChild(table);
-        table.appendChild(this.createTableColGroup(this.columnCount));
-        var innerTr = sf.base.createElement('tr');
-        table.querySelector('tbody').appendChild(innerTr);
-        for (var column = 0; column < this.columnCount; column++) {
-            var innerTd = sf.base.createElement('td', { className: HEADER_CELLS_CLASS });
-            if (this.parent.activeViewOptions.orientation === 'Horizontal') {
-                innerTd.innerHTML = "<span>" + this.parent.getDayNames('abbreviated')[column % 7] + "</span>";
-            }
-            else {
-                var date = new Date(this.parent.selectedDate.getFullYear(), column, 1);
-                innerTd.innerHTML = "<span>" + this.getMonthName(date) + "</span>";
-                innerTd.setAttribute('data-date', date.getTime().toString());
-            }
-            innerTr.appendChild(innerTd);
-            this.parent.trigger(renderCell, { elementType: 'headerCells', element: innerTd });
+        if (this.parent.activeViewOptions.orientation === 'Horizontal' && this.parent.activeViewOptions.group.resources.length > 0 &&
+            !this.parent.uiStateValues.isGroupAdaptive) {
+            container.appendChild(this.renderResourceHeader(DATE_HEADER_WRAP_CLASS));
+            this.columnCount = this.colLevels.slice(-1)[0].length;
         }
+        else {
+            var wrapper = sf.base.createElement('div', { className: DATE_HEADER_WRAP_CLASS });
+            container.appendChild(wrapper);
+            var table = this.createTableLayout();
+            wrapper.appendChild(table);
+            table.appendChild(this.createTableColGroup(this.columnCount));
+            var innerTr = sf.base.createElement('tr');
+            table.querySelector('tbody').appendChild(innerTr);
+            for (var column = 0; column < this.columnCount; column++) {
+                var innerTd = sf.base.createElement('td', { className: HEADER_CELLS_CLASS });
+                if (this.parent.activeViewOptions.orientation === 'Horizontal') {
+                    innerTd.innerHTML = "<span>" + this.parent.getDayNames('abbreviated')[column % 7] + "</span>";
+                }
+                else {
+                    var date = new Date(this.parent.selectedDate.getFullYear(), column, 1);
+                    innerTd.innerHTML = "<span>" + this.getMonthName(date) + "</span>";
+                    innerTd.setAttribute('data-date', date.getTime().toString());
+                }
+                innerTr.appendChild(innerTd);
+                this.parent.trigger(renderCell, { elementType: 'headerCells', element: innerTd });
+            }
+        }
+    };
+    TimelineYear.prototype.renderResourceHeader = function (className) {
+        var wrap = sf.base.createElement('div', { className: className });
+        var tbl = this.createTableLayout();
+        wrap.appendChild(tbl);
+        var trEle = sf.base.createElement('tr');
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            this.colLevels = this.generateColumnLevels();
+        }
+        else {
+            var colData = [{ className: [HEADER_CELLS_CLASS], type: 'headerCell' }];
+            this.colLevels = [colData];
+        }
+        for (var _i = 0, _a = this.colLevels; _i < _a.length; _i++) {
+            var col = _a[_i];
+            var ntr = trEle.cloneNode();
+            var count = className === DATE_HEADER_WRAP_CLASS ? col : [col[0]];
+            for (var _b = 0, count_1 = count; _b < count_1.length; _b++) {
+                var c = count_1[_b];
+                var tdEle = sf.base.createElement('td');
+                if (c.className) {
+                    sf.base.addClass([tdEle], c.className);
+                }
+                if (className === DATE_HEADER_WRAP_CLASS) {
+                    if (c.template) {
+                        sf.base.append(c.template, tdEle);
+                    }
+                    if (c.colSpan) {
+                        tdEle.setAttribute('colspan', c.colSpan.toString());
+                    }
+                    this.setResourceHeaderContent(tdEle, c);
+                }
+                var args = { elementType: c.type, element: tdEle, date: c.date, groupIndex: c.groupIndex };
+                this.parent.trigger(renderCell, args);
+                ntr.appendChild(tdEle);
+            }
+            tbl.querySelector('tbody').appendChild(ntr);
+        }
+        if (className === DATE_HEADER_WRAP_CLASS) {
+            tbl.appendChild(this.createTableColGroup(this.colLevels.slice(-1)[0].length));
+        }
+        return wrap;
     };
     TimelineYear.prototype.renderContent = function (contentWrapper) {
         var tr = sf.base.createElement('tr');
         contentWrapper.appendChild(tr);
         var firstTd = sf.base.createElement('td');
         var lastTd = sf.base.createElement('td');
-        sf.base.append([firstTd, lastTd], tr);
-        var monthWrapper = sf.base.createElement('div', { className: MONTH_HEADER_WRAPPER });
-        firstTd.appendChild(monthWrapper);
-        monthWrapper.appendChild(this.createTableLayout());
+        var tdCollection = [];
+        var monthTBody;
+        if (this.parent.activeViewOptions.orientation === 'Vertical' && this.parent.activeViewOptions.group.resources.length > 0 &&
+            !this.parent.uiStateValues.isGroupAdaptive) {
+            tdCollection.push(firstTd);
+            firstTd.appendChild(this.parent.resourceBase.createResourceColumn());
+            this.rowCount = this.parent.resourceBase.lastResourceLevel.length;
+        }
+        else {
+            tdCollection.push(firstTd);
+            var monthWrapper = sf.base.createElement('div', { className: MONTH_HEADER_WRAPPER });
+            firstTd.appendChild(monthWrapper);
+            monthWrapper.appendChild(this.createTableLayout());
+            monthTBody = monthWrapper.querySelector('tbody');
+        }
+        tdCollection.push(lastTd);
+        sf.base.append(tdCollection, tr);
         var content = sf.base.createElement('div', { className: CONTENT_WRAP_CLASS });
         lastTd.appendChild(content);
-        content.appendChild(this.createTableLayout(CONTENT_TABLE_CLASS));
+        var contentTable = this.createTableLayout(CONTENT_TABLE_CLASS);
+        content.appendChild(contentTable);
         var eventWrapper = sf.base.createElement('div', { className: EVENT_TABLE_CLASS });
         content.appendChild(eventWrapper);
-        var monthTBody = monthWrapper.querySelector('tbody');
-        var contentTBody = content.querySelector('tbody');
+        var contentTBody = contentTable.querySelector('tbody');
+        if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
+            if (this.parent.rowAutoHeight) {
+                sf.base.addClass([contentTable], AUTO_HEIGHT);
+            }
+            var colCount = this.parent.activeViewOptions.orientation === 'Horizontal' ? this.colLevels.slice(-1)[0].length : 12;
+            contentTable.appendChild(this.createTableColGroup(colCount));
+            this.renderResourceContent(eventWrapper, monthTBody, contentTBody);
+        }
+        else {
+            contentTable.appendChild(this.createTableColGroup(this.columnCount));
+            this.renderDefaultContent(eventWrapper, monthTBody, contentTBody);
+        }
+    };
+    TimelineYear.prototype.renderDefaultContent = function (wrapper, monthBody, contentBody) {
         for (var month = 0; month < this.rowCount; month++) {
-            eventWrapper.appendChild(sf.base.createElement('div', { className: APPOINTMENT_CONTAINER_CLASS }));
+            wrapper.appendChild(sf.base.createElement('div', { className: APPOINTMENT_CONTAINER_CLASS }));
             var monthDate = new Date(this.parent.selectedDate.getFullYear(), month, 1);
             var monthStart = this.parent.calendarUtil.getMonthStartDate(new Date(monthDate.getTime()));
             var monthEnd = this.parent.calendarUtil.getMonthEndDate(new Date(monthDate.getTime()));
-            var tr_1 = sf.base.createElement('tr', { attrs: { 'role': 'row' } });
-            var monthTr = tr_1.cloneNode();
-            monthTBody.appendChild(monthTr);
-            var contentTr = tr_1.cloneNode();
-            contentTBody.appendChild(contentTr);
+            var tr = sf.base.createElement('tr', { attrs: { 'role': 'row' } });
+            var monthTr = tr.cloneNode();
+            monthBody.appendChild(monthTr);
+            var contentTr = tr.cloneNode();
+            contentBody.appendChild(contentTr);
             var monthTd = sf.base.createElement('td', { className: MONTH_HEADER_CLASS, attrs: { 'role': 'gridcell' } });
             if (this.parent.activeViewOptions.orientation === 'Horizontal') {
                 monthTd.setAttribute('data-date', monthDate.getTime().toString());
@@ -21885,6 +22071,63 @@ var TimelineYear = /** @class */ (function (_super) {
                 }
                 this.parent.trigger(renderCell, { elementType: 'workCells', element: td, date: date });
             }
+        }
+    };
+    TimelineYear.prototype.renderResourceContent = function (wrapper, monthBody, contentBody) {
+        for (var row = 0; row < this.rowCount; row++) {
+            wrapper.appendChild(sf.base.createElement('div', { className: APPOINTMENT_CONTAINER_CLASS }));
+            var tr = sf.base.createElement('tr', { attrs: { 'role': 'row' } });
+            contentBody.appendChild(tr);
+            var resData = void 0;
+            if (this.parent.activeViewOptions.group.resources.length > 0 && !this.parent.uiStateValues.isGroupAdaptive) {
+                resData = this.parent.resourceBase.lastResourceLevel[row];
+            }
+            var monthDate = new Date(this.parent.selectedDate.getFullYear(), row, 1);
+            var date = this.parent.calendarUtil.getMonthStartDate(new Date(monthDate.getTime()));
+            if (this.parent.activeViewOptions.orientation === 'Horizontal') {
+                var monthTr = tr.cloneNode();
+                monthBody.appendChild(monthTr);
+                var monthTd = sf.base.createElement('td', {
+                    className: MONTH_HEADER_CLASS,
+                    innerHTML: "<span>" + this.getMonthName(monthDate) + "</span>",
+                    attrs: { 'role': 'gridcell', 'data-date': date.getTime().toString() }
+                });
+                monthTr.appendChild(monthTd);
+            }
+            for (var month = 0; month < this.columnCount; month++) {
+                var classList$$1 = [];
+                var groupIndex = row;
+                if (this.parent.activeViewOptions.orientation === 'Vertical') {
+                    classList$$1 = classList$$1.concat(resData.className);
+                    if (classList$$1.indexOf(RESOURCE_PARENT_CLASS) > -1) {
+                        classList$$1.push(RESOURCE_GROUP_CELLS_CLASS);
+                    }
+                    else {
+                        classList$$1.push(WORKDAY_CLASS);
+                    }
+                    monthDate = new Date(this.parent.selectedDate.getFullYear(), month, 1);
+                    date = this.parent.calendarUtil.getMonthStartDate(new Date(monthDate.getTime()));
+                }
+                else {
+                    groupIndex = this.colLevels.slice(-1)[0][month].groupIndex;
+                    classList$$1.push(WORKDAY_CLASS);
+                }
+                var td = sf.base.createElement('td', {
+                    className: WORK_CELLS_CLASS,
+                    attrs: {
+                        'role': 'gridcell', 'aria-selected': 'false',
+                        'data-date': date.getTime().toString()
+                    }
+                });
+                sf.base.addClass([td], classList$$1);
+                td.setAttribute('data-group-index', groupIndex.toString());
+                this.wireEvents(td, 'cell');
+                tr.appendChild(td);
+                this.parent.trigger(renderCell, { elementType: 'workCells', element: td, date: date });
+            }
+        }
+        if (this.parent.activeViewOptions.orientation === 'Vertical') {
+            this.collapseRows(this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS));
         }
     };
     return TimelineYear;

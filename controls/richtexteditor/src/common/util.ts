@@ -57,6 +57,19 @@ export function updateTextNode(value: string): string {
                 isPreviousInlineElem = false;
             }
         }
+        let tableElm: NodeListOf<HTMLElement> = resultElm.querySelectorAll('table');
+        for (let i: number = 0; i < tableElm.length; i++) {
+            if (tableElm[i].getAttribute('border') === '0') {
+                tableElm[i].removeAttribute('border');
+            }
+            let tdElm: NodeListOf<HTMLElement> = tableElm[i].querySelectorAll('td');
+            for (let j: number = 0; j < tdElm.length; j++) {
+                tdElm[j].style.removeProperty('border');
+            }
+            if (!tableElm[i].classList.contains(classes.CLS_TABLE)) {
+                tableElm[i].classList.add(classes.CLS_TABLE);
+            }
+        }
         let imageElm: NodeListOf<HTMLElement> = resultElm.querySelectorAll('img');
         for (let i: number = 0; i < imageElm.length; i++) {
             if (!imageElm[i].classList.contains(classes.CLS_RTE_IMAGE)) {

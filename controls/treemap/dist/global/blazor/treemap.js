@@ -1229,11 +1229,31 @@ function orderByArea(a, b) {
     }
     return -1;
 }
+function maintainSelection(treemap, element, className) {
+    var elementId = treemap.levelSelection;
+    if (elementId) {
+        for (var index = 0; index < elementId.length; index++) {
+            if (element.getAttribute('id') === elementId[index]) {
+                if (element.childElementCount > 0) {
+                    element.children[0].setAttribute('class', className);
+                    applyOptions(element.childNodes[0], {
+                        border: treemap.selectionSettings.border, fill: treemap.selectionSettings.fill,
+                        opacity: treemap.selectionSettings.opacity
+                    });
+                }
+            }
+            else {
+                element.setAttribute('class', '');
+            }
+        }
+    }
+}
 function removeClassNames(elements, type, treemap) {
     var element;
     var options = {};
     for (var j = 0; j < elements.length; j++) {
-        element = elements[j].childNodes[0];
+        element = sf.base.isNullOrUndefined(elements[j].childNodes[0]) ? elements[j] :
+            elements[j].childNodes[0];
         options = treemap.layout.renderItems[element.id.split('_')[6]]['options'];
         applyOptions(element, options);
         elements[j].classList.remove(type);
@@ -1997,6 +2017,7 @@ var LayoutPanel = /** @class */ (function () {
                     }
                     itemGroup.setAttribute('aria-label', item['name']);
                     itemGroup.setAttribute('tabindex', (_this.treemap.tabIndex + i + 2).toString());
+                    maintainSelection(_this.treemap, itemGroup, 'treeMapSelection');
                     _this.layoutGroup.appendChild(itemGroup);
                 }
             });
@@ -2430,6 +2451,8 @@ var TreeMap = /** @class */ (function (_super) {
         _this.drilledItems = [];
         /** @private */
         _this.isHierarchicalData = false;
+        /** @private */
+        _this.levelSelection = [];
         return _this;
     }
     TreeMap.prototype.preRender = function () {
@@ -4761,6 +4784,7 @@ var TreeMapSelection = /** @class */ (function () {
         var eventArgs;
         var eventBlazorArgs;
         var treemap = this.treemap;
+        treemap.levelSelection = [];
         var items = [];
         var targetId = targetEle.id;
         var labelText = targetEle.innerHTML;
@@ -4805,6 +4829,7 @@ var TreeMapSelection = /** @class */ (function () {
                     item = treemap.layout.renderItems[element.id.split('_')[6]];
                     if (orders.indexOf(item['levelOrderName']) > -1) {
                         selectionElements.push(element);
+                        treemap.levelSelection.push(element.id);
                         items.push(item);
                     }
                 }
@@ -5234,6 +5259,7 @@ exports.wordWrap = wordWrap;
 exports.textWrap = textWrap;
 exports.hide = hide;
 exports.orderByArea = orderByArea;
+exports.maintainSelection = maintainSelection;
 exports.removeClassNames = removeClassNames;
 exports.applyOptions = applyOptions;
 exports.textFormatter = textFormatter;

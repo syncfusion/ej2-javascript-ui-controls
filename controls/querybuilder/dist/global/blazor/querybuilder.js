@@ -161,6 +161,7 @@ var QueryBuilder = /** @class */ (function (_super) {
     function QueryBuilder(options, element) {
         var _this = _super.call(this, options, element) || this;
         _this.isReadonly = true;
+        _this.fields = { text: 'label', value: 'field' };
         return _this;
     }
     QueryBuilder.prototype.getPersistData = function () {
@@ -192,6 +193,7 @@ var QueryBuilder = /** @class */ (function (_super) {
         if (this.dataColl.length) {
             var columnKeys = Object.keys(this.dataColl[0]);
             var cols = [];
+            var categories = [];
             var type = void 0;
             var groupBy = false;
             var isDate = false;
@@ -227,8 +229,11 @@ var QueryBuilder = /** @class */ (function (_super) {
                     else {
                         columns[i].category = this.l10n.getConstant('OtherFields');
                     }
+                    if (categories.indexOf(columns[i].category) < 0) {
+                        categories.push(columns[i].category);
+                    }
                 }
-                if (groupBy) {
+                if (groupBy && (categories.length > 1 || categories[0] !== this.l10n.getConstant('OtherFields'))) {
                     this.fields = { text: 'label', value: 'field', groupBy: 'category' };
                 }
             }
@@ -2314,7 +2319,9 @@ var QueryBuilder = /** @class */ (function (_super) {
             isnull: 'IS NULL', isnotnull: 'IS NOT NULL', isempty: 'IS EMPTY', isnotempty: 'IS NOT EMPTY', notstartswith: 'NOT LIKE',
             notendswith: 'NOT LIKE', notcontains: 'NOT LIKE'
         };
-        this.fields = { text: 'label', value: 'field' };
+        if (!this.fields) {
+            this.fields = { text: 'label', value: 'field' };
+        }
     };
     QueryBuilder.prototype.render = function () {
         this.levelColl = {};

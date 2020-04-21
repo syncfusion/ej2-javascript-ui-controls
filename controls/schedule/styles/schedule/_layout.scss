@@ -1452,6 +1452,12 @@
         position: relative;
       }
 
+      .e-date-header-wrap table col,
+      .e-content-wrap table col {
+        width: 60px;
+      }
+
+      .e-resource-left-td,
       .e-date-header-wrap table td {
         background-color: $schedule-header-bg-color;
         border-color: $schedule-header-border-color;
@@ -1463,6 +1469,73 @@
         &.e-current-day {
           color: $schedule-active-font-color;
         }
+      }
+
+      .e-resource-text {
+        color: $schedule-primary-content-font-color;
+        font-size: 13px;
+        overflow: hidden;
+        padding: 0 15px;
+        text-overflow: ellipsis;
+
+        @if ($schedule-skin == 'bootstrap4') {
+          padding: 0 12px;
+        }
+      }
+
+      .e-resource-left-td {
+        vertical-align: middle;
+        width: $schedule-timeline-resources-width;
+      }
+
+      .e-left-indent-wrap .e-resource-cells,
+      .e-date-header-wrap .e-resource-cells {
+        height: 40px;
+      }
+
+      .e-resource-column-wrap {
+        overflow: hidden;
+        position: relative;
+
+        .e-resource-cells {
+          background-color: $schedule-work-cells-bg-color;
+          border-color: $schedule-content-border-color;
+          border-style: $border-type;
+          border-width: 0 1px 1px 0;
+          color: $schedule-primary-content-font-color;
+          height: 70px;
+          padding-left: 15px;
+          padding-right: 0;
+          vertical-align: middle;
+
+          @if ($schedule-skin == 'bootstrap4') {
+            padding-left: 12px;
+          }
+
+          &.e-child-node {
+            background-color: $schedule-workhour-bg-color;
+          }
+        }
+      }
+
+      .e-resource-column-table {
+        height: 100%;
+
+        &.e-auto-height {
+          height: auto;
+        }
+      }
+
+      .e-resource-tree-icon {
+        color: $schedule-icon-color;
+        cursor: pointer;
+        float: left;
+        font-family: 'e-icons';
+        font-size: 12px;
+      }
+
+      .e-resource-collapse {
+        transform: rotate(90deg);
       }
 
       .e-work-cells {
@@ -1519,20 +1592,30 @@
 
       .e-content-table {
         height: 100%;
+
+        &.e-auto-height {
+          height: auto;
+        }
       }
 
-      .e-left-indent {
+      .e-left-indent td {
         border-color: $schedule-content-border-color;
         border-style: $border-type;
-        border-width: 0 $border-size $border-size 0;
+        border-width: 0 $border-size 0 0;
         vertical-align: middle;
       }
 
+      .e-left-indent tr:last-child td {
+        border-width: 0 $border-size $border-size 0;
+      }
+
       &.e-horizontal .e-left-indent {
+        padding: 0;
         width: 100px;
       }
 
-      &.e-vertical .e-left-indent {
+      &.e-vertical .e-left-indent,
+      &.e-vertical .e-left-indent .e-header-cells {
         width: 50px;
       }
 
@@ -1551,7 +1634,7 @@
         cursor: default;
         font-weight: 400;
         height: $schedule-month-header-cells-nrml-height;
-        padding: 3px;
+        padding: 0;
         text-align: center;
 
         @if ($schedule-skin == 'bootstrap4') {

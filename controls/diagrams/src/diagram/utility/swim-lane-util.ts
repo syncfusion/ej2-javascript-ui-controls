@@ -596,7 +596,7 @@ export function updateConnectorsProperties(connectors: string[], diagram: Diagra
         }
         for (let i: number = 0; i < connectors.length; i++) {
             edges = diagram.getObject(connectors[i]) as Connector;
-            if (diagram.lineRoutingModule && (diagram.constraints & DiagramConstraints.LineRouting)) {
+            if (diagram.lineRoutingModule && (diagram.constraints & DiagramConstraints.LineRouting) && edges.type === 'Orthogonal') {
                 diagram.lineRoutingModule.refreshConnectorSegments(diagram, edges, true);
             } else {
                 diagram.connectorPropertyChange(edges, {} as Connector, {

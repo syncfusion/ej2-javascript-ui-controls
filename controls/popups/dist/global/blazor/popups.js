@@ -1987,7 +1987,7 @@ var Dialog = /** @class */ (function (_super) {
                 if (!sf.base.isNullOrUndefined(activeEle) && !sf.base.isNullOrUndefined((activeEle).blur)) {
                     activeEle.blur();
                 }
-                if (!sf.base.isNullOrUndefined(_this.storeActiveElement)) {
+                if (!sf.base.isNullOrUndefined(_this.storeActiveElement) && !sf.base.isNullOrUndefined(_this.storeActiveElement.focus)) {
                     _this.storeActiveElement.focus();
                 }
             }
@@ -2218,7 +2218,7 @@ var Dialog = /** @class */ (function (_super) {
         this.element.style.display = display;
         if (sf.base.Browser.isIE && this.height === 'auto' && !sf.base.isNullOrUndefined(this.contentEle)
             && this.element.offsetHeight < this.contentEle.offsetHeight) {
-            this.element.style.height = '100%';
+            this.element.style.height = 'inherit';
         }
     };
     Dialog.prototype.setEnableRTL = function () {
@@ -2569,6 +2569,9 @@ var Dialog = /** @class */ (function (_super) {
             document.querySelector(this.target) : this.target;
         if (this.dragObj) {
             this.dragObj.dragArea = this.targetEle;
+        }
+        if (this.isModal) {
+            this.updateIsModal();
         }
         this.setMaxHeight();
     };

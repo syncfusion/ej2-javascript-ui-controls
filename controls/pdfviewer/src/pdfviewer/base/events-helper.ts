@@ -1,12 +1,12 @@
 
 import { BaseEventArgs } from '@syncfusion/ej2-base';
 import { AnnotationType } from './index';
-import { ShapeLabelSettingsModel, DocumentTextCollectionSettingsModel } from '../pdfviewer-model';
+import { ShapeLabelSettingsModel, DocumentTextCollectionSettingsModel, RectangleBoundsModel } from '../pdfviewer-model';
 /**
  * Exports types used by PDF viewer.
  */
 
-/** 
+/**
  * This event arguments provides the necessary information about document load event.
  */
 export interface LoadEventArgs extends BaseEventArgs {
@@ -21,7 +21,7 @@ export interface LoadEventArgs extends BaseEventArgs {
     pageData: any;
 }
 
-/** 
+/**
  * This event arguments provides the necessary information about document unload event.
  */
 export interface UnloadEventArgs extends BaseEventArgs {
@@ -31,7 +31,7 @@ export interface UnloadEventArgs extends BaseEventArgs {
     documentName: string;
 }
 
-/** 
+/**
  * This event arguments provides the necessary information about document load failed event.
  */
 export interface LoadFailedEventArgs extends BaseEventArgs {
@@ -49,7 +49,7 @@ export interface LoadFailedEventArgs extends BaseEventArgs {
     password: string;
 }
 
-/** 
+/**
  * This event arguments provides the necessary information about ajax request failure event.
  */
 export interface AjaxRequestFailureEventArgs extends BaseEventArgs {
@@ -73,11 +73,11 @@ export interface AjaxRequestFailureEventArgs extends BaseEventArgs {
     action: string;
 }
 
-/** 
+/**
  * This event arguments provides the necessary information about form validation.
  */
 export interface ValidateFormFieldsArgs extends BaseEventArgs {
-    /** 
+    /**
      * The form fields object from PDF document being loaded.
      */
     // tslint:disable-next-line
@@ -93,7 +93,7 @@ export interface ValidateFormFieldsArgs extends BaseEventArgs {
     nonFillableFields: any;
 }
 
-/** 
+/**
  * This event arguments provides the necessary information about page click event.
  */
 export interface PageClickEventArgs extends BaseEventArgs {
@@ -115,7 +115,7 @@ export interface PageClickEventArgs extends BaseEventArgs {
     y: number;
 }
 
-/** 
+/**
  * This event arguments provides the necessary information about page change event.
  */
 export interface PageChangeEventArgs extends BaseEventArgs {
@@ -133,7 +133,7 @@ export interface PageChangeEventArgs extends BaseEventArgs {
     previousPageNumber: number;
 }
 
-/** 
+/**
  * This event arguments provides the necessary information about zoom change event.
  */
 export interface ZoomChangeEventArgs extends BaseEventArgs {
@@ -588,6 +588,38 @@ export interface ResizeSignatureEventArgs extends BaseEventArgs {
 }
 
 /**
+ * This event arguments provides the necessary information about signature select event.
+ */
+export interface SignatureSelectEventArgs extends BaseEventArgs {
+    /**
+     * Defines the id of the signature selected in the page of the PDF document.
+     */
+    id: string;
+    /**
+     * Defines the page number in which the signature is selected.
+     */
+    pageIndex: number;
+    /**
+     * Defines the bounds of the signature selected in the page of the PDF document.
+     */
+    // tslint:disable-next-line
+    bounds: any;
+    /**
+     * Define the opacity of the signature selected in the page of the PDF document.
+     */
+    opacity: number;
+    /**
+     * Define the stroke color of the signature selected in the page of the PDF document.
+     */
+    strokeColor: string;
+    /**
+     * Define the thickness of the signature selected in the page of the PDF document.
+     */
+    thickness: number;
+
+}
+
+/**
  * This event arguments provides the necessary information about annotation mouseover event.
  */
 export interface AnnotationMouseoverEventArgs extends BaseEventArgs {
@@ -600,7 +632,7 @@ export interface AnnotationMouseoverEventArgs extends BaseEventArgs {
      */
     pageIndex: number;
     /**
-     * Defines the type of the annotation during the mouse hover in the PDF document. 
+     * Defines the type of the annotation during the mouse hover in the PDF document.
      */
     annotationType: AnnotationType;
     /**
@@ -678,6 +710,12 @@ export interface AnnotationSelectEventArgs extends BaseEventArgs {
      */
     isProgrammaticSelection?: boolean;
 
+    /**
+     * Defines the annotation add mode.
+     */
+    annotationAddMode?: string;
+
+
 }
 
 /**
@@ -699,7 +737,7 @@ export interface AnnotationDoubleClickEventArgs extends BaseEventArgs {
     annotation: any;
 }
 
-/** 
+/**
  * This event arguments provides the necessary information about thumbnail click event.
  */
 export interface ThumbnailClickEventArgs extends BaseEventArgs {
@@ -738,7 +776,7 @@ export interface TextSelectionEndEventArgs extends BaseEventArgs {
     textBounds: any;
 }
 
-/** 
+/**
  * This event arguments provides the necessary information about import annotations start event.
  */
 export interface ImportStartEventArgs extends BaseEventArgs {
@@ -749,7 +787,7 @@ export interface ImportStartEventArgs extends BaseEventArgs {
     importData: any;
 }
 
-/** 
+/**
  * This event arguments provides the necessary information about export annotations start event.
  */
 export interface ExportStartEventArgs extends BaseEventArgs {
@@ -760,7 +798,7 @@ export interface ExportStartEventArgs extends BaseEventArgs {
     exportData: any;
 }
 
-/** 
+/**
  * This event arguments provides the necessary information about import annotations success event.
  */
 export interface ImportSuccessEventArgs extends BaseEventArgs {
@@ -771,7 +809,7 @@ export interface ImportSuccessEventArgs extends BaseEventArgs {
     importData: any;
 }
 
-/** 
+/**
  * This event arguments provides the necessary information about export annotations success event.
  */
 export interface ExportSuccessEventArgs extends BaseEventArgs {
@@ -786,7 +824,7 @@ export interface ExportSuccessEventArgs extends BaseEventArgs {
     fileName: string;
 }
 
-/** 
+/**
  * This event arguments provides the necessary information about import annotations failure event.
  */
 export interface ImportFailureEventArgs extends BaseEventArgs {
@@ -801,7 +839,7 @@ export interface ImportFailureEventArgs extends BaseEventArgs {
     errorDetails: string;
 }
 
-/** 
+/**
  * This event arguments provides the necessary information about export annotations failure event.
  */
 export interface ExportFailureEventArgs extends BaseEventArgs {
@@ -816,7 +854,7 @@ export interface ExportFailureEventArgs extends BaseEventArgs {
     errorDetails: string;
 }
 
-/** 
+/**
  * This event arguments provides the necessary information about text extraction completed in the PDF Viewer.
  */
 export interface ExtractTextCompletedEventArgs extends BaseEventArgs {
@@ -826,7 +864,7 @@ export interface ExtractTextCompletedEventArgs extends BaseEventArgs {
     // tslint:disable-next-line
     documentTextCollection: DocumentTextCollectionSettingsModel[][];
 }
-/** 
+/**
  * This event arguments provides the necessary information about data.
  */
 export interface AjaxRequestInitiateEventArgs extends BaseEventArgs {
@@ -859,4 +897,54 @@ export interface DownloadEndEventArgs extends BaseEventArgs {
      * Defines the base 64 string of the loaded PDF document data.
      */
     downloadDocument: string;
+}
+
+/**
+ * This event arguments provides the necessary information about text search start event.
+ */
+export interface TextSearchStartEventArgs extends BaseEventArgs {
+    /**
+     * Specifies the searchText content in the PDF Viewer.
+     */
+    searchText: string;
+    /**
+     * Specifies the match case of the searched text.
+     */
+    matchCase: boolean;
+}
+
+/**
+ * This event arguments provides the necessary information about text search highlight event.
+ */
+export interface TextSearchHighlightEventArgs extends BaseEventArgs {
+    /**
+     * Specifies the searchText content in the PDF Viewer.
+     */
+    searchText: string;
+    /**
+     * Specifies the match case of the searched text.
+     */
+    matchCase: boolean;
+    /**
+     * Specifies the bounds of the highlighted searched text.
+     */
+    bounds: RectangleBoundsModel;
+    /**
+     * Specifies the page number of the highlighted search text.
+     */
+    pageNumber: number;
+}
+
+/**
+ * This event arguments provides the necessary information about text search end event.
+ */
+export interface TextSearchCompleteEventArgs extends BaseEventArgs {
+    /**
+     * Specifies the searchText content in the PDF Viewer.
+     */
+    searchText: string;
+    /**
+     * Specifies the match case of the searched text.
+     */
+    matchCase: boolean;
 }

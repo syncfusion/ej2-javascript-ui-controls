@@ -635,18 +635,23 @@ describe('RTE base module', () => {
         let rteObj: RichTextEditor;
         let actionBeginTiggered: boolean = false;
         let actionCompleteTiggered: boolean = false;
+        let afterImageDeleteTiggered: boolean = false;
         let keyBoardEvent: any = { preventDefault: () => { }, key: 'A', stopPropagation: () => { }, shiftKey: false, which: 8 };
         beforeAll(() => {
             rteObj = renderRTE({
                 value: '',
                 actionBegin: onActionBeginfun,
-                actionComplete: onActionCompletefun
+                actionComplete: onActionCompletefun,
+                afterImageDelete: afterImageDeletefun
             });
             function onActionBeginfun(): void {
                 actionBeginTiggered = true; 
             }
             function onActionCompletefun(): void {
                 actionCompleteTiggered = true; 
+            }
+            function afterImageDeletefun(args: any): void {
+                afterImageDeleteTiggered = true;
             }
         });
 
@@ -741,10 +746,67 @@ describe('RTE base module', () => {
             expect(actionCompleteTiggered).toBe(true);
         });
 
+        it('delete key press for the image element by selecting all', () => {
+            let keyBoardEvent: any = { preventDefault: () => { }, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46 };
+            rteObj.contentModule.getEditPanel().innerHTML = `<div class='actiondiv'><p>test</p><img id='img1' src="https://www.google.co.in/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" width="250" height="250"><p>test2</p></div>`;
+            let editNode: HTMLElement = rteObj.contentModule.getEditPanel() as HTMLElement;
+            editNode.focus();
+            let selectNode: Element = editNode.querySelector('.actiondiv');
+            let curDocument: Document = rteObj.contentModule.getDocument();
+            setCursorPoint(curDocument, selectNode, 0);
+            rteObj.selectAll();
+            keyBoardEvent.which = 46;
+            keyBoardEvent.action = 'delete';
+            keyBoardEvent.code = 'Delete';
+            keyBoardEvent.type = 'keydown';
+            (rteObj as any).keyDown(keyBoardEvent);
+            keyBoardEvent.type = 'keyup';
+            (rteObj as any).keyUp(keyBoardEvent);
+            expect(afterImageDeleteTiggered).toBe(true);
+        });
+
+        it('delete key press for the image element by selecting all', () => {
+            afterImageDeleteTiggered = false;
+            let keyBoardEvent: any = { preventDefault: () => { }, key: 'delete', stopPropagation: () => { }, shiftKey: false, which: 46 };
+            rteObj.contentModule.getEditPanel().innerHTML = `<div class='actiondiv'><p>test<img id='img1' src="https://www.google.co.in/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" width="250" height="250"></p><p>test2</p></div>`;
+            let editNode: HTMLElement = rteObj.contentModule.getEditPanel() as HTMLElement;
+            editNode.focus();
+            let selectNode: Element = editNode.querySelector('.actiondiv');
+            let curDocument: Document = rteObj.contentModule.getDocument();
+            setCursorPoint(curDocument, (selectNode.childNodes[0].childNodes[0] as Element), 4)
+            keyBoardEvent.which = 46;
+            keyBoardEvent.action = 'delete';
+            keyBoardEvent.code = 'Delete';
+            keyBoardEvent.type = 'keydown';
+            (rteObj as any).keyDown(keyBoardEvent);
+            keyBoardEvent.type = 'keyup';
+            (rteObj as any).keyUp(keyBoardEvent);
+            expect(afterImageDeleteTiggered).toBe(true);
+        });
+
+        it('Backspace key press for the image element by selecting all', () => {
+            afterImageDeleteTiggered = false;
+            let keyBoardEvent: any = { preventDefault: () => { }, key: 'Backspace', stopPropagation: () => { }, shiftKey: false, which: 8 };
+            rteObj.contentModule.getEditPanel().innerHTML = `<div class='actiondiv'><p>test<img id='img1' src="https://www.google.co.in/images/branding/googlelogo/2x/googlelogo_color_272x92dp.png" width="250" height="250">test</p><p>test2</p></div>`;
+            let editNode: HTMLElement = rteObj.contentModule.getEditPanel() as HTMLElement;
+            editNode.focus();
+            let selectNode: Element = editNode.querySelector('.actiondiv');
+            let curDocument: Document = rteObj.contentModule.getDocument();
+            setCursorPoint(curDocument, (selectNode.childNodes[0].childNodes[2] as Element), 0)
+            keyBoardEvent.which = 8;
+            keyBoardEvent.code = 'Backspace';
+            keyBoardEvent.type = 'keydown';
+            (rteObj as any).keyDown(keyBoardEvent);
+            keyBoardEvent.type = 'keyup';
+            (rteObj as any).keyUp(keyBoardEvent);
+            expect(afterImageDeleteTiggered).toBe(true);
+        });
+
         afterAll(() => {
             destroy(rteObj);
         });
     });
+
 
     describe('Toolbar - Print Module', () => {
         describe('Print rendering testing', () => {
@@ -2161,6 +2223,23 @@ describe('RTE base module', () => {
             setCursorPoint(curDocument, selectNode, 0);
             keyBoardEvent.ctrlKey = true;
             keyBoardEvent.shiftKey = true;
+            keyBoardEvent.action = 'insert-link';
+            (rteObj as any).keyDown(keyBoardEvent);
+            expect((rteObj.linkModule as any).dialogObj).not.toBeNull();
+            (document.querySelector('.e-rte-linkurl') as any).value = 'http://data';
+            keyBoardEvent.action = 'escape';
+            (rteObj as any).keyDown(keyBoardEvent);
+            expect((rteObj.linkModule as any).dialogObj).toBeNull();
+        });
+
+        it('insert-link: ctrl+k', () => {
+            editNode.innerHTML = innerHTML;
+            editNode.focus();
+            selectNode = editNode.querySelector('.first-p');
+            let sel = new NodeSelection().setSelectionText(document, selectNode.childNodes[0], selectNode.childNodes[0], 1, 5);
+            keyBoardEvent.ctrlKey = true;
+            keyBoardEvent.shiftKey = true;
+            keyBoardEvent.code = 'KeyK';
             keyBoardEvent.action = 'insert-link';
             (rteObj as any).keyDown(keyBoardEvent);
             expect((rteObj.linkModule as any).dialogObj).not.toBeNull();

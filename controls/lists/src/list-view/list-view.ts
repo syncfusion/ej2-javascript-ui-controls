@@ -1663,6 +1663,8 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         if (!(isBlazor() && this.isServerRendered)) {
             this.element.innerHTML = '';
             super.destroy();
+        } else {
+            this.element.style.display = 'none';
         }
     }
 

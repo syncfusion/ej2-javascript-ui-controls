@@ -171,7 +171,7 @@ var Column = /** @class */ (function () {
             this.type = (sf.base.isBlazor() && !sf.base.isNullOrUndefined(this.template) && sf.base.isNullOrUndefined(this.field)) ? 'none' : null;
         }
         else if (this.type) {
-            this.type = this.type ? this.type.toLowerCase() : this.type;
+            this.type = typeof (this.type) === 'string' ? this.type.toLowerCase() : undefined;
         }
         if (this.editType) {
             this.editType = this.editType.toLowerCase();
@@ -5846,8 +5846,11 @@ var FocusStrategy = /** @class */ (function () {
             var data = { virtualData: {}, isAdd: false, isCancel: false };
             this.parent.notify(getVirtualData, data);
             var isKeyFocus = this.actions.some(function (value) { return value === _this.activeKey; });
-            if (data.isAdd || Object.keys(data.virtualData).length || isKeyFocus || data.isCancel) {
+            var isSelected = this.parent.contentModule ?
+                this.parent.contentModule.selectedRowIndex > -1 : false;
+            if (data.isAdd || Object.keys(data.virtualData).length || isKeyFocus || data.isCancel || isSelected) {
                 data.isCancel = false;
+                this.parent.contentModule.selectedRowIndex = -1;
                 if (isKeyFocus) {
                     this.activeKey = this.empty;
                     this.parent.notify('virtaul-key-handler', e);
@@ -6552,6 +6555,8 @@ var HeaderFocus = /** @class */ (function (_super) {
         var isLastCell;
         var lastRow;
         var headerSwap = frozenSwap;
+        var fMatrix = this.parent.focusModule.fHeader && this.parent.focusModule.fHeader.matrix.matrix;
+        var isPresent = fMatrix && !sf.base.isNullOrUndefined(fMatrix[current[0]]);
         if (this.parent.enableHeaderFocus && action === 'tab') {
             lastRow = this.matrix.matrix.length - 1 === current[0];
             isLastCell = current[1] === this.matrix.matrix[current[0]].lastIndexOf(1);
@@ -6571,7 +6576,7 @@ var HeaderFocus = /** @class */ (function (_super) {
         }
         return {
             swap: ((action === 'downArrow' || enterFrozen) && current[0] === this.matrix.matrix.length - 1) ||
-                frozenSwap || (action === 'tab' && lastRow && isLastCell),
+                (isPresent && frozenSwap) || (action === 'tab' && lastRow && isLastCell),
             toHeader: headerSwap,
             toFrozen: frozenSwap
         };
@@ -6661,9 +6666,11 @@ var FixedHeaderFocus = /** @class */ (function (_super) {
     }
     FixedHeaderFocus.prototype.jump = function (action, current) {
         var enterFrozen = this.parent.frozenRows !== 0 && action === 'enter';
+        var hMatrix = this.parent.focusModule.header && this.parent.focusModule.header.matrix.matrix;
+        var isPresent = hMatrix && !sf.base.isNullOrUndefined(hMatrix[current[0]]);
         return {
             swap: (action === 'downArrow' || enterFrozen) && current[0] === this.matrix.matrix.length - 1
-                || ((action === 'rightArrow' || action === 'tab') && current[1] === this.matrix.columns),
+                || ((action === 'rightArrow' || action === 'tab') && current[1] === this.matrix.columns && isPresent),
             toHeader: (action === 'rightArrow' || action === 'tab') && current[1] === this.matrix.columns,
             toFrozen: (action === 'downArrow' || enterFrozen) && current[0] === this.matrix.matrix.length - 1
         };
@@ -6963,6 +6970,7 @@ var Selection = /** @class */ (function () {
         var selectData;
         var isRemoved = false;
         if (gObj.enableVirtualization && index > -1) {
+            this.parent.notify(selectVirtualRow, { selectedIndex: index });
             if (selectedRow && gObj.getRowObjectFromUID(selectedRow.getAttribute('data-uid'))) {
                 selectData = gObj.getRowObjectFromUID(selectedRow.getAttribute('data-uid')).data;
             }
@@ -6971,7 +6979,6 @@ var Selection = /** @class */ (function () {
                 if (prevSelectedData.length > 0) {
                     this.clearRowSelection();
                 }
-                this.parent.notify(selectVirtualRow, { selectedIndex: index });
                 return;
             }
         }
@@ -6985,20 +6992,30 @@ var Selection = /** @class */ (function () {
             return;
         }
         var isRowSelected = selectedRow.hasAttribute('aria-selected');
-        this.actualTarget = this.isInteracted ? this.actualTarget : null;
+        this.activeTarget();
         isToggle = !isToggle ? isToggle :
             !this.selectedRowIndexes.length ? false :
                 (this.selectedRowIndexes.length === 1 ? (index === this.selectedRowIndexes[0]) : false);
         var args;
         var can = 'cancel';
         if (!isToggle) {
-            args = {
-                data: selectData, rowIndex: index, isCtrlPressed: this.isMultiCtrlRequest,
-                isShiftPressed: this.isMultiShiftRequest, row: selectedRow,
-                previousRow: gObj.getRowByIndex(this.prevRowIndex),
-                previousRowIndex: this.prevRowIndex, target: this.actualTarget, cancel: false, isInteracted: this.isInteracted
-            };
-            args = this.addMovableArgs(args, selectedMovableRow);
+            var isHybrid = 'isHybrid';
+            if (!sf.base.isBlazor() || this.parent.isJsComponent || this.parent[isHybrid]) {
+                args = {
+                    data: selectData, rowIndex: index, isCtrlPressed: this.isMultiCtrlRequest,
+                    isShiftPressed: this.isMultiShiftRequest, row: selectedRow,
+                    previousRow: gObj.getRowByIndex(this.prevRowIndex),
+                    previousRowIndex: this.prevRowIndex, target: this.actualTarget, cancel: false, isInteracted: this.isInteracted
+                };
+                args = this.addMovableArgs(args, selectedMovableRow);
+            }
+            else {
+                args = {
+                    data: selectData, rowIndex: index, isCtrlPressed: this.isMultiCtrlRequest,
+                    isShiftPressed: this.isMultiShiftRequest, previousRowIndex: this.prevRowIndex,
+                    cancel: false, isInteracted: this.isInteracted
+                };
+            }
             this.parent.trigger(rowSelecting, this.fDataUpdate(args), this.rowSelectingCallBack(args, isToggle, index, selectData, isRemoved, isRowSelected, can));
         }
         else {
@@ -7009,6 +7026,7 @@ var Selection = /** @class */ (function () {
         var _this = this;
         return function (args) {
             if (!sf.base.isNullOrUndefined(args) && args[can] === true) {
+                _this.disableInteracted();
                 return;
             }
             _this.index = index;
@@ -7108,16 +7126,30 @@ var Selection = /** @class */ (function () {
         if (!this.isRowType() || this.isEditing()) {
             return;
         }
-        var args = {
-            cancel: false,
-            rowIndexes: rowIndexes, row: selectedRow, rowIndex: rowIndex, target: this.actualTarget,
-            prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
-            isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
-            data: selectedData
-        };
-        args = this.addMovableArgs(args, selectedMovableRow);
+        var isHybrid = 'isHybrid';
+        this.activeTarget();
+        var args;
+        if (!sf.base.isBlazor() || this.parent.isJsComponent || this.parent[isHybrid]) {
+            args = {
+                cancel: false,
+                rowIndexes: rowIndexes, row: selectedRow, rowIndex: rowIndex, target: this.actualTarget,
+                prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
+                isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
+                data: selectedData
+            };
+            args = this.addMovableArgs(args, selectedMovableRow);
+        }
+        else {
+            args = {
+                cancel: false,
+                rowIndexes: rowIndexes, rowIndex: rowIndex, previousRowIndex: this.prevRowIndex,
+                isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
+                data: selectedData
+            };
+        }
         this.parent.trigger(rowSelecting, this.fDataUpdate(args), function (args) {
             if (!sf.base.isNullOrUndefined(args) && args[can] === true) {
+                _this.disableInteracted();
                 return;
             }
             _this.clearRow();
@@ -7202,16 +7234,29 @@ var Selection = /** @class */ (function () {
                 this_1.isInteracted = false;
             }
             else {
-                args = {
-                    cancel: false,
-                    data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this_1.actualTarget,
-                    prevRow: gObj.getRows()[this_1.prevRowIndex], previousRowIndex: this_1.prevRowIndex,
-                    isCtrlPressed: this_1.isMultiCtrlRequest, isShiftPressed: this_1.isMultiShiftRequest,
-                    foreignKeyData: rowObj.foreignKeyData, isInteracted: this_1.isInteracted
-                };
-                args = this_1.addMovableArgs(args, selectedMovableRow);
+                var isHybrid = 'isHybrid';
+                this_1.activeTarget();
+                if (!sf.base.isBlazor() || this_1.parent.isJsComponent || this_1.parent[isHybrid]) {
+                    args = {
+                        cancel: false,
+                        data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this_1.actualTarget,
+                        prevRow: gObj.getRows()[this_1.prevRowIndex], previousRowIndex: this_1.prevRowIndex,
+                        isCtrlPressed: this_1.isMultiCtrlRequest, isShiftPressed: this_1.isMultiShiftRequest,
+                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this_1.isInteracted
+                    };
+                    args = this_1.addMovableArgs(args, selectedMovableRow);
+                }
+                else {
+                    args = {
+                        cancel: false,
+                        data: rowObj.data, rowIndex: rowIndex, previousRowIndex: this_1.prevRowIndex,
+                        isCtrlPressed: this_1.isMultiCtrlRequest, isShiftPressed: this_1.isMultiShiftRequest,
+                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this_1.isInteracted
+                    };
+                }
                 this_1.parent.trigger(rowSelecting, this_1.fDataUpdate(args), function (args) {
                     if (!sf.base.isNullOrUndefined(args) && args[can] === true) {
+                        _this.disableInteracted();
                         return;
                     }
                     if (_this.isSingleSel()) {
@@ -7382,7 +7427,6 @@ var Selection = /** @class */ (function () {
             if (span.classList.contains('e-rowselect')) {
                 span.classList.remove('e-spanclicked');
             }
-            this.isInteracted = false;
             if (this.parent.isPersistSelection) {
                 this.persistSelectedData = [];
                 this.selectedRowState = {};
@@ -7391,6 +7435,7 @@ var Selection = /** @class */ (function () {
             this.clearCellSelection();
             this.prevRowIndex = undefined;
             this.enableSelectMultiTouch = false;
+            this.isInteracted = false;
         }
     };
     /**
@@ -7513,8 +7558,15 @@ var Selection = /** @class */ (function () {
             if (!sf.base.isBlazor() || this.parent.isJsComponent || this.parent[isHybrid]) {
                 var rowInString = 'row';
                 var target_2 = 'target';
+                var rowidx = 'rowIndex';
+                var rowidxex = 'rowIndexes';
                 rowDeselectObj[rowInString] = row;
                 rowDeselectObj[target_2] = this.actualTarget;
+                var isHeaderCheckBxClick = this.actualTarget && !sf.base.isNullOrUndefined(sf.base.closest(this.actualTarget, 'thead'));
+                if (isHeaderCheckBxClick) {
+                    rowDeselectObj[rowidx] = rowIndex[0];
+                    rowDeselectObj[rowidxex] = rowIndex;
+                }
             }
             else {
                 var rowIndex_2 = 'rowIndex';
@@ -9532,6 +9584,12 @@ var Selection = /** @class */ (function () {
         this.parent.isSelectedRowIndexUpdating = true;
         this.parent.selectedRowIndex = index;
     };
+    Selection.prototype.disableInteracted = function () {
+        this.isInteracted = false;
+    };
+    Selection.prototype.activeTarget = function () {
+        this.actualTarget = this.isInteracted ? this.actualTarget : null;
+    };
     return Selection;
 }());
 
@@ -9722,7 +9780,9 @@ var ShowHide = /** @class */ (function () {
      * @param  {Column[]} columns - Specifies the columns.
      * @return {void}
      */
-    ShowHide.prototype.setVisible = function (columns) {
+    ShowHide.prototype.setVisible = function (columns, changedStateColumns) {
+        var _this = this;
+        if (changedStateColumns === void 0) { changedStateColumns = []; }
         if (isActionPrevent(this.parent)) {
             this.parent.notify(preventBatch, {
                 instance: this, handler: this.setVisible,
@@ -9730,24 +9790,44 @@ var ShowHide = /** @class */ (function () {
             });
             return;
         }
-        this.parent.trigger(actionBegin, { requestType: 'columnstate' });
-        var currentViewCols = this.parent.getColumns();
-        columns = sf.base.isNullOrUndefined(columns) ? currentViewCols : columns;
-        if (this.parent.allowSelection && this.parent.getSelectedRecords().length) {
-            this.parent.clearSelection();
-        }
-        if (this.parent.enableColumnVirtualization) {
-            var colsInCurrentView = columns.filter(function (col1) { return (currentViewCols.some(function (col2) { return col1.field === col2.field; })); });
-            if (colsInCurrentView.length) {
-                this.parent.notify(columnVisibilityChanged, columns);
+        changedStateColumns = (changedStateColumns.length > 0) ? changedStateColumns :
+            sf.base.isBlazor() ? (JSON.parse(JSON.stringify(columns))) : columns;
+        var args = {
+            requestType: 'columnstate',
+            cancel: false,
+            columns: changedStateColumns
+        };
+        var cancel = 'cancel';
+        this.parent.trigger(actionBegin, args, function (showHideArgs) {
+            var currentViewCols = _this.parent.getColumns();
+            columns = sf.base.isNullOrUndefined(columns) ? currentViewCols : columns;
+            if (showHideArgs[cancel]) {
+                if (columns.length > 0) {
+                    columns[0].visible = true;
+                }
+                return;
             }
-        }
-        else {
-            this.parent.notify(columnVisibilityChanged, columns);
-        }
-        if (this.parent.columnQueryMode !== 'All') {
-            this.parent.refresh();
-        }
+            if (_this.parent.allowSelection && _this.parent.getSelectedRecords().length) {
+                _this.parent.clearSelection();
+            }
+            if (_this.parent.enableColumnVirtualization) {
+                var colsInCurrentView = columns.filter(function (col1) { return (currentViewCols.some(function (col2) { return col1.field === col2.field; })); });
+                if (colsInCurrentView.length) {
+                    _this.parent.notify(columnVisibilityChanged, columns);
+                }
+            }
+            else {
+                _this.parent.notify(columnVisibilityChanged, columns);
+            }
+            var params = {
+                requestType: 'columnstate',
+                columns: changedStateColumns
+            };
+            _this.parent.trigger(actionComplete, params);
+            if (_this.parent.columnQueryMode !== 'All') {
+                _this.parent.refresh();
+            }
+        });
     };
     return ShowHide;
 }());
@@ -11800,7 +11880,6 @@ var Grid = /** @class */ (function (_super) {
         var checkboxColumn = this.getColumns().filter(function (col) { return col.type === 'checkbox'; });
         if (checkboxColumn.length && this.selectionSettings.checkboxMode === 'ResetOnRowClick') {
             this.isCheckBoxSelection = false;
-            this.refreshHeader();
         }
     };
     Grid.prototype.removeMediaListener = function () {
@@ -16600,13 +16679,13 @@ var CheckBoxFilterBase = /** @class */ (function () {
             if (e.target.tagName.toLowerCase() === 'input' && e.target.classList.contains('e-searchinput')) {
                 var value = e.target.value;
                 if (this.options.column.type === 'boolean') {
-                    if (value !== undefined &&
+                    if (value !== '' &&
                         this.getLocalizedLabel('FilterTrue').toLowerCase().indexOf(value.toLowerCase()) !== -1) {
-                        value = 'true';
+                        value = true;
                     }
-                    else if (value !== undefined &&
+                    else if (value !== '' &&
                         this.getLocalizedLabel('FilterFalse').toLowerCase().indexOf(value.toLowerCase()) !== -1) {
-                        value = 'false';
+                        value = false;
                     }
                 }
                 var args = {
@@ -16620,8 +16699,8 @@ var CheckBoxFilterBase = /** @class */ (function () {
                     },
                     field: this.options.field
                 };
-                value ? this.isForeignColumn(this.options.column) ? this.foreignFilter(args, value) :
-                    this.options.handler(args) : this.closeDialog();
+                value !== undefined && value !== null && value !== '' ? this.isForeignColumn(this.options.column) ?
+                    this.foreignFilter(args, value) : this.options.handler(args) : this.closeDialog();
             }
             else {
                 if (e.keyCode === 13) {
@@ -16918,6 +16997,7 @@ var CheckBoxFilterBase = /** @class */ (function () {
             var colData = ('result' in this.options.column.dataSource) ?
                 new sf.data.DataManager(this.options.column.dataSource.result) :
                 this.options.column.dataSource;
+            this.foreignKeyQuery.params = query.params;
             allPromise.push(colData.executeQuery(this.foreignKeyQuery));
             runArray.push(function (data) { return _this.foreignKeyData = data; });
         }
@@ -20070,7 +20150,8 @@ var NumberFilterUI = /** @class */ (function () {
         this.instance = this.parent.createElement('input', { className: 'e-flmenu-input', id: 'numberui-' + args.column.uid });
         args.target.appendChild(this.instance);
         this.numericTxtObj = new sf.inputs.NumericTextBox(sf.base.extend({
-            format: args.column.format,
+            format: typeof (args.column.format) === 'string' || sf.base.isUndefined(args.column.format) ? args.column.format :
+                args.column.format.format,
             locale: this.parent.locale,
             cssClass: 'e-popup-flmenu',
             placeholder: args.localizeText.getConstant('EnterValue'),
@@ -21571,7 +21652,8 @@ var Filter = /** @class */ (function () {
             if (filterIconElement) {
                 filterIconElement.classList.remove('e-filtered');
             }
-            this.parent.renderModule.refresh(); //hot-fix onpropertychanged not working for object { array }           
+            args.requestType = 'filtering';
+            this.parent.renderModule.refresh(args); //hot-fix onpropertychanged not working for object { array }           
         }
         this.parent.dataBind();
     };
@@ -21753,6 +21835,9 @@ var Resize = /** @class */ (function () {
         var columnbyindex = gObj.getColumns()[columnIndexByField];
         var result;
         var width = columnbyindex.width = sf.base.formatUnit(Math.max(wHeader, wContent, wFooter));
+        if (parseInt(width, 10) > columnbyindex.maxWidth) {
+            columnbyindex.width = columnbyindex.maxWidth;
+        }
         this.widthService.setColumnWidth(gObj.getColumns()[columnIndexByField]);
         result = gObj.getColumns().some(function (x) { return x.width === null || x.width === undefined || x.width.length <= 0; });
         if (result === false) {
@@ -21963,10 +22048,14 @@ var Resize = /** @class */ (function () {
                 sf.base.EventHandler.add(this.helper, sf.base.Browser.touchStartEvent, this.resizeStart, this);
             }
             else {
-                var args = {
-                    e: sf.base.isBlazor() && !this.parent.isJsComponent ? null : e,
-                    column: this.column
-                };
+                var args = void 0;
+                if (!sf.base.isBlazor() || this.parent.isJsComponent) {
+                    args = { e: e, column: this.column };
+                }
+                else {
+                    var clonedColumn = sf.base.extend({}, this.column);
+                    args = { column: clonedColumn };
+                }
                 this.parent.trigger(resizeStart, args, function (args) {
                     if (args.cancel || _this.parent.isEdit) {
                         _this.cancelResizeAction();
@@ -22110,10 +22199,14 @@ var Resize = /** @class */ (function () {
         sf.base.EventHandler.remove(document, sf.base.Browser.touchEndEvent, this.resizeEnd);
         this.updateCursor('remove');
         sf.base.detach(this.helper);
-        var args = {
-            e: sf.base.isBlazor() && !this.parent.isJsComponent ? null : e,
-            column: this.column
-        };
+        var args;
+        if (!sf.base.isBlazor() || this.parent.isJsComponent) {
+            args = { e: e, column: this.column };
+        }
+        else {
+            var clonedColumn = sf.base.extend({}, this.column);
+            args = { column: clonedColumn };
+        }
         var content = this.parent.getContent().querySelector('.e-content');
         var cTable = content.querySelector('.e-movablecontent') ? content.querySelector('.e-movablecontent') : content;
         if (cTable.scrollHeight >= cTable.clientHeight) {
@@ -26559,12 +26652,14 @@ var VirtualContentRenderer = /** @class */ (function (_super) {
     };
     VirtualContentRenderer.prototype.dataBound = function () {
         if (this.isSelection && this.activeKey !== 'upArrow' && this.activeKey !== 'downArrow') {
-            this.isSelection = false;
             this.parent.selectRow(this.selectedRowIndex);
         }
         else if (!sf.base.isBlazor()) {
             this.activeKey = this.empty;
         }
+    };
+    VirtualContentRenderer.prototype.rowSelected = function () {
+        this.isSelection = false;
     };
     VirtualContentRenderer.prototype.eventListener = function (action) {
         var _this = this;
@@ -26572,6 +26667,7 @@ var VirtualContentRenderer = /** @class */ (function (_super) {
         this.parent.addEventListener(dataBound, this.dataBound.bind(this));
         this.parent.addEventListener(actionBegin, this.actionBegin.bind(this));
         this.parent.addEventListener(actionComplete, this.actionComplete.bind(this));
+        this.parent.addEventListener(rowSelected, this.rowSelected.bind(this));
         this.parent[action](refreshVirtualBlock, this.refreshContentRows, this);
         this.parent[action](selectVirtualRow, this.selectVirtualRow, this);
         this.parent[action](virtaulCellFocus, this.virtualCellFocus, this);
@@ -26922,15 +27018,20 @@ var VirtualContentRenderer = /** @class */ (function (_super) {
         var _this = this;
         if (this.activeKey !== 'upArrow' && this.activeKey !== 'downArrow'
             && !this.requestTypes.some(function (value) { return value === _this.requestType; })) {
-            this.isSelection = true;
-            this.selectedRowIndex = args.selectedIndex;
-            var page = Math.ceil((args.selectedIndex + 1) / this.parent.pageSettings.pageSize);
-            var blockIndexes = this.vgenerator.getBlockIndexes(page);
-            var scrollTop = this.offsets[blockIndexes[0] - 1];
             var ele = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent()
                 : this.parent.getContent().firstElementChild;
-            if (!sf.base.isNullOrUndefined(scrollTop)) {
-                ele.scrollTop = scrollTop;
+            var selectedRow = this.parent.getRowByIndex(args.selectedIndex);
+            var rectTop = selectedRow ? selectedRow.getBoundingClientRect().top : 0;
+            var rowHeight = this.parent.getRowHeight();
+            var eleOffsHeight = ele.offsetHeight;
+            if (!selectedRow || (rectTop < rowHeight || rectTop > eleOffsHeight)) {
+                this.isSelection = true;
+                this.selectedRowIndex = args.selectedIndex;
+                var viewPortCount = Math.floor(eleOffsHeight / rowHeight);
+                var scrollTop = (args.selectedIndex - viewPortCount) * rowHeight;
+                if (!sf.base.isNullOrUndefined(scrollTop)) {
+                    ele.scrollTop = scrollTop;
+                }
             }
         }
         this.requestType = this.empty;
@@ -27760,15 +27861,15 @@ var EditRender = /** @class */ (function () {
         if (this.parent.editSettings.template) {
             return {};
         }
-        for (var i = 0, len = cols.length; i < len; i++) {
+        var _loop_1 = function (i, len) {
             var col = cols[i];
-            if (this.parent.editModule.checkColumnIsGrouped(col)) {
-                continue;
+            if (this_1.parent.editModule.checkColumnIsGrouped(col)) {
+                return "continue";
             }
             if (col.commands || col.commandsTemplate) {
                 var cells = void 0;
-                var cellRendererFact = this.serviceLocator.getService('cellRendererFactory');
-                var model = new RowModelGenerator(this.parent);
+                var cellRendererFact = this_1.serviceLocator.getService('cellRendererFactory');
+                var model = new RowModelGenerator(this_1.parent);
                 var cellRenderer = cellRendererFact.getCellRenderer(exports.CellType.CommandColumn);
                 cells = model.generateRows(args.rowData)[0].cells;
                 var cell = cells.filter(function (cell) { return cell.rowID; });
@@ -27776,17 +27877,20 @@ var EditRender = /** @class */ (function () {
                 var div = td.firstElementChild;
                 div.setAttribute('textAlign', td.getAttribute('textAlign'));
                 elements[col.uid] = div;
-                continue;
+                return "continue";
             }
             var value = (col.valueAccessor(col.field, args.rowData, col));
             var tArgs = { column: col, value: value, type: args.requestType, data: args.rowData };
             var temp = col.edit.create;
-            var input = void 0;
+            var input;
             if (col.editTemplate) {
-                input = this.parent.createElement('span', { attrs: { 'e-mappinguid': col.uid } });
-                var tempID = this.parent.element.id + col.uid + 'editTemplate';
+                input = this_1.parent.createElement('span', { attrs: { 'e-mappinguid': col.uid } });
+                var tempID = this_1.parent.element.id + col.uid + 'editTemplate';
                 var tempData = sf.base.extend({}, {}, args.rowData, true);
-                appendChildren(input, col.getEditTemplate()(tempData, this.parent, 'editTemplate', tempID));
+                var template_1 = col.getEditTemplate()(tempData, this_1.parent, 'editTemplate', tempID);
+                /* tslint:disable-next-line:no-any */
+                this_1.parent.isReact && this_1.parent.editSettings.mode === 'Batch' ?
+                    setTimeout(function () { appendChildren(input, template_1); }) : appendChildren(input, template_1);
                 if (sf.base.isBlazor()) {
                     var setRules = function (ruleColumn) {
                         var column = ruleColumn;
@@ -27807,7 +27911,7 @@ var EditRender = /** @class */ (function () {
                     input = col.edit.create(tArgs);
                 }
                 if (typeof input === 'string') {
-                    var div = this.parent.createElement('div');
+                    var div = this_1.parent.createElement('div');
                     div.innerHTML = input;
                     input = div.firstChild;
                 }
@@ -27827,6 +27931,10 @@ var EditRender = /** @class */ (function () {
                 }
             }
             elements[col.uid] = input;
+        };
+        var this_1 = this;
+        for (var i = 0, len = cols.length; i < len; i++) {
+            _loop_1(i, len);
         }
         return elements;
     };
@@ -27950,6 +28058,7 @@ var DropDownEditCell = /** @class */ (function () {
             floatLabelType: isInline ? 'Never' : 'Always', open: this.dropDownOpen.bind(this),
             sortOrder: 'Ascending'
         }, args.column.edit.params));
+        this.obj.query.params = this.parent.query.params;
         if (sf.base.isBlazor()) {
             this.obj.locale = this.parent.locale;
         }
@@ -27998,6 +28107,14 @@ var NumericEditCell = /** @class */ (function () {
     function NumericEditCell(parent) {
         this.parent = parent;
     }
+    NumericEditCell.prototype.keyEventHandler = function (args) {
+        if (args.keyCode === 13 || args.keyCode === 9) {
+            var evt = document.createEvent('HTMLEvents');
+            evt.initEvent('change', false, true);
+            /* tslint:disable-next-line:no-any */
+            this.dispatchEvent(evt);
+        }
+    };
     NumericEditCell.prototype.create = function (args) {
         var complexFieldName = getComplexFieldID(args.column.field);
         this.instances = new sf.base.Internationalization(this.parent.locale);
@@ -28009,9 +28126,7 @@ var NumericEditCell = /** @class */ (function () {
         });
     };
     NumericEditCell.prototype.read = function (element) {
-        var value = this.instances.getNumberParser({ format: 'n' })(element.value);
-        /* tslint:disable:no-string-literal */
-        return (this.obj['trimValue'])(value);
+        return this.obj.value;
     };
     NumericEditCell.prototype.write = function (args) {
         var col = args.column;
@@ -28026,9 +28141,11 @@ var NumericEditCell = /** @class */ (function () {
         }, col.edit.params));
         args.element.setAttribute('name', getComplexFieldID(args.column.field));
         this.obj.appendTo(args.element);
+        this.obj.element.addEventListener('keydown', this.keyEventHandler);
     };
     NumericEditCell.prototype.destroy = function () {
         if (this.obj && !this.obj.isDestroyed) {
+            this.obj.element.removeEventListener('keydown', this.keyEventHandler);
             this.obj.destroy();
         }
     };
@@ -28236,7 +28353,7 @@ var NormalEdit = /** @class */ (function () {
         var _this = this;
         var gObj = this.parent;
         var args = {
-            requestType: 'save', type: actionBegin, data: data, cancel: false,
+            requestType: 'save', action: 'edit', type: actionBegin, data: data, cancel: false,
             previousData: gObj.getCurrentViewRecords()[index],
             row: gObj.getRowByIndex(index)
         };
@@ -30940,10 +31057,13 @@ var ColumnChooser = /** @class */ (function () {
     function ColumnChooser(parent, serviceLocator) {
         this.showColumn = [];
         this.hideColumn = [];
+        this.changedColumns = [];
+        this.unchangedColumns = [];
         this.isDlgOpen = false;
         this.dlghide = false;
         this.initialOpenDlg = true;
         this.stateChangeColumns = [];
+        this.changedStateColumns = [];
         this.isInitialOpen = false;
         this.isCustomizeOpenCC = false;
         this.searchOperator = 'startswith';
@@ -31241,32 +31361,48 @@ var ColumnChooser = /** @class */ (function () {
         return this.mainDiv;
     };
     ColumnChooser.prototype.confirmDlgBtnClick = function (args) {
+        var _this = this;
         this.parent.notify(columnChooserOpened, { event: args, dialog: this.dlgObj });
         this.stateChangeColumns = [];
+        this.changedStateColumns = [];
+        this.changedColumns = (this.changedColumns.length > 0) ? this.changedColumns : this.unchangedColumns;
+        this.changedColumnState(this.changedColumns);
         var uncheckedLength = this.ulElement.querySelector('.e-uncheck') &&
             this.ulElement.querySelectorAll('.e-uncheck:not(.e-selectall)').length;
         if (!sf.base.isNullOrUndefined(args)) {
             if (uncheckedLength < this.parent.getColumns().length) {
-                this.parent.trigger(actionBegin, { requestType: 'columnstate' });
-                if (this.hideColumn.length) {
-                    this.columnStateChange(this.hideColumn, false);
-                }
-                if (this.showColumn.length) {
-                    this.columnStateChange(this.showColumn, true);
-                }
-                var params = {
-                    requestType: 'columnstate', element: this.parent.element,
-                    columns: this.stateChangeColumns,
-                    dialogInstance: sf.base.isBlazor() && !this.parent.isJsComponent ? null : this.dlgObj
-                };
-                this.parent.trigger(actionComplete, params);
-                if (sf.base.isBlazor()) {
-                    params.dialogInstance = this.dlgObj;
-                }
-                this.getShowHideService.setVisible(this.stateChangeColumns);
-                this.clearActions();
-                this.parent.notify(tooltipDestroy, { module: 'edit' });
+                var chooserArgs = { requestType: 'columnstate', columns: this.changedStateColumns, cancel: false };
+                var cancel_1 = 'cancel';
+                this.parent.trigger(actionBegin, chooserArgs, function (columnChooserArgs) {
+                    if (columnChooserArgs[cancel_1]) {
+                        _this.showColumn = [];
+                        _this.hideColumn = [];
+                        _this.hideDialog();
+                        return;
+                    }
+                    if (_this.hideColumn.length) {
+                        _this.columnStateChange(_this.hideColumn, false);
+                    }
+                    if (_this.showColumn.length) {
+                        _this.columnStateChange(_this.showColumn, true);
+                    }
+                    var params = {
+                        requestType: 'columnstate',
+                        columns: _this.changedStateColumns
+                    };
+                    _this.parent.trigger(actionComplete, params);
+                    _this.getShowHideService.setVisible(_this.stateChangeColumns, _this.changedStateColumns);
+                    _this.clearActions();
+                    _this.parent.notify(tooltipDestroy, { module: 'edit' });
+                });
             }
+        }
+    };
+    ColumnChooser.prototype.changedColumnState = function (changedColumns) {
+        for (var index = 0; index < changedColumns.length; index++) {
+            var colUid = changedColumns[index];
+            var currentCol = this.parent.getColumnByUid(colUid);
+            sf.base.isBlazor() ? this.changedStateColumns.push(JSON.parse(JSON.stringify(currentCol))) : this.changedStateColumns.push(currentCol);
         }
     };
     ColumnChooser.prototype.columnStateChange = function (stateColumns, state) {
@@ -31286,7 +31422,8 @@ var ColumnChooser = /** @class */ (function () {
         this.hideDialog();
         this.addcancelIcon();
     };
-    ColumnChooser.prototype.checkstatecolumn = function (isChecked, coluid) {
+    ColumnChooser.prototype.checkstatecolumn = function (isChecked, coluid, selectAll) {
+        if (selectAll === void 0) { selectAll = false; }
         if (isChecked) {
             if (this.hideColumn.indexOf(coluid) !== -1) {
                 this.hideColumn.splice(this.hideColumn.indexOf(coluid), 1);
@@ -31302,6 +31439,20 @@ var ColumnChooser = /** @class */ (function () {
             if (this.hideColumn.indexOf(coluid) === -1) {
                 this.hideColumn.push(coluid);
             }
+        }
+        if (selectAll) {
+            if (!isChecked) {
+                this.changedColumns.push(coluid);
+            }
+            else {
+                this.unchangedColumns.push(coluid);
+            }
+        }
+        else if (this.changedColumns.indexOf(coluid) !== -1) {
+            this.changedColumns.splice(this.changedColumns.indexOf(coluid), 1);
+        }
+        else {
+            this.changedColumns.push(coluid);
         }
     };
     ColumnChooser.prototype.columnChooserSearch = function (searchVal) {
@@ -31391,9 +31542,11 @@ var ColumnChooser = /** @class */ (function () {
             var columnUid = parentsUntil(elem, 'e-ccheck').getAttribute('uid');
             var column = this.parent.getColumns();
             if (columnUid === 'grid-selectAll') {
+                this.changedColumns = [];
+                this.unchangedColumns = [];
                 for (var i = 0; i < column.length; i++) {
                     if (column[i].showInColumnChooser) {
-                        this.checkstatecolumn(checkstate, column[i].uid);
+                        this.checkstatecolumn(checkstate, column[i].uid, true);
                     }
                 }
             }
@@ -32274,14 +32427,17 @@ var ExcelExport = /** @class */ (function () {
                 style: undefined,
                 isForeignKey: col.isForeignColumn(),
             };
-            cell.value = gObj.getColumnByField(item.field).headerText +
+            var value = gObj.getColumnByField(item.field).headerText +
                 ': ' + (!col.enableGroupByFormat ? this.exportValueFormatter.formatCellValue(args) : item.key) + ' - ';
             if (item.count > 1) {
-                cell.value += item.count + ' items';
+                value += item.count + ' items';
             }
             else {
-                cell.value += item.count + ' item';
+                value += item.count + ' item';
             }
+            var cArgs = { captionText: value, type: this.isCsvExport ? 'CSV' : 'Excel' };
+            this.parent.trigger(exportGroupCaption, cArgs);
+            cell.value = cArgs.captionText;
             cell.style = this.getCaptionThemeStyle(this.theme);
             var captionModelGen = new CaptionSummaryModelGenerator(gObj);
             var groupCaptionSummaryRows = captionModelGen.generateRows(item);
@@ -33191,7 +33347,7 @@ var PdfExport = /** @class */ (function () {
             };
             /* tslint:disable-next-line:max-line-length */
             var value = this_1.parent.getColumnByField(dataSourceItems.field).headerText + ': ' + (!col.enableGroupByFormat ? this_1.exportValueFormatter.formatCellValue(args) : dataSourceItems.key) + ' - ' + dataSourceItems.count + (dataSource.count > 1 ? ' items' : ' item');
-            var cArgs = { captionText: value };
+            var cArgs = { captionText: value, type: 'PDF' };
             this_1.parent.trigger(exportGroupCaption, cArgs, function (cArgs) {
                 row.cells.getCell(groupIndex).value = cArgs.captionText;
                 row.cells.getCell(groupIndex + 1).style.stringFormat = new sf.pdfexport.PdfStringFormat(sf.pdfexport.PdfTextAlignment.Left);
@@ -33236,6 +33392,10 @@ var PdfExport = /** @class */ (function () {
         var _this = this;
         var columnCount = gridColumn.length + childLevels;
         var depth = measureColumnDepth(eCols);
+        var index = this.parent.getIndentCount();
+        if (this.parent.allowGrouping) {
+            index = this.parent.groupSettings.columns.length;
+        }
         var cols = eCols;
         pdfGrid.columns.add(columnCount);
         pdfGrid.headers.add(rows.length);
@@ -33284,7 +33444,7 @@ var PdfExport = /** @class */ (function () {
                 }
                 else if (cols[i].visible) {
                     spanCnt++;
-                    applyTextAndSpan(rowIndex, i + colIndex, cols[i], depth, 0);
+                    applyTextAndSpan(rowIndex, i + colIndex + index, cols[i], depth, 0);
                 }
             }
             return spanCnt;
@@ -34593,7 +34753,20 @@ var ContextMenu$1 = /** @class */ (function () {
         }
         args.column = this.targetColumn;
         args.rowInfo = this.targetRowdata;
-        this.parent.trigger(contextMenuClick, args);
+        if (sf.base.isBlazor()) {
+            var contextMenuClickArgs = args.rowInfo.row ?
+                {
+                    element: args.element, item: args.item, event: args.event, column: this.targetColumn, rowInfo: {
+                        rowData: this.targetRowdata.rowData, rowIndex: this.targetRowdata.rowIndex, cellIndex: this.targetRowdata.cellIndex
+                    }
+                }
+                : this.targetColumn ? { element: args.element, item: args.item, event: args.event, column: this.targetColumn }
+                    : { element: args.element, item: args.item, event: args.event };
+            this.parent.trigger(contextMenuClick, contextMenuClickArgs);
+        }
+        else {
+            this.parent.trigger(contextMenuClick, args);
+        }
     };
     ContextMenu$$1.prototype.contextMenuOnClose = function (args) {
         var parent = 'parentObj';

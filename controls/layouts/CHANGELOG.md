@@ -2,6 +2,16 @@
 
 ## [Unreleased]
 
+## 18.1.45 (2020-04-21)
+
+### Splitter
+
+#### Bug Fixes
+
+-`#272515`, `#F153399` - Resolved the issue with nested splitter resizing is not working properly.
+
+- Resolved the alignment issue with expand and collapse icons in the internet explorer browser.
+
 ## 18.1.44 (2020-04-14)
 
 ### Splitter
@@ -14,7 +24,7 @@
 
 #### Bug Fixes
 
-- `#271938` - The issue with the Dashboard Layout resize icon style overrides the RTE component image style has been resolved.
+- `#271938` - The issue with `The Dashboard layout resize icon style overrides the RTE component image style` has been resolved.
 
 ## 17.4.51 (2020-02-25)
 

@@ -610,4 +610,41 @@ describe('filter menu module =>', () => {
             destroy(gridObj);
         });
     });
+
+    describe('EJ2-38311 ==> filtering menu with object type format  =>', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowFiltering: true,
+                    allowPaging: true,
+                    filterSettings: { type: 'Menu' },
+                    allowReordering: true,
+                    columns: [{ field: 'OrderID', type: 'number' },
+                    { field: 'Freight', format: {format:'C2'}, type: 'number' }
+                    ],
+                    actionComplete: actionComplete
+                },
+                done);
+        });
+        it('filtering menu open based on its column type =>', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'filterafteropen') {
+                    expect((gridObj.filterModule as any).filterModule.dlgDiv.querySelector('.e-numerictextbox').ej2_instances[0].format).
+                    toBe((gridObj.columns[1] as any).format.format);
+                    gridObj.actionComplete = null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.filterModule as any).filterIconClickHandler(
+                getClickObj(gridObj.getColumnHeaderByField('Freight').querySelector('.e-filtermenudiv')));
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
 });

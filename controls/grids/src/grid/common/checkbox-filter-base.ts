@@ -342,14 +342,14 @@ export class CheckBoxFilterBase {
     private btnClick(e: MouseEvent): void {
         if (this.filterState) {
             if ((<Element>e.target).tagName.toLowerCase() === 'input' && (<Element>e.target).classList.contains('e-searchinput')) {
-                let value: string = (<HTMLInputElement>e.target).value;
+                let value: string | Boolean = (<HTMLInputElement>e.target).value;
                 if (this.options.column.type === 'boolean') {
-                    if (value !== undefined &&
+                    if (value !== '' &&
                         this.getLocalizedLabel('FilterTrue').toLowerCase().indexOf((value as string).toLowerCase()) !== -1) {
-                        value = 'true';
-                    } else if (value !== undefined &&
+                        value = true;
+                    } else if (value !== '' &&
                         this.getLocalizedLabel('FilterFalse').toLowerCase().indexOf((value as string).toLowerCase()) !== -1) {
-                        value = 'false';
+                        value = false;
                     }
                 }
                 let args: Object = {
@@ -363,8 +363,8 @@ export class CheckBoxFilterBase {
                     },
                     field: this.options.field
                 };
-                value ? this.isForeignColumn(this.options.column as Column) ? this.foreignFilter(args, value) :
-                    this.options.handler(args) : this.closeDialog();
+                value !== undefined && value !== null && value !== '' ? this.isForeignColumn(this.options.column as Column) ?
+                    this.foreignFilter(args, value as string) : this.options.handler(args) : this.closeDialog();
             } else {
                 if ((<{ keyCode?: number }>e).keyCode === 13) {
                     this.fltrBtnHandler();
@@ -669,6 +669,7 @@ export class CheckBoxFilterBase {
             let colData: DataManager = ('result' in this.options.column.dataSource) ?
             new DataManager((this.options.column.dataSource as DataResult).result) :
             this.options.column.dataSource as DataManager;
+            this.foreignKeyQuery.params = query.params;
             allPromise.push(colData.executeQuery(this.foreignKeyQuery));
             runArray.push((data: Object[]) => this.foreignKeyData = data);
         }

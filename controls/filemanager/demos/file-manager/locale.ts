@@ -90,7 +90,9 @@ L10n.load({
             "Button-Keep-Both": "Keep both",
             "Button-Replace": "Replace",
             "Button-Skip": "Skip",
-            "ApplyAll-Label": "Do this for all current items"
+            "ApplyAll-Label": "Do this for all current items",
+			"Network-Error": "NetworkError: Failed to send on XMLHTTPRequest: Failed to load",
+			"Server-Error": "ServerError: Invalid response from"
         }
     },
     "de": {
@@ -176,7 +178,9 @@ L10n.load({
             "Button-Keep-Both": "Behalte beides",
             "Button-Replace": "Ersetzen",
             "Button-Skip": "Überspringen",
-            "ApplyAll-Label": "Mache das für alle aktuellen Artikel"
+            "ApplyAll-Label": "Mache das für alle aktuellen Artikel",
+			"Network-Error": "NetworkError: Fehler beim Senden auf XMLHTTPRequest: Fehler beim Laden",
+			"Server-Error": "ServerError: Ungültige Antwort von"
         }
     },
     "fr-CH": {
@@ -262,7 +266,9 @@ L10n.load({
             "Button-Keep-Both": "Garde les deux",
             "Button-Replace": "Remplacer",
             "Button-Skip": "Sauter",
-            "ApplyAll-Label": "Faites ceci pour tous les articles en cours"
+            "ApplyAll-Label": "Faites ceci pour tous les articles en cours",
+			"Network-Error": "NetworkError: échec d'envoi sur XMLHTTPRequest: échec de chargement",
+			"Server-Error": "ServerError: réponse non valide de"
         }
     },
     "ar": {
@@ -348,7 +354,9 @@ L10n.load({
             "Button-Keep-Both": "احتفظ بكليهما",
             "Button-Replace": "يحل محل",
             "Button-Skip": "تخطى",
-            "ApplyAll-Label": "القيام بذلك لجميع العناصر الحالية"
+            "ApplyAll-Label": "القيام بذلك لجميع العناصر الحالية",
+			"Network-Error": "NetworkError: فشل الإرسال على XMLHTTPRequest: فشل التحميل",
+			"Server-Error": "ServerError: استجابة غير صالحة من"
         }
     },
     "zh": {
@@ -434,7 +442,9 @@ L10n.load({
             "Button-Keep-Both": "保留两个",
             "Button-Replace": "更换",
             "Button-Skip": "跳跃",
-            "ApplyAll-Label": "为所有当前项目执行此操作"
+            "ApplyAll-Label": "为所有当前项目执行此操作",
+			"Network-Error": "NetworkError：无法在XMLHTTP上发送请求：无法加载",
+			"Server-Error": "ServerError：来自的无效响应"
         }
     }
 })

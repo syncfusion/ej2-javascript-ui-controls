@@ -253,6 +253,14 @@ export class AutoComplete extends ComboBox {
             }
         }
         if (!isNullOrUndefined(this.suggestionCount)) {
+            // Since defualt value of suggestioncount is 20, checked the condition
+            if (this.suggestionCount !== 20) {
+                for (let queryElements: number = 0; queryElements < filterQuery.queries.length; queryElements++) {
+                    if (filterQuery.queries[queryElements].fn === 'onTake') {
+                        filterQuery.queries.splice(queryElements, 1);
+                    }
+                }
+            }
             filterQuery.take(this.suggestionCount);
         }
         return filterQuery;
@@ -384,7 +392,11 @@ export class AutoComplete extends ComboBox {
         if (isNullOrUndefined(fields.itemCreated)) {
             fields.itemCreated = (e: { [key: string]: HTMLElement }) => {
                 if (this.highlight) {
-                    highlightSearch(e.item, this.queryString, this.ignoreCase, this.filterType);
+                    if (this.element.tagName === this.getNgDirective() && this.itemTemplate) {
+                        setTimeout((): void => { highlightSearch(e.item, this.queryString, this.ignoreCase, this.filterType); }, 0);
+                    } else {
+                        highlightSearch(e.item, this.queryString, this.ignoreCase, this.filterType);
+                    }
                 }
             };
         } else {

@@ -90,6 +90,11 @@ function pixelToPoint(value) {
 function pointToPixel(value) {
     return (value * 92) / 76;
 }
+let uid = 0;
+/** @hidden */
+function getUid$1() {
+    return uid++;
+}
 
 /**
  *  Date processor is used to handle date of task data.
@@ -6470,8 +6475,8 @@ class ChartRows {
             this.parent.editModule.taskbarEditModule.taskBarEditAction === 'ParentResizing' ?
             true : false;
         let template = '<div class="' + taskBarMainContainer + ' ' +
-            this.parent.getUnscheduledTaskClass(data.ganttProperties) + '" ' +
-            ((data.ganttProperties.cssClass) ? data.ganttProperties.cssClass : '') +
+            this.parent.getUnscheduledTaskClass(data.ganttProperties) + ' ' +
+            ((data.ganttProperties.cssClass) ? data.ganttProperties.cssClass : '') + '" ' +
             ' tabindex="-1" style="' + ((data.ganttProperties.isMilestone && !manualParent) ?
             ('width:' + this.milestoneHeight + 'px;height:' +
                 this.milestoneHeight + 'px;margin-top:' + this.milestoneMarginTop + 'px;left:' + (data.ganttProperties.left -
@@ -14693,7 +14698,7 @@ class DialogEdit {
     }
     getPredecessorModel(fields) {
         if (isNullOrUndefined(fields) || fields.length === 0) {
-            fields = ['ID', 'Name', 'Type', 'Offset'];
+            fields = ['ID', 'Name', 'Type', 'Offset', 'UniqueId'];
         }
         let inputModel = {};
         inputModel.editSettings = { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' };
@@ -14740,6 +14745,12 @@ class DialogEdit {
                 column = {
                     field: 'offset', headerText: this.localeObj.getConstant('offset'), editType: 'stringedit',
                     defaultValue: '0 days', validationRules: { required: true }, width: '100px'
+                };
+                columns.push(column);
+            }
+            else if (fields[i].toLowerCase() === 'uniqueid') {
+                column = {
+                    field: 'uniqueId', isPrimaryKey: true, visible: false, defaultValue: getUid$1().toString()
                 };
                 columns.push(column);
             }
@@ -14960,6 +14971,9 @@ class DialogEdit {
         let columns = gridModel.columns;
         columns[1].edit = {
             write: (args) => {
+                if (getValue('requestType', args) === 'add') {
+                    setValue('rowData.uniqueId', getUid$1(), args);
+                }
                 let field = 'name';
                 let autoObj = new ComboBox({
                     dataSource: new DataManager(this.preTableCollection),
@@ -15162,6 +15176,7 @@ class DialogEdit {
                     let offset = Math.abs(predecessor[i].offset);
                     let offsetUnit = predecessor[i].offsetUnit;
                     preData.offset = this.parent.dataOperation.getDurationString(offset, offsetUnit);
+                    preData.uniqueId = getUid$1();
                     preDataCollection.push(preData);
                 }
             }
@@ -15375,7 +15390,7 @@ class DialogEdit {
         if (gridObj.isEdit) {
             gridObj.endEdit();
         }
-        let dataSource = gridObj.currentViewData;
+        let dataSource = gridObj.dataSource;
         let predecessorName = [];
         let newValues = [];
         let predecessorString = '';
@@ -24892,5 +24907,5 @@ class PdfExport {
  * Gantt index file
  */
 
-export { Gantt, PdfHorizontalOverflowType, parentsUntil$1 as parentsUntil, isScheduledTask, getSwapKey, isRemoteData, getTaskData, formatString, getIndex, pixelToPoint, pointToPixel, load, rowDataBound, queryCellInfo, toolbarClick, keyPressed, Edit$2 as Edit, Reorder$1 as Reorder, Resize$1 as Resize, Filter$1 as Filter, Sort$1 as Sort, Dependency, Selection$1 as Selection, Toolbar$3 as Toolbar, DayMarkers, ContextMenu$2 as ContextMenu, ExcelExport$1 as ExcelExport, ColumnMenu$1 as ColumnMenu, RowDD$1 as RowDD, PdfExport, Column, DayWorkingTime, AddDialogFieldSettings, EditDialogFieldSettings, EditSettings, EventMarker, FilterSettings, SearchSettings, Holiday, LabelSettings, SelectionSettings, SplitterSettings, TaskFields, TimelineTierSettings, TimelineSettings, TooltipSettings, SortDescriptor, SortSettings, ResourceFields };
+export { Gantt, PdfHorizontalOverflowType, parentsUntil$1 as parentsUntil, isScheduledTask, getSwapKey, isRemoteData, getTaskData, formatString, getIndex, pixelToPoint, pointToPixel, getUid$1 as getUid, load, rowDataBound, queryCellInfo, toolbarClick, keyPressed, Edit$2 as Edit, Reorder$1 as Reorder, Resize$1 as Resize, Filter$1 as Filter, Sort$1 as Sort, Dependency, Selection$1 as Selection, Toolbar$3 as Toolbar, DayMarkers, ContextMenu$2 as ContextMenu, ExcelExport$1 as ExcelExport, ColumnMenu$1 as ColumnMenu, RowDD$1 as RowDD, PdfExport, Column, DayWorkingTime, AddDialogFieldSettings, EditDialogFieldSettings, EditSettings, EventMarker, FilterSettings, SearchSettings, Holiday, LabelSettings, SelectionSettings, SplitterSettings, TaskFields, TimelineTierSettings, TimelineSettings, TooltipSettings, SortDescriptor, SortSettings, ResourceFields };
 //# sourceMappingURL=ej2-gantt.es2015.js.map

@@ -732,13 +732,15 @@ export class CartesianAxisLayoutPanel {
         let pointX: number = 0;
         let pointY: number = 0;
         let elementSize: Size;
+        let labelSpace: number = axis.labelPadding;
         let options: TextOption; let isAxisBreakLabel: boolean;
         let isLabelInside: boolean = axis.labelPosition === 'Inside';
         let isOpposed: boolean = axis.opposedPosition;
         let tickSpace: number = axis.labelPosition === axis.tickPosition ? axis.majorTickLines.height : 0;
-        let padding: number = tickSpace + this.padding + axis.lineStyle.width * 0.5;
+        let padding: number = tickSpace + labelSpace + axis.lineStyle.width * 0.5;
         padding = (axis.opposedPosition) ? padding : -padding;
         let anchor: string = ((isOpposed && isLabelInside) || (!isOpposed && !isLabelInside)) ? 'end' : 'start';
+        anchor = chart.isRtlEnabled ? ((axis.opposedPosition) ? 'end' : 'start') : anchor;
         let labelElement: Element = chart.renderer.createGroup({ id: chart.element.id + 'AxisLabels' + index });
         let scrollBarHeight: number = isNullOrUndefined(axis.crossesAt) ? axis.scrollBarHeight * (isOpposed ? 1 : -1) : 0;
         let textHeight: number;
@@ -1062,11 +1064,12 @@ export class CartesianAxisLayoutPanel {
     // tslint:disable-next-line:max-func-body-length
     public drawXAxisLabels(axis: Axis, index: number, parent: Element, rect: Rect): void {
         let chart: Chart = this.chart; let pointX: number = 0; let pointY: number = 0;
-        let elementSize: Size; let labelPadding: number; let xValue: number = 0;
+        let labelSpace: number = axis.labelPadding;
+        let elementSize: Size; let labelPadding: number; let anchor: string;
         let labelElement: Element = chart.renderer.createGroup({ id: chart.element.id + 'AxisLabels' + index });
         let islabelInside: boolean = axis.labelPosition === 'Inside'; let isOpposed: boolean = axis.opposedPosition;
         let tickSpace: number = axis.labelPosition === axis.tickPosition ? axis.majorTickLines.height : 0;
-        let padding: number = tickSpace + this.padding + axis.lineStyle.width * 0.5;
+        let padding: number = tickSpace + labelSpace + axis.lineStyle.width * 0.5;
         let rotateSize: Size; let diffHeight: number; let angle: number = axis.angle % 360;
         //I264474: Fix for X axis labels are not rendered in center of tick marks when angle is 270
         let anglePadding: number = ((angle === 90 || angle === -270) ? -4 : (angle === -90 || angle === 270) ? 4 : 0);
@@ -1098,7 +1101,8 @@ export class CartesianAxisLayoutPanel {
                     padding + scrollBarHeight + (angle ? (axis.maxLabelSize.height * 0.5) : (3 * (elementSize.height / 4)));
                 pointY = (rect.y + (labelPadding * label.index));
             }
-            options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, '');
+            anchor = chart.isRtlEnabled ? 'end' : '';
+            options = new TextOption(chart.element.id + index + '_AxisLabel_' + i, pointX, pointY, anchor);
             if (axis.edgeLabelPlacement) {
                 switch (axis.edgeLabelPlacement) {
                     case 'None':

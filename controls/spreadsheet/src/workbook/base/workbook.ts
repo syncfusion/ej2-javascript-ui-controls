@@ -652,8 +652,8 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
     public delete(startIndex?: number, endIndex?: number, model?: ModelType, sheet?: string | number): void {
         sheet = getSheetIndex(this, sheet) || 0;
         this.notify(deleteModel, <InsertDeleteModelArgs>{
-            model: !model || model === 'Sheet' ? this : this.sheets[sheet], start:
-                startIndex || 0, end: endIndex || 0, modelType: model || 'Sheet'
+            model: !model || model === 'Sheet' ? this : this.sheets[sheet], sheet: sheet, start: startIndex || 0,
+            end: isNullOrUndefined(endIndex) ? (startIndex || 0) : endIndex, modelType: model || 'Sheet'
         });
     }
 

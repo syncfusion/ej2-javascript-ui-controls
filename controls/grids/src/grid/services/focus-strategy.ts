@@ -152,8 +152,11 @@ export class FocusStrategy {
             let data: { virtualData: Object, isAdd: boolean, isCancel: boolean } = { virtualData: {}, isAdd: false, isCancel: false };
             this.parent.notify(event.getVirtualData, data);
             let isKeyFocus: boolean = this.actions.some((value: string) => value === this.activeKey);
-            if (data.isAdd || Object.keys(data.virtualData).length || isKeyFocus || data.isCancel) {
+            let isSelected: boolean = this.parent.contentModule ?
+                (<{ selectedRowIndex?: number }>this.parent.contentModule).selectedRowIndex > -1 : false;
+            if (data.isAdd || Object.keys(data.virtualData).length || isKeyFocus || data.isCancel || isSelected) {
                 data.isCancel = false;
+                (<{ selectedRowIndex?: number }>this.parent.contentModule).selectedRowIndex = -1;
                 if (isKeyFocus) {
                     this.activeKey = this.empty;
                     this.parent.notify('virtaul-key-handler', e);
@@ -848,6 +851,8 @@ export class HeaderFocus extends ContentFocus implements IFocus {
         let isLastCell: boolean;
         let lastRow: boolean;
         let headerSwap: boolean = frozenSwap;
+        let fMatrix: number[][] = this.parent.focusModule.fHeader && this.parent.focusModule.fHeader.matrix.matrix;
+        let isPresent: boolean = fMatrix && !isNullOrUndefined(fMatrix[current[0]]);
         if (this.parent.enableHeaderFocus && action === 'tab') {
             lastRow = this.matrix.matrix.length - 1 === current[0];
             isLastCell = current[1] === this.matrix.matrix[current[0]].lastIndexOf(1);
@@ -867,7 +872,7 @@ export class HeaderFocus extends ContentFocus implements IFocus {
         }
         return {
             swap: ((action === 'downArrow' || enterFrozen) && current[0] === this.matrix.matrix.length - 1) ||
-                frozenSwap || (action === 'tab' && lastRow && isLastCell),
+                (isPresent && frozenSwap) || (action === 'tab' && lastRow && isLastCell),
             toHeader: headerSwap,
             toFrozen: frozenSwap
         };
@@ -950,9 +955,11 @@ export class FixedContentFocus extends ContentFocus {
 export class FixedHeaderFocus extends HeaderFocus {
     public jump(action: string, current: number[]): SwapInfo {
         let enterFrozen: boolean = this.parent.frozenRows !== 0 && action === 'enter';
+        let hMatrix: number[][] = this.parent.focusModule.header && this.parent.focusModule.header.matrix.matrix;
+        let isPresent: boolean = hMatrix && !isNullOrUndefined(hMatrix[current[0]]);
         return {
             swap: (action === 'downArrow' || enterFrozen) && current[0] === this.matrix.matrix.length - 1
-                || ((action === 'rightArrow' || action === 'tab') && current[1] === this.matrix.columns),
+            || ((action === 'rightArrow' || action === 'tab') && current[1] === this.matrix.columns && isPresent),
             toHeader: (action === 'rightArrow' || action === 'tab') && current[1] === this.matrix.columns,
             toFrozen: (action === 'downArrow' || enterFrozen) && current[0] === this.matrix.matrix.length - 1
         };

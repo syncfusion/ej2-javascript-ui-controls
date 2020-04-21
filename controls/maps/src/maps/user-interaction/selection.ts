@@ -219,8 +219,9 @@ export class Selection {
 
     /**
      * Get module name.
+     * @private
      */
-    protected removedSelectionList(targetElement: Element): void {
+    public removedSelectionList(targetElement: Element): void {
         if (this.selectionType === 'Shape') {
             this.maps.selectedElementId.splice(this.maps.selectedElementId.indexOf(targetElement.getAttribute('id')), 1);
         }

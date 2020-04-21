@@ -566,6 +566,13 @@ export interface AxisModel {
     enableTrim?: boolean;
 
     /**
+     * Specifies the labelPadding from axis
+     * @default 5
+     */
+
+    labelPadding?: number;
+
+    /**
      * Options for customizing major tick lines.
      */
 

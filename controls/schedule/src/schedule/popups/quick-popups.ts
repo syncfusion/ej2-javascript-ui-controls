@@ -313,7 +313,8 @@ export class QuickPopups {
     private showQuickDialog(popupType: PopupType, eventData?: Object | Object[]): void {
         this.quickDialog.dataBind();
         let eventProp: PopupOpenEventArgs = {
-            type: popupType, cancel: false, data: eventData || this.parent.activeEventData.event, element: this.quickDialog.element
+            type: popupType, cancel: false, data: extend({}, (eventData || this.parent.activeEventData.event), null, true),
+            element: this.quickDialog.element
         };
         this.parent.trigger(event.popupOpen, eventProp, (popupArgs: PopupOpenEventArgs) => {
             if (!popupArgs.cancel) {
@@ -1032,7 +1033,7 @@ export class QuickPopups {
         let isEventPopup: Element = this.quickPopup.element.querySelector('.' + cls.EVENT_POPUP_CLASS);
         let popupType: PopupType = this.parent.isAdaptive ? isEventPopup ? 'ViewEventInfo' : 'EditEventInfo' : 'QuickInfo';
         let eventProp: PopupOpenEventArgs = {
-            type: popupType, cancel: false, data: this.getDataFromTarget(target),
+            type: popupType, cancel: false, data: extend({}, this.getDataFromTarget(target), null, true),
             target: target, element: this.quickPopup.element
         };
         this.parent.trigger(event.popupOpen, eventProp, (popupArgs: PopupOpenEventArgs) => {

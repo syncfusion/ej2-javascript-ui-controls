@@ -127,6 +127,7 @@ export class StickyNotesAnnotation {
                 for (let i: number = 0; i < stickyAnnotations.length; i++) {
                     // tslint:disable-next-line
                     let annotation: any = stickyAnnotations[i];
+                    annotation.annotationAddMode = this.pdfViewer.annotationModule.findAnnotationMode(annotation, pageNumber, annotation.AnnotType);
                     let annotationObject: IPopupAnnotation = null;
                     // tslint:disable-next-line
                     let position: any = annotation.Bounds;
@@ -152,7 +153,8 @@ export class StickyNotesAnnotation {
                         author: author, modifiedDate: annotationObject.modifiedDate, annotName: annotationObject.annotName, pageIndex: pageNumber, bounds: { x: position.Left, y: position.Top, width: position.Width, height: position.Height }, strokeColor: 'transparent', stampStrokeColor: '', data: this.setImageSource(), shapeAnnotationType: 'StickyNotes',
                         subject: annotationObject.subject, notes: annotationObject.note, opacity: annotationObject.opacity, id: annotationObject.annotName, fillColor: annotationObject.color,
                         annotationSelectorSettings: annotation.AnnotationSelectorSettings,
-                        annotationSettings: annotationObject.annotationSettings
+                        annotationSettings: annotationObject.annotationSettings,
+                        annotationAddMode: annotation.annotationAddMode
                     };
                     if (canvas) {
                         this.drawStickyNotes(position.Left, position.Top, position.Width, position.Height, pageNumber, annot, canvas);

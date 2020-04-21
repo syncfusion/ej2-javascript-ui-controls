@@ -4165,3 +4165,103 @@ describe('EJ2-38505 - Grid cell selection will be cleared when we press the left
         gridObj = null;
     });
 });
+
+describe('isInteracted checking after cancel the rowselecting event', () => {
+    let gridObj: Grid;
+    let rowSelecting: (args: any) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                columns: [{ field: 'OrderID' }, { field: 'CustomerID' }, { field: 'EmployeeID' }, { field: 'Freight' },
+                { field: 'ShipCity' }],
+                allowPaging: true,
+                pageSettings: { pageSize: 8, pageCount: 4, currentPage: 1 },
+                allowSelection: true,
+                selectionSettings: { type: 'Multiple', mode: 'Both' },
+            }, done);
+    });
+
+    it('isInteracted property testing - Click', () => {
+        rowSelecting = (args: any) => {
+            args.cancel = true;
+            expect(args.isInteracted).toBeTruthy();
+        };
+        gridObj.rowSelecting = rowSelecting;
+        (gridObj.getRows()[1].querySelector('.e-rowcell') as HTMLElement).click();
+    });
+
+    it('isInteracted property testing - selectRow method', () => {
+        rowSelecting = (args: any) => {
+            expect(args.target).toBeNull();
+            expect(args.isInteracted).toBeFalsy();
+        };
+        gridObj.rowSelecting = rowSelecting;
+        gridObj.selectRow(4);
+    });
+
+    it('isInteracted property testing - selectRows method', () => {
+        rowSelecting = (args: any) => {
+            expect(args.target).toBeNull();
+            expect(args.isInteracted).toBeFalsy();
+        };
+        gridObj.rowSelecting = rowSelecting;
+        gridObj.selectRows([2,3]);
+    });
+
+    it('isInteracted property testing - selectRowsByRange method', () => {
+        rowSelecting = (args: any) => {
+            expect(args.target).toBeNull();
+            expect(args.isInteracted).toBeFalsy();
+        };
+        gridObj.rowSelecting = rowSelecting;
+        gridObj.selectRowsByRange(2,5);
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = rowSelecting = null;
+    });
+});
+
+describe('isInteracted property in rowSelecting and rowDeselected events indexes property testing', () => {
+    let gridObj: Grid;
+    let rowDeselected: (args: any) => void;
+    let rowSelected: (args: any) => void;
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                columns: [
+                    { type: 'checkbox', width: 50 },
+                    { field: 'OrderID', headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' }],
+                allowPaging: true,
+                pageSettings: { pageSize: 8, pageCount: 4, currentPage: 1 },
+                allowSelection: true,
+            }, done);
+    });
+
+    it('isInteracted property testing in selectall - rowselected', () => {
+        rowSelected = (args: any) => {
+            expect(args.isInteracted).toBeTruthy();
+        };
+        gridObj.rowSelected = rowSelected;
+        (<HTMLElement>gridObj.element.querySelector('.e-checkselectall')).click();
+    });
+    it('isInteracted property testing in selectall - rowDeselected', () => {
+        rowDeselected = (args: any) => {
+            expect(args.isInteracted).toBeTruthy();
+            expect(args.rowIndexes).toBeDefined();
+        };
+        gridObj.rowDeselected = rowDeselected;
+        (<HTMLElement>gridObj.element.querySelector('.e-checkselectall')).click();
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = rowSelected = null;
+        gridObj = rowDeselected = null;
+    });
+});

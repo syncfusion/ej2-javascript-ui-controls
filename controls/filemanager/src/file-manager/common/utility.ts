@@ -851,8 +851,11 @@ export function doDownloadFiles(parent: IFileManager, data: Object[], newIds: st
 
 export function createDeniedDialog(parent: IFileManager, data: Object, action: string): void {
     let message: string = getValue('message', getValue('permission', data));
-    message = (message === '') ? '"' + getValue('name', data) + '" is not accessible. you need permission to perform the ' +
-        action + ' action.' : message;
+    if (message === '') {
+        message = getLocaleText(parent, 'Access-Message');
+        message.replace('{0}', getValue('name', data));
+        message.replace('{1}', action);
+    }
     let response: ReadArgs = {
         error: {
             code: '401',

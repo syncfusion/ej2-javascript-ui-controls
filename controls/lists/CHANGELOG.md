@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 18.1.45 (2020-04-21)
+
+### ListBase
+
+#### Bug Fixes
+
+- #270788 - The issue with `The icon elements are not generated when enabling the fullRowNavigable in the TreeView` has been resolved.
+
+### ListView
+
+#### Bug Fixes
+
+- #152966 - The issue with `The enableHtmlSanitizer property is not working in the ListView` has been resolved.
+
 ## 18.1.44 (2020-04-14)
 
 ### ListBox

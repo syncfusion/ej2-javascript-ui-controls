@@ -54,6 +54,7 @@ Spreadsheet component is also offered in the following list of frameworks.
 - **Hyperlink:** Provides the option to navigate the web links or cell reference within the sheet or to other sheets in spreadsheet.
 - **Resize:** Allows you to change the row height and column width. Auto fit the rows and columns based on its content.
 - **Wrap text:** Provides the option to display the large content as multiple lines in a single cell.
+- **Cell template:** Provides the option to insert custom elements like button, checkbox, radio button, datepicker, etc. into a cell or range of cells.
 - **Data validation:** Provides the option to validate edited values based on data validation rules defined for a cell or range of cells.
 - **Find and Replace:** Provides the option to find the data and replace it across all the sheets in Spreadsheet.
 - **Protect sheet:** Provides the option to restrict the user actions like cell editing, row and column insertion, deletion, and resizing.

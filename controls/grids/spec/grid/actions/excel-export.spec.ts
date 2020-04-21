@@ -335,6 +335,49 @@ describe('excel Export =>', () => {
             gridObj = null;
         });
     });
+
+    describe('EJ2-36327 exportGrooupCaption event in excel export =>', () => {
+        let gridObj: Grid;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: employeeData,
+                    allowExcelExport: true,
+                    allowGrouping:true,
+                    groupSettings:{columns:["FirstName"]},
+                    columns: [
+                        { field: 'EmployeeID', headerText: 'Employee ID', textAlign: 'Right', width: 125 },
+                        { field: 'FirstName', headerText: 'Name', width: 125 },
+                        { field: 'Title', headerText: 'Title', width: 180 },
+                        { field: 'City', headerText: 'city', width: 110 },
+                        { field: 'Country', headerText: 'Country', width: 110 }
+                    ],
+                }, done);
+        });
+        it('grid excel exportGroupCaption check', (done) => {
+            let exportGroupCaption = (args?: any): void => {
+                expect(args.type).toBe("Excel");
+                gridObj.exportGroupCaption = null;
+                done();
+            };
+            gridObj.exportGroupCaption = exportGroupCaption;   
+            gridObj.excelExport();
+        });
+        it('grid csv exportGroupCaption check', (done) => {
+            let exportGroupCaption = (args?: any): void => {
+                expect(args.type).toBe("CSV");
+                gridObj.exportGroupCaption = null;
+                done();
+            };
+            gridObj.exportGroupCaption = exportGroupCaption;   
+            gridObj.csvExport();
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = null;
+        });
+    });
 });
 
 

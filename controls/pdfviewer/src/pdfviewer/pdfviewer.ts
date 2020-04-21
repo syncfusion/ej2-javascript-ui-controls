@@ -25,6 +25,8 @@ import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailure
 import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs } from './index';
 // tslint:disable-next-line:max-line-length
 import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs } from './index';
+// tslint:disable-next-line:max-line-length
+import { TextSearchStartEventArgs, TextSearchCompleteEventArgs, TextSearchHighlightEventArgs } from './index';
 import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';
 import { PdfAnnotationBaseModel } from '../diagram/pdf-annotation-model';
 import { Drawing, ClipBoardObject } from '../diagram/drawing';
@@ -35,7 +37,7 @@ import { renderAdornerLayer } from '../diagram/dom-util';
 import { ThumbnailClickEventArgs } from './index';
 import { ValidateFormFieldsArgs } from './base';
 // tslint:disable-next-line:max-line-length
-import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs } from './base';
+import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';
 
 
 /**
@@ -2151,6 +2153,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public enableTextMarkupResizer: boolean;
 
     /**
+     * Enable or disable the multi line text markup annotations in overlapping collections. 
+     * @default false
+     */
+    @Property(false)
+    public enableMultiLineOverlap: boolean;
+
+    /**
      * Enables or disables the multi-page text markup annotation selection in UI.
      * @default false
      */
@@ -2903,6 +2912,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public resizeSignature: EmitType<ResizeSignatureEventArgs>;
 
     /**
+     * Triggers when signature is selected over the page of the PDF document.
+     * @event
+     */
+    @Event()
+    public signatureSelect: EmitType<SignatureSelectEventArgs>;
+
+    /**
      * Triggers when an annotation is selected over the page of the PDF document.
      * @event
      * @blazorProperty 'AnnotationSelected'
@@ -3035,6 +3051,30 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Event()
     public downloadEnd: EmitType<DownloadEndEventArgs>;
+
+    /**
+     * Triggers an event when the text search is started.
+     * @event
+     * @blazorProperty 'OnTextSearchStart'
+     */
+    @Event()
+    public textSearchStart: EmitType<TextSearchStartEventArgs>;
+
+    /**
+     * Triggers an event when the text search is completed.
+     * @event
+     * @blazorProperty 'OnTextSearchComplete'
+     */
+    @Event()
+    public textSearchComplete: EmitType<TextSearchCompleteEventArgs>;
+
+    /**
+     * Triggers an event when the text search text is highlighted.
+     * @event
+     * @blazorProperty 'OnTextSearchHighlight'
+     */
+    @Event()
+    public textSearchHighlight: EmitType<TextSearchHighlightEventArgs>;
 
     /**
      * Triggers before the data send in to the server.
@@ -3782,7 +3822,16 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     // tslint:disable-next-line
-    public fireAnnotationSelect(id: string, pageNumber: number, annotation: any, annotationCollection?: any, multiPageCollection?: any, isSelected?: boolean): void {
+    public fireSignatureSelect(id: string, pageNumber: number, bounds: any, opacity: number, thickness: number, strokeColor: string) {
+        let eventArgs: SignatureSelectEventArgs = { id: id, pageIndex: pageNumber, bounds: bounds, opacity: opacity, thickness: thickness, strokeColor: strokeColor };
+        this.trigger('signatureSelect', eventArgs);
+    }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireAnnotationSelect(id: string, pageNumber: number, annotation: any, annotationCollection?: any, multiPageCollection?: any, isSelected?: boolean, annotationAddMode?: string): void {
         // tslint:disable-next-line:max-line-length
         let eventArgs: AnnotationSelectEventArgs = { name: 'annotationSelect', annotationId: id, pageIndex: pageNumber, annotation: annotation };
         if (annotationCollection) {
@@ -3795,6 +3844,10 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
         if (isSelected) {
             eventArgs.isProgrammaticSelection = isSelected;
         }
+        if (annotationAddMode) {
+            eventArgs.annotationAddMode = annotationAddMode;
+        }
+
         this.trigger('annotationSelect', eventArgs);
     }
 
@@ -3956,6 +4009,33 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public fireTextExtractionCompleted(documentCollection: DocumentTextCollectionSettingsModel[][]): void {
         let eventArgs: ExtractTextCompletedEventArgs = { documentTextCollection: documentCollection };
         this.trigger('extractTextCompleted', eventArgs);
+    }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireTextSearchStart(searchText: string, isMatchcase: boolean): void {
+        // tslint:disable-next-line:max-line-length
+        let eventArgs: TextSearchStartEventArgs = { name: 'textSearchStart', searchText: searchText, matchCase: isMatchcase };
+        this.trigger('textSearchStart', eventArgs);
+    }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireTextSearchComplete(searchText: string, isMatchcase: boolean): void {
+        // tslint:disable-next-line:max-line-length
+        let eventArgs: TextSearchCompleteEventArgs = { name: 'textSearchComplete', searchText: searchText, matchCase: isMatchcase };
+        this.trigger('textSearchComplete', eventArgs);
+    }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public fireTextSearchHighlight(searchText: string, isMatchcase: boolean, bounds: RectangleBoundsModel, pageNumber: number): void {
+        // tslint:disable-next-line:max-line-length
+        let eventArgs: TextSearchHighlightEventArgs = { name: 'textSearchHighlight', searchText: searchText, matchCase: isMatchcase, bounds: bounds, pageNumber: pageNumber };
+        this.trigger('textSearchHighlight', eventArgs);
     }
     /**
      * @private

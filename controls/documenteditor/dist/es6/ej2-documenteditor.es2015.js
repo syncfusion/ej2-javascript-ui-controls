@@ -15559,6 +15559,7 @@ class DocumentHelper {
         let scrollTop = this.owner.viewer.containerTop;
         let scrollLeft = this.owner.viewer.containerLeft;
         let pageHeight = this.visibleBounds.height;
+        this.updateFocus();
         let caretInfo = this.selection.updateCaretSize(this.owner.selection.end, true);
         let topMargin = caretInfo.topMargin;
         let caretHeight = caretInfo.height;
@@ -16681,10 +16682,12 @@ class PageLayoutViewer extends LayoutViewer {
             let index = this.getHeaderFooter(type);
             let headerFooter = this.documentHelper.headersFooters[sectionIndex][index];
             if (!headerFooter) {
-                if (this.documentHelper.headersFooters[0][index]) {
-                    headerFooter = this.documentHelper.headersFooters[0][index];
+                let currentSecIndex = sectionIndex > 0 ? sectionIndex - 1 : sectionIndex;
+                while (!headerFooter && currentSecIndex !== -1 && this.documentHelper.headersFooters[currentSecIndex][index]) {
+                    headerFooter = this.documentHelper.headersFooters[currentSecIndex][index];
+                    currentSecIndex--;
                 }
-                else {
+                if (!headerFooter) {
                     headerFooter = this.createHeaderFooterWidget(type);
                     headerFooter.isEmpty = true;
                 }
@@ -24325,7 +24328,7 @@ class ContextMenu$1 {
      * @param {boolean} isEnable - To hide existing menu item and show custom menu item alone
      * @param {boolean} isBottom - To show the custom menu item in bottom of the existing item
      * @returns {void}
-     * @blazorArgsType items|List<Syncfusion.EJ2.Blazor.Navigations.MenuItem>,isEnable|Boolean,isBottom|Boolean
+     * @blazorArgsType items|List<Syncfusion.Blazor.Navigations.MenuItemModel>,isEnable|Boolean,isBottom|Boolean
      */
     addCustomMenu(items, isEnable, isBottom) {
         let menuItems = JSON.parse(JSON.stringify(items));
@@ -24541,7 +24544,7 @@ class ContextMenu$1 {
             let start = selection.start;
             let end = selection.end;
             if (selection.contextType === 'List'
-                && owner.editorModule.getListLevel(start.paragraph).listLevelPattern !== 'Bullet') {
+                && owner.selection.getListLevel(start.paragraph).listLevelPattern !== 'Bullet') {
                 continueNumbering.style.display = 'block';
                 restartAt.style.display = 'block';
                 restartAt.nextSibling.style.display = 'block';
@@ -31457,6 +31460,7 @@ class Selection {
          * @private
          */
         this.editRegionHighlighters = undefined;
+        this.isSelectList = false;
         /**
          * @private
          */
@@ -33902,6 +33906,24 @@ class Selection {
             }
         }
         return listTextElement;
+    }
+    /**
+     * @private
+     */
+    getListLevel(paragraph) {
+        let currentList = undefined;
+        let listLevelNumber = 0;
+        if (!isNullOrUndefined(paragraph.paragraphFormat) && !isNullOrUndefined(paragraph.paragraphFormat.listFormat)) {
+            currentList = this.documentHelper.getListById(paragraph.paragraphFormat.listFormat.listId);
+            listLevelNumber = paragraph.paragraphFormat.listFormat.listLevelNumber;
+        }
+        if (!isNullOrUndefined(currentList) &&
+            !isNullOrUndefined(this.documentHelper.getAbstractListById(currentList.abstractListId))
+            // && !isNullOrUndefined(this.documentHelper.getAbstractListById(currentList.abstractListId).levels.getItem(listLevelNumber))) {
+            && !isNullOrUndefined(this.documentHelper.getAbstractListById(currentList.abstractListId).levels)) {
+            return this.documentHelper.layout.getListLevel(currentList, listLevelNumber);
+        }
+        return undefined;
     }
     /**
      * @private
@@ -37825,6 +37847,14 @@ class Selection {
             return;
         }
         let para = start.paragraph;
+        if (start.paragraph === end.paragraph && this.isSelectList) {
+            let listLevel = this.getListLevel(start.paragraph);
+            // let breakCharacterFormat: WCharacterFormat = start.paragraph.characterFormat;
+            if (listLevel.characterFormat.uniqueCharacterFormat) {
+                this.characterFormat.copyFormat(listLevel.characterFormat);
+            }
+            return;
+        }
         if (start.offset === this.getParagraphLength(para) && !this.isEmpty) {
             para = this.getNextParagraphBlock(para);
         }
@@ -38805,7 +38835,9 @@ class Selection {
         let selectionIndex = lineWidget.getHierarchicalIndex(endOffset);
         let startPosition = this.getTextPosition(selectionIndex);
         let endPosition = this.getTextPosition(selectionIndex);
+        this.isSelectList = true;
         this.selectRange(startPosition, endPosition);
+        this.isSelectList = false;
         this.highlightListText(this.documentHelper.selectionLineWidget);
         this.contextTypeInternal = 'List';
     }
@@ -46359,6 +46391,7 @@ class Editor {
             this.copiedContent = content;
         }
         this.pasteContentsInternal(this.getBlocks(content), currentFormat);
+        this.isInsertField = false;
     }
     pasteContentsInternal(widgets, currentFormat) {
         this.isPaste = true;
@@ -46650,7 +46683,7 @@ class Editor {
                 }
             }
             else if (indexInInline === 0) {
-                if (isRtl && bidi && this.isInsertField) {
+                if (isRtl && bidi && (this.isInsertField || this.isPaste)) {
                     insertIndex++;
                 }
                 else if (isNullOrUndefined(curInline.previousNode)) {
@@ -46661,7 +46694,7 @@ class Editor {
                 insertIndex++;
                 let prevElement = new TextElementBox();
                 prevElement.characterFormat.copyFormat(curInline.characterFormat);
-                if (bidi && this.isInsertField && isRtl) {
+                if (bidi && (this.isInsertField || this.isPaste) && isRtl) {
                     prevElement.text = curInline.text.slice(0, indexInInline);
                     curInline.text = curInline.text.substring(indexInInline);
                 }
@@ -46685,6 +46718,13 @@ class Editor {
             insertIndex++;
         }
         if (paragraphFormat) {
+            // If paragraph direction is right to left and paste paragraph with LTR direction
+            // Considered new paragraph also RTL
+            if (paragraph.paragraphFormat.bidi === true) {
+                this.isInsertField = true;
+                paragraphFormat.bidi = true;
+                paragraphFormat.textAlignment = paragraph.paragraphFormat.textAlignment;
+            }
             paragraph.paragraphFormat.copyFormat(paragraphFormat);
         }
         // tslint:disable-next-line:max-line-length
@@ -48202,7 +48242,7 @@ class Editor {
      */
     // tslint:disable-next-line:max-line-length
     applyCharacterFormatForListText(selection, property, values, update) {
-        let listLevel = this.getListLevel(selection.start.paragraph);
+        let listLevel = selection.getListLevel(selection.start.paragraph);
         if (isNullOrUndefined(listLevel)) {
             return;
         }
@@ -48271,27 +48311,9 @@ class Editor {
             endPositionInternal = selection.start;
         }
         this.initHistoryPosition(selection, startPositionInternal);
-        let listLevel = this.getListLevel(selection.start.paragraph);
+        let listLevel = selection.getListLevel(selection.start.paragraph);
         this.applyCharFormatValue(listLevel.characterFormat, property, value, update);
         this.startSelectionReLayouting(startPositionInternal.paragraph, selection, startPositionInternal, endPositionInternal);
-    }
-    /**
-     * @private
-     */
-    getListLevel(paragraph) {
-        let currentList = undefined;
-        let listLevelNumber = 0;
-        if (!isNullOrUndefined(paragraph.paragraphFormat) && !isNullOrUndefined(paragraph.paragraphFormat.listFormat)) {
-            currentList = this.documentHelper.getListById(paragraph.paragraphFormat.listFormat.listId);
-            listLevelNumber = paragraph.paragraphFormat.listFormat.listLevelNumber;
-        }
-        if (!isNullOrUndefined(currentList) &&
-            !isNullOrUndefined(this.documentHelper.getAbstractListById(currentList.abstractListId))
-            // && !isNullOrUndefined(this.documentHelper.getAbstractListById(currentList.abstractListId).levels.getItem(listLevelNumber))) {
-            && !isNullOrUndefined(this.documentHelper.getAbstractListById(currentList.abstractListId).levels)) {
-            return this.documentHelper.layout.getListLevel(currentList, listLevelNumber);
-        }
-        return undefined;
     }
     updateInsertPosition() {
         let selection = this.documentHelper.selection;
@@ -48829,7 +48851,13 @@ class Editor {
             index = inlineObj.index;
             let characterFormat = lineWidget.paragraph.characterFormat;
             if (!isNullOrUndefined(inline)) {
-                if (!this.selection.isEmpty && index === inline.length) {
+                if (this.selection.isEmpty && this.selection.contextType === 'List') {
+                    let listLevel = this.selection.getListLevel(this.selection.start.paragraph);
+                    if (listLevel.characterFormat.uniqueCharacterFormat) {
+                        characterFormat = listLevel.characterFormat;
+                    }
+                }
+                else if (!this.selection.isEmpty && index === inline.length) {
                     characterFormat = isNullOrUndefined(inline.nextNode) ? lineWidget.paragraph.characterFormat
                         : inline.nextNode.characterFormat;
                 }
@@ -49660,7 +49688,7 @@ class Editor {
             if (paragraph.previousRenderedWidget instanceof ParagraphWidget) {
                 if (!isNullOrUndefined(paragraph.previousRenderedWidget.paragraphFormat.listFormat)
                     && paragraph.previousRenderedWidget.paragraphFormat.listFormat.listId !== -1) {
-                    let listLevel = this.getListLevel(paragraph.previousRenderedWidget);
+                    let listLevel = this.selection.getListLevel(paragraph.previousRenderedWidget);
                     if (levelNumber === 0) {
                         return paragraph.previousRenderedWidget.paragraphFormat;
                     }
@@ -51578,7 +51606,12 @@ class Editor {
                 this.addRemovedNodes(lineWidget.children[i]);
                 lineWidget.children.splice(i, 1);
                 if (isBidi) {
-                    i++;
+                    if (this.isSkipHistory) {
+                        i--;
+                    }
+                    else {
+                        i++;
+                    }
                 }
                 // }
             }
@@ -83497,7 +83530,7 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
             if (isInHeaderFooter && this.showHeaderProperties) {
                 this.showProperties('headerfooter');
             }
-            else if (currentContext.indexOf('Text') >= 0
+            else if (currentContext.indexOf('Text') >= 0 || currentContext.indexOf('List') >= 0
                 && currentContext.indexOf('Table') < 0) {
                 this.showProperties('text');
             }

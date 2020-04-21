@@ -1109,7 +1109,8 @@ class DataBind {
                 else if (eRange > count) {
                     eRange = count;
                 }
-                this.requestedInfo.push({ deferred: deferred, indexes: args.indexes, isNotLoaded: loadedInfo.isNotLoaded });
+                this.requestedInfo.push({ deferred: deferred, indexes: args.indexes, isNotLoaded: loadedInfo.isNotLoaded,
+                    sheetId: args.sheet.id });
                 if (sRange >= 0 && loadedInfo.isNotLoaded && !isEndReached) {
                     sRanges[k] = sRange;
                     requestedRange.push(false);
@@ -1221,12 +1222,12 @@ class DataBind {
                                 });
                                 //}
                             }
-                            this.checkResolve(args.indexes);
+                            this.checkResolve(args.indexes, args.sheet.id);
                         }
                     });
                 }
                 else if (k === 0 && requestedRange.indexOf(false) === -1) {
-                    this.checkResolve(args.indexes);
+                    this.checkResolve(args.indexes, args.sheet.id);
                 }
             }
         }
@@ -1234,12 +1235,12 @@ class DataBind {
             deferred.resolve();
         }
     }
-    checkResolve(indexes) {
+    checkResolve(indexes, sheetId) {
         let resolved;
         let isSameRng;
         let cnt = 0;
         this.requestedInfo.forEach((info, idx) => {
-            isSameRng = JSON.stringify(info.indexes) === JSON.stringify(indexes);
+            isSameRng = JSON.stringify(info.indexes) === JSON.stringify(indexes) && sheetId === info.sheetId;
             if (isSameRng || resolved) {
                 if (idx === 0) {
                     info.deferred.resolve();
@@ -9119,6 +9120,30 @@ class WorkbookDelete {
         this.parent = parent;
         this.addEventListener();
     }
+    delete(args) {
+        if (!isNullOrUndefined(args.sheet) && args.modelType !== 'Sheet' && args.sheet !== this.parent.activeSheetIndex) {
+            args.model = args.model;
+            for (let i = 0, len = args.model.ranges.length; i < len; i++) {
+                if (args.model.ranges[i].dataSource) {
+                    let deleteArgs = {
+                        promise: new Promise((resolve, reject) => { resolve((() => { })()); }), sheet: args.model,
+                        indexes: [0, 0, 1048576, 16384]
+                    };
+                    this.parent.notify(updateSheetFromDataSource, deleteArgs);
+                    deleteArgs.promise.then(() => {
+                        args.model = this.parent.sheets[args.sheet];
+                        this.deleteModel(args);
+                        deleteArgs.skipModelUpdate = true;
+                    });
+                    return;
+                }
+            }
+            this.deleteModel(args);
+        }
+        else {
+            this.deleteModel(args);
+        }
+    }
     // tslint:disable-next-line
     deleteModel(args) {
         let modelName = `${args.modelType.toLowerCase()}s`;
@@ -9312,7 +9337,7 @@ class WorkbookDelete {
         });
     }
     addEventListener() {
-        this.parent.on(deleteModel, this.deleteModel, this);
+        this.parent.on(deleteModel, this.delete, this);
     }
     /**
      * Destroy workbook delete module.
@@ -9323,7 +9348,7 @@ class WorkbookDelete {
     }
     removeEventListener() {
         if (!this.parent.isDestroyed) {
-            this.parent.off(deleteModel, this.deleteModel);
+            this.parent.off(deleteModel, this.delete);
         }
     }
     /**
@@ -10339,7 +10364,7 @@ class WorkbookFindAndReplace {
         }
         let totalCount = count;
         let requiredCount = this.requiredCount(args) - 1;
-        count = totalCount - requiredCount - 1;
+        count = totalCount - requiredCount;
         args.findCount = count + 'of' + totalCount;
         return;
     }
@@ -12774,7 +12799,8 @@ let Workbook = Workbook_1 = class Workbook extends Component {
     delete(startIndex, endIndex, model, sheet) {
         sheet = getSheetIndex(this, sheet) || 0;
         this.notify(deleteModel, {
-            model: !model || model === 'Sheet' ? this : this.sheets[sheet], start: startIndex || 0, end: endIndex || 0, modelType: model || 'Sheet'
+            model: !model || model === 'Sheet' ? this : this.sheets[sheet], sheet: sheet, start: startIndex || 0,
+            end: isNullOrUndefined(endIndex) ? (startIndex || 0) : endIndex, modelType: model || 'Sheet'
         });
     }
     /**
@@ -22965,32 +22991,41 @@ class Ribbon$$1 {
         return this.findDdb.element;
     }
     findToolDlg() {
+        let countArgs;
         if (isNullOrUndefined(this.parent.element.querySelector('.e-findtool-dlg'))) {
             let toolbarObj;
-            let findTextElement = this.parent.createElement('div');
+            let findTextElement = this.parent.createElement('div', { className: 'e-input-group' });
             let findTextInput = this.parent.createElement('input', {
-                className: 'e-input e-text-findNext-short', attrs: { 'type': 'Text', value: this.findValue }
+                className: 'e-input e-text-findNext-short', attrs: { 'type': 'Text', value: this.findValue },
             });
+            findTextInput.setAttribute('placeholder', 'FindValue');
+            let findSpan = this.parent.createElement('span', { className: 'e-input-group-icon' });
             findTextInput.onkeyup = () => {
-                let countArgs = { countOpt: 'count', findCount: '' };
+                countArgs = { countOpt: 'count', findCount: '' };
                 this.parent.notify(findHandler, { countArgs: countArgs });
+                findSpan.textContent = countArgs.findCount;
+                let totalCount = countArgs.findCount.split('of');
                 let element = document.querySelector('.e-text-findNext-short');
                 let value = element.value;
                 let nextElement = document.querySelector('.e-findRib-next');
                 let prevElement = document.querySelector('.e-findRib-prev');
-                if (isNullOrUndefined(value) || (value === '') || (countArgs.findCount === '0of0')) {
+                if (isNullOrUndefined(value) || (value === '') || (totalCount[1] === '0')) {
                     toolbarObj.enableItems(nextElement, false);
                     toolbarObj.enableItems(prevElement, false);
                 }
-                else if (!isNullOrUndefined(value) || (countArgs.findCount !== '0of0')) {
+                else if (!isNullOrUndefined(value) || (totalCount[1] !== '0')) {
                     toolbarObj.enableItems(nextElement, true);
                     toolbarObj.enableItems(prevElement, true);
                 }
             };
             findTextInput.onkeydown = (e) => {
-                this.findOnKeyDown(e);
+                countArgs = { countOpt: 'count', findCount: '' };
+                this.parent.notify(findHandler, { countArgs: countArgs });
+                let count = countArgs.findCount;
+                this.findOnKeyDown(e, count);
             };
             findTextElement.appendChild(findTextInput);
+            findTextElement.appendChild(findSpan);
             let toolItemModel = [
                 { type: 'Input', template: findTextElement },
                 {
@@ -23018,7 +23053,6 @@ class Ribbon$$1 {
                     }
                 }, width: 'auto', height: 'auto', items: toolItemModel, cssClass: 'e-find-toolObj'
             });
-            let l10n = this.parent.serviceLocator.getService(locale);
             let toolbarElement = this.parent.createElement('div', { className: 'e-find-toolbar' });
             let dialogDiv = this.parent.createElement('div', { className: 'e-dlg-div' });
             this.findDialog = new Dialog({
@@ -23026,9 +23060,6 @@ class Ribbon$$1 {
                 allowDragging: true, target: this.parent.element.querySelector('.e-main-panel'),
                 beforeOpen: () => {
                     EventHandler.add(document, 'click', this.closeDialog, this);
-                    let findTextBox = new TextBox({ placeholder: l10n.getConstant('FindValue') });
-                    findTextBox.createElement = this.parent.createElement;
-                    findTextBox.appendTo(findTextInput);
                 },
                 open: () => {
                     this.textFocus(toolbarObj.element);
@@ -23067,17 +23098,20 @@ class Ribbon$$1 {
             }
         }
     }
-    findOnKeyDown(e) {
+    findOnKeyDown(e, count) {
         if (document.querySelector('.e-text-findNext-short').value) {
-            if (e.shiftKey) {
-                if (e.keyCode === 13) {
-                    let buttonArgs = { findOption: 'prev' };
-                    this.parent.notify(findHandler, buttonArgs);
+            let totalCount = count.split('of');
+            if (totalCount[1] !== '0') {
+                if (e.shiftKey) {
+                    if (e.keyCode === 13) {
+                        let buttonArgs = { findOption: 'prev' };
+                        this.parent.notify(findHandler, buttonArgs);
+                    }
                 }
-            }
-            else if (e.keyCode === 13) {
-                let buttonArg = { findOption: 'next' };
-                this.parent.notify(findHandler, buttonArg);
+                else if (e.keyCode === 13) {
+                    let buttonArg = { findOption: 'next' };
+                    this.parent.notify(findHandler, buttonArg);
+                }
             }
         }
     }
@@ -23095,6 +23129,7 @@ class Ribbon$$1 {
         element.addEventListener('focus', () => {
             let elements = document.querySelector('.e-text-findNext-short');
             elements.focus();
+            elements.classList.add('e-input-focus');
             (elements).setSelectionRange(0, elements.value.length);
         });
     }
@@ -25289,7 +25324,7 @@ class SheetTabs {
         this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
         this.tabInstance.removeTab(activeSheetIdx);
         let activeIndex = this.parent.skipHiddenSheets(this.tabInstance.selectedItem);
-        this.parent.activeSheetIndex = activeIndex;
+        this.parent.setProperties({ 'activeSheetIndex': activeIndex }, true);
         this.parent.renderModule.refreshSheet();
         this.tabInstance.selectedItem = activeIndex;
         this.tabInstance.dataBind();
@@ -28907,7 +28942,7 @@ class ActionEvents {
     actionBeginHandler(args) {
         this.parent.trigger('actionBegin', { action: args.action, args: args });
         if (args.action === 'clipboard' || args.action === 'beforeSort' || args.action === 'format' || args.action === 'cellSave'
-            || args.action === 'beforeWrap' || args.action === 'beforeReplace' || args.action === 'beforeReplaceAll') {
+            || args.action === 'beforeWrap' || args.action === 'beforeReplace') {
             this.parent.notify(setActionData, { args: args });
         }
     }
@@ -28965,7 +29000,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
             bottomIndex: 0, rightIndex: 0
         };
         this.needsID = true;
-        Spreadsheet_1.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, WrapText, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat, WorkbookNumberFormat, WorkbookFormula, Sort, WorkbookSort, Resize, UndoRedo, WorkbookFilter, Filter, SpreadsheetHyperlink, WorkbookHyperlink, Insert, Delete, WorkbookInsert, WorkbookDelete, DataValidation, WorkbookDataValidation, ProtectSheet, FindAndReplace, Merge, WorkbookMerge);
+        Spreadsheet_1.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, WrapText, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat, WorkbookNumberFormat, WorkbookFormula, Sort, WorkbookSort, Resize, UndoRedo, WorkbookFilter, Filter, SpreadsheetHyperlink, WorkbookHyperlink, Insert, Delete, WorkbookInsert, WorkbookDelete, DataValidation, WorkbookDataValidation, ProtectSheet, FindAndReplace, Merge, WorkbookMerge, WorkbookFindAndReplace);
         if (element) {
             this.appendTo(element);
         }

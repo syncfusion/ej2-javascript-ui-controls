@@ -134,7 +134,7 @@ function createAjax(
                         let result: ReadArgs = {
                             error: {
                                 fileExists: null,
-                                message: 'ServerError: Invalid response from ' + parent.ajaxSettings.url,
+                                message: getLocaleText(parent, 'Server-Error') + ' ' + parent.ajaxSettings.url,
                                 code: '406',
                             },
                             files: null,
@@ -202,7 +202,7 @@ function createAjax(
                         files: null,
                         error: {
                             code: '404',
-                            message: 'NetworkError: Failed to send on XMLHTTPRequest: Failed to load ' + parent.ajaxSettings.url,
+                            message: getLocaleText(parent, 'Network-Error') + ' ' + parent.ajaxSettings.url,
                             fileExists: null
                         },
                     };

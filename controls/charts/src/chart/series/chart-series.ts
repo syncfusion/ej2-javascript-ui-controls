@@ -1571,6 +1571,7 @@ export class Series extends SeriesBase {
      * default value is 1 otherwise 0.7.
      * @default null
      * @aspDefaultValueIgnore
+     * @blazorDefaultValue Double.NaN
      */
     @Property(null)
     public columnWidth: number;

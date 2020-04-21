@@ -1,4 +1,4 @@
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
+import { isNullOrUndefined , isBlazor} from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { iterateArrayOrObject, isActionPrevent } from '../base/util';
 import * as events from '../base/constant';
@@ -93,7 +93,7 @@ export class ShowHide {
      * @param  {Column[]} columns - Specifies the columns.
      * @return {void}
      */
-    public setVisible(columns?: Column[]): void {
+    public setVisible(columns?: Column[], changedStateColumns: Column[] = []): void {
         if (isActionPrevent(this.parent)) {
             this.parent.notify(
                 events.preventBatch,
@@ -103,23 +103,44 @@ export class ShowHide {
                 });
             return;
         }
-        this.parent.trigger(events.actionBegin, {requestType: 'columnstate'});
-        let currentViewCols: Column[] = this.parent.getColumns();
-        columns = isNullOrUndefined(columns) ? currentViewCols : columns;
-        if (this.parent.allowSelection && this.parent.getSelectedRecords().length) {
-            this.parent.clearSelection();
-        }
-        if (this.parent.enableColumnVirtualization) {
-            let colsInCurrentView: Column[] =
-            columns.filter((col1: Column) => (currentViewCols.some((col2: Column) => col1.field === col2.field)));
-            if (colsInCurrentView.length) {
+        changedStateColumns = (changedStateColumns.length > 0) ? changedStateColumns :
+            isBlazor() ? (JSON.parse(JSON.stringify(columns))) : columns;
+        let args: Object = {
+            requestType: 'columnstate',
+            cancel: false,
+            columns: changedStateColumns
+        };
+        let cancel: string = 'cancel';
+        this.parent.trigger(events.actionBegin, args, (showHideArgs: Object) => {
+            let currentViewCols: Column[] = this.parent.getColumns();
+            columns = isNullOrUndefined(columns) ? currentViewCols : columns;
+            if (showHideArgs[cancel]) {
+                if (columns.length > 0) {
+                    columns[0].visible = true;
+                }
+                return;
+            }
+            if (this.parent.allowSelection && this.parent.getSelectedRecords().length) {
+                this.parent.clearSelection();
+            }
+            if (this.parent.enableColumnVirtualization) {
+                let colsInCurrentView: Column[] =
+                    columns.filter((col1: Column) => (currentViewCols.some((col2: Column) => col1.field === col2.field)));
+                if (colsInCurrentView.length) {
+                    this.parent.notify(events.columnVisibilityChanged, columns);
+                }
+            } else {
                 this.parent.notify(events.columnVisibilityChanged, columns);
             }
-        } else {
-            this.parent.notify(events.columnVisibilityChanged, columns);
+            let params: Object = {
+                requestType: 'columnstate',
+                columns: changedStateColumns
+            };
+            this.parent.trigger(events.actionComplete, params);
+            if (this.parent.columnQueryMode !== 'All') {
+                this.parent.refresh();
+            }
         }
-        if (this.parent.columnQueryMode !== 'All') {
-            this.parent.refresh();
-        }
+        );
     }
 }

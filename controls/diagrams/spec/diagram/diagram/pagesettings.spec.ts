@@ -22,7 +22,6 @@ describe('PageSettings', () => {
         beforeAll((): void => {
             const isDef = (o: any) => o !== undefined && o !== null;
             if (!isDef(window.performance)) {
-                console.log("Unsupported environment, window.performance.memory is unavailable");
                 this.skip(); //Skips test (in Chai)
                 return;
             }
@@ -317,7 +316,6 @@ describe('PageSettings', () => {
             mouseEvents.mouseMoveEvent(diagramCanvas, 756, 160);
             mouseEvents.mouseUpEvent(diagramCanvas, 756, 160);
             let pathElement: HTMLElement = document.getElementById('Connector1_Default');
-            console.log(pathElement.getAttribute('transform'));
             expect(pathElement.getAttribute('transform') === "rotate(45,731.71,141.71)translate(723.2249841308594,133.22499938964845)" ||
                 pathElement.getAttribute('transform') === 'rotate(45,741.71,136.71)translate(733.2249841308594,128.22499938964845)').toBe(true);
             done();
@@ -329,7 +327,6 @@ describe('PageSettings', () => {
             mouseEvents.mouseMoveEvent(diagramCanvas, 350, 400);
             mouseEvents.mouseUpEvent(diagramCanvas, 350, 400);
             let pathElement: HTMLElement = document.getElementById('Connector2_Default');
-            console.log(pathElement.getAttribute('transform'));
             expect(pathElement.getAttribute('transform') === "rotate(45,250.5,165.5)translate(250.5,153.5)").toBe(true);
             done();
         });
@@ -460,7 +457,7 @@ describe('PageSettings boundary constraints', () => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             diagram.pageSettings.boundaryConstraints = 'Page';
             mouseEvents.dragAndDropEvent(diagramCanvas, 500, 100, 515, 100);
-            mouseEvents.dragAndDropEvent(diagramCanvas, 520, 20, 590, 20);
+            mouseEvents.dragAndDropEvent(diagramCanvas, 520, 100, 590, 20);
             expect(diagram.selectedItems.nodes[0].rotateAngle === 0).toBe(true);
             done();
         });
@@ -520,7 +517,7 @@ describe('PageSettings boundary constraints', () => {
             diagram.pageSettings.boundaryConstraints = 'Page';
             diagram.drawingObject = { id: 'connector11', type: 'Straight' };
             mouseEvents.dragAndDropEvent(diagramCanvas, 250, 400, 250, 520);
-            expect(diagram.connectors[2].targetPoint.y === 400).toBe(true);
+            expect((diagram.connectors[2].targetPoint.y === 392)|| diagram.connectors[2].targetPoint.y === 400).toBe(true);
             done();
         });
         it('branch coverage for drag', (done: Function) => {

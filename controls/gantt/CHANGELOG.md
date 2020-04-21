@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.45 (2020-04-21)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#268281` - Issue on adding dependency using dialog gets resolved.
+
 ## 18.1.44 (2020-04-14)
 
 ### Gantt
@@ -10,6 +18,7 @@
 
 - `#270801` - Issue on end date calculations gets resolved.
 - `#270563` - Console error throws while taskbar resizing with use of taskbar template has been fixed.
+- Issue in mapping custom class of task from data source has been fixed.
 
 ## 18.1.43 (2020-04-07)
 

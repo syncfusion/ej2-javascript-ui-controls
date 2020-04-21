@@ -501,6 +501,11 @@ export const CLS_NOCOLOR_ITEM: string = 'e-nocolor-item';
  * @hidden
  * @deprecated
  */
+export const CLS_TABLE: string = 'e-rte-table';
+/** 
+ * @hidden
+ * @deprecated
+ */
 export const CLS_TABLE_BORDER: string = 'e-rte-table-border';
 /** 
  * @hidden

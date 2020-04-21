@@ -217,6 +217,7 @@ export class ShapeAnnotation {
                 for (let i: number = 0; i < shapeAnnotations.length; i++) {
                     // tslint:disable-next-line
                     let annotation: any = shapeAnnotations[i];
+                    annotation.annotationAddMode = this.pdfViewer.annotationModule.findAnnotationMode(annotation, pageNumber, annotation.AnnotType);
                     let annotationObject: IShapeAnnotation = null;
                     this.shapeCount = this.shapeCount + 1;
                     if (annotation.ShapeAnnotationType) {
@@ -281,7 +282,7 @@ export class ShapeAnnotation {
                             labelContent: annotation.LabelContent, enableShapeLabel: annotation.EnableShapeLabel, labelFillColor: annotation.LabelFillColor,
                             fontColor: annotation.FontColor, labelBorderColor: annotation.LabelBorderColor, fontSize: annotation.FontSize,
                             labelBounds: annotation.LabelBounds, annotationSelectorSettings: annotation.AnnotationSelectorSettings,
-                            annotationSettings: annotationObject.annotationSettings
+                            annotationSettings: annotationObject.annotationSettings, annotationAddMode: annotation.annotationAddMode
                         };
                         let addedAnnot: PdfAnnotationBaseModel = this.pdfViewer.add(annot as PdfAnnotationBase);
                         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape');

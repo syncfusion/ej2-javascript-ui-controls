@@ -1108,7 +1108,8 @@ var DataBind = /** @class */ (function () {
                 else if (eRange > count) {
                     eRange = count;
                 }
-                this_1.requestedInfo.push({ deferred: deferred, indexes: args.indexes, isNotLoaded: loadedInfo.isNotLoaded });
+                this_1.requestedInfo.push({ deferred: deferred, indexes: args.indexes, isNotLoaded: loadedInfo.isNotLoaded,
+                    sheetId: args.sheet.id });
                 if (sRange >= 0 && loadedInfo.isNotLoaded && !isEndReached) {
                     sRanges[k] = sRange;
                     requestedRange.push(false);
@@ -1220,12 +1221,12 @@ var DataBind = /** @class */ (function () {
                                 });
                                 //}
                             }
-                            _this.checkResolve(args.indexes);
+                            _this.checkResolve(args.indexes, args.sheet.id);
                         }
                     });
                 }
                 else if (k === 0 && requestedRange.indexOf(false) === -1) {
-                    this_1.checkResolve(args.indexes);
+                    this_1.checkResolve(args.indexes, args.sheet.id);
                 }
             };
             var this_1 = this;
@@ -1237,12 +1238,12 @@ var DataBind = /** @class */ (function () {
             deferred.resolve();
         }
     };
-    DataBind.prototype.checkResolve = function (indexes) {
+    DataBind.prototype.checkResolve = function (indexes, sheetId) {
         var resolved;
         var isSameRng;
         var cnt = 0;
         this.requestedInfo.forEach(function (info, idx) {
-            isSameRng = JSON.stringify(info.indexes) === JSON.stringify(indexes);
+            isSameRng = JSON.stringify(info.indexes) === JSON.stringify(indexes) && sheetId === info.sheetId;
             if (isSameRng || resolved) {
                 if (idx === 0) {
                     info.deferred.resolve();
@@ -9369,6 +9370,37 @@ var WorkbookDelete = /** @class */ (function () {
         this.parent = parent;
         this.addEventListener();
     }
+    WorkbookDelete.prototype.delete = function (args) {
+        var _this = this;
+        if (!sf.base.isNullOrUndefined(args.sheet) && args.modelType !== 'Sheet' && args.sheet !== this.parent.activeSheetIndex) {
+            args.model = args.model;
+            var _loop_1 = function (i, len) {
+                if (args.model.ranges[i].dataSource) {
+                    var deleteArgs_1 = {
+                        promise: new Promise(function (resolve, reject) { resolve((function () { })()); }), sheet: args.model,
+                        indexes: [0, 0, 1048576, 16384]
+                    };
+                    this_1.parent.notify(updateSheetFromDataSource, deleteArgs_1);
+                    deleteArgs_1.promise.then(function () {
+                        args.model = _this.parent.sheets[args.sheet];
+                        _this.deleteModel(args);
+                        deleteArgs_1.skipModelUpdate = true;
+                    });
+                    return { value: void 0 };
+                }
+            };
+            var this_1 = this;
+            for (var i = 0, len = args.model.ranges.length; i < len; i++) {
+                var state_1 = _loop_1(i, len);
+                if (typeof state_1 === "object")
+                    return state_1.value;
+            }
+            this.deleteModel(args);
+        }
+        else {
+            this.deleteModel(args);
+        }
+    };
     // tslint:disable-next-line
     WorkbookDelete.prototype.deleteModel = function (args) {
         var _this = this;
@@ -9564,7 +9596,7 @@ var WorkbookDelete = /** @class */ (function () {
         });
     };
     WorkbookDelete.prototype.addEventListener = function () {
-        this.parent.on(deleteModel, this.deleteModel, this);
+        this.parent.on(deleteModel, this.delete, this);
     };
     /**
      * Destroy workbook delete module.
@@ -9575,7 +9607,7 @@ var WorkbookDelete = /** @class */ (function () {
     };
     WorkbookDelete.prototype.removeEventListener = function () {
         if (!this.parent.isDestroyed) {
-            this.parent.off(deleteModel, this.deleteModel);
+            this.parent.off(deleteModel, this.delete);
         }
     };
     /**
@@ -10593,7 +10625,7 @@ var WorkbookFindAndReplace = /** @class */ (function () {
         }
         var totalCount = count;
         var requiredCount = this.requiredCount(args) - 1;
-        count = totalCount - requiredCount - 1;
+        count = totalCount - requiredCount;
         args.findCount = count + 'of' + totalCount;
         return;
     };
@@ -13178,7 +13210,8 @@ var Workbook = /** @class */ (function (_super) {
     Workbook.prototype.delete = function (startIndex, endIndex, model, sheet) {
         sheet = getSheetIndex(this, sheet) || 0;
         this.notify(deleteModel, {
-            model: !model || model === 'Sheet' ? this : this.sheets[sheet], start: startIndex || 0, end: endIndex || 0, modelType: model || 'Sheet'
+            model: !model || model === 'Sheet' ? this : this.sheets[sheet], sheet: sheet, start: startIndex || 0,
+            end: sf.base.isNullOrUndefined(endIndex) ? (startIndex || 0) : endIndex, modelType: model || 'Sheet'
         });
     };
     /**
@@ -23535,32 +23568,41 @@ var Ribbon$$1 = /** @class */ (function () {
     };
     Ribbon$$1.prototype.findToolDlg = function () {
         var _this = this;
+        var countArgs;
         if (sf.base.isNullOrUndefined(this.parent.element.querySelector('.e-findtool-dlg'))) {
             var toolbarObj_1;
-            var findTextElement = this.parent.createElement('div');
-            var findTextInput_1 = this.parent.createElement('input', {
-                className: 'e-input e-text-findNext-short', attrs: { 'type': 'Text', value: this.findValue }
+            var findTextElement = this.parent.createElement('div', { className: 'e-input-group' });
+            var findTextInput = this.parent.createElement('input', {
+                className: 'e-input e-text-findNext-short', attrs: { 'type': 'Text', value: this.findValue },
             });
-            findTextInput_1.onkeyup = function () {
-                var countArgs = { countOpt: 'count', findCount: '' };
+            findTextInput.setAttribute('placeholder', 'FindValue');
+            var findSpan_1 = this.parent.createElement('span', { className: 'e-input-group-icon' });
+            findTextInput.onkeyup = function () {
+                countArgs = { countOpt: 'count', findCount: '' };
                 _this.parent.notify(findHandler, { countArgs: countArgs });
+                findSpan_1.textContent = countArgs.findCount;
+                var totalCount = countArgs.findCount.split('of');
                 var element = document.querySelector('.e-text-findNext-short');
                 var value = element.value;
                 var nextElement = document.querySelector('.e-findRib-next');
                 var prevElement = document.querySelector('.e-findRib-prev');
-                if (sf.base.isNullOrUndefined(value) || (value === '') || (countArgs.findCount === '0of0')) {
+                if (sf.base.isNullOrUndefined(value) || (value === '') || (totalCount[1] === '0')) {
                     toolbarObj_1.enableItems(nextElement, false);
                     toolbarObj_1.enableItems(prevElement, false);
                 }
-                else if (!sf.base.isNullOrUndefined(value) || (countArgs.findCount !== '0of0')) {
+                else if (!sf.base.isNullOrUndefined(value) || (totalCount[1] !== '0')) {
                     toolbarObj_1.enableItems(nextElement, true);
                     toolbarObj_1.enableItems(prevElement, true);
                 }
             };
-            findTextInput_1.onkeydown = function (e) {
-                _this.findOnKeyDown(e);
+            findTextInput.onkeydown = function (e) {
+                countArgs = { countOpt: 'count', findCount: '' };
+                _this.parent.notify(findHandler, { countArgs: countArgs });
+                var count = countArgs.findCount;
+                _this.findOnKeyDown(e, count);
             };
-            findTextElement.appendChild(findTextInput_1);
+            findTextElement.appendChild(findTextInput);
+            findTextElement.appendChild(findSpan_1);
             var toolItemModel = [
                 { type: 'Input', template: findTextElement },
                 {
@@ -23588,7 +23630,6 @@ var Ribbon$$1 = /** @class */ (function () {
                     }
                 }, width: 'auto', height: 'auto', items: toolItemModel, cssClass: 'e-find-toolObj'
             });
-            var l10n_1 = this.parent.serviceLocator.getService(locale);
             var toolbarElement_1 = this.parent.createElement('div', { className: 'e-find-toolbar' });
             var dialogDiv = this.parent.createElement('div', { className: 'e-dlg-div' });
             this.findDialog = new sf.popups.Dialog({
@@ -23596,9 +23637,6 @@ var Ribbon$$1 = /** @class */ (function () {
                 allowDragging: true, target: this.parent.element.querySelector('.e-main-panel'),
                 beforeOpen: function () {
                     sf.base.EventHandler.add(document, 'click', _this.closeDialog, _this);
-                    var findTextBox = new sf.inputs.TextBox({ placeholder: l10n_1.getConstant('FindValue') });
-                    findTextBox.createElement = _this.parent.createElement;
-                    findTextBox.appendTo(findTextInput_1);
                 },
                 open: function () {
                     _this.textFocus(toolbarObj_1.element);
@@ -23637,17 +23675,20 @@ var Ribbon$$1 = /** @class */ (function () {
             }
         }
     };
-    Ribbon$$1.prototype.findOnKeyDown = function (e) {
+    Ribbon$$1.prototype.findOnKeyDown = function (e, count) {
         if (document.querySelector('.e-text-findNext-short').value) {
-            if (e.shiftKey) {
-                if (e.keyCode === 13) {
-                    var buttonArgs = { findOption: 'prev' };
-                    this.parent.notify(findHandler, buttonArgs);
+            var totalCount = count.split('of');
+            if (totalCount[1] !== '0') {
+                if (e.shiftKey) {
+                    if (e.keyCode === 13) {
+                        var buttonArgs = { findOption: 'prev' };
+                        this.parent.notify(findHandler, buttonArgs);
+                    }
                 }
-            }
-            else if (e.keyCode === 13) {
-                var buttonArg = { findOption: 'next' };
-                this.parent.notify(findHandler, buttonArg);
+                else if (e.keyCode === 13) {
+                    var buttonArg = { findOption: 'next' };
+                    this.parent.notify(findHandler, buttonArg);
+                }
             }
         }
     };
@@ -23665,6 +23706,7 @@ var Ribbon$$1 = /** @class */ (function () {
         element.addEventListener('focus', function () {
             var elements = document.querySelector('.e-text-findNext-short');
             elements.focus();
+            elements.classList.add('e-input-focus');
             (elements).setSelectionRange(0, elements.value.length);
         });
     };
@@ -25877,7 +25919,7 @@ var SheetTabs = /** @class */ (function () {
         this.dropDownInstance.setProperties({ 'items': this.dropDownInstance.items }, true);
         this.tabInstance.removeTab(activeSheetIdx);
         var activeIndex = this.parent.skipHiddenSheets(this.tabInstance.selectedItem);
-        this.parent.activeSheetIndex = activeIndex;
+        this.parent.setProperties({ 'activeSheetIndex': activeIndex }, true);
         this.parent.renderModule.refreshSheet();
         this.tabInstance.selectedItem = activeIndex;
         this.tabInstance.dataBind();
@@ -29559,7 +29601,7 @@ var ActionEvents = /** @class */ (function () {
     ActionEvents.prototype.actionBeginHandler = function (args) {
         this.parent.trigger('actionBegin', { action: args.action, args: args });
         if (args.action === 'clipboard' || args.action === 'beforeSort' || args.action === 'format' || args.action === 'cellSave'
-            || args.action === 'beforeWrap' || args.action === 'beforeReplace' || args.action === 'beforeReplaceAll') {
+            || args.action === 'beforeWrap' || args.action === 'beforeReplace') {
             this.parent.notify(setActionData, { args: args });
         }
     };
@@ -29631,7 +29673,7 @@ var Spreadsheet = /** @class */ (function (_super) {
             bottomIndex: 0, rightIndex: 0
         };
         _this.needsID = true;
-        Spreadsheet_1.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, WrapText, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat, WorkbookNumberFormat, WorkbookFormula, Sort, WorkbookSort, Resize, UndoRedo, WorkbookFilter, Filter, SpreadsheetHyperlink, WorkbookHyperlink, Insert, Delete, WorkbookInsert, WorkbookDelete, DataValidation, WorkbookDataValidation, ProtectSheet, FindAndReplace, Merge, WorkbookMerge);
+        Spreadsheet_1.Inject(Ribbon$$1, FormulaBar, SheetTabs, Selection, Edit, KeyboardNavigation, KeyboardShortcut, Clipboard, DataBind, Open, ContextMenu$1, Save, NumberFormat, CellFormat, Formula, WrapText, WorkbookEdit, WorkbookOpen, WorkbookSave, WorkbookCellFormat, WorkbookNumberFormat, WorkbookFormula, Sort, WorkbookSort, Resize, UndoRedo, WorkbookFilter, Filter, SpreadsheetHyperlink, WorkbookHyperlink, Insert, Delete, WorkbookInsert, WorkbookDelete, DataValidation, WorkbookDataValidation, ProtectSheet, FindAndReplace, Merge, WorkbookMerge, WorkbookFindAndReplace);
         if (element) {
             _this.appendTo(element);
         }

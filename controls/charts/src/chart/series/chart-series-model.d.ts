@@ -946,6 +946,7 @@ export interface SeriesModel extends SeriesBaseModel{
      * default value is 1 otherwise 0.7.
      * @default null
      * @aspDefaultValueIgnore
+     * @blazorDefaultValue Double.NaN
      */
     columnWidth?: number;
 

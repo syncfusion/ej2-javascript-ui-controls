@@ -81,6 +81,11 @@ function pixelToPoint(value) {
 function pointToPixel(value) {
     return (value * 92) / 76;
 }
+var uid = 0;
+/** @hidden */
+function getUid$1() {
+    return uid++;
+}
 
 /**
  *  Date processor is used to handle date of task data.
@@ -6819,8 +6824,8 @@ var ChartRows = /** @class */ (function () {
             this.parent.editModule.taskbarEditModule.taskBarEditAction === 'ParentResizing' ?
             true : false;
         var template = '<div class="' + taskBarMainContainer + ' ' +
-            this.parent.getUnscheduledTaskClass(data.ganttProperties) + '" ' +
-            ((data.ganttProperties.cssClass) ? data.ganttProperties.cssClass : '') +
+            this.parent.getUnscheduledTaskClass(data.ganttProperties) + ' ' +
+            ((data.ganttProperties.cssClass) ? data.ganttProperties.cssClass : '') + '" ' +
             ' tabindex="-1" style="' + ((data.ganttProperties.isMilestone && !manualParent) ?
             ('width:' + this.milestoneHeight + 'px;height:' +
                 this.milestoneHeight + 'px;margin-top:' + this.milestoneMarginTop + 'px;left:' + (data.ganttProperties.left -
@@ -15094,7 +15099,7 @@ var DialogEdit = /** @class */ (function () {
     };
     DialogEdit.prototype.getPredecessorModel = function (fields) {
         if (sf.base.isNullOrUndefined(fields) || fields.length === 0) {
-            fields = ['ID', 'Name', 'Type', 'Offset'];
+            fields = ['ID', 'Name', 'Type', 'Offset', 'UniqueId'];
         }
         var inputModel = {};
         inputModel.editSettings = { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Normal' };
@@ -15141,6 +15146,12 @@ var DialogEdit = /** @class */ (function () {
                 column = {
                     field: 'offset', headerText: this.localeObj.getConstant('offset'), editType: 'stringedit',
                     defaultValue: '0 days', validationRules: { required: true }, width: '100px'
+                };
+                columns.push(column);
+            }
+            else if (fields[i].toLowerCase() === 'uniqueid') {
+                column = {
+                    field: 'uniqueId', isPrimaryKey: true, visible: false, defaultValue: getUid$1().toString()
                 };
                 columns.push(column);
             }
@@ -15363,6 +15374,9 @@ var DialogEdit = /** @class */ (function () {
         var columns = gridModel.columns;
         columns[1].edit = {
             write: function (args) {
+                if (sf.base.getValue('requestType', args) === 'add') {
+                    sf.base.setValue('rowData.uniqueId', getUid$1(), args);
+                }
                 var field = 'name';
                 var autoObj = new sf.dropdowns.ComboBox({
                     dataSource: new sf.data.DataManager(_this.preTableCollection),
@@ -15566,6 +15580,7 @@ var DialogEdit = /** @class */ (function () {
                     var offset = Math.abs(predecessor[i].offset);
                     var offsetUnit = predecessor[i].offsetUnit;
                     preData.offset = this.parent.dataOperation.getDurationString(offset, offsetUnit);
+                    preData.uniqueId = getUid$1();
                     preDataCollection.push(preData);
                 }
             }
@@ -15781,7 +15796,7 @@ var DialogEdit = /** @class */ (function () {
         if (gridObj.isEdit) {
             gridObj.endEdit();
         }
-        var dataSource = gridObj.currentViewData;
+        var dataSource = gridObj.dataSource;
         var predecessorName = [];
         var newValues = [];
         var predecessorString = '';
@@ -25659,6 +25674,7 @@ exports.formatString = formatString;
 exports.getIndex = getIndex;
 exports.pixelToPoint = pixelToPoint;
 exports.pointToPixel = pointToPixel;
+exports.getUid = getUid$1;
 exports.load = load;
 exports.rowDataBound = rowDataBound;
 exports.queryCellInfo = queryCellInfo;

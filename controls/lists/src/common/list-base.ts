@@ -819,6 +819,10 @@ export namespace ListBase {
                     className: cssClass.text, innerHTML: text,
                     attrs: (ariaAttributes.itemText !== '' ? { role: ariaAttributes.itemText } : {})
                 }));
+                if (options && options.enableHtmlSanitizer) {
+                    let textElement: HTMLElement =  innerDiv.querySelector('.' + cssClass.text);
+                    textElement.innerText = SanitizeHtmlHelper.sanitize(text);
+                }
             }
             li.appendChild(innerDiv);
         }

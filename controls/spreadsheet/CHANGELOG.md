@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.45 (2020-04-21)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+`#I271476`- Fixed the issue of find and replace is not working properly.
+
 ## 18.1.44 (2020-04-14)
 
 ### Spreadsheet

@@ -7453,6 +7453,14 @@ var AutoComplete = /** @__PURE__ @class */ (function (_super) {
             }
         }
         if (!isNullOrUndefined(this.suggestionCount)) {
+            // Since defualt value of suggestioncount is 20, checked the condition
+            if (this.suggestionCount !== 20) {
+                for (var queryElements = 0; queryElements < filterQuery.queries.length; queryElements++) {
+                    if (filterQuery.queries[queryElements].fn === 'onTake') {
+                        filterQuery.queries.splice(queryElements, 1);
+                    }
+                }
+            }
             filterQuery.take(this.suggestionCount);
         }
         return filterQuery;
@@ -7581,7 +7589,12 @@ var AutoComplete = /** @__PURE__ @class */ (function (_super) {
         if (isNullOrUndefined(fields.itemCreated)) {
             fields.itemCreated = function (e) {
                 if (_this.highlight) {
-                    highlightSearch(e.item, _this.queryString, _this.ignoreCase, _this.filterType);
+                    if (_this.element.tagName === _this.getNgDirective() && _this.itemTemplate) {
+                        setTimeout(function () { highlightSearch(e.item, _this.queryString, _this.ignoreCase, _this.filterType); }, 0);
+                    }
+                    else {
+                        highlightSearch(e.item, _this.queryString, _this.ignoreCase, _this.filterType);
+                    }
                 }
             };
         }
@@ -12268,8 +12281,13 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         }
         this.renderComplete();
     };
-    ListBox.prototype.updateBlazorListData = function (data) {
-        this.sortedData = this.jsonData = this.listData = data;
+    ListBox.prototype.updateBlazorListData = function (data, isDataSource) {
+        if (isDataSource) {
+            this.mainList = this.ulElement = this.list.querySelector('ul');
+        }
+        else {
+            this.sortedData = this.jsonData = this.listData = data;
+        }
     };
     ListBox.prototype.initWrapper = function () {
         var hiddenSelect = this.createElement('select', { className: 'e-hidden-select', attrs: { 'multiple': '' } });

@@ -395,7 +395,8 @@ export class BaseLegend {
             let start: ChartLocation; // starting shape center x,y position && to resolve lint error used new line for declaration
             start = new ChartLocation(legendBounds.x + padding + (legend.shapeWidth / 2),
                                       legendBounds.y + padding + this.maxItemHeight / 2);
-            let textOptions: TextOption = new TextOption('', start.x, start.y, 'start');
+            let anchor: string = (chart as Chart).isRtlEnabled ? 'end' : 'start';
+            let textOptions: TextOption = new TextOption('', start.x, start.y, anchor);
             //  initialization for totalPages legend click totalpage again calculate
             this.totalPages = this.totalPages = (this.isChartControl || this.isBulletChartControl) ? this.totalPages : 0;
             let textPadding: number = legend.shapePadding + padding + legend.shapeWidth;

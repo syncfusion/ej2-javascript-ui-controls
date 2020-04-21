@@ -1448,8 +1448,10 @@ let MenuBase = class MenuBase extends Component {
                             if (sli) {
                                 sli.setAttribute('aria-expanded', 'false');
                                 sli.classList.remove(SELECTED);
-                                sli.classList.add(FOCUSED);
-                                sli.focus();
+                                if (liElem) {
+                                    sli.classList.add(FOCUSED);
+                                    sli.focus();
+                                }
                             }
                         }
                     }
@@ -2092,6 +2094,7 @@ let MenuBase = class MenuBase extends Component {
                                 this.isClosed = true;
                                 this.keyType = 'click';
                                 this.closeMenu(culIdx + 1, e);
+                                this.setLISelected(cli);
                             }
                         }
                         if (!this.isClosed) {
@@ -2166,6 +2169,51 @@ let MenuBase = class MenuBase extends Component {
             }
         }
         return null;
+    }
+    /**
+     * This method is used to get the index of the menu item in the Menu based on the argument.
+     * @param item - item be passed to get the index.
+     * @param id - id to be passed to update the item.
+     * @param isUniqueId - Set `true` if it is a unique id.
+     * @returns void
+     */
+    getItemIndex(item, id, isUniqueId) {
+        let idx = id ? id : item.id;
+        let isText = (isUniqueId === false) ? false : true;
+        let navIdx = this.getIndex(idx, isText);
+        return navIdx;
+    }
+    /**
+     * This method is used to set the menu item in the Menu based on the argument.
+     * @param item - item need to be updated.
+     * @param id - id to be passed to update the item.
+     * @param isUniqueId - Set `true` if it is a unique id.
+     * @returns void
+     */
+    setItem(item, id, isUniqueId) {
+        let idx = id ? id : item.id;
+        let isText = (isUniqueId === false) ? false : true;
+        let navIdx = this.getIndex(idx, isText);
+        let items = this.items;
+        switch (navIdx.length) {
+            case 1:
+                items[navIdx[0]].iconCss = item.iconCss;
+                items[navIdx[0]].id = item.id;
+                items[navIdx[0]].text = item.text;
+                items[navIdx[0]].url = item.url;
+                items[navIdx[0]].separator = item.separator;
+                items[navIdx[0]].items = item.items;
+                break;
+            case 2:
+                items[navIdx[0]].items[navIdx[1]] = item;
+                break;
+            case 3:
+                items[navIdx[0]].items[navIdx[1]].items[navIdx[2]] = item;
+                break;
+            case 4:
+                items[navIdx[0]].items[navIdx[1]].items[navIdx[2]].items[navIdx[3]] = item;
+                break;
+        }
     }
     getItem(navIdx) {
         navIdx = navIdx.slice();
@@ -2307,7 +2355,10 @@ let MenuBase = class MenuBase extends Component {
         let key = Object.keys(newProp.items[idx]).pop();
         if (key === 'items') {
             let item = newProp.items[idx];
-            this.getChangedItemIndex(item, index, Number(Object.keys(item.items).pop()));
+            let popStr = Object.keys(item.items).pop();
+            if (popStr) {
+                this.getChangedItemIndex(item, index, Number(popStr));
+            }
         }
         else {
             if (key === 'isParentArray' && index.length > 1) {
@@ -5150,6 +5201,9 @@ let Accordion = class Accordion extends Component {
             this.initialize();
             this.renderControl();
         }
+        else {
+            this.wireFocusEvents();
+        }
         this.wireEvents();
         this.renderComplete();
     }
@@ -5176,6 +5230,17 @@ let Accordion = class Accordion extends Component {
             !(isBlazor() && !this.isStringTemplate)) ? select('div', this.element) : null;
         this.renderItems();
         this.initItemExpand();
+    }
+    wireFocusEvents() {
+        let acrdItem = [].slice.call(this.element.querySelectorAll('.' + CLS_ITEM$1));
+        for (let item of acrdItem) {
+            let headerEle = item.querySelector('.' + CLS_HEADER);
+            if (item.childElementCount > 0 && headerEle) {
+                EventHandler.clearEvents(headerEle);
+                EventHandler.add(headerEle, 'focus', this.focusIn, this);
+                EventHandler.add(headerEle, 'blur', this.focusOut, this);
+            }
+        }
     }
     unwireEvents() {
         EventHandler.remove(this.element, 'click', this.clickHandler);
@@ -6122,6 +6187,7 @@ let Accordion = class Accordion extends Component {
             switch (prop) {
                 case 'items':
                     if (this.isServerRendered) {
+                        this.wireFocusEvents();
                         break;
                     }
                     if (!(newProp.items instanceof Array && oldProp.items instanceof Array)) {

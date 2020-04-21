@@ -393,7 +393,7 @@ export interface PdfAnnotationBaseModel {
     textAlign?: string;
 
     /**
-     * Represents the unique Name of the annotation 
+     * Represents the unique Name of the annotation
      * @default ''
      */
     signatureName?: string;
@@ -427,6 +427,12 @@ export interface PdfAnnotationBaseModel {
      * @default 'false'
      */
     isLock?: boolean;
+
+    /**
+     * specifies the particular annotation mode.
+     * @default 'UI Drawn Annotation'
+     */
+    annotationAddMode?: string;
 
     /**
      * specifies the default settings of the annotation.

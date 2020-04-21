@@ -417,7 +417,8 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     public doubleTapTimer: Object;
     /** @private */
     public isBlazor: boolean;
-
+    /** @private */
+    public levelSelection: string[] = [];
     /**s
      * Constructor for TreeMap component.
      */

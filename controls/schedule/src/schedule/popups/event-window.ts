@@ -554,7 +554,7 @@ export class EventWindow {
                     let resourceModel: ResourcesModel = resourceCollection[i + 1];
                     let filter: Object = (resourceModel.dataSource as Object[]).filter((data: { [key: string]: Object }) =>
                         data[resourceModel.groupIDField] === args.value[j])[0];
-                    let groupId: number = (<{ [key: string]: Object }>filter)[resourceCollection[i + 1].idField] as number;
+                    let groupId: number = (<{ [key: string]: Object }>filter)[resourceCollection[i + 1].groupIDField] as number;
                     let filterRes: { [key: string]: Object }[] = this.filterDatasource(i, groupId);
                     datasource = datasource.concat(filterRes);
                 }

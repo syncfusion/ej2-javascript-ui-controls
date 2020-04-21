@@ -68,6 +68,23 @@ export enum ImageFormat {
  */
 export class ImageDecoder {
     /**
+     * Start of file markers.
+     * @hidden
+     * @private
+     */
+    private sof1Marker : number = 0x00C1;
+    private sof2Marker : number = 0x00C2;
+    private sof3Marker : number = 0x00C3;
+    private sof5Marker : number = 0x00C5;
+    private sof6Marker : number = 0x00C6;
+    private sof7Marker : number = 0x00C7;
+    private sof9Marker : number = 0x00C9;
+    private sof10Marker : number = 0x00CA;
+    private sof11Marker : number = 0x00CB;
+    private sof13Marker : number = 0x00CD;
+    private sof14Marker : number = 0x00CE;
+    private sof15Marker : number = 0x00CF;
+    /**
      * Number array for `png header`.
      * @hidden
      * @private
@@ -104,13 +121,13 @@ export class ImageDecoder {
      */
     private mFormat: ImageFormat = ImageFormat.Unknown;
     /**
-     * `Height` of image.
+     * `height` of image.
      * @hidden
      * @private
      */
     private mHeight: number;
     /**
-     * `Width` of image.
+     * `width` of image.
      * @hidden
      * @private
      */
@@ -134,6 +151,12 @@ export class ImageDecoder {
      * @private
      */
     private imageStream : PdfStream;
+    /**
+     * 'offset' of image.
+     * @hidden
+     * @private
+     */
+    private offset : number;
     /**
      * Internal variable for accessing fields from `DictionryProperties` class.
      * @hidden
@@ -228,11 +251,12 @@ export class ImageDecoder {
         let imgData: ByteArray = new ByteArray(this.mStream.count);
         this.mStream.read(imgData, 0, imgData.count);
         let i: number = 4;
+        let isLengthExceed : boolean = false;
         /* tslint:disable */
-        if (String.fromCharCode(imgData.getBuffer(i + 2)) === 'J' && String.fromCharCode(imgData.getBuffer(i + 3)) === 'F' && String.fromCharCode(imgData.getBuffer(i + 4)) === 'I' && String.fromCharCode(imgData.getBuffer(i + 5)) === 'F' && imgData.getBuffer(i + 6) === 0) {
-            let length: number = imgData.getBuffer(i) * 256 + imgData.getBuffer(i + 1);
-            while (i + length < imgData.count) {
-                i += length;
+        let length: number = imgData.getBuffer(i) * 256 + imgData.getBuffer(i + 1);
+        while (i < imgData.count) {
+            i += length;
+            if (i < imgData.count) {
                 if (imgData.getBuffer(i + 1) === 192) {
                     this.mHeight = imgData.getBuffer(i + 5) * 256 + imgData.getBuffer(i + 6);
                     this.mWidth = imgData.getBuffer(i + 7) * 256 + imgData.getBuffer(i + 8);
@@ -241,7 +265,15 @@ export class ImageDecoder {
                     i += 2;
                     length = imgData.getBuffer(i) * 256 + imgData.getBuffer(i + 1);
                 }
+            } else {
+                isLengthExceed = true;
+                break;
             }
+        }
+        if (isLengthExceed) {
+            this.mStream.position = 0;
+            this.skip(this.mStream, 2);
+            this.readExceededJPGImage(this.mStream);
         }
         /* tslint:enable */
     }
@@ -324,5 +356,82 @@ export class ImageDecoder {
         decodeParams.items.setValue(this.dictionaryProperties.predictor, new PdfNumber(15));
         decodeParams.items.setValue(this.dictionaryProperties.bitsPerComponent, new PdfNumber(this.bitsPerComponent));
         return decodeParams;
+    }
+
+    /**
+     * 'readExceededJPGImage' stream 
+     * @hidden
+     * @private
+     */
+    private readExceededJPGImage(stream: ByteArray): void {
+        this.mStream = stream;
+        let isContinueReading : boolean = true;
+        while (isContinueReading) {
+            let marker : number =  this.getMarker(stream);
+            switch (marker) {
+                case this.sof1Marker:
+                case this.sof2Marker:
+                case this.sof3Marker:
+                case this.sof5Marker:
+                case this.sof6Marker:
+                case this.sof7Marker:
+                case this.sof9Marker:
+                case this.sof10Marker:
+                case this.sof11Marker:
+                case this.sof13Marker:
+                case this.sof14Marker:
+                case this.sof15Marker:
+                    stream.position += 3;
+                    this.mHeight = this.mStream.readNextTwoBytes(stream);
+                    this.mWidth = this.mStream.readNextTwoBytes(stream);
+                    isContinueReading = false;
+                    break;
+                default:
+                this.skipStream(stream);
+                    break;
+            }
+        }
+    }
+    /**
+     * 'skip' stream 
+     * @hidden
+     * @private
+     */
+    private skip(stream: ByteArray, noOfBytes: number): void {
+        this.mStream = stream;
+        let temp : ByteArray =  new ByteArray(noOfBytes);
+        this.mStream.read(temp, 0, temp.count);
+    }
+    /**
+     * 'getMarker' stream 
+     * @hidden
+     * @private
+     */
+    private getMarker(stream: ByteArray): number {
+        let skippedByte :  number = 0;
+        let marker : number = 32;
+        marker = stream.readByte(this.mStream.position);
+        stream.position++;
+        while (marker !== 255) {
+            skippedByte++;
+            marker = stream.readByte(this.mStream.position); stream.position++;
+        }
+        do {
+            marker = stream.readByte(this.mStream.position);
+            stream.position++;
+        }
+        while (marker === 255);
+        return marker;
+    }
+    /**
+     * 'skipStream' stream 
+     * @hidden
+     * @private
+     */
+    private skipStream(stream: ByteArray): void {
+        let markerLength : number = this.mStream.readNextTwoBytes(stream) - 2;
+        if (markerLength > 0) {
+            stream.position += markerLength;
+        }
     }
 }

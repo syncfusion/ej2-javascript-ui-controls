@@ -11,11 +11,28 @@ import { IScrollbarThemeStyle } from '../../chart/index';
 export function createScrollSvg(scrollbar: ScrollBar, renderer: SvgRenderer): void {
     let rect: Rect = scrollbar.axis.rect;
     let isHorizontalAxis: boolean = scrollbar.axis.orientation === 'Horizontal';
+    let enablePadding: boolean = false; let markerHeight: number = 5;
+    let yMin: number | string;
+    for (let tempSeries of scrollbar.axis.series) {
+        if (tempSeries.marker.height > markerHeight) {
+            markerHeight = tempSeries.marker.height;
+        }
+    }
+    for (let tempSeries of scrollbar.axis.series) {
+        yMin = tempSeries.yMin.toString();
+        enablePadding = (tempSeries.yData).some((yData: number | string) => {
+            return yData === yMin;
+        });
+        if (enablePadding) {
+            break;
+        }
+    }
     scrollbar.svgObject = renderer.createSvg({
-        id: scrollbar.component.element.id + '_'  + 'scrollBar_svg' + scrollbar.axis.name,
+        id: scrollbar.component.element.id + '_' + 'scrollBar_svg' + scrollbar.axis.name,
         width: scrollbar.isVertical ? scrollbar.height : scrollbar.width,
         height: scrollbar.isVertical ? scrollbar.width : scrollbar.height,
-        style: 'position: absolute;top: ' + ((scrollbar.axis.opposedPosition && isHorizontalAxis ? -16 : 0) + rect.y) + 'px;left: ' +
+        style: 'position: absolute;top: ' + ((scrollbar.axis.opposedPosition && isHorizontalAxis ? -16 :
+            (enablePadding ? markerHeight : 0)) + rect.y) + 'px;left: ' +
             (((scrollbar.axis.opposedPosition && !isHorizontalAxis ? 16 : 0) + rect.x) - (scrollbar.isVertical ? scrollbar.height : 0))
             + 'px;cursor:auto;'
     });

@@ -2006,6 +2006,28 @@ describe('Checkbox Filter module => ', () => {
             (checkBoxFilter.querySelectorAll('.e-checkbox-wrapper')[2] as any).click(); 
            checkBoxFilter.querySelectorAll('button')[0].click();
         });
+
+        it('Filter Freight dialog open testing', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if(args.requestType === 'filterafteropen'){
+                    checkBoxFilter = gridObj.element.querySelector('.e-checkboxfilter');
+                    gridObj.actionComplete =null;
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (gridObj.filterModule as any).filterIconClickHandler(getClickObj(gridObj.getColumnHeaderByField('Freight').querySelector('.e-filtermenudiv')));
+        });
+
+        it('Filter Freight testing ', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                expect(args.requestType).toBe('filtering');       
+                gridObj.actionComplete =null;
+                done();
+            };
+            gridObj.actionComplete = actionComplete;                     
+           checkBoxFilter.querySelectorAll('button')[1].click();
+        });
         
         afterAll(() => {
             destroy(gridObj);

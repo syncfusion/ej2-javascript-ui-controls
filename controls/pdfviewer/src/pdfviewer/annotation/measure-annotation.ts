@@ -288,6 +288,8 @@ export class MeasureAnnotation {
                     let annotation: any = shapeAnnotations[i];
                     let annotationObject: IMeasureShapeAnnotation = null;
                     this.measureShapeCount = this.measureShapeCount + 1;
+                    // tslint:disable-next-line:max-line-length
+                    annotation.annotationAddMode = this.pdfViewer.annotationModule.findAnnotationMode(annotation, pageNumber, annotation.AnnotType);
                     if (annotation.ShapeAnnotationType) {
                         let vertexPoints: IPoint[] = null;
                         if (annotation.VertexPoints) {
@@ -360,7 +362,7 @@ export class MeasureAnnotation {
                              labelContent: annotation.LabelContent, enableShapeLabel: annotation.EnableShapeLabel, labelFillColor: annotation.LabelFillColor,
                              fontColor: annotation.FontColor, labelBorderColor: annotation.LabelBorderColor, fontSize: annotation.FontSize,
                              labelBounds: annotation.LabelBounds, annotationSelectorSettings: annotation.AnnotationSelectorSettings,
-                             annotationSettings: annotationObject.annotationSettings
+                             annotationSettings: annotationObject.annotationSettings, annotationAddMode: annotation.annotationAddMode
                         };
                         this.pdfViewer.annotation.storeAnnotations(pageNumber, annotationObject, '_annotations_shape_measure');
                         this.pdfViewer.add(annot as PdfAnnotationBase);
@@ -1114,9 +1116,18 @@ export class MeasureAnnotation {
                 calculateValue = (Math.round(calculateValue / 12 * 100) / 100).toString();
                 calculateValue =  calculateValue.split('.');
                 if (calculateValue[1]) {
-                    return (calculateValue[0] + ' sq ft ' + calculateValue[1] + ' in');
+                    // tslint:disable-next-line
+                    let inchValue: any = 0;
+                    if (calculateValue[1].charAt(1)) {
+                        // tslint:disable-next-line
+                        inchValue = parseInt(calculateValue[1].charAt(0)) + '.' + parseInt(calculateValue[1].charAt(1));
+                        inchValue = Math.round(inchValue);
+                    } else {
+                        inchValue = calculateValue[1];
+                    }
+                    return (calculateValue[0] + ' sq ft ' + inchValue + ' in');
                 } else {
-                    return(calculateValue[0] + ' sq ft 00 in');
+                    return(calculateValue[0] + ' sq ft');
                 }
            } else {
                 return (Math.round(area * 100) / 100) + ' sq in';
@@ -1155,9 +1166,18 @@ export class MeasureAnnotation {
                 calculateValue = (Math.round(calculateValue / 12 * 100) / 100).toString();
                 calculateValue = calculateValue.split('.');
                 if (calculateValue[1]) {
-                    return (calculateValue[0] + ' cu ft ' + calculateValue[1] + ' in');
+                    // tslint:disable-next-line
+                    let inchValue: any = 0;
+                    if (calculateValue[1].charAt(1)) {
+                        // tslint:disable-next-line
+                        inchValue = parseInt(calculateValue[1].charAt(0)) + '.' + parseInt(calculateValue[1].charAt(1));
+                        inchValue = Math.round(inchValue);
+                    } else {
+                        inchValue = calculateValue[1];
+                    }
+                    return (calculateValue[0] + ' cu ft ' + inchValue + ' in');
                 } else {
-                    return(calculateValue[0] + ' cu ft 00 in');
+                    return(calculateValue[0] + ' cu ft');
                 }
            } else {
                 return (Math.round(volume * 100) / 100) + ' cu in';
@@ -1214,9 +1234,18 @@ export class MeasureAnnotation {
                 calculateValue = (Math.round(calculateValue / 12 * 100) / 100).toString();
                 calculateValue = calculateValue.split('.');
                 if (calculateValue[1]) {
-                    convertedValue = calculateValue[0] + ' ft ' + calculateValue[1] + ' in';
+                    // tslint:disable-next-line
+                    let inchValue: any = 0;
+                    if (calculateValue[1].charAt(1)) {
+                        // tslint:disable-next-line
+                        inchValue = parseInt(calculateValue[1].charAt(0)) + '.' + parseInt(calculateValue[1].charAt(1));
+                        inchValue = Math.round(inchValue);
+                    } else {
+                        inchValue = calculateValue[1];
+                    }
+                    convertedValue = calculateValue[0] + ' ft ' + inchValue + ' in';
                 } else {
-                    convertedValue = calculateValue[0] + ' ft 00 in';
+                    convertedValue = calculateValue[0] + ' ft';
                 }
            } else {
                 convertedValue = Math.round((value * factor) * 100) / 100 + '  in';

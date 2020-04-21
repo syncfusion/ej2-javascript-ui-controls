@@ -559,6 +559,48 @@ describe('Selection commands', () => {
     });
 });
 
+describe('Font size change with br', () => {
+    let innervalue: string = `<div id="div1"><p id="paragraphfirst">line1</p><p><br></p><p>line 2 with previous as br</p><p>line 3</p><p><br></p><p><br></p><p>line 4 with two previous br</p><p>line 5</p><p><br></p><p><br></p><p id="paragraphlast"><br></p></div>`;
+    let domSelection: NodeSelection = new NodeSelection();
+    let divElement: HTMLDivElement = document.createElement('div');
+    divElement.id = 'divElement';
+    divElement.contentEditable = 'true';
+    divElement.innerHTML = innervalue;
+    let parentDiv: HTMLDivElement;
+
+    beforeAll(() => {
+        document.body.appendChild(divElement);
+        parentDiv = document.getElementById('div1') as HTMLDivElement;
+    });
+    afterAll(() => {
+        detach(divElement);
+    });
+    it('Apply fontsize elements with br', () => {
+        let node1: Node = document.getElementById('paragraphfirst');
+        let listNode1: Text = node1.childNodes[0] as Text;
+        let node2: Node = document.getElementById('paragraphlast');
+        let listNode2: Text = node2.childNodes[0] as Text;
+        domSelection.setSelectionText(document, listNode1, listNode2, 0, 0);
+        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, '36px');
+        let brelement = document.querySelectorAll('br');
+        for (let i: number = 0; i < brelement.length; i++) {
+            expect(brelement[i].parentElement.style.fontSize).toBe('36px');
+        }
+    });
+
+    it('Apply fontsize elements with br for already applied styles', () => {
+        let node1: Node = document.getElementById('paragraphfirst');
+        let listNode1: Text = node1.childNodes[0] as Text;
+        let node2: Node = document.getElementById('paragraphlast');
+        let listNode2: Text = node2.childNodes[0] as Text;
+        domSelection.setSelectionText(document, listNode1, listNode2, 0, 0);
+        SelectionCommands.applyFormat(document, 'fontsize', parentDiv, '8px');
+        let brelement = document.querySelectorAll('br');
+        for (let i: number = 0; i < brelement.length; i++) {
+            expect(brelement[i].parentElement.style.fontSize).toBe('8px');
+        }
+    });
+});
 describe('Bold the content', () => {
     let innervalue: string = `<p>The rich text editor component is WYSIWYG ("what you see is what you get") editor that provides the best user experience to create and update the content. 
     Users can format their content using standard toolbar commands.</p>

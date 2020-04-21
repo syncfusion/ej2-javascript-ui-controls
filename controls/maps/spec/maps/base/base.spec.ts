@@ -783,6 +783,23 @@ describe('Maps Component Base Spec', () => {
             world.layers[0].selectionSettings.enableMultiSelect = false;
             world.refresh();
         });
+        it('Select the map by giving property path type as string array using public methode', () => {
+            world.loaded = (args: ILoadedEventArgs) => {
+                args.maps.shapeSelection(0, ["name", "continent"], 'Russia', true);
+                let selectedElement = document.getElementById(world.element.id + '_LayerIndex_0_shapeIndex_134_dataIndex_3');
+                expect(selectedElement.getAttribute('class')).toBe('ShapeselectionMapStyle');
+            };
+            world.layers[0].selectionSettings.enableMultiSelect = true;
+            world.refresh();
+        });
+        it('Select the map by giving property path type as string array with multiselect using public methode', () => {
+            world.loaded = (args: ILoadedEventArgs) => {
+                args.maps.shapeSelection(0, ["name", "continent"], 'Asia', true);
+                let selectedElement = document.getElementById(world.element.id + '_LayerIndex_0_shapeIndex_29_dataIndex_4');
+                expect(selectedElement.getAttribute('class')).toBe('ShapeselectionMapStyle');
+            };
+            world.refresh();
+        });
     });
 
     describe('Maps testing spec with container size for OSM , Bing and Google Static Maps', () => {

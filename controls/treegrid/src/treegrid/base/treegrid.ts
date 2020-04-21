@@ -1644,8 +1644,11 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     }
     this.grid.query.queries = [];
     let isJsComponent: string = 'isJsComponent';
+    let isHybrid: string = 'isHybrid';
     if (!this.isServerRendered) {
       this.grid[isJsComponent] = true;
+    } else {
+      this.grid[isHybrid] = true;
     }
     this.setBlazorGUID();
     this.setColIndex(this.grid.columns as GridColumnModel[]);
@@ -1788,7 +1791,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     };
     this.grid.rowDeselected = (args: RowDeselectEventArgs): void => {
       this.selectedRowIndex = this.grid.selectedRowIndex;
-      if (isBlazor() && !this.isServerRendered) {
+      if (isBlazor()) {
         let data: string = 'data'; let rowIndex: string = 'rowIndex';
         let row: string = 'row';
         args[data] = args[data][args[data].length - 1];
@@ -3546,7 +3549,7 @@ private getGridEditSettings(): GridEditModel {
         this.trigger(events.expanded, args);
       }
     } else {
-      this.collapseRemoteChild(rows);
+      this.collapseRemoteChild({ record: record, rows: rows });
       this.trigger(events.collapsed, args);
     }
   }
@@ -3567,7 +3570,7 @@ private getGridEditSettings(): GridEditModel {
         r.querySelector(
           '.e-gridrowindex' + record.index + 'level' + (record.level + 1)
         ));
-    if (this.frozenRows > 0) {
+    if (this.frozenRows || this.frozenColumns || this.getFrozenColumns()) {
         movableRows = <HTMLTableRowElement[]>this.getMovableRows().filter(
           (r: HTMLTableRowElement) =>
             r.querySelector(
@@ -3621,15 +3624,15 @@ private getGridEditSettings(): GridEditModel {
     }
     }
   }
-  private collapseRemoteChild(rows: HTMLTableRowElement[]): void {
-    let rData: ITreeData;
+  private collapseRemoteChild(rowDetails: { record: ITreeData, rows: HTMLTableRowElement[] }, isChild?: boolean): void {
+
+    if (!isChild) {
+      rowDetails.record.expanded = false;
+    }
+
+    let rows: HTMLTableRowElement[] = rowDetails.rows;
+    let childRecord: ITreeData;
     for (let i: number = 0; i < rows.length; i++) {
-      if (this.rowTemplate) {
-        rData = this.grid.getCurrentViewRecords()[rows[i].rowIndex];
-      } else {
-        rData = this.grid.getRowObjectFromUID(rows[i].getAttribute('data-Uid')).data;
-      }
-      rData.expanded = false;
       if (isBlazor() && this.isServerRendered) {
         removeClass([rows[i]], 'e-treerowexpanded');
         addClass([rows[i]], 'e-treerowcollapsed');
@@ -3642,16 +3645,23 @@ private getGridEditSettings(): GridEditModel {
       }
       if (rows[i].querySelector('.e-treecolumn-container .e-treegridexpand')) {
         let expandElement: HTMLElement = rows[i].querySelector('.e-treecolumn-container .e-treegridexpand');
-        removeClass([expandElement], 'e-treegridexpand');
-        addClass([expandElement], 'e-treegridcollapse');
+        childRecord = this.rowTemplate ? this.grid.getCurrentViewRecords()[rows[i].rowIndex] :
+          this.grid.getRowObjectFromUID(rows[i].getAttribute('data-Uid')).data;
+        if (!isNullOrUndefined(expandElement) && childRecord.expanded) {
+          removeClass([expandElement], 'e-treegridexpand');
+          addClass([expandElement], 'e-treegridcollapse');
+        }
+
         let cRow: HTMLTableRowElement[] = [];
         let eRows: HTMLTableRowElement[] = this.getRows();
         for (let i: number = 0; i < eRows.length; i++) {
-          if (eRows[i].querySelector('.e-gridrowindex' + rData.index + 'level' + (rData.level + 1))) {
-              cRow.push(eRows[i]);
+          if (eRows[i].querySelector('.e-gridrowindex' + childRecord.index + 'level' + (childRecord.level + 1))) {
+            cRow.push(eRows[i]);
           }
         }
-        this.collapseRemoteChild(cRow);
+        if (cRow.length && childRecord.expanded) {
+          this.collapseRemoteChild({ record: childRecord, rows: cRow }, true);
+        }
       }
     }
   }

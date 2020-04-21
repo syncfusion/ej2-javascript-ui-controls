@@ -642,7 +642,43 @@ describe('TreeMap component Spec', () => {
             treemap.selectionSettings.enable = true;
             treemap.refresh();
         });
-
+        it('Checking the treemap resize window selection state enable or disable when select the maps', () => {
+            treemap.loaded = (args: ILoadedEventArgs) => {
+                let rectEle: Element; let eventObj: Object = {};
+                rectEle = document.getElementById(args.treemap.element.id + '_TreeMap_Border');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousemove',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseMoveOnTreeMap(<PointerEvent>eventObj);
+                rectEle = document.getElementById(args.treemap.element.id + '_Level_Index_0_Item_Index_18_RectPath');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousemove',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseMoveOnTreeMap(<PointerEvent>eventObj);
+                rectEle = document.getElementById(args.treemap.element.id + '_TreeMap_Border');
+                eventObj = {
+                    target: rectEle,
+                    type: 'mousemove',
+                    preventDefault: prevent,
+                    pageX: rectEle.getBoundingClientRect().left,
+                    pageY: (rectEle.getBoundingClientRect().top + 10)
+                };
+                treemap.mouseMoveOnTreeMap(<PointerEvent>eventObj);
+            };
+            treemap.highlightSettings.enable = true;
+            treemap.selectionSettings.enable = true;
+            treemap.height ="400px";
+            treemap.width ="400px";
+            treemap.refresh();
+        });
         it('Checking with legend highlight enable with default mode', () => {
             treemap.loaded = (args: ILoadedEventArgs) => {
                 let rectEle: Element; let eventObj: Object = {};

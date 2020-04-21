@@ -1021,7 +1021,7 @@ export class Filter implements IAction {
 
     private filterHandler(args: {
         action: string, filterCollection: PredicateModel[], field: string, ejpredicate: Predicate,
-        column: Column, actualPredicate: PredicateModel[]
+        column: Column, actualPredicate: PredicateModel[], requestType: string
     }): void {
         let filterIconElement: Element;
         this.actualPredicate[args.field] = args.actualPredicate;
@@ -1057,7 +1057,8 @@ export class Filter implements IAction {
             if (filterIconElement) {
                 filterIconElement.classList.remove('e-filtered');
             }
-            this.parent.renderModule.refresh(); //hot-fix onpropertychanged not working for object { array }           
+            args.requestType = 'filtering';
+            this.parent.renderModule.refresh(args as object); //hot-fix onpropertychanged not working for object { array }           
         }
         this.parent.dataBind();
     }
