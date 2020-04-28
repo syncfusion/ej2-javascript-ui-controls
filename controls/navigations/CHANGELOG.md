@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 18.1.46 (2020-04-28)
+
+### Menu
+
+#### Bug Fixes
+
+- Provided 'getItemIndex' public method to get the index of the menu item.
+
+### TreeView
+
+#### Bug Fixes
+
+- `#269540` -The issue with `The getAllCheckedNodes method which is not returning the proper checkedNodes values in the TreeView component` has been fixed.
+
 ## 18.1.45 (2020-04-21)
 
 ### Menu

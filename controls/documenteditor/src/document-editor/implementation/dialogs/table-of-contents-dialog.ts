@@ -429,14 +429,14 @@ export class TableOfContentsDialog {
         if (!this.target) {
             this.initTableOfContentDialog(localValue, this.documentHelper.owner.enableRtl);
         }
-        this.documentHelper.dialog2.header = localValue.getConstant('Table of Contents');
-        this.documentHelper.dialog2.position = { X: 'center', Y: 'center' };
-        this.documentHelper.dialog2.width = 'auto';
-        this.documentHelper.dialog2.height = 'auto';
-        this.documentHelper.dialog2.content = this.target;
-        this.documentHelper.dialog2.beforeOpen = this.loadTableofContentDialog;
-        this.documentHelper.dialog2.close = this.closeTableOfContentDialog;
-        this.documentHelper.dialog2.buttons = [{
+        this.documentHelper.dialog3.header = localValue.getConstant('Table of Contents');
+        this.documentHelper.dialog3.position = { X: 'center', Y: 'center' };
+        this.documentHelper.dialog3.width = 'auto';
+        this.documentHelper.dialog3.height = 'auto';
+        this.documentHelper.dialog3.content = this.target;
+        this.documentHelper.dialog3.beforeOpen = this.loadTableofContentDialog;
+        this.documentHelper.dialog3.close = this.closeTableOfContentDialog;
+        this.documentHelper.dialog3.buttons = [{
             click: this.applyTableOfContentProperties,
             buttonModel: { content: localValue.getConstant('Ok'), cssClass: 'e-flat e-toc-okay', isPrimary: true }
         },
@@ -444,8 +444,8 @@ export class TableOfContentsDialog {
             click: this.onCancelButtonClick,
             buttonModel: { content: localValue.getConstant('Cancel'), cssClass: 'e-flat e-toc-cancel' }
         }];
-        this.documentHelper.dialog2.dataBind();
-        this.documentHelper.dialog2.show();
+        this.documentHelper.dialog3.dataBind();
+        this.documentHelper.dialog3.show();
     }
     /**
      * @private
@@ -473,7 +473,7 @@ export class TableOfContentsDialog {
      * @private
      */
     public onCancelButtonClick = (): void => {
-        this.documentHelper.dialog2.hide();
+        this.documentHelper.dialog3.hide();
         this.unWireEventsAndBindings();
         this.documentHelper.updateFocus();
     }
@@ -748,7 +748,7 @@ export class TableOfContentsDialog {
         };
         this.applyLevelSetting(tocSettings);
         this.documentHelper.owner.editorModule.insertTableOfContents(tocSettings);
-        this.documentHelper.dialog2.hide();
+        this.documentHelper.dialog3.hide();
         this.documentHelper.updateFocus();
     }
     /**

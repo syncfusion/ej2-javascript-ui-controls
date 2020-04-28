@@ -1,5 +1,5 @@
 // tslint:disable-next-line:max-line-length
-import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, ModuleDeclaration, L10n, isBlazor, Complex, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, ModuleDeclaration, L10n, isBlazor, Complex, isNullOrUndefined, formatUnit } from '@syncfusion/ej2-base';
 import { Event, EmitType } from '@syncfusion/ej2-base';
 import { Toolbar } from './tool-bar/tool-bar';
 import { DocumentEditorContainerModel } from './document-editor-container-model';
@@ -96,6 +96,19 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      */
     @Property(true)
     public enableComment: boolean;
+    /**
+     * Defines the width of the DocumentEditorContainer component 
+     * @default '100%'
+     */
+    @Property('100%')
+    public width: string;
+
+    /**
+     * Defines the height of the DocumentEditorContainer component 
+     * @default '320px'
+     */
+    @Property('320px')
+    public height: string;
     /**
      * Triggers when the component is created
      * @event
@@ -460,6 +473,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
     /**
      * @private
      */
+    // tslint:disable:max-func-body-length
     public onPropertyChanged(newModel: DocumentEditorContainerModel, oldModel: DocumentEditorContainerModel): void {
         for (let prop of Object.keys(newModel)) {
             switch (prop) {
@@ -549,6 +563,18 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
                         this.documentEditor.resize();
                     }
                     break;
+                case 'height':
+                    this.element.style.height = formatUnit(this.height);
+                    if (this.documentEditor) {
+                        this.documentEditor.resize();
+                    }
+                    break;
+                case 'width':
+                    this.element.style.width = formatUnit(this.width);
+                    if (this.documentEditor) {
+                        this.documentEditor.resize();
+                    }
+                    break;
             }
         }
     }
@@ -570,8 +596,11 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             this.toolbarModule.initToolBar(this.toolbarItems);
             this.toolbarModule.enableDisableInsertComment(this.enableComment);
         }
-        if (this.element.getBoundingClientRect().height < 320) {
-            this.element.style.height = '320px';
+        if (this.height !== '') {
+            this.element.style.height = formatUnit(this.height);
+        }
+        if (this.width !== '') {
+            this.element.style.width = formatUnit(this.width);
         }
         this.element.style.minHeight = '320px';
         this.initializeDocumentEditor();
@@ -703,7 +732,9 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             layoutType: this.layoutType,
             pageOutline: '#E0E0E0',
             currentUser: this.currentUser,
-            userColor: this.userColor
+            userColor: this.userColor,
+            height: '100%',
+            width: '100%'
         });
         this.documentEditor.enableAllModules();
         this.documentEditor.enableComment = this.enableComment;
@@ -866,7 +897,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
             this.propertiesPaneContainer.style.display = 'block';
             if (isInHeaderFooter && this.showHeaderProperties) {
                 this.showProperties('headerfooter');
-            } else if (currentContext.indexOf('Text') >= 0 || currentContext.indexOf('List') >= 0
+            } else if (currentContext.indexOf('List') >= 0 || currentContext.indexOf('Text') >= 0
                 && currentContext.indexOf('Table') < 0) {
                 this.showProperties('text');
             } else if (currentContext.indexOf('Image') >= 0) {

@@ -3305,7 +3305,7 @@ var LargeIconsView = /** @class */ (function () {
         this.parent.off(menuItemData, this.onMenuItemData);
         this.parent.off(beforeRequest, this.onBeforeRequest);
         this.parent.off(afterRequest, this.onAfterRequest);
-        this.parent.off(splitterResize, this.resizeHandler);
+        this.parent.off(splitterResize, this.splitterResizeHandler);
         this.parent.off(resizeEnd, this.resizeHandler);
         this.parent.off(pasteInit, this.onpasteInit);
         this.parent.off(pasteEnd, this.onpasteEnd);
@@ -3344,7 +3344,7 @@ var LargeIconsView = /** @class */ (function () {
         this.parent.on(afterRequest, this.onAfterRequest, this);
         this.parent.on(dropInit, this.onDropInit, this);
         this.parent.on(detailsInit, this.onDetailsInit, this);
-        this.parent.on(splitterResize, this.resizeHandler, this);
+        this.parent.on(splitterResize, this.splitterResizeHandler, this);
         this.parent.on(resizeEnd, this.resizeHandler, this);
         this.parent.on(pasteEnd, this.onpasteEnd, this);
         this.parent.on(cutCopyInit, this.oncutCopyInit, this);
@@ -4087,6 +4087,10 @@ var LargeIconsView = /** @class */ (function () {
         }
     };
     LargeIconsView.prototype.resizeHandler = function () {
+        this.getItemCount();
+        this.adjustHeight();
+    };
+    LargeIconsView.prototype.splitterResizeHandler = function () {
         this.getItemCount();
     };
     LargeIconsView.prototype.getItemCount = function () {
@@ -5927,6 +5931,7 @@ var FileManager = /** @class */ (function (_super) {
         }
     };
     FileManager.prototype.resizeHandler = function () {
+        this.adjustHeight();
         this.notify(resizeEnd, {});
     };
     FileManager.prototype.keyActionHandler = function (e) {
@@ -8507,7 +8512,7 @@ var DetailsView = /** @class */ (function () {
         this.parent.on(pasteEnd, this.onpasteEnd, this);
         this.parent.on(cutCopyInit, this.oncutCopyInit, this);
         this.parent.on(menuItemData, this.onMenuItemData, this);
-        this.parent.on(resizeEnd, this.onDetailsResize, this);
+        this.parent.on(resizeEnd, this.onDetailsResizeHandler, this);
         this.parent.on(splitterResize, this.onDetailsResize, this);
         this.parent.on(layoutRefresh, this.onLayoutRefresh, this);
         this.parent.on(dropPath, this.onDropPath, this);
@@ -8546,7 +8551,7 @@ var DetailsView = /** @class */ (function () {
         this.parent.off(selectedData, this.onSelectedData);
         this.parent.off(detailsInit, this.onDetailsInit);
         this.parent.off(menuItemData, this.onMenuItemData);
-        this.parent.off(resizeEnd, this.onDetailsResize);
+        this.parent.off(resizeEnd, this.onDetailsResizeHandler);
         this.parent.off(splitterResize, this.onDetailsResize);
         this.parent.off(layoutRefresh, this.onLayoutRefresh);
         this.parent.off(dropPath, this.onDropPath);
@@ -8630,6 +8635,12 @@ var DetailsView = /** @class */ (function () {
                     }
                 }
             }
+        }
+    };
+    DetailsView.prototype.onDetailsResizeHandler = function () {
+        this.onDetailsResize();
+        if (this.parent.view === 'Details' && !this.parent.isMobile && !sf.base.isNullOrUndefined(this.gridObj)) {
+            this.adjustHeight();
         }
     };
     DetailsView.prototype.createDragObj = function () {

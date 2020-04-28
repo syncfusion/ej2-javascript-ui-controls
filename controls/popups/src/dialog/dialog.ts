@@ -789,7 +789,8 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         if (!isNullOrUndefined(footerEle)) { computedFooterHeight = getComputedStyle(footerEle).height; }
         let headerHeight: number = parseInt(computedHeaderHeight.slice(0, computedHeaderHeight.indexOf('p')), 10);
         let footerHeight: number = parseInt(computedFooterHeight.slice(0, computedFooterHeight.indexOf('p')), 10);
-        return (setMinHeight(headerHeight + 30 + footerHeight));
+        setMinHeight(headerHeight + 30 + footerHeight);
+        return (headerHeight + 30 + footerHeight);
     }
 
     private onResizeStart(args: ResizeMouseEventArgs | ResizeTouchEventArgs, dialogObj: Dialog): boolean {
@@ -1505,10 +1506,13 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         if (this.dragObj) {
             this.dragObj.dragArea = this.targetEle;
         }
+        this.setMaxHeight();
         if (this.isModal) {
             this.updateIsModal();
         }
-        this.setMaxHeight();
+        if (this.enableResize) {
+            this.setResize();
+        }
     }
 
     private updateIsModal(): void {

@@ -3829,8 +3829,11 @@ let Sortable = Sortable_1 = class Sortable extends Base {
             this.trigger('drag', { event: e.event, element: this.element, target: e.target });
             let newInst = this.getSortableInstance(e.target);
             let target = this.getSortableElement(e.target, newInst);
-            if (this.isValidTarget(target, newInst) && this.curTarget !== target &&
+            if ((this.isValidTarget(target, newInst) || e.target.className.indexOf('e-list-group-item') > -1) && this.curTarget !== target &&
                 (newInst.placeHolderElement ? newInst.placeHolderElement !== e.target : true)) {
+                if (e.target.className.indexOf('e-list-group-item') > -1) {
+                    target = e.target;
+                }
                 this.curTarget = target;
                 let oldIdx = this.getIndex(newInst.placeHolderElement, newInst);
                 oldIdx = isNullOrUndefined(oldIdx) ? this.getIndex(this.target) :
@@ -3839,7 +3842,10 @@ let Sortable = Sortable_1 = class Sortable extends Base {
                 let newIdx = this.getIndex(target, newInst);
                 let idx = newInst.element !== this.element ? newIdx : oldIdx < newIdx ? newIdx + 1 : newIdx;
                 if (newInst.placeHolderElement) {
-                    if (newInst.element !== this.element && idx === newInst.element.childElementCount - 1) {
+                    if (e.target.className.indexOf('e-list-group-item') > -1) {
+                        newInst.element.insertBefore(newInst.placeHolderElement, newInst.element.children[newIdx]);
+                    }
+                    else if (newInst.element !== this.element && idx === newInst.element.childElementCount - 1) {
                         newInst.element.appendChild(newInst.placeHolderElement);
                     }
                     else {

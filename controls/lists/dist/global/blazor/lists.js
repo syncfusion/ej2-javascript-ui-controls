@@ -3902,8 +3902,11 @@ var Sortable = /** @class */ (function (_super) {
             _this.trigger('drag', { event: e.event, element: _this.element, target: e.target });
             var newInst = _this.getSortableInstance(e.target);
             var target = _this.getSortableElement(e.target, newInst);
-            if (_this.isValidTarget(target, newInst) && _this.curTarget !== target &&
+            if ((_this.isValidTarget(target, newInst) || e.target.className.indexOf('e-list-group-item') > -1) && _this.curTarget !== target &&
                 (newInst.placeHolderElement ? newInst.placeHolderElement !== e.target : true)) {
+                if (e.target.className.indexOf('e-list-group-item') > -1) {
+                    target = e.target;
+                }
                 _this.curTarget = target;
                 var oldIdx = _this.getIndex(newInst.placeHolderElement, newInst);
                 oldIdx = sf.base.isNullOrUndefined(oldIdx) ? _this.getIndex(_this.target) :
@@ -3912,7 +3915,10 @@ var Sortable = /** @class */ (function (_super) {
                 var newIdx = _this.getIndex(target, newInst);
                 var idx = newInst.element !== _this.element ? newIdx : oldIdx < newIdx ? newIdx + 1 : newIdx;
                 if (newInst.placeHolderElement) {
-                    if (newInst.element !== _this.element && idx === newInst.element.childElementCount - 1) {
+                    if (e.target.className.indexOf('e-list-group-item') > -1) {
+                        newInst.element.insertBefore(newInst.placeHolderElement, newInst.element.children[newIdx]);
+                    }
+                    else if (newInst.element !== _this.element && idx === newInst.element.childElementCount - 1) {
                         newInst.element.appendChild(newInst.placeHolderElement);
                     }
                     else {

@@ -1,4 +1,4 @@
-import { EventHandler, Browser, isBlazor } from '@syncfusion/ej2-base';
+import { EventHandler, Browser } from '@syncfusion/ej2-base';
 import { debounce } from '@syncfusion/ej2-base';
 import { SentinelInfo, SentinelType } from '../base/type';
 import { InterSection, IGrid } from '../base/interface';
@@ -81,8 +81,7 @@ export class InterSectionObserver {
             }
 
             let check: boolean = this.check(direction);
-            if (current.entered && (!isBlazor() || (isBlazor() && !this.parent.isServerRendered) ||
-            (isBlazor() && this.parent.isServerRendered && !this.parent.isWheelScrolled))) {
+            if (current.entered) {
                 onEnterCallback(this.element, current, direction, { top: top, left: left }, this.fromWheel, check);
             }
 
@@ -90,13 +89,8 @@ export class InterSectionObserver {
                 let fn: Function = debounced100;
                 //this.fromWheel ? this.options.debounceEvent ? debounced100 : callback : debounced100;
                 if (current.axis === 'X') { fn = debounced50; }
-                if (isBlazor() && this.parent.isServerRendered && this.parent.isWheelScrolled) {
-                    callback({ direction: direction, sentinel: current, offset: { top: top, left: left },
-                        focusElement: document.activeElement});
-                } else {
-                    fn({ direction: direction, sentinel: current, offset: { top: top, left: left },
-                        focusElement: document.activeElement});
-                }
+                fn({ direction: direction, sentinel: current, offset: { top: top, left: left },
+                    focusElement: document.activeElement});
             }
             this.fromWheel = false;
         };

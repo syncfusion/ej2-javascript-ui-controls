@@ -141,7 +141,7 @@ export class DataBinding {
                     this.dataTable[item[mapper.id]] = node;
                     nextLevel = rootNodes[node.data[mapper.id]];
                     if (nextLevel !== undefined) {
-                            this.renderChildNodes(mapper, nextLevel, node.id, rootNodes, diagram);
+                        this.renderChildNodes(mapper, nextLevel, node.id, rootNodes, diagram);
                     }
                 }
             }
@@ -176,7 +176,6 @@ export class DataBinding {
      * @param {Object} item 
      * @param {Diagram} diagram 
      */
-
     private applyNodeTemplate(mapper: DataSourceModel, item: Object, diagram: Diagram): Node {
         let root: Object = item;
         let id: string = randomId();
@@ -261,7 +260,7 @@ export class DataBinding {
             if (!canBreak) {
                 nextLevel = rtNodes[node.data[mapper.id]];
                 if (nextLevel !== undefined) {
-                        this.renderChildNodes(mapper, nextLevel, node.id, rtNodes, diagram);
+                    this.renderChildNodes(mapper, nextLevel, node.id, rtNodes, diagram);
                 }
             }
         }

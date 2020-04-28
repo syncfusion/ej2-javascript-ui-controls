@@ -445,6 +445,13 @@ describe('Gantt taskbar editing', () => {
             triggerMouseEvent(dragElement, 'mouseup');
             expect(ganttObj.flatData[4].ganttProperties.duration).toBe(0);
         });
+        it('Check start date after dragging parent task', () => {
+            let dragParentElement: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + 'GanttTaskTableBody > tr:nth-child(4) > td > div.e-taskbar-main-container') as HTMLElement;
+            triggerMouseEvent(dragParentElement, 'mousedown', dragParentElement.offsetLeft, dragParentElement.offsetTop);
+            triggerMouseEvent(dragParentElement, 'mousemove', dragParentElement.offsetLeft + 40, 0);
+            triggerMouseEvent(dragParentElement, 'mouseup');
+            expect(ganttObj.getFormatedDate(ganttObj.currentViewData[3].ganttProperties.startDate)).toBe(ganttObj.getFormatedDate(ganttObj.currentViewData[3].ganttProperties.startDate));
+        });
 
         afterAll(() => {
             if (ganttObj) {

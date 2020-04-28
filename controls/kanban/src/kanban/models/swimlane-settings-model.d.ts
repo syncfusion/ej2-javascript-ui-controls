@@ -43,7 +43,9 @@ export interface SwimlaneSettingsModel {
     template?: string;
 
     /**
-     * Sort the swimlane resources in ascending or descending order.
+     * Sort the swimlane resources. The possible values are:
+     * * Ascending
+     * * Descending
      * @default 'Ascending'
      */
     sortBy?: SortType;

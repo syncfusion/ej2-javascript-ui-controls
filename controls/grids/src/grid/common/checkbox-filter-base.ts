@@ -522,50 +522,53 @@ export class CheckBoxFilterBase {
             let filterModel: string = 'filterModel';
             args[filterModel] = {};
         }
-        this.parent.notify(events.cBoxFltrBegin, args);
-        predicte = new Predicate(field, args.operator, parsed, args.matchCase, args.ignoreAccent);
-        if (this.options.type === 'date' || this.options.type === 'datetime') {
-            operator = 'equal';
-            if (isNullOrUndefined(parsed) && val.length) {
-                return;
-            }
-            let filterObj: Object = {
-                field: field, operator: operator, value: parsed, matchCase: matchCase,
-                ignoreAccent: ignoreAccent
-            };
-            predicte = getDatePredicate(filterObj, this.options.type);
-        }
-        if (val.length) {
-         predicte = !isNullOrUndefined(pred) ? predicte.and(pred.e as Predicate) : predicte;
-         query.where(predicte);
-        } else if (!isNullOrUndefined(pred)) {
-            query.where(pred.e as Predicate);
-        }
-        args.filterChoiceCount = !isNullOrUndefined(args.filterChoiceCount) ? args.filterChoiceCount : 1000;
-        let fPredicate: { predicate?: Predicate } = {};
-        showSpinner(this.spinner);
-        this.renderEmpty = false;
-        if (this.isForeignColumn(column) && val.length) {
-            let colData: DataManager = ('result' in column.dataSource) ? new DataManager((column.dataSource as DataResult).result) :
-            column.dataSource as DataManager;
-            // tslint:disable-next-line:no-any
-            colData.executeQuery(query).then((e: any) => {
-                let columnData: Object[] = this.options.column.columnData;
-                this.options.column.columnData = e.result;
-                this.parent.notify(events.generateQuery, { predicate: fPredicate, column: column });
-                if (fPredicate.predicate.predicates.length) {
-                    foreignQuery.where(fPredicate.predicate);
-                } else {
-                    this.renderEmpty = true;
+        this.parent.trigger(events.actionBegin, args, (filterargs: FilterSearchBeginEventArgs) => {
+            filterargs.operator = (isBlazor() && (<{excelSearchOperator?: string}>filterargs).excelSearchOperator !== 'none') ?
+            (<{excelSearchOperator?: string}>filterargs).excelSearchOperator : filterargs.operator;
+            predicte = new Predicate(field, filterargs.operator, parsed, filterargs.matchCase, filterargs.ignoreAccent);
+            if (this.options.type === 'date' || this.options.type === 'datetime') {
+                operator = 'equal';
+                if (isNullOrUndefined(parsed) && val.length) {
+                    return;
                 }
-                this.options.column.columnData = columnData;
-                foreignQuery.take(args.filterChoiceCount);
-                this.search(args, foreignQuery);
-            });
-        } else {
-            query.take(args.filterChoiceCount);
-            this.search(args, query);
-        }
+                let filterObj: Object = {
+                    field: field, operator: operator, value: parsed, matchCase: matchCase,
+                    ignoreAccent: ignoreAccent
+                };
+                predicte = getDatePredicate(filterObj, this.options.type);
+            }
+            if (val.length) {
+             predicte = !isNullOrUndefined(pred) ? predicte.and(pred.e as Predicate) : predicte;
+             query.where(predicte);
+            } else if (!isNullOrUndefined(pred)) {
+                query.where(pred.e as Predicate);
+            }
+            filterargs.filterChoiceCount = !isNullOrUndefined(filterargs.filterChoiceCount) ? filterargs.filterChoiceCount : 1000;
+            let fPredicate: { predicate?: Predicate } = {};
+            showSpinner(this.spinner);
+            this.renderEmpty = false;
+            if (this.isForeignColumn(column) && val.length) {
+                let colData: DataManager = ('result' in column.dataSource) ? new DataManager((column.dataSource as DataResult).result) :
+                column.dataSource as DataManager;
+                // tslint:disable-next-line:no-any
+                colData.executeQuery(query).then((e: any) => {
+                    let columnData: Object[] = this.options.column.columnData;
+                    this.options.column.columnData = e.result;
+                    this.parent.notify(events.generateQuery, { predicate: fPredicate, column: column });
+                    if (fPredicate.predicate.predicates.length) {
+                        foreignQuery.where(fPredicate.predicate);
+                    } else {
+                        this.renderEmpty = true;
+                    }
+                    this.options.column.columnData = columnData;
+                    foreignQuery.take(filterargs.filterChoiceCount);
+                    this.search(filterargs, foreignQuery);
+                });
+            } else {
+                query.take(filterargs.filterChoiceCount);
+                this.search(filterargs, query);
+            }
+        });
     }
 
     protected search(args: FilterSearchBeginEventArgs, query: Query): void {

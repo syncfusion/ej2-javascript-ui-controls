@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.1.46 (2020-04-28)
+
+### File Manager
+
+#### Bug Fixes
+
+- The issue with `Unable to localize the error message in the access control actions` has been fixed.
+- `#269976` - Now, The File Manager UI will be refreshed properly when resizing the browser window.
+
 ## 18.1.36-beta (2020-03-19)
 
 ### File Manager

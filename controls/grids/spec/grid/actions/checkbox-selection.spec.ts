@@ -10,6 +10,7 @@ import { Sort } from '../../../src/grid/actions/sort';
 import { Edit } from '../../../src/grid/actions/edit';
 import { employeeSelectData } from '../base/datasource.spec';
 import { employeeData } from '../base/datasource.spec';
+import { filterData } from '../base/datasource.spec';
 import { BeforeCopyEventArgs } from '../../../src/grid/base/interface';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
 import '../../../node_modules/es6-promise/dist/es6-promise';
@@ -841,6 +842,42 @@ describe('Grid checkbox selection functionality', () => {
         afterAll(() => {
             destroy(gridObj);
             gridObj = selectionModule = rows = actionComplete = null;
+        });
+    });
+
+    describe('EJ2-37662 CheckBoxMode on ResetOnRowClick with persist selection', () => {
+        let gridObj: Grid;
+        let chkAll: HTMLElement;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowPaging: true,
+                    allowSelection: true,
+                    allowGrouping: true,
+                    selectionSettings: { persistSelection: true },
+                    editSettings: { allowDeleting: true },
+                    groupSettings: { columns: ['CustomerID'] },
+                    toolbar: ['Delete'],
+                    enableHover: false,
+                    columns: [
+                        { type: 'checkbox', width: 50 },
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, width: 120, textAlign: 'Right', minWidth: 10 },
+                        { field: 'Freight', width: 125, minWidth: 10 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, minWidth: 10 },
+                    ],
+                }, done);
+        });
+
+        it('checking all row selection reset with persistence', () => {
+            chkAll = gridObj.element.querySelector('.e-checkselectall').nextElementSibling as HTMLElement;
+            chkAll.click();
+            expect(gridObj.getSelectedRecords().length).toBe(71);
+        });
+
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = chkAll = null;
         });
     });
 });

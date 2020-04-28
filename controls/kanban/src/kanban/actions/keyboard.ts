@@ -89,7 +89,9 @@ export class Keyboard {
             case 'delete':
                 let className: string = '.' + cls.CARD_CLASS + '.' + cls.CARD_SELECTION_CLASS;
                 let selectedCards: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(className));
-                selectedCards.forEach((selected: Element) => this.parent.crudModule.deleteCard(this.parent.getCardDetails(selected)));
+                let selectedCardsData: { [key: string]: Object }[] = [];
+                selectedCards.forEach((selected: Element) => { selectedCardsData.push(this.parent.getCardDetails(selected)); });
+                this.parent.crudModule.deleteCard(selectedCardsData);
                 break;
         }
     }

@@ -1862,7 +1862,7 @@ export class Layout {
         let lastTextElement: number = 0;
         for (let i: number = index - 1; i >= 0; i--) {
             let textElement: ElementBox = line.children[i] as ElementBox;
-            if (textElement instanceof TextElementBox) {
+            if (textElement instanceof TextElementBox && textElement.width > 0) {
                 let text: string = textElement.text;
                 lastTextElement = i;
                 if (text.length > 0 && text[text.length - 1] === ' ') {
@@ -1892,7 +1892,9 @@ export class Layout {
                     line.children.splice(i + 1, 0, splittedElement);
                     break;
                 }
-            } else if (!(textElement instanceof ListTextElementBox)) {
+            } else if (!(textElement instanceof ListTextElementBox || textElement instanceof FieldElementBox
+                // to skip field code
+                || textElement instanceof TextElementBox && textElement.width === 0)) {
                 //Handled for inline images/UIelements.
                 lastTextElement = i;
                 isSplitByWord = true;
@@ -2268,7 +2270,9 @@ export class Layout {
                             if (width < tabWidth) {
                                 if (tabStop.tabJustification === 'Right') {
                                     defaultTabWidth = tabWidth - width;
-                                    let areaWidth: number = this.viewer.clientActiveArea.width - defaultTabWidth;
+                                    let rightIndent: number = HelperMethods.convertPointToPixel(paragraph.rightIndent);
+                                    let areaWidth: number = this.viewer.clientActiveArea.width + rightIndent - defaultTabWidth;
+                                    this.viewer.clientActiveArea.width += rightIndent;
                                     if (areaWidth < 0) {
                                         defaultTabWidth += areaWidth - width;
                                     } else if (width > areaWidth) {

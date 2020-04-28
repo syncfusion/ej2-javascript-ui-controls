@@ -12792,6 +12792,9 @@ class PivotChart {
                 (!isNullOrUndefined(parent.olapEngineModule.colMeasurePos) || !isNullOrUndefined(parent.olapEngineModule.rowMeasurePos)))
             : parent.dataSourceSettings.values.length > 0;
         if (isDataAvail) {
+            if (!this.parent.chart && this.parent.element.querySelector('.e-chart')) {
+                remove(this.parent.element.querySelector('#' + this.parent.element.id + '_chart'));
+            }
             if (this.chartSettings.enableMultiAxis) {
                 this.measureList = this.dataSourceSettings.values.map((item) => { return item.name; });
             }
@@ -12819,6 +12822,37 @@ class PivotChart {
             return;
         }
         else {
+            if (!this.parent.element.querySelector('#' + this.parent.element.id + '_chart')) {
+                if (this.parent.displayOption.view === 'Both') {
+                    this.parent.displayOption.primary === 'Chart' ?
+                        (this.parent.element.insertBefore((createElement('div', {
+                            className: PIVOTCHART, id: this.parent.element.id + '_chart'
+                        })), this.parent.element.querySelector('.' + GRID_CLASS))) :
+                        (this.parent.element.appendChild(createElement('div', {
+                            className: PIVOTCHART, id: this.parent.element.id + '_chart'
+                        })));
+                }
+                else {
+                    this.parent.element.appendChild(createElement('div', {
+                        className: PIVOTCHART, id: this.parent.element.id + '_chart'
+                    }));
+                }
+                let width = this.parent.width.toString();
+                if (this.parent.showToolbar && this.parent.grid) {
+                    width = this.parent.getGridWidthAsNumber().toString();
+                }
+                let height = this.getChartHeight();
+                let tmpChart = new Chart({ width: width, height: height });
+                tmpChart.appendTo('#' + this.parent.element.id + '_chart');
+                if (this.parent.showToolbar) {
+                    if (this.parent.displayOption.view === 'Both' && this.parent.currentView === 'Chart') {
+                        this.parent.grid.element.style.display = 'none';
+                    }
+                    if (this.parent.currentView !== 'Chart') {
+                        this.parent.element.querySelector('#' + this.parent.element.id + '_chart').style.display = 'none';
+                    }
+                }
+            }
             this.parent.notify(contentReady, {});
             return;
         }

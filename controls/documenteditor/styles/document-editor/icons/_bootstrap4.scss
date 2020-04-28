@@ -104,6 +104,16 @@
     }
  }
 
+  .e-de-ctn-title-print::before {
+    content: '\e743';
+    font-family: 'e-icons';
+  }
+
+  .e-de-ctn-title-download::before {
+    content: '\e75d';
+    font-family: 'e-icons';
+  }
+
   .e-menu-item .e-de-cmt-add::before {
     content: '\e814';
     font-family: 'e-icons';

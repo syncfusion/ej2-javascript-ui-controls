@@ -296,6 +296,7 @@ var Splitter = /** @class */ (function (_super) {
         this.collapseFlag = false;
         sf.base.EventHandler.add(document, 'touchstart click', this.onDocumentClick, this);
         this.renderComplete();
+        window.addEventListener('resize', this.reportWindowSize.bind(this), true);
         sf.base.EventHandler.add(this.element, 'keydown', this.onMove, this);
     };
     Splitter.prototype.onDocumentClick = function (e) {
@@ -798,6 +799,13 @@ var Splitter = /** @class */ (function (_super) {
         var clonedEle = target.children;
         var separator;
         var proxy;
+        if (this.checkBlazor()) {
+            for (var j = 0; j < this.element.children.length; j++) {
+                if (this.element.children[j].classList.contains(SPLIT_BAR)) {
+                    this.allBars.push(this.element.children[j]);
+                }
+            }
+        }
         for (var i = 0; i < childCount; i++) {
             if (i < childCount - 1) {
                 if (!this.checkBlazor()) {
@@ -811,12 +819,7 @@ var Splitter = /** @class */ (function (_super) {
                 }
                 if (this.checkBlazor()) {
                     proxy = this;
-                    for (var j = 0; j < this.element.children.length; j++) {
-                        if (this.element.children[j].classList.contains(SPLIT_BAR)) {
-                            separator = this.element.children[j];
-                        }
-                    }
-                    this.allBars.push(separator);
+                    separator = this.allBars[i];
                     this.updateIconClass();
                 }
                 if (!this.checkBlazor()) {
@@ -934,6 +937,7 @@ var Splitter = /** @class */ (function (_super) {
         }
     };
     Splitter.prototype.reportWindowSize = function () {
+        var _this = this;
         var paneCount = this.allPanes.length;
         for (var i = 0; i < paneCount; i++) {
             if (sf.base.isNullOrUndefined(this.paneSettings[i].size)) {
@@ -946,9 +950,34 @@ var Splitter = /** @class */ (function (_super) {
                 }
             }
         }
+        setTimeout(function () { _this.updateSplitterSize(); }, 200);
+    };
+    Splitter.prototype.updateSplitterSize = function () {
+        var totalWidth = 0;
+        var flexPaneIndexes = [];
+        var flexCount = 0;
+        var children = this.element.children;
+        for (var i = 0; i < children.length; i++) {
+            totalWidth += this.orientation === 'Horizontal' ? children[i].offsetWidth :
+                children[i].offsetHeight;
+        }
+        var diff = this.orientation === 'Horizontal' ? (this.element.offsetWidth -
+            (this.allBars[0].offsetWidth * this.allBars.length)) - totalWidth :
+            (this.element.offsetHeight - (this.allBars[0].offsetHeight * this.allBars.length)) - totalWidth;
+        for (var i = 0; i < this.allPanes.length; i++) {
+            if (!this.paneSettings[i].size && !(this.allPanes[i].innerText === '')) {
+                flexPaneIndexes[flexCount] = i;
+                flexCount++;
+            }
+        }
+        var avgDiffWidth = diff / flexPaneIndexes.length;
+        for (var j = 0; j < flexPaneIndexes.length; j++) {
+            this.allPanes[flexPaneIndexes[j]].style.flexBasis = this.orientation === 'Horizontal' ?
+                (this.allPanes[flexPaneIndexes[j]].offsetWidth + avgDiffWidth) + 'px' :
+                (this.allPanes[flexPaneIndexes[j]].offsetHeight + avgDiffWidth) + 'px';
+        }
     };
     Splitter.prototype.wireResizeEvents = function () {
-        window.addEventListener('resize', this.reportWindowSize.bind(this));
         sf.base.EventHandler.add(document, 'mousemove', this.onMouseMove, this);
         sf.base.EventHandler.add(document, 'mouseup', this.onMouseUp, this);
         var touchMoveEvent = (sf.base.Browser.info.name === 'msie') ? 'pointermove' : 'touchmove';
@@ -1611,6 +1640,7 @@ var Splitter = /** @class */ (function (_super) {
         this.addStaticPaneClass();
         this.previousPane.style.flexBasis = this.prevPaneCurrentWidth;
         this.nextPane.style.flexBasis = this.nextPaneCurrentWidth;
+        this.updateSplitterSize();
     };
     Splitter.prototype.validateMinRange = function (paneIndex, paneCurrentWidth, pane) {
         var paneMinRange = null;

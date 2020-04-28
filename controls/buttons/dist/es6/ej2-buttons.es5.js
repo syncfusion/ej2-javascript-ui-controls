@@ -2284,7 +2284,8 @@ var ChipList = /** @__PURE__ @class */ (function (_super) {
         this.wireEvent(true);
         this.rippleFunction();
         if (isBlazor()) {
-            var chipChildElement = this.element.querySelectorAll('.e-chip');
+            var chipChildElement = this.type === 'chip' ? this.element.querySelectorAll('.e-chip-text') :
+                this.element.querySelectorAll('.e-chip');
             for (var i = 0; i < chipChildElement.length; i++) {
                 if (chipChildElement[i] != null) {
                     detach(chipChildElement[i]);

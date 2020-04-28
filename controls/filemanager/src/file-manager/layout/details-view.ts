@@ -801,7 +801,7 @@ export class DetailsView {
         this.parent.on(events.pasteEnd, this.onpasteEnd, this);
         this.parent.on(events.cutCopyInit, this.oncutCopyInit, this);
         this.parent.on(events.menuItemData, this.onMenuItemData, this);
-        this.parent.on(events.resizeEnd, this.onDetailsResize, this);
+        this.parent.on(events.resizeEnd, this.onDetailsResizeHandler, this);
         this.parent.on(events.splitterResize, this.onDetailsResize, this);
         this.parent.on(events.layoutRefresh, this.onLayoutRefresh, this);
         this.parent.on(events.dropPath, this.onDropPath, this);
@@ -841,7 +841,7 @@ export class DetailsView {
         this.parent.off(events.selectedData, this.onSelectedData);
         this.parent.off(events.detailsInit, this.onDetailsInit);
         this.parent.off(events.menuItemData, this.onMenuItemData);
-        this.parent.off(events.resizeEnd, this.onDetailsResize);
+        this.parent.off(events.resizeEnd, this.onDetailsResizeHandler);
         this.parent.off(events.splitterResize, this.onDetailsResize);
         this.parent.off(events.layoutRefresh, this.onLayoutRefresh);
         this.parent.off(events.dropPath, this.onDropPath);
@@ -925,6 +925,13 @@ export class DetailsView {
                     }
                 }
             }
+        }
+    }
+
+    private onDetailsResizeHandler(): void {
+        this.onDetailsResize();
+        if (this.parent.view === 'Details' && !this.parent.isMobile && !isNOU(this.gridObj)) {
+            this.adjustHeight();
         }
     }
 

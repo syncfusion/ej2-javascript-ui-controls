@@ -2,7 +2,16 @@
 
 ## [Unreleased]
 
-## 18.1.45 (2020-04-21)
+## 18.1.46 (2020-04-28)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#274505` - An issue with server post triggered without showing Spinner has been fixed.
+- `#274710` - An issue with dropped clone not created at first position when drag the cards has been fixed.
+
+## 18.1.42 (2020-04-01)
 
 ### Kanban
 

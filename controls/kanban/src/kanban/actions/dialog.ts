@@ -1,6 +1,6 @@
-import { append, createElement, remove, isNullOrUndefined, closest } from '@syncfusion/ej2-base';
+import { append, createElement, remove, isNullOrUndefined, closest, extend } from '@syncfusion/ej2-base';
 import { DropDownList, DropDownListModel } from '@syncfusion/ej2-dropdowns';
-import { FormValidator, NumericTextBox, TextBox, Input } from '@syncfusion/ej2-inputs';
+import { FormValidator, NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { Dialog, DialogModel, BeforeOpenEventArgs, ButtonPropsModel, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';
 import { Kanban } from '../base/kanban';
 import { DialogEventArgs, EJ2Instance } from '../base/interface';
@@ -49,16 +49,16 @@ export class KanbanDialog {
             cssClass: cls.DIALOG_CLASS,
             enableRtl: this.parent.enableRtl,
             header: this.parent.localeObj.getConstant(action === 'Add' ? 'addTitle' : action === 'Edit' ? 'editTitle' : 'deleteTitle'),
-            height: this.parent.isAdaptive ? '100%' : 'auto',
+            height: 'auto',
             isModal: true,
-            showCloseIcon: this.parent.isAdaptive ? false : true,
+            showCloseIcon: true,
             target: document.body,
             width: (action === 'Delete') ? 400 : 350,
             visible: false,
             beforeOpen: this.onBeforeDialogOpen.bind(this),
             beforeClose: this.onBeforeDialogClose.bind(this)
         };
-        this.dialogObj = new Dialog(dialogModel, this.element);
+        this.dialogObj = new Dialog(extend(dialogModel, action !== 'Delete' ? (this.parent.dialogSettings.model || {}) : {}), this.element);
         if (action !== 'Delete') {
             this.applyFormValidation();
         }
@@ -103,7 +103,7 @@ export class KanbanDialog {
         let fields: DialogFieldsModel[] = this.parent.dialogSettings.fields;
         if (fields.length === 0) {
             fields = [
-                { text: 'ID', key: this.parent.cardSettings.headerField, type: 'Input' },
+                { text: 'ID', key: this.parent.cardSettings.headerField, type: 'TextBox' },
                 { key: this.parent.keyField, type: 'DropDown' },
                 { key: this.parent.cardSettings.contentField, type: 'TextArea' }
             ];
@@ -174,15 +174,8 @@ export class KanbanDialog {
                 break;
             case 'TextBox':
                 controlObj = new TextBox({ value: fieldValue as string });
-                break;
-            case 'Input':
-                if (fieldValue) {
-                    (element as HTMLInputElement).value = fieldValue as string;
-                }
                 if (fieldValue && this.parent.cardSettings.headerField === field.key) {
-                    Input.createInput({ element: element as HTMLInputElement, properties: { enabled: false } });
-                } else {
-                    Input.createInput({ element: element as HTMLInputElement });
+                    controlObj.enabled = false;
                 }
                 break;
             case 'TextArea':

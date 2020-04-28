@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.46 (2020-04-28)
+
+### Splitter
+
+#### Bug Fixes
+
+- `#272732` -The issue with Splitter pane size decreased by resize of window has been resolved.
+
 ## 18.1.45 (2020-04-21)
 
 ### Splitter

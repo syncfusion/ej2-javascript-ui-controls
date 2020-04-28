@@ -1851,6 +1851,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.extendedGridEvents();
     this.extendedGridActionEvents();
     this.extendedGridEditEvents();
+    this.extendedGridBatchEvents();
     this.bindGridDragEvents();
     this.bindCallBackEvents();
   }
@@ -1898,9 +1899,8 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
   }
   private bindCallBackEvents(): void {
     let beginEdit: Function;
-    let name: string = 'name';
     if (isBlazor() && this.isServerRendered) {
-      if (!isNullOrUndefined(this.grid.beginEdit) && this.grid.beginEdit[name] === 'bound triggerEJEvents') {
+      if (!isNullOrUndefined(this.grid.beginEdit)) {
         beginEdit = this.grid.beginEdit;
       }
     }
@@ -1923,7 +1923,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     };
     this.grid.beginEdit = (args: BeginEditArgs): Deferred | void => {
       if (isBlazor() && this.isServerRendered) {
-        if (beginEdit && typeof beginEdit === 'function' && beginEdit[name] === 'bound triggerEJEvents') {
+        if (beginEdit && typeof beginEdit === 'function') {
           beginEdit.apply(this, [args]);
         }
       }
@@ -1940,12 +1940,11 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     let localobserver: string = 'localObserver';
     let cellEdit: Function;
     let cellSave: Function;
-    let name: string = 'name';
     if (isBlazor() && this.isServerRendered) {
-      if (!isNullOrUndefined(this.grid.cellEdit) && this.grid.cellEdit[name] === 'bound triggerEJEvents') {
+      if (!isNullOrUndefined(this.grid.cellEdit)) {
         cellEdit = this.grid.cellEdit;
       }
-      if (!isNullOrUndefined(this.grid.cellSave) && this.grid.cellSave[name] === 'bound triggerEJEvents') {
+      if (!isNullOrUndefined(this.grid.cellSave)) {
         cellSave = this.grid.cellSave;
       }
     }
@@ -1964,7 +1963,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     };
     this.grid.cellSave = (args: CellSaveArgs): Deferred | void => {
       if (isBlazor() && this.isServerRendered) {
-        if (cellSave && typeof cellSave === 'function' && cellSave[name] === 'bound triggerEJEvents') {
+        if (cellSave && typeof cellSave === 'function') {
           cellSave.apply(this, [args]);
         }
       }
@@ -1993,7 +1992,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     };
     this.grid.cellEdit = (args: BatchAddArgs): Deferred | void => {
         if (isBlazor() && this.isServerRendered) {
-          if (cellEdit && typeof cellEdit === 'function' && cellEdit[name] === 'bound triggerEJEvents') {
+          if (cellEdit && typeof cellEdit === 'function') {
             cellEdit.apply(this, [args]);
           }
         }
@@ -2003,11 +2002,25 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
         this.notify(events.cellEdit, args);
         return promise;
     };
+  }
+
+  private extendedGridBatchEvents(): void {
+    let beforeBatchSave: Function;
+    if (isBlazor() && this.isServerRendered) {
+      if (!isNullOrUndefined(this.grid.beforeBatchSave)) {
+        beforeBatchSave = this.grid.beforeBatchSave;
+      }
+    }
     this.grid.batchAdd = (args: BatchAddArgs): void => {
       this.trigger(events.batchAdd, args);
       this.notify(events.batchAdd, args);
     };
     this.grid.beforeBatchSave = (args: BeforeBatchSaveArgs): void => {
+      if (isBlazor() && this.isServerRendered) {
+        if (beforeBatchSave && typeof beforeBatchSave === 'function') {
+          beforeBatchSave.apply(this, [args]);
+        }
+      }
       this.trigger(events.beforeBatchSave, args);
       this.notify(events.beforeBatchSave, args);
     };
@@ -2082,9 +2095,8 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
 
   private extendedGridActionEvents(): void {
     let actionComplete: Function;
-    let name: string = 'name';
     if (isBlazor() && this.isServerRendered) {
-      if (!isNullOrUndefined(this.grid.actionComplete) && this.grid.actionComplete[name] === 'bound triggerEJEvents') {
+      if (!isNullOrUndefined(this.grid.actionComplete)) {
         actionComplete = this.grid.actionComplete;
       }
     }
@@ -2122,7 +2134,6 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       return callBackPromise;
     };
     this.grid.actionComplete = (args: ActionEventArgs) => {
-      let name: string = 'name';
       if (isBlazor() && this.isServerRendered) {
         let rows: HTMLTableRowElement[] = this.getRows();
         for (let i: number = 0; i < rows.length; i++) {
@@ -2142,7 +2153,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
                                                                        addClass([expandicon], 'e-treegridexpand');
           }
         }
-        if (actionComplete && typeof actionComplete === 'function' && actionComplete[name] === 'bound triggerEJEvents') {
+        if (actionComplete && typeof actionComplete === 'function') {
           actionComplete.apply(this, [args]);
         }
       }
@@ -2711,7 +2722,9 @@ private getGridEditSettings(): GridEditModel {
      */
     public updateRow(index: number, data: Object): void {
       if (this.grid.editModule) {
-          this.grid.editModule.updateRow(index, data);
+        let griddata: Object = this.grid.getCurrentViewRecords()[index];
+        extend(griddata, data);
+        this.grid.editModule.updateRow(index, griddata);
       }
   }
 

@@ -1,12 +1,12 @@
 import { formatUnit, detach, attributes, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Spreadsheet } from '../base/index';
 import { getRangeIndexes } from './../../workbook/common/address';
-import { getColumnWidth } from '../../workbook/base/column';
+import { getColumnWidth, isHiddenCol } from '../../workbook/base/column';
 import { contentLoaded, editOperation, getUpdateUsingRaf, IRowRenderer, removeAllChildren, SheetRenderArgs } from '../common/index';
 import { IRenderer, beforeContentLoaded, getColGroupWidth, virtualContentLoaded, setAriaOptions, dataBound } from '../common/index';
 import { CellRenderArgs, beforeHeaderLoaded, ICellRenderer, created, spreadsheetDestroyed, skipHiddenIdx } from '../common/index';
 import { checkMerge } from '../common/index';
-import { CellModel, SheetModel, ExtendedRange, getCell } from '../../workbook/index';
+import { CellModel, SheetModel, ExtendedRange, getCell, isHiddenRow } from '../../workbook/index';
 
 /**
  * Sheet module is used to render Sheet
@@ -480,10 +480,9 @@ export class SheetRender implements IRenderer {
         let sheet: SheetModel = this.parent.getActiveSheet();
         if (sheet.showHeaders) {
             if (this.parent.scrollSettings.enableVirtualization) {
-                let startIndex: number[] = [this.parent.viewport.topIndex, this.parent.viewport.leftIndex];
-                this.renderHeaders(
-                    [ startIndex[0], startIndex[0] + this.parent.viewport.rowCount + (this.parent.getThreshold('row') * 2) ],
-                    [ startIndex[1], startIndex[1] + this.parent.viewport.colCount + (this.parent.getThreshold('col') * 2) ]);
+                let indexes: number[] = [this.parent.viewport.topIndex, this.parent.viewport.leftIndex,
+                this.parent.viewport.bottomIndex, this.parent.viewport.rightIndex];
+                this.renderHeaders([indexes[0], indexes[2]], [indexes[1], indexes[3]]);
             } else {
                 this.renderHeaders([0, sheet.rowCount - 1], [0, sheet.colCount - 1]);
                 if (sheet.topLeftCell !== 'A1') { this.parent.goTo(sheet.topLeftCell); }
@@ -498,6 +497,7 @@ export class SheetRender implements IRenderer {
     }
 
     private renderHeaders(rowIndexes: number[], colIndexes: number[]): void {
+        let sheet: SheetModel = this.parent.getActiveSheet();
         this.initHeaderPanel();
         let cFrag: DocumentFragment = document.createDocumentFragment(); let rFrag: DocumentFragment = document.createDocumentFragment();
         cFrag.appendChild(this.headerPanel);
@@ -510,16 +510,20 @@ export class SheetRender implements IRenderer {
         let cTHead: Element = this.headerPanel.querySelector('.e-column-header thead');
         let cRow: Element = this.rowRenderer.render(); cTHead.appendChild(cRow); let row: Element;
         for (let i: number = colIndexes[0]; i <= colIndexes[1]; i++) {
-            cRow.appendChild(this.cellRenderer.renderColHeader(i));
+            if (!isHiddenCol(sheet, i)) {
+                cRow.appendChild(this.cellRenderer.renderColHeader(i));
+            }
         }
         let colGroupWidth: number = getColGroupWidth(rowIndexes[1]);
         if (this.colGroupWidth !== colGroupWidth) {
             this.updateLeftColGroup(colGroupWidth, rowHdrEle);
         }
         for (let i: number = rowIndexes[0]; i <= rowIndexes[1]; i++) {
-            row = this.rowRenderer.render(i, true);
-            row.appendChild(this.cellRenderer.renderRowHeader(i));
-            rTBody.appendChild(row);
+            if (!isHiddenRow(sheet, i)) {
+                row = this.rowRenderer.render(i, true);
+                row.appendChild(this.cellRenderer.renderRowHeader(i));
+                rTBody.appendChild(row);
+            }
         }
         getUpdateUsingRaf((): void => {
             this.getColHeaderTable().insertBefore(this.getContentTable().querySelector('colgroup').cloneNode(true), cTHead);

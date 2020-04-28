@@ -3709,6 +3709,7 @@ export class CommandHandler {
         }
         obj = renderContainerHelper(this.diagram, obj) || obj;
         return this.diagram.scale(obj, sx, sy, pivot);
+
     }
     /** @private */
     public rotateSelectedItems(angle: number): boolean {

@@ -57,7 +57,9 @@ export interface KanbanModel extends ComponentModel{
     keyField?: string;
 
     /**
-     * Defines the constraint type used to apply validation based on column or swimlane.
+     * Defines the constraint type used to apply validation based on column or swimlane. The possible values are:
+     * * Column
+     * * Swimlane
      * @default column
      */
     constraintType?: ConstraintType;

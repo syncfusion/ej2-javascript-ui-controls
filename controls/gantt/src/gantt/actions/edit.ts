@@ -883,7 +883,7 @@ export class Edit {
         } else {
             this.parent.setRecordValue(
                 'startDate',
-                this.parent.dateValidationModule.checkStartDate(projectStartDate, taskData),
+                this.parent.dateValidationModule.checkStartDate(projectStartDate, taskData, false),
                 taskData,
                 true);
             if (!isNullOrUndefined(taskData.duration)) {
@@ -974,7 +974,9 @@ export class Edit {
                 this.parent.chartRowsModule.refreshRow(rowIndex);
             }
             if (isRefreshGrid) {
-                this.parent.treeGrid.grid.setRowData(originalData.ganttProperties.rowUniqueID, originalData);
+                /* tslint:disable-next-line */
+                let dataId: number | string = this.parent.viewType === 'ProjectView' ? parseInt(originalData.ganttProperties.rowUniqueID) : originalData.ganttProperties.rowUniqueID;
+                this.parent.treeGrid.grid.setRowData(dataId, originalData);
                 let row: Row<Column> = this.parent.treeGrid.grid.getRowObjectFromUID(
                     this.parent.treeGrid.grid.getDataRows()[rowIndex].getAttribute('data-uid'));
                 row.data = originalData;

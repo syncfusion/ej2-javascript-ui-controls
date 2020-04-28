@@ -17592,7 +17592,7 @@ var Edit$2 = /** @class */ (function () {
             this.parent.setRecordValue('endDate', this.parent.dateValidationModule.checkEndDate(endDate, ganttRecord.ganttProperties), taskData, true);
         }
         else {
-            this.parent.setRecordValue('startDate', this.parent.dateValidationModule.checkStartDate(projectStartDate, taskData), taskData, true);
+            this.parent.setRecordValue('startDate', this.parent.dateValidationModule.checkStartDate(projectStartDate, taskData, false), taskData, true);
             if (!sf.base.isNullOrUndefined(taskData.duration)) {
                 this.parent.dateValidationModule.calculateEndDate(ganttRecord);
             }
@@ -17673,7 +17673,9 @@ var Edit$2 = /** @class */ (function () {
                 this.parent.chartRowsModule.refreshRow(rowIndex);
             }
             if (isRefreshGrid) {
-                this.parent.treeGrid.grid.setRowData(originalData.ganttProperties.rowUniqueID, originalData);
+                /* tslint:disable-next-line */
+                var dataId = this.parent.viewType === 'ProjectView' ? parseInt(originalData.ganttProperties.rowUniqueID) : originalData.ganttProperties.rowUniqueID;
+                this.parent.treeGrid.grid.setRowData(dataId, originalData);
                 var row = this.parent.treeGrid.grid.getRowObjectFromUID(this.parent.treeGrid.grid.getDataRows()[rowIndex].getAttribute('data-uid'));
                 row.data = originalData;
             }

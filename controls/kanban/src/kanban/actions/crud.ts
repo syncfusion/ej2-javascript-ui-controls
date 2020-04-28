@@ -63,6 +63,7 @@ export class Crud {
         };
         this.parent.trigger(events.actionBegin, args, (addArgs: ActionEventArgs) => {
             if (!addArgs.cancel) {
+                this.parent.showSpinner();
                 let promise: Promise<Object> = null;
                 let modifiedData: { [key: string]: Object }[] = [];
                 if (this.parent.cardSettings.priority) {
@@ -107,6 +108,7 @@ export class Crud {
         };
         this.parent.trigger(events.actionBegin, args, (updateArgs: ActionEventArgs) => {
             if (!updateArgs.cancel) {
+                this.parent.showSpinner();
                 let promise: Promise<Object> = null;
                 if (this.parent.cardSettings.priority) {
                     let modifiedData: { [key: string]: Object }[] = [];
@@ -158,6 +160,7 @@ export class Crud {
         };
         this.parent.trigger(events.actionBegin, args, (deleteArgs: ActionEventArgs) => {
             if (!deleteArgs.cancel) {
+                this.parent.showSpinner();
                 let promise: Promise<Object> = null;
                 if (editParms.deletedRecords.length > 1) {
                     if (!this.parent.isBlazorRender()) {

@@ -825,8 +825,6 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** @hidden */
     public isAutoGen: boolean = false;
     private mediaBindInstance: Object = {};
-    /** @hidden */
-    public isWheelScrolled: boolean;
 
     //Module Declarations
     /**
@@ -3344,7 +3342,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         if (this.childGrid || this.detailTemplate) {
             fieldIdx++;
         }
-        if (this.allowRowDragAndDrop) {
+        if (this.isRowDragable()) {
             fieldIdx++;
         }
         col = this.getColumnByField(field);
@@ -3497,7 +3495,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {Element} 
      */
     public getColumnHeaderByField(field: string): Element {
-        return this.getColumnHeaderByUid(this.getColumnByField(field).uid);
+        let column: Column = this.getColumnByField(field);
+        return column ? this.getColumnHeaderByUid(column.uid) : undefined;
     }
 
     /**
@@ -3506,7 +3505,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
      * @return {Element} 
      */
     public getColumnHeaderByUid(uid: string): Element {
-        return this.getHeaderContent().querySelector('[e-mappinguid=' + uid + ']').parentElement;
+        let element: Element = this.getHeaderContent().querySelector('[e-mappinguid=' + uid + ']');
+        return element ? element.parentElement : undefined;
     }
 
     /**
@@ -4615,9 +4615,9 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             } else if (row) {
                 let rows: Element[] = [].slice.call(this.element.querySelectorAll('tr[aria-rowindex="' + row.getAttribute('aria-rowindex') + '"]'));
                 rows.splice(rows.indexOf(row), 1);
-                if (row.getAttribute('aria-selected') != 'true') {
+                if (row.getAttribute('aria-selected') != 'true' && rows[0]) {
                     rows[0].classList.add('e-frozenhover');
-                } else {
+                } else if (rows[0]) {
                     rows[0].classList.remove('e-frozenhover');
                 }
             }

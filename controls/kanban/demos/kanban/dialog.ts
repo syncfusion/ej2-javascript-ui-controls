@@ -28,8 +28,9 @@ let kanbanOptions: KanbanModel = {
     dialogOpen: open,
     dialogClose: close,
     dialogSettings: {
+        model: { width: 500 },
         fields: [
-            { text: 'ID', key: 'Id', type: 'Input', validationRules: { required: true, number: true } },
+            { text: 'ID', key: 'Id', type: 'TextBox' },
             { key: 'Status', type: 'DropDown' },
             { key: 'Assignee', type: 'DropDown' },
             { key: 'Estimate', type: 'Numeric', validationRules: { range: [0, 1000] } },
@@ -82,7 +83,7 @@ document.getElementById('predefined').onchange = () => {
     let checkEle: HTMLInputElement = document.getElementById('predefined') as HTMLInputElement;
     if (checkEle.checked) {
         kanbanObj.dialogSettings.fields = [
-            { text: 'ID', key: 'Id', type: 'Input', validationRules: { required: true, number: true } },
+            { text: 'ID', key: 'Id', type: 'TextBox' },
             { key: 'Status', type: 'DropDown' },
             { key: 'Assignee', type: 'DropDown' },
             { key: 'Estimate', type: 'Numeric', validationRules: { range: [0, 1000] } },

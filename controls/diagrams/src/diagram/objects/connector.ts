@@ -21,7 +21,7 @@ import { getDecoratorShape } from './dictionary/common';
 import { IElement } from './interface/IElement';
 import { Container } from '../core/containers/container';
 import { DiagramElement } from '../core/elements/diagram-element';
-import { HorizontalAlignment, VerticalAlignment, AssociationFlow, ClassifierShape, Multiplicity } from '../enum/enum';
+import { HorizontalAlignment, VerticalAlignment, AssociationFlow, ClassifierShape, Multiplicity, DiagramAction } from '../enum/enum';
 import { ConnectionShapes, UmlActivityFlows, BpmnFlows, BpmnMessageFlows, BpmnSequenceFlows, BpmnAssociationFlows } from '../enum/enum';
 import { SegmentInfo, Alignment } from '../rendering/canvas-interface';
 import { PathAnnotationModel } from './annotation-model';
@@ -1546,7 +1546,7 @@ export class Connector extends NodeBase implements IElement {
     }
 
     /** @private */
-    private clipDecorator(connector: Connector, points: PointModel[], isSource: boolean): PointModel {
+    private clipDecorator(connector: Connector, points: PointModel[], isSource: boolean, diagramAction: DiagramAction): PointModel {
         let point: PointModel = { x: 0, y: 0 };
         let start: PointModel = { x: 0, y: 0 };
         let end: PointModel = { x: 0, y: 0 };
@@ -1559,33 +1559,37 @@ export class Connector extends NodeBase implements IElement {
         let node: DiagramElement = isSource ? connector.sourceWrapper : connector.targetWrapper;
         if (node) {
             strokeWidth = node.style.strokeWidth;
+            if (diagramAction && ((diagramAction) & DiagramAction.DecoratorPropertyChange)) {
+                strokeWidth = 1;
+            }
         }
         let width: number = strokeWidth - 1;
         point.x = (Math.round(start.x + width * (end.x - start.x) / len));
         point.y = (Math.round(start.y + width * (end.y - start.y) / len));
         if ((isSource && connector.sourceDecorator.shape !== 'None') ||
             (!isSource && connector.targetDecorator.shape !== 'None')) {
-            point = Point.adjustPoint(point, end, true, (strokeWidth / 2));
+            point = Point.adjustPoint(point, end, true, (diagramAction & DiagramAction.DecoratorPropertyChange) ? 0 : (strokeWidth / 2));
         }
         return point;
     }
 
     /** @private */
-    public clipDecorators(connector: Connector, pts: PointModel[]): PointModel[] {
+    public clipDecorators(connector: Connector, pts: PointModel[], diagramAction?: DiagramAction): PointModel[] {
         if (connector.sourceDecorator.shape !== 'None') {
-            pts[0] = this.clipDecorator(connector, pts, true);
+            pts[0] = this.clipDecorator(connector, pts, true, diagramAction);
         }
         if (connector.targetDecorator.shape !== 'None') {
-            pts[pts.length - 1] = this.clipDecorator(connector, pts, false);
+            pts[pts.length - 1] = this.clipDecorator(connector, pts, false, diagramAction);
         }
         return pts;
     }
 
     /** @private */
-    public updateSegmentElement(connector: Connector, points: PointModel[], element: PathElement): PathElement {
+    public updateSegmentElement(
+        connector: Connector, points: PointModel[], element: PathElement, diagramActions: DiagramAction): PathElement {
         let segmentPath: string; let bounds: Rect = new Rect();
         let point: PointModel[];
-        segmentPath = this.getSegmentPath(connector, points);
+        segmentPath = this.getSegmentPath(connector, points, diagramActions);
         if (connector.type === 'Bezier') {
             if (this.segments.length > 0) {
                 for (let i: number = 0; i < this.segments.length; i++) {
@@ -1613,14 +1617,16 @@ export class Connector extends NodeBase implements IElement {
         return element;
     }
     /** @private */
-    public getSegmentElement(connector: Connector, segmentElement: PathElement, layoutOrientation?: LayoutOrientation): PathElement {
+    public getSegmentElement(
+        connector: Connector, segmentElement: PathElement, layoutOrientation?: LayoutOrientation, diagramActions?: DiagramAction
+    ): PathElement {
         let bounds: Rect; let segmentPath: string;
         let points: PointModel[] = [];
         flipConnector(connector);
         points = this.getConnectorPoints(connector.type, undefined, layoutOrientation);
         this.intermediatePoints = points;
         segmentElement.staticSize = true;
-        segmentElement = this.updateSegmentElement(connector, points, segmentElement);
+        segmentElement = this.updateSegmentElement(connector, points, segmentElement, diagramActions);
         return segmentElement;
     }
     /** @private */
@@ -1690,7 +1696,7 @@ export class Connector extends NodeBase implements IElement {
     }
 
     /** @private */
-    public getSegmentPath(connector: Connector, points: PointModel[]): string {
+    public getSegmentPath(connector: Connector, points: PointModel[], diagramAction?: DiagramAction): string {
         let path: string = ''; let getPt: PointModel;
         let end: PointModel; let st: PointModel;
         let pts: PointModel[] = [];
@@ -1703,7 +1709,7 @@ export class Connector extends NodeBase implements IElement {
             let bridge: Bridge = connector.bridges[m];
             bridge.rendered = false;
         }
-        pts = this.clipDecorators(connector, pts);
+        pts = this.clipDecorators(connector, pts, diagramAction);
         if (this.cornerRadius > 0 && this.type !== 'Bezier') {
             for (let j: number = 0; j < pts.length - 1; j++) {
                 getPt = pts[j];
@@ -1768,7 +1774,7 @@ export class Connector extends NodeBase implements IElement {
                 pts.splice(pts.length - 1, 0, {
                     x: segments[segments.length - 1].bezierPoint2.x, y: segments[segments.length - 1].bezierPoint2.y
                 });
-                pts = this.clipDecorators(connector, pts);
+                pts = this.clipDecorators(connector, pts, diagramAction);
                 for (let j: number = 0; j < segments.length; j++) {
                     if (j === 0) { path = 'M' + pts[0].x + ' ' + pts[0].y; }
                     let lastPoint: string = (j === segments.length - 1) ? pts[pts.length - 1].x + ' ' + pts[pts.length - 1].y :

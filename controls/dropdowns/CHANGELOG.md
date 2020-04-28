@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.1.46 (2020-04-28)
+
+### ListBox
+
+#### Bug Fixes
+
+- Issue with 'enabled' properly when listbox have toolbar option has been fixed.
+- Issue with Filter element when the scrolling has enabled in listbox.
+
 ## 18.1.43 (2020-04-07)
 
 ### ListBox

@@ -1520,13 +1520,17 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
 
     /**
      * This method is used to get the index of the menu item in the Menu based on the argument.
-     * @param item - item be passed to get the index.
-     * @param id - id to be passed to update the item.
+     * @param item - item be passed to get the index | id to be passed to get the item index.
      * @param isUniqueId - Set `true` if it is a unique id.
      * @returns void
      */
-    public getItemIndex(item: MenuItem, id?: string, isUniqueId?: boolean): number[] {
-        let idx: string = id ? id : item.id;
+    public getItemIndex(item: MenuItem | string, isUniqueId?: boolean): number[] {
+        let idx: string;
+        if (typeof item === 'string') {
+            idx = item;
+        } else {
+            idx = item.id;
+        }
         let isText: boolean = (isUniqueId === false) ? false : true;
         let navIdx: number[] = this.getIndex(idx, isText);
         return navIdx;
@@ -1543,26 +1547,13 @@ export abstract class MenuBase extends Component<HTMLUListElement> implements IN
         let idx: string = id ? id : item.id;
         let isText: boolean = (isUniqueId === false) ? false : true;
         let navIdx: number[] = this.getIndex(idx, isText);
-        let items: MenuItemModel [] = this.items;
-        switch (navIdx.length) {
-            case 1:
-                items[navIdx[0]].iconCss = item.iconCss;
-                items[navIdx[0]].id = item.id;
-                items[navIdx[0]].text = item.text;
-                items[navIdx[0]].url = item.url;
-                items[navIdx[0]].separator = item.separator;
-                items[navIdx[0]].items = item.items;
-                break;
-            case 2:
-                items[navIdx[0]].items[navIdx[1]] = item;
-                break;
-            case 3:
-                items[navIdx[0]].items[navIdx[1]].items[navIdx[2]] = item;
-                break;
-            case 4:
-                items[navIdx[0]].items[navIdx[1]].items[navIdx[2]].items[navIdx[3]] = item;
-                break;
-        }
+        let newItem: MenuItemModel = this.getItem(navIdx);
+        newItem.iconCss = item.iconCss;
+        newItem.id = item.id;
+        newItem.text = item.text;
+        newItem.url = item.url;
+        newItem.separator = item.separator;
+        newItem.items = item.items;
     }
 
     private getItem(navIdx: number[]): MenuItemModel {

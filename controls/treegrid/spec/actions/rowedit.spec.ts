@@ -7,6 +7,7 @@ import { Sort } from '../../src/treegrid/actions/sort';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
 import { DataManager, WebApiAdaptor } from '@syncfusion/ej2-data';
 import { EmitType, createElement, remove } from '@syncfusion/ej2-base';
+import { EditEventArgs } from '@syncfusion/ej2-grids';
 
 
 /**
@@ -2376,6 +2377,84 @@ describe('Hirarchy misalignment when setrowdata is used to replace the value', (
         destroy(gridObj);
       });
       });
+});
+
+describe('Editing - Add', () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  let rows: Element[];
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+          dataSource:[] ,
+          childMapping: 'subtasks',
+          editSettings: { allowEditing: true, mode: 'Cell', allowDeleting: true, allowAdding: true, newRowPosition: 'Bottom' },
+
+          treeColumnIndex: 1,
+          toolbar: ['Add', 'Edit', 'Update', 'Delete'],
+            columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+            { field: 'taskName', headerText: 'Task Name' },
+            { field: 'progress', headerText: 'Progress' },
+            { field: 'startDate', headerText: 'Start Date' }
+            ]
+      },
+      done
+    );
+  });
+  
+    
+      it('Add row ', (done: Function) => {
+        actionComplete = (args?: any): void => {
+          if (args.requestType === 'save') {
+            expect(gridObj.getRows().length == 1).toBe(true);
+            done();
+          }
+        };
+        gridObj.actionComplete = actionComplete;
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_add' } });
+        gridObj.grid.editModule.formObj.element.getElementsByTagName('input')[0].value = "11";
+        (<any>gridObj.grid.toolbarModule).toolbarClickHandler({ item: { id: gridObj.grid.element.id + '_update' } });
+       });
+       afterAll(() => {
+    destroy(gridObj);
+  });
+
+
+       
+describe('update rows methods', () => {
+  let gridObj: TreeGrid;
+  let rows: Element[];
+  let actionComplete: ()=> void;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Row' },
+        columns: [{ field: 'taskID', headerText: 'Task ID', isPrimaryKey: true },
+        { field: 'taskName', headerText: 'Task Name' },
+        { field: 'progress', headerText: 'Progress' },
+        { field: 'startDate', headerText: 'Start Date' }
+        ]
+  },     
+      done
+    );
+  });
+  it('methods', (done: Function) => {
+    actionComplete = (args?:EditEventArgs): void => {
+      if (args.requestType == 'save') {
+        expect(gridObj.dataSource[0].taskName=='test');
+        done();
+  }
+}
+gridObj.actionComplete = actionComplete;
+gridObj.updateRow(0,{taskID:1, taskName:"test"});
+  });
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});
 });
 
 

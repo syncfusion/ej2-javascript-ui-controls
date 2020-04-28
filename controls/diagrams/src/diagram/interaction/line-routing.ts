@@ -121,6 +121,9 @@ export class LineRouting {
                     if (isContains) {
                         grid.nodeId.push(diagramNodes[k].id);
                         grid.walkable = false;
+                        if ((diagramNodes[k] as Node).parentId !== '') {
+                            grid.parentNodeId = (diagramNodes[k] as Node).parentId;
+                        }
                     }
                 }
                 x += size;
@@ -622,7 +625,7 @@ export class LineRouting {
     private isWalkable(x: number, y: number, isparent?: boolean): boolean {
         if (x >= 0 && x < this.noOfRows && y >= 0 && y < this.noOfCols) {
             let grid: VirtualBoundaries = this.gridCollection[x][y];
-            if (grid && (grid.walkable || (grid.nodeId.length === 1 &&
+            if (grid && (grid.walkable || ((grid.nodeId.length === 1 || (grid.nodeId.length === 2 && grid.parentNodeId)) &&
                 (this.sourceGridCollection.indexOf(grid) !== -1 || this.targetGridCollection.indexOf(grid) !== -1 ||
                     this.considerWalkable.indexOf(grid) !== -1)))) {
                 if ((isparent && !grid.parent) || !isparent) {
@@ -725,4 +728,5 @@ export interface VirtualBoundaries {
     afterDistance?: number;
     totalDistance?: number;
     parent?: VirtualBoundaries;
+    parentNodeId ?: string;
 }

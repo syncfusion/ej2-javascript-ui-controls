@@ -456,7 +456,9 @@ export class EventBase {
         for (let cell of cells) {
             cell.setAttribute('aria-selected', 'true');
         }
-        this.parent.removeSelectedClass();
+        if (this.parent.currentView !== 'MonthAgenda') {
+            this.parent.removeSelectedClass();
+        }
         addClass(cells, cls.APPOINTMENT_BORDER);
     }
 
@@ -547,7 +549,9 @@ export class EventBase {
     private appointmentBorderRemove(event: Event & CellClickEventArgs): void {
         let element: HTMLElement = event.event.target as HTMLElement;
         if (closest(element as Element, '.' + cls.APPOINTMENT_CLASS)) {
-            this.parent.removeSelectedClass();
+            if (this.parent.currentView !== 'MonthAgenda') {
+                this.parent.removeSelectedClass();
+            }
         } else if (!closest(element as Element, '.' + cls.POPUP_OPEN)) {
             this.removeSelectedAppointmentClass();
         }

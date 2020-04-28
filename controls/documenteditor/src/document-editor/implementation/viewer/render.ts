@@ -1244,8 +1244,9 @@ export class Renderer {
         let bgColor: string = cellFormat.shading.backgroundColor === '#ffffff' ?
             cellWidget.ownerTable.tableFormat.shading.backgroundColor : cellFormat.shading.backgroundColor;
         let left: number = cellWidget.x - leftMargin - lineWidth;
-        let top: number = cellWidget.y - HelperMethods.convertPointToPixel(cellWidget.topMargin);
-        let width: number = cellWidget.width + leftMargin + lineWidth + cellWidget.margin.right;
+        let topMargin: number = cellWidget.topMargin ? HelperMethods.convertPointToPixel(cellWidget.topMargin) : 0;
+        let top: number = cellWidget.y - topMargin;
+        let width: number = cellWidget.width + leftMargin + cellWidget.margin.right - lineWidth;
         this.pageContext.beginPath();
         if (bgColor !== 'empty') {
             this.pageContext.fillStyle = HelperMethods.getColor(bgColor);

@@ -7,14 +7,6 @@
     position: relative;
     user-select: none;
 
-    .e-icons {
-      &:focus {
-        background: $kanban-icons-toggle-bg-color;
-        border-radius: 100%;
-        color: $kanban-icons-toggle-color;
-      }
-    }
-
     .e-kanban-table {
       border: 0;
       border-collapse: separate;
@@ -306,18 +298,24 @@
 
             .e-swimlane-row-expand,
             .e-swimlane-row-collapse {
+              border: 1px solid transparent;
               color: $kanban-icons-color;
               cursor: pointer;
               height: 24px;
               margin-left: 8px;
               padding: 6px;
 
+              &:hover,
               &:focus {
                 background: $kanban-icons-toggle-bg-color;
-                border-radius: 100%;
-                color: $kanban-icons-toggle-color;
+                border-radius: $kanban-icons-border-radius;
                 margin-left: 8px;
                 padding: 6px;
+
+                @if ($kanban-skin == 'highcontrast' or $kanban-skin == 'bootstrap4') {
+                  border: 1px solid $kanban-border-hover-color;
+                  color: $kanban-icons-toggle-color;
+                }
               }
             }
 
@@ -356,6 +354,7 @@
 
           >.e-collapse-header-text,
           .e-limits,
+          .e-show-add-button,
           .e-card-wrapper {
             display: none;
           }
@@ -426,6 +425,10 @@
           .e-toolbar-swimlane-name {
             font-size: 14px;
             padding: 5px;
+
+            @if $kanban-skin == 'highcontrast' {
+              color: $kanban-default-font;
+            }
           }
 
           .e-toolbar-menu,
@@ -436,6 +439,10 @@
               font-size: 14px;
               padding: 7px;
               padding-left: 4px;
+
+              @if $kanban-skin == 'highcontrast' {
+                color: $kanban-default-font;
+              }
             }
           }
         }
@@ -547,6 +554,10 @@
       text-overflow: ellipsis;
       white-space: nowrap;
       width: 100%;
+
+      @if $kanban-skin == 'highcontrast' {
+        color: $kanban-default-font;
+      }
     }
   }
 

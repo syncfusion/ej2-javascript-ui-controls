@@ -6321,7 +6321,7 @@ export class Selection {
         if (start.paragraph === end.paragraph && this.isSelectList) {
             let listLevel: WListLevel = this.getListLevel(start.paragraph);
             // let breakCharacterFormat: WCharacterFormat = start.paragraph.characterFormat;
-            if (listLevel.characterFormat.uniqueCharacterFormat) {
+            if (listLevel && listLevel.characterFormat.uniqueCharacterFormat) {
                 this.characterFormat.copyFormat(listLevel.characterFormat);
             }
             return;

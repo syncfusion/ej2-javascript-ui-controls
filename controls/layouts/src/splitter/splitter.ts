@@ -536,6 +536,7 @@ export class Splitter extends Component<HTMLElement> {
         this.collapseFlag = false;
         EventHandler.add(document, 'touchstart click', this.onDocumentClick, this);
         this.renderComplete();
+        window.addEventListener('resize', this.reportWindowSize.bind(this), true);
         EventHandler.add(this.element, 'keydown', this.onMove, this);
     }
 
@@ -1060,6 +1061,13 @@ export class Splitter extends Component<HTMLElement> {
         let clonedEle: HTMLCollection = <HTMLCollection>target.children;
         let separator: HTMLElement;
         let proxy: Splitter;
+        if (this.checkBlazor()) {
+            for (let j : number = 0; j < this.element.children.length; j++) {
+                if (this.element.children[j].classList.contains(SPLIT_BAR)) {
+                    this.allBars.push(this.element.children[j] as HTMLElement);
+                }
+            }
+        }
         for (let i: number = 0; i < childCount; i++) {
             if (i < childCount - 1) {
                 if (!this.checkBlazor()) {
@@ -1073,12 +1081,7 @@ export class Splitter extends Component<HTMLElement> {
                 }
                 if (this.checkBlazor()) {
                     proxy = this;
-                    for (let j : number = 0; j < this.element.children.length; j++) {
-                        if (this.element.children[j].classList.contains(SPLIT_BAR)) {
-                            separator = this.element.children[j] as HTMLElement;
-                        }
-                    }
-                    this.allBars.push(separator);
+                    separator = this.allBars[i];
                     this.updateIconClass();
                 }
                 if (!this.checkBlazor()) { this.wireClickEvents(); }
@@ -1198,22 +1201,48 @@ export class Splitter extends Component<HTMLElement> {
     }
 
     private reportWindowSize(): void {
-        let paneCount : number = this.allPanes.length;
-        for (let i : number = 0; i < paneCount; i++) {
+        let paneCount: number = this.allPanes.length;
+        for (let i: number = 0; i < paneCount; i++) {
             if (isNullOrUndefined(this.paneSettings[i].size)) {
                 this.allPanes[i].classList.remove(STATIC_PANE);
             }
             if (paneCount - 1 === i) {
-                let staticPaneCount : number = this.element.querySelectorAll('.' + STATIC_PANE).length;
+                let staticPaneCount: number = this.element.querySelectorAll('.' + STATIC_PANE).length;
                 if (staticPaneCount === paneCount) {
                     removeClass([this.allPanes[i]], STATIC_PANE);
                 }
             }
         }
+        setTimeout(() => { this.updateSplitterSize(); }, 200);
+    }
+
+    private updateSplitterSize() : void {
+        let totalWidth : number = 0;
+        let flexPaneIndexes : number[] = [];
+        let flexCount : number = 0;
+        let children : HTMLCollection = this.element.children;
+        for (let i : number = 0; i < children.length; i++) {
+            totalWidth += this.orientation === 'Horizontal' ? (children[i] as HTMLElement).offsetWidth :
+             (children[i] as HTMLElement).offsetHeight;
+        }
+        let diff : number =  this.orientation === 'Horizontal' ? (this.element.offsetWidth -
+            (this.allBars[0].offsetWidth * this.allBars.length)) - totalWidth :
+        (this.element.offsetHeight - (this.allBars[0].offsetHeight * this.allBars.length)) - totalWidth;
+        for (let i : number = 0; i < this.allPanes.length; i++) {
+            if (!this.paneSettings[i].size && !(this.allPanes[i].innerText === '')) {
+                flexPaneIndexes[flexCount] = i;
+                flexCount++;
+            }
+        }
+        let avgDiffWidth : number = diff / flexPaneIndexes.length;
+        for (let j : number = 0; j < flexPaneIndexes.length; j++) {
+            this.allPanes[flexPaneIndexes[j]].style.flexBasis = this.orientation === 'Horizontal' ?
+             (this.allPanes[flexPaneIndexes[j]].offsetWidth + avgDiffWidth) + 'px' :
+            (this.allPanes[flexPaneIndexes[j]].offsetHeight + avgDiffWidth) + 'px';
+        }
     }
 
     private wireResizeEvents(): void {
-        window.addEventListener('resize', this.reportWindowSize.bind(this));
         EventHandler.add(document, 'mousemove', this.onMouseMove, this);
         EventHandler.add(document, 'mouseup', this.onMouseUp, this);
         let touchMoveEvent: string = (Browser.info.name === 'msie') ? 'pointermove' : 'touchmove';
@@ -1880,6 +1909,7 @@ export class Splitter extends Component<HTMLElement> {
         this.addStaticPaneClass();
         this.previousPane.style.flexBasis = this.prevPaneCurrentWidth;
         this.nextPane.style.flexBasis = this.nextPaneCurrentWidth;
+        this.updateSplitterSize();
     }
 
     private validateMinRange(paneIndex: number, paneCurrentWidth: number, pane: HTMLElement): number {

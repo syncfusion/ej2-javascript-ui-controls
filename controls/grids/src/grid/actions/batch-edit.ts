@@ -1042,7 +1042,7 @@ export class BatchEdit {
     public escapeCellEdit(): void {
         let args: CellSaveArgs = this.generateCellArgs();
         args.value = args.previousValue;
-        this.successCallBack(args, args.cell.parentElement, args.column)(args);
+        this.successCallBack(args, args.cell.parentElement, args.column, true)(args);
     }
 
     private generateCellArgs(): Object {
@@ -1097,7 +1097,7 @@ export class BatchEdit {
     }
 
 
-    private successCallBack(cellSaveArgs: CellSaveArgs, tr: Element, column: Column): Function {
+    private successCallBack(cellSaveArgs: CellSaveArgs, tr: Element, column: Column, isEscapeCellEdit?: boolean): Function {
         return (cellSaveArgs: CellSaveArgs) => {
             let gObj: IGrid = this.parent;
             cellSaveArgs.cell = cellSaveArgs.cell ? cellSaveArgs.cell : this.form.parentElement;
@@ -1150,7 +1150,9 @@ export class BatchEdit {
                                 .replaceWith(this.originalCell[`${this.cellDetails.rowIndex}${cellSaveArgs.columnObject.index}`]);
                 }
             }
-            gObj.trigger(events.cellSaved, cellSaveArgs);
+            if (isNullOrUndefined(isEscapeCellEdit)) {
+                gObj.trigger(events.cellSaved, cellSaveArgs);
+            }
             gObj.notify(events.toolbarRefresh, {});
             this.isColored = false;
             if (this.parent.aggregates.length > 0) {

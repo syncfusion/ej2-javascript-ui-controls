@@ -255,11 +255,13 @@ export class Resize {
         let mainContent: Element = this.parent.getMainContent();
         let oldValue: string = isCol ? `${getColumnWidth(this.parent.getActiveSheet(), idx)}px` :
             `${getRowHeight(this.parent.getActiveSheet(), idx)}px`;
-        let headerTable: HTMLElement = isCol ? this.parent.getColHeaderTable() : this.parent.getRowHeaderTable();
         let contentClone: HTMLElement[] = [];
         let contentTable: HTMLElement = mainContent.getElementsByClassName('e-content-table')[0] as HTMLElement;
+        if (this.parent.getActiveSheet().showHeaders) {
+        let headerTable: HTMLElement = isCol ? this.parent.getColHeaderTable() : this.parent.getRowHeaderTable();
         let headerRow: HTMLCollectionOf<HTMLTableRowElement> =
             headerTable.getElementsByTagName('tr') as HTMLCollectionOf<HTMLTableRowElement>;
+        }
         let headerText: HTMLElement;
         if (isCol) {
             let rowLength: number = sheet.rows.length;
@@ -541,7 +543,20 @@ export class Resize {
     }
 
     private resizeStart(idx: number, viewportIdx: number, value: string, isCol?: boolean, isFit?: boolean, prevData?: string): void {
-        setResize(viewportIdx, value, isCol, this.parent);
+        if (this.parent.getActiveSheet().showHeaders) {
+            setResize(viewportIdx, value, isCol, this.parent);
+        } else {
+            if (isCol) {
+                let curEle: HTMLElement =
+                 this.parent.element.getElementsByClassName('e-sheet-content')[0].getElementsByTagName('col')[viewportIdx];
+                curEle.style.width = value;
+            } else {
+                let curEle: HTMLElement =
+                 this.parent.element.getElementsByClassName('e-sheet-content')[0].getElementsByTagName('tr')[viewportIdx];
+                curEle.style.height = value;
+            }
+
+        }
         let action: string = isFit ? 'resizeToFit' : 'resize';
         let eventArgs: object;
         let isAction: boolean;

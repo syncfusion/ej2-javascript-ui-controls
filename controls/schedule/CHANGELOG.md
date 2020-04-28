@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 18.1.46 (2020-04-28)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#F11648` - An issue with previous value maintaining in select event has been fixed.
+- `#F12531` - An issue with `allowMultiRowSelection` is not working properly in timeline views has been fixed.
+- `#F12345` - An issue with more indicator height added to timeline height even when `rowAutoHeight` enabled has been fixed.
+- `#268604` - An issue with improper time slots rendering when daylight saving time occurring date has been fixed.
+- `#271829` - An issue with selected class is not applied properly in `MonthAgenda` view has been fixed.
+
 ## 18.1.45 (2020-04-21)
 
 ### Schedule

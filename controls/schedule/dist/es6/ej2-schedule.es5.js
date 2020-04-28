@@ -232,6 +232,11 @@ function removeChildren(element) {
         }
     }
 }
+function isDaylightSavingTime(date) {
+    var jan = new Date(date.getFullYear(), 0, 1);
+    var jul = new Date(date.getFullYear(), 6, 1);
+    return date.getTimezoneOffset() < Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+}
 function addLocalOffset(date) {
     if (isBlazor()) {
         var dateValue = new Date(+date - (date.getTimezoneOffset() * 60000));
@@ -1711,7 +1716,7 @@ var KeyboardInteraction = /** @__PURE__ @class */ (function () {
     };
     KeyboardInteraction.prototype.getSelectedElements = function (target) {
         var cellDetails;
-        if (this.selectedCells.length > 1) {
+        if (this.selectedCells.length > 1 && target.classList.contains(SELECTED_CELL_CLASS)) {
             var start = this.parent.getCellDetails(this.selectedCells[0]);
             var end = this.parent.getCellDetails(this.selectedCells.slice(-1)[0]);
             start.endTime = end.endTime;
@@ -1781,10 +1786,12 @@ var KeyboardInteraction = /** @__PURE__ @class */ (function () {
         var target = (targetCell instanceof Array) ? targetCell.slice(-1)[0] : targetCell;
         if (isMultiple) {
             var initialId_1;
+            var viewsOptions_1 = ['Day', 'Week', 'WorkWeek', 'Month',
+                'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'];
             var args = { element: targetCell, requestType: 'mousemove', allowMultipleRow: true };
             this.parent.trigger(select, args, function (selectArgs) {
                 var allowMultipleRow = (!selectArgs.allowMultipleRow) || (!_this.parent.allowMultiRowSelection);
-                if (allowMultipleRow && (['Day', 'Week', 'WorkWeek'].indexOf(_this.parent.currentView) > -1)) {
+                if (allowMultipleRow && (viewsOptions_1.indexOf(_this.parent.currentView) > -1)) {
                     target = target.parentElement.children[_this.initialTarget.cellIndex];
                 }
                 var selectedCells = _this.getCells(_this.isInverseTableSelect(), _this.initialTarget, target);
@@ -2034,7 +2041,8 @@ var KeyboardInteraction = /** @__PURE__ @class */ (function () {
                 return;
             }
         }
-        if (target.classList.contains(WORK_CELLS_CLASS)) {
+        if (target.classList.contains(WORK_CELLS_CLASS) &&
+            (e.target).classList.contains(WORK_CELLS_CLASS)) {
             var key = this.processLeftRight(target);
             if (key.columnIndex >= 0 && key.columnIndex < key.maxIndex - 1) {
                 targetCell = this.calculateNextPrevDate(target, key.element.rows[key.rowIndex].cells[target.cellIndex + 1], 'right');
@@ -2090,7 +2098,8 @@ var KeyboardInteraction = /** @__PURE__ @class */ (function () {
                 return;
             }
         }
-        if (target.classList.contains(WORK_CELLS_CLASS)) {
+        if ((e.target).classList.contains(WORK_CELLS_CLASS) &&
+            target.classList.contains(WORK_CELLS_CLASS)) {
             var key = this.processLeftRight(target);
             if (key.columnIndex > 0 && key.columnIndex < key.maxIndex) {
                 targetCell = this.calculateNextPrevDate(target, key.element.rows[key.rowIndex].cells[target.cellIndex - 1], 'left');
@@ -2209,10 +2218,15 @@ var KeyboardInteraction = /** @__PURE__ @class */ (function () {
         }
     };
     KeyboardInteraction.prototype.processDelete = function (e) {
-        if (document.activeElement && document.activeElement.classList.contains(APPOINTMENT_CLASS)) {
-            addClass([document.activeElement], APPOINTMENT_BORDER);
+        var activeEle = document.activeElement;
+        if (this.parent.currentView === 'MonthAgenda') {
+            var selectedEle = this.parent.eventBase.getSelectedEvents().element;
+            activeEle = ((selectedEle && isNullOrUndefined(selectedEle.length)) ? selectedEle : selectedEle[0]);
+        }
+        if (activeEle && activeEle.classList.contains(APPOINTMENT_CLASS)) {
+            addClass([activeEle], APPOINTMENT_BORDER);
             this.parent.activeEventData = this.parent.eventBase.getSelectedEvents();
-            if (this.parent.activeViewOptions.readonly || document.activeElement.classList.contains('e-read-only')) {
+            if (this.parent.activeViewOptions.readonly || activeEle.classList.contains('e-read-only')) {
                 return;
             }
             this.parent.quickPopup.deleteClick();
@@ -4461,7 +4475,9 @@ var EventBase = /** @__PURE__ @class */ (function () {
             var cell = cells_1[_i];
             cell.setAttribute('aria-selected', 'true');
         }
-        this.parent.removeSelectedClass();
+        if (this.parent.currentView !== 'MonthAgenda') {
+            this.parent.removeSelectedClass();
+        }
         addClass(cells, APPOINTMENT_BORDER);
     };
     EventBase.prototype.getSelectedAppointments = function () {
@@ -4546,7 +4562,9 @@ var EventBase = /** @__PURE__ @class */ (function () {
     EventBase.prototype.appointmentBorderRemove = function (event) {
         var element = event.event.target;
         if (closest(element, '.' + APPOINTMENT_CLASS)) {
-            this.parent.removeSelectedClass();
+            if (this.parent.currentView !== 'MonthAgenda') {
+                this.parent.removeSelectedClass();
+            }
         }
         else if (!closest(element, '.' + POPUP_OPEN)) {
             this.removeSelectedAppointmentClass();
@@ -9642,7 +9660,7 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
         var conTable = this.parent.element.querySelector('.' + CONTENT_TABLE_CLASS);
         this.renderedLength = resWrap.querySelector('tbody').children.length;
         var firstTDIndex = parseInt(resWrap.querySelector('tbody td').getAttribute('data-group-index'), 10);
-        var scrollHeight = (this.parent.rowAutoHeight) ?
+        var scrollHeight = (this.parent.rowAutoHeight && !this.parent.eventSettings.ignoreWhitespace) ?
             (conTable.offsetHeight - conWrap.offsetHeight) : this.bufferCount * this.itemSize;
         addClass([conWrap], 'e-transition');
         var resCollection = [];
@@ -15696,6 +15714,7 @@ var TimelineEvent = /** @__PURE__ @class */ (function (_super) {
         _this.dayLength = _this.element.querySelectorAll('.' + CONTENT_TABLE_CLASS + ' tbody tr').length === 0 ?
             0 : _this.element.querySelectorAll('.' + CONTENT_TABLE_CLASS + ' tbody tr')[0].children.length;
         _this.content = _this.parent.element.querySelector('.' + CONTENT_TABLE_CLASS);
+        _this.moreIndicatorHeight = (_this.parent.rowAutoHeight) ? 0 : _this.moreIndicatorHeight;
         return _this;
     }
     TimelineEvent.prototype.getSlotDates = function () {
@@ -18365,10 +18384,13 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
             styles: 'top:' + topInPx
         });
         var timeCellsWrap = this.getLeftPanelElement();
-        removeClass(timeCellsWrap.querySelectorAll('.' + HIDE_CHILDS_CLASS), HIDE_CHILDS_CLASS);
-        addClass([timeCellsWrap.querySelectorAll('tr')[rowIndex].lastElementChild], HIDE_CHILDS_CLASS);
-        prepend([currentTimeEle], timeCellsWrap);
-        currentTimeEle.style.top = formatUnit(currentTimeEle.offsetTop - (currentTimeEle.offsetHeight / 2));
+        var timeTrs = [].slice.call(timeCellsWrap.querySelectorAll('tr'));
+        if (rowIndex <= timeTrs.length) {
+            removeClass(timeCellsWrap.querySelectorAll('.' + HIDE_CHILDS_CLASS), HIDE_CHILDS_CLASS);
+            addClass([timeTrs[rowIndex].lastElementChild], HIDE_CHILDS_CLASS);
+            prepend([currentTimeEle], timeCellsWrap);
+            currentTimeEle.style.top = formatUnit(currentTimeEle.offsetTop - (currentTimeEle.offsetHeight / 2));
+        }
     };
     VerticalView.prototype.getTopFromDateTime = function (date) {
         var startHour = this.getStartHour();
@@ -18799,17 +18821,20 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
         var msStartHour = startHour.getTime();
         var msEndHour = endHour.getTime();
         if (msStartHour !== msEndHour) {
-            var milliSeconds = (startHour.getTimezoneOffset() !== endHour.getTimezoneOffset()) ?
-                (msEndHour - msStartHour) - 3600000 : (msEndHour - msStartHour);
-            length = Math.round(milliSeconds / msInterval);
+            length = (Math.abs(msEndHour - msStartHour) / msInterval) - ((new Date(msEndHour).getTimezoneOffset()
+                - new Date(msStartHour).getTimezoneOffset()) / (60 / this.parent.activeViewOptions.timeScale.slotCount));
         }
         if (!this.parent.activeViewOptions.timeScale.enable) {
             length = 1;
         }
-        var dt = new Date(msStartHour);
         var start = this.parent.getStartEndTime(this.parent.workHours.start);
         var end = this.parent.getStartEndTime(this.parent.workHours.end);
         for (var i = 0; i < length; i++) {
+            var dt = new Date(msStartHour + (msInterval * i));
+            if (isDaylightSavingTime(dt) || new Date(msStartHour).getTimezoneOffset() !== dt.getTimezoneOffset()) {
+                var timeOffset = new Date(msStartHour).getTimezoneOffset() - dt.getTimezoneOffset();
+                dt = new Date(dt.getTime() - (1000 * 60 * timeOffset));
+            }
             var majorTickDivider = i % (msMajorInterval / msInterval);
             var row = {
                 date: new Date('' + dt),
@@ -18824,7 +18849,6 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
                 handler(row);
             }
             rows.push(row);
-            dt.setMilliseconds(msInterval);
         }
         return rows;
     };
@@ -22633,5 +22657,5 @@ var Print = /** @__PURE__ @class */ (function () {
  * Export Schedule components
  */
 
-export { Schedule, cellClick, cellDoubleClick, moreEventsClick, select, hover, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, popupClose, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, initialLoad, initialEnd, dataReady, eventsLoaded, contentReady, scroll, virtualScroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getTranslateY, getWeekFirstDate, getWeekLastDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, getDateCount, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, removeChildren, addLocalOffset, addLocalOffsetToEvent, capitalizeFirstWord, Resize, DragAndDrop, HeaderRenderer, ViewHelper, ViewBase, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, TimelineYear, Timezone, timezoneData, ICalendarExport, ICalendarImport, ExcelExport, Print, RecurrenceEditor, generateSummary, generate, getDateFromRecurrenceDateString, extractObjectFromRule, getCalendarUtil, getRecurrenceStringFromDate, Gregorian, Islamic };
+export { Schedule, cellClick, cellDoubleClick, moreEventsClick, select, hover, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, popupClose, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, initialLoad, initialEnd, dataReady, eventsLoaded, contentReady, scroll, virtualScroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getTranslateY, getWeekFirstDate, getWeekLastDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, getDateCount, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, removeChildren, isDaylightSavingTime, addLocalOffset, addLocalOffsetToEvent, capitalizeFirstWord, Resize, DragAndDrop, HeaderRenderer, ViewHelper, ViewBase, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, TimelineYear, Timezone, timezoneData, ICalendarExport, ICalendarImport, ExcelExport, Print, RecurrenceEditor, generateSummary, generate, getDateFromRecurrenceDateString, extractObjectFromRule, getCalendarUtil, getRecurrenceStringFromDate, Gregorian, Islamic };
 //# sourceMappingURL=ej2-schedule.es5.js.map

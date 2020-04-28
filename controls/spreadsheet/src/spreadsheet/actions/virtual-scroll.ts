@@ -418,13 +418,19 @@ export class VirtualScroll {
     }
 
     private updateVTrackWidth(args: { colIdx: number, threshold: number }): void {
-        if (args.colIdx >= this.parent.viewport.leftIndex && args.colIdx <= this.parent.viewport.rightIndex ) {
-            let hdrVTrack: HTMLElement = this.parent.getColumnHeaderContent().getElementsByClassName('e-virtualtrack')[0] as HTMLElement;
-            hdrVTrack.style.width = parseInt(hdrVTrack.style.width, 10) + args.threshold + 'px';
+        if (args.colIdx >= this.parent.viewport.leftIndex && args.colIdx <= this.parent.viewport.rightIndex) {
+            if (this.parent.getActiveSheet().showHeaders) {
+                let hdrVTrack: HTMLElement =
+                    this.parent.getColumnHeaderContent().getElementsByClassName('e-virtualtrack')[0] as HTMLElement;
+                hdrVTrack.style.width = parseInt(hdrVTrack.style.width, 10) + args.threshold + 'px';
+            }
             let cntVTrack: HTMLElement = this.parent.getMainContent().getElementsByClassName('e-virtualtrack')[0] as HTMLElement;
             cntVTrack.style.width = parseInt(cntVTrack.style.width, 10) + args.threshold + 'px';
-            let hdrColumn: HTMLElement = this.parent.getColumnHeaderContent().getElementsByClassName('e-virtualable')[0] as HTMLElement;
-            hdrColumn.style.width = parseInt(hdrColumn.style.width, 10) + args.threshold + 'px';
+            if (this.parent.getActiveSheet().showHeaders) {
+                let hdrColumn: HTMLElement =
+                    this.parent.getColumnHeaderContent().getElementsByClassName('e-virtualable')[0] as HTMLElement;
+                hdrColumn.style.width = parseInt(hdrColumn.style.width, 10) + args.threshold + 'px';
+            }
             let cntColumn: HTMLElement = this.parent.getMainContent().getElementsByClassName('e-virtualable')[0] as HTMLElement;
             cntColumn.style.width = parseInt(cntColumn.style.width, 10) + args.threshold + 'px';
         }

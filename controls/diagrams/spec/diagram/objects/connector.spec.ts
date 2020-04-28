@@ -1514,7 +1514,7 @@ describe('Diagram Control', () => {
             diagram.dataBind();
             let decObj: HTMLElement = document.getElementById('c1_srcDec')
             let bounds: DOMRect = decObj.getBoundingClientRect() as DOMRect;
-            expect(bounds.x === 109 && bounds.y === 103.5 && bounds.width === 10 && bounds.height === 10).toBe(true);
+            expect((bounds.x === 109 || bounds.x === 108.5) && bounds.y === 103.5 && bounds.width === 10 && bounds.height === 10).toBe(true);
             done();
         });
     });
@@ -1581,7 +1581,7 @@ describe('Diagram Control', () => {
             expect((diagram.connectors[0].wrapper.children[0] as any).pathData === 'M15,10 L15,22 L5,16Z')
             done();
         });
-    });   
+    });
     describe('Connector padding', () => {
         let diagram: Diagram;
         let ele: HTMLElement;
@@ -1656,6 +1656,16 @@ describe('Diagram Control', () => {
             diagram.dataBind();
             expect((diagram.connectors[0].sourcePadding === 10));
             done();
+        });
+          it('checking connector path data on decorator change', function (done) {
+              diagram.connectors[0].sourceDecorator.width +=10;
+              diagram.connectors[0].sourceDecorator.height +=10;
+              diagram.dataBind()
+              debugger;
+              console.log('checking connector path data on decorator change' +(diagram.connectors[0].wrapper.children[0] as any).pathData )
+            expect((diagram.connectors[0].wrapper.children[0] as any).pathData === 'M300 350 L300 349.5');
+            done();
+            
         });
         it('checking connector style updation', function (done) {
             let path: string = (diagram.connectors[0].wrapper.children[0] as any).pathData;

@@ -8412,8 +8412,15 @@ class Selection {
     setRowSelection(state) {
         if (!this.parent.getDataModule().isRemote() && !isBlazor()) {
             if (state) {
-                for (let data of this.getData()) {
-                    this.selectedRowState[data[this.primaryKey]] = true;
+                if (this.parent.groupSettings.columns.length) {
+                    for (let data of this.getData().records) {
+                        this.selectedRowState[data[this.primaryKey]] = true;
+                    }
+                }
+                else {
+                    for (let data of this.getData()) {
+                        this.selectedRowState[data[this.primaryKey]] = true;
+                    }
                 }
             }
             else {
@@ -8529,7 +8536,8 @@ class Selection {
             else if (this.parent.checkAllRows === 'Check') {
                 this.setRowSelection(true);
                 this.persistSelectedData = (!this.parent.getDataModule().isRemote() && !isBlazor()) ?
-                    this.getData().slice() : this.persistSelectedData;
+                    this.parent.groupSettings.columns.length ? this.getData().records.slice() :
+                        this.getData().slice() : this.persistSelectedData;
             }
         }
     }
@@ -10380,9 +10388,9 @@ class BlazorAction {
                     this.parent.selectRow(parseInt(row.getAttribute('aria-rowindex'), 10));
                     // tslint:disable-next-line:no-any
                     row.cells[0].focus({ preventScroll: true });
-                    this.virtualContentModule.blazorDataLoad = false;
                 }
             }
+            this.virtualContentModule.blazorDataLoad = false;
         }
         if (args.foreignColumnsData) {
             let columns = this.parent.getColumns();
@@ -10456,7 +10464,6 @@ class BlazorAction {
         this.parent.renderModule.dataManagerSuccess(args, this.actionArgs);
         this.parent.getMediaColumns();
         if (this.parent.enableVirtualization) {
-            this.wireEvents();
             this.virtualContentModule = this.parent.contentModule;
             this.setColVTableWidthAndTranslate();
             if (this.parent.groupSettings.columns.length) {
@@ -10503,20 +10510,6 @@ class BlazorAction {
     }
     dataSourceModified() {
         this.dataSourceChanged = true;
-    }
-    wireEvents() {
-        EventHandler.add(this.parent.element, 'wheel', this.wheelScrollHandler, this);
-        EventHandler.add(this.parent.getContentTable(), 'mouseleave', this.mouseLeaveHandler, this);
-    }
-    unWireEvents() {
-        EventHandler.remove(this.parent.element, 'wheel', this.wheelScrollHandler);
-        EventHandler.remove(this.parent.getContentTable(), 'mouseleave', this.mouseLeaveHandler);
-    }
-    wheelScrollHandler() {
-        this.parent.isWheelScrolled = true;
-    }
-    mouseLeaveHandler() {
-        this.parent.isWheelScrolled = false;
     }
     setClientOffSet(args, index) {
         let timeZone = DataUtil.serverTimezoneOffset;
@@ -10612,9 +10605,6 @@ class BlazorAction {
     }
     destroy() {
         this.removeEventListener();
-        if (this.parent.enableVirtualization) {
-            this.unWireEvents();
-        }
     }
 }
 
@@ -12161,7 +12151,7 @@ let Grid = Grid_1 = class Grid extends Component {
         if (this.childGrid || this.detailTemplate) {
             fieldIdx++;
         }
-        if (this.allowRowDragAndDrop) {
+        if (this.isRowDragable()) {
             fieldIdx++;
         }
         col = this.getColumnByField(field);
@@ -12302,7 +12292,8 @@ let Grid = Grid_1 = class Grid extends Component {
      * @return {Element}
      */
     getColumnHeaderByField(field) {
-        return this.getColumnHeaderByUid(this.getColumnByField(field).uid);
+        let column = this.getColumnByField(field);
+        return column ? this.getColumnHeaderByUid(column.uid) : undefined;
     }
     /**
      * Gets a column header by UID.
@@ -12310,7 +12301,8 @@ let Grid = Grid_1 = class Grid extends Component {
      * @return {Element}
      */
     getColumnHeaderByUid(uid) {
-        return this.getHeaderContent().querySelector('[e-mappinguid=' + uid + ']').parentElement;
+        let element = this.getHeaderContent().querySelector('[e-mappinguid=' + uid + ']');
+        return element ? element.parentElement : undefined;
     }
     /**
      * @hidden
@@ -13332,10 +13324,10 @@ let Grid = Grid_1 = class Grid extends Component {
             else if (row) {
                 let rows = [].slice.call(this.element.querySelectorAll('tr[aria-rowindex="' + row.getAttribute('aria-rowindex') + '"]'));
                 rows.splice(rows.indexOf(row), 1);
-                if (row.getAttribute('aria-selected') != 'true') {
+                if (row.getAttribute('aria-selected') != 'true' && rows[0]) {
                     rows[0].classList.add('e-frozenhover');
                 }
-                else {
+                else if (rows[0]) {
                     rows[0].classList.remove('e-frozenhover');
                 }
             }
@@ -16305,53 +16297,56 @@ class CheckBoxFilterBase {
             let filterModel = 'filterModel';
             args[filterModel] = {};
         }
-        this.parent.notify(cBoxFltrBegin, args);
-        predicte = new Predicate(field, args.operator, parsed, args.matchCase, args.ignoreAccent);
-        if (this.options.type === 'date' || this.options.type === 'datetime') {
-            operator = 'equal';
-            if (isNullOrUndefined(parsed) && val.length) {
-                return;
+        this.parent.trigger(actionBegin, args, (filterargs) => {
+            filterargs.operator = (isBlazor() && filterargs.excelSearchOperator !== 'none') ?
+                filterargs.excelSearchOperator : filterargs.operator;
+            predicte = new Predicate(field, filterargs.operator, parsed, filterargs.matchCase, filterargs.ignoreAccent);
+            if (this.options.type === 'date' || this.options.type === 'datetime') {
+                operator = 'equal';
+                if (isNullOrUndefined(parsed) && val.length) {
+                    return;
+                }
+                let filterObj = {
+                    field: field, operator: operator, value: parsed, matchCase: matchCase,
+                    ignoreAccent: ignoreAccent
+                };
+                predicte = getDatePredicate(filterObj, this.options.type);
             }
-            let filterObj = {
-                field: field, operator: operator, value: parsed, matchCase: matchCase,
-                ignoreAccent: ignoreAccent
-            };
-            predicte = getDatePredicate(filterObj, this.options.type);
-        }
-        if (val.length) {
-            predicte = !isNullOrUndefined(pred) ? predicte.and(pred.e) : predicte;
-            query.where(predicte);
-        }
-        else if (!isNullOrUndefined(pred)) {
-            query.where(pred.e);
-        }
-        args.filterChoiceCount = !isNullOrUndefined(args.filterChoiceCount) ? args.filterChoiceCount : 1000;
-        let fPredicate = {};
-        showSpinner(this.spinner);
-        this.renderEmpty = false;
-        if (this.isForeignColumn(column) && val.length) {
-            let colData = ('result' in column.dataSource) ? new DataManager(column.dataSource.result) :
-                column.dataSource;
-            // tslint:disable-next-line:no-any
-            colData.executeQuery(query).then((e) => {
-                let columnData = this.options.column.columnData;
-                this.options.column.columnData = e.result;
-                this.parent.notify(generateQuery, { predicate: fPredicate, column: column });
-                if (fPredicate.predicate.predicates.length) {
-                    foreignQuery.where(fPredicate.predicate);
-                }
-                else {
-                    this.renderEmpty = true;
-                }
-                this.options.column.columnData = columnData;
-                foreignQuery.take(args.filterChoiceCount);
-                this.search(args, foreignQuery);
-            });
-        }
-        else {
-            query.take(args.filterChoiceCount);
-            this.search(args, query);
-        }
+            if (val.length) {
+                predicte = !isNullOrUndefined(pred) ? predicte.and(pred.e) : predicte;
+                query.where(predicte);
+            }
+            else if (!isNullOrUndefined(pred)) {
+                query.where(pred.e);
+            }
+            filterargs.filterChoiceCount = !isNullOrUndefined(filterargs.filterChoiceCount) ? filterargs.filterChoiceCount : 1000;
+            let fPredicate = {};
+            showSpinner(this.spinner);
+            this.renderEmpty = false;
+            if (this.isForeignColumn(column) && val.length) {
+                let colData = ('result' in column.dataSource) ? new DataManager(column.dataSource.result) :
+                    column.dataSource;
+                // tslint:disable-next-line:no-any
+                colData.executeQuery(query).then((e) => {
+                    let columnData = this.options.column.columnData;
+                    this.options.column.columnData = e.result;
+                    this.parent.notify(generateQuery, { predicate: fPredicate, column: column });
+                    if (fPredicate.predicate.predicates.length) {
+                        foreignQuery.where(fPredicate.predicate);
+                    }
+                    else {
+                        this.renderEmpty = true;
+                    }
+                    this.options.column.columnData = columnData;
+                    foreignQuery.take(filterargs.filterChoiceCount);
+                    this.search(filterargs, foreignQuery);
+                });
+            }
+            else {
+                query.take(filterargs.filterChoiceCount);
+                this.search(filterargs, query);
+            }
+        });
     }
     search(args, query) {
         if (this.parent.dataSource && 'result' in this.parent.dataSource) {
@@ -17921,10 +17916,10 @@ class Sort {
         let cols = this.sortSettings.columns;
         let fieldNames = this.parent.getColumns().map((c) => c.field);
         for (let i = 0, len = cols.length; i < len; i++) {
-            if (fieldNames.indexOf(cols[i].field) === -1) {
+            header = gObj.getColumnHeaderByField(cols[i].field);
+            if (fieldNames.indexOf(cols[i].field) === -1 || isNullOrUndefined(header)) {
                 continue;
             }
-            header = gObj.getColumnHeaderByField(cols[i].field);
             this.aria.setSort(header, cols[i].direction);
             if (this.isMultiSort && cols.length > 1) {
                 header.querySelector('.e-headercelldiv').insertBefore(this.parent.createElement('span', { className: 'e-sortnumber', innerHTML: (i + 1).toString() }), header.querySelector('.e-headertext'));
@@ -17945,8 +17940,8 @@ class Sort {
         let fieldNames = this.parent.getColumns().map((c) => c.field);
         for (let i = position ? position : 0, len = !isNullOrUndefined(position) ? position + 1 : cols.length; i < len; i++) {
             header = gObj.getColumnHeaderByField(cols[i].field);
-            if (gObj.allowGrouping && gObj.groupSettings.columns.indexOf(cols[i].field) > -1 &&
-                (isNullOrUndefined(header) || !header.querySelector('.e-sortfilterdiv'))) {
+            if (isNullOrUndefined(header) || (gObj.allowGrouping && gObj.groupSettings.columns.indexOf(cols[i].field) > -1 &&
+                !header.querySelector('.e-sortfilterdiv'))) {
                 continue;
             }
             if (fieldNames.indexOf(cols[i].field) === -1) {
@@ -21182,8 +21177,9 @@ class Resize {
         let columnbyindex = gObj.getColumns()[columnIndexByField];
         let result;
         let width = columnbyindex.width = formatUnit(Math.max(wHeader, wContent, wFooter));
-        if (parseInt(width, 10) > columnbyindex.maxWidth) {
-            columnbyindex.width = columnbyindex.maxWidth;
+        let colMaxWidth = columnbyindex.maxWidth && parseFloat(columnbyindex.maxWidth.toString());
+        if (parseInt(width, 10) > colMaxWidth) {
+            columnbyindex.width = colMaxWidth;
         }
         this.widthService.setColumnWidth(gObj.getColumns()[columnIndexByField]);
         result = gObj.getColumns().some((x) => x.width === null || x.width === undefined || x.width.length <= 0);
@@ -25060,8 +25056,7 @@ class InterSectionObserver {
                 return;
             }
             let check = this.check(direction);
-            if (current.entered && (!isBlazor() || (isBlazor() && !this.parent.isServerRendered) ||
-                (isBlazor() && this.parent.isServerRendered && !this.parent.isWheelScrolled))) {
+            if (current.entered) {
                 onEnterCallback(this.element, current, direction, { top: top, left: left }, this.fromWheel, check);
             }
             if (check) {
@@ -25070,14 +25065,8 @@ class InterSectionObserver {
                 if (current.axis === 'X') {
                     fn = debounced50;
                 }
-                if (isBlazor() && this.parent.isServerRendered && this.parent.isWheelScrolled) {
-                    callback({ direction: direction, sentinel: current, offset: { top: top, left: left },
-                        focusElement: document.activeElement });
-                }
-                else {
-                    fn({ direction: direction, sentinel: current, offset: { top: top, left: left },
-                        focusElement: document.activeElement });
-                }
+                fn({ direction: direction, sentinel: current, offset: { top: top, left: left },
+                    focusElement: document.activeElement });
             }
             this.fromWheel = false;
         };
@@ -25538,8 +25527,9 @@ class VirtualContentRenderer extends ContentRender {
             let pageSizeBy4 = this.parent.pageSettings.pageSize / 4;
             if (infoType.direction === 'down') {
                 let sIndex = Math.round(exactEndIndex) - Math.round((pageSizeBy4));
-                if (isNullOrUndefined(infoType.startIndex) || (exactTopIndex + noOfInViewIndexes) >
-                    (infoType.startIndex + Math.round((this.parent.pageSettings.pageSize / 2 + pageSizeBy4)))) {
+                if (isNullOrUndefined(infoType.startIndex) || (exactEndIndex >
+                    (infoType.startIndex + Math.round((this.parent.pageSettings.pageSize / 2 + pageSizeBy4)))
+                    && infoType.endIndex !== this.count)) {
                     infoType.startIndex = sIndex >= 0 ? Math.round(sIndex) : 0;
                     infoType.startIndex = infoType.startIndex > exactTopIndex ? Math.floor(exactTopIndex) : infoType.startIndex;
                     let eIndex = infoType.startIndex + this.parent.pageSettings.pageSize;
@@ -25575,8 +25565,8 @@ class VirtualContentRenderer extends ContentRender {
         return infoType;
     }
     setKeyboardNavIndex() {
+        this.blazorDataLoad = true;
         if (this.activeKey === 'downArrow' || this.activeKey === 'upArrow') {
-            this.blazorDataLoad = true;
             this.blzRowIndex = this.activeKey === 'downArrow' ? this.rowIndex + 1 : this.rowIndex - 1;
             document.activeElement.blur();
         }
@@ -26263,10 +26253,9 @@ class VirtualContentRenderer extends ContentRender {
             let ele = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent()
                 : this.parent.getContent().firstElementChild;
             let selectedRow = this.parent.getRowByIndex(args.selectedIndex);
-            let rectTop = selectedRow ? selectedRow.getBoundingClientRect().top : 0;
             let rowHeight = this.parent.getRowHeight();
             let eleOffsHeight = ele.offsetHeight;
-            if (!selectedRow || (rectTop < rowHeight || rectTop > eleOffsHeight)) {
+            if (!selectedRow || this.isRowInView(args.selectedIndex, selectedRow, ele, eleOffsHeight, rowHeight)) {
                 this.isSelection = true;
                 this.selectedRowIndex = args.selectedIndex;
                 let viewPortCount = Math.floor(eleOffsHeight / rowHeight);
@@ -26277,6 +26266,17 @@ class VirtualContentRenderer extends ContentRender {
             }
         }
         this.requestType = this.empty;
+    }
+    isRowInView(index, selectedRow, ele, eleOffsHeight, rowHeight) {
+        if (isBlazor()) {
+            let exactTopIndex = ele.scrollTop / rowHeight;
+            let exactEndIndex = exactTopIndex + (eleOffsHeight / rowHeight);
+            return (index < exactTopIndex || index > exactEndIndex);
+        }
+        else {
+            let rectTop = selectedRow ? selectedRow.getBoundingClientRect().top : 0;
+            return (rectTop < rowHeight || rectTop > eleOffsHeight);
+        }
     }
 }
 /**
@@ -27566,6 +27566,7 @@ class NormalEdit {
     }
     updateRow(index, data) {
         let gObj = this.parent;
+        this.editRowIndex = index;
         let args = {
             requestType: 'save', action: 'edit', type: actionBegin, data: data, cancel: false,
             previousData: gObj.getCurrentViewRecords()[index],
@@ -27706,8 +27707,9 @@ class NormalEdit {
             this.closeForm();
             let rowIndex = 'rowIndex';
             let action = 'action';
+            let data = 'data';
             editArgs = { requestType: args.requestType,
-                rowIndex: args[rowIndex], action: args[action] };
+                rowIndex: args[rowIndex], action: args[action], data: args[data] };
             this.parent.notify('editsuccess', editArgs);
         }
         else {
@@ -27719,6 +27721,7 @@ class NormalEdit {
         this.updateCurrentViewData(args.data);
         this.blazorTemplate();
         if (!(isBlazor() && this.parent.isServerRendered)) {
+            this.editRowIndex = null;
             this.parent.trigger(actionComplete, args);
         }
         if (isBlazor()) {
@@ -29010,7 +29013,7 @@ class BatchEdit {
     escapeCellEdit() {
         let args = this.generateCellArgs();
         args.value = args.previousValue;
-        this.successCallBack(args, args.cell.parentElement, args.column)(args);
+        this.successCallBack(args, args.cell.parentElement, args.column, true)(args);
     }
     generateCellArgs() {
         let gObj = this.parent;
@@ -29063,7 +29066,7 @@ class BatchEdit {
             this.successCallBack(args, tr, col)(args);
         }
     }
-    successCallBack(cellSaveArgs, tr, column) {
+    successCallBack(cellSaveArgs, tr, column, isEscapeCellEdit) {
         return (cellSaveArgs) => {
             let gObj = this.parent;
             cellSaveArgs.cell = cellSaveArgs.cell ? cellSaveArgs.cell : this.form.parentElement;
@@ -29118,7 +29121,9 @@ class BatchEdit {
                         .replaceWith(this.originalCell[`${this.cellDetails.rowIndex}${cellSaveArgs.columnObject.index}`]);
                 }
             }
-            gObj.trigger(cellSaved, cellSaveArgs);
+            if (isNullOrUndefined(isEscapeCellEdit)) {
+                gObj.trigger(cellSaved, cellSaveArgs);
+            }
             gObj.notify(toolbarRefresh, {});
             this.isColored = false;
             if (this.parent.aggregates.length > 0) {
@@ -31525,7 +31530,7 @@ class ExcelExport {
     }
     processRecordContent(gObj, returnType, headerRow, exportProperties, currentViewRecords, excelRow, helper) {
         let record;
-        if (!isNullOrUndefined(currentViewRecords)) {
+        if (!isNullOrUndefined(currentViewRecords) && currentViewRecords.length) {
             record = currentViewRecords;
         }
         else {

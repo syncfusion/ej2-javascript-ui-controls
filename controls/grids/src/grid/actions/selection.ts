@@ -2111,8 +2111,14 @@ export class Selection implements IAction {
     private setRowSelection(state: boolean): void {
         if (!this.parent.getDataModule().isRemote() && !isBlazor()) {
             if (state) {
-                for (let data of this.getData()) {
-                    this.selectedRowState[data[this.primaryKey]] = true;
+                if (this.parent.groupSettings.columns.length) {
+                    for (let data of (<{ records?: Object[] }>this.getData()).records) {
+                        this.selectedRowState[data[this.primaryKey]] = true;
+                    }
+                } else {
+                    for (let data of this.getData()) {
+                        this.selectedRowState[data[this.primaryKey]] = true;
+                    }
                 }
             } else {
                 this.selectedRowState = {};
@@ -2228,7 +2234,8 @@ export class Selection implements IAction {
             } else if (this.parent.checkAllRows === 'Check') {
                 this.setRowSelection(true);
                 this.persistSelectedData = (!this.parent.getDataModule().isRemote() && !isBlazor()) ?
-                    this.getData().slice() : this.persistSelectedData;
+                    this.parent.groupSettings.columns.length ? (<{ records?: Object[] }>this.getData()).records.slice() :
+                        this.getData().slice() : this.persistSelectedData;
             }
         }
     }

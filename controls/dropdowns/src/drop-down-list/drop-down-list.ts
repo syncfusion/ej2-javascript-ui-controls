@@ -2231,7 +2231,7 @@ export class DropDownList extends DropDownBase implements IInput {
         let popupInstance: Popup = (isBlazor() && this.isServerRendered) ? null : this.popupObj;
         let eventArgs: PopupEventArgs = { popup: popupInstance, cancel: false, animation: animModel };
         this.trigger('close', eventArgs, (eventArgs: PopupEventArgs) => {
-            if (!this.isServerBlazor && !isNullOrUndefined(this.popupObj) &&
+            if (!isNullOrUndefined(this.popupObj) &&
                 !isNullOrUndefined(this.popupObj.element.querySelector('.e-fixed-head'))) {
                 let fixedHeader: HTMLElement = this.popupObj.element.querySelector('.e-fixed-head');
                 fixedHeader.parentNode.removeChild(fixedHeader);

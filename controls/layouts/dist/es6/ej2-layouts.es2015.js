@@ -273,6 +273,7 @@ let Splitter = class Splitter extends Component {
         this.collapseFlag = false;
         EventHandler.add(document, 'touchstart click', this.onDocumentClick, this);
         this.renderComplete();
+        window.addEventListener('resize', this.reportWindowSize.bind(this), true);
         EventHandler.add(this.element, 'keydown', this.onMove, this);
     }
     onDocumentClick(e) {
@@ -773,6 +774,13 @@ let Splitter = class Splitter extends Component {
         let clonedEle = target.children;
         let separator;
         let proxy;
+        if (this.checkBlazor()) {
+            for (let j = 0; j < this.element.children.length; j++) {
+                if (this.element.children[j].classList.contains(SPLIT_BAR)) {
+                    this.allBars.push(this.element.children[j]);
+                }
+            }
+        }
         for (let i = 0; i < childCount; i++) {
             if (i < childCount - 1) {
                 if (!this.checkBlazor()) {
@@ -786,12 +794,7 @@ let Splitter = class Splitter extends Component {
                 }
                 if (this.checkBlazor()) {
                     proxy = this;
-                    for (let j = 0; j < this.element.children.length; j++) {
-                        if (this.element.children[j].classList.contains(SPLIT_BAR)) {
-                            separator = this.element.children[j];
-                        }
-                    }
-                    this.allBars.push(separator);
+                    separator = this.allBars[i];
                     this.updateIconClass();
                 }
                 if (!this.checkBlazor()) {
@@ -920,9 +923,34 @@ let Splitter = class Splitter extends Component {
                 }
             }
         }
+        setTimeout(() => { this.updateSplitterSize(); }, 200);
+    }
+    updateSplitterSize() {
+        let totalWidth = 0;
+        let flexPaneIndexes = [];
+        let flexCount = 0;
+        let children = this.element.children;
+        for (let i = 0; i < children.length; i++) {
+            totalWidth += this.orientation === 'Horizontal' ? children[i].offsetWidth :
+                children[i].offsetHeight;
+        }
+        let diff = this.orientation === 'Horizontal' ? (this.element.offsetWidth -
+            (this.allBars[0].offsetWidth * this.allBars.length)) - totalWidth :
+            (this.element.offsetHeight - (this.allBars[0].offsetHeight * this.allBars.length)) - totalWidth;
+        for (let i = 0; i < this.allPanes.length; i++) {
+            if (!this.paneSettings[i].size && !(this.allPanes[i].innerText === '')) {
+                flexPaneIndexes[flexCount] = i;
+                flexCount++;
+            }
+        }
+        let avgDiffWidth = diff / flexPaneIndexes.length;
+        for (let j = 0; j < flexPaneIndexes.length; j++) {
+            this.allPanes[flexPaneIndexes[j]].style.flexBasis = this.orientation === 'Horizontal' ?
+                (this.allPanes[flexPaneIndexes[j]].offsetWidth + avgDiffWidth) + 'px' :
+                (this.allPanes[flexPaneIndexes[j]].offsetHeight + avgDiffWidth) + 'px';
+        }
     }
     wireResizeEvents() {
-        window.addEventListener('resize', this.reportWindowSize.bind(this));
         EventHandler.add(document, 'mousemove', this.onMouseMove, this);
         EventHandler.add(document, 'mouseup', this.onMouseUp, this);
         let touchMoveEvent = (Browser.info.name === 'msie') ? 'pointermove' : 'touchmove';
@@ -1582,6 +1610,7 @@ let Splitter = class Splitter extends Component {
         this.addStaticPaneClass();
         this.previousPane.style.flexBasis = this.prevPaneCurrentWidth;
         this.nextPane.style.flexBasis = this.nextPaneCurrentWidth;
+        this.updateSplitterSize();
     }
     validateMinRange(paneIndex, paneCurrentWidth, pane) {
         let paneMinRange = null;

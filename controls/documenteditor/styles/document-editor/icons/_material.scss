@@ -100,6 +100,16 @@
     }
   }
 
+  .e-de-ctn-title-print::before {
+    content: '\e813';
+    font-family: 'e-icons';
+  }
+
+  .e-de-ctn-title-download::before {
+    content: '\e603';
+    font-family: 'e-icons';
+  }
+
   .e-de-table-properties-alignment:hover {
     border-color: $de-table-align-hover-color;
   }

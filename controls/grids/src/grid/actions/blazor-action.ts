@@ -1,5 +1,5 @@
 import { IGrid, ActionArgs, NotifyArgs } from '../base/interface';
-import { Observer, isBlazor, isNullOrUndefined, EventHandler } from '@syncfusion/ej2-base';
+import { Observer, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
 import * as events from '../base/constant';
 import { Column } from '../models/column';
 import { Row } from '../models/row';
@@ -182,9 +182,9 @@ export class BlazorAction {
                     this.parent.selectRow(parseInt(row.getAttribute('aria-rowindex'), 10));
                     // tslint:disable-next-line:no-any
                     ((<HTMLTableRowElement>row).cells[0] as any).focus({ preventScroll: true });
-                    this.virtualContentModule.blazorDataLoad = false;
                 }
             }
+            this.virtualContentModule.blazorDataLoad = false;
         }
         if (args.foreignColumnsData) {
             let columns: Column[] = this.parent.getColumns();
@@ -255,7 +255,6 @@ export class BlazorAction {
         this.parent.renderModule.dataManagerSuccess(args, <NotifyArgs>this.actionArgs);
         this.parent.getMediaColumns();
         if (this.parent.enableVirtualization) {
-            this.wireEvents();
             this.virtualContentModule = (<VirtualContentRenderer>this.parent.contentModule);
             this.setColVTableWidthAndTranslate();
             if (this.parent.groupSettings.columns.length) {
@@ -306,24 +305,6 @@ export class BlazorAction {
 
     private dataSourceModified(): void {
         this.dataSourceChanged = true;
-    }
-
-    private wireEvents(): void {
-        EventHandler.add(this.parent.element, 'wheel', this.wheelScrollHandler, this);
-        EventHandler.add(this.parent.getContentTable(), 'mouseleave', this.mouseLeaveHandler, this);
-    }
-
-    private unWireEvents(): void {
-        EventHandler.remove(this.parent.element, 'wheel', this.wheelScrollHandler);
-        EventHandler.remove(this.parent.getContentTable(), 'mouseleave', this.mouseLeaveHandler);
-    }
-
-    private wheelScrollHandler(): void {
-        this.parent.isWheelScrolled = true;
-    }
-
-    private mouseLeaveHandler(): void {
-        this.parent.isWheelScrolled = false;
     }
 
     private setClientOffSet(args: ReturnType, index: number): void {
@@ -428,8 +409,5 @@ export class BlazorAction {
 
      public destroy(): void {
         this.removeEventListener();
-        if (this.parent.enableVirtualization) {
-            this.unWireEvents();
-        }
      }
 }

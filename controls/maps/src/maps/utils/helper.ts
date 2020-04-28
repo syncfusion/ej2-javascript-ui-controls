@@ -932,8 +932,9 @@ export function mergeSeparateCluster(sameMarkerData: MarkerClusterData[], maps: 
     let layerIndex: number = sameMarkerData[0].layerIndex;
     let clusterIndex: number = sameMarkerData[0].targetClusterIndex;
     let markerIndex: number = sameMarkerData[0].markerIndex;
+    let dataIndex: number = (sameMarkerData[0].isClusterSame) ? sameMarkerData[0].data[0]['index'] : sameMarkerData[0].data[sameMarkerData[0].data.length - 1]['index'];
     let markerId = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex;
-    let clusterId: string = markerId + '_dataIndex_' + sameMarkerData[0].data[0]['index'] + '_cluster_' + clusterIndex;
+    let clusterId: string = markerId + '_dataIndex_' + dataIndex + '_cluster_' + clusterIndex;
     let clusterEle: Element = getElement(clusterId);
     let clusterEleLabel: Element = getElement(clusterId + '_datalabel_' + clusterIndex);
     clusterEle.setAttribute('visibility', 'visible');
@@ -950,7 +951,7 @@ export function clusterSeparate(sameMarkerData: MarkerClusterData[], maps: Maps,
     let layerIndex: number = sameMarkerData[0].layerIndex;
     let markerIndex: number = sameMarkerData[0].markerIndex;
     let clusterIndex: number = sameMarkerData[0].targetClusterIndex;
-    let dataIndex: number = sameMarkerData[0].data[0]['index'];
+    let dataIndex: number = (sameMarkerData[0].isClusterSame) ? sameMarkerData[0].data[0]['index'] : sameMarkerData[0].data[sameMarkerData[0].data.length - 1]['index'];
     let getElementFunction: Function = isDom ? getElement : markerElement.querySelector.bind(markerElement);
     let getQueryConnect: string = isDom ? '' : '#';
     let markerId = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex;

@@ -508,7 +508,7 @@ export class LargeIconsView {
         this.parent.off(events.menuItemData, this.onMenuItemData);
         this.parent.off(events.beforeRequest, this.onBeforeRequest);
         this.parent.off(events.afterRequest, this.onAfterRequest);
-        this.parent.off(events.splitterResize, this.resizeHandler);
+        this.parent.off(events.splitterResize, this.splitterResizeHandler);
         this.parent.off(events.resizeEnd, this.resizeHandler);
         this.parent.off(events.pasteInit, this.onpasteInit);
         this.parent.off(events.pasteEnd, this.onpasteEnd);
@@ -548,7 +548,7 @@ export class LargeIconsView {
         this.parent.on(events.afterRequest, this.onAfterRequest, this);
         this.parent.on(events.dropInit, this.onDropInit, this);
         this.parent.on(events.detailsInit, this.onDetailsInit, this);
-        this.parent.on(events.splitterResize, this.resizeHandler, this);
+        this.parent.on(events.splitterResize, this.splitterResizeHandler, this);
         this.parent.on(events.resizeEnd, this.resizeHandler, this);
         this.parent.on(events.pasteEnd, this.onpasteEnd, this);
         this.parent.on(events.cutCopyInit, this.oncutCopyInit, this);
@@ -1305,6 +1305,11 @@ export class LargeIconsView {
     }
 
     private resizeHandler(): void {
+        this.getItemCount();
+        this.adjustHeight();
+    }
+
+    private splitterResizeHandler(): void {
         this.getItemCount();
     }
 

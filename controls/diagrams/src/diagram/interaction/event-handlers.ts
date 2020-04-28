@@ -32,7 +32,7 @@ import {
 } from './../utility/constraints-util';
 import { CommandModel } from '../diagram/keyboard-commands-model';
 import { updateTooltip } from '../objects/tooltip';
-import { PortVisibility, NodeConstraints, ConnectorConstraints } from '../enum/enum';
+import { PortVisibility, NodeConstraints, ConnectorConstraints, RealAction } from '../enum/enum';
 import { addTouchPointer, measureHtmlText, getAdornerLayerSvg } from '../utility/dom-util';
 import { TextElement } from '../core/elements/text-element';
 import { Size } from '../primitives/size';
@@ -744,7 +744,9 @@ export class DiagramEventHandler {
                 }
                 if (isGroupAction) { this.diagram.endGroupAction(); }
                 this.updateContainerBounds(true);
-                this.commandHandler.updateSelectedNodeProperties(this.eventArgs.source);
+                if (this.eventArgs.clickCount !== 2) {
+                    this.commandHandler.updateSelectedNodeProperties(this.eventArgs.source);
+                }
                 if (this.diagram.selectedObject && this.diagram.selectedObject.helperObject) {
                     this.diagram.remove(this.diagram.selectedObject.helperObject);
                     this.diagram.selectedObject = { helperObject: undefined, actualObject: undefined };
@@ -1722,10 +1724,16 @@ export class DiagramEventHandler {
                     }
                     if ((this.diagram.lineRoutingModule && (this.diagram.constraints & DiagramConstraints.LineRouting))
                         && (!checkParentAsContainer(this.diagram, obj, true))) {
+                        if (obj.children) {
+                            this.diagram.realActions |= RealAction.EnableGroupAction;
+                        }
                         this.diagram.nodePropertyChange(obj, {} as Node, {
                             width: obj.width, height: obj.height,
                             offsetX: obj.offsetX, offsetY: obj.offsetY
                         } as Node);
+                        if (obj.children) {
+                            this.diagram.realActions &= ~RealAction.EnableGroupAction;
+                        }
                     }
                     if ((obj.shape as SwimLaneModel).lanes) {
                         this.updateLaneChildNode(obj);

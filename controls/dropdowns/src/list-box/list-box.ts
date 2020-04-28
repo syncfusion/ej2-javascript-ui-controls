@@ -516,6 +516,11 @@ export class ListBox extends DropDownBase {
     private setHeight(): void {
         let ele: HTMLElement = this.toolbarSettings.items.length ? this.list.parentElement : this.list;
         ele.style.height = formatUnit(this.height);
+        if (this.allowFiltering && this.height.toString().indexOf('%') < 0) {
+            addClass([this.list], 'e-filter-list');
+        } else {
+            removeClass([this.list], 'e-filter-list');
+        }
     }
 
     private setCssClass(): void {
@@ -534,6 +539,9 @@ export class ListBox extends DropDownBase {
             removeClass([ele], cssClass.disabled);
         } else {
             addClass([ele], cssClass.disabled);
+            if (isBlazor() && this.isServerRendered && this.toolbarSettings.items.length) {
+                removeClass([this.list], cssClass.disabled);
+            }
         }
     }
 
@@ -1186,6 +1194,11 @@ export class ListBox extends DropDownBase {
                     'autocapitalize': 'off',
                     'spellcheck': 'false'
                 });
+            }
+            if (this.allowFiltering && this.height.toString().indexOf('%') < 0) {
+                addClass([this.list], 'e-filter-list');
+            } else {
+                removeClass([this.list], 'e-filter-list');
             }
             this.inputString = this.filterInput.value;
             EventHandler.add(this.filterInput, 'input', this.onInput, this);

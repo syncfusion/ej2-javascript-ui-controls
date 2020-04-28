@@ -17144,7 +17144,7 @@ class Edit$2 {
             this.parent.setRecordValue('endDate', this.parent.dateValidationModule.checkEndDate(endDate, ganttRecord.ganttProperties), taskData, true);
         }
         else {
-            this.parent.setRecordValue('startDate', this.parent.dateValidationModule.checkStartDate(projectStartDate, taskData), taskData, true);
+            this.parent.setRecordValue('startDate', this.parent.dateValidationModule.checkStartDate(projectStartDate, taskData, false), taskData, true);
             if (!isNullOrUndefined(taskData.duration)) {
                 this.parent.dateValidationModule.calculateEndDate(ganttRecord);
             }
@@ -17225,7 +17225,9 @@ class Edit$2 {
                 this.parent.chartRowsModule.refreshRow(rowIndex);
             }
             if (isRefreshGrid) {
-                this.parent.treeGrid.grid.setRowData(originalData.ganttProperties.rowUniqueID, originalData);
+                /* tslint:disable-next-line */
+                let dataId = this.parent.viewType === 'ProjectView' ? parseInt(originalData.ganttProperties.rowUniqueID) : originalData.ganttProperties.rowUniqueID;
+                this.parent.treeGrid.grid.setRowData(dataId, originalData);
                 let row = this.parent.treeGrid.grid.getRowObjectFromUID(this.parent.treeGrid.grid.getDataRows()[rowIndex].getAttribute('data-uid'));
                 row.data = originalData;
             }

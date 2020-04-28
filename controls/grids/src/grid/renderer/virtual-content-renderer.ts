@@ -251,8 +251,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             let pageSizeBy4: number = this.parent.pageSettings.pageSize / 4;
             if (infoType.direction === 'down') {
                 let sIndex: number = Math.round(exactEndIndex) - Math.round((pageSizeBy4));
-                if (isNullOrUndefined(infoType.startIndex) || (exactTopIndex + noOfInViewIndexes) >
-                (infoType.startIndex + Math.round((this.parent.pageSettings.pageSize / 2 + pageSizeBy4)))) {
+                if (isNullOrUndefined(infoType.startIndex) || (exactEndIndex >
+                (infoType.startIndex + Math.round((this.parent.pageSettings.pageSize / 2 + pageSizeBy4)))
+                && infoType.endIndex !== this.count)) {
                     infoType.startIndex = sIndex >= 0 ? Math.round(sIndex) : 0;
                     infoType.startIndex = infoType.startIndex > exactTopIndex ? Math.floor(exactTopIndex) : infoType.startIndex;
                     let eIndex: number = infoType.startIndex + this.parent.pageSettings.pageSize;
@@ -288,8 +289,8 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
     }
 
     private setKeyboardNavIndex(): void {
+        this.blazorDataLoad = true;
         if (this.activeKey === 'downArrow' || this.activeKey === 'upArrow') {
-            this.blazorDataLoad = true;
             this.blzRowIndex = this.activeKey === 'downArrow' ? this.rowIndex + 1 : this.rowIndex - 1;
             (document.activeElement as HTMLElement).blur();
         }
@@ -1007,10 +1008,9 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             let ele: Element = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent()
                 : (this.parent.getContent() as HTMLElement).firstElementChild;
             let selectedRow: Element = this.parent.getRowByIndex(args.selectedIndex);
-            let rectTop: number = selectedRow ? selectedRow.getBoundingClientRect().top : 0;
             let rowHeight: number = this.parent.getRowHeight();
             let eleOffsHeight: number = (ele as HTMLElement).offsetHeight;
-            if (!selectedRow || (rectTop < rowHeight || rectTop > eleOffsHeight)) {
+            if (!selectedRow || this.isRowInView(args.selectedIndex, selectedRow, ele, eleOffsHeight, rowHeight)) {
                 this.isSelection = true;
                 this.selectedRowIndex = args.selectedIndex;
                 let viewPortCount: number = Math.floor(eleOffsHeight / rowHeight);
@@ -1021,6 +1021,17 @@ export class VirtualContentRenderer extends ContentRender implements IRenderer {
             }
         }
         this.requestType = this.empty as string;
+    }
+
+    private isRowInView(index: number, selectedRow: Element, ele: Element, eleOffsHeight: number, rowHeight: number): boolean {
+        if (isBlazor()) {
+            let exactTopIndex: number = ele.scrollTop / rowHeight;
+            let exactEndIndex: number = exactTopIndex + (eleOffsHeight / rowHeight);
+            return (index < exactTopIndex || index > exactEndIndex);
+        } else {
+            let rectTop: number = selectedRow ? selectedRow.getBoundingClientRect().top : 0;
+            return (rectTop < rowHeight || rectTop > eleOffsHeight);
+        }
     }
 }
 /**

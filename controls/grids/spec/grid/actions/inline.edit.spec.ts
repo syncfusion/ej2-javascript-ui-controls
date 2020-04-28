@@ -134,6 +134,7 @@ describe('Inline Editing module', () => {
         it('Edit start', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'beginEdit') {
+                    expect((gridObj.editModule as any).editModule.editRowIndex).toBe(0);
                     expect(gridObj.element.querySelectorAll('.e-editedrow').length).toBe(1);
                     expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(1);
                     expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(1);
@@ -187,6 +188,7 @@ describe('Inline Editing module', () => {
         it('Edit complete', (done: Function) => {
             actionComplete = (args?: any): void => {
                 if (args.requestType === 'save') {
+                    expect((gridObj.editModule as any).editModule.editRowIndex).toBeNull();
                     expect(gridObj.element.querySelectorAll('.e-normaledit').length).toBe(0);
                     expect(gridObj.element.querySelectorAll('.e-gridform').length).toBe(0);
                     expect(gridObj.element.querySelectorAll('form').length).toBe(0);
@@ -2846,6 +2848,7 @@ describe('Inline Editing module', () => {
     describe('EJ2-37498 checkbox column value overrides the boolean column while editing', () => {
         let gridObj: Grid;
         let actionComplete: () => void;
+        let beforeDataBound: () => void;
         beforeAll((done: Function) => {
             gridObj = createGrid(
                 {
@@ -2878,10 +2881,20 @@ describe('Inline Editing module', () => {
             gridObj.selectRow(1);
             (gridObj.editModule as any).editModule.startEdit(gridObj.getRows()[1]);
         });
+
+        it('EJ2-39213 - Grid selection module editRowIndex will not get update while using updateRow method', (done: Function) => {
+            beforeDataBound = (args?: any): void => {
+                if (args.requestType === 'save') {
+                    expect((gridObj.editModule as any).editModule.editRowIndex).toBe(2);
+                    gridObj.beforeDataBound = undefined;
+                }
+                done();
+            };
+            gridObj.beforeDataBound = beforeDataBound;
+            gridObj.updateRow(2, { OrderID: 10250, CustomerID: 'ALFKI' });
+        });
         afterAll(() => {
             destroy(gridObj);
         });
-
     });
-
 });

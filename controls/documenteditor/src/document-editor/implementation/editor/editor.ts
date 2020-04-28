@@ -114,6 +114,8 @@ export class Editor {
     public copiedContent: any = '';
     /* tslint:enable:no-any */
     private copiedTextContent: string = '';
+    private previousParaFormat: WParagraphFormat = undefined;
+    private previousCharFormat: WCharacterFormat = undefined;
     private currentPasteOptions: PasteOptions;
     private pasteTextPosition: PositionInfo = undefined;
     public isSkipHistory: boolean = false;
@@ -752,6 +754,8 @@ export class Editor {
         if (!this.isPaste) {
             this.copiedContent = undefined;
             this.copiedTextContent = '';
+            this.previousParaFormat = undefined;
+            this.previousCharFormat = undefined;
             this.selection.isViewPasteOptions = false;
             if (this.isPasteListUpdated) {
                 this.isPasteListUpdated = false;
@@ -1246,6 +1250,8 @@ export class Editor {
                     if (!this.isPaste) {
                         this.copiedContent = undefined;
                         this.copiedTextContent = '';
+                        this.previousParaFormat = undefined;
+                        this.previousCharFormat = undefined;
                         this.selection.isViewPasteOptions = false;
                         if (this.isPasteListUpdated) {
                             this.isPasteListUpdated = false;
@@ -2682,6 +2688,15 @@ export class Editor {
             }
             this.copiedTextContent = textContent = clipbordData.getData('Text');
 
+            if (this.selection.start.paragraph.isEmpty()) {
+                this.previousCharFormat = new WCharacterFormat();
+                this.previousCharFormat.copyFormat(this.selection.start.paragraph.characterFormat);
+                this.previousParaFormat = new WParagraphFormat();
+                this.previousParaFormat.copyFormat(this.selection.start.paragraph.paragraphFormat);
+            } else {
+                this.previousCharFormat = undefined;
+                this.previousParaFormat = undefined;
+            }
             if (rtfContent !== '') {
                 this.pasteAjax(rtfContent, '.rtf');
             } else if (htmlContent !== '') {
@@ -2744,15 +2759,15 @@ export class Editor {
         };
         let editor: any = this;
         this.pasteRequestHandler = new XmlHttpRequestHandler();
+        showSpinner(this.owner.element);
         this.pasteRequestHandler.url = proxy.owner.serviceUrl + this.owner.serverActionSettings.systemClipboard;
         this.pasteRequestHandler.responseType = 'json';
         this.pasteRequestHandler.contentType = 'application/json;charset=UTF-8';
         this.pasteRequestHandler.customHeaders = proxy.owner.headers;
-        this.pasteRequestHandler.send(formObject);
-        showSpinner(this.owner.element);
         this.pasteRequestHandler.onSuccess = this.pasteFormattedContent.bind(this);
         this.pasteRequestHandler.onFailure = this.onPasteFailure.bind(this);
         this.pasteRequestHandler.onError = this.onPasteFailure.bind(this);
+        this.pasteRequestHandler.send(formObject);
     }
     /**
      * @private
@@ -2931,8 +2946,15 @@ export class Editor {
             let arr: string[] = [];
             let txt: string = pasteContent;
             txt = txt.replace(/\r\n/g, '\r');
-            arr = txt.split('\r');
+            if (navigator.userAgent.indexOf('Firefox') !== -1) {
+                arr = txt.split('\n');
+            } else {
+                arr = txt.split('\r');
+            }
             for (let i: number = 0; i < arr.length; i++) {
+                if (i === arr.length - 1 && arr[i].length === 0) {
+                    continue;
+                }
                 let currentInline: ElementInfo = this.selection.start.currentWidget.getInline(this.selection.start.offset, 0);
                 let element: ElementBox = this.selection.getPreviousValidElement(currentInline.element);
                 if (element !== currentInline.element) {
@@ -2940,7 +2962,13 @@ export class Editor {
                 }
                 let insertFormat: WCharacterFormat = element && element === currentInline.element ? startParagraph.characterFormat :
                     element ? element.characterFormat : this.copyInsertFormat(startParagraph.characterFormat, false);
+                if (!isNullOrUndefined(this.previousCharFormat)) {
+                    insertFormat = this.previousCharFormat;
+                }
                 let insertParaFormat: WParagraphFormat = this.documentHelper.selection.copySelectionParagraphFormat();
+                if (!isNullOrUndefined(this.previousParaFormat)) {
+                    insertParaFormat = this.previousParaFormat;
+                }
                 let paragraph: ParagraphWidget = new ParagraphWidget();
                 paragraph.paragraphFormat.copyFormat(insertParaFormat);
                 let line: LineWidget = new LineWidget(paragraph);
@@ -3203,7 +3231,7 @@ export class Editor {
         let insertIndex: number = table.getIndex();
         if (moveRows) {
             //Moves the rows to table.
-            for (let i: number = 0, index: number = 0; i < table.childWidgets.length; i++, index++) {
+            for (let i: number = 0, index: number = 0; i < table.childWidgets.length; i++ , index++) {
                 let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
                 newTable.childWidgets.splice(index, 0, row);
                 row.containerWidget = newTable;
@@ -3404,7 +3432,9 @@ export class Editor {
                 paragraphFormat.bidi = true;
                 paragraphFormat.textAlignment = paragraph.paragraphFormat.textAlignment;
             }
-            paragraph.paragraphFormat.copyFormat(paragraphFormat);
+            if (this.copiedTextContent.indexOf('\n') !== -1 || paragraphFormat.listFormat && paragraphFormat.listFormat.listId !== -1) {
+                paragraph.paragraphFormat.copyFormat(paragraphFormat);
+            }
         }
         // tslint:disable-next-line:max-line-length
         this.documentHelper.layout.reLayoutParagraph(paragraph, lineIndex, 0, this.isInsertField ? undefined : paragraph.paragraphFormat.bidi);
@@ -9175,7 +9205,7 @@ export class Editor {
         }
         if (inline && (inline instanceof BookmarkElementBox && inline.bookmarkType === 0
             || inline.nextNode instanceof BookmarkElementBox)) {
-            if (inline instanceof BookmarkElementBox) {
+            if (inline.nextNode && inline instanceof BookmarkElementBox) {
                 inline = inline.nextNode;
                 paragraph = inline.line.paragraph;
                 offset = inline.line.getOffset(inline, 0);
@@ -9190,6 +9220,9 @@ export class Editor {
                 selection.end.setPositionParagraph(bookMarkEnd.line, bookMarkEnd.line.getOffset(bookMarkEnd, 0) + 1);
                 this.deleteEditElement(selection);
                 return;
+            }
+            if (inline instanceof BookmarkElementBox) {
+                offset = inline.line.getOffset(inline, 1);
             }
         }
         // tslint:disable-next-line:max-line-length
@@ -11464,10 +11497,10 @@ export class Editor {
             let endLine: LineWidget = lastParagraph.childWidgets[lastParagraph.childWidgets.length - 1] as LineWidget;
             if ((startLine !== undefined) && (endLine !== undefined)) {
                 let startElement: ElementBox = startLine.children[0];
-                if (startElement instanceof ListTextElementBox) {
+                if (startElement instanceof ListTextElementBox || startElement instanceof CommentCharacterElementBox) {
                     do {
                         startElement = startElement.nextNode;
-                    } while (startElement instanceof ListTextElementBox);
+                    } while (startElement instanceof ListTextElementBox || startElement instanceof CommentCharacterElementBox);
                 }
                 //Returns the bookmark if already present for paragraph.
                 // tslint:disable-next-line:max-line-length

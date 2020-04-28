@@ -31,8 +31,17 @@
       position: relative;
     }
 
+    &.e-filter-list {
+      overflow: inherit;
+
+      & .e-list-parent {
+        overflow: auto;
+      }
+    }
+
     .e-list-parent {
       height: 100%;
+      min-height: $listview-item-height;
     }
 
     & .e-list-item {
@@ -369,6 +378,10 @@
       @if ($skin-name == 'bootstrap4') {
         padding: 12px 20px;
       }
+    }
+
+    .e-list-parent {
+      min-height: $listview-touch-item-height;
     }
 
     .e-text-content {

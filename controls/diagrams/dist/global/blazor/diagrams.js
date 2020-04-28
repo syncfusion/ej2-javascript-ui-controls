@@ -2521,6 +2521,8 @@ var DiagramShapeStyle = /** @class */ (function (_super) {
     DiagramAction[DiagramAction["isGroupDragging"] = 16384] = "isGroupDragging";
     /** Indicates whether drag is initiated by mouse  */
     DiagramAction[DiagramAction["DragUsingMouse"] = 32768] = "DragUsingMouse";
+    /** Indicates whether decorator property is changed or not */
+    DiagramAction[DiagramAction["DecoratorPropertyChange"] = 65536] = "DecoratorPropertyChange";
 })(exports.DiagramAction || (exports.DiagramAction = {}));
 /**
  * Defines the Selector type to be drawn
@@ -2548,6 +2550,8 @@ var DiagramShapeStyle = /** @class */ (function (_super) {
     RealAction[RealAction["vScrollbarMoved"] = 32] = "vScrollbarMoved";
     /** Indicates whether animation happens or not  */
     RealAction[RealAction["AnimationClick"] = 64] = "AnimationClick";
+    /** Enable the group action */
+    RealAction[RealAction["EnableGroupAction"] = 128] = "EnableGroupAction";
 })(exports.RealAction || (exports.RealAction = {}));
 /** @private */
 
@@ -8227,7 +8231,7 @@ var Connector = /** @class */ (function (_super) {
         return newPoints;
     };
     /** @private */
-    Connector.prototype.clipDecorator = function (connector, points, isSource) {
+    Connector.prototype.clipDecorator = function (connector, points, isSource, diagramAction) {
         var point = { x: 0, y: 0 };
         var start = { x: 0, y: 0 };
         var end = { x: 0, y: 0 };
@@ -8240,31 +8244,34 @@ var Connector = /** @class */ (function (_super) {
         var node = isSource ? connector.sourceWrapper : connector.targetWrapper;
         if (node) {
             strokeWidth = node.style.strokeWidth;
+            if (diagramAction && ((diagramAction) & exports.DiagramAction.DecoratorPropertyChange)) {
+                strokeWidth = 1;
+            }
         }
         var width = strokeWidth - 1;
         point.x = (Math.round(start.x + width * (end.x - start.x) / len));
         point.y = (Math.round(start.y + width * (end.y - start.y) / len));
         if ((isSource && connector.sourceDecorator.shape !== 'None') ||
             (!isSource && connector.targetDecorator.shape !== 'None')) {
-            point = Point.adjustPoint(point, end, true, (strokeWidth / 2));
+            point = Point.adjustPoint(point, end, true, (diagramAction & exports.DiagramAction.DecoratorPropertyChange) ? 0 : (strokeWidth / 2));
         }
         return point;
     };
     /** @private */
-    Connector.prototype.clipDecorators = function (connector, pts) {
+    Connector.prototype.clipDecorators = function (connector, pts, diagramAction) {
         if (connector.sourceDecorator.shape !== 'None') {
-            pts[0] = this.clipDecorator(connector, pts, true);
+            pts[0] = this.clipDecorator(connector, pts, true, diagramAction);
         }
         if (connector.targetDecorator.shape !== 'None') {
-            pts[pts.length - 1] = this.clipDecorator(connector, pts, false);
+            pts[pts.length - 1] = this.clipDecorator(connector, pts, false, diagramAction);
         }
         return pts;
     };
     /** @private */
-    Connector.prototype.updateSegmentElement = function (connector, points, element) {
+    Connector.prototype.updateSegmentElement = function (connector, points, element, diagramActions) {
         var segmentPath;
         var bounds = new Rect();
-        segmentPath = this.getSegmentPath(connector, points);
+        segmentPath = this.getSegmentPath(connector, points, diagramActions);
         if (connector.type === 'Bezier') {
             if (this.segments.length > 0) {
                 for (var i = 0; i < this.segments.length; i++) {
@@ -8293,13 +8300,13 @@ var Connector = /** @class */ (function (_super) {
         return element;
     };
     /** @private */
-    Connector.prototype.getSegmentElement = function (connector, segmentElement, layoutOrientation) {
+    Connector.prototype.getSegmentElement = function (connector, segmentElement, layoutOrientation, diagramActions) {
         var points = [];
         flipConnector(connector);
         points = this.getConnectorPoints(connector.type, undefined, layoutOrientation);
         this.intermediatePoints = points;
         segmentElement.staticSize = true;
-        segmentElement = this.updateSegmentElement(connector, points, segmentElement);
+        segmentElement = this.updateSegmentElement(connector, points, segmentElement, diagramActions);
         return segmentElement;
     };
     /** @private */
@@ -8364,7 +8371,7 @@ var Connector = /** @class */ (function (_super) {
         element.height = size.height;
     };
     /** @private */
-    Connector.prototype.getSegmentPath = function (connector, points) {
+    Connector.prototype.getSegmentPath = function (connector, points, diagramAction) {
         var path = '';
         var getPt;
         var end;
@@ -8379,7 +8386,7 @@ var Connector = /** @class */ (function (_super) {
             var bridge = connector.bridges[m];
             bridge.rendered = false;
         }
-        pts = this.clipDecorators(connector, pts);
+        pts = this.clipDecorators(connector, pts, diagramAction);
         if (this.cornerRadius > 0 && this.type !== 'Bezier') {
             for (var j_1 = 0; j_1 < pts.length - 1; j_1++) {
                 getPt = pts[j_1];
@@ -8469,7 +8476,7 @@ var Connector = /** @class */ (function (_super) {
                 pts.splice(pts.length - 1, 0, {
                     x: segments[segments.length - 1].bezierPoint2.x, y: segments[segments.length - 1].bezierPoint2.y
                 });
-                pts = this.clipDecorators(connector, pts);
+                pts = this.clipDecorators(connector, pts, diagramAction);
                 for (var j_3 = 0; j_3 < segments.length; j_3++) {
                     if (j_3 === 0) {
                         path = 'M' + pts[0].x + ' ' + pts[0].y;
@@ -10811,7 +10818,8 @@ function moveChildInStack(sourceNode, target, diagram, action) {
             sourceParent.wrapper.children.splice(value, 1);
         }
     }
-    if (target && target.parentId && obj.parentId && action === 'Drag' && sourceParent.container.type === 'Stack') {
+    if (target && target.parentId && obj.parentId && action === 'Drag' &&
+        sourceParent.container && sourceParent.container.type === 'Stack') {
         var targetIndex = parent.wrapper.children.indexOf(target.wrapper);
         var sourceIndex = parent.wrapper.children.indexOf(obj.wrapper);
         var undoElement = {
@@ -14251,14 +14259,14 @@ function removeItem(array, item) {
     }
 }
 /** @private */
-function updateConnector(connector, points) {
+function updateConnector(connector, points, diagramActions) {
     var srcPoint;
     var anglePoint;
     var srcDecorator;
     var tarDecorator;
     var targetPoint;
     connector.intermediatePoints = points;
-    connector.updateSegmentElement(connector, points, connector.wrapper.children[0]);
+    connector.updateSegmentElement(connector, points, connector.wrapper.children[0], diagramActions);
     srcPoint = connector.sourcePoint;
     srcDecorator = connector.sourceDecorator;
     if (connector.type === 'Bezier') {
@@ -14270,7 +14278,7 @@ function updateConnector(connector, points) {
     else {
         anglePoint = connector.intermediatePoints;
     }
-    points = connector.clipDecorators(connector, points);
+    points = connector.clipDecorators(connector, points, diagramActions);
     var element = connector.wrapper.children[0];
     element.canMeasurePath = true;
     element = connector.wrapper.children[1];
@@ -25849,7 +25857,9 @@ var DiagramEventHandler = /** @class */ (function () {
                     this.diagram.endGroupAction();
                 }
                 this.updateContainerBounds(true);
-                this.commandHandler.updateSelectedNodeProperties(this.eventArgs.source);
+                if (this.eventArgs.clickCount !== 2) {
+                    this.commandHandler.updateSelectedNodeProperties(this.eventArgs.source);
+                }
                 if (this.diagram.selectedObject && this.diagram.selectedObject.helperObject) {
                     this.diagram.remove(this.diagram.selectedObject.helperObject);
                     this.diagram.selectedObject = { helperObject: undefined, actualObject: undefined };
@@ -26854,10 +26864,16 @@ var DiagramEventHandler = /** @class */ (function () {
                     }
                     if ((this.diagram.lineRoutingModule && (this.diagram.constraints & exports.DiagramConstraints.LineRouting))
                         && (!checkParentAsContainer(this.diagram, obj, true))) {
+                        if (obj.children) {
+                            this.diagram.realActions |= exports.RealAction.EnableGroupAction;
+                        }
                         this.diagram.nodePropertyChange(obj, {}, {
                             width: obj.width, height: obj.height,
                             offsetX: obj.offsetX, offsetY: obj.offsetY
                         });
+                        if (obj.children) {
+                            this.diagram.realActions &= ~exports.RealAction.EnableGroupAction;
+                        }
                     }
                     if (obj.shape.lanes) {
                         this.updateLaneChildNode(obj);
@@ -33284,7 +33300,13 @@ var Diagram = /** @class */ (function (_super) {
                                 var index = Number(key);
                                 var actualObject = this.connectors[index];
                                 var changedProp = newProp.connectors[index];
+                                if (changedProp && (changedProp.sourceDecorator || changedProp.targetDecorator)) {
+                                    this.diagramActions |= exports.DiagramAction.DecoratorPropertyChange;
+                                }
                                 this.connectorPropertyChange(actualObject, oldProp.connectors[index], changedProp, true, true);
+                                if (changedProp && (changedProp.sourceDecorator || changedProp.targetDecorator)) {
+                                    this.diagramActions = this.diagramActions & ~exports.DiagramAction.DecoratorPropertyChange;
+                                }
                                 var args = {
                                     element: cloneBlazorObject(actualObject), cause: this.diagramActions,
                                     oldValue: cloneBlazorObject(oldProp.connectors[index]),
@@ -34352,6 +34374,9 @@ var Diagram = /** @class */ (function (_super) {
                 for (var _i = 0, _a = obj.nodes; _i < _a.length; _i++) {
                     var node = _a[_i];
                     checkBoundaryConstraints = this.commandHandler.scale(node, sx, sy, pivot, obj);
+                    if (!this.commandHandler.checkBoundaryConstraints(undefined, undefined, obj.wrapper.bounds)) {
+                        this.commandHandler.scale(node, 1 / sx, 1 / sy, pivot, obj);
+                    }
                 }
                 this.callBlazorModel = true;
             }
@@ -34360,6 +34385,9 @@ var Diagram = /** @class */ (function (_super) {
                 for (var _b = 0, _c = obj.connectors; _b < _c.length; _b++) {
                     var conn = _c[_b];
                     this.commandHandler.scale(conn, sx, sy, pivot, obj);
+                    if (!this.commandHandler.checkBoundaryConstraints(undefined, undefined, obj.wrapper.bounds)) {
+                        this.commandHandler.scale(conn, 1 / sx, 1 / sy, pivot, obj);
+                    }
                 }
                 this.callBlazorModel = true;
             }
@@ -37222,8 +37250,9 @@ var Diagram = /** @class */ (function (_super) {
         if ((node.children && node.children.length > 0 && (!node.container)) || (node.processId)) {
             var node1 = this.nameTable[node.id];
             if (!(this.realActions & exports.RealAction.PreventScale) && !(this.realActions & exports.RealAction.PreventDrag)) {
-                if (node1.offsetX && !(this.diagramActions & exports.DiagramAction.ToolAction)
-                    && !(this.diagramActions & exports.DiagramAction.PublicMethod)) {
+                if (node1.offsetX && ((this.realActions & exports.RealAction.EnableGroupAction) ||
+                    (!(this.diagramActions & exports.DiagramAction.ToolAction)
+                        && !(this.diagramActions & exports.DiagramAction.PublicMethod)))) {
                     this.realActions |= exports.RealAction.PreventScale;
                     var diffX = (node1.offsetX - node.wrapper.offsetX);
                     node1.offsetX = node.wrapper.offsetX;
@@ -37237,7 +37266,8 @@ var Diagram = /** @class */ (function (_super) {
                 else {
                     node1.offsetX = node.wrapper.offsetX;
                 }
-                if (node1.offsetY && !(this.diagramActions & exports.DiagramAction.ToolAction)) {
+                if (node1.offsetY && ((this.realActions & exports.RealAction.EnableGroupAction) ||
+                    (!(this.diagramActions & exports.DiagramAction.ToolAction)))) {
                     this.realActions |= exports.RealAction.PreventScale;
                     var diffY = (node1.offsetY - node.wrapper.offsetY);
                     node1.offsetY = node.wrapper.offsetY;
@@ -39521,7 +39551,7 @@ var Diagram = /** @class */ (function (_super) {
         }
         if (points.length > 0 || newProp.sourceDecorator !== undefined || (newProp.targetDecorator !== undefined
             && (canMeasureDecoratorPath(Object.keys(newProp.targetDecorator)))) || newProp.cornerRadius !== undefined) {
-            updateConnector(actualObject, points.length > 0 ? points : actualObject.intermediatePoints);
+            updateConnector(actualObject, points.length > 0 ? points : actualObject.intermediatePoints, this.diagramActions);
             if (newProp.type !== undefined) {
                 updateSelector = true;
             }
@@ -48093,6 +48123,9 @@ var LineRouting = /** @class */ (function () {
                     if (isContains) {
                         grid.nodeId.push(diagramNodes[k].id);
                         grid.walkable = false;
+                        if (diagramNodes[k].parentId !== '') {
+                            grid.parentNodeId = diagramNodes[k].parentId;
+                        }
                     }
                 }
                 x += size;
@@ -48653,7 +48686,7 @@ var LineRouting = /** @class */ (function () {
     LineRouting.prototype.isWalkable = function (x, y, isparent) {
         if (x >= 0 && x < this.noOfRows && y >= 0 && y < this.noOfCols) {
             var grid = this.gridCollection[x][y];
-            if (grid && (grid.walkable || (grid.nodeId.length === 1 &&
+            if (grid && (grid.walkable || ((grid.nodeId.length === 1 || (grid.nodeId.length === 2 && grid.parentNodeId)) &&
                 (this.sourceGridCollection.indexOf(grid) !== -1 || this.targetGridCollection.indexOf(grid) !== -1 ||
                     this.considerWalkable.indexOf(grid) !== -1)))) {
                 if ((isparent && !grid.parent) || !isparent) {
@@ -53874,6 +53907,7 @@ var SymbolPalette = /** @class */ (function (_super) {
             //symbol description-textElement
             symbolInfo.description.overflow = symbolInfo.description.overflow || 'Ellipsis';
             symbolInfo.description.wrap = symbolInfo.description.wrap || 'WrapWithOverflow';
+            textElement.id = parent.id + '_text';
             textElement.content = symbolInfo.description.text;
             textElement.width = width;
             textElement.height = 20;

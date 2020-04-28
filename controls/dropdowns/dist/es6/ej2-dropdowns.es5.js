@@ -107,7 +107,8 @@ function highlightSearch(element, query, ignoreCase, type, isBlazor$$1) {
 function findTextNode(element, pattern, isBlazor$$1) {
     for (var index = 0; element.childNodes && (index < element.childNodes.length); index++) {
         if (element.childNodes[index].nodeType === 3) {
-            if (isBlazor$$1) {
+            element = (isBlazor$$1 && element.classList.contains('e-highlight')) ? element.parentElement : element;
+            if (isBlazor$$1 && element.getAttribute('data-value')) {
                 element.innerHTML = element.getAttribute('data-value').replace(pattern, '<span class="e-highlight">$1</span>');
             }
             else {
@@ -116,7 +117,7 @@ function findTextNode(element, pattern, isBlazor$$1) {
             break;
         }
         else {
-            findTextNode(element.childNodes[index], pattern);
+            findTextNode(element.childNodes[index], pattern, isBlazor$$1);
         }
     }
 }
@@ -3255,7 +3256,7 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         var popupInstance = (isBlazor() && this.isServerRendered) ? null : this.popupObj;
         var eventArgs = { popup: popupInstance, cancel: false, animation: animModel };
         this.trigger('close', eventArgs, function (eventArgs) {
-            if (!_this.isServerBlazor && !isNullOrUndefined(_this.popupObj) &&
+            if (!isNullOrUndefined(_this.popupObj) &&
                 !isNullOrUndefined(_this.popupObj.element.querySelector('.e-fixed-head'))) {
                 var fixedHeader = _this.popupObj.element.querySelector('.e-fixed-head');
                 fixedHeader.parentNode.removeChild(fixedHeader);
@@ -12422,6 +12423,12 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
     ListBox.prototype.setHeight = function () {
         var ele = this.toolbarSettings.items.length ? this.list.parentElement : this.list;
         ele.style.height = formatUnit(this.height);
+        if (this.allowFiltering && this.height.toString().indexOf('%') < 0) {
+            addClass([this.list], 'e-filter-list');
+        }
+        else {
+            removeClass([this.list], 'e-filter-list');
+        }
     };
     ListBox.prototype.setCssClass = function () {
         var wrap = this.toolbarSettings.items.length ? this.list.parentElement : this.list;
@@ -12439,6 +12446,9 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             addClass([ele], cssClass.disabled);
+            if (isBlazor() && this.isServerRendered && this.toolbarSettings.items.length) {
+                removeClass([this.list], cssClass.disabled);
+            }
         }
     };
     ListBox.prototype.showSpinner = function () {
@@ -13115,6 +13125,12 @@ var ListBox = /** @__PURE__ @class */ (function (_super) {
                     'autocapitalize': 'off',
                     'spellcheck': 'false'
                 });
+            }
+            if (this.allowFiltering && this.height.toString().indexOf('%') < 0) {
+                addClass([this.list], 'e-filter-list');
+            }
+            else {
+                removeClass([this.list], 'e-filter-list');
             }
             this.inputString = this.filterInput.value;
             EventHandler.add(this.filterInput, 'input', this.onInput, this);

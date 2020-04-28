@@ -155,6 +155,12 @@ export function removeChildren(element: HTMLElement | Element): void {
     }
 }
 
+export function isDaylightSavingTime(date: Date): boolean {
+    let jan: Date = new Date(date.getFullYear(), 0, 1);
+    let jul: Date = new Date(date.getFullYear(), 6, 1);
+    return date.getTimezoneOffset() < Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+}
+
 export function addLocalOffset(date: Date): Date {
     if (isBlazor()) {
         let dateValue: Date = new Date(+date - (date.getTimezoneOffset() * 60000));

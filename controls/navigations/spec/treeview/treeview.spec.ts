@@ -12,7 +12,7 @@ import { remoteData, remoteData1, remoteData2, remoteData2_1, remoteData1_1, hie
 import { hierarchicalData5, expandIconParentData, expandIconChildData, remoteData2_2, remoteData2_3 , remoteData3_1, hierarchicalData6} from '../../spec/treeview/datasource.spec';
 import { localData7, localData8, localData9, checkData, XSSData, XSSnestedData, checkboxData, updatedremoteNode_1, updatedremoteNode_2} from '../../spec/treeview/datasource.spec';
 import { updatedremoteNode_3, updatedremoteNode_4, updatedremoteNode_5, updatedAddNodes, updatedremoteNode_6, updatedremoteNode_7} from '../../spec/treeview/datasource.spec';
-import {  deletedRemoteData, updatedAddNodes1, autoCheckData, autoCheckHierarcialData} from '../../spec/treeview/datasource.spec';
+import {  deletedRemoteData, updatedAddNodes1, autoCheckData, autoCheckHierarcialData, hierarchicalData7} from '../../spec/treeview/datasource.spec';
 import '../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
 import { enableBlazorMode, disableBlazorMode } from '@syncfusion/ej2-base';
@@ -842,6 +842,83 @@ describe('TreeView control', () => {
                         var checknodes = treeObj.getAllCheckedNodes();
                         expect(checknodes.length).toBe(9);
                         expect(treeObj.checkedNodes.length).toBe(9);
+                        done();
+                    }, 100);
+                });
+                it('getAllCheckedNodes method testing with selection via UI', (done: Function) => {
+                    treeObj = new TreeView({
+                        fields: { dataSource: hierarchicalData7, id: "code", text: "name", child: "countries" },
+                        showCheckBox: true
+                    }, '#tree1');
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(function() {
+                        treeObj.expandAll(['AF', 'AS', 'EU']);
+                        let checkEle: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('.e-checkbox-wrapper');
+                        var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                        checkEle[1].querySelector('.e-frame').dispatchEvent(e);
+                        var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                        checkEle[1].querySelector('.e-frame').dispatchEvent(e);
+                        var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                        checkEle[1].querySelector('.e-frame').dispatchEvent(e);
+                        expect(treeObj.checkedNodes.length).toBe(1);
+                        expect(treeObj.getAllCheckedNodes().length).toBe(1);
+                        var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                        checkEle[5].querySelector('.e-frame').dispatchEvent(e);
+                        var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                        checkEle[5].querySelector('.e-frame').dispatchEvent(e);
+                        var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                        checkEle[5].querySelector('.e-frame').dispatchEvent(e);
+                        expect(treeObj.checkedNodes.length).toBe(2);
+                        expect(treeObj.getAllCheckedNodes().length).toBe(2);
+                        var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                        checkEle[9].querySelector('.e-frame').dispatchEvent(e);
+                        var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                        checkEle[9].querySelector('.e-frame').dispatchEvent(e);
+                        var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                        checkEle[9].querySelector('.e-frame').dispatchEvent(e);
+                        expect(treeObj.checkedNodes.length).toBe(3);
+                        expect(treeObj.getAllCheckedNodes().length).toBe(3);
+                        var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                        checkEle[4].querySelector('.e-frame').dispatchEvent(e);
+                        var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                        checkEle[4].querySelector('.e-frame').dispatchEvent(e);
+                        var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                        checkEle[4].querySelector('.e-frame').dispatchEvent(e);
+                        expect(treeObj.checkedNodes.length).toBe(6);
+                        expect(treeObj.getAllCheckedNodes().length).toBe(6);
+                        var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+                        checkEle[4].querySelector('.e-frame').dispatchEvent(e);
+                        var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+                        checkEle[4].querySelector('.e-frame').dispatchEvent(e);
+                        var e = new MouseEvent("click", { view: window, bubbles: true, cancelable: true });
+                        checkEle[4].querySelector('.e-frame').dispatchEvent(e);
+                        expect(treeObj.checkedNodes.length).not.toBe(0);
+                        expect(treeObj.getAllCheckedNodes().length).not.toBe(0);
+                        expect(treeObj.checkedNodes.length).toBe(2);
+                        expect(treeObj.getAllCheckedNodes().length).toBe(2);
+                        done();
+                    }, 100);
+                });
+
+                it('getAllCheckedNodes method testing with selection via programmatically', (done: Function) => {
+                    treeObj = new TreeView({
+                        fields: { dataSource: hierarchicalData7, id: "code", text: "name", child: "countries" },
+                        showCheckBox: true
+                    }, '#tree1');
+                    jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                    setTimeout(function() {
+                        treeObj.checkedNodes = ["NGA", "CHN", "DNK"];
+                        treeObj.dataBind();
+                        expect(treeObj.checkedNodes.length).toBe(3);
+                        expect(treeObj.getAllCheckedNodes().length).toBe(3);
+                        treeObj.checkAll(['AS'])
+                        expect(treeObj.checkedNodes.length).toBe(6);
+                        expect(treeObj.getAllCheckedNodes().length).toBe(6);
+                        treeObj.uncheckAll(['AS'])
+                        expect(treeObj.checkedNodes.length).toBe(2);
+                        expect(treeObj.getAllCheckedNodes().length).toBe(2);
+                        expect(treeObj.checkedNodes[0]).toBe("NGA");
+                        expect(treeObj.checkedNodes[1]).toBe("DNK");
                         done();
                     }, 100);
                 });

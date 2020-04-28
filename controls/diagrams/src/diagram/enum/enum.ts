@@ -199,7 +199,7 @@ export type BranchTypes =
     /**
      * SubLeft - Sets the branch type as SubLeft
      */
-   'SubLeft' |
+    'SubLeft' |
     /**
      * SubRight - Sets the branch type as SubRight
      */
@@ -207,7 +207,7 @@ export type BranchTypes =
     /**
      * Root - Sets the branch type as Root
      */
-    'Root' ;
+    'Root';
 
 /**
  * Defines how the first segments have to be defined in a layout
@@ -2245,9 +2245,11 @@ export enum DiagramAction {
     /** Use to prevent the z order on dragging the diagram elements */
     PreventZIndexOnDragging = 1 << 13,
     /** Indicates whether group dragging has been activated */
-    isGroupDragging  = 1 << 14,
+    isGroupDragging = 1 << 14,
     /** Indicates whether drag is initiated by mouse  */
-    DragUsingMouse  = 1 << 15
+    DragUsingMouse = 1 << 15,
+    /** Indicates whether decorator property is changed or not */
+    DecoratorPropertyChange = 1 << 16
 }
 /** @private */
 export type DiagramHistoryAction = 'AddNodeToLane';
@@ -2275,7 +2277,9 @@ export enum RealAction {
     /** Indicates when the diagram is scrolled vertical using scroll bar */
     vScrollbarMoved = 1 << 5,
     /** Indicates whether animation happens or not  */
-    AnimationClick  = 1 << 6
+    AnimationClick = 1 << 6,
+    /** Enable the group action */
+    EnableGroupAction = 1 << 7
 }
 
 /** @private */

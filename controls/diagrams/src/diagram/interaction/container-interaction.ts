@@ -406,7 +406,8 @@ export function moveChildInStack(sourceNode: Node, target: Node, diagram: Diagra
             sourceParent.wrapper.children.splice(value, 1);
         }
     }
-    if (target && target.parentId && (obj as Node).parentId && action === 'Drag' && sourceParent.container.type === 'Stack') {
+    if (target && target.parentId && (obj as Node).parentId && action === 'Drag' &&
+        sourceParent.container && sourceParent.container.type === 'Stack') {
         let targetIndex: number = parent.wrapper.children.indexOf(target.wrapper);
         let sourceIndex: number = parent.wrapper.children.indexOf(obj.wrapper);
         let undoElement: StackEntryObject = {

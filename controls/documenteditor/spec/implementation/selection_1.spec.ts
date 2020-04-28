@@ -163,6 +163,8 @@ describe('Selection Based on client Coordinated validation', () => {
     (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
     (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
     (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+    editor.width='1000px';
+    editor.height='600px';
     editor.appendTo('#container');
   });
   afterAll((done) => {

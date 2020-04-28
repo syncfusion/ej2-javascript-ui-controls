@@ -262,6 +262,9 @@ var DialogSettings = /** @class */ (function (_super) {
     __decorate$3([
         sf.base.Property([])
     ], DialogSettings.prototype, "fields", void 0);
+    __decorate$3([
+        sf.base.Property(null)
+    ], DialogSettings.prototype, "model", void 0);
     return DialogSettings;
 }(sf.base.ChildProperty));
 
@@ -891,6 +894,7 @@ var Crud = /** @class */ (function () {
         };
         this.parent.trigger(actionBegin, args, function (addArgs) {
             if (!addArgs.cancel) {
+                _this.parent.showSpinner();
                 var promise = null;
                 var modifiedData = [];
                 if (_this.parent.cardSettings.priority) {
@@ -937,6 +941,7 @@ var Crud = /** @class */ (function () {
         };
         this.parent.trigger(actionBegin, args, function (updateArgs) {
             if (!updateArgs.cancel) {
+                _this.parent.showSpinner();
                 var promise = null;
                 if (_this.parent.cardSettings.priority) {
                     var modifiedData = [];
@@ -991,6 +996,7 @@ var Crud = /** @class */ (function () {
         };
         this.parent.trigger(actionBegin, args, function (deleteArgs) {
             if (!deleteArgs.cancel) {
+                _this.parent.showSpinner();
                 var promise = null;
                 if (editParms.deletedRecords.length > 1) {
                     if (!_this.parent.isBlazorRender()) {
@@ -1209,8 +1215,8 @@ var DragAndDrop = /** @class */ (function () {
                 ? true : false;
             if (keys.length === 1 || isDrag) {
                 if (target.classList.contains(CARD_CLASS)) {
-                    var insertClone = (sf.base.isNullOrUndefined(target.previousElementSibling) &&
-                        ((this.dragObj.pageY - target.offsetTop) / 2) < 25) ? 'beforebegin' : 'afterend';
+                    var insertClone = (sf.base.isNullOrUndefined(target.previousElementSibling) && (this.dragObj.pageY -
+                        (this.parent.element.offsetTop + target.offsetTop)) < (target.offsetHeight / 2)) ? 'beforebegin' : 'afterend';
                     target.insertAdjacentElement(insertClone, this.dragObj.targetClone);
                 }
                 else if (target.classList.contains(CONTENT_CELLS_CLASS) && !sf.base.closest(target, '.' + SWIMLANE_ROW_CLASS)) {
@@ -1593,16 +1599,16 @@ var KanbanDialog = /** @class */ (function () {
             cssClass: DIALOG_CLASS,
             enableRtl: this.parent.enableRtl,
             header: this.parent.localeObj.getConstant(action === 'Add' ? 'addTitle' : action === 'Edit' ? 'editTitle' : 'deleteTitle'),
-            height: this.parent.isAdaptive ? '100%' : 'auto',
+            height: 'auto',
             isModal: true,
-            showCloseIcon: this.parent.isAdaptive ? false : true,
+            showCloseIcon: true,
             target: document.body,
             width: (action === 'Delete') ? 400 : 350,
             visible: false,
             beforeOpen: this.onBeforeDialogOpen.bind(this),
             beforeClose: this.onBeforeDialogClose.bind(this)
         };
-        this.dialogObj = new sf.popups.Dialog(dialogModel, this.element);
+        this.dialogObj = new sf.popups.Dialog(sf.base.extend(dialogModel, action !== 'Delete' ? (this.parent.dialogSettings.model || {}) : {}), this.element);
         if (action !== 'Delete') {
             this.applyFormValidation();
         }
@@ -1648,7 +1654,7 @@ var KanbanDialog = /** @class */ (function () {
         var fields = this.parent.dialogSettings.fields;
         if (fields.length === 0) {
             fields = [
-                { text: 'ID', key: this.parent.cardSettings.headerField, type: 'Input' },
+                { text: 'ID', key: this.parent.cardSettings.headerField, type: 'TextBox' },
                 { key: this.parent.keyField, type: 'DropDown' },
                 { key: this.parent.cardSettings.contentField, type: 'TextArea' }
             ];
@@ -1718,16 +1724,8 @@ var KanbanDialog = /** @class */ (function () {
                 break;
             case 'TextBox':
                 controlObj = new sf.inputs.TextBox({ value: fieldValue });
-                break;
-            case 'Input':
-                if (fieldValue) {
-                    element.value = fieldValue;
-                }
                 if (fieldValue && this.parent.cardSettings.headerField === field.key) {
-                    sf.inputs.Input.createInput({ element: element, properties: { enabled: false } });
-                }
-                else {
-                    sf.inputs.Input.createInput({ element: element });
+                    controlObj.enabled = false;
                 }
                 break;
             case 'TextArea':
@@ -2034,7 +2032,9 @@ var Keyboard = /** @class */ (function () {
             case 'delete':
                 var className = '.' + CARD_CLASS + '.' + CARD_SELECTION_CLASS;
                 var selectedCards = [].slice.call(this.parent.element.querySelectorAll(className));
-                selectedCards.forEach(function (selected) { return _this.parent.crudModule.deleteCard(_this.parent.getCardDetails(selected)); });
+                var selectedCardsData_1 = [];
+                selectedCards.forEach(function (selected) { selectedCardsData_1.push(_this.parent.getCardDetails(selected)); });
+                this.parent.crudModule.deleteCard(selectedCardsData_1);
                 break;
         }
     };
@@ -3639,7 +3639,7 @@ var Kanban = /** @class */ (function (_super) {
      * @deprecated
      * @method openDialog
      * @param {CurrentAction} action Defines the action for which the dialog needs to be opened such as either for new card creation or
-     *  editing of existing cards or deletion of existing card. The applicable action names are `Add`, `Edit` and `Delete`.
+     *  editing of existing cards. The applicable action names are `Add` and `Edit`.
      * @param {Object} data It can be card data.
      * @returns {void}
      */

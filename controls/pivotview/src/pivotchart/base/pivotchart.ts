@@ -66,6 +66,9 @@ export class PivotChart {
                 (!isNullOrUndefined(parent.olapEngineModule.colMeasurePos) || !isNullOrUndefined(parent.olapEngineModule.rowMeasurePos)))
             : parent.dataSourceSettings.values.length > 0;
         if (isDataAvail) {
+            if (!this.parent.chart && this.parent.element.querySelector('.e-chart')) {
+                remove(this.parent.element.querySelector('#' + this.parent.element.id + '_chart'));
+            }
             if (this.chartSettings.enableMultiAxis) {
                 this.measureList = this.dataSourceSettings.values.map((item) => { return item.name; });
             } else {
@@ -90,6 +93,38 @@ export class PivotChart {
             this.parent.chart.refresh();
             return;
         } else {
+            if (!this.parent.element.querySelector('#' + this.parent.element.id + '_chart')) {
+                if (this.parent.displayOption.view === 'Both') {
+                    this.parent.displayOption.primary === 'Chart' ?
+                        (this.parent.element.insertBefore(
+                            (createElement('div', {
+                                className: cls.PIVOTCHART, id: this.parent.element.id + '_chart'
+                            })), this.parent.element.querySelector('.' + cls.GRID_CLASS))) :
+                        (this.parent.element.appendChild(createElement('div', {
+                            className: cls.PIVOTCHART, id: this.parent.element.id + '_chart'
+                        })));
+                }
+                else {
+                    this.parent.element.appendChild(createElement('div', {
+                        className: cls.PIVOTCHART, id: this.parent.element.id + '_chart'
+                    }));
+                }
+                let width: string = this.parent.width.toString();
+                if (this.parent.showToolbar && this.parent.grid) {
+                    width = this.parent.getGridWidthAsNumber().toString();
+                }
+                let height: string | number = this.getChartHeight();
+                let tmpChart: Chart = new Chart({ width: width, height: height });
+                tmpChart.appendTo('#' + this.parent.element.id + '_chart');
+                if (this.parent.showToolbar) {
+                    if (this.parent.displayOption.view === 'Both' && this.parent.currentView === 'Chart') {
+                        this.parent.grid.element.style.display = 'none';
+                    }
+                    if (this.parent.currentView !== 'Chart') {
+                        (this.parent.element.querySelector('#' + this.parent.element.id + '_chart') as HTMLElement).style.display = 'none';
+                    }
+                }
+            }
             this.parent.notify(events.contentReady, {});
             return;
         }
@@ -802,7 +837,7 @@ export class PivotChart {
         }
     }
 
-    private tooltipTemplateFn() : Function {
+    private tooltipTemplateFn(): Function {
         return this.templateFn;
     }
     private loaded(args: ILoadedEventArgs): void {

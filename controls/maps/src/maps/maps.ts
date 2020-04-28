@@ -689,7 +689,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     /** @private */
     public applyZoomReset: boolean = false;
     /** @private */
-    public markerClusterExpandCheck: boolean = false;
+  public markerClusterExpandCheck: boolean = false;
+  /** @private */
+  public markerClusterExpand: boolean = false;
 
     /**
      * Constructor for creating the widget

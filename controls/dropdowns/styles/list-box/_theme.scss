@@ -1,4 +1,16 @@
 @include export-module('listbox-theme') {
+  .e-small .e-listbox-wrapper.e-filter-list .e-list-parent {
+    height: $listbox-filter-small-height;
+  }
+
+  .e-bigger .e-listbox-wrapper.e-filter-list .e-list-parent {
+    height: $listbox-filter-bigger-height;
+  }
+
+  .e-small.e-bigger .e-listbox-wrapper.e-filter-list .e-list-parent {
+    height: $listbox-filter-bigger-small-height;
+  }
+
   #{&}.e-listbox-wrapper {
     border: 1px solid $listbox-border-color;
     font-family: $listview-font-family;
@@ -9,6 +21,10 @@
         border-color: $listview-header-border;
         color: $listview-header-text-color;
         font-size: $listview-header-font-size;
+      }
+
+      &.e-filter-list .e-list-parent {
+        height: $listbox-filter-height;
       }
 
       & .e-icons {

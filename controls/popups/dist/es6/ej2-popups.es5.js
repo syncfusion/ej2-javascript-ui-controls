@@ -1556,7 +1556,7 @@ function resizeEast(e) {
 }
 /* istanbul ignore next */
 function setMinHeight(minimumHeight) {
-    return minimumHeight;
+    minHeight = minimumHeight;
 }
 function removeResize() {
     var handlers = targetElement.querySelectorAll('.' + RESIZE_HANDLER);
@@ -1768,7 +1768,8 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         }
         var headerHeight = parseInt(computedHeaderHeight.slice(0, computedHeaderHeight.indexOf('p')), 10);
         var footerHeight = parseInt(computedFooterHeight.slice(0, computedFooterHeight.indexOf('p')), 10);
-        return (setMinHeight(headerHeight + 30 + footerHeight));
+        setMinHeight(headerHeight + 30 + footerHeight);
+        return (headerHeight + 30 + footerHeight);
     };
     Dialog.prototype.onResizeStart = function (args, dialogObj) {
         dialogObj.trigger('resizeStart', args);
@@ -2569,10 +2570,13 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         if (this.dragObj) {
             this.dragObj.dragArea = this.targetEle;
         }
+        this.setMaxHeight();
         if (this.isModal) {
             this.updateIsModal();
         }
-        this.setMaxHeight();
+        if (this.enableResize) {
+            this.setResize();
+        }
     };
     Dialog.prototype.updateIsModal = function () {
         this.element.setAttribute('aria-modal', this.isModal ? 'true' : 'false');

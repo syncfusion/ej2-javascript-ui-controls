@@ -20,14 +20,15 @@ export function highlightSearch(element: HTMLElement, query: string, ignoreCase:
 function findTextNode(element: HTMLElement, pattern: RegExp, isBlazor?: boolean): void {
   for (let index: number = 0; element.childNodes && (index < element.childNodes.length); index++) {
     if (element.childNodes[index].nodeType === 3) {
-      if (isBlazor) {
-        element.innerHTML = element.getAttribute('data-value').replace(pattern, '<span class="e-highlight">$1</span>');
-      } else {
-        element.innerHTML = element.innerHTML.replace(pattern, '<span class="e-highlight">$1</span>');
-      }
-      break;
+        element = (isBlazor && element.classList.contains('e-highlight')) ? element.parentElement : element;
+        if (isBlazor && element.getAttribute('data-value')) {
+            element.innerHTML = element.getAttribute('data-value').replace(pattern, '<span class="e-highlight">$1</span>');
+        } else {
+            element.innerHTML = element.innerHTML.replace(pattern, '<span class="e-highlight">$1</span>');
+        }
+        break;
     } else {
-      findTextNode(element.childNodes[index] as HTMLElement, pattern);
+      findTextNode(element.childNodes[index] as HTMLElement, pattern, isBlazor);
     }
   }
 }

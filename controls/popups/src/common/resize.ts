@@ -410,8 +410,8 @@ function resizeEast(e: any): void {
 }
 
 /* istanbul ignore next */
-export function setMinHeight (minimumHeight: number): number {
-     return minimumHeight;
+export function setMinHeight (minimumHeight: number): void {
+    minHeight = minimumHeight;
 }
 
 export function removeResize(): void {

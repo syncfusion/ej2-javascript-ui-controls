@@ -151,7 +151,7 @@ export class VirtualTreeContentRenderer extends VirtualContentRenderer {
         }
         this.startIndex = lastIndex - this.parent.getRows().length;
         this.endIndex = lastIndex;
-        this.translateY = scrollArgs.offset.top;
+        this.translateY = this.getTranslateY(scrollArgs.offset.top, content.getBoundingClientRect().height);
       }
       if ((downScroll && (scrollArgs.offset.top < (this.parent.getRowHeight() * this.totalRecords)))
           || (upScroll)) {

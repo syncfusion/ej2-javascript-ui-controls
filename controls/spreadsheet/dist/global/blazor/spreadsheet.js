@@ -17121,12 +17121,16 @@ var VirtualScroll = /** @class */ (function () {
     };
     VirtualScroll.prototype.updateVTrackWidth = function (args) {
         if (args.colIdx >= this.parent.viewport.leftIndex && args.colIdx <= this.parent.viewport.rightIndex) {
-            var hdrVTrack = this.parent.getColumnHeaderContent().getElementsByClassName('e-virtualtrack')[0];
-            hdrVTrack.style.width = parseInt(hdrVTrack.style.width, 10) + args.threshold + 'px';
+            if (this.parent.getActiveSheet().showHeaders) {
+                var hdrVTrack = this.parent.getColumnHeaderContent().getElementsByClassName('e-virtualtrack')[0];
+                hdrVTrack.style.width = parseInt(hdrVTrack.style.width, 10) + args.threshold + 'px';
+            }
             var cntVTrack = this.parent.getMainContent().getElementsByClassName('e-virtualtrack')[0];
             cntVTrack.style.width = parseInt(cntVTrack.style.width, 10) + args.threshold + 'px';
-            var hdrColumn = this.parent.getColumnHeaderContent().getElementsByClassName('e-virtualable')[0];
-            hdrColumn.style.width = parseInt(hdrColumn.style.width, 10) + args.threshold + 'px';
+            if (this.parent.getActiveSheet().showHeaders) {
+                var hdrColumn = this.parent.getColumnHeaderContent().getElementsByClassName('e-virtualable')[0];
+                hdrColumn.style.width = parseInt(hdrColumn.style.width, 10) + args.threshold + 'px';
+            }
             var cntColumn = this.parent.getMainContent().getElementsByClassName('e-virtualable')[0];
             cntColumn.style.width = parseInt(cntColumn.style.width, 10) + args.threshold + 'px';
         }
@@ -17962,10 +17966,12 @@ var Resize = /** @class */ (function () {
         var mainContent = this.parent.getMainContent();
         var oldValue = isCol ? getColumnWidth(this.parent.getActiveSheet(), idx) + "px" :
             getRowHeight(this.parent.getActiveSheet(), idx) + "px";
-        var headerTable = isCol ? this.parent.getColHeaderTable() : this.parent.getRowHeaderTable();
         var contentClone = [];
         var contentTable = mainContent.getElementsByClassName('e-content-table')[0];
-        var headerRow = headerTable.getElementsByTagName('tr');
+        if (this.parent.getActiveSheet().showHeaders) {
+            var headerTable = isCol ? this.parent.getColHeaderTable() : this.parent.getRowHeaderTable();
+            var headerRow = headerTable.getElementsByTagName('tr');
+        }
         if (isCol) {
             var rowLength = sheet.rows.length;
             for (var rowIdx = 0; rowIdx < rowLength; rowIdx++) {
@@ -18270,7 +18276,19 @@ var Resize = /** @class */ (function () {
         }
     };
     Resize.prototype.resizeStart = function (idx, viewportIdx, value, isCol, isFit, prevData) {
-        setResize(viewportIdx, value, isCol, this.parent);
+        if (this.parent.getActiveSheet().showHeaders) {
+            setResize(viewportIdx, value, isCol, this.parent);
+        }
+        else {
+            if (isCol) {
+                var curEle = this.parent.element.getElementsByClassName('e-sheet-content')[0].getElementsByTagName('col')[viewportIdx];
+                curEle.style.width = value;
+            }
+            else {
+                var curEle = this.parent.element.getElementsByClassName('e-sheet-content')[0].getElementsByTagName('tr')[viewportIdx];
+                curEle.style.height = value;
+            }
+        }
         var action = isFit ? 'resizeToFit' : 'resize';
         var eventArgs;
         var isAction;
@@ -28781,8 +28799,9 @@ var SheetRender = /** @class */ (function () {
         var sheet = this.parent.getActiveSheet();
         if (sheet.showHeaders) {
             if (this.parent.scrollSettings.enableVirtualization) {
-                var startIndex = [this.parent.viewport.topIndex, this.parent.viewport.leftIndex];
-                this.renderHeaders([startIndex[0], startIndex[0] + this.parent.viewport.rowCount + (this.parent.getThreshold('row') * 2)], [startIndex[1], startIndex[1] + this.parent.viewport.colCount + (this.parent.getThreshold('col') * 2)]);
+                var indexes = [this.parent.viewport.topIndex, this.parent.viewport.leftIndex,
+                    this.parent.viewport.bottomIndex, this.parent.viewport.rightIndex];
+                this.renderHeaders([indexes[0], indexes[2]], [indexes[1], indexes[3]]);
             }
             else {
                 this.renderHeaders([0, sheet.rowCount - 1], [0, sheet.colCount - 1]);
@@ -28802,6 +28821,7 @@ var SheetRender = /** @class */ (function () {
     };
     SheetRender.prototype.renderHeaders = function (rowIndexes, colIndexes) {
         var _this = this;
+        var sheet = this.parent.getActiveSheet();
         this.initHeaderPanel();
         var cFrag = document.createDocumentFragment();
         var rFrag = document.createDocumentFragment();
@@ -28816,16 +28836,20 @@ var SheetRender = /** @class */ (function () {
         cTHead.appendChild(cRow);
         var row;
         for (var i = colIndexes[0]; i <= colIndexes[1]; i++) {
-            cRow.appendChild(this.cellRenderer.renderColHeader(i));
+            if (!isHiddenCol(sheet, i)) {
+                cRow.appendChild(this.cellRenderer.renderColHeader(i));
+            }
         }
         var colGroupWidth = getColGroupWidth(rowIndexes[1]);
         if (this.colGroupWidth !== colGroupWidth) {
             this.updateLeftColGroup(colGroupWidth, rowHdrEle);
         }
         for (var i = rowIndexes[0]; i <= rowIndexes[1]; i++) {
-            row = this.rowRenderer.render(i, true);
-            row.appendChild(this.cellRenderer.renderRowHeader(i));
-            rTBody.appendChild(row);
+            if (!isHiddenRow(sheet, i)) {
+                row = this.rowRenderer.render(i, true);
+                row.appendChild(this.cellRenderer.renderRowHeader(i));
+                rTBody.appendChild(row);
+            }
         }
         getUpdateUsingRaf(function () {
             _this.getColHeaderTable().insertBefore(_this.getContentTable().querySelector('colgroup').cloneNode(true), cTHead);

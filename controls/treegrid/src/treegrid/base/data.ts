@@ -156,7 +156,7 @@ public isRemote(): boolean {
         this.hierarchyData = this.selfReferenceUpdate(selfData);
       }
       if (!Object.keys(this.hierarchyData).length) {
-        this.parent.flatData = <Object[]>(!(this.parent.dataSource instanceof DataManager) ? this.parent.dataSource : []);
+        this.parent.flatData = [];
       } else {
         this.createRecords(this.hierarchyData);
       }

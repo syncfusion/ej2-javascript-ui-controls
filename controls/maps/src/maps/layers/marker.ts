@@ -318,7 +318,7 @@ export class Marker {
         if (isNullOrUndefined(options)) {
             return;
         }
-        if ((options.clusterCollection.length > 0) && options.clusterCollection[0].isClusterSame) {
+        if ((options.clusterCollection.length > 0 && this.maps.markerClusterExpand)) {
             if (getElement(this.maps.element.id + '_mapsTooltip') &&
                 this.maps.mapsTooltipModule.tooltipTargetID.indexOf('_MarkerIndex_') > -1) {
                 removeElement(this.maps.element.id + '_mapsTooltip');
@@ -355,6 +355,7 @@ export class Marker {
       let markCollection: object[] = [];
         let clusterCollection: MarkerClusterData[] = [];
         let marker: MarkerSettingsModel;
+        this.maps.markerClusterExpand = layer.markerClusterSettings.allowClusterExpand;
         if (target.indexOf('_MarkerIndex_') > -1) {
             let markerIndex: number = parseInt(id[1].split('_MarkerIndex_')[1].split('_')[0], 10);
             let dataIndex: number = parseInt(id[1].split('_dataIndex_')[1].split('_')[0], 10);
@@ -370,27 +371,22 @@ export class Marker {
                     });
                 }
                 if ((target.indexOf('_cluster_') > -1)) {
-                    let textElement = document.getElementById(target.indexOf('_datalabel_') > -1 ? target : target + '_datalabel_' + target.split('_cluster_')[1]);
-                    let isClusterSame: boolean = false;
-                    if (+textElement.textContent === collection.length) {
-                        isClusterSame = true;
-                    } else {
-                        let clusterElement = document.getElementById(target.indexOf('_datalabel_') > -1 ? target.split('_datalabel_')[0] : target);
-                        let indexes: number[] = clusterElement.innerHTML.split(',').map(Number);
-                        collection = [];
-                        for (let i of indexes) {
-                            collection.push({ data: marker.dataSource[i], index: i });
-                            if (this.maps.isBlazor) { marker.dataSource[i]["text"] = "";}
-                            markCollection.push(marker.dataSource[i]);
-                        }
-                        isClusterSame = false;
-                    }
-                    clusterCollection.push(<MarkerClusterData>{
-                        data: collection, layerIndex: index, markerIndex: markerIndex,
-                        targetClusterIndex: +(target.split('_cluster_')[1].indexOf('_datalabel_') > -1 ? target.split('_cluster_')[1].split('_datalabel_')[0] : target.split('_cluster_')[1]),
-                        isClusterSame: isClusterSame
-                    });
-                }
+                  let isClusterSame: boolean = false;
+                  let clusterElement = document.getElementById(target.indexOf('_datalabel_') > -1 ? target.split('_datalabel_')[0] : target);
+                  let indexes: number[] = clusterElement.innerHTML.split(',').map(Number);
+                  collection = [];
+                  for (let i of indexes) {
+                      collection.push({ data: marker.dataSource[i], index: i });
+                      if (this.maps.isBlazor) { marker.dataSource[i]["text"] = "";}
+                      markCollection.push(marker.dataSource[i]);
+                  }
+                  isClusterSame = false;
+                  clusterCollection.push(<MarkerClusterData>{
+                      data: collection, layerIndex: index, markerIndex: markerIndex,
+                      targetClusterIndex: +(target.split('_cluster_')[1].indexOf('_datalabel_') > -1 ? target.split('_cluster_')[1].split('_datalabel_')[0] : target.split('_cluster_')[1]),
+                      isClusterSame: isClusterSame
+                  });
+              }
                 return { marker: marker, data: data, clusterCollection: clusterCollection, markCollection: markCollection };
             }
         }
@@ -427,7 +423,7 @@ export class Marker {
             return;
         }
         let options: { marker: MarkerSettingsModel, data: object, clusterCollection: MarkerClusterData[] } = this.getMarker(targetId);
-        if (options.clusterCollection[0].isClusterSame) {
+        if (this.maps.markerClusterExpand) {
             (e.target as Element).setAttribute('style', 'cursor: pointer');
         }
         if (isNullOrUndefined(options)) {

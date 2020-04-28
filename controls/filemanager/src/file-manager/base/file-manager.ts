@@ -1043,6 +1043,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     }
 
     private resizeHandler(): void {
+        this.adjustHeight();
         this.notify(events.resizeEnd, {});
     }
 

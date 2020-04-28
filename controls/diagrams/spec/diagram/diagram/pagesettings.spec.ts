@@ -452,6 +452,10 @@ describe('PageSettings boundary constraints', () => {
             expect(diagram.selectedItems.nodes[0].wrapper.bounds.right != 615
                 || diagram.selectedItems.nodes[0].wrapper.bounds.right != 620).toBe(true);
             done();
+            mouseEvents.dragAndDropEvent(diagramCanvas, 620, 50, 700, 100);
+            expect(diagram.selectedItems.nodes[0].wrapper.bounds.right != 615
+                || diagram.selectedItems.nodes[0].wrapper.bounds.right != 620).toBe(true);
+            done();
         });
         it('boundary constraints for rotate', (done: Function) => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');

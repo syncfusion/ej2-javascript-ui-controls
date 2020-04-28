@@ -31,4 +31,4 @@ export type ConstraintType = 'Column' | 'Swimlane';
 /**
  * Defines types used to specifies the Dialog Field Type.
  */
-export type DialogFieldType = 'String' | 'Numeric' | 'TextArea' | 'DropDown' | 'Input' | 'TextBox';
+export type DialogFieldType = 'TextBox'| 'DropDown' | 'Numeric' | 'TextArea';

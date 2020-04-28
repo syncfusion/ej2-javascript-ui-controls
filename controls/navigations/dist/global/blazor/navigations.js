@@ -2263,13 +2263,18 @@ var MenuBase = /** @class */ (function (_super) {
     };
     /**
      * This method is used to get the index of the menu item in the Menu based on the argument.
-     * @param item - item be passed to get the index.
-     * @param id - id to be passed to update the item.
+     * @param item - item be passed to get the index | id to be passed to get the item index.
      * @param isUniqueId - Set `true` if it is a unique id.
      * @returns void
      */
-    MenuBase.prototype.getItemIndex = function (item, id, isUniqueId) {
-        var idx = id ? id : item.id;
+    MenuBase.prototype.getItemIndex = function (item, isUniqueId) {
+        var idx;
+        if (typeof item === 'string') {
+            idx = item;
+        }
+        else {
+            idx = item.id;
+        }
         var isText = (isUniqueId === false) ? false : true;
         var navIdx = this.getIndex(idx, isText);
         return navIdx;
@@ -2285,26 +2290,13 @@ var MenuBase = /** @class */ (function (_super) {
         var idx = id ? id : item.id;
         var isText = (isUniqueId === false) ? false : true;
         var navIdx = this.getIndex(idx, isText);
-        var items = this.items;
-        switch (navIdx.length) {
-            case 1:
-                items[navIdx[0]].iconCss = item.iconCss;
-                items[navIdx[0]].id = item.id;
-                items[navIdx[0]].text = item.text;
-                items[navIdx[0]].url = item.url;
-                items[navIdx[0]].separator = item.separator;
-                items[navIdx[0]].items = item.items;
-                break;
-            case 2:
-                items[navIdx[0]].items[navIdx[1]] = item;
-                break;
-            case 3:
-                items[navIdx[0]].items[navIdx[1]].items[navIdx[2]] = item;
-                break;
-            case 4:
-                items[navIdx[0]].items[navIdx[1]].items[navIdx[2]].items[navIdx[3]] = item;
-                break;
-        }
+        var newItem = this.getItem(navIdx);
+        newItem.iconCss = item.iconCss;
+        newItem.id = item.id;
+        newItem.text = item.text;
+        newItem.url = item.url;
+        newItem.separator = item.separator;
+        newItem.items = item.items;
     };
     MenuBase.prototype.getItem = function (navIdx) {
         navIdx = navIdx.slice();
@@ -11118,7 +11110,7 @@ var TreeView = /** @class */ (function (_super) {
                         this.parentNodeCheck.splice(this.parentNodeCheck.indexOf(checkedChild), 1);
                     }
                 }
-                else if (this.checkedNodes.indexOf(parent) === -1 && !doCheck) {
+                else if (this.checkedNodes.indexOf(parent) === -1 && this.checkedNodes.indexOf(checkedChild) !== -1 && !doCheck) {
                     this.checkedNodes.splice(this.checkedNodes.indexOf(checkedChild), 1);
                     if (isCheck === 'true') {
                         this.updateField(this.treeData, this.fields, checkedChild, 'isChecked', null);

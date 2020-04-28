@@ -1577,7 +1577,7 @@ var DataManipulation = /** @class */ (function () {
                 this.hierarchyData = this.selfReferenceUpdate(selfData);
             }
             if (!Object.keys(this.hierarchyData).length) {
-                this.parent.flatData = (!(this.parent.dataSource instanceof sf.data.DataManager) ? this.parent.dataSource : []);
+                this.parent.flatData = [];
             }
             else {
                 this.createRecords(this.hierarchyData);
@@ -3036,6 +3036,7 @@ var TreeGrid = /** @class */ (function (_super) {
         this.extendedGridEvents();
         this.extendedGridActionEvents();
         this.extendedGridEditEvents();
+        this.extendedGridBatchEvents();
         this.bindGridDragEvents();
         this.bindCallBackEvents();
     };
@@ -3089,9 +3090,8 @@ var TreeGrid = /** @class */ (function (_super) {
     TreeGrid.prototype.bindCallBackEvents = function () {
         var _this = this;
         var beginEdit$$1;
-        var name = 'name';
         if (sf.base.isBlazor() && this.isServerRendered) {
-            if (!sf.base.isNullOrUndefined(this.grid.beginEdit) && this.grid.beginEdit[name] === 'bound triggerEJEvents') {
+            if (!sf.base.isNullOrUndefined(this.grid.beginEdit)) {
                 beginEdit$$1 = this.grid.beginEdit;
             }
         }
@@ -3114,7 +3114,7 @@ var TreeGrid = /** @class */ (function (_super) {
         };
         this.grid.beginEdit = function (args) {
             if (sf.base.isBlazor() && _this.isServerRendered) {
-                if (beginEdit$$1 && typeof beginEdit$$1 === 'function' && beginEdit$$1[name] === 'bound triggerEJEvents') {
+                if (beginEdit$$1 && typeof beginEdit$$1 === 'function') {
                     beginEdit$$1.apply(_this, [args]);
                 }
             }
@@ -3132,12 +3132,11 @@ var TreeGrid = /** @class */ (function (_super) {
         var localobserver = 'localObserver';
         var cellEdit$$1;
         var cellSave$$1;
-        var name = 'name';
         if (sf.base.isBlazor() && this.isServerRendered) {
-            if (!sf.base.isNullOrUndefined(this.grid.cellEdit) && this.grid.cellEdit[name] === 'bound triggerEJEvents') {
+            if (!sf.base.isNullOrUndefined(this.grid.cellEdit)) {
                 cellEdit$$1 = this.grid.cellEdit;
             }
-            if (!sf.base.isNullOrUndefined(this.grid.cellSave) && this.grid.cellSave[name] === 'bound triggerEJEvents') {
+            if (!sf.base.isNullOrUndefined(this.grid.cellSave)) {
                 cellSave$$1 = this.grid.cellSave;
             }
         }
@@ -3157,7 +3156,7 @@ var TreeGrid = /** @class */ (function (_super) {
         };
         this.grid.cellSave = function (args) {
             if (sf.base.isBlazor() && _this.isServerRendered) {
-                if (cellSave$$1 && typeof cellSave$$1 === 'function' && cellSave$$1[name] === 'bound triggerEJEvents') {
+                if (cellSave$$1 && typeof cellSave$$1 === 'function') {
                     cellSave$$1.apply(_this, [args]);
                 }
             }
@@ -3186,7 +3185,7 @@ var TreeGrid = /** @class */ (function (_super) {
         };
         this.grid.cellEdit = function (args) {
             if (sf.base.isBlazor() && _this.isServerRendered) {
-                if (cellEdit$$1 && typeof cellEdit$$1 === 'function' && cellEdit$$1[name] === 'bound triggerEJEvents') {
+                if (cellEdit$$1 && typeof cellEdit$$1 === 'function') {
                     cellEdit$$1.apply(_this, [args]);
                 }
             }
@@ -3196,11 +3195,25 @@ var TreeGrid = /** @class */ (function (_super) {
             _this.notify(cellEdit, args);
             return promise;
         };
+    };
+    TreeGrid.prototype.extendedGridBatchEvents = function () {
+        var _this = this;
+        var beforeBatchSave$$1;
+        if (sf.base.isBlazor() && this.isServerRendered) {
+            if (!sf.base.isNullOrUndefined(this.grid.beforeBatchSave)) {
+                beforeBatchSave$$1 = this.grid.beforeBatchSave;
+            }
+        }
         this.grid.batchAdd = function (args) {
             _this.trigger(batchAdd, args);
             _this.notify(batchAdd, args);
         };
         this.grid.beforeBatchSave = function (args) {
+            if (sf.base.isBlazor() && _this.isServerRendered) {
+                if (beforeBatchSave$$1 && typeof beforeBatchSave$$1 === 'function') {
+                    beforeBatchSave$$1.apply(_this, [args]);
+                }
+            }
             _this.trigger(beforeBatchSave, args);
             _this.notify(beforeBatchSave, args);
         };
@@ -3273,9 +3286,8 @@ var TreeGrid = /** @class */ (function (_super) {
     TreeGrid.prototype.extendedGridActionEvents = function () {
         var _this = this;
         var actionComplete$$1;
-        var name = 'name';
         if (sf.base.isBlazor() && this.isServerRendered) {
-            if (!sf.base.isNullOrUndefined(this.grid.actionComplete) && this.grid.actionComplete[name] === 'bound triggerEJEvents') {
+            if (!sf.base.isNullOrUndefined(this.grid.actionComplete)) {
                 actionComplete$$1 = this.grid.actionComplete;
             }
         }
@@ -3315,7 +3327,6 @@ var TreeGrid = /** @class */ (function (_super) {
             return callBackPromise;
         };
         this.grid.actionComplete = function (args) {
-            var name = 'name';
             if (sf.base.isBlazor() && _this.isServerRendered) {
                 var rows = _this.getRows();
                 for (var i = 0; i < rows.length; i++) {
@@ -3335,7 +3346,7 @@ var TreeGrid = /** @class */ (function (_super) {
                             sf.base.addClass([expandicon], 'e-treegridexpand');
                     }
                 }
-                if (actionComplete$$1 && typeof actionComplete$$1 === 'function' && actionComplete$$1[name] === 'bound triggerEJEvents') {
+                if (actionComplete$$1 && typeof actionComplete$$1 === 'function') {
                     actionComplete$$1.apply(_this, [args]);
                 }
             }
@@ -3941,7 +3952,9 @@ var TreeGrid = /** @class */ (function (_super) {
      */
     TreeGrid.prototype.updateRow = function (index, data) {
         if (this.grid.editModule) {
-            this.grid.editModule.updateRow(index, data);
+            var griddata = this.grid.getCurrentViewRecords()[index];
+            sf.base.extend(griddata, data);
+            this.grid.editModule.updateRow(index, griddata);
         }
     };
     /**
@@ -9579,7 +9592,7 @@ var VirtualTreeContentRenderer = /** @class */ (function (_super) {
             }
             this.startIndex = lastIndex - this.parent.getRows().length;
             this.endIndex = lastIndex;
-            this.translateY = scrollArgs.offset.top;
+            this.translateY = this.getTranslateY(scrollArgs.offset.top, content.getBoundingClientRect().height);
         }
         if ((downScroll && (scrollArgs.offset.top < (this.parent.getRowHeight() * this.totalRecords)))
             || (upScroll)) {

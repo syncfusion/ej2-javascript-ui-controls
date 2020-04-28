@@ -1,5 +1,5 @@
 // tslint:disable-next-line:max-line-length
-import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Event, ModuleDeclaration, ChildProperty, isBlazor, classList, Complex } from '@syncfusion/ej2-base';
+import { Component, Property, INotifyPropertyChanged, NotifyPropertyChanges, Event, ModuleDeclaration, ChildProperty, isBlazor, classList, Complex, formatUnit } from '@syncfusion/ej2-base';
 import { isNullOrUndefined, L10n, EmitType, Browser } from '@syncfusion/ej2-base';
 import { Save } from '@syncfusion/ej2-file-utils';
 // tslint:disable-next-line:max-line-length
@@ -264,7 +264,18 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
      * @private
      */
     public spellCheckerModule: SpellChecker;
-
+    /**
+     * Defines the width of the DocumentEditor component 
+     * @default '100%'
+     */
+    @Property('100%')
+    public width: string;
+    /**
+     * Defines the height of the DocumentEditor component 
+     * @default '200px'
+     */
+    @Property('200px')
+    public height: string;
     /**
      * Sfdt Service URL
      * @default ''
@@ -798,13 +809,19 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         //pre render section
     }
     protected render(): void {
-        this.documentHelper.initializeComponents();
-        this.openBlank();
         if (!isNullOrUndefined(this.element)) {
             let container: HTMLElement = this.element;
             container.style.minHeight = '200px';
             container.style.minWidth = '200px';
+            if (this.height !== '') {
+                this.element.style.height = formatUnit(this.height);
+            }
+            if (this.width !== '') {
+                this.element.style.width = formatUnit(this.width);
+            }
         }
+        this.documentHelper.initializeComponents();
+        this.openBlank();
         this.renderComplete();
     }
     /**
@@ -885,6 +902,14 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     break;
                 case 'documentEditorSettings':
                     this.viewer.updateScrollBars();
+                    break;
+                case 'height':
+                    this.element.style.height = formatUnit(this.height);
+                    this.resize();
+                    break;
+                case 'width':
+                    this.element.style.width = formatUnit(this.width);
+                    this.resize();
                     break;
             }
         }

@@ -28,6 +28,8 @@ describe('Table Resize at simple case in table middle validation', () => {
         (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.width='1280px';
+        editor.height='500px';
         editor.appendTo('#container');
     });
     afterAll((done): void => {

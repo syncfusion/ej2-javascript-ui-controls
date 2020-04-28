@@ -2191,7 +2191,8 @@ let ChipList = class ChipList extends Component {
         this.wireEvent(true);
         this.rippleFunction();
         if (isBlazor()) {
-            let chipChildElement = this.element.querySelectorAll('.e-chip');
+            let chipChildElement = this.type === 'chip' ? this.element.querySelectorAll('.e-chip-text') :
+                this.element.querySelectorAll('.e-chip');
             for (let i = 0; i < chipChildElement.length; i++) {
                 if (chipChildElement[i] != null) {
                     detach(chipChildElement[i]);

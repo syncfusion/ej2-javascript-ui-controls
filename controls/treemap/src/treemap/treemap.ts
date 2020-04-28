@@ -419,6 +419,10 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     public isBlazor: boolean;
     /** @private */
     public levelSelection: string[] = [];
+    /** @private */
+    public legendId: string[] = [];
+    /** @private */
+    public selectionId: string;
     /**s
      * Constructor for TreeMap component.
      */
@@ -1308,6 +1312,25 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.treeMapHighlightModule) {
             removeShape(this.treeMapHighlightModule.shapeHighlightCollection, 'highlight');
             this.treeMapHighlightModule.highLightId = '';
+        }
+    }
+    /**
+     * This method is used to select or remove the selection of treemap item based on the provided selection settings.
+     */
+    public selectItem(levelOrder: string[], isSelected ?: boolean): void {
+        if (isNullOrUndefined(isSelected)) {
+            isSelected = true;
+        }
+        let levelOrderName: string = '';
+        for (let i: number = 0; i < levelOrder.length; i++) {
+            if (i !== levelOrder.length - 1) {
+                levelOrderName += levelOrder[i] + '#';
+            } else {
+                levelOrderName += levelOrder[i];
+            }
+        }
+        if (this.treeMapSelectionModule && this.selectionSettings.enable) {
+            this.treeMapSelectionModule.selectTreemapItem(levelOrderName, isSelected);
         }
     }
 

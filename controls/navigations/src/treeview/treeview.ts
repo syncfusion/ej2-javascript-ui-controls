@@ -3135,7 +3135,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     if (this.parentNodeCheck.indexOf(checkedChild) !== -1) {
                         this.parentNodeCheck.splice(this.parentNodeCheck.indexOf(checkedChild), 1);
                     }
-                } else if (this.checkedNodes.indexOf(parent) === -1 && !doCheck) {
+                } else if (this.checkedNodes.indexOf(parent) === -1 && this.checkedNodes.indexOf(checkedChild) !== -1 && !doCheck) {
                     this.checkedNodes.splice(this.checkedNodes.indexOf(checkedChild), 1);
                     if (isCheck === 'true') {
                         this.updateField(this.treeData, this.fields, checkedChild, 'isChecked', null);

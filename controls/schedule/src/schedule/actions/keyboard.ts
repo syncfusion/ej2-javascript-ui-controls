@@ -238,7 +238,7 @@ export class KeyboardInteraction {
     }
     private getSelectedElements(target: HTMLTableCellElement): CellClickEventArgs {
         let cellDetails: CellClickEventArgs;
-        if (this.selectedCells.length > 1) {
+        if (this.selectedCells.length > 1 && target.classList.contains(cls.SELECTED_CELL_CLASS)) {
             let start: CellClickEventArgs = this.parent.getCellDetails(this.selectedCells[0]);
             let end: CellClickEventArgs = this.parent.getCellDetails(this.selectedCells.slice(-1)[0]);
             start.endTime = end.endTime;
@@ -305,10 +305,12 @@ export class KeyboardInteraction {
         let target: HTMLTableCellElement = (targetCell instanceof Array) ? targetCell.slice(-1)[0] : targetCell;
         if (isMultiple) {
             let initialId: string;
+            let viewsOptions: string[] = ['Day', 'Week', 'WorkWeek', 'Month',
+                'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'];
             let args: SelectEventArgs = { element: targetCell, requestType: 'mousemove', allowMultipleRow: true };
             this.parent.trigger(event.select, args, (selectArgs: SelectEventArgs) => {
                 let allowMultipleRow: boolean = (!selectArgs.allowMultipleRow) || (!this.parent.allowMultiRowSelection);
-                if (allowMultipleRow && (['Day', 'Week', 'WorkWeek'].indexOf(this.parent.currentView) > -1)) {
+                if (allowMultipleRow && (viewsOptions.indexOf(this.parent.currentView) > -1)) {
                     target = target.parentElement.children[this.initialTarget.cellIndex] as HTMLTableCellElement;
                 }
                 let selectedCells: HTMLTableCellElement[] = this.getCells(this.isInverseTableSelect(), this.initialTarget, target);
@@ -541,11 +543,10 @@ export class KeyboardInteraction {
         if (selectedAppointments.length > 0) {
             target = this.getWorkCellFromAppointmentElement(selectedAppointments[selectedAppointments.length - 1]);
             this.parent.eventBase.removeSelectedAppointmentClass();
-            if (!target) {
-                return;
-            }
+            if (!target) { return; }
         }
-        if (target.classList.contains(cls.WORK_CELLS_CLASS)) {
+        if (target.classList.contains(cls.WORK_CELLS_CLASS) &&
+            ((e.target) as HTMLTableCellElement).classList.contains(cls.WORK_CELLS_CLASS)) {
             let key: KeyEventArgs = this.processLeftRight(target);
             if (key.columnIndex >= 0 && key.columnIndex < key.maxIndex - 1) {
                 targetCell = this.calculateNextPrevDate(target, key.element.rows[key.rowIndex].cells[target.cellIndex + 1], 'right');
@@ -593,11 +594,10 @@ export class KeyboardInteraction {
         if (selectedElements.length > 0) {
             target = this.getWorkCellFromAppointmentElement(selectedElements[selectedElements.length - 1]);
             this.parent.eventBase.removeSelectedAppointmentClass();
-            if (!target) {
-                return;
-            }
+            if (!target) { return; }
         }
-        if (target.classList.contains(cls.WORK_CELLS_CLASS)) {
+        if (((e.target) as HTMLTableCellElement).classList.contains(cls.WORK_CELLS_CLASS) &&
+            target.classList.contains(cls.WORK_CELLS_CLASS)) {
             let key: KeyEventArgs = this.processLeftRight(target);
             if (key.columnIndex > 0 && key.columnIndex < key.maxIndex) {
                 targetCell = this.calculateNextPrevDate(target, key.element.rows[key.rowIndex].cells[target.cellIndex - 1], 'left');
@@ -713,10 +713,15 @@ export class KeyboardInteraction {
         }
     }
     private processDelete(e: KeyboardEventArgs): void {
-        if (document.activeElement && document.activeElement.classList.contains(cls.APPOINTMENT_CLASS)) {
-            addClass([document.activeElement], cls.APPOINTMENT_BORDER);
+        let activeEle: Element = document.activeElement;
+        if (this.parent.currentView === 'MonthAgenda') {
+            let selectedEle: object[] = this.parent.eventBase.getSelectedEvents().element as object[];
+            activeEle = <Element>((selectedEle && isNullOrUndefined(selectedEle.length)) ? selectedEle : selectedEle[0]);
+        }
+        if (activeEle && activeEle.classList.contains(cls.APPOINTMENT_CLASS)) {
+            addClass([activeEle], cls.APPOINTMENT_BORDER);
             this.parent.activeEventData = this.parent.eventBase.getSelectedEvents();
-            if (this.parent.activeViewOptions.readonly || document.activeElement.classList.contains('e-read-only')) {
+            if (this.parent.activeViewOptions.readonly || activeEle.classList.contains('e-read-only')) {
                 return;
             }
             this.parent.quickPopup.deleteClick();

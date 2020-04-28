@@ -953,6 +953,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             //symbol description-textElement
             symbolInfo.description.overflow = symbolInfo.description.overflow || 'Ellipsis';
             symbolInfo.description.wrap = symbolInfo.description.wrap || 'WrapWithOverflow';
+            textElement.id = parent.id + '_text';
             textElement.content = symbolInfo.description.text;
             textElement.width = width;
             textElement.height = 20;
@@ -1022,10 +1023,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         if (symbol.shape.type === 'Native') {
             canvas = createSvgElement(
                 'svg', {
-                    id: symbol.id + '_preview',
-                    width: Math.ceil(symbolPreviewWidth) + 1,
-                    height: Math.ceil(symbolPreviewHeight) + 1
-                });
+                id: symbol.id + '_preview',
+                width: Math.ceil(symbolPreviewWidth) + 1,
+                height: Math.ceil(symbolPreviewHeight) + 1
+            });
             let gElement: SVGElement = createSvgElement('g', { id: symbol.id + '_g' });
             canvas.appendChild(gElement);
             previewContainer.appendChild(canvas);
@@ -1099,10 +1100,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         let height: number = size.height + 1;
         let container: HTMLElement = createHtmlElement(
             'div', {
-                id: symbol.id + '_container',
-                style: 'width:' + width + 'px;height:' + height + 'px;float:left;overflow:hidden',
-                title: symbolInfo.tooltip ? symbolInfo.tooltip : symbol.id
-            });
+            id: symbol.id + '_container',
+            style: 'width:' + width + 'px;height:' + height + 'px;float:left;overflow:hidden',
+            title: symbolInfo.tooltip ? symbolInfo.tooltip : symbol.id
+        });
         parentDiv.appendChild(container);
         let canvas: HTMLCanvasElement | SVGElement;
         let gElement: SVGElement;
@@ -1110,10 +1111,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         if (symbol.shape.type === 'Native') {
             canvas = createSvgElement(
                 'svg', {
-                    id: symbol.id,
-                    width: Math.ceil(symbol.wrapper.actualSize.width) + 1,
-                    height: Math.ceil(symbol.wrapper.actualSize.height) + 1
-                });
+                id: symbol.id,
+                width: Math.ceil(symbol.wrapper.actualSize.width) + 1,
+                height: Math.ceil(symbol.wrapper.actualSize.height) + 1
+            });
             gElement = createSvgElement('g', { id: symbol.id + '_g' });
             canvas.appendChild(gElement);
             container.appendChild(canvas);
@@ -1182,17 +1183,17 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             'div', { 'id': item.id + (isPreview ? '_html_div_preview' : '_html_div') });
         let htmlLayer: HTMLElement = createHtmlElement(
             'div', {
-                'id': item.id + (isPreview ? '_htmlLayer_preview' : '_htmlLayer'),
-                'style': 'width:' + Math.ceil(width + 1) + 'px;' +
-                    'height:' + Math.ceil(height + 1) + 'px;position:absolute',
-                'class': 'e-html-layer'
-            });
+            'id': item.id + (isPreview ? '_htmlLayer_preview' : '_htmlLayer'),
+            'style': 'width:' + Math.ceil(width + 1) + 'px;' +
+                'height:' + Math.ceil(height + 1) + 'px;position:absolute',
+            'class': 'e-html-layer'
+        });
         let htmlLayerDiv: HTMLElement = createHtmlElement(
             'div', {
-                'id': item.id + (isPreview ? '_htmlLayer_div_preview' : '_htmlLayer_div'),
-                'style': 'width:' + Math.ceil(width + 1) + 'px;' +
-                    'height:' + Math.ceil(height + 1) + 'px;position:absolute',
-            });
+            'id': item.id + (isPreview ? '_htmlLayer_div_preview' : '_htmlLayer_div'),
+            'style': 'width:' + Math.ceil(width + 1) + 'px;' +
+                'height:' + Math.ceil(height + 1) + 'px;position:absolute',
+        });
         htmlLayer.appendChild(htmlLayerDiv);
         div.appendChild(htmlLayer);
         canvas = CanvasRenderer.createCanvas(
@@ -1209,22 +1210,22 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     ): HTMLElement {
         let div: HTMLElement = createHtmlElement(
             'div', {
-                'id': symbol.id + (isPreview ? '_html_div_preview' : '_html_div')
-            }
+            'id': symbol.id + (isPreview ? '_html_div_preview' : '_html_div')
+        }
         );
         let htmlLayer: HTMLElement = createHtmlElement(
             'div', {
-                'id': symbol.id + (isPreview ? '_htmlLayer_preview' : '_htmlLayer'),
-                'style': 'width:' + Math.ceil(width + 1) + 'px;' +
-                    'height:' + Math.ceil(height + 1) + 'px;position:absolute',
-                'class': 'e-html-layer'
-            });
+            'id': symbol.id + (isPreview ? '_htmlLayer_preview' : '_htmlLayer'),
+            'style': 'width:' + Math.ceil(width + 1) + 'px;' +
+                'height:' + Math.ceil(height + 1) + 'px;position:absolute',
+            'class': 'e-html-layer'
+        });
         let htmlLayerDiv: HTMLElement = createHtmlElement(
             'div', {
-                'id': symbol.id + (isPreview ? '_htmlLayer_div_preview' : '_htmlLayer_div'),
-                'style': 'width:' + Math.ceil(width + 1) + 'px;' +
-                    'height:' + Math.ceil(height + 1) + 'px;position:absolute',
-            });
+            'id': symbol.id + (isPreview ? '_htmlLayer_div_preview' : '_htmlLayer_div'),
+            'style': 'width:' + Math.ceil(width + 1) + 'px;' +
+                'height:' + Math.ceil(height + 1) + 'px;position:absolute',
+        });
         htmlLayer.appendChild(htmlLayerDiv);
         div.appendChild(htmlLayer);
         canvas = CanvasRenderer.createCanvas(

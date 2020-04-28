@@ -1249,6 +1249,21 @@ function maintainSelection(treemap, element, className) {
         }
     }
 }
+function legendMaintain(treemap, legendGroup) {
+    var elementId = treemap.legendId;
+    if (elementId) {
+        for (var i = 0; i < elementId.length; i++) {
+            for (var j = 0; j < legendGroup.childElementCount; j++) {
+                if (legendGroup.childNodes[j]['id'] === elementId[i]) {
+                    legendGroup.childNodes[j].setAttribute('fill', treemap.selectionSettings.fill);
+                    legendGroup.childNodes[j].setAttribute('stroke', treemap.selectionSettings.border.color);
+                    legendGroup.childNodes[j].setAttribute('stroke-width', (treemap.selectionSettings.border.width).toString());
+                    legendGroup.childNodes[j].setAttribute('opacity', treemap.selectionSettings.opacity);
+                }
+            }
+        }
+    }
+}
 function removeClassNames(elements, type, treemap) {
     var element;
     var options = {};
@@ -2454,6 +2469,8 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
         _this.isHierarchicalData = false;
         /** @private */
         _this.levelSelection = [];
+        /** @private */
+        _this.legendId = [];
         return _this;
     }
     TreeMap.prototype.preRender = function () {
@@ -3342,6 +3359,26 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
         }
     };
     /**
+     * This method is used to select or remove the selection of treemap item based on the provided selection settings.
+     */
+    TreeMap.prototype.selectItem = function (levelOrder, isSelected) {
+        if (isNullOrUndefined(isSelected)) {
+            isSelected = true;
+        }
+        var levelOrderName = '';
+        for (var i = 0; i < levelOrder.length; i++) {
+            if (i !== levelOrder.length - 1) {
+                levelOrderName += levelOrder[i] + '#';
+            }
+            else {
+                levelOrderName += levelOrder[i];
+            }
+        }
+        if (this.treeMapSelectionModule && this.selectionSettings.enable) {
+            this.treeMapSelectionModule.selectTreemapItem(levelOrderName, isSelected);
+        }
+    };
+    /**
      * To provide the array of modules needed for maps rendering
      * @return {ModuleDeclaration[]}
      * @private
@@ -4164,6 +4201,7 @@ var TreeMapLegend = /** @__PURE__ @class */ (function () {
                 this.legendGroup.appendChild(render.drawRectangle(rectOptions));
             }
         }
+        legendMaintain(this.treemap, this.legendGroup);
     };
     TreeMapLegend.prototype.defaultLegendRtlLocation = function (collection, spacing, treemap, legend) {
         var shapeLocation = collection['Shape'];
@@ -4605,7 +4643,7 @@ var TreeMapHighlight = /** @__PURE__ @class */ (function () {
         var element;
         var orders;
         var selectionModule = this.treemap.treeMapSelectionModule;
-        if (targetId.indexOf('_Item_Index') > -1 && (selectionModule ? selectionModule.selectionId !== targetId : true)) {
+        if (targetId.indexOf('_Item_Index') > -1 && (selectionModule ? this.treemap.selectionId !== targetId : true)) {
             if (this.highLightId !== targetId) {
                 treeMapElement = document.getElementById(treemap.element.id + '_TreeMap_' + treemap.layoutType + '_Layout');
                 var selectionElements = document.getElementsByClassName('treeMapSelection');
@@ -4799,7 +4837,7 @@ var TreeMapSelection = /** @__PURE__ @class */ (function () {
         var layoutID = treemap.element.id + '_TreeMap_' + treemap.layoutType + '_Layout';
         if (targetId.indexOf('_Item_Index') > -1) {
             e.preventDefault();
-            if (this.selectionId !== targetId && this.legendSelect) {
+            if (this.treemap.selectionId !== targetId && this.legendSelect) {
                 treeMapElement = document.getElementById(layoutID);
                 item = treemap.layout.renderItems[parseFloat(targetId.split('_')[6])];
                 var index = void 0;
@@ -4835,7 +4873,7 @@ var TreeMapSelection = /** @__PURE__ @class */ (function () {
                     }
                 }
                 removeClassNames(document.getElementsByClassName('treeMapSelection'), 'treeMapSelection', treemap);
-                this.selectionId = targetId;
+                this.treemap.selectionId = targetId;
                 var highLightElements = document.getElementsByClassName('treeMapHighLight');
                 for (var k = 0; k < selectionElements.length; k++) {
                     element = selectionElements[k];
@@ -4888,11 +4926,13 @@ var TreeMapSelection = /** @__PURE__ @class */ (function () {
             }
             else {
                 removeShape(this.shapeSelectionCollection, 'selection');
+                this.shapeSelectionCollection = [];
                 this.shapeElement = undefined;
                 this.shapeSelect = true;
                 this.shapeSelectId = '';
+                this.treemap.legendId = [];
                 removeClassNames(document.getElementsByClassName('treeMapSelection'), 'treeMapSelection', treemap);
-                this.selectionId = '';
+                this.treemap.selectionId = '';
             }
         }
         else if (targetId.indexOf('_Legend_Shape') > -1 || targetId.indexOf('_Legend_Index') > -1) {
@@ -4939,6 +4979,93 @@ var TreeMapSelection = /** @__PURE__ @class */ (function () {
                 this.legendSelect = true;
                 this.legendSelectId = '';
             }
+        }
+    };
+    /**
+     * @private
+     */
+    TreeMapSelection.prototype.selectTreemapItem = function (levelOrder, enable) {
+        if (enable) {
+            var item = void 0;
+            for (var s = 0; s < this.treemap.layout.renderItems.length; s++) {
+                if (levelOrder === this.treemap.layout.renderItems[s]['levelOrderName']) {
+                    item = this.treemap.layout.renderItems[s];
+                    break;
+                }
+            }
+            var selection = this.treemap.selectionSettings;
+            var selectionElements = [];
+            var element = void 0;
+            var selectionElement = void 0;
+            var index = void 0;
+            var items = [];
+            this.treemap.levelSelection = [];
+            var layoutID = this.treemap.element.id + '_TreeMap_' + this.treemap.layoutType + '_Layout';
+            var treeMapElement = document.getElementById(layoutID);
+            var orders = findHightLightItems(item, [], selection.mode, this.treemap);
+            for (var i = 0; i < treeMapElement.childElementCount; i++) {
+                element = treeMapElement.childNodes[i];
+                item = this.treemap.layout.renderItems[element.id.split('_')[6]];
+                if (orders.indexOf(item['levelOrderName']) > -1) {
+                    selectionElements.push(element);
+                    this.treemap.levelSelection.push(element.id);
+                    items.push(item);
+                }
+            }
+            if (this.treemap.legendSettings.visible) {
+                for (var m = 0; m < items.length; m++) {
+                    this.shapeSelect = false;
+                    var length_5 = this.treemap.treeMapLegendModule.legendCollections.length;
+                    var collection = this.treemap.treeMapLegendModule.legendCollections;
+                    this.shapeElement = undefined;
+                    removeShape(this.shapeSelectionCollection, 'selection');
+                    index = getLegendIndex(length_5, items[m], this.treemap);
+                    this.shapeElement = this.treemap.legendSettings.mode === 'Default' ? document.getElementById('container_Legend_Shape_Index_' + index) : document.getElementById('container_Legend_Index_' + index);
+                    if (this.shapeElement !== null) {
+                        this.shapeSelectId = this.shapeElement.getAttribute('id');
+                        this.treemap.legendId.push(this.shapeSelectId);
+                        this.shapeSelectionCollection.push({
+                            legendEle: this.shapeElement, oldFill: collection[index]['legendFill'],
+                            oldOpacity: collection[index]['opacity'], oldBorderColor: collection[index]['borderColor'],
+                            oldBorderWidth: collection[index]['borderWidth']
+                        });
+                        setColor(this.shapeElement, selection.fill, selection.opacity, selection.border.color, selection.border.width.toString());
+                    }
+                }
+            }
+            removeClassNames(document.getElementsByClassName('treeMapSelection'), 'treeMapSelection', this.treemap);
+            selectionElement = document.getElementById(this.treemap.levelSelection[0]);
+            this.treemap.selectionId = selectionElement.childNodes[0]['id'];
+            var highLightElements = document.getElementsByClassName('treeMapHighLight');
+            for (var k = 0; k < selectionElements.length; k++) {
+                element = selectionElements[k];
+                if (highLightElements.length > 0) {
+                    for (var j = 0; j < highLightElements.length; j++) {
+                        if (highLightElements[j].id === element.id) {
+                            highLightElements[j].classList.remove('treeMapHighLight');
+                        }
+                        applyOptions(element.childNodes[0], { border: selection.border, fill: selection.fill, opacity: selection.opacity });
+                        element.classList.add('treeMapSelection');
+                    }
+                }
+                else {
+                    selection.fill = selection.fill === 'null' ?
+                        this.treemap.layout.renderItems[parseInt(element.id.split('Item_Index_')[1], 10)]['options']['fill']
+                        : selection.fill;
+                    applyOptions(element.childNodes[0], { border: selection.border, fill: selection.fill, opacity: selection.opacity });
+                    element.classList.add('treeMapSelection');
+                }
+            }
+        }
+        else {
+            removeShape(this.shapeSelectionCollection, 'selection');
+            this.shapeElement = undefined;
+            this.treemap.levelSelection = [];
+            this.shapeSelect = true;
+            this.shapeSelectId = '';
+            this.treemap.legendId = [];
+            removeClassNames(document.getElementsByClassName('treeMapSelection'), 'treeMapSelection', this.treemap);
+            this.treemap.selectionId = '';
         }
     };
     /**
@@ -5184,5 +5311,5 @@ var TreeMapTooltip = /** @__PURE__ @class */ (function () {
  * exporting all modules from tree map index
  */
 
-export { TreeMap, LevelsData, Border, Margin, Font, CommonTitleSettings, SubTitleSettings, TitleSettings, ColorMapping, LegendSettings, InitialDrillSettings, LeafItemSettings, TooltipSettings, SelectionSettings, HighlightSettings, LevelSettings, load, loaded, beforePrint, itemRendering, drillStart, drillEnd, itemSelected, itemHighlight, tooltipRendering, itemClick, itemMove, click, doubleClick, rightClick, mouseMove, legendItemRendering, legendRendering, resize, defaultFont, Theme, getThemeStyle, Size, stringToNumber, Rect, RectOption, PathOption, measureText, TextOption, textTrim, Location, findPosition, createTextStyle, renderTextElement, getElement, itemsToOrder, isContainsData, findChildren, findHightLightItems, getTemplateFunction, convertElement, findLabelLocation, measureElement, getArea, getShortestEdge, convertToContainer, convertToRect, getMousePosition, colorMap, deSaturationColor, colorCollections, rgbToHex, getColorByValue, getGradientColor, getPercentageColor, getPercentage, wordWrap, textWrap, hide, orderByArea, maintainSelection, removeClassNames, applyOptions, textFormatter, formatValue, ColorValue, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, drawSymbol, renderLegendShape, isParentItem, TreeMapAjax, removeShape, removeLegend, setColor, removeSelectionWithHighlight, getLegendIndex, pushCollection, ExportUtils, TreeMapLegend, LayoutPanel, TreeMapHighlight, TreeMapSelection, TreeMapTooltip };
+export { TreeMap, LevelsData, Border, Margin, Font, CommonTitleSettings, SubTitleSettings, TitleSettings, ColorMapping, LegendSettings, InitialDrillSettings, LeafItemSettings, TooltipSettings, SelectionSettings, HighlightSettings, LevelSettings, load, loaded, beforePrint, itemRendering, drillStart, drillEnd, itemSelected, itemHighlight, tooltipRendering, itemClick, itemMove, click, doubleClick, rightClick, mouseMove, legendItemRendering, legendRendering, resize, defaultFont, Theme, getThemeStyle, Size, stringToNumber, Rect, RectOption, PathOption, measureText, TextOption, textTrim, Location, findPosition, createTextStyle, renderTextElement, getElement, itemsToOrder, isContainsData, findChildren, findHightLightItems, getTemplateFunction, convertElement, findLabelLocation, measureElement, getArea, getShortestEdge, convertToContainer, convertToRect, getMousePosition, colorMap, deSaturationColor, colorCollections, rgbToHex, getColorByValue, getGradientColor, getPercentageColor, getPercentage, wordWrap, textWrap, hide, orderByArea, maintainSelection, legendMaintain, removeClassNames, applyOptions, textFormatter, formatValue, ColorValue, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, drawSymbol, renderLegendShape, isParentItem, TreeMapAjax, removeShape, removeLegend, setColor, removeSelectionWithHighlight, getLegendIndex, pushCollection, ExportUtils, TreeMapLegend, LayoutPanel, TreeMapHighlight, TreeMapSelection, TreeMapTooltip };
 //# sourceMappingURL=ej2-treemap.es5.js.map

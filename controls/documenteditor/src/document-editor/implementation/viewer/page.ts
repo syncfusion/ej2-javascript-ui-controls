@@ -1642,11 +1642,13 @@ export class TableWidget extends BlockWidget {
                     if (rowSpannedCells.length === 0 || rowSpannedCells[rowSpannedCells.length - 1].columnIndex <= columnSpan) {
                         rowSpannedCells.push(cell);
                     } else {
+                        let insertIndex: number = 0;
                         for (let m: number = rowSpannedCells.length; m > 0; m--) {
                             if (rowSpannedCells[m - 1].columnIndex > columnSpan) {
-                                rowSpannedCells.splice(m - 1, 0, cell);
+                                insertIndex = m - 1;
                             }
                         }
+                        rowSpannedCells.splice(insertIndex, 0, cell);
                     }
                 }
                 cellWidth = this.getCellWidth(cell.cellFormat.preferredWidth, cell.cellFormat.preferredWidthType, tableWidth, cell);

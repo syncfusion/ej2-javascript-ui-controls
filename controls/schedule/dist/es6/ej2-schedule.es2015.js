@@ -231,6 +231,11 @@ function removeChildren(element) {
         }
     }
 }
+function isDaylightSavingTime(date) {
+    let jan = new Date(date.getFullYear(), 0, 1);
+    let jul = new Date(date.getFullYear(), 6, 1);
+    return date.getTimezoneOffset() < Math.max(jan.getTimezoneOffset(), jul.getTimezoneOffset());
+}
 function addLocalOffset(date) {
     if (isBlazor()) {
         let dateValue = new Date(+date - (date.getTimezoneOffset() * 60000));
@@ -1704,7 +1709,7 @@ class KeyboardInteraction {
     }
     getSelectedElements(target) {
         let cellDetails;
-        if (this.selectedCells.length > 1) {
+        if (this.selectedCells.length > 1 && target.classList.contains(SELECTED_CELL_CLASS)) {
             let start = this.parent.getCellDetails(this.selectedCells[0]);
             let end = this.parent.getCellDetails(this.selectedCells.slice(-1)[0]);
             start.endTime = end.endTime;
@@ -1773,10 +1778,12 @@ class KeyboardInteraction {
         let target = (targetCell instanceof Array) ? targetCell.slice(-1)[0] : targetCell;
         if (isMultiple) {
             let initialId;
+            let viewsOptions = ['Day', 'Week', 'WorkWeek', 'Month',
+                'TimelineDay', 'TimelineWeek', 'TimelineWorkWeek', 'TimelineMonth'];
             let args = { element: targetCell, requestType: 'mousemove', allowMultipleRow: true };
             this.parent.trigger(select, args, (selectArgs) => {
                 let allowMultipleRow = (!selectArgs.allowMultipleRow) || (!this.parent.allowMultiRowSelection);
-                if (allowMultipleRow && (['Day', 'Week', 'WorkWeek'].indexOf(this.parent.currentView) > -1)) {
+                if (allowMultipleRow && (viewsOptions.indexOf(this.parent.currentView) > -1)) {
                     target = target.parentElement.children[this.initialTarget.cellIndex];
                 }
                 let selectedCells = this.getCells(this.isInverseTableSelect(), this.initialTarget, target);
@@ -2023,7 +2030,8 @@ class KeyboardInteraction {
                 return;
             }
         }
-        if (target.classList.contains(WORK_CELLS_CLASS)) {
+        if (target.classList.contains(WORK_CELLS_CLASS) &&
+            (e.target).classList.contains(WORK_CELLS_CLASS)) {
             let key = this.processLeftRight(target);
             if (key.columnIndex >= 0 && key.columnIndex < key.maxIndex - 1) {
                 targetCell = this.calculateNextPrevDate(target, key.element.rows[key.rowIndex].cells[target.cellIndex + 1], 'right');
@@ -2079,7 +2087,8 @@ class KeyboardInteraction {
                 return;
             }
         }
-        if (target.classList.contains(WORK_CELLS_CLASS)) {
+        if ((e.target).classList.contains(WORK_CELLS_CLASS) &&
+            target.classList.contains(WORK_CELLS_CLASS)) {
             let key = this.processLeftRight(target);
             if (key.columnIndex > 0 && key.columnIndex < key.maxIndex) {
                 targetCell = this.calculateNextPrevDate(target, key.element.rows[key.rowIndex].cells[target.cellIndex - 1], 'left');
@@ -2197,10 +2206,15 @@ class KeyboardInteraction {
         }
     }
     processDelete(e) {
-        if (document.activeElement && document.activeElement.classList.contains(APPOINTMENT_CLASS)) {
-            addClass([document.activeElement], APPOINTMENT_BORDER);
+        let activeEle = document.activeElement;
+        if (this.parent.currentView === 'MonthAgenda') {
+            let selectedEle = this.parent.eventBase.getSelectedEvents().element;
+            activeEle = ((selectedEle && isNullOrUndefined(selectedEle.length)) ? selectedEle : selectedEle[0]);
+        }
+        if (activeEle && activeEle.classList.contains(APPOINTMENT_CLASS)) {
+            addClass([activeEle], APPOINTMENT_BORDER);
             this.parent.activeEventData = this.parent.eventBase.getSelectedEvents();
-            if (this.parent.activeViewOptions.readonly || document.activeElement.classList.contains('e-read-only')) {
+            if (this.parent.activeViewOptions.readonly || activeEle.classList.contains('e-read-only')) {
                 return;
             }
             this.parent.quickPopup.deleteClick();
@@ -4412,7 +4426,9 @@ class EventBase {
         for (let cell of cells) {
             cell.setAttribute('aria-selected', 'true');
         }
-        this.parent.removeSelectedClass();
+        if (this.parent.currentView !== 'MonthAgenda') {
+            this.parent.removeSelectedClass();
+        }
         addClass(cells, APPOINTMENT_BORDER);
     }
     getSelectedAppointments() {
@@ -4497,7 +4513,9 @@ class EventBase {
     appointmentBorderRemove(event) {
         let element = event.event.target;
         if (closest(element, '.' + APPOINTMENT_CLASS)) {
-            this.parent.removeSelectedClass();
+            if (this.parent.currentView !== 'MonthAgenda') {
+                this.parent.removeSelectedClass();
+            }
         }
         else if (!closest(element, '.' + POPUP_OPEN)) {
             this.removeSelectedAppointmentClass();
@@ -9476,7 +9494,7 @@ class VirtualScroll {
         let conTable = this.parent.element.querySelector('.' + CONTENT_TABLE_CLASS);
         this.renderedLength = resWrap.querySelector('tbody').children.length;
         let firstTDIndex = parseInt(resWrap.querySelector('tbody td').getAttribute('data-group-index'), 10);
-        let scrollHeight = (this.parent.rowAutoHeight) ?
+        let scrollHeight = (this.parent.rowAutoHeight && !this.parent.eventSettings.ignoreWhitespace) ?
             (conTable.offsetHeight - conWrap.offsetHeight) : this.bufferCount * this.itemSize;
         addClass([conWrap], 'e-transition');
         let resCollection = [];
@@ -15157,6 +15175,7 @@ class TimelineEvent extends MonthEvent {
         this.dayLength = this.element.querySelectorAll('.' + CONTENT_TABLE_CLASS + ' tbody tr').length === 0 ?
             0 : this.element.querySelectorAll('.' + CONTENT_TABLE_CLASS + ' tbody tr')[0].children.length;
         this.content = this.parent.element.querySelector('.' + CONTENT_TABLE_CLASS);
+        this.moreIndicatorHeight = (this.parent.rowAutoHeight) ? 0 : this.moreIndicatorHeight;
     }
     getSlotDates() {
         this.slots = [];
@@ -17735,10 +17754,13 @@ class VerticalView extends ViewBase {
             styles: 'top:' + topInPx
         });
         let timeCellsWrap = this.getLeftPanelElement();
-        removeClass(timeCellsWrap.querySelectorAll('.' + HIDE_CHILDS_CLASS), HIDE_CHILDS_CLASS);
-        addClass([timeCellsWrap.querySelectorAll('tr')[rowIndex].lastElementChild], HIDE_CHILDS_CLASS);
-        prepend([currentTimeEle], timeCellsWrap);
-        currentTimeEle.style.top = formatUnit(currentTimeEle.offsetTop - (currentTimeEle.offsetHeight / 2));
+        let timeTrs = [].slice.call(timeCellsWrap.querySelectorAll('tr'));
+        if (rowIndex <= timeTrs.length) {
+            removeClass(timeCellsWrap.querySelectorAll('.' + HIDE_CHILDS_CLASS), HIDE_CHILDS_CLASS);
+            addClass([timeTrs[rowIndex].lastElementChild], HIDE_CHILDS_CLASS);
+            prepend([currentTimeEle], timeCellsWrap);
+            currentTimeEle.style.top = formatUnit(currentTimeEle.offsetTop - (currentTimeEle.offsetHeight / 2));
+        }
     }
     getTopFromDateTime(date) {
         let startHour = this.getStartHour();
@@ -18163,17 +18185,20 @@ class VerticalView extends ViewBase {
         let msStartHour = startHour.getTime();
         let msEndHour = endHour.getTime();
         if (msStartHour !== msEndHour) {
-            let milliSeconds = (startHour.getTimezoneOffset() !== endHour.getTimezoneOffset()) ?
-                (msEndHour - msStartHour) - 3600000 : (msEndHour - msStartHour);
-            length = Math.round(milliSeconds / msInterval);
+            length = (Math.abs(msEndHour - msStartHour) / msInterval) - ((new Date(msEndHour).getTimezoneOffset()
+                - new Date(msStartHour).getTimezoneOffset()) / (60 / this.parent.activeViewOptions.timeScale.slotCount));
         }
         if (!this.parent.activeViewOptions.timeScale.enable) {
             length = 1;
         }
-        let dt = new Date(msStartHour);
         let start = this.parent.getStartEndTime(this.parent.workHours.start);
         let end = this.parent.getStartEndTime(this.parent.workHours.end);
         for (let i = 0; i < length; i++) {
+            let dt = new Date(msStartHour + (msInterval * i));
+            if (isDaylightSavingTime(dt) || new Date(msStartHour).getTimezoneOffset() !== dt.getTimezoneOffset()) {
+                let timeOffset = new Date(msStartHour).getTimezoneOffset() - dt.getTimezoneOffset();
+                dt = new Date(dt.getTime() - (1000 * 60 * timeOffset));
+            }
             let majorTickDivider = i % (msMajorInterval / msInterval);
             let row = {
                 date: new Date('' + dt),
@@ -18188,7 +18213,6 @@ class VerticalView extends ViewBase {
                 handler(row);
             }
             rows.push(row);
-            dt.setMilliseconds(msInterval);
         }
         return rows;
     }
@@ -21749,5 +21773,5 @@ class Print {
  * Export Schedule components
  */
 
-export { Schedule, cellClick, cellDoubleClick, moreEventsClick, select, hover, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, popupClose, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, initialLoad, initialEnd, dataReady, eventsLoaded, contentReady, scroll, virtualScroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getTranslateY, getWeekFirstDate, getWeekLastDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, getDateCount, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, removeChildren, addLocalOffset, addLocalOffsetToEvent, capitalizeFirstWord, Resize, DragAndDrop, HeaderRenderer, ViewHelper, ViewBase, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, TimelineYear, Timezone, timezoneData, ICalendarExport, ICalendarImport, ExcelExport, Print, RecurrenceEditor, generateSummary, generate, getDateFromRecurrenceDateString, extractObjectFromRule, getCalendarUtil, getRecurrenceStringFromDate, Gregorian, Islamic };
+export { Schedule, cellClick, cellDoubleClick, moreEventsClick, select, hover, actionBegin, actionComplete, actionFailure, navigating, renderCell, eventClick, eventRendered, dataBinding, dataBound, popupOpen, popupClose, dragStart, drag, dragStop, resizeStart, resizing, resizeStop, initialLoad, initialEnd, dataReady, eventsLoaded, contentReady, scroll, virtualScroll, scrollUiUpdate, uiUpdate, documentClick, cellMouseDown, WEEK_LENGTH, MS_PER_DAY, MS_PER_MINUTE, getElementHeightFromClass, getTranslateY, getWeekFirstDate, getWeekLastDate, firstDateOfMonth, lastDateOfMonth, getWeekNumber, setTime, resetTime, getDateInMs, getDateCount, addDays, addMonths, addYears, getStartEndHours, getMaxDays, getDaysCount, getDateFromString, getScrollBarWidth, findIndexInData, getOuterHeight, removeChildren, isDaylightSavingTime, addLocalOffset, addLocalOffsetToEvent, capitalizeFirstWord, Resize, DragAndDrop, HeaderRenderer, ViewHelper, ViewBase, Day, Week, WorkWeek, Month, Agenda, MonthAgenda, TimelineViews, TimelineMonth, TimelineYear, Timezone, timezoneData, ICalendarExport, ICalendarImport, ExcelExport, Print, RecurrenceEditor, generateSummary, generate, getDateFromRecurrenceDateString, extractObjectFromRule, getCalendarUtil, getRecurrenceStringFromDate, Gregorian, Islamic };
 //# sourceMappingURL=ej2-schedule.es2015.js.map

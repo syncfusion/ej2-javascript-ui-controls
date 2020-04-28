@@ -249,10 +249,13 @@ export class VerticalView extends ViewBase implements IRenderer {
             styles: 'top:' + topInPx
         });
         let timeCellsWrap: Element = this.getLeftPanelElement();
-        removeClass(timeCellsWrap.querySelectorAll('.' + cls.HIDE_CHILDS_CLASS), cls.HIDE_CHILDS_CLASS);
-        addClass([timeCellsWrap.querySelectorAll('tr')[rowIndex].lastElementChild as Element], cls.HIDE_CHILDS_CLASS);
-        prepend([currentTimeEle], timeCellsWrap);
-        currentTimeEle.style.top = formatUnit(currentTimeEle.offsetTop - (currentTimeEle.offsetHeight / 2));
+        let timeTrs: HTMLElement[] = [].slice.call(timeCellsWrap.querySelectorAll('tr'));
+        if (rowIndex <= timeTrs.length) {
+            removeClass(timeCellsWrap.querySelectorAll('.' + cls.HIDE_CHILDS_CLASS), cls.HIDE_CHILDS_CLASS);
+            addClass([timeTrs[rowIndex].lastElementChild as Element], cls.HIDE_CHILDS_CLASS);
+            prepend([currentTimeEle], timeCellsWrap);
+            currentTimeEle.style.top = formatUnit(currentTimeEle.offsetTop - (currentTimeEle.offsetHeight / 2));
+        }
     }
     public getTopFromDateTime(date: Date): number {
         let startHour: Date = this.getStartHour();
@@ -678,17 +681,20 @@ export class VerticalView extends ViewBase implements IRenderer {
         let msStartHour: number = startHour.getTime();
         let msEndHour: number = endHour.getTime();
         if (msStartHour !== msEndHour) {
-            let milliSeconds: number = (startHour.getTimezoneOffset() !== endHour.getTimezoneOffset()) ?
-                (msEndHour - msStartHour) - 3600000 : (msEndHour - msStartHour);
-            length = Math.round(milliSeconds / msInterval);
+            length = (Math.abs(msEndHour - msStartHour) / msInterval) - ((new Date(msEndHour).getTimezoneOffset()
+                - new Date(msStartHour).getTimezoneOffset()) / (60 / this.parent.activeViewOptions.timeScale.slotCount));
         }
         if (!this.parent.activeViewOptions.timeScale.enable) {
             length = 1;
         }
-        let dt: Date = new Date(msStartHour);
         let start: Date = this.parent.getStartEndTime(this.parent.workHours.start);
         let end: Date = this.parent.getStartEndTime(this.parent.workHours.end);
         for (let i: number = 0; i < length; i++) {
+            let dt: Date = new Date(msStartHour + (msInterval * i));
+            if (util.isDaylightSavingTime(dt) || new Date(msStartHour).getTimezoneOffset() !== dt.getTimezoneOffset()) {
+                let timeOffset: number = new Date(msStartHour).getTimezoneOffset() - dt.getTimezoneOffset();
+                dt = new Date(dt.getTime() - (1000 * 60 * timeOffset));
+            }
             let majorTickDivider: number = i % (msMajorInterval / msInterval);
             let row: TimeSlotData = {
                 date: new Date('' + dt),
@@ -703,7 +709,6 @@ export class VerticalView extends ViewBase implements IRenderer {
                 handler(row);
             }
             rows.push(row);
-            dt.setMilliseconds(msInterval);
         }
         return rows;
     }

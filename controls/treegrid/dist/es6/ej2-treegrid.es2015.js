@@ -1474,7 +1474,7 @@ class DataManipulation {
                 this.hierarchyData = this.selfReferenceUpdate(selfData);
             }
             if (!Object.keys(this.hierarchyData).length) {
-                this.parent.flatData = (!(this.parent.dataSource instanceof DataManager) ? this.parent.dataSource : []);
+                this.parent.flatData = [];
             }
             else {
                 this.createRecords(this.hierarchyData);
@@ -2828,6 +2828,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         this.extendedGridEvents();
         this.extendedGridActionEvents();
         this.extendedGridEditEvents();
+        this.extendedGridBatchEvents();
         this.bindGridDragEvents();
         this.bindCallBackEvents();
     }
@@ -2879,9 +2880,8 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     }
     bindCallBackEvents() {
         let beginEdit$$1;
-        let name = 'name';
         if (isBlazor() && this.isServerRendered) {
-            if (!isNullOrUndefined(this.grid.beginEdit) && this.grid.beginEdit[name] === 'bound triggerEJEvents') {
+            if (!isNullOrUndefined(this.grid.beginEdit)) {
                 beginEdit$$1 = this.grid.beginEdit;
             }
         }
@@ -2904,7 +2904,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         };
         this.grid.beginEdit = (args) => {
             if (isBlazor() && this.isServerRendered) {
-                if (beginEdit$$1 && typeof beginEdit$$1 === 'function' && beginEdit$$1[name] === 'bound triggerEJEvents') {
+                if (beginEdit$$1 && typeof beginEdit$$1 === 'function') {
                     beginEdit$$1.apply(this, [args]);
                 }
             }
@@ -2921,12 +2921,11 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         let localobserver = 'localObserver';
         let cellEdit$$1;
         let cellSave$$1;
-        let name = 'name';
         if (isBlazor() && this.isServerRendered) {
-            if (!isNullOrUndefined(this.grid.cellEdit) && this.grid.cellEdit[name] === 'bound triggerEJEvents') {
+            if (!isNullOrUndefined(this.grid.cellEdit)) {
                 cellEdit$$1 = this.grid.cellEdit;
             }
-            if (!isNullOrUndefined(this.grid.cellSave) && this.grid.cellSave[name] === 'bound triggerEJEvents') {
+            if (!isNullOrUndefined(this.grid.cellSave)) {
                 cellSave$$1 = this.grid.cellSave;
             }
         }
@@ -2946,7 +2945,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         };
         this.grid.cellSave = (args) => {
             if (isBlazor() && this.isServerRendered) {
-                if (cellSave$$1 && typeof cellSave$$1 === 'function' && cellSave$$1[name] === 'bound triggerEJEvents') {
+                if (cellSave$$1 && typeof cellSave$$1 === 'function') {
                     cellSave$$1.apply(this, [args]);
                 }
             }
@@ -2975,7 +2974,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         };
         this.grid.cellEdit = (args) => {
             if (isBlazor() && this.isServerRendered) {
-                if (cellEdit$$1 && typeof cellEdit$$1 === 'function' && cellEdit$$1[name] === 'bound triggerEJEvents') {
+                if (cellEdit$$1 && typeof cellEdit$$1 === 'function') {
                     cellEdit$$1.apply(this, [args]);
                 }
             }
@@ -2985,11 +2984,24 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             this.notify(cellEdit, args);
             return promise;
         };
+    }
+    extendedGridBatchEvents() {
+        let beforeBatchSave$$1;
+        if (isBlazor() && this.isServerRendered) {
+            if (!isNullOrUndefined(this.grid.beforeBatchSave)) {
+                beforeBatchSave$$1 = this.grid.beforeBatchSave;
+            }
+        }
         this.grid.batchAdd = (args) => {
             this.trigger(batchAdd, args);
             this.notify(batchAdd, args);
         };
         this.grid.beforeBatchSave = (args) => {
+            if (isBlazor() && this.isServerRendered) {
+                if (beforeBatchSave$$1 && typeof beforeBatchSave$$1 === 'function') {
+                    beforeBatchSave$$1.apply(this, [args]);
+                }
+            }
             this.trigger(beforeBatchSave, args);
             this.notify(beforeBatchSave, args);
         };
@@ -3060,9 +3072,8 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     }
     extendedGridActionEvents() {
         let actionComplete$$1;
-        let name = 'name';
         if (isBlazor() && this.isServerRendered) {
-            if (!isNullOrUndefined(this.grid.actionComplete) && this.grid.actionComplete[name] === 'bound triggerEJEvents') {
+            if (!isNullOrUndefined(this.grid.actionComplete)) {
                 actionComplete$$1 = this.grid.actionComplete;
             }
         }
@@ -3102,7 +3113,6 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             return callBackPromise;
         };
         this.grid.actionComplete = (args) => {
-            let name = 'name';
             if (isBlazor() && this.isServerRendered) {
                 let rows = this.getRows();
                 for (let i = 0; i < rows.length; i++) {
@@ -3122,7 +3132,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
                             addClass([expandicon], 'e-treegridexpand');
                     }
                 }
-                if (actionComplete$$1 && typeof actionComplete$$1 === 'function' && actionComplete$$1[name] === 'bound triggerEJEvents') {
+                if (actionComplete$$1 && typeof actionComplete$$1 === 'function') {
                     actionComplete$$1.apply(this, [args]);
                 }
             }
@@ -3723,7 +3733,9 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
      */
     updateRow(index, data) {
         if (this.grid.editModule) {
-            this.grid.editModule.updateRow(index, data);
+            let griddata = this.grid.getCurrentViewRecords()[index];
+            extend(griddata, data);
+            this.grid.editModule.updateRow(index, griddata);
         }
     }
     /**
@@ -9260,7 +9272,7 @@ class VirtualTreeContentRenderer extends VirtualContentRenderer {
             }
             this.startIndex = lastIndex - this.parent.getRows().length;
             this.endIndex = lastIndex;
-            this.translateY = scrollArgs.offset.top;
+            this.translateY = this.getTranslateY(scrollArgs.offset.top, content.getBoundingClientRect().height);
         }
         if ((downScroll && (scrollArgs.offset.top < (this.parent.getRowHeight() * this.totalRecords)))
             || (upScroll)) {

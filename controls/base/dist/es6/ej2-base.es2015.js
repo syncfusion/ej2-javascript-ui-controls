@@ -847,6 +847,7 @@ class DateFormat {
         }
         else {
             resPattern = IntlBase.ConvertDateToWeekFormat(resPattern);
+            resPattern = resPattern.replace(/tt/, 'a');
             formatOptions.pattern = resPattern;
             formatOptions.numMapper = isBlazor() ?
                 extend({}, numObject) : ParserBase.getNumberMapper(dependable.parserObject, ParserBase.getNumberingSystem(cldr));
@@ -3234,6 +3235,21 @@ var IntlBase;
         return actualPattern;
     }
     IntlBase.getActualDateTimeFormat = getActualDateTimeFormat;
+    // tslint:disable-next-line:no-any
+    function processSymbol(actual, option) {
+        for (let i = 0; i < actual.length; i++) {
+            let mapper = { '.': 'decimal', ',': 'group' };
+            // tslint:disable-next-line:no-any
+            let matched = mapper[actual[i]];
+            if (matched === 'decimal') {
+                actual = actual.replace(/\./g, getValue('numberMapper.numberSymbols.decimal', option) || '.');
+            }
+            else if (matched === 'group') {
+                actual = actual.replace(/,/g, getValue('numberMapper.numberSymbols.group', option) || '.');
+            }
+        }
+        return actual;
+    }
     /**
      * Returns Native Number pattern
      * @private
@@ -3250,8 +3266,8 @@ var IntlBase;
         let curObj = {};
         let curMatch = (options.format || '').match(IntlBase.currencyFormatRegex);
         let type = IntlBase.formatRegex.test(options.format) ? getProperNumericSkeleton(options.format || 'N') : {};
+        let dOptions = {};
         if (curMatch) {
-            let dOptions = {};
             dOptions.numberMapper = isBlazor() ?
                 extend({}, dependable.numericObject) :
                 ParserBase.getNumberMapper(dependable.parserObject, ParserBase.getNumberingSystem(cldr), true);
@@ -3305,6 +3321,9 @@ var IntlBase;
         }
         else {
             actualPattern = options.format.replace(/\'/g, '"');
+        }
+        if (Object.keys(dOptions).length > 0) {
+            actualPattern = processSymbol(actualPattern, dOptions);
         }
         return actualPattern;
     }

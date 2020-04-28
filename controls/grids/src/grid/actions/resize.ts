@@ -159,8 +159,9 @@ export class Resize implements IAction {
         let columnbyindex: Column = gObj.getColumns()[columnIndexByField];
         let result: Boolean;
         let width: string = columnbyindex.width = formatUnit(Math.max(wHeader, wContent, wFooter));
-        if (parseInt(width, 10) > columnbyindex.maxWidth) {
-            columnbyindex.width = columnbyindex.maxWidth;
+        let colMaxWidth: number =  columnbyindex.maxWidth && parseFloat(columnbyindex.maxWidth.toString());
+        if (parseInt(width, 10) > colMaxWidth) {
+            columnbyindex.width = colMaxWidth;
         }
         this.widthService.setColumnWidth(gObj.getColumns()[columnIndexByField] as Column);
         result = gObj.getColumns().some((x: Column) => x.width === null || x.width === undefined || (x.width as string).length <= 0);

@@ -16654,12 +16654,16 @@ class VirtualScroll {
     }
     updateVTrackWidth(args) {
         if (args.colIdx >= this.parent.viewport.leftIndex && args.colIdx <= this.parent.viewport.rightIndex) {
-            let hdrVTrack = this.parent.getColumnHeaderContent().getElementsByClassName('e-virtualtrack')[0];
-            hdrVTrack.style.width = parseInt(hdrVTrack.style.width, 10) + args.threshold + 'px';
+            if (this.parent.getActiveSheet().showHeaders) {
+                let hdrVTrack = this.parent.getColumnHeaderContent().getElementsByClassName('e-virtualtrack')[0];
+                hdrVTrack.style.width = parseInt(hdrVTrack.style.width, 10) + args.threshold + 'px';
+            }
             let cntVTrack = this.parent.getMainContent().getElementsByClassName('e-virtualtrack')[0];
             cntVTrack.style.width = parseInt(cntVTrack.style.width, 10) + args.threshold + 'px';
-            let hdrColumn = this.parent.getColumnHeaderContent().getElementsByClassName('e-virtualable')[0];
-            hdrColumn.style.width = parseInt(hdrColumn.style.width, 10) + args.threshold + 'px';
+            if (this.parent.getActiveSheet().showHeaders) {
+                let hdrColumn = this.parent.getColumnHeaderContent().getElementsByClassName('e-virtualable')[0];
+                hdrColumn.style.width = parseInt(hdrColumn.style.width, 10) + args.threshold + 'px';
+            }
             let cntColumn = this.parent.getMainContent().getElementsByClassName('e-virtualable')[0];
             cntColumn.style.width = parseInt(cntColumn.style.width, 10) + args.threshold + 'px';
         }
@@ -17488,10 +17492,12 @@ class Resize {
         let mainContent = this.parent.getMainContent();
         let oldValue = isCol ? `${getColumnWidth(this.parent.getActiveSheet(), idx)}px` :
             `${getRowHeight(this.parent.getActiveSheet(), idx)}px`;
-        let headerTable = isCol ? this.parent.getColHeaderTable() : this.parent.getRowHeaderTable();
         let contentClone = [];
         let contentTable = mainContent.getElementsByClassName('e-content-table')[0];
-        let headerRow = headerTable.getElementsByTagName('tr');
+        if (this.parent.getActiveSheet().showHeaders) {
+            let headerTable = isCol ? this.parent.getColHeaderTable() : this.parent.getRowHeaderTable();
+            let headerRow = headerTable.getElementsByTagName('tr');
+        }
         if (isCol) {
             let rowLength = sheet.rows.length;
             for (let rowIdx = 0; rowIdx < rowLength; rowIdx++) {
@@ -17795,7 +17801,19 @@ class Resize {
         }
     }
     resizeStart(idx, viewportIdx, value, isCol, isFit, prevData) {
-        setResize(viewportIdx, value, isCol, this.parent);
+        if (this.parent.getActiveSheet().showHeaders) {
+            setResize(viewportIdx, value, isCol, this.parent);
+        }
+        else {
+            if (isCol) {
+                let curEle = this.parent.element.getElementsByClassName('e-sheet-content')[0].getElementsByTagName('col')[viewportIdx];
+                curEle.style.width = value;
+            }
+            else {
+                let curEle = this.parent.element.getElementsByClassName('e-sheet-content')[0].getElementsByTagName('tr')[viewportIdx];
+                curEle.style.height = value;
+            }
+        }
         let action = isFit ? 'resizeToFit' : 'resize';
         let eventArgs;
         let isAction;
@@ -28132,8 +28150,9 @@ class SheetRender {
         let sheet = this.parent.getActiveSheet();
         if (sheet.showHeaders) {
             if (this.parent.scrollSettings.enableVirtualization) {
-                let startIndex = [this.parent.viewport.topIndex, this.parent.viewport.leftIndex];
-                this.renderHeaders([startIndex[0], startIndex[0] + this.parent.viewport.rowCount + (this.parent.getThreshold('row') * 2)], [startIndex[1], startIndex[1] + this.parent.viewport.colCount + (this.parent.getThreshold('col') * 2)]);
+                let indexes = [this.parent.viewport.topIndex, this.parent.viewport.leftIndex,
+                    this.parent.viewport.bottomIndex, this.parent.viewport.rightIndex];
+                this.renderHeaders([indexes[0], indexes[2]], [indexes[1], indexes[3]]);
             }
             else {
                 this.renderHeaders([0, sheet.rowCount - 1], [0, sheet.colCount - 1]);
@@ -28152,6 +28171,7 @@ class SheetRender {
         }
     }
     renderHeaders(rowIndexes, colIndexes) {
+        let sheet = this.parent.getActiveSheet();
         this.initHeaderPanel();
         let cFrag = document.createDocumentFragment();
         let rFrag = document.createDocumentFragment();
@@ -28166,16 +28186,20 @@ class SheetRender {
         cTHead.appendChild(cRow);
         let row;
         for (let i = colIndexes[0]; i <= colIndexes[1]; i++) {
-            cRow.appendChild(this.cellRenderer.renderColHeader(i));
+            if (!isHiddenCol(sheet, i)) {
+                cRow.appendChild(this.cellRenderer.renderColHeader(i));
+            }
         }
         let colGroupWidth = getColGroupWidth(rowIndexes[1]);
         if (this.colGroupWidth !== colGroupWidth) {
             this.updateLeftColGroup(colGroupWidth, rowHdrEle);
         }
         for (let i = rowIndexes[0]; i <= rowIndexes[1]; i++) {
-            row = this.rowRenderer.render(i, true);
-            row.appendChild(this.cellRenderer.renderRowHeader(i));
-            rTBody.appendChild(row);
+            if (!isHiddenRow(sheet, i)) {
+                row = this.rowRenderer.render(i, true);
+                row.appendChild(this.cellRenderer.renderRowHeader(i));
+                rTBody.appendChild(row);
+            }
         }
         getUpdateUsingRaf(() => {
             this.getColHeaderTable().insertBefore(this.getContentTable().querySelector('colgroup').cloneNode(true), cTHead);

@@ -860,8 +860,9 @@ function mergeSeparateCluster(sameMarkerData, maps, markerElement) {
     var layerIndex = sameMarkerData[0].layerIndex;
     var clusterIndex = sameMarkerData[0].targetClusterIndex;
     var markerIndex = sameMarkerData[0].markerIndex;
+    var dataIndex = (sameMarkerData[0].isClusterSame) ? sameMarkerData[0].data[0]['index'] : sameMarkerData[0].data[sameMarkerData[0].data.length - 1]['index'];
     var markerId = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex;
-    var clusterId = markerId + '_dataIndex_' + sameMarkerData[0].data[0]['index'] + '_cluster_' + clusterIndex;
+    var clusterId = markerId + '_dataIndex_' + dataIndex + '_cluster_' + clusterIndex;
     var clusterEle = getElement(clusterId);
     var clusterEleLabel = getElement(clusterId + '_datalabel_' + clusterIndex);
     clusterEle.setAttribute('visibility', 'visible');
@@ -878,7 +879,7 @@ function clusterSeparate(sameMarkerData, maps, markerElement, isDom) {
     var layerIndex = sameMarkerData[0].layerIndex;
     var markerIndex = sameMarkerData[0].markerIndex;
     var clusterIndex = sameMarkerData[0].targetClusterIndex;
-    var dataIndex = sameMarkerData[0].data[0]['index'];
+    var dataIndex = (sameMarkerData[0].isClusterSame) ? sameMarkerData[0].data[0]['index'] : sameMarkerData[0].data[sameMarkerData[0].data.length - 1]['index'];
     var getElementFunction = isDom ? getElement : markerElement.querySelector.bind(markerElement);
     var getQueryConnect = isDom ? '' : '#';
     var markerId = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex;
@@ -4085,7 +4086,7 @@ var Marker = /** @__PURE__ @class */ (function () {
         if (isNullOrUndefined(options)) {
             return;
         }
-        if ((options.clusterCollection.length > 0) && options.clusterCollection[0].isClusterSame) {
+        if ((options.clusterCollection.length > 0 && this.maps.markerClusterExpand)) {
             if (getElement(this.maps.element.id + '_mapsTooltip') &&
                 this.maps.mapsTooltipModule.tooltipTargetID.indexOf('_MarkerIndex_') > -1) {
                 removeElement(this.maps.element.id + '_mapsTooltip');
@@ -4123,6 +4124,7 @@ var Marker = /** @__PURE__ @class */ (function () {
         var markCollection = [];
         var clusterCollection = [];
         var marker$$1;
+        this.maps.markerClusterExpand = layer.markerClusterSettings.allowClusterExpand;
         if (target.indexOf('_MarkerIndex_') > -1) {
             var markerIndex = parseInt(id[1].split('_MarkerIndex_')[1].split('_')[0], 10);
             var dataIndex = parseInt(id[1].split('_dataIndex_')[1].split('_')[0], 10);
@@ -4138,25 +4140,19 @@ var Marker = /** @__PURE__ @class */ (function () {
                     });
                 }
                 if ((target.indexOf('_cluster_') > -1)) {
-                    var textElement = document.getElementById(target.indexOf('_datalabel_') > -1 ? target : target + '_datalabel_' + target.split('_cluster_')[1]);
                     var isClusterSame = false;
-                    if (+textElement.textContent === collection_1.length) {
-                        isClusterSame = true;
-                    }
-                    else {
-                        var clusterElement = document.getElementById(target.indexOf('_datalabel_') > -1 ? target.split('_datalabel_')[0] : target);
-                        var indexes = clusterElement.innerHTML.split(',').map(Number);
-                        collection_1 = [];
-                        for (var _i = 0, indexes_1 = indexes; _i < indexes_1.length; _i++) {
-                            var i = indexes_1[_i];
-                            collection_1.push({ data: marker$$1.dataSource[i], index: i });
-                            if (this.maps.isBlazor) {
-                                marker$$1.dataSource[i]["text"] = "";
-                            }
-                            markCollection.push(marker$$1.dataSource[i]);
+                    var clusterElement = document.getElementById(target.indexOf('_datalabel_') > -1 ? target.split('_datalabel_')[0] : target);
+                    var indexes = clusterElement.innerHTML.split(',').map(Number);
+                    collection_1 = [];
+                    for (var _i = 0, indexes_1 = indexes; _i < indexes_1.length; _i++) {
+                        var i = indexes_1[_i];
+                        collection_1.push({ data: marker$$1.dataSource[i], index: i });
+                        if (this.maps.isBlazor) {
+                            marker$$1.dataSource[i]["text"] = "";
                         }
-                        isClusterSame = false;
+                        markCollection.push(marker$$1.dataSource[i]);
                     }
+                    isClusterSame = false;
                     clusterCollection.push({
                         data: collection_1, layerIndex: index, markerIndex: markerIndex,
                         targetClusterIndex: +(target.split('_cluster_')[1].indexOf('_datalabel_') > -1 ? target.split('_cluster_')[1].split('_datalabel_')[0] : target.split('_cluster_')[1]),
@@ -4199,7 +4195,7 @@ var Marker = /** @__PURE__ @class */ (function () {
             return;
         }
         var options = this.getMarker(targetId);
-        if (options.clusterCollection[0].isClusterSame) {
+        if (this.maps.markerClusterExpand) {
             e.target.setAttribute('style', 'cursor: pointer');
         }
         if (isNullOrUndefined(options)) {
@@ -6194,6 +6190,8 @@ var Maps = /** @__PURE__ @class */ (function (_super) {
         _this.applyZoomReset = false;
         /** @private */
         _this.markerClusterExpandCheck = false;
+        /** @private */
+        _this.markerClusterExpand = false;
         setValue('mergePersistData', _this.mergePersistMapsData, _this);
         return _this;
     }
@@ -9691,7 +9689,7 @@ var Legend = /** @__PURE__ @class */ (function () {
                     break;
             }
             if ((legend.height || legend.width) && legend.mode !== 'Interactive') {
-                map.totalRect = totalRect;
+                map.mapAreaRect = map.totalRect = totalRect;
             }
             else {
                 map.mapAreaRect = totalRect;

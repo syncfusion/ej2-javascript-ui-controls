@@ -91,6 +91,8 @@ describe('Image Resizer testing', () => {
         (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.width='1000px';
+        editor.height='500px';
         editor.appendTo('#container');
         imageResizer = editor.imageResizerModule;
     });
@@ -322,6 +324,8 @@ describe('Image Point', () => {
         (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.width='1200px';
+        editor.height='600px';
         editor.appendTo('#container');
         imageResizer = editor.imageResizerModule;
     });
@@ -485,6 +489,8 @@ describe('Image resizing undo and redo operation', () => {
         (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.width='100%';
+        editor.height='850px';
         editor.appendTo('#container');
         imageResizer = editor.imageResizerModule;
     });

@@ -3,7 +3,7 @@ import { LegendSettingsModel, ColorMappingModel, LevelSettingsModel } from '../m
 import { LeafItemSettingsModel, FontModel, BorderModel } from '../model/base-model';
 import {
     findChildren, Location, Rect, Size, measureText,
-    TextOption, PathOption, RectOption, drawSymbol, orderByArea
+    TextOption, PathOption, RectOption, drawSymbol, orderByArea, legendMaintain
 } from '../utils/helper';
 import { Browser, isNullOrUndefined, EventHandler, extend } from '@syncfusion/ej2-base';
 import { SvgRenderer, GradientColor, LinearGradient } from '@syncfusion/ej2-svg-base';
@@ -522,6 +522,7 @@ export class TreeMapLegend {
                 fill = gradientElement ? 'url(#' + gradientElement.id + ')' : item['fill'];
                 let bounds: Rect = new Rect(item['x'], item['y'], item['width'], item['height']);
                 let textLocation: Location = new Location(item['textX'], item['textY']);
+
                 let rectOptions: RectOption = new RectOption(itemId, fill, legend.shapeBorder, legend.opacity, bounds);
                 if (this.treemap.enableRtl) {
                     if (treemap.legendSettings.position === 'Left' || treemap.legendSettings.position === 'Right'
@@ -545,6 +546,7 @@ export class TreeMapLegend {
                 this.legendGroup.appendChild(render.drawRectangle(rectOptions));
             }
         }
+        legendMaintain(this.treemap, this.legendGroup);
     }
 
     private defaultLegendRtlLocation(collection: Object, spacing: number, treemap: TreeMap, legend: LegendSettingsModel): Object {

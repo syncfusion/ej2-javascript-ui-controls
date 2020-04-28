@@ -1197,7 +1197,7 @@ export class Legend {
                     break;
             }
             if ((legend.height || legend.width) && legend.mode !== 'Interactive') {
-                map.totalRect = totalRect;
+                map.mapAreaRect = map.totalRect = totalRect;
             } else {
                 map.mapAreaRect = totalRect;
             }

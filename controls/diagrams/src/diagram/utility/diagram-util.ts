@@ -8,7 +8,7 @@ import { StrokeStyle, LinearGradient, RadialGradient, Stop } from './../core/app
 import { TextStyleModel, GradientModel, LinearGradientModel, RadialGradientModel } from './../core/appearance-model';
 import { Point } from './../primitives/point';
 import {
-    PortVisibility, ConnectorConstraints, NodeConstraints, Shapes, UmlActivityFlows, BpmnFlows,
+    PortVisibility, ConnectorConstraints, NodeConstraints, Shapes, UmlActivityFlows, BpmnFlows, DiagramAction,
     UmlActivityShapes, PortConstraints, DiagramConstraints, DiagramTools, Transform, EventState, ChangeType
 } from './../enum/enum';
 import { FlowShapes, SelectorConstraints, ThumbsConstraints, FlipDirection, DistributeOptions } from './../enum/enum';
@@ -1558,11 +1558,11 @@ export function removeItem(array: String[], item: string): void {
     }
 }
 /** @private */
-export function updateConnector(connector: Connector, points: PointModel[]): void {
+export function updateConnector(connector: Connector, points: PointModel[], diagramActions?: DiagramAction): void {
     let srcPoint: PointModel; let anglePoint: PointModel[]; let srcDecorator: DecoratorModel;
     let tarDecorator: DecoratorModel; let targetPoint: PointModel;
     connector.intermediatePoints = points;
-    connector.updateSegmentElement(connector, points, connector.wrapper.children[0] as PathElement);
+    connector.updateSegmentElement(connector, points, connector.wrapper.children[0] as PathElement, diagramActions);
     srcPoint = connector.sourcePoint; srcDecorator = connector.sourceDecorator;
     if (connector.type === 'Bezier') {
         let firstSegment: BezierSegment = (connector.segments[0] as BezierSegment);
@@ -1572,7 +1572,7 @@ export function updateConnector(connector: Connector, points: PointModel[]): voi
     } else {
         anglePoint = connector.intermediatePoints;
     }
-    points = connector.clipDecorators(connector, points);
+    points = connector.clipDecorators(connector, points, diagramActions);
     let element: DiagramElement = connector.wrapper.children[0];
     (element as PathElement).canMeasurePath = true;
     element = connector.wrapper.children[1];

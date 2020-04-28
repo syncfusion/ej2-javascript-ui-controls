@@ -125,3 +125,170 @@ describe('Header footer containing document', () => {
         expect((line.children[0] as TextElementBox).text).toBe("Sample 2");
     });
 });
+
+
+/**
+ * Comment destroy validation
+ */
+
+ let commentJson:any={
+	"sections": [
+		{
+			"sectionFormat": {
+				"pageWidth": 612,
+				"pageHeight": 792,
+				"leftMargin": 72,
+				"rightMargin": 72,
+				"topMargin": 72,
+				"bottomMargin": 72,
+				"differentFirstPage": false,
+				"differentOddAndEvenPages": false,
+				"headerDistance": 36,
+				"footerDistance": 36,
+				"bidi": false
+			},
+			"blocks": [
+				{
+					"paragraphFormat": {
+						"afterSpacing": 30,
+						"styleName": "Heading 1",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "Adventure Works Cycles"
+						}
+					]
+				},
+				{
+					"paragraphFormat": {
+						"firstLineIndent": 36,
+						"styleName": "Normal",
+						"listFormat": {}
+					},
+					"characterFormat": {},
+					"inlines": [
+						
+						{
+							"characterFormat": {},
+							"commentCharacterType": 0,
+							"commentId": "2zm972plegqakixr0j5dh6"
+						},
+						{
+							"characterFormat": {},
+							"text": "market base."
+						},
+						{
+							"characterFormat": {},
+							"commentCharacterType": 1,
+							"commentId": "2zm972plegqakixr0j5dh6"
+						}
+					]
+				}
+			],
+			"headersFooters": {
+				
+			}
+		}
+	],
+	"characterFormat": {
+		"bold": false,
+		"italic": false,
+		"fontSize": 11,
+		"fontFamily": "Calibri",
+		"underline": "None",
+		"strikethrough": "None",
+		"baselineAlignment": "Normal",
+		"highlightColor": "NoColor",
+		"fontColor": "#000000",
+		"fontSizeBidi": 11,
+		"fontFamilyBidi": "Calibri"
+	},
+	"paragraphFormat": {
+		"leftIndent": 0,
+		"rightIndent": 0,
+		"firstLineIndent": 0,
+		"textAlignment": "Left",
+		"beforeSpacing": 0,
+		"afterSpacing": 0,
+		"lineSpacing": 1.0791666507720948,
+		"lineSpacingType": "Multiple",
+		"listFormat": {},
+		"bidi": false
+	},
+	"defaultTabWidth": 36,
+	"enforcement": false,
+	"hashValue": "",
+	"saltValue": "",
+	"formatting": false,
+	"protectionType": "NoProtection",
+	"dontUseHTMLParagraphAutoSpacing": false,
+	"styles": [
+		
+	],
+	"lists": [],
+	"abstractLists": [],
+	"comments": [
+		{
+			"commentId": "2zm972plegqakixr0j5dh6",
+			"author": "Guest user",
+			"date": "2020-04-06T08:44:53.098Z",
+			"blocks": [
+				{
+					"inlines": [
+						{
+							"text": "Working comment"
+						}
+					]
+				}
+			],
+			"done": false,
+			"replyComments": []
+		},
+		{
+			"commentId": "o0gprb4nhbmp0y6s3mozc",
+			"author": "Guest user",
+			"date": "2020-04-06T08:45:04.283Z",
+			"blocks": [
+				{
+					"inlines": [
+						{
+							"text": "Non working comment"
+						}
+					]
+				}
+			],
+			"done": false,
+			"replyComments": []
+		}
+	]
+};
+
+describe('Document with broken comment', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Selection, Editor)
+        editor = new DocumentEditor({ isReadOnly: false, enableEditor: true,enableComment:true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Destroy validation', () => {
+        editor.open(JSON.stringify(commentJson));
+       expect(function(){editor.openBlank()}).not.toThrowError();
+    });
+});

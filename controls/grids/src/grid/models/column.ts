@@ -1194,6 +1194,12 @@ export interface ActionEventArgs {
     rowIndex?: number;
     /** Defines take number of data while Filtering */
     filterChoiceCount: number;
+    /**  
+     * Defines the excel search operator
+     * @blazorType Syncfusion.Blazor.Operator
+     * @blazorDefaultValue Syncfusion.Blazor.Operator.None
+     */
+    excelSearchOperator: string;
 }
 
 /**

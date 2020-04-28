@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, classList, createElement, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, classList, createElement, formatUnit, isBlazor, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ContextMenu, Tab, Toolbar } from '@syncfusion/ej2-navigations';
 import { Dialog, DialogUtility, Popup, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
@@ -7602,7 +7602,7 @@ var Layout = /** @__PURE__ @class */ (function () {
         var lastTextElement = 0;
         for (var i = index - 1; i >= 0; i--) {
             var textElement = line.children[i];
-            if (textElement instanceof TextElementBox) {
+            if (textElement instanceof TextElementBox && textElement.width > 0) {
                 var text = textElement.text;
                 lastTextElement = i;
                 if (text.length > 0 && text[text.length - 1] === ' ') {
@@ -7635,7 +7635,9 @@ var Layout = /** @__PURE__ @class */ (function () {
                     break;
                 }
             }
-            else if (!(textElement instanceof ListTextElementBox)) {
+            else if (!(textElement instanceof ListTextElementBox || textElement instanceof FieldElementBox
+                // to skip field code
+                || textElement instanceof TextElementBox && textElement.width === 0)) {
                 //Handled for inline images/UIelements.
                 lastTextElement = i;
                 isSplitByWord = true;
@@ -8022,7 +8024,9 @@ var Layout = /** @__PURE__ @class */ (function () {
                             if (width < tabWidth) {
                                 if (tabStop.tabJustification === 'Right') {
                                     defaultTabWidth = tabWidth - width;
-                                    var areaWidth = this.viewer.clientActiveArea.width - defaultTabWidth;
+                                    var rightIndent = HelperMethods.convertPointToPixel(paragraph.rightIndent);
+                                    var areaWidth = this.viewer.clientActiveArea.width + rightIndent - defaultTabWidth;
+                                    this.viewer.clientActiveArea.width += rightIndent;
                                     if (areaWidth < 0) {
                                         defaultTabWidth += areaWidth - width;
                                     }
@@ -12545,8 +12549,9 @@ var Renderer = /** @__PURE__ @class */ (function () {
         var bgColor = cellFormat.shading.backgroundColor === '#ffffff' ?
             cellWidget.ownerTable.tableFormat.shading.backgroundColor : cellFormat.shading.backgroundColor;
         var left = cellWidget.x - leftMargin - lineWidth;
-        var top = cellWidget.y - HelperMethods.convertPointToPixel(cellWidget.topMargin);
-        var width = cellWidget.width + leftMargin + lineWidth + cellWidget.margin.right;
+        var topMargin = cellWidget.topMargin ? HelperMethods.convertPointToPixel(cellWidget.topMargin) : 0;
+        var top = cellWidget.y - topMargin;
+        var width = cellWidget.width + leftMargin + cellWidget.margin.right - lineWidth;
         this.pageContext.beginPath();
         if (bgColor !== 'empty') {
             this.pageContext.fillStyle = HelperMethods.getColor(bgColor);
@@ -15293,6 +15298,20 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(DocumentHelper.prototype, "dialog3", {
+        /**
+         * Gets the initialized default dialog.
+         * @private
+         */
+        get: function () {
+            if (!this.dialogInternal3) {
+                this.initDialog3(this.owner.enableRtl);
+            }
+            return this.dialogInternal3;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(DocumentHelper.prototype, "currentSelectedComment", {
         /**
          * @private
@@ -15373,7 +15392,9 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
         this.currentSelectedComment = undefined;
         for (var i = 0; i < this.comments.length; i++) {
             var commentStart = this.comments[i].commentStart;
-            commentStart.destroy();
+            if (commentStart) {
+                commentStart.destroy();
+            }
         }
         this.comments = [];
         this.bookmarks.clear();
@@ -15700,13 +15721,35 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
             this.dialogInternal = new Dialog({
                 target: document.body, showCloseIcon: true,
                 allowDragging: true, enableRtl: isRtl, visible: false,
-                width: '1px', isModal: true, position: { X: 'center', Y: 'center' }, zIndex: this.owner.zIndex + 10,
+                width: '1px', isModal: true, position: { X: 'center', Y: 'center' }, zIndex: this.owner.zIndex + 20,
                 animationSettings: { effect: 'None' }
             });
             this.dialogInternal.isStringTemplate = true;
             this.dialogInternal.open = this.selection.hideCaret;
             this.dialogInternal.beforeClose = this.updateFocus;
             this.dialogInternal.appendTo(this.dialogTarget1);
+        }
+    };
+    /**
+     * Initializes dialog template.
+     */
+    DocumentHelper.prototype.initDialog3 = function (isRtl) {
+        if (!this.dialogInternal3) {
+            this.dialogTarget3 = createElement('div', { className: 'e-de-dlg-target' });
+            document.body.appendChild(this.dialogTarget3);
+            if (isRtl) {
+                this.dialogTarget3.classList.add('e-de-rtl');
+            }
+            this.dialogInternal3 = new Dialog({
+                target: document.body, showCloseIcon: true,
+                allowDragging: true, enableRtl: isRtl, visible: false,
+                width: '1px', isModal: true, position: { X: 'center', Y: 'center' }, zIndex: this.owner.zIndex,
+                animationSettings: { effect: 'None' }
+            });
+            this.dialogInternal3.isStringTemplate = true;
+            this.dialogInternal3.open = this.selection.hideCaret;
+            this.dialogInternal3.beforeClose = this.updateFocus;
+            this.dialogInternal3.appendTo(this.dialogTarget3);
         }
     };
     /**
@@ -15729,7 +15772,7 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
             this.dialogInternal2 = new Dialog({
                 target: document.body, showCloseIcon: true,
                 allowDragging: true, enableRtl: isRtl, visible: false,
-                width: '1px', isModal: true, position: { X: 'center', Y: 'Top' }, zIndex: this.owner.zIndex
+                width: '1px', isModal: true, position: { X: 'center', Y: 'Top' }, zIndex: this.owner.zIndex + 10
             });
             this.dialogInternal2.isStringTemplate = true;
             this.dialogInternal2.appendTo(this.dialogTarget2);
@@ -16434,6 +16477,10 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
             this.dialogInternal2.destroy();
             this.dialogInternal2 = undefined;
         }
+        if (this.dialogInternal3) {
+            this.dialogInternal3.destroy();
+            this.dialogInternal3 = undefined;
+        }
         if (this.dialogTarget1 && this.dialogTarget1.parentElement) {
             this.dialogTarget1.parentElement.removeChild(this.dialogTarget1);
         }
@@ -16442,6 +16489,10 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
             this.dialogTarget2.parentElement.removeChild(this.dialogTarget2);
         }
         this.dialogTarget2 = undefined;
+        if (this.dialogTarget3 && this.dialogTarget3.parentElement) {
+            this.dialogTarget3.parentElement.removeChild(this.dialogTarget3);
+        }
+        this.dialogTarget3 = undefined;
         if (!isNullOrUndefined(this.touchStart)) {
             this.touchStart.innerHTML = '';
         }
@@ -19398,11 +19449,13 @@ var TableWidget = /** @__PURE__ @class */ (function (_super) {
                         rowSpannedCells.push(cell);
                     }
                     else {
+                        var insertIndex = 0;
                         for (var m = rowSpannedCells.length; m > 0; m--) {
                             if (rowSpannedCells[m - 1].columnIndex > columnSpan) {
-                                rowSpannedCells.splice(m - 1, 0, cell);
+                                insertIndex = m - 1;
                             }
                         }
+                        rowSpannedCells.splice(insertIndex, 0, cell);
                     }
                 }
                 cellWidth = this.getCellWidth(cell.cellFormat.preferredWidth, cell.cellFormat.preferredWidthType, tableWidth, cell);
@@ -39620,7 +39673,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (start.paragraph === end.paragraph && this.isSelectList) {
             var listLevel = this.getListLevel(start.paragraph);
             // let breakCharacterFormat: WCharacterFormat = start.paragraph.characterFormat;
-            if (listLevel.characterFormat.uniqueCharacterFormat) {
+            if (listLevel && listLevel.characterFormat.uniqueCharacterFormat) {
                 this.characterFormat.copyFormat(listLevel.characterFormat);
             }
             return;
@@ -45237,6 +45290,8 @@ var Editor = /** @__PURE__ @class */ (function () {
         this.copiedContent = '';
         /* tslint:enable:no-any */
         this.copiedTextContent = '';
+        this.previousParaFormat = undefined;
+        this.previousCharFormat = undefined;
         this.pasteTextPosition = undefined;
         this.isSkipHistory = false;
         this.isPaste = false;
@@ -45996,6 +46051,8 @@ var Editor = /** @__PURE__ @class */ (function () {
         if (!this.isPaste) {
             this.copiedContent = undefined;
             this.copiedTextContent = '';
+            this.previousParaFormat = undefined;
+            this.previousCharFormat = undefined;
             this.selection.isViewPasteOptions = false;
             if (this.isPasteListUpdated) {
                 this.isPasteListUpdated = false;
@@ -46388,6 +46445,8 @@ var Editor = /** @__PURE__ @class */ (function () {
                     if (!this.isPaste) {
                         this.copiedContent = undefined;
                         this.copiedTextContent = '';
+                        this.previousParaFormat = undefined;
+                        this.previousCharFormat = undefined;
                         this.selection.isViewPasteOptions = false;
                         if (this.isPasteListUpdated) {
                             this.isPasteListUpdated = false;
@@ -47857,6 +47916,16 @@ var Editor = /** @__PURE__ @class */ (function () {
                 htmlContent = clipbordData.getData('Text/Html');
             }
             this.copiedTextContent = textContent = clipbordData.getData('Text');
+            if (this.selection.start.paragraph.isEmpty()) {
+                this.previousCharFormat = new WCharacterFormat();
+                this.previousCharFormat.copyFormat(this.selection.start.paragraph.characterFormat);
+                this.previousParaFormat = new WParagraphFormat();
+                this.previousParaFormat.copyFormat(this.selection.start.paragraph.paragraphFormat);
+            }
+            else {
+                this.previousCharFormat = undefined;
+                this.previousParaFormat = undefined;
+            }
             if (rtfContent !== '') {
                 this.pasteAjax(rtfContent, '.rtf');
             }
@@ -47921,15 +47990,15 @@ var Editor = /** @__PURE__ @class */ (function () {
             type: type
         };
         this.pasteRequestHandler = new XmlHttpRequestHandler();
+        showSpinner(this.owner.element);
         this.pasteRequestHandler.url = proxy.owner.serviceUrl + this.owner.serverActionSettings.systemClipboard;
         this.pasteRequestHandler.responseType = 'json';
         this.pasteRequestHandler.contentType = 'application/json;charset=UTF-8';
         this.pasteRequestHandler.customHeaders = proxy.owner.headers;
-        this.pasteRequestHandler.send(formObject);
-        showSpinner(this.owner.element);
         this.pasteRequestHandler.onSuccess = this.pasteFormattedContent.bind(this);
         this.pasteRequestHandler.onFailure = this.onPasteFailure.bind(this);
         this.pasteRequestHandler.onError = this.onPasteFailure.bind(this);
+        this.pasteRequestHandler.send(formObject);
     };
     /**
      * @private
@@ -48117,8 +48186,16 @@ var Editor = /** @__PURE__ @class */ (function () {
             var arr = [];
             var txt = pasteContent;
             txt = txt.replace(/\r\n/g, '\r');
-            arr = txt.split('\r');
+            if (navigator.userAgent.indexOf('Firefox') !== -1) {
+                arr = txt.split('\n');
+            }
+            else {
+                arr = txt.split('\r');
+            }
             for (var i = 0; i < arr.length; i++) {
+                if (i === arr.length - 1 && arr[i].length === 0) {
+                    continue;
+                }
                 var currentInline = this.selection.start.currentWidget.getInline(this.selection.start.offset, 0);
                 var element = this.selection.getPreviousValidElement(currentInline.element);
                 if (element !== currentInline.element) {
@@ -48126,7 +48203,13 @@ var Editor = /** @__PURE__ @class */ (function () {
                 }
                 var insertFormat = element && element === currentInline.element ? startParagraph.characterFormat :
                     element ? element.characterFormat : this.copyInsertFormat(startParagraph.characterFormat, false);
+                if (!isNullOrUndefined(this.previousCharFormat)) {
+                    insertFormat = this.previousCharFormat;
+                }
                 var insertParaFormat = this.documentHelper.selection.copySelectionParagraphFormat();
+                if (!isNullOrUndefined(this.previousParaFormat)) {
+                    insertParaFormat = this.previousParaFormat;
+                }
                 var paragraph = new ParagraphWidget();
                 paragraph.paragraphFormat.copyFormat(insertParaFormat);
                 var line = new LineWidget(paragraph);
@@ -48596,7 +48679,9 @@ var Editor = /** @__PURE__ @class */ (function () {
                 paragraphFormat.bidi = true;
                 paragraphFormat.textAlignment = paragraph.paragraphFormat.textAlignment;
             }
-            paragraph.paragraphFormat.copyFormat(paragraphFormat);
+            if (this.copiedTextContent.indexOf('\n') !== -1 || paragraphFormat.listFormat && paragraphFormat.listFormat.listId !== -1) {
+                paragraph.paragraphFormat.copyFormat(paragraphFormat);
+            }
         }
         // tslint:disable-next-line:max-line-length
         this.documentHelper.layout.reLayoutParagraph(paragraph, lineIndex, 0, this.isInsertField ? undefined : paragraph.paragraphFormat.bidi);
@@ -54551,7 +54636,7 @@ var Editor = /** @__PURE__ @class */ (function () {
         }
         if (inline && (inline instanceof BookmarkElementBox && inline.bookmarkType === 0
             || inline.nextNode instanceof BookmarkElementBox)) {
-            if (inline instanceof BookmarkElementBox) {
+            if (inline.nextNode && inline instanceof BookmarkElementBox) {
                 inline = inline.nextNode;
                 paragraph = inline.line.paragraph;
                 offset = inline.line.getOffset(inline, 0);
@@ -54566,6 +54651,9 @@ var Editor = /** @__PURE__ @class */ (function () {
                 selection.end.setPositionParagraph(bookMarkEnd.line, bookMarkEnd.line.getOffset(bookMarkEnd, 0) + 1);
                 this.deleteEditElement(selection);
                 return;
+            }
+            if (inline instanceof BookmarkElementBox) {
+                offset = inline.line.getOffset(inline, 1);
             }
         }
         // tslint:disable-next-line:max-line-length
@@ -56892,10 +56980,10 @@ var Editor = /** @__PURE__ @class */ (function () {
             var endLine = lastParagraph.childWidgets[lastParagraph.childWidgets.length - 1];
             if ((startLine !== undefined) && (endLine !== undefined)) {
                 var startElement = startLine.children[0];
-                if (startElement instanceof ListTextElementBox) {
+                if (startElement instanceof ListTextElementBox || startElement instanceof CommentCharacterElementBox) {
                     do {
                         startElement = startElement.nextNode;
-                    } while (startElement instanceof ListTextElementBox);
+                    } while (startElement instanceof ListTextElementBox || startElement instanceof CommentCharacterElementBox);
                 }
                 //Returns the bookmark if already present for paragraph.
                 // tslint:disable-next-line:max-line-length
@@ -68046,7 +68134,7 @@ var TableOfContentsDialog = /** @__PURE__ @class */ (function () {
          * @private
          */
         this.onCancelButtonClick = function () {
-            _this.documentHelper.dialog2.hide();
+            _this.documentHelper.dialog3.hide();
             _this.unWireEventsAndBindings();
             _this.documentHelper.updateFocus();
         };
@@ -68218,7 +68306,7 @@ var TableOfContentsDialog = /** @__PURE__ @class */ (function () {
             };
             _this.applyLevelSetting(tocSettings);
             _this.documentHelper.owner.editorModule.insertTableOfContents(tocSettings);
-            _this.documentHelper.dialog2.hide();
+            _this.documentHelper.dialog3.hide();
             _this.documentHelper.updateFocus();
         };
         /**
@@ -68615,14 +68703,14 @@ var TableOfContentsDialog = /** @__PURE__ @class */ (function () {
         if (!this.target) {
             this.initTableOfContentDialog(localValue, this.documentHelper.owner.enableRtl);
         }
-        this.documentHelper.dialog2.header = localValue.getConstant('Table of Contents');
-        this.documentHelper.dialog2.position = { X: 'center', Y: 'center' };
-        this.documentHelper.dialog2.width = 'auto';
-        this.documentHelper.dialog2.height = 'auto';
-        this.documentHelper.dialog2.content = this.target;
-        this.documentHelper.dialog2.beforeOpen = this.loadTableofContentDialog;
-        this.documentHelper.dialog2.close = this.closeTableOfContentDialog;
-        this.documentHelper.dialog2.buttons = [{
+        this.documentHelper.dialog3.header = localValue.getConstant('Table of Contents');
+        this.documentHelper.dialog3.position = { X: 'center', Y: 'center' };
+        this.documentHelper.dialog3.width = 'auto';
+        this.documentHelper.dialog3.height = 'auto';
+        this.documentHelper.dialog3.content = this.target;
+        this.documentHelper.dialog3.beforeOpen = this.loadTableofContentDialog;
+        this.documentHelper.dialog3.close = this.closeTableOfContentDialog;
+        this.documentHelper.dialog3.buttons = [{
                 click: this.applyTableOfContentProperties,
                 buttonModel: { content: localValue.getConstant('Ok'), cssClass: 'e-flat e-toc-okay', isPrimary: true }
             },
@@ -68630,8 +68718,8 @@ var TableOfContentsDialog = /** @__PURE__ @class */ (function () {
                 click: this.onCancelButtonClick,
                 buttonModel: { content: localValue.getConstant('Cancel'), cssClass: 'e-flat e-toc-cancel' }
             }];
-        this.documentHelper.dialog2.dataBind();
-        this.documentHelper.dialog2.show();
+        this.documentHelper.dialog3.dataBind();
+        this.documentHelper.dialog3.show();
     };
     TableOfContentsDialog.prototype.checkLevel = function () {
         if (this.heading1.value !== '') {
@@ -71003,7 +71091,8 @@ var StyleDialog = /** @__PURE__ @class */ (function () {
                     name_1 = styleName;
                     _this.documentHelper.owner.editorModule.applyStyle(name_1);
                 }
-                _this.documentHelper.hideDialog();
+                _this.documentHelper.dialog2.hide();
+                _this.documentHelper.updateFocus();
             }
             else {
                 throw new Error('Enter valid Style name');
@@ -71011,6 +71100,7 @@ var StyleDialog = /** @__PURE__ @class */ (function () {
             if (_this.style) {
                 //this.style.destroy();
             }
+            _this.documentHelper.updateFocus();
         };
         /* tslint:disable-next-line:no-any */
         this.loadStyleDialog = function (args) {
@@ -71028,7 +71118,7 @@ var StyleDialog = /** @__PURE__ @class */ (function () {
                 name = _this.editStyleName;
             }
             /* tslint:disable-next-line:max-line-length */
-            _this.okButton = _this.documentHelper.dialog.element.getElementsByClassName('e-flat e-style-okay').item(0);
+            _this.okButton = _this.documentHelper.dialog2.element.getElementsByClassName('e-flat e-style-okay').item(0);
             _this.enableOrDisableOkButton();
             _this.updateStyleNames(_this.getTypeValue(), name);
             _this.updateCharacterFormat(_this.style.characterFormat);
@@ -71041,7 +71131,8 @@ var StyleDialog = /** @__PURE__ @class */ (function () {
             if (!_this.isEdit && _this.style) {
                 _this.style.destroy();
             }
-            _this.documentHelper.hideDialog();
+            _this.documentHelper.dialog2.hide();
+            _this.documentHelper.updateFocus();
         };
         /**
          * @private
@@ -71332,11 +71423,11 @@ var StyleDialog = /** @__PURE__ @class */ (function () {
         if (isNullOrUndefined(header)) {
             header = localObj.getConstant('Create New Style');
         }
-        this.documentHelper.dialog.header = header;
-        this.documentHelper.dialog.height = 'auto';
-        this.documentHelper.dialog.width = 'auto';
-        this.documentHelper.dialog.content = this.target;
-        this.documentHelper.dialog.buttons = [{
+        this.documentHelper.dialog2.header = header;
+        this.documentHelper.dialog2.height = 'auto';
+        this.documentHelper.dialog2.width = 'auto';
+        this.documentHelper.dialog2.content = this.target;
+        this.documentHelper.dialog2.buttons = [{
                 click: this.onOkButtonClick,
                 buttonModel: { content: localObj.getConstant('Ok'), cssClass: 'e-flat e-style-okay', isPrimary: true }
             },
@@ -71345,11 +71436,11 @@ var StyleDialog = /** @__PURE__ @class */ (function () {
                 buttonModel: { content: localObj.getConstant('Cancel'), cssClass: 'e-flat e-style-cancel' }
             }];
         this.toggleDisable();
-        this.documentHelper.dialog.dataBind();
-        this.documentHelper.dialog.beforeOpen = this.loadStyleDialog;
-        this.documentHelper.dialog.close = this.closeStyleDialog;
-        this.documentHelper.dialog.position = { X: 'center', Y: 'center' };
-        this.documentHelper.dialog.show();
+        this.documentHelper.dialog2.dataBind();
+        this.documentHelper.dialog2.beforeOpen = this.loadStyleDialog;
+        this.documentHelper.dialog2.close = this.closeStyleDialog;
+        this.documentHelper.dialog2.position = { X: 'center', Y: 'center' };
+        this.documentHelper.dialog2.show();
     };
     StyleDialog.prototype.updateList = function () {
         var listId = this.style.paragraphFormat.listFormat.listId;
@@ -80016,13 +80107,19 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
         //pre render section
     };
     DocumentEditor.prototype.render = function () {
-        this.documentHelper.initializeComponents();
-        this.openBlank();
         if (!isNullOrUndefined(this.element)) {
             var container = this.element;
             container.style.minHeight = '200px';
             container.style.minWidth = '200px';
+            if (this.height !== '') {
+                this.element.style.height = formatUnit(this.height);
+            }
+            if (this.width !== '') {
+                this.element.style.width = formatUnit(this.width);
+            }
         }
+        this.documentHelper.initializeComponents();
+        this.openBlank();
         this.renderComplete();
     };
     /**
@@ -80105,6 +80202,14 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'documentEditorSettings':
                     this.viewer.updateScrollBars();
+                    break;
+                case 'height':
+                    this.element.style.height = formatUnit(this.height);
+                    this.resize();
+                    break;
+                case 'width':
+                    this.element.style.width = formatUnit(this.width);
+                    this.resize();
                     break;
             }
         }
@@ -81148,6 +81253,12 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property('')
     ], DocumentEditor.prototype, "documentName", void 0);
+    __decorate([
+        Property('100%')
+    ], DocumentEditor.prototype, "width", void 0);
+    __decorate([
+        Property('200px')
+    ], DocumentEditor.prototype, "height", void 0);
     __decorate([
         Property('')
     ], DocumentEditor.prototype, "serviceUrl", void 0);
@@ -85562,6 +85673,7 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
     /**
      * @private
      */
+    // tslint:disable:max-func-body-length
     DocumentEditorContainer.prototype.onPropertyChanged = function (newModel, oldModel) {
         for (var _i = 0, _a = Object.keys(newModel); _i < _a.length; _i++) {
             var prop = _a[_i];
@@ -85652,6 +85764,18 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
                         this.documentEditor.resize();
                     }
                     break;
+                case 'height':
+                    this.element.style.height = formatUnit(this.height);
+                    if (this.documentEditor) {
+                        this.documentEditor.resize();
+                    }
+                    break;
+                case 'width':
+                    this.element.style.width = formatUnit(this.width);
+                    if (this.documentEditor) {
+                        this.documentEditor.resize();
+                    }
+                    break;
             }
         }
     };
@@ -85671,8 +85795,11 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
             this.toolbarModule.initToolBar(this.toolbarItems);
             this.toolbarModule.enableDisableInsertComment(this.enableComment);
         }
-        if (this.element.getBoundingClientRect().height < 320) {
-            this.element.style.height = '320px';
+        if (this.height !== '') {
+            this.element.style.height = formatUnit(this.height);
+        }
+        if (this.width !== '') {
+            this.element.style.width = formatUnit(this.width);
         }
         this.element.style.minHeight = '320px';
         this.initializeDocumentEditor();
@@ -85803,7 +85930,9 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
             layoutType: this.layoutType,
             pageOutline: '#E0E0E0',
             currentUser: this.currentUser,
-            userColor: this.userColor
+            userColor: this.userColor,
+            height: '100%',
+            width: '100%'
         });
         this.documentEditor.enableAllModules();
         this.documentEditor.enableComment = this.enableComment;
@@ -85967,7 +86096,7 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
             if (isInHeaderFooter && this.showHeaderProperties) {
                 this.showProperties('headerfooter');
             }
-            else if (currentContext.indexOf('Text') >= 0 || currentContext.indexOf('List') >= 0
+            else if (currentContext.indexOf('List') >= 0 || currentContext.indexOf('Text') >= 0
                 && currentContext.indexOf('Table') < 0) {
                 this.showProperties('text');
             }
@@ -86123,6 +86252,12 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
     __decorate$1([
         Property(true)
     ], DocumentEditorContainer.prototype, "enableComment", void 0);
+    __decorate$1([
+        Property('100%')
+    ], DocumentEditorContainer.prototype, "width", void 0);
+    __decorate$1([
+        Property('320px')
+    ], DocumentEditorContainer.prototype, "height", void 0);
     __decorate$1([
         Event()
     ], DocumentEditorContainer.prototype, "created", void 0);

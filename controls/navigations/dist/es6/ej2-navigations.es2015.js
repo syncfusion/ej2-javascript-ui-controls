@@ -2172,13 +2172,18 @@ let MenuBase = class MenuBase extends Component {
     }
     /**
      * This method is used to get the index of the menu item in the Menu based on the argument.
-     * @param item - item be passed to get the index.
-     * @param id - id to be passed to update the item.
+     * @param item - item be passed to get the index | id to be passed to get the item index.
      * @param isUniqueId - Set `true` if it is a unique id.
      * @returns void
      */
-    getItemIndex(item, id, isUniqueId) {
-        let idx = id ? id : item.id;
+    getItemIndex(item, isUniqueId) {
+        let idx;
+        if (typeof item === 'string') {
+            idx = item;
+        }
+        else {
+            idx = item.id;
+        }
         let isText = (isUniqueId === false) ? false : true;
         let navIdx = this.getIndex(idx, isText);
         return navIdx;
@@ -2194,26 +2199,13 @@ let MenuBase = class MenuBase extends Component {
         let idx = id ? id : item.id;
         let isText = (isUniqueId === false) ? false : true;
         let navIdx = this.getIndex(idx, isText);
-        let items = this.items;
-        switch (navIdx.length) {
-            case 1:
-                items[navIdx[0]].iconCss = item.iconCss;
-                items[navIdx[0]].id = item.id;
-                items[navIdx[0]].text = item.text;
-                items[navIdx[0]].url = item.url;
-                items[navIdx[0]].separator = item.separator;
-                items[navIdx[0]].items = item.items;
-                break;
-            case 2:
-                items[navIdx[0]].items[navIdx[1]] = item;
-                break;
-            case 3:
-                items[navIdx[0]].items[navIdx[1]].items[navIdx[2]] = item;
-                break;
-            case 4:
-                items[navIdx[0]].items[navIdx[1]].items[navIdx[2]].items[navIdx[3]] = item;
-                break;
-        }
+        let newItem = this.getItem(navIdx);
+        newItem.iconCss = item.iconCss;
+        newItem.id = item.id;
+        newItem.text = item.text;
+        newItem.url = item.url;
+        newItem.separator = item.separator;
+        newItem.items = item.items;
     }
     getItem(navIdx) {
         navIdx = navIdx.slice();
@@ -10797,7 +10789,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                         this.parentNodeCheck.splice(this.parentNodeCheck.indexOf(checkedChild), 1);
                     }
                 }
-                else if (this.checkedNodes.indexOf(parent) === -1 && !doCheck) {
+                else if (this.checkedNodes.indexOf(parent) === -1 && this.checkedNodes.indexOf(checkedChild) !== -1 && !doCheck) {
                     this.checkedNodes.splice(this.checkedNodes.indexOf(checkedChild), 1);
                     if (isCheck === 'true') {
                         this.updateField(this.treeData, this.fields, checkedChild, 'isChecked', null);

@@ -16,11 +16,57 @@
 <body>
     <div class="container-fluid" style="margin-top:15px;">
         <div class="row">
-            <div class="col-md-12">
+            <div class="col-md-8">
                 <div id="kanban"></div>
             </div>
+            <div class="col-lg-4 property-section">
+                <table id="property" title="Properties">
+                    <tr>
+                        <td>
+                            <div>Sort by</div>
+                        </td>
+                        <td>
+                            <div>
+                                <select id="sort" class="form-control">
+                                    <option value="Ascending">Ascending</option>
+                                    <option value="Descending">Descending</option>
+                                </select>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div>Enable Swimlane Drag And Drop</div>
+                        </td>
+                        <td>
+                            <input id="acrossDragAndDrop" type="checkbox" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div>Show Empty Swimlane Row</div>
+                        </td>
+                        <td>
+                            <input id="emptyRow" type="checkbox" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div>Show Swimlane Item Count</div>
+                        </td>
+                        <td>
+                            <input id="itemCount" type="checkbox" />
+                        </td>
+                    </tr>
+                </table>
+            </div>            
         </div>
     </div>
+    <style>
+        #property tr {
+            height: 50px
+        }
+    </style>
 </body>
 
 </html>

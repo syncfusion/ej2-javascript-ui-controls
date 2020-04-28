@@ -5347,4 +5347,30 @@ describe('Splitter Control', () => {
         });
     });
 
+    describe('Window resizing', () => {
+        appendSplitterStyles();
+        let splitterObj: any;
+        beforeAll((): void => {
+            let element: HTMLElement = createElement('div', { id: 'default'});
+            element.style.width ='300px';
+            let child1: HTMLElement = createElement('div');
+            let child2: HTMLElement = createElement('div');
+            element.appendChild(child1);
+            element.appendChild(child2);
+            document.body.appendChild(element);
+            splitterObj = new Splitter({width :'100%', paneSettings: [{ size: '50%', min: '10px' }, { min: '20px', }]});
+            splitterObj.appendTo(document.getElementById('default'));
+        });
+        afterAll((): void => {
+            document.body.innerHTML = '';
+        });
+
+        it('pane size', () => {
+            let resizeEvent  : any= window.document.createEvent('UIEvents'); 
+            resizeEvent.initUIEvent('resize', true, false, window, 0); 
+            window.dispatchEvent(resizeEvent);
+            expect(splitterObj.allPanes[0].style.flexBasis ==='50%').toBe(true);         
+            expect(splitterObj.allPanes[1].style.flexBasis === '').toBe(true);
+        });
+    });
  });

@@ -1075,5 +1075,50 @@ describe('Row Drag and Drop module', () => {
     });
     })
     
+    describe('EJ2-38600-SetCellValue-IsNot-Work-RowDD-Grid-to-Grid', () => {
+        let gridObj: Grid;
+        let gridObj1: Grid;
+        beforeAll((done: Function) => {
+            gridObj1 = createGrid(
+                {
+                    dataSource: [],
+                    allowRowDragAndDrop: true,
+                    rowDropSettings: { targetID: 'Grid' },
+                    allowSelection: true,
+                    selectionSettings: { type: 'Multiple', mode: 'Row' },
+                    columns: [{ field: 'OrderID', isPrimaryKey:true, }, { field: 'CustomerID' }, { field: 'EmployeeID' }, { field: 'Freight', format: 'c2' },
+                    { field: 'OrderDate', format: 'yMd' }],
+                    allowPaging: true
+                }, done);
+            gridObj = createGrid(
+                {
+                    dataSource: data,
+                    allowRowDragAndDrop: true,
+                    rowDropSettings: { targetID: undefined },
+                    allowSelection: true,
+                    columns: [{ field: 'OrderID', isPrimaryKey:true, }, { field: 'CustomerID' }, { field: 'EmployeeID' }, { field: 'Freight', format: 'c2' },
+                    { field: 'OrderDate', format: 'yMd' }],
+                    allowPaging: true,
+                    selectionSettings: { type: 'Multiple' },
+                }, done);    
+        });
+        it('set drop target ID', () => {
+            gridObj.rowDropSettings.targetID = gridObj1.element.id;
+            gridObj.dataBind();
+            expect(document.getElementById(gridObj1.element.id)).toEqual(gridObj1.element);
+        });
+        it('Changed the customer cell', () => {
+            gridObj.setCellValue(10248, 'CustomerID', 'JHON');
+            expect(gridObj.getContent().querySelector('tbody').children[0].children[1].innerHTML).toEqual('JHON');
+        });
+        it('chnaged the freight cell', () => {
+            gridObj.setCellValue(10249, 'Freight', 7);
+            expect(gridObj.getContent().querySelector('tbody').children[1].children[3].innerHTML).toEqual('$7.00');
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = gridObj1 = null;
+        });
+    })
 
 });

@@ -25,7 +25,12 @@ npm install @syncfusion/ej2-kanban
 
 Kanban component is also available in following list of frameworks.
 
-1. [JavaScript (ES5)](https://ej2.syncfusion.com/javascript/demos/#/material/kanban/overview.html)
+1. [JavaScript (ES5)](https://www.syncfusion.com/javascript-ui-controls/js-kanban-board)
+2. [Angular](https://github.com/syncfusion/ej2-angular-ui-components/tree/master/components/kanban)
+3. [React](https://github.com/syncfusion/ej2-react-ui-components/tree/master/components/kanban)
+4. [VueJS](https://github.com/syncfusion/ej2-vue-ui-components/tree/master/components/kanban)
+5. [ASP.NET Core](https://www.syncfusion.com/aspnet-core-ui-controls/kanban-board)
+6. [ASP.NET MVC](https://www.syncfusion.com/aspnet-mvc-ui-controls/kanban-board)
 
 ## Key Features
 

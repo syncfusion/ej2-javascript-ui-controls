@@ -1614,7 +1614,13 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                 let index: number = Number(key);
                                 let actualObject: Connector = this.connectors[index] as Connector;
                                 let changedProp: Connector = newProp.connectors[index] as Connector;
+                                if (changedProp && (changedProp.sourceDecorator || changedProp.targetDecorator)) {
+                                    this.diagramActions |= DiagramAction.DecoratorPropertyChange;
+                                }
                                 this.connectorPropertyChange(actualObject, oldProp.connectors[index] as Connector, changedProp, true, true);
+                                if (changedProp && (changedProp.sourceDecorator || changedProp.targetDecorator)) {
+                                    this.diagramActions = this.diagramActions & ~DiagramAction.DecoratorPropertyChange;
+                                }
                                 let args: IPropertyChangeEventArgs | IBlazorPropertyChangeEventArgs = {
                                     element: cloneBlazorObject(actualObject), cause: this.diagramActions,
                                     oldValue: cloneBlazorObject(oldProp.connectors[index]) as Connector,
@@ -2742,6 +2748,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.callBlazorModel = false;
                 for (let node of obj.nodes) {
                     checkBoundaryConstraints = this.commandHandler.scale(node, sx, sy, pivot, obj);
+                    if (!this.commandHandler.checkBoundaryConstraints(undefined, undefined, obj.wrapper.bounds)) {
+                        this.commandHandler.scale(node, 1 / sx, 1 / sy, pivot, obj);
+                    }
                 }
                 this.callBlazorModel = true;
             }
@@ -2749,6 +2758,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 this.callBlazorModel = false;
                 for (let conn of obj.connectors) {
                     this.commandHandler.scale(conn, sx, sy, pivot, obj);
+                    if (!this.commandHandler.checkBoundaryConstraints(undefined, undefined, obj.wrapper.bounds)) {
+                        this.commandHandler.scale(conn, 1 / sx, 1 / sy, pivot, obj);
+                    }
                 }
                 this.callBlazorModel = true;
             }
@@ -5634,8 +5646,9 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (((node as Node).children && (node as Node).children.length > 0 && (!(node as Node).container)) || ((node as Node).processId)) {
             let node1: NodeModel = this.nameTable[node.id];
             if (!(this.realActions & RealAction.PreventScale) && !(this.realActions & RealAction.PreventDrag)) {
-                if (node1.offsetX && !(this.diagramActions & DiagramAction.ToolAction)
-                    && !(this.diagramActions & DiagramAction.PublicMethod)) {
+                if (node1.offsetX && ((this.realActions & RealAction.EnableGroupAction) ||
+                    (!(this.diagramActions & DiagramAction.ToolAction)
+                        && !(this.diagramActions & DiagramAction.PublicMethod)))) {
                     this.realActions |= RealAction.PreventScale;
                     let diffX: number = (node1.offsetX - node.wrapper.offsetX);
                     node1.offsetX = node.wrapper.offsetX;
@@ -5648,7 +5661,8 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 } else {
                     node1.offsetX = node.wrapper.offsetX;
                 }
-                if (node1.offsetY && !(this.diagramActions & DiagramAction.ToolAction)) {
+                if (node1.offsetY && ((this.realActions & RealAction.EnableGroupAction) ||
+                    (!(this.diagramActions & DiagramAction.ToolAction)))) {
                     this.realActions |= RealAction.PreventScale;
                     let diffY: number = (node1.offsetY - node.wrapper.offsetY);
                     node1.offsetY = node.wrapper.offsetY;
@@ -7888,7 +7902,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (newProp.style !== undefined) { updateStyle(newProp.style, actualObject.wrapper.children[0]); }
         if (points.length > 0 || newProp.sourceDecorator !== undefined || (newProp.targetDecorator !== undefined
             && (canMeasureDecoratorPath(Object.keys(newProp.targetDecorator)))) || newProp.cornerRadius !== undefined) {
-            updateConnector(actualObject, points.length > 0 ? points : actualObject.intermediatePoints);
+            updateConnector(actualObject, points.length > 0 ? points : actualObject.intermediatePoints,this.diagramActions);
             if (newProp.type !== undefined) { updateSelector = true; }
             if (points.length > 0) {
                 actualObject.wrapper.measure(new Size(actualObject.wrapper.width, actualObject.wrapper.height));

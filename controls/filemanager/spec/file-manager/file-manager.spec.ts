@@ -284,6 +284,64 @@ describe('FileManager control', () => {
             expect(document.getElementById('file_tree').classList.contains('e-treeview')).toEqual(true);
         });
     });
+    describe('Window', () => {
+        let feObj: FileManager;
+        let ele: HTMLElement;
+        let container: HTMLElement;
+        let originalTimeout: any;
+        beforeEach((done: Function): void => {
+            jasmine.Ajax.install();
+            feObj = undefined;
+            container = createElement('div', { id: 'container' });
+            document.body.appendChild(container);
+            container.style.height = '400px';
+            ele = createElement('div', { id: 'file' });
+            container.appendChild(ele);
+            feObj = new FileManager({
+                view: 'Details',
+                ajaxSettings: {
+                    url: '/FileOperations',
+                },
+                showThumbnail: false,
+                height: '100%'
+            });
+            feObj.appendTo('#file');
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify(data1)
+            });
+            setTimeout(function () {
+                done();
+            }, 500);
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 50000;
+        });
+        afterEach((): void => {
+            jasmine.Ajax.uninstall();
+            if (feObj) feObj.destroy();
+            ele.remove();
+            container.remove();
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+        it('resize Height testing', () => {
+            container.style.height = '500px';
+            (feObj as any).resizeHandler();
+            expect(document.getElementById('file').querySelector('.e-layout-content').clientHeight).toEqual(455);
+            (feObj as any).splitterResize();
+            expect(document.getElementById('file').querySelector('.e-layout-content').clientHeight).toEqual(455);
+        });
+        it('resize Height setModel testing', () => {
+            feObj.view = 'LargeIcons';
+            feObj.dataBind();
+            feObj.height = '50%';
+            feObj.dataBind();
+            (feObj as any).resizeHandler();
+            expect(document.getElementById('file').querySelector('.e-layout-content').clientHeight).toEqual(155);
+            (feObj as any).splitterResize();
+            expect(document.getElementById('file').querySelector('.e-layout-content').clientHeight).toEqual(155);
+        });
+    });
     describe('Splitter layout and BreadCrumBar Modules testing', () => {
         let feObj: any;
         let mouseEventArgs: any, tapEvent: any;

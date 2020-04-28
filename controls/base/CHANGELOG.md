@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.44 (2020-04-14)
+
+### Common
+
+#### Bug Fixes
+
+- `I263525` - Resolved currency issue for decimal and groups for different cultures in the internalization.
+
 ## 17.4.51 (2020-02-25)
 
 ### Common

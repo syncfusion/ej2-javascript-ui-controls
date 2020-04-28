@@ -1,75 +1,85 @@
 @include export-module('kanban-theme') {
   /*! kanban component theme */
-  .e-kanban .e-kanban-table {
-    .e-header-cells {
-      .e-header-text {
-        color: $kanban-default-font;
-      }
+  .e-kanban {
+    background: $kanban-bg-color;
 
-      &.e-toggle-header {
+    .e-kanban-table {
+      .e-header-cells {
+        .e-header-text,
+        .e-item-count {
+          color: $kanban-default-font;
+        }
 
         .e-column-expand,
         .e-column-collapse {
+          border: 1px solid transparent;
           color: $kanban-icons-color;
 
+          &:hover,
           &:focus {
-            color: $kanban-icons-toggle-color;
-          }
-        }
+            background: $kanban-icons-toggle-bg-color;
+            border-radius: $kanban-icons-border-radius;
 
-      }
-    }
-
-    &.e-content-table {
-      .e-content-row:not(.e-swimlane-row) td {
-        background-color: $kanban-column-bg-color;
-      }
-
-      .e-content-row {
-
-        &.e-swimlane-row {
-          .e-swimlane-text {
-            color: $kanban-default-font;
-          }
-        }
-
-        .e-show-add-button {
-          .e-show-add-icon {
-            color: $kanban-dropped-clone-border-color;
+            @if ($kanban-skin == 'highcontrast' or $kanban-skin == 'bootstrap4') {
+              border: 1px solid $kanban-border-hover-color;
+              color: $kanban-icons-toggle-color;
+            }
           }
         }
       }
 
-      .e-card {
-        &.e-selection {
-          background-color: $kanban-card-selection;
+      &.e-content-table {
+        .e-content-row:not(.e-swimlane-row) td {
+          background-color: $kanban-column-bg-color;
+        }
 
-          @if $kanban-skin == 'fabric' {
-            border: 1px solid $kanban-column-bg-color;
+        .e-content-row {
+
+          &.e-swimlane-row {
+            .e-swimlane-text,
+            .e-item-count {
+              color: $kanban-default-font;
+            }
           }
 
-          @if $kanban-skin == 'highcontrast' {
-            border: 1px solid $kanban-primary-color;
-          }
-          @if $kanban-skin == 'bootstrap4' or $kanban-skin == 'bootstrap' {
-            border: 1px solid $kanban-dragged-clone-border-color;
+          .e-show-add-button {
+            .e-show-add-icon {
+              color: $kanban-dropped-clone-border-color;
+            }
           }
         }
-      }
 
-      .e-target-multi-clone {
-        .e-column-key {
-          &.e-multi-active {
-            background: $kanban-dropped-clone-bg-color;
-            border-color: $kanban-dropped-clone-border-color;
+        .e-card {
+          &.e-selection {
+            background-color: $kanban-card-selection;
+
+            @if $kanban-skin == 'fabric' {
+              border: 1px solid $kanban-column-bg-color;
+            }
+
+            @if $kanban-skin == 'highcontrast' {
+              border: 1px solid $kanban-primary-color;
+            }
+            @if $kanban-skin == 'bootstrap4' or $kanban-skin == 'bootstrap' {
+              border: 1px solid $kanban-dragged-clone-border-color;
+            }
           }
+        }
 
-          &.e-multi-bottom-border {
-            border-bottom-color: $kanban-dropped-clone-border-color;
-          }
+        .e-target-multi-clone {
+          .e-column-key {
+            &.e-multi-active {
+              background: $kanban-dropped-clone-bg-color;
+              border-color: $kanban-dropped-clone-border-color;
+            }
 
-          &.e-multi-active:first-child {
-            border-color: $kanban-dropped-clone-border-color;
+            &.e-multi-bottom-border {
+              border-bottom-color: $kanban-dropped-clone-border-color;
+            }
+
+            &.e-multi-active:first-child {
+              border-color: $kanban-dropped-clone-border-color;
+            }
           }
         }
       }

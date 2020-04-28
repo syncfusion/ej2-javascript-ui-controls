@@ -810,8 +810,9 @@ function mergeSeparateCluster(sameMarkerData, maps, markerElement) {
     let layerIndex = sameMarkerData[0].layerIndex;
     let clusterIndex = sameMarkerData[0].targetClusterIndex;
     let markerIndex = sameMarkerData[0].markerIndex;
+    let dataIndex = (sameMarkerData[0].isClusterSame) ? sameMarkerData[0].data[0]['index'] : sameMarkerData[0].data[sameMarkerData[0].data.length - 1]['index'];
     let markerId = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex;
-    let clusterId = markerId + '_dataIndex_' + sameMarkerData[0].data[0]['index'] + '_cluster_' + clusterIndex;
+    let clusterId = markerId + '_dataIndex_' + dataIndex + '_cluster_' + clusterIndex;
     let clusterEle = getElement(clusterId);
     let clusterEleLabel = getElement(clusterId + '_datalabel_' + clusterIndex);
     clusterEle.setAttribute('visibility', 'visible');
@@ -828,7 +829,7 @@ function clusterSeparate(sameMarkerData, maps, markerElement, isDom) {
     let layerIndex = sameMarkerData[0].layerIndex;
     let markerIndex = sameMarkerData[0].markerIndex;
     let clusterIndex = sameMarkerData[0].targetClusterIndex;
-    let dataIndex = sameMarkerData[0].data[0]['index'];
+    let dataIndex = (sameMarkerData[0].isClusterSame) ? sameMarkerData[0].data[0]['index'] : sameMarkerData[0].data[sameMarkerData[0].data.length - 1]['index'];
     let getElementFunction = isDom ? getElement : markerElement.querySelector.bind(markerElement);
     let getQueryConnect = isDom ? '' : '#';
     let markerId = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex;
@@ -3874,7 +3875,7 @@ class Marker {
         if (isNullOrUndefined(options)) {
             return;
         }
-        if ((options.clusterCollection.length > 0) && options.clusterCollection[0].isClusterSame) {
+        if ((options.clusterCollection.length > 0 && this.maps.markerClusterExpand)) {
             if (getElement(this.maps.element.id + '_mapsTooltip') &&
                 this.maps.mapsTooltipModule.tooltipTargetID.indexOf('_MarkerIndex_') > -1) {
                 removeElement(this.maps.element.id + '_mapsTooltip');
@@ -3912,6 +3913,7 @@ class Marker {
         let markCollection = [];
         let clusterCollection = [];
         let marker$$1;
+        this.maps.markerClusterExpand = layer.markerClusterSettings.allowClusterExpand;
         if (target.indexOf('_MarkerIndex_') > -1) {
             let markerIndex = parseInt(id[1].split('_MarkerIndex_')[1].split('_')[0], 10);
             let dataIndex = parseInt(id[1].split('_dataIndex_')[1].split('_')[0], 10);
@@ -3927,24 +3929,18 @@ class Marker {
                     });
                 }
                 if ((target.indexOf('_cluster_') > -1)) {
-                    let textElement = document.getElementById(target.indexOf('_datalabel_') > -1 ? target : target + '_datalabel_' + target.split('_cluster_')[1]);
                     let isClusterSame = false;
-                    if (+textElement.textContent === collection.length) {
-                        isClusterSame = true;
-                    }
-                    else {
-                        let clusterElement = document.getElementById(target.indexOf('_datalabel_') > -1 ? target.split('_datalabel_')[0] : target);
-                        let indexes = clusterElement.innerHTML.split(',').map(Number);
-                        collection = [];
-                        for (let i of indexes) {
-                            collection.push({ data: marker$$1.dataSource[i], index: i });
-                            if (this.maps.isBlazor) {
-                                marker$$1.dataSource[i]["text"] = "";
-                            }
-                            markCollection.push(marker$$1.dataSource[i]);
+                    let clusterElement = document.getElementById(target.indexOf('_datalabel_') > -1 ? target.split('_datalabel_')[0] : target);
+                    let indexes = clusterElement.innerHTML.split(',').map(Number);
+                    collection = [];
+                    for (let i of indexes) {
+                        collection.push({ data: marker$$1.dataSource[i], index: i });
+                        if (this.maps.isBlazor) {
+                            marker$$1.dataSource[i]["text"] = "";
                         }
-                        isClusterSame = false;
+                        markCollection.push(marker$$1.dataSource[i]);
                     }
+                    isClusterSame = false;
                     clusterCollection.push({
                         data: collection, layerIndex: index, markerIndex: markerIndex,
                         targetClusterIndex: +(target.split('_cluster_')[1].indexOf('_datalabel_') > -1 ? target.split('_cluster_')[1].split('_datalabel_')[0] : target.split('_cluster_')[1]),
@@ -3987,7 +3983,7 @@ class Marker {
             return;
         }
         let options = this.getMarker(targetId);
-        if (options.clusterCollection[0].isClusterSame) {
+        if (this.maps.markerClusterExpand) {
             e.target.setAttribute('style', 'cursor: pointer');
         }
         if (isNullOrUndefined(options)) {
@@ -5934,6 +5930,8 @@ let Maps = class Maps extends Component {
         this.applyZoomReset = false;
         /** @private */
         this.markerClusterExpandCheck = false;
+        /** @private */
+        this.markerClusterExpand = false;
         setValue('mergePersistData', this.mergePersistMapsData, this);
     }
     /**
@@ -9397,7 +9395,7 @@ class Legend {
                     break;
             }
             if ((legend.height || legend.width) && legend.mode !== 'Interactive') {
-                map.totalRect = totalRect;
+                map.mapAreaRect = map.totalRect = totalRect;
             }
             else {
                 map.mapAreaRect = totalRect;

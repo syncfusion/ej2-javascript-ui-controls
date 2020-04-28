@@ -2,7 +2,7 @@ import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Even
 import { Dialog, Popup, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
-import { FormValidator, Input, NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
+import { FormValidator, NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { Button } from '@syncfusion/ej2-buttons';
 import { TreeView } from '@syncfusion/ej2-navigations';
 
@@ -210,6 +210,9 @@ __decorate$3([
 __decorate$3([
     Property([])
 ], DialogSettings.prototype, "fields", void 0);
+__decorate$3([
+    Property(null)
+], DialogSettings.prototype, "model", void 0);
 
 var __decorate$4 = (undefined && undefined.__decorate) || function (decorators, target, key, desc) {
     var c = arguments.length, r = c < 3 ? target : desc === null ? desc = Object.getOwnPropertyDescriptor(target, key) : desc, d;
@@ -789,6 +792,7 @@ class Crud {
         };
         this.parent.trigger(actionBegin, args, (addArgs) => {
             if (!addArgs.cancel) {
+                this.parent.showSpinner();
                 let promise = null;
                 let modifiedData = [];
                 if (this.parent.cardSettings.priority) {
@@ -834,6 +838,7 @@ class Crud {
         };
         this.parent.trigger(actionBegin, args, (updateArgs) => {
             if (!updateArgs.cancel) {
+                this.parent.showSpinner();
                 let promise = null;
                 if (this.parent.cardSettings.priority) {
                     let modifiedData = [];
@@ -885,6 +890,7 @@ class Crud {
         };
         this.parent.trigger(actionBegin, args, (deleteArgs) => {
             if (!deleteArgs.cancel) {
+                this.parent.showSpinner();
                 let promise = null;
                 if (editParms.deletedRecords.length > 1) {
                     if (!this.parent.isBlazorRender()) {
@@ -1093,8 +1099,8 @@ class DragAndDrop {
                 ? true : false;
             if (keys.length === 1 || isDrag) {
                 if (target.classList.contains(CARD_CLASS)) {
-                    let insertClone = (isNullOrUndefined(target.previousElementSibling) &&
-                        ((this.dragObj.pageY - target.offsetTop) / 2) < 25) ? 'beforebegin' : 'afterend';
+                    let insertClone = (isNullOrUndefined(target.previousElementSibling) && (this.dragObj.pageY -
+                        (this.parent.element.offsetTop + target.offsetTop)) < (target.offsetHeight / 2)) ? 'beforebegin' : 'afterend';
                     target.insertAdjacentElement(insertClone, this.dragObj.targetClone);
                 }
                 else if (target.classList.contains(CONTENT_CELLS_CLASS) && !closest(target, '.' + SWIMLANE_ROW_CLASS)) {
@@ -1471,16 +1477,16 @@ class KanbanDialog {
             cssClass: DIALOG_CLASS,
             enableRtl: this.parent.enableRtl,
             header: this.parent.localeObj.getConstant(action === 'Add' ? 'addTitle' : action === 'Edit' ? 'editTitle' : 'deleteTitle'),
-            height: this.parent.isAdaptive ? '100%' : 'auto',
+            height: 'auto',
             isModal: true,
-            showCloseIcon: this.parent.isAdaptive ? false : true,
+            showCloseIcon: true,
             target: document.body,
             width: (action === 'Delete') ? 400 : 350,
             visible: false,
             beforeOpen: this.onBeforeDialogOpen.bind(this),
             beforeClose: this.onBeforeDialogClose.bind(this)
         };
-        this.dialogObj = new Dialog(dialogModel, this.element);
+        this.dialogObj = new Dialog(extend(dialogModel, action !== 'Delete' ? (this.parent.dialogSettings.model || {}) : {}), this.element);
         if (action !== 'Delete') {
             this.applyFormValidation();
         }
@@ -1525,7 +1531,7 @@ class KanbanDialog {
         let fields = this.parent.dialogSettings.fields;
         if (fields.length === 0) {
             fields = [
-                { text: 'ID', key: this.parent.cardSettings.headerField, type: 'Input' },
+                { text: 'ID', key: this.parent.cardSettings.headerField, type: 'TextBox' },
                 { key: this.parent.keyField, type: 'DropDown' },
                 { key: this.parent.cardSettings.contentField, type: 'TextArea' }
             ];
@@ -1595,16 +1601,8 @@ class KanbanDialog {
                 break;
             case 'TextBox':
                 controlObj = new TextBox({ value: fieldValue });
-                break;
-            case 'Input':
-                if (fieldValue) {
-                    element.value = fieldValue;
-                }
                 if (fieldValue && this.parent.cardSettings.headerField === field.key) {
-                    Input.createInput({ element: element, properties: { enabled: false } });
-                }
-                else {
-                    Input.createInput({ element: element });
+                    controlObj.enabled = false;
                 }
                 break;
             case 'TextArea':
@@ -1903,7 +1901,9 @@ class Keyboard {
             case 'delete':
                 let className = '.' + CARD_CLASS + '.' + CARD_SELECTION_CLASS;
                 let selectedCards = [].slice.call(this.parent.element.querySelectorAll(className));
-                selectedCards.forEach((selected) => this.parent.crudModule.deleteCard(this.parent.getCardDetails(selected)));
+                let selectedCardsData = [];
+                selectedCards.forEach((selected) => { selectedCardsData.push(this.parent.getCardDetails(selected)); });
+                this.parent.crudModule.deleteCard(selectedCardsData);
                 break;
         }
     }
@@ -3422,7 +3422,7 @@ let Kanban = class Kanban extends Component {
      * @deprecated
      * @method openDialog
      * @param {CurrentAction} action Defines the action for which the dialog needs to be opened such as either for new card creation or
-     *  editing of existing cards or deletion of existing card. The applicable action names are `Add`, `Edit` and `Delete`.
+     *  editing of existing cards. The applicable action names are `Add` and `Edit`.
      * @param {Object} data It can be card data.
      * @returns {void}
      */

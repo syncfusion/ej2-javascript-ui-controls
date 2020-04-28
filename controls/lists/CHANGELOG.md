@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.46 (2020-04-28)
+
+### ListBox
+
+#### Bug Fixes
+
+- Issue with drag and drop on empty group has been fixed.
+
 ## 18.1.45 (2020-04-21)
 
 ### ListBase

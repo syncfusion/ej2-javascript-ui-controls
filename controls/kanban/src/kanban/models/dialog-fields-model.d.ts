@@ -18,7 +18,11 @@ export interface DialogFieldsModel {
     key?: string;
 
     /**
-     * Defines the field type
+     * It defines the field type, which accepts either of the following values.
+     * * TextBox
+     * * DropDown
+     * * Numeric
+     * * TextArea
      * @default null
      */
     type?: DialogFieldType;

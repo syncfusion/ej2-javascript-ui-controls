@@ -353,7 +353,7 @@ export class ExcelExport {
                                  exportProperties: ExcelExportProperties, currentViewRecords: Object[], excelRow: ExcelRow[],
                                  helper: ExportHelper): ExcelRow[] {
         let record: Object[] | Group;
-        if (!isNullOrUndefined(currentViewRecords)) {
+        if (!isNullOrUndefined(currentViewRecords) && currentViewRecords.length) {
             record = currentViewRecords;
         } else {
             record = (returnType as ReturnType).result;

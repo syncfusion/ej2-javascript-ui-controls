@@ -741,6 +741,23 @@ export function maintainSelection(treemap: TreeMap, element: Element, className:
     }
 }
 
+export function legendMaintain(treemap: TreeMap, legendGroup: Element): void {
+    let elementId: string[] = treemap.legendId;
+    if (elementId) {
+        for (let i: number = 0; i < elementId.length; i++) {
+            for (let j: number = 0; j < legendGroup.childElementCount; j++) {
+                if (legendGroup.childNodes[j]['id'] === elementId[i]) {
+                    (legendGroup.childNodes[j] as SVGRectElement ).setAttribute('fill', treemap.selectionSettings.fill);
+                    (legendGroup.childNodes[j] as SVGRectElement ).setAttribute('stroke', treemap.selectionSettings.border.color);
+                    (legendGroup.childNodes[j] as SVGRectElement ).setAttribute('stroke-width',
+                                                                                (treemap.selectionSettings.border.width).toString());
+                    (legendGroup.childNodes[j] as SVGRectElement ).setAttribute('opacity', treemap.selectionSettings.opacity);
+                }
+            }
+        }
+    }
+}
+
 export function removeClassNames(elements: HTMLCollection, type: string, treemap: TreeMap): void {
     let opacity: string; let process: boolean = true; let element: SVGPathElement;
     let stroke: string; let strokeWidth: string; let fill: string;

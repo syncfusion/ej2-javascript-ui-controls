@@ -111,3 +111,8 @@ $badge-color: $brand-primary-font !default;
 $badge-bgcolor: $brand-primary !default;
 
 $select-all-border-color: $grey-88 !default;
+
+$listbox-filter-height: calc(100% - 52px) !default;
+$listbox-filter-small-height: calc(100% - 46px) !default;
+$listbox-filter-bigger-small-height: calc(100% - 54px) !default;
+$listbox-filter-bigger-height: calc(100% - 58px) !default;

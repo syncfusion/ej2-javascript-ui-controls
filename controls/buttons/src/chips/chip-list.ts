@@ -778,7 +778,8 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
         this.wireEvent(true);
         this.rippleFunction();
         if (isBlazor()) {
-            let chipChildElement: NodeListOf<Element> = this.element.querySelectorAll('.e-chip');
+            let chipChildElement: NodeListOf<Element> = this.type === 'chip' ? this.element.querySelectorAll('.e-chip-text') :
+                this.element.querySelectorAll('.e-chip');
             for (let i: number = 0; i < chipChildElement.length; i++) {
                 if (chipChildElement[i] != null) {
                     detach(chipChildElement[i]);

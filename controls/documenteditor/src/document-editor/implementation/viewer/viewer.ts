@@ -227,6 +227,8 @@ export class DocumentHelper {
     private dialogTarget1: HTMLElement;
     private dialogTarget2: HTMLElement;
     private dialogInternal2: Dialog;
+    private dialogInternal3: Dialog;
+    private dialogTarget3: HTMLElement;
 
     /**
      * @private
@@ -574,6 +576,17 @@ export class DocumentHelper {
         }
         return this.dialogInternal2;
     }
+
+    /**
+     * Gets the initialized default dialog.
+     * @private
+     */
+    get dialog3(): Dialog {
+        if (!this.dialogInternal3) {
+            this.initDialog3(this.owner.enableRtl);
+        }
+        return this.dialogInternal3;
+    }
     /**
      * @private
      */
@@ -671,7 +684,9 @@ export class DocumentHelper {
         this.currentSelectedComment = undefined;
         for (let i: number = 0; i < this.comments.length; i++) {
             let commentStart: CommentCharacterElementBox = this.comments[i].commentStart;
-            commentStart.destroy();
+            if (commentStart) {
+                commentStart.destroy();
+            }
         }
         this.comments = [];
         this.bookmarks.clear();
@@ -1138,13 +1153,35 @@ export class DocumentHelper {
             this.dialogInternal = new Dialog({
                 target: document.body, showCloseIcon: true,
                 allowDragging: true, enableRtl: isRtl, visible: false,
-                width: '1px', isModal: true, position: { X: 'center', Y: 'center' }, zIndex: this.owner.zIndex + 10,
+                width: '1px', isModal: true, position: { X: 'center', Y: 'center' }, zIndex: this.owner.zIndex + 20,
                 animationSettings: { effect: 'None' }
             });
             this.dialogInternal.isStringTemplate = true;
             this.dialogInternal.open = this.selection.hideCaret;
             this.dialogInternal.beforeClose = this.updateFocus;
             this.dialogInternal.appendTo(this.dialogTarget1);
+        }
+    }
+    /**
+     * Initializes dialog template.
+     */
+    private initDialog3(isRtl?: boolean): void {
+        if (!this.dialogInternal3) {
+            this.dialogTarget3 = createElement('div', { className: 'e-de-dlg-target' });
+            document.body.appendChild(this.dialogTarget3);
+            if (isRtl) {
+                this.dialogTarget3.classList.add('e-de-rtl');
+            }
+            this.dialogInternal3 = new Dialog({
+                target: document.body, showCloseIcon: true,
+                allowDragging: true, enableRtl: isRtl, visible: false,
+                width: '1px', isModal: true, position: { X: 'center', Y: 'center' }, zIndex: this.owner.zIndex,
+                animationSettings: { effect: 'None' }
+            });
+            this.dialogInternal3.isStringTemplate = true;
+            this.dialogInternal3.open = this.selection.hideCaret;
+            this.dialogInternal3.beforeClose = this.updateFocus;
+            this.dialogInternal3.appendTo(this.dialogTarget3);
         }
     }
     /**
@@ -1167,7 +1204,7 @@ export class DocumentHelper {
             this.dialogInternal2 = new Dialog({
                 target: document.body, showCloseIcon: true,
                 allowDragging: true, enableRtl: isRtl, visible: false,
-                width: '1px', isModal: true, position: { X: 'center', Y: 'Top' }, zIndex: this.owner.zIndex
+                width: '1px', isModal: true, position: { X: 'center', Y: 'Top' }, zIndex: this.owner.zIndex + 10
             });
             this.dialogInternal2.isStringTemplate = true;
             this.dialogInternal2.appendTo(this.dialogTarget2);
@@ -2554,6 +2591,10 @@ export class DocumentHelper {
             this.dialogInternal2.destroy();
             this.dialogInternal2 = undefined;
         }
+        if (this.dialogInternal3) {
+            this.dialogInternal3.destroy();
+            this.dialogInternal3 = undefined;
+        }
         if (this.dialogTarget1 && this.dialogTarget1.parentElement) {
             this.dialogTarget1.parentElement.removeChild(this.dialogTarget1);
         }
@@ -2562,6 +2603,10 @@ export class DocumentHelper {
             this.dialogTarget2.parentElement.removeChild(this.dialogTarget2);
         }
         this.dialogTarget2 = undefined;
+        if (this.dialogTarget3 && this.dialogTarget3.parentElement) {
+            this.dialogTarget3.parentElement.removeChild(this.dialogTarget3);
+        }
+        this.dialogTarget3 = undefined;
         if (!isNullOrUndefined(this.touchStart)) {
             this.touchStart.innerHTML = '';
         }

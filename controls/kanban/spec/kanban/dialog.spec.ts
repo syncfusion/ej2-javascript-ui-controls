@@ -187,9 +187,9 @@ describe('Dialog actions module', () => {
             let model: KanbanModel = {
                 dialogSettings: {
                     fields: [
-                        { text: 'ID', key: 'Id', type: 'Input', validationRules: { required: true, number: true } },
+                        { text: 'ID', key: 'Id', type: 'TextBox' },
                         { key: 'Status', type: 'DropDown' },
-                        { key: 'Assignee', type: 'Input', validationRules: { required: true } },
+                        { key: 'Assignee', type: 'TextBox', validationRules: { required: true } },
                         { key: 'Estimate', type: 'Numeric', validationRules: { range: [0, 1000] } },
                         { key: 'Summary', type: 'TextBox', validationRules: { required: true } }
                     ]
@@ -236,9 +236,9 @@ describe('Dialog actions module', () => {
             let model: KanbanModel = {
                 dialogSettings: {
                     fields: [
-                        { text: 'ID', key: 'Id', type: 'Input', validationRules: { required: true, number: true } },
+                        { text: 'ID', key: 'Id', type: 'TextBox' },
                         { key: 'Status', type: 'DropDown' },
-                        { key: 'Assignee', type: 'Input', validationRules: { required: true } },
+                        { key: 'Assignee', type: 'TextBox', validationRules: { required: true } },
                         { key: 'Estimate', type: 'Numeric', validationRules: { range: [0, 1000] } },
                         { key: 'Summary', type: 'TextBox', validationRules: { required: true } }
                     ]
@@ -284,9 +284,9 @@ describe('Dialog actions module', () => {
             let model: KanbanModel = {
                 dialogSettings: {
                     fields: [
-                        { text: 'ID', key: 'Id', type: 'Input', validationRules: { required: true, number: true } },
+                        { text: 'ID', key: 'Id', type: 'TextBox' },
                         { key: 'Status', type: 'DropDown' },
-                        { key: 'Assignee', type: 'Input', validationRules: { required: true } },
+                        { key: 'Assignee', type: 'TextBox', validationRules: { required: true } },
                         { key: 'Estimate', type: 'Numeric', validationRules: { range: [0, 1000] } },
                         { key: 'Summary', type: 'TextBox', validationRules: { required: true } }
                     ]

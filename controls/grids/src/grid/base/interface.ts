@@ -473,7 +473,6 @@ export interface IGrid extends Component<HTMLElement> {
     expandedRows?: { [index: number]: IExpandedRow };
     registeredTemplate?: Object;
     lockcolPositionCount?: number;
-    isWheelScrolled?: boolean;
     isPrinting?: boolean;
     id?: string;
     isSelectedRowIndexUpdating?: boolean;
@@ -2299,9 +2298,16 @@ export interface ColumnMenuClickEventArgs extends MenuEventArgs {
     column?: Column;
 }
 
-export interface ContextMenuClickEventArgs extends MenuEventArgs {
+export interface ContextMenuClickEventArgs {
     column?: Column;
     rowInfo?: RowInfo;
+    element: HTMLElement;
+    /** Defines the Menu Items.
+     * @blazorType Syncfusion.Blazor.Navigations.MenuItemModel
+     */
+    item: MenuItemModel;
+    event?: Event;
+    name?: string;
 }
 
 export interface ContextMenuOpenEventArgs extends BeforeOpenCloseMenuEventArgs {
@@ -2362,6 +2368,19 @@ export interface AggregateTemplateContext {
     key?: string;
     /** Gets corresponding grouped foreign key value */
     foreignKey?: string;
+}
+
+export interface PagerTemplateContext {
+    /** Gets the current page number */
+    currentPage?: number;
+    /** Gets the page size number */
+    pageSize?: number;
+    /** Gets the page count */
+    pageCount?: number;
+    /** Gets the total records count */
+    totalRecordsCount?: number;
+    /** Gets the total number of pages */
+    totalPages?: number;
 }
 
 export interface CaptionTemplateContext {

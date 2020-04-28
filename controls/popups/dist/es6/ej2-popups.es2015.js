@@ -1524,7 +1524,7 @@ function resizeEast(e) {
 }
 /* istanbul ignore next */
 function setMinHeight(minimumHeight) {
-    return minimumHeight;
+    minHeight = minimumHeight;
 }
 function removeResize() {
     let handlers = targetElement.querySelectorAll('.' + RESIZE_HANDLER);
@@ -1711,7 +1711,8 @@ let Dialog = class Dialog extends Component {
         }
         let headerHeight = parseInt(computedHeaderHeight.slice(0, computedHeaderHeight.indexOf('p')), 10);
         let footerHeight = parseInt(computedFooterHeight.slice(0, computedFooterHeight.indexOf('p')), 10);
-        return (setMinHeight(headerHeight + 30 + footerHeight));
+        setMinHeight(headerHeight + 30 + footerHeight);
+        return (headerHeight + 30 + footerHeight);
     }
     onResizeStart(args, dialogObj) {
         dialogObj.trigger('resizeStart', args);
@@ -2506,10 +2507,13 @@ let Dialog = class Dialog extends Component {
         if (this.dragObj) {
             this.dragObj.dragArea = this.targetEle;
         }
+        this.setMaxHeight();
         if (this.isModal) {
             this.updateIsModal();
         }
-        this.setMaxHeight();
+        if (this.enableResize) {
+            this.setResize();
+        }
     }
     updateIsModal() {
         this.element.setAttribute('aria-modal', this.isModal ? 'true' : 'false');

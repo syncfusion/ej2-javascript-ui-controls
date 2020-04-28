@@ -868,6 +868,7 @@ var DateFormat = /** @class */ (function () {
         }
         else {
             resPattern = exports.IntlBase.ConvertDateToWeekFormat(resPattern);
+            resPattern = resPattern.replace(/tt/, 'a');
             formatOptions.pattern = resPattern;
             formatOptions.numMapper = isBlazor() ?
                 extend({}, numObject) : ParserBase.getNumberMapper(dependable.parserObject, ParserBase.getNumberingSystem(cldr));
@@ -3285,6 +3286,21 @@ var blazorCultureFormats = {
         return actualPattern;
     }
     IntlBase.getActualDateTimeFormat = getActualDateTimeFormat;
+    // tslint:disable-next-line:no-any
+    function processSymbol(actual, option) {
+        for (var i = 0; i < actual.length; i++) {
+            var mapper_1 = { '.': 'decimal', ',': 'group' };
+            // tslint:disable-next-line:no-any
+            var matched = mapper_1[actual[i]];
+            if (matched === 'decimal') {
+                actual = actual.replace(/\./g, getValue('numberMapper.numberSymbols.decimal', option) || '.');
+            }
+            else if (matched === 'group') {
+                actual = actual.replace(/,/g, getValue('numberMapper.numberSymbols.group', option) || '.');
+            }
+        }
+        return actual;
+    }
     /**
      * Returns Native Number pattern
      * @private
@@ -3301,8 +3317,8 @@ var blazorCultureFormats = {
         var curObj = {};
         var curMatch = (options.format || '').match(IntlBase.currencyFormatRegex);
         var type = IntlBase.formatRegex.test(options.format) ? getProperNumericSkeleton(options.format || 'N') : {};
+        var dOptions = {};
         if (curMatch) {
-            var dOptions = {};
             dOptions.numberMapper = isBlazor() ?
                 extend({}, dependable.numericObject) :
                 ParserBase.getNumberMapper(dependable.parserObject, ParserBase.getNumberingSystem(cldr), true);
@@ -3356,6 +3372,9 @@ var blazorCultureFormats = {
         }
         else {
             actualPattern = options.format.replace(/\'/g, '"');
+        }
+        if (Object.keys(dOptions).length > 0) {
+            actualPattern = processSymbol(actualPattern, dOptions);
         }
         return actualPattern;
     }

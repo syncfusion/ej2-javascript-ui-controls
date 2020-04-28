@@ -447,8 +447,8 @@ export class Sort implements IAction {
         let cols: SortDescriptorModel[] = this.sortSettings.columns;
         let fieldNames: string[] = this.parent.getColumns().map((c: Column) => c.field);
         for (let i: number = 0, len: number = cols.length; i < len; i++) {
-            if (fieldNames.indexOf(cols[i].field) === -1) { continue; }
             header = gObj.getColumnHeaderByField(cols[i].field);
+            if (fieldNames.indexOf(cols[i].field) === -1 || isNullOrUndefined(header)) { continue; }
             this.aria.setSort(<HTMLElement>header, cols[i].direction);
             if (this.isMultiSort && cols.length > 1) {
                 header.querySelector('.e-headercelldiv').insertBefore(
@@ -472,8 +472,8 @@ export class Sort implements IAction {
         for (let i: number = position ? position : 0,
             len: number = !isNullOrUndefined(position) ? position + 1 : cols.length; i < len; i++) {
             header = gObj.getColumnHeaderByField(cols[i].field);
-            if (gObj.allowGrouping && gObj.groupSettings.columns.indexOf(cols[i].field) > -1 &&
-                (isNullOrUndefined(header) || !header.querySelector('.e-sortfilterdiv'))) {
+            if (isNullOrUndefined(header) || (gObj.allowGrouping && gObj.groupSettings.columns.indexOf(cols[i].field) > -1 &&
+                !header.querySelector('.e-sortfilterdiv'))) {
                 continue;
             }
             if (fieldNames.indexOf(cols[i].field) === -1) { continue; }

@@ -37,7 +37,10 @@ export interface CardSettingsModel {
     priority?: string;
 
     /**
-     * Defines the card selection type.
+     * It defines the card selection type, which accepts either of the following values.
+     * * Single
+     * * Multiple
+     * * None
      * @default 'Single'
      */
     selectionType?: SelectionType;

@@ -135,8 +135,8 @@ export class DragAndDrop {
                 ? true : false;
             if (keys.length === 1 || isDrag) {
                 if (target.classList.contains(cls.CARD_CLASS)) {
-                    let insertClone: InsertPosition = (isNullOrUndefined(target.previousElementSibling) &&
-                        ((this.dragObj.pageY - target.offsetTop) / 2) < 25) ? 'beforebegin' : 'afterend';
+                    let insertClone: InsertPosition = (isNullOrUndefined(target.previousElementSibling) && (this.dragObj.pageY -
+                        (this.parent.element.offsetTop + target.offsetTop)) < (target.offsetHeight / 2)) ? 'beforebegin' : 'afterend';
                     target.insertAdjacentElement(insertClone, this.dragObj.targetClone);
                 } else if (target.classList.contains(cls.CONTENT_CELLS_CLASS) && !closest(target, '.' + cls.SWIMLANE_ROW_CLASS)) {
                     target.querySelector('.' + cls.CARD_WRAPPER_CLASS).appendChild(this.dragObj.targetClone);

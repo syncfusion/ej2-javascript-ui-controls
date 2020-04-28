@@ -225,6 +225,10 @@
         border-top: 1px solid $rte-border-color;
       }
 
+      .e-toolbar-extended.e-popup-open {
+        border-bottom: 1px solid $rte-border-color;
+      }
+
       &.e-rte-resize {
         .e-rte-content,
         .e-source-content {

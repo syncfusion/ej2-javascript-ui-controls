@@ -81,6 +81,7 @@ export class DateFormat {
             throwError('Format options or type given must be invalid');
         } else {
             resPattern = base.ConvertDateToWeekFormat(resPattern);
+            resPattern = resPattern.replace(/tt/, 'a');
             formatOptions.pattern = resPattern;
             formatOptions.numMapper = isBlazor() ?
                 extend({}, numObject) : parser.getNumberMapper(dependable.parserObject, parser.getNumberingSystem(cldr));

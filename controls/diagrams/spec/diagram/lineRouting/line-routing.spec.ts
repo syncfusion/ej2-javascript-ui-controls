@@ -7107,4 +7107,59 @@ describe('Diagram Control', () => {
             done();
         });
     });
+    describe('EJ2-38721 - Line Routing for group', () => {
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramLineRoutingGroup' });
+            document.body.appendChild(ele);
+            
+            diagram = new Diagram({
+                width: "700px",
+                height: "800px",
+                nodes: [
+                    {
+                        id: "node1", height: 100, width: 100, offsetX: 300, offsetY: 100,
+                        annotations: [{ content: "Node1" }]
+                    },
+                    {
+                        id: "node2", height: 100, width: 100, offsetX: 500, offsetY: 250,
+                        annotations: [{ content: "Node2" }]
+                    },
+                    {
+                        id: "node3", height: 100, width: 100, offsetX: 100, offsetY: 250,
+                        annotations: [{ content: "Node3" }]
+                    },
+                    {
+                        id: "node4", height: 100, width: 100, offsetX: 300, offsetY: 400,
+                        annotations: [{ content: "Node4" }]
+                    },
+                    {
+                        id: 'group', children: ['node1', 'node2', 'node3']
+                    }
+                ],
+                connectors: [
+                    { id: 'connector1', sourceID: 'node1', targetID: 'node2', },
+                    { id: 'connector2', sourceID: 'node2', targetID: 'node3', },
+                    { id: 'connector3', sourceID: 'node3', targetID: 'node1', },
+                    { id: 'connector4', sourceID: 'node3', targetID: 'node4' }
+                ],
+                constraints: DiagramConstraints.Default | DiagramConstraints.LineRouting,
+                getConnectorDefaults: function (connector: ConnectorModel) { connector.type = 'Orthogonal'; }
+            });
+            diagram.appendTo('#diagramLineRoutingGroup');
+        });
+
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+
+        it('CR issue', (done: Function) => {
+            for (var i = 0; i < diagram.connectors.length; i++) { console.log(getIntermediatePoints((diagram.connectors[i] as Connector).intermediatePoints, '(diagram.connectors[' + i + '] as Connector)')); }
+            expect((diagram.connectors[0] as Connector).intermediatePoints[0].x == 300 && (diagram.connectors[0] as Connector).intermediatePoints[0].y == 150 && (diagram.connectors[0] as Connector).intermediatePoints[1].x == 300 && (diagram.connectors[0] as Connector).intermediatePoints[1].y == 320 && (diagram.connectors[0] as Connector).intermediatePoints[2].x == 500 && (diagram.connectors[0] as Connector).intermediatePoints[2].y == 320 && (diagram.connectors[0] as Connector).intermediatePoints[3].x == 500 && (diagram.connectors[0] as Connector).intermediatePoints[3].y == 300).toBe(true);
+            expect((diagram.connectors[1] as Connector).intermediatePoints[0].x == 450 && (diagram.connectors[1] as Connector).intermediatePoints[0].y == 250 && (diagram.connectors[1] as Connector).intermediatePoints[1].x == 150 && (diagram.connectors[1] as Connector).intermediatePoints[1].y == 250).toBe(true);
+            expect((diagram.connectors[2] as Connector).intermediatePoints[0].x == 150 && (diagram.connectors[2] as Connector).intermediatePoints[0].y == 250 && (diagram.connectors[2] as Connector).intermediatePoints[1].x == 300 && (diagram.connectors[2] as Connector).intermediatePoints[1].y == 250 && (diagram.connectors[2] as Connector).intermediatePoints[2].x == 300 && (diagram.connectors[2] as Connector).intermediatePoints[2].y == 150).toBe(true);
+            expect((diagram.connectors[3] as Connector).intermediatePoints[0].x ==100&&(diagram.connectors[3] as Connector).intermediatePoints[0].y ==300&&(diagram.connectors[3] as Connector).intermediatePoints[1].x ==100&&(diagram.connectors[3] as Connector).intermediatePoints[1].y ==400&&(diagram.connectors[3] as Connector).intermediatePoints[2].x ==250&&(diagram.connectors[3] as Connector).intermediatePoints[2].y ==400).toBe(true);
+            done();
+        });
+    });
 });

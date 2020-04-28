@@ -410,6 +410,31 @@ export var checkboxData  = [
 }
 ];
 
+export let hierarchicalData7: { [key: string]: Object; }[] = [
+    {
+        code: "AF", name: "Africa", countries: [
+            { code: "NGA", name: "Nigeria" },
+            { code: "EGY", name: "Egypt" },
+            { code: "ZAF", name: "South Africa" }
+        ]
+    },
+    {
+        code: "AS", name: "Asia", countries: [
+            { code: "CHN", name: "China" },
+            { code: "IND", name: "India"},
+            { code: "JPN", name: "Japan" }
+        ]
+    },
+    {
+        code: "EU", name: "Europe", countries: [
+            { code: "DNK", name: "Denmark" },
+            { code: "FIN", name: "Finland" },
+            { code: "AUT", name: "Austria" }
+        ]
+    },
+   
+];
+
 export var localData: { [key: string]: Object }[] = [
     { id: 1, text: "Artwork", iconCss: 'folder', imageUrl: 'base/spec/images/Shooting.png', tooltip: 'This is Artwork node', hasChildren: true, selected: 'true', navigateUrl: 'http://npmci.syncfusion.com/', },
     { id: 2, parentID: 1, text: "Abstract", hasChildren: true },

@@ -170,7 +170,7 @@ describe('ContextMenu module', () => {
         done();
        }
        gridObj.actionComplete = actionComplete;
-       (<HTMLInputElement>gridObj.getContentTable().getElementsByClassName('e-numerictextbox')[0]).value = '44';
+       (<any>gridObj.getContentTable().getElementsByClassName('e-numerictextbox')[0]).ej2_instances[0].value = '44';
        (<HTMLElement>gridObj.element.getElementsByClassName('e-tbar-btn-text')[2]).click();
   });
     afterAll(() => {
@@ -242,7 +242,7 @@ describe('ContextMenu module', () => {
         done();
        }
        gridObj.actionComplete = actionComplete;
-       (<HTMLInputElement>gridObj.getContentTable().getElementsByClassName('e-numerictextbox')[0]).value = '55';
+       (<any>gridObj.getContentTable().getElementsByClassName('e-numerictextbox')[0]).ej2_instances[0].value = '55';
        (<HTMLElement>gridObj.element.getElementsByClassName('e-tbar-btn-text')[2]).click();
   });
     afterAll(() => {

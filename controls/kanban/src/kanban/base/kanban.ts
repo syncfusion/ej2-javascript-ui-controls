@@ -114,7 +114,9 @@ export class Kanban extends Component<HTMLElement> {
     public keyField: string;
 
     /**
-     * Defines the constraint type used to apply validation based on column or swimlane.
+     * Defines the constraint type used to apply validation based on column or swimlane. The possible values are:
+     * * Column
+     * * Swimlane
      * @default column
      */
     @Property('Column')
@@ -672,7 +674,7 @@ export class Kanban extends Component<HTMLElement> {
      * @deprecated
      * @method openDialog
      * @param {CurrentAction} action Defines the action for which the dialog needs to be opened such as either for new card creation or
-     *  editing of existing cards or deletion of existing card. The applicable action names are `Add`, `Edit` and `Delete`.
+     *  editing of existing cards. The applicable action names are `Add` and `Edit`.
      * @param {Object} data It can be card data.
      * @returns {void}
      */

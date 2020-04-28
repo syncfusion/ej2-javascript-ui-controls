@@ -188,6 +188,7 @@ export class NormalEdit {
 
     protected updateRow(index: number, data: Object): void {
         let gObj: IGrid = this.parent;
+        this.editRowIndex = index;
         let args: SaveEventArgs = {
             requestType: 'save', action: 'edit', type: events.actionBegin, data: data, cancel: false,
             previousData: gObj.getCurrentViewRecords()[index],
@@ -333,8 +334,9 @@ export class NormalEdit {
             this.closeForm();
             let rowIndex: string = 'rowIndex';
             let action: string = 'action';
+            let data: string = 'data';
             editArgs = {requestType: args.requestType,
-                   rowIndex: args[rowIndex], action: args[action]};
+                   rowIndex: args[rowIndex], action: args[action], data: args[data]};
             this.parent.notify('editsuccess', editArgs);
         } else {
             this.refreshRow(args.data);
@@ -345,6 +347,7 @@ export class NormalEdit {
         this.updateCurrentViewData(args.data);
         this.blazorTemplate();
         if (!(isBlazor() && this.parent.isServerRendered)) {
+            this.editRowIndex = null;
             this.parent.trigger(events.actionComplete, args);
         }
         if (isBlazor()) {

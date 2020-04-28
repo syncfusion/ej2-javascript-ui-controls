@@ -8788,9 +8788,17 @@ var Selection = /** @class */ (function () {
     Selection.prototype.setRowSelection = function (state) {
         if (!this.parent.getDataModule().isRemote() && !sf.base.isBlazor()) {
             if (state) {
-                for (var _i = 0, _a = this.getData(); _i < _a.length; _i++) {
-                    var data = _a[_i];
-                    this.selectedRowState[data[this.primaryKey]] = true;
+                if (this.parent.groupSettings.columns.length) {
+                    for (var _i = 0, _a = this.getData().records; _i < _a.length; _i++) {
+                        var data = _a[_i];
+                        this.selectedRowState[data[this.primaryKey]] = true;
+                    }
+                }
+                else {
+                    for (var _b = 0, _c = this.getData(); _b < _c.length; _b++) {
+                        var data = _c[_b];
+                        this.selectedRowState[data[this.primaryKey]] = true;
+                    }
                 }
             }
             else {
@@ -8906,7 +8914,8 @@ var Selection = /** @class */ (function () {
             else if (this.parent.checkAllRows === 'Check') {
                 this.setRowSelection(true);
                 this.persistSelectedData = (!this.parent.getDataModule().isRemote() && !sf.base.isBlazor()) ?
-                    this.getData().slice() : this.persistSelectedData;
+                    this.parent.groupSettings.columns.length ? this.getData().records.slice() :
+                        this.getData().slice() : this.persistSelectedData;
             }
         }
     };
@@ -10803,9 +10812,9 @@ var BlazorAction = /** @class */ (function () {
                     this.parent.selectRow(parseInt(row.getAttribute('aria-rowindex'), 10));
                     // tslint:disable-next-line:no-any
                     row.cells[0].focus({ preventScroll: true });
-                    this.virtualContentModule.blazorDataLoad = false;
                 }
             }
+            this.virtualContentModule.blazorDataLoad = false;
         }
         if (args.foreignColumnsData) {
             var columns = this.parent.getColumns();
@@ -10879,7 +10888,6 @@ var BlazorAction = /** @class */ (function () {
         this.parent.renderModule.dataManagerSuccess(args, this.actionArgs);
         this.parent.getMediaColumns();
         if (this.parent.enableVirtualization) {
-            this.wireEvents();
             this.virtualContentModule = this.parent.contentModule;
             this.setColVTableWidthAndTranslate();
             if (this.parent.groupSettings.columns.length) {
@@ -10926,20 +10934,6 @@ var BlazorAction = /** @class */ (function () {
     };
     BlazorAction.prototype.dataSourceModified = function () {
         this.dataSourceChanged = true;
-    };
-    BlazorAction.prototype.wireEvents = function () {
-        sf.base.EventHandler.add(this.parent.element, 'wheel', this.wheelScrollHandler, this);
-        sf.base.EventHandler.add(this.parent.getContentTable(), 'mouseleave', this.mouseLeaveHandler, this);
-    };
-    BlazorAction.prototype.unWireEvents = function () {
-        sf.base.EventHandler.remove(this.parent.element, 'wheel', this.wheelScrollHandler);
-        sf.base.EventHandler.remove(this.parent.getContentTable(), 'mouseleave', this.mouseLeaveHandler);
-    };
-    BlazorAction.prototype.wheelScrollHandler = function () {
-        this.parent.isWheelScrolled = true;
-    };
-    BlazorAction.prototype.mouseLeaveHandler = function () {
-        this.parent.isWheelScrolled = false;
     };
     BlazorAction.prototype.setClientOffSet = function (args, index) {
         var timeZone = sf.data.DataUtil.serverTimezoneOffset;
@@ -11036,9 +11030,6 @@ var BlazorAction = /** @class */ (function () {
     };
     BlazorAction.prototype.destroy = function () {
         this.removeEventListener();
-        if (this.parent.enableVirtualization) {
-            this.unWireEvents();
-        }
     };
     return BlazorAction;
 }());
@@ -12661,7 +12652,7 @@ var Grid = /** @class */ (function (_super) {
         if (this.childGrid || this.detailTemplate) {
             fieldIdx++;
         }
-        if (this.allowRowDragAndDrop) {
+        if (this.isRowDragable()) {
             fieldIdx++;
         }
         col = this.getColumnByField(field);
@@ -12809,7 +12800,8 @@ var Grid = /** @class */ (function (_super) {
      * @return {Element}
      */
     Grid.prototype.getColumnHeaderByField = function (field) {
-        return this.getColumnHeaderByUid(this.getColumnByField(field).uid);
+        var column = this.getColumnByField(field);
+        return column ? this.getColumnHeaderByUid(column.uid) : undefined;
     };
     /**
      * Gets a column header by UID.
@@ -12817,7 +12809,8 @@ var Grid = /** @class */ (function (_super) {
      * @return {Element}
      */
     Grid.prototype.getColumnHeaderByUid = function (uid) {
-        return this.getHeaderContent().querySelector('[e-mappinguid=' + uid + ']').parentElement;
+        var element = this.getHeaderContent().querySelector('[e-mappinguid=' + uid + ']');
+        return element ? element.parentElement : undefined;
     };
     /**
      * @hidden
@@ -13846,10 +13839,10 @@ var Grid = /** @class */ (function (_super) {
             else if (row) {
                 var rows = [].slice.call(this.element.querySelectorAll('tr[aria-rowindex="' + row.getAttribute('aria-rowindex') + '"]'));
                 rows.splice(rows.indexOf(row), 1);
-                if (row.getAttribute('aria-selected') != 'true') {
+                if (row.getAttribute('aria-selected') != 'true' && rows[0]) {
                     rows[0].classList.add('e-frozenhover');
                 }
-                else {
+                else if (rows[0]) {
                     rows[0].classList.remove('e-frozenhover');
                 }
             }
@@ -16848,53 +16841,56 @@ var CheckBoxFilterBase = /** @class */ (function () {
             var filterModel = 'filterModel';
             args[filterModel] = {};
         }
-        this.parent.notify(cBoxFltrBegin, args);
-        predicte = new sf.data.Predicate(field, args.operator, parsed, args.matchCase, args.ignoreAccent);
-        if (this.options.type === 'date' || this.options.type === 'datetime') {
-            operator = 'equal';
-            if (sf.base.isNullOrUndefined(parsed) && val.length) {
-                return;
+        this.parent.trigger(actionBegin, args, function (filterargs) {
+            filterargs.operator = (sf.base.isBlazor() && filterargs.excelSearchOperator !== 'none') ?
+                filterargs.excelSearchOperator : filterargs.operator;
+            predicte = new sf.data.Predicate(field, filterargs.operator, parsed, filterargs.matchCase, filterargs.ignoreAccent);
+            if (_this.options.type === 'date' || _this.options.type === 'datetime') {
+                operator = 'equal';
+                if (sf.base.isNullOrUndefined(parsed) && val.length) {
+                    return;
+                }
+                var filterObj = {
+                    field: field, operator: operator, value: parsed, matchCase: matchCase,
+                    ignoreAccent: ignoreAccent
+                };
+                predicte = getDatePredicate(filterObj, _this.options.type);
             }
-            var filterObj = {
-                field: field, operator: operator, value: parsed, matchCase: matchCase,
-                ignoreAccent: ignoreAccent
-            };
-            predicte = getDatePredicate(filterObj, this.options.type);
-        }
-        if (val.length) {
-            predicte = !sf.base.isNullOrUndefined(pred) ? predicte.and(pred.e) : predicte;
-            query.where(predicte);
-        }
-        else if (!sf.base.isNullOrUndefined(pred)) {
-            query.where(pred.e);
-        }
-        args.filterChoiceCount = !sf.base.isNullOrUndefined(args.filterChoiceCount) ? args.filterChoiceCount : 1000;
-        var fPredicate = {};
-        sf.popups.showSpinner(this.spinner);
-        this.renderEmpty = false;
-        if (this.isForeignColumn(column) && val.length) {
-            var colData = ('result' in column.dataSource) ? new sf.data.DataManager(column.dataSource.result) :
-                column.dataSource;
-            // tslint:disable-next-line:no-any
-            colData.executeQuery(query).then(function (e) {
-                var columnData = _this.options.column.columnData;
-                _this.options.column.columnData = e.result;
-                _this.parent.notify(generateQuery, { predicate: fPredicate, column: column });
-                if (fPredicate.predicate.predicates.length) {
-                    foreignQuery.where(fPredicate.predicate);
-                }
-                else {
-                    _this.renderEmpty = true;
-                }
-                _this.options.column.columnData = columnData;
-                foreignQuery.take(args.filterChoiceCount);
-                _this.search(args, foreignQuery);
-            });
-        }
-        else {
-            query.take(args.filterChoiceCount);
-            this.search(args, query);
-        }
+            if (val.length) {
+                predicte = !sf.base.isNullOrUndefined(pred) ? predicte.and(pred.e) : predicte;
+                query.where(predicte);
+            }
+            else if (!sf.base.isNullOrUndefined(pred)) {
+                query.where(pred.e);
+            }
+            filterargs.filterChoiceCount = !sf.base.isNullOrUndefined(filterargs.filterChoiceCount) ? filterargs.filterChoiceCount : 1000;
+            var fPredicate = {};
+            sf.popups.showSpinner(_this.spinner);
+            _this.renderEmpty = false;
+            if (_this.isForeignColumn(column) && val.length) {
+                var colData = ('result' in column.dataSource) ? new sf.data.DataManager(column.dataSource.result) :
+                    column.dataSource;
+                // tslint:disable-next-line:no-any
+                colData.executeQuery(query).then(function (e) {
+                    var columnData = _this.options.column.columnData;
+                    _this.options.column.columnData = e.result;
+                    _this.parent.notify(generateQuery, { predicate: fPredicate, column: column });
+                    if (fPredicate.predicate.predicates.length) {
+                        foreignQuery.where(fPredicate.predicate);
+                    }
+                    else {
+                        _this.renderEmpty = true;
+                    }
+                    _this.options.column.columnData = columnData;
+                    foreignQuery.take(filterargs.filterChoiceCount);
+                    _this.search(filterargs, foreignQuery);
+                });
+            }
+            else {
+                query.take(filterargs.filterChoiceCount);
+                _this.search(filterargs, query);
+            }
+        });
     };
     CheckBoxFilterBase.prototype.search = function (args, query) {
         if (this.parent.dataSource && 'result' in this.parent.dataSource) {
@@ -18493,10 +18489,10 @@ var Sort = /** @class */ (function () {
         var cols = this.sortSettings.columns;
         var fieldNames = this.parent.getColumns().map(function (c) { return c.field; });
         for (var i = 0, len = cols.length; i < len; i++) {
-            if (fieldNames.indexOf(cols[i].field) === -1) {
+            header = gObj.getColumnHeaderByField(cols[i].field);
+            if (fieldNames.indexOf(cols[i].field) === -1 || sf.base.isNullOrUndefined(header)) {
                 continue;
             }
-            header = gObj.getColumnHeaderByField(cols[i].field);
             this.aria.setSort(header, cols[i].direction);
             if (this.isMultiSort && cols.length > 1) {
                 header.querySelector('.e-headercelldiv').insertBefore(this.parent.createElement('span', { className: 'e-sortnumber', innerHTML: (i + 1).toString() }), header.querySelector('.e-headertext'));
@@ -18517,8 +18513,8 @@ var Sort = /** @class */ (function () {
         var fieldNames = this.parent.getColumns().map(function (c) { return c.field; });
         for (var i = position ? position : 0, len = !sf.base.isNullOrUndefined(position) ? position + 1 : cols.length; i < len; i++) {
             header = gObj.getColumnHeaderByField(cols[i].field);
-            if (gObj.allowGrouping && gObj.groupSettings.columns.indexOf(cols[i].field) > -1 &&
-                (sf.base.isNullOrUndefined(header) || !header.querySelector('.e-sortfilterdiv'))) {
+            if (sf.base.isNullOrUndefined(header) || (gObj.allowGrouping && gObj.groupSettings.columns.indexOf(cols[i].field) > -1 &&
+                !header.querySelector('.e-sortfilterdiv'))) {
                 continue;
             }
             if (fieldNames.indexOf(cols[i].field) === -1) {
@@ -21835,8 +21831,9 @@ var Resize = /** @class */ (function () {
         var columnbyindex = gObj.getColumns()[columnIndexByField];
         var result;
         var width = columnbyindex.width = sf.base.formatUnit(Math.max(wHeader, wContent, wFooter));
-        if (parseInt(width, 10) > columnbyindex.maxWidth) {
-            columnbyindex.width = columnbyindex.maxWidth;
+        var colMaxWidth = columnbyindex.maxWidth && parseFloat(columnbyindex.maxWidth.toString());
+        if (parseInt(width, 10) > colMaxWidth) {
+            columnbyindex.width = colMaxWidth;
         }
         this.widthService.setColumnWidth(gObj.getColumns()[columnIndexByField]);
         result = gObj.getColumns().some(function (x) { return x.width === null || x.width === undefined || x.width.length <= 0; });
@@ -25790,8 +25787,7 @@ var InterSectionObserver = /** @class */ (function () {
                 return;
             }
             var check = _this.check(direction);
-            if (current.entered && (!sf.base.isBlazor() || (sf.base.isBlazor() && !_this.parent.isServerRendered) ||
-                (sf.base.isBlazor() && _this.parent.isServerRendered && !_this.parent.isWheelScrolled))) {
+            if (current.entered) {
                 onEnterCallback(_this.element, current, direction, { top: top, left: left }, _this.fromWheel, check);
             }
             if (check) {
@@ -25800,14 +25796,8 @@ var InterSectionObserver = /** @class */ (function () {
                 if (current.axis === 'X') {
                     fn = debounced50;
                 }
-                if (sf.base.isBlazor() && _this.parent.isServerRendered && _this.parent.isWheelScrolled) {
-                    callback({ direction: direction, sentinel: current, offset: { top: top, left: left },
-                        focusElement: document.activeElement });
-                }
-                else {
-                    fn({ direction: direction, sentinel: current, offset: { top: top, left: left },
-                        focusElement: document.activeElement });
-                }
+                fn({ direction: direction, sentinel: current, offset: { top: top, left: left },
+                    focusElement: document.activeElement });
             }
             _this.fromWheel = false;
         };
@@ -26289,8 +26279,9 @@ var VirtualContentRenderer = /** @class */ (function (_super) {
             var pageSizeBy4 = this.parent.pageSettings.pageSize / 4;
             if (infoType.direction === 'down') {
                 var sIndex = Math.round(exactEndIndex) - Math.round((pageSizeBy4));
-                if (sf.base.isNullOrUndefined(infoType.startIndex) || (exactTopIndex + noOfInViewIndexes) >
-                    (infoType.startIndex + Math.round((this.parent.pageSettings.pageSize / 2 + pageSizeBy4)))) {
+                if (sf.base.isNullOrUndefined(infoType.startIndex) || (exactEndIndex >
+                    (infoType.startIndex + Math.round((this.parent.pageSettings.pageSize / 2 + pageSizeBy4)))
+                    && infoType.endIndex !== this.count)) {
                     infoType.startIndex = sIndex >= 0 ? Math.round(sIndex) : 0;
                     infoType.startIndex = infoType.startIndex > exactTopIndex ? Math.floor(exactTopIndex) : infoType.startIndex;
                     var eIndex = infoType.startIndex + this.parent.pageSettings.pageSize;
@@ -26326,8 +26317,8 @@ var VirtualContentRenderer = /** @class */ (function (_super) {
         return infoType;
     };
     VirtualContentRenderer.prototype.setKeyboardNavIndex = function () {
+        this.blazorDataLoad = true;
         if (this.activeKey === 'downArrow' || this.activeKey === 'upArrow') {
-            this.blazorDataLoad = true;
             this.blzRowIndex = this.activeKey === 'downArrow' ? this.rowIndex + 1 : this.rowIndex - 1;
             document.activeElement.blur();
         }
@@ -27021,10 +27012,9 @@ var VirtualContentRenderer = /** @class */ (function (_super) {
             var ele = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent()
                 : this.parent.getContent().firstElementChild;
             var selectedRow = this.parent.getRowByIndex(args.selectedIndex);
-            var rectTop = selectedRow ? selectedRow.getBoundingClientRect().top : 0;
             var rowHeight = this.parent.getRowHeight();
             var eleOffsHeight = ele.offsetHeight;
-            if (!selectedRow || (rectTop < rowHeight || rectTop > eleOffsHeight)) {
+            if (!selectedRow || this.isRowInView(args.selectedIndex, selectedRow, ele, eleOffsHeight, rowHeight)) {
                 this.isSelection = true;
                 this.selectedRowIndex = args.selectedIndex;
                 var viewPortCount = Math.floor(eleOffsHeight / rowHeight);
@@ -27035,6 +27025,17 @@ var VirtualContentRenderer = /** @class */ (function (_super) {
             }
         }
         this.requestType = this.empty;
+    };
+    VirtualContentRenderer.prototype.isRowInView = function (index, selectedRow, ele, eleOffsHeight, rowHeight) {
+        if (sf.base.isBlazor()) {
+            var exactTopIndex = ele.scrollTop / rowHeight;
+            var exactEndIndex = exactTopIndex + (eleOffsHeight / rowHeight);
+            return (index < exactTopIndex || index > exactEndIndex);
+        }
+        else {
+            var rectTop = selectedRow ? selectedRow.getBoundingClientRect().top : 0;
+            return (rectTop < rowHeight || rectTop > eleOffsHeight);
+        }
     };
     return VirtualContentRenderer;
 }(ContentRender));
@@ -28352,6 +28353,7 @@ var NormalEdit = /** @class */ (function () {
     NormalEdit.prototype.updateRow = function (index, data) {
         var _this = this;
         var gObj = this.parent;
+        this.editRowIndex = index;
         var args = {
             requestType: 'save', action: 'edit', type: actionBegin, data: data, cancel: false,
             previousData: gObj.getCurrentViewRecords()[index],
@@ -28493,8 +28495,9 @@ var NormalEdit = /** @class */ (function () {
             this.closeForm();
             var rowIndex = 'rowIndex';
             var action = 'action';
+            var data = 'data';
             editArgs = { requestType: args.requestType,
-                rowIndex: args[rowIndex], action: args[action] };
+                rowIndex: args[rowIndex], action: args[action], data: args[data] };
             this.parent.notify('editsuccess', editArgs);
         }
         else {
@@ -28506,6 +28509,7 @@ var NormalEdit = /** @class */ (function () {
         this.updateCurrentViewData(args.data);
         this.blazorTemplate();
         if (!(sf.base.isBlazor() && this.parent.isServerRendered)) {
+            this.editRowIndex = null;
             this.parent.trigger(actionComplete, args);
         }
         if (sf.base.isBlazor()) {
@@ -29827,7 +29831,7 @@ var BatchEdit = /** @class */ (function () {
     BatchEdit.prototype.escapeCellEdit = function () {
         var args = this.generateCellArgs();
         args.value = args.previousValue;
-        this.successCallBack(args, args.cell.parentElement, args.column)(args);
+        this.successCallBack(args, args.cell.parentElement, args.column, true)(args);
     };
     BatchEdit.prototype.generateCellArgs = function () {
         var gObj = this.parent;
@@ -29880,7 +29884,7 @@ var BatchEdit = /** @class */ (function () {
             this.successCallBack(args, tr, col)(args);
         }
     };
-    BatchEdit.prototype.successCallBack = function (cellSaveArgs, tr, column) {
+    BatchEdit.prototype.successCallBack = function (cellSaveArgs, tr, column, isEscapeCellEdit) {
         var _this = this;
         return function (cellSaveArgs) {
             var gObj = _this.parent;
@@ -29936,7 +29940,9 @@ var BatchEdit = /** @class */ (function () {
                         .replaceWith(_this.originalCell["" + _this.cellDetails.rowIndex + cellSaveArgs.columnObject.index]);
                 }
             }
-            gObj.trigger(cellSaved, cellSaveArgs);
+            if (sf.base.isNullOrUndefined(isEscapeCellEdit)) {
+                gObj.trigger(cellSaved, cellSaveArgs);
+            }
             gObj.notify(toolbarRefresh, {});
             _this.isColored = false;
             if (_this.parent.aggregates.length > 0) {
@@ -32386,7 +32392,7 @@ var ExcelExport = /** @class */ (function () {
     };
     ExcelExport.prototype.processRecordContent = function (gObj, returnType, headerRow, exportProperties, currentViewRecords, excelRow, helper) {
         var record;
-        if (!sf.base.isNullOrUndefined(currentViewRecords)) {
+        if (!sf.base.isNullOrUndefined(currentViewRecords) && currentViewRecords.length) {
             record = currentViewRecords;
         }
         else {

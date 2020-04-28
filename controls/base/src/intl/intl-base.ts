@@ -1005,6 +1005,22 @@ export namespace IntlBase {
         return actualPattern;
     }
 
+    // tslint:disable-next-line:no-any
+    function processSymbol(actual: string, option: any): any {
+        for (let i: number = 0; i < actual.length; i++) {
+            let mapper: object = { '.': 'decimal', ',': 'group' };
+            // tslint:disable-next-line:no-any
+            let matched: any = mapper[actual[i]];
+            if (matched === 'decimal') {
+                actual = actual.replace(/\./g, getValue('numberMapper.numberSymbols.decimal', option) || '.');
+            } else if (matched === 'group') {
+                actual = actual.replace(/,/g, getValue('numberMapper.numberSymbols.group', option) || '.');
+            }
+        }
+        return actual;
+    }
+
+
     /**
      * Returns Native Number pattern
      * @private
@@ -1021,8 +1037,8 @@ export namespace IntlBase {
         let curObj: GenericFormatOptions & { hasNegativePattern?: boolean } = {};
         let curMatch: string[] = (options.format || '').match(currencyFormatRegex);
         let type: NumericSkeleton = formatRegex.test(options.format)  ? getProperNumericSkeleton(options.format || 'N') : {};
+        let dOptions: CommonOptions = {};
         if (curMatch) {
-            let dOptions: CommonOptions = {};
             dOptions.numberMapper = isBlazor() ?
                 extend({}, dependable.numericObject) :
                 parser.getNumberMapper(dependable.parserObject, parser.getNumberingSystem(cldr), true);
@@ -1078,6 +1094,9 @@ export namespace IntlBase {
             }
         } else {
             actualPattern = options.format.replace(/\'/g, '"');
+        }
+        if (Object.keys(dOptions).length > 0) {
+            actualPattern =   processSymbol(actualPattern, dOptions);
         }
         return actualPattern;
     }
