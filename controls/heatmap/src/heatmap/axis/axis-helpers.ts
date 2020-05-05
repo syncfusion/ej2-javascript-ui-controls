@@ -218,23 +218,21 @@ export class AxisHelper {
 
     private drawXAxisLabels(axis: Axis, parent: Element, rect: Rect): void {
         let heatMap: HeatMap = this.heatMap; let labels: string[] = axis.axisLabels;
-        let interval: number = rect.width / axis.axisLabelSize; let compactInterval: number = 0;
+        let borderWidth: number = this.heatMap.cellSettings.border.width > 5 ?  (this.heatMap.cellSettings.border.width / 2) : 0;
+        let interval: number = (rect.width - borderWidth) / axis.axisLabelSize; let compactInterval: number = 0;
         let axisInterval: number = axis.interval ? axis.interval : 1;
         let tempintervel: number = rect.width / (axis.axisLabelSize / axis.axisLabelInterval);
         let temp: number = axis.axisLabelInterval;
         if (tempintervel > 0) {
             while (tempintervel < parseInt(axis.textStyle.size, 10)) {
-                temp = temp + 1;
-                tempintervel = rect.width / (axis.axisLabelSize / temp);
+                temp = temp + 1; tempintervel = rect.width / (axis.axisLabelSize / temp);
             }
         } else { temp = axis.tooltipLabels.length; }
         if (axis.axisLabelInterval < temp) {
-            compactInterval = temp;
-            labels = axis.tooltipLabels;
+            compactInterval = temp; labels = axis.tooltipLabels;
             axisInterval = temp;
         }
-        let y: number; let padding: number = 10;
-        let lableStrtX: number = rect.x + (!axis.isInversed ? 0 : rect.width);
+        let y: number; let padding: number = 10; let lableStrtX: number = rect.x + (!axis.isInversed ? 0 : rect.width);
         let labelPadding: number; let angle: number = axis.angle;
         padding = this.padding; let labelElement: Element; let borderElement: Element;
         if (!heatMap.enableCanvasRendering) {
@@ -248,8 +246,7 @@ export class AxisHelper {
                 axis.showLabelOn === 'None' ? textTrim(interval * axisInterval, labels[i], axis.textStyle) :
                 textTrim(axis.dateTimeAxisLabelInterval[i] * interval, labels[i], axis.textStyle) : labels[i];
             label = axis.enableTrim ? textTrim( axis.maxLabelLength, labels[i], axis.textStyle) :  label ;
-            let elementSize: Size = measureText(label, axis.textStyle);
-            let transform: string;
+            let elementSize: Size = measureText(label, axis.textStyle); let transform: string;
             labelPadding = (axis.opposedPosition) ? -(padding) : (padding + ((angle % 360) === 0 ? (elementSize.height / 2) : 0));
             let x: number = lableRect.x + ((!axis.isInversed) ?
                 (lableRect.width / 2) - (elementSize.width / 2) : -((lableRect.width / 2) + (elementSize.width / 2)));
@@ -281,23 +278,28 @@ export class AxisHelper {
                     (((angle % 360) === 180 || (angle % 360) === -180) ? 0 : (rotateSize.height) / 2));
                 transform = 'rotate(' + angle + ',' + x + ',' + y + ')';
             }
+            if (this.heatMap.cellSettings.border.width > 5 && axis.opposedPosition) {
+                y = y - (this.heatMap.cellSettings.border.width / 2);
+            }
+            if (this.heatMap.yAxis.opposedPosition && this.heatMap.cellSettings.border.width > 5) {
+                x = x + (this.heatMap.cellSettings.border.width / 2);
+            }
+            if (this.heatMap.xAxis.isInversed && this.heatMap.cellSettings.border.width > 5) {
+                x = x - (this.heatMap.cellSettings.border.width / 2);
+            }
             let options: TextOption = new TextOption(
                 heatMap.element.id + '_XAxis_Label' + i,
-                new TextBasic(x, y, (angle % 360 === 0) ? 'start' : 'middle', label, angle, transform),
-                axis.textStyle,
+                new TextBasic(x, y, (angle % 360 === 0) ? 'start' : 'middle', label, angle, transform), axis.textStyle,
                 axis.textStyle.color || heatMap.themeStyle.axisLabel
             );
             if (angle !== 0 && this.heatMap.enableCanvasRendering) {
                 this.drawSvgCanvas.canvasDrawText(options, label);
-            } else {
-                this.drawSvgCanvas.createText(options, labelElement, label);
-            }
+            } else { this.drawSvgCanvas.createText(options, labelElement, label); }
             if (compactInterval === 0) {
                 let labelInterval: number = (axis.valueType === 'DateTime' && axis.showLabelOn !== 'None') ?
                     axis.dateTimeAxisLabelInterval[i] : axis.axisLabelInterval;
                 lableStrtX = lableStrtX + (!axis.isInversed ? (labelInterval * interval) :
                     -(labelInterval * interval));
-
             } else {
                 lableStrtX = lableStrtX + (!axis.isInversed ? (compactInterval * interval) : -(compactInterval * interval));
             }
@@ -307,9 +309,7 @@ export class AxisHelper {
                         labels[i],
                         new Rect(x, y - elementSize.height, elementSize.width, elementSize.height)));
             }
-            if (compactInterval !== 0) {
-                i = i + (compactInterval - 1);
-            }
+            if (compactInterval !== 0) { i = i + (compactInterval - 1); }
         }
         if (!heatMap.enableCanvasRendering) {
             parent.appendChild(labelElement);
@@ -348,8 +348,11 @@ export class AxisHelper {
         for (let i: number = 0, len: number = labels.length; i < len; i++) {
             let labelRect: Rect = new Rect(rect.x, lableStartY, rect.width, interval);
             let position: number = labelRect.height / 2; //titlePositionY(lableRect, 0, 0, axis.textStyle);
-            let x: number = labelRect.x + padding;
-            let y: number = labelRect.y + (axis.isInversed ? position : -position);
+            let axisWidth: number = this.heatMap.cellSettings.border.width >= 20 ? (this.heatMap.cellSettings.border.width / 2) : 0;
+            let x: number = labelRect.x + padding + (axis.opposedPosition ? axisWidth : -axisWidth);
+            let indexValue: number = this.heatMap.cellSettings.border.width > 5 ?
+                (((this.heatMap.cellSettings.border.width / 2) / len) * ( axis.isInversed ? (i) : (len - i))) : 0;
+            let y: number = (labelRect.y - indexValue) + (axis.isInversed ? position : -position);
             label = axis.enableTrim ? textTrim( axis.maxLabelLength, labels[i], axis.textStyle) : labels[i];
             let options: TextOption = new TextOption(
                 heatMap.element.id + '_YAxis_Label' + i,

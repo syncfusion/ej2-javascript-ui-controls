@@ -103,4 +103,16 @@ export interface ChipModel {
      * @blazorType bool?
      */
     enabled?: boolean;
+
+    /**
+     * Specifies the leading icon url for the chip.
+     * @default ''
+     */
+    leadingIconUrl?: string;
+
+    /**
+     * Specifies the trailing icon url for the chip.
+     * @default ''
+     */
+    trailingIconUrl?: string;
 }

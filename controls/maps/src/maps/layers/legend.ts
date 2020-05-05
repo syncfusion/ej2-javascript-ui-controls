@@ -24,9 +24,15 @@ export class Legend {
     private translate: Point;
     public legendBorderRect: Rect = new Rect(0, 0, 0, 0);
     private maps: Maps;
-    private totalPages: Object[] = [];
+    /**
+     * @private
+     */
+    public totalPages: Object[] = [];
     private page: number = 0;
-    private currentPage: number = 0;
+    /**
+     * @private
+     */
+    public currentPage: number = 0;
     private legendItemRect: Rect = new Rect(0, 0, 0, 0);
     private heightIncrement: number = 0;
     private widthIncrement: number = 0;
@@ -332,6 +338,27 @@ export class Legend {
         }
     }
 
+    private legendTextTrim(maxWidth: number, text: string, font: FontModel, legendRectSize: number): string {
+        let label: string = text;
+        let size: number = measureText(text, font).width;
+        let legendWithoutTextSize : number = legendRectSize - size;
+        if (legendRectSize > maxWidth) {
+            let textLength: number = text.length;
+            for (let i: number = textLength - 1; i >= 0; --i) {
+                label = text.substring(0, i) + '...';
+                size = measureText(label, font).width;
+                let totalSize : number = legendWithoutTextSize + size;
+                if (totalSize <= maxWidth || label.length < 4) {
+                    if (label.length < 4) {
+                        label = ' ';
+                    }
+                    return label;
+                }
+            }
+        }
+        return label;
+    }
+
     /**
      * To draw the legend shape and text.
      */
@@ -405,6 +432,12 @@ export class Legend {
                     this.renderLegendBorder();
                 }
                 legendElement.appendChild(drawSymbol(shapeLocation, shape, shapeSize, collection['ImageSrc'], renderOptions));
+                if (collection['Rect']['width'] > this.legendBorderRect.width) {
+                    let legendRectSize : number = collection['Rect']['x'] + collection['Rect']['width'];
+                    let trimmedText : string = this.legendTextTrim(this.legendBorderRect.width, legendText,
+                                                                   legend.textStyle, legendRectSize);
+                    legendText = trimmedText;
+                }
                 textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'start', legendText, '', '');
                 renderTextElement(textOptions, legend.textStyle, legend.textStyle.color, legendElement);
                 this.legendGroup.appendChild(legendElement);
@@ -1790,7 +1823,11 @@ export class Legend {
                 let shapeData: Object = layerData[i];
                 let dataPathValue: string = (dataPath.indexOf(".") > -1 ) ? getValueFromObject(data, dataPath) : data[dataPath];
                 let shapePath: string = checkPropertyPath(data[dataPath], shapePropertyPath, shapeData['properties']);
-                if (shapeData['properties'][shapePath] === dataPathValue) {
+                let dataPathValueCase : string | number = !isNullOrUndefined(dataPathValue)
+                ? dataPathValue.toLowerCase() : dataPathValue;
+                let shapeDataValueCase : string = !isNullOrUndefined(shapeData['properties'][shapePath])
+                && isNaN(shapeData['properties'][shapePath]) ? shapeData['properties'][shapePath].toLowerCase() : shapePath;
+                if (shapeDataValueCase === dataPathValueCase) {
                     legendData.push({
                         layerIndex: layerIndex, shapeIndex: i, dataIndex: dataIndex,
                         name: data[dataPath], value: value

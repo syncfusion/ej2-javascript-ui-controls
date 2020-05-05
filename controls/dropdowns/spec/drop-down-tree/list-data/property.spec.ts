@@ -1032,6 +1032,7 @@ describe('DropDown Tree control List datasource', () => {
             setTimeout(function () {
                 expect(ddtreeObj.value.length).toBe(24);
                 expect(selectAllElement.querySelector('.e-all-text').textContent).toBe('Unselect All');
+                expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);
                 let ncheckEle: Element = <Element & NodeListOf<Element>>selectAllElement.querySelector('.e-checkbox-wrapper');
                 var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
                 ncheckEle.querySelector('.e-frame').dispatchEvent(e);
@@ -1043,6 +1044,7 @@ describe('DropDown Tree control List datasource', () => {
                 setTimeout(function () {
                     expect(ddtreeObj.value.length).toBe(0);
                     expect(selectAllElement.querySelector('.e-all-text').textContent).toBe('Select All');
+                    expect(document.querySelector('.e-popup').classList.contains('e-popup-open')).toBe(true);
                     done();
                 }, 400);
             }, 400);

@@ -224,7 +224,8 @@ export class PdfExport {
         let helper: ExportHelper = new ExportHelper(gObj);
         let dataSource: Object[] | Group = this.processExportProperties(pdfExportProperties, returnType.result);
         let columns: Column[] = isExportColumns(pdfExportProperties) ?
-            prepareColumns(pdfExportProperties.columns, gObj.enableColumnVirtualization) : gObj.columns as Column[];
+            prepareColumns(pdfExportProperties.columns, gObj.enableColumnVirtualization) :
+            helper.getGridExportColumns(gObj.columns as Column[]);
         let isGrouping: boolean = false;
         if (gObj.groupSettings.columns.length) {
             isGrouping = true;
@@ -498,7 +499,7 @@ export class PdfExport {
                     applyTextAndSpan(rowIndex, i + colIndex, cols[i] as Column, 0, newSpanCnt);
                     spanCnt = spanCnt + newSpanCnt;
                     colIndex = colIndex + newSpanCnt - 1;
-                } else if (cols[i].visible) {
+                } else if (cols[i].visible || this.hideColumnInclude) {
                     spanCnt++;
                     applyTextAndSpan(rowIndex, i + colIndex + index, cols[i] as Column, depth, 0);
                 }

@@ -1227,7 +1227,7 @@ export type ProtectionType =
     /**
      * Allow read-only access to the document.
      */
-    'ReadOnly'|
+    'ReadOnly' |
     /**
      * Allow form filling only.
      */
@@ -1343,11 +1343,11 @@ export type ToolbarItem =
     /**
      * RestrictEditing option in the toolbar item.
      */
-    'RestrictEditing'|
+    'RestrictEditing' |
     /**
      * Form fiels option in the toolbar item.
      */
-    'FormFields'|
+    'FormFields' |
     /**
      * Update fields options in toolbar item.
      */
@@ -1368,3 +1368,44 @@ export type CheckBoxSizeType = 'Auto' | 'Exactly';
  * @private
  */
 export type FormFieldType = 'Text' | 'CheckBox' | 'DropDown';
+/**
+ * Specifies the type of VerticalOrigin
+ * @private
+ */
+export type VerticalOrigin = 'Margin' | 'Page' | 'Paragraph' | 'Line' | 'TopMargin' | 'BottomMargin' | 'InsideMargin' | 'OutsideMargin';
+/**
+ * Specifies the type of VerticalAlignment
+ * @private
+ */
+export type VerticalAlignment = 'None' | 'Top' | 'Center' | 'Bottom' | 'Inside' | 'Outside';
+/**
+ * Specifies the type of HorizontalOrigin
+ * @private
+ */
+export type HorizontalOrigin = 'Margin' | 'Page' | 'Column' | 'Character' | 'LeftMargin' | 'RightMargin' | 'InsideMargin' | 'OutsideMargin';
+/**
+ * Specifies the type of HorizontalAlignment
+ * @private
+ */
+export type HorizontalAlignment = 'None' | 'Left' | 'Center' | 'Right' | 'Inside' | 'Outside';
+/**
+ * Specifies the type of Line Format Type
+ * @private
+ */
+export type LineFormatType = 'None' | 'Solid';
+/**
+ * Specifies the type of Line Dashing
+ * @private
+ */
+export type LineDashing = 'Solid' | 'Dash' | 'Dot' | 'DashDot' | 'DashDotDot' | 'DotGEL' |
+    'DashGEL' | 'LongDashGEL' | 'DashDotGEL' | 'LongDashDotGEL' | 'LongDashDotDotGEL';
+/**
+ * Specifies the type of Auto Shape Type
+ * @private
+ */
+export type AutoShapeType = 'Rectangle' | 'Oval';
+/**
+ * Wrapping style
+ * @private
+ */
+export type TextWrappingStyle = 'Inline' | 'InFrontOfText' | 'BehindText';

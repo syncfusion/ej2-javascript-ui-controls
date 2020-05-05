@@ -173,7 +173,7 @@ export class Edit implements IAction {
     public checkLastRow(tr: Element, args?: { row?: Element, requestType?: string }): void {
         let checkLastRow: boolean = this.isLastRow;
         if (this.parent.height !== 'auto' && this.parent.editSettings.newRowPosition === 'Bottom' && args &&
-            args.requestType === 'add') {
+            args.requestType === 'add' && this.parent.height > this.parent.getContentTable().scrollHeight) {
             addClass(tr.querySelectorAll('.e-rowcell'), 'e-lastrowadded');
         } else if (checkLastRow) {
             addClass(tr.querySelectorAll('.e-rowcell'), 'e-lastrowcell');
@@ -189,6 +189,7 @@ export class Edit implements IAction {
             this.showDialog('CancelEdit', this.dialogObj);
             return;
         }
+        this.parent.element.classList.remove('e-editing');
         this.editModule.closeEdit();
         if (!isBlazor()) {
             this.refreshToolbar();

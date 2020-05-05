@@ -286,7 +286,7 @@ describe('paste validation ', () => {
     it('With bookmark', () => {
 
         editor.editor.paste(pasteSfdt);
-        expect(editor.documentHelper.bookmarks.length).toBe(0);
+        expect(editor.documentHelper.bookmarks.length).toBe(1);
     });
 });
 

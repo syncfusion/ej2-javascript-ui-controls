@@ -434,9 +434,11 @@ export class Trendlines {
     private getLinearPoints(trendline: Trendline, points: Points[], xValues: number[], yValues: number[],
                             series: Series, slopeInterceptLinear: SlopeIntercept): Points[] {
         let pts: Points[] = [];
-        let x1Linear: number = xValues[0] - trendline.backwardForecast;
+        let max: number = xValues.indexOf(Math.max.apply(null, xValues));
+        let min: number = xValues.indexOf(Math.min.apply(null, xValues));
+        let x1Linear: number = xValues[min] - trendline.backwardForecast;
         let y1Linear: number = slopeInterceptLinear.slope * x1Linear + slopeInterceptLinear.intercept;
-        let x2Linear: number = xValues[xValues.length - 1] + trendline.forwardForecast;
+        let x2Linear: number = xValues[max] + trendline.forwardForecast;
         let y2Linear: number = slopeInterceptLinear.slope * x2Linear + slopeInterceptLinear.intercept;
         pts.push(
             this.getDataPoint(x1Linear, y1Linear, points[0], series, pts.length));

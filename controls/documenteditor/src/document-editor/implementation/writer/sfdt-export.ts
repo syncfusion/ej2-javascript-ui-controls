@@ -10,7 +10,7 @@ import {
     TableRowWidget, TableCellWidget, ImageElementBox, HeaderFooterWidget, HeaderFooters,
     ListTextElementBox, BookmarkElementBox, EditRangeStartElementBox, EditRangeEndElementBox,
     ChartElementBox, ChartDataTable, ChartTitleArea, ChartDataFormat, ChartLayout, ChartArea, ChartLegend, ChartCategoryAxis,
-    CommentElementBox, CommentCharacterElementBox, TextFormField, CheckBoxFormField, DropDownFormField
+    CommentElementBox, CommentCharacterElementBox, TextFormField, CheckBoxFormField, DropDownFormField, ShapeElementBox
 } from '../viewer/page';
 import { BlockWidget } from '../viewer/page';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
@@ -372,7 +372,6 @@ export class SfdtExport {
                         inline.formFieldData.dropDownList.selectedIndex = (element.formFieldData as DropDownFormField).selectedIndex;
                     }
                 }
-
             }
             if (element.fieldCodeType && element.fieldCodeType !== '') {
                 inline.fieldCodeType = element.fieldCodeType;
@@ -412,10 +411,54 @@ export class SfdtExport {
         } else if (element instanceof CommentCharacterElementBox) {
             inline.commentCharacterType = element.commentType;
             inline.commentId = element.commentId;
+        } else if (element instanceof ShapeElementBox) {
+            this.writeShape(element, inline);
         } else {
             inline = undefined;
         }
         return inline;
+    }
+    private writeShape(element: ShapeElementBox, inline: any): void {
+        inline.shapeId = element.shapeId;
+        inline.name = element.name;
+        inline.alternativeText = element.alternativeText;
+        inline.title = element.title;
+        inline.visible = element.visible;
+        inline.width = HelperMethods.convertPixelToPoint(element.width);
+        inline.height = HelperMethods.convertPixelToPoint(element.height);
+        inline.widthScale = element.widthScale;
+        inline.heightScale = element.heightScale;
+        inline.verticalPosition = HelperMethods.convertPixelToPoint(element.verticalPosition);
+        inline.verticalOrigin = element.verticalOrigin;
+        inline.verticalAlignment = element.verticalAlignment;
+        inline.horizontalPosition = HelperMethods.convertPixelToPoint(element.horizontalPosition);
+        inline.horizontalOrigin = element.horizontalOrigin;
+        inline.horizontalAlignment = element.horizontalAlignment;
+        inline.zOrderPosition = element.zOrderPosition;
+        inline.allowOverlap = element.allowOverlap;
+        inline.layoutInCell = element.layoutInCell;
+        inline.lockAnchor = element.lockAnchor;
+        inline.autoShapeType = element.autoShapeType;
+        if (element.lineFormat) {
+            inline.lineFormat = {};
+            inline.lineFormat.lineFormatType = element.lineFormat.lineFormatType;
+            inline.lineFormat.color = element.lineFormat.color;
+            inline.lineFormat.weight = element.lineFormat.weight;
+            inline.lineFormat.dashStyle = element.lineFormat.dashStyle;
+        }
+        if (element.textFrame) {
+            inline.textFrame = {};
+            inline.textFrame.textVerticalAlignment = element.textFrame.textVerticalAlignment;
+            inline.textFrame.marginLeft = HelperMethods.convertPixelToPoint(element.textFrame.marginLeft);
+            inline.textFrame.marginRight = HelperMethods.convertPixelToPoint(element.textFrame.marginRight);
+            inline.textFrame.marginTop = HelperMethods.convertPixelToPoint(element.textFrame.marginTop);
+            inline.textFrame.marginBottom = HelperMethods.convertPixelToPoint(element.textFrame.marginBottom);
+            inline.textFrame.blocks = [];
+            for (let j: number = 0; j < element.textFrame.childWidgets.length; j++) {
+                let textFrameBlock: BlockWidget = element.textFrame.childWidgets[j] as BlockWidget;
+                this.writeBlock(textFrameBlock, 0, inline.textFrame.blocks);
+            }
+        }
     }
     public writeChart(element: ChartElementBox, inline: any): void {
         inline.chartLegend = {};

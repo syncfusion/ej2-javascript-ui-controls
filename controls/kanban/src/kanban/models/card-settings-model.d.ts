@@ -33,6 +33,7 @@ export interface CardSettingsModel {
     /**
      * Defines the card order
      * @default null
+     * @deprecated
      */
     priority?: string;
 

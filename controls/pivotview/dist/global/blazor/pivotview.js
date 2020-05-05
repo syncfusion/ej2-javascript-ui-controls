@@ -26773,6 +26773,8 @@ var PivotFieldList = /** @class */ (function (_super) {
             this.pivotGridModule.updatePageSettings(false);
         }
         var pageSettings = this.pivotGridModule ? this.pivotGridModule.pageSettings : undefined;
+        var localeObj = this.pivotGridModule ? this.pivotGridModule.localeObj :
+            (this.staticPivotGridModule ? this.staticPivotGridModule.localeObj : this.localeObj);
         var isDrillThrough = this.pivotGridModule ?
             (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : true;
         var enableValueSorting = this.pivotGridModule ? this.pivotGridModule.enableValueSorting : undefined;
@@ -26785,7 +26787,7 @@ var PivotFieldList = /** @class */ (function (_super) {
                 pageSettings: pageSettings,
                 enableValueSorting: enableValueSorting,
                 isDrillThrough: isDrillThrough,
-                localeObj: this.localeObj
+                localeObj: localeObj
             };
         }
         else {
@@ -26795,7 +26797,7 @@ var PivotFieldList = /** @class */ (function (_super) {
                 pageSettings: pageSettings,
                 enableValueSorting: enableValueSorting,
                 isDrillThrough: isDrillThrough,
-                localeObj: this.localeObj
+                localeObj: localeObj
             };
         }
         return customProperties;

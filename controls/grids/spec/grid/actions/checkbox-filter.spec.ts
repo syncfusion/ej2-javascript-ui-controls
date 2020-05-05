@@ -9,6 +9,7 @@ import { Page } from '../../../src/grid/actions/page';
 import { Toolbar } from '../../../src/grid/actions/toolbar';
 import { Freeze } from '../../../src/grid/actions/freeze';
 import { Selection } from '../../../src/grid/actions/selection';
+import { VirtualScroll } from '../../../src/grid/actions/virtual-scroll';
 import { filterData, customerData} from '../base/datasource.spec';
 import { createGrid, destroy, getKeyUpObj, getClickObj, getKeyActionObj } from '../base/specutil.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
@@ -17,7 +18,7 @@ import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import { Query } from '@syncfusion/ej2-data';
 import { FilterSearchBeginEventArgs } from '../../../src/grid/base/interface';
 
-Grid.Inject(Filter, Page,Toolbar, Selection, Group, Freeze, Edit);
+Grid.Inject(Filter, Page,Toolbar, Selection, Group, Freeze, Edit, Filter, VirtualScroll);
 
 describe('Checkbox Filter module => ', () => {
 
@@ -2280,6 +2281,56 @@ describe('Checkbox Filter module => ', () => {
         afterAll(() => {
             destroy(gridObj);
             gridObj = checkBoxFilter = actionBegin = actionComplete = null;
+        });
+    });
+
+    describe('EJ2-37912 - Checkbox selection not maintain properly in overview sample', () => {
+        let gridObj: Grid;
+        let chkAll: HTMLElement;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+                    allowFiltering: true,
+                    enableVirtualization: true,
+                    filterSettings: { type: 'Menu' },
+                    selectionSettings: { persistSelection: true, type: 'Multiple', checkboxOnly: true },
+                    height: 500,
+                    columns: [
+                        { type: 'checkbox', allowFiltering: false, allowSorting: false, width: '20' },
+                        { field: 'OrderID', isPrimaryKey: true, headerText: 'Order ID', textAlign: 'Right', width: 40 },
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 40 },
+                        { field: 'Freight', headerText: 'Freight', textAlign: 'Right', editType: 'numericedit', width: 30 },
+                        { field: 'ShipCountry', headerText: 'Ship Country', editType: 'dropdownedit', width: 40 }
+                    ],    
+                    actionComplete: actionComplete
+                }, done);
+        });
+
+        it('Checkbox state filtering', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                actionComplete = null;
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            chkAll = gridObj.element.querySelector('.e-checkselectall').nextElementSibling as HTMLElement;
+            chkAll.click();
+            gridObj.filterByColumn('OrderID', 'equal', '67');
+        });
+        
+        it('checkbox state clearing', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                expect(chkAll.classList.contains('e-check')).toBeTruthy();
+                done();
+            };
+            gridObj.actionComplete = actionComplete;
+            gridObj.clearFiltering();
+        });
+        
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
         });
     });
 });

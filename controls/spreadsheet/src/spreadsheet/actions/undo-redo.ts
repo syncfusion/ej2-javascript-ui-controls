@@ -36,7 +36,7 @@ export class UndoRedo {
             case 'clipboard':
                 let copiedInfo: { [key: string]: Object } = eventArgs.copiedInfo;
                 address = getRangeIndexes(getRangeFromAddress(eventArgs.pastedRange));
-                if (copiedInfo.isCut) {
+                if (copiedInfo && copiedInfo.isCut) {
                     cutCellDetails = this.getCellDetails(
                         copiedInfo.range as number[], getSheet(this.parent, getSheetIndexFromId(this.parent, <number>copiedInfo.sId)));
                 }

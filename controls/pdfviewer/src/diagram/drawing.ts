@@ -380,8 +380,12 @@ export class Drawing {
                 let length: number = findPointsLength([
                     { x: obj.bounds.x, y: obj.bounds.y },
                     { x: obj.bounds.x + obj.bounds.width, y: obj.bounds.y + obj.bounds.height }]);
-                // tslint:disable-next-line:max-line-length
-                textele.content = this.pdfViewer.annotation.measureAnnotationModule.setConversion((length / 2) * this.pdfViewer.annotation.measureAnnotationModule.pixelToPointFactor, obj);
+                if (!this.pdfViewer.enableImportAnnotationMeasurement && obj.notes && obj.notes !== '') {
+                    textele.content = obj.notes;
+                } else {
+                    // tslint:disable-next-line:max-line-length
+                    textele.content = this.pdfViewer.annotation.measureAnnotationModule.setConversion((length / 2) * this.pdfViewer.annotation.measureAnnotationModule.pixelToPointFactor, obj);
+                }
                 textele.rotateValue = { y: -10, x: obj.bounds.width / 4, angle: obj.rotateAngle };
                 canvas.children.push(textele);
                 break;
@@ -551,18 +555,21 @@ export class Drawing {
         let labels: TextElement[] = [];
         if (obj.shapeAnnotationType === 'Distance') {
             leaders = initLeaders(obj, points);
-            labels = initDistanceLabel(obj, points, this.pdfViewer.annotation.measureAnnotationModule);
+            labels = initDistanceLabel(obj, points, this.pdfViewer.annotation.measureAnnotationModule, this.pdfViewer);
         }
-
         if ((obj.shapeAnnotationType === 'Line' || obj.shapeAnnotationType === 'LineWidthArrowHead') && obj.measureType === 'Perimeter') {
-            labels = initPerimeterLabel(obj, points, this.pdfViewer.annotation.measureAnnotationModule);
+            labels = initPerimeterLabel(obj, points, this.pdfViewer.annotation.measureAnnotationModule, this.pdfViewer);
         }
         if (obj.enableShapeLabel === true && !(obj.shapeAnnotationType === 'Distance') && !(obj.measureType === 'Perimeter')) {
             let textele: TextElement;
             let angle: number = Point.findAngle(points[0], points[1]);
             textele = this.textElement(obj);
             textele.id = randomId();
-            textele.content = obj.labelContent;
+            if (!this.pdfViewer.enableImportAnnotationMeasurement && obj.notes && obj.notes !== '') {
+                textele.content = obj.notes;
+            } else {
+                textele.content = obj.labelContent;
+            }
             textele.style.strokeColor = obj.labelBorderColor;
             textele.style.fill = obj.labelFillColor;
             textele.style.fontSize = obj.fontSize;
@@ -572,7 +579,6 @@ export class Drawing {
             textele.rotateValue = { y: -10, angle: angle };
             labels.push(textele);
         }
-
         points = clipDecorators(obj, points);
         bounds = Rect.toBounds(points);
         container.width = bounds.width;
@@ -580,18 +586,14 @@ export class Drawing {
         container.offsetX = bounds.x + container.pivot.x * bounds.width;
         container.offsetY = bounds.y + container.pivot.y * bounds.height;
         let anglePoints: PointModel[] = obj.vertexPoints as PointModel[];
-
         let accessContent: string = 'getDescription';
         // tslint:disable-next-line:max-line-length
         if (obj.shapeAnnotationType === 'Line' || obj.shapeAnnotationType === 'LineWidthArrowHead' || obj.shapeAnnotationType === 'Distance') {
-            srcDecorator = getDecoratorElement(
-                obj, points[0], anglePoints[1], true);
-            targetDecorator = getDecoratorElement(
-                obj, points[points.length - 1], anglePoints[anglePoints.length - 2], false);
+            srcDecorator = getDecoratorElement(obj, points[0], anglePoints[1], true);
+            targetDecorator = getDecoratorElement(obj, points[points.length - 1], anglePoints[anglePoints.length - 2], false);
         }
         srcDecorator.id = obj.id + '_srcDec';
         targetDecorator.id = obj.id + '_tarDec';
-
         /* tslint:disable:no-string-literal */
         segment.style['fill'] = 'transparent';
         container.style.strokeColor = 'transparent';
@@ -600,7 +602,6 @@ export class Drawing {
         container.children = [];
         setElementStype(obj, segment);
         container.children.push(segment);
-
         if (leaders.length > 0) {
             for (let i: number = 0; i < leaders.length; i++) {
                 container.children.push(leaders[i]);
@@ -613,7 +614,6 @@ export class Drawing {
         }
         container.children.push(srcDecorator);
         container.children.push(targetDecorator);
-
         container.id = obj.id;
         container.offsetX = segment.offsetX;
         container.offsetY = segment.offsetY;

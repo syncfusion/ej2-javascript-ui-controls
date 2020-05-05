@@ -1065,6 +1065,8 @@ export class WordExport {
                 this.serializeFieldCharacter(writer, item);
             } else if (item.hasOwnProperty('imageString')) {
                 this.serializePicture(writer, item);
+            } else if (item.hasOwnProperty('shapeId')) {
+                this.serializeShape(writer, item);
             } else if (item.hasOwnProperty('bookmarkType')) {
                 this.serializeBookMark(writer, item);
             } else if (item.hasOwnProperty('editRangeId')) {
@@ -1168,23 +1170,82 @@ export class WordExport {
             writer.writeEndElement(); //end of run element
         }
     }
+    private serializeShape(writer: XmlWriter, item: any): void {
+        if (item.width >= 0 && item.height >= 0) {
+            writer.writeStartElement(undefined, 'r', this.wNamespace);
+            this.serializeCharacterFormat(writer, item.characterFormat);
+            this.serializeDrawing(writer, item);
+            writer.writeEndElement(); //end of run element
+        }
+    }
     // Serialize the drawing element.
     private serializeDrawing(writer: XmlWriter, draw: any): void {
         writer.writeStartElement(undefined, 'drawing', this.wNamespace);
         if (draw.hasOwnProperty('chartType')) {
             this.serializeInlineCharts(writer, draw);
         } else {
-            this.serializeInlinePicture(writer, draw);
+            this.serializeInlinePictureAndShape(writer, draw);
         }
         writer.writeEndElement();
     }
     // Serialize the inline picture.
-    private serializeInlinePicture(writer: XmlWriter, image: any): void {
-        writer.writeStartElement(undefined, 'inline', this.wpNamespace);
+    private serializeInlinePictureAndShape(writer: XmlWriter, draw: any): void {
+        if (!isNullOrUndefined(draw.imageString)) {
+            writer.writeStartElement(undefined, 'inline', this.wpNamespace);
+        } else {
+            writer.writeStartElement('wp', 'anchor', this.wpNamespace);
+            writer.writeAttributeString(undefined, 'distT', undefined, '0');
+            writer.writeAttributeString(undefined, 'distB', undefined, '0');
+            writer.writeAttributeString(undefined, 'distL', undefined, '114300');
+            writer.writeAttributeString(undefined, 'distR', undefined, '114300');
+            writer.writeAttributeString(undefined, 'simplePos', undefined, '0');
+            writer.writeAttributeString(undefined, 'relativeHeight', undefined, draw.zOrderPosition.toString());
+            //TextWrappingStyle.InFrontOfText
+            writer.writeAttributeString(undefined, 'behindDoc', undefined, '0');
+            let lockAnchor: string = (draw.LockAnchor) ? '1' : '0';
+            writer.writeAttributeString(undefined, 'locked', undefined, lockAnchor);
+            let layoutcell: string = (draw.layoutInCell) ? '1' : '0';
+            writer.writeAttributeString(undefined, 'layoutInCell', undefined, layoutcell);
+            let allowOverlap: string = (draw.allowOverlap) ? '1' : '0';
+            writer.writeAttributeString(undefined, 'allowOverlap', undefined, allowOverlap);
+            writer.writeStartElement('wp', 'simplePos', this.wpNamespace);
+            writer.writeAttributeString(undefined, 'x', undefined, '0');
+            writer.writeAttributeString(undefined, 'y', undefined, '0');
+            writer.writeEndElement();
+            writer.writeStartElement('wp', 'positionH', this.wpNamespace);
+            writer.writeAttributeString(undefined, 'relativeFrom', undefined, draw.horizontalOrigin.toString().toLowerCase());
+            if (draw.horizontalAlignment === 'None') {
+                writer.writeStartElement('wp', 'posOffset', this.wpNamespace);
+                let horPos: number = Math.round(draw.horizontalPosition * this.emusPerPoint);
+                writer.writeString(horPos.toString());
+                writer.writeEndElement(); //end of posOffset
+            } else {
+                writer.writeStartElement('wp', 'align', this.wpNamespace);
+                let horAlig: string = draw.horizontalAlignment.toString().toLowerCase();
+                writer.writeString(horAlig);
+                writer.writeEndElement(); //end of align
+            }
+            writer.writeEndElement(); //end of postionH
+            writer.writeStartElement('wp', 'positionV', this.wpNamespace);
+            writer.writeAttributeString(undefined, 'relativeFrom', undefined, draw.verticalOrigin.toString().toLowerCase());
+            if (draw.verticalAlignment === 'None') {
+                writer.writeStartElement('wp', 'posOffset', this.wpNamespace);
+                let vertPos: number = Math.round(draw.verticalPosition * this.emusPerPoint);
+                writer.writeString(vertPos.toString());
+                writer.writeEndElement(); // end of posOffset
+            } else {
+                writer.writeStartElement('wp', 'align', this.wpNamespace);
+                let verAlig: string = draw.verticalAlignment.toString().toLowerCase();
+                writer.writeString(verAlig);
+                writer.writeEndElement(); //end of align
+            }
+            writer.writeEndElement(); //end of postionV
+        }
+
         writer.writeStartElement(undefined, 'extent', this.wpNamespace);
-        let cx: number = Math.round(image.width * this.emusPerPoint);
+        let cx: number = Math.round(draw.width * this.emusPerPoint);
         writer.writeAttributeString(undefined, 'cx', undefined, cx.toString());
-        let cy: number = Math.round(image.height * this.emusPerPoint);
+        let cy: number = Math.round(draw.height * this.emusPerPoint);
         writer.writeAttributeString(undefined, 'cy', undefined, cy.toString());
         writer.writeEndElement();
         // double borderWidth = (double)picture.PictureShape.PictureDescriptor.BorderLeft.LineWidth / DLSConstants.BorderLineFactor;
@@ -1199,8 +1260,11 @@ export class WordExport {
         //     m_writer.WriteEndElement();
         // }
         //this.serializePicProperties(writer, image);
-
-        this.serializeDrawingGraphics(writer, image);
+        if (draw.imageString) {
+            this.serializeDrawingGraphics(writer, draw);
+        } else {
+            this.serializeShapeDrawingGraphics(writer, draw);
+        }
         writer.writeEndElement();
     }
     // serialize inline chart
@@ -2654,6 +2718,81 @@ export class WordExport {
     private startsWith(sourceString: string, startString: string): boolean {
         return startString.length > 0 && sourceString.substring(0, startString.length) === startString;
     }
+    private serializeShapeDrawingGraphics(writer: XmlWriter, shape: any): void {
+        let val: string = shape.autoShapeType;
+        writer.writeStartElement('wp', 'wrapNone', this.wpNamespace);
+        writer.writeEndElement();
+        writer.writeStartElement('wp', 'docPr', this.wpNamespace);
+        writer.writeAttributeString(undefined, 'id', undefined, (this.mDocPrID++).toString());
+        writer.writeAttributeString(undefined, 'name', undefined, '1'.toString());
+        writer.writeAttributeString(undefined, 'title', undefined, '');
+        writer.writeEndElement();
+        writer.writeStartElement('a', 'graphic', this.aNamespace);
+        writer.writeStartElement('a', 'graphicData', this.aNamespace);
+        writer.writeAttributeString(undefined, 'uri', undefined, this.wpShapeNamespace);
+        writer.writeStartElement('wps', 'wsp', this.wpShapeNamespace);
+        writer.writeStartElement('wps', 'cNvCnPr', this.wpShapeNamespace);
+        writer.writeStartElement('a', 'cxnSpLocks', this.aNamespace);
+        writer.writeAttributeString(undefined, 'noChangeShapeType', undefined, '1');
+        writer.writeEndElement();
+        writer.writeEndElement();
+        writer.writeStartElement('wps', 'spPr', this.wpShapeNamespace);
+        writer.writeAttributeString(undefined, 'bwMode', undefined, 'auto');
+        writer.writeStartElement('a', 'xfrm', this.aNamespace);
+        writer.writeStartElement('a', 'off', this.aNamespace);
+        writer.writeAttributeString(undefined, 'x', undefined, '0');
+        writer.writeAttributeString(undefined, 'y', undefined, '0');
+        writer.writeEndElement();
+        writer.writeStartElement('a', 'ext', this.aNamespace);
+        let cx: number = Math.round((shape.width * this.emusPerPoint));
+        writer.writeAttributeString(undefined, 'cx', undefined, cx.toString());
+        let cy: number = Math.round((shape.height * this.emusPerPoint));
+        writer.writeAttributeString(undefined, 'cy', undefined, cy.toString());
+        writer.writeEndElement();
+        writer.writeEndElement();
+        writer.writeStartElement('a', 'prstGeom', this.aNamespace);
+        if (val === 'StraightConnector') {
+            writer.writeAttributeString(undefined, 'prst', undefined, 'straightConnector1');
+        } else if (val === 'RoundedRectangle') {
+            writer.writeAttributeString(undefined, 'prst', undefined, 'roundRect');
+        } else {
+            writer.writeAttributeString(undefined, 'prst', undefined, 'rect');
+        }
+        writer.writeStartElement('a', 'avLst', this.aNamespace);
+        writer.writeEndElement();
+        writer.writeEndElement();
+        writer.writeStartElement('a', 'noFill', this.aNamespace);
+        writer.writeEndElement();
+        writer.writeStartElement('a', 'ln', this.aNamespace);
+        writer.writeAttributeString(undefined, 'w', undefined, '12700');
+        writer.writeStartElement('a', 'solidFill', this.aNamespace);
+        writer.writeStartElement('a', 'srgbClr', this.aNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '000000');
+        writer.writeEndElement();
+        writer.writeEndElement();
+        writer.writeStartElement('a', 'round', this.aNamespace);
+        writer.writeEndElement();
+        writer.writeStartElement('a', 'headEnd', this.aNamespace);
+        writer.writeEndElement();
+        writer.writeStartElement('a', 'tailEnd', this.aNamespace);
+        writer.writeEndElement();
+        writer.writeEndElement();
+        writer.writeEndElement();
+        if (val === 'Rectangle' || val === 'RoundedRectangle') {
+            writer.writeStartElement('wps', 'txbx', this.wpShapeNamespace);
+            writer.writeStartElement(undefined, 'txbxContent', this.wNamespace);
+            this.serializeBodyItems(writer, shape.textFrame.blocks, true);
+            writer.writeEndElement();
+            writer.writeEndElement();
+        }
+        writer.writeStartElement('wps', 'bodyPr', this.wpShapeNamespace);
+        writer.writeEndElement();
+        writer.writeEndElement();
+        writer.writeEndElement();
+        writer.writeEndElement();
+
+
+    }
     // Serialize the graphics element for pictures.
     private serializeDrawingGraphics(writer: XmlWriter, picture: any): void {
         let id: string = '';
@@ -2997,6 +3136,9 @@ export class WordExport {
             if (!isNullOrUndefined(this.spanCellFormat)) {
                 endProperties = false;
                 this.serializeCellFormat(writer, this.spanCellFormat, false, endProperties);
+            } else {
+                writer.writeStartElement(undefined, 'tcPr', this.wNamespace);
+                endProperties = false;
             }
             this.serializeColumnSpan(collKey, writer);
             writer.writeStartElement(undefined, 'vMerge', this.wNamespace);

@@ -1373,7 +1373,7 @@ describe('Header footer enable validation', () => {
         editor.editorModule.onEnter();
         editor.editorModule.onEnter();
         editor.editor.insertTable(2, 2);
-        expect(editor.viewer.isBlockInHeader(editor.selection.start.paragraph)).toBe(false);
+        expect(editor.documentHelper.isBlockInHeader(editor.selection.start.paragraph)).toBe(false);
         expect(documentHelper.currentPage.footerWidget.height + (documentHelper.currentPage.bodyWidgets[0].sectionFormat.footerDistance * 1.333333333)).toBeGreaterThan(96);
         expect(documentHelper.currentPage.footerWidget.y).toBeLessThan(documentHelper.currentPage.boundingRectangle.height - (documentHelper.currentPage.bodyWidgets[0].sectionFormat.footerDistance * 1.333333333) * 2);
         editor.selection.extendToNextLine();

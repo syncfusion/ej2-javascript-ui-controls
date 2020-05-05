@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 18.1.48 (2020-05-05)
+
+### Maps
+
+#### New Features
+
+- Tooltip will now be rendered for overflowed legend text which is trimmed.
+
 ## 18.1.43 (2020-04-07)
 
 ### Maps

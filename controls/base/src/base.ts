@@ -15,6 +15,12 @@ export interface AngularEventEmitter {
 }
 
 export declare type EmitType<T> = AngularEventEmitter & ((arg?: T, ...rest: any[]) => void);
+
+export interface BlazorDotnetObject {
+    dispose(): void;
+    invokeMethod(methodName: string): void;
+    invokeMethodAsync(methodName: string, ...args: any[]): void;
+}
 /* tslint:enable:no-any */
 
 

@@ -800,7 +800,7 @@ export class PrintAndExport {
                 context.diagram.element.id + 'innerImage', bounds.width + (margin.left + margin.right),
                 bounds.height + (margin.top + margin.bottom));
             let ctx: CanvasRenderingContext2D = canvas.getContext('2d');
-            ctx.fillStyle = 'transparent';
+            ctx.fillStyle = context.diagram.pageSettings.background.color;
             ctx.fillRect(0, 0, bounds.width + (margin.left + margin.right), bounds.height + (margin.top + margin.bottom));
             ctx.drawImage(
                 img, 0, 0, bounds.width, bounds.height,

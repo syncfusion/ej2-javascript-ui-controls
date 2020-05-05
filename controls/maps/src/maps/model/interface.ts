@@ -236,6 +236,10 @@ export interface IShapeSelectedEventArgs extends IMapsEventArgs {
     data?: Object;
     /** Defines the id string of current mouse event target. */
     target?: string;
+    /**
+     * Returns the shape details which are in selected state during multi-selection
+     */
+    shapeDataCollection?: Object;
 }
 
 /** @private */

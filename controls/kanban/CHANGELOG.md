@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.48 (2020-05-05)
+
+### Kanban
+
+#### Bug Fixes
+
+- `#274830` - Rendered empty column when empty data passed to Kanban board.
+
 ## 18.1.46 (2020-04-28)
 
 ### Kanban

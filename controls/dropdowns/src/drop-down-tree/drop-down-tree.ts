@@ -834,6 +834,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             csHome: 'ctrl+shift+home',
             csEnd: 'ctrl+shift+end',
             space: 'space',
+            ctrlA: 'ctrl+A'
         };
     }
 
@@ -1164,7 +1165,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     }
 
     private focusOut(e: MouseEvent): void {
-        if (!this.enabled || this.readonly) {
+        if (!this.enabled || this.readonly || !this.inputFocus) {
             return;
         }
         if ((Browser.isIE || Browser.info.name === 'edge') && (e.target === this.inputWrapper)) {
@@ -1243,7 +1244,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         this.inputFocus = true;
         addClass([this.inputWrapper], [INPUTFOCUS]);
         if ((this.allowMultiSelection || this.showCheckBox) && this.mode === 'Default' && this.inputFocus) {
-            if (this.chipWrapper) {
+            if (this.chipWrapper && (this.value && this.value.length !== 0)) {
                 removeClass([this.chipWrapper], HIDEICON);
                 addClass([this.inputWrapper], SHOW_CHIP);
                 addClass([this.inputEle], CHIP_INPUT);
@@ -1272,6 +1273,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                             this.hidePopup();
                         }
                         break;
+                    case 'tab':
                     case 'shiftTab':
                         if (this.isPopupOpen) {
                             this.hidePopup();
@@ -1289,6 +1291,11 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                     case 'space':
                         this.isValueChange = true;
                         this.keyEventArgs = e;
+                        break;
+                    case 'ctrlA':
+                        if (this.allowMultiSelection) {
+                            this.selectAll(true);
+                        }
                         break;
                     case 'moveRight':
                     case 'moveLeft':
@@ -1326,13 +1333,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                     case 'escape':
                     case 'altUp':
                     case 'shiftTab':
-                        e.preventDefault();
-                        this.hidePopup();
-                        break;
                     case 'tab':
-                        e.preventDefault();
-                        this.hidePopup();
-                        this.inputEle.focus();
+                        if (this.isPopupOpen) {
+                            this.hidePopup();
+                        }
                         break;
                     case 'altDown':
                         if (!this.isPopupOpen) {
@@ -1442,8 +1446,11 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     }
 
     private getValidMode(): boolean {
-        let isValidMode: boolean = this.mode === 'Box' ? true : (this.mode === 'Default' && this.inputFocus) ? true : false;
-        return isValidMode;
+        if (this.allowMultiSelection || this.showCheckBox) {
+            return this.mode === 'Box' ? true : (this.mode === 'Default' && this.inputFocus) ? true : false;
+        } else {
+            return false;
+        }
     }
 
     private createSelectAllWrapper(): void {
@@ -1461,7 +1468,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         this.checkAllParent.appendChild(this.checkBoxElement);
         this.checkAllParent.appendChild(this.selectAllSpan);
         this.setLocale();
-        EventHandler.add(this.checkAllParent, 'mousedown', this.clickHandler, this);
+        EventHandler.add(this.checkAllParent, 'mouseup', this.clickHandler, this);
         this.wireCheckAllWrapperEvents();
     }
 
@@ -1506,6 +1513,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
             this.setLocale(false);
         }
         this.setMultiSelect();
+        this.ensurePlaceHolder();
         ariaState = state === 'check' ? 'true' : 'false';
         if (!isNOU(ariaState)) {
             wrapper.setAttribute('aria-checked', ariaState);
@@ -1922,7 +1930,8 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         let isFilter: Element = closest(target, '.' + FILTERWRAP);
         if ((this.isPopupOpen && (this.inputWrapper.contains(target) || isTree || isFilter)) ||
             ((this.allowMultiSelection || this.showCheckBox) && (this.isPopupOpen && target.classList.contains(CHIP_CLOSE) ||
-                (this.isPopupOpen && (target.classList.contains(CHECKALLPARENT) || target.classList.contains(CHECKBOXFRAME)))))) {
+                (this.isPopupOpen && (target.classList.contains(CHECKALLPARENT) || target.classList.contains(ALLTEXT)
+                 || target.classList.contains(CHECKBOXFRAME)))))) {
             this.isDocumentClick = false;
         } else if (!this.inputWrapper.contains(target)) {
             let isScroller: boolean = target.classList.contains(DROPDOWN) ? true :
@@ -2184,6 +2193,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 this.treeObj.checkAll([args.node]);
             }
             this.setMultiSelect();
+            this.ensurePlaceHolder();
         }
         if (!this.changeOnBlur && (this.allowMultiSelection || this.showCheckBox)) {
             this.triggerChangeEvent(args.event);
@@ -2199,6 +2209,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         }
         if (!this.isChipDelete && args.isInteracted) {
             this.setMultiSelect();
+            this.ensurePlaceHolder();
         }
         if (this.showSelectAll && this.checkBoxElement) {
             let nodes: NodeList = this.treeObj.element.querySelectorAll('li');
@@ -2289,6 +2300,14 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         }
     }
 
+    private ensurePlaceHolder(): void {
+        if (this.value && this.value.length === 0) {
+            removeClass([this.inputEle], CHIP_INPUT);
+            if (this.chipWrapper) {
+                addClass([this.chipWrapper], HIDEICON);
+            }
+        }
+    }
     private ensureClearIconPosition(floatLabelType: FloatLabelType): void {
         if (floatLabelType !== 'Never') {
             this.inputWrapper.insertBefore(this.overAllClear, this.inputObj.buttons[0]);
@@ -2298,6 +2317,10 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
     private setMultiSelectValue(newValues: string[]): void {
         if (!this.isFilteredData) {
             this.setProperties({ value: newValues }, true);
+            if (newValues && newValues.length !== 0 && !this.showCheckBox) {
+                this.treeObj.selectedNodes = this.value.slice();
+                this.treeObj.dataBind();
+            }
         } else {
             let selectedValues: string[] = isNOU(this.value) ? [] : this.value;
             for (let i: number = 0; i < newValues.length; i++) {
@@ -2550,6 +2573,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         }
         this.triggerChangeEvent(e);
         this.isChipDelete = false;
+        this.ensurePlaceHolder();
     }
 
     private resetValue(isDynamicChange?: boolean): void {
@@ -2572,6 +2596,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         }
         if ((this.allowMultiSelection || this.showCheckBox) && this.chipWrapper) {
             this.chipCollection.innerHTML = '';
+            this.ensurePlaceHolder();
         }
     }
 
@@ -2943,6 +2968,9 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         attributes(this.inputWrapper, { 'aria-expanded': 'false' });
         if (this.popupObj && this.isPopupOpen) {
             this.popupObj.hide();
+            if (this.inputFocus) {
+                this.inputWrapper.focus();
+            }
             this.trigger('close', eventArgs);
         }
     }

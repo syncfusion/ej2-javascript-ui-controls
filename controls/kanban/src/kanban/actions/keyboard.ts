@@ -9,7 +9,7 @@ import * as cls from '../base/css-constant';
 export class Keyboard {
     private parent: Kanban;
     private keyboardModule: KeyboardEvents;
-    private prevAction: string;
+    private multiSelection: boolean;
     private keyConfigs: { [key: string]: string } = {
         firstCardSelection: '36',
         lastCardSelection: '35',
@@ -17,20 +17,16 @@ export class Keyboard {
         downArrow: '40',
         rightArrow: '39',
         leftArrow: '37',
-        swimlaneExpandAll: 'ctrl+40',
-        swimlaneCollapseAll: 'ctrl+38',
-        selectedSwimlaneExpand: 'alt+40',
-        selectedSwimlaneCollapse: 'alt+38',
-        selectedColumnCollapse: 'ctrl+37',
-        selectedColumnExpand: 'ctrl+39',
+        multiSelectionEnter: 'ctrl+13',
+        multiSelectionSpace: 'ctrl+32',
         multiSelectionByUpArrow: 'shift+38',
         multiSelectionByDownArrow: 'shift+40',
-        multiSelectionByLeftArrow: 'shift+37',
-        multiSelectionByRightArrow: 'shift+39',
         shiftTab: 'shift+tab',
         enter: '13',
         tab: 'tab',
-        delete: '46'
+        delete: '46',
+        escape: '27',
+        space: '32'
     };
     /**
      * Constructor for keyboard module
@@ -44,7 +40,7 @@ export class Keyboard {
             keyConfigs: this.keyConfigs,
             eventName: 'keydown'
         });
-        this.prevAction = '';
+        this.multiSelection = false;
     }
 
     private keyActionHandler(e: KeyboardEventArgs): void {
@@ -61,30 +57,59 @@ export class Keyboard {
                 break;
             case 'rightArrow':
             case 'leftArrow':
-            case 'multiSelectionByLeftArrow':
-            case 'multiSelectionByRightArrow':
-                this.processLeftRightArrow(e, selectedCard);
+                this.processLeftRightArrow(e);
                 break;
             case 'firstCardSelection':
             case 'lastCardSelection':
                 this.processCardSelection(e.action, selectedCard);
                 break;
-            case 'swimlaneExpandAll':
-            case 'swimlaneCollapseAll':
-            case 'selectedSwimlaneExpand':
-            case 'selectedSwimlaneCollapse':
-                this.processSwimlaneExpandCollapse(e.action);
+            case 'multiSelectionEnter':
+            case 'multiSelectionSpace':
+                if (document.activeElement) {
+                    this.parent.actionModule.cardSelection(document.activeElement, true, false);
+                }
                 break;
-            case 'selectedColumnExpand':
-            case 'selectedColumnCollapse':
-                this.processColumnExpandcollapse(e.action, selectedCard);
-                break;
+            case 'space':
             case 'enter':
                 this.processEnter(e, selectedCard);
                 break;
+            case 'escape':
+                if (document.activeElement.classList.contains(cls.CARD_CLASS) ||
+                    document.activeElement.classList.contains(cls.SHOW_ADD_BUTTON)) {
+                    if (document.activeElement.classList.contains(cls.CARD_SELECTION_CLASS)) {
+                        removeClass([document.activeElement], cls.CARD_SELECTION_CLASS);
+                        (document.activeElement as HTMLElement).focus();
+                    } else {
+                        let ele: Element = closest(document.activeElement, '.' + cls.CONTENT_CELLS_CLASS);
+                        let cards: HTMLElement[] = [].slice.call(ele.querySelectorAll('.' + cls.CARD_CLASS));
+                        removeClass(cards, cls.CARD_SELECTION_CLASS);
+                        (ele as HTMLElement).focus();
+                        this.cardTabIndexRemove();
+                        this.addRemoveTabIndex('Add');
+                    }
+                }
+                break;
             case 'tab':
             case 'shiftTab':
-                this.processTab(e.action, selectedCard);
+                let contentCell: Element = closest(document.activeElement, '.' + cls.CONTENT_CELLS_CLASS);
+                if (document.activeElement.classList.contains(cls.CARD_CLASS)) {
+                    if (!document.activeElement.nextElementSibling && e.action === 'tab') {
+                        e.preventDefault();
+                    }
+                    if (!document.activeElement.previousElementSibling && contentCell.querySelector('.' + cls.SHOW_ADD_BUTTON)
+                        && e.action === 'tab') {
+                        addClass([contentCell.querySelector('.' + cls.SHOW_ADD_BUTTON)], cls.SHOW_ADD_FOCUS);
+                    }
+                }
+                if (document.activeElement.classList.contains(cls.SHOW_ADD_BUTTON)) {
+                    if ((!contentCell.querySelector('.' + cls.CARD_CLASS) && e.action === 'tab') || e.action === 'shiftTab') {
+                        e.preventDefault();
+                    }
+                }
+                if (document.activeElement.classList.contains(cls.ROOT_CLASS)) {
+                    this.cardTabIndexRemove();
+                    this.parent.keyboardModule.addRemoveTabIndex('Add');
+                }
                 break;
             case 'delete':
                 let className: string = '.' + cls.CARD_CLASS + '.' + cls.CARD_SELECTION_CLASS;
@@ -103,133 +128,90 @@ export class Keyboard {
             let selection: string[] = this.parent.actionModule.selectionArray;
             selection.splice(selection.indexOf(selectedCard.getAttribute('data-id')), 1);
         }
+        this.cardTabIndexRemove();
         let cards: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CARD_CLASS));
         let element: Element = action === 'firstCardSelection' ? cards[0] : cards[cards.length - 1];
         this.parent.actionModule.cardSelection(element, false, false);
+        this.addRemoveTabIndex('Remove');
+        (element as HTMLElement).focus();
+        let card: HTMLElement[] = [].slice.call(closest(element, '.' + cls.CONTENT_CELLS_CLASS).querySelectorAll('.' + cls.CARD_CLASS));
+        card.forEach((element: HTMLElement) => {
+            element.setAttribute('tabindex', '0');
+        });
     }
 
-    private processLeftRightArrow(e: KeyboardEventArgs, selectedCard: Element): void {
-        let activeElement: HTMLElement = document.activeElement as HTMLElement;
-        if (!selectedCard && activeElement) {
-            if (activeElement.classList.contains(cls.COLUMN_EXPAND_CLASS) || activeElement.classList.contains(cls.COLUMN_COLLAPSE_CLASS)) {
-                this.parent.actionModule.columnExpandCollapse(activeElement);
-            } else if (activeElement.classList.contains(cls.SWIMLANE_ROW_EXPAND_CLASS) ||
-                activeElement.classList.contains(cls.SWIMLANE_ROW_COLLAPSE_CLASS)) {
-                this.parent.actionModule.rowExpandCollapse(e);
+    private processLeftRightArrow(e: KeyboardEventArgs): void {
+        if (document.activeElement.classList.contains(cls.CONTENT_CELLS_CLASS)) {
+            if (e.action === 'rightArrow' && document.activeElement.nextElementSibling) {
+                (document.activeElement.nextElementSibling as HTMLElement).focus();
+            } else if (e.action === 'leftArrow' && document.activeElement.previousElementSibling) {
+                (document.activeElement.previousElementSibling as HTMLElement).focus();
             }
-        }
-        if (selectedCard) {
-            this.processMoveCards(e.action, this.parent.actionModule.lastCardSelection);
         }
     }
 
     private processUpDownArrow(action: string, selectedCard: Element): void {
-        let card: HTMLElement;
-        let isShift: boolean = false;
-        if (selectedCard) {
-            let key: string = closest(this.parent.actionModule.lastCardSelection, '.' + cls.CONTENT_CELLS_CLASS).getAttribute('data-key');
-            let cardSelector: string = `.${cls.CONTENT_CELLS_CLASS}[data-key="${key}"] .${cls.CARD_CLASS}`;
-            let allCards: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(cardSelector));
-            let curId: string = this.parent.actionModule.lastCardSelection.getAttribute('data-id');
-            let curIndex: number = this.getCardId(allCards).indexOf(curId);
-            isShift = ((action === 'multiSelectionByUpArrow' || action === 'multiSelectionByDownArrow')
-                && this.parent.cardSettings.selectionType === 'Multiple');
-            let index: number = (action === 'upArrow' || action === 'multiSelectionByUpArrow') ? curIndex - 1 : curIndex + 1;
-            card = allCards[index];
-        } else if (action === 'downArrow' && document.activeElement) {
-            if (document.activeElement.classList.contains(cls.SWIMLANE_ROW_EXPAND_CLASS)) {
-                let parentEle: Element = closest(document.activeElement, '.' + cls.SWIMLANE_ROW_CLASS);
-                card = parentEle.nextElementSibling.querySelector('.' + cls.CARD_CLASS);
-            } else if (document.activeElement.classList.contains(cls.ROOT_CLASS) && !this.parent.swimlaneSettings.keyField) {
-                card = this.parent.element.querySelector('.' + cls.CARD_CLASS);
+        if (action === 'upArrow' && document.activeElement) {
+            if (document.activeElement.classList.contains(cls.CARD_CLASS) && document.activeElement.previousElementSibling) {
+                (document.activeElement.previousElementSibling as HTMLElement).focus();
+            } else if (document.activeElement.classList.contains(cls.SHOW_ADD_BUTTON)) {
+                document.activeElement.setAttribute('tabindex', '-1');
+                removeClass([document.activeElement], cls.SHOW_ADD_FOCUS);
+                let cell: Element = closest(document.activeElement, '.' + cls.CONTENT_CELLS_CLASS);
+                if (cell.querySelectorAll('.' + cls.CARD_CLASS).length > 0) {
+                    ([].slice.call(cell.querySelectorAll('.' + cls.CARD_CLASS)) as HTMLElement[]).slice(-1)[0].focus();
+                }
             }
-        } else if (action === 'upArrow' && document.activeElement &&
-        document.activeElement.classList.contains(cls.SWIMLANE_ROW_EXPAND_CLASS)) {
-            let parentEle: Element = closest(document.activeElement, '.' + cls.SWIMLANE_ROW_CLASS);
-            let allCards: HTMLElement[] = [].slice.call(parentEle.previousElementSibling.querySelectorAll('.' + cls.CARD_CLASS));
-            card = (allCards).slice(-1)[0];
+            this.removeSelection();
+        } else if (action === 'downArrow' && document.activeElement &&
+            document.activeElement.classList.contains(cls.CARD_CLASS)) {
+            if (document.activeElement.nextElementSibling) {
+                (document.activeElement.nextElementSibling as HTMLElement).focus();
+            } else if (closest(document.activeElement, '.' + cls.CARD_WRAPPER_CLASS).nextElementSibling) {
+                let ele: Element = closest(document.activeElement, '.' + cls.CARD_WRAPPER_CLASS).nextElementSibling;
+                ele.setAttribute('tabindex', '0');
+                addClass([ele], cls.SHOW_ADD_FOCUS);
+                (ele as HTMLElement).focus();
+            }
+            this.removeSelection();
         }
-        this.parent.actionModule.cardSelection(card, false, isShift);
-        this.parent.element.focus();
-    }
-
-    private processColumnExpandcollapse(action: string, selectedCard: Element): void {
-        let key: string = selectedCard.getAttribute('data-key');
-        let cell: HTMLTableHeaderCellElement = this.parent.element.querySelector(`.${cls.HEADER_CELLS_CLASS}[data-key="${key}"]`);
-        if (cell.classList.contains(cls.HEADER_ROW_TOGGLE_CLASS)) {
-            if ((cell.classList.contains(cls.COLLAPSED_CLASS) && action === 'selectedColumnCollapse') ||
-                (!cell.classList.contains(cls.COLLAPSED_CLASS) && action === 'selectedColumnExpand')) {
-                return;
+        if ((action === 'multiSelectionByUpArrow' || action === 'multiSelectionByDownArrow')
+            && selectedCard && this.parent.cardSettings.selectionType === 'Multiple') {
+            let card: Element;
+            if (action === 'multiSelectionByUpArrow') {
+                card = document.activeElement.previousElementSibling;
             } else {
-                this.parent.actionModule.columnExpandCollapse(cell);
+                card = document.activeElement.nextElementSibling;
+            }
+            if (card) {
+                this.parent.actionModule.cardSelection(card, false, true);
+                (card as HTMLElement).focus();
+                this.multiSelection = true;
             }
         }
     }
 
-    private processSwimlaneExpandCollapse(action: string): void {
-        if (!this.parent.swimlaneSettings.keyField) {
-            return;
-        }
-        let className: string = `.${cls.CARD_CLASS}.${cls.CARD_SELECTION_CLASS}`;
-        if (action === 'swimlaneExpandAll' || action === 'swimlaneCollapseAll') {
-            className = `.${cls.CONTENT_ROW_CLASS}.${cls.SWIMLANE_ROW_CLASS}`;
-        }
-        let element: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(className));
-        if (this.prevAction === action) {
-            return;
-        }
-        this.prevAction = action;
-        element.forEach((ele: Element) => {
-            if (ele.classList.contains(cls.CARD_CLASS)) {
-                ele = closest(ele, '.' + cls.CONTENT_ROW_CLASS).previousElementSibling;
+    private removeSelection(): void {
+        if (this.multiSelection) {
+            let cards: HTMLElement[] = this.parent.getSelectedCards();
+            if (cards.length > 0) {
+                removeClass(cards, cls.CARD_SELECTION_CLASS);
+                this.parent.layoutModule.disableAttributeSelection(cards);
             }
-            if (ele.classList.contains(cls.COLLAPSED_CLASS)) {
-                removeClass([ele, ele.nextElementSibling], cls.COLLAPSED_CLASS);
-                classList(ele.querySelector('.' + cls.ICON_CLASS), [cls.SWIMLANE_ROW_EXPAND_CLASS], [cls.SWIMLANE_ROW_COLLAPSE_CLASS]);
-                ele.querySelector('.' + cls.ICON_CLASS).setAttribute('aria-label', ele.getAttribute('data-key') + ' Expand');
-            } else if (!ele.classList.contains(cls.COLLAPSED_CLASS)) {
-                addClass([ele, ele.nextElementSibling], cls.COLLAPSED_CLASS);
-                classList(ele.querySelector('.' + cls.ICON_CLASS), [cls.SWIMLANE_ROW_COLLAPSE_CLASS], [cls.SWIMLANE_ROW_EXPAND_CLASS]);
-                ele.querySelector('.' + cls.ICON_CLASS).setAttribute('aria-label', ele.getAttribute('data-key') + ' Collapse');
-            }
+            this.multiSelection = false;
+        }
+    }
+
+    public cardTabIndexRemove(): void {
+        let cards: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.CARD_CLASS));
+        cards.forEach((card: HTMLElement) => {
+            card.setAttribute('tabindex', '-1');
         });
-    }
-
-    private getCardId(cardElements: HTMLElement[]): string[] {
-        let curCardId: string[] = [];
-        cardElements.forEach((el: Element) => curCardId.push(el.getAttribute('data-id')));
-        return curCardId;
-    }
-
-    private processNextRow(row: Element): void {
-        for (let i: number = 0; i < row.childElementCount; i++) {
-            let nextCell: Element = row.children[i];
-            let nextCellCards: HTMLElement[] = [].slice.call(nextCell.querySelectorAll('.' + cls.CARD_CLASS));
-            if (nextCellCards.length > 0) {
-                this.parent.actionModule.cardSelection(nextCellCards[0], false, false);
-                break;
-            }
-        }
-    }
-
-    private processPreviousRow(row: Element): void {
-        for (let i: number = (row.childElementCount - 1); i >= 0; i--) {
-            let nextCell: Element = row.children[i];
-            let nextCellCards: HTMLElement[] = [].slice.call(nextCell.querySelectorAll('.' + cls.CARD_CLASS));
-            if (nextCellCards.length > 0) {
-                this.parent.actionModule.cardSelection(nextCellCards.slice(-1)[0], false, false);
-                break;
-            }
-        }
-    }
-
-    private processCards(isSame: boolean, nextCellCards: HTMLElement[], curIndex: number, action: string): void {
-        if (isSame) {
-            let isShift: boolean = ((action === 'multiSelectionByRightArrow' || action === 'multiSelectionByLeftArrow')
-                && this.parent.cardSettings.selectionType === 'Multiple');
-            let processCard: HTMLElement = nextCellCards[curIndex] || nextCellCards.slice(-1)[0];
-            this.parent.actionModule.cardSelection(processCard, false, isShift);
-        }
+        let addButton: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.SHOW_ADD_BUTTON));
+        addButton.forEach((add: HTMLElement) => {
+            add.setAttribute('tabindex', '-1');
+            removeClass([add], cls.SHOW_ADD_FOCUS);
+        });
     }
 
     private processEnter(e: Event, selectedCard: Element): void {
@@ -240,81 +222,57 @@ export class Keyboard {
         if (element.classList.contains(cls.SWIMLANE_ROW_EXPAND_CLASS) || element.classList.contains(cls.SWIMLANE_ROW_COLLAPSE_CLASS)) {
             this.parent.actionModule.rowExpandCollapse(e);
         }
-        if (selectedCard) {
-            this.parent.actionModule.cardClick(e as KeyboardEvent, selectedCard as HTMLElement);
+        if (document.activeElement.classList.contains(cls.CARD_CLASS)) {
+            this.parent.actionModule.cardSelection(document.activeElement, false, false);
+        }
+        if (document.activeElement.classList.contains(cls.SHOW_ADD_BUTTON)) {
+            if (!this.parent.dialogModule.dialogObj) {
+                this.parent.actionModule.addButtonClick(document.activeElement);
+            }
+            (document.activeElement as HTMLElement).focus();
+        }
+        if (element.classList.contains(cls.CONTENT_CELLS_CLASS)) {
+            let cards: HTMLElement[] = [].slice.call(element.querySelectorAll('.' + cls.CARD_CLASS));
+            this.addRemoveTabIndex('Remove');
+            if (cards.length > 0) {
+                (element.querySelector('.' + cls.CARD_CLASS) as HTMLElement).focus();
+                cards.forEach((element: HTMLElement) => {
+                    element.setAttribute('tabindex', '0');
+                });
+            }
+            if (element.querySelector('.' + cls.SHOW_ADD_BUTTON)) {
+                element.querySelector('.' + cls.SHOW_ADD_BUTTON).setAttribute('tabindex', '0');
+                (element.querySelector('.' + cls.SHOW_ADD_BUTTON) as HTMLElement).focus();
+            }
+        }
+        if (selectedCard === document.activeElement && this.parent.element.querySelectorAll('.' + cls.CARD_SELECTION_CLASS).length === 1) {
             this.parent.activeCardData = { data: this.parent.getCardDetails(selectedCard), element: selectedCard };
-            this.parent.dialogModule.openDialog('Edit', this.parent.getCardDetails(selectedCard));
+            if (!this.parent.dialogModule.dialogObj) {
+                this.parent.dialogModule.openDialog('Edit', this.parent.getCardDetails(selectedCard));
+            }
+            (selectedCard as HTMLElement).focus();
         }
     }
 
-    private processTab(action: string, selectedCard: Element): void {
-        if (selectedCard) {
-            let target: HTMLElement = closest(selectedCard, '.' + cls.CONTENT_ROW_CLASS) as HTMLElement;
-            let tabTarget: Element = action === 'tab' ? target.previousElementSibling : target.nextElementSibling;
-            if (tabTarget) {
-                (tabTarget.querySelector(`.${cls.SWIMLANE_ROW_COLLAPSE_CLASS},.${cls.SWIMLANE_ROW_EXPAND_CLASS}`) as HTMLElement).focus();
-            }
-            removeClass([selectedCard], cls.CARD_SELECTION_CLASS);
-            this.parent.layoutModule.disableAttributeSelection(selectedCard);
+    public addRemoveTabIndex(action: string): void {
+        let attribute: string = action === 'Add' ? '0' : '-1';
+        let headerIcon: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.HEADER_ICON_CLASS));
+        if (headerIcon.length > 0) {
+            headerIcon.forEach((element: HTMLElement) => {
+                element.setAttribute('tabindex', attribute);
+            });
         }
-    }
-
-    private processMoveCards(action: string, card: Element): void {
-        let nextCell: Element;
-        let nextCellCards: HTMLElement[];
-        let curCell: HTMLTableCellElement = closest(card, '.' + cls.CONTENT_CELLS_CLASS) as HTMLTableCellElement;
-        let curCellCards: HTMLElement[] = [].slice.call(curCell.querySelectorAll('.' + cls.CARD_CLASS));
-        let curRow: HTMLTableRowElement = closest(curCell, '.' + cls.CONTENT_ROW_CLASS) as HTMLTableRowElement;
-        let curIndex: number = this.getCardId(curCellCards).indexOf(card.getAttribute('data-id'));
-        if (action === 'rightArrow' || action === 'multiSelectionByRightArrow') {
-            if (curCell.cellIndex === (curRow.childElementCount - 1) && this.parent.swimlaneSettings.keyField
-                && action !== 'multiSelectionByRightArrow') {
-                if (curIndex < (this.getCardId(curCellCards).length - 1)) {
-                    this.parent.actionModule.cardSelection(this.parent.actionModule.lastCardSelection.nextElementSibling, false, false);
-                } else if (curRow.rowIndex !== (this.parent.element.querySelectorAll('.' + cls.CONTENT_ROW_CLASS).length - 1)) {
-                    let row: Element = this.parent.element.querySelector(`.${cls.CONTENT_ROW_CLASS}:nth-child(${curRow.rowIndex + 3})`);
-                    this.processNextRow(row);
-                }
-            } else {
-                let isSame: boolean = false;
-                for (let i: number = curCell.cellIndex + 1; i < curRow.children.length; i++) {
-                    nextCell = curRow.children[i];
-                    nextCellCards = [].slice.call(nextCell.querySelectorAll('.' + cls.CARD_CLASS));
-                    if (nextCellCards.length > 0) {
-                        isSame = true;
-                        break;
-                    }
-                }
-                this.processCards(isSame, nextCellCards, curIndex, action);
-            }
-        } else {
-            if (curCell.cellIndex === 0 && this.parent.swimlaneSettings.keyField && action !== 'multiSelectionByLeftArrow') {
-                if (curIndex > 0) {
-                    this.parent.actionModule.cardSelection(this.parent.actionModule.lastCardSelection.previousElementSibling, false, false);
-                } else if (curRow.rowIndex > 1) {
-                    let className: string = `.${cls.CONTENT_ROW_CLASS}:nth-child(${curRow.rowIndex - 1}):not(.${cls.COLLAPSED_CLASS})`;
-                    let targetRow: Element = this.parent.element.querySelector(className);
-                    if (targetRow) {
-                        this.processPreviousRow(targetRow);
-                    }
-                }
-            } else {
-                let isSame: boolean = false;
-                for (let i: number = (curCell.cellIndex - 1); i >= 0; i--) {
-                    nextCell = curRow.children[i] as Element;
-                    nextCellCards = [].slice.call(nextCell.querySelectorAll('.' + cls.CARD_CLASS));
-                    if (nextCellCards.length > 0) {
-                        isSame = true;
-                        break;
-                    }
-                    if (i === 0 && this.parent.swimlaneSettings.keyField) {
-                        let row: Element = this.parent.element.querySelector(`.${cls.CONTENT_ROW_CLASS}:nth-child(${curRow.rowIndex - 1})`);
-                        this.processPreviousRow(row);
-                    }
-                }
-                this.processCards(isSame, nextCellCards, curIndex, action);
-            }
+        let swimlaneIcon: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll('.' + cls.SWIMLANE_ROW_EXPAND_CLASS));
+        if (swimlaneIcon.length > 0) {
+            swimlaneIcon.forEach((element: HTMLElement) => {
+                element.setAttribute('tabindex', attribute);
+            });
         }
+        let className: string = '.' + cls.CONTENT_ROW_CLASS + ':not(.' + cls.SWIMLANE_ROW_CLASS + ') .' + cls.CONTENT_CELLS_CLASS;
+        let contentCell: HTMLElement[] = [].slice.call(this.parent.element.querySelectorAll(className));
+        contentCell.forEach((element: HTMLElement) => {
+            element.setAttribute('tabindex', attribute);
+        });
     }
 
     /**

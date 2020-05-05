@@ -484,6 +484,12 @@ export class Sparkline extends Component<HTMLElement> implements INotifyProperty
         }
         // Used to create clip path sparkline
         let padding: PaddingModel = this.padding;
+        if (this.markerSettings.visible.length) {
+            padding.left = 0;
+            padding.right = 0;
+            padding.bottom = 0;
+            padding.top = 0;
+        }
         borderRect = new RectOption(
             this.element.id + '_sparkline_clip_rect', 'transparent', { color: 'transparent', width: 0 }, 1,
             new Rect(padding.left, padding.top, this.availableSize.width - (padding.left + padding.right),

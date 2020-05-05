@@ -925,6 +925,21 @@ export let remoteData3_1: { [key: string]: Object }[] = [
         ]
     },
 ];
+export let remoteData4: Object[] = [
+    { OrderID: 10248, CustomerID: 'VINET', EmployeeID: 1, Freight: 32.38 },
+    { OrderID: 10249, CustomerID: 'TOMSP', EmployeeID: 2, Freight: 11.61 },
+    { OrderID: 10250, CustomerID: 'HANAR', EmployeeID: 3, Freight: 65.83 }
+];
+
+export let remoteData4_1: Object[] = [
+    { nodeId: '01', ContactName: 'Paul Henriot', EmployeeID: 4, ContactTitle: 'Accounting Manager' }
+];
+export let remoteData4_2: Object[] = [    
+    { nodeId: '02', ContactName: 'Karin Josephs', EmployeeID: 5, ContactTitle: 'Marketing Manager' }
+];
+export let remoteData4_3: Object[] = [
+    { nodeId: '03', ContactName: 'Mario Pontes', EmployeeID: 6, ContactTitle: 'Accounting Manager' }
+];
 
  export let expandIconParentData: { [key: string]: Object }[] = [
         { id: '01', name: 'Users', hasChild: true }

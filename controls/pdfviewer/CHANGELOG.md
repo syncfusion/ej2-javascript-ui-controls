@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 18.1.46 (2020-04-28)
+## 18.1.48 (2020-05-05)
+
+### PDF Viewer
+
+#### New Features
+
+- `#272985` - Provided the support to edit the annotation properties without selecting the annotation.
+
+## 18.1.45 (2020-04-21)
 
 ### PDF Viewer
 

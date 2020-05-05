@@ -526,6 +526,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 targetValue = document.getElementById(forIdValue).getAttribute('value');
             }
             groupID = element.id.replace(this.element.id + '_', '');
+            let group: RuleModel = this.getGroup(groupID);
             let ariaChecked: boolean;
             if (this.enableNotCondition) {
                 if (target.className.indexOf('e-qb-toggle') > -1) {
@@ -537,9 +538,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                         addClass([toggleElem], 'e-active-toggle');
                         ariaChecked = true;
                     }
-                    targetValue = this.rule.condition;
+                    targetValue = group.condition;
                 } else {
-                    ariaChecked = this.rule.not;
+                    ariaChecked = group.not;
                 }
             }
             args = { groupID: groupID, cancel: false, type: 'condition', value: targetValue.toLowerCase() };
@@ -2657,7 +2658,11 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
         let groupId: string = (target instanceof Element) ? target.id : this.element.id + '_' + target;
         let rule: RuleModel = this.getParentGroup(groupId);
-        return { rules: rule.rules, condition: rule.condition };
+        if (this.enableNotCondition) {
+            return { rules: rule.rules, condition: rule.condition, not: rule.not };
+        } else {
+            return { rules: rule.rules, condition: rule.condition };
+        }
     }
     /**
      * Deletes the group or groups based on the group ID.
@@ -3117,9 +3122,9 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         let condition: string = rules.condition;
         if (rules.not) {
             if (isRoot) {
-                queryStr += 'not (';
+                queryStr += 'NOT (';
             } else {
-                queryStr += ' not (';
+                queryStr += ' NOT (';
             }
         }
         for (let j: number = 0, jLen: number = rules.rules.length; j < jLen; j++) {
@@ -3174,7 +3179,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 }
             }
             if (j !== jLen - 1) {
-                queryStr += ' ' + condition + ' ';
+                queryStr += ' ' + condition.toUpperCase() + ' ';
             }
         }
         if (!isRoot) {
@@ -3230,7 +3235,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     }
     private parseSqlStrings(sqlString: string): number {
         let operators: string[] = ['=', '!=', '<=', '>=', '<', '>'];
-        let conditions: string[] = ['and', 'or', 'not'];
+        let conditions: string[] = ['AND', 'OR', 'NOT'];
         let subOp: string[] = ['IN', 'NOT IN', 'LIKE', 'NOT LIKE', 'BETWEEN', 'NOT BETWEEN', 'IS NULL', 'IS NOT NULL',
         'IS EMPTY', 'IS NOT EMPTY'];
         let regexStr: string; let regex: RegExp; let matchValue: string;

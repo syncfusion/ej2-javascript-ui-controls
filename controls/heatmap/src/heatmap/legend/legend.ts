@@ -1069,8 +1069,7 @@ export class Legend {
     private calculateColorAxisGrid(legendRect: Rect): void {
         let heatMap: HeatMap = this.heatMap;
         let rect: Rect = this.legendRectScale;
-        let legendPart: number; let text: string[];
-        let maxTextWrapLength: number = 0;
+        let legendPart: number; let text: string[]; let maxTextWrapLength: number = 0;
         this.segmentCollectionsLabels = []; this.segmentCollections = [];
         this.textWrapCollections = [];
         let pathX1: number; let pathY1: number;
@@ -1135,10 +1134,11 @@ export class Legend {
         }
         let textWrapWidth: number;
         if (heatMap.horizontalGradient) {
+            let segmentWidth: number[] = this.heatMap.isColorRange ? this.segmentCollectionsLabels : this.segmentCollections;
             for (let i: number = 0; i < colorCollection.length; i++) {
                 if (heatMap.paletteSettings.type === 'Gradient') {
-                    let previousSegmentWidth: number = (this.segmentCollections[i] - this.segmentCollections[i - 1]) / 2;
-                    let nextSegmentWidth: number = (this.segmentCollections[i + 1] - this.segmentCollections[i]) / 2;
+                    let previousSegmentWidth: number = (segmentWidth[i] - segmentWidth[i - 1]) / 2;
+                    let nextSegmentWidth: number = (segmentWidth[i + 1] - segmentWidth[i]) / 2;
                     if (i === colorCollection.length - 1) {
                         textWrapWidth = previousSegmentWidth;
                     } else if (i === 0) {

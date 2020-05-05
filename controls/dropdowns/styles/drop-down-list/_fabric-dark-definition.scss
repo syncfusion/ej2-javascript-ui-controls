@@ -60,6 +60,10 @@ $ddl-bigger-small-list-font-size: 14px !default;
     margin-top: 0;
   }
 
+  #{&}.e-popup.e-ddl .e-dropdownbase {
+    min-height: 26px;
+  }
+
   .e-bigger .e-ddl#{&}.e-popup {
     @at-root {
       & .e-list-item,

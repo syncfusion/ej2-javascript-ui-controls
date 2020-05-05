@@ -17,7 +17,7 @@ import { Toolbar } from '../../../src/grid/actions/toolbar';
 import { Selection } from '../../../src/grid/actions/selection';
 import { DatePicker } from '@syncfusion/ej2-calendars';
 import { createGrid, destroy } from '../base/specutil.spec';
-import { data, employeeData } from '../base/datasource.spec';
+import { data, employeeData, filterData } from '../base/datasource.spec';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../base/common.spec';
 import * as events from '../../../src/grid/base/constant';
@@ -2897,4 +2897,39 @@ describe('Inline Editing module', () => {
             destroy(gridObj);
         });
     });
+
+    describe('EJ2-35693-Alignment issues reproduced attached sample', () => {
+        let gridObj: Grid;
+        let actionComplete: () => void;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: filterData,
+		            height: 500,
+            		editSettings: { allowAdding: true, newRowPosition: 'Bottom' },
+            		toolbar: ["Add"],
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', isPrimaryKey: true, validationRules: { required: true }, width: 120  },
+                        { field: 'Freight', textAlign: 'Right', format: 'C2', width: 120 },
+                        { field: 'CustomerID', headerText: 'Contact Name', width: 120 }
+                    ],
+                    actionComplete: actionComplete
+                }, done);
+        });
+        it('Add start', (done: Function) => {
+            actionComplete = (args?: any): void => {
+                if (args.requestType === 'add') {
+                    expect(args.row.querySelector('.e-rowcell').classList.contains('e-lastrowadded')).toBeFalsy();
+                    done();
+                }
+            };
+            gridObj.actionComplete = actionComplete;
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = actionComplete = null;
+        });
+    });
+
 });

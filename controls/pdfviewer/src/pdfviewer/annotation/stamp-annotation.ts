@@ -628,11 +628,12 @@ export class StampAnnotation {
         if (!modifiedDate) {
             modifiedDate = annotation.ModifiedDate ? annotation.ModifiedDate : new Date().toLocaleString();
         }
+        let annotationAddMode: string = annotation ? annotation.annotationAddMode : 'UI Drawn Annotation ';
         annot = {
             // tslint:disable-next-line:max-line-length
             id: 'stamp' + this.pdfViewerBase.customStampCount, bounds: { x: position.left, y: position.top, width: position.width, height: position.height }, pageIndex: pageIndex, data: image.src, modifiedDate: modifiedDate,
             shapeAnnotationType: 'Image', opacity: opacity, rotateAngle: RotationAngle, annotName: annotationName, comments: [], review: { state: '', stateModel: '', modifiedDate: '', author: author },
-            annotationSettings: annotationSettings, annotationAddMode: annotation.annotationAddMode
+            annotationSettings: annotationSettings, annotationAddMode: annotationAddMode
         };
         this.currentStampAnnotation = annot;
         // tslint:disable-next-line

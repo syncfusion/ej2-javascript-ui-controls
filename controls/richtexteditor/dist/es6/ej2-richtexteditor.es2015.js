@@ -11735,6 +11735,9 @@ class SelectionCommands {
         let validFormats = ['bold', 'italic', 'underline', 'strikethrough', 'superscript',
             'subscript', 'uppercase', 'lowercase', 'fontcolor', 'fontname', 'fontsize', 'backgroundcolor'];
         if (validFormats.indexOf(format) > -1) {
+            if (format === 'backgroundcolor' && value === '') {
+                value = 'transparent';
+            }
             let domSelection = new NodeSelection();
             let nodeCutter = new NodeCutter();
             let isFormatted = new IsFormatted();
@@ -11840,10 +11843,34 @@ class SelectionCommands {
                 nodes[index] = lastNode.firstChild;
             }
         }
+        let fontStyle;
+        if (format === 'backgroundcolor') {
+            fontStyle = formatNode.style.fontSize;
+        }
+        let bgStyle;
+        if (format === 'fontsize') {
+            let bg = closest(nodes[index].parentElement, 'span[style*=' + 'background-color' + ']');
+            if (!isNullOrUndefined(bg)) {
+                bgStyle = bg.style.backgroundColor;
+            }
+        }
         let child = InsertMethods.unwrap(formatNode);
         if (child.length > 0 && isFontStyle) {
             for (let num = 0; num < child.length; num++) {
                 child[num] = InsertMethods.Wrap(child[num], this.GetFormatNode(format, value));
+            }
+            let currentNodeElem = nodes[index].parentElement;
+            if (!isNullOrUndefined(fontStyle) && fontStyle !== '') {
+                currentNodeElem.style.fontSize = fontStyle;
+            }
+            if (!isNullOrUndefined(bgStyle) && bgStyle !== '') {
+                currentNodeElem.style.backgroundColor = bgStyle;
+            }
+            if ((format === 'backgroundcolor' && !isNullOrUndefined(fontStyle) && fontStyle !== '') &&
+                currentNodeElem.parentElement.innerHTML === currentNodeElem.outerHTML) {
+                let curParentElem = currentNodeElem.parentElement;
+                curParentElem.parentElement.insertBefore(currentNodeElem, curParentElem);
+                detach(curParentElem);
             }
             if (format === 'fontsize') {
                 let liElement = nodes[index].parentElement;
@@ -11885,6 +11912,10 @@ class SelectionCommands {
                             liElement.style.fontSize = value;
                         }
                         nodes[index] = this.applyStyles(nodes, index, element);
+                        let bg = closest(nodes[index].parentElement, 'span[style*=' + 'background-color' + ']');
+                        if (!isNullOrUndefined(bg)) {
+                            nodes[index].parentElement.style.backgroundColor = bg.style.backgroundColor;
+                        }
                     }
                     else {
                         nodes[index] = this.applyStyles(nodes, index, element);

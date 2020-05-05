@@ -73,9 +73,9 @@ export class MapsTooltip {
                             let data: Object[] = layer.dataSource[i];
                             let dataPath: string = (layer.shapeDataPath.indexOf('.') > -1 ) ?
                             (getValueFromObject(data, layer.shapeDataPath)) : data[layer.shapeDataPath];
-                            let dataPathValue: string = isNullOrUndefined(dataPath) && isNaN(data[layer.shapeDataPath])
+                            let dataPathValue: string = !isNullOrUndefined(dataPath) && isNaN(data[layer.shapeDataPath])
                             ? dataPath.toLowerCase() : dataPath;
-                            let propertyValue: string = isNullOrUndefined(value[properties[k]])
+                            let propertyValue: string = !isNullOrUndefined(value[properties[k]])
                                 && isNaN(value[properties[k]]) ? value[properties[k]].toLowerCase() :
                                 value[properties[k]];
                             if (dataPathValue === propertyValue) {

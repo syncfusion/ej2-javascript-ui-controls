@@ -41,6 +41,7 @@ import { RibbonItemModel } from '../../ribbon/index';
 import { DataValidation } from '../actions/index';
 import { WorkbookDataValidation } from '../../workbook/actions/index';
 import { FindAllArgs, findAllValues } from './../../workbook/common/index';
+import { blankWorkbook } from '../common/index';
 /**
  * Represents the Spreadsheet component. 
  * ```html
@@ -1072,7 +1073,7 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
      * @param {number} sheetIndex - Specifies the sheetIndex. If not specified, it will consider the active sheet.
      */
     public setRowHeight(height: number | string = 20, rowIndex: number = 0, sheetIndex?: number): void {
-        let sheet: SheetModel = isNullOrUndefined(sheetIndex) ? this.getActiveSheet() : this.sheets[sheetIndex - 1];
+        let sheet: SheetModel = isNullOrUndefined(sheetIndex) ? this.getActiveSheet() : this.sheets[sheetIndex];
         if (sheet) {
             let mIndex: number = rowIndex;
             let rowHeight: string = (typeof height === 'number') ? height + 'px' : height;
@@ -1391,7 +1392,16 @@ export class Spreadsheet extends Workbook implements INotifyPropertyChanged {
     }
 
     /**
-     * Gets the row header div of the Spreadsheet. 
+     * Used to refresh the spreadsheet.
+     * @param {boolean} isNew - Specifies `true` / `false` to create new workbook in spreadsheet.
+     * @returns void
+     */
+    public refresh(isNew?: boolean): void {
+        (isNew) ? this.notify(blankWorkbook, {}) : super.refresh();
+    }
+
+    /**
+     * Gets the row header div of the Spreadsheet.
      * @return {Element} 
      * @hidden
      */

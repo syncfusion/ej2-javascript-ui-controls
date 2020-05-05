@@ -333,7 +333,8 @@ export class ExcelExport {
         }
         let helper: ExportHelper = new ExportHelper(gObj);
         let gColumns: Column[] = isExportColumns(exportProperties) ?
-            prepareColumns(exportProperties.columns, gObj.enableColumnVirtualization) : gObj.columns as Column[];
+            prepareColumns(exportProperties.columns, gObj.enableColumnVirtualization) :
+            helper.getGridExportColumns(gObj.columns as Column[]);
         let headerRow: IHeader = helper.getHeaders(gColumns, this.includeHiddenColumn);
         let groupIndent: number = gObj.groupSettings.columns.length;
         excelRows = this.processHeaderContent(gObj, headerRow, groupIndent, excelRows);

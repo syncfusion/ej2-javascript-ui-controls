@@ -75,6 +75,59 @@ describe('RTE SELECTION BASED - backgroundColor - ', () => {
         });
     });
 
+
+    describe(' Combination of font size and background ', () => {
+        describe(' toolbarSettings property - ', () => {
+            let rteObj: RichTextEditor;
+            let controlId: string;
+            beforeAll((done: Function) => {
+                rteObj = renderRTE({
+                    value: '<p id="first">hello</p><p><br></p><p id="last">syncfusion</p>',
+                    toolbarSettings: {
+                        items: ['BackgroundColor', 'FontSize']
+                    },
+                    backgroundColor: {
+                        colorCode: {
+                            'Custom': ['', '#000000', '#ffff00', '#00ff00']
+                        }
+                    },
+                    fontSize: {
+                        items: [
+                            { text: '36 pt', value: '36pt' },
+                            { text: '10 pt', value: '10pt' },
+                            { text: '12 pt', value: '12pt' },
+                        ]
+                    }
+                });
+                controlId = rteObj.element.id;
+                done();
+            });
+            afterAll((done: Function) => {
+                destroy(rteObj);
+                done();
+            })
+            it(' Apply background color and font size ', (done) => {
+                let firstPEle: HTMLElement = rteObj.element.querySelector('#first');
+                let lastPEle: HTMLElement = rteObj.element.querySelector('#last');
+                rteObj.formatter.editorManager.nodeSelection.setSelectionText(document, firstPEle.childNodes[0], lastPEle.childNodes[0], 0, 10);
+                let item: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_BackgroundColor');
+                item = (item.querySelector('.e-rte-color-content') as HTMLElement);
+                dispatchEvent(item, 'mousedown');
+                item.click();
+                let span: HTMLSpanElement = firstPEle.querySelector('span');
+                expect(span.style.backgroundColor === 'rgb(255, 255, 0)').toBe(true);
+                let item2: HTMLElement = rteObj.element.querySelector('#' + controlId + '_toolbar_FontSize');
+                item2.click();
+                let popup: HTMLElement = document.getElementById(controlId + '_toolbar_FontSize-popup');
+                dispatchEvent((popup.querySelectorAll('.e-item')[0] as HTMLElement), 'mousedown');
+                (popup.querySelectorAll('.e-item')[0] as HTMLElement).click();
+                expect(firstPEle.children[0].innerHTML === '<span style="font-size: 36pt; background-color: rgb(255, 255, 0);">hello</span>').toBe(true);
+                expect(lastPEle.children[0].innerHTML === '<span style="font-size: 36pt; background-color: rgb(255, 255, 0);">syncfusion</span>').toBe(true);
+                done();
+            });
+        });
+    });
+
     describe(' onPropertyChange - ', () => {
         describe(' change the backgroundColor.colorCode - ', () => {
             let rteObj: RichTextEditor;

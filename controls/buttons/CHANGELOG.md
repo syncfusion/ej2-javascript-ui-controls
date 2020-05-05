@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.48 (2020-05-05)
+
+### Chips
+
+#### New Features
+
+- `#152050` - Support for adding images to a chip using the `trailingIconUrl` and `leadingIconUrl` property has been included.
+
 ## 18.1.43 (2020-04-07)
 
 ### Radio Button

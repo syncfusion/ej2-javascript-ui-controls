@@ -382,7 +382,7 @@ export class Marker {
                   }
                   isClusterSame = false;
                   clusterCollection.push(<MarkerClusterData>{
-                      data: collection, layerIndex: index, markerIndex: markerIndex,
+                      data: collection, layerIndex: index, markerIndex: markerIndex, dataIndex: dataIndex,
                       targetClusterIndex: +(target.split('_cluster_')[1].indexOf('_datalabel_') > -1 ? target.split('_cluster_')[1].split('_datalabel_')[0] : target.split('_cluster_')[1]),
                       isClusterSame: isClusterSame
                   });

@@ -60,7 +60,7 @@ let kanbanOptions: KanbanModel = {
 };
 
 let kanbanObj: Kanban = new Kanban(kanbanOptions);
-kanbanObj.appendTo('#kanban');
+kanbanObj.appendTo('#Kanban');
 
 document.getElementById('cultures').onchange = () => {
     let ddl: HTMLSelectElement = document.getElementById('cultures') as HTMLSelectElement;

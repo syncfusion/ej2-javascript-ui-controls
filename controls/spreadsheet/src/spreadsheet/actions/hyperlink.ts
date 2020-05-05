@@ -403,8 +403,6 @@ export class SpreadsheetHyperlink {
         } else if (td.querySelector('a') && cell.hyperlink) {
             if (typeof (cell.hyperlink) === 'string') {
                 td.querySelector('a').setAttribute('href', cell.hyperlink);
-            } else {
-                td.querySelector('a').setAttribute('href', cell.hyperlink.address);
             }
         }
     }

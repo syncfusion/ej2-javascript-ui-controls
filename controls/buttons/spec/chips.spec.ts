@@ -1255,7 +1255,8 @@ describe('Chips', () => {
                     chips.destroy();
                 });
                 it('chip(single) focus - kewyboard', () => {
-                    chips = new ChipList({ text: 'chip content' }, '#chip');
+                    chips = new ChipList({ text: 'chip content', leadingIconUrl:'http://ej2.syncfusion.com/demos/src/chips/images/anne.png',
+                        trailingIconUrl:'http://ej2.syncfusion.com/demos/src/chips/images/anne.png' }, '#chip');
                     (chips as any).keyHandler({ target: element, type: 'keyup', keyCode: 9 });
                     (chips as any).keyHandler({ target: element, type: 'keyup', keyCode: 9 });
                     expect(element.classList.contains('e-focused')).toBe(true);

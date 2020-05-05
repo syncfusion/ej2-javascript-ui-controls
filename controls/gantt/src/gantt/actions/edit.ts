@@ -1080,6 +1080,9 @@ export class Edit {
                 }
             }
         }
+        if (childRecords.length) {
+            this.parent.dataOperation.updateParentItems(ganttRecord, true);
+        }
     }
 
     /**
@@ -1430,6 +1433,7 @@ export class Edit {
             let predecessor: IPredecessor = predecessors[i];
             if (predecessor.from.toString() === record.ganttProperties.rowUniqueID.toString()) {
                 let toRecord: IGanttData = this.parent.getRecordByID(predecessor.to.toString());
+                if (!isNullOrUndefined(toRecord)) {
                 let toRecordPredcessor: IPredecessor[] = extend([], [], toRecord.ganttProperties.predecessor, true) as IPredecessor[];
                 let index: number;
                 for (let t: number = 0; t < toRecordPredcessor.length; t++) {
@@ -1441,8 +1445,10 @@ export class Edit {
                 }
                 toRecordPredcessor.splice(index, 1);
                 this.updatePredecessorValues(toRecord, toRecordPredcessor);
+            }
             } else if (predecessor.to.toString() === record.ganttProperties.rowUniqueID.toString()) {
                 let fromRecord: IGanttData = this.parent.getRecordByID(predecessor.from.toString());
+                if (!isNullOrUndefined(fromRecord)) {
                 let fromRecordPredcessor: IPredecessor[] = extend([], [], fromRecord.ganttProperties.predecessor, true) as IPredecessor[];
                 let index: number;
                 for (let t: number = 0; t < fromRecordPredcessor.length; t++) {
@@ -1455,6 +1461,7 @@ export class Edit {
                 fromRecordPredcessor.splice(index, 1);
                 this.updatePredecessorValues(fromRecord, fromRecordPredcessor);
             }
+        }
         }
     }
 
@@ -1676,7 +1683,7 @@ export class Edit {
             if (!obj[taskModel.duration]) {
                 let startDate: Date = this.parent.dataOperation.getDateFromFormat(this.parent.projectStartDate);
                 startDate.setDate(startDate.getDate() + 4);
-                obj[taskModel.endDate] = this.parent.getFormatedDate(startDate, this.parent.dateFormat);
+                obj[taskModel.endDate] = this.parent.getFormatedDate(startDate, this.parent.getDateFormat());
             }
         }
     }

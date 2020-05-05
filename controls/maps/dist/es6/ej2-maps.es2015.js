@@ -660,6 +660,7 @@ function clusterTemplate(currentLayer, markerTemplate, maps, layerIndex, markerC
             if (markerTemplate.childNodes[o]['style']['visibility'] !== 'hidden') {
                 tempElement = markerTemplate.childNodes[o];
                 bounds1 = tempElement.getBoundingClientRect();
+                indexCollection.push(o);
                 if (!isNullOrUndefined(bounds1)) {
                     for (let p = o + 1; p < markerTemplate.childElementCount; p++) {
                         if (markerTemplate.childNodes[p]['style']['visibility'] !== 'hidden') {
@@ -679,7 +680,6 @@ function clusterTemplate(currentLayer, markerTemplate, maps, layerIndex, markerC
                     }
                     tempX = bounds1.left + bounds1.width / 2;
                     tempY = bounds1.top + bounds1.height;
-                    indexCollection.push(o);
                     if (colloideBounds.length > 0) {
                         indexCollection = indexCollection.filter((item, index, value) => value.indexOf(item) === index);
                         let container = maps.element.getBoundingClientRect();
@@ -810,7 +810,7 @@ function mergeSeparateCluster(sameMarkerData, maps, markerElement) {
     let layerIndex = sameMarkerData[0].layerIndex;
     let clusterIndex = sameMarkerData[0].targetClusterIndex;
     let markerIndex = sameMarkerData[0].markerIndex;
-    let dataIndex = (sameMarkerData[0].isClusterSame) ? sameMarkerData[0].data[0]['index'] : sameMarkerData[0].data[sameMarkerData[0].data.length - 1]['index'];
+    let dataIndex = sameMarkerData[0].dataIndex;
     let markerId = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex;
     let clusterId = markerId + '_dataIndex_' + dataIndex + '_cluster_' + clusterIndex;
     let clusterEle = getElement(clusterId);
@@ -829,7 +829,7 @@ function clusterSeparate(sameMarkerData, maps, markerElement, isDom) {
     let layerIndex = sameMarkerData[0].layerIndex;
     let markerIndex = sameMarkerData[0].markerIndex;
     let clusterIndex = sameMarkerData[0].targetClusterIndex;
-    let dataIndex = (sameMarkerData[0].isClusterSame) ? sameMarkerData[0].data[0]['index'] : sameMarkerData[0].data[sameMarkerData[0].data.length - 1]['index'];
+    let dataIndex = sameMarkerData[0].dataIndex;
     let getElementFunction = isDom ? getElement : markerElement.querySelector.bind(markerElement);
     let getQueryConnect = isDom ? '' : '#';
     let markerId = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex;
@@ -1440,7 +1440,7 @@ function getTranslate(mapObject, layer, animate) {
         mapObject.currentShapeDataLength = !isNullOrUndefined(layer.shapeData["features"])
             ? layer.shapeData["features"].length : layer.shapeData["geometries"].length;
     }
-    let size = (mapObject.totalRect) ? mapObject.totalRect : mapObject.mapAreaRect;
+    let size = (mapObject.totalRect && mapObject.legendSettings.visible) ? mapObject.totalRect : mapObject.mapAreaRect;
     let availSize = mapObject.availableSize;
     let x;
     let y;
@@ -1737,7 +1737,7 @@ function getElement(id) {
 function getShapeData(targetId, map) {
     let layerIndex = parseInt(targetId.split('_LayerIndex_')[1].split('_')[0], 10);
     let shapeIndex = parseInt(targetId.split('_shapeIndex_')[1].split('_')[0], 10);
-    let layer = map.layers[layerIndex];
+    let layer = map.layersCollection[layerIndex];
     let shapeData = layer.layerData[shapeIndex]['property'];
     let data;
     if (layer.dataSource) {
@@ -1760,7 +1760,8 @@ function triggerShapeEvent(targetId, selection, maps, eventName) {
         shapeData: shape.shapeData,
         data: shape.data,
         target: targetId,
-        maps: maps
+        maps: maps,
+        shapeDataCollection: maps.shapeSelectionItem
     };
     if (maps.isBlazor) {
         const { maps, shapeData } = eventArgs, blazorEventArgs = __rest(eventArgs, ["maps", "shapeData"]);
@@ -1848,6 +1849,7 @@ function triggerItemSelectionEvent(selectionSettings, map, targetElement, shapeD
         maps: map
     };
     map.trigger('itemSelection', eventArgs, (observedArgs) => {
+        map.shapeSelectionItem.push(eventArgs.shapeData);
         if (!getElement('ShapeselectionMap')) {
             document.body.appendChild(createStyle('ShapeselectionMap', 'ShapeselectionMapStyle', eventArgs));
         }
@@ -1897,6 +1899,11 @@ function timeout(id) {
     removeElement(id);
 }
 function showTooltip(text, size, x, y, areaWidth, areaHeight, id, element, isTouch) {
+    let location = getMousePosition(x, y, element);
+    if (!isNullOrUndefined(location)) {
+        x = location.x;
+        y = location.y;
+    }
     let tooltip = document.getElementById(id);
     let width = measureText(text, {
         fontFamily: 'Segoe UI', size: '8px',
@@ -1946,7 +1953,8 @@ function showTooltip(text, size, x, y, areaWidth, areaHeight, id, element, isTou
 }
 function wordWrap(tooltip, text, x, y, size1, width, areaWidth, element) {
     tooltip.innerHTML = text;
-    tooltip.style.top = (parseInt(size1[0], 10) * 2).toString() + 'px';
+    tooltip.style.top = tooltip.id.indexOf('_Legend') !== -1 ?
+        (parseInt(size1[0], 10) + y).toString() + 'px' : (parseInt(size1[0], 10) * 2).toString() + 'px';
     tooltip.style.left = (x).toString() + 'px';
     tooltip.style.width = width.toString() + 'px';
     tooltip.style.maxWidth = (areaWidth).toString() + 'px';
@@ -3942,7 +3950,7 @@ class Marker {
                     }
                     isClusterSame = false;
                     clusterCollection.push({
-                        data: collection, layerIndex: index, markerIndex: markerIndex,
+                        data: collection, layerIndex: index, markerIndex: markerIndex, dataIndex: dataIndex,
                         targetClusterIndex: +(target.split('_cluster_')[1].indexOf('_datalabel_') > -1 ? target.split('_cluster_')[1].split('_datalabel_')[0] : target.split('_cluster_')[1]),
                         isClusterSame: isClusterSame
                     });
@@ -4223,7 +4231,7 @@ class ColorMapping {
             getValueFromObject(layerData, colorValuePath) : layerData[colorValuePath]) : layerData[colorValuePath];
         let colorValue = Number(equalValue);
         let shapeColor = this.getColorByValue(shapeSettings.colorMapping, colorValue, equalValue);
-        return shapeColor ? shapeColor : color;
+        return !isNullOrUndefined(shapeColor) ? shapeColor : color;
     }
     /**
      * To color by value and color mapping
@@ -4755,6 +4763,7 @@ class LayerPanel {
                             (getValueFromObject(currentShapeData['property'], shapeSettings.colorValuePath)) :
                             currentShapeData['property'][shapeSettings.colorValuePath]);
                     }
+                    fill = !isNullOrUndefined(fill) ? fill : shapeSettings.fill;
                 }
                 let shapeID = this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_' + k;
                 getShapeColor$$1 = this.getShapeColorMapping(this.currentLayer, currentShapeData['property'], fill);
@@ -5932,6 +5941,8 @@ let Maps = class Maps extends Component {
         this.markerClusterExpandCheck = false;
         /** @private */
         this.markerClusterExpand = false;
+        /** @private */
+        this.shapeSelectionItem = [];
         setValue('mergePersistData', this.mergePersistMapsData, this);
     }
     /**
@@ -6586,6 +6597,9 @@ let Maps = class Maps extends Component {
         }
         if (this.isTouch) {
             this.titleTooltip(e, pageX, pageY, true);
+            if (!isNullOrUndefined(this.legendModule)) {
+                this.legendTooltip(e, e.pageX, e.pageY, true);
+            }
         }
         this.notify(Browser.touchEndEvent, e);
         e.preventDefault();
@@ -6656,8 +6670,33 @@ let Maps = class Maps extends Component {
         let element = e.target;
         if (!this.isTouch) {
             this.titleTooltip(e, e.pageX, e.pageY);
+            if (!isNullOrUndefined(this.legendModule)) {
+                this.legendTooltip(e, e.pageX, e.pageY, true);
+            }
         }
         return false;
+    }
+    legendTooltip(event, x, y, isTouch) {
+        let targetId = event.target.id;
+        let legendText;
+        let page = this.legendModule.currentPage;
+        let legendIndex = event.target.id.split('_Index_')[1];
+        let collection;
+        let count = this.legendModule.totalPages.length !== 0 ?
+            this.legendModule.totalPages[page]['Collection'].length : this.legendModule.totalPages.length;
+        for (let i = 0; i < count; i++) {
+            collection = this.legendModule.totalPages[page]['Collection'][i];
+            legendText = collection['DisplayText'];
+            targetId = event.target['id'];
+            legendIndex = event.target['id'].split('_Index_')[1];
+            if ((targetId === (this.element.id + '_Legend_Text_Index_' + legendIndex)) &&
+                (event.target.textContent.indexOf('...') > -1) && collection['idIndex'] === parseInt(legendIndex, 10)) {
+                showTooltip(legendText, this.legendSettings.textStyle.size, x, y, this.element.offsetWidth, this.element.offsetHeight, this.element.id + '_EJ2_Legend_Text_Tooltip', getElement(this.element.id + '_Secondary_Element'), isTouch);
+            }
+        }
+        if ((targetId !== (this.element.id + '_Legend_Text_Index_' + legendIndex))) {
+            removeElement(this.element.id + '_EJ2_Legend_Text_Tooltip');
+        }
     }
     titleTooltip(event, x, y, isTouch) {
         let targetId = event.target.id;
@@ -7039,7 +7078,7 @@ let Maps = class Maps extends Component {
                     this.mapLayerPanel.renderTileLayer(this.mapLayerPanel, this.layers['currentFactor'], (this.layers.length - 1));
                 }
                 else {
-                    this.markerModule.markerRender(layerEle, (this.layers.length - 1), this.mapLayerPanel['currentFactor'], 'AddMarker');
+                    this.render();
                 }
             }
             else if (newProp.layers && isStaticMapType) {
@@ -7813,7 +7852,7 @@ class DataLabel {
         let shapes = layerData[index];
         let locationX;
         let locationY;
-        style.fontFamily = this.maps.themeStyle.labelFontFamily;
+        style.fontFamily = this.maps.theme.toLowerCase() !== 'material' ? this.maps.themeStyle.labelFontFamily : style.fontFamily;
         shape = shapes['property'];
         let properties = (Object.prototype.toString.call(layer.shapePropertyPath) === '[object Array]' ?
             layer.shapePropertyPath : [layer.shapePropertyPath]);
@@ -8270,8 +8309,14 @@ class NavigationLine {
 class Legend {
     constructor(maps) {
         this.legendBorderRect = new Rect(0, 0, 0, 0);
+        /**
+         * @private
+         */
         this.totalPages = [];
         this.page = 0;
+        /**
+         * @private
+         */
         this.currentPage = 0;
         this.legendItemRect = new Rect(0, 0, 0, 0);
         this.heightIncrement = 0;
@@ -8586,6 +8631,26 @@ class Legend {
             this.totalPages[this.page] = { Page: (this.page + 1), Collection: [] };
         }
     }
+    legendTextTrim(maxWidth, text, font, legendRectSize) {
+        let label = text;
+        let size = measureText(text, font).width;
+        let legendWithoutTextSize = legendRectSize - size;
+        if (legendRectSize > maxWidth) {
+            let textLength = text.length;
+            for (let i = textLength - 1; i >= 0; --i) {
+                label = text.substring(0, i) + '...';
+                size = measureText(label, font).width;
+                let totalSize = legendWithoutTextSize + size;
+                if (totalSize <= maxWidth || label.length < 4) {
+                    if (label.length < 4) {
+                        label = ' ';
+                    }
+                    return label;
+                }
+            }
+        }
+        return label;
+    }
     /**
      * To draw the legend shape and text.
      */
@@ -8658,6 +8723,11 @@ class Legend {
                     this.renderLegendBorder();
                 }
                 legendElement.appendChild(drawSymbol(shapeLocation, shape, shapeSize, collection['ImageSrc'], renderOptions));
+                if (collection['Rect']['width'] > this.legendBorderRect.width) {
+                    let legendRectSize = collection['Rect']['x'] + collection['Rect']['width'];
+                    let trimmedText = this.legendTextTrim(this.legendBorderRect.width, legendText, legend.textStyle, legendRectSize);
+                    legendText = trimmedText;
+                }
                 textOptions = new TextOption(textId, textLocation.x, textLocation.y, 'start', legendText, '', '');
                 renderTextElement(textOptions, legend.textStyle, legend.textStyle.color, legendElement);
                 this.legendGroup.appendChild(legendElement);
@@ -9986,7 +10056,11 @@ class Legend {
                 let shapeData = layerData[i];
                 let dataPathValue = (dataPath.indexOf(".") > -1) ? getValueFromObject(data, dataPath) : data[dataPath];
                 let shapePath = checkPropertyPath(data[dataPath], shapePropertyPath, shapeData['properties']);
-                if (shapeData['properties'][shapePath] === dataPathValue) {
+                let dataPathValueCase = !isNullOrUndefined(dataPathValue)
+                    ? dataPathValue.toLowerCase() : dataPathValue;
+                let shapeDataValueCase = !isNullOrUndefined(shapeData['properties'][shapePath])
+                    && isNaN(shapeData['properties'][shapePath]) ? shapeData['properties'][shapePath].toLowerCase() : shapePath;
+                if (shapeDataValueCase === dataPathValueCase) {
                     legendData.push({
                         layerIndex: layerIndex, shapeIndex: i, dataIndex: dataIndex,
                         name: data[dataPath], value: value
@@ -10404,6 +10478,12 @@ class Selection {
                 if (targetElement.getAttribute('class') === this.selectionType + 'selectionMapStyle') {
                     removeClass(targetElement);
                     this.removedSelectionList(targetElement);
+                    for (let m = 0; m < this.maps.shapeSelectionItem.length; m++) {
+                        if (this.maps.shapeSelectionItem[m] === eventArgs.shapeData) {
+                            this.maps.shapeSelectionItem.splice(m, 1);
+                            break;
+                        }
+                    }
                     if (targetElement.id.indexOf('NavigationIndex') > -1) {
                         let index = parseInt(targetElement.id.split('_NavigationIndex_')[1].split('_')[0], 10);
                         let layerIndex = parseInt(targetElement.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
@@ -10444,6 +10524,7 @@ class Selection {
                     if (targetElement.getAttribute('class') === 'ShapeselectionMapStyle') {
                         this.maps.shapeSelectionClass = getElement(this.selectionType + 'selectionMap');
                         this.maps.selectedElementId.push(targetElement.getAttribute('id'));
+                        this.maps.shapeSelectionItem.push(eventArgs.shapeData);
                     }
                     if (targetElement.getAttribute('class') === 'MarkerselectionMapStyle') {
                         this.maps.markerSelectionClass = getElement(this.selectionType + 'selectionMap');
@@ -10576,9 +10657,9 @@ class MapsTooltip {
                             let data = layer.dataSource[i];
                             let dataPath = (layer.shapeDataPath.indexOf('.') > -1) ?
                                 (getValueFromObject(data, layer.shapeDataPath)) : data[layer.shapeDataPath];
-                            let dataPathValue = isNullOrUndefined(dataPath) && isNaN(data[layer.shapeDataPath])
+                            let dataPathValue = !isNullOrUndefined(dataPath) && isNaN(data[layer.shapeDataPath])
                                 ? dataPath.toLowerCase() : dataPath;
-                            let propertyValue = isNullOrUndefined(value[properties[k]])
+                            let propertyValue = !isNullOrUndefined(value[properties[k]])
                                 && isNaN(value[properties[k]]) ? value[properties[k]].toLowerCase() :
                                 value[properties[k]];
                             if (dataPathValue === propertyValue) {

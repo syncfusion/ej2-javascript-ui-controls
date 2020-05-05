@@ -4800,7 +4800,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             return isNullOrUndefined((this.currentViewData as Object[] & { records: Object[] }).records) ?
                 this.currentViewData : (this.currentViewData as Object[] & { records: Object[] }).records;
         }
-        return (this.allowGrouping && this.groupSettings.columns.length && this.currentViewData.length) ?
+        return (this.allowGrouping && this.groupSettings.columns.length && this.currentViewData.length && (<{records?: Object[]}>this.currentViewData).records) ?
             (this.currentViewData as Object[] & { records: Object[] }).records : this.currentViewData;
     }
 

@@ -1405,7 +1405,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
      */
     private helper: Function = (e: { target: HTMLElement, sender: PointerEvent | TouchEvent }) => {
         let clonedElement: HTMLElement;
-        let id: string = (e.sender.target as Element).id.split('_container')[0];
+        let id: string = (this.selectedSymbol && this.selectedSymbol.id) || (e.sender.target as Element).id.split('_container')[0];
         let symbol: IElement = this.symbolTable[id];
         if (symbol && this.selectedSymbol) {
             this.selectedSymbols = this.selectedSymbol.id === (symbol as NodeModel | ConnectorModel).id ? symbol : this.selectedSymbol;

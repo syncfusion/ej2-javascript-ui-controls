@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.1.48 (2020-05-05)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#F11316` - An issue with `ToolbarActionArgs` is deprecated but without it, Print Exporting won't work has been fixed.
+- `#273612` - An issue with blocked events in mobile mode has been fixed.
+
 ## 18.1.46 (2020-04-28)
 
 ### Schedule
@@ -13,6 +22,9 @@
 - `#F12345` - An issue with more indicator height added to timeline height even when `rowAutoHeight` enabled has been fixed.
 - `#268604` - An issue with improper time slots rendering when daylight saving time occurring date has been fixed.
 - `#271829` - An issue with selected class is not applied properly in `MonthAgenda` view has been fixed.
+- `#273646` - An issue with `aria-readonly` attribute has been fixed.
+- `#266725` - An issue with `scrollToResource` method when we enabled the `virtualScrolling` property has been fixed.
+- `#271264` - An issue with `scrollToResource` method when we enabled the `rowAutoHeight` property has been fixed.
 
 ## 18.1.45 (2020-04-21)
 

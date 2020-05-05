@@ -1,4 +1,4 @@
-import { isNullOrUndefined, extend } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, extend, isBlazor } from '@syncfusion/ej2-base';
 import { attributes } from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
 import { Cell } from '../models/cell';
@@ -82,7 +82,6 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
             innerDIV.appendChild(checkAllWrap);
             innerDIV.classList.add('e-headerchkcelldiv');
         }
-
         this.buildAttributeFromCell(node as HTMLElement, cell);
         this.appendHtml(node, innerDIV);
         node.appendChild(this.sortEle.cloneNode());
@@ -130,8 +129,9 @@ export class HeaderCellRenderer extends CellRenderer implements ICellRenderer<Co
             //need to pass the template id for blazor headertemplate
             let headerTempID: string = gridObj.element.id + column.uid + 'headerTemplate';
             let str: string = 'isStringTemplate';
+            let col: Column = isBlazor() ? column.toJSON() : column;
             result = column.getHeaderTemplate()(
-                extend({ 'index': colIndex }, column.toJSON()), gridObj, 'headerTemplate', headerTempID, this.parent[str]);
+                extend({ 'index': colIndex }, col), gridObj, 'headerTemplate', headerTempID, this.parent[str]);
             node.firstElementChild.innerHTML = '';
             appendChildren(node.firstElementChild, result);
         }

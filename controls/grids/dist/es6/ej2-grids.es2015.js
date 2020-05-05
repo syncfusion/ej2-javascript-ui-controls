@@ -1162,11 +1162,18 @@ class Data {
             let promise = 'promise';
             args[promise] = crud;
             if (crud && !Array.isArray(crud) && !crud.hasOwnProperty('deletedRecords')) {
-                return crud.then((result) => {
-                    return this.insert(query, args);
-                }).catch((e) => {
-                    return null;
-                });
+                if (isBlazor()) {
+                    return crud.then((result) => {
+                        return this.insert(query, args);
+                    }).catch((e) => {
+                        return null;
+                    });
+                }
+                else {
+                    return crud.then((result) => {
+                        return this.insert(query, args);
+                    });
+                }
             }
             else {
                 return this.insert(query, args);
@@ -4065,7 +4072,8 @@ class HeaderCellRenderer extends CellRenderer {
             //need to pass the template id for blazor headertemplate
             let headerTempID = gridObj.element.id + column.uid + 'headerTemplate';
             let str = 'isStringTemplate';
-            result = column.getHeaderTemplate()(extend({ 'index': colIndex }, column.toJSON()), gridObj, 'headerTemplate', headerTempID, this.parent[str]);
+            let col = isBlazor() ? column.toJSON() : column;
+            result = column.getHeaderTemplate()(extend({ 'index': colIndex }, col), gridObj, 'headerTemplate', headerTempID, this.parent[str]);
             node.firstElementChild.innerHTML = '';
             appendChildren(node.firstElementChild, result);
         }
@@ -6650,7 +6658,8 @@ class Selection {
                     data: selectData, rowIndex: index, isCtrlPressed: this.isMultiCtrlRequest,
                     isShiftPressed: this.isMultiShiftRequest, row: selectedRow,
                     previousRow: gObj.getRowByIndex(this.prevRowIndex),
-                    previousRowIndex: this.prevRowIndex, target: this.actualTarget, cancel: false, isInteracted: this.isInteracted
+                    previousRowIndex: this.prevRowIndex, target: this.actualTarget, cancel: false, isInteracted: this.isInteracted,
+                    isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
                 };
                 args = this.addMovableArgs(args, selectedMovableRow);
             }
@@ -6658,7 +6667,7 @@ class Selection {
                 args = {
                     data: selectData, rowIndex: index, isCtrlPressed: this.isMultiCtrlRequest,
                     isShiftPressed: this.isMultiShiftRequest, previousRowIndex: this.prevRowIndex,
-                    cancel: false, isInteracted: this.isInteracted
+                    cancel: false, isInteracted: this.isInteracted, isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
                 };
             }
             this.parent.trigger(rowSelecting, this.fDataUpdate(args), this.rowSelectingCallBack(args, isToggle, index, selectData, isRemoved, isRowSelected, can));
@@ -6716,14 +6725,17 @@ class Selection {
                 args = {
                     data: selectData, rowIndex: index,
                     row: selectedRow, previousRow: gObj.getRowByIndex(this.prevRowIndex),
-                    previousRowIndex: this.prevRowIndex, target: this.actualTarget, isInteracted: this.isInteracted
+                    previousRowIndex: this.prevRowIndex, target: this.actualTarget, isInteracted: this.isInteracted,
+                    isHeaderCheckBoxClicked: this.isHeaderCheckboxClicked
                 };
                 args = this.addMovableArgs(args, selectedMovableRow);
             }
             else {
                 args = {
                     data: selectData, rowIndex: index,
-                    previousRowIndex: this.prevRowIndex, isInteracted: this.isInteracted
+                    row: selectedRow, previousRow: gObj.getRowByIndex(this.prevRowIndex),
+                    previousRowIndex: this.prevRowIndex, isInteracted: this.isInteracted,
+                    isHeaderCheckBoxClicked: this.isHeaderCheckboxClicked
                 };
             }
             this.onActionComplete(args, rowSelected);
@@ -6778,7 +6790,7 @@ class Selection {
                 rowIndexes: rowIndexes, row: selectedRow, rowIndex: rowIndex, target: this.actualTarget,
                 prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
                 isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
-                data: selectedData
+                data: selectedData, isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
             };
             args = this.addMovableArgs(args, selectedMovableRow);
         }
@@ -6787,7 +6799,7 @@ class Selection {
                 cancel: false,
                 rowIndexes: rowIndexes, rowIndex: rowIndex, previousRowIndex: this.prevRowIndex,
                 isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
-                data: selectedData
+                data: selectedData, isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
             };
         }
         this.parent.trigger(rowSelecting, this.fDataUpdate(args), (args) => {
@@ -6818,14 +6830,17 @@ class Selection {
                 args = {
                     rowIndexes: rowIndexes, row: selectedRow, rowIndex: rowIndex, target: this.actualTarget,
                     prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
-                    data: isBlazor() ? selectedData : this.getSelectedRecords(), isInteracted: this.isInteracted
+                    data: isBlazor() ? selectedData : this.getSelectedRecords(), isInteracted: this.isInteracted,
+                    isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
                 };
                 args = this.addMovableArgs(args, selectedMovableRow);
             }
             else {
                 args = {
                     rowIndexes: rowIndexes, rowIndex: rowIndex, previousRowIndex: this.prevRowIndex,
-                    data: isBlazor() ? selectedData : this.getSelectedRecords(), isInteracted: this.isInteracted
+                    row: selectedRow, prevRow: gObj.getRows()[this.prevRowIndex],
+                    data: isBlazor() ? selectedData : this.getSelectedRecords(), isInteracted: this.isInteracted,
+                    isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
                 };
             }
             if (this.isRowSelected) {
@@ -6883,7 +6898,8 @@ class Selection {
                         data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this.actualTarget,
                         prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
                         isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
-                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this.isInteracted
+                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this.isInteracted,
+                        isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
                     };
                     args = this.addMovableArgs(args, selectedMovableRow);
                 }
@@ -6892,7 +6908,8 @@ class Selection {
                         cancel: false,
                         data: rowObj.data, rowIndex: rowIndex, previousRowIndex: this.prevRowIndex,
                         isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
-                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this.isInteracted
+                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this.isInteracted,
+                        isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
                     };
                 }
                 this.parent.trigger(rowSelecting, this.fDataUpdate(args), (args) => {
@@ -6915,14 +6932,17 @@ class Selection {
                     args = {
                         data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this.actualTarget,
                         prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
-                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this.isInteracted
+                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this.isInteracted,
+                        isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
                     };
                     args = this.addMovableArgs(args, selectedMovableRow);
                 }
                 else {
                     args = {
                         data: rowObj.data, rowIndex: rowIndex, previousRowIndex: this.prevRowIndex,
-                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this.isInteracted
+                        row: selectedRow, prevRow: gObj.getRows()[this.prevRowIndex],
+                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this.isInteracted,
+                        isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
                     };
                 }
                 this.onActionComplete(args, rowSelected);
@@ -7180,7 +7200,7 @@ class Selection {
             let rowDeselectObj = {
                 rowIndex: rowIndex, data: this.selectionSettings.persistSelection && this.parent.checkAllRows === 'Uncheck' ?
                     this.persistSelectedData : data, foreignKeyData: foreignKeyData$$1,
-                cancel: false, isInteracted: this.isInteracted
+                cancel: false, isInteracted: this.isInteracted, isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
             };
             let isHybrid = 'isHybrid';
             if (!isBlazor() || this.parent.isJsComponent || this.parent[isHybrid]) {
@@ -8522,6 +8542,9 @@ class Selection {
         if (!this.parent.enableVirtualization && this.parent.isPersistSelection) {
             this.refreshPersistSelection();
         }
+        if (this.parent.enableVirtualization) {
+            this.setCheckAllState();
+        }
     }
     updatePersistSelectedData(checkState) {
         if (this.parent.isPersistSelection) {
@@ -8572,6 +8595,7 @@ class Selection {
     checkSelectAll(checkBox) {
         let stateStr = this.getCheckAllStatus(checkBox);
         let state = stateStr === 'Check';
+        this.isHeaderCheckboxClicked = true;
         if (stateStr === 'Intermediate') {
             state = this.getCurrentBatchRecordChanges().some((data) => data[this.primaryKey] in this.selectedRowState);
         }
@@ -8622,6 +8646,7 @@ class Selection {
         let gObj = this.parent;
         this.isMultiCtrlRequest = true;
         let rIndex = 0;
+        this.isHeaderCheckboxClicked = false;
         if (isGroupAdaptive(gObj)) {
             let uid = target.parentElement.getAttribute('data-uid');
             rIndex = gObj.getRows().map((m) => m.getAttribute('data-uid')).indexOf(uid);
@@ -9190,6 +9215,7 @@ class Selection {
         }
     }
     dataReady(e) {
+        this.isHeaderCheckboxClicked = false;
         let isInfinitecroll = this.parent.enableInfiniteScrolling && e.requestType === 'infiniteScroll';
         if (e.requestType !== 'virtualscroll' && !this.parent.isPersistSelection && !isInfinitecroll) {
             this.disableUI = true;
@@ -13502,7 +13528,7 @@ let Grid = Grid_1 = class Grid extends Component {
             return isNullOrUndefined(this.currentViewData.records) ?
                 this.currentViewData : this.currentViewData.records;
         }
-        return (this.allowGrouping && this.groupSettings.columns.length && this.currentViewData.length) ?
+        return (this.allowGrouping && this.groupSettings.columns.length && this.currentViewData.length && this.currentViewData.records) ?
             this.currentViewData.records : this.currentViewData;
     }
     mouseClickHandler(e) {
@@ -22295,7 +22321,7 @@ class RowDD {
             let exp = new RegExp('e-active', 'g'); //high contrast issue
             this.startedRow.innerHTML = this.startedRow.innerHTML.replace(exp, '');
             tbody.appendChild(this.startedRow);
-            if (gObj.getSelectedRows().length > 1) {
+            if (gObj.getSelectedRows().length > 1 && this.startedRow.hasAttribute('aria-selected')) {
                 let dropCountEle = this.parent.createElement('span', {
                     className: 'e-dropitemscount', innerHTML: '' + selectedRows.length,
                 });
@@ -26656,11 +26682,9 @@ class InlineEditRender {
     }
     renderMovable(ele, mEle) {
         let frzCols = this.parent.getFrozenColumns();
-        for (let i = 0; i < frzCols; i++) {
-            mEle.querySelector('tr').removeChild(mEle.querySelector('tr').children[0]);
-        }
-        for (let i = frzCols, len = ele.querySelector('tr').childElementCount; i < len; i++) {
-            ele.querySelector('tr').removeChild(ele.querySelector('tr').children[ele.querySelector('tr').childElementCount - 1]);
+        mEle.querySelector('tr').innerHTML = '';
+        for (let i = frzCols; i < this.parent.getColumns().length; i++) {
+            mEle.querySelector('tr').appendChild(ele.querySelector('tr').removeChild(ele.querySelector('tr').children[frzCols]));
         }
     }
     getEditElement(elements, isEdit, tdElement, args, isFrozen) {
@@ -29413,7 +29437,7 @@ class Edit {
     checkLastRow(tr, args) {
         let checkLastRow = this.isLastRow;
         if (this.parent.height !== 'auto' && this.parent.editSettings.newRowPosition === 'Bottom' && args &&
-            args.requestType === 'add') {
+            args.requestType === 'add' && this.parent.height > this.parent.getContentTable().scrollHeight) {
             addClass(tr.querySelectorAll('.e-rowcell'), 'e-lastrowadded');
         }
         else if (checkLastRow) {
@@ -29429,6 +29453,7 @@ class Edit {
             this.showDialog('CancelEdit', this.dialogObj);
             return;
         }
+        this.parent.element.classList.remove('e-editing');
         this.editModule.closeEdit();
         if (!isBlazor()) {
             this.refreshToolbar();
@@ -31129,6 +31154,15 @@ class ExportHelper {
         gridPool[exportId] = false;
         return { childGrid: childGridObj, element };
     }
+    getGridExportColumns(columns) {
+        let actualGridColumns = [];
+        for (let i = 0, gridColumns = columns; i < gridColumns.length; i++) {
+            if (gridColumns[i].type !== 'checkbox') {
+                actualGridColumns.push(gridColumns[i]);
+            }
+        }
+        return actualGridColumns;
+    }
 }
 /**
  * @hidden
@@ -31512,7 +31546,8 @@ class ExcelExport {
         }
         let helper = new ExportHelper(gObj);
         let gColumns = isExportColumns(exportProperties) ?
-            prepareColumns(exportProperties.columns, gObj.enableColumnVirtualization) : gObj.columns;
+            prepareColumns(exportProperties.columns, gObj.enableColumnVirtualization) :
+            helper.getGridExportColumns(gObj.columns);
         let headerRow = helper.getHeaders(gColumns, this.includeHiddenColumn);
         let groupIndent = gObj.groupSettings.columns.length;
         excelRows = this.processHeaderContent(gObj, headerRow, groupIndent, excelRows);
@@ -32301,7 +32336,8 @@ class PdfExport {
         let helper = new ExportHelper(gObj);
         let dataSource = this.processExportProperties(pdfExportProperties, returnType.result);
         let columns = isExportColumns(pdfExportProperties) ?
-            prepareColumns(pdfExportProperties.columns, gObj.enableColumnVirtualization) : gObj.columns;
+            prepareColumns(pdfExportProperties.columns, gObj.enableColumnVirtualization) :
+            helper.getGridExportColumns(gObj.columns);
         let isGrouping = false;
         if (gObj.groupSettings.columns.length) {
             isGrouping = true;
@@ -32565,7 +32601,7 @@ class PdfExport {
                     spanCnt = spanCnt + newSpanCnt;
                     colIndex = colIndex + newSpanCnt - 1;
                 }
-                else if (cols[i].visible) {
+                else if (cols[i].visible || this.hideColumnInclude) {
                     spanCnt++;
                     applyTextAndSpan(rowIndex, i + colIndex + index, cols[i], depth, 0);
                 }

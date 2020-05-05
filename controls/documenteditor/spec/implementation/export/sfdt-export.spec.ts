@@ -1332,3 +1332,228 @@ describe('FormField Validation', () => {
     });
 
 });
+
+let shapeSfdt: any = {
+    "sections": [
+        {
+            "blocks": [
+                {
+                    "characterFormat": {
+                        "fontSize": 20.0,
+                        "fontFamily": "Arial",
+                        "fontSizeBidi": 20.0,
+                        "fontFamilyBidi": "Arial"
+                    },
+                    "paragraphFormat": {
+                        "afterSpacing": 0.0,
+                        "lineSpacing": 1.0,
+                        "lineSpacingType": "Multiple",
+                        "styleName": "Normal"
+                    },
+                    "inlines": [
+                        {
+                            "shapeId": 1,
+                            "name": "Text Box 2",
+                            "alternativeText": null,
+                            "title": null,
+                            "visible": true,
+                            "width": 185.9,
+                            "height": 110.6,
+                            "widthScale": 100.0,
+                            "heightScale": 100.0,
+                            "lineFormat": {
+                                "lineFormatType": "Solid",
+                                "color": "#FF0000FF",
+                                "weight": 12.5,
+                                "lineStyle": "Solid"
+                            },
+                            "verticalPosition": 29.88,
+                            "verticalOrigin": "Paragraph",
+                            "verticalAlignment": "None",
+                            "horizontalPosition": 18.23,
+                            "horizontalOrigin": "Column",
+                            "horizontalAlignment": "None",
+                            "zOrderPosition": 251660288,
+                            "allowOverlap": true,
+                            "layoutInCell": true,
+                            "lockAnchor": false,
+                            "autoShapeType": "Rectangle",
+                            "textFrame": {
+                                "textVerticalAlignment": "Top",
+                                "leftMargin": 7.2,
+                                "rightMargin": 7.2,
+                                "topMargin": 3.6,
+                                "bottomMargin": 3.6,
+                                "blocks": [
+                                    {
+                                        "paragraphFormat": {
+                                            "styleName": "Normal"
+                                        },
+                                        "inlines": [
+                                            {
+                                                "text": "[Grab your reader’s attention with a great quote from the document or use this space to emphasize a key point. To place this text box anywhere on the page, just drag it.]"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "shapeId": 217,
+                            "name": "Text Box 2",
+                            "alternativeText": null,
+                            "title": null,
+                            "visible": true,
+                            "width": 149.04,
+                            "height": 46.8,
+                            "widthScale": 100.0,
+                            "heightScale": 100.0,
+                            "lineFormat": {
+                                "lineFormatType": "Solid",
+                                "color": "#00B0F0FF",
+                                "weight": 1.0,
+                                "lineStyle": "Solid"
+                            },
+                            "verticalPosition": 12.07,
+                            "verticalOrigin": "Margin",
+                            "verticalAlignment": "None",
+                            "horizontalPosition": 132.37,
+                            "horizontalOrigin": "Margin",
+                            "horizontalAlignment": "None",
+                            "zOrderPosition": 251658240,
+                            "allowOverlap": true,
+                            "layoutInCell": true,
+                            "lockAnchor": false,
+                            "autoShapeType": "Rectangle",
+                            "textFrame": {
+                                "textVerticalAlignment": "Top",
+                                "leftMargin": 0.0,
+                                "rightMargin": 72.0,
+                                "topMargin": 0.0,
+                                "bottomMargin": 0.0,
+                                "blocks": [
+                                    {
+                                        "characterFormat": {
+                                            "fontSize": 10.0,
+                                            "fontFamily": "Arial",
+                                            "fontSizeBidi": 10.0,
+                                            "fontFamilyBidi": "Arial"
+                                        },
+                                        "paragraphFormat": {
+                                            "styleName": "Normal"
+                                        },
+                                        "inlines": [
+                                            {
+                                                "text": " ",
+                                                "characterFormat": {
+                                                    "fontSize": 10.0,
+                                                    "fontFamily": "Arial",
+                                                    "fontSizeBidi": 10.0,
+                                                    "fontFamilyBidi": "Arial"
+                                                }
+                                            },
+                                            {
+                                                "text": "Syncfusion",
+                                                "characterFormat": {
+                                                    "fontSize": 10.0,
+                                                    "fontFamily": "Arial",
+                                                    "fontSizeBidi": 10.0,
+                                                    "fontFamilyBidi": "Arial"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "text": "Action is the foundational key to all success",
+                            "characterFormat": {
+                                "fontSize": 20.0,
+                                "fontFamily": "Arial",
+                                "fontSizeBidi": 20.0,
+                                "fontFamilyBidi": "Arial"
+                            }
+                        },
+                        {
+                            "name": "_GoBack",
+                            "bookmarkType": 0
+                        },
+                        {
+                            "name": "_GoBack",
+                            "bookmarkType": 1
+                        }
+                    ]
+                }
+            ],
+            "headersFooters": {},
+            "sectionFormat": {
+                "headerDistance": 36.0,
+                "footerDistance": 36.0,
+                "pageWidth": 612.0,
+                "pageHeight": 792.0,
+                "leftMargin": 72.0,
+                "rightMargin": 72.0,
+                "topMargin": 72.0,
+                "bottomMargin": 72.0,
+                "differentFirstPage": false,
+                "differentOddAndEvenPages": false,
+                "bidi": false,
+                "restartPageNumbering": false,
+                "pageStartingNumber": 0
+            }
+        }
+    ]
+}
+describe('Sfdt export for Shape', () => {
+    let editor: DocumentEditor;
+    let documentHelper: DocumentHelper;
+    let exportData: any;
+    beforeAll((): void => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(SfdtExport);
+        editor = new DocumentEditor({ enableSfdtExport: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+        editor.open(JSON.stringify(shapeSfdt));
+        exportData = JSON.parse(editor.sfdtExportModule.serialize());
+    });
+    afterAll((done): void => {
+        documentHelper.destroy();
+        documentHelper = undefined;
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('Shape sfdt', () => {
+        let exportShape: any = exportData.sections[0].blocks[0].inlines[0];
+        let sfdtShape: any = shapeSfdt.sections[0].blocks[0].inlines[0];
+        expect(exportShape.allowOverlap).toBe(sfdtShape.allowOverlap);
+        expect(exportShape.alternativeText).toBe(sfdtShape.alternativeText);
+        expect(exportShape.autoShapeType).toBe(sfdtShape.autoShapeType);
+        expect(exportShape.height).toBe(sfdtShape.height);
+        expect(exportShape.heightScale).toBe(sfdtShape.heightScale);
+        expect(exportShape.horizontalAlignment).toBe(sfdtShape.horizontalAlignment);
+        expect(exportShape.horizontalOrigin).toBe(sfdtShape.horizontalOrigin);
+        expect(exportShape.horizontalPosition.toFixed(2)).toBe(sfdtShape.horizontalPosition.toFixed(2));
+        expect(exportShape.layoutInCell).toBe(sfdtShape.layoutInCell);
+        expect(exportShape.lockAnchor).toBe(sfdtShape.lockAnchor);
+        expect(exportShape.name).toBe(sfdtShape.name);
+        expect(exportShape.shapeId).toBe(sfdtShape.shapeId);
+        expect(exportShape.title).toBe(sfdtShape.title);
+        expect(exportShape.width).toBe(sfdtShape.width);
+        expect(exportShape.widthScale).toBe(sfdtShape.widthScale);
+        expect(exportShape.verticalAlignment).toBe(sfdtShape.verticalAlignment);
+        expect(exportShape.verticalOrigin).toBe(sfdtShape.verticalOrigin);
+        expect(exportShape.verticalPosition.toFixed(2)).toBe(sfdtShape.verticalPosition.toFixed(2));
+        expect(exportShape.zOrderPosition).toBe(sfdtShape.zOrderPosition);
+    });
+});

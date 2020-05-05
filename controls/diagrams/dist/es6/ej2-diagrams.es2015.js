@@ -1805,8 +1805,14 @@ var ConnectorConstraints;
     ConnectorConstraints[ConnectorConstraints["LineRouting"] = 32768] = "LineRouting";
     /** Enables or disables routing to the connector. */
     ConnectorConstraints[ConnectorConstraints["InheritLineRouting"] = 65536] = "InheritLineRouting";
+    /** Enables or disables near node padding to the connector. */
+    ConnectorConstraints[ConnectorConstraints["ConnectNearNode"] = 131072] = "ConnectNearNode";
+    /** Enables or disables near port padding to the connector. */
+    ConnectorConstraints[ConnectorConstraints["ConnectNearPort"] = 262144] = "ConnectNearPort";
+    /** Enables or disables Enables or disables near port and node padding to the connector. */
+    ConnectorConstraints[ConnectorConstraints["ConnectNearAll"] = 393216] = "ConnectNearAll";
     /** Enables all constraints. */
-    ConnectorConstraints[ConnectorConstraints["Default"] = 77374] = "Default";
+    ConnectorConstraints[ConnectorConstraints["Default"] = 470590] = "Default";
 })(ConnectorConstraints || (ConnectorConstraints = {}));
 /**
  * Enables/Disables the annotation constraints
@@ -8130,6 +8136,9 @@ __decorate$6([
 __decorate$6([
     Property(10)
 ], Connector.prototype, "hitPadding", void 0);
+__decorate$6([
+    Property(0)
+], Connector.prototype, "connectPadding", void 0);
 __decorate$6([
     Property('Straight')
 ], Connector.prototype, "type", void 0);
@@ -24568,7 +24577,8 @@ class DiagramEventHandler {
                         this.eventArgs.info = info;
                     }
                     this.checkAction(obj);
-                    this.getMouseEventArgs(this.currentPosition, this.eventArgs, this.eventArgs.source);
+                    let padding = this.getConnectorPadding(this.eventArgs);
+                    this.getMouseEventArgs(this.currentPosition, this.eventArgs, this.eventArgs.source, padding);
                     this.updateCursor();
                     this.inAction = true;
                     this.initialEventArgs = null;
@@ -24670,7 +24680,8 @@ class DiagramEventHandler {
                 }
                 if (this.tool && (this.tool.prevPosition || this.tool instanceof LabelTool)) {
                     this.eventArgs.position = this.currentPosition;
-                    this.getMouseEventArgs(this.currentPosition, this.eventArgs, this.eventArgs.source);
+                    let padding = this.getConnectorPadding(this.eventArgs);
+                    this.getMouseEventArgs(this.currentPosition, this.eventArgs, this.eventArgs.source, padding);
                     let ctrlKey = this.isMetaKey(evt);
                     if (ctrlKey || evt.shiftKey) {
                         let info = (ctrlKey && evt.shiftKey) ? { ctrlKey: ctrlKey, shiftKey: evt.shiftKey } :
@@ -24753,6 +24764,15 @@ class DiagramEventHandler {
         this.diagram.commandHandler.removeStackHighlighter(); // end the corresponding tool
     }
     /* tslint:enable */
+    getConnectorPadding(eventArgs) {
+        let padding;
+        let targetObject = eventArgs.source;
+        if (targetObject && (targetObject instanceof Selector) && targetObject.connectors.length) {
+            let selectedConnector = targetObject.connectors[0];
+            padding = (selectedConnector.constraints & ConnectorConstraints.ConnectNearPort) ? selectedConnector.connectPadding : 0;
+        }
+        return padding || 0;
+    }
     getBlazorClickEventArgs(arg) {
         arg = {
             element: this.eventArgs.source ? { selector: cloneBlazorObject(this.eventArgs.source) } :
@@ -25427,7 +25447,7 @@ class DiagramEventHandler {
         }
         return false;
     }
-    getMouseEventArgs(position, args, source) {
+    getMouseEventArgs(position, args, source, padding) {
         args.position = position;
         let obj;
         let objects;
@@ -25457,7 +25477,18 @@ class DiagramEventHandler {
         }
         let wrapper;
         if (obj) {
-            wrapper = this.diagram.findElementUnderMouse(obj, this.currentPosition);
+            wrapper = this.diagram.findElementUnderMouse(obj, this.currentPosition, padding);
+            if (wrapper && obj.ports && obj.ports.length &&
+                !checkPort(obj, wrapper) && (source instanceof Selector) && source.connectors.length) {
+                let currentConnector = source.connectors[0];
+                if ((currentConnector.constraints & ConnectorConstraints.ConnectNearPort) &&
+                    !(currentConnector.constraints & ConnectorConstraints.ConnectNearNode)) {
+                    wrapper = this.diagram.findElementUnderMouse(obj, this.currentPosition, 0);
+                    if (!wrapper) {
+                        obj = null;
+                    }
+                }
+            }
         }
         if (!source) {
             args.source = obj;
@@ -25573,8 +25604,8 @@ class DiagramEventHandler {
     }
     //start region - interface betweend diagram and interaction
     /** @private */
-    findElementUnderMouse(obj, position) {
-        return this.objectFinder.findElementUnderSelectedItem(obj, position);
+    findElementUnderMouse(obj, position, padding) {
+        return this.objectFinder.findElementUnderSelectedItem(obj, position, padding);
     }
     /** @private */
     findObjectsUnderMouse(position, source) {
@@ -25916,13 +25947,15 @@ class ObjectFinder {
         let bounds;
         let child;
         let matrix;
-        let objArray = diagram.spatialSearch.findObjects(new Rect(pt.x - 50, pt.y - 50, 100, 100));
+        let endPadding = (source && (source instanceof Connector) && ((source.constraints & ConnectorConstraints.ConnectNearNode) ||
+            (source.constraints & ConnectorConstraints.ConnectNearPort)) && source.connectPadding) || 0;
+        let objArray = diagram.spatialSearch.findObjects(new Rect(pt.x - 50 - endPadding, pt.y - 50 - endPadding, 100 + endPadding, 100 + endPadding));
         let layerObjTable = {};
         let layerTarger;
         for (let obj of objArray) {
             let point = pt;
             bounds = obj.wrapper.outerBounds;
-            let pointInBounds = (obj.rotateAngle) ? false : bounds.containsPoint(point);
+            let pointInBounds = (obj.rotateAngle) ? false : bounds.containsPoint(point, endPadding);
             if ((obj !== source || diagram.currentDrawingObject instanceof Connector) &&
                 (obj instanceof Connector) ? obj !== diagram.currentDrawingObject : true && obj.wrapper.visible) {
                 let layer = diagram.commandHandler.getObjectLayer(obj.id);
@@ -25935,7 +25968,7 @@ class ObjectFinder {
                             matrix = identityMatrix();
                             rotateMatrix(matrix, -(child.rotateAngle + child.parentTransform), child.offsetX, child.offsetY);
                             point = transformPointByMatrix(matrix, pt);
-                            if (cornersPointsBeforeRotation(child).containsPoint(point)) {
+                            if (cornersPointsBeforeRotation(child).containsPoint(point, endPadding)) {
                                 pointInBounds = true;
                             }
                         }
@@ -25945,7 +25978,7 @@ class ObjectFinder {
                             if ((obj instanceof Connector) ? isPointOverConnector(obj, pt) : pointInBounds) {
                                 let padding = (obj instanceof Connector) ? obj.hitPadding || 0 : 0;
                                 let element;
-                                element = this.findElementUnderMouse(obj, pt, padding);
+                                element = this.findElementUnderMouse(obj, pt, endPadding || padding);
                                 if (element && obj.id !== 'helper') {
                                     insertObject(obj, 'zIndex', layerTarger);
                                 }
@@ -26185,7 +26218,7 @@ class ObjectFinder {
     }
     /* tslint:enable */
     /** @private */
-    findElementUnderSelectedItem(obj, position) {
+    findElementUnderSelectedItem(obj, position, padding) {
         //rewrite this for multiple selection
         if (obj instanceof Selector) {
             if (obj.nodes.length === 1 && (!obj.connectors || !obj.connectors.length)) {
@@ -26196,7 +26229,7 @@ class ObjectFinder {
             }
         }
         else {
-            return this.findElementUnderMouse(obj, position);
+            return this.findElementUnderMouse(obj, position, padding);
         }
         return null;
     }
@@ -26207,14 +26240,14 @@ class ObjectFinder {
     findTargetElement(container, position, padding) {
         for (let i = container.children.length - 1; i >= 0; i--) {
             let element = container.children[i];
-            if (element && element.outerBounds.containsPoint(position)) {
+            if (element && element.outerBounds.containsPoint(position, padding || 0)) {
                 if (element instanceof Container) {
                     let target = this.findTargetElement(element, position);
                     if (target) {
                         return target;
                     }
                 }
-                if (element.bounds.containsPoint(position)) {
+                if (element.bounds.containsPoint(position, padding || 0)) {
                     return element;
                 }
             }
@@ -28005,13 +28038,16 @@ class CommandHandler {
         }
     }
     /** @private */
-    sendToBack() {
-        if (hasSelection(this.diagram)) {
-            let objectId = this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
-                : this.diagram.selectedItems.connectors[0].id;
+    sendToBack(object) {
+        this.diagram.protectPropertyChange(true);
+        if (hasSelection(this.diagram) || object) {
+            let objectId = (object && object.id);
+            objectId = objectId || (this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
+                : this.diagram.selectedItems.connectors[0].id);
             let index = this.diagram.nameTable[objectId].zIndex;
             let layerNum = this.diagram.layers.indexOf(this.getObjectLayer(objectId));
             let zIndexTable = this.diagram.layers[layerNum].zIndexTable;
+            let undoObject = cloneObject(this.diagram.selectedItems);
             for (let i = index; i > 0; i--) {
                 if (zIndexTable[i]) {
                     //When there are empty records in the zindex table
@@ -28041,15 +28077,24 @@ class CommandHandler {
             else {
                 this.diagram.refreshCanvasLayers();
             }
+            let redoObject = cloneObject(this.diagram.selectedItems);
+            let entry = { type: 'SendToBack', category: 'Internal', undoObject: undoObject, redoObject: redoObject };
+            if (!(this.diagram.diagramActions & DiagramAction.UndoRedo)) {
+                this.addHistoryEntry(entry);
+            }
         }
+        this.diagram.protectPropertyChange(false);
     }
     /** @private */
-    bringToFront() {
-        if (hasSelection(this.diagram)) {
-            let objectName = this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
-                : this.diagram.selectedItems.connectors[0].id;
+    bringToFront(obj) {
+        this.diagram.protectPropertyChange(true);
+        if (hasSelection(this.diagram) || obj) {
+            let objectName = (obj && obj.id);
+            objectName = objectName || (this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
+                : this.diagram.selectedItems.connectors[0].id);
             let layerNum = this.diagram.layers.indexOf(this.getObjectLayer(objectName));
             let zIndexTable = this.diagram.layers[layerNum].zIndexTable;
+            let undoObject = cloneObject(this.diagram.selectedItems);
             //find the maximum zIndex of the tabel
             let tabelLength = Number(Object.keys(zIndexTable).sort((a, b) => { return Number(a) - Number(b); }).reverse()[0]);
             let index = this.diagram.nameTable[objectName].zIndex;
@@ -28098,7 +28143,13 @@ class CommandHandler {
             else {
                 this.diagram.refreshCanvasLayers();
             }
+            let redoObject = cloneObject(this.diagram.selectedItems);
+            let entry = { type: 'BringToFront', category: 'Internal', undoObject: undoObject, redoObject: redoObject };
+            if (!(this.diagram.diagramActions & DiagramAction.UndoRedo)) {
+                this.addHistoryEntry(entry);
+            }
         }
+        this.diagram.protectPropertyChange(false);
     }
     /** @private */
     sortByZIndex(nodeArray, sortID) {
@@ -28109,10 +28160,104 @@ class CommandHandler {
         return nodeArray;
     }
     /** @private */
-    sendForward() {
-        if (hasSelection(this.diagram)) {
-            let nodeId = this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
-                : this.diagram.selectedItems.connectors[0].id;
+    orderCommands(isRedo, selector, action) {
+        let selectedObject = selector.nodes;
+        selectedObject = selectedObject.concat(selector.connectors);
+        if (isRedo) {
+            if (action === 'SendBackward') {
+                this.sendBackward(selectedObject[0]);
+            }
+            else if (action === 'SendForward') {
+                this.sendForward(selectedObject[0]);
+            }
+            else if (action === 'BringToFront') {
+                this.bringToFront(selectedObject[0]);
+            }
+            else if (action === 'SendToBack') {
+                this.sendToBack(selectedObject[0]);
+            }
+        }
+        else {
+            let startZIndex = selectedObject[0].zIndex;
+            let endZIndex = this.diagram.nameTable[selectedObject[0].id].zIndex;
+            let undoObject = selectedObject[0];
+            let layer = this.getObjectLayer(undoObject.id);
+            let layerIndex = layer.zIndex;
+            let zIndexTable = layer.zIndexTable;
+            if (action === 'SendBackward' || action === 'SendForward') {
+                for (let i = 0; i < selectedObject.length; i++) {
+                    let undoObject = selectedObject[i];
+                    let layer = this.diagram.layers.indexOf(this.getObjectLayer(undoObject.id));
+                    let node = this.diagram.nameTable[selectedObject[i].id];
+                    node.zIndex = undoObject.zIndex;
+                    this.diagram.layers[layer].zIndexTable[undoObject.zIndex] = undoObject.id;
+                }
+            }
+            else if (action === 'BringToFront') {
+                let k = 1;
+                for (let j = endZIndex; j > startZIndex; j--) {
+                    if (zIndexTable[j]) {
+                        if (!zIndexTable[j - k]) {
+                            zIndexTable[j - k] = zIndexTable[j];
+                            this.diagram.nameTable[zIndexTable[j - k]].zIndex = j;
+                            delete zIndexTable[j];
+                        }
+                        else {
+                            zIndexTable[j] = zIndexTable[j - k];
+                            this.diagram.nameTable[zIndexTable[j]].zIndex = j;
+                        }
+                    }
+                }
+            }
+            else if (action === 'SendToBack') {
+                for (let j = endZIndex; j < startZIndex; j++) {
+                    if (zIndexTable[j]) {
+                        if (!zIndexTable[j + 1]) {
+                            zIndexTable[j + 1] = zIndexTable[j];
+                            this.diagram.nameTable[zIndexTable[j + 1]].zIndex = j;
+                            delete zIndexTable[j];
+                        }
+                        else {
+                            zIndexTable[j] = zIndexTable[j + 1];
+                            this.diagram.nameTable[zIndexTable[j]].zIndex = j;
+                        }
+                    }
+                }
+            }
+            if (action === 'BringToFront' || action === 'SendToBack') {
+                let node = this.diagram.nameTable[selectedObject[0].id];
+                node.zIndex = undoObject.zIndex;
+                this.diagram.layers[layerIndex].zIndexTable[undoObject.zIndex] = undoObject.id;
+            }
+            if (this.diagram.mode === 'SVG') {
+                if (action === 'SendBackward') {
+                    this.moveObject(selectedObject[1].id, selectedObject[0].id);
+                }
+                else if (action === 'SendForward') {
+                    this.moveObject(selectedObject[0].id, selectedObject[1].id);
+                }
+                else if (action === 'BringToFront' || action === 'SendToBack') {
+                    this.moveObject(selectedObject[0].id, zIndexTable[selectedObject[0].zIndex + 1]);
+                }
+            }
+            else {
+                this.diagram.refreshCanvasLayers();
+            }
+        }
+    }
+    moveObject(sourceId, targetId) {
+        if (targetId) {
+            this.moveSvgNode(sourceId, targetId);
+            this.updateNativeNodeIndex(sourceId, targetId);
+        }
+    }
+    /** @private */
+    sendForward(obj) {
+        this.diagram.protectPropertyChange(true);
+        if (hasSelection(this.diagram) || obj) {
+            let nodeId = (obj && obj.id);
+            nodeId = nodeId || (this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
+                : this.diagram.selectedItems.connectors[0].id);
             let layerIndex = this.diagram.layers.indexOf(this.getObjectLayer(nodeId));
             let zIndexTable = this.diagram.layers[layerIndex].zIndexTable;
             let tabelLength = Object.keys(zIndexTable).length;
@@ -28137,6 +28282,9 @@ class CommandHandler {
                 let currentObject = index.zIndex;
                 let temp = zIndexTable[overlapObject];
                 //swap the nodes
+                let undoObject = cloneObject(this.diagram.selectedItems);
+                (this.diagram.nameTable[temp] instanceof Node) ? undoObject.nodes.push(cloneObject(this.diagram.nameTable[temp])) :
+                    undoObject.connectors.push(cloneObject(this.diagram.nameTable[temp]));
                 this.diagram.layers[0].zIndexTable[overlapObject] = index.id;
                 this.diagram.nameTable[zIndexTable[overlapObject]].zIndex = overlapObject;
                 this.diagram.layers[0].zIndexTable[currentObject] = intersectArray[0].id;
@@ -28148,14 +28296,27 @@ class CommandHandler {
                 else {
                     this.diagram.refreshCanvasLayers();
                 }
+                let redo = cloneObject(this.diagram.selectedItems);
+                (this.diagram.nameTable[temp] instanceof Node) ? redo.nodes.push(cloneObject(this.diagram.nameTable[temp])) :
+                    redo.connectors.push(cloneObject(this.diagram.nameTable[temp]));
+                let historyEntry = {
+                    type: 'SendForward', category: 'Internal',
+                    undoObject: undoObject, redoObject: redo
+                };
+                if (!(this.diagram.diagramActions & DiagramAction.UndoRedo)) {
+                    this.addHistoryEntry(historyEntry);
+                }
             }
         }
+        this.diagram.protectPropertyChange(false);
     }
     /** @private */
-    sendBackward() {
-        if (hasSelection(this.diagram)) {
-            let objectId = this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
-                : this.diagram.selectedItems.connectors[0].id;
+    sendBackward(obj) {
+        this.diagram.protectPropertyChange(true);
+        if (hasSelection(this.diagram) || obj) {
+            let objectId = (obj && obj.id);
+            objectId = objectId || (this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
+                : this.diagram.selectedItems.connectors[0].id);
             let layerNum = this.diagram.layers.indexOf(this.getObjectLayer(objectId));
             let zIndexTable = this.diagram.layers[layerNum].zIndexTable;
             let tabelLength = Object.keys(zIndexTable).length;
@@ -28178,6 +28339,9 @@ class CommandHandler {
                 let overlapObject = intersectArray[intersectArray.length - 1].zIndex;
                 let currentObject = node.zIndex;
                 let temp = zIndexTable[overlapObject];
+                let undoObject = cloneObject(this.diagram.selectedItems);
+                (this.diagram.nameTable[temp] instanceof Node) ? undoObject.nodes.push(cloneObject(this.diagram.nameTable[temp])) :
+                    undoObject.connectors.push(cloneObject(this.diagram.nameTable[temp]));
                 //swap the nodes
                 zIndexTable[overlapObject] = node.id;
                 this.diagram.nameTable[zIndexTable[overlapObject]].zIndex = overlapObject;
@@ -28192,8 +28356,17 @@ class CommandHandler {
                 else {
                     this.diagram.refreshCanvasLayers();
                 }
+                let redoObject = cloneObject(this.diagram.selectedItems);
+                (this.diagram.nameTable[temp] instanceof Node) ? redoObject.nodes.push(cloneObject(this.diagram.nameTable[temp])) :
+                    redoObject.connectors.push(cloneObject(this.diagram.nameTable[temp]));
+                let entry = { type: 'SendBackward', category: 'Internal', undoObject: undoObject, redoObject: redoObject };
+                if (!(this.diagram.diagramActions & DiagramAction.UndoRedo)) {
+                    this.addHistoryEntry(entry);
+                }
+                //swap the nodes
             }
         }
+        this.diagram.protectPropertyChange(false);
     }
     /**   @private  */
     updateNativeNodeIndex(nodeId, targetID) {
@@ -33118,9 +33291,10 @@ class Diagram extends Component {
      * Finds the child element of the given object at the given position
      * @param {IElement} obj - Defines the object, the child element of which has to be found
      * @param {PointModel} position - Defines the position, the child element under which has to be found
+     * @param {number} padding - Defines the padding, the child element under which has to be found
      */
-    findElementUnderMouse(obj, position) {
-        return this.eventHandler.findElementUnderMouse(obj, position);
+    findElementUnderMouse(obj, position, padding) {
+        return this.eventHandler.findElementUnderMouse(obj, position, padding);
     }
     /**
      * Defines the action to be done, when the mouse hovers the given element of the given object
@@ -40335,7 +40509,7 @@ class PrintAndExport {
         img.onload = () => {
             let canvas = CanvasRenderer.createCanvas(context.diagram.element.id + 'innerImage', bounds.width + (margin.left + margin.right), bounds.height + (margin.top + margin.bottom));
             let ctx = canvas.getContext('2d');
-            ctx.fillStyle = 'transparent';
+            ctx.fillStyle = context.diagram.pageSettings.background.color;
             ctx.fillRect(0, 0, bounds.width + (margin.left + margin.right), bounds.height + (margin.top + margin.bottom));
             ctx.drawImage(img, 0, 0, bounds.width, bounds.height, margin.left, margin.top, bounds.width, bounds.height);
             image = canvas.toDataURL();
@@ -45611,6 +45785,12 @@ class UndoRedo {
                 this.recordLaneOrPhaseCollectionChanged(entry, diagram, false);
                 entry.isUndo = false;
                 break;
+            case 'SendToBack':
+            case 'SendForward':
+            case 'SendBackward':
+            case 'BringToFront':
+                this.recordOrderCommandChanged(entry, diagram, false);
+                break;
         }
         diagram.diagramActions &= ~DiagramAction.UndoRedo;
         diagram.protectPropertyChange(false);
@@ -45851,6 +46031,12 @@ class UndoRedo {
         let undoObject = entry.undoObject;
         this.getProperty(diagram, (isRedo ? redoObject : undoObject));
         isRedo ? diagram.onPropertyChanged(redoObject, undoObject) : diagram.onPropertyChanged(undoObject, redoObject);
+        diagram.diagramActions = diagram.diagramActions | DiagramAction.UndoRedo;
+    }
+    recordOrderCommandChanged(entry, diagram, isRedo) {
+        let redoObject = entry.redoObject;
+        let undoObject = entry.undoObject;
+        diagram.commandHandler.orderCommands(isRedo, (isRedo ? redoObject : undoObject), entry.type);
         diagram.diagramActions = diagram.diagramActions | DiagramAction.UndoRedo;
     }
     recordSegmentChanged(obj, diagram) {
@@ -46279,6 +46465,12 @@ class UndoRedo {
             case 'LaneCollectionChanged':
             case 'PhaseCollectionChanged':
                 this.recordLaneOrPhaseCollectionChanged(historyEntry, diagram, true);
+                break;
+            case 'SendToBack':
+            case 'SendForward':
+            case 'SendBackward':
+            case 'BringToFront':
+                this.recordOrderCommandChanged(historyEntry, diagram, true);
                 break;
         }
         diagram.protectPropertyChange(false);
@@ -51731,7 +51923,7 @@ class SymbolPalette extends Component {
          */
         this.helper = (e) => {
             let clonedElement;
-            let id = e.sender.target.id.split('_container')[0];
+            let id = (this.selectedSymbol && this.selectedSymbol.id) || e.sender.target.id.split('_container')[0];
             let symbol = this.symbolTable[id];
             if (symbol && this.selectedSymbol) {
                 this.selectedSymbols = this.selectedSymbol.id === symbol.id ? symbol : this.selectedSymbol;

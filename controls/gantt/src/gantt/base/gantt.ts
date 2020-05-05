@@ -1450,8 +1450,6 @@ export class Gantt extends Component<HTMLElement>
     }
     private initProperties(): void {
         this.globalize = new Internationalization(this.locale);
-        this.dateFormat = !isNullOrUndefined(this.dateFormat) ? this.dateFormat : isBlazor() ?
-            this.globalize.getDatePattern({ skeleton: 'd' }) : this.globalize.getDatePattern({ skeleton: 'yMd' });
         this.isAdaptive = Browser.isDevice;
         this.flatData = [];
         this.currentViewData = [];
@@ -1543,6 +1541,19 @@ export class Gantt extends Component<HTMLElement>
         }
         this.taskIds = [];
     }
+    /**
+     *  @private
+     */
+    public getDateFormat(): string {
+        if (!isNullOrUndefined(this.dateFormat)) {
+            return this.dateFormat;
+        } else {
+            let ganttDateFormat: string = isBlazor() ? this.globalize.getDatePattern({ skeleton: 'd' }) :
+                this.globalize.getDatePattern({ skeleton: 'yMd' });
+            return ganttDateFormat;
+        }
+    }
+
     /**
      * Method to map resource fields.
      * 
@@ -1933,7 +1944,7 @@ export class Gantt extends Component<HTMLElement>
             return null;
         }
         if (isNullOrUndefined(format)) {
-            format = this.dateFormat;
+            format = this.getDateFormat();
         }
         return this.globalize.formatDate(date, { format: format });
     }

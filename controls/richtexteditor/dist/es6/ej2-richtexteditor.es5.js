@@ -11850,6 +11850,9 @@ var SelectionCommands = /** @__PURE__ @class */ (function () {
         var validFormats = ['bold', 'italic', 'underline', 'strikethrough', 'superscript',
             'subscript', 'uppercase', 'lowercase', 'fontcolor', 'fontname', 'fontsize', 'backgroundcolor'];
         if (validFormats.indexOf(format) > -1) {
+            if (format === 'backgroundcolor' && value === '') {
+                value = 'transparent';
+            }
             var domSelection = new NodeSelection();
             var nodeCutter = new NodeCutter();
             var isFormatted = new IsFormatted();
@@ -11955,10 +11958,34 @@ var SelectionCommands = /** @__PURE__ @class */ (function () {
                 nodes[index] = lastNode.firstChild;
             }
         }
+        var fontStyle;
+        if (format === 'backgroundcolor') {
+            fontStyle = formatNode.style.fontSize;
+        }
+        var bgStyle;
+        if (format === 'fontsize') {
+            var bg = closest(nodes[index].parentElement, 'span[style*=' + 'background-color' + ']');
+            if (!isNullOrUndefined(bg)) {
+                bgStyle = bg.style.backgroundColor;
+            }
+        }
         var child = InsertMethods.unwrap(formatNode);
         if (child.length > 0 && isFontStyle) {
             for (var num = 0; num < child.length; num++) {
                 child[num] = InsertMethods.Wrap(child[num], this.GetFormatNode(format, value));
+            }
+            var currentNodeElem = nodes[index].parentElement;
+            if (!isNullOrUndefined(fontStyle) && fontStyle !== '') {
+                currentNodeElem.style.fontSize = fontStyle;
+            }
+            if (!isNullOrUndefined(bgStyle) && bgStyle !== '') {
+                currentNodeElem.style.backgroundColor = bgStyle;
+            }
+            if ((format === 'backgroundcolor' && !isNullOrUndefined(fontStyle) && fontStyle !== '') &&
+                currentNodeElem.parentElement.innerHTML === currentNodeElem.outerHTML) {
+                var curParentElem = currentNodeElem.parentElement;
+                curParentElem.parentElement.insertBefore(currentNodeElem, curParentElem);
+                detach(curParentElem);
             }
             if (format === 'fontsize') {
                 var liElement = nodes[index].parentElement;
@@ -12000,6 +12027,10 @@ var SelectionCommands = /** @__PURE__ @class */ (function () {
                             liElement.style.fontSize = value;
                         }
                         nodes[index] = this.applyStyles(nodes, index, element);
+                        var bg = closest(nodes[index].parentElement, 'span[style*=' + 'background-color' + ']');
+                        if (!isNullOrUndefined(bg)) {
+                            nodes[index].parentElement.style.backgroundColor = bg.style.backgroundColor;
+                        }
                     }
                     else {
                         nodes[index] = this.applyStyles(nodes, index, element);

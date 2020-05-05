@@ -205,16 +205,17 @@ public isRemote(): boolean {
     } else {
       if (!(this.parent.dataSource[adaptorName] === 'BlazorAdaptor' && !this.parent[clientRender]) && !this.parent.loadChildOnDemand) {
         for (let rec: number = 0; rec < records.length; rec++) {
-          if ((records[rec][this.parent.hasChildMapping] || this.parentItems.indexOf(records[rec][this.parent.idMapping]) !== -1)
-            && (isNullOrUndefined(records[rec].index))) {
-            records[rec].taskData = extend({}, records[rec]);
-            records[rec].uniqueID = getUid(this.parent.element.id + '_data_');
-            setValue('uniqueIDCollection.' + records[rec].uniqueID, records[rec], this.parent);
-            records[rec].level = 0;
-            records[rec].index = Math.ceil(Math.random() * 1000);
-            records[rec].hasChildRecords = true;
-            records[rec].checkboxState = 'uncheck';
-          }
+            if (isNullOrUndefined(records[rec].index)) {
+                records[rec].taskData = extend({}, records[rec]);
+                records[rec].uniqueID = getUid(this.parent.element.id + '_data_');
+                setValue('uniqueIDCollection.' + records[rec].uniqueID, records[rec], this.parent);
+                records[rec].level = 0;
+                records[rec].index = Math.ceil(Math.random() * 1000);
+                if ((records[rec][this.parent.hasChildMapping] || this.parentItems.indexOf(records[rec][this.parent.idMapping]) !== -1)) {
+                    records[rec].hasChildRecords = true;
+                }
+                records[rec].checkboxState = 'uncheck';
+            }
         }
       } else {
         if (!isNullOrUndefined(records)) {

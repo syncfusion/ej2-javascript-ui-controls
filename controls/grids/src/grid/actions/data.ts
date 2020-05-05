@@ -362,11 +362,17 @@ export class Data implements IDataProcessor {
             let promise: string = 'promise';
             args[promise] = crud;
             if (crud && !Array.isArray(crud) && !crud.hasOwnProperty('deletedRecords')) {
-                return crud.then((result: ReturnType) => {
-                    return this.insert(query, args);
-                }).catch((e: ReturnType) => {
-                    return null;
-                });
+                if (isBlazor()) {
+                    return crud.then((result: ReturnType) => {
+                        return this.insert(query, args);
+                    }).catch((e: ReturnType) => {
+                        return null;
+                    });
+                } else {
+                    return crud.then((result: ReturnType) => {
+                        return this.insert(query, args);
+                    });
+                }
             } else {
                 return this.insert(query, args);
             }

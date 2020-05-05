@@ -8647,6 +8647,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         this.expandChildren = [];
         this.isFieldChange = false;
         this.changeDataSource = false;
+        this.isBlazorExpandedNodes = [];
         this.mouseDownStatus = false;
     }
     /**
@@ -8882,7 +8883,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             let prop = this.getActualProperties(mapper);
             for (let col of Object.keys(prop)) {
                 if (col !== 'dataSource' && col !== 'tableName' && col !== 'child' && !!mapper[col]
-                    && columns.indexOf(mapper[col]) === -1) {
+                    && col !== 'url' && columns.indexOf(mapper[col]) === -1) {
                     columns.push(mapper[col]);
                 }
             }
@@ -10059,6 +10060,9 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         liEle.style.overflow = '';
         liEle.style.height = '';
         removeClass([icon], PROCESS);
+        this.allowServerDataBinding = true;
+        this.updateServerProperties("expand");
+        this.allowServerDataBinding = false;
         this.removeExpand(liEle);
         if (this.isLoaded) {
             this.trigger('nodeCollapsed', colArgs);
@@ -11057,6 +11061,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         this.clearTemplate(['nodeTemplate']);
     }
     reRenderNodes() {
+        this.updateListProp(this.fields);
         resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate');
         if (this.isBlazorPlatform) {
             this.ulElement = this.element.querySelector('.e-list-parent.e-ul');
@@ -11262,6 +11267,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
         let proxy = this;
         this.dragObj = new Draggable(this.element, {
             enableTailMode: true, enableAutoScroll: true,
+            dragArea: this.dragArea,
             dragTarget: '.' + TEXTWRAP,
             helper: (e) => {
                 this.dragTarget = e.sender.target;
@@ -11938,6 +11944,7 @@ let TreeView = TreeView_1 = class TreeView extends Component {
     updateServerProperties(action) {
         if (this.isBlazorPlatform) {
             if (action == "expand") {
+                this.isBlazorExpandedNodes = this.expandedNodes;
                 this.setProperties({ expandedNodes: [] }, true);
             }
             else if (action == "check") {
@@ -12243,6 +12250,9 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             this.updateField(this.treeData, this.fields, sleNodes[l], 'selected', true);
         }
         let enodes = this.expandedNodes;
+        if (this.isBlazorPlatform) {
+            enodes = this.isBlazorExpandedNodes;
+        }
         for (let k = 0, nodelen = enodes.length; k < nodelen; k++) {
             this.updateField(this.treeData, this.fields, enodes[k], 'expanded', true);
         }
@@ -12755,6 +12765,11 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                 case 'allowDragAndDrop':
                     this.setDragAndDrop(this.allowDragAndDrop);
                     break;
+                case 'dragArea':
+                    if (this.allowDragAndDrop) {
+                        this.dragObj.dragArea = this.dragArea;
+                    }
+                    break;
                 case 'allowEditing':
                     this.wireEditingEvents(this.allowEditing);
                     break;
@@ -12816,7 +12831,6 @@ let TreeView = TreeView_1 = class TreeView extends Component {
                     this.isAnimate = false;
                     this.isFieldChange = true;
                     this.initialRender = true;
-                    this.updateListProp(this.fields);
                     if (!this.blazorInitialRender) {
                         this.reRenderNodes();
                     }
@@ -13272,6 +13286,9 @@ __decorate$8([
 __decorate$8([
     Property(false)
 ], TreeView.prototype, "disabled", void 0);
+__decorate$8([
+    Property(null)
+], TreeView.prototype, "dragArea", void 0);
 __decorate$8([
     Property(false)
 ], TreeView.prototype, "enableHtmlSanitizer", void 0);

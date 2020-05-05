@@ -13,6 +13,7 @@ import { hierarchicalData5, expandIconParentData, expandIconChildData, remoteDat
 import { localData7, localData8, localData9, checkData, XSSData, XSSnestedData, checkboxData, updatedremoteNode_1, updatedremoteNode_2} from '../../spec/treeview/datasource.spec';
 import { updatedremoteNode_3, updatedremoteNode_4, updatedremoteNode_5, updatedAddNodes, updatedremoteNode_6, updatedremoteNode_7} from '../../spec/treeview/datasource.spec';
 import {  deletedRemoteData, updatedAddNodes1, autoCheckData, autoCheckHierarcialData, hierarchicalData7} from '../../spec/treeview/datasource.spec';
+import { remoteData4, remoteData4_1, remoteData4_2, remoteData4_3 } from '../../spec/treeview/datasource.spec';
 import '../../node_modules/es6-promise/dist/es6-promise';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
 import { enableBlazorMode, disableBlazorMode } from '@syncfusion/ej2-base';
@@ -953,6 +954,20 @@ describe('TreeView control', () => {
                     let mouseup: any = getEventObject('MouseEvents', 'mouseup', treeObj.element, li[0].querySelector('.e-list-text'));
                     mouseup.type = 'mouseup';
                     EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+                    done();
+                }, 100);
+            });
+            it('dragArea property testing', (done: Function) => {
+                treeObj = new TreeView({ 
+                    fields: { dataSource: hierarchicalData1, id: "nodeId", text: "nodeText", child: "nodeChild" },
+                    allowDragAndDrop: true,
+                    dragArea: "#tree1",
+                },'#tree1');
+                jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+                setTimeout(function() {
+                    expect(treeObj.dragObj).not.toBe(undefined);
+                    expect(treeObj.dropObj).not.toBe(undefined);
+                    expect(treeObj.dragObj.dragArea).toBe("#tree1");
                     done();
                 }, 100);
             });
@@ -14826,6 +14841,75 @@ describe('Remote data binding with loadOnDemand', () => {
         expect(treeObj.element.querySelectorAll('li')[0].querySelector('ul li').children[1].querySelector('.e-list-text').textContent).toBe("Ernst Handel");
     });
 });
+describe('Remote data binding with loadOnDemand with tableName fieldName', () => {
+    let mouseEventArgs: any = {
+        preventDefault: (): void => {},
+        stopImmediatePropagation: (): void => {},
+        target: null,
+        type: null,
+        shiftKey: false,
+        ctrlKey: false
+    };
+    let tapEvent: any = {
+        originalEvent: mouseEventArgs,
+        tapCount: 1
+    };
+    let treeObj: any;
+    let ele: HTMLElement = createElement('div', { id: 'tree1' });
+    let data: DataManager = new DataManager({ url: '/TreeView/remoteData' });
+    let query: Query = new Query().from("Orders").select("CustomerID,OrderID,EmployeeID,Freight").take(3);
+    beforeAll((done: Function) => {
+        jasmine.Ajax.install();
+        document.body.appendChild(ele);
+        treeObj = new TreeView({ 
+            fields: { dataSource: data, query: query, id: "OrderID", text: "CustomerID", hasChildren: "CustomerID", tooltip: "Freight",
+                child: { dataSource: data, tableName: "Customers", id: "nodeId", parentID: "CustomerID", text: "ContactName", tooltip: "ContactTitle" }
+            },
+            dataBound:() => {
+                done();
+            }
+        });
+        treeObj.appendTo(ele);
+        this.request = jasmine.Ajax.requests.mostRecent();
+        this.request.respondWith({
+            status: 200,
+            responseText: JSON.stringify({d: remoteData4, __count: 3})
+        });
+    });
+    afterAll(() => {
+        if (ele)
+            ele.remove();
+        document.body.innerHTML = '';
+        jasmine.Ajax.uninstall();
+    });
+    it('functionality testing', (done: Function) => {
+        expect(treeObj.element.querySelectorAll('li').length).toBe(3);
+        let newli: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+        mouseEventArgs.target = newli[0].querySelector('.e-list-text');
+        tapEvent.tapCount = 2;
+        treeObj.touchExpandObj.tap(tapEvent);
+        this.request = jasmine.Ajax.requests.mostRecent();
+        this.request.respondWith({
+            status: 200,
+            responseText: JSON.stringify({ d: remoteData4_1, __count: 1 })
+        });
+        jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+        setTimeout(function () {
+            mouseEventArgs.target = newli[1].querySelector('.e-list-text');
+            tapEvent.tapCount = 2;
+            treeObj.touchExpandObj.tap(tapEvent);
+            this.request = jasmine.Ajax.requests.mostRecent();
+            this.request.respondWith({
+                status: 200,
+                responseText: JSON.stringify({ d: remoteData4_2, __count: 1 })
+            });
+            setTimeout(function () {
+                expect(treeObj.element.querySelectorAll('li').length).toBe(5);
+                done();
+            }, 450);
+        }, 450);
+    });
+});
 describe('Blazor TreeView testing', () => {
     let gridLayOut: any;
     let ele: HTMLElement;
@@ -14934,5 +15018,85 @@ describe('Blazor TreeView testing', () => {
         gridLayOut.dataBind();
         gridLayOut.isServerRendered = false;
         expect(gridLayOut.element.childElementCount === 1).toBe(true);
+    });
+});
+describe('Remote data binding testing with data from different table', () => {
+    let mouseEventArgs: any = {
+        preventDefault: (): void => {},
+        stopImmediatePropagation: (): void => {},
+        target: null,
+        type: null,
+        shiftKey: false,
+        ctrlKey: false
+    };
+    let tapEvent: any = {
+        originalEvent: mouseEventArgs,
+        tapCount: 1
+    };
+    let treeObj: any;
+    let ele: HTMLElement = createElement('div', { id: 'tree1' });
+    let data: DataManager = new DataManager({
+        url: 'https://services.odata.org/V4/Northwind/Northwind.svc',
+        adaptor: new ODataV4Adaptor,
+        crossDomain: true,
+    });
+    let query: Query = new Query().from('Employees').select('EmployeeID,FirstName,Title').take(5);
+    let query1: Query = new Query().from('Orders').select('OrderID,EmployeeID,ShipName').take(5);
+    beforeAll((done: Function) => {
+        document.body.appendChild(ele);
+        treeObj = new TreeView({ 
+            fields: { dataSource: data, query: query, id: 'EmployeeID', text: 'FirstName', hasChildren: 'EmployeeID',
+            child: { dataSource: data, query: query1, id: 'OrderID', parentID: 'EmployeeID', text: 'ShipName' }
+        },
+        showCheckBox: true,
+            dataBound:() => {
+                done();
+            }
+        });
+        treeObj.appendTo(ele);
+        
+    });
+    afterAll(() => {
+        if (ele)
+            ele.remove();
+        document.body.innerHTML = '';
+                
+    });
+    it('showCheckBox testing', () => {
+        expect(treeObj.element.querySelectorAll('li').length).toBe(5);
+        expect(treeObj.element.querySelector('.e-list-text').innerHTML).toBe('Nancy');
+        let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+        tapEvent.tapCount = 2;
+        mouseEventArgs.target = li[0].querySelector('.e-list-text');
+        treeObj.touchClickObj.tap(tapEvent);
+        setTimeout(function () {
+            let newli: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            expect(newli[1].querySelector('.e-list-text').innerHTML).toBe('Ernst Handel');
+            treeObj.showCheckBox = false;
+            treeObj.dataBind();
+            setTimeout(function () {
+                expect(treeObj.element.querySelector('.e-list-text').innerHTML).toBe('Nancy');
+            }, 200);
+        }, 200);
+    });
+    it('sortOrder testing', () => {
+        expect(treeObj.element.querySelectorAll('li').length).toBe(5);
+        expect(treeObj.element.querySelector('.e-list-text').innerHTML).toBe('Nancy');
+        let li: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+        tapEvent.tapCount = 2;
+        mouseEventArgs.target = li[0].querySelector('.e-list-text');
+        expect(li[0].querySelector('.e-icons').classList.contains('e-icon-expandable')).toBe(true);
+        expect(li[0].querySelector('.e-icons').classList.contains('e-icon-collapsible')).toBe(false);
+        expect(li[0].querySelector('.e-list-text').childElementCount).toBe(0);
+        treeObj.touchClickObj.tap(tapEvent);
+        setTimeout(function () {
+            let newli: Element[] = <Element[] & NodeListOf<Element>>treeObj.element.querySelectorAll('li');
+            expect(newli[1].querySelector('.e-list-text').innerHTML).toBe('Ernst Handel');
+            treeObj.sortOrder = 'Ascending';
+            treeObj.dataBind();
+            setTimeout(function () {
+                expect(treeObj.element.querySelector('.e-list-text').innerHTML).toBe('Andrew');
+            }, 200);
+        }, 200);
     });
 });

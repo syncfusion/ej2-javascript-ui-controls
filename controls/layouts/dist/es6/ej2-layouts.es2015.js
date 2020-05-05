@@ -2345,6 +2345,7 @@ let DashboardLayout = class DashboardLayout extends Component {
                 }
                 this.setClasses([panelElement]);
             }
+            this.updateOldRowColumn();
             if (this.checkMediaQuery()) {
                 this.checkMediaQuerySizing();
             }

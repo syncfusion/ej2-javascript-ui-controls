@@ -227,3 +227,5 @@ export const checkPrevMerge: string = 'checkPrevMerge';
 export const checkMerge: string = 'checkMerge';
 /** @hidden */
 export const removeDataValidation: string = 'removeDataValidation';
+/** @hidden */
+export const blankWorkbook: string = 'blankWorkbook';

@@ -16,6 +16,10 @@
 
 - `#269540` -The issue with `The getAllCheckedNodes method which is not returning the proper checkedNodes values in the TreeView component` has been fixed.
 
+#### New Features
+
+- `#274084` - Provided an option to set the drag area in TreeView component.
+
 ## 18.1.45 (2020-04-21)
 
 ### Menu

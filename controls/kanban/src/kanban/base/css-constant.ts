@@ -167,3 +167,5 @@ export const DIALOG_CONTENT_CONTAINER: string = 'e-kanban-dialog-content';
 export const SHOW_ADD_BUTTON: string = 'e-show-add-button';
 /** @hidden */
 export const SHOW_ADD_ICON: string = 'e-show-add-icon';
+/** @hidden */
+export const SHOW_ADD_FOCUS: string = 'e-show-add-focus';

@@ -9,7 +9,7 @@ import {
     IWidget, BlockWidget,
     ParagraphWidget, LineWidget, BodyWidget, TableCellWidget,
     FieldElementBox, TableWidget, TableRowWidget, BookmarkElementBox, HeaderFooterWidget,
-    EditRangeStartElementBox, CommentElementBox, CheckBoxFormField
+    EditRangeStartElementBox, CommentElementBox, CheckBoxFormField, TextFrame
 } from '../viewer/page';
 import { Dictionary } from '../../base/dictionary';
 import { DocumentEditor } from '../../document-editor';
@@ -337,7 +337,11 @@ export class BaseHistoryInfo {
                 && !isNullOrUndefined(endTextPosition.paragraph.containerWidget)
                 && insertTextPosition.paragraph.containerWidget instanceof TableCellWidget
                 && endTextPosition.paragraph.containerWidget instanceof TableCellWidget
-                && !isNullOrUndefined(insertTextPosition.paragraph.bodyWidget))) {
+                && !isNullOrUndefined(insertTextPosition.paragraph.bodyWidget)) ||
+                 (!isNullOrUndefined(insertTextPosition.paragraph.containerWidget)
+                && !isNullOrUndefined(endTextPosition.paragraph.containerWidget)
+                && insertTextPosition.paragraph.containerWidget instanceof TextFrame
+                && endTextPosition.paragraph.containerWidget instanceof TextFrame)) {
             //Removes if any empty paragraph is added while delete.
             this.owner.selection.selectRange(insertTextPosition, endTextPosition);
             let isDelete: boolean = (this.action === 'BackSpace') ? true : false;

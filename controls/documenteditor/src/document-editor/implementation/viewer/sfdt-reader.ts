@@ -9,10 +9,11 @@ import { LayoutViewer, DocumentHelper } from './viewer';
 import {
     Widget, LineWidget, ParagraphWidget, ImageElementBox, BodyWidget, TextElementBox, TableCellWidget,
     TableRowWidget, TableWidget, FieldElementBox, BlockWidget, HeaderFooterWidget, HeaderFooters,
-    BookmarkElementBox, FieldTextElementBox, TabElementBox, EditRangeStartElementBox, EditRangeEndElementBox,
-    ChartElementBox, ChartCategoryAxis, ChartLegend, ChartLayout, ChartTitleArea, ChartDataFormat,
-    ChartDataTable, ChartArea, ChartCategory, ChartData, ChartSeries, ChartDataLabels, ChartTrendLines, ChartSeriesFormat, ElementBox,
-    CommentCharacterElementBox, CommentElementBox, FormField, TextFormField, CheckBoxFormField, DropDownFormField
+    BookmarkElementBox, FieldTextElementBox, TabElementBox, EditRangeStartElementBox,
+    EditRangeEndElementBox, ChartElementBox, ChartCategoryAxis, ChartLegend, ChartLayout, ChartTitleArea, ChartDataFormat,
+    ChartDataTable, ChartArea, ChartCategory, ChartData, ChartSeries, ChartDataLabels, ChartTrendLines,
+    ChartSeriesFormat, ElementBox, CommentCharacterElementBox, CommentElementBox, FormField,
+    TextFormField, CheckBoxFormField, DropDownFormField, ShapeElementBox, LineFormat, TextFrame
 } from './page';
 import { HelperMethods } from '../editor/editor-helper';
 import { Dictionary } from '../../base/dictionary';
@@ -649,20 +650,30 @@ export class SfdtReader {
                 }
                 field.line = lineWidget;
                 lineWidget.children.push(field);
-            } else if (inline.hasOwnProperty('bookmarkType') && !this.isPaste) {
+            } else if (inline.hasOwnProperty('bookmarkType')) {
                 let bookmark: BookmarkElementBox = undefined;
                 bookmark = new BookmarkElementBox(inline.bookmarkType);
                 bookmark.name = inline.name;
                 lineWidget.children.push(bookmark);
                 bookmark.line = lineWidget;
-                if (!this.isParseHeader) {
+                if (!this.isParseHeader || this.isPaste) {
                     if (inline.bookmarkType === 0) {
-                        this.documentHelper.bookmarks.add(bookmark.name, bookmark);
+                        let isAdd: boolean = this.isPaste && !this.documentHelper.bookmarks.containsKey(bookmark.name);
+                        if (!this.isPaste || isAdd) {
+                            this.documentHelper.bookmarks.add(bookmark.name, bookmark);
+                        } else if (!isAdd) {
+                            lineWidget.children.splice(lineWidget.children.indexOf(bookmark), 1);
+                        }
                     } else if (inline.bookmarkType === 1) {
                         if (this.documentHelper.bookmarks.containsKey(bookmark.name)) {
                             let bookmarkStart: BookmarkElementBox = this.documentHelper.bookmarks.get(bookmark.name);
-                            bookmarkStart.reference = bookmark;
-                            bookmark.reference = bookmarkStart;
+                            let isConsider: boolean = this.isPaste && isNullOrUndefined(bookmarkStart.reference);
+                            if (!this.isPaste || isConsider) {
+                                bookmarkStart.reference = bookmark;
+                                bookmark.reference = bookmarkStart;
+                            } else if (!isConsider) {
+                                lineWidget.children.splice(lineWidget.children.indexOf(bookmark), 1);
+                            }
                         }
                     }
                 }
@@ -728,13 +739,57 @@ export class SfdtReader {
                         }
                     }
                 }
+            } else if (inline.hasOwnProperty('shapeId')) {
+                let shape: ShapeElementBox = new ShapeElementBox();
+                shape.shapeId = inline.shapeId;
+                shape.name = inline.name;
+                shape.alternativeText = inline.alternativeText;
+                shape.title = inline.title;
+                shape.visible = inline.visible;
+                shape.width = HelperMethods.convertPointToPixel(inline.width);
+                shape.height = HelperMethods.convertPointToPixel(inline.height);
+                shape.widthScale = inline.widthScale;
+                shape.heightScale = inline.heightScale;
+                shape.verticalPosition = HelperMethods.convertPointToPixel(inline.verticalPosition);
+                shape.verticalOrigin = inline.verticalOrigin;
+                shape.verticalAlignment = inline.verticalAlignment;
+                shape.horizontalPosition = HelperMethods.convertPointToPixel(inline.horizontalPosition);
+                shape.horizontalOrigin = inline.horizontalOrigin;
+                shape.horizontalAlignment = inline.horizontalAlignment;
+                shape.zOrderPosition = inline.zOrderPosition;
+                shape.allowOverlap = inline.allowOverlap;
+                shape.layoutInCell = inline.layoutInCell;
+                shape.lockAnchor = inline.lockAnchor;
+                shape.autoShapeType = inline.autoShapeType;
+                if (inline.hasOwnProperty('lineFormat')) {
+                    let lineFormat: LineFormat = new LineFormat();
+                    lineFormat.lineFormatType = inline.lineFormat.lineFormatType;
+                    lineFormat.color = inline.lineFormat.color;
+                    lineFormat.weight = inline.lineFormat.weight;
+                    lineFormat.dashStyle = inline.lineFormat.lineStyle;
+                    shape.lineFormat = lineFormat;
+                }
+                if (inline.hasOwnProperty('textFrame')) {
+                    let textFrame: TextFrame = new TextFrame();
+                    textFrame.textVerticalAlignment = inline.textFrame.textVerticalAlignment;
+                    textFrame.marginLeft = inline.textFrame.leftMargin;
+                    textFrame.marginRight = inline.textFrame.rightMargin;
+                    textFrame.marginTop = inline.textFrame.topMargin;
+                    textFrame.marginBottom = inline.textFrame.bottomMargin;
+                    this.parseBody(inline.textFrame.blocks, textFrame.childWidgets as BlockWidget[], textFrame);
+                    shape.textFrame = textFrame;
+                    textFrame.containerShape = shape;
+                }
+                shape.line = lineWidget;
+                lineWidget.children.push(shape);
+                paragraph.floatingElements.push(shape);
             }
         }
         paragraph.childWidgets.push(lineWidget);
         return hasValidElmts;
     }
     private applyCharacterStyle(inline: any, elementbox: ElementBox): void {
-        /*�tslint:disable-next-line:max-line-length */
+        /* tslint:disable-next-line:max-line-length */
         if (!isNullOrUndefined(inline.characterFormat) && !isNullOrUndefined(inline.characterFormat.styleName)) {
             let charStyle: Object = this.documentHelper.styles.findByName(inline.characterFormat.styleName, 'Character');
             elementbox.characterFormat.ApplyStyle(charStyle as WStyle);

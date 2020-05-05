@@ -38,6 +38,10 @@ $ddl-bigger-small-list-font-size: 13px !default;
     transition: transform 300ms ease;
   }
 
+  #{&}.e-popup.e-ddl .e-dropdownbase {
+    min-height: 26px;
+  }
+
   .e-ddl.e-control-wrapper.e-icon-anim .e-ddl-icon::before {
     transform: rotate(180deg);
     transition: transform 300ms ease;

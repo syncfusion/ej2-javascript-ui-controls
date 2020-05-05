@@ -5,7 +5,8 @@ import {
     IWidget, ParagraphWidget, LineWidget, ElementBox, TextElementBox, Margin, Page, ImageElementBox,
     BlockWidget, BlockContainer, BodyWidget, TableWidget, TableCellWidget, TableRowWidget, Widget, ListTextElementBox,
     BookmarkElementBox, HeaderFooterWidget, FieldTextElementBox, TabElementBox, EditRangeStartElementBox, EditRangeEndElementBox,
-    CommentElementBox, CommentCharacterElementBox, CheckBoxFormField, DropDownFormField, TextFormField, FormField
+    CommentElementBox, CommentCharacterElementBox, CheckBoxFormField, DropDownFormField, TextFormField, FormField, ShapeElementBox,
+    TextFrame
 } from '../viewer/page';
 import { WCharacterFormat } from '../format/character-format';
 import {
@@ -909,7 +910,7 @@ export class Editor {
     /* tslint:disable:max-func-body-length */
     public getPrefixAndSuffix(): void {
         let viewer: LayoutViewer = this.owner.viewer;
-        let editor: DocumentEditor;
+        let editor: DocumentEditor = this.owner;
         let documentHelper: DocumentHelper = editor.documentHelper;
         if (this.selection.text !== '') {
             documentHelper.prefix = '';
@@ -2725,7 +2726,6 @@ export class Editor {
             //     this.documentHelper.editableDiv.innerHTML = '';
             // }
         }
-        this.documentHelper.updateFocus();
     }
 
     private pasteImage(imgFile: File): void {
@@ -2759,6 +2759,7 @@ export class Editor {
         };
         let editor: any = this;
         this.pasteRequestHandler = new XmlHttpRequestHandler();
+        this.owner.documentHelper.viewerContainer.focus();
         showSpinner(this.owner.element);
         this.pasteRequestHandler.url = proxy.owner.serviceUrl + this.owner.serverActionSettings.systemClipboard;
         this.pasteRequestHandler.responseType = 'json';
@@ -2785,6 +2786,7 @@ export class Editor {
     private onPasteFailure(result: any): void {
         console.error(result.status, result.statusText);
         hideSpinner(this.owner.element);
+        this.documentHelper.updateFocus();
     }
 
     /**
@@ -3231,7 +3233,7 @@ export class Editor {
         let insertIndex: number = table.getIndex();
         if (moveRows) {
             //Moves the rows to table.
-            for (let i: number = 0, index: number = 0; i < table.childWidgets.length; i++ , index++) {
+            for (let i: number = 0, index: number = 0; i < table.childWidgets.length; i++, index++) {
                 let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
                 newTable.childWidgets.splice(index, 0, row);
                 row.containerWidget = newTable;
@@ -4517,6 +4519,12 @@ export class Editor {
                 count += startIndex;
             }
             if (startIndex === 0 && endIndex === inline.length) {
+                if (inline instanceof ShapeElementBox) {
+                    let shapeIndex: number = lineWidget.paragraph.floatingElements.indexOf(inline);
+                    if (shapeIndex !== -1) {
+                        lineWidget.paragraph.floatingElements.splice(shapeIndex, 1);
+                    }
+                }
                 (paragraph.firstChild as LineWidget).children.splice(insertIndex, 0, inline);
                 inline.line = (paragraph.firstChild as LineWidget);
                 insertIndex++;
@@ -7708,10 +7716,22 @@ export class Editor {
             this.documentHelper.layout.layoutBodyWidgetCollection(block.index, containerWidget, block, false, isSkipShifting);
         }
     }
+    private removeAutoShape(inline: ShapeElementBox): void {
+        let shapeIndex: number = inline.line.paragraph.floatingElements.indexOf(inline);
+        // tslint:disable-next-line:max-line-length
+        inline.line.paragraph.bodyWidget.floatingElements.splice(inline.line.paragraph.bodyWidget.floatingElements.indexOf(inline), 1);
+        inline.line.paragraph.floatingElements.splice(shapeIndex, 1);
+    }
     private removeField(block: BlockWidget, isBookmark?: boolean): void {
         let collection: FieldElementBox[] | string[] = this.documentHelper.fields;
         if (isBookmark) {
             collection = this.documentHelper.bookmarks.keys;
+        }
+        if ((block as ParagraphWidget).floatingElements.length > 0) {
+            for (let z: number = 0; z < (block as ParagraphWidget).floatingElements.length; z++) {
+                let inline: ShapeElementBox = (block as ParagraphWidget).floatingElements[z];
+                this.removeAutoShape(inline);
+            }
         }
 
         for (let i: number = 0; i < collection.length; i++) {
@@ -8169,6 +8189,9 @@ export class Editor {
                     if (this.documentHelper.bookmarks.containsKey(inline.name)) {
                         this.documentHelper.bookmarks.remove(inline.name);
                     }
+                }
+                if (inline instanceof ShapeElementBox) {
+                    this.removeAutoShape(inline);
                 }
                 // if (editAction < 4) {
                 this.unLinkFieldCharacter(inline);
@@ -8687,7 +8710,7 @@ export class Editor {
                 }
             }
             //update Row index of all the cell
-        } else if (block.containerWidget instanceof HeaderFooterWidget) {
+        } else if (block.containerWidget instanceof HeaderFooterWidget || block.containerWidget instanceof TextFrame) {
             for (let i: number = nextIndex; i < block.containerWidget.childWidgets.length; i++) {
                 let nextBlock: BlockWidget = block.containerWidget.childWidgets[i] as BlockWidget;
                 this.updateIndex(nextBlock, increaseIndex);

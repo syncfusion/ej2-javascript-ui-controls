@@ -534,6 +534,8 @@ var DIALOG_CONTENT_CONTAINER = 'e-kanban-dialog-content';
 var SHOW_ADD_BUTTON = 'e-show-add-button';
 /** @hidden */
 var SHOW_ADD_ICON = 'e-show-add-icon';
+/** @hidden */
+var SHOW_ADD_FOCUS = 'e-show-add-focus';
 
 /**
  * Action module is used to perform card actions.
@@ -556,14 +558,15 @@ var Action = /** @__PURE__ @class */ (function () {
         this.hideColumnKeys = [];
     }
     Action.prototype.clickHandler = function (e) {
-        var _this = this;
         var elementSelector = '.' + CARD_CLASS + ',.' + HEADER_ICON_CLASS + ',.' + CONTENT_ROW_CLASS + '.' +
-            SWIMLANE_ROW_CLASS + ',.' + SHOW_ADD_BUTTON;
+            SWIMLANE_ROW_CLASS + ',.' + SHOW_ADD_BUTTON + ',.' + CONTENT_ROW_CLASS +
+            ':not(.' + SWIMLANE_ROW_CLASS + ') .' + CONTENT_CELLS_CLASS;
         var target = closest(e.target, elementSelector);
         if (!target) {
             return;
         }
         if (target.classList.contains(CARD_CLASS)) {
+            this.parent.keyboardModule.cardTabIndexRemove();
             this.cardClick(e);
         }
         else if (target.classList.contains(HEADER_ICON_CLASS)) {
@@ -573,24 +576,32 @@ var Action = /** @__PURE__ @class */ (function () {
             this.rowExpandCollapse(e);
         }
         else if (target.classList.contains(SHOW_ADD_BUTTON)) {
-            var newData = {};
-            if (typeof this.parent.kanbanData[0][this.parent.cardSettings.headerField] === 'number') {
-                newData[this.parent.cardSettings.headerField] = Math.max.apply(Math, this.parent.kanbanData.map(function (obj) { return parseInt(obj[_this.parent.cardSettings.headerField], 10); })) + 1;
-            }
-            newData[this.parent.keyField] = target.closest('.' + CONTENT_CELLS_CLASS).getAttribute('data-key');
-            if (this.parent.cardSettings.priority) {
-                newData[this.parent.cardSettings.priority] = 1;
-                if (target.closest('.' + CONTENT_CELLS_CLASS).querySelector('.' + CARD_CLASS)) {
-                    var data = this.parent.getCardDetails(target.previousElementSibling.lastElementChild);
-                    newData[this.parent.cardSettings.priority] = data[this.parent.cardSettings.priority] + 1;
-                }
-            }
-            if (this.parent.swimlaneSettings.keyField) {
-                newData[this.parent.swimlaneSettings.keyField] =
-                    target.closest('.' + CONTENT_ROW_CLASS).previousElementSibling.getAttribute('data-key');
-            }
-            this.parent.openDialog('Add', newData);
+            this.addButtonClick(target);
         }
+    };
+    Action.prototype.addButtonClick = function (target) {
+        var _this = this;
+        var newData = {};
+        if (this.parent.kanbanData.length === 0) {
+            newData[this.parent.cardSettings.headerField] = 1;
+        }
+        else if (typeof this.parent.kanbanData[0][this.parent.cardSettings.headerField] === 'number') {
+            newData[this.parent.cardSettings.headerField] = Math.max.apply(Math, this.parent.kanbanData.map(function (obj) { return parseInt(obj[_this.parent.cardSettings.headerField], 10); })) + 1;
+        }
+        newData[this.parent.keyField] = closest(target, '.' + CONTENT_CELLS_CLASS).getAttribute('data-key');
+        if (this.parent.cardSettings.priority) {
+            newData[this.parent.cardSettings.priority] = 1;
+            if (closest(target, '.' + CONTENT_CELLS_CLASS).querySelector('.' + CARD_CLASS)) {
+                var data = this.parent.getCardDetails(target.previousElementSibling.lastElementChild);
+                newData[this.parent.cardSettings.priority] = data[this.parent.cardSettings.priority] + 1;
+            }
+        }
+        if (this.parent.kanbanData.length !== 0 && this.parent.swimlaneSettings.keyField &&
+            closest(target, '.' + CONTENT_ROW_CLASS).previousElementSibling) {
+            newData[this.parent.swimlaneSettings.keyField] =
+                closest(target, '.' + CONTENT_ROW_CLASS).previousElementSibling.getAttribute('data-key');
+        }
+        this.parent.openDialog('Add', newData);
     };
     Action.prototype.doubleClickHandler = function (e) {
         var target = closest(e.target, '.' + CARD_CLASS);
@@ -620,6 +631,12 @@ var Action = /** @__PURE__ @class */ (function () {
                 if (_this.parent.isAdaptive && _this.parent.touchModule) {
                     _this.parent.touchModule.updatePopupContent();
                 }
+                var cell = closest(target, '.' + CONTENT_CELLS_CLASS);
+                var element = [].slice.call(cell.querySelectorAll('.' + CARD_CLASS));
+                element.forEach(function (e) {
+                    e.setAttribute('tabindex', '0');
+                });
+                _this.parent.keyboardModule.addRemoveTabIndex('Remove');
             }
         });
     };
@@ -652,19 +669,26 @@ var Action = /** @__PURE__ @class */ (function () {
                 var tgtRow = _this.parent.element.querySelector('.' + CONTENT_ROW_CLASS + (":nth-child(" + (target.rowIndex + 2) + ")"));
                 var targetIcon = target.querySelector("." + SWIMLANE_ROW_EXPAND_CLASS + ",." + SWIMLANE_ROW_COLLAPSE_CLASS);
                 var isCollapsed = target.classList.contains(COLLAPSED_CLASS) ? true : false;
+                var tabIndex_1;
                 if (isCollapsed) {
                     removeClass([tgtRow, target], COLLAPSED_CLASS);
                     classList(targetIcon, [SWIMLANE_ROW_EXPAND_CLASS], [SWIMLANE_ROW_COLLAPSE_CLASS]);
                     _this.parent.swimlaneToggleArray.splice(_this.parent.swimlaneToggleArray.indexOf(key), 1);
+                    tabIndex_1 = '0';
                 }
                 else {
                     addClass([tgtRow, target], COLLAPSED_CLASS);
                     classList(targetIcon, [SWIMLANE_ROW_COLLAPSE_CLASS], [SWIMLANE_ROW_EXPAND_CLASS]);
                     _this.parent.swimlaneToggleArray.push(key);
+                    tabIndex_1 = '-1';
                 }
                 targetIcon.setAttribute('aria-label', isCollapsed ? key + ' Expand' : key + ' Collapse');
                 target.setAttribute('aria-expanded', isCollapsed.toString());
                 tgtRow.setAttribute('aria-expanded', isCollapsed.toString());
+                var rows = [].slice.call(tgtRow.querySelectorAll('.' + CONTENT_CELLS_CLASS));
+                rows.forEach(function (cell) {
+                    cell.setAttribute('tabindex', tabIndex_1);
+                });
                 _this.parent.notify(contentReady, {});
                 _this.parent.trigger(actionComplete, { target: headerTarget, requestType: 'rowExpandCollapse' });
             }
@@ -783,6 +807,7 @@ var Action = /** @__PURE__ @class */ (function () {
                     var card = allCards[i];
                     addClass([card], CARD_SELECTION_CLASS);
                     card.setAttribute('aria-selected', 'true');
+                    card.setAttribute('tabindex', '0');
                     this.selectionArray.push(card.getAttribute('data-id'));
                     this.selectedCardsElement.push(card);
                     this.selectedCardsData.push(this.parent.getCardDetails(card));
@@ -795,6 +820,7 @@ var Action = /** @__PURE__ @class */ (function () {
             else {
                 addClass([target], CARD_SELECTION_CLASS);
                 target.setAttribute('aria-selected', 'true');
+                target.setAttribute('tabindex', '0');
                 this.selectionArray.push(target.getAttribute('data-id'));
                 this.selectedCardsElement.push(target);
                 this.selectedCardsData.push(this.parent.getCardDetails(target));
@@ -1013,7 +1039,7 @@ var Crud = /** @__PURE__ @class */ (function () {
                 }
                 else {
                     if (!_this.parent.isBlazorRender()) {
-                        promise = _this.parent.dataModule.dataManager.remove(_this.keyField, cardData, _this.getTable(), _this.getQuery());
+                        promise = _this.parent.dataModule.dataManager.remove(_this.keyField, editParms.deletedRecords[0], _this.getTable(), _this.getQuery());
                     }
                     else {
                         // tslint:disable-next-line
@@ -1465,6 +1491,9 @@ var DragAndDrop = /** @__PURE__ @class */ (function () {
                 var cell = closest(node, '.' + CONTENT_CELLS_CLASS);
                 if (cell) {
                     cell.style.borderStyle = '';
+                    if (cell.querySelector('.' + SHOW_ADD_BUTTON)) {
+                        removeClass([cell.querySelector('.' + SHOW_ADD_BUTTON)], MULTI_CARD_WRAPPER_CLASS);
+                    }
                     removeClass([cell.querySelector('.' + CARD_WRAPPER_CLASS)], MULTI_CARD_WRAPPER_CLASS);
                 }
             });
@@ -1606,7 +1635,6 @@ var KanbanDialog = /** @__PURE__ @class */ (function () {
             height: 'auto',
             isModal: true,
             showCloseIcon: true,
-            target: document.body,
             width: (action === 'Delete') ? 400 : 350,
             visible: false,
             beforeOpen: this.onBeforeDialogOpen.bind(this),
@@ -1709,8 +1737,7 @@ var KanbanDialog = /** @__PURE__ @class */ (function () {
                 var dropDownOptions = void 0;
                 if (field.key === this.parent.keyField) {
                     dropDownOptions = {
-                        dataSource: [].slice.call(this.parent.columns),
-                        fields: { text: 'headerText', value: 'keyField' },
+                        dataSource: this.parent.layoutModule.columnKeys,
                         value: fieldValue
                     };
                 }
@@ -1756,6 +1783,10 @@ var KanbanDialog = /** @__PURE__ @class */ (function () {
             target: this.parent.activeCardData.element,
             requestType: this.action
         };
+        this.storeElement = document.activeElement;
+        if (parseInt(args.maxHeight, 10) <= 250) {
+            args.maxHeight = '250px';
+        }
         this.parent.trigger(dialogOpen, eventProp, function (openArgs) { return args.cancel = openArgs.cancel; });
     };
     KanbanDialog.prototype.onBeforeDialogClose = function (args) {
@@ -1944,6 +1975,7 @@ var KanbanDialog = /** @__PURE__ @class */ (function () {
         this.destroyComponents();
         if (this.dialogObj) {
             this.dialogObj.destroy();
+            this.storeElement.focus();
             this.dialogObj = null;
             remove(this.element);
             this.element = null;
@@ -1969,20 +2001,16 @@ var Keyboard = /** @__PURE__ @class */ (function () {
             downArrow: '40',
             rightArrow: '39',
             leftArrow: '37',
-            swimlaneExpandAll: 'ctrl+40',
-            swimlaneCollapseAll: 'ctrl+38',
-            selectedSwimlaneExpand: 'alt+40',
-            selectedSwimlaneCollapse: 'alt+38',
-            selectedColumnCollapse: 'ctrl+37',
-            selectedColumnExpand: 'ctrl+39',
+            multiSelectionEnter: 'ctrl+13',
+            multiSelectionSpace: 'ctrl+32',
             multiSelectionByUpArrow: 'shift+38',
             multiSelectionByDownArrow: 'shift+40',
-            multiSelectionByLeftArrow: 'shift+37',
-            multiSelectionByRightArrow: 'shift+39',
             shiftTab: 'shift+tab',
             enter: '13',
             tab: 'tab',
-            delete: '46'
+            delete: '46',
+            escape: '27',
+            space: '32'
         };
         this.parent = parent;
         this.parent.element.tabIndex = this.parent.element.tabIndex === -1 ? 0 : this.parent.element.tabIndex;
@@ -1991,7 +2019,7 @@ var Keyboard = /** @__PURE__ @class */ (function () {
             keyConfigs: this.keyConfigs,
             eventName: 'keydown'
         });
-        this.prevAction = '';
+        this.multiSelection = false;
     }
     Keyboard.prototype.keyActionHandler = function (e) {
         var _this = this;
@@ -2008,30 +2036,60 @@ var Keyboard = /** @__PURE__ @class */ (function () {
                 break;
             case 'rightArrow':
             case 'leftArrow':
-            case 'multiSelectionByLeftArrow':
-            case 'multiSelectionByRightArrow':
-                this.processLeftRightArrow(e, selectedCard);
+                this.processLeftRightArrow(e);
                 break;
             case 'firstCardSelection':
             case 'lastCardSelection':
                 this.processCardSelection(e.action, selectedCard);
                 break;
-            case 'swimlaneExpandAll':
-            case 'swimlaneCollapseAll':
-            case 'selectedSwimlaneExpand':
-            case 'selectedSwimlaneCollapse':
-                this.processSwimlaneExpandCollapse(e.action);
+            case 'multiSelectionEnter':
+            case 'multiSelectionSpace':
+                if (document.activeElement) {
+                    this.parent.actionModule.cardSelection(document.activeElement, true, false);
+                }
                 break;
-            case 'selectedColumnExpand':
-            case 'selectedColumnCollapse':
-                this.processColumnExpandcollapse(e.action, selectedCard);
-                break;
+            case 'space':
             case 'enter':
                 this.processEnter(e, selectedCard);
                 break;
+            case 'escape':
+                if (document.activeElement.classList.contains(CARD_CLASS) ||
+                    document.activeElement.classList.contains(SHOW_ADD_BUTTON)) {
+                    if (document.activeElement.classList.contains(CARD_SELECTION_CLASS)) {
+                        removeClass([document.activeElement], CARD_SELECTION_CLASS);
+                        document.activeElement.focus();
+                    }
+                    else {
+                        var ele = closest(document.activeElement, '.' + CONTENT_CELLS_CLASS);
+                        var cards = [].slice.call(ele.querySelectorAll('.' + CARD_CLASS));
+                        removeClass(cards, CARD_SELECTION_CLASS);
+                        ele.focus();
+                        this.cardTabIndexRemove();
+                        this.addRemoveTabIndex('Add');
+                    }
+                }
+                break;
             case 'tab':
             case 'shiftTab':
-                this.processTab(e.action, selectedCard);
+                var contentCell = closest(document.activeElement, '.' + CONTENT_CELLS_CLASS);
+                if (document.activeElement.classList.contains(CARD_CLASS)) {
+                    if (!document.activeElement.nextElementSibling && e.action === 'tab') {
+                        e.preventDefault();
+                    }
+                    if (!document.activeElement.previousElementSibling && contentCell.querySelector('.' + SHOW_ADD_BUTTON)
+                        && e.action === 'tab') {
+                        addClass([contentCell.querySelector('.' + SHOW_ADD_BUTTON)], SHOW_ADD_FOCUS);
+                    }
+                }
+                if (document.activeElement.classList.contains(SHOW_ADD_BUTTON)) {
+                    if ((!contentCell.querySelector('.' + CARD_CLASS) && e.action === 'tab') || e.action === 'shiftTab') {
+                        e.preventDefault();
+                    }
+                }
+                if (document.activeElement.classList.contains(ROOT_CLASS)) {
+                    this.cardTabIndexRemove();
+                    this.parent.keyboardModule.addRemoveTabIndex('Add');
+                }
                 break;
             case 'delete':
                 var className = '.' + CARD_CLASS + '.' + CARD_SELECTION_CLASS;
@@ -2049,131 +2107,91 @@ var Keyboard = /** @__PURE__ @class */ (function () {
             var selection = this.parent.actionModule.selectionArray;
             selection.splice(selection.indexOf(selectedCard.getAttribute('data-id')), 1);
         }
+        this.cardTabIndexRemove();
         var cards = [].slice.call(this.parent.element.querySelectorAll('.' + CARD_CLASS));
         var element = action === 'firstCardSelection' ? cards[0] : cards[cards.length - 1];
         this.parent.actionModule.cardSelection(element, false, false);
+        this.addRemoveTabIndex('Remove');
+        element.focus();
+        var card = [].slice.call(closest(element, '.' + CONTENT_CELLS_CLASS).querySelectorAll('.' + CARD_CLASS));
+        card.forEach(function (element) {
+            element.setAttribute('tabindex', '0');
+        });
     };
-    Keyboard.prototype.processLeftRightArrow = function (e, selectedCard) {
-        var activeElement = document.activeElement;
-        if (!selectedCard && activeElement) {
-            if (activeElement.classList.contains(COLUMN_EXPAND_CLASS) || activeElement.classList.contains(COLUMN_COLLAPSE_CLASS)) {
-                this.parent.actionModule.columnExpandCollapse(activeElement);
+    Keyboard.prototype.processLeftRightArrow = function (e) {
+        if (document.activeElement.classList.contains(CONTENT_CELLS_CLASS)) {
+            if (e.action === 'rightArrow' && document.activeElement.nextElementSibling) {
+                document.activeElement.nextElementSibling.focus();
             }
-            else if (activeElement.classList.contains(SWIMLANE_ROW_EXPAND_CLASS) ||
-                activeElement.classList.contains(SWIMLANE_ROW_COLLAPSE_CLASS)) {
-                this.parent.actionModule.rowExpandCollapse(e);
+            else if (e.action === 'leftArrow' && document.activeElement.previousElementSibling) {
+                document.activeElement.previousElementSibling.focus();
             }
-        }
-        if (selectedCard) {
-            this.processMoveCards(e.action, this.parent.actionModule.lastCardSelection);
         }
     };
     Keyboard.prototype.processUpDownArrow = function (action, selectedCard) {
-        var card;
-        var isShift = false;
-        if (selectedCard) {
-            var key = closest(this.parent.actionModule.lastCardSelection, '.' + CONTENT_CELLS_CLASS).getAttribute('data-key');
-            var cardSelector = "." + CONTENT_CELLS_CLASS + "[data-key=\"" + key + "\"] ." + CARD_CLASS;
-            var allCards = [].slice.call(this.parent.element.querySelectorAll(cardSelector));
-            var curId = this.parent.actionModule.lastCardSelection.getAttribute('data-id');
-            var curIndex = this.getCardId(allCards).indexOf(curId);
-            isShift = ((action === 'multiSelectionByUpArrow' || action === 'multiSelectionByDownArrow')
-                && this.parent.cardSettings.selectionType === 'Multiple');
-            var index = (action === 'upArrow' || action === 'multiSelectionByUpArrow') ? curIndex - 1 : curIndex + 1;
-            card = allCards[index];
-        }
-        else if (action === 'downArrow' && document.activeElement) {
-            if (document.activeElement.classList.contains(SWIMLANE_ROW_EXPAND_CLASS)) {
-                var parentEle = closest(document.activeElement, '.' + SWIMLANE_ROW_CLASS);
-                card = parentEle.nextElementSibling.querySelector('.' + CARD_CLASS);
+        if (action === 'upArrow' && document.activeElement) {
+            if (document.activeElement.classList.contains(CARD_CLASS) && document.activeElement.previousElementSibling) {
+                document.activeElement.previousElementSibling.focus();
             }
-            else if (document.activeElement.classList.contains(ROOT_CLASS) && !this.parent.swimlaneSettings.keyField) {
-                card = this.parent.element.querySelector('.' + CARD_CLASS);
+            else if (document.activeElement.classList.contains(SHOW_ADD_BUTTON)) {
+                document.activeElement.setAttribute('tabindex', '-1');
+                removeClass([document.activeElement], SHOW_ADD_FOCUS);
+                var cell = closest(document.activeElement, '.' + CONTENT_CELLS_CLASS);
+                if (cell.querySelectorAll('.' + CARD_CLASS).length > 0) {
+                    [].slice.call(cell.querySelectorAll('.' + CARD_CLASS)).slice(-1)[0].focus();
+                }
             }
+            this.removeSelection();
         }
-        else if (action === 'upArrow' && document.activeElement &&
-            document.activeElement.classList.contains(SWIMLANE_ROW_EXPAND_CLASS)) {
-            var parentEle = closest(document.activeElement, '.' + SWIMLANE_ROW_CLASS);
-            var allCards = [].slice.call(parentEle.previousElementSibling.querySelectorAll('.' + CARD_CLASS));
-            card = (allCards).slice(-1)[0];
+        else if (action === 'downArrow' && document.activeElement &&
+            document.activeElement.classList.contains(CARD_CLASS)) {
+            if (document.activeElement.nextElementSibling) {
+                document.activeElement.nextElementSibling.focus();
+            }
+            else if (closest(document.activeElement, '.' + CARD_WRAPPER_CLASS).nextElementSibling) {
+                var ele = closest(document.activeElement, '.' + CARD_WRAPPER_CLASS).nextElementSibling;
+                ele.setAttribute('tabindex', '0');
+                addClass([ele], SHOW_ADD_FOCUS);
+                ele.focus();
+            }
+            this.removeSelection();
         }
-        this.parent.actionModule.cardSelection(card, false, isShift);
-        this.parent.element.focus();
-    };
-    Keyboard.prototype.processColumnExpandcollapse = function (action, selectedCard) {
-        var key = selectedCard.getAttribute('data-key');
-        var cell = this.parent.element.querySelector("." + HEADER_CELLS_CLASS + "[data-key=\"" + key + "\"]");
-        if (cell.classList.contains(HEADER_ROW_TOGGLE_CLASS)) {
-            if ((cell.classList.contains(COLLAPSED_CLASS) && action === 'selectedColumnCollapse') ||
-                (!cell.classList.contains(COLLAPSED_CLASS) && action === 'selectedColumnExpand')) {
-                return;
+        if ((action === 'multiSelectionByUpArrow' || action === 'multiSelectionByDownArrow')
+            && selectedCard && this.parent.cardSettings.selectionType === 'Multiple') {
+            var card = void 0;
+            if (action === 'multiSelectionByUpArrow') {
+                card = document.activeElement.previousElementSibling;
             }
             else {
-                this.parent.actionModule.columnExpandCollapse(cell);
+                card = document.activeElement.nextElementSibling;
+            }
+            if (card) {
+                this.parent.actionModule.cardSelection(card, false, true);
+                card.focus();
+                this.multiSelection = true;
             }
         }
     };
-    Keyboard.prototype.processSwimlaneExpandCollapse = function (action) {
-        if (!this.parent.swimlaneSettings.keyField) {
-            return;
-        }
-        var className = "." + CARD_CLASS + "." + CARD_SELECTION_CLASS;
-        if (action === 'swimlaneExpandAll' || action === 'swimlaneCollapseAll') {
-            className = "." + CONTENT_ROW_CLASS + "." + SWIMLANE_ROW_CLASS;
-        }
-        var element = [].slice.call(this.parent.element.querySelectorAll(className));
-        if (this.prevAction === action) {
-            return;
-        }
-        this.prevAction = action;
-        element.forEach(function (ele) {
-            if (ele.classList.contains(CARD_CLASS)) {
-                ele = closest(ele, '.' + CONTENT_ROW_CLASS).previousElementSibling;
+    Keyboard.prototype.removeSelection = function () {
+        if (this.multiSelection) {
+            var cards = this.parent.getSelectedCards();
+            if (cards.length > 0) {
+                removeClass(cards, CARD_SELECTION_CLASS);
+                this.parent.layoutModule.disableAttributeSelection(cards);
             }
-            if (ele.classList.contains(COLLAPSED_CLASS)) {
-                removeClass([ele, ele.nextElementSibling], COLLAPSED_CLASS);
-                classList(ele.querySelector('.' + ICON_CLASS), [SWIMLANE_ROW_EXPAND_CLASS], [SWIMLANE_ROW_COLLAPSE_CLASS]);
-                ele.querySelector('.' + ICON_CLASS).setAttribute('aria-label', ele.getAttribute('data-key') + ' Expand');
-            }
-            else if (!ele.classList.contains(COLLAPSED_CLASS)) {
-                addClass([ele, ele.nextElementSibling], COLLAPSED_CLASS);
-                classList(ele.querySelector('.' + ICON_CLASS), [SWIMLANE_ROW_COLLAPSE_CLASS], [SWIMLANE_ROW_EXPAND_CLASS]);
-                ele.querySelector('.' + ICON_CLASS).setAttribute('aria-label', ele.getAttribute('data-key') + ' Collapse');
-            }
+            this.multiSelection = false;
+        }
+    };
+    Keyboard.prototype.cardTabIndexRemove = function () {
+        var cards = [].slice.call(this.parent.element.querySelectorAll('.' + CARD_CLASS));
+        cards.forEach(function (card) {
+            card.setAttribute('tabindex', '-1');
         });
-    };
-    Keyboard.prototype.getCardId = function (cardElements) {
-        var curCardId = [];
-        cardElements.forEach(function (el) { return curCardId.push(el.getAttribute('data-id')); });
-        return curCardId;
-    };
-    Keyboard.prototype.processNextRow = function (row) {
-        for (var i = 0; i < row.childElementCount; i++) {
-            var nextCell = row.children[i];
-            var nextCellCards = [].slice.call(nextCell.querySelectorAll('.' + CARD_CLASS));
-            if (nextCellCards.length > 0) {
-                this.parent.actionModule.cardSelection(nextCellCards[0], false, false);
-                break;
-            }
-        }
-    };
-    Keyboard.prototype.processPreviousRow = function (row) {
-        for (var i = (row.childElementCount - 1); i >= 0; i--) {
-            var nextCell = row.children[i];
-            var nextCellCards = [].slice.call(nextCell.querySelectorAll('.' + CARD_CLASS));
-            if (nextCellCards.length > 0) {
-                this.parent.actionModule.cardSelection(nextCellCards.slice(-1)[0], false, false);
-                break;
-            }
-        }
-    };
-    Keyboard.prototype.processCards = function (isSame, nextCellCards, curIndex, action) {
-        if (isSame) {
-            var isShift = ((action === 'multiSelectionByRightArrow' || action === 'multiSelectionByLeftArrow')
-                && this.parent.cardSettings.selectionType === 'Multiple');
-            var processCard = nextCellCards[curIndex] || nextCellCards.slice(-1)[0];
-            this.parent.actionModule.cardSelection(processCard, false, isShift);
-        }
+        var addButton = [].slice.call(this.parent.element.querySelectorAll('.' + SHOW_ADD_BUTTON));
+        addButton.forEach(function (add) {
+            add.setAttribute('tabindex', '-1');
+            removeClass([add], SHOW_ADD_FOCUS);
+        });
     };
     Keyboard.prototype.processEnter = function (e, selectedCard) {
         var element = (e.target);
@@ -2183,84 +2201,56 @@ var Keyboard = /** @__PURE__ @class */ (function () {
         if (element.classList.contains(SWIMLANE_ROW_EXPAND_CLASS) || element.classList.contains(SWIMLANE_ROW_COLLAPSE_CLASS)) {
             this.parent.actionModule.rowExpandCollapse(e);
         }
-        if (selectedCard) {
-            this.parent.actionModule.cardClick(e, selectedCard);
+        if (document.activeElement.classList.contains(CARD_CLASS)) {
+            this.parent.actionModule.cardSelection(document.activeElement, false, false);
+        }
+        if (document.activeElement.classList.contains(SHOW_ADD_BUTTON)) {
+            if (!this.parent.dialogModule.dialogObj) {
+                this.parent.actionModule.addButtonClick(document.activeElement);
+            }
+            document.activeElement.focus();
+        }
+        if (element.classList.contains(CONTENT_CELLS_CLASS)) {
+            var cards = [].slice.call(element.querySelectorAll('.' + CARD_CLASS));
+            this.addRemoveTabIndex('Remove');
+            if (cards.length > 0) {
+                element.querySelector('.' + CARD_CLASS).focus();
+                cards.forEach(function (element) {
+                    element.setAttribute('tabindex', '0');
+                });
+            }
+            if (element.querySelector('.' + SHOW_ADD_BUTTON)) {
+                element.querySelector('.' + SHOW_ADD_BUTTON).setAttribute('tabindex', '0');
+                element.querySelector('.' + SHOW_ADD_BUTTON).focus();
+            }
+        }
+        if (selectedCard === document.activeElement && this.parent.element.querySelectorAll('.' + CARD_SELECTION_CLASS).length === 1) {
             this.parent.activeCardData = { data: this.parent.getCardDetails(selectedCard), element: selectedCard };
-            this.parent.dialogModule.openDialog('Edit', this.parent.getCardDetails(selectedCard));
+            if (!this.parent.dialogModule.dialogObj) {
+                this.parent.dialogModule.openDialog('Edit', this.parent.getCardDetails(selectedCard));
+            }
+            selectedCard.focus();
         }
     };
-    Keyboard.prototype.processTab = function (action, selectedCard) {
-        if (selectedCard) {
-            var target = closest(selectedCard, '.' + CONTENT_ROW_CLASS);
-            var tabTarget = action === 'tab' ? target.previousElementSibling : target.nextElementSibling;
-            if (tabTarget) {
-                tabTarget.querySelector("." + SWIMLANE_ROW_COLLAPSE_CLASS + ",." + SWIMLANE_ROW_EXPAND_CLASS).focus();
-            }
-            removeClass([selectedCard], CARD_SELECTION_CLASS);
-            this.parent.layoutModule.disableAttributeSelection(selectedCard);
+    Keyboard.prototype.addRemoveTabIndex = function (action) {
+        var attribute = action === 'Add' ? '0' : '-1';
+        var headerIcon = [].slice.call(this.parent.element.querySelectorAll('.' + HEADER_ICON_CLASS));
+        if (headerIcon.length > 0) {
+            headerIcon.forEach(function (element) {
+                element.setAttribute('tabindex', attribute);
+            });
         }
-    };
-    Keyboard.prototype.processMoveCards = function (action, card) {
-        var nextCell;
-        var nextCellCards;
-        var curCell = closest(card, '.' + CONTENT_CELLS_CLASS);
-        var curCellCards = [].slice.call(curCell.querySelectorAll('.' + CARD_CLASS));
-        var curRow = closest(curCell, '.' + CONTENT_ROW_CLASS);
-        var curIndex = this.getCardId(curCellCards).indexOf(card.getAttribute('data-id'));
-        if (action === 'rightArrow' || action === 'multiSelectionByRightArrow') {
-            if (curCell.cellIndex === (curRow.childElementCount - 1) && this.parent.swimlaneSettings.keyField
-                && action !== 'multiSelectionByRightArrow') {
-                if (curIndex < (this.getCardId(curCellCards).length - 1)) {
-                    this.parent.actionModule.cardSelection(this.parent.actionModule.lastCardSelection.nextElementSibling, false, false);
-                }
-                else if (curRow.rowIndex !== (this.parent.element.querySelectorAll('.' + CONTENT_ROW_CLASS).length - 1)) {
-                    var row = this.parent.element.querySelector("." + CONTENT_ROW_CLASS + ":nth-child(" + (curRow.rowIndex + 3) + ")");
-                    this.processNextRow(row);
-                }
-            }
-            else {
-                var isSame = false;
-                for (var i = curCell.cellIndex + 1; i < curRow.children.length; i++) {
-                    nextCell = curRow.children[i];
-                    nextCellCards = [].slice.call(nextCell.querySelectorAll('.' + CARD_CLASS));
-                    if (nextCellCards.length > 0) {
-                        isSame = true;
-                        break;
-                    }
-                }
-                this.processCards(isSame, nextCellCards, curIndex, action);
-            }
+        var swimlaneIcon = [].slice.call(this.parent.element.querySelectorAll('.' + SWIMLANE_ROW_EXPAND_CLASS));
+        if (swimlaneIcon.length > 0) {
+            swimlaneIcon.forEach(function (element) {
+                element.setAttribute('tabindex', attribute);
+            });
         }
-        else {
-            if (curCell.cellIndex === 0 && this.parent.swimlaneSettings.keyField && action !== 'multiSelectionByLeftArrow') {
-                if (curIndex > 0) {
-                    this.parent.actionModule.cardSelection(this.parent.actionModule.lastCardSelection.previousElementSibling, false, false);
-                }
-                else if (curRow.rowIndex > 1) {
-                    var className = "." + CONTENT_ROW_CLASS + ":nth-child(" + (curRow.rowIndex - 1) + "):not(." + COLLAPSED_CLASS + ")";
-                    var targetRow = this.parent.element.querySelector(className);
-                    if (targetRow) {
-                        this.processPreviousRow(targetRow);
-                    }
-                }
-            }
-            else {
-                var isSame = false;
-                for (var i = (curCell.cellIndex - 1); i >= 0; i--) {
-                    nextCell = curRow.children[i];
-                    nextCellCards = [].slice.call(nextCell.querySelectorAll('.' + CARD_CLASS));
-                    if (nextCellCards.length > 0) {
-                        isSame = true;
-                        break;
-                    }
-                    if (i === 0 && this.parent.swimlaneSettings.keyField) {
-                        var row = this.parent.element.querySelector("." + CONTENT_ROW_CLASS + ":nth-child(" + (curRow.rowIndex - 1) + ")");
-                        this.processPreviousRow(row);
-                    }
-                }
-                this.processCards(isSame, nextCellCards, curIndex, action);
-            }
-        }
+        var className = '.' + CONTENT_ROW_CLASS + ':not(.' + SWIMLANE_ROW_CLASS + ') .' + CONTENT_CELLS_CLASS;
+        var contentCell = [].slice.call(this.parent.element.querySelectorAll(className));
+        contentCell.forEach(function (element) {
+            element.setAttribute('tabindex', attribute);
+        });
     };
     /**
      * Get module name.
@@ -2697,7 +2687,7 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
             }
             className = isCollaspsed ? CONTENT_ROW_CLASS + ' ' + COLLAPSED_CLASS : CONTENT_ROW_CLASS;
             var tr = createElement('tr', { className: className, attrs: { 'aria-expanded': 'true' } });
-            if (this_2.parent.swimlaneSettings.keyField && !this_2.parent.isAdaptive) {
+            if (this_2.parent.swimlaneSettings.keyField && !this_2.parent.isAdaptive && row.keyField !== '') {
                 this_2.renderSwimlaneRow(tBody, row, isCollaspsed);
             }
             for (var _i = 0, _a = this_2.parent.columns; _i < _a.length; _i++) {
@@ -2707,7 +2697,7 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                     var className_1 = index === -1 ? CONTENT_CELLS_CLASS : CONTENT_CELLS_CLASS + ' ' + COLLAPSED_CLASS;
                     var td = createElement('td', {
                         className: className_1,
-                        attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField, 'aria-expanded': 'true' }
+                        attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField, 'aria-expanded': 'true', 'tabindex': '0' }
                     });
                     if (column.allowToggle && !column.isExpanded || index !== -1) {
                         addClass([td], COLLAPSED_CLASS);
@@ -2715,20 +2705,20 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                         td.setAttribute('aria-expanded', 'false');
                     }
                     if (column.showAddButton) {
-                        var button = createElement('div', { className: SHOW_ADD_BUTTON });
+                        var button = createElement('div', { className: SHOW_ADD_BUTTON, attrs: { 'tabindex': '-1' } });
                         button.appendChild(createElement('div', { className: SHOW_ADD_ICON + ' ' + ICON_CLASS }));
                         td.appendChild(button);
                     }
                     tr.appendChild(td);
-                    var dataObj = [{ keyField: row.keyField, textField: row.textField, count: row.count }];
-                    var args = { data: dataObj, element: tr, cancel: false, requestType: 'contentRow' };
-                    this_2.parent.trigger(queryCellInfo, args, function (columnArgs) {
-                        if (!columnArgs.cancel) {
-                            tBody.appendChild(tr);
-                        }
-                    });
                 }
             }
+            var dataObj = [{ keyField: row.keyField, textField: row.textField, count: row.count }];
+            var args = { data: dataObj, element: tr, cancel: false, requestType: 'contentRow' };
+            this_2.parent.trigger(queryCellInfo, args, function (columnArgs) {
+                if (!columnArgs.cancel) {
+                    tBody.appendChild(tr);
+                }
+            });
         };
         var this_2 = this;
         for (var _i = 0, _a = this.swimlaneRow; _i < _a.length; _i++) {
@@ -2806,12 +2796,7 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                     dataCount += columnData.length;
                     var columnWrapper = tr.querySelector('[data-key="' + column.keyField + '"]');
                     var cardWrapper_1 = createElement('div', { className: CARD_WRAPPER_CLASS });
-                    if (column.showAddButton) {
-                        columnWrapper.insertBefore(cardWrapper_1, columnWrapper.querySelector('.' + SHOW_ADD_BUTTON));
-                    }
-                    else {
-                        columnWrapper.appendChild(cardWrapper_1);
-                    }
+                    columnWrapper.appendChild(cardWrapper_1);
                     var _loop_4 = function (data) {
                         var cardText = data[_this.parent.cardSettings.headerField];
                         var cardIndex = _this.parent.actionModule.selectionArray.indexOf(cardText);
@@ -2820,7 +2805,7 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                             className: CARD_CLASS + className,
                             attrs: {
                                 'data-id': data[_this.parent.cardSettings.headerField], 'data-key': data[_this.parent.keyField],
-                                'aria-selected': 'false'
+                                'aria-selected': 'false', 'tabindex': '-1'
                             }
                         });
                         if (cardIndex !== -1) {
@@ -2874,7 +2859,7 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                 }
             }
         });
-        if (!this.parent.swimlaneSettings.showEmptyRow) {
+        if (!this.parent.swimlaneSettings.showEmptyRow && (this.parent.kanbanData.length === 0 && !this.parent.showEmptyColumn)) {
             removeTrs.forEach(function (tr) { return remove(tr); });
         }
     };
@@ -2929,6 +2914,9 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                         obj[_this.parent.swimlaneSettings.keyField] === row.keyField;
                 }).length;
             });
+            if (kanbanRows.length === 0) {
+                kanbanRows.push({ keyField: '', textField: '' });
+            }
         }
         else {
             kanbanRows.push({ keyField: '', textField: '' });
@@ -3107,6 +3095,11 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         return cardData;
     };
     LayoutRender.prototype.documentClick = function (args) {
+        if (args.target.classList.contains(SWIMLANE_OVERLAY_CLASS) &&
+            this.parent.element.querySelector('.' + SWIMLANE_RESOURCE_CLASS).classList.contains('e-popup-open')) {
+            this.treePopup.hide();
+            removeClass([this.popupOverlay], 'e-enable');
+        }
         if (closest(args.target, "." + ROOT_CLASS)) {
             return;
         }
@@ -3796,6 +3789,9 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property(false)
     ], Kanban.prototype, "enableTooltip", void 0);
+    __decorate([
+        Property(false)
+    ], Kanban.prototype, "showEmptyColumn", void 0);
     __decorate([
         Property(false)
     ], Kanban.prototype, "enablePersistence", void 0);

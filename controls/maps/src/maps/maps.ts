@@ -692,6 +692,8 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
   public markerClusterExpandCheck: boolean = false;
   /** @private */
   public markerClusterExpand: boolean = false;
+  /** @private */
+  public shapeSelectionItem: object[] = [];
 
     /**
      * Constructor for creating the widget
@@ -1379,6 +1381,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         }
         if (this.isTouch) {
             this.titleTooltip(e, pageX, pageY, true);
+            if (!isNullOrUndefined(this.legendModule)) {
+                this.legendTooltip(e, e.pageX, e.pageY, true);
+            }
         }
         this.notify(Browser.touchEndEvent, e);
         e.preventDefault();
@@ -1463,9 +1468,38 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         let touchArg: TouchEvent;
         if (!this.isTouch) {
             this.titleTooltip(e, e.pageX, e.pageY);
+            if (!isNullOrUndefined(this.legendModule)) {
+                this.legendTooltip(e, e.pageX, e.pageY, true);
+            }
         }
         return false;
     }
+
+    private legendTooltip(event: Event, x: number, y: number, isTouch?: boolean): void {
+        let targetId: string = (<HTMLElement>event.target).id;
+        let legendText : string; let page : number = this.legendModule.currentPage;
+        let legendIndex : string = (<HTMLElement>event.target).id.split('_Index_')[1];
+        let collection : Object;
+        let count : number = this.legendModule.totalPages.length !== 0 ?
+        this.legendModule.totalPages[page]['Collection'].length : this.legendModule.totalPages.length;
+        for (let i : number = 0; i < count; i++) {
+            collection = this.legendModule.totalPages[page]['Collection'][i];
+            legendText = collection['DisplayText'];
+            targetId = event.target['id'];
+            legendIndex = event.target['id'].split('_Index_')[1];
+            if ((targetId === (this.element.id + '_Legend_Text_Index_' + legendIndex)) &&
+        ((<HTMLElement>event.target).textContent.indexOf('...') > -1) && collection['idIndex'] === parseInt(legendIndex, 10)) {
+            showTooltip(
+                legendText, this.legendSettings.textStyle.size, x, y, this.element.offsetWidth, this.element.offsetHeight,
+                this.element.id + '_EJ2_Legend_Text_Tooltip', getElement(this.element.id + '_Secondary_Element'), isTouch
+            );
+            }
+        }
+        if ((targetId !== (this.element.id + '_Legend_Text_Index_' + legendIndex))) {
+            removeElement(this.element.id + '_EJ2_Legend_Text_Tooltip');
+        }
+    }
+
     private titleTooltip(event: Event, x: number, y: number, isTouch?: boolean): void {
         let targetId: string = (<HTMLElement>event.target).id;
         if ((targetId === (this.element.id + '_Map_title')) && ((<HTMLElement>event.target).textContent.indexOf('...') > -1)) {
@@ -1860,7 +1894,7 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 if (this.isTileMap) {
                     this.mapLayerPanel.renderTileLayer(this.mapLayerPanel, this.layers['currentFactor'], (this.layers.length - 1));
                 } else {
-                    this.markerModule.markerRender(layerEle, (this.layers.length - 1), this.mapLayerPanel['currentFactor'], 'AddMarker');
+                    this.render();
                 }
             } else if (newProp.layers && isStaticMapType) {
                 this.mapLayerPanel.renderGoogleMap(this.layers[this.layers.length - 1].key, this.staticMapZoom);

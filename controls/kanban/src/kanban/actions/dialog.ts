@@ -15,10 +15,11 @@ import * as cls from '../base/css-constant';
  */
 export class KanbanDialog {
     private parent: Kanban;
-    private dialogObj: Dialog;
+    public dialogObj: Dialog;
     private element: HTMLElement;
     private formObj: FormValidator;
     private action: CurrentAction;
+    private storeElement: HTMLElement;
     private cardData: { [key: string]: Object };
 
     /**
@@ -52,7 +53,6 @@ export class KanbanDialog {
             height: 'auto',
             isModal: true,
             showCloseIcon: true,
-            target: document.body,
             width: (action === 'Delete') ? 400 : 350,
             visible: false,
             beforeOpen: this.onBeforeDialogOpen.bind(this),
@@ -156,8 +156,7 @@ export class KanbanDialog {
                 let dropDownOptions: DropDownListModel;
                 if (field.key === this.parent.keyField) {
                     dropDownOptions = {
-                        dataSource: [].slice.call(this.parent.columns),
-                        fields: { text: 'headerText', value: 'keyField' },
+                        dataSource: this.parent.layoutModule.columnKeys,
                         value: fieldValue as string
                     };
                 } else if (field.key === this.parent.swimlaneSettings.keyField) {
@@ -203,6 +202,10 @@ export class KanbanDialog {
             target: this.parent.activeCardData.element,
             requestType: this.action
         };
+        this.storeElement = <HTMLElement>document.activeElement;
+        if (parseInt(args.maxHeight, 10) <= 250) {
+            args.maxHeight = '250px';
+        }
         this.parent.trigger(events.dialogOpen, eventProp, (openArgs: DialogEventArgs) => args.cancel = openArgs.cancel);
     }
 
@@ -389,6 +392,7 @@ export class KanbanDialog {
         this.destroyComponents();
         if (this.dialogObj) {
             this.dialogObj.destroy();
+            this.storeElement.focus();
             this.dialogObj = null;
             remove(this.element);
             this.element = null;

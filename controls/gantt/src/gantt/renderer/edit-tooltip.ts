@@ -126,7 +126,7 @@ export class EditTooltip {
                 case 'LeftResizing':
                     tooltipString = this.parent.localeObj.getConstant('startDate') + ' : ';
                     tooltipString += instance.formatDate(
-                        editRecord.startDate, { format: this.parent.dateFormat });
+                        editRecord.startDate, { format: this.parent.getDateFormat() });
                     tooltipString += '<br/>' + this.parent.localeObj.getConstant('duration') + ' : ' +
                         this.parent.getDurationString(editRecord.duration, editRecord.durationUnit);
                     break;
@@ -134,7 +134,7 @@ export class EditTooltip {
                 case 'ParentResizing':
                     tooltipString = this.parent.localeObj.getConstant('endDate') + ' : ';
                     tooltipString += instance.formatDate(
-                        editRecord.endDate, { format: this.parent.dateFormat });
+                        editRecord.endDate, { format: this.parent.getDateFormat() });
                     tooltipString += '<br/>' + this.parent.localeObj.getConstant('duration') + ' : ' +
                         this.parent.getDurationString(editRecord.duration, editRecord.durationUnit);
                     break;
@@ -146,13 +146,13 @@ export class EditTooltip {
                         tooltipString = this.parent.localeObj.getConstant('startDate') + ' : ';
                         tooltipString += instance.formatDate(
                             editRecord.startDate,
-                            { format: this.parent.dateFormat });
+                            { format: this.parent.getDateFormat() });
                     }
                     if (!isNullOrUndefined(this.taskbarEdit.taskBarEditRecord.ganttProperties.endDate)) {
                         tooltipString += tooltipString === '' ? '' : '<br/>';
                         tooltipString += this.parent.localeObj.getConstant('endDate') + ' : ' + instance.formatDate(
                             editRecord.endDate,
-                            { format: this.parent.dateFormat });
+                            { format: this.parent.getDateFormat() });
                     }
                     break;
                 case 'ConnectorPointLeftDrag':

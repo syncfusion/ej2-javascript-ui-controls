@@ -235,7 +235,7 @@ export class Tooltip {
             case 'milestone':
                 let sDate: string = !isNullOrUndefined(data.startDate) ? '<tr><td class = "e-gantt-tooltip-label"> Date</td><td>:</td>' +
                 '<td class = "e-gantt-tooltip-value">' +
-                this.parent.getFormatedDate(data.startDate, this.parent.dateFormat) + '</td></tr>' : '';
+                this.parent.getFormatedDate(data.startDate, this.parent.getDateFormat()) + '</td></tr>' : '';
                 content = '<table class = "e-gantt-tooltiptable"><tbody>' +
                     taskName + sDate + '</tbody></table>';
                 break;
@@ -244,12 +244,12 @@ export class Tooltip {
                 let startDate: string = data.startDate ? '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant(scheduledTask ? 'startDate' : 'subTasksStartDate') +
                     '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value"> ' +
-                    this.parent.getFormatedDate(scheduledTask ? data.startDate : data.autoStartDate, this.parent.dateFormat) +
+                    this.parent.getFormatedDate(scheduledTask ? data.startDate : data.autoStartDate, this.parent.getDateFormat()) +
                      '</td></tr>' : '';
                 let endDate: string = data.endDate ? '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant(scheduledTask ? 'endDate' : 'subTasksEndDate') +
                     '</td><td>:</td><td class = "e-gantt-tooltip-value">' + this.parent.getFormatedDate(
-                        scheduledTask ? data.endDate : data.autoEndDate, this.parent.dateFormat) + '</td></tr>' : '';
+                        scheduledTask ? data.endDate : data.autoEndDate, this.parent.getDateFormat()) + '</td></tr>' : '';
                 let duration: string = !isNullOrUndefined(data.duration) ? '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('duration') + '</td><td>:</td>' +
                     '<td class = "e-gantt-tooltip-value"> ' + this.parent.getDurationString(
@@ -265,17 +265,17 @@ export class Tooltip {
                 content = '<table class = "e-gantt-tooltiptable"><tbody>' +
                     taskName + '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('baselineStartDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value">' +
-                    this.parent.getFormatedDate(data.baselineStartDate, this.parent.dateFormat) + '</td></tr><tr>' +
+                    this.parent.getFormatedDate(data.baselineStartDate, this.parent.getDateFormat()) + '</td></tr><tr>' +
                     '<td class = "e-gantt-tooltip-label">' + this.parent.localeObj.getConstant('baselineEndDate') +
                     '</td><td>:</td><td class = "e-gantt-tooltip-value">' +
-                    this.parent.getFormatedDate(data.baselineEndDate, this.parent.dateFormat) + '</td></tr></tbody></table>';
+                    this.parent.getFormatedDate(data.baselineEndDate, this.parent.getDateFormat()) + '</td></tr></tbody></table>';
                 break;
             case 'marker':
                 let markerTooltipElement: EventMarkerModel = parent.tooltipModule.getMarkerTooltipData(args);
                 let markerLabel: string = markerTooltipElement.label ? markerTooltipElement.label : '';
                 content = '<table class = "e-gantt-tooltiptable"><tbody><tr><td>' +
                     this.parent.getFormatedDate(
-                        this.parent.dateValidationModule.getDateFromFormat(markerTooltipElement.day), this.parent.dateFormat) +
+                        this.parent.dateValidationModule.getDateFromFormat(markerTooltipElement.day), this.parent.getDateFormat()) +
                     '</td></tr><tr><td>' +
                     markerLabel + '</td></tr></tbody></table>';
                 break;
@@ -304,33 +304,33 @@ export class Tooltip {
             case 'manualtaskbar':
                 let autoStartDate: string = data.autoStartDate ? '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('subTasksStartDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value"> ' +
-                    this.parent.getFormatedDate(data.autoStartDate, this.parent.dateFormat) + '</td></tr>' : '';
+                    this.parent.getFormatedDate(data.autoStartDate, this.parent.getDateFormat()) + '</td></tr>' : '';
                 let autoEndDate: string = data.autoEndDate ? '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('subTasksEndDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value">' +
-                    this.parent.getFormatedDate(data.autoEndDate, this.parent.dateFormat) + '</td></tr>' : '';
+                    this.parent.getFormatedDate(data.autoEndDate, this.parent.getDateFormat()) + '</td></tr>' : '';
                 let durationValue: string = !isNullOrUndefined(data.duration) ? '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('duration') + '</td><td>:</td>' +
                     '<td class = "e-gantt-tooltip-value"> ' + this.parent.getDurationString(data.duration, data.durationUnit) +
                     '</td></tr>' : '';
                 let manualStartDate: string = data.startDate ? '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('startDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value"> ' +
-                    this.parent.getFormatedDate(data.startDate, this.parent.dateFormat) + '</td></tr>' : '';
+                    this.parent.getFormatedDate(data.startDate, this.parent.getDateFormat()) + '</td></tr>' : '';
                 let manualEndDate: string = data.endDate ? '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('endDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value">' +
-                    this.parent.getFormatedDate(data.endDate, this.parent.dateFormat) + '</td></tr>' : '';
+                    this.parent.getFormatedDate(data.endDate, this.parent.getDateFormat()) + '</td></tr>' : '';
                 content = '<table class = "e-gantt-tooltiptable"><tbody>' +
                     taskName + manualStartDate + autoStartDate + manualEndDate + autoEndDate +  durationValue  + '</tbody></table>';
                 break;
             case 'manualmilestone':
                 let autoStart: string = data.autoStartDate ? '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('subTasksStartDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value"> ' +
-                    this.parent.getFormatedDate(data.autoStartDate, this.parent.dateFormat) + '</td></tr>' : '';
+                    this.parent.getFormatedDate(data.autoStartDate, this.parent.getDateFormat()) + '</td></tr>' : '';
                 let autoEnd: string = data.autoEndDate ? '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('subTasksEndDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value">' +
-                    this.parent.getFormatedDate(data.autoEndDate, this.parent.dateFormat) + '</td></tr>' : '';
+                    this.parent.getFormatedDate(data.autoEndDate, this.parent.getDateFormat()) + '</td></tr>' : '';
                 let date: string = '<tr><td class = "e-gantt-tooltip-label"> Date</td><td>:</td>' +
                     '<td class = "e-gantt-tooltip-value">' +
-                    this.parent.getFormatedDate(data.startDate, this.parent.dateFormat) + '</tr>';
+                    this.parent.getFormatedDate(data.startDate, this.parent.getDateFormat()) + '</tr>';
                 content = '<table class = "e-gantt-tooltiptable"><tbody>' +
                     taskName + date + autoStart + autoEnd + '</tbody></table>';
                 break;

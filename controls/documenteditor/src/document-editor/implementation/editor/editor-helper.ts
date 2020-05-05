@@ -796,6 +796,15 @@ export interface TextPositionInfo {
 /** 
  * @private
  */
+export interface ShapeInfo {
+    element: ElementBox;
+    caretPosition: Point;
+    isShapeSelected: boolean;
+    isInShapeBorder: boolean;
+}
+/** 
+ * @private
+ */
 export interface PageInfo {
     height: number;
     width: number;

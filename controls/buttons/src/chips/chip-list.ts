@@ -51,6 +51,8 @@ interface ChipFields {
     trailingIconCss: string;
     enabled: boolean;
     value: string | number;
+    leadingIconUrl: string;
+    trailingIconUrl: string;
 }
 
 export interface SelectedItems {
@@ -246,6 +248,20 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property('')
     public trailingIconCss: string;
+
+    /**
+     * Specifies the trailing icon url for the chip.
+     * @default ''
+     */
+    @Property('')
+    public leadingIconUrl: string;
+
+    /**
+     * Specifies the trailing icon url for the chip.
+     * @default ''
+     */
+    @Property('')
+    public trailingIconUrl: string;
 
     /**
      * Specifies the custom classes to be added to the chip element used to customize the ChipList component.
@@ -447,7 +463,11 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                 this.trailingIconCss.toString()) : (this.trailingIconCss.toString()),
             enabled: typeof data === 'object' ? (!isNullOrUndefined(data.enabled) ? (data.enabled.toString() === 'false' ? false : true) :
                 chipEnabled) : (chipEnabled),
-            value: typeof data === 'object' ? ((data.value ? data.value.toString() : null)) : null
+            value: typeof data === 'object' ? ((data.value ? data.value.toString() : null)) : null,
+            leadingIconUrl:  typeof data === 'object' ? (data.leadingIconUrl ? data.leadingIconUrl.toString() : this.leadingIconUrl) :
+                this.leadingIconUrl,
+            trailingIconUrl:  typeof data === 'object' ? (data.trailingIconUrl ? data.trailingIconUrl.toString() : this.trailingIconUrl) :
+                this.trailingIconUrl
         };
         return fields;
     }
@@ -463,6 +483,11 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
             let className: string = (classNames.icon + ' ' + fields.leadingIconCss).trim();
             let chipIconElement: HTMLElement = this.createElement('span', { className: className });
             chipArray.push(chipIconElement);
+        } else if (fields.leadingIconUrl) {
+            let className: string = (classNames.avatar + ' ' + 'image-url').trim();
+            let chipIconElement: HTMLElement = this.createElement('span', { className: className});
+            chipIconElement.style.backgroundImage = 'url(' + fields.leadingIconUrl + ')';
+            chipArray.push(chipIconElement);
         }
         let chipTextElement: HTMLElement = this.createElement('span', { className: classNames.text });
         chipTextElement.innerText = fields.text;
@@ -472,6 +497,11 @@ export class ChipList extends Component<HTMLElement> implements INotifyPropertyC
                 (fields.trailingIconCss ? fields.trailingIconCss : classNames.deleteIcon)).trim();
             let chipdeleteElement: HTMLElement = this.createElement('span', { className: className });
             chipArray.push(chipdeleteElement);
+        } else if (fields.trailingIconUrl) {
+            let className: string = ('trailing-icon-url').trim();
+            let chipIconsElement: HTMLElement = this.createElement('span', { className: className });
+            chipIconsElement.style.backgroundImage = 'url(' + fields.trailingIconUrl + ')';
+            chipArray.push(chipIconsElement);
         }
         return chipArray;
     }

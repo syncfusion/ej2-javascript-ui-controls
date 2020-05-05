@@ -173,7 +173,7 @@ export class Crud {
                 } else {
                     if (!this.parent.isBlazorRender()) {
                         promise = this.parent.dataModule.dataManager.remove(
-                            this.keyField, cardData, this.getTable(), this.getQuery()) as Promise<Object>;
+                            this.keyField, editParms.deletedRecords[0], this.getTable(), this.getQuery()) as Promise<Object>;
                     } else {
                         // tslint:disable-next-line
                         (this.parent as any).interopAdaptor.invokeMethodAsync('DeleteCard', this.keyField, { Record: cardData });

@@ -616,7 +616,8 @@ export class DiagramEventHandler {
                         this.eventArgs.info = info;
                     }
                     this.checkAction(obj);
-                    this.getMouseEventArgs(this.currentPosition, this.eventArgs, this.eventArgs.source);
+                    let padding: number = this.getConnectorPadding(this.eventArgs);
+                    this.getMouseEventArgs(this.currentPosition, this.eventArgs, this.eventArgs.source, padding);
                     this.updateCursor();
                     this.inAction = true;
                     this.initialEventArgs = null;
@@ -712,7 +713,8 @@ export class DiagramEventHandler {
                 if (this.diagram.selectedObject.helperObject) { isGroupAction = this.updateContainerBounds(); }
                 if (this.tool && (this.tool.prevPosition || this.tool instanceof LabelTool)) {
                     this.eventArgs.position = this.currentPosition;
-                    this.getMouseEventArgs(this.currentPosition, this.eventArgs, this.eventArgs.source);
+                    let padding: number = this.getConnectorPadding(this.eventArgs);
+                    this.getMouseEventArgs(this.currentPosition, this.eventArgs, this.eventArgs.source, padding);
                     let ctrlKey: boolean = this.isMetaKey(evt);
                     if (ctrlKey || evt.shiftKey) {
                         let info: Info = (ctrlKey && evt.shiftKey) ? { ctrlKey: ctrlKey, shiftKey: evt.shiftKey } :
@@ -781,6 +783,15 @@ export class DiagramEventHandler {
     }
     /* tslint:enable */
 
+    private getConnectorPadding(eventArgs: MouseEventArgs): number {
+        let padding: number;
+        let targetObject: SelectorModel = eventArgs.source;
+        if (targetObject && (targetObject instanceof Selector) && targetObject.connectors.length) {
+            let selectedConnector: ConnectorModel = targetObject.connectors[0];
+            padding = (selectedConnector.constraints & ConnectorConstraints.ConnectNearPort) ? selectedConnector.connectPadding : 0;
+        }
+        return padding || 0;
+    }
     private getBlazorClickEventArgs(arg: IClickEventArgs | IBlazorClickEventArgs): IBlazorClickEventArgs {
         arg = {
             element: this.eventArgs.source ? { selector: cloneBlazorObject(this.eventArgs.source) } :
@@ -1449,7 +1460,7 @@ export class DiagramEventHandler {
         return false;
     }
 
-    private getMouseEventArgs(position: PointModel, args: MouseEventArgs, source?: IElement): MouseEventArgs {
+    private getMouseEventArgs(position: PointModel, args: MouseEventArgs, source?: IElement, padding?: number): MouseEventArgs {
         args.position = position;
         let obj: IElement;
         let objects: IElement[];
@@ -1477,7 +1488,16 @@ export class DiagramEventHandler {
         }
         let wrapper: DiagramElement;
         if (obj) {
-            wrapper = this.diagram.findElementUnderMouse(obj, this.currentPosition);
+            wrapper = this.diagram.findElementUnderMouse(obj, this.currentPosition, padding);
+            if (wrapper && (obj as Node).ports && (obj as Node).ports.length &&
+                !checkPort(obj, wrapper) && (source instanceof Selector) && source.connectors.length) {
+                let currentConnector: ConnectorModel = source.connectors[0];
+                if ((currentConnector.constraints & ConnectorConstraints.ConnectNearPort) &&
+                    !(currentConnector.constraints & ConnectorConstraints.ConnectNearNode)) {
+                    wrapper = this.diagram.findElementUnderMouse(obj, this.currentPosition, 0);
+                    if (!wrapper) { obj = null; }
+                }
+            }
         }
         if (!source) {
             args.source = obj;
@@ -1593,8 +1613,8 @@ export class DiagramEventHandler {
 
     //start region - interface betweend diagram and interaction
     /** @private */
-    public findElementUnderMouse(obj: IElement, position: PointModel): DiagramElement {
-        return this.objectFinder.findElementUnderSelectedItem(obj, position);
+    public findElementUnderMouse(obj: IElement, position: PointModel, padding?: number): DiagramElement {
+        return this.objectFinder.findElementUnderSelectedItem(obj, position, padding);
     }
     /** @private */
     public findObjectsUnderMouse(position: PointModel, source?: IElement): IElement[] {
@@ -1931,12 +1951,14 @@ class ObjectFinder {
             }
         }
         let container: Container; let bounds: Rect; let child: DiagramElement; let matrix: Matrix;
-        let objArray: Object[] = diagram.spatialSearch.findObjects(new Rect(pt.x - 50, pt.y - 50, 100, 100));
+        let endPadding: number = (source && (source instanceof Connector) && ((source.constraints & ConnectorConstraints.ConnectNearNode) ||
+            (source.constraints & ConnectorConstraints.ConnectNearPort)) && source.connectPadding) || 0;
+        let objArray: Object[] = diagram.spatialSearch.findObjects(
+            new Rect(pt.x - 50 - endPadding, pt.y - 50 - endPadding, 100 + endPadding, 100 + endPadding));
         let layerObjTable: {} = {}; let layerTarger: (NodeModel | ConnectorModel)[];
         for (let obj of objArray) {
-            let point: PointModel = pt;
-            bounds = (obj as NodeModel).wrapper.outerBounds;
-            let pointInBounds: boolean = ((obj as NodeModel).rotateAngle) ? false : bounds.containsPoint(point);
+            let point: PointModel = pt; bounds = (obj as NodeModel).wrapper.outerBounds;
+            let pointInBounds: boolean = ((obj as NodeModel).rotateAngle) ? false : bounds.containsPoint(point, endPadding);
             if ((obj !== source || diagram.currentDrawingObject instanceof Connector) &&
                 (obj instanceof Connector) ? obj !== diagram.currentDrawingObject : true && (obj as NodeModel).wrapper.visible) {
                 let layer: LayerModel = diagram.commandHandler.getObjectLayer((obj as NodeModel).id);
@@ -1950,7 +1972,7 @@ class ObjectFinder {
                             rotateMatrix(
                                 matrix, -(child.rotateAngle + child.parentTransform), child.offsetX, child.offsetY);
                             point = transformPointByMatrix(matrix, pt);
-                            if (cornersPointsBeforeRotation(child).containsPoint(point)) { pointInBounds = true; }
+                            if (cornersPointsBeforeRotation(child).containsPoint(point, endPadding)) { pointInBounds = true; }
                         }
                     }
                     if (!source || (isSelected(diagram, obj) === false)) {
@@ -1958,7 +1980,7 @@ class ObjectFinder {
                             if ((obj instanceof Connector) ? isPointOverConnector(obj, pt) : pointInBounds) {
                                 let padding: number = (obj instanceof Connector) ? obj.hitPadding || 0 : 0;
                                 let element: DiagramElement;
-                                element = this.findElementUnderMouse(obj as IElement, pt, padding);
+                                element = this.findElementUnderMouse(obj as IElement, pt, endPadding || padding);
                                 if (element && (obj as Node).id !== 'helper') {
                                     insertObject(obj, 'zIndex', layerTarger);
                                 }
@@ -2080,12 +2102,12 @@ class ObjectFinder {
                     var portElement = this.findTargetElement(objects[i].wrapper, position, undefined);
 
                     if (action === 'Draw' && portElement && (objects[i] instanceof Node) && !checkPort(objects[i], portElement)) {
-                        if (((tool && tool[endPoint] === 'ConnectorSourceEnd') && !canOutConnect(objects[i] as NodeModel))||
-                        ((tool && tool[endPoint] === 'ConnectorTargetEnd') && !canInConnect(objects[i] as NodeModel))) {
+                        if (((tool && tool[endPoint] === 'ConnectorSourceEnd') && !canOutConnect(objects[i] as NodeModel)) ||
+                            ((tool && tool[endPoint] === 'ConnectorTargetEnd') && !canInConnect(objects[i] as NodeModel))) {
                             return actualTarget as IElement
                         }
                     }
-                    if (objects[i] instanceof Node && ((canOutConnect(objects[i] as NodeModel) || (canPortOutConnect(outPort))||canInConnect(objects[i] as NodeModel)||(canPortInConnect(inPort))) ||
+                    if (objects[i] instanceof Node && ((canOutConnect(objects[i] as NodeModel) || (canPortOutConnect(outPort)) || canInConnect(objects[i] as NodeModel) || (canPortInConnect(inPort))) ||
                         (action === 'PortDraw' && (tool instanceof ConnectTool) && tool[endPoint] == 'ConnectorTargetEnd' &&
                             (canInConnect(objects[i] as NodeModel) || (canPortInConnect(inPort)))))) {
                         actualTarget = objects[i];
@@ -2188,7 +2210,7 @@ class ObjectFinder {
     }
     /* tslint:enable */
     /** @private */
-    public findElementUnderSelectedItem(obj: IElement, position: PointModel): DiagramElement {
+    public findElementUnderSelectedItem(obj: IElement, position: PointModel, padding?: number): DiagramElement {
         //rewrite this for multiple selection
         if (obj instanceof Selector) {
             if (obj.nodes.length === 1 && (!obj.connectors || !obj.connectors.length)) {
@@ -2197,7 +2219,7 @@ class ObjectFinder {
                 return this.findElementUnderMouse(obj.connectors[0] as IElement, position);
             }
         } else {
-            return this.findElementUnderMouse(obj, position);
+            return this.findElementUnderMouse(obj, position, padding);
         }
         return null;
     }
@@ -2209,14 +2231,14 @@ class ObjectFinder {
     public findTargetElement(container: Container, position: PointModel, padding?: number): DiagramElement {
         for (let i: number = container.children.length - 1; i >= 0; i--) {
             let element: DiagramElement = container.children[i];
-            if (element && element.outerBounds.containsPoint(position)) {
+            if (element && element.outerBounds.containsPoint(position, padding || 0)) {
                 if (element instanceof Container) {
                     let target: DiagramElement = this.findTargetElement(element, position);
                     if (target) {
                         return target;
                     }
                 }
-                if (element.bounds.containsPoint(position)) {
+                if (element.bounds.containsPoint(position, padding || 0)) {
                     return element;
                 }
             }

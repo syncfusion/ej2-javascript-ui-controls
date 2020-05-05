@@ -195,11 +195,16 @@
           .e-show-add-button {
             border: 1px dashed $kanban-dropped-clone-border-color;
             height: 36px;
-            margin: 0 8px 16px;
+            margin: 8px 8px 0;
 
             .e-show-add-icon {
               padding-top: 11px;
               text-align: center;
+            }
+
+            &:focus {
+              border: 1px dashed $kanban-border-color;
+              color: $kanban-border-color;
             }
           }
 
@@ -212,6 +217,7 @@
             padding: 8px;
 
             .e-card {
+              border: 1px solid transparent;
               cursor: all-scroll;
               margin-bottom: 8px;
               min-height: 50px;
@@ -229,6 +235,10 @@
                 @if ($kanban-skin == 'fabric' or $kanban-skin == 'highcontrast') {
                   padding: 1px;
                 }
+              }
+
+              &:focus {
+                border: 1px solid $kanban-border-color;
               }
 
               &.e-kanban-dragged-card {
@@ -336,6 +346,7 @@
         }
 
         &:not(.e-swimlane-row) .e-content-cells {
+          border: 1px solid transparent;
           height: 100px;
           vertical-align: top;
 
@@ -345,6 +356,10 @@
 
           &.e-max-color {
             background: $kanban-max-color;
+          }
+
+          &:focus {
+            border: 1px solid $kanban-border-color;
           }
         }
 

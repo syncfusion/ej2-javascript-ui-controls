@@ -2,7 +2,7 @@ import { DocumentEditor } from '../../document-editor';
 import {
     Widget, BodyWidget, TableRowWidget, TableWidget,
     LineWidget, ElementBox, TextElementBox, ListTextElementBox, ImageElementBox, Page, ParagraphWidget, TableCellWidget,
-    FieldElementBox, BlockWidget, BlockContainer, BookmarkElementBox, DocumentHelper
+    FieldElementBox, BlockWidget, BlockContainer, BookmarkElementBox, DocumentHelper, ShapeElementBox
 } from '../index';
 import { ElementInfo, IndexInfo, HelperMethods } from '../index';
 import { Point } from '../index';
@@ -452,6 +452,7 @@ export class TextPosition {
                 if (nextValidInline instanceof FieldElementBox && nextValidInline.fieldType === 1
                     || nextValidInline instanceof BookmarkElementBox && nextValidInline.bookmarkType === 1) {
                     inline = nextValidInline as FieldElementBox;
+                    this.currentWidget = inline.line;
                     this.offset = this.currentWidget.getOffset(inline, 1);
                 }
             }
@@ -2043,6 +2044,8 @@ export class SelectionWidgetInfo {
     private leftIn: number = 0;
     private widthIn: number = 0;
     public color: string = '';
+
+    public floatingItems: ShapeElementBox[];
     /**
      * @private
      */
@@ -2078,6 +2081,8 @@ export class SelectionWidgetInfo {
     public destroy(): void {
         this.widthIn = undefined;
         this.leftIn = undefined;
+        this.floatingItems = [];
+        this.floatingItems = undefined;
     }
 }
 /** 

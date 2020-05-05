@@ -6313,6 +6313,33 @@ var Layout = /** @__PURE__ @class */ (function () {
                 this.cutClientWidth(element.previousElement);
             }
         }
+        if (element instanceof ShapeElementBox) {
+            var position = this.getFloatingItemPoints(element);
+            element.x = position.x;
+            element.y = position.y;
+            var clientArea = new Rect(this.viewer.clientArea.x, this.viewer.clientArea.y, this.viewer.clientArea.width, this.viewer.clientArea.height);
+            var clientActiveArea = new Rect(this.viewer.clientActiveArea.x, this.viewer.clientActiveArea.y, this.viewer.clientActiveArea.width, this.viewer.clientActiveArea.height);
+            var blocks = element.textFrame.childWidgets;
+            this.viewer.updateClientAreaForTextBoxShape(element, true);
+            for (var i = 0; i < blocks.length; i++) {
+                var block = blocks[i];
+                this.viewer.updateClientAreaForBlock(block, true);
+                if (block instanceof TableWidget) {
+                    this.clearTableWidget(block, true, true);
+                }
+                this.layoutBlock(block, 0);
+                this.viewer.updateClientAreaForBlock(block, false);
+            }
+            var bodyWidget = element.paragraph.bodyWidget;
+            if (bodyWidget.floatingElements.indexOf(element) === -1) {
+                bodyWidget.floatingElements.push(element);
+            }
+            if (element.paragraph.floatingElements.indexOf(element) === -1) {
+                element.paragraph.floatingElements.push(element);
+            }
+            this.viewer.clientActiveArea = clientActiveArea;
+            this.viewer.clientArea = clientArea;
+        }
         if (parseFloat(width.toFixed(4)) <= parseFloat(this.viewer.clientActiveArea.width.toFixed(4)) || !this.viewer.textWrap) {
             //Fits the text in current line.
             this.addElementToLine(paragraph, element);
@@ -7015,7 +7042,9 @@ var Layout = /** @__PURE__ @class */ (function () {
      * @param element
      */
     Layout.prototype.addElementToLine = function (paragraph, element) {
-        this.viewer.cutFromLeft(this.viewer.clientActiveArea.x + element.width);
+        if (!(element instanceof ShapeElementBox)) {
+            this.viewer.cutFromLeft(this.viewer.clientActiveArea.x + element.width);
+        }
         if (paragraph.paragraphFormat.textAlignment === 'Justify' && element instanceof TextElementBox) {
             this.splitTextElementWordByWord(element);
         }
@@ -7286,6 +7315,7 @@ var Layout = /** @__PURE__ @class */ (function () {
     /**
      * Moves to next line.
      */
+    // tslint:disable:max-func-body-length    
     Layout.prototype.moveToNextLine = function (line) {
         var paragraph = line.paragraph;
         var paraFormat = paragraph.paragraphFormat;
@@ -7349,6 +7379,9 @@ var Layout = /** @__PURE__ @class */ (function () {
             var bottomMargin = 0;
             var leftMargin = 0;
             var elementBox = line.children[i];
+            if (elementBox instanceof ShapeElementBox) {
+                continue;
+            }
             // tslint:disable-next-line:max-line-length
             var alignElements = this.alignLineElements(elementBox, topMargin, bottomMargin, maxDescent, addSubWidth, subWidth, textAlignment, whiteSpaceCount, i === line.children.length - 1);
             topMargin = alignElements.topMargin;
@@ -7372,7 +7405,7 @@ var Layout = /** @__PURE__ @class */ (function () {
             }
             topMargin += beforeSpacing;
             bottomMargin += afterSpacing;
-            if (i === 0) {
+            if (i === 0 || (!(elementBox instanceof ShapeElementBox) && elementBox.previousElement instanceof ShapeElementBox)) {
                 line.height = topMargin + elementBox.height + bottomMargin;
                 if (textAlignment === 'Right' || (textAlignment === 'Justify' && paraFormat.bidi && isParagraphEnd)) {
                     //Aligns the text as right justified and consider subwidth for bidirectional paragrph with justify.
@@ -7391,6 +7424,9 @@ var Layout = /** @__PURE__ @class */ (function () {
     Layout.prototype.updateLineWidget = function (line) {
         for (var i = 0; i < line.children.length; i++) {
             var element = line.children[i];
+            if (element instanceof ShapeElementBox) {
+                continue;
+            }
             if (element instanceof TextElementBox || element instanceof ListTextElementBox) {
                 if (this.maxTextHeight < element.height) {
                     this.maxTextHeight = element.height;
@@ -9993,7 +10029,7 @@ var Layout = /** @__PURE__ @class */ (function () {
     Layout.prototype.getParentTable = function (block) {
         var widget = block;
         while (widget.containerWidget) {
-            if (widget.containerWidget instanceof BlockContainer) {
+            if (widget.containerWidget instanceof BlockContainer || widget.containerWidget instanceof TextFrame) {
                 return widget;
             }
             widget = widget.containerWidget;
@@ -10043,11 +10079,14 @@ var Layout = /** @__PURE__ @class */ (function () {
         if (this.viewer instanceof WebLayoutViewer) {
             bodyWidget.height -= currentTable.height;
         }
-        if (this.viewer.owner.enableHeaderAndFooter || block.isInHeaderFooter) {
+        if ((this.viewer.owner.enableHeaderAndFooter || block.isInHeaderFooter) && !(bodyWidget instanceof TextFrame)) {
             block.bodyWidget.isEmpty = false;
             bodyWidget.height -= currentTable.height;
             // tslint:disable-next-line:max-line-length
-            this.viewer.updateHCFClientAreaWithTop(table.bodyWidget.sectionFormat, this.viewer.isBlockInHeader(table), bodyWidget.page);
+            this.viewer.updateHCFClientAreaWithTop(table.bodyWidget.sectionFormat, this.documentHelper.isBlockInHeader(table), bodyWidget.page);
+        }
+        else if (bodyWidget instanceof TextFrame) {
+            this.viewer.updateClientAreaForTextBoxShape(bodyWidget.containerShape, true);
         }
         else {
             this.viewer.updateClientArea(bodyWidget.sectionFormat, bodyWidget.page);
@@ -10130,7 +10169,7 @@ var Layout = /** @__PURE__ @class */ (function () {
     Layout.prototype.layoutBodyWidgetCollection = function (blockIndex, bodyWidget, block, shiftNextWidget, isSkipShifting) {
         if (!isNullOrUndefined(this.documentHelper.owner)
             && this.documentHelper.owner.isLayoutEnabled) {
-            if (bodyWidget instanceof BlockContainer) {
+            if (bodyWidget instanceof BlockContainer || bodyWidget instanceof TextFrame) {
                 var curretBlock = this.checkAndGetBlock(bodyWidget, blockIndex);
                 if (isNullOrUndefined(curretBlock)) {
                     return;
@@ -10143,6 +10182,9 @@ var Layout = /** @__PURE__ @class */ (function () {
                     // tslint:disable-next-line:max-line-length
                     this.viewer.updateHCFClientAreaWithTop(bodyWidget.sectionFormat, bodyWidget.headerFooterType.indexOf('Header') !== -1, bodyWidget.page);
                     curretBlock.containerWidget.height -= curretBlock.height;
+                }
+                else if (bodyWidget instanceof TextFrame) {
+                    this.viewer.updateClientAreaForTextBoxShape(bodyWidget.containerShape, true);
                 }
                 else {
                     this.viewer.updateClientArea(bodyWidget.sectionFormat, bodyWidget.page);
@@ -10194,22 +10236,27 @@ var Layout = /** @__PURE__ @class */ (function () {
         }
     };
     Layout.prototype.checkAndGetBlock = function (containerWidget, blockIndex) {
-        var sectionIndex = containerWidget.index;
-        while (containerWidget && containerWidget.index === sectionIndex) {
-            if (containerWidget.childWidgets.length > 0 && containerWidget.firstChild.index <= blockIndex &&
-                containerWidget.lastChild.index >= blockIndex) {
-                for (var i = 0; i < containerWidget.childWidgets.length; i++) {
-                    var block = containerWidget.childWidgets[i];
-                    if (block.index === blockIndex) {
-                        return block;
+        if (containerWidget instanceof TextFrame) {
+            return containerWidget.childWidgets[blockIndex];
+        }
+        else {
+            var sectionIndex = containerWidget.index;
+            while (containerWidget && containerWidget.index === sectionIndex) {
+                if (containerWidget.childWidgets.length > 0 && containerWidget.firstChild.index <= blockIndex &&
+                    containerWidget.lastChild.index >= blockIndex) {
+                    for (var i = 0; i < containerWidget.childWidgets.length; i++) {
+                        var block = containerWidget.childWidgets[i];
+                        if (block.index === blockIndex) {
+                            return block;
+                        }
                     }
                 }
-            }
-            if (containerWidget instanceof BodyWidget) {
-                containerWidget = containerWidget.nextRenderedWidget;
-            }
-            else {
-                break;
+                if (containerWidget instanceof BodyWidget) {
+                    containerWidget = containerWidget.nextRenderedWidget;
+                }
+                else {
+                    break;
+                }
             }
         }
         return undefined;
@@ -10567,6 +10614,9 @@ var Layout = /** @__PURE__ @class */ (function () {
                 isNullOrUndefined(nextWidget.nextWidget)) {
                 break;
             }
+            if (!isNullOrUndefined(currentWidget.floatingElements)) {
+                this.shiftLayoutFloatingItems(currentWidget);
+            }
             updateNextBlockList = true;
             this.reLayoutOrShiftWidgets(block, this.viewer);
             splittedWidget = block.getSplitWidgets();
@@ -10760,6 +10810,13 @@ var Layout = /** @__PURE__ @class */ (function () {
     Layout.prototype.shiftParagraphWidget = function (paragraph) {
         this.addParagraphWidget(this.viewer.clientActiveArea, paragraph);
         this.viewer.cutFromTop(this.viewer.clientActiveArea.y + paragraph.height);
+        if (!isNullOrUndefined(paragraph.floatingElements)) {
+            this.shiftLayoutFloatingItems(paragraph);
+            // for (let i: number = 0; i < paragraph.floatingElements.length; i++) {
+            //     let shape: ShapeElementBox = paragraph.floatingElements[i];
+            //     this.layoutElement(shape, paragraph);
+            // }
+        }
         this.updateWidgetToPage(this.viewer, paragraph);
     };
     Layout.prototype.shiftWidgetsForTable = function (table, viewer) {
@@ -11012,6 +11069,13 @@ var Layout = /** @__PURE__ @class */ (function () {
             }
         }
         bodyWidget.childWidgets.splice(index, 0, widget);
+        if (widget instanceof ParagraphWidget && !isNullOrUndefined(widget.floatingElements)) {
+            for (var i = 0; i < widget.floatingElements.length; i++) {
+                var shape = widget.floatingElements[i];
+                bodyWidget.floatingElements.push(shape);
+                widget.bodyWidget.floatingElements.splice(widget.bodyWidget.floatingElements.indexOf(shape), 1);
+            }
+        }
         bodyWidget.height += bodyWidget.height;
         widget.containerWidget = bodyWidget;
     };
@@ -11109,10 +11173,13 @@ var Layout = /** @__PURE__ @class */ (function () {
         var currentParagraph = lineToLayout.paragraph;
         var bodyWidget = paragraph.containerWidget;
         bodyWidget.height -= paragraph.height;
-        if (this.viewer.owner.enableHeaderAndFooter || paragraph.isInHeaderFooter) {
+        if ((this.viewer.owner.enableHeaderAndFooter || paragraph.isInHeaderFooter) && !(bodyWidget instanceof TextFrame)) {
             paragraph.bodyWidget.isEmpty = false;
             // tslint:disable-next-line:max-line-length
-            this.viewer.updateHCFClientAreaWithTop(paragraph.bodyWidget.sectionFormat, this.viewer.isBlockInHeader(paragraph), bodyWidget.page);
+            this.viewer.updateHCFClientAreaWithTop(paragraph.bodyWidget.sectionFormat, this.documentHelper.isBlockInHeader(paragraph), bodyWidget.page);
+        }
+        else if (bodyWidget instanceof TextFrame) {
+            this.viewer.updateClientAreaForTextBoxShape(bodyWidget.containerShape, true);
         }
         else {
             this.viewer.updateClientArea(bodyWidget.sectionFormat, bodyWidget.page);
@@ -11294,6 +11361,654 @@ var Layout = /** @__PURE__ @class */ (function () {
         line.children = [];
         line.children = tempElements;
     };
+    Layout.prototype.shiftLayoutFloatingItems = function (paragraph) {
+        for (var i = 0; i < paragraph.floatingElements.length; i++) {
+            var element = paragraph.floatingElements[i];
+            var position = this.getFloatingItemPoints(element);
+            var height = position.y - element.y;
+            element.x = position.x;
+            element.y = position.y;
+            for (var j = 0; j < element.textFrame.childWidgets.length; j++) {
+                var block = element.textFrame.childWidgets[j];
+                if (block instanceof ParagraphWidget) {
+                    block.y = block.y + height;
+                }
+                else if (block instanceof TableWidget) {
+                    this.shiftChildLocationForTableWidget(block, height);
+                }
+            }
+        }
+    };
+    //RTL feature layout end
+    Layout.prototype.getFloatingItemPoints = function (floatElement) {
+        var paragraph = floatElement.line.paragraph;
+        var sectionFormat = paragraph.bodyWidget.sectionFormat;
+        var indentX = 0;
+        var indentY = 0;
+        if (paragraph) {
+            var leftMargin = HelperMethods.convertPointToPixel(sectionFormat.leftMargin);
+            var rightMargin = HelperMethods.convertPointToPixel(sectionFormat.rightMargin);
+            var topMargin = HelperMethods.convertPointToPixel(sectionFormat.topMargin);
+            var bottomMargin = sectionFormat.bottomMargin > 0 ? HelperMethods.convertPointToPixel(sectionFormat.bottomMargin) : 48;
+            var headerDistance = HelperMethods.convertPointToPixel(sectionFormat.headerDistance);
+            var footerDistance = HelperMethods.convertPointToPixel(sectionFormat.footerDistance);
+            var pageWidth = HelperMethods.convertPointToPixel(sectionFormat.pageWidth);
+            var pageHeight = HelperMethods.convertPointToPixel(sectionFormat.pageHeight);
+            var pageClientWidth = pageWidth - (leftMargin + rightMargin);
+            var pageClientHeight = pageHeight - topMargin - bottomMargin;
+            //Need to consider RTL layout.
+            if (paragraph.isInHeaderFooter && sectionFormat.topMargin <= 0) {
+                topMargin = Math.abs(topMargin) > 0 ? Math.abs(topMargin)
+                    : HelperMethods.convertPointToPixel(sectionFormat.headerDistance) + (paragraph.height);
+            }
+            else {
+                topMargin = topMargin > 0 ? topMargin : 48;
+            }
+            //Update the top margin as text body y position when text body y position exceeds the top margin. 
+            if (!paragraph.isInHeaderFooter && topMargin < this.viewer.clientArea.y) {
+                topMargin = this.viewer.clientArea.y;
+            }
+            var mIsYPositionUpdated = false;
+            var textWrapStyle = 'InFrontOfText';
+            //if (textWrapStyle !== 'Inline') {
+            var isLayoutInCell = false;
+            var vertOrigin = floatElement.verticalOrigin;
+            var horzOrigin = floatElement.horizontalOrigin;
+            var horzAlignment = floatElement.horizontalAlignment;
+            var vertAlignment = floatElement.verticalAlignment;
+            var shapeHeight = floatElement.height;
+            //Need to update size width for Horizontal Line when width exceeds client width.
+            // if(shape !== null && shape.IsHorizontalRule && size.Width > m_layoutArea.ClientActiveArea.Width)
+            //     size.Width = m_layoutArea.ClientActiveArea.Width;
+            var shapeWidth = floatElement.width;
+            var vertPosition = floatElement.verticalPosition;
+            var horzPosition = floatElement.horizontalPosition;
+            var layoutInCell = floatElement.layoutInCell;
+            //Word 2013 Layout picture in table cell even layoutInCell property was False.
+            if (paragraph.isInsideTable && layoutInCell) {
+                isLayoutInCell = true;
+                indentY = this.getVerticalPosition(floatElement, vertPosition, vertOrigin, textWrapStyle);
+                // tslint:disable-next-line:max-line-length
+                indentX = this.getHorizontalPosition(floatElement.width, floatElement, horzAlignment, horzOrigin, horzPosition, textWrapStyle, paragraph.associatedCell.cellFormat.cellWidth);
+            }
+            else {
+                // tslint:disable-next-line:max-line-length
+                if (mIsYPositionUpdated) { /* Upadte the Y Coordinate of floating image when floating image postion is changed based on the wrapping style. */
+                    indentY = this.viewer.clientArea.y;
+                }
+                else {
+                    switch (vertOrigin) {
+                        case 'Page':
+                        case 'TopMargin':
+                            indentY = vertPosition;
+                            switch (vertAlignment) {
+                                case 'Top':
+                                    indentY = vertPosition;
+                                    break;
+                                case 'Center':
+                                    if (vertOrigin === 'TopMargin') {
+                                        indentY = (topMargin - shapeHeight) / 2;
+                                    }
+                                    else {
+                                        indentY = (pageHeight - shapeHeight) / 2;
+                                    }
+                                    break;
+                                case 'Outside':
+                                case 'Bottom':
+                                    if (vertOrigin === 'Page' && vertAlignment === 'Bottom') {
+                                        indentY = pageHeight - shapeHeight;
+                                    }
+                                    else {
+                                        if (vertOrigin === 'TopMargin') {
+                                            indentY = (topMargin - shapeHeight);
+                                        }
+                                        else if ((paragraph.bodyWidget.page.index + 1) % 2 !== 0) {
+                                            indentY = pageHeight - shapeHeight - footerDistance / 2;
+                                        }
+                                        else {
+                                            indentY = headerDistance / 2;
+                                        }
+                                    }
+                                    break;
+                                case 'Inside':
+                                    if (vertOrigin === 'Page') {
+                                        if ((paragraph.bodyWidget.page.index + 1) % 2 === 0) {
+                                            indentY = pageHeight - shapeHeight - footerDistance / 2;
+                                        }
+                                        else {
+                                            indentY = headerDistance / 2;
+                                        }
+                                    }
+                                    else {
+                                        //Need to ensure this behaviour.
+                                        if ((paragraph.bodyWidget.page.index + 1) % 2 === 0) {
+                                            indentY = ((topMargin - shapeHeight) / 2 - headerDistance);
+                                        }
+                                    }
+                                    break;
+                                case 'None':
+                                    // Special case for Shape and Textbox.
+                                    break;
+                            }
+                            break;
+                        case 'Line':
+                            indentY = vertPosition;
+                            switch (vertAlignment) {
+                                case 'Inside':
+                                case 'Top':
+                                    //Need to update line widget height instead of client active area.
+                                    indentY = this.viewer.clientActiveArea.y;
+                                    break;
+                                case 'Center':
+                                    indentY = this.viewer.clientActiveArea.y - shapeHeight / 2;
+                                    break;
+                                case 'Outside':
+                                case 'Bottom':
+                                    indentY = this.viewer.clientActiveArea.y - shapeHeight;
+                                    break;
+                                case 'None':
+                                    indentY = Math.round(paragraph.y) + vertPosition;
+                                    break;
+                            }
+                            break;
+                        case 'BottomMargin':
+                            indentY = vertPosition;
+                            switch (vertAlignment) {
+                                case 'Inside':
+                                case 'Top':
+                                    indentY = (pageHeight - bottomMargin);
+                                    break;
+                                case 'Center':
+                                    indentY = pageHeight - bottomMargin + ((bottomMargin - shapeHeight) / 2);
+                                    break;
+                                case 'Outside':
+                                case 'Bottom':
+                                    if (paragraph.bodyWidget.page.index + 1 % 2 !== 0 && vertAlignment === 'Outside') {
+                                        indentY = pageHeight - bottomMargin;
+                                    }
+                                    else {
+                                        indentY = pageHeight - shapeHeight;
+                                    }
+                                    break;
+                                case 'None':
+                                    indentY = pageHeight - bottomMargin + vertPosition;
+                                    break;
+                            }
+                            break;
+                        case 'InsideMargin':
+                        case 'OutsideMargin':
+                            indentY = vertPosition;
+                            switch (vertAlignment) {
+                                case 'Inside':
+                                    if (vertOrigin === 'InsideMargin') {
+                                        if (vertOrigin === 'InsideMargin' && paragraph.bodyWidget.page.index + 1 % 2 === 0) {
+                                            indentY = pageHeight - shapeHeight;
+                                        }
+                                        else {
+                                            indentY = 0;
+                                        }
+                                    }
+                                    else {
+                                        // tslint:disable-next-line:max-line-length
+                                        indentY = (paragraph.bodyWidget.page.index + 1) % 2 !== 0 ? pageHeight - bottomMargin : topMargin - shapeHeight;
+                                    }
+                                    break;
+                                case 'Top':
+                                    if (vertOrigin === 'InsideMargin') {
+                                        if ((paragraph.bodyWidget.page.index + 1) % 2 === 0) {
+                                            indentY = pageHeight - bottomMargin;
+                                        }
+                                        else {
+                                            indentY = 0;
+                                        }
+                                    }
+                                    else {
+                                        indentY = (paragraph.bodyWidget.page.index + 1) % 2 !== 0 ? pageHeight - bottomMargin : 0;
+                                    }
+                                    break;
+                                case 'Center':
+                                    if (vertOrigin === 'OutsideMargin') {
+                                        //Need to ensure this.
+                                        // tslint:disable-next-line:max-line-length
+                                        indentY = (paragraph.bodyWidget.page.index + 1) % 2 !== 0 ? pageHeight - bottomMargin + (bottomMargin - shapeHeight) / 2 : (topMargin - shapeHeight) / 2;
+                                    }
+                                    else {
+                                        if ((paragraph.bodyWidget.page.index + 1) % 2 === 0) {
+                                            indentY = pageHeight - bottomMargin + (bottomMargin - shapeHeight) / 2;
+                                        }
+                                        else {
+                                            indentY = (topMargin - shapeHeight) / 2;
+                                        }
+                                    }
+                                    break;
+                                case 'Outside':
+                                    if (vertOrigin === 'InsideMargin') {
+                                        if ((paragraph.bodyWidget.page.index + 1) % 2 === 0) {
+                                            indentY = (pageHeight - bottomMargin);
+                                        }
+                                        else {
+                                            indentY = (topMargin - shapeHeight);
+                                        }
+                                    }
+                                    else {
+                                        // tslint:disable-next-line:max-line-length
+                                        indentY = (paragraph.bodyWidget.page.index + 1) % 2 !== 0 ? topMargin - shapeHeight : pageHeight - bottomMargin;
+                                    }
+                                    break;
+                                case 'Bottom':
+                                    if (vertOrigin === 'OutsideMargin') {
+                                        // tslint:disable-next-line:max-line-length
+                                        indentY = (paragraph.bodyWidget.page.index + 1) !== 0 ? pageHeight - shapeHeight : topMargin - shapeHeight;
+                                    }
+                                    else {
+                                        if ((paragraph.bodyWidget.page.index + 1) % 2 === 0) {
+                                            indentY = pageHeight - shapeHeight;
+                                        }
+                                        else {
+                                            indentY = topMargin - shapeHeight;
+                                        }
+                                    }
+                                    break;
+                                case 'None':
+                                    break;
+                            }
+                            break;
+                        case 'Paragraph':
+                            var space = 0;
+                            var prevsibling = paragraph.previousWidget;
+                            if (floatElement) {
+                                //Need to handle DocIO Implementation.
+                                if (Math.round(paragraph.y) !== Math.round(topMargin) && (prevsibling instanceof ParagraphWidget)
+                                    && ((paragraph.paragraphFormat.beforeSpacing > prevsibling.paragraphFormat.afterSpacing)
+                                        || (prevsibling.paragraphFormat.afterSpacing < 14)
+                                            && !paragraph.paragraphFormat.contextualSpacing)) {
+                                    space = prevsibling.paragraphFormat.afterSpacing;
+                                }
+                            }
+                            // tslint:disable-next-line:max-line-length
+                            //Floating item Y position is calculated from paragraph original Y position not from wrapped paragraph Y(ParagraphLayoutInfo.YPosition) position.
+                            indentY = Math.round(paragraph.y) + space + vertPosition;
+                            break;
+                        case 'Margin':
+                            //If header distance is more than top margin, then calculate the position of item based on header distance.
+                            //As per Microsoft Word behavior, it is need to consider paragraph height along with the distance.
+                            if (paragraph.isInHeaderFooter && headerDistance > topMargin) {
+                                //Need to udpate.
+                                indentY = (headerDistance + (paragraph.height)) + vertPosition;
+                            }
+                            else {
+                                indentY = topMargin + vertPosition;
+                            }
+                            switch (vertAlignment) {
+                                case 'Top':
+                                    indentY = topMargin;
+                                    break;
+                                case 'Center':
+                                    indentY = topMargin + (pageClientHeight - shapeHeight) / 2;
+                                    break;
+                                case 'Outside':
+                                case 'Bottom':
+                                    if ((paragraph.bodyWidget.page.index + 1) % 2 !== 0) {
+                                        indentY = topMargin + pageClientHeight - shapeHeight;
+                                    }
+                                    else {
+                                        indentY = topMargin;
+                                    }
+                                    break;
+                                case 'Inside':
+                                    if ((paragraph.bodyWidget.page.index + 1) % 2 === 0) {
+                                        indentY = topMargin + pageClientHeight - shapeHeight;
+                                    }
+                                    else {
+                                        indentY = topMargin;
+                                    }
+                                    break;
+                                case 'None':
+                                    break;
+                            }
+                            break;
+                        default:
+                            //Need to analyze further.
+                            indentY = this.viewer.clientArea.y - vertPosition;
+                            break;
+                    }
+                }
+                // if (horzOrigin !== 'Column' && horzAlignment !== 'None') {
+                //     indentX = this.viewer.clientArea.x;
+                //     //Update the floating item x position to zero when floating item’s width
+                //     //exceeds the page width when floating item and it wrapping style is not equal to  
+                //     // infront of text and behind text and also vertical origin is not equal to paragraph.
+                // } else 
+                if (paragraph && textWrapStyle !== 'InFrontOfText' && textWrapStyle !== 'BehindText' &&
+                    vertOrigin === 'Paragraph' && shapeWidth >= pageWidth) {
+                    indentX = 0;
+                }
+                else {
+                    switch (horzOrigin) {
+                        case 'Page':
+                            indentX = horzPosition;
+                            switch (horzAlignment) {
+                                case 'Center':
+                                    if (isLayoutInCell) {
+                                        indentX = (paragraph.associatedCell.cellFormat.cellWidth - shapeWidth) / 2;
+                                    }
+                                    else {
+                                        indentX = (pageWidth - shapeWidth) / 2;
+                                    }
+                                    break;
+                                case 'Left':
+                                    indentX = 0;
+                                    break;
+                                case 'Outside':
+                                case 'Right':
+                                    if (isLayoutInCell) {
+                                        indentX = paragraph.associatedCell.cellFormat.cellWidth - shapeWidth;
+                                    }
+                                    else {
+                                        indentX = pageWidth - shapeWidth;
+                                    }
+                                    break;
+                                case 'None':
+                                    if (isLayoutInCell) {
+                                        indentX = paragraph.associatedCell.x + horzPosition;
+                                    }
+                                    else if (floatElement instanceof ShapeElementBox) {
+                                        indentX = horzPosition;
+                                        // Shape pItemShape = paraItem as Shape;
+                                        // float horRelPercent = pItemShape !== null ? pItemShape.TextFrame.HorizontalRelativePercent
+                                        //                       : (paraItem as WTextBox).TextBoxFormat.HorizontalRelativePercent;
+                                        // if (Math.Abs(horRelPercent) <= 1000)
+                                        //     indentX = pageWidth * (horRelPercent / 100);
+                                        // else
+                                        //     indentX = pItemShape !== null ? pItemShape.HorizontalPosition
+                                        //         : (paraItem as WTextBox).TextBoxFormat.HorizontalPosition;
+                                    }
+                                    else {
+                                        indentX = horzPosition;
+                                    }
+                                    break;
+                            }
+                            if (indentX < 0 && isLayoutInCell) {
+                                indentX = paragraph.associatedCell.x;
+                            }
+                            break;
+                        case 'Column':
+                            //Update the Xposition while wrapping element exsit in the paragraph
+                            if (this.viewer.clientActiveArea.x < paragraph.x) {
+                                // let cellPadings = 0;
+                                // if (paragraph.isInsideTable) {
+                                //     CellLayoutInfo cellLayoutInfo = (ownerPara.GetOwnerEntity() as IWidget).LayoutInfo as CellLayoutInfo;
+                                //     cellPadings = cellLayoutInfo.Paddings.Left + cellLayoutInfo.Paddings.Right;
+                                // }
+                                // float minimumWidthRequired = DEF_MIN_WIDTH_SQUARE;
+                                // if (textWrapStyle === TextWrappingStyle.Tight || textWrapStyle === TextWrappingStyle.Through)
+                                //     minimumWidthRequired = ownerPara.Document.Settings.CompatibilityMode === CompatibilityMode.Word2013 ?
+                                //         DEF_MIN_WIDTH_2013_TIGHTANDTHROW : DEF_MIN_WIDTH_TIGHTANDTHROW;
+                                // minimumWidthRequired -= cellPadings;
+                                // //Re Update the x position to the page left when paragraph starting position not equal to the 
+                                // //column starting and current inline item is x position equal to the column left position.
+                                // tslint:disable-next-line:max-line-length
+                                // if ((ownerPara.IsXpositionUpated && ownerPara.Document.Settings.CompatibilityMode === CompatibilityMode.Word2013)
+                                //     || paragraphLayoutInfo.XPosition > (pageWidth - minimumWidthRequired - rightMargin)
+                                //     || paragraphLayoutInfo.IsXPositionReUpdate)
+                                //     indentX = layouter.ClientLayoutArea.Left + horzPosition;
+                                // else
+                                indentX = paragraph.x + horzPosition;
+                            }
+                            else {
+                                //Re Update the x position to the page left when word version not equal to 2013 
+                                //and wrapping style not equal to infront of text and behind text. 
+                                if ((textWrapStyle === 'InFrontOfText' || textWrapStyle === 'BehindText')) {
+                                    indentX = paragraph.x + horzPosition;
+                                }
+                                else {
+                                    indentX = this.viewer.clientActiveArea.x + horzPosition;
+                                }
+                            }
+                            //Update the Wrapping element right position as page right when 
+                            //wrapping element right position  exceeds the page right except position 
+                            //InFrontOfText and behindText wrapping style.
+                            if (textWrapStyle !== 'InFrontOfText' && textWrapStyle !== 'BehindText'
+                                && Math.round(indentX + shapeWidth) > Math.round(pageWidth) && shapeWidth < pageWidth) {
+                                indentX = (pageWidth - shapeWidth);
+                            }
+                            switch (horzAlignment) {
+                                case 'Center':
+                                    indentX = this.viewer.clientActiveArea.x + (this.viewer.clientActiveArea.width - shapeWidth) / 2;
+                                    break;
+                                case 'Left':
+                                    indentX = this.viewer.clientActiveArea.x;
+                                    break;
+                                case 'Right':
+                                    // tslint:disable-next-line:max-line-length
+                                    indentX = this.viewer.clientActiveArea.x + this.viewer.clientActiveArea.width - shapeWidth; //- TextBoxFormat.InternalMargin.Right;
+                                    break;
+                                case 'None':
+                                    break;
+                            }
+                            break;
+                        case 'Margin':
+                            if (paragraph.bodyWidget) {
+                                indentX = leftMargin + horzPosition;
+                                switch (horzAlignment) {
+                                    case 'Center':
+                                        indentX = leftMargin + (pageClientWidth - shapeWidth) / 2;
+                                        break;
+                                    case 'Left':
+                                        indentX = leftMargin;
+                                        break;
+                                    case 'Outside':
+                                        if ((paragraph.bodyWidget.page.index + 1) % 2 !== 0) {
+                                            indentX = leftMargin + pageClientWidth - shapeWidth;
+                                        }
+                                        break;
+                                    case 'Right':
+                                        indentX = leftMargin + pageClientWidth - shapeWidth;
+                                        break;
+                                    case 'Inside':
+                                        if ((paragraph.bodyWidget.page.index + 1) % 2 === 0) {
+                                            indentX = leftMargin + pageClientWidth - shapeWidth;
+                                        }
+                                        break;
+                                    case 'None':
+                                        break;
+                                }
+                            }
+                            else {
+                                indentX = this.viewer.clientArea.x + horzPosition;
+                            }
+                            break;
+                        case 'Character':
+                            if (horzAlignment === 'Right' || horzAlignment === 'Center') {
+                                // tslint:disable-next-line:max-line-length
+                                indentX = this.getLeftMarginHorizPosition(leftMargin, horzAlignment, horzPosition, shapeWidth, textWrapStyle);
+                            }
+                            else {
+                                //Need to update this while layouting.**
+                                indentX = this.viewer.clientArea.x + horzPosition;
+                            }
+                            break;
+                        case 'LeftMargin':
+                            indentX = this.getLeftMarginHorizPosition(leftMargin, horzAlignment, horzPosition, shapeWidth, textWrapStyle);
+                            break;
+                        case 'RightMargin':
+                            // tslint:disable-next-line:max-line-length
+                            indentX = this.getRightMarginHorizPosition(pageWidth, rightMargin, horzAlignment, horzPosition, shapeWidth, textWrapStyle);
+                            break;
+                        case 'InsideMargin':
+                            if ((paragraph.bodyWidget.page.index + 1) % 2 === 0) {
+                                // tslint:disable-next-line:max-line-length
+                                indentX = this.getRightMarginHorizPosition(pageWidth, rightMargin, horzAlignment, horzPosition, shapeWidth, textWrapStyle);
+                            }
+                            else {
+                                // tslint:disable-next-line:max-line-length
+                                indentX = this.getLeftMarginHorizPosition(leftMargin, horzAlignment, horzPosition, shapeWidth, textWrapStyle);
+                            }
+                            break;
+                        case 'OutsideMargin':
+                            if ((paragraph.bodyWidget.page.index + 1) % 2 === 0) {
+                                // tslint:disable-next-line:max-line-length
+                                indentX = this.getLeftMarginHorizPosition(leftMargin, horzAlignment, horzPosition, shapeWidth, textWrapStyle);
+                            }
+                            else {
+                                // tslint:disable-next-line:max-line-length
+                                indentX = this.getRightMarginHorizPosition(pageWidth, rightMargin, horzAlignment, horzPosition, shapeWidth, textWrapStyle);
+                            }
+                            break;
+                        default:
+                            indentX = this.viewer.clientArea.x + horzPosition;
+                            break;
+                    }
+                    //Update the floating item right position to the page right when floating item 
+                    //right position exceeds the page width and it wrapping style is not equal to  
+                    // InFrontOfText and behind text and also vertical origin is not equal to paragraph.
+                    if (paragraph && textWrapStyle !== 'InFrontOfText'
+                        && textWrapStyle !== 'BehindText' && vertOrigin === 'Paragraph' && pageWidth < indentX + shapeWidth) {
+                        indentX = pageWidth - shapeWidth;
+                    }
+                }
+            }
+            //}
+        }
+        return new Point(indentX, indentY);
+    };
+    // tslint:disable-next-line:max-line-length
+    Layout.prototype.getLeftMarginHorizPosition = function (leftMargin, horzAlignment, horzPosition, shapeWidth, textWrapStyle) {
+        var indentX = horzPosition;
+        switch (horzAlignment) {
+            case 'Center':
+                indentX = (leftMargin - shapeWidth) / 2;
+                break;
+            case 'Left':
+                indentX = 0;
+                break;
+            case 'Right':
+                indentX = leftMargin - shapeWidth;
+                break;
+            case 'None':
+                break;
+        }
+        if (indentX < 0 && textWrapStyle !== 'InFrontOfText' && textWrapStyle !== 'BehindText') {
+            indentX = 0;
+        }
+        return indentX;
+    };
+    // tslint:disable-next-line:max-line-length
+    Layout.prototype.getRightMarginHorizPosition = function (pageWidth, rightMargin, horzAlignment, horzPosition, shapeWidth, textWrapStyle) {
+        var xPosition = pageWidth - rightMargin;
+        var indentX = xPosition + horzPosition;
+        switch (horzAlignment) {
+            case 'Center':
+                indentX = xPosition + (rightMargin - shapeWidth) / 2;
+                break;
+            case 'Left':
+                indentX = xPosition;
+                break;
+            case 'Right':
+                indentX = pageWidth - shapeWidth;
+                break;
+            case 'None':
+                break;
+        }
+        if ((indentX < 0 || indentX + shapeWidth > pageWidth) && textWrapStyle !== 'InFrontOfText' && textWrapStyle !== 'BehindText') {
+            indentX = pageWidth - shapeWidth;
+        }
+        return indentX;
+    };
+    // tslint:disable-next-line:max-line-length
+    Layout.prototype.getVerticalPosition = function (paraItem, vertPosition, vertOrigin, textWrapStyle) {
+        var paragraph = paraItem.line.paragraph;
+        //ParagraphLayoutInfo paragraphLayoutInfo = (paragraph as IWidget).LayoutInfo as ParagraphLayoutInfo;
+        var shape = paraItem;
+        //WPicture pic = paraItem as WPicture;
+        var indentY = 0;
+        var topMargin = paragraph.associatedCell.topMargin;
+        switch (vertOrigin) {
+            case 'Page':
+            case 'Margin':
+            case 'TopMargin':
+            case 'InsideMargin':
+            case 'BottomMargin':
+            case 'OutsideMargin':
+                indentY = topMargin + vertPosition;
+                break;
+            case 'Line':
+            case 'Paragraph':
+                var space = 0;
+                if (shape) {
+                    space = paragraph.paragraphFormat.afterSpacing;
+                }
+                indentY = paragraph.y + vertPosition + space;
+                break;
+            default:
+                indentY = this.viewer.clientActiveArea.y + vertPosition;
+                break;
+        }
+        return indentY;
+    };
+    /// <summary>
+    /// Get Horizontal position of the picture
+    /// </summary>
+    /// <param name="picture"></param>
+    /// <returns></returns>
+    // tslint:disable-next-line:max-line-length
+    Layout.prototype.getHorizontalPosition = function (width, paraItem, horzAlignment, horzOrigin, horzPosition, textWrapStyle, cellWid) {
+        var indentX = 0;
+        var paragraph = paraItem.line.paragraph;
+        // CellLayoutInfo cellLayoutInfo = (paragraph.OwnerTextBody as IWidget).LayoutInfo as CellLayoutInfo;
+        // ILayoutSpacingsInfo spacings = cellLayoutInfo as ILayoutSpacingsInfo;
+        var cell = paragraph.associatedCell;
+        var cellWidth = cellWid - cell.leftMargin - cell.rightMargin;
+        var cellInnerWidth = cell.cellFormat.cellWidth;
+        var marginLeft = cell.x;
+        var pageLeft = marginLeft - cell.leftMargin;
+        switch (horzOrigin) {
+            case 'Page':
+                {
+                    indentX = horzPosition;
+                    switch (horzAlignment) {
+                        case 'Center':
+                            indentX = pageLeft + (cellWidth - width) / 2;
+                            break;
+                        case 'Left':
+                            indentX = pageLeft;
+                            break;
+                        case 'Right':
+                            indentX = pageLeft + (cellWidth - width);
+                            break;
+                        case 'None':
+                            indentX = pageLeft + horzPosition;
+                            break;
+                    }
+                }
+                break;
+            case 'Column':
+            case 'Margin':
+                {
+                    switch (horzAlignment) {
+                        case 'Center':
+                            indentX = marginLeft + (cellInnerWidth - width) / 2;
+                            break;
+                        case 'Left':
+                            indentX = marginLeft;
+                            break;
+                        case 'Right':
+                            indentX = marginLeft + (cellInnerWidth - width);
+                            break;
+                        case 'None':
+                            indentX = marginLeft + horzPosition;
+                            break;
+                    }
+                }
+                break;
+            default:
+                {
+                    indentX = marginLeft + horzPosition;
+                }
+                break;
+        }
+        return indentX;
+    };
     return Layout;
 }());
 
@@ -11311,6 +12026,7 @@ var Renderer = /** @__PURE__ @class */ (function () {
         this.leftPosition = 0;
         this.topPosition = 0;
         this.isFormField = false;
+        this.height = 0;
         this.documentHelper = documentHelper;
     }
     Object.defineProperty(Renderer.prototype, "pageCanvas", {
@@ -11423,6 +12139,7 @@ var Renderer = /** @__PURE__ @class */ (function () {
             this.pageContext.rect(left, top, width, height);
             this.pageContext.clip();
         }
+        this.height = height;
         if (page.headerWidget) {
             this.renderHFWidgets(page, page.headerWidget, width, true);
         }
@@ -11501,6 +12218,7 @@ var Renderer = /** @__PURE__ @class */ (function () {
                 this.renderWidget(page, block);
             }
         }
+        this.renderFloatingItems(page, widget.floatingElements);
         if (cliped) {
             this.pageContext.restore();
         }
@@ -11607,6 +12325,30 @@ var Renderer = /** @__PURE__ @class */ (function () {
                 this.renderHeader(page, widget, this.documentHelper.layout.getHeader(bodyWidget.childWidgets[0]));
             }
             this.renderWidget(page, widget);
+        }
+        this.renderFloatingItems(page, page.bodyWidgets[0].floatingElements);
+    };
+    Renderer.prototype.renderFloatingItems = function (page, floatingElements) {
+        if (!isNullOrUndefined(floatingElements) && floatingElements.length > 0) {
+            /* tslint:disable */
+            floatingElements.sort(function (a, b) { return a.zOrderPosition - b.zOrderPosition; });
+            for (var i = 0; i < floatingElements.length; i++) {
+                var shape = floatingElements[i];
+                var blocks = shape.textFrame.childWidgets;
+                var shapeLeft = this.getScaledValue(shape.x, 1);
+                var shapeTop = this.getScaledValue(shape.y, 2);
+                this.pageContext.beginPath();
+                this.pageContext.fillStyle = 'white';
+                this.pageContext.fillRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
+                if (shape.lineFormat.lineFormatType !== 'None') {
+                    this.pageContext.strokeStyle = shape.lineFormat.color;
+                    this.pageContext.strokeRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
+                }
+                this.pageContext.closePath();
+                for (var i_1 = 0; i_1 < blocks.length; i_1++) {
+                    this.renderWidget(page, blocks[i_1]);
+                }
+            }
         }
     };
     /**
@@ -11717,7 +12459,8 @@ var Renderer = /** @__PURE__ @class */ (function () {
         this.renderTableCellOutline(page.documentHelper, cellWidget);
         for (var i = 0; i < cellWidget.childWidgets.length; i++) {
             var widget = cellWidget.childWidgets[i];
-            // this.clipRect(cellWidget.x, cellWidget.y, this.getScaledValue(width), this.getScaledValue(cellWidget.height));
+            var width = cellWidget.width + cellWidget.margin.left - cellWidget.leftBorderWidth;
+            this.clipRect(cellWidget.x, cellWidget.y, this.getScaledValue(width), this.getScaledValue(this.height));
             this.renderWidget(page, widget);
             this.pageContext.restore();
         }
@@ -11762,6 +12505,9 @@ var Renderer = /** @__PURE__ @class */ (function () {
         var isCommentMark = false;
         for (var i = 0; i < lineWidget.children.length; i++) {
             var elementBox = lineWidget.children[i];
+            if (elementBox instanceof ShapeElementBox) {
+                continue;
+            }
             if (elementBox instanceof CommentCharacterElementBox &&
                 elementBox.commentType === 0 && this.documentHelper.owner.selectionModule) {
                 if (this.documentHelper.owner.enableComment && !isCommentMark) {
@@ -14434,6 +15180,9 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
          */
         this.updateFocus = function () {
             if (_this.selection) {
+                if (!Browser.isDevice) {
+                    _this.iframe.focus();
+                }
                 _this.editableDiv.focus();
                 _this.selection.showCaret();
             }
@@ -14524,6 +15273,11 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
                 }
                 // tslint:disable-next-line:max-line-length
                 if (_this.isLeftButtonPressed(event) && !_this.owner.isReadOnlyMode && _this.owner.enableImageResizerMode && !isNullOrUndefined(_this.owner.imageResizerModule.selectedResizeElement)) {
+                    if (_this.selection.isInShape) {
+                        var textFram = _this.owner.selection.getCurrentTextFrame();
+                        var shape = textFram.containerShape;
+                        _this.selection.selectShape(shape);
+                    }
                     _this.owner.imageResizerModule.isImageResizing = true;
                 }
                 event.preventDefault();
@@ -14609,7 +15363,8 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
                                 var touchY = yPosition;
                                 var textPosition = _this.owner.selection.end;
                                 var touchPoint_1 = new Point(xPosition, touchY);
-                                if (!_this.owner.enableImageResizerMode || !_this.owner.imageResizerModule.isImageResizerVisible) {
+                                if (!_this.owner.enableImageResizerMode || !_this.owner.imageResizerModule.isImageResizerVisible
+                                    || _this.owner.imageResizerModule.isShapeResize) {
                                     _this.owner.selection.moveTextPosition(touchPoint_1, textPosition);
                                 }
                                 _this.isSelectionChangedOnMouseMoved = true;
@@ -15902,6 +16657,26 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
         return false;
     };
     /**
+     * @private
+     */
+    DocumentHelper.prototype.isInShapeBorder = function (floatElement, cursorPoint) {
+        if (!isNullOrUndefined(floatElement) && floatElement instanceof ShapeElementBox) {
+            var width = floatElement.width;
+            var height = floatElement.height;
+            var lineWidth = floatElement.lineFormat.weight;
+            // tslint:disable-next-line:max-line-length
+            if (this.isInsideRect(floatElement.x - floatElement.margin.left, floatElement.y - floatElement.margin.top, width, height, cursorPoint)) {
+                // this.selectionLineWidget = this.getLineWidget(cursorPoint);
+                if (!(this.isInsideRect(floatElement.x + lineWidth, floatElement.y + lineWidth + floatElement.textFrame.marginTop, 
+                // tslint:disable-next-line:max-line-length
+                width - (lineWidth * 2), height - ((lineWidth * 2) + floatElement.textFrame.marginTop + floatElement.textFrame.marginBottom), cursorPoint))) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+    /**
      * Check whether touch point is inside the rectangle or not.
      * @param x
      * @param y
@@ -16241,7 +17016,6 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
         var scrollTop = this.owner.viewer.containerTop;
         var scrollLeft = this.owner.viewer.containerLeft;
         var pageHeight = this.visibleBounds.height;
-        this.updateFocus();
         var caretInfo = this.selection.updateCaretSize(this.owner.selection.end, true);
         var topMargin = caretInfo.topMargin;
         var caretHeight = caretInfo.height;
@@ -16282,7 +17056,6 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
             var childWidgets = void 0;
             if (this.owner.enableHeaderAndFooter) {
                 var page = this.currentPage;
-                var pageTop = this.selection.getPageTop(page);
                 var pageBottom = page.boundingRectangle.height;
                 var headerHeight = Math.max((page.headerWidget.y + page.headerWidget.height), HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.topMargin)) * this.zoomFactor;
                 var footerDistance = HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.footerDistance);
@@ -16307,19 +17080,82 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
                 if (isNullOrUndefined(childWidgets)) {
                     return undefined;
                 }
-                return this.selection.getLineWidgetBodyWidget(childWidgets, cursorPoint);
+                var shapeElementInfo = this.checkFloatingItems(childWidgets, cursorPoint, isMouseDragged);
+                if (shapeElementInfo.isShapeSelected) {
+                    if (shapeElementInfo.isInShapeBorder) {
+                        return shapeElementInfo.element.line;
+                    }
+                    return this.selection.getLineWidgetBodyWidget(shapeElementInfo.element.textFrame, cursorPoint);
+                }
+                else {
+                    return this.selection.getLineWidgetBodyWidget(childWidgets, cursorPoint);
+                }
             }
             else {
-                for (var i = 0; i < this.currentPage.bodyWidgets.length; i++) {
-                    var bodyWidgets = this.currentPage.bodyWidgets[i];
-                    widget = this.selection.getLineWidgetBodyWidget(bodyWidgets, cursorPoint);
-                    if (!isNullOrUndefined(widget)) {
-                        break;
+                var shapeInfo = this.checkFloatingItems(this.currentPage.bodyWidgets[0], cursorPoint, isMouseDragged);
+                if (shapeInfo.isShapeSelected) {
+                    if (shapeInfo.isInShapeBorder) {
+                        return shapeInfo.element.line;
+                    }
+                    widget = this.selection.getLineWidgetBodyWidget(shapeInfo.element.textFrame, cursorPoint);
+                }
+                else {
+                    for (var i = 0; i < this.currentPage.bodyWidgets.length; i++) {
+                        var bodyWidgets = this.currentPage.bodyWidgets[i];
+                        widget = this.selection.getLineWidgetBodyWidget(bodyWidgets, cursorPoint);
+                        if (!isNullOrUndefined(widget)) {
+                            break;
+                        }
                     }
                 }
             }
         }
         return widget;
+    };
+    /**
+     * @private
+     */
+    DocumentHelper.prototype.checkFloatingItems = function (blockContainer, cursorPoint, isMouseDragged) {
+        var isInShape = false;
+        var isInShapeBorder = false;
+        var floatElement;
+        var selectionInShape = this.selection.isInShape;
+        var isMouseDraggedInShape = isMouseDragged && selectionInShape;
+        if (blockContainer.floatingElements.length > 0) {
+            var page = this.currentPage;
+            /* tslint:disable */
+            blockContainer.floatingElements.sort(function (a, b) { return b.zOrderPosition - a.zOrderPosition; });
+            if (isMouseDraggedInShape) {
+                var textFrame = this.owner.selection.getCurrentTextFrame();
+                if (textFrame) {
+                    floatElement = textFrame.containerShape;
+                    isInShape = true;
+                }
+            }
+            else {
+                for (var i = 0; i < blockContainer.floatingElements.length; i++) {
+                    floatElement = blockContainer.floatingElements[i];
+                    if (cursorPoint.x < floatElement.x + floatElement.margin.left + floatElement.width &&
+                        cursorPoint.x > floatElement.x && cursorPoint.y < floatElement.y + floatElement.margin.top +
+                        floatElement.height && cursorPoint.y > floatElement.y) {
+                        isInShape = true;
+                        if (this.isInShapeBorder(floatElement, cursorPoint)) {
+                            isInShapeBorder = true;
+                        }
+                        break;
+                    }
+                }
+                if (isMouseDragged && !selectionInShape) {
+                    isInShape = false;
+                }
+            }
+        }
+        return {
+            'element': floatElement,
+            'caretPosition': cursorPoint,
+            'isShapeSelected': isInShape,
+            'isInShapeBorder': isInShapeBorder
+        };
     };
     /**
      * @private
@@ -16330,6 +17166,9 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
                 return false;
             }
             block = block.containerWidget;
+            if (block instanceof TextFrame) {
+                block = block.containerShape.paragraph;
+            }
         }
         return block.containerWidget.headerFooterType.indexOf('Header') !== -1;
     };
@@ -16578,6 +17417,7 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
         var editor = !this.owner.isReadOnlyMode ? this.owner.editorModule : undefined;
         var isRowResize = editor ? editor.tableResize.isInRowResizerArea(touchPoint) : false;
         var isCellResize = editor ? editor.tableResize.isInCellResizerArea(touchPoint) : false;
+        var floatItemInfo = this.selection.checkAllFloatingElements(widget, touchPoint);
         var resizePosition = '';
         if (this.owner.enableImageResizerMode) {
             var resizeObj = this.owner.imageResizerModule.getImagePoint(touchPoint);
@@ -16632,7 +17472,9 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
             div.style.cursor = 'default';
         }
         if (!isNullOrUndefined(resizePosition) && resizePosition !== '') {
-            div.style.cursor = resizePosition;
+            if (!this.owner.imageResizerModule.isShapeResize || this.owner.imageResizerModule.isShapeResize && resizePosition !== 'move') {
+                div.style.cursor = resizePosition;
+            }
         }
         else if (!isNullOrUndefined(widgetInfo) && widgetInfo.isImageSelected && left < touchPoint.x && top < touchPoint.y &&
             left + widget.width > touchPoint.x && top + widget.height > touchPoint.y) {
@@ -16643,6 +17485,9 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
         }
         else if (isCellResize) {
             div.style.cursor = 'col-resize';
+        }
+        if (floatItemInfo.isInShapeBorder) {
+            div.style.cursor = 'all-scroll';
         }
     };
     return DocumentHelper;
@@ -16822,6 +17667,23 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
         }
     };
     /**
+     * Updates client area for TextBox shape.
+     * @private
+     */
+    LayoutViewer.prototype.updateClientAreaForTextBoxShape = function (textBox, beforeLayout) {
+        if (beforeLayout) {
+            var marginLeft = HelperMethods.convertPointToPixel(textBox.textFrame.marginLeft);
+            var marginRight = HelperMethods.convertPointToPixel(textBox.textFrame.marginRight);
+            var marginTop = HelperMethods.convertPointToPixel(textBox.textFrame.marginTop);
+            var marginBottom = HelperMethods.convertPointToPixel(textBox.textFrame.marginBottom);
+            var width = textBox.width;
+            var height = Number.POSITIVE_INFINITY;
+            // tslint:disable-next-line:max-line-length
+            this.clientArea = new Rect(textBox.x + marginLeft, textBox.y + marginTop, width - marginLeft - marginRight, height - marginTop - marginBottom);
+            this.clientActiveArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
+        }
+    };
+    /**
      * Updates the client area based on widget.
      * @private
      */
@@ -16842,18 +17704,6 @@ var LayoutViewer = /** @__PURE__ @class */ (function () {
         widget.x = area.x;
         widget.y = area.y;
         widget.width = area.width;
-    };
-    /**
-     * @private
-     */
-    LayoutViewer.prototype.isBlockInHeader = function (block) {
-        while (!(block.containerWidget instanceof HeaderFooterWidget)) {
-            if (!block.containerWidget) {
-                return false;
-            }
-            block = block.containerWidget;
-        }
-        return block.containerWidget.headerFooterType.indexOf('Header') !== -1;
     };
     /**
      * Updates client area for block.
@@ -18251,6 +19101,10 @@ var BlockContainer = /** @__PURE__ @class */ (function (_super) {
         /**
          * @private
          */
+        _this.floatingElements = [];
+        /**
+         * @private
+         */
         _this.sectionFormatIn = undefined;
         return _this;
     }
@@ -18507,7 +19361,13 @@ var BlockWidget = /** @__PURE__ @class */ (function (_super) {
         get: function () {
             var widget = this;
             while (widget.containerWidget) {
-                if (widget.containerWidget instanceof BlockContainer) {
+                if (widget.containerWidget instanceof TextFrame) {
+                    var paragraph = widget.containerWidget.containerShape.line.paragraph;
+                    if (paragraph) {
+                        return paragraph.bodyWidget;
+                    }
+                }
+                else if (widget.containerWidget instanceof BlockContainer) {
                     return widget.containerWidget;
                 }
                 widget = widget.containerWidget;
@@ -18604,7 +19464,10 @@ var BlockWidget = /** @__PURE__ @class */ (function (_super) {
         var node = this;
         hierarchicalIndex = node.containerWidget.childWidgets.indexOf(node) + ';' + hierarchicalIndex;
         if (!isNullOrUndefined(node.containerWidget)) {
-            if (node.containerWidget instanceof BlockWidget) {
+            if (node.containerWidget instanceof TextFrame) {
+                return node.containerWidget.getHierarchicalIndex(hierarchicalIndex);
+            }
+            else if (node.containerWidget instanceof BlockWidget) {
                 return node.containerWidget.getHierarchicalIndex(hierarchicalIndex);
             }
             else if (node.containerWidget instanceof BlockContainer) {
@@ -18634,6 +19497,11 @@ var BlockWidget = /** @__PURE__ @class */ (function (_super) {
     BlockWidget.prototype.getContainerWidth = function () {
         if (this.isInsideTable) {
             return this.associatedCell.getCellWidth();
+        }
+        if (this.containerWidget instanceof TextFrame) {
+            var shape = this.containerWidget.containerShape;
+            return HelperMethods.convertPixelToPoint(shape.width) - HelperMethods.convertPixelToPoint(shape.textFrame.marginLeft)
+                - HelperMethods.convertPixelToPoint(shape.textFrame.marginRight);
         }
         else {
             var bodyWidget = this.bodyWidget;
@@ -18673,6 +19541,10 @@ var ParagraphWidget = /** @__PURE__ @class */ (function (_super) {
          * @private
          */
         _this.isChangeDetected = false;
+        /**
+         * @private
+         */
+        _this.floatingElements = [];
         _this.paragraphFormat = new WParagraphFormat(_this);
         _this.characterFormat = new WCharacterFormat(_this);
         return _this;
@@ -18712,7 +19584,7 @@ var ParagraphWidget = /** @__PURE__ @class */ (function (_super) {
                 }
                 if (inline instanceof TextElementBox || inline instanceof ImageElementBox || inline instanceof BookmarkElementBox
                     || inline instanceof EditRangeEndElementBox || inline instanceof EditRangeStartElementBox
-                    || inline instanceof ChartElementBox
+                    || inline instanceof ChartElementBox || inline instanceof ShapeElementBox
                     || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter(inline))) {
                     return false;
                 }
@@ -18738,6 +19610,7 @@ var ParagraphWidget = /** @__PURE__ @class */ (function (_super) {
                         continue;
                     }
                     if (!isStarted && (inline instanceof TextElementBox || inline instanceof ImageElementBox
+                        || inline instanceof ShapeElementBox
                         || inline instanceof BookmarkElementBox || inline instanceof FieldElementBox
                         && HelperMethods.isLinkedFieldCharacter(inline))
                         || inline instanceof ChartElementBox) {
@@ -19375,7 +20248,7 @@ var TableWidget = /** @__PURE__ @class */ (function (_super) {
         // For continuous layout, window width should be considered. 
         // If preferred width exceeds this limit, it can take upto maximum of 2112 pixels (1584 points will be assigned by Microsoft Word).
         //tslint:disable-next-line:max-line-length
-        if (((!isNullOrUndefined(this.bodyWidget.page)) && this.bodyWidget.page.viewer instanceof WebLayoutViewer && isAutoFit && !this.isInsideTable)) {
+        if (((!isNullOrUndefined(this.bodyWidget.page)) && this.bodyWidget.page.viewer instanceof WebLayoutViewer && isAutoFit && !this.isInsideTable && !(this.containerWidget instanceof TextFrame))) {
             containerWidth = HelperMethods.convertPixelToPoint(this.bodyWidget.page.viewer.clientArea.width - this.bodyWidget.page.viewer.padding.right * 3);
         }
         else {
@@ -21603,6 +22476,7 @@ var LineWidget = /** @__PURE__ @class */ (function () {
                     continue;
                 }
                 if (!isStarted && (inlineElement instanceof TextElementBox || inlineElement instanceof ImageElementBox
+                    || inlineElement instanceof ShapeElementBox
                     || inlineElement instanceof BookmarkElementBox || inlineElement instanceof EditRangeEndElementBox
                     || inlineElement instanceof EditRangeStartElementBox
                     || inlineElement instanceof FieldElementBox
@@ -22686,6 +23560,151 @@ var BookmarkElementBox = /** @__PURE__ @class */ (function (_super) {
 /**
  * @private
  */
+var ShapeCommon = /** @__PURE__ @class */ (function (_super) {
+    __extends(ShapeCommon, _super);
+    function ShapeCommon() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    /**
+     *
+     * @private
+     */
+    ShapeCommon.prototype.getLength = function () {
+        return 1;
+    };
+    /**
+     * @private
+     */
+    ShapeCommon.prototype.clone = function () {
+        var shape = new ShapeElementBox();
+        return shape;
+    };
+    return ShapeCommon;
+}(ElementBox));
+/**
+ * @private
+ */
+var ShapeBase = /** @__PURE__ @class */ (function (_super) {
+    __extends(ShapeBase, _super);
+    function ShapeBase() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    return ShapeBase;
+}(ShapeCommon));
+/**
+ * @private
+ */
+var ShapeElementBox = /** @__PURE__ @class */ (function (_super) {
+    __extends(ShapeElementBox, _super);
+    function ShapeElementBox() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    /**
+     * @private
+     */
+    ShapeElementBox.prototype.clone = function () {
+        var shape = new ShapeElementBox();
+        shape.characterFormat.copyFormat(this.characterFormat);
+        shape.x = this.x;
+        shape.y = this.y;
+        shape.width = this.width;
+        shape.height = this.height;
+        shape.shapeId = this.shapeId;
+        shape.name = this.name;
+        shape.alternativeText = this.alternativeText;
+        shape.title = this.title;
+        shape.widthScale = this.widthScale;
+        shape.heightScale = this.heightScale;
+        shape.visible = this.visible;
+        shape.verticalPosition = this.verticalPosition;
+        shape.verticalAlignment = this.verticalAlignment;
+        shape.verticalOrigin = this.verticalOrigin;
+        shape.horizontalPosition = this.horizontalPosition;
+        shape.horizontalAlignment = this.horizontalAlignment;
+        shape.horizontalOrigin = this.horizontalOrigin;
+        shape.zOrderPosition = this.zOrderPosition;
+        shape.allowOverlap = this.allowOverlap;
+        shape.layoutInCell = this.layoutInCell;
+        shape.lockAnchor = this.lockAnchor;
+        shape.autoShapeType = this.autoShapeType;
+        if (this.lineFormat) {
+            shape.lineFormat = this.lineFormat.clone();
+        }
+        if (this.textFrame) {
+            shape.textFrame = this.textFrame.clone();
+            shape.textFrame.containerShape = shape;
+        }
+        if (this.margin) {
+            shape.margin = this.margin.clone();
+        }
+        return shape;
+    };
+    return ShapeElementBox;
+}(ShapeBase));
+/**
+ * @private
+ */
+var TextFrame = /** @__PURE__ @class */ (function (_super) {
+    __extends(TextFrame, _super);
+    function TextFrame() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    TextFrame.prototype.equals = function () {
+        return false;
+    };
+    TextFrame.prototype.destroyInternal = function () {
+        //return;
+    };
+    TextFrame.prototype.getHierarchicalIndex = function (index) {
+        var line = this.containerShape.line;
+        var offset = line.getOffset(this.containerShape, 0).toString();
+        return line.getHierarchicalIndex(offset);
+    };
+    TextFrame.prototype.getTableCellWidget = function () {
+        return undefined;
+    };
+    /**
+     * @private
+     */
+    TextFrame.prototype.clone = function () {
+        var textFrame = new TextFrame();
+        textFrame.textVerticalAlignment = this.textVerticalAlignment;
+        textFrame.marginBottom = this.marginBottom;
+        textFrame.marginLeft = this.marginLeft;
+        textFrame.marginRight = this.marginRight;
+        textFrame.marginTop = this.marginTop;
+        for (var i = 0; i < this.childWidgets.length; i++) {
+            var block = this.childWidgets[i].clone();
+            textFrame.childWidgets.push(block);
+            block.index = i;
+            block.containerWidget = textFrame;
+        }
+        return textFrame;
+    };
+    return TextFrame;
+}(Widget));
+/**
+ * @private
+ */
+var LineFormat = /** @__PURE__ @class */ (function () {
+    function LineFormat() {
+    }
+    /**
+     * @private
+     */
+    LineFormat.prototype.clone = function () {
+        var lineFormat = new LineFormat();
+        lineFormat.lineFormatType = this.lineFormatType;
+        lineFormat.color = this.color;
+        lineFormat.weight = this.weight;
+        lineFormat.dashStyle = this.dashStyle;
+        return lineFormat;
+    };
+    return LineFormat;
+}());
+/**
+ * @private
+ */
 var ImageElementBox = /** @__PURE__ @class */ (function (_super) {
     __extends(ImageElementBox, _super);
     function ImageElementBox(isInlineImage) {
@@ -22783,7 +23802,7 @@ var ImageElementBox = /** @__PURE__ @class */ (function (_super) {
         _super.prototype.destroy.call(this);
     };
     return ImageElementBox;
-}(ElementBox));
+}(ShapeBase));
 /**
  * @private
  */
@@ -26726,21 +27745,33 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
                 field.line = lineWidget;
                 lineWidget.children.push(field);
             }
-            else if (inline.hasOwnProperty('bookmarkType') && !this.isPaste) {
+            else if (inline.hasOwnProperty('bookmarkType')) {
                 var bookmark = undefined;
                 bookmark = new BookmarkElementBox(inline.bookmarkType);
                 bookmark.name = inline.name;
                 lineWidget.children.push(bookmark);
                 bookmark.line = lineWidget;
-                if (!this.isParseHeader) {
+                if (!this.isParseHeader || this.isPaste) {
                     if (inline.bookmarkType === 0) {
-                        this.documentHelper.bookmarks.add(bookmark.name, bookmark);
+                        var isAdd = this.isPaste && !this.documentHelper.bookmarks.containsKey(bookmark.name);
+                        if (!this.isPaste || isAdd) {
+                            this.documentHelper.bookmarks.add(bookmark.name, bookmark);
+                        }
+                        else if (!isAdd) {
+                            lineWidget.children.splice(lineWidget.children.indexOf(bookmark), 1);
+                        }
                     }
                     else if (inline.bookmarkType === 1) {
                         if (this.documentHelper.bookmarks.containsKey(bookmark.name)) {
                             var bookmarkStart = this.documentHelper.bookmarks.get(bookmark.name);
-                            bookmarkStart.reference = bookmark;
-                            bookmark.reference = bookmarkStart;
+                            var isConsider = this.isPaste && isNullOrUndefined(bookmarkStart.reference);
+                            if (!this.isPaste || isConsider) {
+                                bookmarkStart.reference = bookmark;
+                                bookmark.reference = bookmarkStart;
+                            }
+                            else if (!isConsider) {
+                                lineWidget.children.splice(lineWidget.children.indexOf(bookmark), 1);
+                            }
                         }
                     }
                 }
@@ -26811,12 +27842,57 @@ var SfdtReader = /** @__PURE__ @class */ (function () {
                     }
                 }
             }
+            else if (inline.hasOwnProperty('shapeId')) {
+                var shape = new ShapeElementBox();
+                shape.shapeId = inline.shapeId;
+                shape.name = inline.name;
+                shape.alternativeText = inline.alternativeText;
+                shape.title = inline.title;
+                shape.visible = inline.visible;
+                shape.width = HelperMethods.convertPointToPixel(inline.width);
+                shape.height = HelperMethods.convertPointToPixel(inline.height);
+                shape.widthScale = inline.widthScale;
+                shape.heightScale = inline.heightScale;
+                shape.verticalPosition = HelperMethods.convertPointToPixel(inline.verticalPosition);
+                shape.verticalOrigin = inline.verticalOrigin;
+                shape.verticalAlignment = inline.verticalAlignment;
+                shape.horizontalPosition = HelperMethods.convertPointToPixel(inline.horizontalPosition);
+                shape.horizontalOrigin = inline.horizontalOrigin;
+                shape.horizontalAlignment = inline.horizontalAlignment;
+                shape.zOrderPosition = inline.zOrderPosition;
+                shape.allowOverlap = inline.allowOverlap;
+                shape.layoutInCell = inline.layoutInCell;
+                shape.lockAnchor = inline.lockAnchor;
+                shape.autoShapeType = inline.autoShapeType;
+                if (inline.hasOwnProperty('lineFormat')) {
+                    var lineFormat = new LineFormat();
+                    lineFormat.lineFormatType = inline.lineFormat.lineFormatType;
+                    lineFormat.color = inline.lineFormat.color;
+                    lineFormat.weight = inline.lineFormat.weight;
+                    lineFormat.dashStyle = inline.lineFormat.lineStyle;
+                    shape.lineFormat = lineFormat;
+                }
+                if (inline.hasOwnProperty('textFrame')) {
+                    var textFrame = new TextFrame();
+                    textFrame.textVerticalAlignment = inline.textFrame.textVerticalAlignment;
+                    textFrame.marginLeft = inline.textFrame.leftMargin;
+                    textFrame.marginRight = inline.textFrame.rightMargin;
+                    textFrame.marginTop = inline.textFrame.topMargin;
+                    textFrame.marginBottom = inline.textFrame.bottomMargin;
+                    this.parseBody(inline.textFrame.blocks, textFrame.childWidgets, textFrame);
+                    shape.textFrame = textFrame;
+                    textFrame.containerShape = shape;
+                }
+                shape.line = lineWidget;
+                lineWidget.children.push(shape);
+                paragraph.floatingElements.push(shape);
+            }
         }
         paragraph.childWidgets.push(lineWidget);
         return hasValidElmts;
     };
     SfdtReader.prototype.applyCharacterStyle = function (inline, elementbox) {
-        /*�tslint:disable-next-line:max-line-length */
+        /* tslint:disable-next-line:max-line-length */
         if (!isNullOrUndefined(inline.characterFormat) && !isNullOrUndefined(inline.characterFormat.styleName)) {
             var charStyle = this.documentHelper.styles.findByName(inline.characterFormat.styleName, 'Character');
             elementbox.characterFormat.ApplyStyle(charStyle);
@@ -30740,6 +31816,7 @@ var HtmlExport = /** @__PURE__ @class */ (function () {
         if (text === '\t') {
             return '&emsp;';
         }
+        text = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         var splittedText = text.split(' ');
         var htmlText = '';
         if (splittedText.length > 0) {
@@ -31217,6 +32294,7 @@ var TextPosition = /** @__PURE__ @class */ (function () {
                 if (nextValidInline instanceof FieldElementBox && nextValidInline.fieldType === 1
                     || nextValidInline instanceof BookmarkElementBox && nextValidInline.bookmarkType === 1) {
                     inline = nextValidInline;
+                    this.currentWidget = inline.line;
                     this.offset = this.currentWidget.getOffset(inline, 1);
                 }
             }
@@ -32939,6 +34017,8 @@ var SelectionWidgetInfo = /** @__PURE__ @class */ (function () {
     SelectionWidgetInfo.prototype.destroy = function () {
         this.widthIn = undefined;
         this.leftIn = undefined;
+        this.floatingItems = [];
+        this.floatingItems = undefined;
     };
     return SelectionWidgetInfo;
 }());
@@ -33478,6 +34558,25 @@ var Selection = /** @__PURE__ @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(Selection.prototype, "isInShape", {
+        /**
+         * @private
+         */
+        get: function () {
+            var container = this.start.paragraph.containerWidget;
+            do {
+                if (container instanceof TextFrame) {
+                    return true;
+                }
+                if (container) {
+                    container = container.containerWidget;
+                }
+            } while (container);
+            return false;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(Selection.prototype, "text", {
         /**
          * Gets the text within selection.
@@ -33744,6 +34843,20 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
     };
     /**
+     * @private
+     */
+    Selection.prototype.selectShape = function (shape) {
+        if (shape) {
+            var offset = shape.line.getOffset(shape, 0);
+            var startPosition = new TextPosition(this.owner);
+            startPosition.setPositionParagraph(shape.line, offset);
+            var endoffset = shape.line.getOffset(shape, 1);
+            var endPosition = new TextPosition(this.owner);
+            endPosition.setPositionParagraph(shape.line, endoffset);
+            this.documentHelper.selection.selectRange(startPosition, endPosition);
+        }
+    };
+    /**
      * Toggles the bold property of selected contents.
      * @private
      */
@@ -33895,9 +35008,12 @@ var Selection = /** @__PURE__ @class */ (function () {
             this.owner.imageResizerModule.hideImageResizer();
         }
         if (this.isEmpty) {
-            if (this.isHideSelection(this.start.paragraph)) {
+            if (!this.isInShape && this.isHideSelection(this.start.paragraph)) {
                 this.hideCaret();
                 return;
+            }
+            if (this.isInShape) {
+                this.showResizerForShape();
             }
             this.updateCaretPosition();
         }
@@ -33923,6 +35039,29 @@ var Selection = /** @__PURE__ @class */ (function () {
     Selection.prototype.createHighlightBorder = function (lineWidget, width, left, top, isElementBoxHighlight) {
         if (width < 0) {
             width = 0;
+        }
+        var paragraph = lineWidget.paragraph;
+        var floatingItems = [];
+        if (paragraph.floatingElements.length > 0) {
+            for (var k = 0; k < paragraph.floatingElements.length; k++) {
+                var shapeElement = paragraph.floatingElements[k];
+                if (shapeElement.line === lineWidget) {
+                    var startTextPos = this.start;
+                    var endTextPos = this.end;
+                    if (!this.isForward) {
+                        startTextPos = this.end;
+                        endTextPos = this.start;
+                    }
+                    var offset = shapeElement.line.getOffset(shapeElement, 0);
+                    if ((startTextPos.currentWidget !== lineWidget && endTextPos.currentWidget !== lineWidget) ||
+                        (startTextPos.currentWidget === lineWidget && startTextPos.offset <= offset
+                            && (endTextPos.currentWidget === lineWidget && endTextPos.offset >= offset + 1
+                                || endTextPos.currentWidget !== lineWidget)) || (startTextPos.currentWidget !== lineWidget
+                        && endTextPos.currentWidget === lineWidget && endTextPos.offset >= offset)) {
+                        floatingItems.push(shapeElement);
+                    }
+                }
+            }
         }
         var page = this.getPage(lineWidget.paragraph);
         var height = lineWidget.height;
@@ -33956,11 +35095,13 @@ var Selection = /** @__PURE__ @class */ (function () {
                 }
                 else {
                     selectionWidget = new SelectionWidgetInfo(left, width);
+                    selectionWidget.floatingItems = floatingItems;
                     widgets.add(lineWidget, selectionWidget);
                 }
             }
             if (selectionWidget === undefined) {
                 selectionWidget = new SelectionWidgetInfo(left, width);
+                selectionWidget.floatingItems = floatingItems;
                 widgets.add(lineWidget, selectionWidget);
             }
         }
@@ -33980,6 +35121,16 @@ var Selection = /** @__PURE__ @class */ (function () {
                 documentHelper.selectionContext.globalAlpha = 0.4;
                 // tslint:disable-next-line:max-line-length
                 documentHelper.selectionContext.fillRect((pageLeft + (left * zoomFactor)) - this.viewer.containerLeft, (pageTop + (top * zoomFactor)) - this.viewer.containerTop, width * zoomFactor, height * zoomFactor);
+                if (floatingItems.length > 0) {
+                    for (var z = 0; z < floatingItems.length; z++) {
+                        left = floatingItems[z].x;
+                        top = floatingItems[z].y;
+                        width = floatingItems[z].width;
+                        height = floatingItems[z].height;
+                        // tslint:disable-next-line:max-line-length
+                        documentHelper.selectionContext.fillRect((pageLeft + (left * zoomFactor)) - this.viewer.containerLeft, (pageTop + (top * zoomFactor)) - this.viewer.containerTop, width * zoomFactor, height * zoomFactor);
+                    }
+                }
             }
             documentHelper.selectionContext.restore();
         }
@@ -34090,6 +35241,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             }
             if (!isNullOrUndefined(widgetInfoCollection)) {
                 for (var i = 0; i < widgetInfoCollection.length; i++) {
+                    var selectedWidgetInfo = widgetInfoCollection[i];
                     var width = this.documentHelper.render.getScaledValue(widgetInfoCollection[i].width);
                     var left = this.documentHelper.render.getScaledValue(widgetInfoCollection[i].left, 1);
                     var page = this.owner.selection.getPage(widget.paragraph);
@@ -34102,6 +35254,16 @@ var Selection = /** @__PURE__ @class */ (function () {
                         canvasContext.globalAlpha = 0.4;
                         canvasContext.fillStyle = 'gray';
                         canvasContext.fillRect(left, this.documentHelper.render.getScaledValue(top, 2), width, height);
+                        if (selectedWidgetInfo.floatingItems && selectedWidgetInfo.floatingItems.length > 0) {
+                            for (var j = 0; j < selectedWidgetInfo.floatingItems.length; j++) {
+                                var shape = selectedWidgetInfo.floatingItems[i];
+                                width = this.documentHelper.render.getScaledValue(shape.width);
+                                left = this.documentHelper.render.getScaledValue(shape.x, 1);
+                                top = this.documentHelper.render.getScaledValue(shape.y, 2);
+                                height = this.documentHelper.render.getScaledValue(shape.height);
+                                canvasContext.fillRect(left, top, width, height);
+                            }
+                        }
                     }
                     canvasContext.restore();
                 }
@@ -35260,6 +36422,11 @@ var Selection = /** @__PURE__ @class */ (function () {
             documentStart = this.setPositionForBlock(headerFooter.firstChild, true);
             documentEnd = this.setPositionForBlock(headerFooter.lastChild, false);
         }
+        else if (this.isInShape) {
+            var textFrame = this.getCurrentTextFrame();
+            documentStart = this.setPositionForBlock(textFrame.firstChild, true);
+            documentEnd = this.setPositionForBlock(textFrame.lastChild, false);
+        }
         else {
             documentStart = this.owner.documentStart;
             documentEnd = this.owner.documentEnd;
@@ -35511,6 +36678,11 @@ var Selection = /** @__PURE__ @class */ (function () {
             else {
                 index = block.index + ';' + offset;
             }
+            if (block instanceof TextFrame) {
+                var indexInOwner = block.containerShape.indexInOwner.toString();
+                index = 'S' + ';' + indexInOwner + ';' + offset;
+                return this.getHierarchicalIndex(block.containerShape.paragraph, index);
+            }
             if (block.containerWidget) {
                 if (block instanceof TableCellWidget && block.rowIndex !== block.containerWidget.index) {
                     index = block.rowIndex + ';' + index;
@@ -35641,6 +36813,15 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
         var childWidget = this.getBlockByIndex(container, index);
         if (childWidget) {
+            value = position.index.substring(0, 1);
+            if (value === 'S') {
+                position.index = position.index.substring(1).replace(';', '');
+                var indexInOwner = position.index.substring(0, 1);
+                position.index = position.index.substring(1).replace(';', '');
+                var paraIndex = position.index.substring(0, 1);
+                position.index = position.index.substring(1).replace(';', '');
+                childWidget = childWidget.floatingElements[indexInOwner].textFrame.childWidgets[paraIndex];
+            }
             var child = childWidget;
             if (child instanceof ParagraphWidget) {
                 if (position.index.indexOf(';') > 0) {
@@ -35962,7 +37143,8 @@ var Selection = /** @__PURE__ @class */ (function () {
         var inlineObj = line.getInline(offset, indexInInline);
         var inline = inlineObj.element;
         indexInInline = inlineObj.index;
-        if (!isNullOrUndefined(inline) && indexInInline === inline.length && inline.nextNode instanceof FieldElementBox) {
+        if ((!isNullOrUndefined(inline) && indexInInline === inline.length && inline.nextNode instanceof FieldElementBox)
+            || inline instanceof ShapeElementBox) {
             var nextValidInline = this.getNextValidElement(inline.nextNode);
             if (nextValidInline instanceof FieldElementBox && nextValidInline.fieldType === 0) {
                 inline = nextValidInline;
@@ -36488,7 +37670,8 @@ var Selection = /** @__PURE__ @class */ (function () {
             }
             // tslint:disable-next-line:max-line-length
             if (inline instanceof TextElementBox || inline instanceof ImageElementBox || inline instanceof BookmarkElementBox
-                || inline instanceof EditRangeStartElementBox || inline instanceof EditRangeEndElementBox || inline instanceof CommentCharacterElementBox
+                || inline instanceof ShapeElementBox || inline instanceof EditRangeStartElementBox
+                || inline instanceof EditRangeEndElementBox || inline instanceof CommentCharacterElementBox
                 || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter(inline))) {
                 return startOffset;
             }
@@ -36933,7 +38116,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                     var inlineObj = end.currentWidget.getInline(end.offset, index);
                     inline = inlineObj.element; // return index value
                     index = inlineObj.index;
-                    if (inline instanceof ImageElementBox) {
+                    if (inline instanceof ImageElementBox || inline instanceof ShapeElementBox) {
                         var startOffset = start.currentWidget.getOffset(inline, 0);
                         if (startOffset !== start.offset) {
                             inline = undefined;
@@ -36960,7 +38143,8 @@ var Selection = /** @__PURE__ @class */ (function () {
                     }
                 }
             }
-            if (!this.owner.isReadOnlyMode && inline instanceof ImageElementBox && this.owner.isDocumentLoaded) {
+            // tslint:disable-next-line:max-line-length
+            if (!this.owner.isReadOnlyMode && this.owner.isDocumentLoaded && (inline instanceof ImageElementBox || inline instanceof ShapeElementBox)) {
                 var elementBoxObj = this.getElementBoxInternal(inline, index);
                 var elementBox = elementBoxObj.element; //return index 
                 index = elementBoxObj.index;
@@ -36981,7 +38165,15 @@ var Selection = /** @__PURE__ @class */ (function () {
                     this.hightLightNextParagraph = undefined;
                 }
             }
+            if (this.isInShape) {
+                this.showResizerForShape();
+            }
         }
+    };
+    Selection.prototype.showResizerForShape = function () {
+        var shape = this.getCurrentTextFrame().containerShape;
+        this.owner.imageResizerModule.positionImageResizer(shape);
+        this.owner.imageResizerModule.showImageResizer();
     };
     /**
      * @private
@@ -38152,7 +39344,13 @@ var Selection = /** @__PURE__ @class */ (function () {
      */
     Selection.prototype.getPage = function (widget) {
         var page = undefined;
-        if (widget.containerWidget instanceof BlockContainer) {
+        if (widget.containerWidget instanceof TextFrame) {
+            var shape = widget.containerWidget.containerShape;
+            if (shape.line) {
+                page = this.getPage(shape.line.paragraph);
+            }
+        }
+        else if (widget.containerWidget instanceof BlockContainer) {
             var bodyWidget = widget.containerWidget;
             page = widget.containerWidget.page;
         }
@@ -38578,9 +39776,17 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
         else {
             if (!isNullOrUndefined(element)) {
-                if (caretPosition.x > left + element.margin.left) {
+                if (caretPosition.x > left + element.margin.left || element instanceof ShapeElementBox) {
                     for (var i = widget.children.indexOf(element); i < widget.children.length; i++) {
                         element = widget.children[i];
+                        if (element instanceof ShapeElementBox) {
+                            if (this.documentHelper.isInShapeBorder(element, caretPosition)) {
+                                left = element.x;
+                                top = element.y;
+                                break;
+                            }
+                            continue;
+                        }
                         var isCurrentParaBidi = false;
                         if (element instanceof ListTextElementBox || element instanceof TextElementBox) {
                             isCurrentParaBidi = element.line.paragraph.paragraphFormat.bidi;
@@ -38601,7 +39807,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                         if (isRtlText && isParaBidi) {
                             index = 0;
                         }
-                        if ((element instanceof TextElementBox && element.text !== "\v") || includeParagraphMark) {
+                        if ((element instanceof TextElementBox && (element.text !== "\v" || element.text !== '\f')) || includeParagraphMark) {
                             left += element.margin.left + element.width;
                         }
                     }
@@ -38648,7 +39854,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                                         left += prevWidth;
                                     }
                                     charIndex = i - 1;
-                                    if (i === 1 && element !== widget.children[0]) {
+                                    if (i === 1 && element !== widget.children[0] && !(widget.children[0] instanceof ShapeElementBox)) {
                                         var curIndex = widget.children.indexOf(element);
                                         if (!(widget.children[curIndex - 1] instanceof ListTextElementBox) && !isRtlText) {
                                             element = widget.children[curIndex - 1];
@@ -38663,7 +39869,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                         index = charIndex;
                     }
                     else {
-                        isImageSelected = element instanceof ImageElementBox;
+                        isImageSelected = element instanceof ImageElementBox || element instanceof ShapeElementBox;
                         if (caretPosition.x - left - element.margin.left > element.width / 2) {
                             index = 1;
                             left += element.margin.left + element.width;
@@ -38676,7 +39882,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                             }
                         }
                     }
-                    if (element instanceof TextElementBox && element.text === '\v') {
+                    if (element instanceof TextElementBox && (element.text === '\v' || element.text === '\f')) {
                         index = 0;
                     }
                 }
@@ -38738,6 +39944,34 @@ var Selection = /** @__PURE__ @class */ (function () {
             'index': index,
             'caretPosition': caretPosition,
             'isImageSelected': isImageSelected
+        };
+    };
+    Selection.prototype.checkAllFloatingElements = function (widget, caretPosition) {
+        var bodyWidget;
+        var isShapeSelected = false;
+        var isInShapeBorder = false;
+        var floatElement;
+        if (!isNullOrUndefined(widget)) {
+            bodyWidget = widget.paragraph.bodyWidget;
+            isShapeSelected = false;
+            isInShapeBorder = false;
+            for (var i = 0; i < bodyWidget.floatingElements.length; i++) {
+                floatElement = bodyWidget.floatingElements[i];
+                if (caretPosition.x < floatElement.x + floatElement.margin.left + floatElement.width && caretPosition.x > floatElement.x
+                    && caretPosition.y < floatElement.y + floatElement.margin.top + floatElement.height && caretPosition.y > floatElement.y) {
+                    isShapeSelected = true;
+                    if (this.documentHelper.isInShapeBorder(floatElement, caretPosition)) {
+                        isInShapeBorder = true;
+                    }
+                    break;
+                }
+            }
+        }
+        return {
+            'element': floatElement,
+            'caretPosition': caretPosition,
+            'isShapeSelected': isShapeSelected,
+            'isInShapeBorder': isInShapeBorder
         };
     };
     /* tslint:enable */
@@ -38883,7 +40117,11 @@ var Selection = /** @__PURE__ @class */ (function () {
             width += HelperMethods.convertPointToPixel(paraFormat.firstLineIndent);
         }
         for (var i = 0; i < widget.children.length; i++) {
-            width += widget.children[i].margin.left + widget.children[i].width;
+            var elementBox = widget.children[i];
+            if (elementBox instanceof ShapeElementBox) {
+                continue;
+            }
+            width += elementBox.margin.left + elementBox.width;
         }
         if (includeParagraphMark && widget.paragraph.childWidgets.indexOf(widget) === widget.paragraph.childWidgets.length - 1
             && isNullOrUndefined(widget.paragraph.nextSplitWidget)) {
@@ -38931,9 +40169,9 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
         for (var i = 0; i < count; i++) {
             var widgetInternal = widget.children[i];
-            // if (widgetInternal instanceof FieldElementBox) {
-            //     continue;
-            // }
+            if (widgetInternal instanceof ShapeElementBox) {
+                continue;
+            }
             if (i === 1 && widget.children[i] instanceof ListTextElementBox) {
                 left += widget.children[i].width;
             }
@@ -38987,7 +40225,9 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
         else if (index > 0) {
             if (!isNullOrUndefined(elementBox) && !(elementBox instanceof ListTextElementBox)) {
-                left += elementBox.width;
+                if (!(elementBox instanceof ShapeElementBox)) {
+                    left += elementBox.width;
+                }
                 if (index === 2) {
                     var paragraph = elementBox.line.paragraph;
                     left += this.documentHelper.textHelper.getParagraphMarkWidth(paragraph.characterFormat);
@@ -39432,12 +40672,18 @@ var Selection = /** @__PURE__ @class */ (function () {
     };
     Selection.prototype.getContainerWidget = function (block) {
         var bodyWidget;
-        if (block.containerWidget instanceof BlockContainer) {
+        if (block.containerWidget instanceof TextFrame) {
+            bodyWidget = block.containerWidget.containerShape.line.paragraph.bodyWidget;
+        }
+        else if (block.containerWidget instanceof BlockContainer) {
             bodyWidget = block.containerWidget;
         }
         else {
             bodyWidget = block.containerWidget;
             while (!(bodyWidget instanceof BlockContainer)) {
+                if (bodyWidget instanceof TextFrame) {
+                    bodyWidget = bodyWidget.containerShape.line.paragraph;
+                }
                 bodyWidget = bodyWidget.containerWidget;
             }
         }
@@ -40630,6 +41876,21 @@ var Selection = /** @__PURE__ @class */ (function () {
     /**
      * @private
      */
+    Selection.prototype.getCurrentTextFrame = function () {
+        var container = this.start.paragraph.containerWidget;
+        do {
+            if (container instanceof TextFrame) {
+                return container;
+            }
+            if (container) {
+                container = container.containerWidget;
+            }
+        } while (container);
+        return null;
+    };
+    /**
+     * @private
+     */
     Selection.prototype.isTableSelected = function () {
         var start = this.start;
         var end = this.end;
@@ -40696,7 +41957,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             inline = inlineObj.element;
             index = inlineObj.index;
         }
-        if (inline instanceof ImageElementBox) {
+        if (inline instanceof ImageElementBox || inline instanceof ShapeElementBox) {
             var width = inline.width;
             var height = inline.height;
             inline.width = imageFormat.width;
@@ -40814,7 +42075,7 @@ var Selection = /** @__PURE__ @class */ (function () {
     Selection.prototype.showCaret = function () {
         // tslint:disable-next-line:max-line-length
         var page = !isNullOrUndefined(this.documentHelper.currentPage) ? this.documentHelper.currentPage : this.documentHelper.currentRenderingPage;
-        if (isNullOrUndefined(page) || this.documentHelper.isRowOrCellResizing || this.owner.enableImageResizerMode && this.owner.imageResizerModule.isImageResizerVisible) {
+        if (isNullOrUndefined(page) || this.documentHelper.isRowOrCellResizing || (this.owner.enableImageResizerMode && this.owner.imageResizerModule.isImageResizerVisible && !this.owner.imageResizerModule.isShapeResize)) {
             return;
         }
         var left = page.boundingRectangle.x;
@@ -40825,7 +42086,8 @@ var Selection = /** @__PURE__ @class */ (function () {
         else {
             right = page.boundingRectangle.width - this.owner.viewer.padding.right - this.documentHelper.scrollbarWidth;
         }
-        if (!this.owner.enableImageResizerMode || !this.owner.imageResizerModule.isImageResizerVisible) {
+        // tslint:disable-next-line:max-line-length
+        if (!this.owner.enableImageResizerMode || (!this.owner.imageResizerModule.isImageResizerVisible || this.owner.imageResizerModule.isShapeResize)) {
             if (this.isHideSelection(this.start.paragraph)) {
                 this.caret.style.display = 'none';
             }
@@ -46104,7 +47366,7 @@ var Editor = /** @__PURE__ @class */ (function () {
     /* tslint:disable:max-func-body-length */
     Editor.prototype.getPrefixAndSuffix = function () {
         var viewer = this.owner.viewer;
-        var editor;
+        var editor = this.owner;
         var documentHelper = editor.documentHelper;
         if (this.selection.text !== '') {
             documentHelper.prefix = '';
@@ -47958,7 +49220,6 @@ var Editor = /** @__PURE__ @class */ (function () {
             //     this.documentHelper.editableDiv.innerHTML = '';
             // }
         }
-        this.documentHelper.updateFocus();
     };
     Editor.prototype.pasteImage = function (imgFile) {
         var _this = this;
@@ -47990,6 +49251,7 @@ var Editor = /** @__PURE__ @class */ (function () {
             type: type
         };
         this.pasteRequestHandler = new XmlHttpRequestHandler();
+        this.owner.documentHelper.viewerContainer.focus();
         showSpinner(this.owner.element);
         this.pasteRequestHandler.url = proxy.owner.serviceUrl + this.owner.serverActionSettings.systemClipboard;
         this.pasteRequestHandler.responseType = 'json';
@@ -48016,6 +49278,7 @@ var Editor = /** @__PURE__ @class */ (function () {
     Editor.prototype.onPasteFailure = function (result) {
         console.error(result.status, result.statusText);
         hideSpinner(this.owner.element);
+        this.documentHelper.updateFocus();
     };
     /**
      * Pastes provided sfdt content or the data present in local clipboard if any .
@@ -49791,6 +51054,12 @@ var Editor = /** @__PURE__ @class */ (function () {
                 count += startIndex;
             }
             if (startIndex === 0 && endIndex === inline.length) {
+                if (inline instanceof ShapeElementBox) {
+                    var shapeIndex = lineWidget.paragraph.floatingElements.indexOf(inline);
+                    if (shapeIndex !== -1) {
+                        lineWidget.paragraph.floatingElements.splice(shapeIndex, 1);
+                    }
+                }
                 paragraph.firstChild.children.splice(insertIndex, 0, inline);
                 inline.line = paragraph.firstChild;
                 insertIndex++;
@@ -53085,10 +54354,22 @@ var Editor = /** @__PURE__ @class */ (function () {
             this.documentHelper.layout.layoutBodyWidgetCollection(block.index, containerWidget, block, false, isSkipShifting);
         }
     };
+    Editor.prototype.removeAutoShape = function (inline) {
+        var shapeIndex = inline.line.paragraph.floatingElements.indexOf(inline);
+        // tslint:disable-next-line:max-line-length
+        inline.line.paragraph.bodyWidget.floatingElements.splice(inline.line.paragraph.bodyWidget.floatingElements.indexOf(inline), 1);
+        inline.line.paragraph.floatingElements.splice(shapeIndex, 1);
+    };
     Editor.prototype.removeField = function (block, isBookmark) {
         var collection = this.documentHelper.fields;
         if (isBookmark) {
             collection = this.documentHelper.bookmarks.keys;
+        }
+        if (block.floatingElements.length > 0) {
+            for (var z = 0; z < block.floatingElements.length; z++) {
+                var inline = block.floatingElements[z];
+                this.removeAutoShape(inline);
+            }
         }
         for (var i = 0; i < collection.length; i++) {
             var element = isBookmark ?
@@ -53558,6 +54839,9 @@ var Editor = /** @__PURE__ @class */ (function () {
                     if (this.documentHelper.bookmarks.containsKey(inline.name)) {
                         this.documentHelper.bookmarks.remove(inline.name);
                     }
+                }
+                if (inline instanceof ShapeElementBox) {
+                    this.removeAutoShape(inline);
                 }
                 // if (editAction < 4) {
                 this.unLinkFieldCharacter(inline);
@@ -54098,7 +55382,7 @@ var Editor = /** @__PURE__ @class */ (function () {
             }
             //update Row index of all the cell
         }
-        else if (block.containerWidget instanceof HeaderFooterWidget) {
+        else if (block.containerWidget instanceof HeaderFooterWidget || block.containerWidget instanceof TextFrame) {
             for (var i = nextIndex; i < block.containerWidget.childWidgets.length; i++) {
                 var nextBlock = block.containerWidget.childWidgets[i];
                 this.updateIndex(nextBlock, increaseIndex);
@@ -58272,7 +59556,11 @@ var BaseHistoryInfo = /** @__PURE__ @class */ (function () {
                 && !isNullOrUndefined(endTextPosition.paragraph.containerWidget)
                 && insertTextPosition.paragraph.containerWidget instanceof TableCellWidget
                 && endTextPosition.paragraph.containerWidget instanceof TableCellWidget
-                && !isNullOrUndefined(insertTextPosition.paragraph.bodyWidget))) {
+                && !isNullOrUndefined(insertTextPosition.paragraph.bodyWidget)) ||
+            (!isNullOrUndefined(insertTextPosition.paragraph.containerWidget)
+                && !isNullOrUndefined(endTextPosition.paragraph.containerWidget)
+                && insertTextPosition.paragraph.containerWidget instanceof TextFrame
+                && endTextPosition.paragraph.containerWidget instanceof TextFrame)) {
             //Removes if any empty paragraph is added while delete.
             this.owner.selection.selectRange(insertTextPosition, endTextPosition);
             var isDelete = (this.action === 'BackSpace') ? true : false;
@@ -59399,6 +60687,16 @@ var ImageResizer = /** @__PURE__ @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(ImageResizer.prototype, "isShapeResize", {
+        get: function () {
+            if (this.currentImageElementBox instanceof ShapeElementBox) {
+                return true;
+            }
+            return false;
+        },
+        enumerable: true,
+        configurable: true
+    });
     Object.defineProperty(ImageResizer.prototype, "viewer", {
         get: function () {
             return this.owner.viewer;
@@ -59527,9 +60825,21 @@ var ImageResizer = /** @__PURE__ @class */ (function () {
         this.imageResizerDivElement.style.height = parseInt(this.imageResizerDivElement.style.height.replace('px', ''), 10) * this.documentHelper.zoomFactor + 'px';
         height = this.documentHelper.render.getScaledValue(elementBox.height);
         width = this.documentHelper.render.getScaledValue(elementBox.width);
-        left = this.documentHelper.render.getScaledValue(left);
-        top = this.documentHelper.render.getScaledValue(top);
+        if (elementBox instanceof ImageElementBox) {
+            left = this.documentHelper.render.getScaledValue(left);
+            top = this.documentHelper.render.getScaledValue(top);
+        }
+        else {
+            left = elementBox.x * this.documentHelper.zoomFactor;
+            top = elementBox.y * this.documentHelper.zoomFactor;
+        }
         this.setImageResizerPosition(left, top, width, height, this);
+        if (this.owner.selection.isInShape) {
+            this.resizeContainerDiv.style.borderStyle = 'dashed';
+        }
+        else {
+            this.resizeContainerDiv.style.borderStyle = 'solid';
+        }
         if (!this.selectedImageWidget.containsKey(lineWidget)) {
             var selectedImageInfo = new SelectedImageInfo(elementBox.height, elementBox.width);
             this.selectedImageWidget.add(lineWidget, selectedImageInfo);
@@ -59755,7 +61065,7 @@ var ImageResizer = /** @__PURE__ @class */ (function () {
         //Positions Updating For Image Resize Div
         imageResizer.resizeContainerDiv.style.width = width + 'px';
         imageResizer.resizeContainerDiv.style.height = height + 'px';
-        imageResizer.resizeContainerDiv.style.left = left - 1 + 'px';
+        imageResizer.resizeContainerDiv.style.left = left + 'px';
         imageResizer.resizeContainerDiv.style.top = top + 'px';
         //Positions Updating For Image Resizing Points
         imageResizer.topRightRect.style.left = ((left + width) - 5) + 'px';
@@ -60307,12 +61617,23 @@ var ImageResizer = /** @__PURE__ @class */ (function () {
      */
     ImageResizer.prototype.updateImageResizerPosition = function () {
         if (!isNullOrUndefined(this.currentImageElementBox)) {
-            var elementBox = this.currentImageElementBox;
+            // tslint:disable-next-line:max-line-length
+            var elementBox = this.currentImageElementBox instanceof ImageElementBox ? this.currentImageElementBox : this.currentImageElementBox;
             var lineWidget = elementBox.line;
-            var top_1 = this.documentHelper.selection.getTop(lineWidget) + elementBox.margin.top;
-            var left = this.documentHelper.selection.getLeftInternal(lineWidget, elementBox, 0);
-            var topValue = top_1 * this.documentHelper.zoomFactor;
-            var leftValue = left * this.documentHelper.zoomFactor;
+            var top_1;
+            var left = void 0;
+            var topValue = void 0;
+            var leftValue = void 0;
+            if (this.currentImageElementBox instanceof ImageElementBox) {
+                top_1 = this.documentHelper.selection.getTop(lineWidget) + elementBox.margin.top;
+                left = this.documentHelper.selection.getLeftInternal(lineWidget, elementBox, 0);
+                topValue = top_1 * this.documentHelper.zoomFactor;
+                leftValue = left * this.documentHelper.zoomFactor;
+            }
+            else {
+                leftValue = elementBox.x * this.documentHelper.zoomFactor;
+                topValue = elementBox.y * this.documentHelper.zoomFactor;
+            }
             var height = this.documentHelper.render.getScaledValue(elementBox.height, 2);
             var width = this.documentHelper.render.getScaledValue(elementBox.width, 1);
             this.setImageResizerPosition(leftValue, topValue, width, height, this);
@@ -62165,6 +63486,9 @@ var WordExport = /** @__PURE__ @class */ (function () {
             else if (item.hasOwnProperty('imageString')) {
                 this.serializePicture(writer, item);
             }
+            else if (item.hasOwnProperty('shapeId')) {
+                this.serializeShape(writer, item);
+            }
             else if (item.hasOwnProperty('bookmarkType')) {
                 this.serializeBookMark(writer, item);
             }
@@ -62273,6 +63597,14 @@ var WordExport = /** @__PURE__ @class */ (function () {
             writer.writeEndElement(); //end of run element
         }
     };
+    WordExport.prototype.serializeShape = function (writer, item) {
+        if (item.width >= 0 && item.height >= 0) {
+            writer.writeStartElement(undefined, 'r', this.wNamespace);
+            this.serializeCharacterFormat(writer, item.characterFormat);
+            this.serializeDrawing(writer, item);
+            writer.writeEndElement(); //end of run element
+        }
+    };
     // Serialize the drawing element.
     WordExport.prototype.serializeDrawing = function (writer, draw) {
         writer.writeStartElement(undefined, 'drawing', this.wNamespace);
@@ -62280,17 +63612,70 @@ var WordExport = /** @__PURE__ @class */ (function () {
             this.serializeInlineCharts(writer, draw);
         }
         else {
-            this.serializeInlinePicture(writer, draw);
+            this.serializeInlinePictureAndShape(writer, draw);
         }
         writer.writeEndElement();
     };
     // Serialize the inline picture.
-    WordExport.prototype.serializeInlinePicture = function (writer, image) {
-        writer.writeStartElement(undefined, 'inline', this.wpNamespace);
+    WordExport.prototype.serializeInlinePictureAndShape = function (writer, draw) {
+        if (!isNullOrUndefined(draw.imageString)) {
+            writer.writeStartElement(undefined, 'inline', this.wpNamespace);
+        }
+        else {
+            writer.writeStartElement('wp', 'anchor', this.wpNamespace);
+            writer.writeAttributeString(undefined, 'distT', undefined, '0');
+            writer.writeAttributeString(undefined, 'distB', undefined, '0');
+            writer.writeAttributeString(undefined, 'distL', undefined, '114300');
+            writer.writeAttributeString(undefined, 'distR', undefined, '114300');
+            writer.writeAttributeString(undefined, 'simplePos', undefined, '0');
+            writer.writeAttributeString(undefined, 'relativeHeight', undefined, draw.zOrderPosition.toString());
+            //TextWrappingStyle.InFrontOfText
+            writer.writeAttributeString(undefined, 'behindDoc', undefined, '0');
+            var lockAnchor = (draw.LockAnchor) ? '1' : '0';
+            writer.writeAttributeString(undefined, 'locked', undefined, lockAnchor);
+            var layoutcell = (draw.layoutInCell) ? '1' : '0';
+            writer.writeAttributeString(undefined, 'layoutInCell', undefined, layoutcell);
+            var allowOverlap = (draw.allowOverlap) ? '1' : '0';
+            writer.writeAttributeString(undefined, 'allowOverlap', undefined, allowOverlap);
+            writer.writeStartElement('wp', 'simplePos', this.wpNamespace);
+            writer.writeAttributeString(undefined, 'x', undefined, '0');
+            writer.writeAttributeString(undefined, 'y', undefined, '0');
+            writer.writeEndElement();
+            writer.writeStartElement('wp', 'positionH', this.wpNamespace);
+            writer.writeAttributeString(undefined, 'relativeFrom', undefined, draw.horizontalOrigin.toString().toLowerCase());
+            if (draw.horizontalAlignment === 'None') {
+                writer.writeStartElement('wp', 'posOffset', this.wpNamespace);
+                var horPos = Math.round(draw.horizontalPosition * this.emusPerPoint);
+                writer.writeString(horPos.toString());
+                writer.writeEndElement(); //end of posOffset
+            }
+            else {
+                writer.writeStartElement('wp', 'align', this.wpNamespace);
+                var horAlig = draw.horizontalAlignment.toString().toLowerCase();
+                writer.writeString(horAlig);
+                writer.writeEndElement(); //end of align
+            }
+            writer.writeEndElement(); //end of postionH
+            writer.writeStartElement('wp', 'positionV', this.wpNamespace);
+            writer.writeAttributeString(undefined, 'relativeFrom', undefined, draw.verticalOrigin.toString().toLowerCase());
+            if (draw.verticalAlignment === 'None') {
+                writer.writeStartElement('wp', 'posOffset', this.wpNamespace);
+                var vertPos = Math.round(draw.verticalPosition * this.emusPerPoint);
+                writer.writeString(vertPos.toString());
+                writer.writeEndElement(); // end of posOffset
+            }
+            else {
+                writer.writeStartElement('wp', 'align', this.wpNamespace);
+                var verAlig = draw.verticalAlignment.toString().toLowerCase();
+                writer.writeString(verAlig);
+                writer.writeEndElement(); //end of align
+            }
+            writer.writeEndElement(); //end of postionV
+        }
         writer.writeStartElement(undefined, 'extent', this.wpNamespace);
-        var cx = Math.round(image.width * this.emusPerPoint);
+        var cx = Math.round(draw.width * this.emusPerPoint);
         writer.writeAttributeString(undefined, 'cx', undefined, cx.toString());
-        var cy = Math.round(image.height * this.emusPerPoint);
+        var cy = Math.round(draw.height * this.emusPerPoint);
         writer.writeAttributeString(undefined, 'cy', undefined, cy.toString());
         writer.writeEndElement();
         // double borderWidth = (double)picture.PictureShape.PictureDescriptor.BorderLeft.LineWidth / DLSConstants.BorderLineFactor;
@@ -62305,7 +63690,12 @@ var WordExport = /** @__PURE__ @class */ (function () {
         //     m_writer.WriteEndElement();
         // }
         //this.serializePicProperties(writer, image);
-        this.serializeDrawingGraphics(writer, image);
+        if (draw.imageString) {
+            this.serializeDrawingGraphics(writer, draw);
+        }
+        else {
+            this.serializeShapeDrawingGraphics(writer, draw);
+        }
         writer.writeEndElement();
     };
     // serialize inline chart
@@ -63762,6 +65152,81 @@ var WordExport = /** @__PURE__ @class */ (function () {
     WordExport.prototype.startsWith = function (sourceString, startString) {
         return startString.length > 0 && sourceString.substring(0, startString.length) === startString;
     };
+    WordExport.prototype.serializeShapeDrawingGraphics = function (writer, shape) {
+        var val = shape.autoShapeType;
+        writer.writeStartElement('wp', 'wrapNone', this.wpNamespace);
+        writer.writeEndElement();
+        writer.writeStartElement('wp', 'docPr', this.wpNamespace);
+        writer.writeAttributeString(undefined, 'id', undefined, (this.mDocPrID++).toString());
+        writer.writeAttributeString(undefined, 'name', undefined, '1'.toString());
+        writer.writeAttributeString(undefined, 'title', undefined, '');
+        writer.writeEndElement();
+        writer.writeStartElement('a', 'graphic', this.aNamespace);
+        writer.writeStartElement('a', 'graphicData', this.aNamespace);
+        writer.writeAttributeString(undefined, 'uri', undefined, this.wpShapeNamespace);
+        writer.writeStartElement('wps', 'wsp', this.wpShapeNamespace);
+        writer.writeStartElement('wps', 'cNvCnPr', this.wpShapeNamespace);
+        writer.writeStartElement('a', 'cxnSpLocks', this.aNamespace);
+        writer.writeAttributeString(undefined, 'noChangeShapeType', undefined, '1');
+        writer.writeEndElement();
+        writer.writeEndElement();
+        writer.writeStartElement('wps', 'spPr', this.wpShapeNamespace);
+        writer.writeAttributeString(undefined, 'bwMode', undefined, 'auto');
+        writer.writeStartElement('a', 'xfrm', this.aNamespace);
+        writer.writeStartElement('a', 'off', this.aNamespace);
+        writer.writeAttributeString(undefined, 'x', undefined, '0');
+        writer.writeAttributeString(undefined, 'y', undefined, '0');
+        writer.writeEndElement();
+        writer.writeStartElement('a', 'ext', this.aNamespace);
+        var cx = Math.round((shape.width * this.emusPerPoint));
+        writer.writeAttributeString(undefined, 'cx', undefined, cx.toString());
+        var cy = Math.round((shape.height * this.emusPerPoint));
+        writer.writeAttributeString(undefined, 'cy', undefined, cy.toString());
+        writer.writeEndElement();
+        writer.writeEndElement();
+        writer.writeStartElement('a', 'prstGeom', this.aNamespace);
+        if (val === 'StraightConnector') {
+            writer.writeAttributeString(undefined, 'prst', undefined, 'straightConnector1');
+        }
+        else if (val === 'RoundedRectangle') {
+            writer.writeAttributeString(undefined, 'prst', undefined, 'roundRect');
+        }
+        else {
+            writer.writeAttributeString(undefined, 'prst', undefined, 'rect');
+        }
+        writer.writeStartElement('a', 'avLst', this.aNamespace);
+        writer.writeEndElement();
+        writer.writeEndElement();
+        writer.writeStartElement('a', 'noFill', this.aNamespace);
+        writer.writeEndElement();
+        writer.writeStartElement('a', 'ln', this.aNamespace);
+        writer.writeAttributeString(undefined, 'w', undefined, '12700');
+        writer.writeStartElement('a', 'solidFill', this.aNamespace);
+        writer.writeStartElement('a', 'srgbClr', this.aNamespace);
+        writer.writeAttributeString(undefined, 'val', undefined, '000000');
+        writer.writeEndElement();
+        writer.writeEndElement();
+        writer.writeStartElement('a', 'round', this.aNamespace);
+        writer.writeEndElement();
+        writer.writeStartElement('a', 'headEnd', this.aNamespace);
+        writer.writeEndElement();
+        writer.writeStartElement('a', 'tailEnd', this.aNamespace);
+        writer.writeEndElement();
+        writer.writeEndElement();
+        writer.writeEndElement();
+        if (val === 'Rectangle' || val === 'RoundedRectangle') {
+            writer.writeStartElement('wps', 'txbx', this.wpShapeNamespace);
+            writer.writeStartElement(undefined, 'txbxContent', this.wNamespace);
+            this.serializeBodyItems(writer, shape.textFrame.blocks, true);
+            writer.writeEndElement();
+            writer.writeEndElement();
+        }
+        writer.writeStartElement('wps', 'bodyPr', this.wpShapeNamespace);
+        writer.writeEndElement();
+        writer.writeEndElement();
+        writer.writeEndElement();
+        writer.writeEndElement();
+    };
     // Serialize the graphics element for pictures.
     WordExport.prototype.serializeDrawingGraphics = function (writer, picture) {
         var id = '';
@@ -64094,6 +65559,10 @@ var WordExport = /** @__PURE__ @class */ (function () {
             if (!isNullOrUndefined(this.spanCellFormat)) {
                 endProperties = false;
                 this.serializeCellFormat(writer, this.spanCellFormat, false, endProperties);
+            }
+            else {
+                writer.writeStartElement(undefined, 'tcPr', this.wNamespace);
+                endProperties = false;
             }
             this.serializeColumnSpan(collKey, writer);
             writer.writeStartElement(undefined, 'vMerge', this.wNamespace);
@@ -66841,10 +68310,55 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
             inline.commentCharacterType = element.commentType;
             inline.commentId = element.commentId;
         }
+        else if (element instanceof ShapeElementBox) {
+            this.writeShape(element, inline);
+        }
         else {
             inline = undefined;
         }
         return inline;
+    };
+    SfdtExport.prototype.writeShape = function (element, inline) {
+        inline.shapeId = element.shapeId;
+        inline.name = element.name;
+        inline.alternativeText = element.alternativeText;
+        inline.title = element.title;
+        inline.visible = element.visible;
+        inline.width = HelperMethods.convertPixelToPoint(element.width);
+        inline.height = HelperMethods.convertPixelToPoint(element.height);
+        inline.widthScale = element.widthScale;
+        inline.heightScale = element.heightScale;
+        inline.verticalPosition = HelperMethods.convertPixelToPoint(element.verticalPosition);
+        inline.verticalOrigin = element.verticalOrigin;
+        inline.verticalAlignment = element.verticalAlignment;
+        inline.horizontalPosition = HelperMethods.convertPixelToPoint(element.horizontalPosition);
+        inline.horizontalOrigin = element.horizontalOrigin;
+        inline.horizontalAlignment = element.horizontalAlignment;
+        inline.zOrderPosition = element.zOrderPosition;
+        inline.allowOverlap = element.allowOverlap;
+        inline.layoutInCell = element.layoutInCell;
+        inline.lockAnchor = element.lockAnchor;
+        inline.autoShapeType = element.autoShapeType;
+        if (element.lineFormat) {
+            inline.lineFormat = {};
+            inline.lineFormat.lineFormatType = element.lineFormat.lineFormatType;
+            inline.lineFormat.color = element.lineFormat.color;
+            inline.lineFormat.weight = element.lineFormat.weight;
+            inline.lineFormat.dashStyle = element.lineFormat.dashStyle;
+        }
+        if (element.textFrame) {
+            inline.textFrame = {};
+            inline.textFrame.textVerticalAlignment = element.textFrame.textVerticalAlignment;
+            inline.textFrame.marginLeft = HelperMethods.convertPixelToPoint(element.textFrame.marginLeft);
+            inline.textFrame.marginRight = HelperMethods.convertPixelToPoint(element.textFrame.marginRight);
+            inline.textFrame.marginTop = HelperMethods.convertPixelToPoint(element.textFrame.marginTop);
+            inline.textFrame.marginBottom = HelperMethods.convertPixelToPoint(element.textFrame.marginBottom);
+            inline.textFrame.blocks = [];
+            for (var j = 0; j < element.textFrame.childWidgets.length; j++) {
+                var textFrameBlock = element.textFrame.childWidgets[j];
+                this.writeBlock(textFrameBlock, 0, inline.textFrame.blocks);
+            }
+        }
     };
     SfdtExport.prototype.writeChart = function (element, inline) {
         inline.chartLegend = {};
@@ -86311,5 +87825,5 @@ var DocumentEditorContainer = /** @__PURE__ @class */ (function (_super) {
  * export document editor modules
  */
 
-export { Dictionary, WUniqueFormat, WUniqueFormats, XmlHttpRequestHandler, Print, ContextMenu$1 as ContextMenu, WSectionFormat, WStyle, WParagraphStyle, WCharacterStyle, WStyles, WCharacterFormat, WListFormat, WTabStop, WParagraphFormat, WTableFormat, WRowFormat, WCellFormat, WBorder, WBorders, WShading, WList, WAbstractList, WListLevel, WLevelOverride, DocumentHelper, LayoutViewer, PageLayoutViewer, WebLayoutViewer, Rect, Padding, Margin, Widget, BlockContainer, BodyWidget, HeaderFooterWidget, BlockWidget, ParagraphWidget, TableWidget, TableRowWidget, TableCellWidget, LineWidget, ElementBox, FieldElementBox, FormField, TextFormField, CheckBoxFormField, DropDownFormField, TextElementBox, ErrorTextElementBox, FieldTextElementBox, TabElementBox, BookmarkElementBox, ImageElementBox, ListTextElementBox, EditRangeEndElementBox, EditRangeStartElementBox, ChartElementBox, ChartArea, ChartCategory, ChartData, ChartLegend, ChartSeries, ChartErrorBar, ChartSeriesFormat, ChartDataLabels, ChartTrendLines, ChartTitleArea, ChartDataFormat, ChartFill, ChartLayout, ChartCategoryAxis, ChartDataTable, CommentCharacterElementBox, CommentElementBox, Page, WTableHolder, WColumn, ColumnSizeInfo, Layout, Renderer, SfdtReader, TextHelper, Zoom, Selection, SelectionCharacterFormat, SelectionParagraphFormat, SelectionSectionFormat, SelectionTableFormat, SelectionCellFormat, SelectionRowFormat, SelectionImageFormat, TextPosition, SelectionWidgetInfo, Hyperlink, ImageFormat, Search, OptionsPane, TextSearch, SearchWidgetInfo, TextSearchResult, TextSearchResults, Editor, ImageResizer, ImageResizingPoints, SelectedImageInfo, TableResizer, HelperMethods, Point, Base64, EditorHistory, BaseHistoryInfo, HistoryInfo, ModifiedLevel, ModifiedParagraphFormat, RowHistoryFormat, TableHistoryInfo, TableFormatHistoryInfo, RowFormatHistoryInfo, CellFormatHistoryInfo, CellHistoryFormat, WordExport, TextExport, SfdtExport, HtmlExport, HyperlinkDialog, TableDialog, BookmarkDialog, TableOfContentsDialog, PageSetupDialog, ParagraphDialog, ListDialog, StyleDialog, BulletsAndNumberingDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, CellOptionsDialog, StylesDialog, SpellCheckDialog, CheckBoxFormFieldDialog, TextFormFieldDialog, DropDownFormFieldDialog, FormFieldPopUp, SpellChecker, AddUserDialog, EnforceProtectionDialog, UnProtectDocumentDialog, RestrictEditing, CommentReviewPane, CommentPane, CommentView, DocumentEditorSettings, DocumentEditor, ServerActionSettings, FormFieldSettings, ContainerServerActionSettings, Toolbar$1 as Toolbar, DocumentEditorContainer };
+export { Dictionary, WUniqueFormat, WUniqueFormats, XmlHttpRequestHandler, Print, ContextMenu$1 as ContextMenu, WSectionFormat, WStyle, WParagraphStyle, WCharacterStyle, WStyles, WCharacterFormat, WListFormat, WTabStop, WParagraphFormat, WTableFormat, WRowFormat, WCellFormat, WBorder, WBorders, WShading, WList, WAbstractList, WListLevel, WLevelOverride, DocumentHelper, LayoutViewer, PageLayoutViewer, WebLayoutViewer, Rect, Padding, Margin, Widget, BlockContainer, BodyWidget, HeaderFooterWidget, BlockWidget, ParagraphWidget, TableWidget, TableRowWidget, TableCellWidget, LineWidget, ElementBox, FieldElementBox, FormField, TextFormField, CheckBoxFormField, DropDownFormField, TextElementBox, ErrorTextElementBox, FieldTextElementBox, TabElementBox, BookmarkElementBox, ShapeCommon, ShapeBase, ShapeElementBox, TextFrame, LineFormat, ImageElementBox, ListTextElementBox, EditRangeEndElementBox, EditRangeStartElementBox, ChartElementBox, ChartArea, ChartCategory, ChartData, ChartLegend, ChartSeries, ChartErrorBar, ChartSeriesFormat, ChartDataLabels, ChartTrendLines, ChartTitleArea, ChartDataFormat, ChartFill, ChartLayout, ChartCategoryAxis, ChartDataTable, CommentCharacterElementBox, CommentElementBox, Page, WTableHolder, WColumn, ColumnSizeInfo, Layout, Renderer, SfdtReader, TextHelper, Zoom, Selection, SelectionCharacterFormat, SelectionParagraphFormat, SelectionSectionFormat, SelectionTableFormat, SelectionCellFormat, SelectionRowFormat, SelectionImageFormat, TextPosition, SelectionWidgetInfo, Hyperlink, ImageFormat, Search, OptionsPane, TextSearch, SearchWidgetInfo, TextSearchResult, TextSearchResults, Editor, ImageResizer, ImageResizingPoints, SelectedImageInfo, TableResizer, HelperMethods, Point, Base64, EditorHistory, BaseHistoryInfo, HistoryInfo, ModifiedLevel, ModifiedParagraphFormat, RowHistoryFormat, TableHistoryInfo, TableFormatHistoryInfo, RowFormatHistoryInfo, CellFormatHistoryInfo, CellHistoryFormat, WordExport, TextExport, SfdtExport, HtmlExport, HyperlinkDialog, TableDialog, BookmarkDialog, TableOfContentsDialog, PageSetupDialog, ParagraphDialog, ListDialog, StyleDialog, BulletsAndNumberingDialog, FontDialog, TablePropertiesDialog, BordersAndShadingDialog, TableOptionsDialog, CellOptionsDialog, StylesDialog, SpellCheckDialog, CheckBoxFormFieldDialog, TextFormFieldDialog, DropDownFormFieldDialog, FormFieldPopUp, SpellChecker, AddUserDialog, EnforceProtectionDialog, UnProtectDocumentDialog, RestrictEditing, CommentReviewPane, CommentPane, CommentView, DocumentEditorSettings, DocumentEditor, ServerActionSettings, FormFieldSettings, ContainerServerActionSettings, Toolbar$1 as Toolbar, DocumentEditorContainer };
 //# sourceMappingURL=ej2-documenteditor.es5.js.map

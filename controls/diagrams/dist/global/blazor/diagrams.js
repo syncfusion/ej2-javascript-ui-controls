@@ -1951,8 +1951,14 @@ var DiagramShapeStyle = /** @class */ (function (_super) {
     ConnectorConstraints[ConnectorConstraints["LineRouting"] = 32768] = "LineRouting";
     /** Enables or disables routing to the connector. */
     ConnectorConstraints[ConnectorConstraints["InheritLineRouting"] = 65536] = "InheritLineRouting";
+    /** Enables or disables near node padding to the connector. */
+    ConnectorConstraints[ConnectorConstraints["ConnectNearNode"] = 131072] = "ConnectNearNode";
+    /** Enables or disables near port padding to the connector. */
+    ConnectorConstraints[ConnectorConstraints["ConnectNearPort"] = 262144] = "ConnectNearPort";
+    /** Enables or disables Enables or disables near port and node padding to the connector. */
+    ConnectorConstraints[ConnectorConstraints["ConnectNearAll"] = 393216] = "ConnectNearAll";
     /** Enables all constraints. */
-    ConnectorConstraints[ConnectorConstraints["Default"] = 77374] = "Default";
+    ConnectorConstraints[ConnectorConstraints["Default"] = 470590] = "Default";
 })(exports.ConnectorConstraints || (exports.ConnectorConstraints = {}));
 /**
  * Enables/Disables the annotation constraints
@@ -8606,6 +8612,9 @@ var Connector = /** @class */ (function (_super) {
     __decorate$6([
         sf.base.Property(10)
     ], Connector.prototype, "hitPadding", void 0);
+    __decorate$6([
+        sf.base.Property(0)
+    ], Connector.prototype, "connectPadding", void 0);
     __decorate$6([
         sf.base.Property('Straight')
     ], Connector.prototype, "type", void 0);
@@ -25719,7 +25728,8 @@ var DiagramEventHandler = /** @class */ (function () {
                         this.eventArgs.info = info;
                     }
                     this.checkAction(obj);
-                    this.getMouseEventArgs(this.currentPosition, this.eventArgs, this.eventArgs.source);
+                    var padding = this.getConnectorPadding(this.eventArgs);
+                    this.getMouseEventArgs(this.currentPosition, this.eventArgs, this.eventArgs.source, padding);
                     this.updateCursor();
                     this.inAction = true;
                     this.initialEventArgs = null;
@@ -25821,7 +25831,8 @@ var DiagramEventHandler = /** @class */ (function () {
                 }
                 if (this.tool && (this.tool.prevPosition || this.tool instanceof LabelTool)) {
                     this.eventArgs.position = this.currentPosition;
-                    this.getMouseEventArgs(this.currentPosition, this.eventArgs, this.eventArgs.source);
+                    var padding = this.getConnectorPadding(this.eventArgs);
+                    this.getMouseEventArgs(this.currentPosition, this.eventArgs, this.eventArgs.source, padding);
                     var ctrlKey = this.isMetaKey(evt);
                     if (ctrlKey || evt.shiftKey) {
                         var info = (ctrlKey && evt.shiftKey) ? { ctrlKey: ctrlKey, shiftKey: evt.shiftKey } :
@@ -25904,6 +25915,15 @@ var DiagramEventHandler = /** @class */ (function () {
         this.diagram.commandHandler.removeStackHighlighter(); // end the corresponding tool
     };
     /* tslint:enable */
+    DiagramEventHandler.prototype.getConnectorPadding = function (eventArgs) {
+        var padding;
+        var targetObject = eventArgs.source;
+        if (targetObject && (targetObject instanceof Selector) && targetObject.connectors.length) {
+            var selectedConnector = targetObject.connectors[0];
+            padding = (selectedConnector.constraints & exports.ConnectorConstraints.ConnectNearPort) ? selectedConnector.connectPadding : 0;
+        }
+        return padding || 0;
+    };
     DiagramEventHandler.prototype.getBlazorClickEventArgs = function (arg) {
         arg = {
             element: this.eventArgs.source ? { selector: cloneBlazorObject(this.eventArgs.source) } :
@@ -26579,7 +26599,7 @@ var DiagramEventHandler = /** @class */ (function () {
         }
         return false;
     };
-    DiagramEventHandler.prototype.getMouseEventArgs = function (position, args, source) {
+    DiagramEventHandler.prototype.getMouseEventArgs = function (position, args, source, padding) {
         args.position = position;
         var obj;
         var objects;
@@ -26609,7 +26629,18 @@ var DiagramEventHandler = /** @class */ (function () {
         }
         var wrapper;
         if (obj) {
-            wrapper = this.diagram.findElementUnderMouse(obj, this.currentPosition);
+            wrapper = this.diagram.findElementUnderMouse(obj, this.currentPosition, padding);
+            if (wrapper && obj.ports && obj.ports.length &&
+                !checkPort(obj, wrapper) && (source instanceof Selector) && source.connectors.length) {
+                var currentConnector = source.connectors[0];
+                if ((currentConnector.constraints & exports.ConnectorConstraints.ConnectNearPort) &&
+                    !(currentConnector.constraints & exports.ConnectorConstraints.ConnectNearNode)) {
+                    wrapper = this.diagram.findElementUnderMouse(obj, this.currentPosition, 0);
+                    if (!wrapper) {
+                        obj = null;
+                    }
+                }
+            }
         }
         if (!source) {
             args.source = obj;
@@ -26725,8 +26756,8 @@ var DiagramEventHandler = /** @class */ (function () {
     };
     //start region - interface betweend diagram and interaction
     /** @private */
-    DiagramEventHandler.prototype.findElementUnderMouse = function (obj, position) {
-        return this.objectFinder.findElementUnderSelectedItem(obj, position);
+    DiagramEventHandler.prototype.findElementUnderMouse = function (obj, position, padding) {
+        return this.objectFinder.findElementUnderSelectedItem(obj, position, padding);
     };
     /** @private */
     DiagramEventHandler.prototype.findObjectsUnderMouse = function (position, source) {
@@ -27071,14 +27102,16 @@ var ObjectFinder = /** @class */ (function () {
         var bounds;
         var child;
         var matrix;
-        var objArray = diagram.spatialSearch.findObjects(new Rect(pt.x - 50, pt.y - 50, 100, 100));
+        var endPadding = (source && (source instanceof Connector) && ((source.constraints & exports.ConnectorConstraints.ConnectNearNode) ||
+            (source.constraints & exports.ConnectorConstraints.ConnectNearPort)) && source.connectPadding) || 0;
+        var objArray = diagram.spatialSearch.findObjects(new Rect(pt.x - 50 - endPadding, pt.y - 50 - endPadding, 100 + endPadding, 100 + endPadding));
         var layerObjTable = {};
         var layerTarger;
         for (var _i = 0, objArray_1 = objArray; _i < objArray_1.length; _i++) {
             var obj = objArray_1[_i];
             var point = pt;
             bounds = obj.wrapper.outerBounds;
-            var pointInBounds = (obj.rotateAngle) ? false : bounds.containsPoint(point);
+            var pointInBounds = (obj.rotateAngle) ? false : bounds.containsPoint(point, endPadding);
             if ((obj !== source || diagram.currentDrawingObject instanceof Connector) &&
                 (obj instanceof Connector) ? obj !== diagram.currentDrawingObject : true && obj.wrapper.visible) {
                 var layer = diagram.commandHandler.getObjectLayer(obj.id);
@@ -27092,7 +27125,7 @@ var ObjectFinder = /** @class */ (function () {
                             matrix = identityMatrix();
                             rotateMatrix(matrix, -(child.rotateAngle + child.parentTransform), child.offsetX, child.offsetY);
                             point = transformPointByMatrix(matrix, pt);
-                            if (cornersPointsBeforeRotation(child).containsPoint(point)) {
+                            if (cornersPointsBeforeRotation(child).containsPoint(point, endPadding)) {
                                 pointInBounds = true;
                             }
                         }
@@ -27102,7 +27135,7 @@ var ObjectFinder = /** @class */ (function () {
                             if ((obj instanceof Connector) ? isPointOverConnector(obj, pt) : pointInBounds) {
                                 var padding = (obj instanceof Connector) ? obj.hitPadding || 0 : 0;
                                 var element = void 0;
-                                element = this.findElementUnderMouse(obj, pt, padding);
+                                element = this.findElementUnderMouse(obj, pt, endPadding || padding);
                                 if (element && obj.id !== 'helper') {
                                     insertObject(obj, 'zIndex', layerTarger);
                                 }
@@ -27344,7 +27377,7 @@ var ObjectFinder = /** @class */ (function () {
     };
     /* tslint:enable */
     /** @private */
-    ObjectFinder.prototype.findElementUnderSelectedItem = function (obj, position) {
+    ObjectFinder.prototype.findElementUnderSelectedItem = function (obj, position, padding) {
         //rewrite this for multiple selection
         if (obj instanceof Selector) {
             if (obj.nodes.length === 1 && (!obj.connectors || !obj.connectors.length)) {
@@ -27355,7 +27388,7 @@ var ObjectFinder = /** @class */ (function () {
             }
         }
         else {
-            return this.findElementUnderMouse(obj, position);
+            return this.findElementUnderMouse(obj, position, padding);
         }
         return null;
     };
@@ -27366,14 +27399,14 @@ var ObjectFinder = /** @class */ (function () {
     ObjectFinder.prototype.findTargetElement = function (container, position, padding) {
         for (var i = container.children.length - 1; i >= 0; i--) {
             var element = container.children[i];
-            if (element && element.outerBounds.containsPoint(position)) {
+            if (element && element.outerBounds.containsPoint(position, padding || 0)) {
                 if (element instanceof Container) {
                     var target = this.findTargetElement(element, position);
                     if (target) {
                         return target;
                     }
                 }
-                if (element.bounds.containsPoint(position)) {
+                if (element.bounds.containsPoint(position, padding || 0)) {
                     return element;
                 }
             }
@@ -29249,13 +29282,16 @@ var CommandHandler = /** @class */ (function () {
         }
     };
     /** @private */
-    CommandHandler.prototype.sendToBack = function () {
-        if (hasSelection(this.diagram)) {
-            var objectId = this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
-                : this.diagram.selectedItems.connectors[0].id;
+    CommandHandler.prototype.sendToBack = function (object) {
+        this.diagram.protectPropertyChange(true);
+        if (hasSelection(this.diagram) || object) {
+            var objectId = (object && object.id);
+            objectId = objectId || (this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
+                : this.diagram.selectedItems.connectors[0].id);
             var index = this.diagram.nameTable[objectId].zIndex;
             var layerNum = this.diagram.layers.indexOf(this.getObjectLayer(objectId));
             var zIndexTable = this.diagram.layers[layerNum].zIndexTable;
+            var undoObject = cloneObject(this.diagram.selectedItems);
             for (var i = index; i > 0; i--) {
                 if (zIndexTable[i]) {
                     //When there are empty records in the zindex table
@@ -29285,15 +29321,24 @@ var CommandHandler = /** @class */ (function () {
             else {
                 this.diagram.refreshCanvasLayers();
             }
+            var redoObject = cloneObject(this.diagram.selectedItems);
+            var entry = { type: 'SendToBack', category: 'Internal', undoObject: undoObject, redoObject: redoObject };
+            if (!(this.diagram.diagramActions & exports.DiagramAction.UndoRedo)) {
+                this.addHistoryEntry(entry);
+            }
         }
+        this.diagram.protectPropertyChange(false);
     };
     /** @private */
-    CommandHandler.prototype.bringToFront = function () {
-        if (hasSelection(this.diagram)) {
-            var objectName = this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
-                : this.diagram.selectedItems.connectors[0].id;
+    CommandHandler.prototype.bringToFront = function (obj) {
+        this.diagram.protectPropertyChange(true);
+        if (hasSelection(this.diagram) || obj) {
+            var objectName = (obj && obj.id);
+            objectName = objectName || (this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
+                : this.diagram.selectedItems.connectors[0].id);
             var layerNum = this.diagram.layers.indexOf(this.getObjectLayer(objectName));
             var zIndexTable = this.diagram.layers[layerNum].zIndexTable;
+            var undoObject = cloneObject(this.diagram.selectedItems);
             //find the maximum zIndex of the tabel
             var tabelLength = Number(Object.keys(zIndexTable).sort(function (a, b) { return Number(a) - Number(b); }).reverse()[0]);
             var index = this.diagram.nameTable[objectName].zIndex;
@@ -29342,7 +29387,13 @@ var CommandHandler = /** @class */ (function () {
             else {
                 this.diagram.refreshCanvasLayers();
             }
+            var redoObject = cloneObject(this.diagram.selectedItems);
+            var entry = { type: 'BringToFront', category: 'Internal', undoObject: undoObject, redoObject: redoObject };
+            if (!(this.diagram.diagramActions & exports.DiagramAction.UndoRedo)) {
+                this.addHistoryEntry(entry);
+            }
         }
+        this.diagram.protectPropertyChange(false);
     };
     /** @private */
     CommandHandler.prototype.sortByZIndex = function (nodeArray, sortID) {
@@ -29353,10 +29404,104 @@ var CommandHandler = /** @class */ (function () {
         return nodeArray;
     };
     /** @private */
-    CommandHandler.prototype.sendForward = function () {
-        if (hasSelection(this.diagram)) {
-            var nodeId = this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
-                : this.diagram.selectedItems.connectors[0].id;
+    CommandHandler.prototype.orderCommands = function (isRedo, selector, action) {
+        var selectedObject = selector.nodes;
+        selectedObject = selectedObject.concat(selector.connectors);
+        if (isRedo) {
+            if (action === 'SendBackward') {
+                this.sendBackward(selectedObject[0]);
+            }
+            else if (action === 'SendForward') {
+                this.sendForward(selectedObject[0]);
+            }
+            else if (action === 'BringToFront') {
+                this.bringToFront(selectedObject[0]);
+            }
+            else if (action === 'SendToBack') {
+                this.sendToBack(selectedObject[0]);
+            }
+        }
+        else {
+            var startZIndex = selectedObject[0].zIndex;
+            var endZIndex = this.diagram.nameTable[selectedObject[0].id].zIndex;
+            var undoObject = selectedObject[0];
+            var layer = this.getObjectLayer(undoObject.id);
+            var layerIndex = layer.zIndex;
+            var zIndexTable = layer.zIndexTable;
+            if (action === 'SendBackward' || action === 'SendForward') {
+                for (var i = 0; i < selectedObject.length; i++) {
+                    var undoObject_1 = selectedObject[i];
+                    var layer_2 = this.diagram.layers.indexOf(this.getObjectLayer(undoObject_1.id));
+                    var node = this.diagram.nameTable[selectedObject[i].id];
+                    node.zIndex = undoObject_1.zIndex;
+                    this.diagram.layers[layer_2].zIndexTable[undoObject_1.zIndex] = undoObject_1.id;
+                }
+            }
+            else if (action === 'BringToFront') {
+                var k = 1;
+                for (var j = endZIndex; j > startZIndex; j--) {
+                    if (zIndexTable[j]) {
+                        if (!zIndexTable[j - k]) {
+                            zIndexTable[j - k] = zIndexTable[j];
+                            this.diagram.nameTable[zIndexTable[j - k]].zIndex = j;
+                            delete zIndexTable[j];
+                        }
+                        else {
+                            zIndexTable[j] = zIndexTable[j - k];
+                            this.diagram.nameTable[zIndexTable[j]].zIndex = j;
+                        }
+                    }
+                }
+            }
+            else if (action === 'SendToBack') {
+                for (var j = endZIndex; j < startZIndex; j++) {
+                    if (zIndexTable[j]) {
+                        if (!zIndexTable[j + 1]) {
+                            zIndexTable[j + 1] = zIndexTable[j];
+                            this.diagram.nameTable[zIndexTable[j + 1]].zIndex = j;
+                            delete zIndexTable[j];
+                        }
+                        else {
+                            zIndexTable[j] = zIndexTable[j + 1];
+                            this.diagram.nameTable[zIndexTable[j]].zIndex = j;
+                        }
+                    }
+                }
+            }
+            if (action === 'BringToFront' || action === 'SendToBack') {
+                var node = this.diagram.nameTable[selectedObject[0].id];
+                node.zIndex = undoObject.zIndex;
+                this.diagram.layers[layerIndex].zIndexTable[undoObject.zIndex] = undoObject.id;
+            }
+            if (this.diagram.mode === 'SVG') {
+                if (action === 'SendBackward') {
+                    this.moveObject(selectedObject[1].id, selectedObject[0].id);
+                }
+                else if (action === 'SendForward') {
+                    this.moveObject(selectedObject[0].id, selectedObject[1].id);
+                }
+                else if (action === 'BringToFront' || action === 'SendToBack') {
+                    this.moveObject(selectedObject[0].id, zIndexTable[selectedObject[0].zIndex + 1]);
+                }
+            }
+            else {
+                this.diagram.refreshCanvasLayers();
+            }
+        }
+    };
+    CommandHandler.prototype.moveObject = function (sourceId, targetId) {
+        if (targetId) {
+            this.moveSvgNode(sourceId, targetId);
+            this.updateNativeNodeIndex(sourceId, targetId);
+        }
+    };
+    /** @private */
+    CommandHandler.prototype.sendForward = function (obj) {
+        this.diagram.protectPropertyChange(true);
+        if (hasSelection(this.diagram) || obj) {
+            var nodeId = (obj && obj.id);
+            nodeId = nodeId || (this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
+                : this.diagram.selectedItems.connectors[0].id);
             var layerIndex = this.diagram.layers.indexOf(this.getObjectLayer(nodeId));
             var zIndexTable = this.diagram.layers[layerIndex].zIndexTable;
             var tabelLength = Object.keys(zIndexTable).length;
@@ -29382,6 +29527,9 @@ var CommandHandler = /** @class */ (function () {
                 var currentObject = index.zIndex;
                 var temp_2 = zIndexTable[overlapObject];
                 //swap the nodes
+                var undoObject = cloneObject(this.diagram.selectedItems);
+                (this.diagram.nameTable[temp_2] instanceof Node) ? undoObject.nodes.push(cloneObject(this.diagram.nameTable[temp_2])) :
+                    undoObject.connectors.push(cloneObject(this.diagram.nameTable[temp_2]));
                 this.diagram.layers[0].zIndexTable[overlapObject] = index.id;
                 this.diagram.nameTable[zIndexTable[overlapObject]].zIndex = overlapObject;
                 this.diagram.layers[0].zIndexTable[currentObject] = intersectArray[0].id;
@@ -29393,14 +29541,27 @@ var CommandHandler = /** @class */ (function () {
                 else {
                     this.diagram.refreshCanvasLayers();
                 }
+                var redo = cloneObject(this.diagram.selectedItems);
+                (this.diagram.nameTable[temp_2] instanceof Node) ? redo.nodes.push(cloneObject(this.diagram.nameTable[temp_2])) :
+                    redo.connectors.push(cloneObject(this.diagram.nameTable[temp_2]));
+                var historyEntry = {
+                    type: 'SendForward', category: 'Internal',
+                    undoObject: undoObject, redoObject: redo
+                };
+                if (!(this.diagram.diagramActions & exports.DiagramAction.UndoRedo)) {
+                    this.addHistoryEntry(historyEntry);
+                }
             }
         }
+        this.diagram.protectPropertyChange(false);
     };
     /** @private */
-    CommandHandler.prototype.sendBackward = function () {
-        if (hasSelection(this.diagram)) {
-            var objectId = this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
-                : this.diagram.selectedItems.connectors[0].id;
+    CommandHandler.prototype.sendBackward = function (obj) {
+        this.diagram.protectPropertyChange(true);
+        if (hasSelection(this.diagram) || obj) {
+            var objectId = (obj && obj.id);
+            objectId = objectId || (this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
+                : this.diagram.selectedItems.connectors[0].id);
             var layerNum = this.diagram.layers.indexOf(this.getObjectLayer(objectId));
             var zIndexTable = this.diagram.layers[layerNum].zIndexTable;
             var tabelLength = Object.keys(zIndexTable).length;
@@ -29424,6 +29585,9 @@ var CommandHandler = /** @class */ (function () {
                 var overlapObject = intersectArray[intersectArray.length - 1].zIndex;
                 var currentObject = node.zIndex;
                 var temp_4 = zIndexTable[overlapObject];
+                var undoObject = cloneObject(this.diagram.selectedItems);
+                (this.diagram.nameTable[temp_4] instanceof Node) ? undoObject.nodes.push(cloneObject(this.diagram.nameTable[temp_4])) :
+                    undoObject.connectors.push(cloneObject(this.diagram.nameTable[temp_4]));
                 //swap the nodes
                 zIndexTable[overlapObject] = node.id;
                 this.diagram.nameTable[zIndexTable[overlapObject]].zIndex = overlapObject;
@@ -29438,8 +29602,17 @@ var CommandHandler = /** @class */ (function () {
                 else {
                     this.diagram.refreshCanvasLayers();
                 }
+                var redoObject = cloneObject(this.diagram.selectedItems);
+                (this.diagram.nameTable[temp_4] instanceof Node) ? redoObject.nodes.push(cloneObject(this.diagram.nameTable[temp_4])) :
+                    redoObject.connectors.push(cloneObject(this.diagram.nameTable[temp_4]));
+                var entry = { type: 'SendBackward', category: 'Internal', undoObject: undoObject, redoObject: redoObject };
+                if (!(this.diagram.diagramActions & exports.DiagramAction.UndoRedo)) {
+                    this.addHistoryEntry(entry);
+                }
+                //swap the nodes
             }
         }
+        this.diagram.protectPropertyChange(false);
     };
     /**   @private  */
     CommandHandler.prototype.updateNativeNodeIndex = function (nodeId, targetID) {
@@ -34498,9 +34671,10 @@ var Diagram = /** @class */ (function (_super) {
      * Finds the child element of the given object at the given position
      * @param {IElement} obj - Defines the object, the child element of which has to be found
      * @param {PointModel} position - Defines the position, the child element under which has to be found
+     * @param {number} padding - Defines the padding, the child element under which has to be found
      */
-    Diagram.prototype.findElementUnderMouse = function (obj, position) {
-        return this.eventHandler.findElementUnderMouse(obj, position);
+    Diagram.prototype.findElementUnderMouse = function (obj, position, padding) {
+        return this.eventHandler.findElementUnderMouse(obj, position, padding);
     };
     /**
      * Defines the action to be done, when the mouse hovers the given element of the given object
@@ -41819,7 +41993,7 @@ var PrintAndExport = /** @class */ (function () {
         img.onload = function () {
             var canvas = CanvasRenderer.createCanvas(context.diagram.element.id + 'innerImage', bounds.width + (margin.left + margin.right), bounds.height + (margin.top + margin.bottom));
             var ctx = canvas.getContext('2d');
-            ctx.fillStyle = 'transparent';
+            ctx.fillStyle = context.diagram.pageSettings.background.color;
             ctx.fillRect(0, 0, bounds.width + (margin.left + margin.right), bounds.height + (margin.top + margin.bottom));
             ctx.drawImage(img, 0, 0, bounds.width, bounds.height, margin.left, margin.top, bounds.width, bounds.height);
             image = canvas.toDataURL();
@@ -47158,6 +47332,12 @@ var UndoRedo = /** @class */ (function () {
                 this.recordLaneOrPhaseCollectionChanged(entry, diagram, false);
                 entry.isUndo = false;
                 break;
+            case 'SendToBack':
+            case 'SendForward':
+            case 'SendBackward':
+            case 'BringToFront':
+                this.recordOrderCommandChanged(entry, diagram, false);
+                break;
         }
         diagram.diagramActions &= ~exports.DiagramAction.UndoRedo;
         diagram.protectPropertyChange(false);
@@ -47401,6 +47581,12 @@ var UndoRedo = /** @class */ (function () {
         var undoObject = entry.undoObject;
         this.getProperty(diagram, (isRedo ? redoObject : undoObject));
         isRedo ? diagram.onPropertyChanged(redoObject, undoObject) : diagram.onPropertyChanged(undoObject, redoObject);
+        diagram.diagramActions = diagram.diagramActions | exports.DiagramAction.UndoRedo;
+    };
+    UndoRedo.prototype.recordOrderCommandChanged = function (entry, diagram, isRedo) {
+        var redoObject = entry.redoObject;
+        var undoObject = entry.undoObject;
+        diagram.commandHandler.orderCommands(isRedo, (isRedo ? redoObject : undoObject), entry.type);
         diagram.diagramActions = diagram.diagramActions | exports.DiagramAction.UndoRedo;
     };
     UndoRedo.prototype.recordSegmentChanged = function (obj, diagram) {
@@ -47829,6 +48015,12 @@ var UndoRedo = /** @class */ (function () {
             case 'LaneCollectionChanged':
             case 'PhaseCollectionChanged':
                 this.recordLaneOrPhaseCollectionChanged(historyEntry, diagram, true);
+                break;
+            case 'SendToBack':
+            case 'SendForward':
+            case 'SendBackward':
+            case 'BringToFront':
+                this.recordOrderCommandChanged(historyEntry, diagram, true);
                 break;
         }
         diagram.protectPropertyChange(false);
@@ -53345,7 +53537,7 @@ var SymbolPalette = /** @class */ (function (_super) {
          */
         _this.helper = function (e) {
             var clonedElement;
-            var id = e.sender.target.id.split('_container')[0];
+            var id = (_this.selectedSymbol && _this.selectedSymbol.id) || e.sender.target.id.split('_container')[0];
             var symbol = _this.symbolTable[id];
             if (symbol && _this.selectedSymbol) {
                 _this.selectedSymbols = _this.selectedSymbol.id === symbol.id ? symbol : _this.selectedSymbol;

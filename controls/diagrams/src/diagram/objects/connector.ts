@@ -1030,7 +1030,12 @@ export class Connector extends NodeBase implements IElement {
      */
     @Property(10)
     public hitPadding: number;
-
+    /**
+     * Sets the connector padding value
+     * @default 0
+     */
+    @Property(0)
+    public connectPadding: number;
 
     /**
      * Defines the type of the connector

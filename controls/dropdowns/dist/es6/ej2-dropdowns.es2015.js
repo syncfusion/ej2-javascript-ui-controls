@@ -4150,6 +4150,7 @@ let DropDownTree = class DropDownTree extends Component {
             csHome: 'ctrl+shift+home',
             csEnd: 'ctrl+shift+end',
             space: 'space',
+            ctrlA: 'ctrl+A'
         };
     }
     /**
@@ -4470,7 +4471,7 @@ let DropDownTree = class DropDownTree extends Component {
         return 'EJS-DROPDOWNTREE';
     }
     focusOut(e) {
-        if (!this.enabled || this.readonly) {
+        if (!this.enabled || this.readonly || !this.inputFocus) {
             return;
         }
         if ((Browser.isIE || Browser.info.name === 'edge') && (e.target === this.inputWrapper)) {
@@ -4546,7 +4547,7 @@ let DropDownTree = class DropDownTree extends Component {
         this.inputFocus = true;
         addClass([this.inputWrapper], [INPUTFOCUS]);
         if ((this.allowMultiSelection || this.showCheckBox) && this.mode === 'Default' && this.inputFocus) {
-            if (this.chipWrapper) {
+            if (this.chipWrapper && (this.value && this.value.length !== 0)) {
                 removeClass([this.chipWrapper], HIDEICON);
                 addClass([this.inputWrapper], SHOW_CHIP);
                 addClass([this.inputEle], CHIP_INPUT);
@@ -4574,6 +4575,7 @@ let DropDownTree = class DropDownTree extends Component {
                             this.hidePopup();
                         }
                         break;
+                    case 'tab':
                     case 'shiftTab':
                         if (this.isPopupOpen) {
                             this.hidePopup();
@@ -4591,6 +4593,11 @@ let DropDownTree = class DropDownTree extends Component {
                     case 'space':
                         this.isValueChange = true;
                         this.keyEventArgs = e;
+                        break;
+                    case 'ctrlA':
+                        if (this.allowMultiSelection) {
+                            this.selectAll(true);
+                        }
                         break;
                     case 'moveRight':
                     case 'moveLeft':
@@ -4628,13 +4635,10 @@ let DropDownTree = class DropDownTree extends Component {
                     case 'escape':
                     case 'altUp':
                     case 'shiftTab':
-                        e.preventDefault();
-                        this.hidePopup();
-                        break;
                     case 'tab':
-                        e.preventDefault();
-                        this.hidePopup();
-                        this.inputEle.focus();
+                        if (this.isPopupOpen) {
+                            this.hidePopup();
+                        }
                         break;
                     case 'altDown':
                         if (!this.isPopupOpen) {
@@ -4737,8 +4741,12 @@ let DropDownTree = class DropDownTree extends Component {
         }
     }
     getValidMode() {
-        let isValidMode = this.mode === 'Box' ? true : (this.mode === 'Default' && this.inputFocus) ? true : false;
-        return isValidMode;
+        if (this.allowMultiSelection || this.showCheckBox) {
+            return this.mode === 'Box' ? true : (this.mode === 'Default' && this.inputFocus) ? true : false;
+        }
+        else {
+            return false;
+        }
     }
     createSelectAllWrapper() {
         this.checkAllParent = this.createElement('div', {
@@ -4755,7 +4763,7 @@ let DropDownTree = class DropDownTree extends Component {
         this.checkAllParent.appendChild(this.checkBoxElement);
         this.checkAllParent.appendChild(this.selectAllSpan);
         this.setLocale();
-        EventHandler.add(this.checkAllParent, 'mousedown', this.clickHandler, this);
+        EventHandler.add(this.checkAllParent, 'mouseup', this.clickHandler, this);
         this.wireCheckAllWrapperEvents();
     }
     clickHandler(e) {
@@ -4799,6 +4807,7 @@ let DropDownTree = class DropDownTree extends Component {
             this.setLocale(false);
         }
         this.setMultiSelect();
+        this.ensurePlaceHolder();
         ariaState = state === 'check' ? 'true' : 'false';
         if (!isNullOrUndefined(ariaState)) {
             wrapper.setAttribute('aria-checked', ariaState);
@@ -5229,7 +5238,8 @@ let DropDownTree = class DropDownTree extends Component {
         let isFilter = closest(target, '.' + FILTERWRAP);
         if ((this.isPopupOpen && (this.inputWrapper.contains(target) || isTree || isFilter)) ||
             ((this.allowMultiSelection || this.showCheckBox) && (this.isPopupOpen && target.classList.contains(CHIP_CLOSE) ||
-                (this.isPopupOpen && (target.classList.contains(CHECKALLPARENT) || target.classList.contains(CHECKBOXFRAME)))))) {
+                (this.isPopupOpen && (target.classList.contains(CHECKALLPARENT) || target.classList.contains(ALLTEXT)
+                    || target.classList.contains(CHECKBOXFRAME)))))) {
             this.isDocumentClick = false;
         }
         else if (!this.inputWrapper.contains(target)) {
@@ -5491,6 +5501,7 @@ let DropDownTree = class DropDownTree extends Component {
                 this.treeObj.checkAll([args.node]);
             }
             this.setMultiSelect();
+            this.ensurePlaceHolder();
         }
         if (!this.changeOnBlur && (this.allowMultiSelection || this.showCheckBox)) {
             this.triggerChangeEvent(args.event);
@@ -5505,6 +5516,7 @@ let DropDownTree = class DropDownTree extends Component {
         }
         if (!this.isChipDelete && args.isInteracted) {
             this.setMultiSelect();
+            this.ensurePlaceHolder();
         }
         if (this.showSelectAll && this.checkBoxElement) {
             let nodes = this.treeObj.element.querySelectorAll('li');
@@ -5599,6 +5611,14 @@ let DropDownTree = class DropDownTree extends Component {
             }
         }
     }
+    ensurePlaceHolder() {
+        if (this.value && this.value.length === 0) {
+            removeClass([this.inputEle], CHIP_INPUT);
+            if (this.chipWrapper) {
+                addClass([this.chipWrapper], HIDEICON);
+            }
+        }
+    }
     ensureClearIconPosition(floatLabelType) {
         if (floatLabelType !== 'Never') {
             this.inputWrapper.insertBefore(this.overAllClear, this.inputObj.buttons[0]);
@@ -5607,6 +5627,10 @@ let DropDownTree = class DropDownTree extends Component {
     setMultiSelectValue(newValues) {
         if (!this.isFilteredData) {
             this.setProperties({ value: newValues }, true);
+            if (newValues && newValues.length !== 0 && !this.showCheckBox) {
+                this.treeObj.selectedNodes = this.value.slice();
+                this.treeObj.dataBind();
+            }
         }
         else {
             let selectedValues = isNullOrUndefined(this.value) ? [] : this.value;
@@ -5862,6 +5886,7 @@ let DropDownTree = class DropDownTree extends Component {
         }
         this.triggerChangeEvent(e);
         this.isChipDelete = false;
+        this.ensurePlaceHolder();
     }
     resetValue(isDynamicChange) {
         Input.setValue(null, this.inputEle, this.floatLabelType);
@@ -5884,6 +5909,7 @@ let DropDownTree = class DropDownTree extends Component {
         }
         if ((this.allowMultiSelection || this.showCheckBox) && this.chipWrapper) {
             this.chipCollection.innerHTML = '';
+            this.ensurePlaceHolder();
         }
     }
     clearCheckAll() {
@@ -6284,6 +6310,9 @@ let DropDownTree = class DropDownTree extends Component {
         attributes(this.inputWrapper, { 'aria-expanded': 'false' });
         if (this.popupObj && this.isPopupOpen) {
             this.popupObj.hide();
+            if (this.inputFocus) {
+                this.inputWrapper.focus();
+            }
             this.trigger('close', eventArgs);
         }
     }
@@ -12342,7 +12371,16 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
         this.trigger('drag', this.getDragArgs(args));
         let listObj = this.getComponent(args.target);
         if (listObj && listObj.listData.length === 0) {
-            listObj.ulElement.innerHTML = '';
+            if (isBlazor()) {
+                listObj.ulElement.childNodes.forEach((elem) => {
+                    if (elem.nodeName === '#text') {
+                        elem.nodeValue = '';
+                    }
+                });
+            }
+            else {
+                listObj.ulElement.innerHTML = '';
+            }
         }
     }
     beforeDragEnd(args) {
@@ -12915,11 +12953,8 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
                     'spellcheck': 'false'
                 });
             }
-            if (this.allowFiltering && this.height.toString().indexOf('%') < 0) {
+            if (this.height.toString().indexOf('%') < 0) {
                 addClass([this.list], 'e-filter-list');
-            }
-            else {
-                removeClass([this.list], 'e-filter-list');
             }
             this.inputString = this.filterInput.value;
             EventHandler.add(this.filterInput, 'input', this.onInput, this);
@@ -13854,6 +13889,7 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
                     else {
                         this.list.removeChild(this.list.getElementsByClassName('e-filter-parent')[0]);
                         this.filterParent = null;
+                        removeClass([this.list], 'e-filter-list');
                     }
                     break;
                 case 'scope':

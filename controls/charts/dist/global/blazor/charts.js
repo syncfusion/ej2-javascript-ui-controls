@@ -5874,7 +5874,8 @@ var SeriesBase = /** @class */ (function (_super) {
      */
     SeriesBase.prototype.setEmptyPoint = function (point, i) {
         if (!this.findVisibility(point)) {
-            point.visible = true;
+            point.visible = ((this.xAxis.valueType === 'Logarithmic' || this.yAxis.valueType === 'Logarithmic') && point.yValue === 0)
+                ? false : true;
             return null;
         }
         point.isEmpty = true;
@@ -5960,7 +5961,9 @@ var SeriesBase = /** @class */ (function (_super) {
      * To get Y min max for the provided point seriesType XY
      */
     SeriesBase.prototype.setXYMinMax = function (yValue) {
-        this.yMin = Math.min(this.yMin, (sf.base.isNullOrUndefined(yValue) || isNaN(yValue)) ? this.yMin : yValue);
+        this.yMin = (this.yAxis.valueType === 'Logarithmic' || this.xAxis.valueType === 'Logarithmic') ?
+            Math.min(this.yMin, (sf.base.isNullOrUndefined(yValue) || isNaN(yValue) || (yValue === 0)) ? this.yMin : yValue) :
+            Math.min(this.yMin, (sf.base.isNullOrUndefined(yValue) || isNaN(yValue)) ? this.yMin : yValue);
         this.yMax = Math.max(this.yMax, (sf.base.isNullOrUndefined(yValue) || isNaN(yValue)) ? this.yMax : yValue);
     };
     /**
@@ -17938,9 +17941,11 @@ var Trendlines = /** @class */ (function () {
      */
     Trendlines.prototype.getLinearPoints = function (trendline, points, xValues, yValues, series, slopeInterceptLinear) {
         var pts = [];
-        var x1Linear = xValues[0] - trendline.backwardForecast;
+        var max = xValues.indexOf(Math.max.apply(null, xValues));
+        var min = xValues.indexOf(Math.min.apply(null, xValues));
+        var x1Linear = xValues[min] - trendline.backwardForecast;
         var y1Linear = slopeInterceptLinear.slope * x1Linear + slopeInterceptLinear.intercept;
-        var x2Linear = xValues[xValues.length - 1] + trendline.forwardForecast;
+        var x2Linear = xValues[max] + trendline.forwardForecast;
         var y2Linear = slopeInterceptLinear.slope * x2Linear + slopeInterceptLinear.intercept;
         pts.push(this.getDataPoint(x1Linear, y1Linear, points[0], series, pts.length));
         pts.push(this.getDataPoint(x2Linear, y2Linear, points[points.length - 1], series, pts.length));
@@ -44679,6 +44684,12 @@ var Sparkline = /** @class */ (function (_super) {
         }
         // Used to create clip path sparkline
         var padding = this.padding;
+        if (this.markerSettings.visible.length) {
+            padding.left = 0;
+            padding.right = 0;
+            padding.bottom = 0;
+            padding.top = 0;
+        }
         borderRect = new RectOption$2(this.element.id + '_sparkline_clip_rect', 'transparent', { color: 'transparent', width: 0 }, 1, new Rect$1(padding.left, padding.top, this.availableSize.width - (padding.left + padding.right), this.availableSize.height - (padding.top + padding.bottom)));
         var clipPath = this.renderer.createClipPath({ id: this.element.id + '_sparkline_clip_path' });
         drawRectangle(this, borderRect, clipPath);

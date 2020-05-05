@@ -2123,9 +2123,11 @@ export class TextMarkupAnnotation {
             }
         }
     }
-
+    /**
+     * @private
+     */
     // tslint:disable-next-line
-    private getAnnotations(pageIndex: number, textMarkupAnnotations: any[], id?: string): any[] {
+    public getAnnotations(pageIndex: number, textMarkupAnnotations: any[], id?: string): any[] {
         // tslint:disable-next-line
         let annotationCollection: any[];
         // tslint:disable-next-line

@@ -7,7 +7,7 @@ import {
     Page, Rect, Widget, ImageElementBox, LineWidget, ParagraphWidget,
     BodyWidget, TextElementBox, ElementBox, HeaderFooterWidget, ListTextElementBox,
     TableRowWidget, TableWidget, TableCellWidget, FieldElementBox, TabElementBox, BlockWidget, ErrorTextElementBox,
-    CommentCharacterElementBox
+    CommentCharacterElementBox, ShapeElementBox
 } from './page';
 import { BaselineAlignment, HighlightColor, Underline, Strikethrough, TabLeader } from '../../index';
 import { Layout } from './layout';
@@ -32,6 +32,7 @@ export class Renderer {
     private leftPosition: number = 0;
     private topPosition: number = 0;
     private isFormField: boolean = false;
+    private height: number = 0;
     /**
      * Gets page canvas.
      * @private    
@@ -121,6 +122,7 @@ export class Renderer {
             this.pageContext.rect(left, top, width, height);
             this.pageContext.clip();
         }
+        this.height = height;
         if (page.headerWidget) {
             this.renderHFWidgets(page, page.headerWidget, width, true);
         }
@@ -199,6 +201,7 @@ export class Renderer {
                 this.renderWidget(page, block);
             }
         }
+        this.renderFloatingItems(page, widget.floatingElements);
         if (cliped) {
             this.pageContext.restore();
         }
@@ -302,6 +305,31 @@ export class Renderer {
                 this.renderHeader(page, widget as TableWidget, this.documentHelper.layout.getHeader(bodyWidget.childWidgets[0] as TableWidget));
             }
             this.renderWidget(page, widget);
+        }
+        this.renderFloatingItems(page, page.bodyWidgets[0].floatingElements);
+    }
+
+    private renderFloatingItems(page: Page, floatingElements: ShapeElementBox[]): void {
+        if (!isNullOrUndefined(floatingElements) && floatingElements.length > 0) {
+            /* tslint:disable */
+            floatingElements.sort(function (a, b) { return a.zOrderPosition - b.zOrderPosition });
+            for (let i: number = 0; i < floatingElements.length; i++) {
+                let shape: ShapeElementBox = floatingElements[i];
+                let blocks: BlockWidget[] = shape.textFrame.childWidgets as BlockWidget[];
+                let shapeLeft: number = this.getScaledValue(shape.x, 1);
+                let shapeTop: number = this.getScaledValue(shape.y, 2);
+                this.pageContext.beginPath();
+                this.pageContext.fillStyle = 'white';
+                this.pageContext.fillRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
+                if (shape.lineFormat.lineFormatType !== 'None') {
+                    this.pageContext.strokeStyle = shape.lineFormat.color;
+                    this.pageContext.strokeRect(shapeLeft, shapeTop, this.getScaledValue(shape.width), this.getScaledValue(shape.height));
+                }
+                this.pageContext.closePath();
+                for (let i: number = 0; i < blocks.length; i++) {
+                    this.renderWidget(page, blocks[i]);
+                }
+            }
         }
     }
     /**
@@ -414,7 +442,8 @@ export class Renderer {
         this.renderTableCellOutline(page.documentHelper, cellWidget);
         for (let i: number = 0; i < cellWidget.childWidgets.length; i++) {
             let widget: Widget = cellWidget.childWidgets[i] as Widget;
-            // this.clipRect(cellWidget.x, cellWidget.y, this.getScaledValue(width), this.getScaledValue(cellWidget.height));
+            let width: number = cellWidget.width + cellWidget.margin.left - cellWidget.leftBorderWidth;
+            this.clipRect(cellWidget.x, cellWidget.y, this.getScaledValue(width), this.getScaledValue(this.height));
             this.renderWidget(page, widget);
             this.pageContext.restore();
         }
@@ -460,6 +489,9 @@ export class Renderer {
         let isCommentMark: boolean = false;
         for (let i: number = 0; i < lineWidget.children.length; i++) {
             let elementBox: ElementBox = lineWidget.children[i] as ElementBox;
+            if (elementBox instanceof ShapeElementBox) {
+                continue;
+            }
             if (elementBox instanceof CommentCharacterElementBox &&
                 elementBox.commentType === 0 && this.documentHelper.owner.selectionModule) {
                 if (this.documentHelper.owner.enableComment && !isCommentMark) {

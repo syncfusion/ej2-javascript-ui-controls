@@ -10,7 +10,7 @@ import * as cls from './css-constant';
  */
 export class MobileLayout {
     public parent: Kanban;
-    private popupOverlay: HTMLElement;
+    public popupOverlay: HTMLElement;
     public treeViewObj: TreeView;
     public treePopup: Popup;
     /**

@@ -19,7 +19,7 @@ export interface ResourceFieldsModel {
 
     /**
      * To map unit of resource from resource collection.
-     * @default null     
+     * @default null
      */
     unit?: string;
 

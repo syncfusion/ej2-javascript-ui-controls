@@ -1652,6 +1652,8 @@ var checkPrevMerge = 'checkPrevMerge';
 var checkMerge = 'checkMerge';
 /** @hidden */
 var removeDataValidation = 'removeDataValidation';
+/** @hidden */
+var blankWorkbook = 'blankWorkbook';
 
 /**
  * Open properties.
@@ -14936,6 +14938,10 @@ var Clipboard = /** @class */ (function () {
     Clipboard.prototype.cMenuBeforeOpenHandler = function (e) {
         var sheet = this.parent.getActiveSheet();
         var l10n = this.parent.serviceLocator.getService(locale);
+        var delRowItems = [];
+        var hideRowItems = [];
+        var delColItems = [];
+        var hideColItems = [];
         if (e.target === 'Content' || e.target === 'RowHeader' || e.target === 'ColumnHeader') {
             this.parent.enableContextMenuItems([l10n.getConstant('Paste'), l10n.getConstant('PasteSpecial')], (this.copiedInfo && !sheet.isProtected) ? true : false);
             this.parent.enableContextMenuItems([l10n.getConstant('Cut')], (!sheet.isProtected) ? true : false);
@@ -14945,6 +14951,21 @@ var Clipboard = /** @class */ (function () {
         }
         if ((e.target === 'Content') && (sheet.isProtected && !sheet.protectSettings.insertLink)) {
             this.parent.enableContextMenuItems([l10n.getConstant('Hyperlink')], false);
+        }
+        if (e.target === 'ColumnHeader' && sheet.isProtected) {
+            delColItems = [l10n.getConstant('DeleteColumn'), l10n.getConstant('DeleteColumns'),
+                l10n.getConstant('InsertColumn'), l10n.getConstant('InsertColumns')];
+            hideColItems = [l10n.getConstant('HideColumn'), l10n.getConstant('HideColumns'),
+                l10n.getConstant('UnHideColumns')];
+            this.parent.enableContextMenuItems(delColItems, false);
+            this.parent.enableContextMenuItems(hideColItems, (sheet.protectSettings.formatColumns) ? true : false);
+        }
+        if (e.target === 'RowHeader' && sheet.isProtected) {
+            delRowItems = [l10n.getConstant('DeleteRow'), l10n.getConstant('DeleteRows'),
+                l10n.getConstant('InsertRow'), l10n.getConstant('InsertRows')];
+            hideRowItems = [l10n.getConstant('HideRow'), l10n.getConstant('HideRows'), l10n.getConstant('UnHideRows')];
+            this.parent.enableContextMenuItems(delRowItems, false);
+            this.parent.enableContextMenuItems(hideRowItems, (sheet.protectSettings.formatRows) ? true : false);
         }
     };
     Clipboard.prototype.rowHeightChanged = function (args) {
@@ -14990,12 +15011,12 @@ var Clipboard = /** @class */ (function () {
             var beginEventArgs = {
                 requestType: 'paste',
                 copiedInfo: this.copiedInfo,
-                copiedRange: getRangeAddress(cIdx),
+                copiedRange: isExternal ? null : getRangeAddress(cIdx),
                 pastedRange: getRangeAddress(rfshRange),
                 type: (args && args.type) || 'All',
                 cancel: false
             };
-            if (args.isAction) {
+            if (args.isAction || isExternal) {
                 this.parent.notify(beginAction, { eventArgs: beginEventArgs, action: 'clipboard' });
             }
             if (beginEventArgs.cancel) {
@@ -15081,7 +15102,7 @@ var Clipboard = /** @class */ (function () {
             if (isExternal || (args && args.isAction)) {
                 this.parent.element.focus();
             }
-            if (args.isAction) {
+            if (args.isAction || isExternal) {
                 var sheetIndex = copyInfo && copyInfo.sId ? getSheetIndexFromId(this.parent, copyInfo.sId) :
                     this.parent.activeSheetIndex;
                 var eventArgs = {
@@ -15089,8 +15110,8 @@ var Clipboard = /** @class */ (function () {
                     copiedInfo: copyInfo,
                     mergeCollection: mergeCollection,
                     pasteSheetIndex: this.parent.activeSheetIndex,
-                    copiedRange: this.parent.sheets[sheetIndex].name + '!' + getRangeAddress(copyInfo && copyInfo.range ? copyInfo.range :
-                        getRangeIndexes(this.parent.sheets[sheetIndex].selectedRange)),
+                    copiedRange: isExternal ? null : this.parent.sheets[sheetIndex].name + '!' + getRangeAddress(copyInfo &&
+                        copyInfo.range ? copyInfo.range : getRangeIndexes(this.parent.sheets[sheetIndex].selectedRange)),
                     pastedRange: getSheetName(this.parent) + '!' + getRangeAddress(rfshRange),
                     type: (args && args.type) || 'All'
                 };
@@ -19375,9 +19396,6 @@ var SpreadsheetHyperlink = /** @class */ (function () {
             if (typeof (cell.hyperlink) === 'string') {
                 td.querySelector('a').setAttribute('href', cell.hyperlink);
             }
-            else {
-                td.querySelector('a').setAttribute('href', cell.hyperlink.address);
-            }
         }
     };
     SpreadsheetHyperlink.prototype.hyperEditContent = function () {
@@ -19672,7 +19690,7 @@ var UndoRedo = /** @class */ (function () {
             case 'clipboard':
                 var copiedInfo = eventArgs.copiedInfo;
                 address = getRangeIndexes(getRangeFromAddress(eventArgs.pastedRange));
-                if (copiedInfo.isCut) {
+                if (copiedInfo && copiedInfo.isCut) {
                     cutCellDetails = this.getCellDetails(copiedInfo.range, getSheet(this.parent, getSheetIndexFromId(this.parent, copiedInfo.sId)));
                 }
                 break;
@@ -24126,13 +24144,8 @@ var Ribbon$$1 = /** @class */ (function () {
                                     content: this.parent.serviceLocator.getService(locale).getConstant('Ok'), isPrimary: true
                                 },
                                 click: function () {
-                                    _this.parent.sheets.length = 0;
-                                    _this.parent.createSheet();
                                     dialogInst_1.hide();
-                                    _this.parent.activeSheetIndex = _this.parent.sheets.length - 1;
-                                    _this.parent.notify(refreshSheetTabs, {});
-                                    _this.parent.notify(sheetsDestroyed, {});
-                                    _this.parent.renderModule.refreshSheet();
+                                    _this.blankWorkbook();
                                 }
                             }]
                     });
@@ -24523,6 +24536,15 @@ var Ribbon$$1 = /** @class */ (function () {
             }
         }
     };
+    Ribbon$$1.prototype.blankWorkbook = function () {
+        this.parent.sheets.length = 0;
+        this.parent.sheetNameCount = 1;
+        this.parent.notify(sheetsDestroyed, {});
+        this.parent.createSheet();
+        this.parent.activeSheetIndex = this.parent.sheets.length - 1;
+        this.parent.notify(refreshSheetTabs, {});
+        this.parent.renderModule.refreshSheet();
+    };
     Ribbon$$1.prototype.addEventListener = function () {
         this.parent.on(ribbon, this.initRibbon, this);
         this.parent.on(enableToolbarItems, this.enableToolbarItems, this);
@@ -24538,6 +24560,7 @@ var Ribbon$$1 = /** @class */ (function () {
         this.parent.on(enableRibbonTabs, this.enableRibbonTabs, this);
         this.parent.on(protectCellFormat, this.protectSheetHandler, this);
         this.parent.on(selectionComplete, this.updateMergeItem, this);
+        this.parent.on(blankWorkbook, this.blankWorkbook, this);
     };
     Ribbon$$1.prototype.destroy = function () {
         var parentElem = this.parent.element;
@@ -24594,6 +24617,7 @@ var Ribbon$$1 = /** @class */ (function () {
             this.parent.off(enableRibbonTabs, this.enableRibbonTabs);
             this.parent.off(protectCellFormat, this.protectSheetHandler);
             this.parent.off(selectionComplete, this.updateMergeItem);
+            this.parent.off(blankWorkbook, this.blankWorkbook);
         }
     };
     return Ribbon$$1;
@@ -30154,7 +30178,7 @@ var Spreadsheet = /** @class */ (function (_super) {
     Spreadsheet.prototype.setRowHeight = function (height, rowIndex, sheetIndex) {
         if (height === void 0) { height = 20; }
         if (rowIndex === void 0) { rowIndex = 0; }
-        var sheet = sf.base.isNullOrUndefined(sheetIndex) ? this.getActiveSheet() : this.sheets[sheetIndex - 1];
+        var sheet = sf.base.isNullOrUndefined(sheetIndex) ? this.getActiveSheet() : this.sheets[sheetIndex];
         if (sheet) {
             var mIndex = rowIndex;
             var rowHeight = (typeof height === 'number') ? height + 'px' : height;
@@ -30474,6 +30498,14 @@ var Spreadsheet = /** @class */ (function (_super) {
         else {
             _super.prototype.hideColumn.call(this, startIndex, endIndex, hide, sheet);
         }
+    };
+    /**
+     * Used to refresh the spreadsheet.
+     * @param {boolean} isNew - Specifies `true` / `false` to create new workbook in spreadsheet.
+     * @returns void
+     */
+    Spreadsheet.prototype.refresh = function (isNew) {
+        (isNew) ? this.notify(blankWorkbook, {}) : _super.prototype.refresh.call(this);
     };
     /**
      * Gets the row header div of the Spreadsheet.
@@ -31502,6 +31534,7 @@ exports.hiddenMerge = hiddenMerge;
 exports.checkPrevMerge = checkPrevMerge;
 exports.checkMerge = checkMerge;
 exports.removeDataValidation = removeDataValidation;
+exports.blankWorkbook = blankWorkbook;
 exports.getUpdateUsingRaf = getUpdateUsingRaf;
 exports.removeAllChildren = removeAllChildren;
 exports.getColGroupWidth = getColGroupWidth;

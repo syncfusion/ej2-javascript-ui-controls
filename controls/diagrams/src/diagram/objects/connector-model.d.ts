@@ -688,6 +688,12 @@ export interface ConnectorModel extends NodeBaseModel{
     hitPadding?: number;
 
     /**
+     * Sets the connector padding value
+     * @default 0
+     */
+    connectPadding?: number;
+
+    /**
      * Defines the type of the connector
      * * Straight - Sets the segment type as Straight
      * * Orthogonal - Sets the segment type as Orthogonal

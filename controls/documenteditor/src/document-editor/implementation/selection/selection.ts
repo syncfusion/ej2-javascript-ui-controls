@@ -4,11 +4,11 @@ import {
     LineWidget, TextElementBox, ListTextElementBox, ImageElementBox, Page, ParagraphWidget, TableCellWidget,
     FieldElementBox, BlockWidget, HeaderFooterWidget, BlockContainer, BookmarkElementBox, ElementBox, HeaderFooters,
     EditRangeStartElementBox, EditRangeEndElementBox, TabElementBox, CommentElementBox, CommentCharacterElementBox,
-    TextFormField, CheckBoxFormField, DropDownFormField
+    TextFormField, CheckBoxFormField, DropDownFormField, ShapeElementBox, TextFrame
 } from '../viewer/page';
 import {
     ElementInfo, CaretHeightInfo, IndexInfo, SizeInfo,
-    FirstElementInfo, HelperMethods, HyperlinkTextInfo, LineInfo, Point
+    FirstElementInfo, HelperMethods, HyperlinkTextInfo, LineInfo, Point, ShapeInfo
 } from '../editor/editor-helper';
 import {
     SelectionCharacterFormat, SelectionCellFormat, SelectionParagraphFormat,
@@ -317,6 +317,21 @@ export class Selection {
         return this.getHierarchicalIndexByPosition(this.end);
     }
     /**
+     * @private
+     */
+    get isInShape(): boolean {
+        let container: Widget = this.start.paragraph.containerWidget;
+        do {
+            if (container instanceof TextFrame) {
+                return true;
+            }
+            if (container) {
+                container = container.containerWidget;
+            }
+        } while (container);
+        return false;
+    }
+    /**
      * Gets the text within selection.
      * @default ''
      * @aspType string
@@ -584,6 +599,20 @@ export class Selection {
         }
     }
     /**
+     * @private
+     */
+    public selectShape(shape: ShapeElementBox): void {
+        if (shape) {
+            let offset: number = shape.line.getOffset(shape, 0);
+            let startPosition: TextPosition = new TextPosition(this.owner);
+            startPosition.setPositionParagraph(shape.line, offset);
+            let endoffset: number = shape.line.getOffset(shape, 1);
+            let endPosition: TextPosition = new TextPosition(this.owner);
+            endPosition.setPositionParagraph(shape.line, endoffset);
+            this.documentHelper.selection.selectRange(startPosition, endPosition);
+        }
+    }
+    /**
      * Toggles the bold property of selected contents.
      * @private
      */
@@ -736,9 +765,12 @@ export class Selection {
             this.owner.imageResizerModule.hideImageResizer();
         }
         if (this.isEmpty) {
-            if (this.isHideSelection(this.start.paragraph)) {
+            if (!this.isInShape && this.isHideSelection(this.start.paragraph)) {
                 this.hideCaret();
                 return;
+            }
+            if (this.isInShape) {
+                this.showResizerForShape();
             }
             this.updateCaretPosition();
         } else {
@@ -762,6 +794,29 @@ export class Selection {
     public createHighlightBorder(lineWidget: LineWidget, width: number, left: number, top: number, isElementBoxHighlight: boolean): void {
         if (width < 0) {
             width = 0;
+        }
+        let paragraph: ParagraphWidget = lineWidget.paragraph;
+        let floatingItems: ShapeElementBox[] = [];
+        if (paragraph.floatingElements.length > 0) {
+            for (let k: number = 0; k < paragraph.floatingElements.length; k++) {
+                let shapeElement: ShapeElementBox = paragraph.floatingElements[k];
+                if (shapeElement.line === lineWidget) {
+                    let startTextPos: TextPosition = this.start;
+                    let endTextPos: TextPosition = this.end;
+                    if (!this.isForward) {
+                        startTextPos = this.end;
+                        endTextPos = this.start;
+                    }
+                    let offset: number = shapeElement.line.getOffset(shapeElement, 0);
+                    if ((startTextPos.currentWidget !== lineWidget && endTextPos.currentWidget !== lineWidget) ||
+                        (startTextPos.currentWidget === lineWidget && startTextPos.offset <= offset
+                            && (endTextPos.currentWidget === lineWidget && endTextPos.offset >= offset + 1
+                                || endTextPos.currentWidget !== lineWidget)) || (startTextPos.currentWidget !== lineWidget
+                                    && endTextPos.currentWidget === lineWidget && endTextPos.offset >= offset)) {
+                        floatingItems.push(shapeElement);
+                    }
+                }
+            }
         }
         let page: Page = this.getPage(lineWidget.paragraph);
         let height: number = lineWidget.height;
@@ -792,11 +847,13 @@ export class Selection {
                     widgets.add(lineWidget, selectionWidgetCollection);
                 } else {
                     selectionWidget = new SelectionWidgetInfo(left, width);
+                    selectionWidget.floatingItems = floatingItems;
                     widgets.add(lineWidget, selectionWidget);
                 }
             }
             if (selectionWidget === undefined) {
                 selectionWidget = new SelectionWidgetInfo(left, width);
+                selectionWidget.floatingItems = floatingItems;
                 widgets.add(lineWidget, selectionWidget);
             }
         }
@@ -815,6 +872,16 @@ export class Selection {
                 documentHelper.selectionContext.globalAlpha = 0.4;
                 // tslint:disable-next-line:max-line-length
                 documentHelper.selectionContext.fillRect((pageLeft + (left * zoomFactor)) - this.viewer.containerLeft, (pageTop + (top * zoomFactor)) - this.viewer.containerTop, width * zoomFactor, height * zoomFactor);
+                if (floatingItems.length > 0) {
+                    for (let z: number = 0; z < floatingItems.length; z++) {
+                        left = floatingItems[z].x;
+                        top = floatingItems[z].y;
+                        width = floatingItems[z].width;
+                        height = floatingItems[z].height;
+                        // tslint:disable-next-line:max-line-length
+                        documentHelper.selectionContext.fillRect((pageLeft + (left * zoomFactor)) - this.viewer.containerLeft, (pageTop + (top * zoomFactor)) - this.viewer.containerTop, width * zoomFactor, height * zoomFactor);
+                    }
+                }
             }
             documentHelper.selectionContext.restore();
         }
@@ -922,6 +989,7 @@ export class Selection {
             }
             if (!isNullOrUndefined(widgetInfoCollection)) {
                 for (let i: number = 0; i < widgetInfoCollection.length; i++) {
+                    let selectedWidgetInfo: SelectionWidgetInfo = widgetInfoCollection[i];
                     let width: number = this.documentHelper.render.getScaledValue(widgetInfoCollection[i].width);
                     let left: number = this.documentHelper.render.getScaledValue(widgetInfoCollection[i].left, 1);
 
@@ -934,6 +1002,16 @@ export class Selection {
                         canvasContext.globalAlpha = 0.4;
                         canvasContext.fillStyle = 'gray';
                         canvasContext.fillRect(left, this.documentHelper.render.getScaledValue(top, 2), width, height);
+                        if (selectedWidgetInfo.floatingItems && selectedWidgetInfo.floatingItems.length > 0) {
+                            for (let j: number = 0; j < selectedWidgetInfo.floatingItems.length; j++) {
+                                let shape: ShapeElementBox = selectedWidgetInfo.floatingItems[i];
+                                width = this.documentHelper.render.getScaledValue(shape.width);
+                                left = this.documentHelper.render.getScaledValue(shape.x, 1);
+                                top = this.documentHelper.render.getScaledValue(shape.y, 2);
+                                height = this.documentHelper.render.getScaledValue(shape.height);
+                                canvasContext.fillRect(left, top, width, height);
+                            }
+                        }
                     }
                     canvasContext.restore();
                 }
@@ -2071,6 +2149,10 @@ export class Selection {
             let headerFooter: HeaderFooterWidget = this.getContainerWidget(this.start.paragraph) as HeaderFooterWidget;
             documentStart = this.setPositionForBlock(headerFooter.firstChild as BlockWidget, true);
             documentEnd = this.setPositionForBlock(headerFooter.lastChild as BlockWidget, false);
+        } else if (this.isInShape) {
+            let textFrame: TextFrame = this.getCurrentTextFrame();
+            documentStart = this.setPositionForBlock(textFrame.firstChild as BlockWidget, true);
+            documentEnd = this.setPositionForBlock(textFrame.lastChild as BlockWidget, false);
         } else {
             documentStart = this.owner.documentStart;
             documentEnd = this.owner.documentEnd;
@@ -2315,6 +2397,11 @@ export class Selection {
             } else {
                 index = block.index + ';' + offset;
             }
+            if (block instanceof TextFrame) {
+                let indexInOwner: string = block.containerShape.indexInOwner.toString();
+                index = 'S' + ';' + indexInOwner + ';' + offset;
+                return this.getHierarchicalIndex(block.containerShape.paragraph, index);
+            }
             if (block.containerWidget) {
                 if (block instanceof TableCellWidget && block.rowIndex !== block.containerWidget.index) {
                     index = block.rowIndex + ';' + index;
@@ -2446,6 +2533,15 @@ export class Selection {
         }
         let childWidget: Widget = this.getBlockByIndex(container, index);
         if (childWidget) {
+            value = position.index.substring(0, 1);
+            if (value === 'S') {
+                position.index = position.index.substring(1).replace(';', '');
+                let indexInOwner: string = position.index.substring(0, 1);
+                position.index = position.index.substring(1).replace(';', '');
+                let paraIndex: string = position.index.substring(0, 1);
+                position.index = position.index.substring(1).replace(';', '');
+                childWidget = (childWidget as ParagraphWidget).floatingElements[indexInOwner].textFrame.childWidgets[paraIndex] as Widget;
+            }
             let child: Widget = childWidget as Widget;
             if (child instanceof ParagraphWidget) {
                 if (position.index.indexOf(';') > 0) {
@@ -2762,7 +2858,8 @@ export class Selection {
         let inlineObj: ElementInfo = line.getInline(offset, indexInInline);
         let inline: ElementBox = inlineObj.element;
         indexInInline = inlineObj.index;
-        if (!isNullOrUndefined(inline) && indexInInline === inline.length && inline.nextNode instanceof FieldElementBox) {
+        if ((!isNullOrUndefined(inline) && indexInInline === inline.length && inline.nextNode instanceof FieldElementBox)
+            || inline instanceof ShapeElementBox) {
             let nextValidInline: ElementBox = this.getNextValidElement((inline.nextNode as ElementBox));
             if (nextValidInline instanceof FieldElementBox && nextValidInline.fieldType === 0) {
                 inline = nextValidInline;
@@ -3267,7 +3364,8 @@ export class Selection {
             }
             // tslint:disable-next-line:max-line-length
             if (inline instanceof TextElementBox || inline instanceof ImageElementBox || inline instanceof BookmarkElementBox
-                || inline instanceof EditRangeStartElementBox || inline instanceof EditRangeEndElementBox || inline instanceof CommentCharacterElementBox
+                || inline instanceof ShapeElementBox || inline instanceof EditRangeStartElementBox
+                || inline instanceof EditRangeEndElementBox || inline instanceof CommentCharacterElementBox
                 || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox)))) {
                 return startOffset;
             }
@@ -3688,7 +3786,7 @@ export class Selection {
                     let inlineObj: ElementInfo = end.currentWidget.getInline(end.offset, index);
                     inline = inlineObj.element;  // return index value
                     index = inlineObj.index;
-                    if (inline instanceof ImageElementBox) {
+                    if (inline instanceof ImageElementBox || inline instanceof ShapeElementBox) {
                         let startOffset: number = start.currentWidget.getOffset(inline, 0);
                         if (startOffset !== start.offset) {
                             inline = undefined;
@@ -3714,7 +3812,8 @@ export class Selection {
                     }
                 }
             }
-            if (!this.owner.isReadOnlyMode && inline instanceof ImageElementBox && this.owner.isDocumentLoaded) {
+            // tslint:disable-next-line:max-line-length
+            if (!this.owner.isReadOnlyMode && this.owner.isDocumentLoaded && (inline instanceof ImageElementBox || inline instanceof ShapeElementBox)) {
                 let elementBoxObj: ElementInfo = this.getElementBoxInternal(inline, index);
                 let elementBox: ImageElementBox = elementBoxObj.element as ImageElementBox;     //return index 
                 index = elementBoxObj.index;
@@ -3734,7 +3833,15 @@ export class Selection {
                     this.hightLightNextParagraph = undefined;
                 }
             }
+            if (this.isInShape) {
+                this.showResizerForShape();
+            }
         }
+    }
+    private showResizerForShape(): void {
+        let shape: ShapeElementBox = this.getCurrentTextFrame().containerShape as ShapeElementBox;
+        this.owner.imageResizerModule.positionImageResizer(shape as ShapeElementBox);
+        this.owner.imageResizerModule.showImageResizer();
     }
     /**
      * @private
@@ -4863,7 +4970,12 @@ export class Selection {
      */
     public getPage(widget: Widget): Page {
         let page: Page = undefined;
-        if (widget.containerWidget instanceof BlockContainer) {
+        if (widget.containerWidget instanceof TextFrame) {
+            let shape: ShapeElementBox = widget.containerWidget.containerShape as ShapeElementBox;
+            if (shape.line) {
+                page = this.getPage(shape.line.paragraph);
+            }
+        } else if (widget.containerWidget instanceof BlockContainer) {
             let bodyWidget: BodyWidget = widget.containerWidget as BodyWidget;
             page = (widget.containerWidget as BodyWidget).page;
         } else if (!isNullOrUndefined(widget.containerWidget)) {
@@ -5271,9 +5383,17 @@ export class Selection {
             caretPosition = new Point(left, topMargin > 0 ? top + topMargin : top);
         } else {
             if (!isNullOrUndefined(element)) {
-                if (caretPosition.x > left + element.margin.left) {
+                if (caretPosition.x > left + element.margin.left || element instanceof ShapeElementBox) {
                     for (let i: number = widget.children.indexOf(element); i < widget.children.length; i++) {
                         element = widget.children[i];
+                        if (element instanceof ShapeElementBox) {
+                            if (this.documentHelper.isInShapeBorder(element, caretPosition)) {
+                                left = element.x;
+                                top = element.y;
+                                break;
+                            }
+                            continue;
+                        }
                         let isCurrentParaBidi: boolean = false;
                         if (element instanceof ListTextElementBox || element instanceof TextElementBox) {
                             isCurrentParaBidi = element.line.paragraph.paragraphFormat.bidi;
@@ -5294,7 +5414,7 @@ export class Selection {
                         if (isRtlText && isParaBidi) {
                             index = 0;
                         }
-                        if ((element instanceof TextElementBox && (element as TextElementBox).text !== "\v") || includeParagraphMark) {
+                        if ((element instanceof TextElementBox && ((element as TextElementBox).text !== "\v" || (element as TextElementBox).text !== '\f')) || includeParagraphMark) {
                             left += element.margin.left + element.width;
                         }
                     } else if (element instanceof TextElementBox) {
@@ -5335,7 +5455,7 @@ export class Selection {
                                         left += prevWidth;
                                     }
                                     charIndex = i - 1;
-                                    if (i === 1 && element !== widget.children[0]) {
+                                    if (i === 1 && element !== widget.children[0] && !(widget.children[0] instanceof ShapeElementBox)) {
                                         let curIndex: number = widget.children.indexOf(element);
                                         if (!(widget.children[curIndex - 1] instanceof ListTextElementBox) && !isRtlText) {
                                             element = widget.children[curIndex - 1];
@@ -5349,7 +5469,7 @@ export class Selection {
                         }
                         index = charIndex;
                     } else {
-                        isImageSelected = element instanceof ImageElementBox;
+                        isImageSelected = element instanceof ImageElementBox || element instanceof ShapeElementBox;
                         if (caretPosition.x - left - element.margin.left > element.width / 2) {
                             index = 1;
                             left += element.margin.left + element.width;
@@ -5361,10 +5481,9 @@ export class Selection {
                             }
                         }
                     }
-                    if (element instanceof TextElementBox && (element as TextElementBox).text === '\v') {
+                    if (element instanceof TextElementBox && ((element as TextElementBox).text === '\v' || (element as TextElementBox).text === '\f')) {
                         index = 0;
                     }
-
                 } else {
                     isRtlText = element.isRightToLeft;
                     isParaBidi = element.line.paragraph.paragraphFormat.bidi;
@@ -5421,6 +5540,34 @@ export class Selection {
             'caretPosition': caretPosition,
             'isImageSelected': isImageSelected
         };
+    }
+    public checkAllFloatingElements(widget: LineWidget, caretPosition: Point): ShapeInfo {
+        let bodyWidget: BlockContainer;
+        let isShapeSelected: boolean = false;
+        let isInShapeBorder: boolean = false;
+        let floatElement: ShapeElementBox;
+        if (!isNullOrUndefined(widget)) {
+            bodyWidget = widget.paragraph.bodyWidget;
+            isShapeSelected = false;
+            isInShapeBorder = false;
+            for (let i: number = 0; i < bodyWidget.floatingElements.length; i++) {
+                floatElement = bodyWidget.floatingElements[i];
+                if (caretPosition.x < floatElement.x + floatElement.margin.left + floatElement.width && caretPosition.x > floatElement.x
+                    && caretPosition.y < floatElement.y + floatElement.margin.top + floatElement.height && caretPosition.y > floatElement.y) {
+                    isShapeSelected = true;
+                    if (this.documentHelper.isInShapeBorder(floatElement, caretPosition)) {
+                        isInShapeBorder = true;
+                    }
+                    break;
+                }
+            }
+        }
+        return {
+            'element': floatElement,
+            'caretPosition': caretPosition,
+            'isShapeSelected': isShapeSelected,
+            'isInShapeBorder': isInShapeBorder
+        }
     }
     /* tslint:enable */
     /**
@@ -5562,7 +5709,11 @@ export class Selection {
             width += HelperMethods.convertPointToPixel(paraFormat.firstLineIndent);
         }
         for (let i: number = 0; i < widget.children.length; i++) {
-            width += widget.children[i].margin.left + widget.children[i].width;
+            let elementBox: ElementBox = widget.children[i];
+            if (elementBox instanceof ShapeElementBox) {
+                continue;
+            }
+            width += elementBox.margin.left + elementBox.width;
         }
         if (includeParagraphMark && widget.paragraph.childWidgets.indexOf(widget) === widget.paragraph.childWidgets.length - 1
             && isNullOrUndefined(widget.paragraph.nextSplitWidget)) {
@@ -5610,9 +5761,9 @@ export class Selection {
         }
         for (let i: number = 0; i < count; i++) {
             let widgetInternal: ElementBox = widget.children[i];
-            // if (widgetInternal instanceof FieldElementBox) {
-            //     continue;
-            // }
+            if (widgetInternal instanceof ShapeElementBox) {
+                continue;
+            }
             if (i === 1 && widget.children[i] instanceof ListTextElementBox) {
                 left += widget.children[i].width;
             } else if (widget.children[i] instanceof TabElementBox && elementBox === widgetInternal) {
@@ -5659,7 +5810,9 @@ export class Selection {
             this.documentHelper.moveCaretPosition = 0;
         } else if (index > 0) {
             if (!isNullOrUndefined(elementBox) && !(elementBox instanceof ListTextElementBox)) {
-                left += elementBox.width;
+                if (!(elementBox instanceof ShapeElementBox)) {
+                    left += elementBox.width;
+                }
                 if (index === 2) {
                     let paragraph: ParagraphWidget = elementBox.line.paragraph;
                     left += this.documentHelper.textHelper.getParagraphMarkWidth(paragraph.characterFormat);
@@ -6089,11 +6242,16 @@ export class Selection {
     }
     private getContainerWidget(block: BlockWidget): BlockContainer {
         let bodyWidget: Widget;
-        if (block.containerWidget instanceof BlockContainer) {
+        if (block.containerWidget instanceof TextFrame) {
+            bodyWidget = block.containerWidget.containerShape.line.paragraph.bodyWidget;
+        } else if (block.containerWidget instanceof BlockContainer) {
             bodyWidget = block.containerWidget;
         } else {
             bodyWidget = block.containerWidget;
             while (!(bodyWidget instanceof BlockContainer)) {
+                if (bodyWidget instanceof TextFrame) {
+                    bodyWidget = bodyWidget.containerShape.line.paragraph;
+                }
                 bodyWidget = bodyWidget.containerWidget;
             }
         }
@@ -7260,6 +7418,21 @@ export class Selection {
     /**
      * @private
      */
+    public getCurrentTextFrame(): TextFrame {
+        let container: Widget = this.start.paragraph.containerWidget;
+        do {
+            if (container instanceof TextFrame) {
+                return container;
+            }
+            if (container) {
+                container = container.containerWidget;
+            }
+        } while (container);
+        return null;
+    }
+    /**
+     * @private
+     */
     public isTableSelected(): boolean {
         let start: TextPosition = this.start;
         let end: TextPosition = this.end;
@@ -7328,11 +7501,11 @@ export class Selection {
             inline = inlineObj.element;
             index = inlineObj.index;
         }
-        if (inline instanceof ImageElementBox) {
-            let width: number = (inline as ImageElementBox).width;
-            let height: number = (inline as ImageElementBox).height;
-            (inline as ImageElementBox).width = imageFormat.width;
-            (inline as ImageElementBox).height = imageFormat.height;
+        if (inline instanceof ImageElementBox || inline instanceof ShapeElementBox) {
+            let width: number = inline.width;
+            let height: number = inline.height;
+            inline.width = imageFormat.width;
+            inline.height = imageFormat.height;
             imageFormat.width = width;
             imageFormat.height = height;
             if (paragraph !== null && paragraph.containerWidget !== null && this.owner.editorModule) {
@@ -7445,7 +7618,7 @@ export class Selection {
     public showCaret(): void {
         // tslint:disable-next-line:max-line-length
         let page: Page = !isNullOrUndefined(this.documentHelper.currentPage) ? this.documentHelper.currentPage : this.documentHelper.currentRenderingPage;
-        if (isNullOrUndefined(page) || this.documentHelper.isRowOrCellResizing || this.owner.enableImageResizerMode && this.owner.imageResizerModule.isImageResizerVisible) {
+        if (isNullOrUndefined(page) || this.documentHelper.isRowOrCellResizing || (this.owner.enableImageResizerMode && this.owner.imageResizerModule.isImageResizerVisible && !this.owner.imageResizerModule.isShapeResize)) {
             return;
         }
         let left: number = page.boundingRectangle.x;
@@ -7455,7 +7628,8 @@ export class Selection {
         } else {
             right = page.boundingRectangle.width - this.owner.viewer.padding.right - this.documentHelper.scrollbarWidth;
         }
-        if (!this.owner.enableImageResizerMode || !this.owner.imageResizerModule.isImageResizerVisible) {
+        // tslint:disable-next-line:max-line-length
+        if (!this.owner.enableImageResizerMode || (!this.owner.imageResizerModule.isImageResizerVisible || this.owner.imageResizerModule.isShapeResize)) {
             if (this.isHideSelection(this.start.paragraph)) {
                 this.caret.style.display = 'none';
             } else if (this.isEmpty && (!this.owner.isReadOnlyMode || this.owner.enableCursorOnReadOnly)) {

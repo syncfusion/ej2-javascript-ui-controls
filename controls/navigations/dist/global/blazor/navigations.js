@@ -8950,6 +8950,7 @@ var TreeView = /** @class */ (function (_super) {
         _this.expandChildren = [];
         _this.isFieldChange = false;
         _this.changeDataSource = false;
+        _this.isBlazorExpandedNodes = [];
         _this.mouseDownStatus = false;
         return _this;
     }
@@ -9191,7 +9192,7 @@ var TreeView = /** @class */ (function (_super) {
             for (var _i = 0, _a = Object.keys(prop); _i < _a.length; _i++) {
                 var col = _a[_i];
                 if (col !== 'dataSource' && col !== 'tableName' && col !== 'child' && !!mapper[col]
-                    && columns.indexOf(mapper[col]) === -1) {
+                    && col !== 'url' && columns.indexOf(mapper[col]) === -1) {
                     columns.push(mapper[col]);
                 }
             }
@@ -10372,6 +10373,9 @@ var TreeView = /** @class */ (function (_super) {
         liEle.style.overflow = '';
         liEle.style.height = '';
         sf.base.removeClass([icon], PROCESS);
+        this.allowServerDataBinding = true;
+        this.updateServerProperties("expand");
+        this.allowServerDataBinding = false;
         this.removeExpand(liEle);
         if (this.isLoaded) {
             this.trigger('nodeCollapsed', colArgs);
@@ -11378,6 +11382,7 @@ var TreeView = /** @class */ (function (_super) {
         this.clearTemplate(['nodeTemplate']);
     };
     TreeView.prototype.reRenderNodes = function () {
+        this.updateListProp(this.fields);
         sf.base.resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate');
         if (this.isBlazorPlatform) {
             this.ulElement = this.element.querySelector('.e-list-parent.e-ul');
@@ -11586,6 +11591,7 @@ var TreeView = /** @class */ (function (_super) {
         var proxy = this;
         this.dragObj = new sf.base.Draggable(this.element, {
             enableTailMode: true, enableAutoScroll: true,
+            dragArea: this.dragArea,
             dragTarget: '.' + TEXTWRAP,
             helper: function (e) {
                 _this.dragTarget = e.sender.target;
@@ -12264,6 +12270,7 @@ var TreeView = /** @class */ (function (_super) {
     TreeView.prototype.updateServerProperties = function (action) {
         if (this.isBlazorPlatform) {
             if (action == "expand") {
+                this.isBlazorExpandedNodes = this.expandedNodes;
                 this.setProperties({ expandedNodes: [] }, true);
             }
             else if (action == "check") {
@@ -12570,6 +12577,9 @@ var TreeView = /** @class */ (function (_super) {
             this.updateField(this.treeData, this.fields, sleNodes[l], 'selected', true);
         }
         var enodes = this.expandedNodes;
+        if (this.isBlazorPlatform) {
+            enodes = this.isBlazorExpandedNodes;
+        }
         for (var k = 0, nodelen = enodes.length; k < nodelen; k++) {
             this.updateField(this.treeData, this.fields, enodes[k], 'expanded', true);
         }
@@ -13085,6 +13095,11 @@ var TreeView = /** @class */ (function (_super) {
                 case 'allowDragAndDrop':
                     this.setDragAndDrop(this.allowDragAndDrop);
                     break;
+                case 'dragArea':
+                    if (this.allowDragAndDrop) {
+                        this.dragObj.dragArea = this.dragArea;
+                    }
+                    break;
                 case 'allowEditing':
                     this.wireEditingEvents(this.allowEditing);
                     break;
@@ -13146,7 +13161,6 @@ var TreeView = /** @class */ (function (_super) {
                     this.isAnimate = false;
                     this.isFieldChange = true;
                     this.initialRender = true;
-                    this.updateListProp(this.fields);
                     if (!this.blazorInitialRender) {
                         this.reRenderNodes();
                     }
@@ -13603,6 +13617,9 @@ var TreeView = /** @class */ (function (_super) {
     __decorate$8([
         sf.base.Property(false)
     ], TreeView.prototype, "disabled", void 0);
+    __decorate$8([
+        sf.base.Property(null)
+    ], TreeView.prototype, "dragArea", void 0);
     __decorate$8([
         sf.base.Property(false)
     ], TreeView.prototype, "enableHtmlSanitizer", void 0);

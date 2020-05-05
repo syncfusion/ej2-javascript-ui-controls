@@ -2878,9 +2878,10 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
      * Finds the child element of the given object at the given position
      * @param {IElement} obj - Defines the object, the child element of which has to be found
      * @param {PointModel} position - Defines the position, the child element under which has to be found
+     * @param {number} padding - Defines the padding, the child element under which has to be found
      */
-    public findElementUnderMouse(obj: IElement, position: PointModel): DiagramElement {
-        return this.eventHandler.findElementUnderMouse(obj, position);
+    public findElementUnderMouse(obj: IElement, position: PointModel, padding?: number): DiagramElement {
+        return this.eventHandler.findElementUnderMouse(obj, position, padding);
     }
 
     /**
@@ -7405,7 +7406,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
                     // Header - constraints
                     let headerNode: NodeModel = this.nameTable[actualObject.id + shape.header.id];
-                    headerNode.constraints = (!newSelectConstraints ) ? headerNode.constraints & ~NodeConstraints.Select :
+                    headerNode.constraints = (!newSelectConstraints) ? headerNode.constraints & ~NodeConstraints.Select :
                         headerNode.constraints | NodeConstraints.Select;
 
                     // Phase - Constraints
@@ -7413,7 +7414,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     if (shape.phaseSize > 0) {
                         for (let i: number = 0; i < shape.phases.length; i++) {
                             phaseNode = this.nameTable[actualObject.id + shape.phases[i].id + '_header'];
-                            phaseNode.constraints = (!newSelectConstraints ) ? phaseNode.constraints & ~NodeConstraints.Select :
+                            phaseNode.constraints = (!newSelectConstraints) ? phaseNode.constraints & ~NodeConstraints.Select :
                                 phaseNode.constraints | NodeConstraints.Select;
                         }
                     }
@@ -7424,11 +7425,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     for (let i: number = 0; i < shape.lanes.length; i++) {
                         for (let l: number = 0; l < value; l++) {
                             laneNode = this.nameTable[actualObject.id + shape.lanes[i].id + l];
-                            laneNode.constraints = (!newSelectConstraints ) ? laneNode.constraints & ~NodeConstraints.Select :
+                            laneNode.constraints = (!newSelectConstraints) ? laneNode.constraints & ~NodeConstraints.Select :
                                 laneNode.constraints | NodeConstraints.Select;
                             if (l === 0) {
                                 laneHeader = this.nameTable[actualObject.id + shape.lanes[i].id + '_' + l + '_header']
-                                laneHeader.constraints = (!newSelectConstraints ) ? laneHeader.constraints & ~NodeConstraints.Select :
+                                laneHeader.constraints = (!newSelectConstraints) ? laneHeader.constraints & ~NodeConstraints.Select :
                                     laneHeader.constraints | NodeConstraints.Select;
                             }
                         }
@@ -7902,7 +7903,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (newProp.style !== undefined) { updateStyle(newProp.style, actualObject.wrapper.children[0]); }
         if (points.length > 0 || newProp.sourceDecorator !== undefined || (newProp.targetDecorator !== undefined
             && (canMeasureDecoratorPath(Object.keys(newProp.targetDecorator)))) || newProp.cornerRadius !== undefined) {
-            updateConnector(actualObject, points.length > 0 ? points : actualObject.intermediatePoints,this.diagramActions);
+            updateConnector(actualObject, points.length > 0 ? points : actualObject.intermediatePoints, this.diagramActions);
             if (newProp.type !== undefined) { updateSelector = true; }
             if (points.length > 0) {
                 actualObject.wrapper.measure(new Size(actualObject.wrapper.width, actualObject.wrapper.height));
@@ -8557,7 +8558,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     let nodeDragSize: SymbolSizeModel; let nodePreviewSize: SymbolSizeModel; let paletteDragSize: SymbolSizeModel;
 
                     if (paletteId) {
-                         // tslint:disable-next-line:no-any
+                        // tslint:disable-next-line:no-any
                         let sourceElement: Object = (document.getElementById(paletteId) as any).ej2_instances[0];
                         let source: string = 'sourceElement';
                         this.droppable[source] = sourceElement;

@@ -59,6 +59,7 @@ export class Print {
                         let pageHeight: number = this.pdfViewerBase.pageSize[pageIndex].height;
                         this.pdfViewer.printModule.createRequestForPrint(pageIndex, pageWidth, pageHeight, this.pdfViewerBase.pageCount);
                     }
+                    this.pdfViewer.firePrintEnd(this.pdfViewer.downloadFileName);
                 },
                 100);
         }

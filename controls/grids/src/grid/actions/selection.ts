@@ -108,6 +108,7 @@ export class Selection implements IAction {
     private bdrAFTop: HTMLElement;
     private bdrAFBottom: HTMLElement;
     private isInteracted: boolean;
+    private isHeaderCheckboxClicked: boolean;
     private checkSelectAllClicked: boolean;
     private index: number;
     private toggle: boolean;
@@ -282,14 +283,15 @@ export class Selection implements IAction {
                     data: selectData, rowIndex: index, isCtrlPressed: this.isMultiCtrlRequest,
                     isShiftPressed: this.isMultiShiftRequest, row: selectedRow,
                     previousRow: gObj.getRowByIndex(this.prevRowIndex),
-                    previousRowIndex: this.prevRowIndex, target: this.actualTarget, cancel: false, isInteracted: this.isInteracted
+                    previousRowIndex: this.prevRowIndex, target: this.actualTarget, cancel: false, isInteracted: this.isInteracted,
+                    isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
                 };
                 args = this.addMovableArgs(args, selectedMovableRow);
             } else {
                 args = {
                     data: selectData, rowIndex: index, isCtrlPressed: this.isMultiCtrlRequest,
                     isShiftPressed: this.isMultiShiftRequest, previousRowIndex: this.prevRowIndex,
-                    cancel: false, isInteracted: this.isInteracted
+                    cancel: false, isInteracted: this.isInteracted, isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
                 };
             }
             this.parent.trigger(events.rowSelecting, this.fDataUpdate(args),
@@ -344,13 +346,16 @@ export class Selection implements IAction {
                 args = {
                     data: selectData, rowIndex: index,
                     row: selectedRow, previousRow: gObj.getRowByIndex(this.prevRowIndex),
-                    previousRowIndex: this.prevRowIndex, target: this.actualTarget, isInteracted: this.isInteracted
+                    previousRowIndex: this.prevRowIndex, target: this.actualTarget, isInteracted: this.isInteracted,
+                    isHeaderCheckBoxClicked: this.isHeaderCheckboxClicked
                 };
                 args = this.addMovableArgs(args, selectedMovableRow);
             } else {
                 args = {
                     data: selectData, rowIndex: index,
-                    previousRowIndex: this.prevRowIndex, isInteracted: this.isInteracted
+                    row: selectedRow, previousRow: gObj.getRowByIndex(this.prevRowIndex),
+                    previousRowIndex: this.prevRowIndex, isInteracted: this.isInteracted,
+                    isHeaderCheckBoxClicked: this.isHeaderCheckboxClicked
                 };
             }
             this.onActionComplete(args, events.rowSelected);
@@ -408,7 +413,7 @@ export class Selection implements IAction {
                 rowIndexes: rowIndexes, row: selectedRow, rowIndex: rowIndex, target: this.actualTarget,
                 prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
                 isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
-                data: selectedData
+                data: selectedData, isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
             };
             args = this.addMovableArgs(args, selectedMovableRow);
         } else {
@@ -416,7 +421,7 @@ export class Selection implements IAction {
                 cancel: false,
                 rowIndexes: rowIndexes, rowIndex: rowIndex, previousRowIndex: this.prevRowIndex,
                 isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
-                data: selectedData
+                data: selectedData, isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
             };
         }
         this.parent.trigger(events.rowSelecting, this.fDataUpdate(args), (args: Object) => {
@@ -442,13 +447,16 @@ export class Selection implements IAction {
                 args = {
                     rowIndexes: rowIndexes, row: selectedRow, rowIndex: rowIndex, target: this.actualTarget,
                     prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
-                    data: isBlazor() ? selectedData : this.getSelectedRecords(), isInteracted: this.isInteracted
+                    data: isBlazor() ? selectedData : this.getSelectedRecords(), isInteracted: this.isInteracted,
+                    isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
                 };
                 args = this.addMovableArgs(args, selectedMovableRow);
             } else {
                 args = {
                     rowIndexes: rowIndexes, rowIndex: rowIndex, previousRowIndex: this.prevRowIndex,
-                    data: isBlazor() ? selectedData : this.getSelectedRecords(), isInteracted: this.isInteracted
+                    row: selectedRow, prevRow: gObj.getRows()[this.prevRowIndex],
+                    data: isBlazor() ? selectedData : this.getSelectedRecords(), isInteracted: this.isInteracted,
+                    isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
                 };
             }
             if (this.isRowSelected) {
@@ -507,7 +515,8 @@ export class Selection implements IAction {
                         data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this.actualTarget,
                         prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
                         isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
-                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this.isInteracted
+                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this.isInteracted,
+                        isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
                     };
                     args = this.addMovableArgs(args, selectedMovableRow);
                 } else {
@@ -515,7 +524,8 @@ export class Selection implements IAction {
                         cancel: false,
                         data: rowObj.data, rowIndex: rowIndex, previousRowIndex: this.prevRowIndex,
                         isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
-                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this.isInteracted
+                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this.isInteracted,
+                        isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
                     };
                 }
                 this.parent.trigger(events.rowSelecting, this.fDataUpdate(args), (args: Object) => {
@@ -536,13 +546,16 @@ export class Selection implements IAction {
                     args = {
                         data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this.actualTarget,
                         prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
-                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this.isInteracted
+                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this.isInteracted,
+                        isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
                     };
                     args = this.addMovableArgs(args, selectedMovableRow);
                 } else {
                     args = {
                         data: rowObj.data, rowIndex: rowIndex, previousRowIndex: this.prevRowIndex,
-                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this.isInteracted
+                        row: selectedRow, prevRow: gObj.getRows()[this.prevRowIndex],
+                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this.isInteracted,
+                        isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
                     };
                 }
                 this.onActionComplete(args, events.rowSelected);
@@ -808,7 +821,7 @@ export class Selection implements IAction {
             let rowDeselectObj: Object = {
                 rowIndex: rowIndex, data: this.selectionSettings.persistSelection && this.parent.checkAllRows === 'Uncheck' ?
                  this.persistSelectedData : data, foreignKeyData: foreignKeyData,
-                cancel: false, isInteracted: this.isInteracted
+                cancel: false, isInteracted: this.isInteracted, isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
             };
             let isHybrid: string = 'isHybrid';
             if (!isBlazor() || this.parent.isJsComponent || this.parent[isHybrid]) {
@@ -2220,6 +2233,9 @@ export class Selection implements IAction {
         if (!this.parent.enableVirtualization && this.parent.isPersistSelection) {
             this.refreshPersistSelection();
         }
+        if (this.parent.enableVirtualization) {
+            this.setCheckAllState();
+        }
     }
 
     private updatePersistSelectedData(checkState: boolean): void {
@@ -2273,6 +2289,7 @@ export class Selection implements IAction {
     private checkSelectAll(checkBox: HTMLInputElement): void {
         let stateStr: string = this.getCheckAllStatus(checkBox);
         let state: boolean = stateStr === 'Check';
+        this.isHeaderCheckboxClicked = true;
         if (stateStr === 'Intermediate') {
             state = this.getCurrentBatchRecordChanges().some((data: Object) =>
                 data[this.primaryKey] in this.selectedRowState);
@@ -2323,6 +2340,7 @@ export class Selection implements IAction {
         let gObj: IGrid = this.parent;
         this.isMultiCtrlRequest = true;
         let rIndex: number = 0;
+        this.isHeaderCheckboxClicked = false;
         if (isGroupAdaptive(gObj)) {
             let uid: string = target.parentElement.getAttribute('data-uid');
             rIndex = gObj.getRows().map((m: HTMLTableRowElement) => m.getAttribute('data-uid')).indexOf(uid);
@@ -2887,6 +2905,7 @@ export class Selection implements IAction {
     }
 
     public dataReady(e: { requestType: string }): void {
+        this.isHeaderCheckboxClicked = false;
         let isInfinitecroll: boolean = this.parent.enableInfiniteScrolling && e.requestType === 'infiniteScroll';
         if (e.requestType !== 'virtualscroll' && !this.parent.isPersistSelection && !isInfinitecroll) {
             this.disableUI = true;

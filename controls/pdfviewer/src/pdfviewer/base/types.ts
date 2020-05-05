@@ -79,6 +79,23 @@ export enum FontStyle {
 }
 
 /**
+ * enum for context menu items
+ */
+export enum ContextMenuItem {
+    Copy = 0,
+    Highlight = 1,
+    Cut = 2,
+    Underline = 4,
+    Paste = 8,
+    Delete = 16,
+    ScaleRatio = 32,
+    Strikethrough = 64,
+    Properties = 128,
+    Comment = 256,
+}
+
+
+/**
  * Enum unit for text alignment
  */
 export type TextAlignment = 'Left' | 'Right' | 'Center' | 'Justify';

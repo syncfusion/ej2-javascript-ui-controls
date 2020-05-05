@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.48 (2020-05-05)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#273422` - Date mismatch for parent and child record gets resolved.
+
 ## 18.1.46 (2020-04-28)
 
 ### Gantt
@@ -10,6 +18,7 @@
 
 - `#273440` - Issue on updating end date value using cell edit gets resolved.
 - `#273426` - Issue on validating parent start date on taskbar edit action gets resolved.
+- `#274066` - Console error on dragging parent milestone task gets resolved.
 
 ## 18.1.45 (2020-04-21)
 

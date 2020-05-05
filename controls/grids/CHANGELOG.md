@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 18.1.48 (2020-05-05)
+
+### Grid
+
+#### Bug Fixes
+
+- `#269945, #271023` - `editTemplate` element events are not triggered for movable content.
+- `#273042` - grouping after restoring the persist data issue has been resolved.
+- `#273483, #275002, #275153` -  `actionfailure` event error message issue has been fixed.
+- `#273238` - Missing of `headerText` property in the template data has been fixed.
+- `#266631` - Hidden column headers in Grid did not reflect in pdf export while using `includeHiddenColumn` issue has been fixed.
+
 ## 18.1.46 (2020-04-28)
 
 ### Grid

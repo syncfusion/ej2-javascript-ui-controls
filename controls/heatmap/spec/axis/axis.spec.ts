@@ -748,6 +748,24 @@ describe('Heatmap Control', () => {
             text = document.getElementById('container_YAxis_MultiLevel0_Text0');
             expect(text.textContent == "Testing 3").toBe(true);
         });
+        it('Checking border', function () {
+            heatmap.yAxis.intervalType = 'Years';
+            heatmap.cellSettings.border.width = 26;
+            heatmap.xAxis.isInversed = true;
+            heatmap.yAxis.isInversed = true;
+            heatmap.yAxis.opposedPosition = true;
+            heatmap.xAxis.opposedPosition = true;
+            heatmap.yAxis.multiLevelLabels= [
+                {
+                    categories: [
+                        { start: new Date(2017, 3, 1), end: new Date(2018, 5, 5), text: 'Testing 3', },
+                    ]
+                }
+            ];
+            heatmap.refresh();
+            text = document.getElementById('container_YAxis_MultiLevel0_Text0');
+            expect(text.textContent == "Testing 3").toBe(true);
+        });
     });
     it('memory leak', () => {     
         profile.sample();

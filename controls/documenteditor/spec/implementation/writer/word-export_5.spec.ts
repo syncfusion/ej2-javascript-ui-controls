@@ -1236,3 +1236,50 @@ describe('Serialize section propertes validation', () => {
         expect((writer as any).bufferText.match(/sectPr/g).length).toBe(4);
     });
 });
+
+let shapeDoc: any = {"sections":[{"blocks":[{"characterFormat":{"fontSize":11.0,"fontFamily":"Whitney Medium","fontSizeBidi":11.0},"paragraphFormat":{"textAlignment":"Justify","styleName":"Normal"},"inlines":[{"shapeId":11,"name":"AutoShape 4","alternativeText":null,"title":null,"visible":true,"width":504.75,"height":0.0,"widthScale":100.0,"heightScale":100.0,"lineFormat":{"lineFormatType":"Solid","color":"#000000FF","weight":1.0,"lineStyle":"Solid"},"verticalPosition":16.5,"verticalOrigin":"Paragraph","verticalAlignment":"None","horizontalPosition":1.0,"horizontalOrigin":"Column","horizontalAlignment":"None","zOrderPosition":251660288,"allowOverlap":true,"layoutInCell":true,"lockAnchor":false,"autoShapeType":"StraightConnector","textFrame":{"textVerticalAlignment":"Top","leftMargin":7.087,"rightMargin":7.087,"topMargin":3.685,"bottomMargin":3.685,"blocks":[]}}]},{"paragraphFormat":{"styleName":"Normal","tabs":[{"tabJustification":"Left","position":132.5,"tabLeader":"None","deletePosition":0.0}]},"inlines":[{"text":"\t"},{"name":"_GoBack","bookmarkType":0},{"name":"_GoBack","bookmarkType":1}]}],"headersFooters":{},"sectionFormat":{"headerDistance":36.0,"footerDistance":36.0,"pageWidth":612.0,"pageHeight":792.0,"leftMargin":72.0,"rightMargin":72.0,"topMargin":72.0,"bottomMargin":72.0,"differentFirstPage":false,"differentOddAndEvenPages":false,"bidi":false,"restartPageNumbering":false,"pageStartingNumber":0}}],"characterFormat":{"fontSize":11.0,"fontFamily":"Calibri","fontSizeBidi":11.0,"fontFamilyBidi":"Arial"},"paragraphFormat":{"afterSpacing":8.0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple"},"background":{"color":"#FFFFFFFF"},"styles":[{"type":"Paragraph","name":"Normal","next":"Normal","characterFormat":{"fontSize":10.0,"fontFamily":"Times New Roman","fontColor":"#000000FF","fontSizeBidi":12.0},"paragraphFormat":{"afterSpacing":0.0,"lineSpacing":1.0,"lineSpacingType":"Multiple"}},{"type":"Character","name":"Default Paragraph Font"}],"defaultTabWidth":36.0,"formatting":false,"protectionType":"NoProtection","enforcement":false,"dontUseHTMLParagraphAutoSpacing":false}
+describe('Serialize Shape validation', () => {
+    let editor: DocumentEditor;
+    let writer: XmlWriter;
+    let json: any;
+    beforeAll((): void => {
+        document.body.appendChild(createElement('div', { id: 'container' }));
+        DocumentEditor.Inject(Editor, Selection, WordExport, SfdtExport);
+        editor = new DocumentEditor({ enableWordExport: true, enableSfdtExport: true, enableEditor: true, isReadOnly: false, enableSelection: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        writer = new XmlWriter();
+        editor.open(JSON.stringify(shapeDoc));
+    });
+    afterAll((done): void => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        writer.destroy();
+        setTimeout(function () {
+            document.body.innerHTML = '';
+            done();
+        }, 1000);
+    });
+    it('Serialize AutoShape StraightConnector validation', () => {
+        json = editor.sfdtExportModule.write();
+        (editor.wordExportModule as any).setDocument(json);
+        (editor.wordExportModule as any).section = (editor.wordExportModule as any).document.sections[0];
+        let block : any =json.sections[0].blocks[0].inlines[0];
+        (editor.wordExportModule as any).serializeInlinePictureAndShape(writer,block);
+        expect((writer as any).bufferText.indexOf('<wp:anchor distT="0" distB="0" distL="114300" distR="114300" simplePos="0" relativeHeight="251660288" behindDoc="0" locked="0" layoutInCell="1" allowOverlap="1"')).not.toBe(-1);
+        expect((writer as any).bufferText.indexOf('<wp:simplePos x="0" y="0" ')).not.toBe(-1);
+        expect((writer as any).bufferText.indexOf('<wp:positionH relativeFrom="column"')).not.toBe(-1);
+        expect((writer as any).bufferText.indexOf('<wp:positionV relativeFrom="paragraph"')).not.toBe(-1);
+        expect((writer as any).bufferText.indexOf('<wp:docPr id="0" name="1" title=""')).not.toBe(-1);
+        expect((writer as any).bufferText.indexOf('<a:cxnSpLocks noChangeShapeType="1"')).not.toBe(-1);
+        expect((writer as any).bufferText.indexOf('<wps:spPr bwMode="auto"')).not.toBe(-1);
+        expect((writer as any).bufferText.indexOf('<a:off x="0" y="0"')).not.toBe(-1);
+        expect((writer as any).bufferText.indexOf('<a:ext cx="6410325" cy="0"')).not.toBe(-1);
+        expect((writer as any).bufferText.indexOf('<a:prstGeom prst="straightConnector1"')).not.toBe(-1);
+        expect((writer as any).bufferText.indexOf('<a:srgbClr val="000000"')).not.toBe(-1);
+    });
+});

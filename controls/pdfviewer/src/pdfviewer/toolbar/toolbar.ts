@@ -1019,6 +1019,7 @@ export class Toolbar {
         }
     }
 
+    // tslint:disable-next-line:max-line
     private handleToolbarBtnClick(args: ClickEventArgs): void {
         switch ((args.originalEvent.target as HTMLElement).id) {
             case this.pdfViewer.element.id + '_open':
@@ -1031,7 +1032,7 @@ export class Toolbar {
                 break;
             case this.pdfViewer.element.id + '_print':
             case this.pdfViewer.element.id + '_printIcon': case this.pdfViewer.element.id + '_printText':
-                if (this.pdfViewer.printModule) {
+                if (this.pdfViewer.printModule && this.pdfViewer.firePrintStart()) {
                     this.pdfViewer.printModule.print();
                 }
                 break;

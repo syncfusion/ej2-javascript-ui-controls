@@ -206,6 +206,13 @@ export interface TreeViewModel extends ComponentModel{
     disabled?: boolean;
 
     /**
+     * Defines the area in which the draggable element movement will be occurring. Outside that area will be restricted
+     * for the draggable element movement. By default, the draggable element movement occurs in the entire page. 
+     * @default null
+     */
+    dragArea?: HTMLElement | string;
+
+    /**
      * Defines whether to allow the cross-scripting site or not.
      * @default false
      */

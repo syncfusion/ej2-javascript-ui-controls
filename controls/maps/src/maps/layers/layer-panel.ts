@@ -360,6 +360,7 @@ export class LayerPanel {
                                    (getValueFromObject(currentShapeData['property'], shapeSettings.colorValuePath)) :
                                    currentShapeData['property'][shapeSettings.colorValuePath]);
                     }
+                    fill = !isNullOrUndefined(fill) ? fill : shapeSettings.fill;
                 }
                 let shapeID: string = this.mapObject.element.id + '_LayerIndex_' + layerIndex + '_shapeIndex_' + i + '_dataIndex_' + k;
                 getShapeColor = this.getShapeColorMapping(this.currentLayer, currentShapeData['property'], fill);

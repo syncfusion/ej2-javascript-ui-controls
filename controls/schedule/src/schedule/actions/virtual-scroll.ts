@@ -83,7 +83,7 @@ export class VirtualScroll {
         this.itemSize = util.getElementHeightFromClass(this.parent.activeView.element, cls.WORK_CELLS_CLASS) || this.itemSize;
     }
 
-    private virtualScrolling(): void {
+    public virtualScrolling(): void {
         this.parent.quickPopup.quickPopupHide();
         this.parent.quickPopup.morePopup.hide();
         let resWrap: HTMLElement = this.parent.element.querySelector('.' + cls.RESOURCE_COLUMN_WRAP_CLASS) as HTMLElement;

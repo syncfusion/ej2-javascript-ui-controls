@@ -876,6 +876,7 @@ export class HtmlExport {
         if (text === '\t') {
             return '&emsp;';
         }
+        text = text.replace(/</g, '&lt;').replace(/>/g, '&gt;');
         let splittedText: string[] = text.split(' ');
         let htmlText: string = '';
         if (splittedText.length > 0) {

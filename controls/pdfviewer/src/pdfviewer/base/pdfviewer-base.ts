@@ -432,6 +432,12 @@ export class PdfViewerBase {
      * @private
      */
     public documentLoaded: boolean = false;
+    private tileRenderCount: number = 0;
+    private tileRequestCount: number = 0;
+    /**
+     * @private
+     */
+    public isTileImageRendered: boolean = false;
 
     constructor(viewer: PdfViewer) {
         this.pdfViewer = viewer;
@@ -3099,6 +3105,7 @@ export class PdfViewerBase {
 
     // tslint:disable-next-line
     private tileRenderPage(data: any, pageIndex: number): void {
+        let proxy: PdfViewerBase = this;
         if (data && this.pageSize[pageIndex]) {
             let pageWidth: number = this.getPageWidth(pageIndex);
             let pageHeight: number = this.getPageHeight(pageIndex);
@@ -3142,6 +3149,7 @@ export class PdfViewerBase {
                                 // tslint:disable-next-line
                                 (pagecanvas as HTMLCanvasElement).width = parseInt((pageWidth * scaleFactor).toString());
                             }
+                            proxy.tileRenderCount = proxy.tileRenderCount + 1;
                             let zoomFactor: number = this.retrieveCurrentZoomFactor();
                             if (data.zoomFactor) {
                                 zoomFactor = data.zoomFactor;
@@ -3171,6 +3179,10 @@ export class PdfViewerBase {
                                         this.pdfViewer.textSearchModule.getPDFDocumentTexts();
                                     }
                                 }
+                            }
+                            if (proxy.tileRenderCount === proxy.tileRequestCount && proxy.isTileImageRendered) {
+                                proxy.isTileImageRendered = false;
+                                proxy.tileRenderCount = 0;
                                 if (this.pdfViewer.magnificationModule) {
                                     this.pdfViewer.magnificationModule.rerenderCountIncrement();
                                 }
@@ -4229,6 +4241,7 @@ export class PdfViewerBase {
                     noTileY = tileSettings.y;
                 }
             }
+            proxy.tileRequestCount = noTileX * noTileY;
             if (data && (viewPortWidth < pageWidth || this.getZoomFactor() > 2) && tileSettings.enableTileRendering) {
                 for (let k: number = 0; k < noTileX; k++) {
                     for (let l: number = 0; l < noTileY; l++) {
@@ -4261,6 +4274,8 @@ export class PdfViewerBase {
                 if ((viewPortWidth >= pageWidth) || !proxy.pdfViewer.tileRenderingSettings.enableTileRendering) {
                     proxy.renderPage(data, pageIndex);
                 } else {
+                    proxy.isTileImageRendered = true;
+                    proxy.tileRenderCount = 0;
                     proxy.tileRenderPage(data, pageIndex);
                     for (let k: number = 0; k < noTileX; k++) {
                         for (let l: number = 0; l < noTileY; l++) {
@@ -4294,6 +4309,8 @@ export class PdfViewerBase {
                     noTileX = 1;
                     noTileY = 1;
                 }
+                proxy.tileRenderCount = 0;
+                proxy.isTileImageRendered = true;
                 for (let x: number = 0; x < noTileX; x++) {
                     for (let y: number = 0; y < noTileY; y++) {
                         let jsonObject: object;

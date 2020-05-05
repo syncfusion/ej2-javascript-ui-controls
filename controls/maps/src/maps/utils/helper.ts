@@ -783,6 +783,7 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
             if (markerTemplate.childNodes[o]['style']['visibility'] !== 'hidden') {
                 tempElement = markerTemplate.childNodes[o] as Element;
                 bounds1 = tempElement.getBoundingClientRect() as DOMRect;
+                indexCollection.push(o as number);
                 if (!isNullOrUndefined(bounds1)) {
                     for (let p: number = o + 1; p < markerTemplate.childElementCount; p++) {
                         if (markerTemplate.childNodes[p]['style']['visibility'] !== 'hidden') {
@@ -801,8 +802,7 @@ export function clusterTemplate(currentLayer: LayerSettings, markerTemplate: HTM
                         }
                     }
                     tempX = bounds1.left + bounds1.width / 2;
-                    tempY = bounds1.top + bounds1.height;
-                    indexCollection.push(o as number);
+                    tempY = bounds1.top + bounds1.height;                    
                     if (colloideBounds.length > 0) {
                         indexCollection = indexCollection.filter((item, index, value) => value.indexOf(item) === index);
                         let container: ClientRect = maps.element.getBoundingClientRect();
@@ -932,7 +932,7 @@ export function mergeSeparateCluster(sameMarkerData: MarkerClusterData[], maps: 
     let layerIndex: number = sameMarkerData[0].layerIndex;
     let clusterIndex: number = sameMarkerData[0].targetClusterIndex;
     let markerIndex: number = sameMarkerData[0].markerIndex;
-    let dataIndex: number = (sameMarkerData[0].isClusterSame) ? sameMarkerData[0].data[0]['index'] : sameMarkerData[0].data[sameMarkerData[0].data.length - 1]['index'];
+    let dataIndex: number = sameMarkerData[0].dataIndex;
     let markerId = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex;
     let clusterId: string = markerId + '_dataIndex_' + dataIndex + '_cluster_' + clusterIndex;
     let clusterEle: Element = getElement(clusterId);
@@ -951,7 +951,7 @@ export function clusterSeparate(sameMarkerData: MarkerClusterData[], maps: Maps,
     let layerIndex: number = sameMarkerData[0].layerIndex;
     let markerIndex: number = sameMarkerData[0].markerIndex;
     let clusterIndex: number = sameMarkerData[0].targetClusterIndex;
-    let dataIndex: number = (sameMarkerData[0].isClusterSame) ? sameMarkerData[0].data[0]['index'] : sameMarkerData[0].data[sameMarkerData[0].data.length - 1]['index'];
+    let dataIndex: number = sameMarkerData[0].dataIndex;
     let getElementFunction: Function = isDom ? getElement : markerElement.querySelector.bind(markerElement);
     let getQueryConnect: string = isDom ? '' : '#';
     let markerId = maps.element.id + '_LayerIndex_' + layerIndex + '_MarkerIndex_' + markerIndex;
@@ -1581,7 +1581,7 @@ export function getTranslate(mapObject: Maps, layer: LayerSettings, animate?: bo
         mapObject.currentShapeDataLength = !isNullOrUndefined(layer.shapeData["features"])
             ? layer.shapeData["features"].length : layer.shapeData["geometries"].length;
     }
-    let size: Rect = (mapObject.totalRect) ? mapObject.totalRect : mapObject.mapAreaRect;
+    let size: Rect = (mapObject.totalRect && mapObject.legendSettings.visible) ? mapObject.totalRect : mapObject.mapAreaRect;
     let availSize: Size = mapObject.availableSize;
     let x: number; let y: number;
     let mapWidth: number = Math.abs(max['x'] - min['x']);
@@ -1862,7 +1862,7 @@ export function getElement(id: string): Element {
 export function getShapeData(targetId: string, map: Maps): { shapeData: object, data: object } {
     let layerIndex: number = parseInt(targetId.split('_LayerIndex_')[1].split('_')[0], 10);
     let shapeIndex: number = parseInt(targetId.split('_shapeIndex_')[1].split('_')[0], 10);
-    let layer: LayerSettings = map.layers[layerIndex] as LayerSettings;
+    let layer: LayerSettings = map.layersCollection[layerIndex] as LayerSettings;
     let shapeData: Object = layer.layerData[shapeIndex]['property'];
     let data: object;
     if (layer.dataSource) {
@@ -1888,7 +1888,8 @@ export function triggerShapeEvent(
         shapeData: shape.shapeData,
         data: shape.data,
         target: targetId,
-        maps: maps
+        maps: maps,
+        shapeDataCollection: maps.shapeSelectionItem
     };
     if (maps.isBlazor) {
         const { maps, shapeData, ...blazorEventArgs }: IShapeSelectedEventArgs = eventArgs;
@@ -1977,8 +1978,9 @@ export function triggerItemSelectionEvent(selectionSettings: SelectionSettingsMo
         shapeData: shapeData,
         data: data,
         maps: map
-    };
+    };    
     map.trigger('itemSelection', eventArgs, (observedArgs: ISelectionEventArgs) => {
+        map.shapeSelectionItem.push(eventArgs.shapeData);
         if (!getElement('ShapeselectionMap')) {
             document.body.appendChild(createStyle('ShapeselectionMap',
                 'ShapeselectionMapStyle', eventArgs));
@@ -2037,6 +2039,11 @@ export function showTooltip(
     text: string, size: string, x: number, y: number, areaWidth: number, areaHeight: number, id: string, element: Element,
     isTouch?: boolean
 ): void {
+    let location : MapLocation = getMousePosition(x, y, element);
+    if (!isNullOrUndefined(location)) {
+        x = location.x;
+        y = location.y;
+    }
     let tooltip: HTMLElement = document.getElementById(id);
     let width: number = measureText(text, {
         fontFamily: 'Segoe UI', size: '8px',
@@ -2087,7 +2094,8 @@ export function wordWrap(
     areaWidth: number, element: Element
 ): void {
     tooltip.innerHTML = text;
-    tooltip.style.top = (parseInt(size1[0], 10) * 2).toString() + 'px';
+    tooltip.style.top = tooltip.id.indexOf('_Legend') !== -1 ?
+    (parseInt(size1[0], 10) + y).toString() + 'px' : (parseInt(size1[0], 10) * 2).toString() + 'px';
     tooltip.style.left = (x).toString() + 'px';
     tooltip.style.width = width.toString() + 'px';
     tooltip.style.maxWidth = (areaWidth).toString() + 'px';

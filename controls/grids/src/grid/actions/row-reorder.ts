@@ -74,7 +74,7 @@ export class RowDD {
         this.startedRow.innerHTML = this.startedRow.innerHTML.replace(exp, '');
         tbody.appendChild(this.startedRow);
 
-        if (gObj.getSelectedRows().length > 1) {
+        if (gObj.getSelectedRows().length > 1 && this.startedRow.hasAttribute('aria-selected')) {
             let dropCountEle: HTMLElement = this.parent.createElement('span', {
                 className: 'e-dropitemscount', innerHTML: '' + selectedRows.length,
             });

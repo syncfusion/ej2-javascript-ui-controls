@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.1.48 (2020-05-05)
+
+### Diagram
+
+#### Bug Fixes
+
+- `271060`  - The issue with "Margin does not apply for the exported image" has been fixed.
+- `272898`  - The issue with "When drag some nodes in palette it does not show preview and drop in diagram" has been fixed.
+
 ## 18.1.46 (2020-04-28)
 
 ### Diagram

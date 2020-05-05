@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.48 (2020-05-05)
+
+### Dashboard Layout
+
+#### Bug Fixes
+
+- `#275109` - Issue with floating the panels in inline rendering has been resolved.
+
 ## 18.1.46 (2020-04-28)
 
 ### Splitter

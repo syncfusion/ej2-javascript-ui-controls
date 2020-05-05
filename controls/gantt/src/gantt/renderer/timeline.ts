@@ -878,7 +878,7 @@ export class Timeline {
         let cellWidth: number;
         let isWeekendCell: boolean;
         let date: string = isNullOrUndefined(formatter) ?
-            this.parent.globalize.formatDate(scheduleWeeks, { format: this.parent.dateFormat }) :
+            this.parent.globalize.formatDate(scheduleWeeks, { format: this.parent.getDateFormat() }) :
             this.customFormat(scheduleWeeks, format, tier, mode, formatter);
         thWidth = (this.getIncrement(scheduleWeeks, count, mode) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth;
         cellWidth = thWidth;

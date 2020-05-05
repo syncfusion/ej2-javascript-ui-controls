@@ -900,7 +900,7 @@ describe('QueryBuilder', () => {
             queryBuilder.summaryView = true;
             queryBuilder.dataBind();
             expect(selectAll('.e-summary-content', queryBuilder.element).length).toBe(1);
-            expect(document.getElementsByClassName('e-summary-content')[0].querySelector('textarea').value).toEqual("EmployeeID = 1 or Title = 'Sales Manager'");
+            expect(document.getElementsByClassName('e-summary-content')[0].querySelector('textarea').value).toEqual("EmployeeID = 1 OR Title = 'Sales Manager'");
             (document.getElementsByClassName('e-edit-rule')[0] as HTMLElement).click();
             expect(queryBuilder.element.querySelector('.e-summary-content').style.display).toEqual('none');
 
@@ -1207,7 +1207,7 @@ describe('QueryBuilder', () => {
                 rule: operatorRules
             }, '#querybuilder');
             queryBuilder.getFilteredRecords(queryBuilder.rule);
-            expect(queryBuilder.getSqlFromRules(queryBuilder.rule)).toEqual("EmployeeID BETWEEN 4 AND 5 and Title IN ('Sales Manager') and City LIKE ('u%')");
+            expect(queryBuilder.getSqlFromRules(queryBuilder.rule)).toEqual("EmployeeID BETWEEN 4 AND 5 AND Title IN ('Sales Manager') AND City LIKE ('u%')");
             queryBuilder.getRulesFromSql("EmployeeID BETWEEN 4 AND 5 and Title IN ('Sales Manager') and City LIKE ('u%')");
             let operatorElem: DropDownList = queryBuilder.element.querySelector('.e-rule-operator .e-control').ej2_instances;
             operatorElem[0].showPopup();
@@ -1220,7 +1220,7 @@ describe('QueryBuilder', () => {
             itemsCln[6].click();
             expect(operatorElem[0].value).toEqual('notin');
             queryBuilder.getFilteredRecords(queryBuilder.rule);
-            expect(queryBuilder.getSqlFromRules(queryBuilder.rule)).toEqual("EmployeeID NOT BETWEEN 0 AND 0 and Title NOT IN ('Sales Manager') and City LIKE ('%u')");
+            expect(queryBuilder.getSqlFromRules(queryBuilder.rule)).toEqual("EmployeeID NOT BETWEEN 0 AND 0 AND Title NOT IN ('Sales Manager') AND City LIKE ('%u')");
             queryBuilder.reset();
             expect(selectAll('.e-group-container', queryBuilder.element).length).toBe(1);
             expect(selectAll('.e-rule-container', queryBuilder.element).length).toBe(0);

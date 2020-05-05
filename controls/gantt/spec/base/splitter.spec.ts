@@ -77,4 +77,38 @@ describe('Gantt splitter support', () => {
             expect(ganttObj.splitterModule.splitterObject.paneSettings[0].size).toBe('0%');
         });
     });
+
+    describe('Schedule mode', () => {
+        let ganttObj: Gantt;
+
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: baselineData,
+                taskFields: {
+                    id: 'TaskId',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    endDate: 'EndDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    child: 'Children'
+                },
+                splitterSettings: {
+                    columnIndex: 3
+                },
+                projectStartDate: new Date('10/15/2017'),
+                projectEndDate: new Date('12/30/2017'),
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        it('Vertical scrollbar hidden issue while setting columnIndex', () => {
+            ganttObj.splitterSettings.position = '50%';
+            ganttObj.dataBind();
+            expect(ganttObj.splitterModule.splitterObject.paneSettings[0].size).toBe('50%');
+        });
+    });
 });

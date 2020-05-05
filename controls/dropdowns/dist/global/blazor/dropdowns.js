@@ -4232,6 +4232,7 @@ var DropDownTree = /** @class */ (function (_super) {
             csHome: 'ctrl+shift+home',
             csEnd: 'ctrl+shift+end',
             space: 'space',
+            ctrlA: 'ctrl+A'
         };
     };
     /**
@@ -4554,7 +4555,7 @@ var DropDownTree = /** @class */ (function (_super) {
         return 'EJS-DROPDOWNTREE';
     };
     DropDownTree.prototype.focusOut = function (e) {
-        if (!this.enabled || this.readonly) {
+        if (!this.enabled || this.readonly || !this.inputFocus) {
             return;
         }
         if ((sf.base.Browser.isIE || sf.base.Browser.info.name === 'edge') && (e.target === this.inputWrapper)) {
@@ -4630,7 +4631,7 @@ var DropDownTree = /** @class */ (function (_super) {
         this.inputFocus = true;
         sf.base.addClass([this.inputWrapper], [INPUTFOCUS]);
         if ((this.allowMultiSelection || this.showCheckBox) && this.mode === 'Default' && this.inputFocus) {
-            if (this.chipWrapper) {
+            if (this.chipWrapper && (this.value && this.value.length !== 0)) {
                 sf.base.removeClass([this.chipWrapper], HIDEICON);
                 sf.base.addClass([this.inputWrapper], SHOW_CHIP);
                 sf.base.addClass([this.inputEle], CHIP_INPUT);
@@ -4659,6 +4660,7 @@ var DropDownTree = /** @class */ (function (_super) {
                             _this.hidePopup();
                         }
                         break;
+                    case 'tab':
                     case 'shiftTab':
                         if (_this.isPopupOpen) {
                             _this.hidePopup();
@@ -4676,6 +4678,11 @@ var DropDownTree = /** @class */ (function (_super) {
                     case 'space':
                         _this.isValueChange = true;
                         _this.keyEventArgs = e;
+                        break;
+                    case 'ctrlA':
+                        if (_this.allowMultiSelection) {
+                            _this.selectAll(true);
+                        }
                         break;
                     case 'moveRight':
                     case 'moveLeft':
@@ -4714,13 +4721,10 @@ var DropDownTree = /** @class */ (function (_super) {
                     case 'escape':
                     case 'altUp':
                     case 'shiftTab':
-                        e.preventDefault();
-                        _this.hidePopup();
-                        break;
                     case 'tab':
-                        e.preventDefault();
-                        _this.hidePopup();
-                        _this.inputEle.focus();
+                        if (_this.isPopupOpen) {
+                            _this.hidePopup();
+                        }
                         break;
                     case 'altDown':
                         if (!_this.isPopupOpen) {
@@ -4824,8 +4828,12 @@ var DropDownTree = /** @class */ (function (_super) {
         }
     };
     DropDownTree.prototype.getValidMode = function () {
-        var isValidMode = this.mode === 'Box' ? true : (this.mode === 'Default' && this.inputFocus) ? true : false;
-        return isValidMode;
+        if (this.allowMultiSelection || this.showCheckBox) {
+            return this.mode === 'Box' ? true : (this.mode === 'Default' && this.inputFocus) ? true : false;
+        }
+        else {
+            return false;
+        }
     };
     DropDownTree.prototype.createSelectAllWrapper = function () {
         this.checkAllParent = this.createElement('div', {
@@ -4842,7 +4850,7 @@ var DropDownTree = /** @class */ (function (_super) {
         this.checkAllParent.appendChild(this.checkBoxElement);
         this.checkAllParent.appendChild(this.selectAllSpan);
         this.setLocale();
-        sf.base.EventHandler.add(this.checkAllParent, 'mousedown', this.clickHandler, this);
+        sf.base.EventHandler.add(this.checkAllParent, 'mouseup', this.clickHandler, this);
         this.wireCheckAllWrapperEvents();
     };
     DropDownTree.prototype.clickHandler = function (e) {
@@ -4886,6 +4894,7 @@ var DropDownTree = /** @class */ (function (_super) {
             this.setLocale(false);
         }
         this.setMultiSelect();
+        this.ensurePlaceHolder();
         ariaState = state === 'check' ? 'true' : 'false';
         if (!sf.base.isNullOrUndefined(ariaState)) {
             wrapper.setAttribute('aria-checked', ariaState);
@@ -5320,7 +5329,8 @@ var DropDownTree = /** @class */ (function (_super) {
         var isFilter = sf.base.closest(target, '.' + FILTERWRAP);
         if ((this.isPopupOpen && (this.inputWrapper.contains(target) || isTree || isFilter)) ||
             ((this.allowMultiSelection || this.showCheckBox) && (this.isPopupOpen && target.classList.contains(CHIP_CLOSE) ||
-                (this.isPopupOpen && (target.classList.contains(CHECKALLPARENT) || target.classList.contains(CHECKBOXFRAME)))))) {
+                (this.isPopupOpen && (target.classList.contains(CHECKALLPARENT) || target.classList.contains(ALLTEXT)
+                    || target.classList.contains(CHECKBOXFRAME)))))) {
             this.isDocumentClick = false;
         }
         else if (!this.inputWrapper.contains(target)) {
@@ -5582,6 +5592,7 @@ var DropDownTree = /** @class */ (function (_super) {
                 this.treeObj.checkAll([args.node]);
             }
             this.setMultiSelect();
+            this.ensurePlaceHolder();
         }
         if (!this.changeOnBlur && (this.allowMultiSelection || this.showCheckBox)) {
             this.triggerChangeEvent(args.event);
@@ -5596,6 +5607,7 @@ var DropDownTree = /** @class */ (function (_super) {
         }
         if (!this.isChipDelete && args.isInteracted) {
             this.setMultiSelect();
+            this.ensurePlaceHolder();
         }
         if (this.showSelectAll && this.checkBoxElement) {
             var nodes = this.treeObj.element.querySelectorAll('li');
@@ -5690,6 +5702,14 @@ var DropDownTree = /** @class */ (function (_super) {
             }
         }
     };
+    DropDownTree.prototype.ensurePlaceHolder = function () {
+        if (this.value && this.value.length === 0) {
+            sf.base.removeClass([this.inputEle], CHIP_INPUT);
+            if (this.chipWrapper) {
+                sf.base.addClass([this.chipWrapper], HIDEICON);
+            }
+        }
+    };
     DropDownTree.prototype.ensureClearIconPosition = function (floatLabelType) {
         if (floatLabelType !== 'Never') {
             this.inputWrapper.insertBefore(this.overAllClear, this.inputObj.buttons[0]);
@@ -5698,6 +5718,10 @@ var DropDownTree = /** @class */ (function (_super) {
     DropDownTree.prototype.setMultiSelectValue = function (newValues) {
         if (!this.isFilteredData) {
             this.setProperties({ value: newValues }, true);
+            if (newValues && newValues.length !== 0 && !this.showCheckBox) {
+                this.treeObj.selectedNodes = this.value.slice();
+                this.treeObj.dataBind();
+            }
         }
         else {
             var selectedValues = sf.base.isNullOrUndefined(this.value) ? [] : this.value;
@@ -5955,6 +5979,7 @@ var DropDownTree = /** @class */ (function (_super) {
         }
         this.triggerChangeEvent(e);
         this.isChipDelete = false;
+        this.ensurePlaceHolder();
     };
     DropDownTree.prototype.resetValue = function (isDynamicChange) {
         sf.inputs.Input.setValue(null, this.inputEle, this.floatLabelType);
@@ -5977,6 +6002,7 @@ var DropDownTree = /** @class */ (function (_super) {
         }
         if ((this.allowMultiSelection || this.showCheckBox) && this.chipWrapper) {
             this.chipCollection.innerHTML = '';
+            this.ensurePlaceHolder();
         }
     };
     DropDownTree.prototype.clearCheckAll = function () {
@@ -6379,6 +6405,9 @@ var DropDownTree = /** @class */ (function (_super) {
         sf.base.attributes(this.inputWrapper, { 'aria-expanded': 'false' });
         if (this.popupObj && this.isPopupOpen) {
             this.popupObj.hide();
+            if (this.inputFocus) {
+                this.inputWrapper.focus();
+            }
             this.trigger('close', eventArgs);
         }
     };
@@ -12535,7 +12564,16 @@ var ListBox = /** @class */ (function (_super) {
         this.trigger('drag', this.getDragArgs(args));
         var listObj = this.getComponent(args.target);
         if (listObj && listObj.listData.length === 0) {
-            listObj.ulElement.innerHTML = '';
+            if (sf.base.isBlazor()) {
+                listObj.ulElement.childNodes.forEach(function (elem) {
+                    if (elem.nodeName === '#text') {
+                        elem.nodeValue = '';
+                    }
+                });
+            }
+            else {
+                listObj.ulElement.innerHTML = '';
+            }
         }
     };
     ListBox.prototype.beforeDragEnd = function (args) {
@@ -13122,11 +13160,8 @@ var ListBox = /** @class */ (function (_super) {
                     'spellcheck': 'false'
                 });
             }
-            if (this.allowFiltering && this.height.toString().indexOf('%') < 0) {
+            if (this.height.toString().indexOf('%') < 0) {
                 sf.base.addClass([this.list], 'e-filter-list');
-            }
-            else {
-                sf.base.removeClass([this.list], 'e-filter-list');
             }
             this.inputString = this.filterInput.value;
             sf.base.EventHandler.add(this.filterInput, 'input', this.onInput, this);
@@ -14077,6 +14112,7 @@ var ListBox = /** @class */ (function (_super) {
                     else {
                         this.list.removeChild(this.list.getElementsByClassName('e-filter-parent')[0]);
                         this.filterParent = null;
+                        sf.base.removeClass([this.list], 'e-filter-list');
                     }
                     break;
                 case 'scope':

@@ -900,6 +900,30 @@ export interface DownloadEndEventArgs extends BaseEventArgs {
 }
 
 /**
+ * This event arguments provide the necessary information about print start event.
+ */
+export interface PrintStartEventArgs extends BaseEventArgs {
+    /**
+     * File name of the currently loaded PDF document in the PDF Viewer.
+     */
+    fileName: string;
+    /**
+     * If it is true then the print operation will not work.
+     */
+    cancel: boolean;
+}
+
+/**
+ * This event arguments provide the necessary information about print end event.
+ */
+export interface PrintEndEventArgs extends BaseEventArgs {
+    /**
+     * File name of the currently loaded PDF document in the PDF Viewer.
+     */
+    fileName: string;
+}
+
+/**
  * This event arguments provides the necessary information about text search start event.
  */
 export interface TextSearchStartEventArgs extends BaseEventArgs {

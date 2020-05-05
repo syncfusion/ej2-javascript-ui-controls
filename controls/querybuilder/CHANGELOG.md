@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 18.1.46 (2020-04-28)
+## 18.1.48 (2020-05-05)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- Issue with SQL parsing has been resolved.
+
+## 18.1.45 (2020-04-21)
 
 ### QueryBuilder
 

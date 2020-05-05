@@ -9,14 +9,15 @@ import { Renderer } from './render';
 import { createElement, Browser } from '@syncfusion/ej2-base';
 import {
     Page, Rect, Widget, ListTextElementBox, FieldElementBox, ParagraphWidget, HeaderFooterWidget, EditRangeStartElementBox,
-    CommentElementBox, CommentCharacterElementBox, Padding, DropDownFormField, TextFormField, CheckBoxFormField
+    CommentElementBox, CommentCharacterElementBox, Padding, DropDownFormField, TextFormField, CheckBoxFormField, ShapeElementBox,
+    TextFrame, BlockContainer
 } from './page';
 import { DocumentEditor } from '../../document-editor';
 import {
     BodyWidget, LineWidget, TableWidget, TableRowWidget, TableCellWidget,
     ElementBox, BlockWidget, HeaderFooters, BookmarkElementBox
 } from './page';
-import { HelperMethods, Point, TextPositionInfo, ImagePointInfo, PageInfo, CanvasInfo } from '../editor/editor-helper';
+import { HelperMethods, Point, TextPositionInfo, ImagePointInfo, PageInfo, CanvasInfo, ShapeInfo } from '../editor/editor-helper';
 import { TextHelper, TextHeightInfo } from './text-helper';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { Selection, CommentReviewPane, } from '../index';
@@ -1229,6 +1230,9 @@ export class DocumentHelper {
      */
     public updateFocus = (): void => {
         if (this.selection) {
+            if (!Browser.isDevice) {
+                this.iframe.focus();
+            }
             this.editableDiv.focus();
             this.selection.showCaret();
         }
@@ -1424,6 +1428,11 @@ export class DocumentHelper {
             }
             // tslint:disable-next-line:max-line-length
             if (this.isLeftButtonPressed(event) && !this.owner.isReadOnlyMode && this.owner.enableImageResizerMode && !isNullOrUndefined(this.owner.imageResizerModule.selectedResizeElement)) {
+                if (this.selection.isInShape) {
+                    let textFram: TextFrame = this.owner.selection.getCurrentTextFrame();
+                    let shape: ShapeElementBox = textFram.containerShape as ShapeElementBox;
+                    this.selection.selectShape(shape);
+                }
                 this.owner.imageResizerModule.isImageResizing = true;
             }
             event.preventDefault();
@@ -1509,7 +1518,8 @@ export class DocumentHelper {
                             let touchY: number = yPosition;
                             let textPosition: TextPosition = this.owner.selection.end;
                             let touchPoint: Point = new Point(xPosition, touchY);
-                            if (!this.owner.enableImageResizerMode || !this.owner.imageResizerModule.isImageResizerVisible) {
+                            if (!this.owner.enableImageResizerMode || !this.owner.imageResizerModule.isImageResizerVisible
+                                || this.owner.imageResizerModule.isShapeResize) {
                                 this.owner.selection.moveTextPosition(touchPoint, textPosition);
                             }
                             this.isSelectionChangedOnMouseMoved = true;
@@ -1728,6 +1738,26 @@ export class DocumentHelper {
             if (this.isInsideRect(left, widget.paragraph.y, width, height, cursorPoint)) {
                 this.selectionLineWidget = widget;
                 return true;
+            }
+        }
+        return false;
+    }
+    /**
+     * @private
+     */
+    public isInShapeBorder(floatElement: ShapeElementBox, cursorPoint: Point): boolean {
+        if (!isNullOrUndefined(floatElement) && floatElement instanceof ShapeElementBox) {
+            let width: number = floatElement.width;
+            let height: number = floatElement.height;
+            let lineWidth: number = floatElement.lineFormat.weight;
+            // tslint:disable-next-line:max-line-length
+            if (this.isInsideRect(floatElement.x - floatElement.margin.left, floatElement.y - floatElement.margin.top, width, height, cursorPoint)) {
+                // this.selectionLineWidget = this.getLineWidget(cursorPoint);
+                if (!(this.isInsideRect(floatElement.x + lineWidth, floatElement.y + lineWidth + floatElement.textFrame.marginTop,
+                    // tslint:disable-next-line:max-line-length
+                    width - (lineWidth * 2), height - ((lineWidth * 2) + floatElement.textFrame.marginTop + floatElement.textFrame.marginBottom), cursorPoint))) {
+                    return true;
+                }
             }
         }
         return false;
@@ -2306,7 +2336,6 @@ export class DocumentHelper {
         let scrollTop: number = this.owner.viewer.containerTop;
         let scrollLeft: number = this.owner.viewer.containerLeft;
         let pageHeight: number = this.visibleBounds.height;
-        this.updateFocus();
         let caretInfo: CaretHeightInfo = this.selection.updateCaretSize(this.owner.selection.end, true);
         let topMargin: number = caretInfo.topMargin;
         let caretHeight: number = caretInfo.height;
@@ -2346,7 +2375,6 @@ export class DocumentHelper {
             let childWidgets: Widget;
             if (this.owner.enableHeaderAndFooter) {
                 let page: Page = this.currentPage;
-                let pageTop: number = this.selection.getPageTop(page);
                 let pageBottom: number = page.boundingRectangle.height;
                 let headerHeight: number = Math.max((page.headerWidget.y + page.headerWidget.height),
                     HelperMethods.convertPointToPixel(page.bodyWidgets[0].sectionFormat.topMargin)) * this.zoomFactor;
@@ -2369,18 +2397,79 @@ export class DocumentHelper {
                 if (isNullOrUndefined(childWidgets)) {
                     return undefined;
                 }
-                return this.selection.getLineWidgetBodyWidget(childWidgets, cursorPoint);
+                let shapeElementInfo: ShapeInfo = this.checkFloatingItems(childWidgets as BlockContainer, cursorPoint, isMouseDragged);
+                if (shapeElementInfo.isShapeSelected) {
+                    if (shapeElementInfo.isInShapeBorder) {
+                        return shapeElementInfo.element.line;
+                    }
+                    return this.selection.getLineWidgetBodyWidget((shapeElementInfo.element as ShapeElementBox).textFrame, cursorPoint);
+                } else {
+                    return this.selection.getLineWidgetBodyWidget(childWidgets, cursorPoint);
+                }
             } else {
-                for (let i: number = 0; i < this.currentPage.bodyWidgets.length; i++) {
-                    let bodyWidgets: BodyWidget = this.currentPage.bodyWidgets[i];
-                    widget = this.selection.getLineWidgetBodyWidget(bodyWidgets, cursorPoint);
-                    if (!isNullOrUndefined(widget)) {
-                        break;
+                let shapeInfo: ShapeInfo = this.checkFloatingItems(this.currentPage.bodyWidgets[0], cursorPoint, isMouseDragged);
+                if (shapeInfo.isShapeSelected) {
+                    if (shapeInfo.isInShapeBorder) {
+                        return shapeInfo.element.line;
+                    }
+                    widget = this.selection.getLineWidgetBodyWidget((shapeInfo.element as ShapeElementBox).textFrame, cursorPoint);
+                } else {
+                    for (let i: number = 0; i < this.currentPage.bodyWidgets.length; i++) {
+                        let bodyWidgets: BodyWidget = this.currentPage.bodyWidgets[i];
+                        widget = this.selection.getLineWidgetBodyWidget(bodyWidgets, cursorPoint);
+                        if (!isNullOrUndefined(widget)) {
+                            break;
+                        }
                     }
                 }
             }
         }
         return widget;
+    }
+
+    /**
+     * @private
+     */
+    private checkFloatingItems(blockContainer: BlockContainer, cursorPoint: Point, isMouseDragged: boolean): ShapeInfo {
+        let isInShape: boolean = false;
+        let isInShapeBorder: boolean = false;
+        let floatElement: ShapeElementBox;
+        let selectionInShape: boolean = this.selection.isInShape;
+        let isMouseDraggedInShape: boolean = isMouseDragged && selectionInShape;
+        if (blockContainer.floatingElements.length > 0) {
+            let page: Page = this.currentPage;
+            /* tslint:disable */
+            blockContainer.floatingElements.sort(function (a, b) { return b.zOrderPosition - a.zOrderPosition; });
+            if (isMouseDraggedInShape) {
+                let textFrame: TextFrame = this.owner.selection.getCurrentTextFrame();
+                if (textFrame) {
+                    floatElement = textFrame.containerShape as ShapeElementBox;
+                    isInShape = true;
+                }
+            } else {
+                for (let i: number = 0; i < blockContainer.floatingElements.length; i++) {
+                    floatElement = blockContainer.floatingElements[i];
+                    if (cursorPoint.x < floatElement.x + floatElement.margin.left + floatElement.width &&
+                        cursorPoint.x > floatElement.x && cursorPoint.y < floatElement.y + floatElement.margin.top +
+                        floatElement.height && cursorPoint.y > floatElement.y) {
+                        isInShape = true;
+                        if (this.isInShapeBorder(floatElement, cursorPoint)) {
+                            isInShapeBorder = true;
+                        }
+                        break;
+                    }
+                }
+                if (isMouseDragged && !selectionInShape) {
+                    isInShape = false;
+                }
+            }
+        }
+        return {
+            'element': floatElement,
+            'caretPosition': cursorPoint,
+            'isShapeSelected': isInShape,
+            'isInShapeBorder': isInShapeBorder
+        }
     }
     /**
      * @private
@@ -2391,6 +2480,9 @@ export class DocumentHelper {
                 return false;
             }
             block = block.containerWidget as BlockWidget;
+            if (block instanceof TextFrame) {
+                block = block.containerShape.paragraph;
+            }
         }
         return (block.containerWidget as HeaderFooterWidget).headerFooterType.indexOf('Header') !== -1;
     }
@@ -2691,6 +2783,7 @@ export class DocumentHelper {
         let editor: Editor = !this.owner.isReadOnlyMode ? this.owner.editorModule : undefined;
         let isRowResize: boolean = editor ? editor.tableResize.isInRowResizerArea(touchPoint) : false;
         let isCellResize: boolean = editor ? editor.tableResize.isInCellResizerArea(touchPoint) : false;
+        let floatItemInfo: ShapeInfo = this.selection.checkAllFloatingElements(widget, touchPoint);
         let resizePosition: string = '';
         if (this.owner.enableImageResizerMode) {
             let resizeObj: ImagePointInfo = this.owner.imageResizerModule.getImagePoint(touchPoint);
@@ -2743,7 +2836,9 @@ export class DocumentHelper {
         }
 
         if (!isNullOrUndefined(resizePosition) && resizePosition !== '') {
-            div.style.cursor = resizePosition;
+            if (!this.owner.imageResizerModule.isShapeResize || this.owner.imageResizerModule.isShapeResize && resizePosition !== 'move') {
+                div.style.cursor = resizePosition;
+            }
         } else if (!isNullOrUndefined(widgetInfo) && widgetInfo.isImageSelected && left < touchPoint.x && top < touchPoint.y &&
             left + widget.width > touchPoint.x && top + widget.height > touchPoint.y) {
             div.style.cursor = 'move';
@@ -2752,6 +2847,9 @@ export class DocumentHelper {
             div.style.cursor = 'row-resize';
         } else if (isCellResize) {
             div.style.cursor = 'col-resize';
+        }
+        if (floatItemInfo.isInShapeBorder) {
+            div.style.cursor = 'all-scroll';
         }
     }
 }
@@ -2930,6 +3028,23 @@ export abstract class LayoutViewer {
         }
     }
     /**
+     * Updates client area for TextBox shape.
+     * @private
+     */
+    public updateClientAreaForTextBoxShape(textBox: ShapeElementBox, beforeLayout: boolean): void {
+        if (beforeLayout) {
+            let marginLeft: number = HelperMethods.convertPointToPixel(textBox.textFrame.marginLeft);
+            let marginRight: number = HelperMethods.convertPointToPixel(textBox.textFrame.marginRight);
+            let marginTop: number = HelperMethods.convertPointToPixel(textBox.textFrame.marginTop);
+            let marginBottom: number = HelperMethods.convertPointToPixel(textBox.textFrame.marginBottom);
+            let width: number = textBox.width;
+            let height: number = Number.POSITIVE_INFINITY;
+            // tslint:disable-next-line:max-line-length
+            this.clientArea = new Rect(textBox.x + marginLeft, textBox.y + marginTop, width - marginLeft - marginRight, height - marginTop - marginBottom);
+            this.clientActiveArea = new Rect(this.clientArea.x, this.clientArea.y, this.clientArea.width, this.clientArea.height);
+        }
+    }
+    /**
      * Updates the client area based on widget.
      * @private
      */
@@ -2950,18 +3065,6 @@ export abstract class LayoutViewer {
         widget.x = area.x;
         widget.y = area.y;
         widget.width = area.width;
-    }
-    /**
-     * @private
-     */
-    public isBlockInHeader(block: Widget): boolean {
-        while (!(block.containerWidget instanceof HeaderFooterWidget)) {
-            if (!block.containerWidget) {
-                return false;
-            }
-            block = block.containerWidget as BlockWidget;
-        }
-        return (block.containerWidget as HeaderFooterWidget).headerFooterType.indexOf('Header') !== -1;
     }
     /**
      * Updates client area for block.

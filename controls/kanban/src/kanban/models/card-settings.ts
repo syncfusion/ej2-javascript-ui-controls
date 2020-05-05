@@ -39,6 +39,7 @@ export class CardSettings extends ChildProperty<CardSettings> {
     /**
      * Defines the card order
      * @default null
+     * @deprecated
      */
     @Property()
     public priority: string;

@@ -1629,14 +1629,15 @@ var DataManipulation = /** @class */ (function () {
         else {
             if (!(this.parent.dataSource[adaptorName] === 'BlazorAdaptor' && !this.parent[clientRender]) && !this.parent.loadChildOnDemand) {
                 for (var rec = 0; rec < records.length; rec++) {
-                    if ((records[rec][this.parent.hasChildMapping] || this.parentItems.indexOf(records[rec][this.parent.idMapping]) !== -1)
-                        && (sf.base.isNullOrUndefined(records[rec].index))) {
+                    if (sf.base.isNullOrUndefined(records[rec].index)) {
                         records[rec].taskData = sf.base.extend({}, records[rec]);
                         records[rec].uniqueID = sf.grids.getUid(this.parent.element.id + '_data_');
                         sf.base.setValue('uniqueIDCollection.' + records[rec].uniqueID, records[rec], this.parent);
                         records[rec].level = 0;
                         records[rec].index = Math.ceil(Math.random() * 1000);
-                        records[rec].hasChildRecords = true;
+                        if ((records[rec][this.parent.hasChildMapping] || this.parentItems.indexOf(records[rec][this.parent.idMapping]) !== -1)) {
+                            records[rec].hasChildRecords = true;
+                        }
                         records[rec].checkboxState = 'uncheck';
                     }
                 }
@@ -2796,9 +2797,10 @@ var TreeGrid = /** @class */ (function (_super) {
         this.renderComplete();
         var destroyTemplate = 'destroyTemplate';
         var destroyTemplateFn = this.grid[destroyTemplate];
-        this.grid[destroyTemplate] = function (args) {
+        //tslint:disable-next-line:no-any
+        this.grid[destroyTemplate] = function (args, index) {
             destroyTemplateFn.apply(_this.grid);
-            _this.clearTemplate(args);
+            _this.clearTemplate(args, index);
         };
         if (sf.base.isBlazor() && this.isServerRendered) {
             var fn_1 = function (args) { return _this.gridRendered(args, fn_1); };
@@ -2839,6 +2841,10 @@ var TreeGrid = /** @class */ (function (_super) {
         }
         this.wireEvents();
         this.afterGridRender();
+        var updateColTypeObj = 'updateColTypeObj';
+        if (!sf.base.isNullOrUndefined(this.grid.editModule)) {
+            this.grid.editModule[updateColTypeObj]();
+        }
         var processModel = 'processModel';
         this.grid[processModel]();
         sf.grids.gridObserver.off('component-rendered', this.gridRendered);
@@ -2969,6 +2975,11 @@ var TreeGrid = /** @class */ (function (_super) {
             if (!sf.base.isBlazor()) {
                 _this.selectedRowIndex = _this.grid.selectedRowIndex;
             }
+            else if (sf.base.isBlazor() && _this.isServerRendered) {
+                _this.allowServerDataBinding = false;
+                _this.setProperties({ selectedRowIndex: _this.grid.selectedRowIndex }, true);
+                _this.allowServerDataBinding = true;
+            }
             treeGrid.notify(rowSelected, args);
             _this.trigger(rowSelected, args);
         };
@@ -2999,6 +3010,16 @@ var TreeGrid = /** @class */ (function (_super) {
         this.grid.checkBoxChange = function (args) {
             _this.trigger(checkboxChange, args);
         };
+        this.grid.cellSelected = function (args) {
+            var cellSelectedArgs;
+            if (sf.base.isBlazor() && _this.isServerRendered) {
+                cellSelectedArgs = { data: args.data, cellIndex: args.cellIndex };
+                _this.trigger('cellSelected', cellSelectedArgs);
+            }
+            else {
+                _this.trigger('cellSelected', args);
+            }
+        };
         this.grid.pdfExportComplete = this.triggerEvents.bind(this);
         this.grid.excelExportComplete = this.triggerEvents.bind(this);
         this.grid.excelHeaderQueryCellInfo = this.triggerEvents.bind(this);
@@ -3010,7 +3031,6 @@ var TreeGrid = /** @class */ (function (_super) {
         this.grid.cellDeselecting = this.triggerEvents.bind(this);
         this.grid.columnMenuOpen = this.triggerEvents.bind(this);
         this.grid.columnMenuClick = this.triggerEvents.bind(this);
-        this.grid.cellSelected = this.triggerEvents.bind(this);
         this.grid.headerCellInfo = this.triggerEvents.bind(this);
         this.grid.resizeStart = this.triggerEvents.bind(this);
         this.grid.resizing = this.triggerEvents.bind(this);

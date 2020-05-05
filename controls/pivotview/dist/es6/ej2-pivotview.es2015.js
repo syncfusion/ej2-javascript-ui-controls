@@ -26055,6 +26055,8 @@ let PivotFieldList = class PivotFieldList extends Component {
             this.pivotGridModule.updatePageSettings(false);
         }
         let pageSettings = this.pivotGridModule ? this.pivotGridModule.pageSettings : undefined;
+        let localeObj = this.pivotGridModule ? this.pivotGridModule.localeObj :
+            (this.staticPivotGridModule ? this.staticPivotGridModule.localeObj : this.localeObj);
         let isDrillThrough = this.pivotGridModule ?
             (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : true;
         let enableValueSorting = this.pivotGridModule ? this.pivotGridModule.enableValueSorting : undefined;
@@ -26067,7 +26069,7 @@ let PivotFieldList = class PivotFieldList extends Component {
                 pageSettings: pageSettings,
                 enableValueSorting: enableValueSorting,
                 isDrillThrough: isDrillThrough,
-                localeObj: this.localeObj
+                localeObj: localeObj
             };
         }
         else {
@@ -26077,7 +26079,7 @@ let PivotFieldList = class PivotFieldList extends Component {
                 pageSettings: pageSettings,
                 enableValueSorting: enableValueSorting,
                 isDrillThrough: isDrillThrough,
-                localeObj: this.localeObj
+                localeObj: localeObj
             };
         }
         return customProperties;

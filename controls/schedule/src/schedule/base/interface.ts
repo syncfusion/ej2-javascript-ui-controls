@@ -8,7 +8,7 @@ import { ResourcesModel, ViewsModel } from '../models/models';
  */
 
  /** An interface that holds options to control the actions of scheduler such as editing, navigation, and more. */
-export interface ActionEventArgs extends BaseEventArgs {
+export interface ActionEventArgs extends ToolbarActionArgs {
     /** Returns the request type of the current action. */
     requestType: string;
     /**
@@ -44,7 +44,7 @@ export interface ToolbarActionArgs extends BaseEventArgs {
     /** Returns the request type of the current action. */
     requestType: string;
     /** Returns the toolbar items present in the Schedule header bar. */
-    items: ItemModel[];
+    items?: ItemModel[];
 }
 
 /** An interface that holds options to control the cell click action. */

@@ -1,6 +1,7 @@
 import { createElement, Browser } from '@syncfusion/ej2-base';
 import { ContextMenu as Context, MenuEventArgs, MenuItemModel, BeforeOpenCloseMenuEventArgs } from '@syncfusion/ej2-navigations';
 import { PdfViewer, PdfViewerBase } from '../index';
+import { ContextMenuItem } from './types';
 
 /**
  * ContextMenu module is used to handle the context menus used in the control.
@@ -89,6 +90,7 @@ export class ContextMenu {
         return target;
     }
 
+    // tslint:disable-next-line:max-func-body-length
     private contextMenuOnBeforeOpen(args: BeforeOpenCloseMenuEventArgs): void {
         let target: HTMLElement = this.setTarget(args);
         // tslint:disable-next-line:max-line-length
@@ -188,8 +190,65 @@ export class ContextMenu {
         }
         if (this.pdfViewer.contextMenuOption === 'None') {
             args.cancel = true;
+        } else {
+            this.disableContextItems(args);
         }
     }
+    private disableContextItems(args: BeforeOpenCloseMenuEventArgs): void {
+        if (this.pdfViewer.disableContextMenuItems && this.pdfViewer.disableContextMenuItems.length > 0) {
+            let hideMenuItems: string[] = [];
+            let ul: HTMLElement = this.contextMenuObj.getRootElement();
+            for (let i: number = 0; i < this.pdfViewer.disableContextMenuItems.length; i++) {
+                let menuItem: string = ContextMenuItem[this.pdfViewer.disableContextMenuItems[i]];
+                switch (menuItem) {
+                    case 'Highlight':
+                        menuItem = 'Highlight context';
+                    break;
+                    case 'Underline':
+                        menuItem = 'Underline context';
+                    break;
+                    case 'Strikethrough':
+                        menuItem = 'Strikethrough context';
+                    break;
+                    case 'Delete':
+                        menuItem = 'Delete Context';
+                    break;
+                    case 'Scaleratio':
+                        menuItem = 'Scale Ratio';
+                    break;
+                    case 'Comment':
+                        this.pdfViewerBase.getElement('_context_menu_comment_separator').classList.add('e-menu-hide');
+                    break;
+                    case 'Properties':
+                        this.pdfViewerBase.getElement('_context_menu_separator').classList.add('e-menu-hide');
+                        break;
+                }
+                let menuName: string =  this.pdfViewer.localeObj.getConstant(menuItem);
+                let index: number = this.copyContextMenu.map( (e: MenuItemModel) => { return e.text; }).indexOf(menuName);
+                if (!ul.children[index].classList.contains('e-menu-hide')) {
+                    hideMenuItems.push(menuName);
+                }
+            }
+            this.contextMenuObj.hideItems(hideMenuItems);
+            if (this.getEnabledItemCount(ul) === 0) {
+                args.cancel = true;
+            }
+        }
+    }
+
+    private getEnabledItemCount(ul: HTMLElement): number {
+        let enabledItemCount : number = this.copyContextMenu.length - 1;
+        let liCollection : HTMLCollection = ul.children;
+        for (let i: number = 0; i < liCollection.length; i++) {
+            // tslint:disable-next-line
+           let li: any = liCollection[i];
+           if (li.classList.contains('e-menu-hide') || li.classList.contains('e-disabled')) {
+                enabledItemCount = enabledItemCount - 1;
+           }
+        }
+        return enabledItemCount;
+    }
+
     private hideContextItems(): void {
         if (this.pdfViewer.selectedItems.annotations.length === 0) {
             // tslint:disable-next-line:max-line-length

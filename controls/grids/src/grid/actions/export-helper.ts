@@ -252,6 +252,15 @@ export class ExportHelper {
         gridPool[exportId] = false;
         return {childGrid: childGridObj, element};
     }
+    public getGridExportColumns(columns: Column[]): Column[] {
+        let actualGridColumns: Column[] = [];
+        for (let i: number = 0, gridColumns: Column[] = columns; i < gridColumns.length; i++) {
+            if (gridColumns[i].type !== 'checkbox') {
+                actualGridColumns.push(gridColumns[i]);
+            }
+        }
+        return actualGridColumns;
+    }
 }
 
 /**

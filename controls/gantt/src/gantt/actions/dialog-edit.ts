@@ -695,7 +695,7 @@ export class DialogEdit {
                 break;
             case 'datepickeredit':
                 let datePickerObj: DatePickerModel = common as DatePickerModel;
-                datePickerObj.format = this.parent.dateFormat;
+                datePickerObj.format = this.parent.getDateFormat();
                 datePickerObj.strictMode = true;
                 datePickerObj.firstDayOfWeek = ganttObj.timelineModule.customTimelineSettings.weekStartDay;
                 if (column.field === ganttObj.columnMapping.startDate ||
@@ -709,7 +709,7 @@ export class DialogEdit {
                 break;
             case 'datetimepickeredit':
                 let dateTimePickerObj: DatePickerModel = common as DatePickerModel;
-                dateTimePickerObj.format = this.parent.dateFormat;
+                dateTimePickerObj.format = this.parent.getDateFormat();
                 dateTimePickerObj.strictMode = true;
                 dateTimePickerObj.firstDayOfWeek = ganttObj.timelineModule.customTimelineSettings.weekStartDay;
                 if (column.field === ganttObj.columnMapping[taskSettings.startDate] ||

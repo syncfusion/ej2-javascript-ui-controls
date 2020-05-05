@@ -951,7 +951,7 @@ export class TaskbarEdit {
      */
     private setItemPosition(): void {
         let item: ITaskData = this.taskBarEditRecord.ganttProperties;
-        let width: number = this.taskBarEditAction === 'MilestoneDrag' ?
+        let width: number = this.taskBarEditAction === 'MilestoneDrag' || item.isMilestone ?
             this.parent.chartRowsModule.milestoneHeight : item.width;
         let rightResizer: number = this.parent.isAdaptive ? (width - 2) : (width - 10);
         let taskBarMainContainer: HTMLElement = closest(this.taskBarEditElement, 'tr.' + cls.chartRow)
@@ -991,7 +991,7 @@ export class TaskbarEdit {
             if (traceConnectorPointRight) {
                 traceConnectorPointRight.style.left = (this.parent.isAdaptive ? (width + 10) : (width + 2)) + 'px';
             }
-            if (this.taskBarEditAction === 'MilestoneDrag') {
+            if (this.taskBarEditAction === 'MilestoneDrag' || item.isMilestone) {
                 taskBarMainContainer.style.left = (item.left - (width / 2)) + 'px';
                 leftLabelContainer.style.width = (item.left - (width / 2)) + 'px';
                 rightLabelContainer.style.left = (item.left + (width / 2)) + 'px';
@@ -1011,7 +1011,9 @@ export class TaskbarEdit {
                     childProgressResizer.style.left = (item.progressWidth - 10) + 'px';
                 }
             } else if (this.taskBarEditAction === 'ParentDrag') {
-                traceParentTaskBar.style.width = (width) + 'px';
+                if (!isNullOrUndefined(traceParentTaskBar)) {
+                    traceParentTaskBar.style.width = (width) + 'px';
+                }
                 if (!isNullOrUndefined(traceChildProgressBar)) {
                     traceParentProgressBar.style.width = (item.progressWidth) + 'px';
                 }

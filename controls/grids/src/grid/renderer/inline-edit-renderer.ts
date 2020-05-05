@@ -194,11 +194,9 @@ export class InlineEditRender {
 
     private renderMovable(ele: Element, mEle: Element): void {
         let frzCols: number = this.parent.getFrozenColumns();
-        for (let i: number = 0; i < frzCols; i++) {
-            mEle.querySelector('tr').removeChild(mEle.querySelector('tr').children[0]);
-        }
-        for (let i: number = frzCols, len: number = ele.querySelector('tr').childElementCount; i < len; i++) {
-            ele.querySelector('tr').removeChild(ele.querySelector('tr').children[ele.querySelector('tr').childElementCount - 1]);
+        mEle.querySelector('tr').innerHTML = '';
+        for (let i: number = frzCols; i < this.parent.getColumns().length; i++) {
+            mEle.querySelector('tr').appendChild(ele.querySelector('tr').removeChild(ele.querySelector('tr').children[frzCols]));
         }
     }
 

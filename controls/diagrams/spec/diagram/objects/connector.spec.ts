@@ -1694,4 +1694,85 @@ describe('Diagram Control', () => {
             expect(memory).toBeLessThan(profile.samples[0] + 0.25);
         })
     });
+    describe('Connector padding with constraints', () => {
+        let diagram: Diagram;
+        let ele: HTMLElement;
+        let mouseEvents: MouseEvents = new MouseEvents();
+        let diagramCanvas: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'diagramDecoratorIssue' });
+            document.body.appendChild(ele);
+            let nodeport2: PointPortModel = { offset: { x: 1 } };
+            nodeport2.id = 'fff';
+
+            nodeport2.shape = 'Circle';
+            let nodeport21: PointPortModel = { offset: { y: 1 } };
+            nodeport21.id = 'ggg';
+
+            let node: NodeModel = {
+                id: 'node1', width: 50, height: 50, offsetX: 100, offsetY: 100, annotations: [{ content: 'Node1', height: 50, width: 50 }], ports: [nodeport2]
+            };
+            let node2: NodeModel = {
+                id: 'node2', width: 50, height: 50, offsetX: 200, offsetY: 200, annotations: [{ content: 'Node2', height: 50, width: 50 }], ports: [nodeport21]
+            };
+            let node3: NodeModel = {
+                id: 'node3', width: 100, height: 75, offsetX: 300, offsetY: 350, annotations: [{ content: 'Node3', height: 50, width: 50 }]
+            };
+            let node4: NodeModel = {
+                id: 'node4', width: 100, height: 75, offsetX: 800, offsetY: 350, annotations: [{ content: 'Node3', height: 50, width: 50 }]
+            };
+            diagram = new Diagram({
+                width: 500, height: 500, nodes: [node, node2, node3, node4],
+                connectors: [
+                    {
+                        id: 'connector1', sourcePoint: { x: 100, y: 200 }, targetPoint: { x: 200, y: 200 },
+                        type: 'Straight', connectPadding: 50, constraints: ConnectorConstraints.Default,
+                        annotations: [{ content: 'dddd', style: { color: 'red' } }]
+                    }, {
+                        id: 'connector2', sourcePoint: { x: 100, y: 200 }, targetPoint: { x: 200, y: 200 }, sourcePortID: 'fff', connectPadding: 50, constraints: (ConnectorConstraints.Default & ~ConnectorConstraints.ConnectNearAll),
+                    }, {
+                        id: 'connector3',
+                        type: 'Straight', sourcePoint: { x: 100, y: 200 }, targetPoint: { x: 200, y: 200 }, connectPadding: 50, constraints: (ConnectorConstraints.Default & ~ConnectorConstraints.ConnectNearNode)
+                    }, {
+                        id: 'connector4',
+                        type: 'Straight', sourcePoint: { x: 100, y: 200 }, targetPoint: { x: 200, y: 200 }, connectPadding: 50, constraints: (ConnectorConstraints.Default & ~ConnectorConstraints.ConnectNearPort)
+                    }],
+                snapSettings: { constraints: SnapConstraints.ShowLines }
+            });
+            diagram.appendTo('#diagramDecoratorIssue');
+            diagramCanvas = document.getElementById(diagram.element.id + 'content');
+        });
+        afterAll((): void => {
+            diagram.destroy();
+            ele.remove();
+        });
+        it('checking connector with paddingToNode', function (done) {
+            debugger
+           
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 200, 200);
+            mouseEvents.dragAndDropEvent(diagramCanvas, 200, 200, 100, 160);
+            expect((diagram.nameTable['connector4'].targetID === 'node1'));
+            done();
+        });
+        it('checking connector with paddingToPort', function (done) {
+            
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 200, 200);
+            mouseEvents.dragAndDropEvent(diagramCanvas, 200, 200, 100, 160);
+            expect((diagram.nameTable['connector3'].targetPortID === 'ggg'));
+            done();
+
+        });
+        it('checking connector with none', function (done) {
+            
+            let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+            mouseEvents.clickEvent(diagramCanvas, 200, 200);
+            mouseEvents.dragAndDropEvent(diagramCanvas, 200, 200, 100, 160);
+            expect((diagram.nameTable['connector2'].targetPortID === '') );
+            done();
+
+        });
+
+    });
 });

@@ -83,6 +83,8 @@ export class Clipboard {
     private cMenuBeforeOpenHandler(e: { target: string }): void {
         let sheet: SheetModel = this.parent.getActiveSheet();
         let l10n: L10n = this.parent.serviceLocator.getService(locale);
+        let delRowItems: string[] = []; let hideRowItems: string[] = [];
+        let delColItems: string[] = []; let hideColItems: string[] = [];
         if (e.target === 'Content' || e.target === 'RowHeader' || e.target === 'ColumnHeader') {
             this.parent.enableContextMenuItems(
                 [l10n.getConstant('Paste'), l10n.getConstant('PasteSpecial')], (this.copiedInfo && !sheet.isProtected) ? true : false);
@@ -94,6 +96,21 @@ export class Clipboard {
         }
         if ((e.target === 'Content') && (sheet.isProtected && !sheet.protectSettings.insertLink)) {
             this.parent.enableContextMenuItems([l10n.getConstant('Hyperlink')], false);
+        }
+        if (e.target === 'ColumnHeader' && sheet.isProtected) {
+            delColItems = [l10n.getConstant('DeleteColumn'), l10n.getConstant('DeleteColumns'),
+            l10n.getConstant('InsertColumn'), l10n.getConstant('InsertColumns')];
+            hideColItems = [l10n.getConstant('HideColumn'), l10n.getConstant('HideColumns'),
+            l10n.getConstant('UnHideColumns')];
+            this.parent.enableContextMenuItems(delColItems, false);
+            this.parent.enableContextMenuItems(hideColItems, (sheet.protectSettings.formatColumns) ? true : false);
+        }
+        if (e.target === 'RowHeader' && sheet.isProtected) {
+            delRowItems = [l10n.getConstant('DeleteRow'), l10n.getConstant('DeleteRows'),
+            l10n.getConstant('InsertRow'), l10n.getConstant('InsertRows')];
+            hideRowItems = [l10n.getConstant('HideRow'), l10n.getConstant('HideRows'), l10n.getConstant('UnHideRows')];
+            this.parent.enableContextMenuItems(delRowItems, false);
+            this.parent.enableContextMenuItems(hideRowItems, (sheet.protectSettings.formatRows) ? true : false);
         }
     }
 
@@ -145,12 +162,12 @@ export class Clipboard {
             let beginEventArgs: BeforePasteEventArgs = {
                 requestType: 'paste',
                 copiedInfo: this.copiedInfo,
-                copiedRange: getRangeAddress(cIdx),
+                copiedRange: isExternal ? null : getRangeAddress(cIdx),
                 pastedRange: getRangeAddress(rfshRange),
                 type: (args && args.type) || 'All',
                 cancel: false
             };
-            if (args.isAction) {
+            if (args.isAction || isExternal) {
                 this.parent.notify(beginAction, { eventArgs: beginEventArgs, action: 'clipboard' });
             }
             if (beginEventArgs.cancel) {
@@ -228,7 +245,7 @@ export class Clipboard {
             if (isExternal || (args && args.isAction)) {
                 this.parent.element.focus();
             }
-            if (args.isAction) {
+            if (args.isAction || isExternal) {
                 let sheetIndex: number = copyInfo && copyInfo.sId ? getSheetIndexFromId(this.parent, copyInfo.sId) :
                     this.parent.activeSheetIndex;
                 let eventArgs: Object = {
@@ -236,8 +253,8 @@ export class Clipboard {
                     copiedInfo: copyInfo,
                     mergeCollection: mergeCollection,
                     pasteSheetIndex: this.parent.activeSheetIndex,
-                    copiedRange: this.parent.sheets[sheetIndex].name + '!' + getRangeAddress(copyInfo && copyInfo.range ? copyInfo.range :
-                        getRangeIndexes(this.parent.sheets[sheetIndex].selectedRange)),
+                    copiedRange: isExternal ? null : this.parent.sheets[sheetIndex].name + '!' + getRangeAddress(copyInfo &&
+                        copyInfo.range ? copyInfo.range : getRangeIndexes(this.parent.sheets[sheetIndex].selectedRange)),
                     pastedRange: getSheetName(this.parent) + '!' + getRangeAddress(rfshRange),
                     type: (args && args.type) || 'All'
                 };

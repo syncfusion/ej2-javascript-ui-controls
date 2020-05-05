@@ -142,6 +142,12 @@ export class Selection {
                 if (targetElement.getAttribute('class') === this.selectionType + 'selectionMapStyle') {
                     removeClass(targetElement);
                     this.removedSelectionList(targetElement);
+                    for (let m: number = 0; m < this.maps.shapeSelectionItem.length; m++) {
+                      if (this.maps.shapeSelectionItem[m] === eventArgs.shapeData) {
+                        this.maps.shapeSelectionItem.splice(m, 1);
+                        break;
+                      }
+                    }
                     if (targetElement.id.indexOf('NavigationIndex') > -1) {
                         let index: number = parseInt(targetElement.id.split('_NavigationIndex_')[1].split('_')[0], 10);
                         let layerIndex: number = parseInt(targetElement.parentElement.id.split('_LayerIndex_')[1].split('_')[0], 10);
@@ -184,6 +190,7 @@ export class Selection {
                     if (targetElement.getAttribute('class') === 'ShapeselectionMapStyle') {
                         this.maps.shapeSelectionClass = getElement(this.selectionType + 'selectionMap');
                         this.maps.selectedElementId.push(targetElement.getAttribute('id'));
+                        this.maps.shapeSelectionItem.push(eventArgs.shapeData);
                     }
                     if (targetElement.getAttribute('class') === 'MarkerselectionMapStyle') {
                         this.maps.markerSelectionClass = getElement(this.selectionType + 'selectionMap');

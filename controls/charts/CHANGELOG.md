@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 18.1.46 (2020-04-28)
+## 18.1.48 (2020-05-05)
+
+### Chart
+
+#### Bug Fixes
+
+- `#273192` - Trendlines are short and have the wrong slope direction issue fixed.
+
+## 18.1.45 (2020-04-21)
 
 ### Chart
 

@@ -116,6 +116,12 @@ export interface KanbanModel extends ComponentModel{
     enableTooltip?: boolean;
 
     /**
+     * Enable or disable the columns when empty dataSource.
+     * @default false
+     */
+    showEmptyColumn?: boolean;
+
+    /**
      * Enables or disables the persisting component's state between page reloads. 
      * If enabled, columns, dataSource properties will be persisted in kanban.
      * @deprecated

@@ -3,7 +3,8 @@ import { LayoutViewer, PageLayoutViewer, WebLayoutViewer } from '../index';
 import { Dictionary } from '../../base/dictionary';
 import { DocumentEditor } from '../../document-editor';
 import { ImageFormat } from '../selection/selection-helper';
-import { IWidget, ImageElementBox, LineWidget, Page, ParagraphWidget, TableCellWidget, TableRowWidget } from '../viewer/page';
+import { IWidget, ImageElementBox, LineWidget, Page, ParagraphWidget, TableCellWidget, TableRowWidget,
+    ShapeElementBox } from '../viewer/page';
 import { Point, ImagePointInfo, HelperMethods } from './editor-helper';
 import { BaseHistoryInfo } from '../editor-history/base-history-info';
 import { DocumentHelper } from '../viewer';
@@ -17,7 +18,7 @@ export class ImageResizer {
      * @private
      */
     public owner: DocumentEditor;
-    private currentImageElementBoxIn: ImageElementBox;
+    private currentImageElementBoxIn: ImageElementBox | ShapeElementBox;
     /**
      * @private
      */
@@ -139,13 +140,13 @@ export class ImageResizer {
      * Gets or Sets the current image element box.
      * @private
      */
-    get currentImageElementBox(): ImageElementBox {
+    get currentImageElementBox(): ImageElementBox | ShapeElementBox {
         return this.currentImageElementBoxIn;
     }
     /**
      * @private
      */
-    set currentImageElementBox(value: ImageElementBox) {
+    set currentImageElementBox(value: ImageElementBox | ShapeElementBox) {
         this.currentImageElementBoxIn = value;
     }
     /**
@@ -154,6 +155,13 @@ export class ImageResizer {
      */
     get resizeMarkSize(): number {
         return this.resizeMarkSizeIn;
+    }
+
+    get isShapeResize(): boolean {
+        if (this.currentImageElementBox instanceof ShapeElementBox) {
+            return true;
+        }
+        return false;
     }
     /**
      * @private
@@ -225,7 +233,7 @@ export class ImageResizer {
      * @param {ImageElementBox} elementBox - Specifies the image position.
      * @private
      */
-    public positionImageResizer(elementBox: ImageElementBox): void {
+    public positionImageResizer(elementBox: ImageElementBox | ShapeElementBox): void {
         this.selectedImageWidget.clear();
         // Initializes the image resizer on demand, i.e at the time of selecting an image for the first time.
         let resizeDiv: HTMLElement;
@@ -301,9 +309,19 @@ export class ImageResizer {
         this.imageResizerDivElement.style.height = parseInt(this.imageResizerDivElement.style.height.replace('px', ''), 10) * this.documentHelper.zoomFactor + 'px';
         height = this.documentHelper.render.getScaledValue(elementBox.height);
         width = this.documentHelper.render.getScaledValue(elementBox.width);
-        left = this.documentHelper.render.getScaledValue(left);
-        top = this.documentHelper.render.getScaledValue(top);
+        if (elementBox instanceof ImageElementBox) {
+            left = this.documentHelper.render.getScaledValue(left);
+            top = this.documentHelper.render.getScaledValue(top);
+        } else {
+            left = elementBox.x * this.documentHelper.zoomFactor;
+            top = elementBox.y * this.documentHelper.zoomFactor;
+        }
         this.setImageResizerPosition(left, top, width, height, this);
+        if (this.owner.selection.isInShape) {
+            this.resizeContainerDiv.style.borderStyle = 'dashed';
+        } else {
+            this.resizeContainerDiv.style.borderStyle = 'solid';
+        }
         if (!this.selectedImageWidget.containsKey(lineWidget)) {
             let selectedImageInfo: SelectedImageInfo = new SelectedImageInfo(elementBox.height, elementBox.width);
             this.selectedImageWidget.add(lineWidget, selectedImageInfo);
@@ -545,7 +563,7 @@ export class ImageResizer {
         //Positions Updating For Image Resize Div
         imageResizer.resizeContainerDiv.style.width = width + 'px';
         imageResizer.resizeContainerDiv.style.height = height + 'px';
-        imageResizer.resizeContainerDiv.style.left = left - 1 + 'px';
+        imageResizer.resizeContainerDiv.style.left = left + 'px';
         imageResizer.resizeContainerDiv.style.top = top + 'px';
         //Positions Updating For Image Resizing Points
         imageResizer.topRightRect.style.left = ((left + width) - 5) + 'px';
@@ -713,7 +731,7 @@ export class ImageResizer {
             }
             // tslint:disable-next-line:max-line-length 
             if (this.owner.enableHistoryMode) {
-                this.initHistoryForImageResizer(this.currentImageElementBox);
+                this.initHistoryForImageResizer(this.currentImageElementBox as ImageElementBox);
             }
             if (!isNullOrUndefined(this.currentImageElementBox)) {
                 // tslint:disable-next-line:max-line-length   
@@ -1072,12 +1090,22 @@ export class ImageResizer {
      */
     public updateImageResizerPosition(): void {
         if (!isNullOrUndefined(this.currentImageElementBox)) {
-            let elementBox: ImageElementBox = this.currentImageElementBox;
+            // tslint:disable-next-line:max-line-length
+            let elementBox: ImageElementBox | ShapeElementBox = this.currentImageElementBox instanceof ImageElementBox ? this.currentImageElementBox as ImageElementBox : this.currentImageElementBox as ShapeElementBox;
             let lineWidget: LineWidget = elementBox.line;
-            let top: number = this.documentHelper.selection.getTop(lineWidget) + elementBox.margin.top;
-            let left: number = this.documentHelper.selection.getLeftInternal(lineWidget, elementBox, 0);
-            let topValue: number = top * this.documentHelper.zoomFactor;
-            let leftValue: number = left * this.documentHelper.zoomFactor;
+            let top: number;
+            let left: number;
+            let topValue: number;
+            let leftValue: number;
+            if (this.currentImageElementBox instanceof ImageElementBox) {
+                top = this.documentHelper.selection.getTop(lineWidget) + elementBox.margin.top;
+                left = this.documentHelper.selection.getLeftInternal(lineWidget, elementBox, 0);
+                topValue = top * this.documentHelper.zoomFactor;
+                leftValue = left * this.documentHelper.zoomFactor;
+            } else {
+                leftValue = elementBox.x * this.documentHelper.zoomFactor;
+                topValue = elementBox.y * this.documentHelper.zoomFactor;
+            }
             let height: number = this.documentHelper.render.getScaledValue(elementBox.height, 2);
             let width: number = this.documentHelper.render.getScaledValue(elementBox.width, 1);
             this.setImageResizerPosition(leftValue, topValue, width, height, this);

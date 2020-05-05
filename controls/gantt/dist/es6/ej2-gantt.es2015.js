@@ -1013,7 +1013,7 @@ class DateProcessor {
             return new Date(date.getTime());
         }
         else {
-            let dateObject = this.parent.globalize.parseDate(date, { format: this.parent.dateFormat, type: 'dateTime' });
+            let dateObject = this.parent.globalize.parseDate(date, { format: this.parent.getDateFormat(), type: 'dateTime' });
             return isNullOrUndefined(dateObject) && !isNaN(new Date(date).getTime()) ? new Date(date) : dateObject;
         }
     }
@@ -4464,7 +4464,7 @@ class Timeline {
         let cellWidth;
         let isWeekendCell;
         let date = isNullOrUndefined(formatter) ?
-            this.parent.globalize.formatDate(scheduleWeeks, { format: this.parent.dateFormat }) :
+            this.parent.globalize.formatDate(scheduleWeeks, { format: this.parent.getDateFormat() }) :
             this.customFormat(scheduleWeeks, format, tier, mode, formatter);
         thWidth = (this.getIncrement(scheduleWeeks, count, mode) / (1000 * 60 * 60 * 24)) * this.parent.perDayWidth;
         cellWidth = thWidth;
@@ -5266,16 +5266,16 @@ class GanttTreeGrid {
             /** Name column */
             column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('startDate');
             column.editType = column.editType ? column.editType :
-                this.parent.dateFormat.toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
-            column.format = column.format ? column.format : { type: 'date', format: this.parent.dateFormat };
+                this.parent.getDateFormat().toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
+            column.format = column.format ? column.format : { type: 'date', format: this.parent.getDateFormat() };
             column.width = column.width ? column.width : 150;
             column.edit = { params: { renderDayCell: this.parent.renderWorkingDayCell.bind(this.parent) } };
         }
         else if (taskSettings.endDate === column.field) {
             column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('endDate');
-            column.format = column.format ? column.format : { type: 'date', format: this.parent.dateFormat };
+            column.format = column.format ? column.format : { type: 'date', format: this.parent.getDateFormat() };
             column.editType = column.editType ? column.editType :
-                this.parent.dateFormat.toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
+                this.parent.getDateFormat().toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
             column.width = column.width ? column.width : 150;
             column.edit = { params: { renderDayCell: this.parent.renderWorkingDayCell.bind(this.parent) } };
         }
@@ -5316,19 +5316,15 @@ class GanttTreeGrid {
                 column.disableHtmlEncode = true;
             }
         }
-        else if (taskSettings.baselineStartDate === column.field) {
+        else if (taskSettings.baselineStartDate === column.field ||
+            taskSettings.baselineEndDate === column.field) {
+            let colName = taskSettings.baselineEndDate ? 'baselineEndDate' :
+                'baselineStartDate';
             column.width = column.width ? column.width : 150;
-            column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('baselineStartDate');
-            column.format = column.format ? column.format : { type: 'date', format: this.parent.dateFormat };
+            column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant(colName);
+            column.format = column.format ? column.format : { type: 'date', format: this.parent.getDateFormat() };
             column.editType = column.editType ? column.editType :
-                this.parent.dateFormat.toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
-        }
-        else if (taskSettings.baselineEndDate === column.field) {
-            column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('baselineEndDate');
-            column.width = column.width ? column.width : 150;
-            column.format = column.format ? column.format : { type: 'date', format: this.parent.dateFormat };
-            column.editType = column.editType ? column.editType :
-                this.parent.dateFormat.toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
+                this.parent.getDateFormat().toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
         }
         else if (taskSettings.work === column.field) {
             column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('work');
@@ -8916,7 +8912,7 @@ class Tooltip$1 {
             case 'milestone':
                 let sDate = !isNullOrUndefined(data.startDate) ? '<tr><td class = "e-gantt-tooltip-label"> Date</td><td>:</td>' +
                     '<td class = "e-gantt-tooltip-value">' +
-                    this.parent.getFormatedDate(data.startDate, this.parent.dateFormat) + '</td></tr>' : '';
+                    this.parent.getFormatedDate(data.startDate, this.parent.getDateFormat()) + '</td></tr>' : '';
                 content$$1 = '<table class = "e-gantt-tooltiptable"><tbody>' +
                     taskName + sDate + '</tbody></table>';
                 break;
@@ -8925,11 +8921,11 @@ class Tooltip$1 {
                 let startDate = data.startDate ? '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant(scheduledTask ? 'startDate' : 'subTasksStartDate') +
                     '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value"> ' +
-                    this.parent.getFormatedDate(scheduledTask ? data.startDate : data.autoStartDate, this.parent.dateFormat) +
+                    this.parent.getFormatedDate(scheduledTask ? data.startDate : data.autoStartDate, this.parent.getDateFormat()) +
                     '</td></tr>' : '';
                 let endDate = data.endDate ? '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant(scheduledTask ? 'endDate' : 'subTasksEndDate') +
-                    '</td><td>:</td><td class = "e-gantt-tooltip-value">' + this.parent.getFormatedDate(scheduledTask ? data.endDate : data.autoEndDate, this.parent.dateFormat) + '</td></tr>' : '';
+                    '</td><td>:</td><td class = "e-gantt-tooltip-value">' + this.parent.getFormatedDate(scheduledTask ? data.endDate : data.autoEndDate, this.parent.getDateFormat()) + '</td></tr>' : '';
                 let duration = !isNullOrUndefined(data.duration) ? '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('duration') + '</td><td>:</td>' +
                     '<td class = "e-gantt-tooltip-value"> ' + this.parent.getDurationString((scheduledTask ? data.duration : data.autoDuration), data.durationUnit) +
@@ -8944,16 +8940,16 @@ class Tooltip$1 {
                 content$$1 = '<table class = "e-gantt-tooltiptable"><tbody>' +
                     taskName + '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('baselineStartDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value">' +
-                    this.parent.getFormatedDate(data.baselineStartDate, this.parent.dateFormat) + '</td></tr><tr>' +
+                    this.parent.getFormatedDate(data.baselineStartDate, this.parent.getDateFormat()) + '</td></tr><tr>' +
                     '<td class = "e-gantt-tooltip-label">' + this.parent.localeObj.getConstant('baselineEndDate') +
                     '</td><td>:</td><td class = "e-gantt-tooltip-value">' +
-                    this.parent.getFormatedDate(data.baselineEndDate, this.parent.dateFormat) + '</td></tr></tbody></table>';
+                    this.parent.getFormatedDate(data.baselineEndDate, this.parent.getDateFormat()) + '</td></tr></tbody></table>';
                 break;
             case 'marker':
                 let markerTooltipElement = parent.tooltipModule.getMarkerTooltipData(args);
                 let markerLabel = markerTooltipElement.label ? markerTooltipElement.label : '';
                 content$$1 = '<table class = "e-gantt-tooltiptable"><tbody><tr><td>' +
-                    this.parent.getFormatedDate(this.parent.dateValidationModule.getDateFromFormat(markerTooltipElement.day), this.parent.dateFormat) +
+                    this.parent.getFormatedDate(this.parent.dateValidationModule.getDateFromFormat(markerTooltipElement.day), this.parent.getDateFormat()) +
                     '</td></tr><tr><td>' +
                     markerLabel + '</td></tr></tbody></table>';
                 break;
@@ -8982,33 +8978,33 @@ class Tooltip$1 {
             case 'manualtaskbar':
                 let autoStartDate = data.autoStartDate ? '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('subTasksStartDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value"> ' +
-                    this.parent.getFormatedDate(data.autoStartDate, this.parent.dateFormat) + '</td></tr>' : '';
+                    this.parent.getFormatedDate(data.autoStartDate, this.parent.getDateFormat()) + '</td></tr>' : '';
                 let autoEndDate = data.autoEndDate ? '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('subTasksEndDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value">' +
-                    this.parent.getFormatedDate(data.autoEndDate, this.parent.dateFormat) + '</td></tr>' : '';
+                    this.parent.getFormatedDate(data.autoEndDate, this.parent.getDateFormat()) + '</td></tr>' : '';
                 let durationValue = !isNullOrUndefined(data.duration) ? '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('duration') + '</td><td>:</td>' +
                     '<td class = "e-gantt-tooltip-value"> ' + this.parent.getDurationString(data.duration, data.durationUnit) +
                     '</td></tr>' : '';
                 let manualStartDate = data.startDate ? '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('startDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value"> ' +
-                    this.parent.getFormatedDate(data.startDate, this.parent.dateFormat) + '</td></tr>' : '';
+                    this.parent.getFormatedDate(data.startDate, this.parent.getDateFormat()) + '</td></tr>' : '';
                 let manualEndDate = data.endDate ? '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('endDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value">' +
-                    this.parent.getFormatedDate(data.endDate, this.parent.dateFormat) + '</td></tr>' : '';
+                    this.parent.getFormatedDate(data.endDate, this.parent.getDateFormat()) + '</td></tr>' : '';
                 content$$1 = '<table class = "e-gantt-tooltiptable"><tbody>' +
                     taskName + manualStartDate + autoStartDate + manualEndDate + autoEndDate + durationValue + '</tbody></table>';
                 break;
             case 'manualmilestone':
                 let autoStart = data.autoStartDate ? '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('subTasksStartDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value"> ' +
-                    this.parent.getFormatedDate(data.autoStartDate, this.parent.dateFormat) + '</td></tr>' : '';
+                    this.parent.getFormatedDate(data.autoStartDate, this.parent.getDateFormat()) + '</td></tr>' : '';
                 let autoEnd = data.autoEndDate ? '<tr><td class = "e-gantt-tooltip-label">' +
                     this.parent.localeObj.getConstant('subTasksEndDate') + '</td><td>:</td>' + '<td class = "e-gantt-tooltip-value">' +
-                    this.parent.getFormatedDate(data.autoEndDate, this.parent.dateFormat) + '</td></tr>' : '';
+                    this.parent.getFormatedDate(data.autoEndDate, this.parent.getDateFormat()) + '</td></tr>' : '';
                 let date = '<tr><td class = "e-gantt-tooltip-label"> Date</td><td>:</td>' +
                     '<td class = "e-gantt-tooltip-value">' +
-                    this.parent.getFormatedDate(data.startDate, this.parent.dateFormat) + '</tr>';
+                    this.parent.getFormatedDate(data.startDate, this.parent.getDateFormat()) + '</tr>';
                 content$$1 = '<table class = "e-gantt-tooltiptable"><tbody>' +
                     taskName + date + autoStart + autoEnd + '</tbody></table>';
                 break;
@@ -9322,8 +9318,6 @@ let Gantt = class Gantt extends Component {
     }
     initProperties() {
         this.globalize = new Internationalization(this.locale);
-        this.dateFormat = !isNullOrUndefined(this.dateFormat) ? this.dateFormat : isBlazor() ?
-            this.globalize.getDatePattern({ skeleton: 'd' }) : this.globalize.getDatePattern({ skeleton: 'yMd' });
         this.isAdaptive = Browser.isDevice;
         this.flatData = [];
         this.currentViewData = [];
@@ -9414,6 +9408,19 @@ let Gantt = class Gantt extends Component {
             this.taskType = 'FixedWork';
         }
         this.taskIds = [];
+    }
+    /**
+     *  @private
+     */
+    getDateFormat() {
+        if (!isNullOrUndefined(this.dateFormat)) {
+            return this.dateFormat;
+        }
+        else {
+            let ganttDateFormat = isBlazor() ? this.globalize.getDatePattern({ skeleton: 'd' }) :
+                this.globalize.getDatePattern({ skeleton: 'yMd' });
+            return ganttDateFormat;
+        }
     }
     /**
      * Method to map resource fields.
@@ -9813,7 +9820,7 @@ let Gantt = class Gantt extends Component {
             return null;
         }
         if (isNullOrUndefined(format)) {
-            format = this.dateFormat;
+            format = this.getDateFormat();
         }
         return this.globalize.formatDate(date, { format: format });
     }
@@ -12419,14 +12426,14 @@ class EditTooltip {
                     break;
                 case 'LeftResizing':
                     tooltipString = this.parent.localeObj.getConstant('startDate') + ' : ';
-                    tooltipString += instance.formatDate(editRecord.startDate, { format: this.parent.dateFormat });
+                    tooltipString += instance.formatDate(editRecord.startDate, { format: this.parent.getDateFormat() });
                     tooltipString += '<br/>' + this.parent.localeObj.getConstant('duration') + ' : ' +
                         this.parent.getDurationString(editRecord.duration, editRecord.durationUnit);
                     break;
                 case 'RightResizing':
                 case 'ParentResizing':
                     tooltipString = this.parent.localeObj.getConstant('endDate') + ' : ';
-                    tooltipString += instance.formatDate(editRecord.endDate, { format: this.parent.dateFormat });
+                    tooltipString += instance.formatDate(editRecord.endDate, { format: this.parent.getDateFormat() });
                     tooltipString += '<br/>' + this.parent.localeObj.getConstant('duration') + ' : ' +
                         this.parent.getDurationString(editRecord.duration, editRecord.durationUnit);
                     break;
@@ -12436,11 +12443,11 @@ class EditTooltip {
                 case 'ManualParentDrag':
                     if (!isNullOrUndefined(this.taskbarEdit.taskBarEditRecord.ganttProperties.startDate)) {
                         tooltipString = this.parent.localeObj.getConstant('startDate') + ' : ';
-                        tooltipString += instance.formatDate(editRecord.startDate, { format: this.parent.dateFormat });
+                        tooltipString += instance.formatDate(editRecord.startDate, { format: this.parent.getDateFormat() });
                     }
                     if (!isNullOrUndefined(this.taskbarEdit.taskBarEditRecord.ganttProperties.endDate)) {
                         tooltipString += tooltipString === '' ? '' : '<br/>';
-                        tooltipString += this.parent.localeObj.getConstant('endDate') + ' : ' + instance.formatDate(editRecord.endDate, { format: this.parent.dateFormat });
+                        tooltipString += this.parent.localeObj.getConstant('endDate') + ' : ' + instance.formatDate(editRecord.endDate, { format: this.parent.getDateFormat() });
                     }
                     break;
                 case 'ConnectorPointLeftDrag':
@@ -13374,7 +13381,7 @@ class TaskbarEdit {
      */
     setItemPosition() {
         let item = this.taskBarEditRecord.ganttProperties;
-        let width = this.taskBarEditAction === 'MilestoneDrag' ?
+        let width = this.taskBarEditAction === 'MilestoneDrag' || item.isMilestone ?
             this.parent.chartRowsModule.milestoneHeight : item.width;
         let rightResizer = this.parent.isAdaptive ? (width - 2) : (width - 10);
         let taskBarMainContainer$$1 = closest(this.taskBarEditElement, 'tr.' + chartRow)
@@ -13405,7 +13412,7 @@ class TaskbarEdit {
             if (traceConnectorPointRight) {
                 traceConnectorPointRight.style.left = (this.parent.isAdaptive ? (width + 10) : (width + 2)) + 'px';
             }
-            if (this.taskBarEditAction === 'MilestoneDrag') {
+            if (this.taskBarEditAction === 'MilestoneDrag' || item.isMilestone) {
                 taskBarMainContainer$$1.style.left = (item.left - (width / 2)) + 'px';
                 leftLabelContainer$$1.style.width = (item.left - (width / 2)) + 'px';
                 rightLabelContainer$$1.style.left = (item.left + (width / 2)) + 'px';
@@ -13428,7 +13435,9 @@ class TaskbarEdit {
                 }
             }
             else if (this.taskBarEditAction === 'ParentDrag') {
-                traceParentTaskBar$$1.style.width = (width) + 'px';
+                if (!isNullOrUndefined(traceParentTaskBar$$1)) {
+                    traceParentTaskBar$$1.style.width = (width) + 'px';
+                }
                 if (!isNullOrUndefined(traceChildProgressBar$$1)) {
                     traceParentProgressBar$$1.style.width = (item.progressWidth) + 'px';
                 }
@@ -14414,7 +14423,7 @@ class DialogEdit {
                 break;
             case 'datepickeredit':
                 let datePickerObj = common;
-                datePickerObj.format = this.parent.dateFormat;
+                datePickerObj.format = this.parent.getDateFormat();
                 datePickerObj.strictMode = true;
                 datePickerObj.firstDayOfWeek = ganttObj.timelineModule.customTimelineSettings.weekStartDay;
                 if (column.field === ganttObj.columnMapping.startDate ||
@@ -14428,7 +14437,7 @@ class DialogEdit {
                 break;
             case 'datetimepickeredit':
                 let dateTimePickerObj = common;
-                dateTimePickerObj.format = this.parent.dateFormat;
+                dateTimePickerObj.format = this.parent.getDateFormat();
                 dateTimePickerObj.strictMode = true;
                 dateTimePickerObj.firstDayOfWeek = ganttObj.timelineModule.customTimelineSettings.weekStartDay;
                 if (column.field === ganttObj.columnMapping[taskSettings.startDate] ||
@@ -17320,6 +17329,9 @@ class Edit$2 {
                 }
             }
         }
+        if (childRecords.length) {
+            this.parent.dataOperation.updateParentItems(ganttRecord, true);
+        }
     }
     /**
      * To get updated child records.
@@ -17669,31 +17681,35 @@ class Edit$2 {
             let predecessor = predecessors[i];
             if (predecessor.from.toString() === record.ganttProperties.rowUniqueID.toString()) {
                 let toRecord = this.parent.getRecordByID(predecessor.to.toString());
-                let toRecordPredcessor = extend([], [], toRecord.ganttProperties.predecessor, true);
-                let index;
-                for (let t = 0; t < toRecordPredcessor.length; t++) {
-                    if (toRecordPredcessor[t].to.toString() === toRecord.ganttProperties.rowUniqueID.toString()
-                        && toRecordPredcessor[t].from.toString() === record.ganttProperties.rowUniqueID.toString()) {
-                        index = t;
-                        break;
+                if (!isNullOrUndefined(toRecord)) {
+                    let toRecordPredcessor = extend([], [], toRecord.ganttProperties.predecessor, true);
+                    let index;
+                    for (let t = 0; t < toRecordPredcessor.length; t++) {
+                        if (toRecordPredcessor[t].to.toString() === toRecord.ganttProperties.rowUniqueID.toString()
+                            && toRecordPredcessor[t].from.toString() === record.ganttProperties.rowUniqueID.toString()) {
+                            index = t;
+                            break;
+                        }
                     }
+                    toRecordPredcessor.splice(index, 1);
+                    this.updatePredecessorValues(toRecord, toRecordPredcessor);
                 }
-                toRecordPredcessor.splice(index, 1);
-                this.updatePredecessorValues(toRecord, toRecordPredcessor);
             }
             else if (predecessor.to.toString() === record.ganttProperties.rowUniqueID.toString()) {
                 let fromRecord = this.parent.getRecordByID(predecessor.from.toString());
-                let fromRecordPredcessor = extend([], [], fromRecord.ganttProperties.predecessor, true);
-                let index;
-                for (let t = 0; t < fromRecordPredcessor.length; t++) {
-                    if (fromRecordPredcessor[t].from.toString() === fromRecord.ganttProperties.rowUniqueID.toString()
-                        && fromRecordPredcessor[t].to.toString() === record.ganttProperties.rowUniqueID.toString()) {
-                        index = t;
-                        break;
+                if (!isNullOrUndefined(fromRecord)) {
+                    let fromRecordPredcessor = extend([], [], fromRecord.ganttProperties.predecessor, true);
+                    let index;
+                    for (let t = 0; t < fromRecordPredcessor.length; t++) {
+                        if (fromRecordPredcessor[t].from.toString() === fromRecord.ganttProperties.rowUniqueID.toString()
+                            && fromRecordPredcessor[t].to.toString() === record.ganttProperties.rowUniqueID.toString()) {
+                            index = t;
+                            break;
+                        }
                     }
+                    fromRecordPredcessor.splice(index, 1);
+                    this.updatePredecessorValues(fromRecord, fromRecordPredcessor);
                 }
-                fromRecordPredcessor.splice(index, 1);
-                this.updatePredecessorValues(fromRecord, fromRecordPredcessor);
             }
         }
     }
@@ -17921,7 +17937,7 @@ class Edit$2 {
             if (!obj[taskModel.duration]) {
                 let startDate = this.parent.dataOperation.getDateFromFormat(this.parent.projectStartDate);
                 startDate.setDate(startDate.getDate() + 4);
-                obj[taskModel.endDate] = this.parent.getFormatedDate(startDate, this.parent.dateFormat);
+                obj[taskModel.endDate] = this.parent.getFormatedDate(startDate, this.parent.getDateFormat());
             }
         }
     }

@@ -45,6 +45,18 @@ export interface ChipListModel extends ComponentModel{
     trailingIconCss?: string;
 
     /**
+     * Specifies the trailing icon url for the chip.
+     * @default ''
+     */
+    leadingIconUrl?: string;
+
+    /**
+     * Specifies the trailing icon url for the chip.
+     * @default ''
+     */
+    trailingIconUrl?: string;
+
+    /**
      * Specifies the custom classes to be added to the chip element used to customize the ChipList component.
      * @default ''
      */

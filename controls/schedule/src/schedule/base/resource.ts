@@ -483,7 +483,8 @@ export class ResourceBase {
                 }).catch((e: ReturnType) => this.dataManagerFailure(e));
             } else {
                 this.parent.renderModule.render(this.parent.currentView, false);
-                let processed: Object[] = this.parent.eventBase.processData(this.parent.eventsData as { [key: string]: Object }[]);
+                let processed: Object[] = this.parent.eventBase.processData([...this.parent.blockData as { [key: string]: Object }[],
+                ...this.parent.eventsData as { [key: string]: Object }[]]);
                 this.parent.notify(events.dataReady, { processedData: processed });
             }
         }
@@ -904,13 +905,20 @@ export class ResourceBase {
             if (this.parent.virtualScrollModule) {
                 let virtual: HTMLElement = this.parent.element.querySelector('.' + cls.VIRTUAL_TRACK_CLASS) as HTMLElement;
                 let averageRowHeight: number = Math.round(virtual.offsetHeight / this.expandedResources.length);
-                let isRendered: Object[] = (this.renderedResources as Object[]).filter((e: { [key: string]: Object }) =>
-                    e.groupIndex === index);
-                if (((((Math.round((this.parent.element.querySelector('.' + cls.CONTENT_WRAP_CLASS) as HTMLElement).offsetHeight / 60)
-                    - this.parent.virtualScrollModule.bufferCount) < index))
-                    && this.renderedResources[this.renderedResources.length - 1].groupIndex > index) && (isRendered.length === 0)) {
-                    scrollElement.scrollTop =
-                        (index * averageRowHeight) + ((this.parent.virtualScrollModule.bufferCount - 1) * averageRowHeight);
+                if (this.parent.rowAutoHeight) {
+                    scrollElement.scrollTop = 0;
+                    this.parent.virtualScrollModule.virtualScrolling();
+                }
+                scrollElement.scrollTop = (index * averageRowHeight)
+                    - (((this.parent.virtualScrollModule.bufferCount - 1) * averageRowHeight));
+                this.parent.virtualScrollModule.virtualScrolling();
+                if (this.parent.rowAutoHeight) {
+                    let td: HTMLElement =
+                        this.parent.element.querySelector(`.${cls.WORK_CELLS_CLASS}[data-group-index="${index}"]`) as HTMLElement;
+                    if (td && !td.parentElement.classList.contains(cls.HIDDEN_CLASS)) {
+                        scrollElement.scrollTop =
+                            (scrollElement.scrollTop < td.offsetTop) ? td.offsetTop : scrollElement.scrollTop + td.offsetTop;
+                    }
                 } else {
                     scrollElement.scrollTop = (index * averageRowHeight);
                 }

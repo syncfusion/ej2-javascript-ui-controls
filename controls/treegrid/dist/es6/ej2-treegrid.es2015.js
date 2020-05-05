@@ -1526,14 +1526,15 @@ class DataManipulation {
         else {
             if (!(this.parent.dataSource[adaptorName] === 'BlazorAdaptor' && !this.parent[clientRender]) && !this.parent.loadChildOnDemand) {
                 for (let rec = 0; rec < records.length; rec++) {
-                    if ((records[rec][this.parent.hasChildMapping] || this.parentItems.indexOf(records[rec][this.parent.idMapping]) !== -1)
-                        && (isNullOrUndefined(records[rec].index))) {
+                    if (isNullOrUndefined(records[rec].index)) {
                         records[rec].taskData = extend({}, records[rec]);
                         records[rec].uniqueID = getUid(this.parent.element.id + '_data_');
                         setValue('uniqueIDCollection.' + records[rec].uniqueID, records[rec], this.parent);
                         records[rec].level = 0;
                         records[rec].index = Math.ceil(Math.random() * 1000);
-                        records[rec].hasChildRecords = true;
+                        if ((records[rec][this.parent.hasChildMapping] || this.parentItems.indexOf(records[rec][this.parent.idMapping]) !== -1)) {
+                            records[rec].hasChildRecords = true;
+                        }
                         records[rec].checkboxState = 'uncheck';
                     }
                 }
@@ -2591,9 +2592,10 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         this.renderComplete();
         let destroyTemplate = 'destroyTemplate';
         let destroyTemplateFn = this.grid[destroyTemplate];
-        this.grid[destroyTemplate] = (args) => {
+        //tslint:disable-next-line:no-any
+        this.grid[destroyTemplate] = (args, index) => {
             destroyTemplateFn.apply(this.grid);
-            this.clearTemplate(args);
+            this.clearTemplate(args, index);
         };
         if (isBlazor() && this.isServerRendered) {
             let fn = (args) => this.gridRendered(args, fn);
@@ -2634,6 +2636,10 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         }
         this.wireEvents();
         this.afterGridRender();
+        let updateColTypeObj = 'updateColTypeObj';
+        if (!isNullOrUndefined(this.grid.editModule)) {
+            this.grid.editModule[updateColTypeObj]();
+        }
         let processModel = 'processModel';
         this.grid[processModel]();
         gridObserver.off('component-rendered', this.gridRendered);
@@ -2761,6 +2767,11 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             if (!isBlazor()) {
                 this.selectedRowIndex = this.grid.selectedRowIndex;
             }
+            else if (isBlazor() && this.isServerRendered) {
+                this.allowServerDataBinding = false;
+                this.setProperties({ selectedRowIndex: this.grid.selectedRowIndex }, true);
+                this.allowServerDataBinding = true;
+            }
             treeGrid.notify(rowSelected, args);
             this.trigger(rowSelected, args);
         };
@@ -2791,6 +2802,16 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         this.grid.checkBoxChange = (args) => {
             this.trigger(checkboxChange, args);
         };
+        this.grid.cellSelected = (args) => {
+            let cellSelectedArgs;
+            if (isBlazor() && this.isServerRendered) {
+                cellSelectedArgs = { data: args.data, cellIndex: args.cellIndex };
+                this.trigger('cellSelected', cellSelectedArgs);
+            }
+            else {
+                this.trigger('cellSelected', args);
+            }
+        };
         this.grid.pdfExportComplete = this.triggerEvents.bind(this);
         this.grid.excelExportComplete = this.triggerEvents.bind(this);
         this.grid.excelHeaderQueryCellInfo = this.triggerEvents.bind(this);
@@ -2802,7 +2823,6 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         this.grid.cellDeselecting = this.triggerEvents.bind(this);
         this.grid.columnMenuOpen = this.triggerEvents.bind(this);
         this.grid.columnMenuClick = this.triggerEvents.bind(this);
-        this.grid.cellSelected = this.triggerEvents.bind(this);
         this.grid.headerCellInfo = this.triggerEvents.bind(this);
         this.grid.resizeStart = this.triggerEvents.bind(this);
         this.grid.resizing = this.triggerEvents.bind(this);

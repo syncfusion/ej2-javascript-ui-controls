@@ -914,7 +914,7 @@ export let baselineData: Object[] = [
                             {
                                 'resourceInfo': [3], 'TaskId': 9, 'TaskName': 'Grand child task 1',
                                 'StartDate': new Date('10/28/2017'), 'BaselineStartDate': new Date('10/27/2017'),
-                                'BaselineEndDate': new Date('11/1/2017'), 'Duration': 5, 'Progress': 60
+                                'BaselineEndDate': new Date('11/1/2017'), 'Duration': 0, 'Progress': 60
                             }]
                     }
                 ]

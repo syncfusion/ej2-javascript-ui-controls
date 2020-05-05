@@ -375,6 +375,11 @@ export class MarkerClusterData extends ChildProperty<MarkerClusterData> {
      */
     public markerIndex: number;
     /**
+     * Sets and gets the index value for the marker in the maps.
+     * @private
+     */
+    public dataIndex: number;
+    /**
      * Sets and gets the index value for cluster for which the click operation is triggered.
      * @private
      */

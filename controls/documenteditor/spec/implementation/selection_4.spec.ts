@@ -460,3 +460,106 @@ describe('Update Reference field', () => {
         expect(referenceText).toBe('checked');
     });
 });
+
+
+
+/**
+ * Selection validation with bookmark and line break character
+ */
+let loadData:any={
+    "sections": [
+        {
+            "sectionFormat": {
+                "pageWidth": 612,
+                "pageHeight": 792,
+                "leftMargin": 72,
+                "rightMargin": 72,
+                "topMargin": 72,
+                "bottomMargin": 72,
+                "differentFirstPage": false,
+                "differentOddAndEvenPages": false,
+                "headerDistance": 36,
+                "footerDistance": 36,
+                "bidi": false
+            },
+            "blocks": [
+                {
+                    "paragraphFormat": {
+                        "styleName": "Normal",
+                        "listFormat": {}
+                    },
+                    "characterFormat": {},
+                    "inlines": [
+                        {
+                            "characterFormat": {},
+                            "bookmarkType": 0,
+                            "name": "d"
+                        },
+                        {
+                            "characterFormat": {
+                                "bidi": false
+                            },
+                            "text": "sdsadad"
+                        },
+                        {
+                            "characterFormat": {
+                                "bold": false,
+                                "italic": false,
+                                "underline": "None",
+                                "bidi": false
+                            },
+                            "text": "\u000b"
+                        },
+                        {
+                            "characterFormat": {},
+                            "bookmarkType": 1,
+                            "name": "d"
+                        }
+                    ]
+                }
+            ],
+            "headersFooters":{}
+        }
+    ],
+    "defaultTabWidth": 36,
+    "enforcement": false,
+    "hashValue": "",
+    "saltValue": "",
+    "formatting": false,
+    "protectionType": "NoProtection",
+    "dontUseHTMLParagraphAutoSpacing": false,
+    "styles": [],
+    "lists": [],
+    "abstractLists": [],
+    "comments": []
+};
+describe('shift down key validation', () => {
+    let editor: DocumentEditor = undefined;
+    let documentHelper: DocumentHelper;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection);
+        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+    });
+    afterAll((done) => {
+        document.body.removeChild(document.getElementById('container'));
+        editor.destroy();
+        editor = undefined;
+        documentHelper = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('with bookmark and line break character', () => {
+        editor.open(JSON.stringify(loadData));
+        editor.selection.handleShiftDownKey();
+        expect(editor.selection.start.currentWidget).not.toBe(editor.selection.end.currentWidget);
+    });
+});

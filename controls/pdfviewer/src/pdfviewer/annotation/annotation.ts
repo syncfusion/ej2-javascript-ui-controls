@@ -3174,9 +3174,25 @@ export class Annotation {
         }
         if (annotation.uniqueKey !== undefined) {
             // tslint:disable-next-line
-            let obj: any = (this.pdfViewer.nameTable as any)[annotation.uniqueKey];
-            obj.annotationSettings.isLock = annotation.annotationSettings.isLock;
+            currentAnnotation = (this.pdfViewer.nameTable as any)[annotation.uniqueKey];
+            currentAnnotation.annotationSettings.isLock = annotation.annotationSettings.isLock;
+            annotationId = currentAnnotation.annotName;
+            pageNumber = currentAnnotation.pageIndex;
          }
+        if (annotation.shapeAnnotationType === 'textMarkup') {
+        if (! this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
+            // tslint:disable-next-line:max-line-length
+            currentAnnotation = this.pdfViewer.annotationModule.textMarkupAnnotationModule.getAnnotations(annotation.pageNumber, annotation);
+            for (let i: number = 0; i < currentAnnotation.length; i++) {
+                if (annotation.annotationId === currentAnnotation[i].annotName) {
+                    currentAnnotation = currentAnnotation[i];
+                    this.textMarkupAnnotationModule.currentTextMarkupAnnotation = currentAnnotation;
+                    this.textMarkupAnnotationModule.selectTextMarkupCurrentPage = currentAnnotation.pageNumber;
+                    break;
+                }
+            }
+        }
+    }
         if (currentAnnotation) {
             // tslint:disable-next-line
             let clonedObject: any = cloneObject(currentAnnotation);
@@ -3185,7 +3201,7 @@ export class Annotation {
             if (annotation.shapeAnnotationType === 'textMarkup') {
                 annotationType = 'textMarkup';
             }
-            if (annotation.type === 'TextMarkup') {
+            if (annotation.type === 'TextMarkup' || annotation.shapeAnnotationType === 'textMarkup') {
                 if (currentAnnotation.opacity !== annotation.opacity) {
                     this.pdfViewer.annotationModule.textMarkupAnnotationModule.modifyOpacityProperty(null, annotation.opacity);
                 }

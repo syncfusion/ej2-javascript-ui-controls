@@ -626,6 +626,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private isBlazorPlatform: boolean;
     private isFieldChange: boolean = false;
     private changeDataSource: boolean = false;
+    private isBlazorExpandedNodes: string[] = [];
     /**
      * Indicates whether the TreeView allows drag and drop of nodes. To drag and drop a node in
      * desktop, hold the mouse on the node, drag it to the target node and drop the node by releasing
@@ -693,6 +694,14 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      */
     @Property(false)
     public disabled: boolean;
+
+    /**
+     * Defines the area in which the draggable element movement will be occurring. Outside that area will be restricted
+     * for the draggable element movement. By default, the draggable element movement occurs in the entire page. 
+     * @default null
+     */
+    @Property(null)
+    public dragArea: HTMLElement | string;
 
     /**
      * Defines whether to allow the cross-scripting site or not.
@@ -1239,7 +1248,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             let prop: FieldsSettingsModel = this.getActualProperties(mapper);
             for (let col of Object.keys(prop)) {
                 if (col !== 'dataSource' && col !== 'tableName' && col !== 'child' && !!(mapper as { [key: string]: Object })[col]
-                    && columns.indexOf((mapper as { [key: string]: string })[col]) === -1) {
+                    && col !== 'url' && columns.indexOf((mapper as { [key: string]: string })[col]) === -1) {
                     columns.push((mapper as { [key: string]: string })[col]);
                 }
             }
@@ -2390,6 +2399,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         liEle.style.overflow = '';
         liEle.style.height = '';
         removeClass([icon], PROCESS);
+        this.allowServerDataBinding = true;
+        this.updateServerProperties("expand");
+        this.allowServerDataBinding = false;
         this.removeExpand(liEle);
         if (this.isLoaded) {
             this.trigger('nodeCollapsed', colArgs);
@@ -3415,6 +3427,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
      }
 
     private reRenderNodes(): void {
+        this.updateListProp(this.fields);
         resetBlazorTemplate(this.element.id + 'nodeTemplate', 'NodeTemplate');
         if (this.isBlazorPlatform) {
             this.ulElement = this.element.querySelector('.e-list-parent.e-ul');
@@ -3619,6 +3632,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
         let virtualEle: HTMLElement; let proxy : TreeView = this;
         this.dragObj = new Draggable(this.element, {
             enableTailMode: true, enableAutoScroll: true,
+            dragArea: this.dragArea,
             dragTarget: '.' + TEXTWRAP,
             helper: (e: { sender: MouseEvent & TouchEvent, element: HTMLElement }) => {
                 this.dragTarget = <Element>e.sender.target;
@@ -4288,6 +4302,7 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
     private updateServerProperties(action: string): void {
         if(this.isBlazorPlatform ) {
             if(action == "expand") {
+                this.isBlazorExpandedNodes = this.expandedNodes;
                 this.setProperties({ expandedNodes:  [] }, true);
             }
             else if(action == "check") {
@@ -4605,6 +4620,9 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
             this.updateField(this.treeData, this.fields, sleNodes[l], 'selected', true);
         }
         let enodes: string[] = this.expandedNodes;
+        if (this.isBlazorPlatform) {
+            enodes = this.isBlazorExpandedNodes;
+        }
         for (let k: number = 0, nodelen: number = enodes.length; k < nodelen; k++) {
             this.updateField(this.treeData, this.fields, enodes[k], 'expanded', true);
         }
@@ -5136,6 +5154,11 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                 case 'allowDragAndDrop':
                     this.setDragAndDrop(this.allowDragAndDrop);
                     break;
+                case 'dragArea':
+                    if (this.allowDragAndDrop) {
+                        this.dragObj.dragArea = this.dragArea;
+                    }
+                    break;
                 case 'allowEditing':
                     this.wireEditingEvents(this.allowEditing);
                     break;
@@ -5197,7 +5220,6 @@ export class TreeView extends Component<HTMLElement> implements INotifyPropertyC
                     this.isAnimate = false;
                     this.isFieldChange = true;
                     this.initialRender = true;
-                    this.updateListProp(this.fields);
                     if(!this.blazorInitialRender) {
                         this.reRenderNodes();
                     }

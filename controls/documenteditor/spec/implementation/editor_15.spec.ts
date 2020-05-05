@@ -290,7 +290,7 @@ describe('257171- copy and paste bookmark insert multiple time',()=>{
     it('intial paste bookmark child validation', () => {
         editor.editor.insertText('a');
        editor.editor.paste(pasteData);
-       expect(editor.selection.start.currentWidget.children.length).toBe(6);
+       expect(editor.selection.start.currentWidget.children.length).toBe(10);
     });
     it('After multiple format, paste bookmark validation',()=>{
         editor.selection.handleEndKey();

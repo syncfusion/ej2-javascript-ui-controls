@@ -27,7 +27,7 @@ import { SelectorModel } from '../objects/node-model';
 import { Selector } from '../objects/node';
 import { hasSelection, isSelected, hasSingleConnection, contains } from './actions';
 import { AlignmentOptions, DistributeOptions, SizingOptions, DiagramEvent, BoundaryConstraints, AlignmentMode } from '../enum/enum';
-import { BlazorAction } from '../enum/enum';
+import { BlazorAction, EntryType } from '../enum/enum';
 import { HistoryEntry } from '../diagram/history';
 import { canSelect, canMove, canRotate, canDragSourceEnd, canDragTargetEnd, canSingleSelect, canDrag } from './../utility/constraints-util';
 import { canMultiSelect, canContinuousDraw } from './../utility/constraints-util';
@@ -1838,13 +1838,17 @@ export class CommandHandler {
         }
     }
     /** @private */
-    public sendToBack(): void {
-        if (hasSelection(this.diagram)) {
-            let objectId: string = this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
-                : this.diagram.selectedItems.connectors[0].id;
+    public sendToBack(object?: NodeModel | ConnectorModel): void {
+        this.diagram.protectPropertyChange(true);
+        if (hasSelection(this.diagram) || object) {
+            let objectId: string = (object && object.id);
+            objectId = objectId || (this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
+                : this.diagram.selectedItems.connectors[0].id);
             let index: number = this.diagram.nameTable[objectId].zIndex;
             let layerNum: number = this.diagram.layers.indexOf(this.getObjectLayer(objectId));
             let zIndexTable: {} = (this.diagram.layers[layerNum] as Layer).zIndexTable;
+            let undoObject: SelectorModel = cloneObject(this.diagram.selectedItems);
+
             for (let i: number = index; i > 0; i--) {
                 if (zIndexTable[i]) {
                     //When there are empty records in the zindex table
@@ -1872,17 +1876,27 @@ export class CommandHandler {
             } else {
                 this.diagram.refreshCanvasLayers();
             }
+            let redoObject: SelectorModel = cloneObject(this.diagram.selectedItems);
+            let entry: HistoryEntry = { type: 'SendToBack', category: 'Internal', undoObject: undoObject, redoObject: redoObject };
+            if (!(this.diagram.diagramActions & DiagramAction.UndoRedo)) {
+                this.addHistoryEntry(entry);
+            }
         }
+        this.diagram.protectPropertyChange(false);
     }
 
 
     /** @private */
-    public bringToFront(): void {
-        if (hasSelection(this.diagram)) {
-            let objectName: string = this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
-                : this.diagram.selectedItems.connectors[0].id;
+    public bringToFront(obj?: NodeModel | ConnectorModel): void {
+        this.diagram.protectPropertyChange(true);
+        if (hasSelection(this.diagram) || obj) {
+            let objectName: string = (obj && obj.id);
+            objectName = objectName || (this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
+                : this.diagram.selectedItems.connectors[0].id);
             let layerNum: number = this.diagram.layers.indexOf(this.getObjectLayer(objectName));
             let zIndexTable: {} = (this.diagram.layers[layerNum] as Layer).zIndexTable;
+            let undoObject: SelectorModel = cloneObject(this.diagram.selectedItems);
+
             //find the maximum zIndex of the tabel
             let tabelLength: number = Number(Object.keys(zIndexTable).sort(
                 (a: string, b: string) => { return Number(a) - Number(b); }).reverse()[0]);
@@ -1933,7 +1947,14 @@ export class CommandHandler {
             } else {
                 this.diagram.refreshCanvasLayers();
             }
+            let redoObject: SelectorModel = cloneObject(this.diagram.selectedItems);
+            let entry: HistoryEntry = { type: 'BringToFront', category: 'Internal', undoObject: undoObject, redoObject: redoObject };
+            if (!(this.diagram.diagramActions & DiagramAction.UndoRedo)) {
+                this.addHistoryEntry(entry);
+            }
         }
+        this.diagram.protectPropertyChange(false);
+
     }
 
     /** @private */
@@ -1944,12 +1965,99 @@ export class CommandHandler {
         });
         return nodeArray;
     }
-
     /** @private */
-    public sendForward(): void {
-        if (hasSelection(this.diagram)) {
-            let nodeId: string = this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
-                : this.diagram.selectedItems.connectors[0].id;
+    public orderCommands(isRedo: boolean, selector: Selector, action: EntryType): void {
+        let selectedObject: (NodeModel | ConnectorModel)[] = selector.nodes;
+        selectedObject = selectedObject.concat(selector.connectors);
+        if (isRedo) {
+            if (action === 'SendBackward') {
+                this.sendBackward(selectedObject[0]);
+            } else if (action === 'SendForward') {
+                this.sendForward(selectedObject[0]);
+            } else if (action === 'BringToFront') {
+                this.bringToFront(selectedObject[0]);
+            } else if (action === 'SendToBack') {
+                this.sendToBack(selectedObject[0]);
+            }
+
+        } else {
+            let startZIndex: number = selectedObject[0].zIndex;
+            let endZIndex: number = this.diagram.nameTable[selectedObject[0].id].zIndex;
+            let undoObject: NodeModel = selectedObject[0] as NodeModel;
+            let layer: LayerModel = this.getObjectLayer(undoObject.id);
+            let layerIndex: number = layer.zIndex;
+            let zIndexTable: {} = (layer as Layer).zIndexTable;
+            if (action === 'SendBackward' || action === 'SendForward') {
+                for (let i: number = 0; i < selectedObject.length; i++) {
+                    let undoObject: NodeModel = selectedObject[i] as NodeModel;
+                    let layer: number = this.diagram.layers.indexOf(this.getObjectLayer(undoObject.id));
+                    let node: NodeModel = this.diagram.nameTable[selectedObject[i].id];
+                    node.zIndex = undoObject.zIndex;
+                    (this.diagram.layers[layer] as Layer).zIndexTable[undoObject.zIndex] = undoObject.id;
+                }
+            } else if (action === 'BringToFront') {
+                let k: number = 1;
+                for (let j: number = endZIndex; j > startZIndex; j--) {
+                    if (zIndexTable[j]) {
+                        if (!zIndexTable[j - k]) {
+                            zIndexTable[j - k] = zIndexTable[j];
+                            this.diagram.nameTable[zIndexTable[j - k]].zIndex = j;
+                            delete zIndexTable[j];
+                        } else {
+                            zIndexTable[j] = zIndexTable[j - k];
+                            this.diagram.nameTable[zIndexTable[j]].zIndex = j;
+                        }
+                    }
+                }
+
+            } else if (action === 'SendToBack') {
+                for (let j: number = endZIndex; j < startZIndex; j++) {
+                    if (zIndexTable[j]) {
+                        if (!zIndexTable[j + 1]) {
+                            zIndexTable[j + 1] = zIndexTable[j];
+                            this.diagram.nameTable[zIndexTable[j + 1]].zIndex = j;
+                            delete zIndexTable[j];
+                        } else {
+                            zIndexTable[j] = zIndexTable[j + 1];
+                            this.diagram.nameTable[zIndexTable[j]].zIndex = j;
+                        }
+                    }
+                }
+            }
+            if (action === 'BringToFront' || action === 'SendToBack') {
+                let node: NodeModel = this.diagram.nameTable[selectedObject[0].id];
+                node.zIndex = undoObject.zIndex;
+                (this.diagram.layers[layerIndex] as Layer).zIndexTable[undoObject.zIndex] = undoObject.id;
+            }
+            if (this.diagram.mode === 'SVG') {
+                if (action === 'SendBackward') {
+                    this.moveObject(selectedObject[1].id, selectedObject[0].id);
+                } else if (action === 'SendForward') {
+                    this.moveObject(selectedObject[0].id, selectedObject[1].id);
+                } else if (action === 'BringToFront' || action === 'SendToBack') {
+                    this.moveObject(selectedObject[0].id, zIndexTable[selectedObject[0].zIndex + 1]);
+                }
+            } else {
+                this.diagram.refreshCanvasLayers();
+            }
+
+        }
+    }
+
+    private moveObject(sourceId: string, targetId: string): void {
+        if (targetId) {
+            this.moveSvgNode(sourceId, targetId);
+            this.updateNativeNodeIndex(sourceId, targetId);
+        }
+    }
+    /** @private */
+    public sendForward(obj?: NodeModel | ConnectorModel): void {
+        this.diagram.protectPropertyChange(true);
+
+        if (hasSelection(this.diagram) || obj) {
+            let nodeId: string = (obj && obj.id);
+            nodeId = nodeId || (this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
+                : this.diagram.selectedItems.connectors[0].id);
 
             let layerIndex: number = this.diagram.layers.indexOf(this.getObjectLayer(nodeId));
             let zIndexTable: {} = (this.diagram.layers[layerIndex] as Layer).zIndexTable;
@@ -1975,6 +2083,10 @@ export class CommandHandler {
                 let currentObject: number = index.zIndex;
                 let temp: string = zIndexTable[overlapObject];
                 //swap the nodes
+                let undoObject: SelectorModel = cloneObject(this.diagram.selectedItems);
+                (this.diagram.nameTable[temp] instanceof Node) ? undoObject.nodes.push(cloneObject(this.diagram.nameTable[temp])) :
+                    undoObject.connectors.push(cloneObject(this.diagram.nameTable[temp]));
+
                 (this.diagram.layers[0] as Layer).zIndexTable[overlapObject] = index.id;
                 this.diagram.nameTable[zIndexTable[overlapObject]].zIndex = overlapObject;
                 (this.diagram.layers[0] as Layer).zIndexTable[currentObject] = intersectArray[0].id;
@@ -1985,14 +2097,31 @@ export class CommandHandler {
                 } else {
                     this.diagram.refreshCanvasLayers();
                 }
+
+                let redo: SelectorModel = cloneObject(this.diagram.selectedItems);
+                (this.diagram.nameTable[temp] instanceof Node) ? redo.nodes.push(cloneObject(this.diagram.nameTable[temp])) :
+                    redo.connectors.push(cloneObject(this.diagram.nameTable[temp]));
+
+                let historyEntry: HistoryEntry = {
+                    type: 'SendForward', category: 'Internal',
+                    undoObject: undoObject, redoObject: redo
+                };
+                if (!(this.diagram.diagramActions & DiagramAction.UndoRedo)) {
+                    this.addHistoryEntry(historyEntry);
+                }
             }
         }
+        this.diagram.protectPropertyChange(false);
+
     }
     /** @private */
-    public sendBackward(): void {
-        if (hasSelection(this.diagram)) {
-            let objectId: string = this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
-                : this.diagram.selectedItems.connectors[0].id;
+    public sendBackward(obj?: NodeModel | ConnectorModel): void {
+        this.diagram.protectPropertyChange(true);
+
+        if (hasSelection(this.diagram) || obj) {
+            let objectId: string = (obj && obj.id);
+            objectId = objectId || (this.diagram.selectedItems.nodes.length ? this.diagram.selectedItems.nodes[0].id
+                : this.diagram.selectedItems.connectors[0].id);
             let layerNum: number = this.diagram.layers.indexOf(this.getObjectLayer(objectId));
             let zIndexTable: {} = (this.diagram.layers[layerNum] as Layer).zIndexTable;
             let tabelLength: number = Object.keys(zIndexTable).length;
@@ -2011,10 +2140,15 @@ export class CommandHandler {
                     }
                 }
             }
+
             if (intersectArray.length > 0) {
                 let overlapObject: number = intersectArray[intersectArray.length - 1].zIndex;
                 let currentObject: number = node.zIndex;
                 let temp: string = zIndexTable[overlapObject];
+                let undoObject: SelectorModel = cloneObject(this.diagram.selectedItems);
+                (this.diagram.nameTable[temp] instanceof Node) ? undoObject.nodes.push(cloneObject(this.diagram.nameTable[temp])) :
+                    undoObject.connectors.push(cloneObject(this.diagram.nameTable[temp]));
+
                 //swap the nodes
                 zIndexTable[overlapObject] = node.id;
                 this.diagram.nameTable[zIndexTable[overlapObject]].zIndex = overlapObject;
@@ -2028,8 +2162,19 @@ export class CommandHandler {
                 } else {
                     this.diagram.refreshCanvasLayers();
                 }
+                let redoObject: SelectorModel = cloneObject(this.diagram.selectedItems);
+                (this.diagram.nameTable[temp] instanceof Node) ? redoObject.nodes.push(cloneObject(this.diagram.nameTable[temp])) :
+                    redoObject.connectors.push(cloneObject(this.diagram.nameTable[temp]));
+
+                let entry: HistoryEntry = { type: 'SendBackward', category: 'Internal', undoObject: undoObject, redoObject: redoObject };
+                if (!(this.diagram.diagramActions & DiagramAction.UndoRedo)) {
+                    this.addHistoryEntry(entry);
+                }
+                //swap the nodes
             }
         }
+        this.diagram.protectPropertyChange(false);
+
     }
 
     /**   @private  */

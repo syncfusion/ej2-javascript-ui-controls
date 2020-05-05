@@ -361,7 +361,10 @@ export class QuickPopups {
                         cls.EVENT_RECURRENCE_ICON_CLASS : cls.EVENT_RECURRENCE_EDIT_ICON_CLASS;
                     appointmentEle.appendChild(createElement('div', { className: cls.ICON + ' ' + iconClass }));
                 }
-                let args: EventRenderedArgs = { data: eventData, element: appointmentEle, cancel: false };
+                let args: EventRenderedArgs = {
+                    data: extend({}, eventData, null, true) as { [key: string]: Object },
+                    element: appointmentEle, cancel: false
+                };
                 this.parent.trigger(event.eventRendered, args, (eventArgs: EventRenderedArgs) => {
                     if (!eventArgs.cancel) {
                         moreEventWrapperEle.appendChild(appointmentEle);

@@ -1,11 +1,11 @@
 import { Ribbon as RibbonComponent, RibbonItemModel, ExpandCollapseEventArgs } from '../../ribbon/index';
 import { Spreadsheet } from '../base/index';
 import { ribbon, MenuSelectEventArgs, selectionComplete, beforeRibbonCreate, removeDataValidation } from '../common/index';
-import { initiateDataValidation, invalidData, setUndoRedo } from '../common/index';
+import { initiateDataValidation, invalidData, setUndoRedo, blankWorkbook } from '../common/index';
 import { dialog, reapplyFilter, enableFileMenuItems, applyProtect, protectCellFormat } from '../common/index';
-import { findHandler } from '../common/index';
+import { findHandler, refreshSheetTabs } from '../common/index';
 import { IRenderer, destroyComponent, performUndoRedo, beginAction, completeAction, applySort, hideRibbonTabs } from '../common/index';
-import { enableToolbarItems, ribbonClick, paste, locale, refreshSheetTabs, initiateCustomSort, getFilteredColumn } from '../common/index';
+import { enableToolbarItems, ribbonClick, paste, locale, initiateCustomSort, getFilteredColumn } from '../common/index';
 import { tabSwitch, getUpdateUsingRaf, updateToggleItem, initiateHyperlink, editHyperlink } from '../common/index';
 import { addRibbonTabs, addToolbarItems, hideFileMenuItems, addFileMenuItems, hideToolbarItems, enableRibbonTabs } from '../common/index';
 import { MenuEventArgs, BeforeOpenCloseMenuEventArgs, ClickEventArgs, Toolbar, Menu, MenuItemModel } from '@syncfusion/ej2-navigations';
@@ -19,7 +19,7 @@ import { ItemModel } from '@syncfusion/ej2-splitbuttons';
 import { calculatePosition, OffsetPosition } from '@syncfusion/ej2-popups';
 import { applyNumberFormatting, getFormattedCellObject, getRangeIndexes, SaveType, setMerge, MergeArgs } from '../../workbook/common/index';
 import { activeCellChanged, textDecorationUpdate, BeforeCellFormatArgs, isNumber } from '../../workbook/common/index';
-import { sheetsDestroyed, SortOrder, NumberFormatType, SetCellFormatArgs } from '../../workbook/common/index';
+import { SortOrder, NumberFormatType, SetCellFormatArgs, sheetsDestroyed } from '../../workbook/common/index';
 import { getCell, FontFamily, VerticalAlign, TextAlign, CellStyleModel, setCellFormat } from '../../workbook/index';
 import { Button } from '@syncfusion/ej2-buttons';
 import { ColorPicker as RibbonColorPicker } from './color-picker';
@@ -1260,11 +1260,8 @@ export class Ribbon {
                                 content: (this.parent.serviceLocator.getService(locale) as L10n).getConstant('Ok'), isPrimary: true
                             },
                             click: (): void => {
-                                this.parent.sheets.length = 0; this.parent.createSheet(); dialogInst.hide();
-                                this.parent.activeSheetIndex = this.parent.sheets.length - 1;
-                                this.parent.notify(refreshSheetTabs, {});
-                                this.parent.notify(sheetsDestroyed, {});
-                                this.parent.renderModule.refreshSheet();
+                                dialogInst.hide();
+                                this.blankWorkbook();
                             }
                         }]
                     });
@@ -1634,6 +1631,14 @@ export class Ribbon {
             }
         }
     }
+
+    private blankWorkbook(): void {
+        this.parent.sheets.length = 0; this.parent.sheetNameCount = 1;
+        this.parent.notify(sheetsDestroyed, {}); this.parent.createSheet();
+        this.parent.activeSheetIndex = this.parent.sheets.length - 1;
+        this.parent.notify(refreshSheetTabs, {});
+        this.parent.renderModule.refreshSheet();
+    }
     private addEventListener(): void {
         this.parent.on(ribbon, this.initRibbon, this);
         this.parent.on(enableToolbarItems, this.enableToolbarItems, this);
@@ -1649,6 +1654,7 @@ export class Ribbon {
         this.parent.on(enableRibbonTabs, this.enableRibbonTabs, this);
         this.parent.on(protectCellFormat, this.protectSheetHandler, this);
         this.parent.on(selectionComplete, this.updateMergeItem, this);
+        this.parent.on(blankWorkbook, this.blankWorkbook, this);
     }
     public destroy(): void {
         let parentElem: HTMLElement = this.parent.element;
@@ -1690,6 +1696,7 @@ export class Ribbon {
             this.parent.off(enableRibbonTabs, this.enableRibbonTabs);
             this.parent.off(protectCellFormat, this.protectSheetHandler);
             this.parent.off(selectionComplete, this.updateMergeItem);
+            this.parent.off(blankWorkbook, this.blankWorkbook);
         }
     }
 }

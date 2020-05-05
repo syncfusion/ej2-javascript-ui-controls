@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 18.1.48 (2020-05-05)
+
+### Spreadsheet
+
+#### New Features
+
+`#I273372`- Provided an option to create new blank workbook in spreadsheet.
+
+#### Bug Fixes
+
+- Events are not triggering while pasting external data issue fixed.
+
 ## 18.1.45 (2020-04-21)
 
 ### Spreadsheet

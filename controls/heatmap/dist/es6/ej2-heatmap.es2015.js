@@ -1851,6 +1851,9 @@ class Axis extends ChildProperty {
                 labelSize.height = (labelSize.height > size.height) ? labelSize.height : size.height;
             }
         }
+        if (heatmap.cellSettings.border.width >= 20 && axis.orientation !== 'Horizontal') {
+            labelSize.width = labelSize.width + (heatmap.cellSettings.border.width / 4);
+        }
         if (axis.opposedPosition) {
             this.farSizes.push((axis.orientation === 'Horizontal') ? labelSize.height : labelSize.width + padding);
         }
@@ -2377,7 +2380,8 @@ class AxisHelper {
     drawXAxisLabels(axis, parent, rect) {
         let heatMap = this.heatMap;
         let labels = axis.axisLabels;
-        let interval = rect.width / axis.axisLabelSize;
+        let borderWidth = this.heatMap.cellSettings.border.width > 5 ? (this.heatMap.cellSettings.border.width / 2) : 0;
+        let interval = (rect.width - borderWidth) / axis.axisLabelSize;
         let compactInterval = 0;
         let axisInterval = axis.interval ? axis.interval : 1;
         let tempintervel = rect.width / (axis.axisLabelSize / axis.axisLabelInterval);
@@ -2455,6 +2459,15 @@ class AxisHelper {
                     (((angle % 360) === 180 || (angle % 360) === -180) ? 0 : (rotateSize.height) / 2));
                 transform = 'rotate(' + angle + ',' + x + ',' + y + ')';
             }
+            if (this.heatMap.cellSettings.border.width > 5 && axis.opposedPosition) {
+                y = y - (this.heatMap.cellSettings.border.width / 2);
+            }
+            if (this.heatMap.yAxis.opposedPosition && this.heatMap.cellSettings.border.width > 5) {
+                x = x + (this.heatMap.cellSettings.border.width / 2);
+            }
+            if (this.heatMap.xAxis.isInversed && this.heatMap.cellSettings.border.width > 5) {
+                x = x - (this.heatMap.cellSettings.border.width / 2);
+            }
             let options = new TextOption(heatMap.element.id + '_XAxis_Label' + i, new TextBasic(x, y, (angle % 360 === 0) ? 'start' : 'middle', label, angle, transform), axis.textStyle, axis.textStyle.color || heatMap.themeStyle.axisLabel);
             if (angle !== 0 && this.heatMap.enableCanvasRendering) {
                 this.drawSvgCanvas.canvasDrawText(options, label);
@@ -2517,8 +2530,11 @@ class AxisHelper {
         for (let i = 0, len = labels.length; i < len; i++) {
             let labelRect = new Rect(rect.x, lableStartY, rect.width, interval);
             let position = labelRect.height / 2; //titlePositionY(lableRect, 0, 0, axis.textStyle);
-            let x = labelRect.x + padding;
-            let y = labelRect.y + (axis.isInversed ? position : -position);
+            let axisWidth = this.heatMap.cellSettings.border.width >= 20 ? (this.heatMap.cellSettings.border.width / 2) : 0;
+            let x = labelRect.x + padding + (axis.opposedPosition ? axisWidth : -axisWidth);
+            let indexValue = this.heatMap.cellSettings.border.width > 5 ?
+                (((this.heatMap.cellSettings.border.width / 2) / len) * (axis.isInversed ? (i) : (len - i))) : 0;
+            let y = (labelRect.y - indexValue) + (axis.isInversed ? position : -position);
             label = axis.enableTrim ? textTrim(axis.maxLabelLength, labels[i], axis.textStyle) : labels[i];
             let options = new TextOption(heatMap.element.id + '_YAxis_Label' + i, new TextBasic(x, y, anchor, label, 0, 'rotate(' + 0 + ',' + (x) + ',' + (y) + ')', 'middle'), axis.textStyle, axis.textStyle.color || heatMap.themeStyle.axisLabel);
             if (Browser.isIE && !heatMap.enableCanvasRendering) {
@@ -5212,10 +5228,11 @@ class Legend {
         }
         let textWrapWidth;
         if (heatMap.horizontalGradient) {
+            let segmentWidth = this.heatMap.isColorRange ? this.segmentCollectionsLabels : this.segmentCollections;
             for (let i = 0; i < colorCollection.length; i++) {
                 if (heatMap.paletteSettings.type === 'Gradient') {
-                    let previousSegmentWidth = (this.segmentCollections[i] - this.segmentCollections[i - 1]) / 2;
-                    let nextSegmentWidth = (this.segmentCollections[i + 1] - this.segmentCollections[i]) / 2;
+                    let previousSegmentWidth = (segmentWidth[i] - segmentWidth[i - 1]) / 2;
+                    let nextSegmentWidth = (segmentWidth[i + 1] - segmentWidth[i]) / 2;
                     if (i === colorCollection.length - 1) {
                         textWrapWidth = previousSegmentWidth;
                     }

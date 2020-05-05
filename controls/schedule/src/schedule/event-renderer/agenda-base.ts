@@ -80,7 +80,10 @@ export class AgendaBase {
                 append([].slice.call(templateEle), appWrapper);
                 util.removeChildren(listElement.children[li]);
                 listElement.children[li].appendChild(appWrapper);
-                let args: EventRenderedArgs = { data: listData[li], element: listElement.children[li] as HTMLElement, cancel: false };
+                let args: EventRenderedArgs = {
+                    data: extend({}, listData[li], null, true) as { [key: string]: Object },
+                    element: listElement.children[li] as HTMLElement, cancel: false
+                };
                 this.parent.trigger(event.eventRendered, args, (eventArgs: EventRenderedArgs) => {
                     if (eventArgs.cancel) {
                         remove(listElement.children[li]);

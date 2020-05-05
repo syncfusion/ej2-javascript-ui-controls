@@ -39,35 +39,44 @@ export class Action {
 
     public clickHandler(e: KeyboardEvent): void {
         let elementSelector: string = '.' + cls.CARD_CLASS + ',.' + cls.HEADER_ICON_CLASS + ',.' + cls.CONTENT_ROW_CLASS + '.' +
-            cls.SWIMLANE_ROW_CLASS + ',.' + cls.SHOW_ADD_BUTTON;
+            cls.SWIMLANE_ROW_CLASS + ',.' + cls.SHOW_ADD_BUTTON + ',.' + cls.CONTENT_ROW_CLASS +
+            ':not(.' + cls.SWIMLANE_ROW_CLASS + ') .' + cls.CONTENT_CELLS_CLASS;
         let target: Element = closest(e.target as Element, elementSelector);
         if (!target) { return; }
         if (target.classList.contains(cls.CARD_CLASS)) {
+            this.parent.keyboardModule.cardTabIndexRemove();
             this.cardClick(e);
         } else if (target.classList.contains(cls.HEADER_ICON_CLASS)) {
             this.columnExpandCollapse(e);
         } else if (target.classList.contains(cls.CONTENT_ROW_CLASS) && target.classList.contains(cls.SWIMLANE_ROW_CLASS)) {
             this.rowExpandCollapse(e);
         } else if (target.classList.contains(cls.SHOW_ADD_BUTTON)) {
-            let newData: { [key: string]: string | number } = {};
-            if (typeof (this.parent.kanbanData[0] as { [key: string]: Object })[this.parent.cardSettings.headerField] === 'number') {
-                newData[this.parent.cardSettings.headerField] = Math.max.apply(Math, this.parent.kanbanData.map(
-                    (obj: { [key: string]: string }) => parseInt(obj[this.parent.cardSettings.headerField], 10))) + 1;
-            }
-            newData[this.parent.keyField] = target.closest('.' + cls.CONTENT_CELLS_CLASS).getAttribute('data-key');
-            if (this.parent.cardSettings.priority) {
-                newData[this.parent.cardSettings.priority] = 1;
-                if (target.closest('.' + cls.CONTENT_CELLS_CLASS).querySelector('.' + cls.CARD_CLASS)) {
-                    let data: { [key: string]: Object } = this.parent.getCardDetails(target.previousElementSibling.lastElementChild);
-                    newData[this.parent.cardSettings.priority] = data[this.parent.cardSettings.priority] as number + 1;
-                }
-            }
-            if (this.parent.swimlaneSettings.keyField) {
-                newData[this.parent.swimlaneSettings.keyField] =
-                    target.closest('.' + cls.CONTENT_ROW_CLASS).previousElementSibling.getAttribute('data-key');
-            }
-            this.parent.openDialog('Add', newData);
+            this.addButtonClick(target);
         }
+    }
+
+    public addButtonClick(target: Element): void {
+        let newData: { [key: string]: string | number } = {};
+        if (this.parent.kanbanData.length === 0) {
+            newData[this.parent.cardSettings.headerField] = 1;
+        } else if (typeof (this.parent.kanbanData[0] as { [key: string]: Object })[this.parent.cardSettings.headerField] === 'number') {
+            newData[this.parent.cardSettings.headerField] = Math.max.apply(Math, this.parent.kanbanData.map(
+                (obj: { [key: string]: string }) => parseInt(obj[this.parent.cardSettings.headerField], 10))) + 1;
+        }
+        newData[this.parent.keyField] = closest(target, '.' + cls.CONTENT_CELLS_CLASS).getAttribute('data-key');
+        if (this.parent.cardSettings.priority) {
+            newData[this.parent.cardSettings.priority] = 1;
+            if (closest(target, '.' + cls.CONTENT_CELLS_CLASS).querySelector('.' + cls.CARD_CLASS)) {
+                let data: { [key: string]: Object } = this.parent.getCardDetails(target.previousElementSibling.lastElementChild);
+                newData[this.parent.cardSettings.priority] = data[this.parent.cardSettings.priority] as number + 1;
+            }
+        }
+        if (this.parent.kanbanData.length !== 0 && this.parent.swimlaneSettings.keyField &&
+            closest(target, '.' + cls.CONTENT_ROW_CLASS).previousElementSibling) {
+            newData[this.parent.swimlaneSettings.keyField] =
+                closest(target, '.' + cls.CONTENT_ROW_CLASS).previousElementSibling.getAttribute('data-key');
+        }
+        this.parent.openDialog('Add', newData);
     }
 
     public doubleClickHandler(e: MouseEvent): void {
@@ -97,6 +106,12 @@ export class Action {
                 if (this.parent.isAdaptive && this.parent.touchModule) {
                     this.parent.touchModule.updatePopupContent();
                 }
+                let cell: Element = closest(target, '.' + cls.CONTENT_CELLS_CLASS);
+                let element: HTMLElement[] = [].slice.call(cell.querySelectorAll('.' + cls.CARD_CLASS));
+                element.forEach((e: HTMLElement): void => {
+                    e.setAttribute('tabindex', '0');
+                });
+                this.parent.keyboardModule.addRemoveTabIndex('Remove');
             }
         });
     }
@@ -128,18 +143,25 @@ export class Action {
                 let tgtRow: Element = this.parent.element.querySelector('.' + cls.CONTENT_ROW_CLASS + `:nth-child(${target.rowIndex + 2})`);
                 let targetIcon: Element = target.querySelector(`.${cls.SWIMLANE_ROW_EXPAND_CLASS},.${cls.SWIMLANE_ROW_COLLAPSE_CLASS}`);
                 let isCollapsed: boolean = target.classList.contains(cls.COLLAPSED_CLASS) ? true : false;
+                let tabIndex: string;
                 if (isCollapsed) {
                     removeClass([tgtRow, target], cls.COLLAPSED_CLASS);
                     classList(targetIcon, [cls.SWIMLANE_ROW_EXPAND_CLASS], [cls.SWIMLANE_ROW_COLLAPSE_CLASS]);
                     this.parent.swimlaneToggleArray.splice(this.parent.swimlaneToggleArray.indexOf(key), 1);
+                    tabIndex = '0';
                 } else {
                     addClass([tgtRow, target], cls.COLLAPSED_CLASS);
                     classList(targetIcon, [cls.SWIMLANE_ROW_COLLAPSE_CLASS], [cls.SWIMLANE_ROW_EXPAND_CLASS]);
                     this.parent.swimlaneToggleArray.push(key);
+                    tabIndex = '-1';
                 }
                 targetIcon.setAttribute('aria-label', isCollapsed ? key + ' Expand' : key + ' Collapse');
                 target.setAttribute('aria-expanded', isCollapsed.toString());
                 tgtRow.setAttribute('aria-expanded', isCollapsed.toString());
+                let rows: HTMLElement[] = [].slice.call(tgtRow.querySelectorAll('.' + cls.CONTENT_CELLS_CLASS));
+                rows.forEach((cell: HTMLElement) => {
+                    cell.setAttribute('tabindex', tabIndex);
+                });
                 this.parent.notify(events.contentReady, {});
                 this.parent.trigger(events.actionComplete, { target: headerTarget, requestType: 'rowExpandCollapse' });
             }
@@ -251,6 +273,7 @@ export class Action {
                     let card: HTMLElement = allCards[i];
                     addClass([card], cls.CARD_SELECTION_CLASS);
                     card.setAttribute('aria-selected', 'true');
+                    card.setAttribute('tabindex', '0');
                     this.selectionArray.push(card.getAttribute('data-id'));
                     this.selectedCardsElement.push(card);
                     this.selectedCardsData.push(this.parent.getCardDetails(card));
@@ -262,6 +285,7 @@ export class Action {
             } else {
                 addClass([target], cls.CARD_SELECTION_CLASS);
                 target.setAttribute('aria-selected', 'true');
+                target.setAttribute('tabindex', '0');
                 this.selectionArray.push(target.getAttribute('data-id'));
                 this.selectedCardsElement.push(target);
                 this.selectedCardsData.push(this.parent.getCardDetails(target));

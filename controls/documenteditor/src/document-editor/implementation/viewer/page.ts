@@ -1,5 +1,8 @@
 import { WTableFormat, WRowFormat, WCellFormat } from '../format/index';
-import { WidthType, WColor, AutoFitType, TextFormFieldType, CheckBoxSizeType } from '../../base/types';
+import {
+    WidthType, WColor, AutoFitType, TextFormFieldType, CheckBoxSizeType, VerticalOrigin, VerticalAlignment,
+    HorizontalOrigin, HorizontalAlignment, LineFormatType, LineDashing, AutoShapeType
+} from '../../base/types';
 import { WListLevel } from '../list/list-level';
 import { WParagraphFormat, WCharacterFormat, WSectionFormat, WBorder, WBorders } from '../format/index';
 import { isNullOrUndefined, createElement } from '@syncfusion/ej2-base';
@@ -462,6 +465,10 @@ export abstract class BlockContainer extends Widget {
     /**
      * @private
      */
+    public floatingElements: ShapeElementBox[] = [];
+    /**
+     * @private
+     */
     public sectionFormatIn: WSectionFormat = undefined;
     /**
      * @private
@@ -715,7 +722,13 @@ export abstract class BlockWidget extends Widget {
     get bodyWidget(): BlockContainer {
         let widget: Widget = this;
         while (widget.containerWidget) {
-            if (widget.containerWidget instanceof BlockContainer) {
+            if (widget.containerWidget instanceof TextFrame) {
+                let paragraph: ParagraphWidget = widget.containerWidget.containerShape.line.paragraph;
+                if (paragraph) {
+                    return paragraph.bodyWidget;
+                }
+            }
+            else if (widget.containerWidget instanceof BlockContainer) {
                 return widget.containerWidget as BlockContainer;
             }
             widget = widget.containerWidget;
@@ -788,7 +801,9 @@ export abstract class BlockWidget extends Widget {
         let node: BlockWidget = this;
         hierarchicalIndex = node.containerWidget.childWidgets.indexOf(node) + ';' + hierarchicalIndex;
         if (!isNullOrUndefined(node.containerWidget)) {
-            if (node.containerWidget instanceof BlockWidget) {
+            if (node.containerWidget instanceof TextFrame) {
+                return (node.containerWidget as TextFrame).getHierarchicalIndex(hierarchicalIndex);
+            } else if (node.containerWidget instanceof BlockWidget) {
                 return (node.containerWidget as BlockWidget).getHierarchicalIndex(hierarchicalIndex);
             } else if (node.containerWidget instanceof BlockContainer) {
                 hierarchicalIndex = node.containerWidget.getHierarchicalIndex(hierarchicalIndex);
@@ -823,6 +838,11 @@ export abstract class BlockWidget extends Widget {
     public getContainerWidth(): number {
         if (this.isInsideTable) {
             return this.associatedCell.getCellWidth();
+        }
+        if (this.containerWidget instanceof TextFrame) {
+            let shape: ShapeElementBox = this.containerWidget.containerShape as ShapeElementBox;
+            return HelperMethods.convertPixelToPoint(shape.width) - HelperMethods.convertPixelToPoint(shape.textFrame.marginLeft)
+                - HelperMethods.convertPixelToPoint(shape.textFrame.marginRight);
         } else {
             let bodyWidget: BlockContainer = this.bodyWidget;
             let sectionFormat: WSectionFormat = bodyWidget.sectionFormat;
@@ -862,6 +882,10 @@ export class ParagraphWidget extends BlockWidget {
     /**
      * @private
      */
+    public floatingElements: ShapeElementBox[] = [];
+    /**
+     * @private
+     */
     get isEndsWithPageBreak(): boolean {
         if (this.childWidgets.length > 0) {
             return (this.lastChild as LineWidget).isEndsWithPageBreak;
@@ -898,7 +922,7 @@ export class ParagraphWidget extends BlockWidget {
                 }
                 if (inline instanceof TextElementBox || inline instanceof ImageElementBox || inline instanceof BookmarkElementBox
                     || inline instanceof EditRangeEndElementBox || inline instanceof EditRangeStartElementBox
-                    || inline instanceof ChartElementBox
+                    || inline instanceof ChartElementBox || inline instanceof ShapeElementBox
                     || (inline instanceof FieldElementBox && HelperMethods.isLinkedFieldCharacter((inline as FieldElementBox)))) {
                     return false;
                 }
@@ -924,6 +948,7 @@ export class ParagraphWidget extends BlockWidget {
                         continue;
                     }
                     if (!isStarted && (inline instanceof TextElementBox || inline instanceof ImageElementBox
+                        || inline instanceof ShapeElementBox
                         || inline instanceof BookmarkElementBox || inline instanceof FieldElementBox
                         && HelperMethods.isLinkedFieldCharacter(inline as FieldElementBox))
                         || inline instanceof ChartElementBox) {
@@ -1571,7 +1596,7 @@ export class TableWidget extends BlockWidget {
         // For continuous layout, window width should be considered. 
         // If preferred width exceeds this limit, it can take upto maximum of 2112 pixels (1584 points will be assigned by Microsoft Word).
         //tslint:disable-next-line:max-line-length
-        if (((!isNullOrUndefined(this.bodyWidget.page)) && this.bodyWidget.page.viewer instanceof WebLayoutViewer && isAutoFit && !this.isInsideTable)) {
+        if (((!isNullOrUndefined(this.bodyWidget.page)) && this.bodyWidget.page.viewer instanceof WebLayoutViewer && isAutoFit && !this.isInsideTable && !(this.containerWidget instanceof TextFrame))) {
             containerWidth = HelperMethods.convertPixelToPoint(this.bodyWidget.page.viewer.clientArea.width - this.bodyWidget.page.viewer.padding.right * 3);
         } else {
             containerWidth = this.getOwnerWidth(true);
@@ -3680,6 +3705,7 @@ export class LineWidget implements IWidget {
                     continue;
                 }
                 if (!isStarted && (inlineElement instanceof TextElementBox || inlineElement instanceof ImageElementBox
+                    || inlineElement instanceof ShapeElementBox
                     || inlineElement instanceof BookmarkElementBox || inlineElement instanceof EditRangeEndElementBox
                     || inlineElement instanceof EditRangeStartElementBox
                     || inlineElement instanceof FieldElementBox
@@ -4690,7 +4716,261 @@ export class BookmarkElementBox extends ElementBox {
 /** 
  * @private
  */
-export class ImageElementBox extends ElementBox {
+export class ShapeCommon extends ElementBox {
+    /**
+     * @private
+     */
+    public shapeId: number;
+    /**
+     * @private
+     */
+    public name: string;
+    /**
+     * @private
+     */
+    public alternativeText: string;
+    /**
+     * @private
+     */
+    public title: string;
+    /**
+     * @private
+     */
+    public visible: boolean;
+    /**
+     * @private
+     */
+    public width: number;
+    /**
+     * @private
+     */
+    public height: number;
+    /**
+     * @private
+     */
+    public widthScale: number;
+    /**
+     * @private
+     */
+    public heightScale: number;
+    /**
+     * @private
+     */
+    public lineFormat: LineFormat;
+    /**
+     * 
+     * @private
+     */
+    public getLength(): number {
+        return 1;
+    }
+    /**
+     * @private
+     */
+
+    public clone(): ShapeCommon {
+        let shape: ShapeElementBox = new ShapeElementBox();
+        return shape;
+
+    }
+}
+/** 
+ * @private
+ */
+export class ShapeBase extends ShapeCommon {
+    /**
+     * @private
+     */
+    public verticalPosition: number;
+    /**
+     * @private
+     */
+    public verticalOrigin: VerticalOrigin;
+    /**
+     * @private
+     */
+    public verticalAlignment: VerticalAlignment;
+    /**
+     * @private
+     */
+    public horizontalPosition: number;
+    /**
+     * @private
+     */
+    public horizontalOrigin: HorizontalOrigin;
+    /**
+     * @private
+     */
+    public horizontalAlignment: HorizontalAlignment;
+    /**
+     * @private
+     */
+    public zOrderPosition: number;
+    /**
+     * @private
+     */
+    public allowOverlap: boolean;
+    /**
+     * @private
+     */
+    public layoutInCell: boolean;
+    /**
+     * @private
+     */
+    public lockAnchor: boolean;
+}
+/** 
+ * @private
+ */
+export class ShapeElementBox extends ShapeBase {
+    /**
+     * @private
+     */
+    public textFrame: TextFrame;
+    /**
+     * @private
+     */
+    public autoShapeType: AutoShapeType;
+    /**
+     * @private
+     */
+    public clone(): ShapeElementBox {
+        let shape: ShapeElementBox = new ShapeElementBox();
+        shape.characterFormat.copyFormat(this.characterFormat);
+        shape.x = this.x;
+        shape.y = this.y;
+        shape.width = this.width;
+        shape.height = this.height;
+        shape.shapeId = this.shapeId;
+        shape.name = this.name;
+        shape.alternativeText = this.alternativeText;
+        shape.title = this.title;
+        shape.widthScale = this.widthScale;
+        shape.heightScale = this.heightScale;
+        shape.visible = this.visible;
+        shape.verticalPosition = this.verticalPosition;
+        shape.verticalAlignment = this.verticalAlignment;
+        shape.verticalOrigin = this.verticalOrigin;
+        shape.horizontalPosition = this.horizontalPosition;
+        shape.horizontalAlignment = this.horizontalAlignment;
+        shape.horizontalOrigin = this.horizontalOrigin;
+        shape.zOrderPosition = this.zOrderPosition;
+        shape.allowOverlap = this.allowOverlap;
+        shape.layoutInCell = this.layoutInCell;
+        shape.lockAnchor = this.lockAnchor;
+        shape.autoShapeType = this.autoShapeType;
+        if (this.lineFormat) {
+            shape.lineFormat = this.lineFormat.clone();
+        }
+        if (this.textFrame) {
+            shape.textFrame = this.textFrame.clone();
+            shape.textFrame.containerShape = shape;
+        }
+        if (this.margin) {
+            shape.margin = this.margin.clone();
+        }
+        return shape;
+    }
+}
+/** 
+ * @private
+ */
+export class TextFrame extends Widget {
+    /**
+     * @private
+     */
+    public containerShape: ElementBox;
+    /**
+     * @private
+     */
+    public textVerticalAlignment: VerticalAlignment;
+    /**
+     * @private
+     */
+    public marginLeft: number;
+    /**
+     * @private
+     */
+    public marginRight: number;
+    /**
+     * @private
+     */
+    public marginTop: number;
+    /**
+     * @private
+     */
+    public marginBottom: number;
+
+    public equals(): boolean {
+        return false;
+    }
+    public destroyInternal(): void {
+        //return;
+    }
+    public getHierarchicalIndex(index: string): string {
+        let line: LineWidget = this.containerShape.line;
+        let offset: string = line.getOffset(this.containerShape, 0).toString();
+        return line.getHierarchicalIndex(offset);
+    }
+    public getTableCellWidget(): TableCellWidget {
+        return undefined;
+    }
+    /**
+     * @private
+     */
+    public clone(): TextFrame {
+        let textFrame: TextFrame = new TextFrame();
+        textFrame.textVerticalAlignment = this.textVerticalAlignment;
+        textFrame.marginBottom = this.marginBottom;
+        textFrame.marginLeft = this.marginLeft;
+        textFrame.marginRight = this.marginRight;
+        textFrame.marginTop = this.marginTop;
+        for (let i: number = 0; i < this.childWidgets.length; i++) {
+            let block: BlockWidget = (this.childWidgets[i] as BlockWidget).clone();
+            textFrame.childWidgets.push(block);
+            block.index = i;
+            block.containerWidget = textFrame;
+        }
+
+        return textFrame;
+    }
+}
+/** 
+ * @private
+ */
+export class LineFormat {
+    /**
+     * @private
+     */
+    public lineFormatType: LineFormatType;
+    /**
+     * @private
+     */
+    public color: string;
+    /**
+     * @private
+     */
+    public weight: number;
+    /**
+     * @private
+     */
+    public dashStyle: LineDashing;
+    /**
+     * @private
+     */
+    public clone(): LineFormat {
+        let lineFormat: LineFormat = new LineFormat();
+        lineFormat.lineFormatType = this.lineFormatType;
+        lineFormat.color = this.color;
+        lineFormat.weight = this.weight;
+        lineFormat.dashStyle = this.dashStyle;
+        return lineFormat;
+    }
+}
+/** 
+ * @private
+ */
+export class ImageElementBox extends ShapeBase {
     private imageStr: string = '';
     private imgElement: HTMLImageElement = undefined;
     private isInlineImageIn: boolean = true;
@@ -6722,7 +7002,6 @@ export class Page {
      * 
      */
     public allowNextPageRendering: boolean = true;
-
     /**
      * @private
      */

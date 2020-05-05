@@ -2015,6 +2015,9 @@ var Axis = /** @class */ (function (_super) {
                 labelSize.height = (labelSize.height > size.height) ? labelSize.height : size.height;
             }
         }
+        if (heatmap.cellSettings.border.width >= 20 && axis.orientation !== 'Horizontal') {
+            labelSize.width = labelSize.width + (heatmap.cellSettings.border.width / 4);
+        }
         if (axis.opposedPosition) {
             this.farSizes.push((axis.orientation === 'Horizontal') ? labelSize.height : labelSize.width + padding);
         }
@@ -2542,7 +2545,8 @@ var AxisHelper = /** @class */ (function () {
     AxisHelper.prototype.drawXAxisLabels = function (axis, parent, rect) {
         var heatMap = this.heatMap;
         var labels = axis.axisLabels;
-        var interval = rect.width / axis.axisLabelSize;
+        var borderWidth = this.heatMap.cellSettings.border.width > 5 ? (this.heatMap.cellSettings.border.width / 2) : 0;
+        var interval = (rect.width - borderWidth) / axis.axisLabelSize;
         var compactInterval = 0;
         var axisInterval = axis.interval ? axis.interval : 1;
         var tempintervel = rect.width / (axis.axisLabelSize / axis.axisLabelInterval);
@@ -2620,6 +2624,15 @@ var AxisHelper = /** @class */ (function () {
                     (((angle % 360) === 180 || (angle % 360) === -180) ? 0 : (rotateSize.height) / 2));
                 transform = 'rotate(' + angle + ',' + x + ',' + y + ')';
             }
+            if (this.heatMap.cellSettings.border.width > 5 && axis.opposedPosition) {
+                y = y - (this.heatMap.cellSettings.border.width / 2);
+            }
+            if (this.heatMap.yAxis.opposedPosition && this.heatMap.cellSettings.border.width > 5) {
+                x = x + (this.heatMap.cellSettings.border.width / 2);
+            }
+            if (this.heatMap.xAxis.isInversed && this.heatMap.cellSettings.border.width > 5) {
+                x = x - (this.heatMap.cellSettings.border.width / 2);
+            }
             var options = new TextOption(heatMap.element.id + '_XAxis_Label' + i, new TextBasic(x, y, (angle % 360 === 0) ? 'start' : 'middle', label, angle, transform), axis.textStyle, axis.textStyle.color || heatMap.themeStyle.axisLabel);
             if (angle !== 0 && this.heatMap.enableCanvasRendering) {
                 this.drawSvgCanvas.canvasDrawText(options, label);
@@ -2682,8 +2695,11 @@ var AxisHelper = /** @class */ (function () {
         for (var i = 0, len = labels.length; i < len; i++) {
             var labelRect = new Rect(rect.x, lableStartY, rect.width, interval);
             var position = labelRect.height / 2; //titlePositionY(lableRect, 0, 0, axis.textStyle);
-            var x = labelRect.x + padding;
-            var y = labelRect.y + (axis.isInversed ? position : -position);
+            var axisWidth = this.heatMap.cellSettings.border.width >= 20 ? (this.heatMap.cellSettings.border.width / 2) : 0;
+            var x = labelRect.x + padding + (axis.opposedPosition ? axisWidth : -axisWidth);
+            var indexValue = this.heatMap.cellSettings.border.width > 5 ?
+                (((this.heatMap.cellSettings.border.width / 2) / len) * (axis.isInversed ? (i) : (len - i))) : 0;
+            var y = (labelRect.y - indexValue) + (axis.isInversed ? position : -position);
             label = axis.enableTrim ? textTrim(axis.maxLabelLength, labels[i], axis.textStyle) : labels[i];
             var options = new TextOption(heatMap.element.id + '_YAxis_Label' + i, new TextBasic(x, y, anchor, label, 0, 'rotate(' + 0 + ',' + (x) + ',' + (y) + ')', 'middle'), axis.textStyle, axis.textStyle.color || heatMap.themeStyle.axisLabel);
             if (sf.base.Browser.isIE && !heatMap.enableCanvasRendering) {
@@ -5439,10 +5455,11 @@ var Legend = /** @class */ (function () {
         }
         var textWrapWidth;
         if (heatMap.horizontalGradient) {
+            var segmentWidth = this.heatMap.isColorRange ? this.segmentCollectionsLabels : this.segmentCollections;
             for (var i = 0; i < colorCollection.length; i++) {
                 if (heatMap.paletteSettings.type === 'Gradient') {
-                    var previousSegmentWidth = (this.segmentCollections[i] - this.segmentCollections[i - 1]) / 2;
-                    var nextSegmentWidth = (this.segmentCollections[i + 1] - this.segmentCollections[i]) / 2;
+                    var previousSegmentWidth = (segmentWidth[i] - segmentWidth[i - 1]) / 2;
+                    var nextSegmentWidth = (segmentWidth[i + 1] - segmentWidth[i]) / 2;
                     if (i === colorCollection.length - 1) {
                         textWrapWidth = previousSegmentWidth;
                     }

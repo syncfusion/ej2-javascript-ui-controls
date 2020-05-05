@@ -97,7 +97,10 @@ export class VerticalEvent extends EventBase {
             setStyleAttribute(appointmentElement, { 'left': appLeft });
         }
         let eventType: string = appointmentElement.classList.contains(cls.BLOCK_APPOINTMENT_CLASS) ? 'blockEvent' : 'event';
-        let args: EventRenderedArgs = { data: eventObj, element: appointmentElement, cancel: false, type: eventType };
+        let args: EventRenderedArgs = {
+            data: extend({}, eventObj, null, true) as { [key: string]: Object },
+            element: appointmentElement, cancel: false, type: eventType
+        };
         this.parent.trigger(events.eventRendered, args, (eventArgs: EventRenderedArgs) => {
             if (!eventArgs.cancel) {
                 appointmentWrap[index].appendChild(appointmentElement);

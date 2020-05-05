@@ -389,8 +389,7 @@ export class Axis extends ChildProperty<Axis> {
             }
         }
         for (let i: number = 0; i < labels.length; i++) {
-            let multipleRow : MultipleRow [] = this.multipleRow;
-            let label : string;
+            let multipleRow : MultipleRow [] = this.multipleRow; let label : string;
             if (axis.enableTrim) {
                 label = textTrim(axis.maxLabelLength, labels[i], axis.textStyle);
             } else { label = labels[i]; }
@@ -413,8 +412,7 @@ export class Axis extends ChildProperty<Axis> {
                     } else if (size.width < interval) {
                         for (let j: number = 1; j <= axis.multilevel.length; j++) {
                             if (axis.multilevel[j] < multipleRow[i].start) {
-                                count = j;
-                                multipleRow[j].row = count;
+                                count = j; multipleRow[j].row = count;
                                 break;
                             }
                         }
@@ -422,8 +420,7 @@ export class Axis extends ChildProperty<Axis> {
                 }
                 labelSize.height = (labelSize.height > ((size.height * count) + (((size.height * 0.5) / 2) * (count - 1)))) ?
                     labelSize.height : ((size.height * count) + (((size.height * 0.5) / 2) * count));
-                this.multipleRow[i].index = count;
-                axis.multilevel[count] = multipleRow[i].end;
+                this.multipleRow[i].index = count; axis.multilevel[count] = multipleRow[i].end;
             } else {
                 if (axis.orientation === 'Horizontal' && axis.labelIntersectAction === 'MultipleRows' && i === 0 &&
                     axis.labelRotation === 0) {
@@ -431,6 +428,9 @@ export class Axis extends ChildProperty<Axis> {
                 }
                 labelSize.height = (labelSize.height > size.height) ? labelSize.height : size.height;
             }
+        }
+        if (heatmap.cellSettings.border.width >= 20 && axis.orientation !== 'Horizontal') {
+            labelSize.width = labelSize.width + (heatmap.cellSettings.border.width / 4);
         }
         if (axis.opposedPosition) {
             this.farSizes.push((axis.orientation === 'Horizontal') ? labelSize.height : labelSize.width + padding);

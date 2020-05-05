@@ -5560,7 +5560,8 @@ class SeriesBase extends ChildProperty {
      */
     setEmptyPoint(point, i) {
         if (!this.findVisibility(point)) {
-            point.visible = true;
+            point.visible = ((this.xAxis.valueType === 'Logarithmic' || this.yAxis.valueType === 'Logarithmic') && point.yValue === 0)
+                ? false : true;
             return null;
         }
         point.isEmpty = true;
@@ -5646,7 +5647,9 @@ class SeriesBase extends ChildProperty {
      * To get Y min max for the provided point seriesType XY
      */
     setXYMinMax(yValue) {
-        this.yMin = Math.min(this.yMin, (isNullOrUndefined(yValue) || isNaN(yValue)) ? this.yMin : yValue);
+        this.yMin = (this.yAxis.valueType === 'Logarithmic' || this.xAxis.valueType === 'Logarithmic') ?
+            Math.min(this.yMin, (isNullOrUndefined(yValue) || isNaN(yValue) || (yValue === 0)) ? this.yMin : yValue) :
+            Math.min(this.yMin, (isNullOrUndefined(yValue) || isNaN(yValue)) ? this.yMin : yValue);
         this.yMax = Math.max(this.yMax, (isNullOrUndefined(yValue) || isNaN(yValue)) ? this.yMax : yValue);
     }
     /**
@@ -16683,9 +16686,11 @@ class Trendlines {
      */
     getLinearPoints(trendline, points, xValues, yValues, series, slopeInterceptLinear) {
         let pts = [];
-        let x1Linear = xValues[0] - trendline.backwardForecast;
+        let max = xValues.indexOf(Math.max.apply(null, xValues));
+        let min = xValues.indexOf(Math.min.apply(null, xValues));
+        let x1Linear = xValues[min] - trendline.backwardForecast;
         let y1Linear = slopeInterceptLinear.slope * x1Linear + slopeInterceptLinear.intercept;
-        let x2Linear = xValues[xValues.length - 1] + trendline.forwardForecast;
+        let x2Linear = xValues[max] + trendline.forwardForecast;
         let y2Linear = slopeInterceptLinear.slope * x2Linear + slopeInterceptLinear.intercept;
         pts.push(this.getDataPoint(x1Linear, y1Linear, points[0], series, pts.length));
         pts.push(this.getDataPoint(x2Linear, y2Linear, points[points.length - 1], series, pts.length));
@@ -42106,6 +42111,12 @@ let Sparkline = class Sparkline extends Component {
         }
         // Used to create clip path sparkline
         let padding = this.padding;
+        if (this.markerSettings.visible.length) {
+            padding.left = 0;
+            padding.right = 0;
+            padding.bottom = 0;
+            padding.top = 0;
+        }
         borderRect = new RectOption$2(this.element.id + '_sparkline_clip_rect', 'transparent', { color: 'transparent', width: 0 }, 1, new Rect$1(padding.left, padding.top, this.availableSize.width - (padding.left + padding.right), this.availableSize.height - (padding.top + padding.bottom)));
         let clipPath = this.renderer.createClipPath({ id: this.element.id + '_sparkline_clip_path' });
         drawRectangle(this, borderRect, clipPath);

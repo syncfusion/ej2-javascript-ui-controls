@@ -6,7 +6,7 @@ import { NodeCutter } from './nodecutter';
 import { InsertMethods } from './insert-methods';
 import { IsFormatted } from './isformatted';
 import { isIDevice, setEditFrameFocus } from '../../common/util';
-import { isNullOrUndefined as isNOU, Browser } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, Browser, closest, detach } from '@syncfusion/ej2-base';
 
 export class SelectionCommands {
     /**
@@ -18,6 +18,9 @@ export class SelectionCommands {
         let validFormats: string[] = ['bold', 'italic', 'underline', 'strikethrough', 'superscript',
             'subscript', 'uppercase', 'lowercase', 'fontcolor', 'fontname', 'fontsize', 'backgroundcolor'];
         if (validFormats.indexOf(format) > -1) {
+            if (format === 'backgroundcolor' && value === '') {
+                value = 'transparent';
+            }
             let domSelection: NodeSelection = new NodeSelection();
             let nodeCutter: NodeCutter = new NodeCutter();
             let isFormatted: IsFormatted = new IsFormatted();
@@ -162,10 +165,35 @@ export class SelectionCommands {
                 nodes[index] = lastNode.firstChild;
             }
         }
+        let fontStyle: string;
+        if (format === 'backgroundcolor') {
+            fontStyle = (formatNode as HTMLElement).style.fontSize;
+
+        }
+        let bgStyle: string;
+        if (format === 'fontsize') {
+            let bg: Element = closest(nodes[index].parentElement, 'span[style*=' + 'background-color' + ']');
+            if (!isNOU(bg)) {
+                bgStyle = (bg as HTMLElement).style.backgroundColor;
+            }
+        }
         let child: Node[] = InsertMethods.unwrap(formatNode);
         if (child.length > 0 && isFontStyle) {
             for (let num: number = 0; num < child.length; num++) {
                 child[num] = InsertMethods.Wrap(child[num] as HTMLElement, this.GetFormatNode(format, value));
+            }
+            let currentNodeElem: HTMLElement = nodes[index].parentElement;
+            if (!isNOU(fontStyle) && fontStyle !== '') {
+                currentNodeElem.style.fontSize = fontStyle;
+            }
+            if (!isNOU(bgStyle) && bgStyle !== '') {
+                currentNodeElem.style.backgroundColor = bgStyle;
+            }
+            if ((format === 'backgroundcolor' && !isNOU(fontStyle) && fontStyle !== '') &&
+            currentNodeElem.parentElement.innerHTML === currentNodeElem.outerHTML) {
+                let curParentElem: HTMLElement = currentNodeElem.parentElement;
+                curParentElem.parentElement.insertBefore(currentNodeElem, curParentElem);
+                detach(curParentElem);
             }
             if (format === 'fontsize') {
                 let liElement: HTMLElement = nodes[index].parentElement;
@@ -218,6 +246,10 @@ export class SelectionCommands {
                             liElement.style.fontSize = value;
                         }
                         nodes[index] = this.applyStyles(nodes, index, element);
+                        let bg: Element = closest(nodes[index].parentElement, 'span[style*=' + 'background-color' + ']');
+                        if (!isNOU(bg)) {
+                            nodes[index].parentElement.style.backgroundColor = (bg as HTMLElement).style.backgroundColor;
+                        }
                     } else {
                         nodes[index] = this.applyStyles(nodes, index, element);
                     }

@@ -1,11 +1,11 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
-import { Selection, DocumentHelper } from '../../src/index';
+import { Selection, DocumentHelper, ShapeElementBox, ImageResizer } from '../../src/index';
 import {
     SelectionWidgetInfo, TextPosition
 } from '../../src/index';
 import { createElement, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { LayoutViewer, PageLayoutViewer } from '../../src/index';
-import { Point } from '../../src/document-editor/implementation/editor/editor-helper';
+import { Point, ShapeInfo } from '../../src/document-editor/implementation/editor/editor-helper';
 import { TestHelper } from '../test-helper.spec';
 import { Editor } from '../../src/index';
 import { EditorHistory } from '../../src/document-editor/implementation/editor-history/editor-history';
@@ -3411,7 +3411,7 @@ describe('Selection test script1', () => {
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-       documentHelper=editor.documentHelper;
+        documentHelper = editor.documentHelper;
         editor.open(selection_document());
     });
     beforeEach(() => {
@@ -3476,7 +3476,7 @@ describe('Selection test script2', () => {
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-       documentHelper=editor.documentHelper;
+        documentHelper = editor.documentHelper;
         editor.open(selection_document());
     });
     beforeEach(() => {
@@ -3526,7 +3526,7 @@ describe('Selection test script3', () => {
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-       documentHelper=editor.documentHelper;
+        documentHelper = editor.documentHelper;
         editor.open(selection_document());
     });
     beforeEach(() => {
@@ -3575,7 +3575,7 @@ describe('Selection test scrip4', () => {
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-       documentHelper=editor.documentHelper;
+        documentHelper = editor.documentHelper;
         editor.open(selection_document());
     });
     beforeEach(() => {
@@ -3624,7 +3624,7 @@ describe('Selection test script5', () => {
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-       documentHelper=editor.documentHelper;
+        documentHelper = editor.documentHelper;
         editor.open(selection_document());
     });
     beforeEach(() => {
@@ -3675,7 +3675,7 @@ describe('Selection test script6', () => {
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-       documentHelper=editor.documentHelper;
+        documentHelper = editor.documentHelper;
         editor.open(selection_document());
     });
     beforeEach(() => {
@@ -3772,7 +3772,7 @@ describe('Selection test scrip7', () => {
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-       documentHelper=editor.documentHelper;
+        documentHelper = editor.documentHelper;
         editor.open(selection_document());
     });
     beforeEach(() => {
@@ -3819,7 +3819,7 @@ describe('Selection test script9', () => {
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-       documentHelper=editor.documentHelper;
+        documentHelper = editor.documentHelper;
         editor.open(selection_document());
     });
     beforeEach(() => {
@@ -3869,7 +3869,7 @@ describe('Selection test script10', () => {
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-       documentHelper=editor.documentHelper;
+        documentHelper = editor.documentHelper;
         editor.open(selection_document());
     });
     beforeEach(() => {
@@ -3925,7 +3925,7 @@ describe('Selection test script11', () => {
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-       documentHelper=editor.documentHelper;
+        documentHelper = editor.documentHelper;
         editor.open(selection_document());
     });
     beforeEach(() => {
@@ -3975,7 +3975,7 @@ describe('Selection test script12', () => {
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-       documentHelper=editor.documentHelper;
+        documentHelper = editor.documentHelper;
         editor.open(selection_document());
     });
     beforeEach(() => {
@@ -4056,7 +4056,7 @@ describe('Selection test script13', () => {
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-       documentHelper=editor.documentHelper;
+        documentHelper = editor.documentHelper;
         editor.open(selection_document());
     });
     beforeEach(() => {
@@ -4114,7 +4114,7 @@ describe('Back ward Selection validation', () => {
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-       documentHelper=editor.documentHelper;
+        documentHelper = editor.documentHelper;
         editor.open(selection_document());
     });
     beforeEach(() => {
@@ -4292,7 +4292,7 @@ describe('Selection Validation for branch ', () => {
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-       documentHelper=editor.documentHelper;
+        documentHelper = editor.documentHelper;
     });
     beforeEach(() => {
         editor.selection.selectPosition(editor.documentStart, editor.documentStart);
@@ -4331,7 +4331,7 @@ describe('Selection Module Unit Test script', () => {
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-       documentHelper=editor.documentHelper;
+        documentHelper = editor.documentHelper;
         editor.open(selection_document());
     });
     beforeEach(() => {
@@ -4379,7 +4379,7 @@ describe('update table format validation', () => {
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-       documentHelper=editor.documentHelper;
+        documentHelper = editor.documentHelper;
         editor.open(selection_document());
     });
     beforeEach(() => {
@@ -4420,7 +4420,7 @@ describe('Selection API validation For field ', () => {
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-       documentHelper=editor.documentHelper;
+        documentHelper = editor.documentHelper;
     });
     beforeEach(() => {
         editor.openBlank();
@@ -4522,7 +4522,7 @@ describe('Move To paragraph start validation', () => {
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-       documentHelper=editor.documentHelper;
+        documentHelper = editor.documentHelper;
     });
     beforeEach(() => {
         editor.openBlank();
@@ -4560,7 +4560,7 @@ describe('Get next and previous rendered block validation', () => {
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-       documentHelper=editor.documentHelper;
+        documentHelper = editor.documentHelper;
         selection = editor.selection;
     });
     beforeEach(() => {
@@ -4848,7 +4848,7 @@ describe('Get Cell and Block Validation', () => {
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-       documentHelper=editor.documentHelper;
+        documentHelper = editor.documentHelper;
         selection = editor.selection;
     });
     beforeEach(() => {
@@ -4964,7 +4964,7 @@ describe('Get previous valid line ', () => {
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-       documentHelper=editor.documentHelper;
+        documentHelper = editor.documentHelper;
         selection = editor.selection;
     });
     beforeEach(() => {
@@ -5082,7 +5082,7 @@ describe('is exist after inline', () => {
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-       documentHelper=editor.documentHelper;
+        documentHelper = editor.documentHelper;
         selection = editor.selection;
     });
     beforeEach(() => {
@@ -5548,7 +5548,7 @@ describe('Get Next and previous selected cell', () => {
         (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
-       documentHelper=editor.documentHelper;
+        documentHelper = editor.documentHelper;
         selection = editor.selection;
     });
     beforeEach(() => {
@@ -5602,5 +5602,262 @@ describe('Get Next and previous selected cell', () => {
         let cell: TableCellWidget = editor.selection.start.paragraph.associatedCell.ownerTable.associatedCell;
         let cell1: TableCellWidget = editor.selection.start.paragraph.associatedCell;
         expect(selection.getContainerCell(cell1)).toBe(cell);
+    });
+});
+
+let shapeSfdt: any = {
+    "sections": [
+        {
+            "blocks": [
+                {
+                    "characterFormat": {
+                        "fontSize": 20.0,
+                        "fontFamily": "Arial",
+                        "fontSizeBidi": 20.0,
+                        "fontFamilyBidi": "Arial"
+                    },
+                    "paragraphFormat": {
+                        "afterSpacing": 0.0,
+                        "lineSpacing": 1.0,
+                        "lineSpacingType": "Multiple",
+                        "styleName": "Normal"
+                    },
+                    "inlines": [
+                        {
+                            "shapeId": 1,
+                            "name": "Text Box 2",
+                            "alternativeText": null,
+                            "title": null,
+                            "visible": true,
+                            "width": 185.9,
+                            "height": 110.6,
+                            "widthScale": 100.0,
+                            "heightScale": 100.0,
+                            "lineFormat": {
+                                "lineFormatType": "Solid",
+                                "color": "#FF0000FF",
+                                "weight": 12.5,
+                                "lineStyle": "Solid"
+                            },
+                            "verticalPosition": 29.88,
+                            "verticalOrigin": "Paragraph",
+                            "verticalAlignment": "None",
+                            "horizontalPosition": 18.23,
+                            "horizontalOrigin": "Column",
+                            "horizontalAlignment": "None",
+                            "zOrderPosition": 251660288,
+                            "allowOverlap": true,
+                            "layoutInCell": true,
+                            "lockAnchor": false,
+                            "autoShapeType": "Rectangle",
+                            "textFrame": {
+                                "textVerticalAlignment": "Top",
+                                "leftMargin": 7.2,
+                                "rightMargin": 7.2,
+                                "topMargin": 3.6,
+                                "bottomMargin": 3.6,
+                                "blocks": [
+                                    {
+                                        "paragraphFormat": {
+                                            "styleName": "Normal"
+                                        },
+                                        "inlines": [
+                                            {
+                                                "text": "[Grab your reader’s attention with a great quote from the document or use this space to emphasize a key point. To place this text box anywhere on the page, just drag it.]"
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "shapeId": 217,
+                            "name": "Text Box 2",
+                            "alternativeText": null,
+                            "title": null,
+                            "visible": true,
+                            "width": 149.04,
+                            "height": 46.8,
+                            "widthScale": 100.0,
+                            "heightScale": 100.0,
+                            "lineFormat": {
+                                "lineFormatType": "Solid",
+                                "color": "#00B0F0FF",
+                                "weight": 1.0,
+                                "lineStyle": "Solid"
+                            },
+                            "verticalPosition": 12.07,
+                            "verticalOrigin": "Margin",
+                            "verticalAlignment": "None",
+                            "horizontalPosition": 132.37,
+                            "horizontalOrigin": "Margin",
+                            "horizontalAlignment": "None",
+                            "zOrderPosition": 251658240,
+                            "allowOverlap": true,
+                            "layoutInCell": true,
+                            "lockAnchor": false,
+                            "autoShapeType": "Rectangle",
+                            "textFrame": {
+                                "textVerticalAlignment": "Top",
+                                "leftMargin": 0.0,
+                                "rightMargin": 72.0,
+                                "topMargin": 0.0,
+                                "bottomMargin": 0.0,
+                                "blocks": [
+                                    {
+                                        "characterFormat": {
+                                            "fontSize": 10.0,
+                                            "fontFamily": "Arial",
+                                            "fontSizeBidi": 10.0,
+                                            "fontFamilyBidi": "Arial"
+                                        },
+                                        "paragraphFormat": {
+                                            "styleName": "Normal"
+                                        },
+                                        "inlines": [
+                                            {
+                                                "text": " ",
+                                                "characterFormat": {
+                                                    "fontSize": 10.0,
+                                                    "fontFamily": "Arial",
+                                                    "fontSizeBidi": 10.0,
+                                                    "fontFamilyBidi": "Arial"
+                                                }
+                                            },
+                                            {
+                                                "text": "Syncfusion",
+                                                "characterFormat": {
+                                                    "fontSize": 10.0,
+                                                    "fontFamily": "Arial",
+                                                    "fontSizeBidi": 10.0,
+                                                    "fontFamilyBidi": "Arial"
+                                                }
+                                            }
+                                        ]
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            "text": "Action is the foundational key to all success",
+                            "characterFormat": {
+                                "fontSize": 20.0,
+                                "fontFamily": "Arial",
+                                "fontSizeBidi": 20.0,
+                                "fontFamilyBidi": "Arial"
+                            }
+                        },
+                        {
+                            "name": "_GoBack",
+                            "bookmarkType": 0
+                        },
+                        {
+                            "name": "_GoBack",
+                            "bookmarkType": 1
+                        }
+                    ]
+                }
+            ],
+            "headersFooters": {},
+            "sectionFormat": {
+                "headerDistance": 36.0,
+                "footerDistance": 36.0,
+                "pageWidth": 612.0,
+                "pageHeight": 792.0,
+                "leftMargin": 72.0,
+                "rightMargin": 72.0,
+                "topMargin": 72.0,
+                "bottomMargin": 72.0,
+                "differentFirstPage": false,
+                "differentOddAndEvenPages": false,
+                "bidi": false,
+                "restartPageNumbering": false,
+                "pageStartingNumber": 0
+            }
+        }
+    ]
+}
+describe('Shape Selection Validation', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, ImageResizer, EditorHistory);
+        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, enableImageResizer: true, isReadOnly: false, enableEditorHistory: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        editor.open(JSON.stringify(shapeSfdt));
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Floating Elements in paragraph', () => {
+        let paragraph: ParagraphWidget = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget;
+        expect(paragraph.floatingElements.length).toBe(2);
+        expect(editor.documentHelper.pages[0].bodyWidgets[0].floatingElements.length).toBe(2);
+    });
+    it('Check all float Elements', () => {
+        let paragraph: ParagraphWidget = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget;
+        let line: LineWidget = paragraph.childWidgets[0] as LineWidget
+        let shape: ShapeElementBox = paragraph.floatingElements[0] as ShapeElementBox;
+        let cursorPoint: Point = new Point(shape.x + 2, shape.y + 10);
+        let shapeInfo: ShapeInfo = editor.selection.checkAllFloatingElements(line, cursorPoint);
+        expect(shapeInfo.isInShapeBorder).toBe(true);
+        cursorPoint = new Point(shape.x + 50, shape.y + 40);
+        shapeInfo = editor.selection.checkAllFloatingElements(line, cursorPoint);
+        expect(shapeInfo.isInShapeBorder).toBe(false);
+        cursorPoint = new Point(shape.x - 20, shape.y + 10);
+        shapeInfo = editor.selection.checkAllFloatingElements(line, cursorPoint);
+        expect(shapeInfo.isShapeSelected).toBe(false);
+    });
+    it('Select Shape Pargraph to check shape also selected', () => {
+        let cursorPoint: Point = new Point(150, 105);
+        editor.viewer.documentHelper.updateTextPositionForSelection(cursorPoint, 3);
+        let line: LineWidget = editor.selection.start.paragraph.childWidgets[0] as LineWidget;
+        expect(line.children[0] instanceof ShapeElementBox).toBe(true);
+        expect(line.children[1] instanceof ShapeElementBox).toBe(true);
+    });
+    it('Check Shape resizer visible for selected shape', () => {
+        let paragraph: ParagraphWidget = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget;
+        let shape: ShapeElementBox = paragraph.floatingElements[0] as ShapeElementBox;
+        let cursorPoint: Point = new Point(shape.x + 50, shape.y + 40);
+        editor.viewer.documentHelper.updateTextPositionForSelection(cursorPoint, 1);
+        expect(editor.selection.isInShape).toBe(true);
+        editor.imageResizerModule.updateImageResizerPosition();
+        expect(editor.imageResizerModule.isImageResizerVisible).toBe(true);
+    });
+    it('Editor History inside shape', () => {
+        let paragraph: ParagraphWidget = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget;
+        let shape: ShapeElementBox = paragraph.floatingElements[0] as ShapeElementBox;
+        let cursorPoint: Point = new Point(shape.x + 50, shape.y + 40);
+        editor.viewer.documentHelper.updateTextPositionForSelection(cursorPoint, 1);
+        expect(editor.editorHistoryModule.undoStack).toBeUndefined;
+        editor.editorModule.insertText('Sync');
+        expect(editor.editorHistoryModule.undoStack.length).toBe(1);
+        expect(editor.editorHistoryModule.redoStack).toBeUndefined;
+        editor.editorHistoryModule.undo();
+        expect(editor.editorHistoryModule.redoStack.length).toBe(1);
+    });
+    it('Editor History on deleting shape', () => {
+        let paragraph: ParagraphWidget = editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget;
+        let shape: ShapeElementBox = paragraph.floatingElements[0] as ShapeElementBox;
+        editor.selectionModule.selectShape(shape);
+        let event: any = {
+            preventDefault: function () { return true },
+            which: 8
+        }
+        editor.editorModule.onKeyDownInternal(event, false, false, false);
+        expect(editor.documentHelper.pages[0].bodyWidgets[0].floatingElements.length).toBe(1);
+        editor.editorHistoryModule.undo();
+        expect(editor.documentHelper.pages[0].bodyWidgets[0].floatingElements.length).toBe(2);
     });
 });

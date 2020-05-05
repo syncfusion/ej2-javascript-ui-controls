@@ -1175,11 +1175,18 @@ var Data = /** @__PURE__ @class */ (function () {
             var promise = 'promise';
             args[promise] = crud;
             if (crud && !Array.isArray(crud) && !crud.hasOwnProperty('deletedRecords')) {
-                return crud.then(function (result) {
-                    return _this.insert(query, args);
-                }).catch(function (e) {
-                    return null;
-                });
+                if (isBlazor()) {
+                    return crud.then(function (result) {
+                        return _this.insert(query, args);
+                    }).catch(function (e) {
+                        return null;
+                    });
+                }
+                else {
+                    return crud.then(function (result) {
+                        return _this.insert(query, args);
+                    });
+                }
             }
             else {
                 return this.insert(query, args);
@@ -4172,7 +4179,8 @@ var HeaderCellRenderer = /** @__PURE__ @class */ (function (_super) {
             //need to pass the template id for blazor headertemplate
             var headerTempID = gridObj.element.id + column.uid + 'headerTemplate';
             var str = 'isStringTemplate';
-            result = column.getHeaderTemplate()(extend({ 'index': colIndex }, column.toJSON()), gridObj, 'headerTemplate', headerTempID, this.parent[str]);
+            var col = isBlazor() ? column.toJSON() : column;
+            result = column.getHeaderTemplate()(extend({ 'index': colIndex }, col), gridObj, 'headerTemplate', headerTempID, this.parent[str]);
             node.firstElementChild.innerHTML = '';
             appendChildren(node.firstElementChild, result);
         }
@@ -7012,7 +7020,8 @@ var Selection = /** @__PURE__ @class */ (function () {
                     data: selectData, rowIndex: index, isCtrlPressed: this.isMultiCtrlRequest,
                     isShiftPressed: this.isMultiShiftRequest, row: selectedRow,
                     previousRow: gObj.getRowByIndex(this.prevRowIndex),
-                    previousRowIndex: this.prevRowIndex, target: this.actualTarget, cancel: false, isInteracted: this.isInteracted
+                    previousRowIndex: this.prevRowIndex, target: this.actualTarget, cancel: false, isInteracted: this.isInteracted,
+                    isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
                 };
                 args = this.addMovableArgs(args, selectedMovableRow);
             }
@@ -7020,7 +7029,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                 args = {
                     data: selectData, rowIndex: index, isCtrlPressed: this.isMultiCtrlRequest,
                     isShiftPressed: this.isMultiShiftRequest, previousRowIndex: this.prevRowIndex,
-                    cancel: false, isInteracted: this.isInteracted
+                    cancel: false, isInteracted: this.isInteracted, isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
                 };
             }
             this.parent.trigger(rowSelecting, this.fDataUpdate(args), this.rowSelectingCallBack(args, isToggle, index, selectData, isRemoved, isRowSelected, can));
@@ -7079,14 +7088,17 @@ var Selection = /** @__PURE__ @class */ (function () {
                 args = {
                     data: selectData, rowIndex: index,
                     row: selectedRow, previousRow: gObj.getRowByIndex(this.prevRowIndex),
-                    previousRowIndex: this.prevRowIndex, target: this.actualTarget, isInteracted: this.isInteracted
+                    previousRowIndex: this.prevRowIndex, target: this.actualTarget, isInteracted: this.isInteracted,
+                    isHeaderCheckBoxClicked: this.isHeaderCheckboxClicked
                 };
                 args = this.addMovableArgs(args, selectedMovableRow);
             }
             else {
                 args = {
                     data: selectData, rowIndex: index,
-                    previousRowIndex: this.prevRowIndex, isInteracted: this.isInteracted
+                    row: selectedRow, previousRow: gObj.getRowByIndex(this.prevRowIndex),
+                    previousRowIndex: this.prevRowIndex, isInteracted: this.isInteracted,
+                    isHeaderCheckBoxClicked: this.isHeaderCheckboxClicked
                 };
             }
             this.onActionComplete(args, rowSelected);
@@ -7142,7 +7154,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                 rowIndexes: rowIndexes, row: selectedRow, rowIndex: rowIndex, target: this.actualTarget,
                 prevRow: gObj.getRows()[this.prevRowIndex], previousRowIndex: this.prevRowIndex,
                 isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
-                data: selectedData
+                data: selectedData, isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
             };
             args = this.addMovableArgs(args, selectedMovableRow);
         }
@@ -7151,7 +7163,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                 cancel: false,
                 rowIndexes: rowIndexes, rowIndex: rowIndex, previousRowIndex: this.prevRowIndex,
                 isCtrlPressed: this.isMultiCtrlRequest, isShiftPressed: this.isMultiShiftRequest,
-                data: selectedData
+                data: selectedData, isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
             };
         }
         this.parent.trigger(rowSelecting, this.fDataUpdate(args), function (args) {
@@ -7183,14 +7195,17 @@ var Selection = /** @__PURE__ @class */ (function () {
                 args = {
                     rowIndexes: rowIndexes, row: selectedRow, rowIndex: rowIndex, target: _this.actualTarget,
                     prevRow: gObj.getRows()[_this.prevRowIndex], previousRowIndex: _this.prevRowIndex,
-                    data: isBlazor() ? selectedData : _this.getSelectedRecords(), isInteracted: _this.isInteracted
+                    data: isBlazor() ? selectedData : _this.getSelectedRecords(), isInteracted: _this.isInteracted,
+                    isHeaderCheckboxClicked: _this.isHeaderCheckboxClicked
                 };
                 args = _this.addMovableArgs(args, selectedMovableRow);
             }
             else {
                 args = {
                     rowIndexes: rowIndexes, rowIndex: rowIndex, previousRowIndex: _this.prevRowIndex,
-                    data: isBlazor() ? selectedData : _this.getSelectedRecords(), isInteracted: _this.isInteracted
+                    row: selectedRow, prevRow: gObj.getRows()[_this.prevRowIndex],
+                    data: isBlazor() ? selectedData : _this.getSelectedRecords(), isInteracted: _this.isInteracted,
+                    isHeaderCheckboxClicked: _this.isHeaderCheckboxClicked
                 };
             }
             if (_this.isRowSelected) {
@@ -7249,7 +7264,8 @@ var Selection = /** @__PURE__ @class */ (function () {
                         data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this_1.actualTarget,
                         prevRow: gObj.getRows()[this_1.prevRowIndex], previousRowIndex: this_1.prevRowIndex,
                         isCtrlPressed: this_1.isMultiCtrlRequest, isShiftPressed: this_1.isMultiShiftRequest,
-                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this_1.isInteracted
+                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this_1.isInteracted,
+                        isHeaderCheckboxClicked: this_1.isHeaderCheckboxClicked
                     };
                     args = this_1.addMovableArgs(args, selectedMovableRow);
                 }
@@ -7258,7 +7274,8 @@ var Selection = /** @__PURE__ @class */ (function () {
                         cancel: false,
                         data: rowObj.data, rowIndex: rowIndex, previousRowIndex: this_1.prevRowIndex,
                         isCtrlPressed: this_1.isMultiCtrlRequest, isShiftPressed: this_1.isMultiShiftRequest,
-                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this_1.isInteracted
+                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this_1.isInteracted,
+                        isHeaderCheckboxClicked: this_1.isHeaderCheckboxClicked
                     };
                 }
                 this_1.parent.trigger(rowSelecting, this_1.fDataUpdate(args), function (args) {
@@ -7281,14 +7298,17 @@ var Selection = /** @__PURE__ @class */ (function () {
                     args = {
                         data: rowObj.data, rowIndex: rowIndex, row: selectedRow, target: this_1.actualTarget,
                         prevRow: gObj.getRows()[this_1.prevRowIndex], previousRowIndex: this_1.prevRowIndex,
-                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this_1.isInteracted
+                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this_1.isInteracted,
+                        isHeaderCheckboxClicked: this_1.isHeaderCheckboxClicked
                     };
                     args = this_1.addMovableArgs(args, selectedMovableRow);
                 }
                 else {
                     args = {
                         data: rowObj.data, rowIndex: rowIndex, previousRowIndex: this_1.prevRowIndex,
-                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this_1.isInteracted
+                        row: selectedRow, prevRow: gObj.getRows()[this_1.prevRowIndex],
+                        foreignKeyData: rowObj.foreignKeyData, isInteracted: this_1.isInteracted,
+                        isHeaderCheckboxClicked: this_1.isHeaderCheckboxClicked
                     };
                 }
                 this_1.onActionComplete(args, rowSelected);
@@ -7559,7 +7579,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             var rowDeselectObj = {
                 rowIndex: rowIndex, data: this.selectionSettings.persistSelection && this.parent.checkAllRows === 'Uncheck' ?
                     this.persistSelectedData : data, foreignKeyData: foreignKeyData$$1,
-                cancel: false, isInteracted: this.isInteracted
+                cancel: false, isInteracted: this.isInteracted, isHeaderCheckboxClicked: this.isHeaderCheckboxClicked
             };
             var isHybrid = 'isHybrid';
             if (!isBlazor() || this.parent.isJsComponent || this.parent[isHybrid]) {
@@ -8907,6 +8927,9 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (!this.parent.enableVirtualization && this.parent.isPersistSelection) {
             this.refreshPersistSelection();
         }
+        if (this.parent.enableVirtualization) {
+            this.setCheckAllState();
+        }
     };
     Selection.prototype.updatePersistSelectedData = function (checkState) {
         if (this.parent.isPersistSelection) {
@@ -8958,6 +8981,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         var _this = this;
         var stateStr = this.getCheckAllStatus(checkBox);
         var state = stateStr === 'Check';
+        this.isHeaderCheckboxClicked = true;
         if (stateStr === 'Intermediate') {
             state = this.getCurrentBatchRecordChanges().some(function (data) {
                 return data[_this.primaryKey] in _this.selectedRowState;
@@ -9010,6 +9034,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         var gObj = this.parent;
         this.isMultiCtrlRequest = true;
         var rIndex = 0;
+        this.isHeaderCheckboxClicked = false;
         if (isGroupAdaptive(gObj)) {
             var uid = target.parentElement.getAttribute('data-uid');
             rIndex = gObj.getRows().map(function (m) { return m.getAttribute('data-uid'); }).indexOf(uid);
@@ -9583,6 +9608,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
     };
     Selection.prototype.dataReady = function (e) {
+        this.isHeaderCheckboxClicked = false;
         var isInfinitecroll = this.parent.enableInfiniteScrolling && e.requestType === 'infiniteScroll';
         if (e.requestType !== 'virtualscroll' && !this.parent.isPersistSelection && !isInfinitecroll) {
             this.disableUI = true;
@@ -14024,7 +14050,7 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
             return isNullOrUndefined(this.currentViewData.records) ?
                 this.currentViewData : this.currentViewData.records;
         }
-        return (this.allowGrouping && this.groupSettings.columns.length && this.currentViewData.length) ?
+        return (this.allowGrouping && this.groupSettings.columns.length && this.currentViewData.length && this.currentViewData.records) ?
             this.currentViewData.records : this.currentViewData;
     };
     Grid.prototype.mouseClickHandler = function (e) {
@@ -22970,7 +22996,7 @@ var RowDD = /** @__PURE__ @class */ (function () {
             var exp = new RegExp('e-active', 'g'); //high contrast issue
             _this.startedRow.innerHTML = _this.startedRow.innerHTML.replace(exp, '');
             tbody.appendChild(_this.startedRow);
-            if (gObj.getSelectedRows().length > 1) {
+            if (gObj.getSelectedRows().length > 1 && _this.startedRow.hasAttribute('aria-selected')) {
                 var dropCountEle = _this.parent.createElement('span', {
                     className: 'e-dropitemscount', innerHTML: '' + selectedRows.length,
                 });
@@ -27432,11 +27458,9 @@ var InlineEditRender = /** @__PURE__ @class */ (function () {
     };
     InlineEditRender.prototype.renderMovable = function (ele, mEle) {
         var frzCols = this.parent.getFrozenColumns();
-        for (var i = 0; i < frzCols; i++) {
-            mEle.querySelector('tr').removeChild(mEle.querySelector('tr').children[0]);
-        }
-        for (var i = frzCols, len = ele.querySelector('tr').childElementCount; i < len; i++) {
-            ele.querySelector('tr').removeChild(ele.querySelector('tr').children[ele.querySelector('tr').childElementCount - 1]);
+        mEle.querySelector('tr').innerHTML = '';
+        for (var i = frzCols; i < this.parent.getColumns().length; i++) {
+            mEle.querySelector('tr').appendChild(ele.querySelector('tr').removeChild(ele.querySelector('tr').children[frzCols]));
         }
     };
     InlineEditRender.prototype.getEditElement = function (elements, isEdit, tdElement, args, isFrozen) {
@@ -30260,7 +30284,7 @@ var Edit = /** @__PURE__ @class */ (function () {
     Edit.prototype.checkLastRow = function (tr, args) {
         var checkLastRow = this.isLastRow;
         if (this.parent.height !== 'auto' && this.parent.editSettings.newRowPosition === 'Bottom' && args &&
-            args.requestType === 'add') {
+            args.requestType === 'add' && this.parent.height > this.parent.getContentTable().scrollHeight) {
             addClass(tr.querySelectorAll('.e-rowcell'), 'e-lastrowadded');
         }
         else if (checkLastRow) {
@@ -30276,6 +30300,7 @@ var Edit = /** @__PURE__ @class */ (function () {
             this.showDialog('CancelEdit', this.dialogObj);
             return;
         }
+        this.parent.element.classList.remove('e-editing');
         this.editModule.closeEdit();
         if (!isBlazor()) {
             this.refreshToolbar();
@@ -31994,6 +32019,15 @@ var ExportHelper = /** @__PURE__ @class */ (function () {
         gridPool[exportId] = false;
         return { childGrid: childGridObj, element: element };
     };
+    ExportHelper.prototype.getGridExportColumns = function (columns) {
+        var actualGridColumns = [];
+        for (var i = 0, gridColumns = columns; i < gridColumns.length; i++) {
+            if (gridColumns[i].type !== 'checkbox') {
+                actualGridColumns.push(gridColumns[i]);
+            }
+        }
+        return actualGridColumns;
+    };
     return ExportHelper;
 }());
 /**
@@ -32381,7 +32415,8 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
         }
         var helper = new ExportHelper(gObj);
         var gColumns = isExportColumns(exportProperties) ?
-            prepareColumns(exportProperties.columns, gObj.enableColumnVirtualization) : gObj.columns;
+            prepareColumns(exportProperties.columns, gObj.enableColumnVirtualization) :
+            helper.getGridExportColumns(gObj.columns);
         var headerRow = helper.getHeaders(gColumns, this.includeHiddenColumn);
         var groupIndent = gObj.groupSettings.columns.length;
         excelRows = this.processHeaderContent(gObj, headerRow, groupIndent, excelRows);
@@ -33184,7 +33219,8 @@ var PdfExport = /** @__PURE__ @class */ (function () {
         var helper = new ExportHelper(gObj);
         var dataSource = this.processExportProperties(pdfExportProperties, returnType.result);
         var columns = isExportColumns(pdfExportProperties) ?
-            prepareColumns(pdfExportProperties.columns, gObj.enableColumnVirtualization) : gObj.columns;
+            prepareColumns(pdfExportProperties.columns, gObj.enableColumnVirtualization) :
+            helper.getGridExportColumns(gObj.columns);
         var isGrouping = false;
         if (gObj.groupSettings.columns.length) {
             isGrouping = true;
@@ -33455,7 +33491,7 @@ var PdfExport = /** @__PURE__ @class */ (function () {
                     spanCnt = spanCnt + newSpanCnt;
                     colIndex = colIndex + newSpanCnt - 1;
                 }
-                else if (cols[i].visible) {
+                else if (cols[i].visible || _this.hideColumnInclude) {
                     spanCnt++;
                     applyTextAndSpan(rowIndex, i + colIndex + index, cols[i], depth, 0);
                 }

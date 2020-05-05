@@ -1013,7 +1013,8 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
      */
     public setEmptyPoint(point: Points, i: number): void {
         if (!this.findVisibility(point)) {
-            point.visible = true;
+            point.visible = ((this.xAxis.valueType === 'Logarithmic' || this.yAxis.valueType === 'Logarithmic') && point.yValue === 0)
+            ? false : true;
             return null;
         }
         point.isEmpty = true;
@@ -1098,7 +1099,9 @@ export class SeriesBase extends ChildProperty<SeriesBase> {
      * To get Y min max for the provided point seriesType XY
      */
     private setXYMinMax(yValue: number): void {
-        this.yMin = Math.min(this.yMin, (isNullOrUndefined(yValue) || isNaN(yValue)) ? this.yMin : yValue);
+        this.yMin = (this.yAxis.valueType === 'Logarithmic' || this.xAxis.valueType === 'Logarithmic') ?
+        Math.min(this.yMin, (isNullOrUndefined(yValue) || isNaN(yValue) || (yValue === 0)) ? this.yMin : yValue) :
+        Math.min(this.yMin, (isNullOrUndefined(yValue) || isNaN(yValue)) ? this.yMin : yValue);
         this.yMax = Math.max(this.yMax, (isNullOrUndefined(yValue) || isNaN(yValue)) ? this.yMax : yValue);
     }
     /**

@@ -1648,6 +1648,8 @@ const checkPrevMerge = 'checkPrevMerge';
 const checkMerge = 'checkMerge';
 /** @hidden */
 const removeDataValidation = 'removeDataValidation';
+/** @hidden */
+const blankWorkbook = 'blankWorkbook';
 
 /**
  * Open properties.
@@ -14493,6 +14495,10 @@ class Clipboard {
     cMenuBeforeOpenHandler(e) {
         let sheet = this.parent.getActiveSheet();
         let l10n = this.parent.serviceLocator.getService(locale);
+        let delRowItems = [];
+        let hideRowItems = [];
+        let delColItems = [];
+        let hideColItems = [];
         if (e.target === 'Content' || e.target === 'RowHeader' || e.target === 'ColumnHeader') {
             this.parent.enableContextMenuItems([l10n.getConstant('Paste'), l10n.getConstant('PasteSpecial')], (this.copiedInfo && !sheet.isProtected) ? true : false);
             this.parent.enableContextMenuItems([l10n.getConstant('Cut')], (!sheet.isProtected) ? true : false);
@@ -14502,6 +14508,21 @@ class Clipboard {
         }
         if ((e.target === 'Content') && (sheet.isProtected && !sheet.protectSettings.insertLink)) {
             this.parent.enableContextMenuItems([l10n.getConstant('Hyperlink')], false);
+        }
+        if (e.target === 'ColumnHeader' && sheet.isProtected) {
+            delColItems = [l10n.getConstant('DeleteColumn'), l10n.getConstant('DeleteColumns'),
+                l10n.getConstant('InsertColumn'), l10n.getConstant('InsertColumns')];
+            hideColItems = [l10n.getConstant('HideColumn'), l10n.getConstant('HideColumns'),
+                l10n.getConstant('UnHideColumns')];
+            this.parent.enableContextMenuItems(delColItems, false);
+            this.parent.enableContextMenuItems(hideColItems, (sheet.protectSettings.formatColumns) ? true : false);
+        }
+        if (e.target === 'RowHeader' && sheet.isProtected) {
+            delRowItems = [l10n.getConstant('DeleteRow'), l10n.getConstant('DeleteRows'),
+                l10n.getConstant('InsertRow'), l10n.getConstant('InsertRows')];
+            hideRowItems = [l10n.getConstant('HideRow'), l10n.getConstant('HideRows'), l10n.getConstant('UnHideRows')];
+            this.parent.enableContextMenuItems(delRowItems, false);
+            this.parent.enableContextMenuItems(hideRowItems, (sheet.protectSettings.formatRows) ? true : false);
         }
     }
     rowHeightChanged(args) {
@@ -14547,12 +14568,12 @@ class Clipboard {
             let beginEventArgs = {
                 requestType: 'paste',
                 copiedInfo: this.copiedInfo,
-                copiedRange: getRangeAddress(cIdx),
+                copiedRange: isExternal ? null : getRangeAddress(cIdx),
                 pastedRange: getRangeAddress(rfshRange),
                 type: (args && args.type) || 'All',
                 cancel: false
             };
-            if (args.isAction) {
+            if (args.isAction || isExternal) {
                 this.parent.notify(beginAction, { eventArgs: beginEventArgs, action: 'clipboard' });
             }
             if (beginEventArgs.cancel) {
@@ -14638,7 +14659,7 @@ class Clipboard {
             if (isExternal || (args && args.isAction)) {
                 this.parent.element.focus();
             }
-            if (args.isAction) {
+            if (args.isAction || isExternal) {
                 let sheetIndex = copyInfo && copyInfo.sId ? getSheetIndexFromId(this.parent, copyInfo.sId) :
                     this.parent.activeSheetIndex;
                 let eventArgs = {
@@ -14646,8 +14667,8 @@ class Clipboard {
                     copiedInfo: copyInfo,
                     mergeCollection: mergeCollection,
                     pasteSheetIndex: this.parent.activeSheetIndex,
-                    copiedRange: this.parent.sheets[sheetIndex].name + '!' + getRangeAddress(copyInfo && copyInfo.range ? copyInfo.range :
-                        getRangeIndexes(this.parent.sheets[sheetIndex].selectedRange)),
+                    copiedRange: isExternal ? null : this.parent.sheets[sheetIndex].name + '!' + getRangeAddress(copyInfo &&
+                        copyInfo.range ? copyInfo.range : getRangeIndexes(this.parent.sheets[sheetIndex].selectedRange)),
                     pastedRange: getSheetName(this.parent) + '!' + getRangeAddress(rfshRange),
                     type: (args && args.type) || 'All'
                 };
@@ -18890,9 +18911,6 @@ class SpreadsheetHyperlink {
             if (typeof (cell.hyperlink) === 'string') {
                 td.querySelector('a').setAttribute('href', cell.hyperlink);
             }
-            else {
-                td.querySelector('a').setAttribute('href', cell.hyperlink.address);
-            }
         }
     }
     hyperEditContent() {
@@ -19186,7 +19204,7 @@ class UndoRedo {
             case 'clipboard':
                 let copiedInfo = eventArgs.copiedInfo;
                 address = getRangeIndexes(getRangeFromAddress(eventArgs.pastedRange));
-                if (copiedInfo.isCut) {
+                if (copiedInfo && copiedInfo.isCut) {
                     cutCellDetails = this.getCellDetails(copiedInfo.range, getSheet(this.parent, getSheetIndexFromId(this.parent, copiedInfo.sId)));
                 }
                 break;
@@ -23545,13 +23563,8 @@ class Ribbon$$1 {
                                     content: this.parent.serviceLocator.getService(locale).getConstant('Ok'), isPrimary: true
                                 },
                                 click: () => {
-                                    this.parent.sheets.length = 0;
-                                    this.parent.createSheet();
                                     dialogInst.hide();
-                                    this.parent.activeSheetIndex = this.parent.sheets.length - 1;
-                                    this.parent.notify(refreshSheetTabs, {});
-                                    this.parent.notify(sheetsDestroyed, {});
-                                    this.parent.renderModule.refreshSheet();
+                                    this.blankWorkbook();
                                 }
                             }]
                     });
@@ -23937,6 +23950,15 @@ class Ribbon$$1 {
             }
         }
     }
+    blankWorkbook() {
+        this.parent.sheets.length = 0;
+        this.parent.sheetNameCount = 1;
+        this.parent.notify(sheetsDestroyed, {});
+        this.parent.createSheet();
+        this.parent.activeSheetIndex = this.parent.sheets.length - 1;
+        this.parent.notify(refreshSheetTabs, {});
+        this.parent.renderModule.refreshSheet();
+    }
     addEventListener() {
         this.parent.on(ribbon, this.initRibbon, this);
         this.parent.on(enableToolbarItems, this.enableToolbarItems, this);
@@ -23952,6 +23974,7 @@ class Ribbon$$1 {
         this.parent.on(enableRibbonTabs, this.enableRibbonTabs, this);
         this.parent.on(protectCellFormat, this.protectSheetHandler, this);
         this.parent.on(selectionComplete, this.updateMergeItem, this);
+        this.parent.on(blankWorkbook, this.blankWorkbook, this);
     }
     destroy() {
         let parentElem = this.parent.element;
@@ -24008,6 +24031,7 @@ class Ribbon$$1 {
             this.parent.off(enableRibbonTabs, this.enableRibbonTabs);
             this.parent.off(protectCellFormat, this.protectSheetHandler);
             this.parent.off(selectionComplete, this.updateMergeItem);
+            this.parent.off(blankWorkbook, this.blankWorkbook);
         }
     }
 }
@@ -29474,7 +29498,7 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
      * @param {number} sheetIndex - Specifies the sheetIndex. If not specified, it will consider the active sheet.
      */
     setRowHeight(height = 20, rowIndex = 0, sheetIndex) {
-        let sheet = isNullOrUndefined(sheetIndex) ? this.getActiveSheet() : this.sheets[sheetIndex - 1];
+        let sheet = isNullOrUndefined(sheetIndex) ? this.getActiveSheet() : this.sheets[sheetIndex];
         if (sheet) {
             let mIndex = rowIndex;
             let rowHeight = (typeof height === 'number') ? height + 'px' : height;
@@ -29794,6 +29818,14 @@ let Spreadsheet = Spreadsheet_1 = class Spreadsheet extends Workbook {
         else {
             super.hideColumn(startIndex, endIndex, hide, sheet);
         }
+    }
+    /**
+     * Used to refresh the spreadsheet.
+     * @param {boolean} isNew - Specifies `true` / `false` to create new workbook in spreadsheet.
+     * @returns void
+     */
+    refresh(isNew) {
+        (isNew) ? this.notify(blankWorkbook, {}) : super.refresh();
     }
     /**
      * Gets the row header div of the Spreadsheet.
@@ -30524,5 +30556,5 @@ Spreadsheet = Spreadsheet_1 = __decorate$9([
  * Export Spreadsheet modules
  */
 
-export { Workbook, Range, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, setColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Cell, getCell, setCell, skipDefaultValue, wrap, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getAddressFromSelectedRange, getAddressInfo, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, ProtectSettings, Hyperlink, Validation, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, findAllValues, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, wrapEvent, onSave, insert, deleteAction, insertModel, deleteModel, isValidation, setValidation, addHighlight, dataValidate, findNext, findPrevious, goto, findWorkbookHandler, replaceHandler, replaceAllHandler, showDialog, findUndoRedo, findKeyUp, removeValidation, removeHighlight, queryCellInfo, count, findCount, protectSheetWorkBook, updateToggle, protectsheetHandler, unprotectsheetHandler, replaceAllDialog, workBookeditAlert, setLockCells, applyLockCells, setMerge, applyMerge, mergedRange, activeCellMergedRange, insertMerge, pasteMerge, checkIsFormula, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, WorkbookInsert, WorkbookDelete, WorkbookDataValidation, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookMerge, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, insertSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableToolbarItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideFileMenuItems, addFileMenuItems, hideRibbonTabs, enableRibbonTabs, addRibbonTabs, addToolbarItems, hideToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, initiateCustomSort, applySort, collaborativeUpdate, hideShow, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, setScrollEvent, initiateDataValidation, validationError, startEdit, invalidData, clearInvalid, protectSheet, unprotectSheet, applyProtect, protectCellFormat, gotoDlg, findDlg, findHandler, replace, created, editAlert, setUndoRedo, enableFormulaInput, protectSelection, hiddenMerge, checkPrevMerge, checkMerge, removeDataValidation, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, getSiblingsHeight, inView, getCellPosition, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, setRowEleHeight, getTextHeight, getTextWidth, getLines, setMaxHgt, getMaxHgt, skipHiddenIdx, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, WRAPTEXT, locale, dialog, actionEvents, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
+export { Workbook, Range, UsedRange, Sheet, getSheetIndex, getSheetIndexFromId, getSheetNameFromAddress, getSheetIndexByName, updateSelectedRange, getSelectedRange, getSheet, getSheetNameCount, getMaxSheetId, initSheet, getSheetName, Row, getRow, setRow, isHiddenRow, getRowHeight, setRowHeight, getRowsHeight, Column, getColumn, setColumn, getColumnWidth, getColumnsWidth, isHiddenCol, Cell, getCell, setCell, skipDefaultValue, wrap, getData, getModel, processIdx, clearRange, getRangeIndexes, getCellIndexes, getColIndex, getCellAddress, getRangeAddress, getColumnHeaderText, getIndexesFromAddress, getRangeFromAddress, getAddressFromSelectedRange, getAddressInfo, getSwapRange, isSingleCell, executeTaskAsync, WorkbookBasicModule, WorkbookAllModule, getWorkbookRequiredModules, CellStyle, DefineName, ProtectSettings, Hyperlink, Validation, workbookDestroyed, updateSheetFromDataSource, dataSourceChanged, workbookOpen, beginSave, saveCompleted, applyNumberFormatting, getFormattedCellObject, refreshCellElement, setCellFormat, findAllValues, textDecorationUpdate, applyCellFormat, updateUsedRange, workbookFormulaOperation, workbookEditOperation, checkDateFormat, getFormattedBarText, activeCellChanged, openSuccess, openFailure, sheetCreated, sheetsDestroyed, aggregateComputation, beforeSort, initiateSort, sortComplete, sortRangeAlert, initiatelink, beforeHyperlinkCreate, afterHyperlinkCreate, beforeHyperlinkClick, afterHyperlinkClick, addHyperlink, setLinkModel, beforeFilter, initiateFilter, filterComplete, filterRangeAlert, clearAllFilter, wrapEvent, onSave, insert, deleteAction, insertModel, deleteModel, isValidation, setValidation, addHighlight, dataValidate, findNext, findPrevious, goto, findWorkbookHandler, replaceHandler, replaceAllHandler, showDialog, findUndoRedo, findKeyUp, removeValidation, removeHighlight, queryCellInfo, count, findCount, protectSheetWorkBook, updateToggle, protectsheetHandler, unprotectsheetHandler, replaceAllDialog, workBookeditAlert, setLockCells, applyLockCells, setMerge, applyMerge, mergedRange, activeCellMergedRange, insertMerge, pasteMerge, checkIsFormula, toFraction, getGcd, intToDate, dateToInt, isDateTime, isNumber, toDate, workbookLocale, localeData, DataBind, WorkbookOpen, WorkbookSave, WorkbookFormula, WorkbookNumberFormat, getFormatFromType, getTypeFromFormat, WorkbookSort, WorkbookFilter, WorkbookCellFormat, WorkbookEdit, WorkbookHyperlink, WorkbookInsert, WorkbookDelete, WorkbookDataValidation, WorkbookFindAndReplace, WorkbookProtectSheet, WorkbookMerge, getRequiredModules, ribbon, formulaBar, sheetTabs, refreshSheetTabs, dataRefresh, initialLoad, contentLoaded, mouseDown, spreadsheetDestroyed, editOperation, formulaOperation, formulaBarOperation, click, keyUp, keyDown, formulaKeyUp, formulaBarUpdate, onVerticalScroll, onHorizontalScroll, beforeContentLoaded, beforeVirtualContentLoaded, virtualContentLoaded, contextMenuOpen, cellNavigate, mouseUpAfterSelection, selectionComplete, cMenuBeforeOpen, insertSheetTab, removeSheetTab, renameSheetTab, ribbonClick, refreshRibbon, enableToolbarItems, tabSwitch, selectRange, cut, copy, paste, clearCopy, dataBound, beforeDataBound, addContextMenuItems, removeContextMenuItems, enableContextMenuItems, enableFileMenuItems, hideFileMenuItems, addFileMenuItems, hideRibbonTabs, enableRibbonTabs, addRibbonTabs, addToolbarItems, hideToolbarItems, beforeRibbonCreate, rowHeightChanged, colWidthChanged, beforeHeaderLoaded, onContentScroll, deInitProperties, activeSheetChanged, renameSheet, initiateCustomSort, applySort, collaborativeUpdate, hideShow, autoFit, updateToggleItem, initiateHyperlink, editHyperlink, openHyperlink, removeHyperlink, createHyperlinkElement, sheetNameUpdate, hideSheet, performUndoRedo, updateUndoRedoCollection, setActionData, getBeforeActionData, clearUndoRedoCollection, initiateFilterUI, renderFilterCell, reapplyFilter, filterByCellValue, clearFilter, getFilteredColumn, completeAction, beginAction, filterCellKeyDown, getFilterRange, setAutoFit, refreshFormulaDatasource, setScrollEvent, initiateDataValidation, validationError, startEdit, invalidData, clearInvalid, protectSheet, unprotectSheet, applyProtect, protectCellFormat, gotoDlg, findDlg, findHandler, replace, created, editAlert, setUndoRedo, enableFormulaInput, protectSelection, hiddenMerge, checkPrevMerge, checkMerge, removeDataValidation, blankWorkbook, getUpdateUsingRaf, removeAllChildren, getColGroupWidth, getScrollBarWidth, getSiblingsHeight, inView, getCellPosition, locateElem, setStyleAttribute$1 as setStyleAttribute, getStartEvent, getMoveEvent, getEndEvent, isTouchStart, isTouchMove, isTouchEnd, getClientX, getClientY, setAriaOptions, destroyComponent, setResize, setWidthAndHeight, findMaxValue, updateAction, hasTemplate, setRowEleHeight, getTextHeight, getTextWidth, getLines, setMaxHgt, getMaxHgt, skipHiddenIdx, BasicModule, AllModule, ScrollSettings, SelectionSettings, DISABLED, WRAPTEXT, locale, dialog, actionEvents, fontColor, fillColor, defaultLocale, Spreadsheet, Clipboard, Edit, Selection, Scroll, VirtualScroll, KeyboardNavigation, KeyboardShortcut, CellFormat, Resize, CollaborativeEditing, ShowHide, SpreadsheetHyperlink, UndoRedo, WrapText, Insert, Delete, DataValidation, ProtectSheet, FindAndReplace, Merge, Ribbon$$1 as Ribbon, FormulaBar, Formula, SheetTabs, Open, Save, ContextMenu$1 as ContextMenu, NumberFormat, Sort, Filter, Render, SheetRender, RowRenderer, CellRenderer, Calculate, FormulaError, FormulaInfo, CalcSheetFamilyItem, getAlphalabel, ValueChangedArgs, Parser, CalculateCommon, isUndefined$1 as isUndefined, getModules, getValue$1 as getValue, setValue, ModuleLoader, CommonErrors, FormulasErrorsStrings, BasicFormulas };
 //# sourceMappingURL=ej2-spreadsheet.es2015.js.map

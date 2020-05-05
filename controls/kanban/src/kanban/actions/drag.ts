@@ -373,6 +373,9 @@ export class DragAndDrop {
                 let cell: HTMLElement = closest(node, '.' + cls.CONTENT_CELLS_CLASS) as HTMLElement;
                 if (cell) {
                     cell.style.borderStyle = '';
+                    if (cell.querySelector('.' + cls.SHOW_ADD_BUTTON)) {
+                        removeClass([cell.querySelector('.' + cls.SHOW_ADD_BUTTON)], cls.MULTI_CARD_WRAPPER_CLASS);
+                    }
                     removeClass([cell.querySelector('.' + cls.CARD_WRAPPER_CLASS)], cls.MULTI_CARD_WRAPPER_CLASS);
                 }
             });

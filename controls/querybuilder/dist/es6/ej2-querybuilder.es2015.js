@@ -289,6 +289,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                 targetValue = document.getElementById(forIdValue).getAttribute('value');
             }
             groupID = element.id.replace(this.element.id + '_', '');
+            let group = this.getGroup(groupID);
             let ariaChecked;
             if (this.enableNotCondition) {
                 if (target.className.indexOf('e-qb-toggle') > -1) {
@@ -301,10 +302,10 @@ let QueryBuilder = class QueryBuilder extends Component {
                         addClass([toggleElem], 'e-active-toggle');
                         ariaChecked = true;
                     }
-                    targetValue = this.rule.condition;
+                    targetValue = group.condition;
                 }
                 else {
-                    ariaChecked = this.rule.not;
+                    ariaChecked = group.not;
                 }
             }
             args = { groupID: groupID, cancel: false, type: 'condition', value: targetValue.toLowerCase() };
@@ -2584,7 +2585,12 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
         let groupId = (target instanceof Element) ? target.id : this.element.id + '_' + target;
         let rule = this.getParentGroup(groupId);
-        return { rules: rule.rules, condition: rule.condition };
+        if (this.enableNotCondition) {
+            return { rules: rule.rules, condition: rule.condition, not: rule.not };
+        }
+        else {
+            return { rules: rule.rules, condition: rule.condition };
+        }
     }
     /**
      * Deletes the group or groups based on the group ID.
@@ -3103,10 +3109,10 @@ let QueryBuilder = class QueryBuilder extends Component {
         let condition = rules.condition;
         if (rules.not) {
             if (isRoot) {
-                queryStr += 'not (';
+                queryStr += 'NOT (';
             }
             else {
-                queryStr += ' not (';
+                queryStr += ' NOT (';
             }
         }
         for (let j = 0, jLen = rules.rules.length; j < jLen; j++) {
@@ -3171,7 +3177,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                 }
             }
             if (j !== jLen - 1) {
-                queryStr += ' ' + condition + ' ';
+                queryStr += ' ' + condition.toUpperCase() + ' ';
             }
         }
         if (!isRoot) {
@@ -3228,7 +3234,7 @@ let QueryBuilder = class QueryBuilder extends Component {
     }
     parseSqlStrings(sqlString) {
         let operators = ['=', '!=', '<=', '>=', '<', '>'];
-        let conditions = ['and', 'or', 'not'];
+        let conditions = ['AND', 'OR', 'NOT'];
         let subOp = ['IN', 'NOT IN', 'LIKE', 'NOT LIKE', 'BETWEEN', 'NOT BETWEEN', 'IS NULL', 'IS NOT NULL',
             'IS EMPTY', 'IS NOT EMPTY'];
         let regexStr;

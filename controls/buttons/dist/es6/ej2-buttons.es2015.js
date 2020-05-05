@@ -1865,7 +1865,11 @@ let ChipList = class ChipList extends Component {
                 this.trailingIconCss.toString()) : (this.trailingIconCss.toString()),
             enabled: typeof data === 'object' ? (!isNullOrUndefined(data.enabled) ? (data.enabled.toString() === 'false' ? false : true) :
                 chipEnabled) : (chipEnabled),
-            value: typeof data === 'object' ? ((data.value ? data.value.toString() : null)) : null
+            value: typeof data === 'object' ? ((data.value ? data.value.toString() : null)) : null,
+            leadingIconUrl: typeof data === 'object' ? (data.leadingIconUrl ? data.leadingIconUrl.toString() : this.leadingIconUrl) :
+                this.leadingIconUrl,
+            trailingIconUrl: typeof data === 'object' ? (data.trailingIconUrl ? data.trailingIconUrl.toString() : this.trailingIconUrl) :
+                this.trailingIconUrl
         };
         return fields;
     }
@@ -1882,6 +1886,12 @@ let ChipList = class ChipList extends Component {
             let chipIconElement = this.createElement('span', { className: className });
             chipArray.push(chipIconElement);
         }
+        else if (fields.leadingIconUrl) {
+            let className = (classNames.avatar + ' ' + 'image-url').trim();
+            let chipIconElement = this.createElement('span', { className: className });
+            chipIconElement.style.backgroundImage = 'url(' + fields.leadingIconUrl + ')';
+            chipArray.push(chipIconElement);
+        }
         let chipTextElement = this.createElement('span', { className: classNames.text });
         chipTextElement.innerText = fields.text;
         chipArray.push(chipTextElement);
@@ -1890,6 +1900,12 @@ let ChipList = class ChipList extends Component {
                 (fields.trailingIconCss ? fields.trailingIconCss : classNames.deleteIcon)).trim();
             let chipdeleteElement = this.createElement('span', { className: className });
             chipArray.push(chipdeleteElement);
+        }
+        else if (fields.trailingIconUrl) {
+            let className = ('trailing-icon-url').trim();
+            let chipIconsElement = this.createElement('span', { className: className });
+            chipIconsElement.style.backgroundImage = 'url(' + fields.trailingIconUrl + ')';
+            chipArray.push(chipIconsElement);
         }
         return chipArray;
     }
@@ -2289,6 +2305,12 @@ __decorate$4([
 __decorate$4([
     Property('')
 ], ChipList.prototype, "trailingIconCss", void 0);
+__decorate$4([
+    Property('')
+], ChipList.prototype, "leadingIconUrl", void 0);
+__decorate$4([
+    Property('')
+], ChipList.prototype, "trailingIconUrl", void 0);
 __decorate$4([
     Property('')
 ], ChipList.prototype, "cssClass", void 0);

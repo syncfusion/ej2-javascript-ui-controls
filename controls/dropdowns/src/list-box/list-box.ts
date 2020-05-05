@@ -637,7 +637,15 @@ export class ListBox extends DropDownBase {
         this.trigger('drag', this.getDragArgs(args as DragEventArgs & BlazorDragEventArgs));
         let listObj: ListBox = this.getComponent(args.target);
         if (listObj && listObj.listData.length === 0) {
-            listObj.ulElement.innerHTML = '';
+            if (isBlazor()) {
+                listObj.ulElement.childNodes.forEach((elem: HTMLElement) => {
+                    if (elem.nodeName === '#text') {
+                        elem.nodeValue = '';
+                    }
+                });
+            } else {
+                listObj.ulElement.innerHTML = '';
+            }
         }
     }
 
@@ -1195,10 +1203,8 @@ export class ListBox extends DropDownBase {
                     'spellcheck': 'false'
                 });
             }
-            if (this.allowFiltering && this.height.toString().indexOf('%') < 0) {
+            if (this.height.toString().indexOf('%') < 0) {
                 addClass([this.list], 'e-filter-list');
-            } else {
-                removeClass([this.list], 'e-filter-list');
             }
             this.inputString = this.filterInput.value;
             EventHandler.add(this.filterInput, 'input', this.onInput, this);
@@ -2134,6 +2140,7 @@ export class ListBox extends DropDownBase {
                     } else {
                         this.list.removeChild(this.list.getElementsByClassName('e-filter-parent')[0]);
                         this.filterParent = null;
+                        removeClass([this.list], 'e-filter-list');
                     }
                     break;
                 case 'scope':

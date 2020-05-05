@@ -1010,6 +1010,8 @@ export interface RowDeselectEventArgs {
     target?: Element;
     /** Defines whether event is triggered by interaction or not. */
     isInteracted?: boolean;
+    /** Defines whether header checkbox is clicked or not */
+    isHeaderCheckboxClicked ?: boolean;
 }
 
 export interface RowSelectEventArgs extends RowDeselectEventArgs {

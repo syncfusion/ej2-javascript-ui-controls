@@ -346,6 +346,7 @@ var QueryBuilder = /** @class */ (function (_super) {
                 targetValue = document.getElementById(forIdValue).getAttribute('value');
             }
             groupID = element.id.replace(this.element.id + '_', '');
+            var group = this.getGroup(groupID);
             var ariaChecked = void 0;
             if (this.enableNotCondition) {
                 if (target.className.indexOf('e-qb-toggle') > -1) {
@@ -358,10 +359,10 @@ var QueryBuilder = /** @class */ (function (_super) {
                         sf.base.addClass([toggleElem], 'e-active-toggle');
                         ariaChecked = true;
                     }
-                    targetValue = this.rule.condition;
+                    targetValue = group.condition;
                 }
                 else {
-                    ariaChecked = this.rule.not;
+                    ariaChecked = group.not;
                 }
             }
             args = { groupID: groupID, cancel: false, type: 'condition', value: targetValue.toLowerCase() };
@@ -2658,7 +2659,12 @@ var QueryBuilder = /** @class */ (function (_super) {
         }
         var groupId = (target instanceof Element) ? target.id : this.element.id + '_' + target;
         var rule = this.getParentGroup(groupId);
-        return { rules: rule.rules, condition: rule.condition };
+        if (this.enableNotCondition) {
+            return { rules: rule.rules, condition: rule.condition, not: rule.not };
+        }
+        else {
+            return { rules: rule.rules, condition: rule.condition };
+        }
     };
     /**
      * Deletes the group or groups based on the group ID.
@@ -3178,10 +3184,10 @@ var QueryBuilder = /** @class */ (function (_super) {
         var condition = rules.condition;
         if (rules.not) {
             if (isRoot) {
-                queryStr += 'not (';
+                queryStr += 'NOT (';
             }
             else {
-                queryStr += ' not (';
+                queryStr += ' NOT (';
             }
         }
         for (var j = 0, jLen = rules.rules.length; j < jLen; j++) {
@@ -3246,7 +3252,7 @@ var QueryBuilder = /** @class */ (function (_super) {
                 }
             }
             if (j !== jLen - 1) {
-                queryStr += ' ' + condition + ' ';
+                queryStr += ' ' + condition.toUpperCase() + ' ';
             }
         }
         if (!isRoot) {
@@ -3303,7 +3309,7 @@ var QueryBuilder = /** @class */ (function (_super) {
     };
     QueryBuilder.prototype.parseSqlStrings = function (sqlString) {
         var operators = ['=', '!=', '<=', '>=', '<', '>'];
-        var conditions = ['and', 'or', 'not'];
+        var conditions = ['AND', 'OR', 'NOT'];
         var subOp = ['IN', 'NOT IN', 'LIKE', 'NOT LIKE', 'BETWEEN', 'NOT BETWEEN', 'IS NULL', 'IS NOT NULL',
             'IS EMPTY', 'IS NOT EMPTY'];
         var regexStr;

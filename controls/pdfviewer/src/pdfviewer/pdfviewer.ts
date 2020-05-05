@@ -11,7 +11,7 @@ import { Magnification } from './index';
 import { Toolbar } from './index';
 import { ToolbarItem } from './index';
 // tslint:disable-next-line:max-line-length
-import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType } from './base/types';
+import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem } from './base/types';
 import { Annotation } from './index';
 import { LinkAnnotation } from './index';
 import { ThumbnailView } from './index';
@@ -24,7 +24,7 @@ import { Print, CalibrationUnit } from './index';
 import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs } from './index';
 import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs } from './index';
 // tslint:disable-next-line:max-line-length
-import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs } from './index';
+import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs, PrintStartEventArgs, PrintEndEventArgs } from './index';
 // tslint:disable-next-line:max-line-length
 import { TextSearchStartEventArgs, TextSearchCompleteEventArgs, TextSearchHighlightEventArgs } from './index';
 import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';
@@ -2237,6 +2237,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public contextMenuOption: ContextMenuAction;
 
     /**
+     * enable or disable context menu Items
+     * @default []
+     */
+    @Property([])
+    public disableContextMenuItems: ContextMenuItem[];
+
+    /**
      * Enable or disables the Navigation module of PdfViewer.
      * @default true
      */
@@ -2257,6 +2264,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     @Property(false)
     public enableShapeLabel: boolean;
 
+    /**
+     * Enable or disables the customization of measure values in PdfViewer.
+     * @default true
+     */
+    @Property(true)
+    public enableImportAnnotationMeasurement: boolean;
 
     /**
      * Enable or disables the Pinch zoom of PdfViewer.
@@ -3051,6 +3064,22 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Event()
     public downloadEnd: EmitType<DownloadEndEventArgs>;
+
+    /**
+     * Triggers an event when the print action is started.
+     * @event
+     * @blazorProperty 'PrintStart'
+     */
+    @Event()
+    public printStart: EmitType<PrintStartEventArgs>;
+
+    /**
+     * Triggers an event when the print actions is finished.
+     * @event
+     * @blazorProperty 'PrintEnd'
+     */
+    @Event()
+    public printEnd: EmitType<PrintEndEventArgs>;
 
     /**
      * Triggers an event when the text search is started.
@@ -3944,6 +3973,26 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public fireDownloadEnd(fileName: string, downloadData: string): void {
         let eventArgs: DownloadEndEventArgs = { fileName: fileName, downloadDocument: downloadData };
         this.trigger('downloadEnd', eventArgs);
+    }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public firePrintStart(): boolean {
+        let eventArgs: PrintStartEventArgs = { fileName: this.downloadFileName, cancel: false };
+        this.trigger('printStart', eventArgs);
+        if (eventArgs.cancel) {
+           return false;
+        } else {
+            return true;
+        }
+    }
+    /**
+     * @private
+     */
+    public firePrintEnd(fileName: string): void {
+        let eventArgs: PrintEndEventArgs = { fileName: fileName };
+        this.trigger('printEnd', eventArgs);
     }
     /**
      * @private

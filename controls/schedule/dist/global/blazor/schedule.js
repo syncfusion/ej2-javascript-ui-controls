@@ -5001,8 +5001,7 @@ var EventBase = /** @class */ (function () {
         }
     };
     EventBase.prototype.getReadonlyAttribute = function (event) {
-        return (event[this.parent.eventFields.isReadonly]) ?
-            event[this.parent.eventFields.isReadonly] : 'false';
+        return (event[this.parent.eventFields.isReadonly] || this.parent.readonly).toString();
     };
     EventBase.prototype.isBlockRange = function (eventData) {
         var _this = this;
@@ -5535,7 +5534,10 @@ var QuickPopups = /** @class */ (function () {
                         EVENT_RECURRENCE_ICON_CLASS : EVENT_RECURRENCE_EDIT_ICON_CLASS;
                     appointmentEle.appendChild(sf.base.createElement('div', { className: ICON + ' ' + iconClass }));
                 }
-                var args = { data: eventData, element: appointmentEle, cancel: false };
+                var args = {
+                    data: sf.base.extend({}, eventData, null, true),
+                    element: appointmentEle, cancel: false
+                };
                 this_1.parent.trigger(eventRendered, args, function (eventArgs) {
                     if (!eventArgs.cancel) {
                         moreEventWrapperEle.appendChild(appointmentEle);
@@ -11563,7 +11565,7 @@ var ResourceBase = /** @class */ (function () {
             }
             else {
                 this.parent.renderModule.render(this.parent.currentView, false);
-                var processed = this.parent.eventBase.processData(this.parent.eventsData);
+                var processed = this.parent.eventBase.processData(this.parent.blockData.concat(this.parent.eventsData));
                 this.parent.notify(dataReady, { processedData: processed });
             }
         }
@@ -12009,14 +12011,19 @@ var ResourceBase = /** @class */ (function () {
             if (this.parent.virtualScrollModule) {
                 var virtual = this.parent.element.querySelector('.' + VIRTUAL_TRACK_CLASS);
                 var averageRowHeight = Math.round(virtual.offsetHeight / this.expandedResources.length);
-                var isRendered = this.renderedResources.filter(function (e) {
-                    return e.groupIndex === index;
-                });
-                if (((((Math.round(this.parent.element.querySelector('.' + CONTENT_WRAP_CLASS).offsetHeight / 60)
-                    - this.parent.virtualScrollModule.bufferCount) < index))
-                    && this.renderedResources[this.renderedResources.length - 1].groupIndex > index) && (isRendered.length === 0)) {
-                    scrollElement.scrollTop =
-                        (index * averageRowHeight) + ((this.parent.virtualScrollModule.bufferCount - 1) * averageRowHeight);
+                if (this.parent.rowAutoHeight) {
+                    scrollElement.scrollTop = 0;
+                    this.parent.virtualScrollModule.virtualScrolling();
+                }
+                scrollElement.scrollTop = (index * averageRowHeight)
+                    - (((this.parent.virtualScrollModule.bufferCount - 1) * averageRowHeight));
+                this.parent.virtualScrollModule.virtualScrolling();
+                if (this.parent.rowAutoHeight) {
+                    var td = this.parent.element.querySelector("." + WORK_CELLS_CLASS + "[data-group-index=\"" + index + "\"]");
+                    if (td && !td.parentElement.classList.contains(HIDDEN_CLASS)) {
+                        scrollElement.scrollTop =
+                            (scrollElement.scrollTop < td.offsetTop) ? td.offsetTop : scrollElement.scrollTop + td.offsetTop;
+                    }
                 }
                 else {
                     scrollElement.scrollTop = (index * averageRowHeight);
@@ -12344,6 +12351,8 @@ var Schedule = /** @class */ (function (_super) {
         if (selectedDate === void 0) { selectedDate = this.selectedDate; }
         // persist the selected date value
         var date = selectedDate instanceof Date ? new Date(selectedDate.getTime()) : new Date(selectedDate);
+        this.minDate = this.minDate instanceof Date ? new Date(this.minDate.getTime()) : new Date(this.minDate);
+        this.maxDate = this.maxDate instanceof Date ? new Date(this.maxDate.getTime()) : new Date(this.maxDate);
         if (this.minDate <= this.maxDate) {
             if (date < this.minDate) {
                 date = this.minDate;
@@ -16162,7 +16171,10 @@ var VerticalEvent = /** @class */ (function (_super) {
             sf.base.setStyleAttribute(appointmentElement, { 'left': appLeft });
         }
         var eventType = appointmentElement.classList.contains(BLOCK_APPOINTMENT_CLASS) ? 'blockEvent' : 'event';
-        var args = { data: eventObj, element: appointmentElement, cancel: false, type: eventType };
+        var args = {
+            data: sf.base.extend({}, eventObj, null, true),
+            element: appointmentElement, cancel: false, type: eventType
+        };
         this.parent.trigger(eventRendered, args, function (eventArgs) {
             if (!eventArgs.cancel) {
                 appointmentWrap[index].appendChild(appointmentElement);
@@ -18220,13 +18232,14 @@ var VerticalView = /** @class */ (function (_super) {
     };
     VerticalView.prototype.setContentHeight = function (element, leftPanelElement, height) {
         if (this.parent.isAdaptive && !this.isTimelineView() && !this.parent.isServerRenderer()) {
-            element.style.height = sf.base.formatUnit(height);
+            element.style.height = (this.parent.height === 'auto') ? 'auto' : sf.base.formatUnit(height);
         }
         else {
             if (!sf.base.isNullOrUndefined(leftPanelElement)) {
-                leftPanelElement.style.height = sf.base.formatUnit(height - this.getScrollXIndent(element));
+                leftPanelElement.style.height = (this.parent.height === 'auto') ? 'auto'
+                    : sf.base.formatUnit(height - this.getScrollXIndent(element));
             }
-            element.style.height = sf.base.formatUnit(height);
+            element.style.height = (this.parent.height === 'auto') ? 'auto' : sf.base.formatUnit(height);
         }
     };
     VerticalView.prototype.scrollToWorkHour = function () {
@@ -19690,7 +19703,10 @@ var AgendaBase = /** @class */ (function () {
                 sf.base.append([].slice.call(templateEle), appWrapper);
                 removeChildren(listElement.children[li]);
                 listElement.children[li].appendChild(appWrapper);
-                var args = { data: listData[li], element: listElement.children[li], cancel: false };
+                var args = {
+                    data: sf.base.extend({}, listData[li], null, true),
+                    element: listElement.children[li], cancel: false
+                };
                 this_1.parent.trigger(eventRendered, args, function (eventArgs) {
                     if (eventArgs.cancel) {
                         sf.base.remove(listElement.children[li]);

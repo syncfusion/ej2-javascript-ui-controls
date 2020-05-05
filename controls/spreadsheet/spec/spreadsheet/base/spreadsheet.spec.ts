@@ -608,7 +608,7 @@ describe('Spreadsheet base module ->', () => {
         });
 
         it('setRowHeight testing', (done: Function) => {
-            helper.invoke('setRowHeight', [100, 2, 1]);
+            helper.invoke('setRowHeight', [100, 2, 0]);
             let tr: HTMLTableRowElement = helper.invoke('getRow', [2]);
             expect(tr.style.height).toBe('100px');
             done();

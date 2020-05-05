@@ -171,7 +171,7 @@ export class LayoutRender extends MobileLayout {
             }
             className = isCollaspsed ? cls.CONTENT_ROW_CLASS + ' ' + cls.COLLAPSED_CLASS : cls.CONTENT_ROW_CLASS;
             let tr: HTMLElement = createElement('tr', { className: className, attrs: { 'aria-expanded': 'true' } });
-            if (this.parent.swimlaneSettings.keyField && !this.parent.isAdaptive) {
+            if (this.parent.swimlaneSettings.keyField && !this.parent.isAdaptive && row.keyField !== '') {
                 this.renderSwimlaneRow(tBody, row, isCollaspsed);
             }
             for (let column of this.parent.columns) {
@@ -180,7 +180,7 @@ export class LayoutRender extends MobileLayout {
                     let className: string = index === -1 ? cls.CONTENT_CELLS_CLASS : cls.CONTENT_CELLS_CLASS + ' ' + cls.COLLAPSED_CLASS;
                     let td: HTMLElement = createElement('td', {
                         className: className,
-                        attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField, 'aria-expanded': 'true' }
+                        attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField, 'aria-expanded': 'true', 'tabindex': '0' }
                     });
                     if (column.allowToggle && !column.isExpanded || index !== -1) {
                         addClass([td], cls.COLLAPSED_CLASS);
@@ -188,20 +188,20 @@ export class LayoutRender extends MobileLayout {
                         td.setAttribute('aria-expanded', 'false');
                     }
                     if (column.showAddButton) {
-                        let button: HTMLElement = createElement('div', { className: cls.SHOW_ADD_BUTTON });
+                        let button: HTMLElement = createElement('div', { className: cls.SHOW_ADD_BUTTON, attrs: { 'tabindex': '-1' } });
                         button.appendChild(createElement('div', { className: cls.SHOW_ADD_ICON + ' ' + cls.ICON_CLASS }));
                         td.appendChild(button);
                     }
                     tr.appendChild(td);
-                    let dataObj: HeaderArgs[] = [{ keyField: row.keyField, textField: row.textField, count: row.count }];
-                    let args: QueryCellInfoEventArgs = { data: dataObj, element: tr, cancel: false, requestType: 'contentRow' };
-                    this.parent.trigger(events.queryCellInfo, args, (columnArgs: QueryCellInfoEventArgs) => {
-                        if (!columnArgs.cancel) {
-                            tBody.appendChild(tr);
-                        }
-                    });
                 }
             }
+            let dataObj: HeaderArgs[] = [{ keyField: row.keyField, textField: row.textField, count: row.count }];
+            let args: QueryCellInfoEventArgs = { data: dataObj, element: tr, cancel: false, requestType: 'contentRow' };
+            this.parent.trigger(events.queryCellInfo, args, (columnArgs: QueryCellInfoEventArgs) => {
+                if (!columnArgs.cancel) {
+                    tBody.appendChild(tr);
+                }
+            });
         }
     }
 
@@ -274,11 +274,7 @@ export class LayoutRender extends MobileLayout {
                     dataCount += columnData.length;
                     let columnWrapper: HTMLElement = tr.querySelector('[data-key="' + column.keyField + '"]');
                     let cardWrapper: HTMLElement = createElement('div', { className: cls.CARD_WRAPPER_CLASS });
-                    if (column.showAddButton) {
-                        columnWrapper.insertBefore(cardWrapper, columnWrapper.querySelector('.' + cls.SHOW_ADD_BUTTON));
-                    } else {
-                        columnWrapper.appendChild(cardWrapper);
-                    }
+                    columnWrapper.appendChild(cardWrapper);
                     for (let data of columnData as { [key: string]: string }[]) {
                         let cardText: string = data[this.parent.cardSettings.headerField] as string;
                         let cardIndex: number = this.parent.actionModule.selectionArray.indexOf(cardText);
@@ -287,7 +283,7 @@ export class LayoutRender extends MobileLayout {
                             className: cls.CARD_CLASS + className,
                             attrs: {
                                 'data-id': data[this.parent.cardSettings.headerField], 'data-key': data[this.parent.keyField],
-                                'aria-selected': 'false'
+                                'aria-selected': 'false', 'tabindex': '-1'
                             }
                         });
                         if (cardIndex !== -1) {
@@ -332,7 +328,7 @@ export class LayoutRender extends MobileLayout {
                 }
             }
         });
-        if (!this.parent.swimlaneSettings.showEmptyRow) {
+        if (!this.parent.swimlaneSettings.showEmptyRow && (this.parent.kanbanData.length === 0 && !this.parent.showEmptyColumn)) {
             removeTrs.forEach((tr: HTMLElement) => remove(tr));
         }
     }
@@ -385,6 +381,9 @@ export class LayoutRender extends MobileLayout {
                     this.columnKeys.indexOf(<string>obj[this.parent.keyField]) > -1 &&
                     obj[this.parent.swimlaneSettings.keyField] === row.keyField).length;
             });
+            if (kanbanRows.length === 0) {
+                kanbanRows.push({ keyField: '', textField: '' });
+            }
         } else {
             kanbanRows.push({ keyField: '', textField: '' });
         }
@@ -554,6 +553,11 @@ export class LayoutRender extends MobileLayout {
     }
 
     private documentClick(args: Event): void {
+        if ((args.target as HTMLElement).classList.contains(cls.SWIMLANE_OVERLAY_CLASS) &&
+            this.parent.element.querySelector('.' + cls.SWIMLANE_RESOURCE_CLASS).classList.contains('e-popup-open')) {
+            this.treePopup.hide();
+            removeClass([this.popupOverlay], 'e-enable');
+        }
         if (closest(args.target as HTMLElement, `.${cls.ROOT_CLASS}`)) {
             return;
         }

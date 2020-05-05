@@ -422,15 +422,15 @@ export class GanttTreeGrid {
             /** Name column */
             column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('startDate');
             column.editType = column.editType ? column.editType :
-                this.parent.dateFormat.toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
-            column.format = column.format ? column.format : { type: 'date', format: this.parent.dateFormat };
+                this.parent.getDateFormat().toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
+            column.format = column.format ? column.format : { type: 'date', format: this.parent.getDateFormat() };
             column.width = column.width ? column.width : 150;
             column.edit = { params: { renderDayCell: this.parent.renderWorkingDayCell.bind(this.parent) } };
         } else if (taskSettings.endDate === column.field) {
             column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('endDate');
-            column.format = column.format ? column.format : { type: 'date', format: this.parent.dateFormat };
+            column.format = column.format ? column.format : { type: 'date', format: this.parent.getDateFormat() };
             column.editType = column.editType ? column.editType :
-                this.parent.dateFormat.toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
+                this.parent.getDateFormat().toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
             column.width = column.width ? column.width : 150;
             column.edit = { params: { renderDayCell: this.parent.renderWorkingDayCell.bind(this.parent) } };
         } else if (taskSettings.duration === column.field) {
@@ -464,18 +464,15 @@ export class GanttTreeGrid {
             } else {
                 column.disableHtmlEncode = true;
             }
-        } else if (taskSettings.baselineStartDate === column.field) {
+        } else if (taskSettings.baselineStartDate === column.field ||
+            taskSettings.baselineEndDate === column.field) {
+            let colName: string = taskSettings.baselineEndDate ? 'baselineEndDate' :
+                'baselineStartDate';
             column.width = column.width ? column.width : 150;
-            column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('baselineStartDate');
-            column.format = column.format ? column.format : { type: 'date', format: this.parent.dateFormat };
+            column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant(colName);
+            column.format = column.format ? column.format : { type: 'date', format: this.parent.getDateFormat() };
             column.editType = column.editType ? column.editType :
-                this.parent.dateFormat.toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
-        } else if (taskSettings.baselineEndDate === column.field) {
-            column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('baselineEndDate');
-            column.width = column.width ? column.width : 150;
-            column.format = column.format ? column.format : { type: 'date', format: this.parent.dateFormat };
-            column.editType = column.editType ? column.editType :
-                this.parent.dateFormat.toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
+                this.parent.getDateFormat().toLowerCase().indexOf('hh') !== -1 ? 'datetimepickeredit' : 'datepickeredit';
         } else if (taskSettings.work === column.field) {
             column.headerText = column.headerText ? column.headerText : this.parent.localeObj.getConstant('work');
             column.width = column.width ? column.width : 150;

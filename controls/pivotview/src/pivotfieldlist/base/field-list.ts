@@ -613,6 +613,8 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
             this.pivotGridModule.updatePageSettings(false);
         }
         let pageSettings: IPageSettings = this.pivotGridModule ? this.pivotGridModule.pageSettings : undefined;
+        let localeObj: L10n = this.pivotGridModule ? this.pivotGridModule.localeObj :
+            (this.staticPivotGridModule ? this.staticPivotGridModule.localeObj : this.localeObj);
         let isDrillThrough: boolean = this.pivotGridModule ?
             (this.pivotGridModule.allowDrillThrough || this.pivotGridModule.editSettings.allowEditing) : true;
         let enableValueSorting: boolean = this.pivotGridModule ? this.pivotGridModule.enableValueSorting : undefined;
@@ -625,7 +627,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 pageSettings: pageSettings,
                 enableValueSorting: enableValueSorting,
                 isDrillThrough: isDrillThrough,
-                localeObj: this.localeObj
+                localeObj: localeObj
             };
         } else {
             customProperties = {
@@ -634,7 +636,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 pageSettings: pageSettings,
                 enableValueSorting: enableValueSorting,
                 isDrillThrough: isDrillThrough,
-                localeObj: this.localeObj
+                localeObj: localeObj
             };
         }
         return customProperties;

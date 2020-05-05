@@ -132,7 +132,6 @@ let formfield: string = '{"sections":[{"sectionFormat":{"pageWidth":612,"pageHei
 describe('FormField Validation for word export', () => {
     let editor: DocumentEditor;
     let documentHelper: DocumentHelper;
-    let json: any;
     beforeAll((): void => {
         let ele: HTMLElement = createElement('div', { id: 'container' });
         document.body.appendChild(ele);

@@ -2394,6 +2394,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                 }
                 this.setClasses([panelElement]);
             }
+            this.updateOldRowColumn();
             if (this.checkMediaQuery()) {
                 this.checkMediaQuerySizing();
             }

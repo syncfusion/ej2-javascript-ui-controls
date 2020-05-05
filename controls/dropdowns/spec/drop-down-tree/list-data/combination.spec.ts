@@ -634,6 +634,33 @@ describe('DropDown Tree control List datasource', () => {
             let chips_1 = chipElement.querySelectorAll('.e-chips');
             expect(chips_1.length).toBe(0);
         });
+
+        it('blur event testing after clearing value', () => {
+            var i = 0;
+            ddtreeObj = new DropDownTree({
+                fields: {
+                    dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' 
+                },
+                blur: function(){
+                    i++;
+                } ,
+            }, '#ddtree');
+            expect(i).toEqual(0);
+            ddtreeObj.showPopup();
+            var li = (ddtreeObj as any).treeObj.element.querySelectorAll('li');
+            mouseEventArgs.target = li[0].querySelector('.e-list-text');
+            tapEvent.tapCount = 1;
+            (ddtreeObj as any).treeObj.touchClickObj.tap(tapEvent);
+            expect(ddtreeObj.text).toBe("Australia");
+            let ele1: HTMLElement = (ddtreeObj as any).element.nextElementSibling;
+            var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            ele1.dispatchEvent(e);
+            var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            ele1.dispatchEvent(e);
+            expect(ddtreeObj.text).toBe(null);
+            ddtreeObj.onFocusOut();
+            expect(i).toEqual(1);
+        });
         it('Invalid text testing', () => {
             ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: "id", text: "name", parentValue: "pid", hasChildren: "hasChild", expanded: 'expanded' }, allowMultiSelection: true }, '#ddtree');
             ddtreeObj.text = 'Australia,Brazil,aaaa';

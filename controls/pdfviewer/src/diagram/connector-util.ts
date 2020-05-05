@@ -3,7 +3,7 @@ import { PdfAnnotationBaseModel } from './pdf-annotation-model';
 import { PointModel, PathElement, Rect, DrawingElement, Point, Size, RotateTransform, TextElement, randomId, Matrix, identityMatrix, rotateMatrix, transformPointByMatrix, DecoratorShapes, Intersection, Segment, intersect3 } from '@syncfusion/ej2-drawings';
 import { setElementStype, findPointsLength } from './drawing-util';
 import { isNullOrUndefined } from '@syncfusion/ej2-base';
-import { MeasureAnnotation } from '../pdfviewer';
+import { MeasureAnnotation, PdfViewer } from '../pdfviewer';
 
 /** @private */
 export function getConnectorPoints(obj: PdfAnnotationBaseModel, points?: PointModel[]): PointModel[] {
@@ -128,12 +128,17 @@ export function clipDecorator(connector: PdfAnnotationBaseModel, points: PointMo
 /**
  * @hidden
  */
-export function initDistanceLabel(obj: PdfAnnotationBaseModel, points: PointModel[], measure: MeasureAnnotation): TextElement[] {
+// tslint:disable-next-line:max-line-length
+export function initDistanceLabel(obj: PdfAnnotationBaseModel, points: PointModel[], measure: MeasureAnnotation, pdfviewer: PdfViewer): TextElement[] {
     let labels: TextElement[] = [];
     let textele: TextElement;
     let angle: number = Point.findAngle(points[0], points[1]);
     textele = textElement(obj, angle);
-    textele.content = measure.setConversion(findPointsLength([points[0], points[1]]) * measure.pixelToPointFactor, obj);
+    if (!pdfviewer.enableImportAnnotationMeasurement && obj.notes && obj.notes !== '') {
+        textele.content = obj.notes;
+    } else {
+        textele.content = measure.setConversion(findPointsLength([points[0], points[1]]) * measure.pixelToPointFactor, obj);
+    }
     textele.rotateValue = { y: -10, angle: angle };
     if (obj.enableShapeLabel === true) {
         textele.style.strokeColor = obj.labelBorderColor;
@@ -188,12 +193,17 @@ export function updateRadiusLabel(obj: PdfAnnotationBaseModel, measure: MeasureA
 /**
  * @hidden
  */
-export function initPerimeterLabel(obj: PdfAnnotationBaseModel, points: PointModel[], measure: MeasureAnnotation): TextElement[] {
+// tslint:disable-next-line:max-line-length
+export function initPerimeterLabel(obj: PdfAnnotationBaseModel, points: PointModel[], measure: MeasureAnnotation, pdfviewer: PdfViewer): TextElement[] {
     let labels: TextElement[] = [];
     let textele: TextElement;
     let angle: number = Point.findAngle(points[0], points[1]);
     textele = textElement(obj, angle);
-    textele.content = measure.calculatePerimeter(obj);
+    if (!pdfviewer.enableImportAnnotationMeasurement && obj.notes && obj.notes !== '') {
+        textele.content = obj.notes;
+    } else {
+        textele.content = measure.calculatePerimeter(obj);
+    }
     if (obj.enableShapeLabel === true) {
         textele.style.strokeColor = obj.labelBorderColor;
         textele.style.fill = obj.labelFillColor;

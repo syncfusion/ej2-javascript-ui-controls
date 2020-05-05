@@ -20,7 +20,7 @@ export class ResourceFields extends ChildProperty<ResourceFields> {
 
     /**
      * To map unit of resource from resource collection.
-     * @default null     
+     * @default null
      */
     @Property(null)
     public unit: string;

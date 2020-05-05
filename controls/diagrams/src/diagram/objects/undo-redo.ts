@@ -273,8 +273,7 @@ export class UndoRedo {
     }
 
     private undoEntry(entry: HistoryEntry, diagram: Diagram): void {
-        let obj: SelectorModel;
-        let nodeObject: SelectorModel | Node;
+        let obj: SelectorModel; let nodeObject: SelectorModel | Node;
         if (entry.type !== 'PropertyChanged' && entry.type !== 'CollectionChanged' && entry.type !== 'LabelCollectionChanged') {
             obj = (entry.undoObject) as SelectorModel;
             nodeObject = (entry.undoObject) as SelectorModel;
@@ -286,8 +285,7 @@ export class UndoRedo {
                 nodeObject = (entry.undoObject) as SelectorModel;
             }
         }
-        diagram.protectPropertyChange(true);
-        diagram.diagramActions |= DiagramAction.UndoRedo;
+        diagram.protectPropertyChange(true); diagram.diagramActions |= DiagramAction.UndoRedo;
         switch (entry.type) {
             case 'PositionChanged':
             case 'Align':
@@ -358,17 +356,20 @@ export class UndoRedo {
                 this.recordLaneOrPhaseCollectionChanged(entry, diagram, false);
                 entry.isUndo = false;
                 break;
+            case 'SendToBack':
+            case 'SendForward':
+            case 'SendBackward':
+            case 'BringToFront':
+                this.recordOrderCommandChanged(entry, diagram, false);
+                break;
         }
         diagram.diagramActions &= ~DiagramAction.UndoRedo;
-        diagram.protectPropertyChange(false);
-        diagram.historyChangeTrigger(entry, 'Undo');
+        diagram.protectPropertyChange(false); diagram.historyChangeTrigger(entry, 'Undo');
         if (nodeObject) {
             let object: NodeModel | ConnectorModel = this.checkNodeObject(nodeObject, diagram);
             if (object) {
                 let getnodeDefaults: Function = getFunction(diagram.updateSelection);
-                if (getnodeDefaults) {
-                    getnodeDefaults(object, diagram);
-                }
+                if (getnodeDefaults) { getnodeDefaults(object, diagram); }
             }
         }
     }
@@ -605,7 +606,12 @@ export class UndoRedo {
         isRedo ? diagram.onPropertyChanged(redoObject, undoObject) : diagram.onPropertyChanged(undoObject, redoObject);
         diagram.diagramActions = diagram.diagramActions | DiagramAction.UndoRedo;
     }
-
+    private recordOrderCommandChanged(entry: HistoryEntry, diagram: Diagram, isRedo: boolean): void {
+        let redoObject: Selector = entry.redoObject as Selector;
+        let undoObject: Selector = entry.undoObject as Selector;
+        diagram.commandHandler.orderCommands(isRedo, (isRedo ? redoObject : undoObject), entry.type);
+        diagram.diagramActions = diagram.diagramActions | DiagramAction.UndoRedo;
+    }
     private recordSegmentChanged(obj: SelectorModel, diagram: Diagram): void {
         let i: number = 0;
         let node: NodeModel;
@@ -1033,11 +1039,16 @@ export class UndoRedo {
             case 'PhaseCollectionChanged':
                 this.recordLaneOrPhaseCollectionChanged(historyEntry, diagram, true);
                 break;
+            case 'SendToBack':
+            case 'SendForward':
+            case 'SendBackward':
+            case 'BringToFront':
+                this.recordOrderCommandChanged(historyEntry, diagram, true);
+                break;
         }
         diagram.protectPropertyChange(false);
         diagram.diagramActions &= ~DiagramAction.UndoRedo;
         diagram.historyChangeTrigger(historyEntry, 'Redo');
-
         if (redovalue) {
             let value: NodeModel | ConnectorModel = this.checkNodeObject(redovalue, diagram);
             if (value) {

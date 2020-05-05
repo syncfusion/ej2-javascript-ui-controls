@@ -21,7 +21,7 @@ export class ColorMapping {
          getValueFromObject(layerData, colorValuePath) : layerData[colorValuePath]) : layerData[colorValuePath];
         let colorValue: number = Number(equalValue);
         let shapeColor: Object = this.getColorByValue(shapeSettings.colorMapping, colorValue, equalValue);
-        return shapeColor ? shapeColor : color;
+        return !isNullOrUndefined(shapeColor) ? shapeColor : color;
     }
     /**
      * To color by value and color mapping

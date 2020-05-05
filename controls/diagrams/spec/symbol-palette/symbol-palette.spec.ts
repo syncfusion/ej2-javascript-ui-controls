@@ -1647,4 +1647,61 @@ describe('Symbol Palette', () => {
 
 
     });
+    describe('Annotation interaction mouse leave ', () => {
+        let palette: SymbolPalette;
+        let ele: HTMLElement;
+        let diagramCanvas: HTMLElement;
+        beforeAll((): void => {
+            ele = createElement('div');
+            ele.appendChild(createElement('div', { id: 'symbolpalette', styles: 'width:25%;float:left;' }));
+            document.body.appendChild(ele);
+            var palette = new SymbolPalette({
+                expandMode: 'Multiple',
+                palettes: [
+                    {
+                        id: 'flow', expanded: true, symbols: [
+                            {
+                                id: 'aggregate',
+                                style: { fill: 'none' },
+                                shape: {
+                                    type: 'Native',
+                                    content: "<g><path d=\"m450 60v437c0 8.402344-6.597656 15-15 15h-420c-8.402344 0-15-6.597656-15-15v-437l30-30h390zm0 0\" fill=\"#e0f4ff\"/><path d=\"m450 60v437c0 8.402344-6.597656 15-15 15h-210v-482h195zm0 0\" fill=\"#bbdcff\"/><path d=\"m375 120h-300c-8.402344 0-15 6.597656-15 15v61c0 8.402344 6.597656 15 15 15h300c8.402344 0 15-6.597656 15-15v-61c0-8.402344-6.597656-15-15-15zm0 0\" fill=\"#7fe881\"/><path d=\"m225 241h-150c-8.402344 0-15 6.597656-15 15v181c0 8.402344 6.597656 15 15 15h150c8.402344 0 15-6.597656 15-15v-181c0-8.402344-6.597656-15-15-15zm0 0\" fill=\"#bbdcff\"/><g fill=\"#9abadb\"><path d=\"m375 331h-90c-8.289062 0-15-6.710938-15-15v-60c0-8.289062 6.710938-15 15-15h90c8.289062 0 15 6.710938 15 15v60c0 8.289062-6.710938 15-15 15zm0 0\"/><path d=\"m375 452h-90c-8.289062 0-15-6.710938-15-15v-61c0-8.289062 6.710938-15 15-15h90c8.289062 0 15 6.710938 15 15v61c0 8.289062-6.710938 15-15 15zm0 0\"/><path d=\"m240 256v181c0 8.402344-6.597656 15-15 15v-211c8.402344 0 15 6.597656 15 15zm0 0\"/></g><path d=\"m390 135v61c0 8.402344-6.597656 15-15 15h-150v-91h150c8.402344 0 15 6.597656 15 15zm0 0\" fill=\"#5bc980\"/><path d=\"m450 15v45h-450v-45c0-8.402344 6.597656-15 15-15h420c8.402344 0 15 6.597656 15 15zm0 0\" fill=\"#61729b\"/><path d=\"m450 15v45h-225v-60h210c8.402344 0 15 6.597656 15 15zm0 0\" fill=\"#47568c\"/></g>"
+                                },
+                                width: 48,
+                                height: 48,
+                            }
+                        ], title: 'Flow Shapes'
+                    },
+                ],
+                width: '100%', height: '100%',
+                symbolHeight: 80,
+                symbolWidth: 95,
+                getSymbolInfo: function () {
+                    return {
+                        description:  { text: "Aggregate"},
+                        tooltip: "Aggregate",
+                        fit: true,
+                    };
+                },
+                symbolMargin: {
+                    left: 3,
+                    right: 3,
+                    top: 5,
+                    bottom: 5
+                }
+            });
+            palette.appendTo('#symbolpalette');
+        });
+
+        afterAll((): void => {
+            palette.destroy();
+            ele.remove();
+        });
+        it('Symbol Description render in Palette', (done: Function) => {
+            diagramCanvas=document.getElementById("aggregate_g");
+            var textelement=diagramCanvas.getElementsByTagName("text")[0];
+            expect(textelement.id != "undefined_text").toBe(true);
+            done();
+        });
+    })
 });

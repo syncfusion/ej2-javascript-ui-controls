@@ -522,6 +522,33 @@ describe('DropDown Tree control hierarchical datasource', () => {
             expect(chipDelete.classList.contains('e-icon-hide')).toBe(true);
         });
 
+        it('blur event testing after clearing value', () => {
+            var i = 0;
+            ddtreeObj = new DropDownTree({
+                fields: {
+                    dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child"
+                },
+                blur: function(){
+                    i++;
+                } ,
+            }, '#ddtree');
+            expect(i).toEqual(0);
+            ddtreeObj.showPopup();
+            var li = (ddtreeObj as any).treeObj.element.querySelectorAll('li');
+            mouseEventArgs.target = li[0].querySelector('.e-list-text');
+            tapEvent.tapCount = 1;
+            (ddtreeObj as any).treeObj.touchClickObj.tap(tapEvent);
+            expect(ddtreeObj.text).toBe("Australia");
+            let ele1: HTMLElement = (ddtreeObj as any).element.nextElementSibling;
+            var e = new MouseEvent("mousedown", { view: window, bubbles: true, cancelable: true });
+            ele1.dispatchEvent(e);
+            var e = new MouseEvent("mouseup", { view: window, bubbles: true, cancelable: true });
+            ele1.dispatchEvent(e);
+            expect(ddtreeObj.text).toBe(null);
+            ddtreeObj.onFocusOut();
+            expect(i).toEqual(1);
+        });
+
         it('Invalid value testing', () => {
             ddtreeObj = new DropDownTree({ fields: { dataSource: hierarchicalData3, value: "id", text: "name", expanded: 'expanded', child: "child" }, treeSettings: { loadOnDemand: true } }, '#ddtree');
             let ele = ddtreeObj.element;

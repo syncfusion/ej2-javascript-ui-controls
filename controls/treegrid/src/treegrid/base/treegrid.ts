@@ -1619,9 +1619,10 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.renderComplete();
     let destroyTemplate: string = 'destroyTemplate';
     let destroyTemplateFn: Function = this.grid[destroyTemplate] as Function;
-    this.grid[destroyTemplate] = (args: string[]) => {
+    //tslint:disable-next-line:no-any
+    this.grid[destroyTemplate] = (args: string[], index?: any) => {
         destroyTemplateFn.apply(this.grid);
-        this.clearTemplate(args);
+        this.clearTemplate(args, index);
     };
     if (isBlazor() && this.isServerRendered) {
       let fn: Function = (args: { grid: Grid, id: string }) => this.gridRendered(args, fn);
@@ -1662,6 +1663,10 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     }
     this.wireEvents();
     this.afterGridRender();
+    let updateColTypeObj: string = 'updateColTypeObj';
+    if (!isNullOrUndefined(this.grid.editModule)) {
+      this.grid.editModule[updateColTypeObj]();
+    }
     let processModel: string = 'processModel';
     this.grid[processModel]();
     gridObserver.off('component-rendered', this.gridRendered);
@@ -1785,6 +1790,10 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.grid.rowSelected = (args: RowDeselectEventArgs): void => {
       if (!isBlazor()) {
         this.selectedRowIndex = this.grid.selectedRowIndex;
+      } else if (isBlazor() && this.isServerRendered) {
+        this.allowServerDataBinding = false;
+        this.setProperties({ selectedRowIndex: this.grid.selectedRowIndex}, true);
+        this.allowServerDataBinding = true;
       }
       treeGrid.notify(events.rowSelected, args);
       this.trigger(events.rowSelected, args);
@@ -1814,6 +1823,15 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.grid.checkBoxChange = (args?: CheckBoxChangeEventArgs): void => {
       this.trigger(events.checkboxChange, args);
     };
+    this.grid.cellSelected = (args: CellSelectEventArgs): void => {
+      let cellSelectedArgs: Object;
+      if (isBlazor() && this.isServerRendered) {
+        cellSelectedArgs = { data: args.data, cellIndex: args.cellIndex };
+        this.trigger('cellSelected', cellSelectedArgs);
+      } else {
+        this.trigger('cellSelected', args);
+      }
+    };
     this.grid.pdfExportComplete = this.triggerEvents.bind(this);
     this.grid.excelExportComplete = this.triggerEvents.bind(this);
     this.grid.excelHeaderQueryCellInfo = this.triggerEvents.bind(this);
@@ -1825,7 +1843,6 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     this.grid.cellDeselecting = this.triggerEvents.bind(this);
     this.grid.columnMenuOpen = this.triggerEvents.bind(this);
     this.grid.columnMenuClick = this.triggerEvents.bind(this);
-    this.grid.cellSelected = this.triggerEvents.bind(this);
     this.grid.headerCellInfo = this.triggerEvents.bind(this);
     this.grid.resizeStart = this.triggerEvents.bind(this);
     this.grid.resizing = this.triggerEvents.bind(this);

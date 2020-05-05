@@ -1955,7 +1955,11 @@ var ChipList = /** @class */ (function (_super) {
                 this.trailingIconCss.toString()) : (this.trailingIconCss.toString()),
             enabled: typeof data === 'object' ? (!sf.base.isNullOrUndefined(data.enabled) ? (data.enabled.toString() === 'false' ? false : true) :
                 chipEnabled) : (chipEnabled),
-            value: typeof data === 'object' ? ((data.value ? data.value.toString() : null)) : null
+            value: typeof data === 'object' ? ((data.value ? data.value.toString() : null)) : null,
+            leadingIconUrl: typeof data === 'object' ? (data.leadingIconUrl ? data.leadingIconUrl.toString() : this.leadingIconUrl) :
+                this.leadingIconUrl,
+            trailingIconUrl: typeof data === 'object' ? (data.trailingIconUrl ? data.trailingIconUrl.toString() : this.trailingIconUrl) :
+                this.trailingIconUrl
         };
         return fields;
     };
@@ -1972,6 +1976,12 @@ var ChipList = /** @class */ (function (_super) {
             var chipIconElement = this.createElement('span', { className: className });
             chipArray.push(chipIconElement);
         }
+        else if (fields.leadingIconUrl) {
+            var className = (classNames.avatar + ' ' + 'image-url').trim();
+            var chipIconElement = this.createElement('span', { className: className });
+            chipIconElement.style.backgroundImage = 'url(' + fields.leadingIconUrl + ')';
+            chipArray.push(chipIconElement);
+        }
         var chipTextElement = this.createElement('span', { className: classNames.text });
         chipTextElement.innerText = fields.text;
         chipArray.push(chipTextElement);
@@ -1980,6 +1990,12 @@ var ChipList = /** @class */ (function (_super) {
                 (fields.trailingIconCss ? fields.trailingIconCss : classNames.deleteIcon)).trim();
             var chipdeleteElement = this.createElement('span', { className: className });
             chipArray.push(chipdeleteElement);
+        }
+        else if (fields.trailingIconUrl) {
+            var className = ('trailing-icon-url').trim();
+            var chipIconsElement = this.createElement('span', { className: className });
+            chipIconsElement.style.backgroundImage = 'url(' + fields.trailingIconUrl + ')';
+            chipArray.push(chipIconsElement);
         }
         return chipArray;
     };
@@ -2384,6 +2400,12 @@ var ChipList = /** @class */ (function (_super) {
     __decorate$4([
         sf.base.Property('')
     ], ChipList.prototype, "trailingIconCss", void 0);
+    __decorate$4([
+        sf.base.Property('')
+    ], ChipList.prototype, "leadingIconUrl", void 0);
+    __decorate$4([
+        sf.base.Property('')
+    ], ChipList.prototype, "trailingIconUrl", void 0);
     __decorate$4([
         sf.base.Property('')
     ], ChipList.prototype, "cssClass", void 0);

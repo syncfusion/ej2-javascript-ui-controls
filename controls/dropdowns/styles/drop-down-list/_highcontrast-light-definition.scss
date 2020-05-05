@@ -35,6 +35,10 @@ $ddl-bigger-small-list-font-size: 14px !default;
     height: 36px;
   }
 
+  #{&}.e-popup.e-ddl .e-dropdownbase {
+    min-height: 26px;
+  }
+
   .e-ddl#{&} {
     &.e-popup {
       border: 0;

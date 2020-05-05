@@ -83,6 +83,36 @@
           font-family: 'e-icons';
         }
       }
+
+      .image-url {
+        align-items: center;
+        background-size: cover;
+        border-radius: $chip-leading-icon-border-radius;
+        display: flex;
+        font-size: $chip-leading-icon-font-size;
+        height: $chip-leading-icon-size;
+        justify-content: center;
+        line-height: 1;
+        margin: $chip-leading-icon-margin;
+        overflow: hidden;
+        width: $chip-leading-icon-size;
+      }
+
+      .trailing-icon-url {
+        align-items: center;
+        background-size: cover;
+        border-radius: $chip-delete-icon-border-radius;
+        display: flex;
+        font-family: 'e-icons';
+        font-size: $chip-delete-icon-font-size;
+        height: $chip-delete-icon-size;
+        justify-content: center;
+        line-height: 1;
+        margin: $chip-delete-icon-margin;
+        overflow: hidden;
+        width: $chip-delete-icon-size;
+      }
+
     }
 
     &:not(.e-chip) {
@@ -166,6 +196,10 @@
         &.e-chip-avatar-wrap {
           border-radius: $chip-rtl-avatar-wrapper-border-radius;
         }
+
+        .trailing-icon-url {
+          margin: $chip-rtl-delete-icon-margin;
+        }
       }
 
       &.e-multi-selection .e-chip {
@@ -224,6 +258,13 @@
           font-size: small;
         }
       }
+    }
+
+    .trailing-icon-url {
+      font-size: $chip-touch-delete-icon-font-size;
+      height: $chip-touch-delete-icon-size;
+      margin: $chip-touch-delete-icon-margin;
+      width: $chip-touch-delete-icon-size;
     }
 
     &.e-multi-selection .e-chip {
@@ -286,6 +327,11 @@
           }
         }
       }
+
+      .trailing-icon-url {
+        margin: $chip-touch-rtl-delete-icon-margin;
+      }
+
     }
   }
 }

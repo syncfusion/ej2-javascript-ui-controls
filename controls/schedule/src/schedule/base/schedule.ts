@@ -972,6 +972,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     private validateDate(selectedDate: Date = this.selectedDate): void {
         // persist the selected date value
         let date: Date = selectedDate instanceof Date ? new Date(selectedDate.getTime()) : new Date(selectedDate);
+        this.minDate = this.minDate instanceof Date ? new Date(this.minDate.getTime()) : new Date(this.minDate);
+        this.maxDate = this.maxDate instanceof Date ? new Date(this.maxDate.getTime()) : new Date(this.maxDate);
         if (this.minDate <= this.maxDate) {
             if (date < this.minDate) {
                 date = this.minDate;

@@ -593,6 +593,7 @@ export class DashboardLayout extends Component<HTMLElement> implements INotifyPr
                 }
                 this.setClasses([panelElement]);
             }
+            this.updateOldRowColumn();
             if (this.checkMediaQuery()) {
                 this.checkMediaQuerySizing();
             }

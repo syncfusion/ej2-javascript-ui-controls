@@ -106,12 +106,13 @@ export class VerticalView extends ViewBase implements IRenderer {
     }
     public setContentHeight(element: HTMLElement, leftPanelElement: HTMLElement, height: number): void {
         if (this.parent.isAdaptive && !this.isTimelineView() && !this.parent.isServerRenderer()) {
-            element.style.height = formatUnit(height);
+            element.style.height = (this.parent.height === 'auto') ? 'auto' : formatUnit(height);
         } else {
             if (!isNullOrUndefined(leftPanelElement)) {
-                leftPanelElement.style.height = formatUnit(height - this.getScrollXIndent(element));
+                leftPanelElement.style.height = (this.parent.height === 'auto') ? 'auto'
+                    : formatUnit(height - this.getScrollXIndent(element));
             }
-            element.style.height = formatUnit(height);
+            element.style.height = (this.parent.height === 'auto') ? 'auto' : formatUnit(height);
         }
     }
     public scrollToWorkHour(): void {

@@ -989,8 +989,7 @@ export class EventBase {
     }
 
     public getReadonlyAttribute(event: { [key: string]: Object }): string {
-        return (event[this.parent.eventFields.isReadonly]) ?
-            event[this.parent.eventFields.isReadonly] as string : 'false';
+        return (event[this.parent.eventFields.isReadonly] || this.parent.readonly).toString();
     }
 
     public isBlockRange(eventData: Object | Object[]): boolean {
