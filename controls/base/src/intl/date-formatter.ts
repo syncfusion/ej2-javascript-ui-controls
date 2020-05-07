@@ -115,7 +115,7 @@ export class DateFormat {
                         break;
                     case 'a':
                         formatOptions.designator = isBlazor() ?
-                         getValue('dayPeriods', dateObject) : getValue('dayPeriods.format.wide', dateObject);
+                            getValue('dayPeriods', dateObject) : getValue('dayPeriods.format.wide', dateObject);
                         break;
                     case 'G':
                         let eText: string = (len <= 3) ? 'eraAbbr' : (len === 4) ? 'eraNames' : 'eraNarrow';
@@ -128,9 +128,12 @@ export class DateFormat {
             }
         }
         return (value: Date): string => {
-            if (isNaN(value.getDate())) {
+            if (!(value instanceof Date))
+                value = new Date(value);
+
+            if (isNaN(value.getDate()))
                 return null;
-            }
+
             return this.intDateFormatter(value, formatOptions);
         };
     }
