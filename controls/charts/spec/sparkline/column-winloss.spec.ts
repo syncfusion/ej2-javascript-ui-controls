@@ -175,7 +175,7 @@ describe('Sparkline Column and WinLoss series spec', () => {
             expect(options.text).toBe('-1098152600');
             expect(options.x).toBe(336);
             // first test case local and second for server value
-            expect(options.y === 77 || options.y === 76).toBe(true);
+            expect(options.y === 79 || options.y === 78).toBe(true);
         });
     });
     describe('Sparkline WinLoss Series Spec', () => {

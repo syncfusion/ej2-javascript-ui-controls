@@ -123,47 +123,36 @@ describe('Virtual-freeze-renderer --- row virtualization', () => {
         });
 
         it('Perform scrolling', (done: Function) => {
-            gridObj.dataBound = function () {
-                let fcnt: Element = gridObj.getContent().querySelector('.e-frozencontent');
-                expect(fcnt.querySelectorAll('.e-row').length).toBe(mCont.querySelectorAll('.e-row').length);
-                expect(fRowBeforeScroll).not.toBe(fcnt.querySelector('.e-row'));
-                expect(mRowBeforeScroll).not.toBe(mCont.querySelector('.e-row'));
-                expect(fcnt.querySelector('.e-row')).not.toBe(mCont.querySelector('.e-row'));
-                gridObj.dataBound = null;
-                done();
-            },
-                mCont.scrollTop = 300;
+            mCont.scrollTop = 2500;
+            setTimeout(done, 400);
         });
 
-        it('Ensure transform values before scroll', (done: Function) => {
-            gridObj.dataBound = function () {
-                let fcnt: Element = gridObj.getContent().querySelector('.e-frozencontent');
-                let mcnt: Element = gridObj.getContent().querySelector('.e-movablecontent');
-                let mVTblTrans: { width: number, height: number } = getTransformValues(mcnt.firstElementChild);
-                let fVTblTrans: { width: number, height: number } = getTransformValues(fcnt.firstElementChild);
-                expect(mVTblTrans.height).not.toBe(0);
-                expect(fVTblTrans.height).not.toBe(0);
-                expect(fVTblTrans.height).toBe(mVTblTrans.height);
-                expect(fVTblTrans.width).toBe(0);
-                expect(mVTblTrans.width).toBe(0);
-                gridObj.dataBound = null;
-                done();
-            }
-            mCont.scrollTop = 800;
+        it('Check rows count after scrolling', () => {
+            let fcnt: Element = gridObj.getContent().querySelector('.e-frozencontent');
+            let mcnt: Element = gridObj.getContent().querySelector('.e-movablecontent');
+            let mVTblTrans: { width: number, height: number } = getTransformValues(mcnt.firstElementChild);
+            let fVTblTrans: { width: number, height: number } = getTransformValues(fcnt.firstElementChild);
+            expect(fcnt.querySelectorAll('.e-row').length).toBe(mCont.querySelectorAll('.e-row').length);
+            expect(fcnt.querySelector('.e-row')).not.toBe(mCont.querySelector('.e-row'));
+            expect(mVTblTrans.height).not.toBe(0);
+            expect(fVTblTrans.height).not.toBe(0);
+            expect(fVTblTrans.height).toBe(mVTblTrans.height);
+            expect(fVTblTrans.width).toBe(0);
+            expect(mVTblTrans.width).toBe(0);
         });
 
         it('Go to first page', (done: Function) => {
-            gridObj.dataBound = function () {
-                let fcnt: Element = gridObj.getContent().querySelector('.e-frozencontent');
-                let mcnt: Element = gridObj.getContent().querySelector('.e-movablecontent');
-                let mVTblTrans: { width: number, height: number } = getTransformValues(mcnt.firstElementChild);
-                let fVTblTrans: { width: number, height: number } = getTransformValues(fcnt.firstElementChild);
-                expect(mVTblTrans.height).not.toBe(0);
-                expect(fVTblTrans.height).not.toBe(0);
-                gridObj.dataBound = null;
-                done();
-            }
             mCont.scrollTop = 0;
+            setTimeout(done, 400);
+        });
+
+        it('ensure transform values in first page', () => {
+            let fcnt: Element = gridObj.getContent().querySelector('.e-frozencontent');
+            let mcnt: Element = gridObj.getContent().querySelector('.e-movablecontent');
+            let mVTblTrans: { width: number, height: number } = getTransformValues(mcnt.firstElementChild);
+            let fVTblTrans: { width: number, height: number } = getTransformValues(fcnt.firstElementChild);
+            expect(mVTblTrans.height).toBe(0);
+            expect(fVTblTrans.height).toBe(0);
         });
 
         afterAll(() => {
@@ -289,11 +278,7 @@ describe('Virtual-freeze-renderer --- row virtualization', () => {
                     enableVirtualization: true,
                     enableColumnVirtualization: true,
                     height: 400
-                },
-                () => {
-                    setTimeout(done, 100);
-                }
-            );
+                }, done);
         });
 
         it('Collect html elements', () => {
@@ -347,13 +332,13 @@ describe('Virtual-freeze-renderer --- row virtualization', () => {
                     enableColumnVirtualization: true,
                     enableVirtualization: true,
                     height: 400
-                },
-                () => {
-                    gridObj.getContent().querySelector('.e-movablecontent').scrollLeft = 400;
-                    setTimeout(done, 100);
-                }
-            );
+                }, done);
         });
+
+        it('scroll left', (done: Function) => {
+            gridObj.getContent().querySelector('.e-movablecontent').scrollLeft = 800;
+            setTimeout(done, 200);
+        })
 
         it('Ensure tables transform value', () => {
             let fcnt: Element = gridObj.getContent().querySelector('.e-frozencontent');
@@ -366,12 +351,13 @@ describe('Virtual-freeze-renderer --- row virtualization', () => {
             expect(mVTblTrans.width).not.toBe(0);
         });
         
-        it('Ensure frozen content after scrolled the content to x-axis - to resolve the coverage issue', function (done) {
-            gridObj.dataBound = function(){
-                expect(gridObj.pageSettings.currentPage).not.toBe(1);
-                done();
-            };
+        it('scroll to bottom', function (done) {
             gridObj.getContent().querySelector('.e-movablecontent').scrollTop = 800;
+            setTimeout(done, 400);
+        });
+
+        it('ensure currentPage value', () => {
+            expect(gridObj.pageSettings.currentPage).not.toBe(1);
         });
 
         afterAll(() => {
@@ -393,11 +379,13 @@ describe('Virtual-freeze-renderer --- row virtualization', () => {
                 }, done);
         });
 
-        it('Ensure isFrozen', () => {
+        it('Ensure isFrozen', (done: Function) => {
             (gridObj.columns[1] as Column).isFrozen = true;
             gridObj.dataBound = function() {
                 expect((gridObj as IGrid).getMovableVirtualContent()).not.toBeNull();
+                done();
             };
+            gridObj.refreshColumns();
         });
         afterAll(() => {
             destroy(gridObj);
@@ -425,14 +413,16 @@ describe('Virtual-freeze-renderer --- row virtualization', () => {
         });
 
         it('Ensure Header row', function (done) {
-            gridObj.dataBound = function () {
-                let transform: { width: number, height: number } = getTransformValues(gridObj.getMovableVirtualContent().firstElementChild);
-                expect(transform.height).not.toBe(0);
-                expect(transform.width).not.toBe(0);
-                done();
-            };
             gridObj.getContent().querySelector('.e-movablecontent').scrollTop = 800;
+            setTimeout(done, 400);
         });
+
+        it ('Ensure header transform', () => {
+            let transform: { width: number, height: number } = getTransformValues(gridObj.getMovableVirtualContent().firstElementChild);
+            expect(transform.height).not.toBe(0);
+            expect(transform.width).not.toBe(0);
+        });
+
         afterAll(() => {
             destroy(gridObj);
         });

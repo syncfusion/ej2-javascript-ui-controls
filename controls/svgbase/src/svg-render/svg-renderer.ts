@@ -199,7 +199,9 @@ export class SvgRenderer {
      * @param {TextAttributes} options - Options needed to draw a text in SVG
      * @return {Element}
      */
-    public createText(options: TextAttributes, label: string, transX ?: number, transY ?: number): Element {
+    public createText(
+        options: TextAttributes, label: string, transX?: number, transY?: number, dy?: number, isTSpan?: boolean
+    ): Element {
         let text: Element = document.createElementNS(this.svgLink, 'text');
         text = this.setElementAttributes(options as SVGCanvasAttributes, text);
         if (!isNullOrUndefined(label)) {

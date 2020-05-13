@@ -77,10 +77,10 @@ describe('Reorder module', () => {
         it('Dynamic allowReordering set', () => {
             gridObj.allowReordering = false;
             gridObj.dataBind();
-            expect(gridObj.getHeaderTable().querySelector('.e-draggable')).toBe(null);
+            expect(gridObj.reorderModule).toBeUndefined();
             gridObj.allowReordering = true;
             gridObj.dataBind();
-            expect(gridObj.getHeaderTable().querySelector('.e-draggable')).not.toBe(null);
+            expect(gridObj.getHeaderContent().classList.contains("e-draggable")).toBeTruthy();
         });
 
         it('Reorder Column method testing', (done: Function) => {
@@ -165,6 +165,7 @@ describe('Reorder module', () => {
             gridObj.dataBind();
             let dropClone = createElement('div', { attrs: { 'e-mappinguid': gridObj.getUidByColumnField('OrderID') } });
             document.body.appendChild(dropClone);
+            (gridObj.renderModule as any).headerRenderer.draggable.currentStateTarget = gridObj.getColumnHeaderByField('OrderID');
             (gridObj.headerModule as any).helper({ target: gridObj.getHeaderTable().querySelector('tr'), sender: { clientX: 10, clientY: 10, target: gridObj.getColumnHeaderByField('OrderID') } });
             (gridObj.headerModule as any).dragStart({ target: gridObj.getColumnHeaderByField('OrderID').children[0], event: { clientX: 10, clientY: 10, target: gridObj.getColumnHeaderByField('OrderID').children[0] } });
             (gridObj.headerModule as any).dragStart({ target: gridObj.getColumnHeaderByField('OrderID'), event: { clientX: 10, clientY: 10, target: gridObj.getColumnHeaderByField('OrderID').children[0] } });
@@ -366,6 +367,7 @@ describe('Reorder module', () => {
             gridObj.dataBind();
             let dropClone = createElement('div', { attrs: { 'e-mappinguid': gridObj.getUidByColumnField('OrderID') } });
             document.body.appendChild(dropClone);
+            (gridObj.renderModule as any).headerRenderer.draggable.currentStateTarget = gridObj.getColumnHeaderByField('OrderID');
             (gridObj.headerModule as any).helper({ target: gridObj.getHeaderTable().querySelector('tr'), sender: { clientX: 10, clientY: 10, target: gridObj.getColumnHeaderByField('OrderID') } });
             (gridObj.headerModule as any).dragStart({ target: gridObj.getColumnHeaderByField('OrderID').children[0], event: { clientX: 10, clientY: 10, target: gridObj.getColumnHeaderByField('OrderID').children[0] } });
             (gridObj.headerModule as any).dragStart({ target: gridObj.getColumnHeaderByField('OrderID'), event: { clientX: 10, clientY: 10, target: gridObj.getColumnHeaderByField('OrderID').children[0] } });
@@ -450,7 +452,7 @@ describe('Reorder module', () => {
         it('Dynamic allowReordering set', () => {
             gridObj.allowReordering = true;
             gridObj.dataBind();
-            expect(gridObj.getHeaderTable().querySelector('.e-draggable')).not.toBe(null);
+            expect(gridObj.getHeaderContent().classList.contains("e-draggable")).toBeTruthy();
         });
 
         it('Reorder Column method testing - 1', () => {

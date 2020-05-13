@@ -692,6 +692,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         let tspanStyle: string = ''; let line: string; let tspanOption: Object;
         this.findFormattedText();
         let isHeader: boolean;
+        let isRtlEnabled: boolean = document.body.getAttribute('dir') === 'rtl';
+        let anchor: string = isRtlEnabled ? 'end' : 'start';
         this.leftSpace = this.areaBounds.x + this.location.x;
         this.rightSpace = (this.areaBounds.x + this.areaBounds.width) - this.leftSpace;
         let headerContent: string = this.header.replace(/<b>/g, '').replace(/<\/b>/g, '').trim();
@@ -714,7 +716,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
         let options: TextOption = new TextOption(
             this.element.id + '_text', this.marginX * 2, (this.marginY * 2 + this.padding * 2 + (this.marginY === 2 ? 3 : 0)),
-            'start', ''
+            anchor, ''
         );
         let parentElement: Element = textElement(options, font, null, groupElement);
         let withoutHeader: boolean = this.formattedText.length === 1 && this.formattedText[0].indexOf(' : <b>') > -1;

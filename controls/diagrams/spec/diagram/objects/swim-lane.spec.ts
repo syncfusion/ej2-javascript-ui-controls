@@ -16,7 +16,7 @@ import { Container } from '../../../src/diagram/core/containers/container';
 import { ConnectorModel } from '../../../src/diagram/objects/connector-model';
 import { PhaseModel, LaneModel } from '../../../src/diagram/objects/node-model';
 import { SymbolPalette, SymbolInfo, PaletteModel, } from '../../../src/symbol-palette/index'; 
-import { IElement, PointModel, NodeConstraints, LineRouting, Connector, DiagramConstraints, AnnotationConstraints } from '../../../src/diagram/index';
+import { IElement, PointModel, NodeConstraints, LineRouting, Connector, DiagramConstraints, AnnotationConstraints, CommandHandler, DiagramEventHandler } from '../../../src/diagram/index';
 import { UndoRedo } from '../../../src/diagram/objects/undo-redo';
 import { Annotation } from '../../../src/diagram/objects/annotation';
 import { ShapeStyleModel } from '../../../src/diagram/core/appearance-model';
@@ -234,6 +234,7 @@ describe('Diagram Control', () => {
             expect((diagram.nameTable['node1'].shape as SwimLaneModel).lanes.length === 1).toBe(true);
             done();
         });
+        
         it('Checking remove phase at runtime', (done: Function) => {
             var lane = (diagram.nodes[0].shape as SwimLaneModel).phases[0];
             diagram.removePhase(diagram.nameTable['node1'], lane);
@@ -3596,7 +3597,7 @@ describe('Diagram Control', () => {
                             title: 'Swimlane Shapes',
                             symbols: [
                                 {
-                                    id: 'stackCanvas1',
+                                    id: 'stackCanvas1',addInfo:'add',
                                     shape: {
                                         type: 'SwimLane', lanes: [
                                             {
@@ -3698,6 +3699,7 @@ describe('Diagram Control', () => {
                     events.mouseMoveEvent(diagram.element, 120 + diagram.element.offsetLeft, 150 + diagram.element.offsetTop, false, false);
                     events.mouseUpEvent(diagram.element, 120 + diagram.element.offsetLeft, 150 + diagram.element.offsetTop, false, false);
                     expect(diagram.nodes.length > 0).toBe(true);
+                    expect(diagram.nodes[0].addInfo === "add").toBe(true);
                     done();
                 }, 10);
             });
@@ -7688,6 +7690,59 @@ describe('Swimlane - Enable Line Routing', () => {
                     done();
                 }, 300);
             });
+        });
+        describe('Preventing Phase copy', () => {
+            let diagram: Diagram;
+            let mouseEvents: MouseEvents = new MouseEvents();
+            let ele: HTMLElement;
+            beforeAll((): void => {
+                ele = createElement('div', { id: 'diagramSwimlane1' });
+                document.body.appendChild(ele);
+                let nodes: NodeModel[] = [
+                    {
+                        id: 'swimlane',
+                        shape: {
+                            type: 'SwimLane',
+                            lanes: [
+                                {
+                                    id: 'stackCanvas1',
+                                    height: 100,
+                                },
+                            ],
+                            phases: [
+                                {
+                                    id: 'phase1', offset: 170,
+                                    header: { annotation: { content: 'Phase' } }
+
+                                },
+                                ],
+                            phaseSize: 20,
+                        },
+                        offsetX: 420, offsetY: 270,
+                        height: 100,
+                        width: 200
+                    },
+                ];
+                diagram = new Diagram({ width: 1000, height: 1000, nodes: nodes });
+                diagram.appendTo('#diagramSwimlane1');
+            });
+            afterAll((): void => {
+                diagram.destroy();
+                ele.remove();
+            });
+    
+            it('Preventing Phase Copy in diagram', (done: Function) => {
+                let diagramCanvas = document.getElementById(diagram.element.id + 'content');
+                let phase = diagram.nameTable["swimlanephase1_header"];
+                let mouseEvents : MouseEvents = new MouseEvents();
+                mouseEvents.mouseDownEvent(diagramCanvas,phase.wrapper.offsetX + diagram.element.offsetLeft, phase.wrapper.offsetY + diagram.element.offsetTop);
+                mouseEvents.mouseUpEvent(diagramCanvas,phase.wrapper.offsetX + diagram.element.offsetLeft, phase.wrapper.offsetY + diagram.element.offsetTop);
+                diagram.copy();
+                diagram.paste();
+                expect(diagram.nodes.length === 4).toBe(true);
+                done();
+            });
+    
         });
     });
 });

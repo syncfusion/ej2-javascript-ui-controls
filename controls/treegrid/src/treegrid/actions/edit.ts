@@ -62,6 +62,7 @@ export class Edit {
         this.parent.on(events.cellSave, this.cellSave, this);
         this.parent.on(events.batchCancel, this.batchCancel, this);
         this.parent.grid.on(events.keyPressed, this.keyPressed, this);
+        this.parent.grid.on('batchedit-form', this.lastCellTab, this);
         this.parent.grid.on('content-ready', this.contentready, this);
         this.parent.on(events.cellEdit, this.cellEdit, this);
         this.parent.on('actionBegin', this.editActionEvents, this);
@@ -95,6 +96,7 @@ export class Edit {
         this.parent.off(events.recordDoubleClick, this.recordDoubleClick);
         this.parent.off(events.batchCancel, this.batchCancel);
         this.parent.grid.off(events.keyPressed, this.keyPressed);
+        this.parent.grid.off('batchedit-form', this.lastCellTab);
         this.parent.grid.off('content-ready', this.contentready);
         this.parent.off(events.cellEdit, this.cellEdit);
         this.parent.off('actionBegin', this.editActionEvents);
@@ -252,6 +254,7 @@ export class Edit {
           setValue('isEditCollapse', true, this.parent);
           args.rowData[args.columnName] = args.value;
           let row: HTMLTableRowElement;
+          let mRow: HTMLTableRowElement;
           if (isNullOrUndefined(args.cell)) {
             row = this.parent.grid.editModule[editModule].form.parentElement.parentNode;
           } else {
@@ -264,7 +267,8 @@ export class Edit {
                  if (e[primaryKeys[0]] === args.rowData[primaryKeys[0]]) { rowIndex = i; return; }
                 });
           } else {
-            rowIndex = this.parent.getRows().indexOf(row);
+            rowIndex = (this.parent.getRows().indexOf(row) === -1 && this.parent.frozenColumns > 0) ?
+                       this.parent.grid.getMovableRows().indexOf(row) : this.parent.getRows().indexOf(row);
           }
           let arg: CellSaveEventArgs = {};
           extend(arg, args);
@@ -284,6 +288,11 @@ export class Edit {
               this.isOnBatch = false;
             }
             this.enableToolbarItems('save');
+            if (this.parent.frozenColumns > 0) {
+              mRow = <HTMLTableRowElement>this.parent.grid.getMovableRows()[rowIndex];
+              removeClass([mRow], ['e-editedrow', 'e-batchrow']);
+              removeClass(mRow.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
+            }
             removeClass([row], ['e-editedrow', 'e-batchrow']);
             removeClass(row.querySelectorAll('.e-rowcell'), ['e-editedbatchcell', 'e-updatedtd']);
             this.parent.grid.focusModule.restoreFocus();
@@ -297,6 +306,14 @@ export class Edit {
           } else {
             this.parent.grid.isEdit = true;
           }
+      }
+    }
+
+    private lastCellTab(formObj: Element): void {
+      if (!this.parent.grid.isEdit && this.isOnBatch && this.keyPress === 'tab' && this.parent.editSettings.mode === 'Cell') {
+        this.updateGridEditMode('Normal');
+        this.isOnBatch = false;
+        this.keyPress = null;
       }
     }
 
@@ -412,10 +429,6 @@ export class Edit {
           }
       }
       let rows: Element[] = this.parent.grid.getDataRows();
-      let movableRows: Object[];
-      if (this.parent.frozenRows || this.parent.getFrozenColumns()) {
-        movableRows = this.parent.getMovableDataRows();
-      }
       if (this.parent.editSettings.mode !== 'Dialog') {
         if (this.parent.editSettings.newRowPosition === 'Above') {
           position = 'before';
@@ -423,7 +436,7 @@ export class Edit {
                     this.parent.editSettings.newRowPosition === 'Child')
           && this.selectedIndex > -1) {
           position = 'after';
-          if ((records[index] as ITreeData).expanded && !isNullOrUndefined(records[index])) {
+          if (!isNullOrUndefined(records[index]) && (records[index] as ITreeData).expanded) {
             if (this.parent.editSettings.mode === 'Batch' && (this.parent.getBatchChanges()[this.addedRecords].length > 1
                 || this.parent.getBatchChanges()[this.deletedRecords].length)) {
                 index += findChildrenRecords(records[index]).length;
@@ -441,11 +454,21 @@ export class Edit {
           if (index >= rows.length) {
             index = rows.length - 2;
           }
+          let r: string = 'rows';
+          let newRowObject: Row<Column> =  this.parent.grid.contentModule[r][0];
           let focussedElement: HTMLInputElement = <HTMLInputElement>document.activeElement;
           rows[index + 1][position](rows[0]);
           setValue('batchIndex', index + 1, this.batchEditModule);
-          if (this.parent.frozenRows || this.parent.getFrozenColumns()) {
+          let rowObjectIndex: number = this.parent.editSettings.newRowPosition  === 'Above' ? index : index + 1;
+          this.parent.grid.contentModule[r].splice(0, 1);
+          this.parent.grid.contentModule[r].splice(rowObjectIndex, 0, newRowObject);
+          if (this.parent.frozenRows || this.parent.getFrozenColumns() || this.parent.frozenColumns) {
+            let movableRows: Object[] = this.parent.getMovableDataRows();
+            let frows: string = 'freezeRows';
+            let newFreezeRowObject: Row<Column> = this.parent.grid.getRowsObject()[0];
             movableRows[index + 1][position](movableRows[0]);
+            this.parent.grid.contentModule[frows].splice(0, 1);
+            this.parent.grid.contentModule[frows].splice(rowObjectIndex, 0, newFreezeRowObject);
             setValue('batchIndex', index + 1, this.batchEditModule);
           }
           if (this.parent.editSettings.mode === 'Row' || this.parent.editSettings.mode === 'Cell') {
@@ -664,8 +687,10 @@ export class Edit {
       && (e.args.requestType.toString() === 'delete' || e.args.requestType.toString() === 'save'
         || (this.parent.editSettings.mode === 'Batch' && e.args.requestType.toString() === 'batchsave'))) {
       this.updateIndex(this.parent.grid.dataSource, this.parent.getRows(), this.parent.getCurrentViewRecords());
-      if (this.parent.frozenRows || this.parent.getFrozenColumns()) {
-        this.updateIndex(this.parent.grid.dataSource, this.parent.getMovableDataRows(), this.parent.getCurrentViewRecords());
+      if (this.parent.frozenRows || this.parent.getFrozenColumns() || this.parent.frozenColumns) {
+        if ((this.parent.grid.dataSource as Object[]).length === this.parent.getMovableDataRows().length) {
+          this.updateIndex(this.parent.grid.dataSource, this.parent.getMovableDataRows(), this.parent.getCurrentViewRecords());
+        }
       }
     }
   }

@@ -301,7 +301,7 @@ export class Marker {
             value: options.data["name"]
         };
         if (this.maps.isBlazor) {
-            const { maps, marker, data, ...blazorEventArgs }: IMarkerClickEventArgs = eventArgs;
+            const { maps, marker, ...blazorEventArgs }: IMarkerClickEventArgs = eventArgs;
             eventArgs = blazorEventArgs;
         }
         this.maps.trigger(markerClick, eventArgs);

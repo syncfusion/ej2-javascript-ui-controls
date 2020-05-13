@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 18.1.48 (2020-05-05)
+## 18.1.52 (2020-05-13)
+
+### ProgressBar
+
+#### Bug Fixes
+
+- Progress bar label not render at end of the progress has been fixed.
+
+## 18.1.42 (2020-04-01)
 
 ### ProgressBar
 

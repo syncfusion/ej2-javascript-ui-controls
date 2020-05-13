@@ -685,7 +685,7 @@ export class BaseLegend {
     protected translatePage(pagingText: Element, page: number, pageNumber: number): number {
         let size: number = (this.clipPathHeight) * page;
         let translate: string = 'translate(0,-' + size + ')';
-        if (!this.isChartControl && !this.bulletChart && this.isVertical) {
+        if (!this.isChartControl && !this.isBulletChartControl && this.isVertical) {
             let pageLength: number = page * this.maxColumns;
             size = this.pageXCollections[page * this.maxColumns] - this.legendBounds.x;
             size = size < 0 ? 0 : size; // to avoid small pixel variation

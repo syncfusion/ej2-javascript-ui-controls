@@ -3095,7 +3095,12 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         super.destroy();
         this.unwireEvents();
         window.removeEventListener('resize', this.onresize);
-        removeClass([this.sliderContainer], [classNames.sliderDisabled]);
+        if (!isBlazor() && !this.isServerRendered) {
+            removeClass([this.sliderContainer], [classNames.sliderDisabled]);
+        } else {
+            removeClass([this.sliderContainer], [classNames.sliderDisabled, classNames.sliderContainer, classNames.controlWrapper,
+                classNames.horizontalSlider, classNames.verticalSlider]);
+        }
         this.firstHandle.removeAttribute('aria-orientation');
         if (this.type === 'Range') {
             this.secondHandle.removeAttribute('aria-orientation');

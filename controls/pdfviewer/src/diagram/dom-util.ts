@@ -25,6 +25,7 @@ export function renderAdornerLayer(
     pdfViewer.adornerSvgLayer.appendChild(svgSelector);
     setAttributeSvg(svgAdornerSvg, { style: 'pointer-events:none;' });
     }
+    pdfViewer.viewerBase.applyElementStyles(divElement, index);
 }
 
 /**

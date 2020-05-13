@@ -302,7 +302,7 @@ describe('TreeMap component Spec', () => {
         });
         it('Checking with export', (done: Function): void => {
             treemap.loaded = (args: ILoadedEventArgs): void => {
-                args.treemap.export('PDF','TreeMap');
+                args.treemap.export('PDF','TreeMap',0,true);
             };
             treemap.loaded = (args: ILoadedEventArgs): void => {
                 svg = document.getElementById('container_TreeMap_Border');

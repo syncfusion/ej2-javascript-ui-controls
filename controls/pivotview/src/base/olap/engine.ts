@@ -3255,15 +3255,13 @@ export class OlapEngine {
         return xmlMsg;
     }
     public getConnectionInfo(connectionString: string, locale: string | number): ConnectionInfo {
-        let connectionInfo: ConnectionInfo = { url: '', LCID: '1033' };
+        let connectionInfo: ConnectionInfo = { url: '', LCID: !isNullOrUndefined(locale) ? locale.toString() : '1033' };
         if (connectionString !== '') {
             for (let obj of connectionString.split(';')) {
                 if (obj.toLowerCase().indexOf('locale') < 0 && connectionInfo.url.length === 0) {
                     connectionInfo.url = obj;
                 } else if (obj.toLowerCase().indexOf('locale') >= 0) {
                     connectionInfo.LCID = obj.replace(/ /g, '').split('=')[1];
-                } else if (!isNullOrUndefined(locale)) {
-                    connectionInfo.LCID = locale.toString();
                 }
             }
         }

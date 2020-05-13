@@ -637,6 +637,33 @@ describe ('left indent testing', () => {
             });
         });
 
+        describe('Apply UL to OL list which is right indented and then left indent', () => {            
+            let innerText: string = `<div style="color:red;" id="content-edit" contenteditable="true" class="e-node-deletable e-node-inner"><ol><li style="list-style-type: none;"><ol><li id="start">list 1<ol><li id="sublist">list 2</li></ol></li><li id="end">list 3</li></ol></li></ol></div>`;            
+            let elem: HTMLElement = createElement('div', {
+                id: 'dom-node', innerHTML: innerText.trim()
+            });
+            beforeAll(() => {
+                document.body.appendChild(elem);
+                editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+                editNode = editorObj.editableElement as HTMLElement;
+            });
+            it('Apply UL to OL list which is right indented and then left indent', () => {
+                startNode = editNode.querySelector('#start');
+                endNode = editNode.querySelector('#end');
+                editorObj.nodeSelection.setSelectionText(document, startNode.childNodes[0], endNode, 1, 1);
+                editorObj.execCommand("Lists", 'UL', null);
+                expect(editNode.querySelector('#sublist').parentElement.tagName === 'UL').toBe(true);
+                expect(editNode.querySelector('#start').parentElement.closest('LI').parentElement.tagName === 'UL').toBe(true);
+
+                editorObj.execCommand("Indents", 'Outdent', null);
+                expect(editNode.querySelector('#sublist').parentElement.tagName === 'UL').toBe(true);
+                expect(editNode.querySelector('#start').parentElement.tagName === 'UL').toBe(true);
+            });
+            afterAll(() => {
+                detach(elem);
+            });
+        });
+
         describe(' basic OL format apply and revert', () => {
             let elem: HTMLElement = createElement('div', {
                 id: 'dom-node', innerHTML: olHTML.trim()
@@ -1545,6 +1572,91 @@ describe ('left indent testing', () => {
                 (editorObj as any).editorKeyDown(keyBoardEvent);
                 expect(editNode.querySelector('#firstli').textContent.length === 0).toBe(true);
             });
+            afterAll(() => {
+                detach(elem);
+            });
+        });
+
+        describe('Backspace key press testing in list', () => {
+            let elem: HTMLElement;
+            let innerValue: string = `<div id="content-edit"><ul><li id="firstli"><br><ul><li id="sublist">sublist</li><li>sublist 2﻿﻿<br></li></ul></li></ul><div>`;
+            beforeEach(() => {
+                elem = createElement('div', {
+                    id: 'dom-node', innerHTML: innerValue
+                });
+                document.body.appendChild(elem);
+                editorObj = new EditorManager({ document: document, editableElement: document.getElementById("content-edit") });
+                editNode = editorObj.editableElement as HTMLElement;
+            });
+            afterEach(() => {
+                detach(elem);
+            });
+
+            it(' Backspace key press at empty ul with sun list as UL', () => {
+                startNode = editNode.querySelector('#firstli');
+                setCursorPoint(startNode, 0);
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'backspace';
+                keyBoardEvent.event.which = 8;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                let sublist = editNode.querySelector('#sublist');
+                expect(sublist.parentElement.tagName === 'UL').toBe(true);
+                expect(sublist.parentElement.parentElement.tagName !== 'UL').toBe(true);
+                innerValue = `<div id="content-edit"><ul><li id="firstli"><br><ol><li id="sublist">sublist</li><li>sublist 2﻿﻿<br></li></ol></li></ul><div>`;
+            });
+
+            it(' Backspace key press at empty ul with sun list as OL', () => {
+                startNode = editNode.querySelector('#firstli');
+                setCursorPoint(startNode, 0);
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'backspace';
+                keyBoardEvent.event.which = 8;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                let sublist = editNode.querySelector('#sublist');
+                expect(sublist.parentElement.tagName === 'OL').toBe(true);
+                expect(sublist.parentElement.parentElement.tagName !== 'UL').toBe(true);
+                innerValue = `<div id="content-edit"><ul><li id="firstli"><br></li><ul><li id="sublist">sublist</li><li>sublist2</li></ul><li>mainlist</li></ul><div>`;
+            });
+
+            it(' Type 2 lists Backspace key press at empty ul with sun list as UL', () => {
+                startNode = editNode.querySelector('#firstli');
+                setCursorPoint(startNode, 0);
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'backspace';
+                keyBoardEvent.event.which = 8;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                let sublist = editNode.querySelector('#sublist');
+                expect(sublist.parentElement.tagName === 'UL').toBe(true);
+                expect(sublist.parentElement.parentElement.tagName !== 'UL').toBe(true);
+                innerValue = `<div id="content-edit"><ul><li id="firstli"><br></li><ol><li id="sublist">sublist</li><li>sublist2</li></ol><li>mainlist</li></ul><div>`;
+            });
+
+            it(' Type 2 lists Backspace key press at empty ul with sun list as OL', () => {
+                startNode = editNode.querySelector('#firstli');
+                setCursorPoint(startNode, 0);
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'backspace';
+                keyBoardEvent.event.which = 8;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                let sublist = editNode.querySelector('#sublist');
+                expect(sublist.parentElement.tagName === 'OL').toBe(true);
+                expect(sublist.parentElement.parentElement.tagName !== 'UL').toBe(true);
+                innerValue = `<div id="content-edit"><ul><li id="firstli"><br></li><ol><li id="sublist">sublist</li><li>sublist2</li></ol><li>mainlist</li></ul><div>`;
+            });
+
+            it('content with non empty space', () => {
+                startNode = editNode.querySelector('#firstli');
+                setCursorPoint(startNode, 1);
+                keyBoardEvent.event.shiftKey = false;
+                keyBoardEvent.action = 'backspace';
+                keyBoardEvent.event.which = 8;
+                (editorObj as any).editorKeyDown(keyBoardEvent);
+                let sublist = editNode.querySelector('#sublist');
+                expect(sublist.parentElement.tagName === 'OL').toBe(true);
+                expect(sublist.parentElement.parentElement.tagName !== 'UL').toBe(true);
+                innerValue = `<div id="content-edit"><ul><li id="firstli">﻿<br></li><ul><li id="sublist">sublist</li><li>sublist2</li></ul><li>mainlist</li></ul><div>`;
+            });
+
             afterAll(() => {
                 detach(elem);
             });

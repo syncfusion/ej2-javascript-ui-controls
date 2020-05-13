@@ -213,8 +213,8 @@ export class TaskProcessor extends DateProcessor {
         let id: string = null; let name: string = null;
         progress = progress ? parseFloat(progress.toString()) ? parseFloat(progress.toString()) : 0 : 0;
         let predecessors: string | number | object[] = data[taskSettings.dependency];
-        let baselineStartDate: Date = this.getDateFromFormat(data[taskSettings.baselineStartDate]);
-        let baselineEndDate: Date = this.getDateFromFormat(data[taskSettings.baselineEndDate]);
+        let baselineStartDate: Date = this.getDateFromFormat(data[taskSettings.baselineStartDate], true);
+        let baselineEndDate: Date = this.getDateFromFormat(data[taskSettings.baselineEndDate], true);
         let ganttData: IGanttData = {} as IGanttData;
         let ganttProperties: ITaskData = {} as ITaskData;
         let autoSchedule: boolean = (this.parent.taskMode === 'Auto') ? true :
@@ -444,8 +444,8 @@ export class TaskProcessor extends DateProcessor {
         let ganttProperties: ITaskData = ganttData.ganttProperties;
         let duration: string = data[taskSettings.duration];
         duration = isNullOrUndefined(duration) || duration === '' ? null : duration;
-        let startDate: Date = this.getDateFromFormat(data[taskSettings.startDate]);
-        let endDate: Date = this.getDateFromFormat(data[taskSettings.endDate]);
+        let startDate: Date = this.getDateFromFormat(data[taskSettings.startDate], true);
+        let endDate: Date = this.getDateFromFormat(data[taskSettings.endDate], true);
         let isMileStone: boolean = taskSettings.milestone ? data[taskSettings.milestone] ? true : false : false;
         let durationMapping: string = data[taskSettings.durationUnit] ? data[taskSettings.durationUnit] : '';
         this.parent.setRecordValue('durationUnit', this.validateDurationUnitMapping(durationMapping), ganttProperties, true);
@@ -874,11 +874,24 @@ export class TaskProcessor extends DateProcessor {
         let duration: number = task.ganttProperties.duration;
         let durationUnit: string = task.ganttProperties.durationUnit;
         if (!isNullOrUndefined(duration)) {
-            this.parent.setRecordValue(mapping, this.getDurationInDay(duration, durationUnit), task);
-            this.parent.setRecordValue('taskData.' + mapping, this.getDurationString(duration, durationUnit), task);
+            this.parent.setRecordValue(mapping, task.ganttProperties.duration, task);
+            /* tslint:disable-next-line:no-any */
+            let durationValue: any = (getValue(mapping, task.taskData));
+            if (isNaN(durationValue) && isNullOrUndefined(this.parent.taskFields.durationUnit) && !isNullOrUndefined(durationValue)) {
+                this.parent.setRecordValue('taskData.' + mapping, this.getDurationString(duration, durationUnit), task);
+            } else {
+                if (typeof durationValue === 'string') {
+                    this.parent.setRecordValue('taskData.' + mapping, duration.toString(), task);
+                } else {
+                    this.parent.setRecordValue('taskData.' + mapping, duration, task);
+                }
+            }
         } else {
             this.parent.setRecordValue(mapping, duration, task);
             this.parent.setRecordValue('taskData.' + mapping, duration, task);
+        }
+        if (this.parent.taskFields.durationUnit) {
+            task.taskData[this.parent.taskFields.durationUnit] = task.ganttProperties.durationUnit;
         }
     }
     private getWorkInHour(work: number, workUnit: string): number {
@@ -1012,7 +1025,10 @@ export class TaskProcessor extends DateProcessor {
         }
     }
 
-    private updateResourceName(data: IGanttData): void {
+    /**
+     * @private
+     */
+    public updateResourceName(data: IGanttData): void {
         let resourceInfo: Object[] = data.ganttProperties.resourceInfo;
         let resourceName: Object[] = [];
         if (resourceInfo) {
@@ -1056,11 +1072,11 @@ export class TaskProcessor extends DateProcessor {
 
     private validateDurationUnitMapping(durationUnit: string): string {
         let unit: string = durationUnit;
-        if (unit === 'minute') {
+        if ((unit === 'minute') || (unit === 'minutes') || (unit === 'm') || (unit === 'min')) {
             unit = 'minute';
-        } else if (unit === 'hour') {
+        } else if ((unit === 'hour') || (unit === 'hours') || (unit === 'h') || (unit === 'hr')) {
             unit = 'hour';
-        } else if (unit === 'day') {
+        } else if ((unit === 'day') || (unit === 'days') || (unit === 'd')) {
             unit = 'day';
         } else {
             unit = this.parent.durationUnit.toLocaleLowerCase();

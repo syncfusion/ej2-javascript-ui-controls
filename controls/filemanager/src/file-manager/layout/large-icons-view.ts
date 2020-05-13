@@ -1306,7 +1306,9 @@ export class LargeIconsView {
 
     private resizeHandler(): void {
         this.getItemCount();
-        this.adjustHeight();
+        if (!isNOU(this.listObj)) {
+            this.adjustHeight();
+        }
     }
 
     private splitterResizeHandler(): void {

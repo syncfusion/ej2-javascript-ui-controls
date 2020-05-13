@@ -4,7 +4,7 @@ import { formatUnit, isNullOrUndefined } from '@syncfusion/ej2-base';
 import { IGrid, IAction, NotifyArgs } from '../base/interface';
 import { getScrollBarWidth, getUpdateUsingRaf } from '../base/util';
 import {
-    scroll, contentReady, uiUpdate, onEmpty, headerRefreshed, textWrapRefresh, virtualScrollEdit, infiniteScrollHandler
+    scroll, contentReady, uiUpdate, onEmpty, headerRefreshed, textWrapRefresh, virtualScrollEdit, infiniteScrollHandler, closeFilterDialog
 } from '../base/constant';
 import { ColumnWidthService } from '../services/width-controller';
 import { Grid } from '../base/grid';
@@ -59,7 +59,7 @@ export class Scroll implements IAction {
     public setHeight(): void {
         let mHdrHeight: number = 0;
         let content: HTMLElement = (<HTMLElement>this.parent.getContent().querySelector('.e-content'));
-        if (this.parent.frozenRows && this.parent.height !== 'auto') {
+        if (!this.parent.enableVirtualization && this.parent.frozenRows && this.parent.height !== 'auto') {
             let tbody: HTMLElement = (this.parent.getHeaderContent().querySelector('tbody') as HTMLElement);
             mHdrHeight = tbody ? tbody.offsetHeight : 0;
             content.style.height = formatUnit((this.parent.height as number) - mHdrHeight);
@@ -169,6 +169,7 @@ export class Scroll implements IAction {
                 return;
             }
 
+            this.parent.notify(closeFilterDialog, e);
             element.scrollLeft = left;
             if (isFooter) { this.header.scrollLeft = left; }
             this.previousValues.left = left;

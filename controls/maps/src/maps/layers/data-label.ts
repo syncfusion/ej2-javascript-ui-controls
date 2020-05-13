@@ -96,15 +96,15 @@ export class DataLabel {
             if (shapeProperties[properties[j]]) {
                 propertyPath = properties[j];
                 datasrcObj = this.getDataLabel(
-                    layer.dataSource as object[], labelpath, shapeData['properties'][propertyPath], layer.shapeDataPath);
+                    layer.dataSource as object[], layer.shapeDataPath, shapeData['properties'][propertyPath], layer.shapeDataPath);
                 if (datasrcObj) {
                     break;
                 }
             }
         }
         datasrcObj = this.getDataLabel(
-            layer.dataSource as object[], labelpath, shapeData['properties'][propertyPath], layer.shapeDataPath);
-        if (!isNullOrUndefined(shapes['property']) && ((shapeProperties[labelpath]) || datasrcObj)) {
+            layer.dataSource as object[], layer.shapeDataPath, shapeData['properties'][propertyPath], layer.shapeDataPath);
+        if (!isNullOrUndefined(shapes['property'])) {
             shapePoint = [[]];
             if (!layerData[index]['_isMultiPolygon'] && layerData[index]['type'] !== 'Point') {
                 shapePoint.push(this.getPoint(layerData[index] as object[], []));
@@ -137,7 +137,19 @@ export class DataLabel {
             }
         }
         text = (!isNullOrUndefined(datasrcObj)) ? !isNullOrUndefined(datasrcObj[labelpath]) ?
-            datasrcObj[labelpath].toString() : datasrcObj[labelpath] : shapeData['properties'][labelpath];
+            datasrcObj[layer.shapeDataPath].toString() : datasrcObj[layer.shapeDataPath] : shapeData['properties'][labelpath];
+        if ((Object.prototype.toString.call(layer.shapePropertyPath) === '[object Array]') &&
+            (isNullOrUndefined(text) && layer.dataSource['length'] === 0)) {
+          for(var l = 0; l < layer.shapePropertyPath.length; l++) {
+              if (shapeData['properties'][layer.shapePropertyPath[l]]) {
+                  text = shapeData['properties'][layer.shapePropertyPath[l]];
+                  break;
+              }
+          }
+        }
+        if (isNullOrUndefined(text) && (layer.dataLabelSettings.template !=="" && layer.dataSource['length'] === 0)) {
+            text = shapeData['properties'][layer.shapePropertyPath as string];
+        }
         let dataLabelText : string = text;
         let projectionType : string = this.maps.projectionType;
         if (isPoint) {

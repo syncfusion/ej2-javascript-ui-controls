@@ -165,6 +165,7 @@ export class Selection {
                         removeClass(ele);
                         this.removedSelectionList(ele);
                         if (this.selectionType === 'Shape') {
+                            this.maps.shapeSelectionItem = [];
                             let selectionLength: number = this.maps.selectedElementId.length;
                             for (let i: number = 0; i < selectionLength; i++) {
                                 ele = layetElement.getElementsByClassName(this.selectionType + 'selectionMapStyle')[0];

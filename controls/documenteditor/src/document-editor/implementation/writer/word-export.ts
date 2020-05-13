@@ -1066,7 +1066,9 @@ export class WordExport {
             } else if (item.hasOwnProperty('imageString')) {
                 this.serializePicture(writer, item);
             } else if (item.hasOwnProperty('shapeId')) {
+                let currentParargaph: any = this.paragraph;
                 this.serializeShape(writer, item);
+                this.paragraph = currentParargaph;
             } else if (item.hasOwnProperty('bookmarkType')) {
                 this.serializeBookMark(writer, item);
             } else if (item.hasOwnProperty('editRangeId')) {
@@ -2720,12 +2722,13 @@ export class WordExport {
     }
     private serializeShapeDrawingGraphics(writer: XmlWriter, shape: any): void {
         let val: string = shape.autoShapeType;
+        let id: number = shape.shapeId;
         writer.writeStartElement('wp', 'wrapNone', this.wpNamespace);
         writer.writeEndElement();
         writer.writeStartElement('wp', 'docPr', this.wpNamespace);
-        writer.writeAttributeString(undefined, 'id', undefined, (this.mDocPrID++).toString());
-        writer.writeAttributeString(undefined, 'name', undefined, '1'.toString());
-        writer.writeAttributeString(undefined, 'title', undefined, '');
+        writer.writeAttributeString(undefined, 'id', undefined, id.toString());
+        writer.writeAttributeString(undefined, 'name', undefined, shape.name);
+        writer.writeAttributeString(undefined, 'title', undefined, shape.title);
         writer.writeEndElement();
         writer.writeStartElement('a', 'graphic', this.aNamespace);
         writer.writeStartElement('a', 'graphicData', this.aNamespace);

@@ -11354,6 +11354,9 @@ var TreeView = /** @class */ (function (_super) {
             var selected = currLi.classList.contains(ACTIVE);
             var expanded = (currLi.getAttribute('aria-expanded') === 'true') ? true : false;
             var hasChildren = (currLi.getAttribute('aria-expanded') === null) ? false : true;
+            if (this.isBlazorPlatform) {
+                hasChildren = currLi.getAttribute('aria-expanded') === 'true' ? true : (currLi.querySelector('.e-icon-expandable') || currLi.querySelector('.e-icon-collapsible')) != null ? true : false;
+            }
             var checked = null;
             if (this.showCheckBox) {
                 checked = sf.base.select('.' + CHECKBOXWRAP, currLi).getAttribute('aria-checked');

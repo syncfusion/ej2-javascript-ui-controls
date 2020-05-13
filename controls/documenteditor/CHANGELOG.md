@@ -2,6 +2,19 @@
 
 ## [Unreleased]
 
+## 18.1.52 (2020-05-13)
+
+### Document Editor
+
+#### New Features
+
+- `#267067`,`#267934` - Added API to customize font family dropdown.
+
+#### Bug Fixes
+
+- `#271375` - Resolved table layout issue when table contain vertical merged cells.
+- `#252868` - Resolved script error when minimize row height.
+
 ## 18.1.48 (2020-05-05)
 
 ### Document Editor

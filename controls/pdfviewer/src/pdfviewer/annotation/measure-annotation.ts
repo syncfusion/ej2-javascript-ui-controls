@@ -1125,7 +1125,11 @@ export class MeasureAnnotation {
                     } else {
                         inchValue = calculateValue[1];
                     }
-                    return (calculateValue[0] + ' sq ft ' + inchValue + ' in');
+                    if (!inchValue) {
+                        return (calculateValue[0] + ' sq ft');
+                    } else {
+                        return (calculateValue[0] + ' sq ft ' + inchValue + ' in');
+                    }
                 } else {
                     return(calculateValue[0] + ' sq ft');
                 }
@@ -1175,7 +1179,11 @@ export class MeasureAnnotation {
                     } else {
                         inchValue = calculateValue[1];
                     }
-                    return (calculateValue[0] + ' cu ft ' + inchValue + ' in');
+                    if (!inchValue) {
+                        return (calculateValue[0] + ' cu ft');
+                    } else {
+                        return (calculateValue[0] + ' cu ft ' + inchValue + ' in');
+                    }
                 } else {
                     return(calculateValue[0] + ' cu ft');
                 }
@@ -1243,7 +1251,11 @@ export class MeasureAnnotation {
                     } else {
                         inchValue = calculateValue[1];
                     }
-                    convertedValue = calculateValue[0] + ' ft ' + inchValue + ' in';
+                    if (!inchValue) {
+                        convertedValue = calculateValue[0] + ' ft';
+                    } else {
+                        convertedValue = calculateValue[0] + ' ft ' + inchValue + ' in';
+                    }
                 } else {
                     convertedValue = calculateValue[0] + ' ft';
                 }

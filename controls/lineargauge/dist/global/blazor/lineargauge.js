@@ -700,6 +700,24 @@ function getElementOffset(childElement, parentElement) {
     parentElement.removeChild(childElement);
     return new Size(width, height);
 }
+/**
+ * To trigger the download element
+ * @param fileName
+ * @param type
+ * @param url
+ */
+function triggerDownload(fileName, type, url, isDownload) {
+    sf.base.createElement('a', {
+        attrs: {
+            'download': fileName + '.' + type.toLocaleLowerCase(),
+            'href': url
+        }
+    }).dispatchEvent(new MouseEvent(isDownload ? 'click' : 'move', {
+        view: window,
+        bubbles: false,
+        cancelable: true
+    }));
+}
 /** @private */
 var VisibleRange = /** @class */ (function () {
     function VisibleRange(min, max, interval, delta) {
@@ -2475,7 +2493,7 @@ var GaugeTooltip = /** @class */ (function () {
             y = (lineY - elementRect.top);
             if (this.pointerElement.id.indexOf('Range') > -1 || this.pointerElement.id.indexOf('BarPointer') > -1) {
                 x = (!this.currentAxis.isInversed) ? ((tooltipPosition === 'End') ? x + width : ((tooltipPosition === 'Start') ?
-                    x : x + (width / 2))) : ((tooltipPosition === 'End') ? x + width : ((tooltipPosition === 'Start') ? x : x + (width / 2)));
+                    x : x + (width / 2))) : ((tooltipPosition === 'End') ? x : ((tooltipPosition === 'Start') ? x + width : x + (width / 2)));
             }
             else {
                 x = (this.currentPointer.type === 'Marker') ? (x + width / 2) : (!this.currentAxis.isInversed) ? x + width : x;
@@ -2602,21 +2620,23 @@ function getThemeStyle(theme) {
 }
 
 /**
- * Represent the print and export for gauge
+ * Represent the print and export for gauge.
+ * @hidden
  */
-var ExportUtils = /** @class */ (function () {
+var Print = /** @class */ (function () {
     /**
      * Constructor for gauge
      * @param control
      */
-    function ExportUtils(control) {
+    function Print(control) {
         this.control = control;
     }
     /**
      * To print the gauge
      * @param elements
+     * @private
      */
-    ExportUtils.prototype.print = function (elements) {
+    Print.prototype.print = function (elements) {
         var _this = this;
         this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
         this.printWindow.moveTo(0, 0);
@@ -2635,7 +2655,7 @@ var ExportUtils = /** @class */ (function () {
      * @param elements
      * @private
      */
-    ExportUtils.prototype.getHTMLContent = function (elements) {
+    Print.prototype.getHTMLContent = function (elements) {
         var div = sf.base.createElement('div');
         if (elements) {
             if (elements instanceof Array) {
@@ -2656,72 +2676,181 @@ var ExportUtils = /** @class */ (function () {
         return div;
     };
     /**
+     * Get module name.
+     */
+    Print.prototype.getModuleName = function () {
+        return 'Print';
+    };
+    /**
+     * To destroy the print.
+     * @return {void}
+     * @private
+     */
+    Print.prototype.destroy = function (control) {
+        /**
+         * Destroy method performed here
+         */
+    };
+    return Print;
+}());
+
+/**
+ * Represent the print and export for gauge.
+ * @hidden
+ */
+var PdfExport = /** @class */ (function () {
+    /**
+     * Constructor for gauge
+     * @param control
+     */
+    function PdfExport(control) {
+        this.control = control;
+    }
+    /**
+     * To export the file as pdf format
+     * @param type
+     * @param fileName
+     * @private
+     */
+    PdfExport.prototype.export = function (type, fileName, orientation, allowDownload) {
+        var _this = this;
+        var promise = new Promise(function (resolve, reject) {
+            var canvasElement = sf.base.createElement('canvas', {
+                id: 'ej2-canvas',
+                attrs: {
+                    'width': _this.control.availableSize.width.toString(),
+                    'height': _this.control.availableSize.height.toString()
+                }
+            });
+            orientation = sf.base.isNullOrUndefined(orientation) ? sf.pdfexport.PdfPageOrientation.Landscape : orientation;
+            var svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+                _this.control.svgObject.outerHTML +
+                '</svg>';
+            var url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] :
+                [(new XMLSerializer()).serializeToString(_this.control.svgObject)], { type: 'image/svg+xml' }));
+            var image = new Image();
+            var context = canvasElement.getContext('2d');
+            image.onload = (function () {
+                context.drawImage(image, 0, 0);
+                window.URL.revokeObjectURL(url);
+                var document = new sf.pdfexport.PdfDocument();
+                var imageString = canvasElement.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
+                document.pageSettings.orientation = orientation;
+                imageString = imageString.slice(imageString.indexOf(',') + 1);
+                document.pages.add().graphics.drawImage(new sf.pdfexport.PdfBitmap(imageString), 0, 0, (_this.control.availableSize.width - 60), _this.control.availableSize.height);
+                if (allowDownload) {
+                    document.save(fileName + '.pdf');
+                    document.destroy();
+                }
+                else {
+                    resolve(null);
+                }
+            });
+            image.src = url;
+        });
+        return promise;
+    };
+    /**
+     * Get module name.
+     */
+    PdfExport.prototype.getModuleName = function () {
+        return 'PdfExport';
+    };
+    /**
+     * To destroy the PdfExport.
+     * @return {void}
+     * @private
+     */
+    PdfExport.prototype.destroy = function (control) {
+        /**
+         * Destroy method performed here
+         */
+    };
+    return PdfExport;
+}());
+
+/**
+ * Represent the print and export for gauge.
+ * @hidden
+ */
+var ImageExport = /** @class */ (function () {
+    /**
+     * Constructor for gauge
+     * @param control
+     */
+    function ImageExport(control) {
+        this.control = control;
+    }
+    /**
      * To export the file as image/svg format
      * @param type
      * @param fileName
+     * @private
      */
-    ExportUtils.prototype.export = function (type, fileName, orientation) {
+    ImageExport.prototype.export = function (type, fileName, allowDownload) {
         var _this = this;
-        var element = sf.base.createElement('canvas', {
-            id: 'ej2-canvas',
-            attrs: {
-                'width': this.control.availableSize.width.toString(),
-                'height': this.control.availableSize.height.toString()
-            }
-        });
-        var isDownload = !(sf.base.Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
-        orientation = sf.base.isNullOrUndefined(orientation) ? sf.pdfexport.PdfPageOrientation.Landscape : orientation;
-        var svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
-            this.control.svgObject.outerHTML +
-            '</svg>';
-        var url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] :
-            [(new XMLSerializer()).serializeToString(this.control.svgObject)], { type: 'image/svg+xml' }));
-        if (type === 'SVG') {
-            this.triggerDownload(fileName, type, url, isDownload);
-        }
-        else {
-            var image_1 = new Image();
-            var ctx_1 = element.getContext('2d');
-            image_1.onload = (function () {
-                ctx_1.drawImage(image_1, 0, 0);
-                window.URL.revokeObjectURL(url);
-                if (type === 'PDF') {
-                    var document_1 = new sf.pdfexport.PdfDocument();
-                    var imageString = element.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
-                    document_1.pageSettings.orientation = orientation;
-                    imageString = imageString.slice(imageString.indexOf(',') + 1);
-                    document_1.pages.add().graphics.drawImage(new sf.pdfexport.PdfBitmap(imageString), 0, 0, (_this.control.availableSize.width - 60), _this.control.availableSize.height);
-                    if (isDownload) {
-                        document_1.save(fileName + '.pdf');
-                        document_1.destroy();
-                    }
-                }
-                else {
-                    _this.triggerDownload(fileName, type, element.toDataURL('image/png').replace('image/png', 'image/octet-stream'), isDownload);
+        var promise = new Promise(function (resolve, reject) {
+            var element = sf.base.createElement('canvas', {
+                id: 'ej2-canvas',
+                attrs: {
+                    'width': _this.control.availableSize.width.toString(),
+                    'height': _this.control.availableSize.height.toString()
                 }
             });
-            image_1.src = url;
-        }
+            var isDownload = !(sf.base.Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
+            var svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+                _this.control.svgObject.outerHTML +
+                '</svg>';
+            var url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] :
+                [(new XMLSerializer()).serializeToString(_this.control.svgObject)], { type: 'image/svg+xml' }));
+            if (type === 'SVG') {
+                if (allowDownload) {
+                    triggerDownload(fileName, type, url, isDownload);
+                }
+                else {
+                    resolve(null);
+                }
+            }
+            else {
+                var image_1 = new Image();
+                var context_1 = element.getContext('2d');
+                image_1.onload = (function () {
+                    context_1.drawImage(image_1, 0, 0);
+                    window.URL.revokeObjectURL(url);
+                    if (allowDownload) {
+                        triggerDownload(fileName, type, element.toDataURL('image/png').replace('image/png', 'image/octet-stream'), isDownload);
+                    }
+                    else {
+                        if (type === 'JPEG') {
+                            resolve(element.toDataURL('image/jpeg'));
+                        }
+                        else if (type === 'PNG') {
+                            resolve(element.toDataURL('image/png'));
+                        }
+                    }
+                });
+                image_1.src = url;
+            }
+        });
+        return promise;
     };
     /**
-     * To trigger the download element
-     * @param fileName
-     * @param type
-     * @param url
+     * Get module name.
      */
-    ExportUtils.prototype.triggerDownload = function (fileName, type, url, isDownload) {
-        sf.base.createElement('a', {
-            attrs: {
-                'download': fileName + '.' + type.toLocaleLowerCase(),
-                'href': url
-            }
-        }).dispatchEvent(new MouseEvent(isDownload ? 'click' : 'move', {
-            view: window,
-            bubbles: false,
-            cancelable: true
-        }));
+    ImageExport.prototype.getModuleName = function () {
+        return 'ImageExport';
     };
-    return ExportUtils;
+    /**
+     * To destroy the ImageExport.
+     * @return {void}
+     * @private
+     */
+    ImageExport.prototype.destroy = function (control) {
+        /**
+         * Destroy method performed here
+         */
+    };
+    return ImageExport;
 }());
 
 var __extends = (undefined && undefined.__extends) || (function () {
@@ -2783,11 +2912,20 @@ var LinearGauge = /** @class */ (function (_super) {
         _this.gaugeResized = false;
         return _this;
     }
+    LinearGauge_1 = LinearGauge;
     /**
      * Initialize the preRender method.
      */
     LinearGauge.prototype.preRender = function () {
         this.isBlazor = sf.base.isBlazor();
+        if (!this.isBlazor) {
+            this.allowPrint = true;
+            this.allowImageExport = true;
+            this.allowPdfExport = true;
+            LinearGauge_1.Inject(Print);
+            LinearGauge_1.Inject(PdfExport);
+            LinearGauge_1.Inject(ImageExport);
+        }
         this.unWireEvents();
         this.trigger(load, { gauge: !this.isBlazor ? this : null });
         this.initPrivateVariable();
@@ -3344,8 +3482,9 @@ var LinearGauge = /** @class */ (function (_super) {
      * @param id - Specifies the element to print the linear gauge.
      */
     LinearGauge.prototype.print = function (id) {
-        var exportChart = new ExportUtils(this);
-        exportChart.print(id);
+        if ((this.allowPrint) && (this.printModule)) {
+            this.printModule.print(id);
+        }
     };
     /**
      * This method handles the export functionality for linear gauge.
@@ -3353,9 +3492,22 @@ var LinearGauge = /** @class */ (function (_super) {
      * @param fileName - Specifies the file name for the exported file.
      * @param orientation - Specified the orientation for the exported pdf document.
      */
-    LinearGauge.prototype.export = function (type, fileName, orientation) {
-        var exportMap = new ExportUtils(this);
-        exportMap.export(type, fileName, orientation);
+    LinearGauge.prototype.export = function (type, fileName, orientation, allowDownload) {
+        var _this = this;
+        if (sf.base.isNullOrUndefined(allowDownload)) {
+            allowDownload = true;
+        }
+        if ((type !== 'PDF') && (this.allowImageExport) && (this.imageExportModule)) {
+            return new Promise(function (resolve, reject) {
+                resolve(_this.imageExportModule.export(type, fileName, allowDownload));
+            });
+        }
+        else if ((this.allowPdfExport) && (this.pdfExportModule)) {
+            return new Promise(function (resolve, reject) {
+                resolve(_this.pdfExportModule.export(type, fileName, orientation, allowDownload));
+            });
+        }
+        return null;
     };
     /**
      * Handles the mouse event arguments.
@@ -3546,6 +3698,24 @@ var LinearGauge = /** @class */ (function (_super) {
                 args: [this, GaugeTooltip]
             });
         }
+        if (this.allowPrint) {
+            modules.push({
+                member: 'Print',
+                args: [this]
+            });
+        }
+        if (this.allowImageExport) {
+            modules.push({
+                member: 'ImageExport',
+                args: [this]
+            });
+        }
+        if (this.allowPdfExport) {
+            modules.push({
+                member: 'PdfExport',
+                args: [this]
+            });
+        }
         return modules;
     };
     /**
@@ -3615,6 +3785,7 @@ var LinearGauge = /** @class */ (function (_super) {
             this.renderAxisElements();
         }
     };
+    var LinearGauge_1;
     __decorate([
         sf.base.Property(null)
     ], LinearGauge.prototype, "width", void 0);
@@ -3624,6 +3795,15 @@ var LinearGauge = /** @class */ (function (_super) {
     __decorate([
         sf.base.Property('Vertical')
     ], LinearGauge.prototype, "orientation", void 0);
+    __decorate([
+        sf.base.Property(false)
+    ], LinearGauge.prototype, "allowPrint", void 0);
+    __decorate([
+        sf.base.Property(false)
+    ], LinearGauge.prototype, "allowImageExport", void 0);
+    __decorate([
+        sf.base.Property(false)
+    ], LinearGauge.prototype, "allowPdfExport", void 0);
     __decorate([
         sf.base.Complex({}, Margin)
     ], LinearGauge.prototype, "margin", void 0);
@@ -3717,7 +3897,7 @@ var LinearGauge = /** @class */ (function (_super) {
     __decorate([
         sf.base.Event()
     ], LinearGauge.prototype, "beforePrint", void 0);
-    LinearGauge = __decorate([
+    LinearGauge = LinearGauge_1 = __decorate([
         sf.base.NotifyPropertyChanges
     ], LinearGauge);
     return LinearGauge;
@@ -3731,7 +3911,7 @@ var LinearGauge = /** @class */ (function (_super) {
  * LinearGauge component exported.
  */
 
-LinearGauge.Inject(GaugeTooltip, Annotations);
+LinearGauge.Inject(GaugeTooltip, Annotations, Print, PdfExport, ImageExport);
 
 exports.LinearGauge = LinearGauge;
 exports.Font = Font;
@@ -3762,6 +3942,7 @@ exports.formatValue = formatValue;
 exports.getLabelFormat = getLabelFormat;
 exports.getTemplateFunction = getTemplateFunction;
 exports.getElementOffset = getElementOffset;
+exports.triggerDownload = triggerDownload;
 exports.VisibleRange = VisibleRange;
 exports.GaugeLocation = GaugeLocation;
 exports.Size = Size;
@@ -3783,6 +3964,9 @@ exports.calculateShapes = calculateShapes;
 exports.getBox = getBox;
 exports.Annotations = Annotations;
 exports.GaugeTooltip = GaugeTooltip;
+exports.Print = Print;
+exports.ImageExport = ImageExport;
+exports.PdfExport = PdfExport;
 
 return exports;
 

@@ -3096,6 +3096,9 @@ class HelperMethods {
         return formattedValue;
     }
     /* tslint:enable:no-any */
+    /**
+     * @private
+     */
     static capitaliseFirst(value, type) {
         let text = '';
         if (type === 'Title case') {
@@ -11519,7 +11522,6 @@ class Renderer {
         this.isFieldCode = false;
         this.leftPosition = 0;
         this.topPosition = 0;
-        this.isFormField = false;
         this.height = 0;
         this.documentHelper = documentHelper;
     }
@@ -11951,6 +11953,24 @@ class Renderer {
         if (lineWidget.isFirstLine() && !paraFormat.bidi) {
             left += HelperMethods.convertPointToPixel(paraFormat.firstLineIndent);
         }
+        if (this.documentHelper && this.documentHelper.selection && !isNullOrUndefined(this.documentHelper.selection.formFieldHighlighters)
+            && this.documentHelper.selection.formFieldHighlighters.containsKey(lineWidget)) {
+            if (this.documentHelper.owner.documentEditorSettings
+                && this.documentHelper.owner.documentEditorSettings.formFieldSettings.applyShading) {
+                let widgetInfo = page.documentHelper.selection.formFieldHighlighters.get(lineWidget);
+                for (let i = 0; i < widgetInfo.length; i++) {
+                    this.pageContext.fillStyle = this.documentHelper.owner.documentEditorSettings.formFieldSettings.shadingColor;
+                    let height = lineWidget.height;
+                    let isLastLine = lineWidget.isLastLine();
+                    if (isLastLine) {
+                        // tslint:disable-next-line:max-line-length
+                        height = height - HelperMethods.convertPointToPixel(this.documentHelper.layout.getAfterSpacing(lineWidget.paragraph));
+                    }
+                    // tslint:disable-next-line:max-line-length
+                    this.pageContext.fillRect(this.getScaledValue(widgetInfo[i].left, 1), this.getScaledValue(top, 2), this.getScaledValue(widgetInfo[i].width), this.getScaledValue(height));
+                }
+            }
+        }
         if (this.documentHelper.owner.searchModule) {
             // tslint:disable-next-line:max-line-length
             if (!isNullOrUndefined(page.documentHelper.owner.searchModule.searchHighlighters) && page.documentHelper.owner.searchModule.searchHighlighters.containsKey(lineWidget)) {
@@ -12052,15 +12072,9 @@ class Renderer {
                 if ((!isNullOrUndefined(element.fieldEnd) || element.hasFieldEnd)) {
                     this.isFieldCode = true;
                 }
-                if (!isNullOrUndefined(element.formFieldData) && element.hasFieldEnd && !isNullOrUndefined(element.fieldEnd)) {
-                    this.isFormField = true;
-                }
             }
             else if (element.fieldType === 2 || element.fieldType === 1) {
                 this.isFieldCode = false;
-                if (element.fieldType === 1) {
-                    this.isFormField = false;
-                }
             }
         }
     }
@@ -12173,12 +12187,6 @@ class Renderer {
             }
             // tslint:disable-next-line:max-line-length
             this.pageContext.fillRect(this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
-        }
-        if (this.documentHelper && this.documentHelper.owner.documentEditorSettings
-            && this.documentHelper.owner.documentEditorSettings.formFieldSettings.applyShading && this.isFormField) {
-            this.pageContext.fillStyle = this.documentHelper.owner.documentEditorSettings.formFieldSettings.shadingColor;
-            // tslint:disable-next-line:max-line-length
-            this.pageContext.fillRect(this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width) + 0.5, this.getScaledValue(elementBox.height));
         }
         let color = format.fontColor;
         this.pageContext.textBaseline = 'alphabetic';
@@ -14570,7 +14578,7 @@ class DocumentHelper {
          * @private
          */
         this.onPaste = (event) => {
-            if (!this.owner.isReadOnlyMode) {
+            if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                 this.owner.editorModule.pasteInternal(event);
             }
             this.editableDiv.innerText = '';
@@ -14841,6 +14849,7 @@ class DocumentHelper {
                 if (this.selection.checkAndEnableHeaderFooter(cursorPoint, this.owner.viewer.findFocusedPage(cursorPoint, true))) {
                     return;
                 }
+                let formField = this.selection.getCurrentFormField();
                 if (!this.isDocumentProtected && this.owner.enableFormField) {
                     let formatType = this.selection.getFormFieldType();
                     if (formatType) {
@@ -14859,6 +14868,10 @@ class DocumentHelper {
                                 break;
                         }
                     }
+                }
+                else if (this.isDocumentProtected && formField && formField.formFieldData instanceof TextFormField
+                    && formField.formFieldData.type === 'Text') {
+                    this.selection.selectField();
                 }
                 else {
                     this.tapCount = 2;
@@ -14922,8 +14935,13 @@ class DocumentHelper {
                     this.selection.navigateHyperLinkOnEvent(touchPoint, false);
                 }
                 if (this.isLeftButtonPressed(event) && this.isDocumentProtected && this.protectionType === 'FormFieldsOnly' && this.selection) {
-                    let formField = this.selection.getCurrentFormField();
-                    if (formField && formField.formFieldData && formField.formFieldData.enabled) {
+                    let widget = this.getLineWidget(touchPoint);
+                    let formField = this.selection.getHyperLinkFieldInCurrentSelection(widget, touchPoint, true);
+                    if (isNullOrUndefined(formField)) {
+                        formField = this.selection.getCurrentFormField();
+                    }
+                    // tslint:disable-next-line:max-line-length
+                    if (formField && formField.formFieldData && formField.formFieldData.enabled && !this.selection.isInlineFormFillMode(formField)) {
                         let data = { 'fieldName': formField.formFieldData.name };
                         if (formField.formFieldData instanceof TextFormField) {
                             data.value = formField.resultText;
@@ -14935,7 +14953,10 @@ class DocumentHelper {
                             data.value = formField.formFieldData.selectedIndex;
                         }
                         this.owner.trigger('beforeFormFieldFill', data);
-                        if (formField.formFieldData instanceof TextFormField || formField.formFieldData instanceof DropDownFormField) {
+                        // tslint:disable-next-line:max-line-length
+                        if (this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Popup' && !(formField.formFieldData instanceof CheckBoxFormField)
+                            || (formField.formFieldData instanceof TextFormField && !(formField.formFieldData.type === 'Text'))
+                            || formField.formFieldData instanceof DropDownFormField) {
                             this.formFillPopup.showPopUp(formField, touchPoint);
                         }
                         else {
@@ -14944,6 +14965,9 @@ class DocumentHelper {
                             data.isCanceled = false;
                             this.owner.trigger('afterFormFieldFill', data);
                         }
+                    }
+                    if (!formField && this.isFormFillProtectedMode) {
+                        this.selection.navigateToNextFormField();
                     }
                 }
                 else {
@@ -15445,6 +15469,18 @@ class DocumentHelper {
         }
         this.currentSelectedCommentInternal = value;
     }
+    /**
+     * @private
+     */
+    get isInlineFormFillProtectedMode() {
+        return this.isFormFillProtectedMode && this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Inline';
+    }
+    /**
+     * @private
+     */
+    get isFormFillProtectedMode() {
+        return this.isDocumentProtected && this.protectionType === 'FormFieldsOnly';
+    }
     initalizeStyles() {
         /* tslint:disable-next-line:max-line-length */
         this.preDefinedStyles.add('Normal', '{"type":"Paragraph","name":"Normal","next":"Normal"}');
@@ -15935,6 +15971,10 @@ class DocumentHelper {
         this.layout.isInitialLoad = true;
         this.layout.layoutItems(sections, false);
         if (this.owner.selection) {
+            this.selection.previousSelectedFormField = undefined;
+            if (this.formFields.length > 0) {
+                this.owner.selection.highlightFormFields();
+            }
             this.owner.selection.editRangeCollection = [];
             this.owner.selection.selectRange(this.owner.documentStart, this.owner.documentStart);
             if (this.isDocumentProtected) {
@@ -16804,6 +16844,14 @@ class DocumentHelper {
             }
             else {
                 this.selection.setHyperlinkContentToToolTip(hyperlinkField, widget, touchPoint.x, false);
+            }
+            if (formField) {
+                // tslint:disable-next-line:max-line-length
+                let isInlineFormFillMode = (formField.formFieldData instanceof TextFormField) && formField.formFieldData.type === 'Text';
+                if (this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Inline' && isInlineFormFillMode) {
+                    //Update text cursor in text form field.
+                    formField = undefined;
+                }
             }
         }
         let isCtrlkeyPressed = this.isIosDevice ? event.metaKey : event.ctrlKey;
@@ -22576,6 +22624,21 @@ class BookmarkElementBox extends ElementBox {
  * @private
  */
 class ShapeCommon extends ElementBox {
+    constructor() {
+        super(...arguments);
+        /**
+         * @private
+         */
+        this.name = '';
+        /**
+         * @private
+         */
+        this.alternativeText = '';
+        /**
+         * @private
+         */
+        this.title = '';
+    }
     /**
      *
      * @private
@@ -27263,7 +27326,8 @@ class SelectionCharacterFormat {
      */
     notifyPropertyChanged(propertyName) {
         // tslint:disable-next-line:max-line-length
-        if (!isNullOrUndefined(this.selection) && (this.selection.isCleared || this.selection.owner.isReadOnlyMode || !this.selection.owner.isDocumentLoaded || this.selection.owner.isPastingContent) && !this.selection.isRetrieveFormatting) {
+        if (!isNullOrUndefined(this.selection) && (this.selection.isCleared || (this.selection.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) ||
+            !this.selection.owner.isDocumentLoaded || this.selection.owner.isPastingContent) && !this.selection.isRetrieveFormatting) {
             return;
         }
         if (!isNullOrUndefined(this.selection) && !isNullOrUndefined(this.selection.start) && !this.selection.isRetrieveFormatting) {
@@ -27753,7 +27817,7 @@ class SelectionParagraphFormat {
      */
     notifyPropertyChanged(propertyName) {
         if (!isNullOrUndefined(this.selection) &&
-            (this.selection.owner.isReadOnlyMode || !this.selection.owner.isDocumentLoaded)
+            ((this.selection.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) || !this.selection.owner.isDocumentLoaded)
             && !this.selection.isRetrieveFormatting) {
             return;
         }
@@ -27967,7 +28031,8 @@ class SelectionParagraphFormat {
      * @private
      */
     setList(listAdv) {
-        if (this.documentHelper.owner.isReadOnlyMode || !this.documentHelper.owner.isDocumentLoaded) {
+        // tslint:disable-next-line:max-line-length
+        if ((this.documentHelper.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) || !this.documentHelper.owner.isDocumentLoaded) {
             return;
         }
         let list = this.documentHelper.getListById(this.listId);
@@ -30619,7 +30684,7 @@ class TextPosition {
                     || nextValidInline instanceof BookmarkElementBox && nextValidInline.bookmarkType === 1) {
                     inline = nextValidInline;
                     this.currentWidget = inline.line;
-                    this.offset = this.currentWidget.getOffset(inline, 1);
+                    this.offset = this.currentWidget.getOffset(inline, this.documentHelper.isFormFillProtectedMode ? 0 : 1);
                 }
             }
         }
@@ -32549,6 +32614,10 @@ class Selection {
         /**
          * @private
          */
+        this.isHighlightFormFields = false;
+        /**
+         * @private
+         */
         this.isHightlightEditRegionInternal = false;
         /**
          * @private
@@ -32566,7 +32635,15 @@ class Selection {
          * @private
          */
         this.editRegionHighlighters = undefined;
+        /**
+         * @private
+         */
+        this.formFieldHighlighters = undefined;
         this.isSelectList = false;
+        /**
+         * @private
+         */
+        this.previousSelectedFormField = undefined;
         /**
          * @private
          */
@@ -32604,6 +32681,7 @@ class Selection {
         this.imageFormatInternal = new SelectionImageFormat(this);
         this.editRangeCollection = [];
         this.editRegionHighlighters = new Dictionary();
+        this.formFieldHighlighters = new Dictionary();
     }
     /**
      * @private
@@ -33026,15 +33104,19 @@ class Selection {
      */
     selectFieldInternal(fieldStart) {
         if (fieldStart) {
+            let formFillingMode = this.documentHelper.isFormFillProtectedMode;
             let fieldEnd = fieldStart.fieldEnd;
-            let offset = fieldStart.line.getOffset(fieldStart, 0);
+            if (formFillingMode) {
+                fieldStart = fieldStart.fieldSeparator;
+            }
+            let offset = fieldStart.line.getOffset(fieldStart, formFillingMode ? 1 : 0);
             let startPosition = new TextPosition(this.owner);
             startPosition.setPositionParagraph(fieldStart.line, offset);
             let isBookmark = fieldStart.nextNode instanceof BookmarkElementBox;
-            if (isBookmark) {
+            if (isBookmark && !formFillingMode) {
                 fieldEnd = fieldStart.nextElement.reference;
             }
-            let endoffset = fieldEnd.line.getOffset(fieldEnd, 1);
+            let endoffset = fieldEnd.line.getOffset(fieldEnd, formFillingMode ? 0 : 1);
             let endPosition = new TextPosition(this.owner);
             endPosition.setPositionParagraph(fieldEnd.line, endoffset);
             //selects the field range
@@ -33271,6 +33353,10 @@ class Selection {
             this.addEditRegionHighlight(lineWidget, left, width);
             return;
         }
+        else if (this.isHighlightFormFields) {
+            this.addFormFieldHighlight(lineWidget, left, width);
+            return;
+        }
         else {
             if (widgets.containsKey(lineWidget)) {
                 if (widgets.get(lineWidget) instanceof SelectionWidgetInfo) {
@@ -33358,6 +33444,22 @@ class Selection {
         return editRegionHighlight;
     }
     /**
+     * @private
+     */
+    addFormFieldHighlight(lineWidget, left, width) {
+        let highlighters = undefined;
+        let collection = this.formFieldHighlighters;
+        if (collection.containsKey(lineWidget)) {
+            highlighters = collection.get(lineWidget);
+        }
+        else {
+            highlighters = [];
+            collection.add(lineWidget, highlighters);
+        }
+        let formFieldHighlight = new SelectionWidgetInfo(left, width);
+        highlighters.push(formFieldHighlight);
+    }
+    /**
      * Create selection highlight inside table
      * @private
      */
@@ -33374,7 +33476,7 @@ class Selection {
         let isVisiblePage = this.viewer.containerTop <= pageTop
             || pageTop < this.viewer.containerTop + this.documentHelper.selectionCanvas.height;
         let widgets = this.selectedWidgets;
-        if (!this.isHightlightEditRegionInternal) {
+        if (!this.isHightlightEditRegionInternal && !this.isHighlightFormFields) {
             if (widgets.containsKey(cellWidget) && widgets.get(cellWidget) instanceof SelectionWidgetInfo) {
                 selectionWidget = widgets.get(cellWidget);
                 if (isVisiblePage) {
@@ -33750,6 +33852,15 @@ class Selection {
         this.updateForwardSelection();
         this.upDownSelectionLength = this.start.location.x;
         this.fireSelectionChanged(true);
+        if (this.documentHelper.isFormFillProtectedMode) {
+            let formField = this.getCurrentFormField();
+            if (formField) {
+                let fieldEndOffset = formField.line.getOffset(formField.fieldEnd, 1);
+                if (this.end.offset === fieldEndOffset) {
+                    this.selectPrevNextFormField(true);
+                }
+            }
+        }
     }
     /**
      * Move to next paragraph
@@ -33779,6 +33890,13 @@ class Selection {
         this.updateBackwardSelection();
         this.upDownSelectionLength = this.start.location.x;
         this.fireSelectionChanged(true);
+        if (this.documentHelper.isFormFillProtectedMode) {
+            let formField = this.getCurrentFormField();
+            if (!formField) {
+                formField = this.getPreviousFormField();
+                this.selectPrevNextFormField(false, formField);
+            }
+        }
     }
     /**
      * Move to previous paragraph
@@ -33834,6 +33952,10 @@ class Selection {
      * @private
      */
     moveUp() {
+        if (this.documentHelper.isFormFillProtectedMode) {
+            this.selectPrevNextFormField(false);
+            return;
+        }
         if (isNullOrUndefined(this.start)) {
             return;
         }
@@ -33855,6 +33977,10 @@ class Selection {
      * @private
      */
     moveDown() {
+        if (this.documentHelper.isFormFillProtectedMode) {
+            this.selectPrevNextFormField(true);
+            return;
+        }
         if (isNullOrUndefined(this.start)) {
             return;
         }
@@ -34345,57 +34471,146 @@ class Selection {
             && start.paragraph.paragraphFormat.listFormat.listId !== -1 && !this.owner.isReadOnlyMode) {
             this.owner.editorModule.updateListLevel(isShiftTab ? false : true);
         }
-        else if (!this.owner.isReadOnlyMode) {
+        else if (!this.owner.isReadOnlyMode && !this.documentHelper.isFormFillProtectedMode) {
             this.owner.editorModule.handleTextInput('\t');
         }
         if (this.documentHelper.protectionType === 'FormFieldsOnly' && this.documentHelper.formFields.length > 0) {
-            if (isShiftTab) {
-                this.selectPreviousFormField();
-            }
-            else {
-                this.selectNextFormField();
-            }
+            this.selectPrevNextFormField(!isShiftTab);
         }
         this.checkForCursorVisibility();
     }
-    /**
-     * @private
-     * Navigates to next form field
-     */
-    selectNextFormField() {
-        // tslint:disable-next-line:max-line-length
-        let currentStart = this.owner.selection.end;
-        for (let i = 0; i < this.documentHelper.formFields.length; i++) {
-            // tslint:disable-next-line:max-line-length
-            if (!this.documentHelper.formFields[i].formFieldData.enabled) {
-                continue;
-            }
-            let paraIndex = this.owner.selection.getElementPosition(this.documentHelper.formFields[i]).startPosition;
-            if (paraIndex.isExistAfter(currentStart)) {
-                this.selectFieldInternal(this.documentHelper.formFields[i]);
-                break;
-            }
-            else if (i === (this.documentHelper.formFields.length - 1)) {
-                this.selectFieldInternal(this.documentHelper.formFields[0]);
-            }
-        }
-    }
-    selectPreviousFormField() {
-        // tslint:disable-next-line:max-line-length
+    // returns current field in FormFill mode (if Selection goes before field seperator)
+    getPreviousFormField() {
         let currentStart = this.owner.selection.start;
+        let formField;
         for (let i = (this.documentHelper.formFields.length - 1); i >= 0; i--) {
             // tslint:disable-next-line:max-line-length
             if (!this.documentHelper.formFields[i].formFieldData.enabled) {
                 continue;
             }
-            let paraIndex = this.owner.selection.getElementPosition(this.documentHelper.formFields[i]).startPosition;
+            let paraIndex = this.getElementPosition(this.documentHelper.formFields[i]).startPosition;
             if (paraIndex.isExistBefore(currentStart)) {
-                this.selectFieldInternal(this.documentHelper.formFields[i]);
+                formField = this.documentHelper.formFields[i];
                 break;
             }
             else if (i === 0) {
-                this.selectFieldInternal(this.documentHelper.formFields[(this.documentHelper.formFields.length - 1)]);
+                formField = this.documentHelper.formFields[(this.documentHelper.formFields.length - 1)];
             }
+        }
+        return formField;
+    }
+    // Navigates & Selects next form field
+    selectPrevNextFormField(forward, formField) {
+        if (this.documentHelper.isFormFillProtectedMode) {
+            if (!formField) {
+                formField = this.getCurrentFormField();
+            }
+            let index = this.documentHelper.formFields.indexOf(formField);
+            if (forward) {
+                for (let i = index;; i++) {
+                    if (i === (this.documentHelper.formFields.length - 1)) {
+                        i = 0;
+                    }
+                    else {
+                        i = i + 1;
+                    }
+                    if (!this.documentHelper.formFields[i].formFieldData.enabled) {
+                        i = i - 1;
+                        continue;
+                    }
+                    this.selectFieldInternal(this.documentHelper.formFields[i]);
+                    break;
+                }
+            }
+            else {
+                for (let i = index;; i--) {
+                    if (i === 0) {
+                        i = (this.documentHelper.formFields.length - 1);
+                    }
+                    else {
+                        i = i - 1;
+                    }
+                    if (!this.documentHelper.formFields[i].formFieldData.enabled) {
+                        i = i + 1;
+                        continue;
+                    }
+                    this.selectFieldInternal(this.documentHelper.formFields[i]);
+                    break;
+                }
+            }
+        }
+    }
+    /**
+     * @private
+     */
+    navigateToNextFormField() {
+        let currentStart = this.owner.selection.end;
+        let currentFormField;
+        for (let i = 0; i < this.documentHelper.formFields.length; i++) {
+            currentFormField = this.documentHelper.formFields[i];
+            if (!this.documentHelper.formFields[i].formFieldData.enabled) {
+                continue;
+            }
+            let paraIndex = this.getElementPosition(this.documentHelper.formFields[i]).startPosition;
+            if (paraIndex.isExistAfter(currentStart)) {
+                // tslint:disable-next-line:max-line-length
+                if (currentFormField.formFieldData instanceof TextFormField && currentFormField.formFieldData.type === 'Text' &&
+                    this.documentHelper.isInlineFormFillProtectedMode) {
+                    this.selectTextElementStartOfField(this.documentHelper.formFields[i]);
+                }
+                else {
+                    this.selectFieldInternal(this.documentHelper.formFields[i]);
+                }
+                break;
+            }
+            else if (i === (this.documentHelper.formFields.length - 1)) {
+                currentFormField = this.documentHelper.formFields[0];
+                // tslint:disable-next-line:max-line-length
+                if (currentFormField.formFieldData instanceof TextFormField && currentFormField.formFieldData.type === 'Text' &&
+                    this.documentHelper.isInlineFormFillProtectedMode) {
+                    this.selectTextElementStartOfField(this.documentHelper.formFields[0]);
+                }
+                else {
+                    this.selectFieldInternal(this.documentHelper.formFields[0]);
+                }
+            }
+        }
+    }
+    /**
+     * @private
+     */
+    selectTextElementStartOfField(formField) {
+        let fieldSeparator = formField.fieldSeparator;
+        let element = fieldSeparator.nextElement;
+        if (element) {
+            while (!(element instanceof TextElementBox)) {
+                element = element.nextElement;
+            }
+            let offset = formField.line.getOffset(element, 0);
+            let point = this.getPhysicalPositionInternal(formField.line, offset, false);
+            this.selectInternal(formField.line, element, 0, point);
+        }
+    }
+    triggerFormFillEvent() {
+        let previousField = this.previousSelectedFormField;
+        let currentField = this.getCurrentFormField();
+        let previousFieldData;
+        let currentFieldData;
+        if (currentField !== previousField && previousField && previousField.formFieldData instanceof TextFormField
+            && previousField.formFieldData.type === 'Text') {
+            if (previousField.formFieldData.format !== '') {
+                // Need to handle update form field format
+                //this.owner.editor.applyFormTextFormat(previousField);
+            }
+            // tslint:disable-next-line:max-line-length
+            previousFieldData = { 'fieldName': previousField.formFieldData.name, 'value': this.owner.editorModule.getFormFieldText(previousField) };
+            this.owner.trigger('afterFormFieldFill', previousFieldData);
+        }
+        if (currentField !== previousField && currentField && currentField.formFieldData instanceof TextFormField
+            && currentField.formFieldData.type === 'Text') {
+            // tslint:disable-next-line:max-line-length
+            currentFieldData = { 'fieldName': currentField.formFieldData.name, 'value': this.owner.editorModule.getFormFieldText(currentField) };
+            this.owner.trigger('beforeFormFieldFill', currentFieldData);
         }
     }
     selectPreviousCell() {
@@ -37019,6 +37234,9 @@ class Selection {
      */
     getPreviousValidElement(inline) {
         let previousValidInline = undefined;
+        if (this.documentHelper.isFormFillProtectedMode && inline.fieldType === 2) {
+            return inline;
+        }
         while (inline instanceof FieldElementBox) {
             if (HelperMethods.isLinkedFieldCharacter(inline)) {
                 if (inline instanceof FieldElementBox && inline.fieldType === 0) {
@@ -37071,7 +37289,7 @@ class Selection {
             if (nextInline instanceof FieldElementBox && nextInline.fieldType === 1
                 || nextInline instanceof BookmarkElementBox && nextInline.bookmarkType === 1) {
                 inline = nextInline;
-                index = 1;
+                index = this.documentHelper.isFormFillProtectedMode ? 0 : 1;
             }
         }
         else if (index === 0 && inline.previousNode instanceof FieldElementBox) {
@@ -38145,6 +38363,9 @@ class Selection {
             'isImageSelected': isImageSelected
         };
     }
+    /**
+     * @private
+     */
     checkAllFloatingElements(widget, caretPosition) {
         let bodyWidget;
         let isShapeSelected = false;
@@ -38655,6 +38876,10 @@ class Selection {
             this.owner.fireSelectionChange();
         }
         this.documentHelper.updateFocus();
+        if (this.documentHelper.isInlineFormFillProtectedMode && isSelectionChanged) {
+            this.triggerFormFillEvent();
+            this.previousSelectedFormField = this.getCurrentFormField();
+        }
     }
     //Formats Retrieval
     /**
@@ -39822,6 +40047,10 @@ class Selection {
         if (isNullOrUndefined(inline)) {
             field = this.getHyperLinkFields(this.end.paragraph, checkedFields, isRetrieve);
         }
+        else if (this.documentHelper.isFormFillProtectedMode && inline instanceof BookmarkElementBox
+            && inline.previousNode instanceof FieldElementBox && inline.previousNode.fieldType === 1) {
+            field = undefined;
+        }
         else {
             let paragraph = inline.line.paragraph;
             field = this.getHyperLinkFieldInternal(paragraph, inline, checkedFields, isRetrieve, false);
@@ -40043,6 +40272,23 @@ class Selection {
         return false;
     }
     /**
+     * Return true if selection is in text form field
+     * @private
+     */
+    isInlineFormFillMode(field) {
+        if (this.documentHelper.isInlineFormFillProtectedMode) {
+            if (isNullOrUndefined(field)) {
+                field = this.getCurrentFormField();
+            }
+            if (field) {
+                if (field.formFieldData instanceof TextFormField && field.formFieldData.type === 'Text') {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    /**
      * @private
      */
     getFormFieldType() {
@@ -40065,7 +40311,34 @@ class Selection {
      * @private
      */
     getCurrentFormField() {
-        let field = this.getHyperlinkField(true);
+        let field;
+        if (this.documentHelper.isFormFillProtectedMode && this.owner.documentEditorSettings.formFieldSettings &&
+            this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Inline') {
+            for (let i = 0; i < this.documentHelper.formFields.length; i++) {
+                let formField = this.documentHelper.formFields[i];
+                let offset = formField.fieldSeparator.line.getOffset(formField.fieldSeparator, 1);
+                let fieldStart = new TextPosition(this.owner);
+                fieldStart.setPositionParagraph(formField.fieldSeparator.line, offset);
+                let fieldEndElement = formField.fieldEnd;
+                offset = fieldEndElement.line.getOffset(fieldEndElement, 0);
+                let fieldEnd = new TextPosition(this.owner);
+                fieldEnd.setPositionParagraph(fieldEndElement.line, offset);
+                let start = this.start;
+                let end = this.end;
+                if (!this.isForward) {
+                    start = this.end;
+                    end = this.start;
+                }
+                if ((start.isExistAfter(fieldStart) || start.isAtSamePosition(fieldStart))
+                    && (end.isExistBefore(fieldEnd) || end.isAtSamePosition(fieldEnd))) {
+                    field = formField;
+                    break;
+                }
+            }
+        }
+        else {
+            field = this.getHyperlinkField(true);
+        }
         if (field instanceof FieldElementBox && field.fieldType === 0 && !isNullOrUndefined(field.formFieldData)) {
             return field;
         }
@@ -40289,7 +40562,7 @@ class Selection {
             if (this.isHideSelection(this.start.paragraph)) {
                 this.caret.style.display = 'none';
             }
-            else if (this.isEmpty && (!this.owner.isReadOnlyMode || this.owner.enableCursorOnReadOnly)) {
+            else if (this.isEmpty && (!this.owner.isReadOnlyMode || this.owner.enableCursorOnReadOnly || this.isInlineFormFillMode())) {
                 let caretLeft = parseInt(this.caret.style.left.replace('px', ''), 10);
                 if (caretLeft < left || caretLeft > right) {
                     this.caret.style.display = 'none';
@@ -40695,7 +40968,7 @@ class Selection {
                     break;
             }
         }
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.isInlineFormFillMode()) {
             this.owner.editorModule.onKeyDownInternal(event, ctrl, shift, alt);
         }
         else if (this.documentHelper.isDocumentProtected && this.documentHelper.protectionType === 'FormFieldsOnly') {
@@ -41114,6 +41387,35 @@ class Selection {
             this.highlightEditRegionInternal(this.editRangeCollection[j]);
         }
         this.isHightlightEditRegionInternal = false;
+        this.viewer.updateScrollBars();
+    }
+    /**
+     * @private
+     */
+    highlightFormFields() {
+        if (isNullOrUndefined(this.formFieldHighlighters)) {
+            this.formFieldHighlighters = new Dictionary();
+        }
+        this.formFieldHighlighters.clear();
+        let formFields = this.documentHelper.formFields;
+        for (let i = 0; i < formFields.length; i++) {
+            let formField = formFields[i];
+            let offset = formField.line.getOffset(formField, 0);
+            let startPosition = new TextPosition(this.owner);
+            startPosition.setPositionParagraph(formField.line, offset);
+            let endElement = formField.fieldEnd;
+            offset = endElement.line.getOffset(endElement, 1);
+            let endPosition = new TextPosition(this.owner);
+            endPosition.setPositionParagraph(endElement.line, offset);
+            this.isHighlightFormFields = true;
+            this.highlight(startPosition.paragraph, startPosition, endPosition);
+            if (this.isHighlightNext) {
+                this.highlightNextBlock(this.hightLightNextParagraph, startPosition, endPosition);
+                this.isHighlightNext = false;
+                this.hightLightNextParagraph = undefined;
+            }
+        }
+        this.isHighlightFormFields = false;
         this.viewer.updateScrollBars();
     }
     /**
@@ -43899,10 +44201,10 @@ class TableResizer {
         this.owner.documentHelper.layout.reLayoutTable(table);
         this.owner.editorModule.reLayout(this.owner.selection);
         if (row) {
-            this.currentResizingTable = row.ownerTable;
+            this.getRowReSizerPosition(undefined, this.startingPoint);
         }
-        if (this.currentResizingTable.childWidgets === undefined
-            || this.currentResizingTable.childWidgets[this.resizerPosition] === undefined) {
+        if (this.currentResizingTable && (this.currentResizingTable.childWidgets === undefined
+            || this.currentResizingTable.childWidgets[this.resizerPosition] === undefined)) {
             this.resizerPosition = -1;
         }
     }
@@ -45416,6 +45718,9 @@ class Editor {
         if (this.selection.isHighlightEditRegion) {
             this.selection.onHighlight();
         }
+        if (this.documentHelper.formFields.length > 0) {
+            this.selection.highlightFormFields();
+        }
         if (!this.isPaste) {
             this.copiedContent = undefined;
             this.copiedTextContent = '';
@@ -45607,25 +45912,25 @@ class Editor {
                     break;
                 case 49:
                     event.preventDefault();
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.onApplyParagraphFormat('lineSpacing', 1, false, false);
                     }
                     break;
                 case 50:
                     event.preventDefault();
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.onApplyParagraphFormat('lineSpacing', 2, false, false);
                     }
                     break;
                 case 53:
                     event.preventDefault();
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.onApplyParagraphFormat('lineSpacing', 1.5, false, false);
                     }
                     break;
                 case 66:
                     event.preventDefault();
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.toggleBold();
                     }
                     break;
@@ -45636,7 +45941,7 @@ class Editor {
                     }
                     break;
                 case 69:
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.toggleTextAlignment('Center');
                     }
                     event.preventDefault();
@@ -45650,12 +45955,12 @@ class Editor {
                     break;
                 case 73:
                     event.preventDefault();
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.toggleItalic();
                     }
                     break;
                 case 74:
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.toggleTextAlignment('Justify');
                     }
                     event.preventDefault();
@@ -45667,13 +45972,13 @@ class Editor {
                     }
                     break;
                 case 76:
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.toggleTextAlignment('Left');
                     }
                     event.preventDefault();
                     break;
                 case 77:
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.owner.selection.increaseIndent();
                     }
                     event.preventDefault();
@@ -45685,14 +45990,14 @@ class Editor {
                     }
                     break;
                 case 82:
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.toggleTextAlignment('Right');
                     }
                     event.preventDefault();
                     break;
                 case 85:
                     event.preventDefault();
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.owner.selection.toggleUnderline('Single');
                     }
                     break;
@@ -45716,19 +46021,19 @@ class Editor {
                     break;
                 case 219:
                     event.preventDefault();
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.onApplyCharacterFormat('fontSize', 'decrement', true);
                     }
                     break;
                 case 221:
                     event.preventDefault();
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.onApplyCharacterFormat('fontSize', 'increment', true);
                     }
                     break;
                 case 187:
                     event.preventDefault();
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.toggleBaselineAlignment('Subscript');
                     }
                     break;
@@ -45857,7 +46162,7 @@ class Editor {
      * @private
      */
     handleBackKey() {
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             this.owner.editorModule.onBackSpace();
         }
         this.selection.checkForCursorVisibility();
@@ -45867,7 +46172,7 @@ class Editor {
      * @private
      */
     handleDelete() {
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             this.owner.editorModule.delete();
         }
         this.selection.checkForCursorVisibility();
@@ -45877,7 +46182,7 @@ class Editor {
      * @private
      */
     handleEnterKey() {
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             if (Browser.isDevice) {
                 this.documentHelper.isCompositionStart = false;
             }
@@ -45889,7 +46194,7 @@ class Editor {
      * @private
      */
     handleTextInput(text) {
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             if (this.animationTimer) {
                 clearTimeout(this.animationTimer);
             }
@@ -45962,6 +46267,20 @@ class Editor {
      */
     //tslint:disable: max-func-body-length
     insertTextInternal(text, isReplace) {
+        if (this.documentHelper.protectionType === 'FormFieldsOnly' && this.selection.isInlineFormFillMode()) {
+            let inline = this.selection.getCurrentFormField();
+            //(inline.formFieldData as TextFormField).isContentChanged = true;
+            let resultText = this.getFormFieldText();
+            let rex = new RegExp(this.owner.documentHelper.textHelper.getEnSpaceCharacter(), 'gi');
+            if (resultText.length > 0 && resultText.replace(rex, '') === '') {
+                resultText = '';
+                this.selection.selectFieldInternal(inline);
+            }
+            let maxLength = inline.formFieldData.maxLength;
+            if (maxLength !== 0 && resultText.length >= maxLength) {
+                return;
+            }
+        }
         let selection = this.documentHelper.selection;
         let insertPosition;
         let isRemoved = true;
@@ -47293,6 +47612,10 @@ class Editor {
                 this.previousCharFormat = undefined;
                 this.previousParaFormat = undefined;
             }
+            if (this.documentHelper.protectionType === 'FormFieldsOnly' && this.documentHelper.selection.isInlineFormFillMode()) {
+                htmlContent = '';
+                rtfContent = '';
+            }
             if (rtfContent !== '') {
                 this.pasteAjax(rtfContent, '.rtf');
             }
@@ -47704,6 +48027,21 @@ class Editor {
     pasteContents(content, currentFormat) {
         if (typeof (content) !== 'string') {
             this.copiedContent = content;
+        }
+        if (this.documentHelper.protectionType === 'FormFieldsOnly' && this.documentHelper.selection.isInlineFormFillMode()) {
+            let inline = this.selection.getCurrentFormField();
+            let resultText = this.getFormFieldText();
+            let maxLength = inline.formFieldData.maxLength;
+            let selectedTextLength = this.documentHelper.selection.text.length;
+            if (maxLength > 0) {
+                if (selectedTextLength === 0) {
+                    let contentlength = maxLength - resultText.length;
+                    content = content.substring(0, contentlength);
+                }
+                else if (selectedTextLength > 0) {
+                    content = content.substring(0, selectedTextLength);
+                }
+            }
         }
         this.pasteContentsInternal(this.getBlocks(content), currentFormat);
         this.isInsertField = false;
@@ -49489,6 +49827,20 @@ class Editor {
         this.owner.viewer.cutFromTop(blockToShift.y);
         this.documentHelper.blockToShift = blockToShift;
     }
+    /**
+     * @private
+     */
+    allowFormattingInFormFields(property) {
+        if (this.documentHelper.protectionType === 'FormFieldsOnly' && this.selection.isInlineFormFillMode() &&
+            !isNullOrUndefined(this.owner.documentEditorSettings.formFieldSettings.formattingExceptions)) {
+            for (let j = 0; j < this.owner.documentEditorSettings.formFieldSettings.formattingExceptions.length; j++) {
+                if (property.toLowerCase() === this.owner.documentEditorSettings.formFieldSettings.formattingExceptions[j].toLowerCase()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
     //Paste Implementation ends
     //Character Format apply implementation starts
     /**
@@ -49501,12 +49853,14 @@ class Editor {
      * @private
      */
     onApplyCharacterFormat(property, value, update) {
-        if (this.restrictFormatting) {
+        let allowFormatting = this.documentHelper.isFormFillProtectedMode
+            && this.documentHelper.selection.isInlineFormFillMode() && this.allowFormattingInFormFields(property);
+        if (this.restrictFormatting && !allowFormatting) {
             return;
         }
         this.documentHelper.layout.isBidiReLayout = true;
         let selection = this.documentHelper.selection;
-        if (selection.owner.isReadOnlyMode || !selection.owner.isDocumentLoaded) {
+        if ((selection.owner.isReadOnlyMode && !allowFormatting) || !selection.owner.isDocumentLoaded) {
             return;
         }
         update = isNullOrUndefined(update) ? false : update;
@@ -49704,7 +50058,7 @@ class Editor {
      * Increases the left indent of selected paragraphs to a factor of 36 points.
      */
     increaseIndent() {
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             this.onApplyParagraphFormat('leftIndent', this.documentHelper.defaultTabWidth, true, false);
         }
     }
@@ -49712,7 +50066,7 @@ class Editor {
      * Decreases the left indent of selected paragraphs to a factor of 36 points.
      */
     decreaseIndent() {
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             this.onApplyParagraphFormat('leftIndent', -this.documentHelper.defaultTabWidth, true, false);
         }
     }
@@ -49728,7 +50082,7 @@ class Editor {
      * @param {string} fontFamily Bullet font family
      */
     applyBullet(bullet, fontFamily) {
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             this.applyBulletOrNumbering(bullet, 'Bullet', fontFamily);
         }
     }
@@ -49739,7 +50093,7 @@ class Editor {
      * @param listLevelPattern  Default value of ‘listLevelPattern’ parameter is ListLevelPattern.Arabic
      */
     applyNumbering(numberFormat, listLevelPattern) {
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             this.applyBulletOrNumbering(numberFormat, listLevelPattern, 'Verdana');
         }
     }
@@ -49799,7 +50153,7 @@ class Editor {
      */
     updateProperty(type, value) {
         let selection = this.selection;
-        if (selection.owner.isReadOnlyMode || !selection.owner.isDocumentLoaded) {
+        if ((selection.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) || !selection.owner.isDocumentLoaded) {
             return;
         }
         let startPosition = selection.start;
@@ -50143,7 +50497,7 @@ class Editor {
      * Toggles the bold property of selected contents.
      */
     toggleBold() {
-        if (this.documentHelper.owner.isReadOnlyMode) {
+        if (this.documentHelper.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) {
             return;
         }
         let value = this.getCurrentSelectionValue('bold');
@@ -50153,7 +50507,7 @@ class Editor {
      * Toggles the bold property of selected contents.
      */
     toggleItalic() {
-        if (this.documentHelper.owner.isReadOnlyMode) {
+        if (this.documentHelper.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) {
             return;
         }
         let value = this.getCurrentSelectionValue('italic');
@@ -50202,7 +50556,7 @@ class Editor {
      * @param underline Default value of ‘underline’ parameter is Single.
      */
     toggleUnderline(underline) {
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             this.updateProperty(1, underline);
         }
     }
@@ -50211,7 +50565,7 @@ class Editor {
      * @param {Strikethrough} strikethrough Default value of strikethrough parameter is SingleStrike.
      */
     toggleStrikethrough(strikethrough) {
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             let value;
             if (isNullOrUndefined(strikethrough)) {
                 value = this.selection.characterFormat.strikethrough === 'SingleStrike' ? 'None' : 'SingleStrike';
@@ -50540,7 +50894,8 @@ class Editor {
      * @param  {TextAlignment} textAlignment
      */
     toggleTextAlignment(textAlignment) {
-        if (this.documentHelper.owner.isReadOnlyMode || !this.documentHelper.owner.isDocumentLoaded) {
+        // tslint:disable-next-line:max-line-length
+        if ((this.documentHelper.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) || !this.documentHelper.owner.isDocumentLoaded) {
             return;
         }
         // Toggle performed based on current selection format similar to MS word behavior.
@@ -50566,14 +50921,16 @@ class Editor {
      * @private
      */
     onApplyParagraphFormat(property, value, update, isSelectionChanged) {
-        if (this.restrictFormatting) {
+        let allowFormatting = this.documentHelper.isFormFillProtectedMode
+            && this.documentHelper.selection.isInlineFormFillMode() && this.allowFormattingInFormFields(property);
+        if (this.restrictFormatting && !allowFormatting) {
             return;
         }
         let action = property === 'bidi' ? 'ParagraphBidi' : (property[0].toUpperCase() + property.slice(1));
         this.documentHelper.owner.isShiftingEnabled = true;
         let selection = this.documentHelper.selection;
         this.initHistory(action);
-        if (this.documentHelper.owner.isReadOnlyMode || !this.documentHelper.owner.isDocumentLoaded) {
+        if ((this.owner.isReadOnlyMode && !allowFormatting) || !this.owner.isDocumentLoaded) {
             return;
         }
         if (property === 'leftIndent') {
@@ -53521,6 +53878,7 @@ class Editor {
                         this.updateHistoryPosition(selection.end, false);
                     }
                     this.reLayout(selection);
+                    this.insertSpaceInFormField();
                 }
             }
             this.documentHelper.triggerSpellCheck = false;
@@ -53623,6 +53981,19 @@ class Editor {
         let indexInInline = 0;
         let inlineObj = currentLineWidget.getInline(offset, indexInInline);
         let inline = inlineObj.element;
+        if (this.selection.isInlineFormFillMode()) {
+            if (inline instanceof FieldElementBox && inline.fieldType === 2) {
+                return;
+            }
+            let resultText = this.getFormFieldText();
+            if (resultText.length === 1) {
+                this.selection.selectFieldInternal(this.selection.getCurrentFormField());
+                // tslint:disable-next-line:max-line-length
+                this.insertTextInternal(this.documentHelper.textHelper.repeatChar(this.documentHelper.textHelper.getEnSpaceCharacter(), 5), true);
+                this.selection.selectTextElementStartOfField(this.selection.getCurrentFormField());
+                return;
+            }
+        }
         indexInInline = inlineObj.index;
         if (inline instanceof TextElementBox) {
             inline.ignoreOnceItems = [];
@@ -53924,6 +54295,7 @@ class Editor {
             selection.selectContent(textPosition, true);
             // if (this.documentHelper.owner.enableEditorHistory) {
             this.reLayout(selection);
+            this.insertSpaceInFormField();
             // }
             // this.updateSelectionRangeOffSet(selection.start, selection.end);
             // }
@@ -53959,6 +54331,27 @@ class Editor {
         let indexInInline = 0;
         let inlineObj = paragraph.getInline(selection.start.offset, indexInInline);
         let inline = inlineObj.element;
+        if (this.selection.isInlineFormFillMode()) {
+            if (inline instanceof FieldElementBox && inline.fieldType === 1) {
+                return;
+            }
+            let resultText = this.getFormFieldText();
+            if (!(inline instanceof TextElementBox)) {
+                inline = inline.nextElement;
+            }
+            if (resultText.length === 1 && inline instanceof TextElementBox) {
+                this.selection.selectFieldInternal(this.selection.getCurrentFormField());
+                // tslint:disable-next-line:max-line-length
+                this.insertTextInternal(this.documentHelper.textHelper.repeatChar(this.documentHelper.textHelper.getEnSpaceCharacter(), 5), true);
+                this.selection.selectTextElementStartOfField(this.selection.getCurrentFormField());
+                return;
+            }
+            else {
+                if (inline instanceof FieldElementBox && inline.fieldType === 1) {
+                    return;
+                }
+            }
+        }
         indexInInline = inlineObj.index;
         if (paragraph.paragraphFormat.listFormat && paragraph.paragraphFormat.listFormat.listId !== -1 &&
             this.documentHelper.isListTextSelected && selection.contextType === 'List') {
@@ -53967,6 +54360,10 @@ class Editor {
         }
         if (!isNullOrUndefined(inline) && indexInInline === inline.length && !isNullOrUndefined(inline.nextNode)) {
             inline = inline.nextNode;
+            if (inline instanceof FieldElementBox && inline.fieldType === 1 &&
+                !isNullOrUndefined(inline.fieldBegin.formFieldData)) {
+                return;
+            }
             indexInInline = 0;
         }
         if (!isNullOrUndefined(inline)) {
@@ -57078,6 +57475,61 @@ class Editor {
             count = count + 1;
         }
         return name;
+    }
+    // Inserts 5 space on Form Fill inline mode if length is 0
+    insertSpaceInFormField() {
+        if (this.documentHelper.isInlineFormFillProtectedMode && this.selection.isInlineFormFillMode()) {
+            let resultText = this.getFormFieldText();
+            if (resultText.length === 0 || resultText === '\r') {
+                // tslint:disable-next-line:max-line-length
+                this.insertTextInternal(this.documentHelper.textHelper.repeatChar(this.documentHelper.textHelper.getEnSpaceCharacter(), 5), true);
+                this.selection.selectTextElementStartOfField(this.selection.getCurrentFormField());
+            }
+        }
+    }
+    /**
+     * @private
+     */
+    getFormFieldText(formField) {
+        if (isNullOrUndefined(formField)) {
+            formField = this.selection.getCurrentFormField();
+        }
+        let seperator = formField.fieldSeparator;
+        let text = this.getNextRenderedWidgetText(seperator);
+        return text;
+    }
+    getNextRenderedWidgetText(seperator) {
+        let text = '';
+        if (seperator instanceof FieldElementBox && seperator.fieldType === 2) {
+            let textElement = seperator;
+            do {
+                if (!(isNullOrUndefined(textElement)) && textElement instanceof TextElementBox) {
+                    text = text + textElement.text;
+                }
+                if (isNullOrUndefined(textElement.nextNode)) {
+                    text += '\r';
+                    let nextBlock = textElement.paragraph.nextRenderedWidget;
+                    if (isNullOrUndefined(nextBlock)) {
+                        break;
+                    }
+                    if (nextBlock instanceof TableWidget) {
+                        nextBlock = this.selection.getFirstParagraphBlock(nextBlock);
+                    }
+                    while (nextBlock.isEmpty()) {
+                        text += '\r';
+                        nextBlock = nextBlock.nextRenderedWidget;
+                    }
+                    // tslint:disable-next-line:max-line-length
+                    textElement = nextBlock.childWidgets[0].children[0];
+                }
+                else {
+                    textElement = textElement.nextNode;
+                }
+            } 
+            // tslint:disable-next-line:max-line-length
+            while (!(textElement instanceof FieldElementBox && textElement.fieldType === 1 && textElement === seperator.fieldEnd));
+        }
+        return text;
     }
 }
 
@@ -61416,7 +61868,9 @@ class WordExport {
                 this.serializePicture(writer, item);
             }
             else if (item.hasOwnProperty('shapeId')) {
+                let currentParargaph = this.paragraph;
                 this.serializeShape(writer, item);
+                this.paragraph = currentParargaph;
             }
             else if (item.hasOwnProperty('bookmarkType')) {
                 this.serializeBookMark(writer, item);
@@ -63083,12 +63537,13 @@ class WordExport {
     }
     serializeShapeDrawingGraphics(writer, shape) {
         let val = shape.autoShapeType;
+        let id = shape.shapeId;
         writer.writeStartElement('wp', 'wrapNone', this.wpNamespace);
         writer.writeEndElement();
         writer.writeStartElement('wp', 'docPr', this.wpNamespace);
-        writer.writeAttributeString(undefined, 'id', undefined, (this.mDocPrID++).toString());
-        writer.writeAttributeString(undefined, 'name', undefined, '1'.toString());
-        writer.writeAttributeString(undefined, 'title', undefined, '');
+        writer.writeAttributeString(undefined, 'id', undefined, id.toString());
+        writer.writeAttributeString(undefined, 'name', undefined, shape.name);
+        writer.writeAttributeString(undefined, 'title', undefined, shape.title);
         writer.writeEndElement();
         writer.writeStartElement('a', 'graphic', this.aNamespace);
         writer.writeStartElement('a', 'graphicData', this.aNamespace);
@@ -66267,15 +66722,15 @@ class SfdtExport {
             inline.lineFormat.lineFormatType = element.lineFormat.lineFormatType;
             inline.lineFormat.color = element.lineFormat.color;
             inline.lineFormat.weight = element.lineFormat.weight;
-            inline.lineFormat.dashStyle = element.lineFormat.dashStyle;
+            inline.lineFormat.lineStyle = element.lineFormat.dashStyle;
         }
         if (element.textFrame) {
             inline.textFrame = {};
             inline.textFrame.textVerticalAlignment = element.textFrame.textVerticalAlignment;
-            inline.textFrame.marginLeft = HelperMethods.convertPixelToPoint(element.textFrame.marginLeft);
-            inline.textFrame.marginRight = HelperMethods.convertPixelToPoint(element.textFrame.marginRight);
-            inline.textFrame.marginTop = HelperMethods.convertPixelToPoint(element.textFrame.marginTop);
-            inline.textFrame.marginBottom = HelperMethods.convertPixelToPoint(element.textFrame.marginBottom);
+            inline.textFrame.leftMargin = HelperMethods.convertPixelToPoint(element.textFrame.marginLeft);
+            inline.textFrame.rightMargin = HelperMethods.convertPixelToPoint(element.textFrame.marginRight);
+            inline.textFrame.topMargin = HelperMethods.convertPixelToPoint(element.textFrame.marginTop);
+            inline.textFrame.bottomMargin = HelperMethods.convertPixelToPoint(element.textFrame.marginBottom);
             inline.textFrame.blocks = [];
             for (let j = 0; j < element.textFrame.childWidgets.length; j++) {
                 let textFrameBlock = element.textFrame.childWidgets[j];
@@ -71871,13 +72326,10 @@ class FontDialog {
             innerHTML: locale.getConstant('Font')
         });
         let fontNameValues = createElement('select', { id: this.target.id + '_fontName' });
-        fontNameValues.innerHTML = '<option>Arial</option><option>Calibri</option><option>Candara</option><option>Comic Sans MS</option>' +
-            '<option>Consolas</option><option>Constantia</option><option>Corbel</option>' +
-            '<option>Courier New</option><option>Ebrima</option><option>Franklin Gothic</option>' +
-            '<option>Gabriola</option><option>Gadugi</option><option>Georgia</option><option>Impact</option>' +
-            '<option>Javanese Text</option><option>Microsoft Sans Serif</option><option>MS Gothic</option><option>MS UI Gothic</option>' +
-            '<option>Segoe Print</option><option>Times New Roman</option><option>Verdana</option><option>Segoe UI</option>' +
-            '<option>Algerian</option><option>Cambria</option><option>Georgia</option><option>Consolas</option>';
+        let fontValues = this.documentHelper.owner.documentEditorSettings.fontFamilies;
+        for (let i = 0; i < fontValues.length; i++) {
+            fontNameValues.innerHTML += '<option>' + fontValues[i] + '</option>';
+        }
         fontSubDiv1.appendChild(fontNameLabel);
         fontSubDiv1.appendChild(fontNameValues);
         fontDiv.appendChild(fontSubDiv1);
@@ -78722,7 +79174,10 @@ __decorate([
     Property('#FFE97F')
 ], DocumentEditorSettings.prototype, "searchHighlightColor", void 0);
 __decorate([
-    Property({ shadingColor: '#cfcfcf', applyShading: true, selectionColor: '#cccccc' })
+    Property(['Algerian', 'Arial', 'Calibri', 'Cambria', 'Cambria Math', 'Candara', 'Courier New', 'Georgia', 'Impact', 'Segoe Print', 'Segoe Script', 'Segoe UI', 'Symbol', 'Times New Roman', 'Verdana', 'Windings'])
+], DocumentEditorSettings.prototype, "fontFamilies", void 0);
+__decorate([
+    Property({ shadingColor: '#cfcfcf', applyShading: true, selectionColor: '#cccccc', formFillingMode: 'Popup' })
 ], DocumentEditorSettings.prototype, "formFieldSettings", void 0);
 /**
  * The Document editor component is used to draft, save or print rich text contents as page by page.
@@ -80023,7 +80478,13 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
                     formData.value = formField[i].formFieldData.checked;
                 }
                 else if (formField[i].formFieldData instanceof TextFormField) {
-                    let resultText = formField[i].resultText;
+                    let resultText = '';
+                    if (this.documentHelper.isInlineFormFillProtectedMode) {
+                        resultText = this.editorModule.getFormFieldText(formField[i]);
+                    }
+                    else {
+                        resultText = formField[i].resultText;
+                    }
                     let rex = new RegExp(this.documentHelper.textHelper.getEnSpaceCharacter(), 'gi');
                     if (resultText.replace(rex, '') === '') {
                         resultText = '';
@@ -80634,6 +81095,12 @@ __decorate([
 __decorate([
     Property('#cccccc')
 ], FormFieldSettings.prototype, "selectionColor", void 0);
+__decorate([
+    Property('Popup')
+], FormFieldSettings.prototype, "formFillingMode", void 0);
+__decorate([
+    Property([])
+], FormFieldSettings.prototype, "formattingExceptions", void 0);
 /**
  * The `ServerActionSettings` module is used to provide the server action methods of Document Editor Container.
  */
@@ -81775,28 +82242,29 @@ class Text {
         this.fontSize.element.parentElement.setAttribute('title', this.localObj.getConstant('Font Size'));
     }
     createDropDownListForFamily(fontSelectElement) {
-        let fontStyle = [{ FontName: 'Algerian' }, { FontName: 'Arial' },
-            { FontName: 'Calibri' }, { FontName: 'Cambria' }, { FontName: 'Cambria Math' }, { FontName: 'Candara' },
-            { FontName: 'Courier New' }, { FontName: 'Georgia' }, { FontName: 'Impact' }, { FontName: 'Segoe Print' },
-            { FontName: 'Segoe Script' }, { FontName: 'Segoe UI' }, { FontName: 'Symbol' },
-            { FontName: 'Times New Roman' }, { FontName: 'Verdana' }, { FontName: 'Windings' }
-        ];
+        let fontStyle;
         this.fontFamily = new ComboBox({
             dataSource: fontStyle,
             query: new Query().select(['FontName']),
-            fields: { text: 'FontName', value: 'FontName' },
+            fields: { text: 'FontName', value: 'FontValue' },
             popupHeight: '150px',
             cssClass: 'e-de-prop-dropdown',
             allowCustom: true,
             showClearButton: false,
             enableRtl: this.isRtl
         });
+        this.fontFamily.appendTo(fontSelectElement);
+        let fontFamilyValue = this.container.documentEditorSettings.fontFamilies;
+        for (let i = 0; i < fontFamilyValue.length; i++) {
+            let fontValue = fontFamilyValue[i];
+            let fontStyleValue = { 'FontName': fontValue, 'FontValue': fontValue };
+            this.fontFamily.addItem(fontStyleValue, i);
+        }
         if (!this.container.enableCsp) {
             this.fontFamily.itemTemplate = '<span style="font-family: ${FontName};">${FontName}</span>';
             this.fontFamily.isStringTemplate = true;
         }
         this.fontFamily.focus = () => { this.isRetrieving = false; this.fontFamily.element.select(); };
-        this.fontFamily.appendTo(fontSelectElement);
         this.fontFamily.element.parentElement.setAttribute('title', this.localObj.getConstant('Font'));
     }
     wireEvent() {
@@ -84887,8 +85355,30 @@ let DocumentEditorContainer = class DocumentEditorContainer extends Component {
         }
     }
     customizeDocumentEditorSettings() {
+        if (this.documentEditorSettings.formFieldSettings) {
+            let settings = this.documentEditorSettings.formFieldSettings;
+            let documentEditor = this.documentEditor;
+            if (!isNullOrUndefined(settings.applyShading)) {
+                documentEditor.documentEditorSettings.formFieldSettings.applyShading = settings.applyShading;
+            }
+            if (!isNullOrUndefined(settings.formFillingMode)) {
+                documentEditor.documentEditorSettings.formFieldSettings.formFillingMode = settings.formFillingMode;
+            }
+            if (!isNullOrUndefined(settings.formattingExceptions)) {
+                documentEditor.documentEditorSettings.formFieldSettings.formattingExceptions = settings.formattingExceptions;
+            }
+            if (!isNullOrUndefined(settings.selectionColor)) {
+                documentEditor.documentEditorSettings.formFieldSettings.selectionColor = settings.selectionColor;
+            }
+            if (!isNullOrUndefined(settings.shadingColor)) {
+                documentEditor.documentEditorSettings.formFieldSettings.shadingColor = settings.shadingColor;
+            }
+        }
         if (this.documentEditorSettings.searchHighlightColor) {
             this.documentEditor.documentEditorSettings.searchHighlightColor = this.documentEditorSettings.searchHighlightColor;
+        }
+        if (this.documentEditorSettings.fontFamilies) {
+            this.documentEditor.documentEditorSettings.fontFamilies = this.documentEditorSettings.fontFamilies;
         }
     }
     /**

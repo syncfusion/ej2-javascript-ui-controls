@@ -1,4 +1,5 @@
-import { RangeNavigator, AreaSeries } from '../../../src/range-navigator/index';
+import { RangeNavigator } from '../../../src/range-navigator/index';
+import { AreaSeries } from '../../../src/chart/index';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import '../../../node_modules/es6-promise/dist/es6-promise';

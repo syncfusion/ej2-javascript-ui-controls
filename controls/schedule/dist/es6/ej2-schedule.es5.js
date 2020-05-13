@@ -6528,22 +6528,22 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         }
         this.renderQuickDialog();
     };
-    QuickPopups.prototype.refreshQuickPopup = function () {
-        if (this.quickPopup.element) {
-            this.quickPopup.destroy();
-            remove(this.quickPopup.element);
-            this.quickPopup.element = null;
-        }
-        this.renderQuickPopup();
-    };
-    QuickPopups.prototype.refreshMorePopup = function () {
-        if (this.morePopup.element) {
-            this.morePopup.destroy();
-            remove(this.morePopup.element);
-            this.morePopup.element = null;
-        }
-        this.renderMorePopup();
-    };
+    // public refreshQuickPopup(): void {
+    //     if (this.quickPopup.element) {
+    //         this.quickPopup.destroy();
+    //         remove(this.quickPopup.element);
+    //         this.quickPopup.element = null;
+    //     }
+    //     this.renderQuickPopup();
+    // }
+    // public refreshMorePopup(): void {
+    //     if (this.morePopup.element) {
+    //         this.morePopup.destroy();
+    //         remove(this.morePopup.element);
+    //         this.morePopup.element = null;
+    //     }
+    //     this.renderMorePopup();
+    // }
     QuickPopups.prototype.destroy = function () {
         if (this.quickPopup.element.querySelectorAll('.e-formvalidator').length) {
             this.fieldValidator.destroy();
@@ -9662,7 +9662,7 @@ var VirtualScroll = /** @__PURE__ @class */ (function () {
         var conTable = this.parent.element.querySelector('.' + CONTENT_TABLE_CLASS);
         this.renderedLength = resWrap.querySelector('tbody').children.length;
         var firstTDIndex = parseInt(resWrap.querySelector('tbody td').getAttribute('data-group-index'), 10);
-        var scrollHeight = (this.parent.rowAutoHeight && !this.parent.eventSettings.ignoreWhitespace) ?
+        var scrollHeight = this.parent.rowAutoHeight ?
             (conTable.offsetHeight - conWrap.offsetHeight) : this.bufferCount * this.itemSize;
         addClass([conWrap], 'e-transition');
         var resCollection = [];
@@ -10628,13 +10628,14 @@ var Crud = /** @__PURE__ @class */ (function () {
         }
         else {
             endDate = new Date(+followEvent[fields.startTime]);
+            var newRecurrenceRule = followEvent[fields.recurrenceRule];
             var startDate = parentEvent[fields.startTime];
             var ruleException = (this.parent.currentAction === 'DeleteFollowingEvents') ? followEvent[fields.recurrenceException] : null;
-            var dateCollection = generate(startDate, recurrenceRule, ruleException, this.parent.activeViewOptions.firstDayOfWeek);
+            var dateCollection = generate(startDate, newRecurrenceRule, ruleException, this.parent.activeViewOptions.firstDayOfWeek);
             var untilDate = new Date(dateCollection.slice(-1)[0]);
             untilDate.setHours(endDate.getHours(), endDate.getMinutes(), endDate.getSeconds());
             endDate.setHours(startDate.getHours(), startDate.getMinutes(), startDate.getSeconds());
-            followEvent[fields.recurrenceRule] = this.getUpdatedRecurrenceRule(recurrenceRule, new Date(+untilDate), false);
+            followEvent[fields.recurrenceRule] = this.getUpdatedRecurrenceRule(newRecurrenceRule, new Date(+untilDate), false);
         }
         parentEvent[fields.recurrenceRule] =
             this.getUpdatedRecurrenceRule(recurrenceRule, addDays(new Date(endDate.getTime()), -1), true);
@@ -11157,9 +11158,6 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
             && this.parent.activeViewOptions.group.resources.length > 0) {
             addClass([tbl], AUTO_HEIGHT);
         }
-        if (this.parent.eventSettings.ignoreWhitespace) {
-            addClass([tbl], IGNORE_WHITESPACE);
-        }
         var tBody = tbl.querySelector('tbody');
         var resData = this.generateTreeData(true);
         this.countCalculation(resColl.slice(0, -2), resColl.slice(0, -1));
@@ -11592,6 +11590,10 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
         var _this = this;
         this.parent.showSpinner();
         if (isBlazor()) {
+            if (!this.parent.isServerRenderer() && this.parent.tempResourceCollection) {
+                this.parent.resourceCollection = this.parent.tempResourceCollection || [];
+                this.refreshLayout(false);
+            }
             // the resourceCollection will be updated in layoutReady method
             // tslint:disable-next-line:no-any
             // (this.parent as any).interopAdaptor.invokeMethodAsync('BindResourcesData').then((result: string) => {
@@ -11887,6 +11889,17 @@ var ResourceBase = /** @__PURE__ @class */ (function () {
             return data[0][resource.cssClassField];
         }
         return undefined;
+    };
+    ResourceBase.prototype.getResourceRenderDates = function () {
+        var resourceDates = [].concat.apply([], this.lastResourceLevel.map(function (e) { return e.renderDates; }));
+        var removeDuplicateDates = function (dateColl) { return dateColl.filter(function (date, index, dates) {
+            return dates.map(function (dateObj) { return dateObj.getTime(); }).indexOf(date.getTime()) === index;
+        }); };
+        var renderDates = removeDuplicateDates(resourceDates);
+        renderDates.sort(function (a, b) {
+            return a.getDay() - b.getDay();
+        });
+        return renderDates;
     };
     ResourceBase.prototype.filterData = function (dataSource, field, value) {
         return dataSource.filter(function (data) { return data[field] === value; });
@@ -12507,6 +12520,11 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             isReadonly: this.eventSettings.fields.isReadonly,
             followingID: this.eventSettings.fields.followingID,
         };
+        this.setEditorTitles();
+        this.dataModule = new Data(this.eventSettings.dataSource, this.eventSettings.query);
+        this.crudModule = new Crud(this);
+    };
+    Schedule.prototype.setEditorTitles = function () {
         this.editorTitles = {
             subject: this.eventSettings.fields.subject.title || this.localeObj.getConstant('title'),
             startTime: this.eventSettings.fields.startTime.title || this.localeObj.getConstant('start'),
@@ -12518,8 +12536,6 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
             description: this.eventSettings.fields.description.title || this.localeObj.getConstant('description'),
             recurrenceRule: this.eventSettings.fields.recurrenceRule.title || this.localeObj.getConstant('repeat')
         };
-        this.dataModule = new Data(this.eventSettings.dataSource, this.eventSettings.query);
-        this.crudModule = new Crud(this);
     };
     Schedule.prototype.initializeView = function (viewName) {
         this.showSpinner();
@@ -12838,8 +12854,8 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
      * @hidden
      */
     Schedule.prototype.wireEvents = function () {
-        var resize = 'onorientationchange' in window ? 'orientationchange' : 'resize';
-        EventHandler.add(window, resize, this.onScheduleResize, this);
+        EventHandler.add(window, 'resize', this.onScheduleResize, this);
+        EventHandler.add(window, 'orientationchange', this.onScheduleResize, this);
         EventHandler.add(document, Browser.touchStartEvent, this.onDocumentClick, this);
         EventHandler.add(this.element, 'mouseover', this.workCellAction.onHover, this.workCellAction);
         if (this.allowKeyboardInteraction) {
@@ -13077,8 +13093,8 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
      * @hidden
      */
     Schedule.prototype.unwireEvents = function () {
-        var resize = 'onorientationchange' in window ? 'orientationchange' : 'resize';
-        EventHandler.remove(window, resize, this.onScheduleResize);
+        EventHandler.remove(window, 'resize', this.onScheduleResize);
+        EventHandler.remove(window, 'orientationchange', this.onScheduleResize);
         EventHandler.remove(document, Browser.touchStartEvent, this.onDocumentClick);
         EventHandler.remove(this.element, 'mouseover', this.workCellAction.onHover);
         if (this.keyboardInteractionModule) {
@@ -13152,6 +13168,8 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
                     break;
                 case 'locale':
                 case 'calendarMode':
+                    this.globalize = new Internationalization(this.locale);
+                    this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
                     this.setCldrTimeFormat();
                     this.setCalendarMode();
                     state.isRefresh = true;
@@ -13317,22 +13335,20 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
      */
     Schedule.prototype.refresh = function () {
         if (!this.isServerRenderer()) {
+            // Temp resource collecgtion required for blazor alone
+            this.tempResourceCollection = this.resourceCollection;
             _super.prototype.refresh.call(this);
+            this.tempResourceCollection = null;
         }
         else {
-            if (this.quickPopup) {
-                this.quickPopup.refreshQuickDialog();
-                this.quickPopup.refreshQuickPopup();
-                this.quickPopup.refreshMorePopup();
-            }
-            if (this.eventWindow) {
-                this.eventWindow.refresh();
-            }
+            this.setEditorTitles();
             this.destroyHeaderModule();
             if (this.showHeaderBar) {
                 this.headerModule = new HeaderRenderer(this);
                 this.renderModule.updateHeader();
             }
+            this.destroyPopups();
+            this.initializePopups();
             this.notify(scrollUiUpdate, { cssProperties: this.getCssProperties() });
             this.notify(dataReady, {});
         }
@@ -15723,7 +15739,6 @@ var TimelineEvent = /** @__PURE__ @class */ (function (_super) {
         _this.dayLength = _this.element.querySelectorAll('.' + CONTENT_TABLE_CLASS + ' tbody tr').length === 0 ?
             0 : _this.element.querySelectorAll('.' + CONTENT_TABLE_CLASS + ' tbody tr')[0].children.length;
         _this.content = _this.parent.element.querySelector('.' + CONTENT_TABLE_CLASS);
-        _this.moreIndicatorHeight = (_this.parent.rowAutoHeight) ? 0 : _this.moreIndicatorHeight;
         return _this;
     }
     TimelineEvent.prototype.getSlotDates = function () {
@@ -16978,7 +16993,9 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
         this.heightUptoCursorPoint = (this.heightUptoCursorPoint === 0) ?
             Math.ceil((Math.abs(this.actionObj.clone.getBoundingClientRect().top - this.actionObj.Y) / this.heightPerMinute)) *
                 this.heightPerMinute : this.heightUptoCursorPoint;
-        this.isAllDayDrag = this.actionObj.clone.classList.contains(ALLDAY_APPOINTMENT_CLASS);
+        this.isAllDayDrag = (this.parent.activeViewOptions.timeScale.enable) ?
+            this.actionObj.clone.classList.contains(ALLDAY_APPOINTMENT_CLASS) :
+            this.actionObj.event[this.parent.eventFields.isAllDay];
         if (this.isStepDragging && this.minDiff === 0) {
             this.calculateMinutesDiff(eventObj);
         }
@@ -16992,6 +17009,9 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
             else {
                 this.daysVariation = 0;
             }
+        }
+        else {
+            this.daysVariation = 0;
         }
         if (this.parent.eventDragArea) {
             var targetElement = eventArgs.target;
@@ -18069,11 +18089,6 @@ var ViewBase = /** @__PURE__ @class */ (function () {
             addClass([element], AUTO_HEIGHT);
         }
     };
-    ViewBase.prototype.addIgnoreWhitespaceClass = function (element) {
-        if (this.parent.eventSettings.ignoreWhitespace) {
-            addClass([element], IGNORE_WHITESPACE);
-        }
-    };
     ViewBase.prototype.getColElements = function () {
         return [].slice.call(this.element.querySelectorAll('.' + CONTENT_WRAP_CLASS
             + ' col, .' + DATE_HEADER_WRAP_CLASS + ' col'));
@@ -18516,6 +18531,9 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
         if (this.parent.activeViewOptions.allowVirtualScrolling) {
             clsList.push(VIRTUAL_SCROLL_CLASS);
         }
+        if (this.parent.eventSettings.ignoreWhitespace) {
+            clsList.push(IGNORE_WHITESPACE);
+        }
         this.renderPanel(type);
         addClass([this.element], clsList);
         this.element.appendChild(this.createTableLayout(OUTER_TABLE_CLASS));
@@ -18705,7 +18723,6 @@ var VerticalView = /** @__PURE__ @class */ (function (_super) {
         var wrap = createElement('div', { className: CONTENT_WRAP_CLASS });
         var tbl = this.createTableLayout(CONTENT_TABLE_CLASS);
         this.addAutoHeightClass(tbl);
-        this.addIgnoreWhitespaceClass(tbl);
         this.createColGroup(tbl, this.colLevels.slice(-1)[0]);
         this.renderContentTable(tbl);
         wrap.appendChild(tbl);
@@ -19011,6 +19028,20 @@ var WorkWeek = /** @__PURE__ @class */ (function (_super) {
         _this.viewClass = 'e-work-week-view';
         return _this;
     }
+    WorkWeek.prototype.startDate = function () {
+        var startDate = this.renderDates[0];
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            startDate = this.parent.resourceBase.getResourceRenderDates()[0];
+        }
+        return startDate;
+    };
+    WorkWeek.prototype.endDate = function () {
+        var endDate = addDays(this.renderDates[this.renderDates.length - 1], 1);
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            endDate = addDays(this.parent.resourceBase.getResourceRenderDates().slice(-1)[0], 1);
+        }
+        return endDate;
+    };
     /**
      * Get module name.
      */
@@ -19203,6 +19234,9 @@ var Month = /** @__PURE__ @class */ (function (_super) {
         }
         if (this.parent.activeViewOptions.allowVirtualScrolling) {
             clsList.push(VIRTUAL_SCROLL_CLASS);
+        }
+        if (this.parent.eventSettings.ignoreWhitespace) {
+            clsList.push(IGNORE_WHITESPACE);
         }
         addClass([this.element], clsList);
         this.renderPanel(type);
@@ -19418,7 +19452,6 @@ var Month = /** @__PURE__ @class */ (function (_super) {
     Month.prototype.renderContentArea = function () {
         var tbl = this.createTableLayout(CONTENT_TABLE_CLASS);
         this.addAutoHeightClass(tbl);
-        this.addIgnoreWhitespaceClass(tbl);
         if (this.parent.currentView === 'TimelineMonth') {
             this.createColGroup(tbl, this.colLevels[this.colLevels.length - 1]);
         }
@@ -19767,6 +19800,9 @@ var AgendaBase = /** @__PURE__ @class */ (function () {
     };
     AgendaBase.prototype.processAgendaEvents = function (events) {
         var eventsProcessed = [];
+        if (isNullOrUndefined(events)) {
+            return eventsProcessed;
+        }
         for (var _i = 0, events_1 = events; _i < events_1.length; _i++) {
             var event_1 = events_1[_i];
             var splited = this.parent.eventBase.splitEventByDay(event_1);

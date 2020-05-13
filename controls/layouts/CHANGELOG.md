@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 18.1.52 (2020-05-13)
+
+### Dashboard Layout
+
+#### New Features
+
+- `#269881` - Provided support to restrict the dragging functionality of an individual panel by adding `e-drag-restrict` cssClass to the panel.
+
+### Splitter
+
+#### Bug Fixes
+
+- `#273127` - Resolved the issue "Splitter resizing does not work as expected in the internet explorer browser".
+
+- `F153749` - Issue with "Splitter expand and collapse action doesn't work as expected after the pane resize" has been resolved.
+
 ## 18.1.48 (2020-05-05)
 
 ### Dashboard Layout

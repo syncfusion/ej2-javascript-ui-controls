@@ -4347,7 +4347,7 @@ var DatePicker = /** @class */ (function (_super) {
         var culture = new sf.base.Internationalization(this.locale);
         if (this.format) {
             if (typeof this.format === 'string') {
-                this.formatString = this.format;
+                this.formatString = sf.base.isBlazor() ? this.format.replace(/tt/, 'a') : this.format;
             }
             else if (this.format.skeleton !== '' && !sf.base.isNullOrUndefined(this.format.skeleton)) {
                 var skeletonString = this.format.skeleton;

@@ -22,3 +22,6 @@ export * from './user-interaction/selection';
 export * from './user-interaction/tooltip';
 export * from './user-interaction/zoom';
 export * from './user-interaction/annotation';
+export * from './model/print';
+export * from './model/export-image';
+export * from './model/export-pdf';

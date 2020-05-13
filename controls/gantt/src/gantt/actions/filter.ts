@@ -216,29 +216,22 @@ export class Filter {
     private setPosition(li: Element, ul: HTMLElement): void {
         let gridPos: ClientRect = this.parent.element.getBoundingClientRect();
         let liPos: ClientRect = li.getBoundingClientRect();
-        let left: number = liPos.left - gridPos.left;
-        let top: number = liPos.top - gridPos.top;
-        if (gridPos.height < top) {
-            top = top - ul.offsetHeight + liPos.height;
-        } else if (gridPos.height < top + ul.offsetHeight) {
-            top = gridPos.height - ul.offsetHeight;
+        let left: number = liPos.right + window.scrollX;
+        let top: number = liPos.top + window.scrollY;
+
+        if (gridPos.right < (left + ul.offsetWidth)) {
+            if ((liPos.left - ul.offsetWidth) > gridPos.left) {
+                left = (liPos.left - ul.offsetWidth);
+            } else {
+                left -= (left + ul.offsetWidth) - gridPos.right;
+            }
         }
-        if (window.innerHeight < ul.offsetHeight + top + gridPos.top) {
-            top = window.innerHeight - ul.offsetHeight - gridPos.top;
-        }
-        left += (this.parent.enableRtl ? - ul.offsetWidth : liPos.width);
-        if (gridPos.width <= left + ul.offsetWidth) {
-            left -= liPos.width + ul.offsetWidth;
-        } else if (left < 0) {
-            left += ul.offsetWidth + liPos.width;
-        }
-        ul.style.top = top + 7 + 'px';
-        ul.style.left = left + 7 + 'px';
+        ul.style.top = top + 'px';
+        ul.style.left = left + 'px';
     }
 
     private updateFilterMenuPosition(element: HTMLElement, args: GroupEventArgs): void {
         this.parent.element.appendChild(element);
-        (element.querySelector('.e-valid-input') as HTMLElement).focus();
         let targetElement: HTMLElement;
         if (this.parent.showColumnMenu) {
             targetElement = document.querySelector('#treeGrid' + this.parent.controlId + '_gridcontrol_colmenu_Filter');
@@ -247,6 +240,7 @@ export class Filter {
             targetElement = this.parent.treeGrid.grid.getColumnHeaderByField(args.columnName).querySelector('.e-filtermenudiv');
             getFilterMenuPostion(targetElement, getValue('filterModel.dlgObj', args), this.parent.treeGrid.grid as IXLFilter);
         }
+        (element.querySelector('.e-valid-input') as HTMLElement).focus();
     }
     private removeEventListener(): void {
         if (this.parent.isDestroyed) {

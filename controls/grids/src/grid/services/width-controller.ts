@@ -116,7 +116,8 @@ export class ColumnWidthService {
         let mCont: HTMLElement = <HTMLTableColElement>this.parent.getContent().querySelector('.e-movablecontent');
         if (frzCols && index >= frzCols && mHdr && mHdr.querySelector('colgroup')) {
             headerCol = (<HTMLTableColElement>mHdr.querySelector('colgroup').children[index - frzCols]);
-        } else if (this.parent.enableColumnVirtualization && frzCols && mHdr.scrollLeft > 0) {
+        } else if (this.parent.enableColumnVirtualization && frzCols && (<{ isXaxis?: Function }>this.parent.contentModule).isXaxis()
+            && mHdr.scrollLeft > 0) {
             let colGroup: HTMLElement = mHdr.querySelector('colgroup');
             headerCol = (<HTMLTableColElement>colGroup.children[(colGroup.children.length - 1) - index]);
         } else {
@@ -131,7 +132,8 @@ export class ColumnWidthService {
         if (frzCols && index >= frzCols) {
             contentCol = (<HTMLTableColElement>this.parent.getContent().querySelector('.e-movablecontent')
                 .querySelector('colgroup').children[index - frzCols]);
-        } else if (this.parent.enableColumnVirtualization && frzCols && mCont.scrollLeft > 0) {
+        } else if (this.parent.enableColumnVirtualization && frzCols && (<{ isXaxis?: Function }>this.parent.contentModule).isXaxis()
+            && mCont.scrollLeft > 0) {
             let colGroup: HTMLElement = this.parent.getContent().querySelector('.e-movablecontent')
                 .querySelector('colgroup');
             contentCol = (<HTMLTableColElement>colGroup.children[(colGroup.children.length - 1) - index]);

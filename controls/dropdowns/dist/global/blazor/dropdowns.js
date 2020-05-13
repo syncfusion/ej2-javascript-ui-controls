@@ -360,8 +360,11 @@ var DropDownBase = /** @class */ (function (_super) {
             }
             var content = actionFailure ?
                 this.l10n.getConstant('actionFailureTemplate') : this.l10n.getConstant('noRecordsTemplate');
-            if (sf.base.isBlazor() && this.getModuleName() === 'listbox' && ele.childNodes[1]) {
-                ele.childNodes[1].nodeValue = content;
+            if (this.getModuleName() === 'listbox') {
+                var liElem = this.createElement('li');
+                liElem.textContent = content;
+                ele.appendChild(liElem);
+                liElem.classList.add('e-list-nrt');
             }
             else {
                 ele.innerHTML = content;
@@ -6344,7 +6347,7 @@ var DropDownTree = /** @class */ (function (_super) {
         }
     };
     /**
-     * Removes the component from the DOM and detaches all its related event handlers. Also it removes the attributes and classes.
+     * Removes the component from the DOM and detaches all its related event handlers. Also, it removes the attributes and classes.
      * @method destroy
      * @return {void}.
      */
@@ -6377,16 +6380,16 @@ var DropDownTree = /** @class */ (function (_super) {
     };
     /**
      * Ensures visibility of the Dropdown Tree item by using item value or item element.
-     * When many Dropdown Tree items are present and we need to find a particular item, `ensureVisible` property
-     * helps to bring the item to visibility by expanding the Dropdown Tree and scrolling to the specific item.
-     * @param  {string | Element} item - Specifies value of Dropdown Tree item/ Dropdown Tree item element.
+     * If many Dropdown Tree items are present, and we are in need to find a particular item, then the `ensureVisible` property
+     * helps you to bring the item to visibility by expanding the Dropdown Tree and scrolling to the specific item.
+     * @param  {string | Element} item - Specifies the value of Dropdown Tree item/ Dropdown Tree item element.
      */
     DropDownTree.prototype.ensureVisible = function (item) {
         this.treeObj.ensureVisible(item);
     };
     /**
      * To get the updated data of source of the Dropdown Tree.
-     * @param  {string | Element} item - Specifies value of Dropdown Tree item/ Dropdown Tree item element.
+     * @param  {string | Element} item - Specifies the value of Dropdown Tree item/ Dropdown Tree item element.
      * @returns { { [key: string]: Object }[] }.
      */
     DropDownTree.prototype.getData = function (item) {
@@ -6412,10 +6415,10 @@ var DropDownTree = /** @class */ (function (_super) {
         }
     };
     /**
-     * Based on the state parameter, entire list item will be selected/deselected.
+     * Based on the state parameter, entire list item will be selected or deselected.
      * parameter
      * `true`   - Selects entire Dropdown Tree items.
-     * `false`  - Un Selects entire Dropdown Tree items.
+     * `false`  - Unselects entire Dropdown Tree items.
      * @returns void
      */
     DropDownTree.prototype.selectAll = function (state) {
@@ -12501,6 +12504,20 @@ var ListBox = /** @class */ (function (_super) {
             this.isValidKey = false;
         }
         this.keyDownStatus = false;
+        this.refreshClearIcon();
+    };
+    ListBox.prototype.clearText = function () {
+        this.filterInput.value = '';
+        this.refreshClearIcon();
+        var event = document.createEvent('KeyboardEvent');
+        this.isValidKey = true;
+        this.KeyUp(event);
+    };
+    ListBox.prototype.refreshClearIcon = function () {
+        if (this.filterInput.parentElement.querySelector('.' + listBoxClasses.clearIcon)) {
+            var clearElement = this.filterInput.parentElement.querySelector('.' + listBoxClasses.clearIcon);
+            clearElement.style.visibility = this.filterInput.value === '' ? 'hidden' : 'visible';
+        }
     };
     ListBox.prototype.onActionComplete = function (ulElement, list, e) {
         var searchEle;
@@ -12564,15 +12581,9 @@ var ListBox = /** @class */ (function (_super) {
         this.trigger('drag', this.getDragArgs(args));
         var listObj = this.getComponent(args.target);
         if (listObj && listObj.listData.length === 0) {
-            if (sf.base.isBlazor()) {
-                listObj.ulElement.childNodes.forEach(function (elem) {
-                    if (elem.nodeName === '#text') {
-                        elem.nodeValue = '';
-                    }
-                });
-            }
-            else {
-                listObj.ulElement.innerHTML = '';
+            var noRecElem = listObj.ulElement.getElementsByClassName('e-list-nrt')[0];
+            if (noRecElem) {
+                listObj.ulElement.removeChild(noRecElem);
             }
         }
     };
@@ -13085,6 +13096,9 @@ var ListBox = /** @class */ (function (_super) {
         sf.base.EventHandler.remove(this.list, 'click', this.clickHandler);
         sf.base.EventHandler.remove(wrapper, 'keydown', this.keyDownHandler);
         sf.base.EventHandler.remove(wrapper, 'focusout', this.focusOutHandler);
+        if (this.allowFiltering) {
+            sf.base.EventHandler.remove(this.clearFilterIconElem, 'click', this.clearText);
+        }
         if (this.toolbarSettings.items.length) {
             sf.base.EventHandler.remove(this.getToolElem(), 'click', this.toolbarClickHandler);
         }
@@ -13137,15 +13151,22 @@ var ListBox = /** @class */ (function (_super) {
             }
             else {
                 this.filterParent = this.createElement('span', {
-                    className: 'e-filter-parent'
+                    className: listBoxClasses.filterParent
                 });
                 this.filterInput = this.createElement('input', {
                     attrs: { type: 'text' },
-                    className: 'e-input-filter'
+                    className: listBoxClasses.filterInput
                 });
                 this.element.parentNode.insertBefore(this.filterInput, this.element);
+                var backIcon = false;
+                if (sf.base.Browser.isDevice) {
+                    backIcon = true;
+                }
                 filterInputObj = sf.inputs.Input.createInput({
-                    element: this.filterInput
+                    element: this.filterInput,
+                    buttons: backIcon ?
+                        [listBoxClasses.backIcon, listBoxClasses.filterBarClearIcon] : [listBoxClasses.filterBarClearIcon],
+                    properties: { placeholder: this.filterBarPlaceholder }
                 }, this.createElement);
                 sf.base.append([filterInputObj.container], this.filterParent);
                 sf.base.prepend([this.filterParent], this.list);
@@ -13164,6 +13185,11 @@ var ListBox = /** @class */ (function (_super) {
                 sf.base.addClass([this.list], 'e-filter-list');
             }
             this.inputString = this.filterInput.value;
+            this.clearFilterIconElem = this.filterInput.parentElement.querySelector('.' + listBoxClasses.clearIcon);
+            if (!sf.base.Browser.isDevice && this.clearFilterIconElem) {
+                sf.base.EventHandler.add(this.clearFilterIconElem, 'click', this.clearText, this);
+                this.clearFilterIconElem.style.visibility = 'hidden';
+            }
             sf.base.EventHandler.add(this.filterInput, 'input', this.onInput, this);
             sf.base.EventHandler.add(this.filterInput, 'keyup', this.KeyUp, this);
             sf.base.EventHandler.add(this.filterInput, 'keydown', this.onKeyDown, this);
@@ -13440,15 +13466,9 @@ var ListBox = /** @class */ (function (_super) {
                 tListBox.liCollections = tliCollections.concat(rLiCollection_1.reverse());
             }
             if (tListBox.listData.length === 0) {
-                if (sf.base.isBlazor()) {
-                    tListBox.ulElement.childNodes.forEach(function (elem) {
-                        if (elem.nodeName === '#text') {
-                            elem.nodeValue = '';
-                        }
-                    });
-                }
-                else {
-                    tListBox.ulElement.innerHTML = '';
+                var noRecElem = tListBox.ulElement.getElementsByClassName('e-list-nrt')[0];
+                if (noRecElem) {
+                    tListBox.ulElement.removeChild(noRecElem);
                 }
             }
             dataIdx.sort(function (n1, n2) { return n2 - n1; }).forEach(function (i) {
@@ -13514,7 +13534,7 @@ var ListBox = /** @class */ (function (_super) {
             }
         }
         if (fListBox.value.length === 1 && fListBox.getSelectedItems().length) {
-            fListBox.value[0] = fListBox.getSelectedItems()[0].innerHTML;
+            fListBox.value[0] = fListBox.getFormattedValue(fListBox.getSelectedItems()[0].getAttribute('data-value'));
         }
     };
     ListBox.prototype.moveAllItemTo = function () {
@@ -13536,27 +13556,15 @@ var ListBox = /** @class */ (function (_super) {
             return;
         }
         if (tListBox.listData.length === 0) {
-            if (sf.base.isBlazor()) {
-                tListBox.ulElement.childNodes.forEach(function (elem) {
-                    if (elem.nodeName === '#text') {
-                        elem.nodeValue = '';
-                    }
-                });
-            }
-            else {
-                tListBox.ulElement.innerHTML = '';
+            var noRecElem = tListBox.ulElement.getElementsByClassName('e-list-nrt')[0];
+            if (noRecElem) {
+                tListBox.ulElement.removeChild(noRecElem);
             }
         }
         if (isRefresh) {
-            if (sf.base.isBlazor()) {
-                fListBox.ulElement.childNodes.forEach(function (elem) {
-                    if (elem.nodeName === '#text') {
-                        elem.nodeValue = '';
-                    }
-                });
-            }
-            else {
-                fListBox.ulElement.innerHTML = '';
+            var noRecElem = fListBox.ulElement.getElementsByClassName('e-list-nrt')[0];
+            if (noRecElem) {
+                fListBox.ulElement.removeChild(noRecElem);
             }
         }
         else {
@@ -13811,6 +13819,9 @@ var ListBox = /** @class */ (function (_super) {
         var ele = this.list.getElementsByClassName('e-focused')[0];
         if (ele) {
             ele.classList.remove('e-focused');
+        }
+        if (this.allowFiltering) {
+            this.refreshClearIcon();
         }
     };
     ListBox.prototype.getValidIndex = function (cli, index, keyCode) {
@@ -14115,6 +14126,13 @@ var ListBox = /** @class */ (function (_super) {
                         sf.base.removeClass([this.list], 'e-filter-list');
                     }
                     break;
+                case 'filterBarPlaceholder':
+                    if (this.allowFiltering) {
+                        if (this.filterInput) {
+                            sf.inputs.Input.setPlaceholder(newProp.filterBarPlaceholder, this.filterInput);
+                        }
+                    }
+                    break;
                 case 'scope':
                     if (this.allowDragAndDrop) {
                         sf.base.getComponent(this.ulElement, 'sortable').scope = newProp.scope;
@@ -14209,6 +14227,9 @@ var ListBox = /** @class */ (function (_super) {
         sf.base.Property(true)
     ], ListBox.prototype, "ignoreCase", void 0);
     __decorate$6([
+        sf.base.Property(null)
+    ], ListBox.prototype, "filterBarPlaceholder", void 0);
+    __decorate$6([
         sf.base.Event()
     ], ListBox.prototype, "beforeItemRender", void 0);
     __decorate$6([
@@ -14261,6 +14282,13 @@ var ListBox = /** @class */ (function (_super) {
     ], ListBox);
     return ListBox;
 }(DropDownBase));
+var listBoxClasses = {
+    backIcon: 'e-input-group-icon e-back-icon e-icons',
+    filterBarClearIcon: 'e-input-group-icon e-clear-icon e-icons',
+    filterInput: 'e-input-filter',
+    filterParent: 'e-filter-parent',
+    clearIcon: 'e-clear-icon',
+};
 
 /**
  * export all modules from current location

@@ -12,6 +12,7 @@ import { AccPoints } from '../../../src/accumulation-chart/model/acc-base';
 import { getElement, ChartLocation } from '../../../src/common/utils/helper';
 import { AccumulationDataLabel } from '../../../src/accumulation-chart/renderer/dataLabel';
 import { AccumulationTooltip } from '../../../src/accumulation-chart/user-interaction/tooltip';
+import { AccumulationSelection } from '../../../src/accumulation-chart/user-interaction/selection';
 import { piedata} from '../../chart/base/data.spec';
 import { MouseEvents } from '../../chart/base/events.spec';
 import { getPosition, addTooltipStyles } from '../base/util.spec';
@@ -19,7 +20,7 @@ import { IAccLoadedEventArgs, } from '../../../src/accumulation-chart/model/pie-
 import { ITooltipRenderEventArgs, IPointEventArgs } from '../../../src/chart/model/chart-interface';
 import '../../../node_modules/es6-promise/dist/es6-promise';
 import { profile, inMB, getMemoryProfile } from '../../common.spec';
-AccumulationChart.Inject(PieSeries, PyramidSeries,FunnelSeries,  AccumulationLegend, AccumulationDataLabel, AccumulationTooltip);
+AccumulationChart.Inject(PieSeries, PyramidSeries, AccumulationSelection, FunnelSeries,  AccumulationLegend, AccumulationDataLabel, AccumulationTooltip);
 
 describe('Accumulation Chart Control', () => {
     beforeAll(() => {
@@ -373,6 +374,18 @@ describe('Checking tooltip text with useGroupSeparator is true', () => {
             expect(tooltip.children[3].innerHTML).toEqual("1,377,507");
             done();
         };
+        accumulation.refresh();
+    });
+    it('Checking point value with selection', (done: Function) => {
+        accumulation.loaded = (args: IAccLoadedEventArgs) => {
+            segement = getElement(sliceid + 2);
+            trigger.mousemoveEvent(segement, 0, 0, 200, 250);
+            let element = document.getElementById('container_Series_0_Point_2');
+            trigger.clickEvent(element);
+            expect(+element.getAttribute('opacity') === 1).toBe(true);
+            done();
+        };
+        accumulation.selectionMode = 'Point';
         accumulation.refresh();
     });
 });

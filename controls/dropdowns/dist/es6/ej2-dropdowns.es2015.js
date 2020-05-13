@@ -342,8 +342,11 @@ let DropDownBase = class DropDownBase extends Component {
             }
             let content = actionFailure ?
                 this.l10n.getConstant('actionFailureTemplate') : this.l10n.getConstant('noRecordsTemplate');
-            if (isBlazor() && this.getModuleName() === 'listbox' && ele.childNodes[1]) {
-                ele.childNodes[1].nodeValue = content;
+            if (this.getModuleName() === 'listbox') {
+                let liElem = this.createElement('li');
+                liElem.textContent = content;
+                ele.appendChild(liElem);
+                liElem.classList.add('e-list-nrt');
             }
             else {
                 ele.innerHTML = content;
@@ -6249,7 +6252,7 @@ let DropDownTree = class DropDownTree extends Component {
         }
     }
     /**
-     * Removes the component from the DOM and detaches all its related event handlers. Also it removes the attributes and classes.
+     * Removes the component from the DOM and detaches all its related event handlers. Also, it removes the attributes and classes.
      * @method destroy
      * @return {void}.
      */
@@ -6282,16 +6285,16 @@ let DropDownTree = class DropDownTree extends Component {
     }
     /**
      * Ensures visibility of the Dropdown Tree item by using item value or item element.
-     * When many Dropdown Tree items are present and we need to find a particular item, `ensureVisible` property
-     * helps to bring the item to visibility by expanding the Dropdown Tree and scrolling to the specific item.
-     * @param  {string | Element} item - Specifies value of Dropdown Tree item/ Dropdown Tree item element.
+     * If many Dropdown Tree items are present, and we are in need to find a particular item, then the `ensureVisible` property
+     * helps you to bring the item to visibility by expanding the Dropdown Tree and scrolling to the specific item.
+     * @param  {string | Element} item - Specifies the value of Dropdown Tree item/ Dropdown Tree item element.
      */
     ensureVisible(item) {
         this.treeObj.ensureVisible(item);
     }
     /**
      * To get the updated data of source of the Dropdown Tree.
-     * @param  {string | Element} item - Specifies value of Dropdown Tree item/ Dropdown Tree item element.
+     * @param  {string | Element} item - Specifies the value of Dropdown Tree item/ Dropdown Tree item element.
      * @returns { { [key: string]: Object }[] }.
      */
     getData(item) {
@@ -6317,10 +6320,10 @@ let DropDownTree = class DropDownTree extends Component {
         }
     }
     /**
-     * Based on the state parameter, entire list item will be selected/deselected.
+     * Based on the state parameter, entire list item will be selected or deselected.
      * parameter
      * `true`   - Selects entire Dropdown Tree items.
-     * `false`  - Un Selects entire Dropdown Tree items.
+     * `false`  - Unselects entire Dropdown Tree items.
      * @returns void
      */
     selectAll(state) {
@@ -12309,6 +12312,20 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
             this.isValidKey = false;
         }
         this.keyDownStatus = false;
+        this.refreshClearIcon();
+    }
+    clearText() {
+        this.filterInput.value = '';
+        this.refreshClearIcon();
+        let event = document.createEvent('KeyboardEvent');
+        this.isValidKey = true;
+        this.KeyUp(event);
+    }
+    refreshClearIcon() {
+        if (this.filterInput.parentElement.querySelector('.' + listBoxClasses.clearIcon)) {
+            let clearElement = this.filterInput.parentElement.querySelector('.' + listBoxClasses.clearIcon);
+            clearElement.style.visibility = this.filterInput.value === '' ? 'hidden' : 'visible';
+        }
     }
     onActionComplete(ulElement, list, e) {
         let searchEle;
@@ -12371,15 +12388,9 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
         this.trigger('drag', this.getDragArgs(args));
         let listObj = this.getComponent(args.target);
         if (listObj && listObj.listData.length === 0) {
-            if (isBlazor()) {
-                listObj.ulElement.childNodes.forEach((elem) => {
-                    if (elem.nodeName === '#text') {
-                        elem.nodeValue = '';
-                    }
-                });
-            }
-            else {
-                listObj.ulElement.innerHTML = '';
+            let noRecElem = listObj.ulElement.getElementsByClassName('e-list-nrt')[0];
+            if (noRecElem) {
+                listObj.ulElement.removeChild(noRecElem);
             }
         }
     }
@@ -12878,6 +12889,9 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
         EventHandler.remove(this.list, 'click', this.clickHandler);
         EventHandler.remove(wrapper, 'keydown', this.keyDownHandler);
         EventHandler.remove(wrapper, 'focusout', this.focusOutHandler);
+        if (this.allowFiltering) {
+            EventHandler.remove(this.clearFilterIconElem, 'click', this.clearText);
+        }
         if (this.toolbarSettings.items.length) {
             EventHandler.remove(this.getToolElem(), 'click', this.toolbarClickHandler);
         }
@@ -12930,15 +12944,22 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
             }
             else {
                 this.filterParent = this.createElement('span', {
-                    className: 'e-filter-parent'
+                    className: listBoxClasses.filterParent
                 });
                 this.filterInput = this.createElement('input', {
                     attrs: { type: 'text' },
-                    className: 'e-input-filter'
+                    className: listBoxClasses.filterInput
                 });
                 this.element.parentNode.insertBefore(this.filterInput, this.element);
+                let backIcon = false;
+                if (Browser.isDevice) {
+                    backIcon = true;
+                }
                 filterInputObj = Input.createInput({
-                    element: this.filterInput
+                    element: this.filterInput,
+                    buttons: backIcon ?
+                        [listBoxClasses.backIcon, listBoxClasses.filterBarClearIcon] : [listBoxClasses.filterBarClearIcon],
+                    properties: { placeholder: this.filterBarPlaceholder }
                 }, this.createElement);
                 append([filterInputObj.container], this.filterParent);
                 prepend([this.filterParent], this.list);
@@ -12957,6 +12978,11 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
                 addClass([this.list], 'e-filter-list');
             }
             this.inputString = this.filterInput.value;
+            this.clearFilterIconElem = this.filterInput.parentElement.querySelector('.' + listBoxClasses.clearIcon);
+            if (!Browser.isDevice && this.clearFilterIconElem) {
+                EventHandler.add(this.clearFilterIconElem, 'click', this.clearText, this);
+                this.clearFilterIconElem.style.visibility = 'hidden';
+            }
             EventHandler.add(this.filterInput, 'input', this.onInput, this);
             EventHandler.add(this.filterInput, 'keyup', this.KeyUp, this);
             EventHandler.add(this.filterInput, 'keydown', this.onKeyDown, this);
@@ -13228,15 +13254,9 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
                 tListBox.liCollections = tliCollections.concat(rLiCollection.reverse());
             }
             if (tListBox.listData.length === 0) {
-                if (isBlazor()) {
-                    tListBox.ulElement.childNodes.forEach((elem) => {
-                        if (elem.nodeName === '#text') {
-                            elem.nodeValue = '';
-                        }
-                    });
-                }
-                else {
-                    tListBox.ulElement.innerHTML = '';
+                let noRecElem = tListBox.ulElement.getElementsByClassName('e-list-nrt')[0];
+                if (noRecElem) {
+                    tListBox.ulElement.removeChild(noRecElem);
                 }
             }
             dataIdx.sort((n1, n2) => n2 - n1).forEach((i) => {
@@ -13302,7 +13322,7 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
             }
         }
         if (fListBox.value.length === 1 && fListBox.getSelectedItems().length) {
-            fListBox.value[0] = fListBox.getSelectedItems()[0].innerHTML;
+            fListBox.value[0] = fListBox.getFormattedValue(fListBox.getSelectedItems()[0].getAttribute('data-value'));
         }
     }
     moveAllItemTo() {
@@ -13324,27 +13344,15 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
             return;
         }
         if (tListBox.listData.length === 0) {
-            if (isBlazor()) {
-                tListBox.ulElement.childNodes.forEach((elem) => {
-                    if (elem.nodeName === '#text') {
-                        elem.nodeValue = '';
-                    }
-                });
-            }
-            else {
-                tListBox.ulElement.innerHTML = '';
+            let noRecElem = tListBox.ulElement.getElementsByClassName('e-list-nrt')[0];
+            if (noRecElem) {
+                tListBox.ulElement.removeChild(noRecElem);
             }
         }
         if (isRefresh) {
-            if (isBlazor()) {
-                fListBox.ulElement.childNodes.forEach((elem) => {
-                    if (elem.nodeName === '#text') {
-                        elem.nodeValue = '';
-                    }
-                });
-            }
-            else {
-                fListBox.ulElement.innerHTML = '';
+            let noRecElem = fListBox.ulElement.getElementsByClassName('e-list-nrt')[0];
+            if (noRecElem) {
+                fListBox.ulElement.removeChild(noRecElem);
             }
         }
         else {
@@ -13597,6 +13605,9 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
         let ele = this.list.getElementsByClassName('e-focused')[0];
         if (ele) {
             ele.classList.remove('e-focused');
+        }
+        if (this.allowFiltering) {
+            this.refreshClearIcon();
         }
     }
     getValidIndex(cli, index, keyCode) {
@@ -13892,6 +13903,13 @@ let ListBox = ListBox_1 = class ListBox extends DropDownBase {
                         removeClass([this.list], 'e-filter-list');
                     }
                     break;
+                case 'filterBarPlaceholder':
+                    if (this.allowFiltering) {
+                        if (this.filterInput) {
+                            Input.setPlaceholder(newProp.filterBarPlaceholder, this.filterInput);
+                        }
+                    }
+                    break;
                 case 'scope':
                     if (this.allowDragAndDrop) {
                         getComponent(this.ulElement, 'sortable').scope = newProp.scope;
@@ -13986,6 +14004,9 @@ __decorate$6([
     Property(true)
 ], ListBox.prototype, "ignoreCase", void 0);
 __decorate$6([
+    Property(null)
+], ListBox.prototype, "filterBarPlaceholder", void 0);
+__decorate$6([
     Event()
 ], ListBox.prototype, "beforeItemRender", void 0);
 __decorate$6([
@@ -14036,6 +14057,13 @@ __decorate$6([
 ListBox = ListBox_1 = __decorate$6([
     NotifyPropertyChanges
 ], ListBox);
+const listBoxClasses = {
+    backIcon: 'e-input-group-icon e-back-icon e-icons',
+    filterBarClearIcon: 'e-input-group-icon e-clear-icon e-icons',
+    filterInput: 'e-input-filter',
+    filterParent: 'e-filter-parent',
+    clearIcon: 'e-clear-icon',
+};
 
 /**
  * export all modules from current location

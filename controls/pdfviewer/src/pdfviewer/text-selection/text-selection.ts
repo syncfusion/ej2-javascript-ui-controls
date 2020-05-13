@@ -1357,6 +1357,12 @@ export class TextSelection {
     private normalizeBounds(bound: ClientRect, pageNumber: number): IRectangle {
         let newBounds: IRectangle = null;
         let currentPageElement: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + pageNumber);
+        if (this.pdfViewerBase.isMixedSizeDocument) {
+            let currentTextElement: HTMLElement = this.pdfViewerBase.getElement('_textLayer_' + pageNumber);
+            if (currentTextElement) {
+                currentPageElement = currentTextElement;
+            }
+        }
         let currentPageRect: ClientRect = currentPageElement.getBoundingClientRect();
         newBounds = {
             bottom: this.getMagnifiedValue(bound.bottom - currentPageRect.top), height: this.getMagnifiedValue(bound.height),

@@ -15,7 +15,9 @@ import { ThumbSettingsModel, RangeTooltipSettingsModel } from './model/range-bas
 import { RangeSlider } from './renderer/slider';
 import { AxisPosition, StepLineSeries, ExportType, IPrintEventArgs, RectOption } from '../chart/index';
 import { Chart, getElement, ChartTheme, LineSeries, AreaSeries } from '../chart/index';
-import { DateTime, Logarithmic, IResizeRangeNavigatorEventArgs } from '../range-navigator/index';
+import { IResizeRangeNavigatorEventArgs } from '../range-navigator/index';
+import { DateTime } from '../chart/axis/date-time-axis';
+import { Logarithmic } from '../chart/axis/logarithmic-axis';
 import { ILabelRenderEventsArgs, IRangeTooltipRenderEventArgs } from './model/range-navigator-interface';
 import { IRangeLoadedEventArgs, IRangeStyle, IChangedEventArgs } from './model/range-navigator-interface';
 import { getRangeThemeColor } from './utils/theme';

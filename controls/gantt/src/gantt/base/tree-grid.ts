@@ -245,6 +245,11 @@ export class GanttTreeGrid {
             focussedElement.focus();
         } else if (getValue('type', args) === 'save') {
             if (this.parent.editModule && this.parent.editModule.cellEditModule) {
+                let data: IGanttData = getValue('data', args);
+                if (!isNullOrUndefined(data) && !isNullOrUndefined(this.parent.getTaskByUniqueID(data.uniqueID))) {
+                    /* tslint:disable-next-line */
+                    this.parent.getTaskByUniqueID(data.uniqueID).taskData[this.parent.taskFields.duration] = data.taskData[this.parent.taskFields.duration];
+                }
                 this.parent.editModule.cellEditModule.initiateCellEdit(args, this.currentEditRow);
                 this.currentEditRow = {};
             }

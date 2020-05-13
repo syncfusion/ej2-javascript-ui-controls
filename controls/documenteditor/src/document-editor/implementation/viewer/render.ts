@@ -31,7 +31,6 @@ export class Renderer {
     private isFieldCode: boolean = false;
     private leftPosition: number = 0;
     private topPosition: number = 0;
-    private isFormField: boolean = false;
     private height: number = 0;
     /**
      * Gets page canvas.
@@ -465,6 +464,24 @@ export class Renderer {
         if (lineWidget.isFirstLine() && !paraFormat.bidi) {
             left += HelperMethods.convertPointToPixel(paraFormat.firstLineIndent);
         }
+        if (this.documentHelper && this.documentHelper.selection && !isNullOrUndefined(this.documentHelper.selection.formFieldHighlighters)
+            && this.documentHelper.selection.formFieldHighlighters.containsKey(lineWidget)) {
+            if (this.documentHelper.owner.documentEditorSettings
+                && this.documentHelper.owner.documentEditorSettings.formFieldSettings.applyShading) {
+                let widgetInfo: SelectionWidgetInfo[] = page.documentHelper.selection.formFieldHighlighters.get(lineWidget);
+                for (let i: number = 0; i < widgetInfo.length; i++) {
+                    this.pageContext.fillStyle = this.documentHelper.owner.documentEditorSettings.formFieldSettings.shadingColor;
+                    let height: number = lineWidget.height;
+                    let isLastLine: boolean = lineWidget.isLastLine();
+                    if (isLastLine) {
+                        // tslint:disable-next-line:max-line-length
+                        height = height - HelperMethods.convertPointToPixel(this.documentHelper.layout.getAfterSpacing(lineWidget.paragraph))
+                    }
+                    // tslint:disable-next-line:max-line-length
+                    this.pageContext.fillRect(this.getScaledValue(widgetInfo[i].left, 1), this.getScaledValue(top, 2), this.getScaledValue(widgetInfo[i].width), this.getScaledValue(height));
+                }
+            }
+        }
         if (this.documentHelper.owner.searchModule) {
             // tslint:disable-next-line:max-line-length
             if (!isNullOrUndefined(page.documentHelper.owner.searchModule.searchHighlighters) && page.documentHelper.owner.searchModule.searchHighlighters.containsKey(lineWidget)) {
@@ -566,14 +583,8 @@ export class Renderer {
                 if ((!isNullOrUndefined(element.fieldEnd) || element.hasFieldEnd)) {
                     this.isFieldCode = true;
                 }
-                if (!isNullOrUndefined(element.formFieldData) && element.hasFieldEnd && !isNullOrUndefined(element.fieldEnd)) {
-                    this.isFormField = true;
-                }
             } else if (element.fieldType === 2 || element.fieldType === 1) {
                 this.isFieldCode = false;
-                if (element.fieldType === 1) {
-                    this.isFormField = false;
-                }
             }
         }
     }
@@ -686,13 +697,6 @@ export class Renderer {
             // tslint:disable-next-line:max-line-length
             this.pageContext.fillRect(this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
         }
-        if (this.documentHelper && this.documentHelper.owner.documentEditorSettings
-            && this.documentHelper.owner.documentEditorSettings.formFieldSettings.applyShading && this.isFormField) {
-            this.pageContext.fillStyle = this.documentHelper.owner.documentEditorSettings.formFieldSettings.shadingColor;
-            // tslint:disable-next-line:max-line-length
-            this.pageContext.fillRect(this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width) + 0.5, this.getScaledValue(elementBox.height));
-        }
-
         let color: string = format.fontColor;
         this.pageContext.textBaseline = 'alphabetic';
         let bold: string = '';

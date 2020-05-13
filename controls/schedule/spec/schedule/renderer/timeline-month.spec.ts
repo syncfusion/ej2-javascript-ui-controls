@@ -3673,7 +3673,7 @@ describe('Schedule Timeline Month view', () => {
             expect(resorucCellHeight).toEqual(cellHeight);
             let blockIndicator: HTMLElement[] = [].slice.call(schObj.element.querySelectorAll('.e-block-indicator'));
             expect(blockIndicator.length).toEqual(8);
-            expect(blockIndicator[0].offsetTop).toEqual(122);
+            expect(blockIndicator[0].offsetTop).toEqual(141);
         });
     });
 

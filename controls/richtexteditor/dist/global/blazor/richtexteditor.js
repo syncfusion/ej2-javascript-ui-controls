@@ -9169,12 +9169,56 @@ var Lists = /** @class */ (function () {
             startNode.textContent = '';
         }
     };
+    Lists.prototype.backspaceList = function (e) {
+        var range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        var startNode = this.parent.domNode.getSelectedNode(range.startContainer, range.startOffset);
+        var endNode = this.parent.domNode.getSelectedNode(range.endContainer, range.endOffset);
+        startNode = startNode.nodeName === 'BR' ? startNode.parentElement : startNode;
+        endNode = endNode.nodeName === 'BR' ? endNode.parentElement : endNode;
+        if (startNode === endNode && !sf.base.isNullOrUndefined(sf.base.closest(startNode, 'li')) &&
+            startNode.textContent.trim() === '' && startNode.textContent.charCodeAt(0) === 65279) {
+            startNode.textContent = '';
+        }
+        if (startNode === endNode && startNode.textContent === '') {
+            if (startNode.closest('ul') || startNode.closest('ol')) {
+                var parentList = !sf.base.isNullOrUndefined(startNode.closest('ul')) ? startNode.closest('ul') : startNode.closest('ol');
+                if (parentList.firstElementChild === startNode && (parentList.children[1].tagName === 'OL' ||
+                    parentList.children[1].tagName === 'UL')) {
+                    if (parentList.tagName === parentList.children[1].tagName) {
+                        while (parentList.children[1].lastChild) {
+                            this.parent.domNode.insertAfter(parentList.children[1].lastChild, parentList.children[1]);
+                        }
+                        sf.base.detach(parentList.children[1]);
+                    }
+                    else {
+                        parentList.parentElement.insertBefore(parentList.children[1], parentList);
+                    }
+                }
+            }
+        }
+        else if (startNode.firstChild.nodeName === 'BR' && (startNode.childNodes[1].nodeName === 'UL' ||
+            startNode.childNodes[1].nodeName === 'OL')) {
+            var parentList = !sf.base.isNullOrUndefined(startNode.closest('ul')) ? startNode.closest('ul') : startNode.closest('ol');
+            if (parentList.tagName === startNode.childNodes[1].nodeName) {
+                while (startNode.childNodes[1].lastChild) {
+                    this.parent.domNode.insertAfter(startNode.children[1].lastChild, startNode);
+                }
+                sf.base.detach(startNode.childNodes[1]);
+            }
+            else {
+                parentList.parentElement.insertBefore(startNode.children[1], parentList);
+            }
+        }
+    };
     Lists.prototype.keyDownHandler = function (e) {
         if (e.event.which === 13) {
             this.enterList(e);
         }
         if (e.event.which === 32) {
             this.spaceList(e);
+        }
+        if (e.event.which === 8) {
+            this.backspaceList(e);
         }
         if (e.event.which === 9) {
             var range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
@@ -9462,6 +9506,16 @@ var Lists = /** @class */ (function () {
                 nodesTemp.push(node);
             }
         }
+        var parentList = [];
+        for (var k = 0; k < nodesTemp.length; k++) {
+            var nodesTempListParent = nodesTemp[k].closest('LI');
+            if (!sf.base.isNullOrUndefined(nodesTempListParent) && (nodesTemp.indexOf(nodesTempListParent.parentElement) < 0)) {
+                if (nodesTempListParent.parentElement.innerText === nodesTemp[k].innerText) {
+                    parentList.push(nodesTempListParent.parentElement);
+                }
+            }
+        }
+        nodesTemp = parentList.concat(nodesTemp);
         for (var j = nodesTemp.length - 1; j >= 0; j--) {
             var h = nodesTemp[j];
             var replace = '<' + tagName.toLowerCase() + ' '
@@ -11899,7 +11953,6 @@ var SelectionCommands = /** @class */ (function () {
         if (cursorFormat) {
             cursorNode = cursorNodes[0];
             InsertMethods.unwrap(cursorFormat);
-            cursorNodes[0] = InsertMethods.Wrap(cursorNodes[0], this.GetFormatNode(format, value));
         }
         else {
             cursorNode = this.getInsertNode(docElement, range, format, value).firstChild;
@@ -14661,9 +14714,29 @@ var PasteCleanup = /** @class */ (function () {
             },
             uploading: function (e) {
                 _this.parent.trigger(imageUploading, e);
+                _this.parent.inputElement.contentEditable = 'false';
             },
             failure: function (e) {
                 setTimeout(function () { _this.uploadFailure(imgElem, uploadObj, popupObj, e); }, 900);
+            },
+            canceling: function () {
+                _this.parent.inputElement.contentEditable = 'true';
+                if (imgElem.nextSibling.textContent === ' ') {
+                    sf.base.detach(imgElem.nextSibling);
+                }
+                sf.base.detach(imgElem);
+                popupObj.close();
+            },
+            selected: function (e) {
+                e.cancel = true;
+            },
+            removing: function () {
+                _this.parent.inputElement.contentEditable = 'true';
+                if (imgElem.nextSibling.textContent === ' ') {
+                    sf.base.detach(imgElem.nextSibling);
+                }
+                sf.base.detach(imgElem);
+                popupObj.close();
             }
         });
         uploadObj.appendTo(popupObj.element.childNodes[0]);
@@ -14684,6 +14757,7 @@ var PasteCleanup = /** @class */ (function () {
         sf.base.detach(popupObj.element.querySelector('.e-rte-dialog-upload .e-file-select-wrap'));
     };
     PasteCleanup.prototype.uploadFailure = function (imgElem, uploadObj, popupObj, e) {
+        this.parent.inputElement.contentEditable = 'true';
         sf.base.detach(imgElem);
         if (popupObj) {
             popupObj.close();
@@ -14693,6 +14767,7 @@ var PasteCleanup = /** @class */ (function () {
     };
     PasteCleanup.prototype.popupClose = function (popupObj, uploadObj, imgElem, e) {
         var _this = this;
+        this.parent.inputElement.contentEditable = 'true';
         this.parent.trigger(imageUploadSuccess, e, function (e) {
             if (!sf.base.isNullOrUndefined(_this.parent.insertImageSettings.path)) {
                 var url = _this.parent.insertImageSettings.path + e.file.name;
@@ -17436,7 +17511,8 @@ var Image = /** @class */ (function () {
                     e.preventDefault();
                 }
                 else {
-                    if (sf.base.closest(e.target, '#' + _this.parent.getID() + '_toolbar')) {
+                    if (sf.base.closest(e.target, '#' + _this.parent.getID() + '_toolbar') ||
+                        _this.parent.inputElement.contentEditable === 'false') {
                         e.preventDefault();
                         return;
                     }
@@ -17579,6 +17655,7 @@ var Image = /** @class */ (function () {
      */
     Image.prototype.uploadMethod = function (dragEvent, imageElement) {
         var _this = this;
+        var isUploading = false;
         var proxy = this;
         var popupEle = this.parent.createElement('div');
         this.parent.element.appendChild(popupEle);
@@ -17614,20 +17691,33 @@ var Image = /** @class */ (function () {
                 saveUrl: this.parent.insertImageSettings.saveUrl,
             },
             cssClass: CLS_RTE_DIALOG_UPLOAD,
-            dropArea: this.parent.inputElement,
+            dropArea: this.parent.element,
             allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
             removing: function () {
+                _this.parent.inputElement.contentEditable = 'true';
+                isUploading = false;
                 sf.base.detach(imageElement);
                 _this.popupObj.close();
             },
             canceling: function () {
+                _this.parent.inputElement.contentEditable = 'true';
+                isUploading = false;
                 sf.base.detach(imageElement);
                 _this.popupObj.close();
             },
             uploading: function (e) {
+                isUploading = true;
                 _this.parent.trigger(imageUploading, e);
+                _this.parent.inputElement.contentEditable = 'false';
+            },
+            selected: function (e) {
+                if (isUploading) {
+                    e.cancel = true;
+                }
             },
             failure: function (e) {
+                isUploading = false;
+                _this.parent.inputElement.contentEditable = 'true';
                 var args = {
                     args: dragEvent,
                     type: 'Images',
@@ -17637,6 +17727,8 @@ var Image = /** @class */ (function () {
                 setTimeout(function () { _this.uploadFailure(imageElement, args, e); }, 900);
             },
             success: function (e) {
+                isUploading = false;
+                _this.parent.inputElement.contentEditable = 'true';
                 var args = {
                     args: dragEvent,
                     type: 'Images',
@@ -20164,12 +20256,40 @@ var RichTextEditor = /** @class */ (function (_super) {
                 range.startContainer.textContent = range.startContainer.textContent.replace(regEx, '');
                 this.formatter.editorManager.nodeSelection.setCursorPoint(this.contentModule.getDocument(), range.startContainer, pointer);
             }
+            else if ((e.code === 'Backspace' && e.which === 8) &&
+                range.startContainer.textContent.charCodeAt(0) === 8203) {
+                var parentEle = range.startContainer.parentElement;
+                var index = void 0;
+                var i = void 0;
+                for (i = 0; i < parentEle.childNodes.length; i++) {
+                    if (parentEle.childNodes[i] === range.startContainer) {
+                        index = i;
+                    }
+                }
+                var bool = true;
+                var removeNodeArray = [];
+                for (i = index; i >= 0; i--) {
+                    if (parentEle.childNodes[i].textContent.charCodeAt(0) === 8203 && bool) {
+                        removeNodeArray.push(i);
+                    }
+                    else {
+                        bool = false;
+                    }
+                }
+                if (removeNodeArray.length > 0) {
+                    for (i = removeNodeArray.length - 1; i > 0; i--) {
+                        parentEle.childNodes[removeNodeArray[i]].textContent = '';
+                    }
+                }
+                this.formatter.editorManager.nodeSelection.setCursorPoint(this.contentModule.getDocument(), range.startContainer, range.startOffset);
+            }
         }
         if (this.formatter.getUndoRedoStack().length === 0) {
             this.formatter.saveData();
         }
         if (e.action !== 'insert-link' &&
-            (e.action && e.action !== 'paste' || e.which === 9)) {
+            (e.action && e.action !== 'paste' || e.which === 9 ||
+                (e.code === 'Backspace' && e.which === 8))) {
             this.formatter.process(this, null, e);
             switch (e.action) {
                 case 'toolbar-focus':
@@ -20313,7 +20433,8 @@ var RichTextEditor = /** @class */ (function (_super) {
             var pastedContentLength = (sf.base.isNullOrUndefined(e) || sf.base.isNullOrUndefined(e.clipboardData))
                 ? 0 : e.clipboardData.getData('text/plain').length;
             var totalLength = (currentLength - selectionLength) + pastedContentLength;
-            if (!pasteArgs.cancel && (_this.maxLength === -1 || totalLength < _this.maxLength)) {
+            if (!pasteArgs.cancel && _this.inputElement.contentEditable === 'true' &&
+                (_this.maxLength === -1 || totalLength < _this.maxLength)) {
                 if (!sf.base.isNullOrUndefined(_this.pasteCleanupModule)) {
                     _this.notify(pasteClean, { args: e });
                 }

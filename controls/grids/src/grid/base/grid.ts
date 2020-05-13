@@ -825,6 +825,8 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /** @hidden */
     public isAutoGen: boolean = false;
     private mediaBindInstance: Object = {};
+    /** @hidden */
+    public commandDelIndex: number = undefined;
 
     //Module Declarations
     /**
@@ -2906,6 +2908,10 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         let headerCells: Element[] = [].slice.call(this.getHeaderContent().querySelectorAll('.e-headercell:not(.e-stackedheadercell)'));
         let stdHdrCell: Element[] = [].slice.call(this.getHeaderContent().querySelectorAll('.e-stackedheadercell'));
         let cols: Column[] = this.getColumns();
+        if (this.enableColumnVirtualization && this.getFrozenColumns()) {
+            let cells: Element[] = (<{ getHeaderCells?: Function }>this.contentModule).getHeaderCells();
+            headerCells = cells.length ? cells : headerCells;
+        }
         for (let i: number = 0; i < headerCells.length; i++) {
             let cell: Element = headerCells[i];
             if (this.allowGrouping || this.allowReordering || this.allowSorting) {
@@ -2988,6 +2994,11 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
         }
         let columns: Column[] = vLen === 0 ? this.columnModel :
             this.columnModel.slice(inview[0], inview[vLen - 1] + 1);
+        if (this.contentModule && this.enableColumnVirtualization && this.getFrozenColumns() && inview.length
+            && inview[0] > 0) {
+            let frozenCols: Column[] = (<{ ensureFrozenCols?: Function }>this.contentModule).ensureFrozenCols(columns);
+            columns = frozenCols;
+        }
         return columns;
 
     }
@@ -5637,6 +5648,24 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
             this.getDataModule().setForeignKeyDataState({ isDataChanged: false });
             if(this.contentModule || this.headerModule){
             this.renderModule.render();
+            }
+        }
+    }
+
+    /**
+     * @hidden
+     */
+    public resetFilterDlgPosition(field: string) {
+        let header: Element = this.getColumnHeaderByField(field);
+        if (header) {
+            let target: Element = header.querySelector('.e-filtermenudiv');
+            let filterDlg: HTMLElement = this.element.querySelector('.e-filter-popup');
+            if (target && filterDlg) {
+                let gClient: ClientRect = this.element.getBoundingClientRect();
+                let fClient: ClientRect = target.getBoundingClientRect();
+                if (filterDlg) {
+                    filterDlg.style.left = (fClient.right - gClient.left).toString() + 'px';
+                }
             }
         }
     }

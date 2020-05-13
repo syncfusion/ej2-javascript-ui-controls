@@ -994,6 +994,17 @@ var ListView = /** @class */ (function (_super) {
                         this.header(this.headerTitle, false);
                     }
                     break;
+                case 'query':
+                    if (this.enableVirtualization) {
+                        this.virtualizationModule.reRenderUiVirtualization();
+                    }
+                    else {
+                        if (sf.base.isBlazor() && this.isServerRendered && !this.enableVirtualization) {
+                            this.itemReRender = true;
+                        }
+                        this.reRender();
+                    }
+                    break;
                 case 'showHeader':
                     this.header(this.headerTitle, false);
                     break;
@@ -1754,7 +1765,7 @@ var ListView = /** @class */ (function (_super) {
         var eventArgs = {};
         sf.base.merge(eventArgs, selectedItem);
         if (e) {
-            sf.base.merge(eventArgs, { isInteracted: true, event: e, index: Array.prototype.indexOf.call(this.curUL.children, li) });
+            sf.base.merge(eventArgs, { isInteracted: true, event: e, index: this.curUL && Array.prototype.indexOf.call(this.curUL.children, li) });
         }
         return eventArgs;
     };
@@ -2793,9 +2804,6 @@ var ListView = /** @class */ (function (_super) {
         sf.base.Property('')
     ], ListView.prototype, "width", void 0);
     __decorate([
-        sf.base.Property('')
-    ], ListView.prototype, "virtualCheckBox", void 0);
-    __decorate([
         sf.base.Property(null)
     ], ListView.prototype, "template", void 0);
     __decorate([
@@ -3522,7 +3530,8 @@ var Virtualization = /** @class */ (function () {
             // tslint:disable-next-line:no-any
             this.listViewInstance.renderCheckbox(args);
             // tslint:enable-next-line:no-any
-            if (!sf.base.isNullOrUndefined(this.listViewInstance.virtualCheckBox.outerHTML)) {
+            if ((!sf.base.isNullOrUndefined(this.listViewInstance.virtualCheckBox)) &&
+                (!sf.base.isNullOrUndefined(this.listViewInstance.virtualCheckBox.outerHTML))) {
                 var div = document.createElement('div');
                 div.innerHTML = this.listViewInstance.template || commonTemplate;
                 div.children[0].classList.add('e-checkbox');

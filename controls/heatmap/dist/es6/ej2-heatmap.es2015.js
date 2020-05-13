@@ -6789,6 +6789,12 @@ let HeatMap = class HeatMap extends Component {
         let width = stringToNumber(this.width, this.element.offsetWidth) || this.element.offsetWidth || 600;
         let height = stringToNumber(this.height, this.element.offsetHeight) || this.element.offsetHeight || 450;
         this.availableSize = new Size(width, height);
+        let align = document.getElementById(this.element.id).align;
+        if (align === 'center') {
+            let containerWidth = this.availableSize.width.toString();
+            this.element.style.width = containerWidth + 'px';
+            this.element.style.margin = '0 auto';
+        }
     }
     renderTitle() {
         if (this.titleSettings.text) {

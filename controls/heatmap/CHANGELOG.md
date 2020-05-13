@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.52 (2020-05-13)
+
+### HeatMap
+
+#### Bug Fixes
+
+- `#270398` - Heatmap tooltip alignment issue has been fixed.
+
 ## 18.1.45 (2020-04-21)
 
 ### HeatMap

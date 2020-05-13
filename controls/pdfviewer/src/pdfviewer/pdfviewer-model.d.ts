@@ -1,4 +1,4 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { FormFields } from './index';import { Print, CalibrationUnit } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs } from './index';import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs, PrintStartEventArgs, PrintEndEventArgs } from './index';import { TextSearchStartEventArgs, TextSearchCompleteEventArgs, TextSearchHighlightEventArgs } from './index';import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';import { PdfAnnotationBaseModel } from '../diagram/pdf-annotation-model';import { Drawing, ClipBoardObject } from '../diagram/drawing';import { Selector } from '../diagram/selector';import { SelectorModel } from '../diagram/selector-model';import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from '../diagram/dom-util';import { ThumbnailClickEventArgs } from './index';import { ValidateFormFieldsArgs } from './base';import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex } from '@syncfusion/ej2-base';import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';import { PdfViewerBase } from './index';import { Navigation } from './index';import { Magnification } from './index';import { Toolbar } from './index';import { ToolbarItem } from './index';import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem } from './base/types';import { Annotation } from './index';import { LinkAnnotation } from './index';import { ThumbnailView } from './index';import { BookmarkView } from './index';import { TextSelection } from './index';import { TextSearch } from './index';import { FormFields } from './index';import { Print, CalibrationUnit } from './index';import { UnloadEventArgs, LoadEventArgs, LoadFailedEventArgs, AjaxRequestFailureEventArgs, PageChangeEventArgs, PageClickEventArgs, ZoomChangeEventArgs, HyperlinkClickEventArgs, HyperlinkMouseOverArgs, ImportStartEventArgs, ImportSuccessEventArgs, ImportFailureEventArgs, ExportStartEventArgs, ExportSuccessEventArgs, ExportFailureEventArgs, AjaxRequestInitiateEventArgs } from './index';import { AnnotationAddEventArgs, AnnotationRemoveEventArgs, AnnotationPropertiesChangeEventArgs, AnnotationResizeEventArgs, AnnotationSelectEventArgs, AnnotationMoveEventArgs, AnnotationDoubleClickEventArgs, AnnotationMouseoverEventArgs, PageMouseoverEventArgs } from './index';import { TextSelectionStartEventArgs, TextSelectionEndEventArgs, DownloadStartEventArgs, DownloadEndEventArgs, ExtractTextCompletedEventArgs, PrintStartEventArgs, PrintEndEventArgs } from './index';import { TextSearchStartEventArgs, TextSearchCompleteEventArgs, TextSearchHighlightEventArgs } from './index';import { PdfAnnotationBase, ZOrderPageTable } from '../diagram/pdf-annotation';import { PdfAnnotationBaseModel } from '../diagram/pdf-annotation-model';import { Drawing, ClipBoardObject } from '../diagram/drawing';import { Selector } from '../diagram/selector';import { SelectorModel } from '../diagram/selector-model';import { PointModel, IElement, Rect } from '@syncfusion/ej2-drawings';import { renderAdornerLayer } from '../diagram/dom-util';import { ThumbnailClickEventArgs } from './index';import { ValidateFormFieldsArgs } from './base';import { AddSignatureEventArgs, RemoveSignatureEventArgs, MoveSignatureEventArgs, SignaturePropertiesChangeEventArgs, ResizeSignatureEventArgs, SignatureSelectEventArgs } from './base';
 import {IAjaxHeaders} from "./pdfviewer";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
@@ -1726,6 +1726,72 @@ export interface TileRenderingSettingsModel {
 }
 
 /**
+ * Interface for a class ScrollSettings
+ */
+export interface ScrollSettingsModel {
+
+    /**
+     * Increase or decrease the delay time.
+     */
+    delayPageRequestTimeOnScroll?: number;
+
+}
+
+/**
+ * Interface for a class FormFieldCollections
+ */
+export interface FormFieldCollectionsModel {
+
+    /**
+     * fieldName of the form fields.
+     */
+    fieldName?: string;
+
+    /**
+     * id of the form fields.
+     */
+    id?: string;
+
+    /**
+     * type of the form fields.
+     */
+    type?: string;
+
+    /**
+     * isReadOnly of the form fields.
+     */
+    isReadOnly?: boolean;
+
+}
+
+/**
+ * Interface for a class StampItemSettings
+ */
+export interface StampItemSettingsModel {
+
+    /**
+     * Enable or disables the custom stamp of PdfViewer.
+     */
+    enableCustomStamp?: boolean;
+
+    /**
+     * dynamic stamp item in the PdfViewer.
+     */
+    dynamicStamps?: DynamicStampItem[];
+
+    /**
+     * sign stamp item in the PdfViewer.
+     */
+    signStamps?: SignStampItem[];
+
+    /**
+     * standard business stamp item in the PdfViewer.
+     */
+    standardBusinessStamps?: StandardBusinessStampItem[];
+
+}
+
+/**
  * Interface for a class PdfViewer
  */
 export interface PdfViewerModel extends ComponentModel{
@@ -1860,6 +1926,12 @@ export interface PdfViewerModel extends ComponentModel{
     enableHandwrittenSignature?: boolean;
 
     /**
+     * restrict zoom request.
+     * @default false
+     */
+    restrictZoomRequest?: boolean;
+
+    /**
      * Specifies the open state of the hyperlink in the PDF document.
      * @default CurrentTab
      */
@@ -1876,6 +1948,12 @@ export interface PdfViewerModel extends ComponentModel{
      * @default []
      */
     disableContextMenuItems?: ContextMenuItem[];
+
+    /**
+     * Defines the settings of the PdfViewer toolbar.
+     */
+    // tslint:disable-next-line:max-line-length
+    formFieldCollections?: FormFieldCollectionsModel[];
 
     /**
      * Enable or disables the Navigation module of PdfViewer.
@@ -1936,6 +2014,12 @@ export interface PdfViewerModel extends ComponentModel{
      * @default false
      */
     enableFormFieldsValidation?: boolean;
+
+    /**
+     * Enable if the PDF document contains form fields.
+     * @default false
+     */
+    isFormFieldsDocument?: boolean;
 
     /**
      * Enable or disable the free text annotation in the Pdfviewer.
@@ -2186,6 +2270,17 @@ export interface PdfViewerModel extends ComponentModel{
      * Defines the tile rendering settings.
      */
     tileRenderingSettings?: TileRenderingSettingsModel;
+
+    /**
+     * Defines the settings of the PdfViewer toolbar.
+     */
+    // tslint:disable-next-line:max-line-length
+    stampItemSettings?: StampItemSettingsModel;
+
+    /**
+     * Defines the scroll settings.
+     */
+    scrollSettings?: ScrollSettingsModel;
 
     /**
      * Defines the collection of selected items, size and position of the selector

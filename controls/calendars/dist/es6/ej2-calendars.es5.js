@@ -4349,7 +4349,7 @@ var DatePicker = /** @__PURE__ @class */ (function (_super) {
         var culture = new Internationalization(this.locale);
         if (this.format) {
             if (typeof this.format === 'string') {
-                this.formatString = this.format;
+                this.formatString = isBlazor() ? this.format.replace(/tt/, 'a') : this.format;
             }
             else if (this.format.skeleton !== '' && !isNullOrUndefined(this.format.skeleton)) {
                 var skeletonString = this.format.skeleton;

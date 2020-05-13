@@ -1,7 +1,7 @@
 import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, Touch, compile, createElement, extend, getValue, isBlazor, isNullOrUndefined, merge, print, remove, resetBlazorTemplate, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { CanvasRenderer, PathOption, Rect, Size, SvgRenderer, TextOption, Tooltip, findDirection, getElement, measureText, removeElement, textElement } from '@syncfusion/ej2-svg-base';
 import { DataManager, DataUtil, Deferred, Query } from '@syncfusion/ej2-data';
-import { PdfBitmap, PdfDocument, PdfPageOrientation, SizeF } from '@syncfusion/ej2-pdf-export';
+import { PdfBitmap, PdfColor, PdfDocument, PdfPageOrientation, PdfPageTemplateElement, PdfSolidBrush, PdfStandardFont, SizeF } from '@syncfusion/ej2-pdf-export';
 import { Toolbar } from '@syncfusion/ej2-navigations';
 import { DateRangePicker } from '@syncfusion/ej2-calendars';
 import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
@@ -1415,6 +1415,8 @@ class Axis extends ChildProperty {
         this.multiLevelLabelHeight = 0;
         /** @private */
         this.isChart = true;
+        /** @private */
+        this.isIntervalInDecimal = true;
         /**
          * @private
          * Task: BLAZ-2044
@@ -1816,6 +1818,9 @@ __decorate$2([
 __decorate$2([
     Property(0)
 ], Axis.prototype, "zoomPosition", void 0);
+__decorate$2([
+    Property(true)
+], Axis.prototype, "enableScrollbarOnZooming", void 0);
 __decorate$2([
     Property(false)
 ], Axis.prototype, "opposedPosition", void 0);
@@ -3757,10 +3762,11 @@ class CartesianAxisLayoutPanel {
     measureDefinition(definition, chart, size, clipRect) {
         let ele = 16; // scrollbar element height is 16.
         for (let axis of definition.axes) {
-            axis.scrollBarHeight = chart.scrollBarModule && chart.zoomSettings.enableScrollbar && chart.zoomModule.isZoomed
-                && (axis.zoomFactor < 1 || axis.zoomPosition > 0) ? ele : 0;
+            axis.scrollBarHeight = chart.scrollBarModule && chart.zoomModule && chart.zoomSettings.enableScrollbar &&
+                axis.enableScrollbarOnZooming && chart.zoomModule.isZoomed && (axis.zoomFactor < 1 || axis.zoomPosition > 0) ? ele : 0;
             axis.scrollBarHeight = chart.scrollBarModule && (chart.zoomModule && chart.zoomSettings.enableScrollbar &&
-                chart.zoomModule.isZoomed && (axis.zoomFactor < 1 || axis.zoomPosition > 0) || axis.scrollbarSettings.enable) ? ele : 0;
+                axis.enableScrollbarOnZooming && chart.zoomModule.isZoomed && (axis.zoomFactor < 1 || axis.zoomPosition > 0)
+                || axis.scrollbarSettings.enable) ? ele : 0;
             axis.getModule(chart);
             axis.baseModule.calculateRangeAndInterval(size, axis);
             definition.computeSize(axis, clipRect, axis.scrollBarHeight);
@@ -4074,7 +4080,8 @@ class CartesianAxisLayoutPanel {
                     axisLineElement.appendChild(outsideElement);
                 }
             }
-            if (chart.scrollBarModule && (chart.zoomSettings.enableScrollbar || axis.scrollbarSettings.enable)) {
+            if (chart.scrollBarModule && ((chart.zoomSettings.enableScrollbar && axis.enableScrollbarOnZooming) ||
+                axis.scrollbarSettings.enable)) {
                 this.renderScrollbar(chart, axis);
             }
         }
@@ -4896,9 +4903,6 @@ class CartesianAxisLayoutPanel {
      * @param index
      */
     findParentNode(elementId, label, axis, index) {
-        if (axis.crossAt === null) {
-            return document.getElementById(elementId + 'AxisGroup' + index + 'Inside');
-        }
         if (document.getElementById(elementId + 'AxisGroup' + index + 'Inside').contains(document.getElementById(label.id))) {
             return document.getElementById(elementId + 'AxisGroup' + index + 'Inside');
         }
@@ -7228,7 +7232,7 @@ class BaseLegend {
     translatePage(pagingText, page, pageNumber) {
         let size = (this.clipPathHeight) * page;
         let translate = 'translate(0,-' + size + ')';
-        if (!this.isChartControl && !this.bulletChart && this.isVertical) {
+        if (!this.isChartControl && !this.isBulletChartControl && this.isVertical) {
             let pageLength = page * this.maxColumns;
             size = this.pageXCollections[page * this.maxColumns] - this.legendBounds.x;
             size = size < 0 ? 0 : size; // to avoid small pixel variation
@@ -7466,7 +7470,7 @@ class ExportUtils {
      * @param type
      * @param fileName
      */
-    export(type, fileName, orientation, controls, width, height, isVertical) {
+    export(type, fileName, orientation, controls, width, height, isVertical, header, footer) {
         let controlValue = this.getControlsValue(controls, isVertical);
         width = width ? width : controlValue.width;
         height = height ? height : controlValue.height;
@@ -7505,7 +7509,7 @@ class ExportUtils {
             }
             image = canvas.toDataURL();
             if (type === 'PDF') {
-                this.exportPdf(canvas, orientation, width, height, isDownload, fileName);
+                this.exportPdf(canvas, orientation, width, height, isDownload, fileName, header, footer);
             }
             else {
                 this.doexport(type, image, fileName);
@@ -7518,7 +7522,7 @@ class ExportUtils {
                 ctx.drawImage(image, 0, 0);
                 window.URL.revokeObjectURL(url);
                 if (type === 'PDF') {
-                    this.exportPdf(element, orientation, width, height, isDownload, fileName);
+                    this.exportPdf(element, orientation, width, height, isDownload, fileName, header, footer);
                 }
                 else {
                     if (window.navigator.msSaveOrOpenBlob) {
@@ -7657,7 +7661,8 @@ class ExportUtils {
         chart['preRender']();
         chart['render']();
     }
-    exportPdf(element, orientation, width, height, isDownload, fileName) {
+    // tslint:disable-next-line:max-line-length
+    exportPdf(element, orientation, width, height, isDownload, fileName, header, footer) {
         let document = new PdfDocument();
         let margin = document.pageSettings.margins;
         let pdfDefaultWidth = document.pageSettings.width;
@@ -7668,6 +7673,20 @@ class ExportUtils {
         document.pageSettings.orientation = orientation;
         exactWidth = (pdfDefaultWidth < width) ? (width + margin.left + margin.right) : pdfDefaultWidth;
         exactHeight = (pdfDefaultHeight < height) ? (height + margin.top + margin.bottom) : pdfDefaultHeight;
+        if (header !== undefined) {
+            let font = new PdfStandardFont(1, header.fontSize || 15);
+            let pdfHeader = new PdfPageTemplateElement(exactWidth, 40);
+            // tslint:disable-next-line:max-line-length
+            pdfHeader.graphics.drawString(header.content + '', font, null, new PdfSolidBrush(new PdfColor(0, 0, 0)), header.x, header.y, null);
+            document.template.top = pdfHeader;
+        }
+        if (footer !== undefined) {
+            let font = new PdfStandardFont(1, footer.fontSize || 15);
+            let pdfFooter = new PdfPageTemplateElement(exactWidth, 40);
+            // tslint:disable-next-line:max-line-length
+            pdfFooter.graphics.drawString(footer.content + '', font, null, new PdfSolidBrush(new PdfColor(0, 0, 0)), footer.x, footer.y, null);
+            document.template.bottom = pdfFooter;
+        }
         document.pageSettings.size = new SizeF(exactWidth, exactHeight);
         imageString = imageString.slice(imageString.indexOf(',') + 1);
         document.pages.add().graphics.drawImage(new PdfBitmap(imageString), 0, 0, width, height);
@@ -9094,9 +9113,9 @@ let Chart = class Chart extends Component {
      */
     setLocaleConstants() {
         this.defaultLocalConstants = {
-            ZoomIn: 'ZoomIn',
+            ZoomIn: 'Zoom in',
             Zoom: 'Zoom',
-            ZoomOut: 'ZoomOut',
+            ZoomOut: 'Zoom out',
             Pan: 'Pan',
             Reset: 'Reset',
             ResetZoom: 'Reset Zoom'
@@ -10009,7 +10028,7 @@ class NiceInterval extends Double {
                 skeleton = axis.isChart ? (axis.valueType === 'DateTime' ? 'y' : 'y') : 'y';
             }
             else {
-                skeleton = axis.isChart ? (axis.valueType === 'DateTime' ? 'y' : 'yMMM') : 'y';
+                skeleton = axis.isChart ? ((axis.valueType === 'DateTime' && axis.isIntervalInDecimal) ? 'y' : 'yMMM') : 'y';
             }
         }
         else if (intervalType === 'Quarter') {
@@ -10065,8 +10084,9 @@ class NiceInterval extends Double {
      * @param currentValue
      * @param previousValue
      */
-    getMonthFormat(currentValue, previousValue) {
-        return ((new Date(currentValue).getFullYear() === new Date(previousValue).getFullYear()) ? 'MMM' : 'y MMM');
+    getMonthFormat(axis, currentValue, previousValue) {
+        return ((new Date(currentValue).getFullYear() === new Date(previousValue).getFullYear()) ?
+            (axis.isIntervalInDecimal ? 'MMM' : 'MMM d') : 'y MMM');
     }
     /**
      * Get intervalType day label format for the axis
@@ -10076,7 +10096,8 @@ class NiceInterval extends Double {
      */
     getDayFormat(axis, currentValue, previousValue) {
         return (axis.valueType === 'DateTime' ?
-            ((new Date(currentValue).getMonth() !== new Date(previousValue).getMonth()) ? 'MMMd' : 'd') : 'yMd');
+            ((new Date(currentValue).getMonth() !== new Date(previousValue).getMonth()) ? 'MMMd' :
+                (axis.isIntervalInDecimal ? 'd' : 'Ehm')) : 'yMd');
     }
     /**
      * Find label format for axis
@@ -10088,7 +10109,7 @@ class NiceInterval extends Double {
     findCustomFormats(axis, currentValue, previousValue) {
         let labelFormat = axis.labelFormat ? axis.labelFormat : '';
         if (axis.isChart && !axis.skeleton && axis.actualIntervalType === 'Months' && !labelFormat) {
-            labelFormat = axis.valueType === 'DateTime' ? this.getMonthFormat(currentValue, previousValue) : 'yMMM';
+            labelFormat = axis.valueType === 'DateTime' ? this.getMonthFormat(axis, currentValue, previousValue) : 'yMMM';
         }
         return labelFormat;
     }
@@ -10345,34 +10366,45 @@ class DateTime extends NiceInterval {
     /** @private */
     increaseDateTimeInterval(axis, value, interval) {
         let result = new Date(value);
-        interval = Math.ceil(interval);
-        axis.visibleRange.interval = interval;
+        if (axis.interval) {
+            axis.isIntervalInDecimal = (interval % 1) === 0;
+            axis.visibleRange.interval = interval;
+        }
+        else {
+            interval = Math.ceil(interval);
+            axis.visibleRange.interval = interval;
+        }
         let intervalType = axis.actualIntervalType;
-        switch (intervalType) {
-            case 'Years':
-                result.setFullYear(result.getFullYear() + interval);
-                return result;
-            case 'Quarter':
-                result.setMonth(result.getMonth() + (3 * interval));
-                return result;
-            case 'Months':
-                result.setMonth(result.getMonth() + interval);
-                return result;
-            case 'Weeks':
-                result.setDate(result.getDate() + (interval * 7));
-                return result;
-            case 'Days':
-                result.setDate(result.getDate() + interval);
-                return result;
-            case 'Hours':
-                result.setHours(result.getHours() + interval);
-                return result;
-            case 'Minutes':
-                result.setMinutes(result.getMinutes() + interval);
-                return result;
-            case 'Seconds':
-                result.setSeconds(result.getSeconds() + interval);
-                return result;
+        if (axis.isIntervalInDecimal) {
+            switch (intervalType) {
+                case 'Years':
+                    result.setFullYear(result.getFullYear() + interval);
+                    return result;
+                case 'Quarter':
+                    result.setMonth(result.getMonth() + (3 * interval));
+                    return result;
+                case 'Months':
+                    result.setMonth(result.getMonth() + interval);
+                    return result;
+                case 'Weeks':
+                    result.setDate(result.getDate() + (interval * 7));
+                    return result;
+                case 'Days':
+                    result.setDate(result.getDate() + interval);
+                    return result;
+                case 'Hours':
+                    result.setHours(result.getHours() + interval);
+                    return result;
+                case 'Minutes':
+                    result.setMinutes(result.getMinutes() + interval);
+                    return result;
+                case 'Seconds':
+                    result.setSeconds(result.getSeconds() + interval);
+                    return result;
+            }
+        }
+        else {
+            result = this.getDecimalInterval(result, interval, intervalType);
         }
         return result;
     }
@@ -10405,6 +10437,49 @@ class DateTime extends NiceInterval {
                 return sResult;
         }
         return sResult;
+    }
+    getDecimalInterval(result, interval, intervalType) {
+        let roundValue = Math.floor(interval);
+        let decimalValue = interval - roundValue;
+        switch (intervalType) {
+            case 'Years':
+                let month = Math.round(12 * decimalValue);
+                result.setFullYear(result.getFullYear() + roundValue);
+                result.setMonth(result.getMonth() + month);
+                return result;
+            case 'Quarter':
+                result.setMonth(result.getMonth() + (3 * interval));
+                return result;
+            case 'Months':
+                let days = Math.round(30 * decimalValue);
+                result.setMonth(result.getMonth() + roundValue);
+                result.setDate(result.getDate() + days);
+                return result;
+            case 'Weeks':
+                result.setDate(result.getDate() + (interval * 7));
+                return result;
+            case 'Days':
+                let hour = Math.round(24 * decimalValue);
+                result.setDate(result.getDate() + roundValue);
+                result.setHours(result.getHours() + hour);
+                return result;
+            case 'Hours':
+                let min = Math.round(60 * decimalValue);
+                result.setHours(result.getHours() + roundValue);
+                result.setMinutes(result.getMinutes() + min);
+                return result;
+            case 'Minutes':
+                let sec = Math.round(60 * decimalValue);
+                result.setMinutes(result.getMinutes() + roundValue);
+                result.setSeconds(result.getSeconds() + sec);
+                return result;
+            case 'Seconds':
+                let milliSec = Math.round(1000 * decimalValue);
+                result.setSeconds(result.getSeconds() + roundValue);
+                result.setMilliseconds(result.getMilliseconds() + milliSec);
+                return result;
+        }
+        return result;
     }
     /**
      * Get module name
@@ -13438,8 +13513,10 @@ class StepLineSeries extends LineBase {
                 startPoint = series.emptyPointSettings.mode === 'Drop' ? startPoint : 'M';
             }
         }
-        point1 = getPoint(visiblePoints[visiblePoints.length - 1].xValue + lineLength, visiblePoints[visiblePoints.length - 1].yValue, xAxis, yAxis, isInverted);
-        direction = direction.concat(startPoint + ' ' + (point1.x) + ' ' + (point1.y) + ' ');
+        if (visiblePoints.length > 0) {
+            point1 = getPoint(visiblePoints[visiblePoints.length - 1].xValue + lineLength, visiblePoints[visiblePoints.length - 1].yValue, xAxis, yAxis, isInverted);
+            direction = direction.concat(startPoint + ' ' + (point1.x) + ' ' + (point1.y) + ' ');
+        }
         pathOptions = new PathOption(series.chart.element.id + '_Series_' + series.index, 'transparent', series.width, series.interior, series.opacity, series.dashArray, direction);
         this.appendLinePath(pathOptions, series, '');
         this.renderMarker(series);
@@ -17389,8 +17466,14 @@ class BaseTooltip extends ChartData {
     }
     highlightPoint(series, pointIndex, highlight) {
         let element = this.getElement(this.element.id + '_Series_' + series.index + '_Point_' + pointIndex);
-        if (element) {
+        let selectionModule = this.control.accumulationSelectionModule;
+        let isSelectedElement = selectionModule && selectionModule.selectedDataIndexes.length > 0 ? true : false;
+        if (element && (!isSelectedElement || isSelectedElement && element.getAttribute('class')
+            && element.getAttribute('class').indexOf('_ej2_chart_selection_series_') === -1)) {
             element.setAttribute('opacity', (highlight ? series.opacity / 2 : series.opacity).toString());
+        }
+        else {
+            element.setAttribute('opacity', series.opacity.toString());
         }
     }
     highlightPoints() {
@@ -24747,7 +24830,7 @@ class Export {
      * @param type
      * @param fileName
      */
-    export(type, fileName, orientation, controls, width, height, isVertical) {
+    export(type, fileName, orientation, controls, width, height, isVertical, header, footer) {
         let exportChart = new ExportUtils(this.chart);
         controls = controls ? controls : [this.chart];
         let argsData = {
@@ -24755,7 +24838,7 @@ class Export {
         };
         this.chart.trigger(beforeExport, argsData);
         if (!argsData.cancel) {
-            exportChart.export(type, fileName, orientation, controls, width = argsData.width, height = argsData.height, isVertical);
+            exportChart.export(type, fileName, orientation, controls, width = argsData.width, height = argsData.height, isVertical, header, footer);
         }
     }
     /**
@@ -25857,7 +25940,7 @@ class PieSeries extends PieBase {
         let target = event.target;
         let id = indexFinder(target.id, true);
         let accumulationId = event.target.id.substring(0, (event.target.id.indexOf('Series') - 1));
-        let borderElement = document.getElementById(accumulationId + 'PointHover_Border');
+        let borderElement = document.getElementById(this.accumulation.element.id + 'PointHover_Border');
         let createBorderEle;
         let seriesIndex = id.series;
         let pointIndex = id.point;
@@ -28812,6 +28895,7 @@ class AccumulationSelection extends BaseSelection {
      * To apply selection style for elements.
      */
     applyStyles(elements, index) {
+        let accumulationTooltip = this.control.accumulationTooltipModule;
         for (let element of elements) {
             let legendShape;
             if (element) {
@@ -28822,6 +28906,10 @@ class AccumulationSelection extends BaseSelection {
                 }
                 this.removeSvgClass(element.parentNode, this.unselected);
                 this.removeSvgClass(element, this.unselected);
+                let opacity = accumulationTooltip && (accumulationTooltip.previousPoints.length > 0 &&
+                    accumulationTooltip.previousPoints[0].point.index !== index.point) ?
+                    accumulationTooltip.svgTooltip.opacity : this.series[index.series].opacity;
+                element.setAttribute('opacity', opacity.toString());
                 this.addSvgClass(element, this.getSelectionClass(element.id));
             }
         }
@@ -28836,6 +28924,7 @@ class AccumulationSelection extends BaseSelection {
      * To remove selection style for elements.
      */
     removeStyles(elements, index) {
+        let accumulationTooltip = this.control.accumulationTooltipModule;
         let legendShape;
         for (let element of elements) {
             if (element) {
@@ -28843,6 +28932,9 @@ class AccumulationSelection extends BaseSelection {
                     legendShape = document.getElementById(this.control.element.id + '_chart_legend_shape_' + index.point);
                     this.removeSvgClass(legendShape, this.getSelectionClass(legendShape.id));
                 }
+                let opacity = accumulationTooltip && (accumulationTooltip.previousPoints[0].point.index === index.point) ?
+                    accumulationTooltip.svgTooltip.opacity : this.series[index.series].opacity;
+                element.setAttribute('opacity', opacity.toString());
                 this.removeSvgClass(element, this.getSelectionClass(element.id));
             }
         }
@@ -30984,6 +31076,197 @@ RangeNavigator = __decorate$10([
 ], RangeNavigator);
 
 /**
+ * `Tooltip` module is used to render the tooltip for chart series.
+ */
+class RangeTooltip {
+    /**
+     * Constructor for tooltip module.
+     * @private.
+     */
+    constructor(range) {
+        this.control = range;
+        this.elementId = range.element.id;
+    }
+    /**
+     * Left tooltip method called here
+     * @param rangeSlider
+     */
+    renderLeftTooltip(rangeSlider) {
+        this.fadeOutTooltip();
+        let content = this.getTooltipContent(rangeSlider.currentStart);
+        let contentWidth = this.getContentSize(content);
+        let rect = this.control.enableRtl ? rangeSlider.rightRect : rangeSlider.leftRect;
+        if (contentWidth > rect.width) {
+            rect = rangeSlider.midRect;
+        }
+        this.leftTooltip = this.renderTooltip(rect, this.createElement('_leftTooltip'), rangeSlider.startX, content);
+    }
+    /**
+     * get the content size
+     * @param value
+     */
+    getContentSize(value) {
+        let width;
+        let font = this.control.tooltip.textStyle;
+        if (this.control.tooltip.template) {
+            width = createTemplate(createElement('div', {
+                id: 'measureElement',
+                styles: 'position: absolute;'
+            }), 0, this.control.tooltip.template, this.control).getBoundingClientRect().width;
+        }
+        else {
+            // 20 for tooltip padding
+            width = measureText(value[0], font).width + 20;
+        }
+        return width;
+    }
+    /**
+     * Right tooltip method called here
+     * @param rangeSlider
+     */
+    renderRightTooltip(rangeSlider) {
+        this.fadeOutTooltip();
+        let content = this.getTooltipContent(rangeSlider.currentEnd);
+        let contentWidth = this.getContentSize(content);
+        let rect = this.control.enableRtl ? rangeSlider.leftRect : rangeSlider.rightRect;
+        if (contentWidth > rect.width) {
+            rect = rangeSlider.midRect;
+            rect.x = !this.control.series.length ? rect.x : 0;
+        }
+        this.rightTooltip = this.renderTooltip(rect, this.createElement('_rightTooltip'), rangeSlider.endX, content);
+    }
+    /**
+     * Tooltip element creation
+     * @param id
+     */
+    createElement(id) {
+        if (getElement$1(this.elementId + id)) {
+            return getElement$1(this.elementId + id);
+        }
+        else {
+            let element = document.createElement('div');
+            element.id = this.elementId + id;
+            element.className = 'ejSVGTooltip';
+            element.setAttribute('style', 'pointer-events:none; position:absolute;z-index: 1');
+            if (!this.control.stockChart) {
+                getElement$1(this.elementId + '_Secondary_Element').appendChild(element);
+            }
+            else {
+                let stockChart = this.control.stockChart;
+                getElement$1(stockChart.element.id + '_Secondary_Element').appendChild(element);
+                element.style.transform = 'translateY(' + (((stockChart.availableSize.height - stockChart.toolbarHeight - 80) +
+                    stockChart.toolbarHeight) + stockChart.titleSize.height) + 'px)';
+            }
+            return element;
+        }
+    }
+    /**
+     * Tooltip render called here
+     * @param bounds
+     * @param parent
+     * @param pointX
+     * @param value
+     */
+    renderTooltip(bounds, parent, pointX, content) {
+        let control = this.control;
+        let tooltip = control.tooltip;
+        let argsData = {
+            cancel: false, name: 'tooltipRender', text: content,
+            textStyle: tooltip.textStyle
+        };
+        this.control.trigger('tooltipRender', argsData);
+        let left = control.svgObject.getBoundingClientRect().left -
+            control.element.getBoundingClientRect().left;
+        if (!argsData.cancel) {
+            return new Tooltip({
+                location: { x: pointX, y: control.rangeSlider.sliderY },
+                content: argsData.text, marginX: 2,
+                enableShadow: false,
+                marginY: 2, arrowPadding: 8, rx: 0, ry: 0,
+                inverted: control.series.length > 0,
+                areaBounds: bounds, fill: tooltip.fill,
+                theme: this.control.theme,
+                //enableShadow: false,
+                clipBounds: { x: left },
+                border: tooltip.border, opacity: tooltip.opacity,
+                template: tooltip.template,
+                textStyle: argsData.textStyle,
+                availableSize: control.availableSize,
+                data: {
+                    'start': this.getTooltipContent(this.control.startValue)[0],
+                    'end': this.getTooltipContent(this.control.endValue)[0],
+                    'value': content[0]
+                }
+            }, parent);
+        }
+        else {
+            return null;
+        }
+    }
+    /**
+     * Tooltip content processed here
+     * @param value
+     */
+    getTooltipContent(value) {
+        let control = this.control;
+        let tooltip = control.tooltip;
+        let xAxis = control.chartSeries.xAxis;
+        let text;
+        let format = tooltip.format || xAxis.labelFormat;
+        let isCustom = format.match('{value}') !== null;
+        let valueType = xAxis.valueType;
+        if (valueType === 'DateTime') {
+            text = (control.intl.getDateFormat({
+                format: format || 'MM/dd/yyyy',
+                type: firstToLowerCase(control.skeletonType),
+                skeleton: control.dateTimeModule.getSkeleton(xAxis, null, null, control.isBlazor)
+            }))(new Date(value));
+        }
+        else {
+            xAxis.format = control.intl.getNumberFormat({
+                format: isCustom ? '' : format,
+                useGrouping: control.useGroupingSeparator
+            });
+            text = control.doubleModule.formatValue(xAxis, isCustom, format, valueType === 'Logarithmic' ? Math.pow(xAxis.logBase, value) : value);
+        }
+        return [text];
+    }
+    /**
+     * Fadeout animation performed here
+     */
+    fadeOutTooltip() {
+        let tooltip = this.control.tooltip;
+        if (tooltip.displayMode === 'OnDemand') {
+            stopTimer(this.toolTipInterval);
+            if (this.rightTooltip) {
+                this.toolTipInterval = setTimeout(() => {
+                    this.leftTooltip.fadeOut();
+                    this.rightTooltip.fadeOut();
+                }, 1000);
+            }
+        }
+    }
+    /**
+     * Get module name.
+     */
+    getModuleName() {
+        return 'RangeTooltip';
+    }
+    /**
+     * To destroy the tooltip.
+     * @return {void}
+     * @private
+     */
+    destroy(chart) {
+        // Destroy method called here
+    }
+}
+
+/**
+ * Range Navigator component export methods
+ */
+
+/**
  * Period selector class
  */
 class PeriodSelector {
@@ -31321,197 +31604,6 @@ class PeriodSelector {
          */
     }
 }
-
-/**
- * `Tooltip` module is used to render the tooltip for chart series.
- */
-class RangeTooltip {
-    /**
-     * Constructor for tooltip module.
-     * @private.
-     */
-    constructor(range) {
-        this.control = range;
-        this.elementId = range.element.id;
-    }
-    /**
-     * Left tooltip method called here
-     * @param rangeSlider
-     */
-    renderLeftTooltip(rangeSlider) {
-        this.fadeOutTooltip();
-        let content = this.getTooltipContent(rangeSlider.currentStart);
-        let contentWidth = this.getContentSize(content);
-        let rect = this.control.enableRtl ? rangeSlider.rightRect : rangeSlider.leftRect;
-        if (contentWidth > rect.width) {
-            rect = rangeSlider.midRect;
-        }
-        this.leftTooltip = this.renderTooltip(rect, this.createElement('_leftTooltip'), rangeSlider.startX, content);
-    }
-    /**
-     * get the content size
-     * @param value
-     */
-    getContentSize(value) {
-        let width;
-        let font = this.control.tooltip.textStyle;
-        if (this.control.tooltip.template) {
-            width = createTemplate(createElement('div', {
-                id: 'measureElement',
-                styles: 'position: absolute;'
-            }), 0, this.control.tooltip.template, this.control).getBoundingClientRect().width;
-        }
-        else {
-            // 20 for tooltip padding
-            width = measureText(value[0], font).width + 20;
-        }
-        return width;
-    }
-    /**
-     * Right tooltip method called here
-     * @param rangeSlider
-     */
-    renderRightTooltip(rangeSlider) {
-        this.fadeOutTooltip();
-        let content = this.getTooltipContent(rangeSlider.currentEnd);
-        let contentWidth = this.getContentSize(content);
-        let rect = this.control.enableRtl ? rangeSlider.leftRect : rangeSlider.rightRect;
-        if (contentWidth > rect.width) {
-            rect = rangeSlider.midRect;
-            rect.x = !this.control.series.length ? rect.x : 0;
-        }
-        this.rightTooltip = this.renderTooltip(rect, this.createElement('_rightTooltip'), rangeSlider.endX, content);
-    }
-    /**
-     * Tooltip element creation
-     * @param id
-     */
-    createElement(id) {
-        if (getElement$1(this.elementId + id)) {
-            return getElement$1(this.elementId + id);
-        }
-        else {
-            let element = document.createElement('div');
-            element.id = this.elementId + id;
-            element.className = 'ejSVGTooltip';
-            element.setAttribute('style', 'pointer-events:none; position:absolute;z-index: 1');
-            if (!this.control.stockChart) {
-                getElement$1(this.elementId + '_Secondary_Element').appendChild(element);
-            }
-            else {
-                let stockChart = this.control.stockChart;
-                getElement$1(stockChart.element.id + '_Secondary_Element').appendChild(element);
-                element.style.transform = 'translateY(' + (((stockChart.availableSize.height - stockChart.toolbarHeight - 80) +
-                    stockChart.toolbarHeight) + stockChart.titleSize.height) + 'px)';
-            }
-            return element;
-        }
-    }
-    /**
-     * Tooltip render called here
-     * @param bounds
-     * @param parent
-     * @param pointX
-     * @param value
-     */
-    renderTooltip(bounds, parent, pointX, content) {
-        let control = this.control;
-        let tooltip = control.tooltip;
-        let argsData = {
-            cancel: false, name: 'tooltipRender', text: content,
-            textStyle: tooltip.textStyle
-        };
-        this.control.trigger('tooltipRender', argsData);
-        let left = control.svgObject.getBoundingClientRect().left -
-            control.element.getBoundingClientRect().left;
-        if (!argsData.cancel) {
-            return new Tooltip({
-                location: { x: pointX, y: control.rangeSlider.sliderY },
-                content: argsData.text, marginX: 2,
-                enableShadow: false,
-                marginY: 2, arrowPadding: 8, rx: 0, ry: 0,
-                inverted: control.series.length > 0,
-                areaBounds: bounds, fill: tooltip.fill,
-                theme: this.control.theme,
-                //enableShadow: false,
-                clipBounds: { x: left },
-                border: tooltip.border, opacity: tooltip.opacity,
-                template: tooltip.template,
-                textStyle: argsData.textStyle,
-                availableSize: control.availableSize,
-                data: {
-                    'start': this.getTooltipContent(this.control.startValue)[0],
-                    'end': this.getTooltipContent(this.control.endValue)[0],
-                    'value': content[0]
-                }
-            }, parent);
-        }
-        else {
-            return null;
-        }
-    }
-    /**
-     * Tooltip content processed here
-     * @param value
-     */
-    getTooltipContent(value) {
-        let control = this.control;
-        let tooltip = control.tooltip;
-        let xAxis = control.chartSeries.xAxis;
-        let text;
-        let format = tooltip.format || xAxis.labelFormat;
-        let isCustom = format.match('{value}') !== null;
-        let valueType = xAxis.valueType;
-        if (valueType === 'DateTime') {
-            text = (control.intl.getDateFormat({
-                format: format || 'MM/dd/yyyy',
-                type: firstToLowerCase(control.skeletonType),
-                skeleton: control.dateTimeModule.getSkeleton(xAxis, null, null, control.isBlazor)
-            }))(new Date(value));
-        }
-        else {
-            xAxis.format = control.intl.getNumberFormat({
-                format: isCustom ? '' : format,
-                useGrouping: control.useGroupingSeparator
-            });
-            text = control.doubleModule.formatValue(xAxis, isCustom, format, valueType === 'Logarithmic' ? Math.pow(xAxis.logBase, value) : value);
-        }
-        return [text];
-    }
-    /**
-     * Fadeout animation performed here
-     */
-    fadeOutTooltip() {
-        let tooltip = this.control.tooltip;
-        if (tooltip.displayMode === 'OnDemand') {
-            stopTimer(this.toolTipInterval);
-            if (this.rightTooltip) {
-                this.toolTipInterval = setTimeout(() => {
-                    this.leftTooltip.fadeOut();
-                    this.rightTooltip.fadeOut();
-                }, 1000);
-            }
-        }
-    }
-    /**
-     * Get module name.
-     */
-    getModuleName() {
-        return 'RangeTooltip';
-    }
-    /**
-     * To destroy the tooltip.
-     * @return {void}
-     * @private
-     */
-    destroy(chart) {
-        // Destroy method called here
-    }
-}
-
-/**
- * Range Navigator component export methods
- */
 
 /**
  * Cartesian chart renderer for financial chart
@@ -41612,7 +41704,7 @@ class SparklineRenderer {
             option.id = textId + i;
             option.x = temp.location.x + dataLabel.offset.x;
             option.y = ((spark.type === 'Pie') ? temp.location.y : ((temp.markerPosition > this.axisHeight) ? (temp.location.y +
-                (size.height / 2) + space + padding) : (temp.location.y - (size.height / 2) - space - padding))) + dataLabel.offset.y;
+                (size.height / 2) + space + 2 + padding) : (temp.location.y - (size.height / 2) - space - padding))) + dataLabel.offset.y;
             option.text = (dataLabel.format !== '') ? this.formatter(dataLabel.format, this.sparkline.dataSource[i]) :
                 temp.yVal.toString();
             let labelArgs = {
@@ -42800,5 +42892,5 @@ class SparklineTooltip {
  * Chart components exported.
  */
 
-export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, Offset, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, getVisiblePoints, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, degreeToRadian, getRotatedRectangleCoordinates, isRotatedRectIntersect, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement$1 as getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement$1 as textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, getUnicodeText, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, ImageOption, CircleOption, PolygonOption, ChartLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, Highlight, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointDoubleClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, selectionComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, regSub, regSup, beforeExport, afterExport, bulletChartMouseClick, onZooming, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, Double, RangeTooltip, BulletChart, Range, MajorTickLinesSettings, MinorTickLinesSettings, BulletLabelStyle, BulletTooltipSettings, BulletDataLabel, BulletChartLegendSettings, BulletChartTheme, getBulletThemeColor, BulletTooltip, BulletChartLegend, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
+export { CrosshairSettings, ZoomSettings, Chart, Row, Column, MajorGridLines, MinorGridLines, AxisLine, MajorTickLines, MinorTickLines, CrosshairTooltip, Axis, VisibleLabels, Double, DateTime, Category, Logarithmic, DateTimeCategory, NiceInterval, StripLine, Connector, Font, Border, Offset, ChartArea, Margin, Animation$1 as Animation, Indexes, CornerRadius, Index, EmptyPointSettings, DragSettings, TooltipSettings, Periods, PeriodSelectorSettings, LineSeries, ColumnSeries, AreaSeries, BarSeries, PolarSeries, RadarSeries, StackingBarSeries, CandleSeries, StackingColumnSeries, StepLineSeries, StepAreaSeries, StackingAreaSeries, StackingLineSeries, ScatterSeries, RangeColumnSeries, WaterfallSeries, HiloSeries, HiloOpenCloseSeries, RangeAreaSeries, BubbleSeries, SplineSeries, HistogramSeries, SplineAreaSeries, TechnicalIndicator, SmaIndicator, EmaIndicator, TmaIndicator, AccumulationDistributionIndicator, AtrIndicator, MomentumIndicator, RsiIndicator, StochasticIndicator, BollingerBands, MacdIndicator, Trendlines, sort, isBreakLabel, getVisiblePoints, rotateTextSize, removeElement$1 as removeElement, logBase, showTooltip, inside, withIn, logWithIn, withInRange, sum, subArraySum, subtractThickness, subtractRect, degreeToLocation, degreeToRadian, getRotatedRectangleCoordinates, isRotatedRectIntersect, getAngle, subArray, valueToCoefficient, TransformToVisible, indexFinder, CoefficientToVector, valueToPolarCoefficient, Mean, PolarArc, createTooltip, createZoomingLabels, withInBounds, getValueXByPoint, getValueYByPoint, findClipRect, firstToLowerCase, getTransform, getMinPointsDelta, getAnimationFunction, linear, markerAnimate, animateRectElement, pathAnimation, appendClipElement, triggerLabelRender, setRange, getActualDesiredIntervalsCount, templateAnimate, drawSymbol, calculateShapes, getRectLocation, minMax, getElement$1 as getElement, getTemplateFunction, createTemplate, getFontStyle, measureElementRect, findlElement, getPoint, appendElement, appendChildElement, getDraggedRectLocation, checkBounds, getLabelText, stopTimer, isCollide, isOverlap, containsRect, calculateRect, convertToHexCode, componentToHex, convertHexToColor, colorNameToHex, getSaturationColor, getMedian, calculateLegendShapes, textTrim, lineBreakLabelTrim, stringToNumber, redrawElement, animateRedrawElement, textElement$1 as textElement, calculateSize, createSvg, getTitle, titlePositionX, textWrap, getUnicodeText, blazorTemplatesReset, CustomizeOption, StackValues, RectOption, ImageOption, CircleOption, PolygonOption, ChartLocation, Thickness, ColorValue, PointData, AccPointData, ControlPoints, Crosshair, Tooltip$1 as Tooltip, Zoom, Selection, DataEditing, Highlight, DataLabel, ErrorBar, DataLabelSettings, MarkerSettings, Points, Trendline, ErrorBarCapSettings, ChartSegment, ErrorBarSettings, SeriesBase, Series, Legend, ChartAnnotation, ChartAnnotationSettings, LabelBorder, MultiLevelCategories, StripLineSettings, MultiLevelLabels, ScrollbarSettingsRange, ScrollbarSettings, BoxAndWhiskerSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiColoredSeries, MultiLevelLabel, ScrollBar, ParetoSeries, Export, AccumulationChart, AccumulationAnnotationSettings, AccumulationDataLabelSettings, PieCenter, AccPoints, AccumulationSeries, getSeriesFromIndex, pointByIndex, PieSeries, FunnelSeries, PyramidSeries, AccumulationLegend, AccumulationDataLabel, AccumulationTooltip, AccumulationSelection, AccumulationAnnotation, StockChart, StockChartFont, StockChartBorder, StockChartArea, StockMargin, StockChartStripLineSettings, StockEmptyPointSettings, StockChartConnector, StockSeries, StockChartIndicator, StockChartAxis, StockChartRow, StockChartTrendline, StockChartAnnotationSettings, StockChartIndexes, StockEventsSettings, loaded, legendClick, load, animationComplete, legendRender, textRender, pointRender, seriesRender, axisLabelRender, axisRangeCalculated, axisMultiLabelRender, tooltipRender, chartMouseMove, chartMouseClick, pointClick, pointDoubleClick, pointMove, chartMouseLeave, chartMouseDown, chartMouseUp, zoomComplete, dragComplete, selectionComplete, resized, beforePrint, annotationRender, scrollStart, scrollEnd, scrollChanged, stockEventRender, multiLevelLabelClick, dragStart, drag, dragEnd, regSub, regSup, beforeExport, afterExport, bulletChartMouseClick, onZooming, Theme, getSeriesColor, getThemeColor, getScrollbarThemeColor, PeriodSelector, RangeNavigator, rangeValueToCoefficient, getXLocation, getRangeValueXByPoint, getExactData, getNearestValue, DataPoint, RangeNavigatorTheme, getRangeThemeColor, RangeNavigatorAxis, RangeSeries, RangeSlider, RangeNavigatorSeries, ThumbSettings, StyleSettings, RangeTooltipSettings, RangeTooltip, BulletChart, Range, MajorTickLinesSettings, MinorTickLinesSettings, BulletLabelStyle, BulletTooltipSettings, BulletDataLabel, BulletChartLegendSettings, BulletChartTheme, getBulletThemeColor, BulletTooltip, BulletChartLegend, Smithchart, SmithchartMajorGridLines, SmithchartMinorGridLines, SmithchartAxisLine, SmithchartAxis, LegendTitle, LegendLocation, LegendItemStyleBorder, LegendItemStyle, LegendBorder, SmithchartLegendSettings, SeriesTooltipBorder, SeriesTooltip, SeriesMarkerBorder, SeriesMarkerDataLabelBorder, SeriesMarkerDataLabelConnectorLine, SeriesMarkerDataLabel, SeriesMarker, SmithchartSeries, TooltipRender, Subtitle, Title, SmithchartFont, SmithchartMargin, SmithchartBorder, SmithchartRect, LabelCollection, LegendSeries, LabelRegion, HorizontalLabelCollection, RadialLabelCollections, LineSegment, PointRegion, Point, ClosestPoint, MarkerOptions, SmithchartLabelPosition, Direction, DataLabelTextOptions, LabelOption, SmithchartSize, GridArcPoints, smithchartBeforePrint, SmithchartLegend, Sparkline, SparklineTooltip, SparklineBorder, SparklineFont, TrackLineSettings, SparklineTooltipSettings, ContainerArea, LineSettings, RangeBandSettings, AxisSettings, Padding, SparklineMarkerSettings, LabelOffset, SparklineDataLabelSettings };
 //# sourceMappingURL=ej2-charts.es2015.js.map

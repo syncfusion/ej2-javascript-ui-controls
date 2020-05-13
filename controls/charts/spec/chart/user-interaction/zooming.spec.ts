@@ -543,7 +543,8 @@ describe('Chart Control', () => {
             trigger.mouseoverEvent(targetElement);
             firstElement = document.getElementById('EJ2_Chart_ZoomTip');
             expect(firstElement != null).toBe(true);
-            expect(firstElement.textContent.indexOf('ZoomIn') == 1).toBe(true);
+            expect(firstElement.textContent.indexOf('Zoom') == 1).toBe(true);
+            expect(firstElement.textContent.indexOf('in') == 6).toBe(true);
             trigger.mouseoutEvent(targetElement);
             firstElement = document.getElementById('EJ2_Chart_ZoomTip');
             expect(firstElement == null).toBe(true);
@@ -558,7 +559,8 @@ describe('Chart Control', () => {
             trigger.mouseoverEvent(targetElement);
             firstElement = document.getElementById('EJ2_Chart_ZoomTip');
             expect(firstElement != null).toBe(true);
-            expect(firstElement.textContent.indexOf('ZoomOut') == 1).toBe(true);
+            expect(firstElement.textContent.indexOf('Zoom') == 1).toBe(true);
+            expect(firstElement.textContent.indexOf('out') == 6).toBe(true);
             trigger.mouseoutEvent(targetElement);
             firstElement = document.getElementById('EJ2_Chart_ZoomTip');
             expect(firstElement == null).toBe(true);

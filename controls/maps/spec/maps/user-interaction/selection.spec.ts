@@ -167,13 +167,13 @@ describe('Selection Settings', () => {
             done();
         });
         it('Checking with multiselection between shape and legend', () => {
-            worldmap.loaded = (args: ILoadedEventArgs) => {
+          worldmap.loaded = (args: ILoadedEventArgs) => {
                 spec = getElement('container_Legend_Shape_Index_0');
                 trigger.clickEvent(spec);
                 expect(spec.getAttribute('class')).toBe('ShapeselectionMapStyle');
                 spec = getElement('container_LayerIndex_0_shapeIndex_82_dataIndex_9');
-                expect(spec.getAttribute('class')).toBe('ShapeselectionMapStyle');
                 trigger.clickEvent(spec);
+                expect(spec.getAttribute('class')).toBe('ShapeselectionMapStyle');                
             };
             worldmap.layers[0].selectionSettings.enableMultiSelect = true;
             worldmap.refresh();
@@ -184,8 +184,8 @@ describe('Selection Settings', () => {
                 trigger.clickEvent(spec);
                 expect(spec.getAttribute('class')).toBe('ShapeselectionMapStyle');
                 spec = getElement('container_Legend_Shape_Index_0');
-                expect(spec.getAttribute('class')).toBe('ShapeselectionMapStyle');
                 trigger.clickEvent(spec);
+                expect(spec.getAttribute('class')).toBe('ShapeselectionMapStyle');
                 trigger.clickEvent(getElement('container_Legend_Shape_Index_1'));
                 trigger.clickEvent(getElement('container_LayerIndex_0_shapeIndex_134_dataIndex_2'));
                 trigger.clickEvent(getElement('container_LayerIndex_0_shapeIndex_29_dataIndex_0'));

@@ -15747,7 +15747,6 @@ class Selection {
                 this.getColIdxFromClientX(getClientX(this.touchEvt)) === colIdx)) {
             this.mouseDownHandler(e);
         }
-        this.parent.trigger('select', { range: this.parent.getActiveSheet().selectedRange });
         document.removeEventListener(getMoveEvent().split(' ')[0], this.mouseMoveEvt);
         if (!Browser.isPointer) {
             document.removeEventListener(getMoveEvent().split(' ')[1], this.mouseMoveEvt);
@@ -15846,6 +15845,7 @@ class Selection {
             e = { type: 'mousedown' };
         }
         this.parent.notify(selectionComplete, e);
+        this.parent.trigger('select', { range: this.parent.getActiveSheet().selectedRange });
     }
     UpdateRowColSelected(indexes) {
         let sheet = this.parent.getActiveSheet();

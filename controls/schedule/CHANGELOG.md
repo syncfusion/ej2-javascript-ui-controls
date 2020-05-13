@@ -2,6 +2,21 @@
 
 ## [Unreleased]
 
+## 18.1.52 (2020-05-13)
+
+### Schedule
+
+#### New Features
+
+- Now resource grouping support has been added in timeline year view.
+
+#### Bug Fixes
+
+- `#272563` - An issue with drag and drop of all day events doesn't work properly when we disable `timeScale` property has been fixed.
+- `#271586` - An issue with event is not created in Sunday and Saturday of the `WorkWeek` view has been fixed.
+- `#153364` - An issue with appointment alignment while rotation has been fixed.
+- `#273474` - An issue with `editFollowingEvent` has been fixed.
+
 ## 18.1.48 (2020-05-05)
 
 ### Schedule
@@ -19,7 +34,6 @@
 
 - `#F11648` - An issue with previous value maintaining in select event has been fixed.
 - `#F12531` - An issue with `allowMultiRowSelection` is not working properly in timeline views has been fixed.
-- `#F12345` - An issue with more indicator height added to timeline height even when `rowAutoHeight` enabled has been fixed.
 - `#268604` - An issue with improper time slots rendering when daylight saving time occurring date has been fixed.
 - `#271829` - An issue with selected class is not applied properly in `MonthAgenda` view has been fixed.
 - `#273646` - An issue with `aria-readonly` attribute has been fixed.

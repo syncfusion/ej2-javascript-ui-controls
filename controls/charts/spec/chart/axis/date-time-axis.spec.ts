@@ -487,6 +487,71 @@ describe('Chart Control', () => {
             chart.refresh();
         });
     });
+    describe('Datetime Axis with double value interval', () => {
+        let chart: Chart;
+        let ele: HTMLElement;
+        let svg: HTMLElement;
+        let loaded: EmitType<ILoadedEventArgs>;
+        let loaded1: EmitType<ILoadedEventArgs>;
+        beforeAll((): void => {
+            ele = createElement('div', { id: 'chartContainer' });
+            document.body.appendChild(ele);
+            chart = new Chart(
+                {
+                    primaryXAxis: {
+                        title: 'Sales Across Years', intervalType: 'Years', valueType: 'DateTime',
+                        minimum: new Date(2000, 6, 1), maximum: new Date(2010, 6, 1)
+                    },
+                    primaryYAxis: { title: 'Sales Amount in millions(USD)' },
+                    series: [
+                        {
+                            name: 'series1', type: 'Line', fill: '#ACE5FF', width: 2, animation: { enable: false },
+                            dataSource: [{ x: new Date(2000, 6, 11), y: 10 }, 
+                                { x: new Date(2002, 3, 7), y: 30 },
+                                { x: new Date(2004, 3, 6), y: 15 }, 
+                                { x: new Date(2006, 3, 30), y: 65 },
+                                { x: new Date(2008, 3, 8), y: 90 }, 
+                                { x: new Date(2010, 3, 8), y: 85 }], xName: 'x', yName: 'y'
+                        },
+                    ],
+                    height: '600', width: '900', legendSettings: { visible: false }
+                });
+        });
+        afterAll((): void => {
+            chart.destroy();
+            ele.remove();
+        });
+
+        it('Checking interval in years', (done: Function) => {
+            loaded = (args: Object): void => {
+                svg = document.getElementById('chartContainerAxisLabels0');
+                expect(svg.childNodes.length == 8).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.interval = 1.4;
+            chart.appendTo('#chartContainer');
+        });
+        it('Checking interval in months', (done: Function) => {
+            loaded = (args: Object): void => {
+                svg = document.getElementById('chartContainerAxisLabels0');
+                expect(svg.childNodes.length == 23).toBe(true);
+                done();
+            };
+            chart.loaded = loaded;
+            chart.primaryXAxis.interval = 0.5;
+            chart.primaryXAxis.minimum = new Date(2000, 0, 1);
+            chart.primaryXAxis.maximum = new Date(2000, 11, 1);
+            chart.primaryXAxis.intervalType = 'Months';
+            chart.series[0].dataSource = [{ x: new Date(2000, 1, 11), y: 10 }, 
+                { x: new Date(2000, 3, 7), y: 30 },
+                { x: new Date(2000, 4, 6), y: 15 }, 
+                { x: new Date(2000, 5, 30), y: 65 },
+                { x: new Date(2000, 7, 8), y: 90 }, 
+                { x: new Date(2000, 9, 8), y: 85 } ];
+            chart.appendTo('#chartContainer');
+        });
+    });
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

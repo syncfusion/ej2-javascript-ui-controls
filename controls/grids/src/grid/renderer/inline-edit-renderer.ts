@@ -34,6 +34,10 @@ export class InlineEditRender {
         args.row = this.parent.createElement('tr', { className: 'e-row e-addedrow' });
         if (tbody.querySelector('.e-emptyrow')) {
             tbody.querySelector('.e-emptyrow').remove();
+            if (this.parent.getFrozenColumns()) {
+                let moveTbody: Element = this.parent.getContent().querySelector('.e-movablecontent').querySelector('tbody');
+                moveTbody.firstElementChild.remove();
+            }
         }
         this.parent.editSettings.newRowPosition === 'Top' ? tbody.insertBefore(args.row, tbody.firstChild) : tbody.appendChild(args.row);
         args.row.appendChild(this.getEditElement(elements, false, undefined, args, true));

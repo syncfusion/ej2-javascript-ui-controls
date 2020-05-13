@@ -81,6 +81,14 @@
       content: '\e727';
     }
 
+    .e-indent::before {
+      content: '\e33f';
+    }
+
+    .e-outdent::before {
+      content: '\e35d';
+    }
+
     .e-add-above::before {
       content: '\e658';
     }

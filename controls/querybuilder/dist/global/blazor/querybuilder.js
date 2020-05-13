@@ -286,6 +286,9 @@ var QueryBuilder = /** @class */ (function (_super) {
             }
         }
     };
+    QueryBuilder.prototype.focusEventHandler = function (event) {
+        this.target = event.target;
+    };
     QueryBuilder.prototype.clickEventHandler = function (event) {
         var _this = this;
         var target = event.target;
@@ -379,6 +382,7 @@ var QueryBuilder = /** @class */ (function (_super) {
                 this.beforeSuccessCallBack(args, target);
             }
         }
+        this.target = target;
     };
     QueryBuilder.prototype.beforeSuccessCallBack = function (args, target) {
         if (!args.cancel) {
@@ -1538,6 +1542,8 @@ var QueryBuilder = /** @class */ (function (_super) {
         return 0;
     };
     QueryBuilder.prototype.renderValues = function (target, itemData, prevItemData, isRender, rule, tempRule, element) {
+        var filtElem = document.getElementById(element.id.replace('operatorkey', 'filterkey'));
+        var filtObj = sf.base.getComponent(filtElem, 'dropdownlist');
         if (isRender) {
             var ddlObj = sf.base.getComponent(target.querySelector('input'), 'dropdownlist');
             if (itemData.operators) {
@@ -1557,15 +1563,34 @@ var QueryBuilder = /** @class */ (function (_super) {
             var parentId = sf.base.closest(target, '.e-rule-container').id;
             if (prevItemData && prevItemData.template) {
                 this.templateDestroy(prevItemData, parentId + '_valuekey0');
-                sf.base.detach(target.nextElementSibling.querySelector('#' + parentId + '_valuekey0'));
+                if (sf.base.isBlazor()) {
+                    if (!(prevItemData.field === itemData.field)) {
+                        sf.base.blazorTemplates[this.element.id + prevItemData.field] = [];
+                        sf.base.resetBlazorTemplate(this.element.id + prevItemData.field, 'Template');
+                        sf.base.detach(target.nextElementSibling.querySelector('.e-blazor-template'));
+                    }
+                }
+                else {
+                    sf.base.detach(target.nextElementSibling.querySelector('#' + parentId + '_valuekey0'));
+                }
             }
             if (isRender) {
-                this.destroyControls(target);
+                if (sf.base.isBlazor() && !prevItemData.template) {
+                    this.destroyControls(target);
+                }
+                else if (!sf.base.isBlazor()) {
+                    this.destroyControls(target);
+                }
             }
-            var filtElem = document.getElementById(element.id.replace('operatorkey', 'filterkey'));
-            var filtObj = sf.base.getComponent(filtElem, 'dropdownlist');
             itemData.template = this.columns[filtObj.index].template;
             if (itemData.template) {
+                if (sf.base.isBlazor() && itemData.field) {
+                    this.columnTemplateFn = this.templateParser(itemData.template);
+                    var templateID = this.element.id + itemData.field;
+                    var template = this.columnTemplateFn(itemData, this, 'Template', templateID);
+                    target.nextElementSibling.appendChild(template[0]);
+                    sf.base.updateBlazorTemplate(templateID, 'Template', this.columns[filtObj.index], false);
+                }
                 sf.base.addClass([target.nextElementSibling], 'e-template-value');
                 itemData.template = this.columns[filtObj.index].template;
                 var valElem = void 0;
@@ -1794,7 +1819,7 @@ var QueryBuilder = /** @class */ (function (_super) {
                     selectedValue = selVal;
                 }
             }
-            if (target.className.indexOf('e-template') > -1) {
+            if (target.classList.contains('e-blazor-template') || target.className.indexOf('e-template') > -1) {
                 rule.rules[index].value = selectedValue;
                 eventsArgs = { groupID: groupElem.id, ruleID: ruleElem.id, value: rule.rules[index].value, type: 'value' };
                 if (!this.isImportRules) {
@@ -2124,6 +2149,7 @@ var QueryBuilder = /** @class */ (function (_super) {
         }
         return rule;
     };
+    // tslint:disable-next-line:max-func-body-length
     QueryBuilder.prototype.onPropertyChanged = function (newProp, oldProp) {
         var properties = Object.keys(newProp);
         for (var _i = 0, properties_1 = properties; _i < properties_1.length; _i++) {
@@ -2194,7 +2220,17 @@ var QueryBuilder = /** @class */ (function (_super) {
                     this.refresh();
                     break;
                 case 'columns':
-                    this.columns = newProp.columns;
+                    if (sf.base.isBlazor()) {
+                        var columnIndex = Object.keys(newProp.columns).toString();
+                        var columnValue = newProp.columns[columnIndex].values;
+                        while (!this.target.classList.contains('e-blazor-template')) {
+                            this.target = this.target.parentElement;
+                        }
+                        this.updateRules(this.target, columnValue);
+                    }
+                    else {
+                        this.columns = newProp.columns;
+                    }
                     this.columnSort();
                     break;
                 case 'sortDirection':
@@ -2349,6 +2385,19 @@ var QueryBuilder = /** @class */ (function (_super) {
         }
         this.renderComplete();
     };
+    QueryBuilder.prototype.templateParser = function (template) {
+        if (template) {
+            try {
+                if (document.querySelectorAll(template).length) {
+                    return sf.base.compile(document.querySelector(template).innerHTML.trim());
+                }
+            }
+            catch (error) {
+                return sf.base.compile(template);
+            }
+        }
+        return undefined;
+    };
     QueryBuilder.prototype.executeDataManager = function (query) {
         var _this = this;
         var data = this.dataManager.executeQuery(query);
@@ -2373,11 +2422,15 @@ var QueryBuilder = /** @class */ (function (_super) {
     QueryBuilder.prototype.wireEvents = function () {
         var wrapper = this.getWrapper();
         sf.base.EventHandler.add(wrapper, 'click', this.clickEventHandler, this);
+        sf.base.EventHandler.add(wrapper, 'focusout', this.focusEventHandler, this);
+        sf.base.EventHandler.add(wrapper, 'focusin', this.focusEventHandler, this);
         sf.base.EventHandler.add(this.element, 'keydown', this.keyBoardHandler, this);
     };
     QueryBuilder.prototype.unWireEvents = function () {
         var wrapper = this.getWrapper();
         sf.base.EventHandler.remove(wrapper, 'click', this.clickEventHandler);
+        sf.base.EventHandler.remove(wrapper, 'focusout', this.focusEventHandler);
+        sf.base.EventHandler.remove(wrapper, 'focusin', this.focusEventHandler);
         sf.base.EventHandler.remove(this.element, 'keydown', this.keyBoardHandler);
     };
     QueryBuilder.prototype.getParentGroup = function (target, isParent) {

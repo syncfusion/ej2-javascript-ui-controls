@@ -31,9 +31,10 @@ export class HeaderRender implements IRenderer {
     private notfrzIdx: number = 0;
     private lockColsRendered: boolean;
     public freezeReorder: boolean;
+    public draggable: Draggable;
     private helper: Function = (e: { sender: MouseEvent }) => {
         let gObj: IGrid = this.parent;
-        let target: Element = (e.sender.target as Element);
+        let target: Element = this.draggable.currentStateTarget;
         let parentEle: HTMLElement = parentsUntil(target, 'e-headercell') as HTMLElement;
         if (!(gObj.allowReordering || gObj.allowGrouping) || (!isNullOrUndefined(parentEle)
             && parentEle.querySelectorAll('.e-checkselectall').length > 0)) {
@@ -81,7 +82,7 @@ export class HeaderRender implements IRenderer {
     private dragStart: Function = (e: { target: HTMLElement, event: MouseEventArgs } & BlazorDragEventArgs) => {
         let gObj: IGrid = this.parent;
         (gObj.element.querySelector('.e-gridpopup') as HTMLElement).style.display = 'none';
-        gObj.notify(events.columnDragStart, { target: e.target, column: this.column, event: e.event });
+        gObj.notify(events.columnDragStart, { target: this.draggable.currentStateTarget, column: this.column, event: e.event });
         if (isBlazor()) {
             e.bindEvents(e.dragElement);
         }
@@ -331,6 +332,11 @@ export class HeaderRender implements IRenderer {
     private updateColGroup(colGroup: Element): Element {
         let cols: Column[] = this.parent.getColumns() as Column[];
         let col: Element; let indexes: number[] = this.parent.getColumnIndexesInView();
+        if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns()
+            && (<{ isXaxis?: Function }>this.parent.contentModule).isXaxis()) {
+            cols = extend([], this.parent.getColumns()) as Column[];
+            cols.splice(0, this.parent.getFrozenColumns());
+        }
         colGroup.id = this.parent.element.id + 'colGroup';
         if (this.parent.allowGrouping) {
             for (let i: number = 0, len: number = this.parent.groupSettings.columns.length; i < len; i++) {
@@ -412,8 +418,8 @@ export class HeaderRender implements IRenderer {
             left = this.parent.getContent().querySelector('.e-movablecontent').scrollLeft;
         }
         if (!cols.columns) {
-            if (left && left > 0 && this.parent.enableColumnVirtualization
-                && (<{ inViewIndexes?: number[] }>this.parent).inViewIndexes[0] !== 0) {
+            if (left && left > 0 && (<{ isXaxis?: Function }>this.parent.contentModule).isXaxis()
+                && (<{ inViewIndexes?: number[] }>this.parent).inViewIndexes[0] !== 0 && this.frzIdx > this.parent.getFrozenColumns()) {
                 rows[index].cells.push(this.generateCell(
                     cols, CellType.Header, this.colDepth - index,
                     (isFirstObj ? '' : (isFirstCol ? 'e-firstcell' : '')) + lastCol, index, this.parent.getColumnIndexByUid(cols.uid)));
@@ -603,8 +609,11 @@ export class HeaderRender implements IRenderer {
         let setFrozenTable: boolean = isBlazor() && this.parent.isServerRendered && this.parent.frozenRows !== 0 && frzCols !== 0;
         let headerDiv: Element = this.getPanel();
         this.toggleStackClass(headerDiv);
-        let table: Element = (this.parent.enableColumnVirtualization && frzCols) || this.freezeReorder
-            ? this.headerPanel.querySelector('.e-movableheader').querySelector('.e-table') : this.getTable();
+        let table: Element = this.freezeReorder ? this.headerPanel.querySelector('.e-movableheader').querySelector('.e-table')
+            : this.getTable();
+        if (isVFTable) {
+            table = (<{ getVirtualFreezeHeader?: Function }>this.parent.contentModule).getVirtualFreezeHeader();
+        }
         if (setFrozenTable && !isVFTable) {
             table = this.freezeReorder ? this.headerPanel.querySelector('.e-movableheader').querySelector('.e-table') :
                 this.headerPanel.querySelector('.e-frozenheader').querySelector('.e-table');
@@ -633,7 +642,7 @@ export class HeaderRender implements IRenderer {
             this.parent.notify(events.colGroupRefresh, {});
             this.widthService.setWidthToColumns();
             this.parent.updateDefaultCursor();
-            if (!frzCols) {
+            if (!frzCols || (this.parent.enableColumnVirtualization && frzCols)) {
                 this.initializeHeaderDrag();
             }
             let rows: Element[] = [].slice.call(headerDiv.querySelectorAll('tr.e-columnheader'));
@@ -645,6 +654,9 @@ export class HeaderRender implements IRenderer {
             }
             if (!frzCols) {
                 this.parent.notify(events.headerRefreshed, { rows: this.rows, args: { isFrozen: this.parent.getFrozenColumns() !== 0 } });
+            }
+            if (this.parent.enableColumnVirtualization && parentsUntil(table, 'e-movableheader')) {
+                this.parent.notify(events.headerRefreshed, { rows: this.rows, args: { isFrozen: false, isXaxis: true } });
             }
             if (this.parent.allowTextWrap && this.parent.textWrapSettings.wrapMode === 'Header') {
                 wrap(rows, true);
@@ -685,18 +697,15 @@ export class HeaderRender implements IRenderer {
         if (!(this.parent.allowReordering || (this.parent.allowGrouping && this.parent.groupSettings.showDropArea))) {
             return;
         }
-        let headerRows: Element[] = [].slice.call(gObj.getHeaderContent().querySelectorAll('.e-columnheader'));
-        for (let i: number = 0, len: number = headerRows.length; i < len; i++) {
-            let drag: Draggable = new Draggable(headerRows[i] as HTMLElement, {
-                dragTarget: '.e-headercell',
-                distance: 5,
-                helper: this.helper,
-                dragStart: this.dragStart,
-                drag: this.drag,
-                dragStop: this.dragStop,
-                abort: '.e-rhandler'
-            });
-        }
+        this.draggable = new Draggable(gObj.getHeaderContent() as HTMLElement, {
+            dragTarget: '.e-headercell',
+            distance: 5,
+            helper: this.helper,
+            dragStart: this.dragStart,
+            drag: this.drag,
+            dragStop: this.dragStop,
+            abort: '.e-rhandler'
+        });
     }
 
     protected initializeHeaderDrop(): void {

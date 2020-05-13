@@ -100,7 +100,6 @@ export class SelectionCommands {
         if (cursorFormat) {
             cursorNode = cursorNodes[0];
             InsertMethods.unwrap(cursorFormat);
-            cursorNodes[0] = InsertMethods.Wrap(cursorNodes[0] as HTMLElement, this.GetFormatNode(format, value));
         } else {
             cursorNode = this.getInsertNode(docElement, range, format, value).firstChild;
         }

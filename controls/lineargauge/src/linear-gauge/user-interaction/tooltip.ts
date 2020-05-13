@@ -234,7 +234,7 @@ export class GaugeTooltip {
             y = (lineY - elementRect.top);
             if (this.pointerElement.id.indexOf('Range') > -1 || this.pointerElement.id.indexOf('BarPointer') > -1) {
                 x = (!this.currentAxis.isInversed) ? ((tooltipPosition === 'End') ? x + width : ((tooltipPosition === 'Start') ?
-                x : x + (width / 2))) : ((tooltipPosition === 'End') ? x + width : ((tooltipPosition === 'Start') ? x : x + (width / 2)));
+                x : x + (width / 2))) : ((tooltipPosition === 'End') ? x : ((tooltipPosition === 'Start') ? x + width : x + (width / 2)));
             } else {
                 x = (this.currentPointer.type === 'Marker') ? (x + width / 2) : (!this.currentAxis.isInversed) ? x + width : x;
             }

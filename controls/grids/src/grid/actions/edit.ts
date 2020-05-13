@@ -237,7 +237,7 @@ export class Edit implements IAction {
             return;
         }
         if (!data) {
-            if (!gObj.getSelectedRecords().length) {
+            if (!gObj.getSelectedRecords().length && isNullOrUndefined(gObj.commandDelIndex)) {
                 this.showDialog('DeleteOperationAlert', this.alertDObj);
                 return;
             }

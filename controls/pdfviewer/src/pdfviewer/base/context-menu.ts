@@ -237,7 +237,7 @@ export class ContextMenu {
     }
 
     private getEnabledItemCount(ul: HTMLElement): number {
-        let enabledItemCount : number = this.copyContextMenu.length - 1;
+        let enabledItemCount : number = this.copyContextMenu.length;
         let liCollection : HTMLCollection = ul.children;
         for (let i: number = 0; i < liCollection.length; i++) {
             // tslint:disable-next-line

@@ -600,23 +600,9 @@ export interface SignatureSelectEventArgs extends BaseEventArgs {
      */
     pageIndex: number;
     /**
-     * Defines the bounds of the signature selected in the page of the PDF document.
+     * Defines the properties of the selected signature.
      */
-    // tslint:disable-next-line
-    bounds: any;
-    /**
-     * Define the opacity of the signature selected in the page of the PDF document.
-     */
-    opacity: number;
-    /**
-     * Define the stroke color of the signature selected in the page of the PDF document.
-     */
-    strokeColor: string;
-    /**
-     * Define the thickness of the signature selected in the page of the PDF document.
-     */
-    thickness: number;
-
+    signature: object;
 }
 
 /**

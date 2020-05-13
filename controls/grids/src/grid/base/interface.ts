@@ -473,6 +473,7 @@ export interface IGrid extends Component<HTMLElement> {
     expandedRows?: { [index: number]: IExpandedRow };
     registeredTemplate?: Object;
     lockcolPositionCount?: number;
+    commandDelIndex?: number;
     isPrinting?: boolean;
     id?: string;
     isSelectedRowIndexUpdating?: boolean;

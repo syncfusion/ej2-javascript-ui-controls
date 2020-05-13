@@ -8,7 +8,7 @@ import { DOMNode, markerClassName } from './dom-node';
 import * as EVENTS from './../../common/constant';
 import { setStyleAttribute } from '@syncfusion/ej2-base';
 import { isIDevice, setEditFrameFocus } from '../../common/util';
-import { isNullOrUndefined, closest } from '@syncfusion/ej2-base';
+import { isNullOrUndefined, isNullOrUndefined as isNOU, closest } from '@syncfusion/ej2-base';
 
 /**
  * Lists internal component
@@ -98,12 +98,53 @@ export class Lists {
             startNode.textContent = '';
         }
     }
+    private backspaceList(e: IHtmlKeyboardEvent): void {
+        let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        let startNode: Element = this.parent.domNode.getSelectedNode(range.startContainer as Element, range.startOffset);
+        let endNode: Element = this.parent.domNode.getSelectedNode(range.endContainer as Element, range.endOffset);
+        startNode = startNode.nodeName === 'BR' ? startNode.parentElement : startNode;
+        endNode = endNode.nodeName === 'BR' ? endNode.parentElement : endNode;
+        if (startNode === endNode && !isNullOrUndefined(closest(startNode, 'li')) &&
+        startNode.textContent.trim() === '' && startNode.textContent.charCodeAt(0) === 65279) {
+            startNode.textContent = '';
+        }
+        if (startNode === endNode && startNode.textContent === '') {
+            if (startNode.closest('ul') || startNode.closest('ol')) {
+                let parentList: HTMLElement = !isNOU(startNode.closest('ul')) ? startNode.closest('ul') : startNode.closest('ol');
+                if (parentList.firstElementChild === startNode && (parentList.children[1].tagName === 'OL' ||
+                parentList.children[1].tagName === 'UL')) {
+                    if (parentList.tagName === parentList.children[1].tagName) {
+                        while (parentList.children[1].lastChild) {
+                            this.parent.domNode.insertAfter(parentList.children[1].lastChild as Element, parentList.children[1]);
+                        }
+                        detach(parentList.children[1]);
+                    } else {
+                        parentList.parentElement.insertBefore(parentList.children[1], parentList);
+                    }
+                }
+            }
+        } else if (startNode.firstChild.nodeName === 'BR' && (startNode.childNodes[1].nodeName === 'UL' ||
+        startNode.childNodes[1].nodeName === 'OL')) {
+            let parentList: HTMLElement = !isNOU(startNode.closest('ul')) ? startNode.closest('ul') : startNode.closest('ol');
+            if (parentList.tagName === startNode.childNodes[1].nodeName) {
+                while (startNode.childNodes[1].lastChild) {
+                    this.parent.domNode.insertAfter(startNode.children[1].lastChild as Element, startNode);
+                }
+                detach(startNode.childNodes[1]);
+            } else {
+                parentList.parentElement.insertBefore(startNode.children[1], parentList);
+            }
+        }
+    }
     private keyDownHandler(e: IHtmlKeyboardEvent): void {
         if (e.event.which === 13) {
             this.enterList(e);
         }
         if (e.event.which === 32) {
             this.spaceList(e);
+        }
+        if (e.event.which === 8) {
+            this.backspaceList(e);
         }
         if (e.event.which === 9) {
             let range: Range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
@@ -384,6 +425,16 @@ export class Lists {
                 nodesTemp.push(node);
             }
         }
+        let parentList: Element[] = [];
+        for (let k: number = 0; k < nodesTemp.length; k++) {
+            let nodesTempListParent: Element = nodesTemp[k].closest('LI');
+            if (!isNOU(nodesTempListParent) && (nodesTemp.indexOf(nodesTempListParent.parentElement) < 0)) {
+               if (nodesTempListParent.parentElement.innerText === (nodesTemp[k] as HTMLElement).innerText) {
+                    parentList.push(nodesTempListParent.parentElement);
+               }
+            }
+        }
+        nodesTemp = parentList.concat(nodesTemp);
         for (let j: number = nodesTemp.length - 1; j >= 0; j--) {
             let h: Element = nodesTemp[j];
             let replace: string = '<' + tagName.toLowerCase() + ' '

@@ -224,13 +224,10 @@ export class FontDialog {
             innerHTML: locale.getConstant('Font')
         });
         let fontNameValues: HTMLSelectElement = createElement('select', { id: this.target.id + '_fontName' }) as HTMLSelectElement;
-        fontNameValues.innerHTML = '<option>Arial</option><option>Calibri</option><option>Candara</option><option>Comic Sans MS</option>' +
-            '<option>Consolas</option><option>Constantia</option><option>Corbel</option>' +
-            '<option>Courier New</option><option>Ebrima</option><option>Franklin Gothic</option>' +
-            '<option>Gabriola</option><option>Gadugi</option><option>Georgia</option><option>Impact</option>' +
-            '<option>Javanese Text</option><option>Microsoft Sans Serif</option><option>MS Gothic</option><option>MS UI Gothic</option>' +
-            '<option>Segoe Print</option><option>Times New Roman</option><option>Verdana</option><option>Segoe UI</option>' +
-            '<option>Algerian</option><option>Cambria</option><option>Georgia</option><option>Consolas</option>';
+        let fontValues: string[] = this.documentHelper.owner.documentEditorSettings.fontFamilies;
+        for (let i: number = 0; i < fontValues.length; i++) {
+            fontNameValues.innerHTML += '<option>' + fontValues[i] + '</option>';
+        }
         fontSubDiv1.appendChild(fontNameLabel);
         fontSubDiv1.appendChild(fontNameValues);
         fontDiv.appendChild(fontSubDiv1);

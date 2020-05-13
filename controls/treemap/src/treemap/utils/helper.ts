@@ -1,9 +1,10 @@
 import { BorderModel, FontModel, ColorMappingModel, LeafItemSettingsModel } from '../model/base-model';
-import { createElement, compile, merge, isNullOrUndefined } from '@syncfusion/ej2-base';
+import { createElement, compile, merge, isNullOrUndefined, remove } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Alignment, LabelPosition } from '../utils/enum';
 import { TreeMap } from '../treemap';
 import { IShapes } from '../model/interface';
+import { ExportType } from '../utils/enum';
 /**
  * Create the class for size
  */
@@ -1040,3 +1041,27 @@ export function pushCollection(
         shapeOldBorderWidth: renderItems[number]['options']['border']['width']
     });
 }
+
+/**
+ * To trigger the download element
+ * @param fileName 
+ * @param type 
+ * @param url 
+ */
+export function triggerDownload(fileName: string, type: ExportType, url: string, isDownload: boolean): void {
+        createElement('a', {
+            attrs: {
+                'download': fileName + '.' + (type as string).toLocaleLowerCase(),
+                'href': url
+            }
+        }).dispatchEvent(new MouseEvent(isDownload ? 'click' : 'move', {
+            view: window,
+            bubbles: false,
+            cancelable: true
+        }));
+    }
+
+    export function removeElement(id: string): void {
+        let element: Element = document.getElementById(id);
+        return element ? remove(element) : null;
+    }

@@ -1,5 +1,5 @@
 import { Component, Property, Event, EmitType, EventHandler, classList, L10n, compile, isNullOrUndefined } from '@syncfusion/ej2-base';import { NotifyPropertyChanges, INotifyPropertyChanged, detach, append, Animation } from '@syncfusion/ej2-base';import { addClass, removeClass, KeyboardEvents, KeyboardEventArgs, setValue, getValue, ChildProperty } from '@syncfusion/ej2-base';import { Collection, Complex, Browser, Ajax, BeforeSendEventArgs, getUniqueID, closest } from '@syncfusion/ej2-base';import { createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';import { updateBlazorTemplate, resetBlazorTemplate, isBlazor } from '@syncfusion/ej2-base';
-import {ActionCompleteEventArgs,RenderingEventArgs,BeforeUploadEventArgs,FileListRenderingEventArgs,SelectedEventArgs,UploadingEventArgs,RemovingEventArgs,BeforeRemoveEventArgs,ClearingEventArgs,CancelEventArgs,PauseResumeEventArgs} from "./uploader";
+import {DropEffect,ActionCompleteEventArgs,RenderingEventArgs,BeforeUploadEventArgs,FileListRenderingEventArgs,SelectedEventArgs,UploadingEventArgs,RemovingEventArgs,BeforeRemoveEventArgs,ClearingEventArgs,CancelEventArgs,PauseResumeEventArgs} from "./uploader";
 import {ComponentModel} from '@syncfusion/ej2-base';
 
 /**
@@ -233,6 +233,15 @@ export interface UploaderModel extends ComponentModel{
      * @default false
      */
     directoryUpload?: boolean;
+
+    /**
+     * Specifies the drag operation effect to the uploader component. Possible values are Copy , Move, Link and None.
+     * 
+     * By default, the uploader component works based on the browser drag operation effect.
+     * 
+     * @default 'Default'
+     */
+    dropEffect?: DropEffect;
 
     /**
      * Triggers when the component is created.

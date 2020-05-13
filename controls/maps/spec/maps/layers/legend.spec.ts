@@ -1506,7 +1506,7 @@ describe('Map marker properties tesing', () => {
                 map.loaded = (args: ILoadedEventArgs) => {
                     expect(spec.getAttribute('fill')).toBe("#E5E5E5");
                     spec = document.getElementById("container_LayerIndex_0_shapeIndex_64_dataIndex_58");
-                    expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                    expect(spec.getAttribute('fill')).toBe("rgb(153,174,214)");
                     spec = document.getElementById('container_Legend_Shape_Index_0')
                     trigger.clickEvent(spec);
                 }
@@ -2033,9 +2033,9 @@ describe('Map marker properties tesing', () => {
                             it('Check toggle state after call refresh', () => {
                                 map.loaded = (args: ILoadedEventArgs) => {
                                     spec = document.getElementById('container_Legend_Shape_Index_0')
-                                    expect(spec.getAttribute('fill')).toBe("#E5E5E5");
+                                    expect(spec.getAttribute('fill')).toBe("rgb(153,174,214)");
                                     spec = document.getElementById('container_LayerIndex_0_shapeIndex_64_dataIndex_58')
-                                    expect(spec.getAttribute('fill')).toBe("yellow");
+                                    expect(spec.getAttribute('fill')).toBe("rgb(153,174,214)");
                                 }
                                 map.refresh();
                             })

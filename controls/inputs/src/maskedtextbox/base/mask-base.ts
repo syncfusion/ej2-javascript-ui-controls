@@ -238,7 +238,7 @@ export function strippedValue(element: HTMLInputElement, maskValues: string): st
             }
             if (!checkMask) {
                 if ((maskValue[i] !== this.promptChar) && (!isNullOrUndefined(this.customRegExpCollec[k]) &&
-                    ((!isNullOrUndefined(this.regExpCollec[this.customRegExpCollec[k]])) ||
+                    ((this._callPasteHandler || !isNullOrUndefined(this.regExpCollec[this.customRegExpCollec[k]])) ||
                         (this.customRegExpCollec[k].length > 2 && this.customRegExpCollec[k][0] === '[' &&
                             this.customRegExpCollec[k][this.customRegExpCollec[k].length - 1] === ']') ||
                         (!isNullOrUndefined(this.customCharacters) &&

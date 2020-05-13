@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.52 (2020-05-13)
+
+### TreeGrid
+
+#### New Features
+
+- Provided support for Editing with Frozen Columns.
+
 ## 18.1.48 (2020-05-05)
 
 ### TreeGrid

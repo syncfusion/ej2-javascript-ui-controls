@@ -41,7 +41,7 @@ let palettes: PaletteModel[] = [
     {
         id: 'flow', expanded: true, title: 'Flow Shapes', symbols: [
             {
-                id: 'Terminator', width: 50, height: 60, shape: { type: 'Flow', shape: 'Terminator' }, style: { strokeWidth: 1 }, ports: [
+                id: 'Terminator', width: 50, height: 60, shape: { type: 'Flow', shape: 'Terminator' }, style: { strokeWidth: 5 },addInfo: "hellow", ports: [
                     { offset: { x: 0, y: 0.5 }, visibility: PortVisibility.Connect | PortVisibility.Hover, constraints: PortConstraints.Draw },
                     { offset: { x: 0.5, y: 0 }, visibility: PortVisibility.Connect | PortVisibility.Hover, constraints: PortConstraints.Draw },
                     { offset: { x: 1, y: 0.5 }, visibility: PortVisibility.Connect | PortVisibility.Hover, constraints: PortConstraints.Draw },
@@ -95,7 +95,8 @@ let palettes: PaletteModel[] = [
         title: 'Swimlane Shapes',
         symbols: [
             {
-                id: 'stackCanvas1',
+                id: 'stackCanvas1',addInfo: "hellow",
+                style: { strokeWidth: 5 },
                 shape: {
                     type: 'SwimLane', lanes: [
                         {
@@ -346,6 +347,7 @@ function CSSDone() {
         symbolPalette.appendTo('#symbolpalette');
     }
 }
+
 
 let diagram = new Diagram({
     width: 1500, height: 1000, nodes: nodes,

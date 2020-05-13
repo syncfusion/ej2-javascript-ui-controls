@@ -1460,7 +1460,8 @@ export class Image {
                 if (actionBeginArgs.cancel) {
                     e.preventDefault();
                 } else {
-                    if (closest((e.target as HTMLElement), '#' + this.parent.getID() + '_toolbar')) {
+                    if (closest((e.target as HTMLElement), '#' + this.parent.getID() + '_toolbar') ||
+                    this.parent.inputElement.contentEditable === 'false') {
                         e.preventDefault();
                         return;
                     }
@@ -1598,6 +1599,7 @@ export class Image {
      * Rendering uploader and popup for drag and drop
      */
     private uploadMethod(dragEvent: DragEvent, imageElement: HTMLImageElement): void {
+        let isUploading: boolean = false;
         let proxy: Image = this;
         let popupEle: HTMLElement = this.parent.createElement('div');
         this.parent.element.appendChild(popupEle);
@@ -1634,20 +1636,33 @@ export class Image {
                 saveUrl: this.parent.insertImageSettings.saveUrl,
             },
             cssClass: classes.CLS_RTE_DIALOG_UPLOAD,
-            dropArea: this.parent.inputElement,
+            dropArea: this.parent.element,
             allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
             removing: () => {
+                this.parent.inputElement.contentEditable = 'true';
+                isUploading = false;
                 detach(imageElement);
                 this.popupObj.close();
             },
             canceling: () => {
+                this.parent.inputElement.contentEditable = 'true';
+                isUploading = false;
                 detach(imageElement);
                 this.popupObj.close();
             },
             uploading: (e: UploadingEventArgs) => {
+                isUploading = true;
                 this.parent.trigger(events.imageUploading, e);
+                this.parent.inputElement.contentEditable = 'false';
+            },
+            selected: (e: SelectedEventArgs) => {
+                if (isUploading) {
+                    e.cancel = true;
+                }
             },
             failure: (e: Object) => {
+                isUploading = false;
+                this.parent.inputElement.contentEditable = 'true';
                 let args: IShowPopupArgs = {
                     args: dragEvent as MouseEvent,
                     type: 'Images',
@@ -1657,6 +1672,8 @@ export class Image {
                 setTimeout(() => { this.uploadFailure(imageElement, args, e); }, 900);
             },
             success: (e: Object) => {
+                isUploading = false;
+                this.parent.inputElement.contentEditable = 'true';
                 let args: IShowPopupArgs = {
                     args: dragEvent as MouseEvent,
                     type: 'Images',

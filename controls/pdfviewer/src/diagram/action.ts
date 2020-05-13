@@ -10,10 +10,14 @@ import { isPointOverConnector } from './connector-util';
 import { LineTool, NodeDrawingTool } from './tools';
 
 /** @private */
-export function findActiveElement(event: MouseEvent | TouchEvent, pdfBase: PdfViewerBase, pdfViewer: PdfViewer): IElement {
+// tslint:disable-next-line
+export function findActiveElement(event: MouseEvent | TouchEvent, pdfBase: PdfViewerBase, pdfViewer: PdfViewer, isOverlapped?: boolean): any {
     if (pdfViewer && pdfBase.activeElements.activePageID > -1) {
         let objects: IElement[] = findObjectsUnderMouse(pdfBase, pdfViewer, event as MouseEvent);
         let object: IElement = findObjectUnderMouse(objects, event, pdfBase, pdfViewer);
+        if (isOverlapped) {
+            return objects;
+        }
         return object;
     }
     return undefined;

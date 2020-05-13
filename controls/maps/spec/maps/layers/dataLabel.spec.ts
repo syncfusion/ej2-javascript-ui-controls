@@ -367,6 +367,58 @@ describe('Map layer testing', () => {
             label.refresh();
         });
     });
+    describe('datalabel with shapePropertyPath and without labelPath', () => {
+      let id: string = 'label';
+      let label: Maps;
+      let ele: HTMLDivElement;
+      let spec: Element;
+      let prevent: Function = (): void => {
+          //Prevent Function
+      };
+      beforeAll(() => {
+          ele = <HTMLDivElement>createElement('div', { id: id, styles: 'height: 512px; width: 512px;' });
+          document.body.appendChild(ele);
+          label = new Maps({
+              layers: [{
+                  layerType: 'Geometry',
+                  shapePropertyPath: ["continent", "admin", "name" ],
+                  dataLabelSettings: {
+                      visible: true,
+                  },
+                  shapeSettings: {
+                      fill: '#C3E6ED',
+                  },
+                  shapeData: World_Map,
+              },
+              ]
+          }, '#' + id);
+      });
+      afterAll(() => {
+          remove(ele);
+          label.destroy();
+      });
+      it('checking with datalabel template without labelPath', () => {
+        label.loaded = (args: ILoadedEventArgs) => {
+            let element: Element = document.getElementById('label_LayerIndex_0_shapeIndex_1_LabelIndex_1');
+            expect(element.innerHTML).toBe("<div>string</div>");
+        };
+        label.layers[0].dataLabelSettings.labelPath = "";
+        label.layers[0].dataLabelSettings.template = 'string';
+        label.refresh();
+    });
+  it('checking with datalabel without labelPath and datasource', () => {
+    label.loaded = (args: ILoadedEventArgs) => {
+      let element: Element = document.getElementById('label_LayerIndex_0_Label_Template_Group');
+      expect(element.childElementCount).toBeGreaterThanOrEqual(47);
+    };
+    label.layers[0].shapePropertyPath= "continent";
+    label.layers[0].shapeDataPath= 'country';
+    label.layers[0].dataSource =[{name: 'Asia', country: 'Asia', color: '#FFFF00'}];
+    label.layers[0].dataLabelSettings.labelPath = "";
+    label.layers[0].dataLabelSettings.template = "string";
+    label.refresh();
+});
+  });
 	describe('datalabel for sublayer with point type data', () => {
         let id: string = 'label';
         let label: Maps;

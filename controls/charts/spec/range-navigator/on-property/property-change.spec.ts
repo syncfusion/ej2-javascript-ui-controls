@@ -1,4 +1,5 @@
-import { RangeNavigator, AreaSeries, DateTime, IChangedEventArgs, RangeTooltip } from '../../../src/range-navigator/index';
+import { RangeNavigator, IChangedEventArgs, RangeTooltip } from '../../../src/range-navigator/index';
+import { AreaSeries, DateTime } from '../../../src/chart/index';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';

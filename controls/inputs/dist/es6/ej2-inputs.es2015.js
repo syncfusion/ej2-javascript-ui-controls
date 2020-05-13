@@ -1889,17 +1889,10 @@ let NumericTextBox = class NumericTextBox extends Component {
                     this.validateStep();
                     break;
                 case 'showSpinButton':
-                    if (newProp.showSpinButton) {
-                        this.spinBtnCreation();
-                    }
-                    else {
-                        detach(this.spinUp);
-                        detach(this.spinDown);
-                    }
+                    this.updateSpinButton(newProp);
                     break;
                 case 'showClearButton':
-                    Input.setClearButton(newProp.showClearButton, this.element, this.inputWrapper, undefined, this.createElement);
-                    this.bindClearEvent();
+                    this.updateClearButton(newProp);
                     break;
                 case 'floatLabelType':
                     this.floatLabelType = newProp.floatLabelType;
@@ -1945,6 +1938,36 @@ let NumericTextBox = class NumericTextBox extends Component {
                 case 'decimals':
                     this.decimals = newProp.decimals;
                     this.updateValue(this.value);
+            }
+        }
+    }
+    updateClearButton(newProp) {
+        if (isBlazor()) {
+            if (this.showClearButton) {
+                this.inputWrapper.clearButton = this.container.querySelector('.e-clear-icon');
+                Input.wireClearBtnEvents(this.element, this.inputWrapper.clearButton, this.inputWrapper.container);
+            }
+        }
+        else {
+            Input.setClearButton(newProp.showClearButton, this.element, this.inputWrapper, undefined, this.createElement);
+            this.bindClearEvent();
+        }
+    }
+    updateSpinButton(newProp) {
+        if (isBlazor()) {
+            if (this.showSpinButton) {
+                this.spinDown = this.container.querySelector('.' + SPINDOWN);
+                this.spinUp = this.container.querySelector('.' + SPINUP);
+                this.wireSpinBtnEvents();
+            }
+        }
+        else {
+            if (newProp.showSpinButton) {
+                this.spinBtnCreation();
+            }
+            else {
+                detach(this.spinUp);
+                detach(this.spinDown);
             }
         }
     }
@@ -2260,7 +2283,7 @@ function strippedValue(element, maskValues) {
             }
             if (!checkMask) {
                 if ((maskValue[i] !== this.promptChar) && (!isNullOrUndefined(this.customRegExpCollec[k]) &&
-                    ((!isNullOrUndefined(this.regExpCollec[this.customRegExpCollec[k]])) ||
+                    ((this._callPasteHandler || !isNullOrUndefined(this.regExpCollec[this.customRegExpCollec[k]])) ||
                         (this.customRegExpCollec[k].length > 2 && this.customRegExpCollec[k][0] === '[' &&
                             this.customRegExpCollec[k][this.customRegExpCollec[k].length - 1] === ']') ||
                         (!isNullOrUndefined(this.customCharacters) &&
@@ -6157,7 +6180,13 @@ let Slider = class Slider extends Component {
         super.destroy();
         this.unwireEvents();
         window.removeEventListener('resize', this.onresize);
-        removeClass([this.sliderContainer], [classNames.sliderDisabled]);
+        if (!isBlazor() && !this.isServerRendered) {
+            removeClass([this.sliderContainer], [classNames.sliderDisabled]);
+        }
+        else {
+            removeClass([this.sliderContainer], [classNames.sliderDisabled, classNames.sliderContainer, classNames.controlWrapper,
+                classNames.horizontalSlider, classNames.verticalSlider]);
+        }
         this.firstHandle.removeAttribute('aria-orientation');
         if (this.type === 'Range') {
             this.secondHandle.removeAttribute('aria-orientation');
@@ -7669,7 +7698,7 @@ let Uploader = class Uploader extends Component {
         }
     }
     getPersistData() {
-        return this.addOnPersist([]);
+        return this.addOnPersist(['filesData']);
     }
     /**
      * Return the module name of the component.
@@ -7845,6 +7874,10 @@ let Uploader = class Uploader extends Component {
     }
     renderPreLoadFiles() {
         if (this.files.length) {
+            if (this.enablePersistence && this.filesData.length) {
+                this.createFileList(this.filesData);
+                return;
+            }
             if (isNullOrUndefined(this.files[0].size)) {
                 return;
             }
@@ -8138,6 +8171,9 @@ let Uploader = class Uploader extends Component {
             return;
         }
         this.dropZoneElement.classList.add(DRAG_HOVER);
+        if (this.dropEffect !== 'Default') {
+            e.dataTransfer.dropEffect = this.dropEffect.toLowerCase();
+        }
         e.preventDefault();
         e.stopPropagation();
     }
@@ -8445,11 +8481,13 @@ let Uploader = class Uploader extends Component {
         for (let i = 0; i < this.filesEntries.length; i++) {
             // tslint:disable-next-line
             this.filesEntries[i].file((fileObj) => {
-                let path = this.filesEntries[i].fullPath;
-                files.push({ 'path': path, 'file': fileObj });
-                if (i === this.filesEntries.length - 1) {
-                    this.filesEntries = [];
-                    this.renderSelectedFiles(event, files, true);
+                if (this.filesEntries) {
+                    let path = this.filesEntries[i].fullPath;
+                    files.push({ 'path': path, 'file': fileObj });
+                    if (i === this.filesEntries.length - 1) {
+                        this.filesEntries = [];
+                        this.renderSelectedFiles(event, files, true);
+                    }
                 }
             });
         }
@@ -10630,6 +10668,9 @@ __decorate$4([
 __decorate$4([
     Property(false)
 ], Uploader.prototype, "directoryUpload", void 0);
+__decorate$4([
+    Property('Default')
+], Uploader.prototype, "dropEffect", void 0);
 __decorate$4([
     Event()
 ], Uploader.prototype, "created", void 0);

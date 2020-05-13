@@ -133,6 +133,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
     public blockData: Object[];
     public blockProcessed: Object[];
     public resourceCollection: ResourcesModel[];
+    public tempResourceCollection: ResourcesModel[];
     public currentAction: CurrentAction;
     public quickPopup: QuickPopups;
     public selectedElements: Element[];
@@ -1117,6 +1118,11 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             isReadonly: this.eventSettings.fields.isReadonly,
             followingID: this.eventSettings.fields.followingID,
         };
+        this.setEditorTitles();
+        this.dataModule = new Data(this.eventSettings.dataSource, this.eventSettings.query);
+        this.crudModule = new Crud(this);
+    }
+    private setEditorTitles(): void {
         this.editorTitles = {
             subject: this.eventSettings.fields.subject.title || this.localeObj.getConstant('title'),
             startTime: this.eventSettings.fields.startTime.title || this.localeObj.getConstant('start'),
@@ -1128,8 +1134,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
             description: this.eventSettings.fields.description.title || this.localeObj.getConstant('description'),
             recurrenceRule: this.eventSettings.fields.recurrenceRule.title || this.localeObj.getConstant('repeat')
         };
-        this.dataModule = new Data(this.eventSettings.dataSource, this.eventSettings.query);
-        this.crudModule = new Crud(this);
     }
     private initializeView(viewName: View): void {
         this.showSpinner();
@@ -1455,8 +1459,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @hidden
      */
     private wireEvents(): void {
-        let resize: string = 'onorientationchange' in window ? 'orientationchange' : 'resize';
-        EventHandler.add(<HTMLElement & Window>window, resize, this.onScheduleResize, this);
+        EventHandler.add(<HTMLElement & Window>window, 'resize', this.onScheduleResize, this);
+        EventHandler.add(<HTMLElement & Window>window, 'orientationchange', this.onScheduleResize, this);
         EventHandler.add(document, Browser.touchStartEvent, this.onDocumentClick, this);
         EventHandler.add(this.element, 'mouseover', this.workCellAction.onHover, this.workCellAction);
         if (this.allowKeyboardInteraction) {
@@ -1722,8 +1726,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * @hidden
      */
     private unwireEvents(): void {
-        let resize: string = 'onorientationchange' in window ? 'orientationchange' : 'resize';
-        EventHandler.remove(<HTMLElement & Window>window, resize, this.onScheduleResize);
+        EventHandler.remove(<HTMLElement & Window>window, 'resize', this.onScheduleResize);
+        EventHandler.remove(<HTMLElement & Window>window, 'orientationchange', this.onScheduleResize);
         EventHandler.remove(document, Browser.touchStartEvent, this.onDocumentClick);
         EventHandler.remove(this.element, 'mouseover', this.workCellAction.onHover);
         if (this.keyboardInteractionModule) {
@@ -1797,6 +1801,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
                     break;
                 case 'locale':
                 case 'calendarMode':
+                    this.globalize = new Internationalization(this.locale);
+                    this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
                     this.setCldrTimeFormat();
                     this.setCalendarMode();
                     state.isRefresh = true;
@@ -1950,19 +1956,19 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      */
     public refresh(): void {
         if (!this.isServerRenderer()) {
+            // Temp resource collecgtion required for blazor alone
+            this.tempResourceCollection = this.resourceCollection;
             super.refresh();
+            this.tempResourceCollection = null;
         } else {
-            if (this.quickPopup) {
-                this.quickPopup.refreshQuickDialog();
-                this.quickPopup.refreshQuickPopup();
-                this.quickPopup.refreshMorePopup();
-            }
-            if (this.eventWindow) { this.eventWindow.refresh(); }
+            this.setEditorTitles();
             this.destroyHeaderModule();
             if (this.showHeaderBar) {
                 this.headerModule = new HeaderRenderer(this);
                 this.renderModule.updateHeader();
             }
+            this.destroyPopups();
+            this.initializePopups();
             this.notify(events.scrollUiUpdate, { cssProperties: this.getCssProperties() });
             this.notify(events.dataReady, {});
         }

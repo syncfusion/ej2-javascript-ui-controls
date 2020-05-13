@@ -15,6 +15,7 @@ import { TextBox, NumericTextBox, InputEventArgs, ChangeEventArgs as InputChange
 import { DatePicker, ChangeEventArgs as CalendarChangeEventArgs } from '@syncfusion/ej2-calendars';
 import { DropDownButton, ItemModel, MenuEventArgs } from '@syncfusion/ej2-splitbuttons';
 import { Tooltip, createSpinner, showSpinner, hideSpinner } from '@syncfusion/ej2-popups';
+import { resetBlazorTemplate, updateBlazorTemplate, blazorTemplates, compile as templateCompiler } from '@syncfusion/ej2-base';
 type ReturnType = { result: Object[], count: number, aggregates?: Object };
 MultiSelect.Inject(CheckBoxSelection);
 /**
@@ -220,7 +221,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private timer: number;
     private isReadonly: boolean = true;
     private fields: Object = { text: 'label', value: 'field' };
-
+    private columnTemplateFn: Function;
+    private target: Element;
     /** 
      * Triggers when the component is created.
      * @event
@@ -473,6 +475,10 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
     }
 
+    private focusEventHandler(event: MouseEventArgs): void {
+        this.target = event.target as Element;
+    }
+
     private clickEventHandler(event: MouseEventArgs): void {
         let target: Element = event.target as Element; let args: ChangeEventArgs;
         this.isImportRules = false; let groupID: string;
@@ -556,6 +562,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                 this.beforeSuccessCallBack(args, target);
             }
         }
+        this.target = target;
     }
     private beforeSuccessCallBack(args: ChangeEventArgs, target: Element): void {
         if (!args.cancel) {
@@ -1619,6 +1626,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     private renderValues(
         target: Element, itemData: ColumnsModel, prevItemData: ColumnsModel, isRender: boolean, rule: RuleModel,
         tempRule: RuleModel, element: Element): void {
+        let filtElem: HTMLElement = document.getElementById(element.id.replace('operatorkey', 'filterkey'));
+        let filtObj: DropDownList = getComponent(filtElem, 'dropdownlist') as DropDownList;
         if (isRender) {
             let ddlObj: DropDownList = getComponent(target.querySelector('input'), 'dropdownlist') as DropDownList;
             if (itemData.operators) {
@@ -1637,15 +1646,32 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         let parentId: string = closest(target, '.e-rule-container').id;
         if (prevItemData && prevItemData.template) {
             this.templateDestroy(prevItemData, parentId + '_valuekey0');
-            detach(target.nextElementSibling.querySelector('#' + parentId + '_valuekey0'));
+            if (isBlazor()) {
+                if (!(prevItemData.field === itemData.field)) {
+                    blazorTemplates[this.element.id + prevItemData.field] = [];
+                    resetBlazorTemplate(this.element.id + prevItemData.field, 'Template');
+                    detach(target.nextElementSibling.querySelector('.e-blazor-template'));
+                }
+            } else {
+                detach(target.nextElementSibling.querySelector('#' + parentId + '_valuekey0'));
+            }
         }
         if (isRender) {
-            this.destroyControls(target);
+            if (isBlazor() && !prevItemData.template) {
+                this.destroyControls(target);
+            } else if (!isBlazor()) {
+                this.destroyControls(target);
+            }
         }
-        let filtElem: HTMLElement = document.getElementById(element.id.replace('operatorkey', 'filterkey'));
-        let filtObj: DropDownList = getComponent(filtElem, 'dropdownlist') as DropDownList;
         itemData.template = this.columns[filtObj.index].template;
         if (itemData.template) {
+            if (isBlazor() && itemData.field) {
+                this.columnTemplateFn = this.templateParser(itemData.template as string);
+                let templateID: string = this.element.id + itemData.field;
+                let template: Element[] = this.columnTemplateFn(itemData, this, 'Template', templateID);
+                target.nextElementSibling.appendChild(template[0]);
+                updateBlazorTemplate(templateID, 'Template', this.columns[filtObj.index], false);
+            }
             addClass([target.nextElementSibling], 'e-template-value');
             itemData.template = this.columns[filtObj.index].template;
             let valElem: Element | Element[];
@@ -1854,7 +1880,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     selectedValue = selVal as number[];
                 }
             }
-            if (target.className.indexOf('e-template') > -1) {
+            if (target.classList.contains('e-blazor-template') || target.className.indexOf('e-template') > -1) {
                 rule.rules[index].value = selectedValue as string | number | string[] | number[];
                 eventsArgs = { groupID: groupElem.id, ruleID: ruleElem.id, value: rule.rules[index].value as string, type: 'value'};
                 if (!this.isImportRules) {
@@ -2158,6 +2184,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
         return rule;
     }
+    // tslint:disable-next-line:max-func-body-length
     public onPropertyChanged(newProp: QueryBuilderModel, oldProp: QueryBuilderModel): void {
         let properties: string[] = Object.keys(newProp);
         for (let prop of properties) {
@@ -2219,7 +2246,16 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     this.refresh();
                     break;
                 case 'columns':
-                    this.columns = newProp.columns;
+                    if (isBlazor()) {
+                        let columnIndex: string = Object.keys(newProp.columns).toString();
+                        let columnValue: string | number | boolean | string[] | number[] = newProp.columns[columnIndex].values;
+                        while (!this.target.classList.contains('e-blazor-template')) {
+                            this.target = this.target.parentElement;
+                        }
+                        this.updateRules(this.target, columnValue);
+                    } else {
+                        this.columns = newProp.columns;
+                    }
                     this.columnSort();
                     break;
                 case 'sortDirection':
@@ -2367,6 +2403,20 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
         this.renderComplete();
     }
+
+    private templateParser(template: string): Function {
+        if (template) {
+            try {
+                if (document.querySelectorAll(template).length) {
+                    return templateCompiler(document.querySelector(template).innerHTML.trim());
+                }
+            } catch (error) {
+                return templateCompiler(template);
+            }
+        }
+        return undefined;
+    }
+
     private executeDataManager(query: Query): void {
         let data: Promise<Object> = this.dataManager.executeQuery(query) as Promise<Object>;
         let deferred: Deferred = new Deferred();
@@ -2389,11 +2439,15 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
     protected wireEvents(): void {
         let wrapper: Element = this.getWrapper();
         EventHandler.add(wrapper, 'click', this.clickEventHandler, this);
+        EventHandler.add(wrapper, 'focusout', this.focusEventHandler, this);
+        EventHandler.add(wrapper, 'focusin', this.focusEventHandler, this);
         EventHandler.add(this.element, 'keydown', this.keyBoardHandler, this);
     }
     protected unWireEvents(): void {
         let wrapper: Element = this.getWrapper();
         EventHandler.remove(wrapper, 'click', this.clickEventHandler);
+        EventHandler.remove(wrapper, 'focusout', this.focusEventHandler);
+        EventHandler.remove(wrapper, 'focusin', this.focusEventHandler);
         EventHandler.remove(this.element, 'keydown', this.keyBoardHandler);
     }
     private getParentGroup(target: Element| string, isParent ?: boolean): RuleModel {

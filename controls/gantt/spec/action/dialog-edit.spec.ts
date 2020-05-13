@@ -3,7 +3,7 @@
  */
 import { getValue } from '@syncfusion/ej2-base';
 import { Gantt, Edit, Toolbar, IGanttData } from '../../src/index';
-import { dialogEditData, resourcesData, resources, scheduleModeData } from '../base/data-source.spec';
+import { dialogEditData, resourcesData, resources, scheduleModeData, indentOutdentData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from '../base/gantt-util.spec';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 interface EJ2Instance extends HTMLElement {
@@ -833,6 +833,58 @@ describe('Gantt dialog module', () => {
                 setTimeout(done, 500);
             }
             expect(ganttObj.getFormatedDate(ganttObj.currentViewData[2].ganttProperties.startDate, 'M/d/yyyy')).toBe('2/27/2017');
+        });
+    });
+    describe('indent-outdent', () => {
+        let ganttObj: Gantt;
+
+        beforeAll((done: Function) => {
+            ganttObj = createGantt({
+                dataSource: indentOutdentData,
+                allowSorting: true,
+                allowSelection: true,
+                taskFields: {
+                    id: 'TaskID',
+                    name: 'TaskName',
+                    startDate: 'StartDate',
+                    duration: 'Duration',
+                    progress: 'Progress',
+                    endDate: 'EndDate',
+                    child: 'subtasks',
+                   
+                },
+                editSettings: {
+                    allowEditing: true,
+                    allowDeleting: true,
+                    allowTaskbarEditing: true,
+                    showDeleteConfirmDialog: true
+                },
+                toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'Indent', 'Outdent'],
+            }, done);
+        });
+        afterAll(() => {
+            if (ganttObj) {
+                destroyGantt(ganttObj);
+            }
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 1000);
+        });
+        it('Indenting a record', (done: Function) => {
+            expect(ganttObj.currentViewData[2].level).toBe(1);
+            ganttObj.selectRow(2, false);
+            setTimeout(done, 1000);
+            ganttObj.indent();
+            setTimeout(done, 10000);
+            expect(ganttObj.currentViewData[2].level).toBe(2);
+        });
+        it('Otdenting a record', (done: Function) => {
+            expect(ganttObj.currentViewData[2].level).toBe(2);
+            ganttObj.selectRow(2, false);
+            setTimeout(done, 1000);
+            ganttObj.outdent();
+            setTimeout(done, 10000);
+            expect(ganttObj.currentViewData[2].level).toBe(1);
         });
     });
 });

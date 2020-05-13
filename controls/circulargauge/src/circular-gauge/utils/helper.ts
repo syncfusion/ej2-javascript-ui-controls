@@ -9,6 +9,7 @@ import { IVisiblePointer, IVisibleRange } from '../model/interface';
 import { merge } from '@syncfusion/ej2-base';
 import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { createElement, remove, setStyleAttribute } from '@syncfusion/ej2-base';
+import { ExportType } from '../utils/enum';
 
 /**
  * Function to measure the height and width of the text.
@@ -807,3 +808,23 @@ export class VisibleLabels {
         this.size = size;
     }
 }
+
+/**
+ * To trigger the download element
+ * @param fileName 
+ * @param type 
+ * @param url 
+ */
+export function triggerDownload(fileName: string, type: ExportType, url: string, isDownload: boolean): void {
+       createElement('a', {
+            attrs: {
+                'download': fileName + '.' + (type as string).toLocaleLowerCase(),
+                'href': url
+            }
+        }).dispatchEvent(new MouseEvent(isDownload ? 'click' : 'move', {
+            view: window,
+            bubbles: false,
+            cancelable: true
+        }));
+        }
+

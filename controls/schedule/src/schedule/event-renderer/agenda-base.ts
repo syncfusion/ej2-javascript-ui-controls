@@ -135,6 +135,9 @@ export class AgendaBase {
 
     public processAgendaEvents(events: Object[]): Object[] {
         let eventsProcessed: Object[] = [];
+        if (isNullOrUndefined(events)) {
+            return eventsProcessed;
+        }
         for (let event of events) {
             let splited: Object[] = this.parent.eventBase.splitEventByDay(event as { [key: string]: Object });
             eventsProcessed = eventsProcessed.concat(splited.length > 1 ? splited : event);

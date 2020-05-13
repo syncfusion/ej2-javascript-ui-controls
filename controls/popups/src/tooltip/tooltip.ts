@@ -437,10 +437,10 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         });
     }
     private getTooltipPosition(target: HTMLElement): OffsetPosition {
-        this.tooltipEle.style.display = 'none';
+        this.tooltipEle.style.display = 'block';
         let pos: OffsetPosition = calculatePosition(target, this.tooltipPositionX, this.tooltipPositionY);
-        this.tooltipEle.style.display = '';
         let offsetPos: OffsetPosition = this.calculateTooltipOffset(this.position);
+        this.tooltipEle.style.display = '';
         let elePos: OffsetPosition = this.collisionFlipFit(target, pos.left + offsetPos.left, pos.top + offsetPos.top);
         return elePos;
     }

@@ -1007,15 +1007,13 @@ export namespace IntlBase {
 
     // tslint:disable-next-line:no-any
     function processSymbol(actual: string, option: any): any {
-        for (let i: number = 0; i < actual.length; i++) {
-            let mapper: object = { '.': 'decimal', ',': 'group' };
+        if (actual.indexOf(',') !== -1) {
             // tslint:disable-next-line:no-any
-            let matched: any = mapper[actual[i]];
-            if (matched === 'decimal') {
-                actual = actual.replace(/\./g, getValue('numberMapper.numberSymbols.decimal', option) || '.');
-            } else if (matched === 'group') {
-                actual = actual.replace(/,/g, getValue('numberMapper.numberSymbols.group', option) || '.');
-            }
+            let split: any = actual.split(',');
+            actual = (split[0] + getValue('numberMapper.numberSymbols.group', option) +
+                split[1].replace('.', getValue('numberMapper.numberSymbols.decimal', option)));
+        } else {
+            actual = actual.replace('.', getValue('numberMapper.numberSymbols.decimal', option));
         }
         return actual;
     }

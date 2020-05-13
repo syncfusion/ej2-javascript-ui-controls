@@ -7,9 +7,9 @@ import { usMap } from '../../maps/data/data.spec';
 import { IPrintEventArgs } from '../../../src/maps/model/interface';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { beforePrint } from '../../../src/maps/model/constants';
-import { Legend, Annotations } from '../../../src/maps/index';
+import { Legend, Annotations, PdfExport, ImageExport, Print } from '../../../src/maps/index';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
-Maps.Inject(Legend, Annotations, DataLabel);
+Maps.Inject(Legend, Annotations, DataLabel, PdfExport, ImageExport, Print );
 export function getElementByID(id: string): Element {
     return document.getElementById(id);
 }
@@ -43,6 +43,9 @@ describe('Map layer testing', () => {
             document.body.appendChild(mapElement);
             document.body.appendChild(temp);
             mapObj = new Maps({
+                allowImageExport: true,
+                allowPdfExport : true,
+                allowPrint : true,
                 layers: [{
                     shapeSettings: {
                         fill: '#C3E6ED',
@@ -69,12 +72,13 @@ describe('Map layer testing', () => {
             remove(mapElement);
             mapObj.destroy();
         });
-        it(' checking a print', (done: Function) => {
+        it('checking a print', (done: Function) => {
             mapObj.beforePrint = (args: IPrintEventArgs): void => {
                 expect(args.htmlContent.outerHTML.indexOf('<div id="container" class="e-control e-maps e-lib" aria-label="Maps Element" tabindex="1"') > -1).toBe(true);
                 done();
             };
-            mapObj.print();
+            mapObj.print();  
+            mapObj.refresh();  
         });
         it('Checking a PDF', (): void => {
             mapObj.loaded = (args: ILoadedEventArgs): void => {
@@ -130,27 +134,29 @@ describe('Map layer testing', () => {
             };
             mapObj.refresh();
         });
-        it('Checking export', (done: Function) => {
+        it('Checking Image export- JPEG', (done: Function) => {
             mapObj.export('JPEG', 'map');
             setTimeout(() => {
                 expect('').toBe('');
                 done();
             }, 500);
         });
-        it('Checking export - SVG', (done: Function) => {
+        it('Checking  Image export - SVG', (done: Function) => {
             mapObj.export('SVG', 'map');
             setTimeout(() => {
                 expect('').toBe('');
                 done();
             }, 500);
         });
-        it('Checking export - PDF', (done: Function) => {
-            mapObj.export('PDF', 'map');
+        it('Checking  Image export - PNG', (done: Function) => {
+            mapObj.export('PNG', 'map');
             setTimeout(() => {
                 expect('').toBe('');
                 done();
             }, 500);
         });
+
+    
         it('Checking export - PDF - Potrait', (done: Function) => {
             mapObj.export('PDF', 'map', PdfPageOrientation.Portrait);
             setTimeout(() => {
@@ -172,6 +178,13 @@ describe('Map layer testing', () => {
                 done();
             }, 500);
         });
+        it('Checking to return base64 for JPEG', (done: Function) => {
+            mapObj.export('JPEG', 'map', PdfPageOrientation.Portrait, false);
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
         it('Checking to return base64 for PDF', (done: Function) => {
             mapObj.export('PDF', 'map', PdfPageOrientation.Portrait, false);
             setTimeout(() => {
@@ -179,7 +192,11 @@ describe('Map layer testing', () => {
                 done();
             }, 500);
         });
+      
     });
+    
+  
+
     describe('Map Tile layer testing', () => {
         let mapObj: Maps;
         let mapElement: Element;
@@ -201,6 +218,9 @@ describe('Map layer testing', () => {
             document.body.appendChild(mapElement);
             document.body.appendChild(temp);
             mapObj = new Maps({
+                allowPdfExport : true,
+                allowImageExport : true,
+                allowPrint : true,
                 zoomSettings: {
                     enable: true
                 },
@@ -236,48 +256,73 @@ describe('Map layer testing', () => {
             remove(mapElement);
             mapObj.destroy();
         });
-        it('Checking export for Tile map - SVG', (done: Function) => {
+        it('Checking Image export for Tile map - SVG', (done: Function) => {
             mapObj.export('SVG', 'map');
             setTimeout(() => {
                 expect('').toBe('');
                 done();
             }, 500);
         });
-        it('Checking export for Tile map - PNG', (done: Function) => {
+        it('Checking Image export Image Tile map - PNG', (done: Function) => {
             mapObj.export('PNG', 'map');
             setTimeout(() => {
                 expect('').toBe('');
                 done();
             }, 500);
         });
-        it('Checking export for Tile map - JPEG', (done: Function) => {
+        it('Checking Image export for Tile map - JPEG', (done: Function) => {
             mapObj.export('JPEG', 'map');
             setTimeout(() => {
                 expect('').toBe('');
                 done();
             }, 500);
         });
-        it('Checking export to base64 for Tile map - JPEG', (done: Function) => {
-            mapObj.export('JPEG', 'map');
-            setTimeout(() => {
-                expect('').toBe('');
-                done();
-            }, 500);
-        });
-        it('Checking export for Tile map - JPEG', (done: Function) => {
+        it('Checking Pdf export for Tile map - PDF', (done: Function) => {
             mapObj.export('PDF', 'map');
             setTimeout(() => {
                 expect('').toBe('');
                 done();
             }, 500);
         });
-        it('Checking export base64 for Tile map - JPEG', (done: Function) => {
-            mapObj.export('PDF', 'map');
+        it('Checking to return base64 for JPEG', (done: Function) => {
+            mapObj.export('JPEG', 'map', PdfPageOrientation.Portrait, false);
             setTimeout(() => {
                 expect('').toBe('');
                 done();
             }, 500);
         });
+        it('Checking to return base64 for png', (done: Function) => {
+            mapObj.export('PNG', 'map', PdfPageOrientation.Portrait, false);
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+        it('Checking to return base64 for SVG', (done: Function) => {
+            mapObj.export('SVG', 'map', PdfPageOrientation.Portrait, false);
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+
+        it('Checking to return base64 for PDF', (done: Function) => {
+            mapObj.export('PDF', 'map', PdfPageOrientation.Portrait, false);
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+        it('Checking Image export in PDF ', (done: Function) => {
+            mapObj.allowImageExport = false;
+            mapObj.export('SVG', 'map',PdfPageOrientation.Portrait,true);
+            setTimeout(() => {
+                expect('').toBe('');
+                done();
+            }, 500);
+        });
+
+    
     });
     it('memory leak', () => {
         profile.sample();

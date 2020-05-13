@@ -4,6 +4,7 @@
 export * from './chart';
 export * from './chart-model';
 export * from './axis/axis';
+export * from './axis/double-axis';
 export * from './axis/date-time-axis';
 export * from './axis/category-axis';
 export * from './axis/logarithmic-axis';

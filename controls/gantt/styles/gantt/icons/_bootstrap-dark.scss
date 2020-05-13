@@ -77,6 +77,14 @@
       content: '\e659';
     }
 
+    .e-indent::before {
+      content: '\e33f';
+    }
+
+    .e-outdent::before {
+      content: '\e35d';
+    }
+
     .e-csvexport::before {
       content: '\e241';
     }

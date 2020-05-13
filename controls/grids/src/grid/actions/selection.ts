@@ -19,6 +19,7 @@ import { ReturnType } from '../base/type';
 import { FocusStrategy } from '../services/focus-strategy';
 import { iterateExtend } from '../base/util';
 import { VirtualContentRenderer } from '../renderer/virtual-content-renderer';
+import { VirtualFreezeRenderer } from '../renderer/virtual-freeze-renderer';
 
 
 /**
@@ -123,6 +124,7 @@ export class Selection implements IAction {
     private isPersisted: boolean = false;
     private cmdKeyPressed: boolean = false;
     private isMacOS: boolean;
+    private cellselected: boolean = false;
     /**
      * @hidden
      */
@@ -251,8 +253,10 @@ export class Selection implements IAction {
         let isRemoved: boolean = false;
         if (gObj.enableVirtualization && index > -1) {
             this.parent.notify(events.selectVirtualRow, { selectedIndex: index });
-            if (selectedRow && gObj.getRowObjectFromUID(selectedRow.getAttribute('data-uid'))) {
-                selectData = gObj.getRowObjectFromUID(selectedRow.getAttribute('data-uid')).data;
+            let frozenData: Object = gObj.getFrozenColumns() ? (gObj.contentModule as VirtualFreezeRenderer).getRowObjectByIndex(index)
+                : null;
+            if (selectedRow && (gObj.getRowObjectFromUID(selectedRow.getAttribute('data-uid')) || frozenData)) {
+                selectData = frozenData ? frozenData : gObj.getRowObjectFromUID(selectedRow.getAttribute('data-uid')).data;
             } else {
                 let prevSelectedData: Object[] = this.parent.getSelectedRecords();
                 if (prevSelectedData.length > 0) {
@@ -928,6 +932,7 @@ export class Selection implements IAction {
             this.parent.trigger(
                 events.cellSelecting, this.fDataUpdate(args),
                 this.successCallBack(args, isToggle, cellIndex, selectedCell, selectedData));
+            this.cellselected = true;
         } else {
             this.successCallBack(args, isToggle, cellIndex, selectedCell, selectedData)(args);
         }
@@ -1061,7 +1066,10 @@ export class Selection implements IAction {
             } else {
                 cellSelectedArgs = { data: selectedData, cellIndex: edIndex, selectedRowCellIndex: this.selectedRowCellIndexes };
             }
-            this.onActionComplete(cellSelectedArgs, events.cellSelected);
+            if (!this.isDragged) {
+                this.onActionComplete(cellSelectedArgs, events.cellSelected);
+                this.cellselected = true;
+            }
             this.updateCellProps(stIndex, edIndex);
         });
     }
@@ -1177,8 +1185,7 @@ export class Selection implements IAction {
             }
             selectedCell = this.getSelectedMovableCell(cellIndex);
             if (!selectedCell) {
-                selectedCell = gObj.getCellFromIndex(
-                    cellIndex.rowIndex, this.getColIndex(cellIndex.rowIndex, cellIndex.cellIndex));
+                selectedCell = gObj.getCellFromIndex(cellIndex.rowIndex, this.getColIndex(cellIndex.rowIndex, cellIndex.cellIndex));
             }
             foreignKeyData.push(rowObj.cells[frzCols && cellIndexes[0].cellIndex >= frzCols
                 ? cellIndex.cellIndex - frzCols : cellIndex.cellIndex].foreignKeyData);
@@ -1243,6 +1250,7 @@ export class Selection implements IAction {
                     cellSelectedArgs = { data: selectedData, cellIndex: cellIndexes[0], selectedRowCellIndex: this.selectedRowCellIndexes };
                 }
                 this.onActionComplete(cellSelectedArgs, events.cellSelected);
+                this.cellselected = true;
             }
             this.updateCellProps(cellIndex, cellIndex);
         }
@@ -1396,7 +1404,9 @@ export class Selection implements IAction {
             }
             this.selectedRowCellIndexes = [];
             this.isCellSelected = false;
-            this.cellDeselect(events.cellDeselected, rowCell, data, cells, foreignKeyData);
+            if (!this.isDragged && this.cellselected) {
+                this.cellDeselect(events.cellDeselected, rowCell, data, cells, foreignKeyData);
+            }
         }
     }
 
@@ -1778,6 +1788,16 @@ export class Selection implements IAction {
         } else {
             this.mUPTarget = null;
         }
+        if (this.isDragged) {
+            let target: Element = e.target as Element;
+            let rowIndex: number = parseInt(target.parentElement.getAttribute('aria-rowindex'), 10);
+            let cellIndex: number =  parseInt(target.getAttribute('aria-colindex'), 10);
+            this.isDragged = false;
+            this.clearCellSelection();
+            this.selectCellsByRange(
+                { rowIndex: this.startDIndex, cellIndex: this.startDCellIndex },
+                { rowIndex: rowIndex, cellIndex: cellIndex });
+        }
         this.isDragged = false;
         this.updateAutoFillPosition();
         if (this.isAutoFillSel) {
@@ -2004,6 +2024,7 @@ export class Selection implements IAction {
 
     private render(e?: NotifyArgs): void {
         EventHandler.add(this.parent.getContent(), 'mousedown', this.mouseDownHandler, this);
+        this.initPerisistSelection();
     }
 
     private onPropertyChanged(e: { module: string, properties: SelectionSettings }): void {
@@ -2293,6 +2314,9 @@ export class Selection implements IAction {
         if (stateStr === 'Intermediate') {
             state = this.getCurrentBatchRecordChanges().some((data: Object) =>
                 data[this.primaryKey] in this.selectedRowState);
+        }
+        if (this.parent.isPersistSelection) {
+            this.totalRecordsCount = this.parent.pageSettings.totalRecordsCount;
         }
         this.checkSelectAllAction(!state);
         if (isBlazor() && this.parent.isServerRendered && this.parent.enableVirtualization) {
@@ -2657,6 +2681,7 @@ export class Selection implements IAction {
             case 'upArrow':
             case 'enter':
             case 'shiftEnter':
+                this.target = e.element;
                 this.applyDownUpKey(rowIndex, cellIndex);
                 break;
             case 'rightArrow':

@@ -8,6 +8,10 @@ import { IPrintEventArgs } from '../../../src/treemap/model/interface';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import  {profile , inMB, getMemoryProfile} from '../common.spec';
 import { beforePrint } from '../../../src/treemap/model/constants';
+import { Print } from '../../../src/treemap/model/print';
+import { PdfExport } from '../../../src/treemap/model/pdf-export';
+import { ImageExport } from '../../../src/treemap/model/image-export';
+TreeMap.Inject(Print, PdfExport, ImageExport);
 
 let jobDataSource: Object[] = jobData;
 let gameDataSource: Object[] = sportsData;
@@ -284,6 +288,9 @@ describe('TreeMap component Spec', () => {
             document.body.appendChild(element);
             document.body.appendChild(temp);
             treemap = new TreeMap({
+                allowImageExport:true,
+                allowPdfExport: true,
+                allowPrint: true,
                 border: {
                     color: 'red',
                     width: 2
@@ -369,34 +376,146 @@ describe('TreeMap component Spec', () => {
         });
 
         it('Checking export', (done: Function) => {
-            treemap.export('JPEG', 'map');
+             treemap.export('JPEG', 'map',0, true);
+            expect('').toBe("");
+            done();
+        });
+        it('Checking export - SVG', (done: Function) => {
+            treemap.export('SVG', 'map',1, true);
+            expect('').toBe("");
+            done();
+        });
+        it('Checking export - PDF', (done: Function) => {
+            treemap.export('PDF', 'map',1, true);
+            expect('').toBe("");
+            done();
+        });
+        it('Checking export - PDF - Potrait', (done: Function) => {
+            treemap.export('PDF', 'map', PdfPageOrientation.Portrait, true);
+            expect('').toBe("");
+            done();
+        });
+    });
+
+    describe('TreeMap print and export  spec with conseidering the orientation and download option', () => {
+        let element: Element;
+        let treemap: TreeMap;
+        let temp: Element;
+        let prevent: Function = (): void => { };
+        let trigger: MouseEvents = new MouseEvents();
+        let id: string = 'container';
+        temp = createElement('div', { id: 'tempElement' });
+        let spec: Element;
+        (<any>window).open = () => {
+            return {
+                document: { write: () => { }, close: () => { } },
+                close: () => { }, print: () => { }, focus: () => { }, moveTo: () => { }, resizeTo: () => { }
+            };
+        };
+        beforeAll(() => {
+            element = createElement('div', { id: id });
+            let template: Element = createElement('div', { id: 'template', styles: 'display: none;border: 2px solid red' });
+            document.body.appendChild(template);
+            template.innerHTML = "<div id='templateWrap' style='background-color:#4472c4;border-radius: 3px;'>" +
+                "<img src='./img1.jpg' style='border-radius: 0px;width: 24px;height: 24px;padding: 2px;' />" +
+                "<div style='color:white;float: right;padding: 2px;line-height: 20px; text-align: center; font-family:Roboto; font-style: medium; fontp-size:14px;'><span>Print</span></div></div>";
+            (element as HTMLDivElement).style.width = '600px';
+            (element as HTMLDivElement).style.height = '400px';
+            document.body.appendChild(element);
+            document.body.appendChild(temp);
+            treemap = new TreeMap({
+                allowPrint:true,
+                allowPdfExport:true,
+                allowImageExport:true,
+                border: {
+                    color: 'red',
+                    width: 2
+                },
+                titleSettings: {
+                    text: 'Tree Map control',
+                },
+                dataSource: jobData,
+                weightValuePath: 'EmployeesCount',
+                leafItemSettings: {
+                    labelPath: 'JobGroup',
+                    fill: '#6699cc',
+                    labelPosition: 'BottomRight',
+                    border: { color: 'black', width: 2 }
+                },
+                levels: [
+                    { groupPath: 'Country', fill: '#336699', border: { color: 'black', width: 2 } },
+                    { groupPath: 'JobDescription', fill: '#336699', border: { color: 'black', width: 2 } }
+                ]
+            }, '#' + id);
+        });
+        afterAll(() => {
+            treemap.destroy();
+            treemap.destroy();
+            document.getElementById(id).remove();
+        });
+        
+
+        it('Checking to print direct element', (done: Function) => {
+            treemap.loaded = (args: Object): void => {
+                treemap.print(document.getElementById('container'));
+            };
+            treemap.beforePrint = (args: IPrintEventArgs): void => {
+                expect(args.htmlContent.outerHTML.indexOf('id="container" class="e-lib e-treemap e-control"') > -1).toBe(true);
+                done();
+            };
+            treemap.refresh();
+        });
+        it('Checking to print single element', (done: Function) => {
+            treemap.loaded = (args: Object): void => {
+                treemap.print(document.getElementById('container'));
+            };
+            treemap.beforePrint = (args: IPrintEventArgs): void => {
+                expect(args.htmlContent.outerHTML.indexOf(' id="container" class="e-lib e-treemap e-control"') > -1).toBe(true);
+                done();
+            };
+            treemap.refresh();
+        });
+
+        it('Checking export', (done: Function) => {
+            treemap.export('JPEG', 'map',1, false);
             setTimeout(() => {
                 expect('').toBe('');
                 done();
             }, 500);
         });
         it('Checking export - SVG', (done: Function) => {
-            treemap.export('SVG', 'map');
+            treemap.export('SVG', 'map',1, false);
             setTimeout(() => {
                 expect('').toBe('');
                 done();
             }, 500);
         });
         it('Checking export - PDF', (done: Function) => {
-            treemap.export('PDF', 'map');
+            treemap.export('PDF', 'map',1, false);
             setTimeout(() => {
                 expect('').toBe('');
                 done();
             }, 500);
+        });
+        it('Checking the height property while export', (done: Function) => {
+            treemap.export('PDF', 'map',1, true);
+            let svg = document.getElementById("container_svg");
+            expect(svg.getAttribute("height")).toBe("400");
+            done();
+        });
+        it('Checking the height property while export', (done: Function) => {
+            treemap.export('PNG', 'map',1, false);
+            let svg = document.getElementById("container_svg");
+            expect(svg.getAttribute("height")).toBe("400");
+            done();
         });
         it('Checking export - PDF - Potrait', (done: Function) => {
-            treemap.export('PDF', 'map', PdfPageOrientation.Portrait);
-            setTimeout(() => {
-                expect('').toBe('');
-                done();
-            }, 500);
+            treemap.export('PDF', 'map', PdfPageOrientation.Portrait, true);
+            expect('').toBe("");
+            done();
         });
     });
+
     it('memory leak', () => {
         profile.sample();
         let average: any = inMB(profile.averageChange)

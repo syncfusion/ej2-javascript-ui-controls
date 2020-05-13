@@ -295,6 +295,7 @@ export class Filter implements IAction {
         this.parent.on(events.filterOpen, this.columnMenuFilter, this);
         this.parent.on(events.click, this.filterIconClickHandler, this);
         this.parent.on('persist-data-changed', this.initialEnd, this);
+        this.parent.on(events.closeFilterDialog, this.clickHandler, this);
     }
     /**
      * @hidden
@@ -311,6 +312,7 @@ export class Filter implements IAction {
         this.parent.off(events.filterOpen, this.columnMenuFilter);
         this.parent.off(events.filterMenuClose, this.filterMenuClose);
         this.parent.off(events.click, this.filterIconClickHandler);
+        this.parent.off(events.closeFilterDialog, this.clickHandler);
     }
 
     private filterMenuClose(args: { field: string }): void {

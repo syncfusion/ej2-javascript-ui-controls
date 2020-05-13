@@ -261,7 +261,7 @@ export class DateTime extends NiceInterval {
             delta: axis.actualRange.delta,
         };
         let isLazyLoad : boolean = isNullOrUndefined(axis.zoomingScrollBar) ? false : axis.zoomingScrollBar.isLazyLoad;
-        if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad ) {
+        if ((axis.zoomFactor < 1 || axis.zoomPosition > 0) && !isLazyLoad) {
             axis.calculateVisibleRange(size);
             axis.visibleRange.interval = (axis.enableAutoIntervalOnZooming) ?
                 this.calculateDateTimeNiceInterval(axis, size, axis.visibleRange.min, axis.visibleRange.max)
@@ -327,34 +327,43 @@ export class DateTime extends NiceInterval {
     /** @private */
     public increaseDateTimeInterval(axis: Axis, value: number, interval: number): Date {
         let result: Date = new Date(value);
-        interval = Math.ceil(interval);
-        axis.visibleRange.interval = interval;
+        if (axis.interval) {
+            axis.isIntervalInDecimal = (interval % 1) === 0;
+            axis.visibleRange.interval = interval;
+        } else {
+            interval = Math.ceil(interval);
+            axis.visibleRange.interval = interval;
+        }
         let intervalType: RangeIntervalType = axis.actualIntervalType as RangeIntervalType;
-        switch (intervalType) {
-            case 'Years':
-                result.setFullYear(result.getFullYear() + interval);
-                return result;
-            case 'Quarter':
-                result.setMonth(result.getMonth() + (3 * interval));
-                return result;
-            case 'Months':
-                result.setMonth(result.getMonth() + interval);
-                return result;
-            case 'Weeks':
-                result.setDate(result.getDate() + (interval * 7));
-                return result;
-            case 'Days':
-                result.setDate(result.getDate() + interval);
-                return result;
-            case 'Hours':
-                result.setHours(result.getHours() + interval);
-                return result;
-            case 'Minutes':
-                result.setMinutes(result.getMinutes() + interval);
-                return result;
-            case 'Seconds':
-                result.setSeconds(result.getSeconds() + interval);
-                return result;
+        if (axis.isIntervalInDecimal) {
+            switch (intervalType) {
+                case 'Years':
+                    result.setFullYear(result.getFullYear() + interval);
+                    return result;
+                case 'Quarter':
+                    result.setMonth(result.getMonth() + (3 * interval));
+                    return result;
+                case 'Months':
+                    result.setMonth(result.getMonth() + interval);
+                    return result;
+                case 'Weeks':
+                    result.setDate(result.getDate() + (interval * 7));
+                    return result;
+                case 'Days':
+                    result.setDate(result.getDate() + interval);
+                    return result;
+                case 'Hours':
+                    result.setHours(result.getHours() + interval);
+                    return result;
+                case 'Minutes':
+                    result.setMinutes(result.getMinutes() + interval);
+                    return result;
+                case 'Seconds':
+                    result.setSeconds(result.getSeconds() + interval);
+                    return result;
+            }
+        } else {
+                result = this.getDecimalInterval(result, interval, intervalType);
         }
         return result;
     }
@@ -394,6 +403,50 @@ export class DateTime extends NiceInterval {
                 return sResult;
         }
         return sResult;
+    }
+
+    private getDecimalInterval(result: Date, interval: number, intervalType: RangeIntervalType): Date {
+        let roundValue: number = Math.floor(interval);
+        let decimalValue: number = interval - roundValue;
+        switch (intervalType) {
+                case 'Years':
+                    let month: number = Math.round(12 * decimalValue);
+                    result.setFullYear(result.getFullYear() + roundValue);
+                    result.setMonth(result.getMonth() + month);
+                    return result;
+                case 'Quarter':
+                    result.setMonth(result.getMonth() + (3 * interval));
+                    return result;
+                case 'Months':
+                    let days: number = Math.round(30 * decimalValue);
+                    result.setMonth(result.getMonth() + roundValue);
+                    result.setDate(result.getDate() + days);
+                    return result;
+                case 'Weeks':
+                    result.setDate(result.getDate() + (interval * 7));
+                    return result;
+                case 'Days':
+                    let hour: number = Math.round(24 * decimalValue);
+                    result.setDate(result.getDate() + roundValue);
+                    result.setHours(result.getHours() + hour);
+                    return result;
+                case 'Hours':
+                    let min: number = Math.round(60 * decimalValue);
+                    result.setHours(result.getHours() + roundValue);
+                    result.setMinutes(result.getMinutes() + min);
+                    return result;
+                case 'Minutes':
+                    let sec: number = Math.round(60 * decimalValue);
+                    result.setMinutes(result.getMinutes() + roundValue);
+                    result.setSeconds(result.getSeconds() + sec);
+                    return result;
+                case 'Seconds':
+                    let milliSec: number = Math.round(1000 * decimalValue);
+                    result.setSeconds(result.getSeconds() + roundValue);
+                    result.setMilliseconds(result.getMilliseconds() + milliSec);
+                    return result;
+        }
+        return result;
     }
 
     /**

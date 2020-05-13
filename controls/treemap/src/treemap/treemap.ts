@@ -20,20 +20,22 @@ import { IItemRenderingEventArgs, IResizeEventArgs, IDoubleClickEventArgs, IRigh
 import { IItemClickEventArgs, IItemMoveEventArgs, IClickEventArgs, IMouseMoveEventArgs } from '../treemap/model/interface';
 import { IDrillStartEventArgs, IItemSelectedEventArgs, ITreeMapTooltipRenderEventArgs } from '../treemap/model/interface';
 import { IItemHighlightEventArgs, IDrillEndEventArgs, IThemeStyle } from '../treemap/model/interface';
-import { Size, stringToNumber, RectOption, Rect, textTrim, measureText, findChildren } from '../treemap/utils/helper';
+import { Size, stringToNumber, RectOption, Rect, textTrim, measureText, findChildren, removeElement } from '../treemap/utils/helper';
 import { removeClassNames, removeShape, textFormatter } from '../treemap/utils/helper';
 import { findPosition, Location, TextOption, renderTextElement, isContainsData, TreeMapAjax } from '../treemap/utils/helper';
 import { load, loaded, itemSelected, drillStart, drillEnd } from '../treemap/model/constants';
 import { itemClick, itemMove, click, mouseMove, resize, doubleClick, rightClick } from '../treemap/model/constants';
 import { LayoutPanel } from './layout/render-panel';
 import { TreeMapTooltip } from './user-interaction/tooltip';
-import { ExportUtils } from '../treemap/utils/export';
 import { ExportType } from '../treemap/utils/enum';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { TreeMapHighlight, TreeMapSelection } from './user-interaction/highlight-selection';
 import { TreeMapLegend } from './layout/legend';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { getThemeStyle } from './model/theme';
+import { Print } from './model/print';
+import { ImageExport } from './model/image-export';
+import { PdfExport } from './model/pdf-export';
 /**
  * Represents the treemap component.
  * ```html
@@ -64,6 +66,39 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      * Sets and gets the module that is used to add legend in the treemap.
      */
     public treeMapLegendModule: TreeMapLegend;
+    /**
+     * Sets and gets the module that is used to add print functionality in the treemap.
+     * @private
+     */
+    public printModule: Print;
+    /**
+     * Sets and gets the module that is used to add imageExport functionality in the treemap.
+     * @private
+     */
+    public imageExportModule: ImageExport;
+    /**
+     * Sets and gets the module that is used to add pdf export functionality in the treemap.
+     * @private
+     */
+    public pdfExportModule: PdfExport ;
+    /**
+     * Enables and disables the print functionality in treemap.
+     * @default false
+     */
+    @Property(false)
+    public allowPrint: boolean;
+    /**
+     * Enables and disables the export to image functionality in treemap.
+     * @default false
+     */
+    @Property(false)
+    public allowImageExport: boolean;
+    /**
+     * Enables and disables the export to pdf functionality in treemap.
+     * @default false
+     */
+    @Property(false)
+    public allowPdfExport: boolean;
     /**
      * Sets and gets the width of the treemap component.
      * @default null
@@ -423,6 +458,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
     public legendId: string[] = [];
     /** @private */
     public selectionId: string;
+
     /**s
      * Constructor for TreeMap component.
      */
@@ -433,7 +469,14 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
 
     protected preRender(): void {
         this.isBlazor = isBlazor();
-
+        if (!this.isBlazor) {
+            this.allowPrint = true;
+            this.allowImageExport = true;
+            this.allowPdfExport = true;
+            TreeMap.Inject(Print);
+            TreeMap.Inject(PdfExport);
+            TreeMap.Inject(ImageExport);
+        }
         this.trigger(load, { treemap: this.isBlazor ? null : this }, () => {
             this.initPrivateVariable();
             this.unWireEVents();
@@ -764,8 +807,9 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      * @param id - Specifies the element to print the treemap.
      */
     public print(id?: string[] | string | Element): void {
-        let exportChart: ExportUtils = new ExportUtils(this);
-        exportChart.print(id);
+        if (this.allowPrint && this.printModule) {
+            this.printModule.print(id);
+        }
     }
     /**
      * This method is used to perform the export functionality for the rendered treemap.
@@ -773,9 +817,23 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      * @param fileName - Specifies file name for exporting the rendered treemap. 
      * @param orientation - Specifies the orientation of the pdf document.
      */
-    public export(type: ExportType, fileName: string, orientation?: PdfPageOrientation): void {
-        let exportMap: ExportUtils = new ExportUtils(this);
-        exportMap.export(type, fileName, orientation);
+    public export(type: ExportType, fileName: string, orientation?: PdfPageOrientation, allowDownload?: boolean): Promise<string> {
+        if (isNullOrUndefined(allowDownload)) {
+            allowDownload = true;
+            }
+        if (type === 'PDF' && this.allowPdfExport && this.pdfExportModule) {
+
+                return new Promise((resolve: Function, reject: Function) => {
+                    resolve(this.pdfExportModule.export(type, fileName, orientation, allowDownload));
+                });
+
+        } else if (this.allowImageExport && (type !== 'PDF') && this.imageExportModule) {
+
+                return new Promise((resolve: Function, reject: Function) => {
+                    resolve(this.imageExportModule.export(type, fileName, allowDownload));
+                });
+        }
+        return null;
     }
     /* tslint:disable:no-string-literal */
     private processFlatJsonData(): void {
@@ -1314,6 +1372,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
             this.treeMapHighlightModule.highLightId = '';
         }
     }
+
     /**
      * This method is used to select or remove the selection of treemap item based on the provided selection settings.
      */
@@ -1333,6 +1392,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
             this.treeMapSelectionModule.selectTreemapItem(levelOrderName, isSelected);
         }
     }
+
 
     /**
      * To provide the array of modules needed for maps rendering
@@ -1363,6 +1423,24 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
             modules.push({
                 member: 'treeMapLegend',
                 args: [this]
+            });
+        }
+        if (this.allowPrint) {
+            modules.push({
+                member: 'Print',
+                args: [this, Print]
+            });
+        }
+        if (this.allowImageExport) {
+            modules.push({
+                member: 'ImageExport',
+                args: [this, ImageExport]
+            });
+        }
+        if (this.allowPdfExport) {
+            modules.push({
+                member: 'PdfExport',
+                args: [this, PdfExport]
             });
         }
         return modules;
@@ -1410,7 +1488,23 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public destroy(): void {
         this.unWireEVents();
+        this.drilledItems = [];
+        this.levelSelection = [];
+        this.legendId = [];
+        this.removeSvg();
         super.destroy();
+    }
+
+    private removeSvg(): void {
+        removeElement(this.element.id + '_Secondary_Element');
+        if (this.svgObject) {
+            while (this.svgObject.childNodes.length > 0) {
+                this.svgObject.removeChild(this.svgObject.firstChild);
+            }
+            if (!this.svgObject.hasChildNodes() && this.svgObject.parentNode) {
+                remove(this.svgObject);
+            }
+        }
     }
 
     /**

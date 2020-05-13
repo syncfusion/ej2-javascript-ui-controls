@@ -236,6 +236,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     private LISTVIEW_HEADERTEMPLATE_ID: string;
     private liElement: Element;
     private itemReRender: boolean = false;
+    private virtualCheckBox: Element | string;
     /**
      * The `cssClass` property is used to add a user-preferred class name in the root element of the ListView, 
      *  using which we can customize the component (both CSS and functionality customization)
@@ -384,12 +385,6 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
     public width: number | string;
 
     /**
-     * It is used for set checkBox in virtualization with template concept ListView component.
-     * @default ''
-     */
-    @Property('')
-    protected virtualCheckBox: Element | string;
-    /**
      * The ListView component supports to customize the content of each list items with the help of `template` property.
      *     
      * @default null
@@ -492,6 +487,16 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
                 case 'headerTitle':
                     if (!this.curDSLevel.length) {
                         this.header(this.headerTitle, false);
+                    }
+                    break;
+                case 'query':
+                    if (this.enableVirtualization) {
+                        this.virtualizationModule.reRenderUiVirtualization();
+                    } else {
+                        if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
+                            this.itemReRender = true;
+                        }
+                        this.reRender();
                     }
                     break;
                 case 'showHeader':
@@ -1251,7 +1256,7 @@ export class ListView extends Component<HTMLElement> implements INotifyPropertyC
         let eventArgs: Object = {};
         merge(eventArgs, selectedItem);
         if (e) {
-            merge(eventArgs, { isInteracted: true, event: e, index: Array.prototype.indexOf.call(this.curUL.children, li) });
+            merge(eventArgs, { isInteracted: true, event: e, index: this.curUL && Array.prototype.indexOf.call(this.curUL.children, li) });
         }
         return eventArgs;
     }

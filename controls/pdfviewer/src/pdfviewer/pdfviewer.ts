@@ -4,14 +4,14 @@ import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from 
 import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel, TextSearchColorSettingsModel, DocumentTextCollectionSettingsModel, TextDataSettingsModel, RectangleBoundsModel } from './pdfviewer-model';
 import { ToolbarSettingsModel, AnnotationToolbarSettingsModel, ShapeLabelSettingsModel } from './pdfviewer-model';
 // tslint:disable-next-line:max-line-length
-import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampItemModel, HandWrittenSignatureSettingsModel, AnnotationSettingsModel, TileRenderingSettingsModel } from './pdfviewer-model';
+import { ServerActionSettingsModel, AjaxRequestSettingsModel, CustomStampItemModel, HandWrittenSignatureSettingsModel, AnnotationSettingsModel, TileRenderingSettingsModel, StampItemSettingsModel, ScrollSettingsModel , FormFieldCollectionsModel } from './pdfviewer-model';
 import { PdfViewerBase } from './index';
 import { Navigation } from './index';
 import { Magnification } from './index';
 import { Toolbar } from './index';
 import { ToolbarItem } from './index';
 // tslint:disable-next-line:max-line-length
-import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem } from './base/types';
+import { LinkTarget, InteractionMode, AnnotationType, AnnotationToolbarItem, LineHeadStyle, ContextMenuAction, FontStyle, TextAlignment, AnnotationResizerShape, AnnotationResizerLocation, ZoomMode, PrintMode, CursorType, ContextMenuItem, DynamicStampItem, SignStampItem, StandardBusinessStampItem } from './base/types';
 import { Annotation } from './index';
 import { LinkAnnotation } from './index';
 import { ThumbnailView } from './index';
@@ -2004,6 +2004,72 @@ export class TileRenderingSettings extends ChildProperty<TileRenderingSettings> 
     @Property(0)
     public y: number;
 }
+/**
+ * The `ScrollSettings` module is used to provide the settings of the scroll of the PDF viewer.
+ */
+export class ScrollSettings extends ChildProperty<ScrollSettings> {
+    /**
+     * Increase or decrease the delay time.
+     */
+    @Property(100)
+    public delayPageRequestTimeOnScroll: number;
+}
+/**
+ * The `FormFieldCollections` is used to store the form fields of PDF document.
+ */
+export class FormFieldCollections extends ChildProperty<FormFieldCollections> {
+    /**
+     * fieldName of the form fields.
+     */
+    @Property('')
+    public fieldName: string;
+
+    /**
+     * id of the form fields.
+     */
+    @Property('')
+    public id: string;
+
+    /**
+     * type of the form fields.
+     */
+    @Property('')
+    public type: string;
+
+    /**
+     * isReadOnly of the form fields.
+     */
+    @Property(false)
+    public isReadOnly: boolean;
+}
+/**
+ * The `StampItemSettings` module is used to provide the  stamp items in toolbar of PDF viewer.
+ */
+export class StampItemSettings  extends ChildProperty<StampItemSettings> {
+    /**
+     * Enable or disables the custom stamp of PdfViewer.
+     */
+    @Property(true)
+    public enableCustomStamp: boolean;
+
+    /**
+     * dynamic stamp item in the PdfViewer.
+     */
+    @Property([])
+    public dynamicStamps: DynamicStampItem[];
+
+    /**
+     * sign stamp item in the PdfViewer.
+     */
+    @Property([])
+    public signStamps: SignStampItem[];
+
+    /**
+     * standard business stamp item in the PdfViewer.
+     */
+    @Property([])
+    public standardBusinessStamps: StandardBusinessStampItem[];
+}
 
 /**
  * Represents the PDF viewer component.
@@ -2072,6 +2138,12 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     // tslint:disable-next-line
     public annotationCollection: any[];
+
+    /**
+     * Get the Loaded document signature Collections in the PdfViewer control.
+     */
+    // tslint:disable-next-line
+    public signatureCollection: any[] = [];
 
     /**
      * Gets or sets the document name loaded in the PdfViewer control.
@@ -2223,6 +2295,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     public enableHandwrittenSignature: boolean;
 
     /**
+     * restrict zoom request.
+     * @default false
+     */
+    @Property(true)
+    public restrictZoomRequest: boolean;
+
+    /**
      * Specifies the open state of the hyperlink in the PDF document.
      * @default CurrentTab
      */
@@ -2242,6 +2321,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Property([])
     public disableContextMenuItems: ContextMenuItem[];
+
+    /**
+     * Defines the settings of the PdfViewer toolbar.
+     */
+    // tslint:disable-next-line:max-line-length
+    @Property({ fieldName: '', id: '', type: '', isReadOnly: false })
+    public formFieldCollections: FormFieldCollectionsModel[];
 
     /**
      * Enable or disables the Navigation module of PdfViewer.
@@ -2312,6 +2398,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Property(false)
     public enableFormFieldsValidation: boolean;
+
+    /** 
+     * Enable if the PDF document contains form fields.
+     * @default false
+     */
+    @Property(false)
+    public isFormFieldsDocument: boolean;
 
     /**
      * Enable or disable the free text annotation in the Pdfviewer.
@@ -2603,6 +2696,19 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      */
     @Property({ enableTileRendering: true, x: 0, y: 0 })
     public tileRenderingSettings: TileRenderingSettingsModel;
+
+    /**
+     * Defines the settings of the PdfViewer toolbar.
+     */
+    // tslint:disable-next-line:max-line-length
+    @Property({ enableCustomStamp: true, dynamicStamps: [DynamicStampItem.Revised, DynamicStampItem.Reviewed, DynamicStampItem.Received, DynamicStampItem.Confidential, DynamicStampItem.Approved, DynamicStampItem.NotApproved], signStamps: [SignStampItem.Witness, SignStampItem.InitialHere, SignStampItem.SignHere, SignStampItem.Accepted, SignStampItem.Rejected], standardBusinessStamps: [StandardBusinessStampItem.Approved, StandardBusinessStampItem.NotApproved, StandardBusinessStampItem.Draft, StandardBusinessStampItem.Final, StandardBusinessStampItem.Completed, StandardBusinessStampItem.Confidential, StandardBusinessStampItem.ForPublicRelease, StandardBusinessStampItem.NotForPublicRelease, StandardBusinessStampItem.ForComment, StandardBusinessStampItem.Void, StandardBusinessStampItem.PreliminaryResults, StandardBusinessStampItem.InformationOnly]})
+    public stampItemSettings: StampItemSettingsModel;
+
+    /**
+     * Defines the scroll settings.
+     */
+    @Property({ delayPageRequestTimeOnScroll: 100 })
+    public scrollSettings: ScrollSettingsModel;
 
     /**
      * @private
@@ -3648,6 +3754,23 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
     }
 
     /**
+     * To retrieve the form fields in the PDF Document.
+     * @returns void
+     */
+    public retrieveFormFields(): FormFieldCollectionsModel[] {
+        return this.formFieldCollections;
+    }
+
+    /**
+     * To update the form fields in the PDF Document.
+     * @returns void
+     */
+    // tslint:disable-next-line
+    public updateFormFields(formFields: any): void {
+        this.formFieldsModule.updateFormFieldValues(formFields);
+    }
+
+    /**
      * @private
      */
     // tslint:disable-next-line
@@ -3851,8 +3974,8 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     // tslint:disable-next-line
-    public fireSignatureSelect(id: string, pageNumber: number, bounds: any, opacity: number, thickness: number, strokeColor: string) {
-        let eventArgs: SignatureSelectEventArgs = { id: id, pageIndex: pageNumber, bounds: bounds, opacity: opacity, thickness: thickness, strokeColor: strokeColor };
+    public fireSignatureSelect(id: string, pageNumber: number, signature: object) {
+        let eventArgs: SignatureSelectEventArgs = { id: id, pageIndex: pageNumber, signature: signature };
         this.trigger('signatureSelect', eventArgs);
     }
 

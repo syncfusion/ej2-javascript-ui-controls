@@ -1,4 +1,4 @@
-import { createElement, Browser, closest } from '@syncfusion/ej2-base';
+import { createElement, Browser} from '@syncfusion/ej2-base';
 import {
     Toolbar as Tool, ClickEventArgs, MenuItemModel, Menu, MenuModel,
     BeforeOpenCloseMenuEventArgs as Menuopen, MenuEventArgs
@@ -12,6 +12,7 @@ import { cloneObject } from '../../diagram/drawing-util';
 import { FreeTextAnnotation } from '../annotation/free-text-annotation';
 import { ComboBox } from '@syncfusion/ej2-dropdowns';
 import { Query } from '@syncfusion/ej2-data';
+import { DynamicStampItem, SignStampItem, StandardBusinessStampItem } from '../base/types';
 
 /**
  * @hidden
@@ -288,51 +289,76 @@ export class AnnotationToolbar {
         this.primaryToolbar.createTooltip(this.pdfViewerBase.getElement('_annotation_stamp'), this.pdfViewer.localeObj.getConstant('Add Stamp'));
         let contextMenuElement: HTMLElement = createElement('ul', { id: 'contextMenuElement' });
         this.pdfViewerBase.getElement('_annotation_stamp').appendChild(contextMenuElement);
+        let items: Object[] = [];
+
+        if (this.pdfViewer.stampItemSettings.dynamicStamps && this.pdfViewer.stampItemSettings.dynamicStamps.length > 0) {
+            let dynamicStamps: Object[] = [];
+            items.push({text: 'Dynamic', items: dynamicStamps});
+            this.pdfViewer.stampItemSettings.dynamicStamps.forEach( (stampItem: DynamicStampItem, index: number) => {
+                let name: string = DynamicStampItem[stampItem];
+                switch (name) {
+                    case 'NotApproved':
+                        name = 'Not Approved';
+                        break;
+                    }
+                dynamicStamps.push({text: name});
+            });
+        }
+
+        if (this.pdfViewer.stampItemSettings.signStamps && this.pdfViewer.stampItemSettings.signStamps.length > 0) {
+            let signStamps: Object[] = [];
+            items.push({text: 'Sign Here', items: signStamps});
+            this.pdfViewer.stampItemSettings.signStamps.forEach( (stampItem: SignStampItem, index: number) => {
+                let name: string = SignStampItem[stampItem];
+                switch (name) {
+                    case 'InitialHere':
+                        name = 'Initial Here';
+                        break;
+                    case 'SignHere':
+                        name = 'Sign Here';
+                        break;
+                }
+                signStamps.push({text: name});
+            });
+        }
+        if (this.pdfViewer.stampItemSettings.standardBusinessStamps && this.pdfViewer.stampItemSettings.standardBusinessStamps.length > 0) {
+            let standardsBusinessStamps: Object[] = [];
+            items.push({text: 'Standard Business', items : standardsBusinessStamps});
+            this.pdfViewer.stampItemSettings.standardBusinessStamps.forEach( (stampItem: StandardBusinessStampItem, index: number) => {
+                let name: string = StandardBusinessStampItem[stampItem];
+                switch (name) {
+                    case 'NotApproved':
+                        name = 'Not Approved';
+                        break;
+                    case 'ForPublicRelease':
+                        name = 'For Public Release';
+                        break;
+                    case 'NotForPublicRelease':
+                        name = 'Not For Public Release';
+                        break;
+                    case 'ForComment':
+                        name = 'For Comment';
+                        break;
+                    case 'PreliminaryResults':
+                        name = 'Preliminary Results';
+                        break;
+                    case 'InformationOnly':
+                        name = 'Information Only';
+                        break;
+                    }
+                standardsBusinessStamps.push({text: name});
+            });
+        }
+        if (this.pdfViewer.stampItemSettings.enableCustomStamp) {
+            if (items.length > 0) {
+                items.push({ separator: true });
+            }
+            items.push({ text: 'Custom Stamp', items: [] });
+        }
         this.stampMenu = [
             {
                 iconCss: 'e-pv-stamp-icon e-pv-icon',
-                items: [
-                    {
-                        text: 'Dynamic',
-                        items: [
-                            { text: 'Revised' },
-                            { text: 'Reviewed' },
-                            { text: 'Received' },
-                            { text: 'Approved' },
-                            { text: 'Confidential' },
-                            { text: 'Not Approved' },
-                        ]
-                    },
-                    {
-                        text: 'Sign Here',
-                        items: [
-                            { text: 'Witness' },
-                            { text: 'Initial Here' },
-                            { text: 'Sign Here' },
-                            { text: 'Accepted' },
-                            { text: 'Rejected' },
-                        ]
-                    },
-                    {
-                        text: 'Standard Business',
-                        items: [
-                            { text: 'Approved' },
-                            { text: 'Not Approved' },
-                            { text: 'Draft' },
-                            { text: 'Final' },
-                            { text: 'Completed' },
-                            { text: 'Confidential' },
-                            { text: 'For Public Release' },
-                            { text: 'Not For Public Release' },
-                            { text: 'For Comment' },
-                            { text: 'Void' },
-                            { text: 'Preliminary Results ' },
-                            { text: 'Information Only ' },
-                        ]
-                    },
-                    { separator: true },
-                    { text: 'Custom Stamp', items: [] }
-                ],
+                items: items,
             },
         ];
         let menuOptions: MenuModel = {
@@ -367,9 +393,6 @@ export class AnnotationToolbar {
                             currentElements.items.push({ text: elements[m].customStampName });
                         }
                     }
-                }
-                if (args.parentItem.text === 'Standard Business') {
-                    (closest(args.element, '.e-menu-wrapper') as HTMLElement).style.height = '320px';
                 }
                 this.stampParentID = args.parentItem.text;
                 this.menuItems.showItemOnClick = false;

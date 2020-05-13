@@ -869,16 +869,18 @@ export class Zoom {
                 scale: map.scale, tileZoomLevel: map.tileZoomLevel, latitude: location['latitude'], longitude: location['longitude']
             };
             map.trigger(pan, panArgs);
-            if (panningXDirection && panningYDirection) {
-                map.translatePoint = new Point(x, y);
-                this.applyTransform();
-            } else if (panningXDirection) {
-                map.translatePoint = new Point(x, map.translatePoint.y);
-                this.applyTransform();
-            } else if (panningYDirection) {
-                map.translatePoint = new Point(map.translatePoint.x, y);
-                this.applyTransform();
-            }
+            if (!panArgs.cancel) {
+                if (panningXDirection && panningYDirection) {
+                    map.translatePoint = new Point(x, y);
+                    this.applyTransform();
+                } else if (panningXDirection) {
+                    map.translatePoint = new Point(x, map.translatePoint.y);
+                    this.applyTransform();
+                } else if (panningYDirection) {
+                    map.translatePoint = new Point(map.translatePoint.x, y);
+                    this.applyTransform();
+                }
+            }            
             this.maps.zoomNotApplied = false;
         } else if (this.maps.tileZoomLevel > 1) {
             x = map.tileTranslatePoint.x - xDifference;
@@ -1243,7 +1245,7 @@ export class Zoom {
         let toolBarSize: ClientRect = this.toolBarGroup.getBoundingClientRect();
         rectSVGObject.setAttribute('height', (toolBarSize.height + padding / 2).toString());
         rectSVGObject.setAttribute('width', (toolBarSize.width + padding / 2).toString());
-        let size: Rect = map.mapAreaRect;
+        let size: Rect = !isNullOrUndefined(map.totalRect) ? map.totalRect : map.mapAreaRect;
         let x: number = 0; let y: number = 0;
         switch (map.zoomSettings.verticalAlignment) {
             case 'Near':

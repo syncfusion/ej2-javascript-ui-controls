@@ -19,7 +19,7 @@ import { Search } from './index';
 import { OptionsPane } from './index';
 import { WordExport } from './index';
 import { TextExport } from './index';
-import { FormatType, PageFitType, DialogType } from './index';
+import { FormatType, PageFitType, DialogType, FormattingExceptions } from './index';
 import { ContextMenu } from './index';
 import { ImageResizer } from './index';
 import { SfdtExport } from './index';
@@ -36,6 +36,7 @@ import { PasteOptions } from './index';
 import { CommentReviewPane, CheckBoxFormFieldDialog, DropDownFormField, TextFormField, CheckBoxFormField, FieldElementBox, TextFormFieldInfo, CheckBoxFormFieldInfo, DropDownFormFieldInfo } from './implementation/index';
 import { TextFormFieldDialog } from './implementation/dialogs/form-field-text-dialog';
 import { DropDownFormFieldDialog } from './implementation/dialogs/form-field-drop-down-dialog';
+import { FormFillingMode } from './base';
 
 /**
  * The `DocumentEditorSettings` module is used to provide the customize property of Document Editor.
@@ -49,12 +50,21 @@ export class DocumentEditorSettings extends ChildProperty<DocumentEditorSettings
     @Property('#FFE97F')
     public searchHighlightColor: string;
 
+    /* tslint:disable */
+    /**
+     * Specifies the user preferred font family of Document Editor.
+     * @default ['Algerian','Arial','Calibri','Cambria','CambriaMath','Candara','CourierNew','Georgia','Impact','SegoePrint','SegoeScript','SegoeUI','Symbol','TimesNewRoman','Verdana','Windings']
+     */
+    @Property(['Algerian', 'Arial', 'Calibri', 'Cambria', 'Cambria Math', 'Candara', 'Courier New', 'Georgia', 'Impact', 'Segoe Print', 'Segoe Script', 'Segoe UI', 'Symbol', 'Times New Roman', 'Verdana', 'Windings'])
+    public fontFamilies: string[];
+    /* tslint:enable */
+
+
     /**
      * Form field settings.
      */
-    @Property({ shadingColor: '#cfcfcf', applyShading: true, selectionColor: '#cccccc' })
+    @Property({ shadingColor: '#cfcfcf', applyShading: true, selectionColor: '#cccccc', formFillingMode: 'Popup' })
     public formFieldSettings: FormFieldSettingsModel;
-
 }
 
 /**
@@ -1883,7 +1893,12 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
                     // tslint:disable-next-line:max-line-length
                     formData.value = (formField[i].formFieldData as CheckBoxFormField).checked;
                 } else if (formField[i].formFieldData instanceof TextFormField) {
-                    let resultText: string = formField[i].resultText;
+                    let resultText: string = '';
+                    if (this.documentHelper.isInlineFormFillProtectedMode) {
+                        resultText = this.editorModule.getFormFieldText(formField[i]);
+                    } else {
+                        resultText = formField[i].resultText;
+                    }
                     let rex: RegExp = new RegExp(this.documentHelper.textHelper.getEnSpaceCharacter(), 'gi');
                     if (resultText.replace(rex, '') === '') {
                         resultText = '';
@@ -2317,6 +2332,18 @@ export class FormFieldSettings extends ChildProperty<FormFieldSettings> {
      */
     @Property('#cccccc')
     public selectionColor: string;
+    /**
+     * Get or Set form filling mode type. 
+     * @default 'Popup'
+     */
+    @Property('Popup')
+    public formFillingMode: FormFillingMode;
+    /**
+     * Get or Set formatting exception. 
+     * @default []
+     */
+    @Property([])
+    public formattingExceptions: FormattingExceptions[];
 }
 
 

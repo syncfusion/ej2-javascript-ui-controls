@@ -2818,9 +2818,9 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
      */
     private setLocaleConstants(): void {
         this.defaultLocalConstants = {
-            ZoomIn: 'ZoomIn',
+            ZoomIn: 'Zoom in',
             Zoom: 'Zoom',
-            ZoomOut: 'ZoomOut',
+            ZoomOut: 'Zoom out',
             Pan: 'Pan',
             Reset: 'Reset',
             ResetZoom: 'Reset Zoom'

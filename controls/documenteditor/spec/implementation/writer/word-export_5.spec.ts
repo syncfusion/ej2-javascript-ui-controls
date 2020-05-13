@@ -1274,7 +1274,7 @@ describe('Serialize Shape validation', () => {
         expect((writer as any).bufferText.indexOf('<wp:simplePos x="0" y="0" ')).not.toBe(-1);
         expect((writer as any).bufferText.indexOf('<wp:positionH relativeFrom="column"')).not.toBe(-1);
         expect((writer as any).bufferText.indexOf('<wp:positionV relativeFrom="paragraph"')).not.toBe(-1);
-        expect((writer as any).bufferText.indexOf('<wp:docPr id="0" name="1" title=""')).not.toBe(-1);
+        expect((writer as any).bufferText.indexOf('<wp:docPr id="11" name="AutoShape 4" title=""')).not.toBe(-1);
         expect((writer as any).bufferText.indexOf('<a:cxnSpLocks noChangeShapeType="1"')).not.toBe(-1);
         expect((writer as any).bufferText.indexOf('<wps:spPr bwMode="auto"')).not.toBe(-1);
         expect((writer as any).bufferText.indexOf('<a:off x="0" y="0"')).not.toBe(-1);

@@ -1,4 +1,5 @@
-import { RangeNavigator, AreaSeries, DateTime, IChangedEventArgs } from '../../../src/range-navigator/index';
+import { RangeNavigator, IChangedEventArgs } from '../../../src/range-navigator/index';
+import { AreaSeries, DateTime } from '../../../src/chart/index';
 import { PeriodSelector } from '../../../src/common/period-selector/period-selector';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { DataManager, Query } from '@syncfusion/ej2-data';

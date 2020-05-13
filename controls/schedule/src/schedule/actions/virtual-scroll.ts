@@ -93,7 +93,7 @@ export class VirtualScroll {
         let conTable: HTMLElement = this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS) as HTMLElement;
         this.renderedLength = resWrap.querySelector('tbody').children.length;
         let firstTDIndex: number = parseInt(resWrap.querySelector('tbody td').getAttribute('data-group-index'), 10);
-        let scrollHeight: number = (this.parent.rowAutoHeight && !this.parent.eventSettings.ignoreWhitespace) ?
+        let scrollHeight: number = this.parent.rowAutoHeight ?
             (conTable.offsetHeight - conWrap.offsetHeight) : this.bufferCount * this.itemSize;
         addClass([conWrap], 'e-transition');
         let resCollection: TdData[] = [];

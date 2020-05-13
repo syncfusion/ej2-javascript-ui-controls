@@ -285,19 +285,19 @@ describe('Sparkline ', () => {
             expect(options.text).toBe('-313');
             expect(options.x).toBe(174);
             // first test case local and second for server value
-            expect(options.y === 141 || options.y === 140).toBe(true);
+            expect(options.y === 143 || options.y === 142).toBe(true);
             ele = getIdElement(id + '_sparkline_label_text_4');
             options = getLabelOptions(ele);
             expect(options.text).toBe('-648');
             expect(options.x).toBe(342);
             // first test case local and second for server value
-            expect(options.y === 185 || options.y === 184).toBe(true);
+            expect(options.y === 187 || options.y === 186).toBe(true);
             ele = getIdElement(id + '_sparkline_label_text_6');
             options = getLabelOptions(ele);
             expect(options.text).toBe('-423');
             expect(options.x).toBe(511);
             // first test case local and second for server value
-            expect(options.y === 155 || options.y === 154).toBe(true);
+            expect(options.y === 157 || options.y === 156).toBe(true);
         });
         it('Sparkline datalabel visible mode Negative other points not visible checking', () => {
             ele = getIdElement(id + '_sparkline_label_text_0');

@@ -32,7 +32,6 @@ export class TimelineEvent extends MonthEvent {
         this.dayLength = this.element.querySelectorAll('.' + cls.CONTENT_TABLE_CLASS + ' tbody tr').length === 0 ?
             0 : this.element.querySelectorAll('.' + cls.CONTENT_TABLE_CLASS + ' tbody tr')[0].children.length;
         this.content = this.parent.element.querySelector('.' + cls.CONTENT_TABLE_CLASS) as HTMLElement;
-        this.moreIndicatorHeight = (this.parent.rowAutoHeight) ? 0 : this.moreIndicatorHeight;
     }
 
     public getSlotDates(): void {

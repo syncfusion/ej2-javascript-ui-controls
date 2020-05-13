@@ -366,6 +366,10 @@ export class SelectTool extends ToolBase {
     }
 
     private mouseEventHelper(args: MouseEventArgs): void {
+        if (this.commandHandler && this.commandHandler.annotationModule) {
+            // tslint:disable-next-line
+            this.commandHandler.annotationModule.overlappedCollections = findActiveElement(args as any, this.pdfViewerBase, this.commandHandler, true);
+        }
         // tslint:disable-next-line
         let object: IElement = findActiveElement(args as any, this.pdfViewerBase, this.commandHandler);
         // tslint:disable-next-line

@@ -8,7 +8,7 @@ import {ComponentModel} from '@syncfusion/ej2-base';
 export interface FieldsModel {
 
     /**
-     * This field specifies the child items or mapping field for the nested child items which contains an array of JSON objects.
+     * This field specifies the child items or mapping field for the nested child items that contains an array of JSON objects.
      */
     child?: string | FieldsModel;
 
@@ -44,19 +44,19 @@ export interface FieldsModel {
     imageUrl?: string;
 
     /**
-     * Specifies the parent value field mapped in data source.
+     * Specifies the parent value field mapped in the data source.
      */
     parentValue?: string;
 
     /**
      * Defines the external [`Query`](http://ej2.syncfusion.com/documentation/data/api-query.html)
-     * that will execute along with data processing.
+     * that will execute along with the data processing.
      * @default null
      */
     query?: Query;
 
     /**
-     * Specifies the mapping field for selected state of the Dropdown Tree item.
+     * Specifies the mapping field for the selected state of the Dropdown Tree item.
      */
     selected?: string;
 
@@ -66,7 +66,7 @@ export interface FieldsModel {
     tableName?: string;
 
     /**
-     * Specifies the mapping field for text displayed as Dropdown Tree item's display text.
+     * Specifies the mapping field for text displayed as Dropdown Tree items display text.
      */
     text?: string;
 
@@ -76,7 +76,7 @@ export interface FieldsModel {
     tooltip?: string;
 
     /**
-     * Specifies the value(ID) field mapped in data source.
+     * Specifies the value(ID) field mapped in the data source.
      */
     value?: string;
 
@@ -95,14 +95,14 @@ export interface TreeSettingsModel {
     autoCheck?: boolean;
 
     /**
-     * Specifies the action on which the parent items in the pop-up should expand/collapse. The available actions are
-     * * `Auto` - In desktop, the expand/collapse operation happens when you double-click the node,
+     * Specifies the action on which the parent items in the pop-up should expand or collapse. The available actions are
+     * * `Auto` - In desktop, the expand or collapse operation happens when you double-click the node, 
      * and in mobile devices it happens on single-tap.
-     * * `Click` - The expand/collapse operation happens when you perform single-click/tap 
+     * * `Click` - The expand or collapse operation happens when you perform single-click/tap 
      * on the pop-up item in both desktop and mobile devices.
-     * * `DblClick` - The expand/collapse operation happens when you perform a double-click/tap 
+     * * `DblClick` - The expand or collapse operation happens when you perform a double-click/tap 
      * on the pop-up item in both desktop and mobile devices.
-     * * `None` - The expand/collapse operation will not happen when you perform single-click/tap 
+     * * `None` - The expand or collapse operation will not happen when you perform single-click/tap 
      * or double-click/tap on the pop-up items in both desktop and mobile devices.
      * @default 'Auto'
      */
@@ -111,7 +111,7 @@ export interface TreeSettingsModel {
     /**
      * By default, the load on demand (Lazy load) is set to false.
      * Enabling this property will render only the parent tree items in the popup and
-     * the child items will be rendered on demand while expanding the corresponding parent node.
+     * the child items will be rendered on demand when expanding the corresponding parent node.
      * @default false
      */
     loadOnDemand?: boolean;
@@ -131,7 +131,7 @@ export interface DropDownTreeModel extends ComponentModel{
     actionFailureTemplate?: string;
 
     /**
-     * When allowFiltering is set to true, show the filter bar (search text box) of the component.
+     * When allowFiltering is set to true, it shows the filter bar (search text box) of the component.
      * The filter action retrieves matched items through the **filtering** event based on the characters typed in the search text box.
      * If no match is found, the value of the **noRecordsTemplate** property will be displayed.
      * 
@@ -141,7 +141,7 @@ export interface DropDownTreeModel extends ComponentModel{
 
     /**
      * Enables or disables the multi-selection of items. To select multiple items:
-     * * Select the items by holding down the **CTRL** key while clicking on the items.
+     * * Select the items by holding down the **CTRL** key when clicking on the items.
      * * Select consecutive items by clicking the first item to select and hold down the **SHIFT** key and click the last item to select.
      *
      * @default false
@@ -149,7 +149,7 @@ export interface DropDownTreeModel extends ComponentModel{
     allowMultiSelection?: boolean;
 
     /**
-     * By default, the Dropdown Tree component fires the change event while focus out the component.
+     * By default, the Dropdown Tree component fires the change event while focusing out the component.
      * If you want to fire the change event on every value selection and remove, then disable this property.
      * 
      * @default true
@@ -208,7 +208,7 @@ export interface DropDownTreeModel extends ComponentModel{
      * <tr> 
      * <td colSpan=1 rowSpan=1> 
      * EndsWith<br/></td><td colSpan=1 rowSpan=1> 
-     * Checks whether a value ends with specified value.<br/></td><td colSpan=1 rowSpan=1> 
+     * Checks whether a value ends with the specified value.<br/></td><td colSpan=1 rowSpan=1> 
      * String<br/></td></tr> 
      * <tr> 
      * <td colSpan=1 rowSpan=1> 
@@ -236,13 +236,13 @@ export interface DropDownTreeModel extends ComponentModel{
 
     /**
      * Specifies the template that renders a customized footer container at the bottom of the pop-up list.
-     * By default the footerTemplate will be null and there will no footer container for the pop-up list.
+     * By default, the footerTemplate will be null and there will be no footer container for the pop-up list.
      * @default null
      */
     footerTemplate?: string;
 
     /**
-     * When **ignoreAccent** set to true, then ignores the diacritic characters or accents when filtering.
+     * When **ignoreAccent** is set to true, then it ignores the diacritic characters or accents when filtering.
      */
     ignoreAccent?: boolean;
 
@@ -253,8 +253,8 @@ export interface DropDownTreeModel extends ComponentModel{
     ignoreCase?: boolean;
 
     /**
-     * Specifies the template that renders a customized header container in the top of the pop-up list.
-     * By default the headerTemplate will be null and there will no header container for the pop-up list.
+     * Specifies the template that renders a customized header container at the top of the pop-up list.
+     * By default, the headerTemplate will be null and there will be no header container for the pop-up list.
      * @default null
      */
     headerTemplate?: string;
@@ -266,8 +266,8 @@ export interface DropDownTreeModel extends ComponentModel{
     htmlAttributes?: { [key: string]: string; };
 
     /**
-     * Specifies a template to render customized content for all the items.
-     * If the itemTemplate property is set, the template content overrides the displayed item text.
+     * Specifies a template to render customized content for all the items. 
+     * If the **itemTemplate** property is set, the template content overrides the displayed item text.
      * The property accepts [template string](http://ej2.syncfusion.com/documentation/base/template-engine.html)
      * or HTML element ID holding the content.
      * @default null
@@ -278,13 +278,14 @@ export interface DropDownTreeModel extends ComponentModel{
      * Configures visibility mode for component interaction when allowMultiSelection or checkbox is enabled.
      * Different modes are:
      * * Box : Selected items will be visualized in chip.
-     * * Delimiter : Selected items will be visualized in text content.
-     * * Default : On focus in, the component will act in box mode. On blur component will act in delimiter mode.
+     * * Delimiter : Selected items will be visualized in the text content.
+     * * Default : On focus in component will act in the box mode. On blur component will act in the delimiter mode.
      */
     mode?: Mode;
 
     /**
-     * Specifies the template that renders a customized pop-up list content when there no data available to be displayed within the pop-up.
+     * Specifies the template that renders a customized pop-up list content when there is no data available
+     * to be displayed within the pop-up.
      * @default 'No Records Found'
      */
     noRecordsTemplate?: string;
@@ -308,13 +309,13 @@ export interface DropDownTreeModel extends ComponentModel{
     popupWidth?: string | number;
 
     /**
-     * When set to true, the user interactions on the component are disabled.
+     * When set to true, the user interactions on the component will be disabled.
      * @default false
      */
     readonly?: boolean;
 
     /**
-     * Specifies whether to show or hide the selectAll checkbox in the pop-up which allows to select all items in the pop-up.
+     * Specifies whether to show or hide the selectAll checkbox in the pop-up which allows you to select all the items in the pop-up.
      * @default false
      */
     showSelectAll?: boolean;
@@ -327,14 +328,14 @@ export interface DropDownTreeModel extends ComponentModel{
 
     /**
      * Enables or disables the checkbox option in the Dropdown Tree component.
-     * If enable, the Checkbox will be displayed next to the expand/collapse icon of the tree items.
+     * If enabled, the Checkbox will be displayed next to the expand or collapse icon of the tree items.
      * @default false
      */
     showCheckBox?: boolean;
 
     /**
      * Specifies whether to show or hide the clear icon in textbox.
-     * When the clear button is clicked, `value`, `text` properties are reset to null.
+     * When the clear button is clicked, `value`, `text` properties will be reset to null.
      * @default true
      */
     showClearButton?: boolean;
@@ -347,11 +348,11 @@ export interface DropDownTreeModel extends ComponentModel{
     showDropDownIcon?: boolean;
 
     /**
-     * Specifies a value that indicates whether the items are sorted in the ascending or descending order, or are not sorted at all.
+     * Specifies a value that indicates whether the items are sorted in the ascending or descending order, or not sorted at all.
      * The available types of sort order are,
      * * `None` - The items are not sorted.
      * * `Ascending` - The items are sorted in the ascending order.
-     * * `Descending` - - The items are sorted in the ascending order.
+     * * `Descending` - The items are sorted in the descending order.
      * @default 'None'
      */
     sortOrder?: SortOrder;
@@ -369,7 +370,7 @@ export interface DropDownTreeModel extends ComponentModel{
     treeSettings?: TreeSettingsModel;
 
     /**
-     * Specifies the display text for the un select all checkbox in the pop-up.
+     * Specifies the display text for the unselect all checkbox in the pop-up.
      * @default 'Unselect All'
      */
     unSelectAllText?: string;
@@ -389,7 +390,7 @@ export interface DropDownTreeModel extends ComponentModel{
     width?: string | number;
 
     /**
-     * specifies the z-index value of the pop-up element.
+     * Specifies the z-index value of the pop-up element.
      * @default 1000
      */
     zIndex?: number;

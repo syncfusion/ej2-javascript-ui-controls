@@ -776,7 +776,7 @@ export class MoveTool extends ToolBase {
             }
         }
         this.checkPropertyValue();
-        let obj: SelectorModel; let historyAdded: boolean = false; let object: SelectorModel | Node;
+        let obj: SelectorModel; let historyAdded: boolean = false; let object: NodeModel | ConnectorModel | SelectorModel;
         let redoObject: SelectorModel = { nodes: [], connectors: [] };
         if (this.objectType !== 'Port') {
             if (args.source instanceof Node || args.source instanceof Connector) {
@@ -790,10 +790,12 @@ export class MoveTool extends ToolBase {
             } else {
                 obj = cloneObject(args.source);
             }
-            object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Selector;
+            object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Selector ||(this.commandHandler.renderContainerHelper(args.source as ConnectorModel) as Connector);
             if (((object as Node).id === 'helper' && !(obj.nodes[0] as Node).isLane && !(obj.nodes[0] as Node).isPhase)
                 || ((object as Node).id !== 'helper')) {
-                if (object.offsetX !== this.undoElement.offsetX || object.offsetY !== this.undoElement.offsetY) {
+                if ((object as NodeModel).offsetX !== this.undoElement.offsetX || (object as NodeModel).offsetY !== this.undoElement.offsetY ||
+                 (object as ConnectorModel).sourcePoint !== (this.undoElement as any).sourcePoint 
+                 || (object as ConnectorModel).targetPoint !== (this.undoElement as any).targetPoint) {
                     if (args.source) {
                         newValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
                         oldValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
@@ -1030,7 +1032,7 @@ export class RotateTool extends ToolBase {
     /**   @private  */
     public mouseDown(args: MouseEventArgs): void {
         if (isBlazor()) {
-            let object: NodeModel | SelectorModel;
+            let object: NodeModel | ConnectorModel | SelectorModel;
             object = (this.commandHandler.renderContainerHelper(args.source) as Node) || args.source as Node | Selector;
             let oldValue: SelectorModel = { rotateAngle: object.wrapper.rotateAngle };
             let arg: IRotationEventArgs = {
@@ -1061,7 +1063,7 @@ export class RotateTool extends ToolBase {
     public async mouseUp(args: MouseEventArgs): Promise<void> {
         this.checkPropertyValue();
         if (isBlazor()) {
-            let object: NodeModel | SelectorModel;
+            let object: NodeModel | ConnectorModel | SelectorModel;
             object = (this.commandHandler.renderContainerHelper(args.source) as Node) || args.source as Node | Selector;
             let oldValue: SelectorModel = { rotateAngle: this.tempArgs.oldValue.rotateAngle };
             let newValue: SelectorModel = { rotateAngle: object.wrapper.rotateAngle };
@@ -1076,7 +1078,7 @@ export class RotateTool extends ToolBase {
                 this.commandHandler.rotatePropertyChnage(this.tempArgs.oldValue.rotateAngle)
             }
         }
-        let object: NodeModel | SelectorModel;
+        let object: NodeModel | ConnectorModel | SelectorModel;
         object = (this.commandHandler.renderContainerHelper(args.source) as Node) || args.source as Node | Selector;
         if (this.undoElement.rotateAngle !== object.wrapper.rotateAngle) {
             let oldValue: SelectorModel = { rotateAngle: object.wrapper.rotateAngle };
@@ -1104,7 +1106,7 @@ export class RotateTool extends ToolBase {
     /**   @private  */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
-        let object: NodeModel | SelectorModel;
+        let object: NodeModel | ConnectorModel | SelectorModel;
         object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Node | Selector;
         if (this.undoElement.rotateAngle === object.wrapper.rotateAngle) {
             let oldValue: SelectorModel = { rotateAngle: object.wrapper.rotateAngle };
@@ -1254,7 +1256,7 @@ export class ResizeTool extends ToolBase {
         }
         this.checkPropertyValue();
         this.commandHandler.removeSnap();
-        let object: NodeModel | SelectorModel;
+        let object: NodeModel | ConnectorModel | SelectorModel;
         this.commandHandler.updateSelector();
         object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Node | Selector;
         if ((this.undoElement.offsetX !== object.wrapper.offsetX || this.undoElement.offsetY !== object.wrapper.offsetY)) {
@@ -1298,7 +1300,7 @@ export class ResizeTool extends ToolBase {
     /**   @private  */
     public mouseMove(args: MouseEventArgs): boolean {
         super.mouseMove(args);
-        let object: NodeModel | SelectorModel;
+        let object: NodeModel | ConnectorModel | SelectorModel;
         object = (this.commandHandler.renderContainerHelper(args.source as NodeModel) as Node) || args.source as Node | Selector;
         if (this.undoElement.offsetX === object.wrapper.offsetX && this.undoElement.offsetY === object.wrapper.offsetY) {
             let oldValue: SelectorModel = {

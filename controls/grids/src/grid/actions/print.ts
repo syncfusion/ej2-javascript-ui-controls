@@ -99,6 +99,11 @@ export class Print {
         });
         document.body.appendChild(element);
         let printGrid: IGrid = new Grid(getPrintGridModel(gObj, gObj.hierarchyPrintMode) as Object);
+        /* tslint:disable-next-line:no-any */
+        if ((this.parent as any).isAngular ) {
+            /* tslint:disable-next-line:no-any */
+            (printGrid as any).viewContainerRef = (this.parent as any).viewContainerRef;
+        }
         /* tslint:disable:no-empty */
         (printGrid as Grid).load = () => {};
         printGrid.query = gObj.getQuery().clone();
@@ -111,8 +116,8 @@ export class Print {
         }
         gObj.notify(events.printGridInit, { element: element, printgrid: printGrid });
         this.parent.log('exporting_begin', this.getModuleName());
-        printGrid.appendTo(element as HTMLElement);
         printGrid.registeredTemplate = this.parent.registeredTemplate;
+        printGrid.appendTo(element as HTMLElement);
         printGrid.trigger = gObj.trigger;
     }
 

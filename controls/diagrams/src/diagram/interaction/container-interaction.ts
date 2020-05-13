@@ -151,7 +151,7 @@ export function createHelper(diagram: Diagram, obj: Node): Node {
 }
 
 /** @private */
-export function renderContainerHelper(diagram: Diagram, obj: SelectorModel | NodeModel): NodeModel | ConnectorModel {
+export function renderContainerHelper(diagram: Diagram, obj: SelectorModel | NodeModel | ConnectorModel): NodeModel | ConnectorModel {
     diagram.enableServerDataBinding(false);
     let object: NodeModel | ConnectorModel; let container: Canvas;
     let nodes: NodeModel;

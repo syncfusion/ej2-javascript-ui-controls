@@ -2070,8 +2070,10 @@ export let alignElement: Function = (element: Container, offsetX: number, offset
 export let cloneSelectedObjects: Function = (diagram: Diagram): object => {
     let nodes: NodeModel[] = diagram.selectedItems.nodes;
     let connectors: ConnectorModel[] = diagram.selectedItems.connectors;
+    diagram.protectPropertyChange(true);
     diagram.selectedItems.nodes = [];
     diagram.selectedItems.connectors = [];
+    diagram.protectPropertyChange(false);
     let clonedSelectedItems: object = cloneObject(diagram.selectedItems);
     for (let i: number = 0; i < nodes.length; i++) {
         diagram.selectedItems.nodes.push(diagram.nameTable[nodes[i].id]);

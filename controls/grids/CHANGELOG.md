@@ -2,6 +2,24 @@
 
 ## [Unreleased]
 
+## 18.1.52 (2020-05-13)
+
+### Grid
+
+#### Bug Fixes
+
+-`#273572` - script error after pressing enter key in batch edit mode issue has been resolved.
+
+-`#153383` - grid lines mismatched while scrolling with frozen column in `firefox` issue has been resolved.
+-`#273838` - Unnecessary to include an Empty row when inserting a `frozenColumn` Grid row issue has been resolved.
+-`#274520` - `cellSeletected` and `cellDeSelected` events triggers many time while selecting cells via mouse issue has been resolved.
+-`#275010` - Need internal events for column chooser buttons issue has been fixed.
+-`#274227` - cancel icon not rendered in the filter bar with movable header has been fixed.
+
+#### New Features
+
+- `#261103, #267581` - Provided the column `Reordering` support for Grid with `virtualization` and frozen columns feature.
+
 ## 18.1.48 (2020-05-05)
 
 ### Grid
@@ -13,6 +31,10 @@
 - `#273483, #275002, #275153` -  `actionfailure` event error message issue has been fixed.
 - `#273238` - Missing of `headerText` property in the template data has been fixed.
 - `#266631` - Hidden column headers in Grid did not reflect in pdf export while using `includeHiddenColumn` issue has been fixed.
+- `#271911` - column template in angular after print issue has been resolved.
+- `#273134` - Header template in angular after print issue has been fixed.
+- `#269502` - Mismatch of reordering column issue has been fixed.
+- `#273854, #274776` - Foreign Key search query for `UrlAdaptor` has been fixed.
 
 ## 18.1.46 (2020-04-28)
 

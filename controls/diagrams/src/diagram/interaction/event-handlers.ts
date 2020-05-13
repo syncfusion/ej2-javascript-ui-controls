@@ -880,7 +880,7 @@ export class DiagramEventHandler {
             this.commandHandler.select(swimlaneNode);
         } else if (actualShape.isLane) {
             let swimLaneobj: NodeModel = {
-                id: randomId(), width: selectedNode.width, height: selectedNode.height,
+                id: randomId(), width: selectedNode.width, height: selectedNode.height, addInfo: selectedNode.addInfo,
                 shape: {
                     type: 'SwimLane', header: {
                         annotation: { content: 'Header' }, height: 50, style: actualShape.lanes[0].header.style
@@ -1403,7 +1403,7 @@ export class DiagramEventHandler {
         let text: string = ((editTextBox as HTMLTextAreaElement).value);
         let line: string[] = text.split('\n');
         node = (this.diagram.selectedItems.nodes[0]) ? this.diagram.selectedItems.nodes[0] : this.diagram.selectedItems.connectors[0];
-        if ((!node && this.tool instanceof TextDrawingTool) || node.shape.type === 'SwimLane') {
+        if ((!node && this.tool instanceof TextDrawingTool) || (node && node.shape.type === 'SwimLane')) {
             node = this.diagram.nameTable[this.diagram.activeLabel.parentId];
         }
         if (node && ((node.shape.type !== 'Text' && node.annotations.length > 0) || (node.shape.type === 'Text'))) {

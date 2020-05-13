@@ -82,7 +82,7 @@ export class TaskbarEdit {
         this.dragMouseLeave = false;
         this.isMouseDragged = false;
         this.previousItemProperty = ['left', 'progress', 'duration', 'isMilestone', 'startDate', 'endDate', 'width', 'progressWidth',
-        'autoLeft', 'autoDuration', 'autoStartDate', 'autoEndDate', 'autoWidth', ];
+        'autoLeft', 'autoDuration', 'autoStartDate', 'autoEndDate', 'autoWidth'];
         this.tapPointOnFocus = false;
         this.touchEdit = false;
     }
@@ -355,7 +355,7 @@ export class TaskbarEdit {
             action = 'ManualParentDrag';
         } else if (data) {
             action = data.hasChildRecords ? this.parent.taskMode === 'Auto' ? 'ParentDrag' : ''
-             : data.ganttProperties.isMilestone ? 'MilestoneDrag' : 'ChildDrag';
+            : data.ganttProperties.isMilestone ? 'MilestoneDrag' : 'ChildDrag';
         }
         return action;
     }
@@ -423,10 +423,6 @@ export class TaskbarEdit {
         this.dragMouseLeave = false;
         this.isMouseDragCheck();
         if (this.isMouseDragged && this.taskBarEditAction) {
-            if (this.taskBarEditAction === 'ConnectorPointLeftDrag' ||
-                this.taskBarEditAction === 'ConnectorPointRightDrag') {
-                this.updateConnectorLineSecondProperties(event);
-            }
             this.taskBarEditingAction(event, false);
         } else if (!this.parent.isAdaptive && !this.taskBarEditAction) {
             this.updateTaskBarEditElement(event);
@@ -464,6 +460,7 @@ export class TaskbarEdit {
                 this.enableDragging(e);
             } else if (this.taskBarEditAction === 'ConnectorPointLeftDrag' ||
                 this.taskBarEditAction === 'ConnectorPointRightDrag') {
+                this.updateConnectorLineSecondProperties(e);
                 this.triggerDependencyEvent(e);
                 if (!this.parent.isAdaptive) {
                     this.drawFalseLine();
@@ -778,7 +775,7 @@ export class TaskbarEdit {
                 }
                 let tempdate: Date = isNullOrUndefined(item.startDate) ? startDate : item.startDate;
                 endDate = item.isMilestone ? tempdate :
-                 this.parent.dateValidationModule.checkEndDate(tempEndDate, this.taskBarEditRecord.ganttProperties);
+                this.parent.dateValidationModule.checkEndDate(tempEndDate, this.taskBarEditRecord.ganttProperties);
                 this.parent.setRecordValue('endDate', new Date(endDate.getTime()), item, true);
                 this.parent.dateValidationModule.calculateDuration(this.taskBarEditRecord);
                 this.parent.editModule.updateResourceRelatedFields(this.taskBarEditRecord, 'duration');
@@ -975,7 +972,7 @@ export class TaskbarEdit {
         let traceConnectorPointRight: HTMLElement =
             this.taskBarEditElement.querySelector('.' + cls.rightConnectorPointOuterDiv) as HTMLElement;
         let manualParentTaskbar: HTMLElement = this.taskBarEditElement as HTMLElement;
-        let manualTaskbar: HTMLElement = this.taskBarEditElement.querySelector('.' + cls.manualParentTaskBar)  as HTMLElement;
+        let manualTaskbar: HTMLElement = this.taskBarEditElement.querySelector('.' + cls.manualParentTaskBar) as HTMLElement;
         let manualParentRight: HTMLElement =
             this.taskBarEditElement.querySelector('.' + cls.manualParentRightResizer) as HTMLElement;
         let manualParentLeft: HTMLElement =
@@ -1271,10 +1268,12 @@ export class TaskbarEdit {
         }
         let isValidLink: boolean =
             this.parent.connectorLineEditModule.validatePredecessorRelation(this.connectorSecondRecord, this.finalPredecessor);
+        let predecessorArray: IPredecessor[] = this.parent.predecessorModule.calculatePredecessor(predecessor, this.connectorSecondRecord);
         let args: IDependencyEventArgs = {} as IDependencyEventArgs;
         args.fromItem = fromItem;
         args.toItem = toItem;
         args.newPredecessorString = this.finalPredecessor;
+        args.predecessor = predecessorArray && predecessorArray[0];
         args.isValidLink = isValidLink;
         args.requestType = 'ValidateDependency';
         this.parent.trigger('actionBegin', args);

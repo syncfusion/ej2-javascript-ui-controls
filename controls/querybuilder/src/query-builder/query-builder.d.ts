@@ -186,6 +186,8 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private timer;
     private isReadonly;
     private fields;
+    private columnTemplateFn;
+    private target;
     /**
      * Triggers when the component is created.
      * @event
@@ -312,6 +314,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     protected getModuleName(): string;
     private initialize;
     private updateCustomOperator;
+    private focusEventHandler;
     private clickEventHandler;
     private beforeSuccessCallBack;
     private selectBtn;
@@ -394,6 +397,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     onPropertyChanged(newProp: QueryBuilderModel, oldProp: QueryBuilderModel): void;
     protected preRender(): void;
     protected render(): void;
+    private templateParser;
     private executeDataManager;
     private initControl;
     protected wireEvents(): void;

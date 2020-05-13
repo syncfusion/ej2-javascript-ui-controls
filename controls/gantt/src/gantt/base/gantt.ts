@@ -323,6 +323,13 @@ export class Gantt extends Component<HTMLElement>
     public columnMenuItems: ColumnMenuItem[] | ColumnMenuItemModel[];
 
     /**
+     * By default, task schedule dates are calculated with system time zone.If Gantt chart assigned with specific time zone, 
+     * then schedule dates are calculated as given time zone date value.
+     * @default null
+     */
+    @Property()
+    public timezone: string;
+    /**
      * If `collapseAllParentTasks` set to true, then root tasks are rendered with collapsed state.
      * @default false
      */
@@ -2596,8 +2603,26 @@ export class Gantt extends Component<HTMLElement>
             work: 'Work',
             taskType: 'Task Type',
             unassignedTask: 'Unassigned Task',
-            group: 'Group'
+            group: 'Group',
+            indent: 'Indent',
+            outdent: 'Outdent'
+
         };
+        if (isBlazor()) {
+            let blazorLocale: Object = {
+                zoomIn: 'Zoom In',
+                zoomOut: 'Zoom Out',
+                zoomToFit: 'Zoom To Fit',
+                excelExport: 'Excel Export',
+                csvExport: 'CSV Export',
+                pdfExport: 'Pdf Export',
+                expandAll: 'Expand All',
+                collapseAll: 'Collapse All',
+                nextTimeSpan: 'Next Timespan',
+                prevTimeSpan: 'Previous Timespan',
+            };
+            extend(ganttLocale, blazorLocale, {}, true);
+        }
         return ganttLocale;
     }
     /**
@@ -3025,6 +3050,32 @@ export class Gantt extends Component<HTMLElement>
     public updateRecordByID(data: Object): void {
         if (this.editModule && this.editSettings.allowEditing) {
             this.editModule.updateRecordByID(data);
+        }
+    }
+    /**
+     * To update existing taskId with new unique Id.
+     */
+    public updateTaskId(currentId: number | string, newId: number | string): void {
+        this.editModule.updateTaskId(currentId, newId);
+    }
+    /**
+     * To indent the level of selected task to the hierarchical Gantt task.
+     * @return {void}
+     * @public
+     */
+    public indent(): void {
+        if (this.editModule && this.editSettings.allowEditing) {
+            this.editModule.indent();
+        }
+    }
+    /**
+     * To outdent the level of selected task from the hierarchical Gantt task.
+     * @return {void}
+     * @public
+     */
+    public outdent(): void {
+        if (this.editModule && this.editSettings.allowEditing) {
+            this.editModule.outdent();
         }
     }
     /**

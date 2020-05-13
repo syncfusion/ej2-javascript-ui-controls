@@ -57,7 +57,11 @@ export type ToolbarItem =
      /** To export Gantt in CSV */
     'CsvExport' |
     /** To export Gantt in PDF */
-    'PdfExport';
+    'PdfExport' |
+    /** To indent a selected record */
+    'Indent' |
+    /** To outdent a selected record */
+    'Outdent';
 
 /** 
  * Defines the schedule header mode. They are

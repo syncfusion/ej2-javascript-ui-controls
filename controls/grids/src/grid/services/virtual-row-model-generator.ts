@@ -179,12 +179,25 @@ export class VirtualRowModelGenerator implements IModelGenerator<Column> {
             (<VirtualContentRenderer>this.parent.contentModule).startColIndex = indexes[0];
             (<VirtualContentRenderer>this.parent.contentModule).endColIndex = indexes[indexes.length - 1];
         }
+        this.addFrozenIndex(indexes);
         return indexes;
     }
 
+    private addFrozenIndex(indexes: number[]): void {
+        if (this.parent.getFrozenColumns() && this.parent.enableColumnVirtualization && indexes[0] === 0) {
+            for (let i: number = 0; i < this.parent.getFrozenColumns(); i++) {
+                indexes.push(indexes[indexes.length - 1] + 1);
+            }
+        }
+    }
+
     public checkAndResetCache(action: string): boolean {
-        let clear: boolean = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder',
-                            'save', 'delete'].some((value: string) => action === value);
+        let actions: string[] = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder',
+            'save', 'delete'];
+        if (this.parent.getFrozenColumns() && this.parent.frozenRows && this.parent.enableColumnVirtualization && action === 'reorder') {
+            actions = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'save', 'delete'];
+        }
+        let clear: boolean = actions.some((value: string) => action === value);
         if (clear) {
             this.cache = {}; this.data = {}; this.groups = {};
         }

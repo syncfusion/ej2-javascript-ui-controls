@@ -14772,8 +14772,10 @@ var alignElement = function (element, offsetX, offsetY, diagram, flip) {
 var cloneSelectedObjects = function (diagram) {
     var nodes = diagram.selectedItems.nodes;
     var connectors = diagram.selectedItems.connectors;
+    diagram.protectPropertyChange(true);
     diagram.selectedItems.nodes = [];
     diagram.selectedItems.connectors = [];
+    diagram.protectPropertyChange(false);
     var clonedSelectedItems = cloneObject(diagram.selectedItems);
     for (var i = 0; i < nodes.length; i++) {
         diagram.selectedItems.nodes.push(diagram.nameTable[nodes[i].id]);
@@ -23205,10 +23207,12 @@ var MoveTool = /** @__PURE__ @class */ (function (_super) {
                         else {
                             obj = cloneObject(args.source);
                         }
-                        object = this.commandHandler.renderContainerHelper(args.source) || args.source;
+                        object = this.commandHandler.renderContainerHelper(args.source) || args.source || this.commandHandler.renderContainerHelper(args.source);
                         if ((object.id === 'helper' && !obj.nodes[0].isLane && !obj.nodes[0].isPhase)
                             || (object.id !== 'helper')) {
-                            if (object.offsetX !== this.undoElement.offsetX || object.offsetY !== this.undoElement.offsetY) {
+                            if (object.offsetX !== this.undoElement.offsetX || object.offsetY !== this.undoElement.offsetY ||
+                                object.sourcePoint !== this.undoElement.sourcePoint
+                                || object.targetPoint !== this.undoElement.targetPoint) {
                                 if (args.source) {
                                     newValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
                                     oldValues = { offsetX: args.source.wrapper.offsetX, offsetY: args.source.wrapper.offsetY };
@@ -26032,7 +26036,7 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
         }
         else if (actualShape.isLane) {
             var swimLaneobj = {
-                id: randomId(), width: selectedNode.width, height: selectedNode.height,
+                id: randomId(), width: selectedNode.width, height: selectedNode.height, addInfo: selectedNode.addInfo,
                 shape: {
                     type: 'SwimLane', header: {
                         annotation: { content: 'Header' }, height: 50, style: actualShape.lanes[0].header.style
@@ -26548,7 +26552,7 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
         var text = (editTextBox.value);
         var line = text.split('\n');
         node = (this.diagram.selectedItems.nodes[0]) ? this.diagram.selectedItems.nodes[0] : this.diagram.selectedItems.connectors[0];
-        if ((!node && this.tool instanceof TextDrawingTool) || node.shape.type === 'SwimLane') {
+        if ((!node && this.tool instanceof TextDrawingTool) || (node && node.shape.type === 'SwimLane')) {
             node = this.diagram.nameTable[this.diagram.activeLabel.parentId];
         }
         if (node && ((node.shape.type !== 'Text' && node.annotations.length > 0) || (node.shape.type === 'Text'))) {
@@ -28263,49 +28267,51 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
         if (this.diagram.selectedItems.nodes.length > 0) {
             selectedItems = selectedItems.concat(this.diagram.selectedItems.nodes);
             for (var j = 0; j < this.diagram.selectedItems.nodes.length; j++) {
-                var node = cloneObject(this.diagram.selectedItems.nodes[j]);
-                if (node.wrapper && (node.offsetX !== node.wrapper.offsetX)) {
-                    node.offsetX = node.wrapper.offsetX;
-                }
-                if (node.wrapper && (node.offsetY !== node.wrapper.offsetY)) {
-                    node.offsetY = node.wrapper.offsetY;
-                }
-                this.copyProcesses(node);
-                obj.push(cloneObject(node));
-                var matrix = identityMatrix();
-                rotateMatrix(matrix, -node.rotateAngle, node.offsetX, node.offsetY);
-                if (node.children) {
-                    var childTable = this.clipboardData.childTable;
-                    var tempNode = void 0;
-                    var elements = [];
-                    var nodes = this.getAllDescendants(node, elements, true);
-                    for (var i = 0; i < nodes.length; i++) {
-                        tempNode = this.diagram.nameTable[nodes[i].id];
-                        var clonedObject = childTable[tempNode.id] = cloneObject(tempNode);
-                        var newOffset = transformPointByMatrix(matrix, { x: clonedObject.wrapper.offsetX, y: clonedObject.wrapper.offsetY });
-                        if (tempNode instanceof Node) {
-                            clonedObject.offsetX = newOffset.x;
-                            clonedObject.offsetY = newOffset.y;
-                            clonedObject.rotateAngle -= node.rotateAngle;
+                if (!selectedItems[j].isPhase) {
+                    var node = cloneObject(this.diagram.selectedItems.nodes[j]);
+                    if (node.wrapper && (node.offsetX !== node.wrapper.offsetX)) {
+                        node.offsetX = node.wrapper.offsetX;
+                    }
+                    if (node.wrapper && (node.offsetY !== node.wrapper.offsetY)) {
+                        node.offsetY = node.wrapper.offsetY;
+                    }
+                    this.copyProcesses(node);
+                    obj.push(cloneObject(node));
+                    var matrix = identityMatrix();
+                    rotateMatrix(matrix, -node.rotateAngle, node.offsetX, node.offsetY);
+                    if (node.children) {
+                        var childTable = this.clipboardData.childTable;
+                        var tempNode = void 0;
+                        var elements = [];
+                        var nodes = this.getAllDescendants(node, elements, true);
+                        for (var i = 0; i < nodes.length; i++) {
+                            tempNode = this.diagram.nameTable[nodes[i].id];
+                            var clonedObject = childTable[tempNode.id] = cloneObject(tempNode);
+                            var newOffset = transformPointByMatrix(matrix, { x: clonedObject.wrapper.offsetX, y: clonedObject.wrapper.offsetY });
+                            if (tempNode instanceof Node) {
+                                clonedObject.offsetX = newOffset.x;
+                                clonedObject.offsetY = newOffset.y;
+                                clonedObject.rotateAngle -= node.rotateAngle;
+                            }
+                        }
+                        this.clipboardData.childTable = childTable;
+                    }
+                    if (node.shape.type === 'SwimLane') {
+                        var swimlane = this.diagram.getObject(this.diagram.selectedItems.nodes[j].id);
+                        var childTable = this.clipboardData.childTable;
+                        var connectorsList = getConnectors(this.diagram, swimlane.wrapper.children[0], 0, true);
+                        for (var i = 0; i < connectorsList.length; i++) {
+                            var connector = this.diagram.getObject(connectorsList[i]);
+                            childTable[connector.id] = cloneObject(connector);
                         }
                     }
-                    this.clipboardData.childTable = childTable;
-                }
-                if (node.shape.type === 'SwimLane') {
-                    var swimlane = this.diagram.getObject(this.diagram.selectedItems.nodes[j].id);
-                    var childTable = this.clipboardData.childTable;
-                    var connectorsList = getConnectors(this.diagram, swimlane.wrapper.children[0], 0, true);
-                    for (var i = 0; i < connectorsList.length; i++) {
-                        var connector = this.diagram.getObject(connectorsList[i]);
-                        childTable[connector.id] = cloneObject(connector);
+                    if (node && node.isLane) {
+                        var childTable = this.clipboardData.childTable;
+                        var swimlane = this.diagram.getObject(node.parentId);
+                        var lane = findLane(node, this.diagram);
+                        childTable[node.id] = cloneObject(lane);
+                        childTable[node.id].width = swimlane.wrapper.actualSize.width;
                     }
-                }
-                if (node && node.isLane) {
-                    var childTable = this.clipboardData.childTable;
-                    var swimlane = this.diagram.getObject(node.parentId);
-                    var lane = findLane(node, this.diagram);
-                    childTable[node.id] = cloneObject(lane);
-                    childTable[node.id].width = swimlane.wrapper.actualSize.width;
                 }
             }
         }
@@ -40454,6 +40460,7 @@ var Diagram = /** @__PURE__ @class */ (function (_super) {
                                         group.height = newNode.shape.lanes[0].height;
                                         group.previewSize = newNode.previewSize;
                                         group.dragSize = newNode.dragSize;
+                                        group.addInfo = newNode.addInfo;
                                         newNode = _this.add(group);
                                         _this.diagramActions &= ~DiagramAction.PreventCollectionChangeOnDragOver;
                                     }
@@ -42618,6 +42625,10 @@ var DiagramContextMenu = /** @__PURE__ @class */ (function () {
                         if (hidden) {
                             diagramArgs.cancel = hidden;
                             this.hiddenItems = [];
+                        }
+                        /* tslint:disable */
+                        if (this.parent.selectedItems && this.parent.selectedItems.nodes[0].isPhase) {
+                            args.cancel = true;
                         }
                         return [2 /*return*/];
                 }

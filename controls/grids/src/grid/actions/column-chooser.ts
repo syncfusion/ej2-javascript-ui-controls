@@ -213,6 +213,7 @@ export class ColumnChooser implements IAction {
             }
             this.removeCancelIcon();
             this.dlgObj.show();
+            this.parent.notify(events.columnChooserOpened, { dialog: this.dlgObj });
 
         } else {
             // this.unWireEvents();
@@ -323,7 +324,7 @@ export class ColumnChooser implements IAction {
                 }
             },
             {
-                click: this.clearActions.bind(this),
+                click: this.clearBtnClick.bind(this),
                 buttonModel: { cssClass: 'e-flat e-cc e-cc-cnbtn', content: this.l10n.getConstant('CancelButton') }
             }],
             content: this.renderChooserList(),
@@ -362,7 +363,6 @@ export class ColumnChooser implements IAction {
     }
 
     private confirmDlgBtnClick(args: Object): void {
-        this.parent.notify(events.columnChooserOpened, { event: args, dialog: this.dlgObj });
         this.stateChangeColumns = [];
         this.changedStateColumns = [];
         this.changedColumns = (this.changedColumns.length > 0) ? this.changedColumns : this.unchangedColumns;
@@ -426,6 +426,11 @@ export class ColumnChooser implements IAction {
         // this.unWireEvents();
         this.hideDialog();
         this.addcancelIcon();
+    }
+
+    private clearBtnClick(): void {
+        this.clearActions();
+        this.parent.notify(events.columnChooserCancelBtnClick, { dialog: this.dlgObj });
     }
 
     private checkstatecolumn(isChecked: boolean, coluid: string, selectAll: boolean = false): void {

@@ -137,7 +137,6 @@ export class BaseHistoryInfo {
         // tslint:disable-next-line:max-line-length
         this.removedNodes.push({ 'editStart': editStart, 'startIndex': editStart.indexInOwner, 'endIndex': editStart.editRangeEnd.indexInOwner });
     }
-
     private revertFormField(): void {
         /* tslint:disable:no-any */
         let fieldInfo: any = this.removedNodes[0];

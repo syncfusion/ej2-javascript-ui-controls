@@ -54,7 +54,7 @@ export class PieSeries extends PieBase {
         let target: Element = event.target as Element;
         let id: Index = indexFinder(target.id, true);
         let accumulationId: string = (event.target as Element).id.substring(0, ((event.target as Element).id.indexOf('Series') - 1));
-        let borderElement: Element = document.getElementById(accumulationId + 'PointHover_Border');
+        let borderElement: Element = document.getElementById(this.accumulation.element.id + 'PointHover_Border');
         let createBorderEle: Element;
         let seriesIndex: number = id.series;
         let pointIndex: number = id.point;

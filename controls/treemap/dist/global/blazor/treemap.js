@@ -1513,6 +1513,28 @@ function pushCollection(collection, index, number, legendElement, shapeElement, 
         shapeOldBorderWidth: renderItems[number]['options']['border']['width']
     });
 }
+/**
+ * To trigger the download element
+ * @param fileName
+ * @param type
+ * @param url
+ */
+function triggerDownload(fileName, type, url, isDownload) {
+    sf.base.createElement('a', {
+        attrs: {
+            'download': fileName + '.' + type.toLocaleLowerCase(),
+            'href': url
+        }
+    }).dispatchEvent(new MouseEvent(isDownload ? 'click' : 'move', {
+        view: window,
+        bubbles: false,
+        cancelable: true
+    }));
+}
+function removeElement(id) {
+    var element = document.getElementById(id);
+    return element ? sf.base.remove(element) : null;
+}
 
 var __rest$1 = (undefined && undefined.__rest) || function (s, e) {
     var t = {};
@@ -2198,129 +2220,6 @@ var LayoutPanel = /** @class */ (function () {
 }());
 
 /**
- * Annotation Module handles the Annotation for Maps
- */
-var ExportUtils = /** @class */ (function () {
-    /**
-     * Constructor for Maps
-     * @param control
-     */
-    function ExportUtils(control) {
-        this.control = control;
-    }
-    /**
-     * This method is used to perform the print functionality in treemap.
-     * @param elements
-     */
-    ExportUtils.prototype.print = function (elements) {
-        var _this = this;
-        this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
-        this.printWindow.moveTo(0, 0);
-        this.printWindow.resizeTo(screen.availWidth, screen.availHeight);
-        var argsData = {
-            cancel: false, htmlContent: this.getHTMLContent(elements), name: beforePrint
-        };
-        this.control.trigger(beforePrint, argsData, function () {
-            if (!argsData.cancel) {
-                sf.base.print(argsData.htmlContent, _this.printWindow);
-            }
-        });
-    };
-    /**
-     * To get the html string of the Maps
-     * @param elements
-     * @private
-     */
-    ExportUtils.prototype.getHTMLContent = function (elements) {
-        var div = sf.base.createElement('div');
-        if (elements) {
-            if (elements instanceof Array) {
-                elements.forEach(function (value) {
-                    div.appendChild(getElement(value).cloneNode(true));
-                });
-            }
-            else if (elements instanceof Element) {
-                div.appendChild(elements.cloneNode(true));
-            }
-            else {
-                div.appendChild(getElement(elements).cloneNode(true));
-            }
-        }
-        else {
-            div.appendChild(this.control.element.cloneNode(true));
-        }
-        return div;
-    };
-    /**
-     * This method is used to perform the export functionality for the rendered treemap.
-     * @param type
-     * @param fileName
-     */
-    ExportUtils.prototype.export = function (type, fileName, orientation) {
-        var _this = this;
-        var element = sf.base.createElement('canvas', {
-            id: 'ej2-canvas',
-            attrs: {
-                'width': this.control.availableSize.width.toString(),
-                'height': this.control.availableSize.height.toString()
-            }
-        });
-        var isDownload = !(sf.base.Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
-        orientation = sf.base.isNullOrUndefined(orientation) ? sf.pdfexport.PdfPageOrientation.Landscape : orientation;
-        var svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
-            this.control.svgObject.outerHTML +
-            '</svg>';
-        var url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] :
-            [(new XMLSerializer()).serializeToString(this.control.svgObject)], { type: 'image/svg+xml' }));
-        if (type === 'SVG') {
-            this.triggerDownload(fileName, type, url, isDownload);
-        }
-        else {
-            var image_1 = new Image();
-            var ctx_1 = element.getContext('2d');
-            image_1.onload = (function () {
-                ctx_1.drawImage(image_1, 0, 0);
-                window.URL.revokeObjectURL(url);
-                if (type === 'PDF') {
-                    var document_1 = new sf.pdfexport.PdfDocument();
-                    var imageString = element.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
-                    document_1.pageSettings.orientation = orientation;
-                    imageString = imageString.slice(imageString.indexOf(',') + 1);
-                    document_1.pages.add().graphics.drawImage(new sf.pdfexport.PdfBitmap(imageString), 0, 0, (_this.control.availableSize.width - 60), _this.control.availableSize.height);
-                    if (isDownload) {
-                        document_1.save(fileName + '.pdf');
-                        document_1.destroy();
-                    }
-                }
-                else {
-                    _this.triggerDownload(fileName, type, element.toDataURL('image/png').replace('image/png', 'image/octet-stream'), isDownload);
-                }
-            });
-            image_1.src = url;
-        }
-    };
-    /**
-     * To trigger the download element
-     * @param fileName
-     * @param type
-     * @param url
-     */
-    ExportUtils.prototype.triggerDownload = function (fileName, type, url, isDownload) {
-        sf.base.createElement('a', {
-            attrs: {
-                'download': fileName + '.' + type.toLocaleLowerCase(),
-                'href': url
-            }
-        }).dispatchEvent(new MouseEvent(isDownload ? 'click' : 'move', {
-            view: window,
-            bubbles: false,
-            cancelable: true
-        }));
-    };
-    return ExportUtils;
-}());
-
-/**
  * Maps Themes doc
  */
 
@@ -2413,6 +2312,230 @@ function getThemeStyle(theme) {
 }
 
 /**
+ * Print module handles the print functionality for treemap.
+ * @hidden
+ */
+var Print = /** @class */ (function () {
+    /**
+     * Constructor for Maps
+     * @param control
+     */
+    function Print(control) {
+        this.control = control;
+    }
+    /**
+     * This method is used to perform the print functionality in treemap.
+     * @param elements
+     * @private
+     */
+    Print.prototype.print = function (elements) {
+        var _this = this;
+        this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
+        this.printWindow.moveTo(0, 0);
+        this.printWindow.resizeTo(screen.availWidth, screen.availHeight);
+        var argsData = {
+            cancel: false, htmlContent: this.getHTMLContent(elements), name: beforePrint
+        };
+        this.control.trigger(beforePrint, argsData, function () {
+            if (!argsData.cancel) {
+                sf.base.print(argsData.htmlContent, _this.printWindow);
+            }
+        });
+    };
+    /**
+     * To get the html string of the Maps
+     * @param elements
+     * @private
+     */
+    Print.prototype.getHTMLContent = function (elements) {
+        var div = sf.base.createElement('div');
+        if (elements) {
+            if (elements instanceof Array) {
+                elements.forEach(function (value) {
+                    div.appendChild(getElement(value).cloneNode(true));
+                });
+            }
+            else if (elements instanceof Element) {
+                div.appendChild(elements.cloneNode(true));
+            }
+            else {
+                div.appendChild(getElement(elements).cloneNode(true));
+            }
+        }
+        else {
+            div.appendChild(this.control.element.cloneNode(true));
+        }
+        return div;
+    };
+    /**
+     * Get module name.
+     */
+    Print.prototype.getModuleName = function () {
+        // Returns te module name
+        return 'Print';
+    };
+    /**
+     * To destroy the legend.
+     * @return {void}
+     * @private
+     */
+    Print.prototype.destroy = function (treemap) {
+        /**
+         * Destroy method performed here
+         */
+    };
+    return Print;
+}());
+
+/**
+ * ImageExport module handles the export to image functionality for treemap.
+ * @hidden
+ */
+var ImageExport = /** @class */ (function () {
+    /**
+     * Constructor for Maps
+     * @param control
+     */
+    function ImageExport(control) {
+        this.control = control;
+    }
+    /**
+     * This method is used to perform the export functionality for the rendered treemap.
+     * @param type
+     * @param fileName
+     * @private
+     */
+    ImageExport.prototype.export = function (type, fileName, allowDownload) {
+        var _this = this;
+        var promise = new Promise(function (resolve, reject) {
+            var element = sf.base.createElement('canvas', {
+                id: 'ej2-canvas',
+                attrs: {
+                    'height': _this.control.availableSize.height.toString(),
+                    'width': _this.control.availableSize.width.toString(),
+                }
+            });
+            var isDownload = !(sf.base.Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
+            var svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+                _this.control.svgObject.outerHTML +
+                '</svg>';
+            var url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] :
+                [(new XMLSerializer()).serializeToString(_this.control.svgObject)], { type: 'image/svg+xml' }));
+            if (type === 'SVG') {
+                if (allowDownload) {
+                    triggerDownload(fileName, type, url, isDownload);
+                }
+                else {
+                    resolve(null);
+                }
+            }
+            else {
+                var image_1 = new Image();
+                var context_1 = element.getContext('2d');
+                image_1.onload = (function () {
+                    context_1.drawImage(image_1, 0, 0);
+                    window.URL.revokeObjectURL(url);
+                    if (allowDownload) {
+                        triggerDownload(fileName, type, element.toDataURL('image/png').replace('image/png', 'image/octet-stream'), isDownload);
+                    }
+                    else {
+                        if (type === 'JPEG') {
+                            resolve(element.toDataURL('image/jpeg'));
+                        }
+                        else if (type === 'PNG') {
+                            resolve(element.toDataURL('image/png'));
+                        }
+                    }
+                });
+                image_1.src = url;
+            }
+        });
+        return promise;
+    };
+    ImageExport.prototype.getModuleName = function () {
+        // Returns te module name
+        return 'ImageExport';
+    };
+    /**
+     * To destroy the ImageExport.
+     * @return {void}
+     * @private
+     */
+    ImageExport.prototype.destroy = function (treemap) {
+        // Destroy method performed here
+    };
+    return ImageExport;
+}());
+
+/**
+ * PdfExport module handles the export to pdf functionality for treemap.
+ * @hidden
+ */
+var PdfExport = /** @class */ (function () {
+    /**
+     * Constructor for Maps
+     * @param control
+     */
+    function PdfExport(control) {
+        this.control = control;
+    }
+    /**
+     * This method is used to perform the export functionality for the rendered treemap.
+     * @param type
+     * @param fileName
+     * @private
+     */
+    PdfExport.prototype.export = function (type, fileName, orientation, allowDownload) {
+        var _this = this;
+        var promise = new Promise(function (resolve, reject) {
+            var element = sf.base.createElement('canvas', {
+                id: 'ej2-canvas',
+                attrs: {
+                    'width': _this.control.availableSize.width.toString(),
+                    'height': _this.control.availableSize.height.toString()
+                }
+            });
+            var isDownload = !(sf.base.Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
+            orientation = sf.base.isNullOrUndefined(orientation) ? sf.pdfexport.PdfPageOrientation.Landscape : orientation;
+            var url = window.URL.createObjectURL(new Blob([(new XMLSerializer()).serializeToString(_this.control.svgObject)], { type: 'image/svg+xml' }));
+            var image = new Image();
+            var context = element.getContext('2d');
+            image.onload = (function () {
+                context.drawImage(image, 0, 0);
+                window.URL.revokeObjectURL(url);
+                var document = new sf.pdfexport.PdfDocument();
+                var imageString = element.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
+                document.pageSettings.orientation = orientation;
+                imageString = imageString.slice(imageString.indexOf(',') + 1);
+                document.pages.add().graphics.drawImage(new sf.pdfexport.PdfBitmap(imageString), 0, 0, (_this.control.availableSize.width - 60), _this.control.availableSize.height);
+                if (allowDownload) {
+                    document.save(fileName + '.pdf');
+                    document.destroy();
+                }
+                else {
+                    resolve(null);
+                }
+            });
+            image.src = url;
+        });
+        return promise;
+    };
+    PdfExport.prototype.getModuleName = function () {
+        // Returns te module name
+        return 'PdfExport';
+    };
+    /**
+     * To destroy the ImageExport.
+     * @return {void}
+     * @private
+     */
+    PdfExport.prototype.destroy = function (treemap) {
+        // Destroy method performed here
+    };
+    return PdfExport;
+}());
+
+/**
  * Tree Map Components
  */
 var __extends = (undefined && undefined.__extends) || (function () {
@@ -2472,9 +2595,18 @@ var TreeMap = /** @class */ (function (_super) {
         _this.legendId = [];
         return _this;
     }
+    TreeMap_1 = TreeMap;
     TreeMap.prototype.preRender = function () {
         var _this = this;
         this.isBlazor = sf.base.isBlazor();
+        if (!this.isBlazor) {
+            this.allowPrint = true;
+            this.allowImageExport = true;
+            this.allowPdfExport = true;
+            TreeMap_1.Inject(Print);
+            TreeMap_1.Inject(PdfExport);
+            TreeMap_1.Inject(ImageExport);
+        }
         this.trigger(load, { treemap: this.isBlazor ? null : this }, function () {
             _this.initPrivateVariable();
             _this.unWireEVents();
@@ -2783,8 +2915,9 @@ var TreeMap = /** @class */ (function (_super) {
      * @param id - Specifies the element to print the treemap.
      */
     TreeMap.prototype.print = function (id) {
-        var exportChart = new ExportUtils(this);
-        exportChart.print(id);
+        if (this.allowPrint && this.printModule) {
+            this.printModule.print(id);
+        }
     };
     /**
      * This method is used to perform the export functionality for the rendered treemap.
@@ -2792,9 +2925,22 @@ var TreeMap = /** @class */ (function (_super) {
      * @param fileName - Specifies file name for exporting the rendered treemap.
      * @param orientation - Specifies the orientation of the pdf document.
      */
-    TreeMap.prototype.export = function (type, fileName, orientation) {
-        var exportMap = new ExportUtils(this);
-        exportMap.export(type, fileName, orientation);
+    TreeMap.prototype.export = function (type, fileName, orientation, allowDownload) {
+        var _this = this;
+        if (sf.base.isNullOrUndefined(allowDownload)) {
+            allowDownload = true;
+        }
+        if (type === 'PDF' && this.allowPdfExport && this.pdfExportModule) {
+            return new Promise(function (resolve, reject) {
+                resolve(_this.pdfExportModule.export(type, fileName, orientation, allowDownload));
+            });
+        }
+        else if (this.allowImageExport && (type !== 'PDF') && this.imageExportModule) {
+            return new Promise(function (resolve, reject) {
+                resolve(_this.imageExportModule.export(type, fileName, allowDownload));
+            });
+        }
+        return null;
     };
     /* tslint:disable:no-string-literal */
     TreeMap.prototype.processFlatJsonData = function () {
@@ -3408,6 +3554,24 @@ var TreeMap = /** @class */ (function (_super) {
                 args: [this]
             });
         }
+        if (this.allowPrint) {
+            modules.push({
+                member: 'Print',
+                args: [this, Print]
+            });
+        }
+        if (this.allowImageExport) {
+            modules.push({
+                member: 'ImageExport',
+                args: [this, ImageExport]
+            });
+        }
+        if (this.allowPdfExport) {
+            modules.push({
+                member: 'PdfExport',
+                args: [this, PdfExport]
+            });
+        }
         return modules;
     };
     /**
@@ -3451,7 +3615,22 @@ var TreeMap = /** @class */ (function (_super) {
      */
     TreeMap.prototype.destroy = function () {
         this.unWireEVents();
+        this.drilledItems = [];
+        this.levelSelection = [];
+        this.legendId = [];
+        this.removeSvg();
         _super.prototype.destroy.call(this);
+    };
+    TreeMap.prototype.removeSvg = function () {
+        removeElement(this.element.id + '_Secondary_Element');
+        if (this.svgObject) {
+            while (this.svgObject.childNodes.length > 0) {
+                this.svgObject.removeChild(this.svgObject.firstChild);
+            }
+            if (!this.svgObject.hasChildNodes() && this.svgObject.parentNode) {
+                sf.base.remove(this.svgObject);
+            }
+        }
     };
     /**
      * Get the properties to be maintained in the persisted state.
@@ -3460,6 +3639,16 @@ var TreeMap = /** @class */ (function (_super) {
     TreeMap.prototype.getPersistData = function () {
         return '';
     };
+    var TreeMap_1;
+    __decorate([
+        sf.base.Property(false)
+    ], TreeMap.prototype, "allowPrint", void 0);
+    __decorate([
+        sf.base.Property(false)
+    ], TreeMap.prototype, "allowImageExport", void 0);
+    __decorate([
+        sf.base.Property(false)
+    ], TreeMap.prototype, "allowPdfExport", void 0);
     __decorate([
         sf.base.Property(null)
     ], TreeMap.prototype, "width", void 0);
@@ -3607,7 +3796,7 @@ var TreeMap = /** @class */ (function (_super) {
     __decorate([
         sf.base.Event()
     ], TreeMap.prototype, "legendRendering", void 0);
-    TreeMap = __decorate([
+    TreeMap = TreeMap_1 = __decorate([
         sf.base.NotifyPropertyChanges
     ], TreeMap);
     return TreeMap;
@@ -5310,7 +5499,7 @@ var TreeMapTooltip = /** @class */ (function () {
  * exporting all modules from tree map index
  */
 
-TreeMap.Inject(TreeMapTooltip, TreeMapLegend, TreeMapHighlight, TreeMapSelection);
+TreeMap.Inject(TreeMapTooltip, TreeMapLegend, TreeMapHighlight, TreeMapSelection, Print, PdfExport, ImageExport);
 
 exports.TreeMap = TreeMap;
 exports.LevelsData = LevelsData;
@@ -5407,12 +5596,16 @@ exports.setColor = setColor;
 exports.removeSelectionWithHighlight = removeSelectionWithHighlight;
 exports.getLegendIndex = getLegendIndex;
 exports.pushCollection = pushCollection;
-exports.ExportUtils = ExportUtils;
+exports.triggerDownload = triggerDownload;
+exports.removeElement = removeElement;
 exports.TreeMapLegend = TreeMapLegend;
 exports.LayoutPanel = LayoutPanel;
 exports.TreeMapHighlight = TreeMapHighlight;
 exports.TreeMapSelection = TreeMapSelection;
 exports.TreeMapTooltip = TreeMapTooltip;
+exports.ImageExport = ImageExport;
+exports.PdfExport = PdfExport;
+exports.Print = Print;
 
 return exports;
 

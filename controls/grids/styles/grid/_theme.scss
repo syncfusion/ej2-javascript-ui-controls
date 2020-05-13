@@ -186,7 +186,9 @@
   }
 
     &.e-rtl .e-frozenheader > .e-table,
-    &.e-rtl .e-frozencontent > .e-table  {
+    &.e-rtl .e-frozencontent > .e-table,
+    &.e-rtl .e-frozenheader .e-virtualtable > .e-table,
+    &.e-rtl .e-frozencontent .e-virtualtable > .e-table {
       border-left-color: $frozen-border-color;
   }
 

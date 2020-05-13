@@ -495,4 +495,14 @@ describe('SVG Tooltip', () => {
         tooltip.theme = 'Material';
         tooltip.refresh();
     });
+    it('Tooltip with body element rtl direction', () => {
+        tooltip.loaded = (args: Object) => {
+            svgObject = getElement('tooltipcontainer_svg');
+            expect(svgObject).not.toBe(null);
+            let textElement: Element = document.getElementById('tooltipcontainer_text');
+            expect(textElement.getAttribute('text-anchor')).toBe('end');
+        };
+        document.body.setAttribute('dir', 'rtl');
+        tooltip.refresh();
+    });
 });

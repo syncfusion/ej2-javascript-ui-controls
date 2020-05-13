@@ -510,6 +510,12 @@ export class Axis extends ChildProperty<Axis> {
 
     @Property(0)
     public zoomPosition: number;
+      /**
+       * Enables the scrollbar for zooming.
+       * @default true
+       */
+     @Property(true)
+     public enableScrollbarOnZooming: boolean;
 
     /**
      * If set to true, the axis will render at the opposite side of its default position.
@@ -883,6 +889,8 @@ export class Axis extends ChildProperty<Axis> {
     public isChart: boolean = true;
     /** @private */
     public maxPointLength: number;
+    /** @private */
+    public isIntervalInDecimal: boolean = true;
     /**
      * @private
      * Task: BLAZ-2044

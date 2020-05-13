@@ -6,6 +6,7 @@ import { IVisiblePointer } from '../model/interface';
 import { Axis, Pointer, Range } from '../axes/axis';
 import { Orientation, MarkerType } from './enum';
 import { LinearGauge } from '../../linear-gauge';
+import { ExportType } from '../utils/enum';
 
 /**
  * Specifies Linear-Gauge Helper methods
@@ -197,6 +198,25 @@ export function getElementOffset(childElement: HTMLElement, parentElement: HTMLE
     parentElement.removeChild(childElement);
     return new Size(width, height);
 }
+
+    /**
+     * To trigger the download element
+     * @param fileName 
+     * @param type 
+     * @param url 
+     */
+export function triggerDownload(fileName: string, type: ExportType, url: string, isDownload: boolean): void {
+        createElement('a', {
+            attrs: {
+                'download': fileName + '.' + (type as string).toLocaleLowerCase(),
+                'href': url
+            }
+        }).dispatchEvent(new MouseEvent(isDownload ? 'click' : 'move', {
+            view: window,
+            bubbles: false,
+            cancelable: true
+        }));
+    }
 
 /** @private */
 export class VisibleRange {

@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../../src/document-editor/document-editor';
 import { createElement, select } from '@syncfusion/ej2-base';
-import { Editor, TableWidget, TextElementBox } from '../../../src/index';
+import { Editor, TableWidget, TextElementBox, TextFormFieldDialog } from '../../../src/index';
 import { TestHelper } from '../../test-helper.spec';
 import { Selection } from '../../../src/index';
 import { EditorHistory } from '../../../src/document-editor/implementation/editor-history/editor-history';
@@ -344,24 +344,430 @@ describe('Restrict Editing validation with password is empty validation', () => 
     });
     it('protect document with empty password', () => {
         editor.editor.insertText('sample');
-       editor.editor.addProtection('','ReadOnly');
-       expect(editor.documentHelper.protectionType).toBe('ReadOnly');
-       expect(editor.documentHelper.isDocumentProtected).toBe(true);
+        editor.editor.addProtection('', 'ReadOnly');
+        expect(editor.documentHelper.protectionType).toBe('ReadOnly');
+        expect(editor.documentHelper.isDocumentProtected).toBe(true);
     });
     it('Insert text in protected document', () => {
         editor.editor.handleTextInput('s');
         expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('sample');
-    editor.editor.unProtectDocument();
-   
+        editor.editor.unProtectDocument();
+
     });
     it('Insert text after unprotect document', () => {
         editor.editor.insertText('s');
         expect((editor.selection.start.currentWidget.children[0] as TextElementBox).text).toBe('samples');
         editor.selection.selectAll();
         editor.editor.insertEditRangeElement('everyone');
-        editor.editor.addProtection('','ReadOnly');
+        editor.editor.addProtection('', 'ReadOnly');
         editor.editor.handleTextInput('s');
         expect((editor.selection.start.currentWidget.children[1] as TextElementBox).text).toBe('samples');
     });
 
+});
+let TextFormField: any = {
+    "sections": [
+        {
+            "sectionFormat": {
+                "pageWidth": 612,
+                "pageHeight": 792,
+                "leftMargin": 72,
+                "rightMargin": 72,
+                "topMargin": 72,
+                "bottomMargin": 72,
+                "differentFirstPage": false,
+                "differentOddAndEvenPages": false,
+                "headerDistance": 36,
+                "footerDistance": 36,
+                "bidi": false
+            },
+            "blocks": [
+                {
+                    "paragraphFormat": {
+                        "styleName": "Normal",
+                        "listFormat": {
+                        }
+                    },
+                    "characterFormat": {
+                    },
+                    "inlines": [
+                        {
+                            "characterFormat": {
+                            },
+                            "fieldType": 0,
+                            "hasFieldEnd": true,
+                            "formFieldData": {
+                                "name": "Text1",
+                                "enabled": true,
+                                "helpText": "",
+                                "statusText": "",
+                                "textInput": {
+                                    "type": "Text",
+                                    "maxLength": 0,
+                                    "defaultValue": "Syncfusion",
+                                    "format": ""
+                                }
+                            }
+                        },
+                        {
+                            "characterFormat": {
+                            },
+                            "bookmarkType": 0,
+                            "name": "Text1"
+                        },
+                        {
+                            "characterFormat": {
+                            },
+                            "text": " FORMTEXT "
+                        },
+                        {
+                            "characterFormat": {
+                            },
+                            "fieldType": 2
+                        },
+                        {
+                            "characterFormat": {
+                            },
+                            "bookmarkType": 0,
+                            "name": "_GoBack"
+                        },
+                        {
+                            "characterFormat": {
+                            },
+                            "text": "Syncfusion"
+                        },
+                        {
+                            "characterFormat": {
+                            },
+                            "bookmarkType": 1,
+                            "name": "_GoBack"
+                        },
+                        {
+                            "characterFormat": {
+                            },
+                            "fieldType": 1
+                        },
+                        {
+                            "characterFormat": {
+                            },
+                            "bookmarkType": 1,
+                            "name": "Text1"
+                        }
+                    ]
+                }
+            ],
+            "headersFooters": {
+            }
+        }
+    ],
+    "characterFormat": {
+        "bold": false,
+        "italic": false,
+        "fontSize": 11,
+        "fontFamily": "Calibri",
+        "underline": "None",
+        "strikethrough": "None",
+        "baselineAlignment": "Normal",
+        "highlightColor": "NoColor",
+        "fontColor": "#000000",
+        "fontSizeBidi": 11,
+        "fontFamilyBidi": "Arial"
+    },
+    "paragraphFormat": {
+        "leftIndent": 0,
+        "rightIndent": 0,
+        "firstLineIndent": 0,
+        "textAlignment": "Left",
+        "beforeSpacing": 0,
+        "afterSpacing": 8,
+        "lineSpacing": 1.0791666507720947,
+        "lineSpacingType": "Multiple",
+        "listFormat": {
+        },
+        "bidi": false
+    },
+    "defaultTabWidth": 36,
+    "enforcement": true,
+    "hashValue": "DtAEDux42ScZP1O4y/wSNBM3VM7798i7zX3uabsX6R5z+tkmWLkenUjf/E893543/lmTZn5nSysnO19TYnD+GQ==",
+    "saltValue": "IoYM+ccLHCMT6B8SRquSgw==",
+    "formatting": false,
+    "protectionType": "FormFieldsOnly",
+    "dontUseHTMLParagraphAutoSpacing": false,
+    "styles": [
+        {
+            "name": "Normal",
+            "type": "Paragraph",
+            "paragraphFormat": {
+                "listFormat": {
+                }
+            },
+            "characterFormat": {
+            },
+            "next": "Normal"
+        },
+        {
+            "name": "Default Paragraph Font",
+            "type": "Character",
+            "characterFormat": {
+            }
+        },
+        {
+            "name": "Heading 1",
+            "type": "Paragraph",
+            "paragraphFormat": {
+                "leftIndent": 0,
+                "rightIndent": 0,
+                "firstLineIndent": 0,
+                "textAlignment": "Left",
+                "beforeSpacing": 12,
+                "afterSpacing": 0,
+                "lineSpacing": 1.0791666507720947,
+                "lineSpacingType": "Multiple",
+                "outlineLevel": "Level1",
+                "listFormat": {
+                }
+            },
+            "characterFormat": {
+                "fontSize": 16,
+                "fontFamily": "Calibri Light",
+                "fontColor": "#2F5496"
+            },
+            "basedOn": "Normal",
+            "link": "Heading 1 Char",
+            "next": "Normal"
+        },
+        {
+            "name": "Heading 1 Char",
+            "type": "Character",
+            "characterFormat": {
+                "fontSize": 16,
+                "fontFamily": "Calibri Light",
+                "fontColor": "#2F5496"
+            },
+            "basedOn": "Default Paragraph Font"
+        },
+        {
+            "name": "Heading 2",
+            "type": "Paragraph",
+            "paragraphFormat": {
+                "leftIndent": 0,
+                "rightIndent": 0,
+                "firstLineIndent": 0,
+                "textAlignment": "Left",
+                "beforeSpacing": 2,
+                "afterSpacing": 0,
+                "lineSpacing": 1.0791666507720947,
+                "lineSpacingType": "Multiple",
+                "outlineLevel": "Level2",
+                "listFormat": {
+                }
+            },
+            "characterFormat": {
+                "fontSize": 13,
+                "fontFamily": "Calibri Light",
+                "fontColor": "#2F5496"
+            },
+            "basedOn": "Normal",
+            "link": "Heading 2 Char",
+            "next": "Normal"
+        },
+        {
+            "name": "Heading 2 Char",
+            "type": "Character",
+            "characterFormat": {
+                "fontSize": 13,
+                "fontFamily": "Calibri Light",
+                "fontColor": "#2F5496"
+            },
+            "basedOn": "Default Paragraph Font"
+        },
+        {
+            "name": "Heading 3",
+            "type": "Paragraph",
+            "paragraphFormat": {
+                "leftIndent": 0,
+                "rightIndent": 0,
+                "firstLineIndent": 0,
+                "textAlignment": "Left",
+                "beforeSpacing": 2,
+                "afterSpacing": 0,
+                "lineSpacing": 1.0791666507720947,
+                "lineSpacingType": "Multiple",
+                "outlineLevel": "Level3",
+                "listFormat": {
+                }
+            },
+            "characterFormat": {
+                "fontSize": 12,
+                "fontFamily": "Calibri Light",
+                "fontColor": "#1F3763"
+            },
+            "basedOn": "Normal",
+            "link": "Heading 3 Char",
+            "next": "Normal"
+        },
+        {
+            "name": "Heading 3 Char",
+            "type": "Character",
+            "characterFormat": {
+                "fontSize": 12,
+                "fontFamily": "Calibri Light",
+                "fontColor": "#1F3763"
+            },
+            "basedOn": "Default Paragraph Font"
+        },
+        {
+            "name": "Heading 4",
+            "type": "Paragraph",
+            "paragraphFormat": {
+                "leftIndent": 0,
+                "rightIndent": 0,
+                "firstLineIndent": 0,
+                "textAlignment": "Left",
+                "beforeSpacing": 2,
+                "afterSpacing": 0,
+                "lineSpacing": 1.0791666507720947,
+                "lineSpacingType": "Multiple",
+                "outlineLevel": "Level4",
+                "listFormat": {
+                }
+            },
+            "characterFormat": {
+                "italic": true,
+                "fontFamily": "Calibri Light",
+                "fontColor": "#2F5496"
+            },
+            "basedOn": "Normal",
+            "link": "Heading 4 Char",
+            "next": "Normal"
+        },
+        {
+            "name": "Heading 4 Char",
+            "type": "Character",
+            "characterFormat": {
+                "italic": true,
+                "fontFamily": "Calibri Light",
+                "fontColor": "#2F5496"
+            },
+            "basedOn": "Default Paragraph Font"
+        },
+        {
+            "name": "Heading 5",
+            "type": "Paragraph",
+            "paragraphFormat": {
+                "leftIndent": 0,
+                "rightIndent": 0,
+                "firstLineIndent": 0,
+                "textAlignment": "Left",
+                "beforeSpacing": 2,
+                "afterSpacing": 0,
+                "lineSpacing": 1.0791666507720947,
+                "lineSpacingType": "Multiple",
+                "outlineLevel": "Level5",
+                "listFormat": {
+                }
+            },
+            "characterFormat": {
+                "fontFamily": "Calibri Light",
+                "fontColor": "#2F5496"
+            },
+            "basedOn": "Normal",
+            "link": "Heading 5 Char",
+            "next": "Normal"
+        },
+        {
+            "name": "Heading 5 Char",
+            "type": "Character",
+            "characterFormat": {
+                "fontFamily": "Calibri Light",
+                "fontColor": "#2F5496"
+            },
+            "basedOn": "Default Paragraph Font"
+        },
+        {
+            "name": "Heading 6",
+            "type": "Paragraph",
+            "paragraphFormat": {
+                "leftIndent": 0,
+                "rightIndent": 0,
+                "firstLineIndent": 0,
+                "textAlignment": "Left",
+                "beforeSpacing": 2,
+                "afterSpacing": 0,
+                "lineSpacing": 1.0791666507720947,
+                "lineSpacingType": "Multiple",
+                "outlineLevel": "Level6",
+                "listFormat": {
+                }
+            },
+            "characterFormat": {
+                "fontFamily": "Calibri Light",
+                "fontColor": "#1F3763"
+            },
+            "basedOn": "Normal",
+            "link": "Heading 6 Char",
+            "next": "Normal"
+        },
+        {
+            "name": "Heading 6 Char",
+            "type": "Character",
+            "characterFormat": {
+                "fontFamily": "Calibri Light",
+                "fontColor": "#1F3763"
+            },
+            "basedOn": "Default Paragraph Font"
+        }
+    ],
+    "lists": [
+    ],
+    "abstractLists": [
+    ],
+    "comments": [
+    ]
+}
+describe('Form Filling validation For Formatting', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor = new DocumentEditor({
+            enableEditor: true, isReadOnly: false, enableEditorHistory: true,
+            documentEditorSettings: { formFieldSettings: { formFillingMode: 'Inline' } }
+        });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        editor.open(JSON.stringify(TextFormField));
+        editor.selection.isHighlightEditRegion = true;
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Form Filling TextForm Field validation For CharacterFormatting', () => {
+        editor.selection.navigateToNextFormField();
+        editor.selection.selectField();
+        editor.documentEditorSettings.formFieldSettings.formattingExceptions = ['Bold', 'Italic'];
+        editor.editorModule.onApplyCharacterFormat('bold', true, false);
+        expect(editor.documentHelper.protectionType).toBe('FormFieldsOnly');
+        expect(editor.documentHelper.isDocumentProtected).toBe(true);
+        expect(editor.selection.characterFormat.bold).toBe(true);
+    });
+    it('Form Filling TextForm Field validation For ParagraphFormatting', () => {
+        editor.selection.selectField();
+        editor.documentEditorSettings.formFieldSettings.formattingExceptions = ['TextAlignment'];
+        editor.editorModule.onApplyParagraphFormat('textAlignment', 'Center', false, true);
+        expect(editor.documentHelper.protectionType).toBe('FormFieldsOnly');
+        expect(editor.documentHelper.isDocumentProtected).toBe(true);
+        expect(editor.selection.paragraphFormat.textAlignment).toBe('Center');
+    });
 });

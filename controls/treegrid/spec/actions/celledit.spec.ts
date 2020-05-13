@@ -424,7 +424,7 @@ describe('Cell Edit module', () => {
         {
         dataSource: sampleData,
         childMapping: 'subtasks',
-        editSettings: { allowEditing: true, mode: 'Row', allowDeleting: true, allowAdding: true,},
+        editSettings: { allowEditing: true, mode: 'Cell', allowDeleting: true, allowAdding: true,},
         treeColumnIndex: 1,
         toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
         columns: [{field: 'taskID', headerText: 'Task ID', isPrimaryKey: true},
@@ -442,7 +442,7 @@ describe('Cell Edit module', () => {
         }, 0);
       }
       gridObj.cellEdit = cellEdit;
-      gridObj.editCell(2,'duration');
+      gridObj.editCell(2,'progress');
     });
     afterAll(() => {
       destroy(gridObj);

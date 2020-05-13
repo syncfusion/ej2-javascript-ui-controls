@@ -969,6 +969,17 @@ let ListView = class ListView extends Component {
                         this.header(this.headerTitle, false);
                     }
                     break;
+                case 'query':
+                    if (this.enableVirtualization) {
+                        this.virtualizationModule.reRenderUiVirtualization();
+                    }
+                    else {
+                        if (isBlazor() && this.isServerRendered && !this.enableVirtualization) {
+                            this.itemReRender = true;
+                        }
+                        this.reRender();
+                    }
+                    break;
                 case 'showHeader':
                     this.header(this.headerTitle, false);
                     break;
@@ -1725,7 +1736,7 @@ let ListView = class ListView extends Component {
         let eventArgs = {};
         merge(eventArgs, selectedItem);
         if (e) {
-            merge(eventArgs, { isInteracted: true, event: e, index: Array.prototype.indexOf.call(this.curUL.children, li) });
+            merge(eventArgs, { isInteracted: true, event: e, index: this.curUL && Array.prototype.indexOf.call(this.curUL.children, li) });
         }
         return eventArgs;
     }
@@ -2755,9 +2766,6 @@ __decorate([
     Property('')
 ], ListView.prototype, "width", void 0);
 __decorate([
-    Property('')
-], ListView.prototype, "virtualCheckBox", void 0);
-__decorate([
     Property(null)
 ], ListView.prototype, "template", void 0);
 __decorate([
@@ -3475,7 +3483,8 @@ class Virtualization {
             // tslint:disable-next-line:no-any
             this.listViewInstance.renderCheckbox(args);
             // tslint:enable-next-line:no-any
-            if (!isNullOrUndefined(this.listViewInstance.virtualCheckBox.outerHTML)) {
+            if ((!isNullOrUndefined(this.listViewInstance.virtualCheckBox)) &&
+                (!isNullOrUndefined(this.listViewInstance.virtualCheckBox.outerHTML))) {
                 let div = document.createElement('div');
                 div.innerHTML = this.listViewInstance.template || commonTemplate;
                 div.children[0].classList.add('e-checkbox');

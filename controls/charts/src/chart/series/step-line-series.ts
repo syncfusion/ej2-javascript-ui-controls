@@ -52,11 +52,13 @@ export class StepLineSeries extends LineBase {
                 startPoint = series.emptyPointSettings.mode === 'Drop' ? startPoint : 'M';
             }
         }
-        point1 = getPoint(
-            visiblePoints[visiblePoints.length - 1].xValue + lineLength,
-            visiblePoints[visiblePoints.length - 1].yValue, xAxis, yAxis, isInverted
-        );
-        direction = direction.concat(startPoint + ' ' + (point1.x) + ' ' + (point1.y) + ' ');
+        if (visiblePoints.length > 0) {
+            point1 = getPoint(
+                visiblePoints[visiblePoints.length - 1].xValue + lineLength,
+                visiblePoints[visiblePoints.length - 1].yValue, xAxis, yAxis, isInverted
+            );
+            direction = direction.concat(startPoint + ' ' + (point1.x) + ' ' + (point1.y) + ' ');
+        }
         pathOptions = new PathOption(
             series.chart.element.id + '_Series_' + series.index, 'transparent',
             series.width, series.interior, series.opacity, series.dashArray, direction

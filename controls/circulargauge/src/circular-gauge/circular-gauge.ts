@@ -30,9 +30,11 @@ import { AxisLayoutPanel } from './axes/axis-panel';
 import { getThemeStyle } from './model/theme';
 import { LegendSettingsModel } from './legend/legend-model';
 import { LegendSettings, Legend } from './legend/legend';
-import { ExportUtils } from '../circular-gauge/utils/export';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { ExportType } from '../circular-gauge/utils/enum';
+import { PdfExport } from  './model/pdf-export';
+import { ImageExport } from './model/image-export';
+import { Print } from './model/print';
 
 /**
  * Represents the circular gauge control.
@@ -53,6 +55,24 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      * Sets and gets the module that is used to add annotation in the circular gauge.
      */
     public annotationsModule: Annotations;
+
+    /**
+     * Sets and gets the module that is used to add Print in the circular gauge.
+     * @private
+     */
+    public printModule : Print;
+
+    /**
+     * Sets and gets the module that is used to add ImageExport in the circular gauge.
+     * @private
+     */
+    public imageExportModule: ImageExport;
+
+    /**
+     * Sets and gets the module that is used to add pdfExport in the circular gauge.
+     * @private
+     */
+    public pdfExportModule: PdfExport;
 
     /**
      * Sets and gets the module that is used to show the tooltip in the circular gauge.
@@ -143,6 +163,27 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      */
     @Property(false)
     public enableRangeDrag: boolean;
+
+    /**
+     * Enables and disables the print functionality in circular gauge.
+     * @default false
+     */
+    @Property(false)
+    public allowPrint: boolean;
+
+    /**
+     * Enables and disables the export to image functionality in circular gauge.
+     * @default false
+     */
+    @Property(false)
+    public allowImageExport: boolean;
+
+    /**
+     * Enables and disables the export to pdf functionality in circular gauge.
+     * @default false
+     */
+    @Property(false)
+    public allowPdfExport: boolean;
 
     /**
      * Sets and gets the X coordinate of the circular gauge.
@@ -415,6 +456,14 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
     //tslint:disable
     protected preRender(): void {
         this.isBlazor = isBlazor();
+        if (!this.isBlazor) {
+            this.allowPrint = true;
+            this.allowImageExport = true;
+            this.allowPdfExport = true;
+            CircularGauge.Inject(Print);
+            CircularGauge.Inject(PdfExport);
+            CircularGauge.Inject(ImageExport);
+        }
         this.unWireEvents();
         this.trigger(load, this.isBlazor ? null : { gauge: this });
         this.initPrivateVariable();
@@ -1120,19 +1169,34 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
      * This method is used to print the rendered circular gauge.
      * @param id - Specifies the element to print the circular gauge.
      */
-    public print(id?: string[] | string | Element): void {
-        let exportChart: ExportUtils = new ExportUtils(this);
-        exportChart.print(id);
+    public print (id?: string[] | string | Element): void {
+        if (this.allowPrint && this.printModule){
+            this.printModule.print(id);
+        }
     }
     /**
      * This method is used to perform the export functionality for the circular gauge.
      * @param type - Specifies the type of the export.
      * @param fileName - Specifies the file name for the exported file.
      * @param orientation - Specified the orientation for the exported pdf document.
+     * @param allowDownload - Specifies whether to download as a file.
      */
-    public export(type: ExportType, fileName: string, orientation?: PdfPageOrientation): void {
-        let exportMap: ExportUtils = new ExportUtils(this);
-        exportMap.export(type, fileName, orientation);
+    public export(type: ExportType, fileName: string, orientation?: PdfPageOrientation, allowDownload?: boolean): Promise<string> {
+        if (isNullOrUndefined(allowDownload)) {
+            allowDownload = true;
+        }      
+        if (type=='PDF' && this.allowPdfExport && this.pdfExportModule) {
+                return new Promise((resolve: Function, reject: Function) => {
+                resolve(this.pdfExportModule.export(type, fileName, orientation, allowDownload));
+                });            
+        }
+        else if (this.allowImageExport && (type !== 'PDF') && this.imageExportModule)
+        {
+                return new Promise((resolve: Function, reject: Function) => {
+                    resolve(this.imageExportModule.export(type, fileName, allowDownload));
+                });            
+        }
+        return null;
     }
     /**
      * Method to set mouse x, y from events
@@ -1234,6 +1298,24 @@ export class CircularGauge extends Component<HTMLElement> implements INotifyProp
             modules.push({
                 member: 'Tooltip',
                 args: [this, GaugeTooltip]
+            });
+        }
+        if (this.allowPrint) {
+            modules.push({
+                member: 'Print',
+                args: [this,Print]
+            });
+        }
+        if (this.allowImageExport) {
+            modules.push({
+                member: 'ImageExport',
+                args: [this,ImageExport]
+            });
+        }
+        if (this.allowPdfExport) {
+            modules.push({
+                member: 'PdfExport',
+                args: [this,PdfExport]
             });
         }
         if (this.legendSettings.visible) {

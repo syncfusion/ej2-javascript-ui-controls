@@ -16205,7 +16205,6 @@ var Selection = /** @class */ (function () {
                 this.getColIdxFromClientX(getClientX(this.touchEvt)) === colIdx)) {
             this.mouseDownHandler(e);
         }
-        this.parent.trigger('select', { range: this.parent.getActiveSheet().selectedRange });
         document.removeEventListener(getMoveEvent().split(' ')[0], this.mouseMoveEvt);
         if (!sf.base.Browser.isPointer) {
             document.removeEventListener(getMoveEvent().split(' ')[1], this.mouseMoveEvt);
@@ -16304,6 +16303,7 @@ var Selection = /** @class */ (function () {
             e = { type: 'mousedown' };
         }
         this.parent.notify(selectionComplete, e);
+        this.parent.trigger('select', { range: this.parent.getActiveSheet().selectedRange });
     };
     Selection.prototype.UpdateRowColSelected = function (indexes) {
         var sheet = this.parent.getActiveSheet();

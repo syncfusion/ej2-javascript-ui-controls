@@ -225,7 +225,7 @@ var DropDownButton = /** @class */ (function (_super) {
             this.dropDown.refreshPosition(this.element);
         }
         this.dropDown.hide();
-        sf.base.attributes(this.element, (_a = {}, _a['aria-haspopup'] = this.items.length || this.target ? 'true' : 'false', _a['aria-expanded'] = 'false', _a['aria-owns'] = this.getPopUpElement().id, _a['type'] = 'button', _a));
+        sf.base.attributes(this.element, (_a = {}, _a['aria-haspopup'] = this.items.length || this.target ? 'true' : 'false', _a['aria-expanded'] = 'false', _a['aria-owns'] = this.getPopUpElement().id, _a['type'] = 'button', _a['aria-label'] = this.element.textContent + ' dropdownbutton', _a));
         if (this.cssClass) {
             sf.base.addClass([div], this.cssClass.split(' '));
         }

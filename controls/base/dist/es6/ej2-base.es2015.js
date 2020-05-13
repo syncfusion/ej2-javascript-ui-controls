@@ -847,7 +847,9 @@ class DateFormat {
         }
         else {
             resPattern = IntlBase.ConvertDateToWeekFormat(resPattern);
-            resPattern = resPattern.replace(/tt/, 'a');
+            if (isBlazor()) {
+                resPattern = resPattern.replace(/tt/, 'a');
+            }
             formatOptions.pattern = resPattern;
             formatOptions.numMapper = isBlazor() ?
                 extend({}, numObject) : ParserBase.getNumberMapper(dependable.parserObject, ParserBase.getNumberingSystem(cldr));
@@ -3237,16 +3239,14 @@ var IntlBase;
     IntlBase.getActualDateTimeFormat = getActualDateTimeFormat;
     // tslint:disable-next-line:no-any
     function processSymbol(actual, option) {
-        for (let i = 0; i < actual.length; i++) {
-            let mapper = { '.': 'decimal', ',': 'group' };
+        if (actual.indexOf(',') !== -1) {
             // tslint:disable-next-line:no-any
-            let matched = mapper[actual[i]];
-            if (matched === 'decimal') {
-                actual = actual.replace(/\./g, getValue('numberMapper.numberSymbols.decimal', option) || '.');
-            }
-            else if (matched === 'group') {
-                actual = actual.replace(/,/g, getValue('numberMapper.numberSymbols.group', option) || '.');
-            }
+            let split = actual.split(',');
+            actual = (split[0] + getValue('numberMapper.numberSymbols.group', option) +
+                split[1].replace('.', getValue('numberMapper.numberSymbols.decimal', option)));
+        }
+        else {
+            actual = actual.replace('.', getValue('numberMapper.numberSymbols.decimal', option));
         }
         return actual;
     }

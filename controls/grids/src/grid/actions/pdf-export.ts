@@ -449,10 +449,6 @@ export class PdfExport {
                                allowHorizontalOverflow: boolean, eCols: Column[]): PdfGrid {
         let columnCount: number = gridColumn.length + childLevels;
         let depth: number = measureColumnDepth(eCols);
-        let index: number = this.parent.getIndentCount();
-        if (this.parent.allowGrouping) {
-            index = this.parent.groupSettings.columns.length;
-        }
         let cols: Column[] | string[] | ColumnModel[] = eCols;
         pdfGrid.columns.add(columnCount);
         pdfGrid.headers.add(rows.length);
@@ -501,7 +497,7 @@ export class PdfExport {
                     colIndex = colIndex + newSpanCnt - 1;
                 } else if (cols[i].visible || this.hideColumnInclude) {
                     spanCnt++;
-                    applyTextAndSpan(rowIndex, i + colIndex + index, cols[i] as Column, depth, 0);
+                    applyTextAndSpan(rowIndex, i + colIndex, cols[i] as Column, depth, 0);
                 }
             }
             return spanCnt;

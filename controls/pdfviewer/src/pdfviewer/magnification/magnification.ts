@@ -383,7 +383,9 @@ export class Magnification {
         if (!this.isPagesZoomed) {
             this.reRenderPageNumber = this.pdfViewerBase.currentPageNumber;
         }
-        this.isPagesZoomed = true;
+        if (!this.pdfViewerBase.documentLoaded) {
+            this.isPagesZoomed = true;
+        }
         let scrollValue: number = this.getMagnifiedValue(this.pdfViewerBase.viewerContainer.scrollTop);
         if (this.pdfViewer.textSelectionModule) {
             this.pdfViewer.textSelectionModule.maintainSelectionOnZoom(false, true);
@@ -733,7 +735,11 @@ export class Magnification {
                     if (this.pdfViewerBase.pageSize[i] != null) {
                         let width: number = this.pdfViewerBase.pageSize[i].width * this.zoomFactor;
                         let height: number = this.pdfViewerBase.pageSize[i].height * this.zoomFactor;
-                        pageDiv.style.width = width + 'px';
+                        if (this.pdfViewerBase.isMixedSizeDocument && this.pdfViewerBase.highestWidth > 0) {
+                            pageDiv.style.width = (this.pdfViewerBase.highestWidth * this.zoomFactor) + 'px';
+                        } else {
+                            pageDiv.style.width = width + 'px';
+                        }
                         pageDiv.style.height = height + 'px';
                         // tslint:disable-next-line:max-line-length
                         pageDiv.style.top = ((this.pdfViewerBase.pageSize[i].top) * this.zoomFactor) + 'px';
@@ -772,6 +778,7 @@ export class Magnification {
                                     textLayer.style.display = 'none';
                                 }
                             }
+                            this.pdfViewerBase.applyElementStyles(textLayer, i);
                         }
                         let adornerSvg: HTMLElement = getDiagramElement(this.pdfViewer.element.id + '_textLayer_' + i);
                         if (adornerSvg) {
@@ -789,6 +796,7 @@ export class Magnification {
                             adornerSvg.style.width = width + 'px';
                             adornerSvg.style.height = height + 'px';
                             this.pdfViewer.renderSelector(i, this.pdfViewer.annotationSelectorSettings);
+                            this.pdfViewerBase.applyElementStyles(diagramAdornerLayer, i);
                         }
                     }
                 }

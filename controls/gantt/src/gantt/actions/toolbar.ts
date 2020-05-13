@@ -10,13 +10,15 @@ import { RowSelectEventArgs } from '@syncfusion/ej2-grids';
 import { ToolbarItem } from '../base/enum';
 import { EditSettingsModel } from '../models/edit-settings-model';
 import { TextBox } from '@syncfusion/ej2-inputs';
+import { IGanttData } from '../base/common';
 export class Toolbar {
     private parent: Gantt;
     private predefinedItems: { [key: string]: ItemModel } = {};
     private id: string;
     public toolbar: NavToolbar;
     private items: string[] = ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
-        'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport', 'CsvExport', 'PdfExport'];
+        'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport',
+        'CsvExport', 'PdfExport', 'Indent', 'Outdent'];
     public element: HTMLElement;
     private searchElement: HTMLInputElement;
     constructor(parent: Gantt) {
@@ -42,7 +44,8 @@ export class Toolbar {
                 this.parent.element.appendChild(this.element);
             }
             let preItems: ToolbarItem[] = ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
-                'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport', 'CsvExport', 'PdfExport'];
+            'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport', 'CsvExport',
+            'PdfExport', 'Indent', 'Outdent'];
             for (let item of preItems) {
                 let itemStr: string = item.toLowerCase();
                 let localeName: string = item[0].toLowerCase() + item.slice(1);
@@ -236,6 +239,16 @@ export class Toolbar {
                             gObj.editModule.dialogModule.openToolbarEditDialog();
                         }
                         break;
+                    case gID + '_indent':
+                        if (gObj.editModule && gObj.selectionModule.getSelectedRecords().length) {
+                            gObj.indent();
+                        }
+                        break;
+                    case gID + '_outdent':
+                        if (gObj.editModule && gObj.selectionModule.getSelectedRecords().length) {
+                            gObj.outdent();
+                        }
+                        break;
                     case gID + '_update':
                         gObj.editModule.cellEditModule.isCellEdit = false;
                         gObj.treeGrid.grid.saveCell();
@@ -332,11 +345,13 @@ export class Toolbar {
         let disableItems: string[] = [];
         let edit: EditSettingsModel = gObj.editSettings;
         let gID: string = this.id;
+        let ind: number = gObj.selectedRowIndex;
+        let previousGanttRecord : IGanttData;
         let isSelected: boolean = gObj.selectionModule ? gObj.selectionModule.selectedRowIndexes.length === 1 ||
             gObj.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
         let toolbarItems: ItemModel[] = this.toolbar ? this.toolbar.items : [];
         let toolbarDefaultItems: string[] = [gID + '_add', gID + '_edit', gID + '_delete',
-        gID + '_update', gID + '_cancel'];
+        gID + '_update', gID + '_cancel', gID + '_indent', gID + '_outdent'];
         let isResouceParent: boolean = ((this.parent.viewType === 'ResourceView' && getValue('data.level', args) !== 0
           || this.parent.viewType === 'ProjectView'));
         if (!isNullOrUndefined(this.parent.editModule)) {
@@ -346,6 +361,24 @@ export class Toolbar {
             edit.allowAdding && isResouceParent && !touchEdit ? enableItems.push(gID + '_add') : disableItems.push(gID + '_add');
             edit.allowEditing && isResouceParent && hasData && isSelected && !touchEdit ?
                 enableItems.push(gID + '_edit') : disableItems.push(gID + '_edit');
+            if (!edit.allowEditing || ind === 0 || ind === -1 || !hasData || !isSelected || this.parent.viewType === 'ResourceView') {
+                disableItems.push(gID + '_indent');
+                disableItems.push(gID + '_outdent');
+            } else {
+                if (gObj.currentViewData[ind].level === 0 && hasData && !touchEdit ) {
+                    enableItems.push(gID + '_indent');
+                    disableItems.push(gID + '_outdent');
+                } else {
+                    previousGanttRecord = gObj.currentViewData[ind - 1];
+                    if ((gObj.currentViewData[ind].level - previousGanttRecord.level === 1) && ind !== -1) {
+                        disableItems.push(gID + '_indent');
+                        enableItems.push(gID + '_outdent');
+                    } else if (ind !== -1) {
+                        enableItems.push(gID + '_indent');
+                        enableItems.push(gID + '_outdent');
+                    }
+                }
+            }
             let isDeleteSelected: boolean = gObj.selectionModule ? gObj.selectionModule.selectedRowIndexes.length > 0 ||
                 gObj.selectionModule.getSelectedRowCellIndexes().length > 0 ? true : false : false;
             edit.allowDeleting && isResouceParent && hasData && isDeleteSelected && !touchEdit ?

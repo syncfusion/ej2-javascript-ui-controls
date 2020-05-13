@@ -866,17 +866,46 @@ export class DateProcessor {
         return (date.getHours() * 60 * 60) + (date.getMinutes() * 60) + date.getSeconds() + (date.getMilliseconds() / 1000);
     }
     /**
+     * 
+     * @private
+     */
+    public offset(date: Date, localOffset: number, timezone: string): number {
+        let convertedDate: Date = new Date(date.toLocaleString('en-US', { timeZone: timezone }));
+        if (!isNaN(convertedDate.getTime())) {
+            return ((date.getTime() - convertedDate.getTime()) / 60000) + localOffset;
+        }
+        return 0;
+    }
+    /**
      * @param date 
      * @private
      */
-    public getDateFromFormat(date: string | Date): Date {
+    public convert(date: Date, timezone: string): Date {
+        let fromOffset: number = date.getTimezoneOffset();
+        let toOffset : number = this.offset(date, fromOffset, timezone);
+        date = new Date(date.getTime() + (fromOffset - toOffset) * 60000);
+        let toLocalOffset: number = date.getTimezoneOffset();
+        return new Date(date.getTime() + (toLocalOffset - fromOffset) * 60000);
+    }
+    /**
+     * @param date 
+     * @private
+     */
+    public getDateFromFormat(date: string | Date , toConvert?: boolean): Date {
+        let updatedDate: Date;
         if (isNullOrUndefined(date)) {
             return null;
         } else if (date instanceof Date) {
-            return new Date(date.getTime());
+            updatedDate = new Date(date.getTime());
         } else {
             let dateObject: Date = this.parent.globalize.parseDate(date, { format: this.parent.getDateFormat(), type: 'dateTime' });
-            return isNullOrUndefined(dateObject) && !isNaN(new Date(date).getTime()) ? new Date(date) : dateObject;
+            updatedDate = isNullOrUndefined(dateObject) && !isNaN(new Date(date).getTime()) ? new Date(date) : dateObject;
+        }
+        if (!isNullOrUndefined(this.parent.timezone) && toConvert) {
+            let convertedDate : Date = this.convert(updatedDate, this.parent.timezone);
+            return convertedDate;
+        }else {
+          return updatedDate;
         }
     }
     /**

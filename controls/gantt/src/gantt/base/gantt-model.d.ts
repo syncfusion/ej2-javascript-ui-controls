@@ -63,6 +63,13 @@ export interface GanttModel extends ComponentModel{
     columnMenuItems?: ColumnMenuItem[] | ColumnMenuItemModel[];
 
     /**
+     * By default, task schedule dates are calculated with system time zone.If Gantt chart assigned with specific time zone, 
+     * then schedule dates are calculated as given time zone date value.
+     * @default null
+     */
+    timezone?: string;
+
+    /**
      * If `collapseAllParentTasks` set to true, then root tasks are rendered with collapsed state.
      * @default false
      */

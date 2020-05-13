@@ -24,7 +24,10 @@ export class RowDD {
     /** @hidden */
     public isaddtoBottom: boolean = false;
     /** @hidden */
+    private previousParent: string;
     private dropPosition: string;
+    /** @hidden */
+    private isSharedTask: boolean = false;
     /** @hidden */
     private canDrop: boolean = true;
     /**
@@ -127,6 +130,9 @@ export class RowDD {
         if (this.parent.filterSettings.columns.length > 0 || this.parent.sortSettings.columns.length > 0) {
             args.cancel = true;
         }
+        if (this.parent.viewType === 'ResourceView' && getValue('level', args.data[0]) === 0) {
+            args.cancel = true;
+        }
     }
     private rowDrop(args: RowDropEventArgs): void {
         let ganttDragelem: Element = document.querySelector('.e-ganttdrag');
@@ -135,6 +141,22 @@ export class RowDD {
         }
         args.dropRecord = this.parent.currentViewData[args.dropIndex];
         this.parent.trigger('rowDrop', args);
+        if (this.parent.viewType === 'ResourceView') {
+            if (args.dropPosition === 'middleSegment') {
+                if (args.dropRecord.level === 1) {
+                    args.cancel = true; // preventing to drop the record as child to any child records 
+                } else if (args.dropRecord.uniqueID === getValue('parentItem', args.data[0]).uniqueID) {
+                    args.cancel = true;
+                }
+            }
+            if (args.dropPosition !== 'middleSegment') {
+                if (args.dropRecord.level === 0) {
+                    args.cancel = true;
+                } else if (getValue('parentItem', args.data[0]).uniqueID === args.dropRecord.parentItem.uniqueID) {
+                    args.cancel = true;
+                }
+            }
+        }
         if (!args.cancel) {
             args.cancel = true;
             args.requestType = 'beforeDrop';
@@ -142,6 +164,7 @@ export class RowDD {
             this.dropRows(args, true); // method to update the data collections based on drop action
         }
     }
+    /* tslint:disable-next-line:max-func-body-length */
     private dropRows(args: RowDropEventArgs, isByMethod?: boolean): void {
         this.dropPosition = args.dropPosition;
         if (args.dropPosition !== 'Invalid' && this.parent.editModule) {
@@ -166,10 +189,15 @@ export class RowDD {
                         this.deleteDragRow();
                     }
                     let recordIndex1: number = this.ganttData.indexOf(droppedRecord);
+                    if (this.parent.viewType === 'ResourceView') {
+                        this.checkisSharedTask();
+                        this.previousParent = this.draggedRecord.parentItem.uniqueID;
+                    }
                     if (this.dropPosition === 'topSegment') {
                         this.dropAtTop(recordIndex1);
                     }
                     if (this.dropPosition === 'bottomSegment') {
+                        if (!this.isSharedTask) {
                         if (!droppedRecord.hasChildRecords) {
                             if (this.parent.taskFields.parentID && (this.parent.dataSource as IGanttData[]).length > 0) {
                                (this.parent.dataSource as IGanttData[]).splice(recordIndex1 + 1, 0, this.draggedRecord.taskData);
@@ -177,6 +205,11 @@ export class RowDD {
                             this.ganttData.splice(recordIndex1 + 1, 0, this.draggedRecord);
                             this.parent.flatData.splice(recordIndex1 + 1, 0, this.draggedRecord);
                             this.parent.ids.splice(recordIndex1 + 1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
+                            if (this.parent.viewType === 'ResourceView') {
+                                /* tslint:disable-next-line */
+                                let taskId: string = this.draggedRecord.level === 0 ? 'R' + this.draggedRecord.ganttProperties.taskId : 'T' + this.draggedRecord.ganttProperties.taskId;
+                                this.parent.getTaskIds().splice(recordIndex1 + 1, 0, taskId);
+                            }
 
                         } else {
                             count = this.parent.editModule.getChildCount(droppedRecord, 0);
@@ -186,6 +219,11 @@ export class RowDD {
                             this.ganttData.splice(recordIndex1 + count + 1, 0, this.draggedRecord);
                             this.parent.flatData.splice(recordIndex1 + count + 1, 0, this.draggedRecord);
                             this.parent.ids.splice(recordIndex1 + count + 1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
+                            if (this.parent.viewType === 'ResourceView') {
+                                /* tslint:disable-next-line */
+                                let spliceId: string = this.draggedRecord.level === 0 ? 'R' + this.draggedRecord.ganttProperties.taskId : 'T' + this.draggedRecord.ganttProperties.taskId;
+                                this.parent.getTaskIds().splice(recordIndex1 + count + 1, 0, spliceId);
+                            }
                         }
                         draggedRecord.parentItem = this.ganttData[recordIndex1].parentItem;
                         draggedRecord.parentUniqueID = this.ganttData[recordIndex1].parentUniqueID;
@@ -202,6 +240,7 @@ export class RowDD {
                             childRecords.splice(droppedRecordIndex, 0, draggedRecord);
                         }
                     }
+                }
                     if (this.dropPosition === 'middleSegment') {
                         this.dropMiddle(recordIndex1);
                     }
@@ -228,6 +267,35 @@ export class RowDD {
                     }
                 }
         }
+            if (this.parent.viewType === 'ResourceView' && !this.isSharedTask) {
+                let parentUniqueID: string;
+                if (this.dropPosition === 'middleSegment') {
+                    parentUniqueID = this.droppedRecord.uniqueID;
+                } else {
+                    parentUniqueID = this.droppedRecord.parentItem.uniqueID;
+                }
+                let droppedParentItem: IGanttData = this.parent.getTaskByUniqueID(parentUniqueID);
+                let editedObj: Object = {};
+                editedObj[this.parent.taskFields.resourceInfo] = [];
+                editedObj[this.parent.taskFields.resourceInfo].push(droppedParentItem.ganttProperties.taskId);
+                this.removeExistingResources();
+                let tempResourceInfo: Object[] = this.parent.dataOperation.setResourceInfo(editedObj);
+                let currentTask: IGanttData = this.draggedRecord;
+                if (isNullOrUndefined(currentTask.ganttProperties.resourceInfo)) {
+                    currentTask.ganttProperties.resourceInfo = [];
+                }
+                if (droppedParentItem.ganttProperties.taskName === 'Unassigned Task') {
+                    currentTask.ganttProperties.resourceInfo = [];
+                } else {
+                    currentTask.ganttProperties.resourceInfo.push(tempResourceInfo[0]);
+                }
+                this.updateCurrentTask(currentTask);
+                if (droppedParentItem.ganttProperties.taskName === 'Unassigned Task') {
+                    this.deleteSharedResourceTask();
+                } else {
+                    this.updateSharedResourceTask();
+                }
+            }
         // method to update the edited parent records
             for (let j: number = 0; j < this.updateParentRecords.length; j++) {
                 this.parent.dataOperation.updateParentItems(this.updateParentRecords[j]);
@@ -241,7 +309,90 @@ export class RowDD {
         this.parent.trigger('actionComplete', args);
         this.parent.editedRecords = [];
     }
+    private updateCurrentTask(currentTask: IGanttData): void {
+        this.parent.dataOperation.updateMappingData(currentTask, 'resourceInfo');
+        this.parent.editModule.updateResourceRelatedFields(currentTask, 'resource');
+        /* tslint:disable-next-line:no-any */
+        (this.parent.editModule.dialogModule as any).dialogEditValidationFlag = false;
+        this.parent.editModule.dialogModule.validateDuration(currentTask);
+        this.parent.dataOperation.updateWidthLeft(currentTask);
+        this.parent.dataOperation.updateTaskData(currentTask);
+    }
+    private deleteSharedResourceTask(): void {
+        for (let i: number = 0; i < this.parent.getTaskIds().length; i++) {
+            if (this.parent.getTaskIds()[i] === 'T' + this.draggedRecord.ganttProperties.taskId) {
+                /* tslint:disable-next-line */
+                if (this.parent.getTaskByUniqueID(this.parent.currentViewData[i].parentItem.uniqueID).ganttProperties.taskName !== 'Unassigned Task') {
+                    this.removeRecords(this.parent.currentViewData[i]);
+                }
+                /* tslint:disable-next-line */
+                if (!isNullOrUndefined(this.parent.currentViewData[i].parentItem && this.updateParentRecords.indexOf(this.parent.currentViewData[i].parentItem) !== -1)) {
+                    this.updateParentRecords.push(this.parent.currentViewData[i].parentItem);
+                }
+            }
+        }
+    }
+    private removeExistingResources(): void {
+        let preParentRecord: IGanttData = this.parent.getTaskByUniqueID(this.previousParent);
+        if (this.draggedRecord.ganttProperties.resourceInfo) {
+            for (let count: number = 0; count < this.draggedRecord.ganttProperties.resourceInfo.length; count++) {
+                /* tslint:disable-next-line */
+                if (this.draggedRecord.ganttProperties.resourceInfo[count][this.parent.resourceFields.id] === preParentRecord.ganttProperties.taskId) {
+                    this.draggedRecord.ganttProperties.resourceInfo.splice(count, 1);
+                    break;
+                }
+            }
+        }
+    }
+    /*update the record for the same task which are shared with other tasks*/
+    private updateSharedResourceTask(): void {
+        for (let i: number = 0; i < this.parent.getTaskIds().length; i++) {
+            if (this.parent.getTaskIds()[i] === 'T' + this.draggedRecord.ganttProperties.taskId) {
+                this.parent.editModule.updateGanttProperties(this.draggedRecord, this.parent.currentViewData[i]);
+                this.parent.dataOperation.updateTaskData(this.parent.currentViewData[i]);
+                /* tslint:disable-next-line */
+                if (!isNullOrUndefined(this.parent.currentViewData[i].parentItem && this.updateParentRecords.indexOf(this.parent.currentViewData[i].parentItem) !== -1)) {
+                    this.updateParentRecords.push(this.parent.currentViewData[i].parentItem);
+                }
+            }
+        }
+    }
+    private _getExistingTaskWithID(record: IGanttData): IGanttData[] {
+        let existingTasks: IGanttData[] = [];
+        for (let i: number = 0; i < this.parent.getTaskIds().length; i++) {
+            if (this.parent.getTaskIds()[i] === 'T' + record.ganttProperties.taskId) {
+                existingTasks.push(this.parent.currentViewData[i]);
+            }
+        }
+        return existingTasks;
+    }
 
+    /*Method to remove resource from resource Info collection and update reosurce related fields*/
+    private removeResourceInfo(record: IGanttData): void {
+        let droppedParentItem: IGanttData = this.parent.getTaskByUniqueID(this.draggedRecord.parentItem.uniqueID);
+        if (record.ganttProperties.resourceInfo && record.ganttProperties.resourceInfo.length > 1) {
+            let sameIdTasks: IGanttData[] = this._getExistingTaskWithID(record);
+            let currentTask: IGanttData;
+            if (sameIdTasks == null) {
+                return;
+            }
+            for (let i: number = 0; i < sameIdTasks.length; i++) {
+                currentTask = sameIdTasks[i];
+                let resources: object[] = currentTask.ganttProperties.resourceInfo;
+                for (let count: number = 0; count < resources.length; count++) {
+                    if (resources[count][this.parent.resourceFields.id] === droppedParentItem.ganttProperties.taskId) {
+                        resources.splice(count, 1);
+                        this.parent.setRecordValue('resourceInfo', resources, currentTask.ganttProperties, true);
+                        this.updateCurrentTask(currentTask);
+                        if (!isNullOrUndefined(currentTask.parentItem && this.updateParentRecords.indexOf(currentTask.parentItem) !== -1)) {
+                            this.updateParentRecords.push(currentTask.parentItem);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+    }
     private refreshDataSource(): void {
         let draggedRecord: IGanttData = this.draggedRecord;
         let droppedRecord: IGanttData = this.droppedRecord;
@@ -296,13 +447,18 @@ export class RowDD {
         let childRecordsLength: number = (isNullOrUndefined(childRecords) ||
             childRecords === 0) ? recordIndex1 + 1 :
             childRecords + recordIndex1 + 1;
-        if (this.dropPosition === 'middleSegment') {
-            if (gObj.taskFields.parentID &&  (this.parent.dataSource as IGanttData[]).length > 0) {
+        if (this.dropPosition === 'middleSegment' && !this.isSharedTask) {
+            if (gObj.taskFields.parentID && (this.parent.dataSource as IGanttData[]).length > 0) {
                 (this.parent.dataSource as IGanttData[]).splice(childRecordsLength, 0, this.draggedRecord.taskData);
             }
             this.ganttData.splice(childRecordsLength, 0, this.draggedRecord);
             this.parent.flatData.splice(childRecordsLength, 0, this.draggedRecord);
             this.parent.ids.splice(childRecordsLength, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
+            if (this.parent.viewType === 'ResourceView') {
+                /* tslint:disable-next-line */
+                let recordId: string = this.draggedRecord.level === 0 ? 'R' + this.draggedRecord.ganttProperties.taskId : 'T' + this.draggedRecord.ganttProperties.taskId;
+                this.parent.getTaskIds().splice(childRecordsLength, 0, recordId);
+            }
             if (this.draggedRecord.hasChildRecords) {
                 this.updateChildRecord(this.draggedRecord, childRecordsLength, this.droppedRecord.expanded);
             }
@@ -363,31 +519,55 @@ export class RowDD {
         deletedRow = this.parent.getTaskByUniqueID(this.draggedRecord.uniqueID);
         this.removeRecords(deletedRow);
     }
-
+    //method to check the dropped record has already present in the child collection
+    private checkisSharedTask(): void {
+        this.isSharedTask = false;
+        let sharedTask: IGanttData = null;
+        let parentUniqueID: string = this.droppedRecord.level === 0 ? this.droppedRecord.uniqueID : this.droppedRecord.parentItem.uniqueID;
+        let droppedParentItem: IGanttData = this.parent.getTaskByUniqueID(parentUniqueID);
+        let childTasks: IGanttData[] = droppedParentItem.childRecords;
+        for (let i: number = 0; i < childTasks.length; i++) {
+            if ('T' + this.draggedRecord.ganttProperties.taskId === 'T' + childTasks[i].ganttProperties.taskId) {
+                this.isSharedTask = true;
+                sharedTask = childTasks[i];
+            }
+        }
+        if (this.isSharedTask) {
+            this.removeResourceInfo(sharedTask);
+        }
+    }
     private dropAtTop(recordIndex1: number): void {
         let gObj: Gantt = this.parent;
-        if (gObj.taskFields.parentID && (this.parent.dataSource as IGanttData[]).length > 0) {
-            (this.parent.dataSource as IGanttData[]).splice(recordIndex1, 0, this.draggedRecord.taskData);
-        }
-        this.draggedRecord.parentItem = this.ganttData[recordIndex1].parentItem;
-        this.draggedRecord.parentUniqueID = this.ganttData[recordIndex1].parentUniqueID;
-        this.draggedRecord.level = this.ganttData[recordIndex1].level;
-        this.ganttData.splice(recordIndex1, 0, this.draggedRecord);
-        this.parent.flatData.splice(recordIndex1, 0, this.draggedRecord);
-        this.parent.ids.splice(recordIndex1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
-        if (this.draggedRecord.hasChildRecords) {
-            let level: number = 1;
-            this.updateChildRecord(this.draggedRecord, recordIndex1);
-            this.updateChildRecordLevel(this.draggedRecord, level);
-        }
-        if (this.droppedRecord.parentItem) {
-            let rec: IGanttData[] = this.parent.getParentTask(this.droppedRecord.parentItem).childRecords;
-            let childRecords: IGanttData[] = rec;
-            let droppedRecordIndex: number = childRecords.indexOf(this.droppedRecord);
-            childRecords.splice(droppedRecordIndex, 0, this.draggedRecord);
-        }
-        if (!isNullOrUndefined(this.draggedRecord.parentItem && this.updateParentRecords.indexOf(this.draggedRecord.parentItem) !== -1)) {
-            this.updateParentRecords.push(this.draggedRecord.parentItem);
+        if (!this.isSharedTask) {
+            if (gObj.taskFields.parentID && (this.parent.dataSource as IGanttData[]).length > 0) {
+                (this.parent.dataSource as IGanttData[]).splice(recordIndex1, 0, this.draggedRecord.taskData);
+            }
+            this.draggedRecord.parentItem = this.ganttData[recordIndex1].parentItem;
+            this.draggedRecord.parentUniqueID = this.ganttData[recordIndex1].parentUniqueID;
+            this.draggedRecord.level = this.ganttData[recordIndex1].level;
+            this.ganttData.splice(recordIndex1, 0, this.draggedRecord);
+            this.parent.flatData.splice(recordIndex1, 0, this.draggedRecord);
+            this.parent.ids.splice(recordIndex1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
+            if (this.parent.viewType === 'ResourceView') {
+                /* tslint:disable-next-line */
+                let id: string = this.draggedRecord.level === 0 ? 'R' + this.draggedRecord.ganttProperties.taskId : 'T' + this.draggedRecord.ganttProperties.taskId;
+                this.parent.getTaskIds().splice(recordIndex1, 0, id);
+            }
+            if (this.draggedRecord.hasChildRecords) {
+                let level: number = 1;
+                this.updateChildRecord(this.draggedRecord, recordIndex1);
+                this.updateChildRecordLevel(this.draggedRecord, level);
+            }
+            if (this.droppedRecord.parentItem) {
+                let rec: IGanttData[] = this.parent.getParentTask(this.droppedRecord.parentItem).childRecords;
+                let childRecords: IGanttData[] = rec;
+                let droppedRecordIndex: number = childRecords.indexOf(this.droppedRecord);
+                childRecords.splice(droppedRecordIndex, 0, this.draggedRecord);
+            }
+            /* tslint:disable-next-line */
+            if (!isNullOrUndefined(this.draggedRecord.parentItem && this.updateParentRecords.indexOf(this.draggedRecord.parentItem) !== -1)) {
+                this.updateParentRecords.push(this.draggedRecord.parentItem);
+            }
         }
     }
     private updateChildRecordLevel(record: IGanttData, level: number): number {
@@ -446,6 +626,14 @@ export class RowDD {
                 let childRecords: IGanttData[] = flatParentData ? flatParentData.childRecords : [];
                 let childIndex: number = 0;
                 if (childRecords && childRecords.length > 0) {
+                    if (this.parent.viewType === 'ResourceView' && childRecords.length === 1) {
+                        //For updating the parent record which has zero parent reords.
+                        this.parent.isOnDelete = true;
+                        childRecords[0].isDelete = true;
+                        this.parent.dataOperation.updateParentItems(flatParentData);
+                        this.parent.isOnDelete = false;
+                        childRecords[0].isDelete = false;
+                    }
                     childIndex = childRecords.indexOf(deletedRow);
                     flatParentData.childRecords.splice(childIndex, 1);
                     // collection for updating parent record
@@ -477,6 +665,9 @@ export class RowDD {
                     this.ganttData.splice(idx, 1);
                     this.parent.flatData.splice(idx, 1);
                     this.parent.ids.splice(idx, 1);
+                    if (this.parent.viewType === 'ResourceView') {
+                        this.parent.getTaskIds().splice(idx, 1);
+                    }
                 }
             }
             let recordIndex: number = this.ganttData.indexOf(deletedRow);
@@ -485,6 +676,9 @@ export class RowDD {
                 this.ganttData.splice(recordIndex, deletedRecordCount + 1);
                 this.parent.flatData.splice(recordIndex, deletedRecordCount + 1);
                 this.parent.ids.splice(recordIndex, deletedRecordCount + 1);
+                if (this.parent.viewType === 'ResourceView') {
+                    this.parent.getTaskIds().splice(recordIndex, deletedRecordCount + 1);
+                }
             }
             if (deletedRow.parentItem && flatParentData && flatParentData.childRecords && !flatParentData.childRecords.length) {
                 flatParentData.expanded = false;
@@ -513,6 +707,9 @@ export class RowDD {
                 this.ganttData.splice(idx, 1);
                 this.parent.flatData.splice(idx, 1);
                 this.parent.ids.splice(idx, 1);
+                if (this.parent.viewType === 'ResourceView') {
+                this.parent.getTaskIds().splice(idx, 1);
+                }
             }
             if (currentRecord.hasChildRecords) {
                 this.removeChildItem(currentRecord);

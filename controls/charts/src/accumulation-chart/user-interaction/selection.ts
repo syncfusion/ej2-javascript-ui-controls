@@ -10,6 +10,8 @@ import { AccumulationSeries, pointByIndex, AccPoints } from '../model/acc-base';
 import { AccumulationSeriesModel } from '../model/acc-base-model';
 import { Indexes, Index } from '../../common/model/base';
 import { BaseSelection } from '../../common/user-interaction/selection';
+import { AccumulationTooltip } from './tooltip';
+
 /**
  * `AccumulationSelection` module handles the selection for accumulation chart.
  */
@@ -220,6 +222,7 @@ export class AccumulationSelection extends BaseSelection {
      * To apply selection style for elements.
      */
     private applyStyles(elements: Element[], index: Index): void {
+        let accumulationTooltip: AccumulationTooltip = (this.control as AccumulationChart).accumulationTooltipModule;
         for (let element of elements) {
             let legendShape: Element;
             if (element) {
@@ -230,6 +233,10 @@ export class AccumulationSelection extends BaseSelection {
                 }
                 this.removeSvgClass(<Element>element.parentNode, this.unselected);
                 this.removeSvgClass(element, this.unselected);
+                let opacity: number = accumulationTooltip && (accumulationTooltip.previousPoints.length > 0 &&
+                    accumulationTooltip.previousPoints[0].point.index !== index.point) ?
+                    accumulationTooltip.svgTooltip.opacity : this.series[index.series].opacity;
+                element.setAttribute('opacity', opacity.toString());
                 this.addSvgClass(element, this.getSelectionClass(element.id));
             }
         }
@@ -244,6 +251,7 @@ export class AccumulationSelection extends BaseSelection {
      * To remove selection style for elements.
      */
     private removeStyles(elements: Element[], index: Index): void {
+        let accumulationTooltip: AccumulationTooltip = (this.control as AccumulationChart).accumulationTooltipModule;
         let legendShape: Element;
         for (let element of elements) {
             if (element) {
@@ -251,6 +259,9 @@ export class AccumulationSelection extends BaseSelection {
                     legendShape = document.getElementById(this.control.element.id + '_chart_legend_shape_' + index.point);
                     this.removeSvgClass(legendShape, this.getSelectionClass(legendShape.id));
                 }
+                let opacity: number = accumulationTooltip && (accumulationTooltip.previousPoints[0].point.index === index.point) ?
+                    accumulationTooltip.svgTooltip.opacity : this.series[index.series].opacity;
+                element.setAttribute('opacity', opacity.toString());
                 this.removeSvgClass(element, this.getSelectionClass(element.id));
             }
         }

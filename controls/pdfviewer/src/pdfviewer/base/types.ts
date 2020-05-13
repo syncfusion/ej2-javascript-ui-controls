@@ -145,3 +145,44 @@ export enum CursorType {
     text = 'text',
     w_resize = 'w-resize'
 }
+
+/**
+ * Enum type for Dynamic Stamp Items
+ */
+export enum DynamicStampItem {
+    Revised = 1,
+    Reviewed = 2,
+    Received = 4,
+    Approved = 8,
+    Confidential = 16,
+    NotApproved = 32
+}
+
+/**
+ * Enum type for Sign Stamp Items
+ */
+export enum SignStampItem  {
+    Witness =  1,
+    InitialHere = 2,
+    SignHere = 4,
+    Accepted = 8,
+    Rejected = 16
+}
+
+/**
+ * Enum type for Standard Business Stamp Items
+ */
+export enum StandardBusinessStampItem {
+    Approved = 1,
+    NotApproved = 2,
+    Draft = 4,
+    Final = 8,
+    Completed = 16,
+    Confidential = 32,
+    ForPublicRelease = 64,
+    NotForPublicRelease = 128,
+    ForComment= 256,
+    Void = 512,
+    PreliminaryResults = 1024,
+    InformationOnly = 2048
+}

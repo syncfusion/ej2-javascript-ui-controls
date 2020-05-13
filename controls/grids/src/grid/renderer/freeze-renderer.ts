@@ -161,7 +161,9 @@ export class FreezeRender extends HeaderRender implements IRenderer {
         if (!isBlazor() || this.parent.frozenRows === 0) {
             this.updateColgroup();
         }
-        this.widthService.setWidthToTable();
+        if (!this.parent.enableVirtualization) {
+            this.widthService.setWidthToTable();
+        }
         if (this.parent.allowTextWrap && this.parent.textWrapSettings.wrapMode === 'Header') {
             wrap([].slice.call(this.movableHeader.querySelectorAll('tr.e-columnheader')), true);
         }
@@ -174,9 +176,14 @@ export class FreezeRender extends HeaderRender implements IRenderer {
     }
 
     private rfshMovable(): void {
-        if (!isBlazor() || this.parent.frozenRows === 0) {
-            this.getFrozenHeader().appendChild(this.getTable());
-            this.getMovableHeader().appendChild(this.createTable());
+        if (this.parent.enableColumnVirtualization) {
+            this.parent.getFrozenVirtualHeader().querySelector('.e-virtualtable').appendChild(this.getTable());
+            this.parent.getMovableVirtualHeader().querySelector('.e-virtualtable').appendChild(this.createTable());
+        } else {
+            if (!isBlazor() || this.parent.frozenRows === 0) {
+                this.getFrozenHeader().appendChild(this.getTable());
+                this.getMovableHeader().appendChild(this.createTable());
+            }
         }
         this.refreshStackedHdrHgt();
         this.addMovableFirstCls();
@@ -206,7 +213,7 @@ export class FreezeRender extends HeaderRender implements IRenderer {
             let filterRow: Element = this.getTable().querySelector('.e-filterbar');
             if (this.parent.allowFiltering && filterRow && this.getMovableHeader().querySelector('thead')) {
                 this.getMovableHeader().querySelector('thead')
-                    .appendChild(renderMovable(filterRow, this.parent.getFrozenColumns()));
+                    .appendChild(this.filterRenderer(filterRow, this.parent.getFrozenColumns()));
                 let elements: HTMLInputElement[] = [].slice.call(this.getMovableHeader().
                 querySelectorAll('thead .e-filterbarcell .e-input'));
                 for (let elem of elements) {
@@ -302,12 +309,12 @@ export class FreezeRender extends HeaderRender implements IRenderer {
             mRowHgt = width[i];
             if (!isNullOrUndefined(fRows[i]) && fRows[i].childElementCount && ((isWrap && fRowHgt < mRowHgt) ||
                 (!isWrap && fRowHgt < mRowHgt) || (this.parent.allowResizing && this.parent.resizeModule &&
-                !this.parent.resizeModule.isFrozenColResized))) {
+                this.parent.resizeModule.isFrozenColResized === false))) {
                 fRows[i].style.height = mRowHgt + 'px';
             }
             if (mRows && !isNullOrUndefined(mRows[i]) && mRows[i].childElementCount && ((isWrap && fRowHgt > mRowHgt) ||
                 (!isWrap && fRowHgt > mRowHgt) || (this.parent.allowResizing && this.parent.resizeModule &&
-                this.parent.resizeModule.isFrozenColResized))) {
+                this.parent.resizeModule.isFrozenColResized === true))) {
                 mRows[i].style.height = fRowHgt + 'px';
             }
         }
@@ -405,5 +412,13 @@ export class FreezeRender extends HeaderRender implements IRenderer {
         mTable.insertBefore(
             renderMovable(this.getFrozenHeader().querySelector('colgroup'), this.parent.getFrozenColumns()),
             mTable.querySelector('thead'));
+    }
+    private filterRenderer(ele: Element, frozenColumn: number): Element {
+        let clone: Element = ele.cloneNode(true) as Element;
+        clone.innerHTML = '';
+        for (let i: number = frozenColumn; i < this.parent.getColumns().length; i++) {
+            clone.appendChild(ele.removeChild(ele.children[frozenColumn]));
+        }
+        return clone;
     }
 }

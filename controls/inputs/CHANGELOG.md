@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.52 (2020-05-13)
+
+### Uploader
+
+#### Bug Fixes
+
+- Now, selected files persist properly when enabling enablePersistence property.
+
 ## 18.1.44 (2020-04-14)
 
 ### TextBox

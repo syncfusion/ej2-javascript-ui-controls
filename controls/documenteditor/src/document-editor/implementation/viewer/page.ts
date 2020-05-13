@@ -4724,15 +4724,15 @@ export class ShapeCommon extends ElementBox {
     /**
      * @private
      */
-    public name: string;
+    public name: string = '';
     /**
      * @private
      */
-    public alternativeText: string;
+    public alternativeText: string = '';
     /**
      * @private
      */
-    public title: string;
+    public title: string = '';
     /**
      * @private
      */

@@ -124,7 +124,13 @@ export class Render {
         gObj.trigger(events.actionBegin, e, (args: NotifyArgs = { requestType: 'refresh' }) => {
             if (args.requestType === 'delete' && isBlazor() && !gObj.isJsComponent) {
                 let data: string = 'data';
-                args[data] = gObj.getSelectedRecords();
+                if (isNullOrUndefined(gObj.commandDelIndex)) {
+                    args[data] = gObj.getSelectedRecords();
+                } else {
+                    let tempSelectedRecord: Object = args[data];
+                    args[data] = {};
+                    args[data][0] = tempSelectedRecord;
+                }
             }
             if (args.cancel) {
                 gObj.notify(events.cancelBegin, args);

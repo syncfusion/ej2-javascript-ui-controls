@@ -364,28 +364,30 @@ export class Text {
     }
 
     private createDropDownListForFamily(fontSelectElement: HTMLElement): void {
-        let fontStyle: { [key: string]: Object }[] = [{ FontName: 'Algerian' }, { FontName: 'Arial' },
-        { FontName: 'Calibri' }, { FontName: 'Cambria' }, { FontName: 'Cambria Math' }, { FontName: 'Candara' },
-        { FontName: 'Courier New' }, { FontName: 'Georgia' }, { FontName: 'Impact' }, { FontName: 'Segoe Print' },
-        { FontName: 'Segoe Script' }, { FontName: 'Segoe UI' }, { FontName: 'Symbol' },
-        { FontName: 'Times New Roman' }, { FontName: 'Verdana' }, { FontName: 'Windings' }
-        ];
+        let fontStyle: { [key: string]: Object; }[];
         this.fontFamily = new ComboBox({
             dataSource: fontStyle,
             query: new Query().select(['FontName']),
-            fields: { text: 'FontName', value: 'FontName' },
+            fields: { text: 'FontName', value: 'FontValue' },
             popupHeight: '150px',
             cssClass: 'e-de-prop-dropdown',
             allowCustom: true,
             showClearButton: false,
             enableRtl: this.isRtl
         });
+        this.fontFamily.appendTo(fontSelectElement);
+        let fontFamilyValue: string[] = this.container.documentEditorSettings.fontFamilies;
+        for (let i: number = 0; i < fontFamilyValue.length; i++) {
+            let fontValue: string = fontFamilyValue[i];
+            let fontStyleValue: { [key: string]: Object; } = { 'FontName': fontValue, 'FontValue': fontValue };
+            this.fontFamily.addItem(fontStyleValue, i);
+        }
+
         if (!this.container.enableCsp) {
             this.fontFamily.itemTemplate = '<span style="font-family: ${FontName};">${FontName}</span>';
             this.fontFamily.isStringTemplate = true;
         }
         this.fontFamily.focus = (): void => { this.isRetrieving = false; (this.fontFamily.element as HTMLInputElement).select(); };
-        this.fontFamily.appendTo(fontSelectElement);
         this.fontFamily.element.parentElement.setAttribute('title', this.localObj.getConstant('Font'));
     }
     public wireEvent(): void {

@@ -256,7 +256,9 @@ export class CanvasRenderer {
      * @param {string} label - Specifies the text which has to be drawn on the canvas
      * @return {void}
      */
-    public createText(options: TextAttributes, label: string, transX ?: number, transY ?: number): Element {
+    public createText(
+        options: TextAttributes, label: string, transX?: number, transY?: number, dy?: number, isTSpan?: boolean
+    ): Element {
         let fontWeight: string = this.getOptionValue<string>(options, 'font-weight');
         if (!isNullOrUndefined(fontWeight) && fontWeight.toLowerCase() === 'regular') {
            fontWeight = 'normal';
@@ -267,6 +269,7 @@ export class CanvasRenderer {
         let font: string = (fontStyle + ' ' + fontWeight + ' ' + fontSize + ' ' + fontFamily);
         let anchor: string = this.getOptionValue<string>(options, 'text-anchor');
         let opacity: number = options.opacity !== undefined ? options.opacity : 1;
+        let rotation: number = isNullOrUndefined(options.labelRotation) ? 0 : options.labelRotation;
         if (anchor === 'middle') {
             anchor = 'center';
         }
@@ -278,10 +281,12 @@ export class CanvasRenderer {
         if (options.baseline) {
             this.ctx.textBaseline = options.baseline;
         }
-        let txtlngth: number = 0;
-        this.ctx.translate(options.x + (txtlngth / 2) + (transX ? transX : 0), options.y + (transY ? transY : 0));
-        this.ctx.rotate(options.labelRotation * Math.PI / 180);
-        this.ctx.fillText(label, 0, 0);
+        if (!isTSpan) {
+            let txtlngth: number = 0;
+            this.ctx.translate(options.x + (txtlngth / 2) + (transX ? transX : 0), options.y + (transY ? transY : 0));
+            this.ctx.rotate(options.labelRotation * Math.PI / 180);
+        }
+        this.ctx.fillText(label, isTSpan ? options.x : 0, isTSpan ? dy : 0);
         this.ctx.restore();
         return this.canvasObj;
     }

@@ -3247,10 +3247,10 @@ let Tooltip = class Tooltip extends Component {
         });
     }
     getTooltipPosition(target) {
-        this.tooltipEle.style.display = 'none';
+        this.tooltipEle.style.display = 'block';
         let pos = calculatePosition(target, this.tooltipPositionX, this.tooltipPositionY);
-        this.tooltipEle.style.display = '';
         let offsetPos = this.calculateTooltipOffset(this.position);
+        this.tooltipEle.style.display = '';
         let elePos = this.collisionFlipFit(target, pos.left + offsetPos.left, pos.top + offsetPos.top);
         return elePos;
     }

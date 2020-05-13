@@ -453,7 +453,7 @@ export class TextPosition {
                     || nextValidInline instanceof BookmarkElementBox && nextValidInline.bookmarkType === 1) {
                     inline = nextValidInline as FieldElementBox;
                     this.currentWidget = inline.line;
-                    this.offset = this.currentWidget.getOffset(inline, 1);
+                    this.offset = this.currentWidget.getOffset(inline, this.documentHelper.isFormFillProtectedMode ? 0 : 1);
                 }
             }
         } else if (lineIndex + 1 < this.paragraph.childWidgets.length) {

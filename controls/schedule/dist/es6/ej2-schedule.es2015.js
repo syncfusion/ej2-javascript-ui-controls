@@ -6430,22 +6430,22 @@ class QuickPopups {
         }
         this.renderQuickDialog();
     }
-    refreshQuickPopup() {
-        if (this.quickPopup.element) {
-            this.quickPopup.destroy();
-            remove(this.quickPopup.element);
-            this.quickPopup.element = null;
-        }
-        this.renderQuickPopup();
-    }
-    refreshMorePopup() {
-        if (this.morePopup.element) {
-            this.morePopup.destroy();
-            remove(this.morePopup.element);
-            this.morePopup.element = null;
-        }
-        this.renderMorePopup();
-    }
+    // public refreshQuickPopup(): void {
+    //     if (this.quickPopup.element) {
+    //         this.quickPopup.destroy();
+    //         remove(this.quickPopup.element);
+    //         this.quickPopup.element = null;
+    //     }
+    //     this.renderQuickPopup();
+    // }
+    // public refreshMorePopup(): void {
+    //     if (this.morePopup.element) {
+    //         this.morePopup.destroy();
+    //         remove(this.morePopup.element);
+    //         this.morePopup.element = null;
+    //     }
+    //     this.renderMorePopup();
+    // }
     destroy() {
         if (this.quickPopup.element.querySelectorAll('.e-formvalidator').length) {
             this.fieldValidator.destroy();
@@ -9496,7 +9496,7 @@ class VirtualScroll {
         let conTable = this.parent.element.querySelector('.' + CONTENT_TABLE_CLASS);
         this.renderedLength = resWrap.querySelector('tbody').children.length;
         let firstTDIndex = parseInt(resWrap.querySelector('tbody td').getAttribute('data-group-index'), 10);
-        let scrollHeight = (this.parent.rowAutoHeight && !this.parent.eventSettings.ignoreWhitespace) ?
+        let scrollHeight = this.parent.rowAutoHeight ?
             (conTable.offsetHeight - conWrap.offsetHeight) : this.bufferCount * this.itemSize;
         addClass([conWrap], 'e-transition');
         let resCollection = [];
@@ -10347,13 +10347,14 @@ class Crud {
         }
         else {
             endDate = new Date(+followEvent[fields.startTime]);
+            let newRecurrenceRule = followEvent[fields.recurrenceRule];
             let startDate = parentEvent[fields.startTime];
             let ruleException = (this.parent.currentAction === 'DeleteFollowingEvents') ? followEvent[fields.recurrenceException] : null;
-            let dateCollection = generate(startDate, recurrenceRule, ruleException, this.parent.activeViewOptions.firstDayOfWeek);
+            let dateCollection = generate(startDate, newRecurrenceRule, ruleException, this.parent.activeViewOptions.firstDayOfWeek);
             let untilDate = new Date(dateCollection.slice(-1)[0]);
             untilDate.setHours(endDate.getHours(), endDate.getMinutes(), endDate.getSeconds());
             endDate.setHours(startDate.getHours(), startDate.getMinutes(), startDate.getSeconds());
-            followEvent[fields.recurrenceRule] = this.getUpdatedRecurrenceRule(recurrenceRule, new Date(+untilDate), false);
+            followEvent[fields.recurrenceRule] = this.getUpdatedRecurrenceRule(newRecurrenceRule, new Date(+untilDate), false);
         }
         parentEvent[fields.recurrenceRule] =
             this.getUpdatedRecurrenceRule(recurrenceRule, addDays(new Date(endDate.getTime()), -1), true);
@@ -10780,9 +10781,6 @@ class ResourceBase {
             && this.parent.activeViewOptions.group.resources.length > 0) {
             addClass([tbl], AUTO_HEIGHT);
         }
-        if (this.parent.eventSettings.ignoreWhitespace) {
-            addClass([tbl], IGNORE_WHITESPACE);
-        }
         let tBody = tbl.querySelector('tbody');
         let resData = this.generateTreeData(true);
         this.countCalculation(resColl.slice(0, -2), resColl.slice(0, -1));
@@ -11208,6 +11206,10 @@ class ResourceBase {
     bindResourcesData(isSetModel) {
         this.parent.showSpinner();
         if (isBlazor()) {
+            if (!this.parent.isServerRenderer() && this.parent.tempResourceCollection) {
+                this.parent.resourceCollection = this.parent.tempResourceCollection || [];
+                this.refreshLayout(false);
+            }
             // the resourceCollection will be updated in layoutReady method
             // tslint:disable-next-line:no-any
             // (this.parent as any).interopAdaptor.invokeMethodAsync('BindResourcesData').then((result: string) => {
@@ -11491,6 +11493,15 @@ class ResourceBase {
             return data[0][resource.cssClassField];
         }
         return undefined;
+    }
+    getResourceRenderDates() {
+        let resourceDates = [].concat.apply([], this.lastResourceLevel.map((e) => e.renderDates));
+        let removeDuplicateDates = (dateColl) => dateColl.filter((date, index, dates) => dates.map((dateObj) => dateObj.getTime()).indexOf(date.getTime()) === index);
+        let renderDates = removeDuplicateDates(resourceDates);
+        renderDates.sort((a, b) => {
+            return a.getDay() - b.getDay();
+        });
+        return renderDates;
     }
     filterData(dataSource, field, value) {
         return dataSource.filter((data) => data[field] === value);
@@ -12067,6 +12078,11 @@ let Schedule = class Schedule extends Component {
             isReadonly: this.eventSettings.fields.isReadonly,
             followingID: this.eventSettings.fields.followingID,
         };
+        this.setEditorTitles();
+        this.dataModule = new Data(this.eventSettings.dataSource, this.eventSettings.query);
+        this.crudModule = new Crud(this);
+    }
+    setEditorTitles() {
         this.editorTitles = {
             subject: this.eventSettings.fields.subject.title || this.localeObj.getConstant('title'),
             startTime: this.eventSettings.fields.startTime.title || this.localeObj.getConstant('start'),
@@ -12078,8 +12094,6 @@ let Schedule = class Schedule extends Component {
             description: this.eventSettings.fields.description.title || this.localeObj.getConstant('description'),
             recurrenceRule: this.eventSettings.fields.recurrenceRule.title || this.localeObj.getConstant('repeat')
         };
-        this.dataModule = new Data(this.eventSettings.dataSource, this.eventSettings.query);
-        this.crudModule = new Crud(this);
     }
     initializeView(viewName) {
         this.showSpinner();
@@ -12393,8 +12407,8 @@ let Schedule = class Schedule extends Component {
      * @hidden
      */
     wireEvents() {
-        let resize = 'onorientationchange' in window ? 'orientationchange' : 'resize';
-        EventHandler.add(window, resize, this.onScheduleResize, this);
+        EventHandler.add(window, 'resize', this.onScheduleResize, this);
+        EventHandler.add(window, 'orientationchange', this.onScheduleResize, this);
         EventHandler.add(document, Browser.touchStartEvent, this.onDocumentClick, this);
         EventHandler.add(this.element, 'mouseover', this.workCellAction.onHover, this.workCellAction);
         if (this.allowKeyboardInteraction) {
@@ -12630,8 +12644,8 @@ let Schedule = class Schedule extends Component {
      * @hidden
      */
     unwireEvents() {
-        let resize = 'onorientationchange' in window ? 'orientationchange' : 'resize';
-        EventHandler.remove(window, resize, this.onScheduleResize);
+        EventHandler.remove(window, 'resize', this.onScheduleResize);
+        EventHandler.remove(window, 'orientationchange', this.onScheduleResize);
         EventHandler.remove(document, Browser.touchStartEvent, this.onDocumentClick);
         EventHandler.remove(this.element, 'mouseover', this.workCellAction.onHover);
         if (this.keyboardInteractionModule) {
@@ -12704,6 +12718,8 @@ let Schedule = class Schedule extends Component {
                     break;
                 case 'locale':
                 case 'calendarMode':
+                    this.globalize = new Internationalization(this.locale);
+                    this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
                     this.setCldrTimeFormat();
                     this.setCalendarMode();
                     state.isRefresh = true;
@@ -12869,22 +12885,20 @@ let Schedule = class Schedule extends Component {
      */
     refresh() {
         if (!this.isServerRenderer()) {
+            // Temp resource collecgtion required for blazor alone
+            this.tempResourceCollection = this.resourceCollection;
             super.refresh();
+            this.tempResourceCollection = null;
         }
         else {
-            if (this.quickPopup) {
-                this.quickPopup.refreshQuickDialog();
-                this.quickPopup.refreshQuickPopup();
-                this.quickPopup.refreshMorePopup();
-            }
-            if (this.eventWindow) {
-                this.eventWindow.refresh();
-            }
+            this.setEditorTitles();
             this.destroyHeaderModule();
             if (this.showHeaderBar) {
                 this.headerModule = new HeaderRenderer(this);
                 this.renderModule.updateHeader();
             }
+            this.destroyPopups();
+            this.initializePopups();
             this.notify(scrollUiUpdate, { cssProperties: this.getCssProperties() });
             this.notify(dataReady, {});
         }
@@ -15187,7 +15201,6 @@ class TimelineEvent extends MonthEvent {
         this.dayLength = this.element.querySelectorAll('.' + CONTENT_TABLE_CLASS + ' tbody tr').length === 0 ?
             0 : this.element.querySelectorAll('.' + CONTENT_TABLE_CLASS + ' tbody tr')[0].children.length;
         this.content = this.parent.element.querySelector('.' + CONTENT_TABLE_CLASS);
-        this.moreIndicatorHeight = (this.parent.rowAutoHeight) ? 0 : this.moreIndicatorHeight;
     }
     getSlotDates() {
         this.slots = [];
@@ -16384,7 +16397,9 @@ class DragAndDrop extends ActionBase {
         this.heightUptoCursorPoint = (this.heightUptoCursorPoint === 0) ?
             Math.ceil((Math.abs(this.actionObj.clone.getBoundingClientRect().top - this.actionObj.Y) / this.heightPerMinute)) *
                 this.heightPerMinute : this.heightUptoCursorPoint;
-        this.isAllDayDrag = this.actionObj.clone.classList.contains(ALLDAY_APPOINTMENT_CLASS);
+        this.isAllDayDrag = (this.parent.activeViewOptions.timeScale.enable) ?
+            this.actionObj.clone.classList.contains(ALLDAY_APPOINTMENT_CLASS) :
+            this.actionObj.event[this.parent.eventFields.isAllDay];
         if (this.isStepDragging && this.minDiff === 0) {
             this.calculateMinutesDiff(eventObj);
         }
@@ -16398,6 +16413,9 @@ class DragAndDrop extends ActionBase {
             else {
                 this.daysVariation = 0;
             }
+        }
+        else {
+            this.daysVariation = 0;
         }
         if (this.parent.eventDragArea) {
             let targetElement = eventArgs.target;
@@ -17465,11 +17483,6 @@ class ViewBase {
             addClass([element], AUTO_HEIGHT);
         }
     }
-    addIgnoreWhitespaceClass(element) {
-        if (this.parent.eventSettings.ignoreWhitespace) {
-            addClass([element], IGNORE_WHITESPACE);
-        }
-    }
     getColElements() {
         return [].slice.call(this.element.querySelectorAll('.' + CONTENT_WRAP_CLASS
             + ' col, .' + DATE_HEADER_WRAP_CLASS + ' col'));
@@ -17887,6 +17900,9 @@ class VerticalView extends ViewBase {
         if (this.parent.activeViewOptions.allowVirtualScrolling) {
             clsList.push(VIRTUAL_SCROLL_CLASS);
         }
+        if (this.parent.eventSettings.ignoreWhitespace) {
+            clsList.push(IGNORE_WHITESPACE);
+        }
         this.renderPanel(type);
         addClass([this.element], clsList);
         this.element.appendChild(this.createTableLayout(OUTER_TABLE_CLASS));
@@ -18075,7 +18091,6 @@ class VerticalView extends ViewBase {
         let wrap = createElement('div', { className: CONTENT_WRAP_CLASS });
         let tbl = this.createTableLayout(CONTENT_TABLE_CLASS);
         this.addAutoHeightClass(tbl);
-        this.addIgnoreWhitespaceClass(tbl);
         this.createColGroup(tbl, this.colLevels.slice(-1)[0]);
         this.renderContentTable(tbl);
         wrap.appendChild(tbl);
@@ -18330,6 +18345,20 @@ class WorkWeek extends VerticalView {
         super(par);
         this.viewClass = 'e-work-week-view';
     }
+    startDate() {
+        let startDate = this.renderDates[0];
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            startDate = this.parent.resourceBase.getResourceRenderDates()[0];
+        }
+        return startDate;
+    }
+    endDate() {
+        let endDate = addDays(this.renderDates[this.renderDates.length - 1], 1);
+        if (this.parent.activeViewOptions.group.resources.length > 0) {
+            endDate = addDays(this.parent.resourceBase.getResourceRenderDates().slice(-1)[0], 1);
+        }
+        return endDate;
+    }
     /**
      * Get module name.
      */
@@ -18505,6 +18534,9 @@ class Month extends ViewBase {
         }
         if (this.parent.activeViewOptions.allowVirtualScrolling) {
             clsList.push(VIRTUAL_SCROLL_CLASS);
+        }
+        if (this.parent.eventSettings.ignoreWhitespace) {
+            clsList.push(IGNORE_WHITESPACE);
         }
         addClass([this.element], clsList);
         this.renderPanel(type);
@@ -18717,7 +18749,6 @@ class Month extends ViewBase {
     renderContentArea() {
         let tbl = this.createTableLayout(CONTENT_TABLE_CLASS);
         this.addAutoHeightClass(tbl);
-        this.addIgnoreWhitespaceClass(tbl);
         if (this.parent.currentView === 'TimelineMonth') {
             this.createColGroup(tbl, this.colLevels[this.colLevels.length - 1]);
         }
@@ -19061,6 +19092,9 @@ class AgendaBase {
     }
     processAgendaEvents(events) {
         let eventsProcessed = [];
+        if (isNullOrUndefined(events)) {
+            return eventsProcessed;
+        }
         for (let event of events) {
             let splited = this.parent.eventBase.splitEventByDay(event);
             eventsProcessed = eventsProcessed.concat(splited.length > 1 ? splited : event);

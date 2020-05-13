@@ -99,7 +99,7 @@ $gantt-connector-left-point-left: -12px !default;
 $gantt-parent-progress-bar-border-radius: 0px !default;
 $gantt-timeline-top-headercell-font-size: 14px !default;
 $gantt-timeline-top-headercell-font-weight: 400 !default;
-$gantt-active-background: $selection-bg !default;
+$gantt-active-background: rgba($selection-bg, 0.70) !default;
 $gantt-active-color: #000 !default;
 $gantt-active-color-opacity: 1 !default;
 $gantt-table-background: #000 !default;

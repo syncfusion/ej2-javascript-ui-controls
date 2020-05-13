@@ -16,6 +16,7 @@ import { RowModelGenerator } from '../services/row-model-generator';
 import { GroupModelGenerator } from '../services/group-model-generator';
 import { getScrollBarWidth, isGroupAdaptive } from '../base/util';
 import { Grid } from '../base/grid';
+import { VirtualFreezeRenderer } from './virtual-freeze-renderer';
 
 
 /**
@@ -50,6 +51,8 @@ export class ContentRender implements IRenderer {
     private pressedKey: string;
     private visibleRows: Row<Column>[] = [];
     private isAddRows: boolean = false;
+    private currentMovableRows: Object[];
+    private initialPageRecords: Object;
 
     private rafCallback: Function = (args: NotifyArgs) => {
         let arg: NotifyArgs = args;
@@ -211,7 +214,11 @@ export class ContentRender implements IRenderer {
     public refreshContentRows(args: NotifyArgs = {}): void {
         let gObj: IGrid = this.parent;
         if (gObj.currentViewData.length === 0) { return; }
-        let dataSource: Object = gObj.currentViewData; let frag: DocumentFragment = document.createDocumentFragment();
+        let dataSource: Object = this.currentMovableRows || gObj.currentViewData;
+        let frag: DocumentFragment = document.createDocumentFragment();
+        if (!this.initialPageRecords) {
+            this.initialPageRecords = extend([], dataSource);
+        }
         let hdrfrag: DocumentFragment = document.createDocumentFragment(); let columns: Column[] = <Column[]>gObj.getColumns();
         let tr: Element; let hdrTbody: HTMLElement; let frzCols: number = gObj.getFrozenColumns();
         let trElement: Element;
@@ -314,8 +321,8 @@ export class ContentRender implements IRenderer {
             return;
         }
         if (this.parent.enableVirtualization && this.parent.getFrozenColumns()) {
-            if (this.parent.enableColumnVirtualization) {
-                if (args.requestType === 'virtualscroll' && args.virtualInfo.sentinelInfo.axis === 'X') {
+            if (this.parent.enableColumnVirtualization && args.requestType === 'virtualscroll') {
+                if (args.virtualInfo.sentinelInfo.axis === 'X') {
                     modelData = (<{ generateRows?: Function }>(<Grid>this.parent).contentModule).generateRows(dataSource, args);
                     args.renderMovableContent = true;
                 } else if (mCont.scrollLeft > 0 && !args.renderMovableContent) {
@@ -398,21 +405,31 @@ export class ContentRender implements IRenderer {
                 }
             }
         }
-        if (gObj.frozenRows && args.requestType === 'virtualscroll' && args.virtualInfo.sentinelInfo.axis === 'X') {
+        let isVFFrozenOnly: boolean = gObj.frozenRows && !gObj.getFrozenColumns() && this.parent.enableVirtualization
+            && args.requestType === 'reorder';
+        if ((gObj.frozenRows && args.requestType === 'virtualscroll' && args.virtualInfo.sentinelInfo.axis === 'X') || isVFFrozenOnly) {
             let bIndex: number[] = args.virtualInfo.blockIndexes;
+            let page: number = args.virtualInfo.page;
             args.virtualInfo.blockIndexes = [1, 2];
+            if (isVFFrozenOnly) {
+                args.virtualInfo.page = 1;
+            }
+            let data: Object = isVFFrozenOnly ? this.initialPageRecords : dataSource;
             let mhdrData: Row<Column>[] = (<{ generateRows?: Function }>(<{ vgenerator?: Function }>this).vgenerator)
-                .generateRows(dataSource, args);
+                .generateRows(data, args);
             mhdrData.splice(this.parent.frozenRows);
             for (let i: number = 0; i < this.parent.frozenRows; i++) {
-                if (args.virtualInfo.columnIndexes[0] === 0) {
-                    mhdrData[i].cells.splice(0, this.parent.getFrozenColumns());
-                }
+                mhdrData[i].cells.splice(0, this.parent.getFrozenColumns());
                 tr = row.render(mhdrData[i], columns);
                 hdrfrag.appendChild(tr);
             }
             args.virtualInfo.blockIndexes = bIndex;
+            args.virtualInfo.page = page;
+            if (isVFFrozenOnly && args.virtualInfo.page === 1) {
+                modelData.splice(0, this.parent.frozenRows);
+            }
         }
+        this.virtualFrozenHdrRefresh(hdrfrag, modelData, row, args, dataSource, columns);
         for (let i: number = startIndex, len: number = modelData.length; i < len; i++) {
             if (!this.isAddRows) {
                 this.rows.push(modelData[i]);
@@ -425,7 +442,9 @@ export class ContentRender implements IRenderer {
             }
             if (!gObj.rowTemplate) {
                 tr = row.render(modelData[i], columns);
-                if (gObj.frozenRows && i < gObj.frozenRows && args.requestType !== 'virtualscroll') {
+                let isVFreorder: boolean = gObj.enableVirtualization
+                    && (args.requestType === 'reorder' || args.requestType === 'refresh');
+                if (gObj.frozenRows && i < gObj.frozenRows && args.requestType !== 'virtualscroll' && !isVFreorder) {
                     hdrfrag.appendChild(tr);
                 } else {
                     frag.appendChild(tr);
@@ -474,7 +493,7 @@ export class ContentRender implements IRenderer {
             hdrTbody.innerHTML = '';
             hdrTbody.appendChild(hdrfrag);
         }
-        if (gObj.frozenRows && idx === 0 && cont.offsetHeight === Number(gObj.height)) {
+        if (!gObj.enableVirtualization && gObj.frozenRows && idx === 0 && cont.offsetHeight === Number(gObj.height)) {
             cont.style.height = (cont.offsetHeight - hdrTbody.offsetHeight) + 'px';
         }
         if (frzCols && idx === 0) {
@@ -518,7 +537,8 @@ export class ContentRender implements IRenderer {
                     if (isVFTable) {
                         if (!args.renderMovableContent) {
                             this.appendContent(fCont.querySelector('tbody'), frag, args);
-                            if (this.parent.enableColumnVirtualization && mCont.scrollLeft > 0) {
+                            if (this.parent.enableColumnVirtualization && args.requestType === 'virtualscroll'
+                                && mCont.scrollLeft > 0) {
                                 this.parent.setColumnIndexesInView(this.viewColIndexes);
                                 args.virtualInfo.columnIndexes = this.viewColIndexes;
                             }
@@ -554,6 +574,33 @@ export class ContentRender implements IRenderer {
     public appendContent(tbody: Element, frag: DocumentFragment, args: NotifyArgs): void {
         tbody.appendChild(frag);
         this.getTable().appendChild(tbody);
+    }
+
+    private getReorderedVFRows(args: NotifyArgs): Row<Column>[] {
+        return (this.parent.contentModule as VirtualFreezeRenderer).getReorderedFrozenRows(args);
+    }
+
+    private virtualFrozenHdrRefresh(
+        hdrfrag: DocumentFragment, modelData: Row<Column>[],
+        row: RowRenderer<Column>, args: NotifyArgs, dataSource: Object, columns: Column[]
+    ): void {
+        if (this.parent.frozenRows && this.parent.getFrozenColumns() && this.parent.enableVirtualization
+            && (args.requestType === 'reorder' || args.requestType === 'refresh')) {
+            let tr: Element;
+            this.currentMovableRows = dataSource as Object[];
+            let fhdrData: Row<Column>[] = this.getReorderedVFRows(args);
+            for (let i: number = 0; i < fhdrData.length; i++) {
+                tr = row.render(fhdrData[i], columns);
+                hdrfrag.appendChild(tr);
+            }
+            if (args.virtualInfo.page === 1) {
+                modelData.splice(0, this.parent.frozenRows);
+            }
+            if (args.renderMovableContent) {
+                this.parent.currentViewData = this.currentMovableRows;
+                this.currentMovableRows = null;
+            }
+        }
     }
 
     /**
@@ -746,7 +793,8 @@ export class ContentRender implements IRenderer {
     private colGroupRefresh(): void {
         if (this.getColGroup()) {
             let colGroup: Element;
-            if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns()) {
+            if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns()
+                && (<{ isXaxis?: Function }>this.parent.contentModule).isXaxis()) {
                 colGroup = <Element>this.parent.getMovableVirtualHeader().querySelector('colgroup').cloneNode(true);
             } else {
                 colGroup = isBlazor() ? <Element>this.parent.getHeaderTable().querySelector('colgroup').cloneNode(true) :

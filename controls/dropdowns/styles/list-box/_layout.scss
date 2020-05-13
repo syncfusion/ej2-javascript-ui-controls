@@ -24,6 +24,7 @@
     }
 
     &:not(.e-list-template) .e-list-item,
+    .e-list-nrt,
     .e-selectall-parent {
       height: $listview-item-height;
       line-height: $listview-item-line-height;

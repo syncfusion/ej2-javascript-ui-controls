@@ -1006,6 +1006,31 @@ describe('GridLayout', () => {
             expect(resizingElement.classList.contains("e-dragging")).toBe(false);
         });
 
+        it('Checking dynamic update of empty panels', () => {
+            gridLayOut = new DashboardLayout({
+                cellAspectRatio: 1,
+                columns: 12,
+                cellSpacing: [5, 5],
+                resizableHandles: ['e-east'],
+                allowResizing: true,
+                panels: [
+                    { "id": '0', "sizeX": 1, "sizeY": 1, "row": 0, "col": 0, content: generateTemplate('0') },
+                    { "id": '1', "sizeX": 1, "sizeY": 1, "row": 0, "col": 1, content: generateTemplate('1') },
+                    { "id": '2', "sizeX": 1, "sizeY": 1, "minSizeX": 1, "minSizeY": 1, "row": 0, "col": 2, content: generateTemplate('2') },
+                    { "id": '3', "sizeX": 1, "sizeY": 1, "minSizeX": 1, "maxSizeX": 1, "minSizeY": 1, "maxSizeY": 1, "row": 0, "col": 3, content: generateTemplate('3') },
+                    { "id": '4', "sizeX": 1, "sizeY": 2, "minSizeX": 1, "maxSizeX": 3, "minSizeY": 1, "maxSizeY": 3, "row": 0, "col": 4, content: generateTemplate('4') },
+                    { "id": '5', "sizeX": 1, "sizeY": 2, "minSizeX": 1, "maxSizeX": 3, "minSizeY": 1, "maxSizeY": 3, "row": 0, "col": 7, content: generateTemplate('5') },
+                    { "id": '6', "sizeX": 1, "sizeY": 1, "minSizeX": 1, "minSizeY": 1, "row": 1, "col": 8, content: generateTemplate('6') },
+                    { "id": '7', "sizeX": 1, "sizeY": 1, "minSizeX": 1, "minSizeY": 1, "row": 0, "col": 8, content: generateTemplate('7') },
+                ]
+            });
+            gridLayOut.appendTo('#gridlayout');
+            gridLayOut.panels = [];
+            gridLayOut.dataBind();
+            let CellElements: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>gridLayOut.element.querySelectorAll('.e-panel');
+            expect(CellElements.length).toBe(0);
+        });
+
         it('Resizing test case in east direction alone after refresh', () => {
             gridLayOut = new DashboardLayout({
                 cellAspectRatio: 1,
@@ -6316,6 +6341,36 @@ describe('GridLayout', () => {
             expect((<any>gridLayOut).getCellInstance('0').col == 0).toBe(true);
             gridLayOut.addPanel({ row: 0, col: 1, sizeX: 1, sizeY: 1 });
         });
+        it('Drag Restrict class testing inline rendering', () => {
+            document.getElementById('0').classList.add("e-drag-restrict");
+            let movingElemnt: HTMLElement = document.getElementById('0');
+            let targetElemnt: HTMLElement = document.getElementById('2');
+            let mousedown: any = getEventObject('MouseEvents', 'mousedown', movingElemnt, movingElemnt, 0, 0);
+            EventHandler.trigger(<HTMLElement>movingElemnt, 'mousedown', mousedown);
+            let mousemove: any = getEventObject('MouseEvents', 'mousemove', movingElemnt, targetElemnt, 110, 0);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            mousemove.srcElement = mousemove.target = mousemove.toElement = targetElemnt;
+            mousemove = setMouseCordinates(mousemove, 60, 0);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            mousemove = setMouseCordinates(mousemove, 62, 0);
+            EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+            let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
+            mouseup.type = 'mouseup';
+            mouseup.currentTarget = document;
+            EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+            expect((<any>gridLayOut).getCellInstance('0').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('0').col == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('2').row == 0).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('2').col == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('3').row == 2).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('3').col == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('4').row == 2).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('4').col == 2).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('13').row == 3).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('13').col == 1).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('16').row == 4).toBe(true);
+            expect((<any>gridLayOut).getCellInstance('16').col == 0).toBe(true);
+        });
         it('change and drag event testing', () => {
             gridLayOut.change = function (args: ChangeEventArgs) {
                 expect(args.changedPanels.length > 0).toBe(true);
@@ -7571,6 +7626,97 @@ describe('GridLayout', () => {
         expect((<any>gridLayOut).getCellInstance('2').col == 2).toBe(true);
         expect((<any>gridLayOut).getCellInstance('3').row == 0).toBe(true);
         expect((<any>gridLayOut).getCellInstance('3').col == 2).toBe(true);
+        gridLayOut.destroy();
+        detach(ele);
+    });
+
+    it('Testing drag restrict classfor dragging with events', () => {
+        let gridLayOut: any;
+        let changeTrigger: boolean = false;
+        let dragStartTrigger: boolean = false;
+        let dragTrigger: boolean = false;
+        let dragStopTrigger: boolean = false;
+        ele = createElement('div', { id: 'gridlayout' });
+        setStyle(ele, { 'position': 'relative' });
+        parentEle = createElement('div', { id: 'container' });
+        setStyle(parentEle, { 'position': 'relative' });
+        parentEle.style.width = '1264px';
+        parentEle.appendChild(ele);
+        document.body.appendChild(parentEle);
+        gridLayOut = new DashboardLayout({
+            allowDragging: true,
+            columns: 20,
+            cellSpacing: [5, 5],
+            panels: [{ "id": 'zero', "sizeX": 1, "sizeY": 1, "row": 0, "col": 0, content: generateTemplate('0'), cssClass: 'e-drag-restrict' },
+            { "id": 'two', "sizeX": 2, "sizeY": 2, "row": 0, "col": 1, content: generateTemplate('2') },
+            { "id": 'five', "sizeX": 1, "sizeY": 1, "row": 0, "col": 3, content: generateTemplate('5') },
+            { "id": 'seven', "sizeX": 1, "sizeY": 3, "row": 0, "col": 4, content: generateTemplate('7') },
+            { "id": 'eight', "sizeX": 3, "sizeY": 1, "row": 0, "col": 5, content: generateTemplate('8') },
+            { "id": 'six', "sizeX": 1, "sizeY": 1, "row": 1, "col": 3, content: generateTemplate('6') },
+            { "id": 'one', "sizeX": 1, "sizeY": 2, "row": 1, "col": 0, content: generateTemplate('1') },
+            { "id": 'nine', "sizeX": 2, "sizeY": 1, "row": 2, "col": 5, content: generateTemplate('9') },
+            { "id": 'twelve', "sizeX": 1, "sizeY": 1, "row": 2, "col": 7, content: generateTemplate('12') },
+            { "id": 'ten', "sizeX": 1, "sizeY": 1, "row": 1, "col": 5, content: generateTemplate('10') },
+            { "id": 'eleven', "sizeX": 2, "sizeY": 1, "row": 1, "col": 6, content: generateTemplate('11') },
+            { "id": 'three', "sizeX": 1, "sizeY": 1, "row": 2, "col": 1, content: generateTemplate('3') },
+            { "id": 'four', "sizeX": 2, "sizeY": 1, "row": 2, "col": 2, content: generateTemplate('4') },
+            { "id": 'thirteen', "sizeX": 4, "sizeY": 1, "row": 3, "col": 1, content: generateTemplate('13') },
+            { "id": 'fourteen', "sizeX": 1, "sizeY": 1, "row": 3, "col": 0, content: generateTemplate('14') },
+            { "id": 'fifteen', "sizeX": 3, "sizeY": 2, "row": 3, "col": 5, content: generateTemplate('15') },
+            { "id": 'sixteen', "sizeX": 5, "sizeY": 1, "row": 4, "col": 0, content: generateTemplate('16') },
+            { "id": 'seventeen', "sizeX": 1, "sizeY": 4, "row": 0, "col": 8, content: generateTemplate('17') },
+            { "id": 'eighteen', "sizeX": 3, "sizeY": 3, "row": 0, "col": 9, content: generateTemplate('18') },
+            { "id": 'nineteen', "sizeX": 2, "sizeY": 1, "row": 3, "col": 9, content: generateTemplate('19') },
+            { "id": 'twenty', "sizeX": 1, "sizeY": 2, "row": 3, "col": 11, content: generateTemplate('20') },
+            { "id": 'twentyone', "sizeX": 3, "sizeY": 1, "row": 4, "col": 8, content: generateTemplate('21') },
+            ],
+            change: function (args: ChangeEventArgs) {
+                changeTrigger = true;
+            },
+            dragStart: function (args: DragStartArgs) {
+                dragStartTrigger = true;
+            },
+            dragStop: function (args: DragStopArgs) {
+                dragStopTrigger = true;
+            },
+            drag: function (args: DraggedEventArgs) {
+                dragTrigger = true;
+            }
+        });
+        gridLayOut.appendTo('#gridlayout');
+        let CellElements: HTMLElement[] = <HTMLElement[] & NodeListOf<Element>>gridLayOut.element.querySelectorAll('.e-panel');
+        setCss(CellElements);
+        let movingElemnt: HTMLElement = document.getElementById('zero');
+        let targetElemnt: HTMLElement = document.getElementById('two');
+        let mousedown: any = getEventObject('MouseEvents', 'mousedown', movingElemnt, movingElemnt, 0, 0);
+        EventHandler.trigger(<HTMLElement>movingElemnt, 'mousedown', mousedown);
+        let mousemove: any = getEventObject('MouseEvents', 'mousemove', movingElemnt, targetElemnt, 110, 0);
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        mousemove.srcElement = mousemove.target = mousemove.toElement = targetElemnt;
+        mousemove = setMouseCordinates(mousemove, 60, 0);
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        mousemove = setMouseCordinates(mousemove, 62, 0);
+        EventHandler.trigger(<any>(document), 'mousemove', mousemove);
+        let mouseup: any = getEventObject('MouseEvents', 'mouseup', movingElemnt, targetElemnt);
+        mouseup.type = 'mouseup';
+        mouseup.currentTarget = document;
+        EventHandler.trigger(<any>(document), 'mouseup', mouseup);
+        expect((<any>gridLayOut).getCellInstance('zero').row == 0).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('zero').col == 0).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('two').row == 0).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('two').col == 1).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('three').row == 2).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('three').col == 1).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('four').row == 2).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('four').col == 2).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('thirteen').row == 3).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('thirteen').col == 1).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('sixteen').row == 4).toBe(true);
+        expect((<any>gridLayOut).getCellInstance('sixteen').col == 0).toBe(true);
+        expect(changeTrigger).toBe(false);
+        expect(dragStartTrigger).toBe(false);
+        expect(dragTrigger).toBe(false);
+        expect(dragStopTrigger).toBe(false);
         gridLayOut.destroy();
         detach(ele);
     });

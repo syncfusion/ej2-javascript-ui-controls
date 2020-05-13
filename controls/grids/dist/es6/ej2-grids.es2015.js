@@ -758,6 +758,10 @@ const setInfiniteCache = 'set-infinite-cache';
 const initialCollapse = 'initial-collapse';
 /** @hidden */
 const getAggregateQuery = 'get-aggregate-query';
+/** @hidden */
+const closeFilterDialog = 'close-filter-dialog';
+/** @hidden */
+const columnChooserCancelBtnClick = 'columnChooserCancelBtnClick';
 
 /**
  * Defines types of Cell
@@ -1026,8 +1030,8 @@ class Data {
         let needForeignKeySearch = false;
         if (this.parent.searchSettings.key.length) {
             needForeignKeySearch = this.parent.getForeignKeyColumns().some((col) => fields.indexOf(col.field) > -1);
-            if (needForeignKeySearch && !(this.dataManager.adaptor.getModulename &&
-                this.dataManager.adaptor.getModulename() === 'ODataV4Adaptor')) {
+            if (needForeignKeySearch && (this.dataManager.adaptor.getModuleName &&
+                this.dataManager.adaptor.getModuleName() === 'ODataV4Adaptor')) {
                 for (let i = 0; i < fields.length; i++) {
                     let column = this.getColumnByField(fields[i]);
                     if (column.isForeignColumn()) {
@@ -2394,8 +2398,11 @@ class ContentRender {
         if (gObj.currentViewData.length === 0) {
             return;
         }
-        let dataSource = gObj.currentViewData;
+        let dataSource = this.currentMovableRows || gObj.currentViewData;
         let frag = document.createDocumentFragment();
+        if (!this.initialPageRecords) {
+            this.initialPageRecords = extend([], dataSource);
+        }
         let hdrfrag = document.createDocumentFragment();
         let columns = gObj.getColumns();
         let tr;
@@ -2501,8 +2508,8 @@ class ContentRender {
             return;
         }
         if (this.parent.enableVirtualization && this.parent.getFrozenColumns()) {
-            if (this.parent.enableColumnVirtualization) {
-                if (args.requestType === 'virtualscroll' && args.virtualInfo.sentinelInfo.axis === 'X') {
+            if (this.parent.enableColumnVirtualization && args.requestType === 'virtualscroll') {
+                if (args.virtualInfo.sentinelInfo.axis === 'X') {
                     modelData = this.parent.contentModule.generateRows(dataSource, args);
                     args.renderMovableContent = true;
                 }
@@ -2590,21 +2597,31 @@ class ContentRender {
                 }
             }
         }
-        if (gObj.frozenRows && args.requestType === 'virtualscroll' && args.virtualInfo.sentinelInfo.axis === 'X') {
+        let isVFFrozenOnly = gObj.frozenRows && !gObj.getFrozenColumns() && this.parent.enableVirtualization
+            && args.requestType === 'reorder';
+        if ((gObj.frozenRows && args.requestType === 'virtualscroll' && args.virtualInfo.sentinelInfo.axis === 'X') || isVFFrozenOnly) {
             let bIndex = args.virtualInfo.blockIndexes;
+            let page = args.virtualInfo.page;
             args.virtualInfo.blockIndexes = [1, 2];
+            if (isVFFrozenOnly) {
+                args.virtualInfo.page = 1;
+            }
+            let data = isVFFrozenOnly ? this.initialPageRecords : dataSource;
             let mhdrData = this.vgenerator
-                .generateRows(dataSource, args);
+                .generateRows(data, args);
             mhdrData.splice(this.parent.frozenRows);
             for (let i = 0; i < this.parent.frozenRows; i++) {
-                if (args.virtualInfo.columnIndexes[0] === 0) {
-                    mhdrData[i].cells.splice(0, this.parent.getFrozenColumns());
-                }
+                mhdrData[i].cells.splice(0, this.parent.getFrozenColumns());
                 tr = row.render(mhdrData[i], columns);
                 hdrfrag.appendChild(tr);
             }
             args.virtualInfo.blockIndexes = bIndex;
+            args.virtualInfo.page = page;
+            if (isVFFrozenOnly && args.virtualInfo.page === 1) {
+                modelData.splice(0, this.parent.frozenRows);
+            }
         }
+        this.virtualFrozenHdrRefresh(hdrfrag, modelData, row, args, dataSource, columns);
         for (let i = startIndex, len = modelData.length; i < len; i++) {
             if (!this.isAddRows) {
                 this.rows.push(modelData[i]);
@@ -2617,7 +2634,9 @@ class ContentRender {
             }
             if (!gObj.rowTemplate) {
                 tr = row.render(modelData[i], columns);
-                if (gObj.frozenRows && i < gObj.frozenRows && args.requestType !== 'virtualscroll') {
+                let isVFreorder = gObj.enableVirtualization
+                    && (args.requestType === 'reorder' || args.requestType === 'refresh');
+                if (gObj.frozenRows && i < gObj.frozenRows && args.requestType !== 'virtualscroll' && !isVFreorder) {
                     hdrfrag.appendChild(tr);
                 }
                 else {
@@ -2670,7 +2689,7 @@ class ContentRender {
             hdrTbody.innerHTML = '';
             hdrTbody.appendChild(hdrfrag);
         }
-        if (gObj.frozenRows && idx === 0 && cont.offsetHeight === Number(gObj.height)) {
+        if (!gObj.enableVirtualization && gObj.frozenRows && idx === 0 && cont.offsetHeight === Number(gObj.height)) {
             cont.style.height = (cont.offsetHeight - hdrTbody.offsetHeight) + 'px';
         }
         if (frzCols && idx === 0) {
@@ -2715,7 +2734,8 @@ class ContentRender {
                 if (isVFTable) {
                     if (!args.renderMovableContent) {
                         this.appendContent(fCont.querySelector('tbody'), frag, args);
-                        if (this.parent.enableColumnVirtualization && mCont.scrollLeft > 0) {
+                        if (this.parent.enableColumnVirtualization && args.requestType === 'virtualscroll'
+                            && mCont.scrollLeft > 0) {
                             this.parent.setColumnIndexesInView(this.viewColIndexes);
                             args.virtualInfo.columnIndexes = this.viewColIndexes;
                         }
@@ -2753,6 +2773,28 @@ class ContentRender {
     appendContent(tbody, frag, args) {
         tbody.appendChild(frag);
         this.getTable().appendChild(tbody);
+    }
+    getReorderedVFRows(args) {
+        return this.parent.contentModule.getReorderedFrozenRows(args);
+    }
+    virtualFrozenHdrRefresh(hdrfrag, modelData, row, args, dataSource, columns) {
+        if (this.parent.frozenRows && this.parent.getFrozenColumns() && this.parent.enableVirtualization
+            && (args.requestType === 'reorder' || args.requestType === 'refresh')) {
+            let tr;
+            this.currentMovableRows = dataSource;
+            let fhdrData = this.getReorderedVFRows(args);
+            for (let i = 0; i < fhdrData.length; i++) {
+                tr = row.render(fhdrData[i], columns);
+                hdrfrag.appendChild(tr);
+            }
+            if (args.virtualInfo.page === 1) {
+                modelData.splice(0, this.parent.frozenRows);
+            }
+            if (args.renderMovableContent) {
+                this.parent.currentViewData = this.currentMovableRows;
+                this.currentMovableRows = null;
+            }
+        }
     }
     /**
      * Get the content div element of grid
@@ -2936,7 +2978,8 @@ class ContentRender {
     colGroupRefresh() {
         if (this.getColGroup()) {
             let colGroup;
-            if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns()) {
+            if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns()
+                && this.parent.contentModule.isXaxis()) {
                 colGroup = this.parent.getMovableVirtualHeader().querySelector('colgroup').cloneNode(true);
             }
             else {
@@ -3032,7 +3075,7 @@ class HeaderRender {
         this.notfrzIdx = 0;
         this.helper = (e) => {
             let gObj = this.parent;
-            let target = e.sender.target;
+            let target = this.draggable.currentStateTarget;
             let parentEle = parentsUntil(target, 'e-headercell');
             if (!(gObj.allowReordering || gObj.allowGrouping) || (!isNullOrUndefined(parentEle)
                 && parentEle.querySelectorAll('.e-checkselectall').length > 0)) {
@@ -3083,7 +3126,7 @@ class HeaderRender {
         this.dragStart = (e) => {
             let gObj = this.parent;
             gObj.element.querySelector('.e-gridpopup').style.display = 'none';
-            gObj.notify(columnDragStart, { target: e.target, column: this.column, event: e.event });
+            gObj.notify(columnDragStart, { target: this.draggable.currentStateTarget, column: this.column, event: e.event });
             if (isBlazor()) {
                 e.bindEvents(e.dragElement);
             }
@@ -3314,6 +3357,11 @@ class HeaderRender {
         let cols = this.parent.getColumns();
         let col;
         let indexes = this.parent.getColumnIndexesInView();
+        if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns()
+            && this.parent.contentModule.isXaxis()) {
+            cols = extend([], this.parent.getColumns());
+            cols.splice(0, this.parent.getFrozenColumns());
+        }
         colGroup.id = this.parent.element.id + 'colGroup';
         if (this.parent.allowGrouping) {
             for (let i = 0, len = this.parent.groupSettings.columns.length; i < len; i++) {
@@ -3392,8 +3440,8 @@ class HeaderRender {
             left = this.parent.getContent().querySelector('.e-movablecontent').scrollLeft;
         }
         if (!cols.columns) {
-            if (left && left > 0 && this.parent.enableColumnVirtualization
-                && this.parent.inViewIndexes[0] !== 0) {
+            if (left && left > 0 && this.parent.contentModule.isXaxis()
+                && this.parent.inViewIndexes[0] !== 0 && this.frzIdx > this.parent.getFrozenColumns()) {
                 rows[index].cells.push(this.generateCell(cols, CellType.Header, this.colDepth - index, (isFirstObj ? '' : (isFirstCol ? 'e-firstcell' : '')) + lastCol, index, this.parent.getColumnIndexByUid(cols.uid)));
             }
             else {
@@ -3567,8 +3615,11 @@ class HeaderRender {
         let setFrozenTable = isBlazor() && this.parent.isServerRendered && this.parent.frozenRows !== 0 && frzCols !== 0;
         let headerDiv = this.getPanel();
         this.toggleStackClass(headerDiv);
-        let table = (this.parent.enableColumnVirtualization && frzCols) || this.freezeReorder
-            ? this.headerPanel.querySelector('.e-movableheader').querySelector('.e-table') : this.getTable();
+        let table = this.freezeReorder ? this.headerPanel.querySelector('.e-movableheader').querySelector('.e-table')
+            : this.getTable();
+        if (isVFTable) {
+            table = this.parent.contentModule.getVirtualFreezeHeader();
+        }
         if (setFrozenTable && !isVFTable) {
             table = this.freezeReorder ? this.headerPanel.querySelector('.e-movableheader').querySelector('.e-table') :
                 this.headerPanel.querySelector('.e-frozenheader').querySelector('.e-table');
@@ -3598,7 +3649,7 @@ class HeaderRender {
             this.parent.notify(colGroupRefresh, {});
             this.widthService.setWidthToColumns();
             this.parent.updateDefaultCursor();
-            if (!frzCols) {
+            if (!frzCols || (this.parent.enableColumnVirtualization && frzCols)) {
                 this.initializeHeaderDrag();
             }
             let rows = [].slice.call(headerDiv.querySelectorAll('tr.e-columnheader'));
@@ -3610,6 +3661,9 @@ class HeaderRender {
             }
             if (!frzCols) {
                 this.parent.notify(headerRefreshed, { rows: this.rows, args: { isFrozen: this.parent.getFrozenColumns() !== 0 } });
+            }
+            if (this.parent.enableColumnVirtualization && parentsUntil(table, 'e-movableheader')) {
+                this.parent.notify(headerRefreshed, { rows: this.rows, args: { isFrozen: false, isXaxis: true } });
             }
             if (this.parent.allowTextWrap && this.parent.textWrapSettings.wrapMode === 'Header') {
                 wrap(rows, true);
@@ -3647,18 +3701,15 @@ class HeaderRender {
         if (!(this.parent.allowReordering || (this.parent.allowGrouping && this.parent.groupSettings.showDropArea))) {
             return;
         }
-        let headerRows = [].slice.call(gObj.getHeaderContent().querySelectorAll('.e-columnheader'));
-        for (let i = 0, len = headerRows.length; i < len; i++) {
-            let drag = new Draggable(headerRows[i], {
-                dragTarget: '.e-headercell',
-                distance: 5,
-                helper: this.helper,
-                dragStart: this.dragStart,
-                drag: this.drag,
-                dragStop: this.dragStop,
-                abort: '.e-rhandler'
-            });
-        }
+        this.draggable = new Draggable(gObj.getHeaderContent(), {
+            dragTarget: '.e-headercell',
+            distance: 5,
+            helper: this.helper,
+            dragStart: this.dragStart,
+            drag: this.drag,
+            dragStop: this.dragStop,
+            abort: '.e-rhandler'
+        });
     }
     initializeHeaderDrop() {
         let gObj = this.parent;
@@ -4516,7 +4567,14 @@ class Render {
         gObj.trigger(actionBegin, e, (args = { requestType: 'refresh' }) => {
             if (args.requestType === 'delete' && isBlazor() && !gObj.isJsComponent) {
                 let data = 'data';
-                args[data] = gObj.getSelectedRecords();
+                if (isNullOrUndefined(gObj.commandDelIndex)) {
+                    args[data] = gObj.getSelectedRecords();
+                }
+                else {
+                    let tempSelectedRecord = args[data];
+                    args[data] = {};
+                    args[data][0] = tempSelectedRecord;
+                }
             }
             if (args.cancel) {
                 gObj.notify(cancelBegin, args);
@@ -5249,7 +5307,8 @@ class ColumnWidthService {
         if (frzCols && index >= frzCols && mHdr && mHdr.querySelector('colgroup')) {
             headerCol = mHdr.querySelector('colgroup').children[index - frzCols];
         }
-        else if (this.parent.enableColumnVirtualization && frzCols && mHdr.scrollLeft > 0) {
+        else if (this.parent.enableColumnVirtualization && frzCols && this.parent.contentModule.isXaxis()
+            && mHdr.scrollLeft > 0) {
             let colGroup = mHdr.querySelector('colgroup');
             headerCol = colGroup.children[(colGroup.children.length - 1) - index];
         }
@@ -5267,7 +5326,8 @@ class ColumnWidthService {
             contentCol = this.parent.getContent().querySelector('.e-movablecontent')
                 .querySelector('colgroup').children[index - frzCols];
         }
-        else if (this.parent.enableColumnVirtualization && frzCols && mCont.scrollLeft > 0) {
+        else if (this.parent.enableColumnVirtualization && frzCols && this.parent.contentModule.isXaxis()
+            && mCont.scrollLeft > 0) {
             let colGroup = this.parent.getContent().querySelector('.e-movablecontent')
                 .querySelector('colgroup');
             contentCol = colGroup.children[(colGroup.children.length - 1) - index];
@@ -6509,6 +6569,7 @@ class Selection {
         this.disableUI = false;
         this.isPersisted = false;
         this.cmdKeyPressed = false;
+        this.cellselected = false;
         /**
          * @hidden
          */
@@ -6624,8 +6685,10 @@ class Selection {
         let isRemoved = false;
         if (gObj.enableVirtualization && index > -1) {
             this.parent.notify(selectVirtualRow, { selectedIndex: index });
-            if (selectedRow && gObj.getRowObjectFromUID(selectedRow.getAttribute('data-uid'))) {
-                selectData = gObj.getRowObjectFromUID(selectedRow.getAttribute('data-uid')).data;
+            let frozenData = gObj.getFrozenColumns() ? gObj.contentModule.getRowObjectByIndex(index)
+                : null;
+            if (selectedRow && (gObj.getRowObjectFromUID(selectedRow.getAttribute('data-uid')) || frozenData)) {
+                selectData = frozenData ? frozenData : gObj.getRowObjectFromUID(selectedRow.getAttribute('data-uid')).data;
             }
             else {
                 let prevSelectedData = this.parent.getSelectedRecords();
@@ -7302,6 +7365,7 @@ class Selection {
                 args[previousRowCellIndex] = this.prevECIdxs;
             }
             this.parent.trigger(cellSelecting, this.fDataUpdate(args), this.successCallBack(args, isToggle, cellIndex, selectedCell, selectedData));
+            this.cellselected = true;
         }
         else {
             this.successCallBack(args, isToggle, cellIndex, selectedCell, selectedData)(args);
@@ -7437,7 +7501,10 @@ class Selection {
             else {
                 cellSelectedArgs = { data: selectedData, cellIndex: edIndex, selectedRowCellIndex: this.selectedRowCellIndexes };
             }
-            this.onActionComplete(cellSelectedArgs, cellSelected);
+            if (!this.isDragged) {
+                this.onActionComplete(cellSelectedArgs, cellSelected);
+                this.cellselected = true;
+            }
             this.updateCellProps(stIndex, edIndex);
         });
     }
@@ -7622,6 +7689,7 @@ class Selection {
                     cellSelectedArgs = { data: selectedData, cellIndex: cellIndexes[0], selectedRowCellIndex: this.selectedRowCellIndexes };
                 }
                 this.onActionComplete(cellSelectedArgs, cellSelected);
+                this.cellselected = true;
             }
             this.updateCellProps(cellIndex, cellIndex);
         }
@@ -7764,7 +7832,9 @@ class Selection {
             }
             this.selectedRowCellIndexes = [];
             this.isCellSelected = false;
-            this.cellDeselect(cellDeselected, rowCell, data, cells, foreignKeyData$$1);
+            if (!this.isDragged && this.cellselected) {
+                this.cellDeselect(cellDeselected, rowCell, data, cells, foreignKeyData$$1);
+            }
         }
     }
     getSelectedCellsElement() {
@@ -8107,6 +8177,14 @@ class Selection {
         else {
             this.mUPTarget = null;
         }
+        if (this.isDragged) {
+            let target = e.target;
+            let rowIndex = parseInt(target.parentElement.getAttribute('aria-rowindex'), 10);
+            let cellIndex = parseInt(target.getAttribute('aria-colindex'), 10);
+            this.isDragged = false;
+            this.clearCellSelection();
+            this.selectCellsByRange({ rowIndex: this.startDIndex, cellIndex: this.startDCellIndex }, { rowIndex: rowIndex, cellIndex: cellIndex });
+        }
         this.isDragged = false;
         this.updateAutoFillPosition();
         if (this.isAutoFillSel) {
@@ -8318,6 +8396,7 @@ class Selection {
     }
     render(e) {
         EventHandler.add(this.parent.getContent(), 'mousedown', this.mouseDownHandler, this);
+        this.initPerisistSelection();
     }
     onPropertyChanged(e) {
         if (e.module !== this.getModuleName()) {
@@ -8598,6 +8677,9 @@ class Selection {
         this.isHeaderCheckboxClicked = true;
         if (stateStr === 'Intermediate') {
             state = this.getCurrentBatchRecordChanges().some((data) => data[this.primaryKey] in this.selectedRowState);
+        }
+        if (this.parent.isPersistSelection) {
+            this.totalRecordsCount = this.parent.pageSettings.totalRecordsCount;
         }
         this.checkSelectAllAction(!state);
         if (isBlazor() && this.parent.isServerRendered && this.parent.enableVirtualization) {
@@ -8976,6 +9058,7 @@ class Selection {
             case 'upArrow':
             case 'enter':
             case 'shiftEnter':
+                this.target = e.element;
                 this.applyDownUpKey(rowIndex, cellIndex);
                 break;
             case 'rightArrow':
@@ -9518,7 +9601,7 @@ class Scroll {
     setHeight() {
         let mHdrHeight = 0;
         let content = this.parent.getContent().querySelector('.e-content');
-        if (this.parent.frozenRows && this.parent.height !== 'auto') {
+        if (!this.parent.enableVirtualization && this.parent.frozenRows && this.parent.height !== 'auto') {
             let tbody = this.parent.getHeaderContent().querySelector('tbody');
             mHdrHeight = tbody ? tbody.offsetHeight : 0;
             content.style.height = formatUnit(this.parent.height - mHdrHeight);
@@ -9625,6 +9708,7 @@ class Scroll {
                 this.previousValues.top = !isHeader ? this.previousValues.top : target.scrollTop;
                 return;
             }
+            this.parent.notify(closeFilterDialog, e);
             element.scrollLeft = left;
             if (isFooter) {
                 this.header.scrollLeft = left;
@@ -10932,6 +11016,8 @@ let Grid = Grid_1 = class Grid extends Component {
         /** @hidden */
         this.isAutoGen = false;
         this.mediaBindInstance = {};
+        /** @hidden */
+        this.commandDelIndex = undefined;
         // enable/disable logger for MVC & Core
         this.enableLogger = true;
         this.needsID = true;
@@ -11777,6 +11863,10 @@ let Grid = Grid_1 = class Grid extends Component {
         let headerCells = [].slice.call(this.getHeaderContent().querySelectorAll('.e-headercell:not(.e-stackedheadercell)'));
         let stdHdrCell = [].slice.call(this.getHeaderContent().querySelectorAll('.e-stackedheadercell'));
         let cols = this.getColumns();
+        if (this.enableColumnVirtualization && this.getFrozenColumns()) {
+            let cells = this.contentModule.getHeaderCells();
+            headerCells = cells.length ? cells : headerCells;
+        }
         for (let i = 0; i < headerCells.length; i++) {
             let cell = headerCells[i];
             if (this.allowGrouping || this.allowReordering || this.allowSorting) {
@@ -11858,6 +11948,11 @@ let Grid = Grid_1 = class Grid extends Component {
         }
         let columns = vLen === 0 ? this.columnModel :
             this.columnModel.slice(inview[0], inview[vLen - 1] + 1);
+        if (this.contentModule && this.enableColumnVirtualization && this.getFrozenColumns() && inview.length
+            && inview[0] > 0) {
+            let frozenCols = this.contentModule.ensureFrozenCols(columns);
+            columns = frozenCols;
+        }
         return columns;
     }
     /**
@@ -14325,6 +14420,23 @@ let Grid = Grid_1 = class Grid extends Component {
             }
         }
     }
+    /**
+     * @hidden
+     */
+    resetFilterDlgPosition(field) {
+        let header = this.getColumnHeaderByField(field);
+        if (header) {
+            let target = header.querySelector('.e-filtermenudiv');
+            let filterDlg = this.element.querySelector('.e-filter-popup');
+            if (target && filterDlg) {
+                let gClient = this.element.getBoundingClientRect();
+                let fClient = target.getBoundingClientRect();
+                if (filterDlg) {
+                    filterDlg.style.left = (fClient.right - gClient.left).toString() + 'px';
+                }
+            }
+        }
+    }
 };
 __decorate$1([
     Property()
@@ -14799,6 +14911,11 @@ class Print {
         });
         document.body.appendChild(element);
         let printGrid = new Grid(getPrintGridModel(gObj, gObj.hierarchyPrintMode));
+        /* tslint:disable-next-line:no-any */
+        if (this.parent.isAngular) {
+            /* tslint:disable-next-line:no-any */
+            printGrid.viewContainerRef = this.parent.viewContainerRef;
+        }
         /* tslint:disable:no-empty */
         printGrid.load = () => { };
         printGrid.query = gObj.getQuery().clone();
@@ -14811,8 +14928,8 @@ class Print {
         }
         gObj.notify(printGridInit, { element: element, printgrid: printGrid });
         this.parent.log('exporting_begin', this.getModuleName());
-        printGrid.appendTo(element);
         printGrid.registeredTemplate = this.parent.registeredTemplate;
+        printGrid.appendTo(element);
         printGrid.trigger = gObj.trigger;
     }
     contentReady() {
@@ -20296,6 +20413,7 @@ class Filter {
         this.parent.on(filterOpen, this.columnMenuFilter, this);
         this.parent.on(click, this.filterIconClickHandler, this);
         this.parent.on('persist-data-changed', this.initialEnd, this);
+        this.parent.on(closeFilterDialog, this.clickHandler, this);
     }
     /**
      * @hidden
@@ -20314,6 +20432,7 @@ class Filter {
         this.parent.off(filterOpen, this.columnMenuFilter);
         this.parent.off(filterMenuClose, this.filterMenuClose);
         this.parent.off(click, this.filterIconClickHandler);
+        this.parent.off(closeFilterDialog, this.clickHandler);
     }
     filterMenuClose(args) {
         this.fltrDlgDetails.isOpen = false;
@@ -21781,9 +21900,10 @@ class Reorder {
     chkDropPosition(srcElem, destElem) {
         let col = this.parent.getColumnByUid(destElem.firstElementChild.getAttribute('e-mappinguid'));
         let bool = col ? !col.lockColumn : true;
-        return (srcElem.parentElement.isEqualNode(destElem.parentElement) || (this.parent.getFrozenColumns()
-            && Array.prototype.indexOf.call(closest(srcElem, 'thead').children, srcElem.parentElement)
-                === Array.prototype.indexOf.call(closest(destElem, 'thead').children, destElem.parentElement)))
+        return ((srcElem.parentElement.isEqualNode(destElem.parentElement) || this.parent.enableColumnVirtualization)
+            || (this.parent.getFrozenColumns()
+                && Array.prototype.indexOf.call(closest(srcElem, 'thead').children, srcElem.parentElement)
+                    === Array.prototype.indexOf.call(closest(destElem, 'thead').children, destElem.parentElement)))
             && this.targetParentContainerIndex(srcElem, destElem) > -1 && bool;
     }
     chkDropAllCols(srcElem, destElem) {
@@ -21852,7 +21972,7 @@ class Reorder {
             if (this.parent.enableColumnVirtualization) {
                 let columns = this.parent.columns;
                 let sourceUid = this.element.querySelector('.e-headercelldiv').getAttribute('e-mappinguid');
-                let col = this.parent.getColumns(true).filter((col) => col.uid === sourceUid);
+                let col = this.parent.columns.filter((col) => col.uid === sourceUid);
                 let colMatchIndex = null;
                 let column = col[0];
                 let destUid = destElem.querySelector('.e-headercelldiv').getAttribute('e-mappinguid');
@@ -21999,19 +22119,23 @@ class Reorder {
         return parents$$1[parents$$1.length - 1];
     }
     reorderSingleColumn(fromFName, toFName) {
-        let fColumn = this.parent.getColumnByField(fromFName);
-        let toColumn = this.parent.getColumnByField(toFName);
+        let fColumn = this.parent.enableColumnVirtualization ?
+            this.parent.columns.filter((col) => col.field === fromFName)[0]
+            : this.parent.getColumnByField(fromFName);
+        let toColumn = this.parent.enableColumnVirtualization ?
+            this.parent.columns.filter((col) => col.field === toFName)[0]
+            : this.parent.getColumnByField(toFName);
         if ((!isNullOrUndefined(fColumn) && (!fColumn.allowReordering || fColumn.lockColumn)) ||
             (!isNullOrUndefined(toColumn) && (!toColumn.allowReordering || fColumn.lockColumn))) {
             this.parent.log('action_disabled_column', { moduleName: this.getModuleName(), column: fColumn, destColumn: toColumn });
             return;
         }
-        let column = this.parent.getColumnByField(toFName);
+        let column = toColumn;
         let parent = this.getColParent(column, this.parent.columns);
         let columns = parent ? parent.columns : this.parent.columns;
         let destIndex = inArray(column, columns);
         if (destIndex > -1) {
-            this.moveColumns(destIndex, this.parent.getColumnByField(fromFName), true);
+            this.moveColumns(destIndex, fColumn, true);
         }
     }
     reorderMultipleColumns(fromFNames, toFName) {
@@ -22104,7 +22228,10 @@ class Reorder {
             this.createReorderElement();
         }
     }
-    createReorderElement() {
+    createReorderElement(e) {
+        if (e && e.args.isXaxis) {
+            this.setDisplay('none');
+        }
         let header = this.parent.element.querySelector('.e-headercontent');
         this.upArrow = header.appendChild(this.parent
             .createElement('div', { className: 'e-icons e-icon-reorderuparrow e-reorderuparrow', attrs: { style: 'display:none' } }));
@@ -22175,7 +22302,8 @@ class Reorder {
         }
         let closest$$1 = closest(target, '.e-headercell:not(.e-stackedHeaderCell)');
         let cloneElement = gObj.element.querySelector('.e-cloneproperties');
-        let isLeft = this.x > getPosition(e.event).x + gObj.getContent().firstElementChild.scrollLeft;
+        let content = gObj.getFrozenColumns() ? gObj.getMovableVirtualContent() : gObj.getContent().firstElementChild;
+        let isLeft = this.x > getPosition(e.event).x + content.scrollLeft;
         removeClass(gObj.getHeaderTable().querySelectorAll('.e-reorderindicate'), ['e-reorderindicate']);
         this.setDisplay('none');
         this.stopTimer();
@@ -22226,6 +22354,15 @@ class Reorder {
         if ((isLeft && cliRect.left < cliRectBase.left) || (!isLeft && cliRect.right > cliRectBase.right)) {
             return;
         }
+        if (this.parent.getFrozenColumns() && target.classList.contains('e-headercell')) {
+            let col = this.parent.getColumnByUid(target.firstElementChild.getAttribute('e-mappinguid'));
+            let fhdrWidth = Math.round(this.parent.getFrozenVirtualHeader().getBoundingClientRect().right);
+            let mhdrRight = Math.round(this.parent.getMovableVirtualHeader().getBoundingClientRect().right);
+            if (col && this.parent.getNormalizedColumnIndex(col.uid) >= this.parent.getFrozenColumns()
+                && ((isLeft && Math.round(cliRect.left) < fhdrWidth) || (!isLeft && mhdrRight < cliRect.right))) {
+                return;
+            }
+        }
         this.upArrow.style.top = cliRect.top + cliRect.height - cliRectBase.top + 'px';
         this.downArrow.style.top = cliRect.top - cliRectBase.top - 4 + 'px';
         this.upArrow.style.left = this.downArrow.style.left = (isLeft ? cliRect.left : cliRect.right) - cliRectBase.left - 4 + 'px';
@@ -22239,7 +22376,8 @@ class Reorder {
         if (!e.column.allowReordering || e.column.lockColumn) {
             return;
         }
-        this.x = getPosition(e.event).x + gObj.getContent().firstElementChild.scrollLeft;
+        let content = gObj.getFrozenColumns() ? gObj.getMovableVirtualContent() : gObj.getContent().firstElementChild;
+        this.x = getPosition(e.event).x + content.scrollLeft;
         gObj.trigger(columnDragStart, {
             target: target, draggableType: 'headercell', column: e.column
         });
@@ -25274,11 +25412,23 @@ class VirtualRowModelGenerator {
             this.parent.contentModule.startColIndex = indexes[0];
             this.parent.contentModule.endColIndex = indexes[indexes.length - 1];
         }
+        this.addFrozenIndex(indexes);
         return indexes;
     }
+    addFrozenIndex(indexes) {
+        if (this.parent.getFrozenColumns() && this.parent.enableColumnVirtualization && indexes[0] === 0) {
+            for (let i = 0; i < this.parent.getFrozenColumns(); i++) {
+                indexes.push(indexes[indexes.length - 1] + 1);
+            }
+        }
+    }
     checkAndResetCache(action) {
-        let clear = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder',
-            'save', 'delete'].some((value) => action === value);
+        let actions = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder',
+            'save', 'delete'];
+        if (this.parent.getFrozenColumns() && this.parent.frozenRows && this.parent.enableColumnVirtualization && action === 'reorder') {
+            actions = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'save', 'delete'];
+        }
+        let clear = actions.some((value) => action === value);
         if (clear) {
             this.cache = {};
             this.data = {};
@@ -25379,6 +25529,7 @@ class VirtualContentRenderer extends ContentRender {
         this.isNormaledit = this.parent.editSettings.mode === 'Normal';
         this.virtualData = {};
         this.emptyRowData = {};
+        this.vfColIndex = [];
         this.locator = locator;
         this.eventListener('on');
         this.parent.on(columnVisibilityChanged, this.setVisible, this);
@@ -25468,6 +25619,7 @@ class VirtualContentRenderer extends ContentRender {
                 if (Browser.isIE) {
                     this.parent.hideSpinner();
                 }
+                this.requestType = this.requestType === 'virtualscroll' ? this.empty : this.requestType;
                 this.restoreEdit();
                 return;
             }
@@ -25497,6 +25649,7 @@ class VirtualContentRenderer extends ContentRender {
             }
         }
         if (!isBlazor() || (isBlazor() && !this.parent.isServerRendered)) {
+            this.requestType = 'virtualscroll';
             this.parent.notify(viewInfo.event, { requestType: 'virtualscroll', virtualInfo: viewInfo,
                 focusElement: scrollArgs.focusElement });
         }
@@ -25650,12 +25803,18 @@ class VirtualContentRenderer extends ContentRender {
             this.virtualEle.adjustTable(cOff, translate);
         }
     }
+    // tslint:disable-next-line:max-func-body-length
     appendContent(target, newChild, e) {
         // currentInfo value will be used if there are multiple dom updates happened due to mousewheel
+        let colVFtable = this.parent.enableColumnVirtualization && this.parent.getFrozenColumns() !== 0;
+        this.checkFirstBlockColIndexes(e);
         let info = e.virtualInfo.sentinelInfo && e.virtualInfo.sentinelInfo.axis === 'Y' && this.currentInfo.page &&
             this.currentInfo.page !== e.virtualInfo.page ? this.currentInfo : e.virtualInfo;
         this.prevInfo = this.prevInfo || e.virtualInfo;
         let cBlock = (info.columnIndexes[0]) - 1;
+        if (colVFtable && info.columnIndexes[0] === this.parent.getFrozenColumns()) {
+            cBlock = (info.columnIndexes[0] - this.parent.getFrozenColumns()) - 1;
+        }
         let cOffset = this.getColumnOffset(cBlock);
         let width;
         let blocks = info.blockIndexes;
@@ -25720,10 +25879,16 @@ class VirtualContentRenderer extends ContentRender {
             }
             else {
                 this.parent.getMovableVirtualContent().querySelector('.e-table').appendChild(target);
+                this.requestType = this.requestType === 'virtualscroll' ? this.empty : this.requestType;
+            }
+            if (this.vfColIndex.length) {
+                e.virtualInfo.columnIndexes = info.columnIndexes = extend([], this.vfColIndex);
+                this.vfColIndex = e.renderMovableContent ? [] : this.vfColIndex;
             }
         }
         else {
             this.getTable().appendChild(target);
+            this.requestType = this.requestType === 'virtualscroll' ? this.empty : this.requestType;
         }
         if (this.parent.groupSettings.columns.length) {
             if (!isGroupAdaptive(this.parent) && info.direction === 'up') {
@@ -25752,9 +25917,31 @@ class VirtualContentRenderer extends ContentRender {
             && e.requestType === 'virtualscroll' && e.virtualInfo.sentinelInfo.axis === 'X') {
             this.refreshMvTbalTransform();
         }
+        if (e.requestType === 'virtualscroll' && e.virtualInfo.sentinelInfo.axis === 'X') {
+            this.parent.notify(autoCol, {});
+        }
         this.focusCell(e);
         this.restoreEdit();
         this.restoreAdd();
+    }
+    checkFirstBlockColIndexes(e) {
+        if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns() && e.virtualInfo.columnIndexes[0] === 0) {
+            let indexes = [];
+            if (!e.renderMovableContent && e.virtualInfo.columnIndexes.length > this.parent.getFrozenColumns()) {
+                this.vfColIndex = e.virtualInfo.columnIndexes;
+                for (let i = 0; i < this.parent.getFrozenColumns(); i++) {
+                    indexes.push(i);
+                }
+                e.virtualInfo.columnIndexes = indexes;
+            }
+            else if (e.renderMovableContent) {
+                if (!this.vfColIndex.length) {
+                    this.vfColIndex = extend([], e.virtualInfo.columnIndexes);
+                }
+                e.virtualInfo.columnIndexes = extend([], this.vfColIndex);
+                e.virtualInfo.columnIndexes.splice(0, this.parent.getFrozenColumns());
+            }
+        }
     }
     focusCell(e) {
         if (this.activeKey !== 'upArrow' && this.activeKey !== 'downArrow') {
@@ -25995,7 +26182,9 @@ class VirtualContentRenderer extends ContentRender {
         return dataIndex;
     }
     actionBegin(args) {
-        this.requestType = args.requestType;
+        if (args.requestType !== 'virtualscroll') {
+            this.requestType = args.requestType;
+        }
     }
     virtualCellFocus(e) {
         // To decide the action (select or scroll), when using arrow keys for cell focus
@@ -26057,6 +26246,10 @@ class VirtualContentRenderer extends ContentRender {
                 this.parent.editModule.previousVirtualData = {};
             }
         }
+        if (this.parent.enableColumnVirtualization && args.requestType === 'filterafteropen'
+            && this.currentInfo.columnIndexes && this.currentInfo.columnIndexes[0] > 0) {
+            this.parent.resetFilterDlgPosition(args.columnName);
+        }
     }
     resetIsedit() {
         if (this.parent.enableVirtualization && this.isNormaledit) {
@@ -26105,6 +26298,7 @@ class VirtualContentRenderer extends ContentRender {
             }
         }
     }
+    /** @hidden */
     getRowObjectByIndex(index) {
         let data = this.getRowCollection(index, false, true);
         return data;
@@ -26134,8 +26328,9 @@ class VirtualContentRenderer extends ContentRender {
     }
     resetScrollPosition(action) {
         if (this.actions.some((value) => value === action)) {
-            this.preventEvent = this.content.scrollTop !== 0;
-            this.content.scrollTop = 0;
+            let content = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent() : this.content;
+            this.preventEvent = content.scrollTop !== 0;
+            content.scrollTop = 0;
         }
         if (action !== 'virtualscroll') {
             this.isAdd = false;
@@ -26164,7 +26359,7 @@ class VirtualContentRenderer extends ContentRender {
         let rowCollection = isMovable ? this.parent.getMovableDataRows() : this.parent.getDataRows();
         let collection = isRowObject ? this.parent.getCurrentViewRecords() : rowCollection;
         let selectedRow = collection[index - startIdx];
-        if (this.parent.frozenRows && this.parent.pageSettings.currentPage > 1) {
+        if (!isRowObject && this.parent.frozenRows && this.parent.pageSettings.currentPage > 1) {
             selectedRow = index <= this.parent.frozenRows ? rowCollection[index]
                 : rowCollection[(index - startIdx) + this.parent.frozenRows];
         }
@@ -26212,6 +26407,13 @@ class VirtualContentRenderer extends ContentRender {
     }
     setVisible(columns) {
         let gObj = this.parent;
+        let frozenCols = this.parent.getFrozenColumns();
+        let fcntColGrp;
+        let mcntColGrp;
+        if (frozenCols) {
+            fcntColGrp = [].slice.call(this.parent.getFrozenVirtualContent().querySelectorAll('col'));
+            mcntColGrp = [].slice.call(this.parent.getMovableVirtualContent().querySelectorAll('col'));
+        }
         if (isBlazor() && gObj.isServerRendered) {
             this.parent.notify('setvisibility', columns);
         }
@@ -26230,8 +26432,22 @@ class VirtualContentRenderer extends ContentRender {
             let column = columns[c];
             let idx = gObj.getNormalizedColumnIndex(column.uid);
             let displayVal = column.visible === true ? '' : 'none';
+            let colGrp;
+            if (fcntColGrp && mcntColGrp) {
+                if (idx >= frozenCols) {
+                    colGrp = mcntColGrp;
+                    tr = this.parent.getMovableRows();
+                    idx = idx - frozenCols;
+                }
+                else {
+                    colGrp = fcntColGrp;
+                }
+            }
+            else {
+                colGrp = this.getColGroup().children;
+            }
             if (idx !== -1 && testRow && idx < testRow.cells.length) {
-                setStyleAttribute(this.getColGroup().childNodes[idx], { 'display': displayVal });
+                setStyleAttribute(colGrp[idx], { 'display': displayVal });
             }
             if (!needFullRefresh) {
                 let width;
@@ -26266,7 +26482,7 @@ class VirtualContentRenderer extends ContentRender {
                 VTablewidth: width, translateX: translateX });
             this.parent.notify('setcolumnstyles', {});
         }
-        if (needFullRefresh) {
+        if (needFullRefresh || frozenCols) {
             this.refreshContentRows({ requestType: 'refresh' });
         }
         else {
@@ -26328,7 +26544,9 @@ class VirtualHeaderRenderer extends HeaderRender {
         super.renderTable();
         this.virtualEle.table = this.getTable();
         this.virtualEle.content = this.getPanel().querySelector('.e-headercontent');
-        this.virtualEle.content.style.position = 'relative';
+        if (!this.parent.getFrozenColumns()) {
+            this.virtualEle.content.style.position = 'relative';
+        }
         this.virtualEle.renderWrapper();
         this.virtualEle.renderPlaceHolder('absolute');
     }
@@ -26336,28 +26554,42 @@ class VirtualHeaderRenderer extends HeaderRender {
         this.virtualEle.wrapper.appendChild(table);
     }
     refreshUI() {
-        if (this.parent.getFrozenColumns() && this.parent.enableColumnVirtualization) {
-            this.parent.contentModule
-                .setTable(this.parent.getMovableVirtualContent().querySelector('.e-table'));
-        }
+        this.setFrozenTable(this.parent.getMovableVirtualContent());
         this.gen.refreshColOffsets();
         this.parent.setColumnIndexesInView(this.gen.getColumnIndexes(this.getPanel().querySelector('.e-headercontent')));
         super.refreshUI();
-        if (this.parent.getFrozenColumns() && this.parent.enableColumnVirtualization) {
-            this.parent.contentModule.setTable(this.parent.getFrozenVirtualContent()
-                .querySelector('.e-table'));
-        }
+        this.setFrozenTable(this.parent.getFrozenVirtualContent());
     }
     setVisible(columns) {
         let gObj = this.parent;
         let displayVal;
         let idx;
         let needFullRefresh;
+        let frozenCols = this.parent.getFrozenColumns();
+        let fhdrColGrp;
+        let mhdrColGrp;
+        if (frozenCols) {
+            fhdrColGrp = [].slice.call(this.parent.getFrozenVirtualHeader().querySelectorAll('col'));
+            mhdrColGrp = [].slice.call(this.parent.getMovableVirtualHeader().querySelectorAll('col'));
+        }
         for (let c = 0, clen = columns.length; c < clen; c++) {
             let column = columns[c];
             idx = gObj.getNormalizedColumnIndex(column.uid);
             displayVal = column.visible ? '' : 'none';
-            setStyleAttribute(this.getColGroup().children[idx], { 'display': displayVal });
+            let colGrp;
+            if (fhdrColGrp && mhdrColGrp) {
+                if (idx >= frozenCols) {
+                    colGrp = mhdrColGrp;
+                    idx = idx - frozenCols;
+                }
+                else {
+                    colGrp = fhdrColGrp;
+                }
+            }
+            else {
+                colGrp = this.getColGroup().children;
+            }
+            setStyleAttribute(colGrp[idx], { 'display': displayVal });
             if (gObj.enableColumnVirtualization && !gObj.groupSettings.columns.length) {
                 let tablewidth;
                 if (column.visible) {
@@ -26378,13 +26610,28 @@ class VirtualHeaderRenderer extends HeaderRender {
             else {
                 needFullRefresh = true;
             }
-            if (needFullRefresh) {
+            if (needFullRefresh && !frozenCols) {
                 this.refreshUI();
             }
         }
+        if (frozenCols) {
+            this.parent.notify(columnPositionChanged, {});
+        }
+    }
+    setFrozenTable(content) {
+        if (this.parent.getFrozenColumns() && this.parent.enableColumnVirtualization
+            && this.parent.contentModule.isXaxis()) {
+            this.parent.contentModule
+                .setTable(content.querySelector('.e-table'));
+        }
     }
     setDisplayNone(col, displayVal) {
-        for (let ele of [].slice.apply(this.getTable().querySelectorAll('th.e-headercell'))) {
+        let frozenCols = this.parent.getFrozenColumns();
+        let table = this.getTable();
+        if (frozenCols && col.index >= frozenCols) {
+            table = this.parent.getMovableVirtualHeader().querySelector('.e-table');
+        }
+        for (let ele of [].slice.apply(table.querySelectorAll('th.e-headercell'))) {
             if (ele.querySelector('[e-mappinguid]') &&
                 ele.querySelector('[e-mappinguid]').getAttribute('e-mappinguid') === col.uid) {
                 setStyleAttribute(ele, { 'display': displayVal });
@@ -26432,6 +26679,9 @@ class VirtualElementHandler {
     setVirtualHeight(height, width) {
         this.placeholder.style.height = `${height}px`;
         this.placeholder.style.width = width;
+    }
+    setFreezeWrapperWidth(wrapper, width, full) {
+        wrapper.style.width = width ? `${width}px` : full ? '100%' : '';
     }
 }
 
@@ -26519,6 +26769,10 @@ class InlineEditRender {
         args.row = this.parent.createElement('tr', { className: 'e-row e-addedrow' });
         if (tbody.querySelector('.e-emptyrow')) {
             tbody.querySelector('.e-emptyrow').remove();
+            if (this.parent.getFrozenColumns()) {
+                let moveTbody = this.parent.getContent().querySelector('.e-movablecontent').querySelector('tbody');
+                moveTbody.firstElementChild.remove();
+            }
         }
         this.parent.editSettings.newRowPosition === 'Top' ? tbody.insertBefore(args.row, tbody.firstChild) : tbody.appendChild(args.row);
         args.row.appendChild(this.getEditElement(elements, false, undefined, args, true));
@@ -27321,7 +27575,7 @@ class DropDownEditCell {
             if ('result' in this.column.dataSource) {
                 this.column.dataSource.result = e.result;
             }
-            else {
+            else if (this.column.dataSource instanceof DataManager) {
                 this.column.dataSource.dataSource.json = e.result;
             }
         }
@@ -27951,6 +28205,10 @@ class NormalEdit {
             requestType: 'delete', type: actionBegin, foreignKeyData: {},
             data: data ? data : this.parent.getSelectedRecords(), tr: this.parent.getSelectedRows(), cancel: false
         };
+        if (!isNullOrUndefined(this.parent.commandDelIndex)) {
+            args.data[0] =
+                this.parent.getRowObjectFromUID(this.parent.getRowByIndex(this.parent.commandDelIndex).getAttribute('data-uid')).data;
+        }
         if (this.parent.enableVirtualization && args.data.length > 1) {
             let uid = this.parent.getSelectedRows()[0].getAttribute('data-uid');
             args.data = [this.parent.getRowObjectFromUID(uid).data];
@@ -28681,6 +28939,10 @@ class BatchEdit {
             tr.classList.add('e-insertedrow');
             if (tbody.querySelector('.e-emptyrow')) {
                 tbody.querySelector('.e-emptyrow').remove();
+                if (this.parent.getFrozenColumns()) {
+                    let moveTbody = this.parent.getContent().querySelector('.e-movablecontent').querySelector('tbody');
+                    moveTbody.firstElementChild.remove();
+                }
             }
             if (gObj.getFrozenColumns()) {
                 mTr = this.renderMovable(tr);
@@ -28715,8 +28977,7 @@ class BatchEdit {
             let addedRecords = 'addedRecords';
             let dRecords = 'deletedRecords';
             let btmIdx = this.parent.getCurrentViewRecords().length + changes[addedRecords].length - changes[dRecords].length - 1;
-            this.parent.editSettings.newRowPosition === 'Top' ? gObj.selectRow(0) :
-                gObj.selectRow(btmIdx);
+            this.parent.editSettings.newRowPosition === 'Top' ? gObj.selectRow(0) : gObj.selectRow(btmIdx);
             if (!data) {
                 index = this.findNextEditableCell(0, true);
                 col = gObj.getColumns()[index];
@@ -29498,7 +29759,7 @@ class Edit {
             return;
         }
         if (!data) {
-            if (!gObj.getSelectedRecords().length) {
+            if (!gObj.getSelectedRecords().length && isNullOrUndefined(gObj.commandDelIndex)) {
                 this.showDialog('DeleteOperationAlert', this.alertDObj);
                 return;
             }
@@ -30409,6 +30670,7 @@ class ColumnChooser {
             }
             this.removeCancelIcon();
             this.dlgObj.show();
+            this.parent.notify(columnChooserOpened, { dialog: this.dlgObj });
         }
         else {
             // this.unWireEvents();
@@ -30509,7 +30771,7 @@ class ColumnChooser {
                     }
                 },
                 {
-                    click: this.clearActions.bind(this),
+                    click: this.clearBtnClick.bind(this),
                     buttonModel: { cssClass: 'e-flat e-cc e-cc-cnbtn', content: this.l10n.getConstant('CancelButton') }
                 }],
             content: this.renderChooserList(),
@@ -30546,7 +30808,6 @@ class ColumnChooser {
         return this.mainDiv;
     }
     confirmDlgBtnClick(args) {
-        this.parent.notify(columnChooserOpened, { event: args, dialog: this.dlgObj });
         this.stateChangeColumns = [];
         this.changedStateColumns = [];
         this.changedColumns = (this.changedColumns.length > 0) ? this.changedColumns : this.unchangedColumns;
@@ -30605,6 +30866,10 @@ class ColumnChooser {
         // this.unWireEvents();
         this.hideDialog();
         this.addcancelIcon();
+    }
+    clearBtnClick() {
+        this.clearActions();
+        this.parent.notify(columnChooserCancelBtnClick, { dialog: this.dlgObj });
     }
     checkstatecolumn(isChecked, coluid, selectAll = false) {
         if (isChecked) {
@@ -32551,10 +32816,6 @@ class PdfExport {
     processGridHeaders(childLevels, pdfGrid, rows, gridColumn, border, headerFont, headerBrush, grid, allowHorizontalOverflow, eCols) {
         let columnCount = gridColumn.length + childLevels;
         let depth = measureColumnDepth(eCols);
-        let index = this.parent.getIndentCount();
-        if (this.parent.allowGrouping) {
-            index = this.parent.groupSettings.columns.length;
-        }
         let cols = eCols;
         pdfGrid.columns.add(columnCount);
         pdfGrid.headers.add(rows.length);
@@ -32603,7 +32864,7 @@ class PdfExport {
                 }
                 else if (cols[i].visible || this.hideColumnInclude) {
                     spanCnt++;
-                    applyTextAndSpan(rowIndex, i + colIndex + index, cols[i], depth, 0);
+                    applyTextAndSpan(rowIndex, i + colIndex, cols[i], depth, 0);
                 }
             }
             return spanCnt;
@@ -33601,10 +33862,12 @@ class CommandColumn {
                     if (gObj.editSettings.mode !== 'Batch') {
                         gObj.editModule.endEdit();
                     }
+                    gObj.commandDelIndex = parseInt(closest(target, 'tr').getAttribute('aria-rowindex'), 10);
                     gObj.clearSelection();
                     //for toogle issue when dbl click
-                    gObj.selectRow(parseInt(closest(target, 'tr').getAttribute('aria-rowindex'), 10), false);
+                    gObj.selectRow(gObj.commandDelIndex, false);
                     gObj.editModule.deleteRecord();
+                    gObj.commandDelIndex = undefined;
                     break;
             }
         });
@@ -34431,7 +34694,9 @@ class FreezeRender extends HeaderRender {
         if (!isBlazor() || this.parent.frozenRows === 0) {
             this.updateColgroup();
         }
-        this.widthService.setWidthToTable();
+        if (!this.parent.enableVirtualization) {
+            this.widthService.setWidthToTable();
+        }
         if (this.parent.allowTextWrap && this.parent.textWrapSettings.wrapMode === 'Header') {
             wrap([].slice.call(this.movableHeader.querySelectorAll('tr.e-columnheader')), true);
         }
@@ -34443,9 +34708,15 @@ class FreezeRender extends HeaderRender {
         this.parent.notify(headerRefreshed, { rows: this.rows, args: { isFrozen: false } });
     }
     rfshMovable() {
-        if (!isBlazor() || this.parent.frozenRows === 0) {
-            this.getFrozenHeader().appendChild(this.getTable());
-            this.getMovableHeader().appendChild(this.createTable());
+        if (this.parent.enableColumnVirtualization) {
+            this.parent.getFrozenVirtualHeader().querySelector('.e-virtualtable').appendChild(this.getTable());
+            this.parent.getMovableVirtualHeader().querySelector('.e-virtualtable').appendChild(this.createTable());
+        }
+        else {
+            if (!isBlazor() || this.parent.frozenRows === 0) {
+                this.getFrozenHeader().appendChild(this.getTable());
+                this.getMovableHeader().appendChild(this.createTable());
+            }
         }
         this.refreshStackedHdrHgt();
         this.addMovableFirstCls();
@@ -34471,7 +34742,7 @@ class FreezeRender extends HeaderRender {
             let filterRow = this.getTable().querySelector('.e-filterbar');
             if (this.parent.allowFiltering && filterRow && this.getMovableHeader().querySelector('thead')) {
                 this.getMovableHeader().querySelector('thead')
-                    .appendChild(renderMovable(filterRow, this.parent.getFrozenColumns()));
+                    .appendChild(this.filterRenderer(filterRow, this.parent.getFrozenColumns()));
                 let elements = [].slice.call(this.getMovableHeader().
                     querySelectorAll('thead .e-filterbarcell .e-input'));
                 for (let elem of elements) {
@@ -34564,12 +34835,12 @@ class FreezeRender extends HeaderRender {
             mRowHgt = width[i];
             if (!isNullOrUndefined(fRows[i]) && fRows[i].childElementCount && ((isWrap && fRowHgt < mRowHgt) ||
                 (!isWrap && fRowHgt < mRowHgt) || (this.parent.allowResizing && this.parent.resizeModule &&
-                !this.parent.resizeModule.isFrozenColResized))) {
+                this.parent.resizeModule.isFrozenColResized === false))) {
                 fRows[i].style.height = mRowHgt + 'px';
             }
             if (mRows && !isNullOrUndefined(mRows[i]) && mRows[i].childElementCount && ((isWrap && fRowHgt > mRowHgt) ||
                 (!isWrap && fRowHgt > mRowHgt) || (this.parent.allowResizing && this.parent.resizeModule &&
-                this.parent.resizeModule.isFrozenColResized))) {
+                this.parent.resizeModule.isFrozenColResized === true))) {
                 mRows[i].style.height = fRowHgt + 'px';
             }
         }
@@ -34660,6 +34931,14 @@ class FreezeRender extends HeaderRender {
         remove(this.getMovableHeader().querySelector('colgroup'));
         mTable.insertBefore(renderMovable(this.getFrozenHeader().querySelector('colgroup'), this.parent.getFrozenColumns()), mTable.querySelector('thead'));
     }
+    filterRenderer(ele, frozenColumn) {
+        let clone = ele.cloneNode(true);
+        clone.innerHTML = '';
+        for (let i = frozenColumn; i < this.parent.getColumns().length; i++) {
+            clone.appendChild(ele.removeChild(ele.children[frozenColumn]));
+        }
+        return clone;
+    }
 }
 
 /**
@@ -34669,6 +34948,7 @@ class FreezeRender extends HeaderRender {
 class VirtualFreezeRenderer extends FreezeContentRender {
     constructor(parent, locator) {
         super(parent, locator);
+        this.frzeeLoad = 1;
         this.serviceLoc = locator;
     }
     /**
@@ -34704,16 +34984,14 @@ class VirtualFreezeRenderer extends FreezeContentRender {
      * @hidden
      */
     generateRows(data, notifyArgs) {
-        let isSplit = false;
         let virtualRows = this.virtualRenderer.vgenerator.generateRows(data, notifyArgs);
         let arr = [];
         arr = virtualRows.map((row) => extend({}, row));
-        if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns() && notifyArgs.renderMovableContent) {
-            let left = this.parent.getMovableVirtualContent().scrollLeft;
-            isSplit = notifyArgs.requestType === 'virtualscroll' && left > 0 && notifyArgs.virtualInfo.columnIndexes[0] !== 0;
+        if (!this.firstPageRecords) {
+            this.firstPageRecords = data;
         }
         let rows = this.freezeRowGenerator.generateRows(data, notifyArgs, arr);
-        return isSplit ? virtualRows : rows;
+        return rows;
     }
     /**
      * @hidden
@@ -34743,8 +35021,77 @@ class VirtualFreezeRenderer extends FreezeContentRender {
      * @hidden
      */
     getColGroup() {
-        let colGroup = this.parent.getMovableVirtualContent().querySelector('colgroup');
+        let mCol = this.parent.getMovableVirtualContent().querySelector('colgroup');
+        let fCol = this.parent.getFrozenVirtualContent().querySelector('colgroup');
+        let colGroup = this.isXaxis() ? mCol : fCol;
         return colGroup;
+    }
+    /**
+     * @hidden
+     */
+    getReorderedFrozenRows(args) {
+        let rows;
+        let bIndex = args.virtualInfo.blockIndexes;
+        let colIndex = args.virtualInfo.columnIndexes;
+        let page = args.virtualInfo.page;
+        args.virtualInfo.blockIndexes = [1, 2];
+        args.virtualInfo.page = 1;
+        if (!args.renderMovableContent) {
+            args.virtualInfo.columnIndexes = [];
+        }
+        let virtualRows = this.virtualRenderer.vgenerator.generateRows(this.firstPageRecords, args);
+        rows = this.splitReorderedRows(virtualRows);
+        args.virtualInfo.blockIndexes = bIndex;
+        args.virtualInfo.columnIndexes = colIndex;
+        args.virtualInfo.page = page;
+        return rows.splice(0, this.parent.frozenRows);
+    }
+    splitReorderedRows(rows) {
+        let frzCols = this.parent.getFrozenColumns();
+        for (let i = 0, len = rows.length; i < len; i++) {
+            if (this.frzeeLoad % 2 === 0) {
+                rows[i].cells = rows[i].cells.slice(frzCols, rows[i].cells.length);
+            }
+            else {
+                rows[i].isFreezeRow = true;
+                rows[i].cells = rows[i].cells.slice(0, frzCols);
+            }
+        }
+        this.frzeeLoad++;
+        return rows;
+    }
+    isXaxis() {
+        let value = false;
+        if (this.virtualRenderer) {
+            value = this.virtualRenderer.requestType === 'virtualscroll'
+                && this.virtualRenderer.currentInfo.sentinelInfo.axis === 'X';
+        }
+        return value;
+    }
+    getHeaderCells() {
+        let content = this.isXaxis() ? this.parent.getMovableVirtualHeader() : this.parent.getHeaderContent();
+        return content ? [].slice.call(content.querySelectorAll('.e-headercell:not(.e-stackedheadercell)')) : [];
+    }
+    getVirtualFreezeHeader() {
+        let headerTable;
+        if (this.isXaxis()) {
+            headerTable = this.parent.getMovableVirtualHeader().querySelector('.e-table');
+        }
+        else {
+            headerTable = this.parent.getFrozenVirtualHeader().querySelector('.e-table');
+        }
+        return headerTable;
+    }
+    ensureFrozenCols(columns) {
+        let frozenCols = this.parent.columns.slice(0, this.parent.getFrozenColumns());
+        columns = frozenCols.concat(columns);
+        return columns;
+    }
+    /**
+     * @hidden
+     */
+    getRowObjectByIndex(index) {
+        return this.virtualRenderer.getRowObjectByIndex(index);
     }
 }
 class VirtualFreezeHdrRenderer extends FreezeRender {
@@ -36726,5 +37073,5 @@ class MaskedTextBoxCellEdit {
  * Export Grid components
  */
 
-export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, InfiniteScrollSettings, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, headerValueAccessor, getUpdateUsingRaf, isExportColumns, updateColumnTypeForExportColumns, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, getTransformValues, applyBiggerTheme, alignFrozenEditForm, ensureLastRow, ensureFirstRow, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, beforeAutoFill, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, exportGroupCaption, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, columnDataStateChange, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, beforeFltrcMenuOpen, valCustomPlacement, filterCboxValue, componentRendered, restoreFocus, detailStateChange, detailIndentCellInfo, virtaulKeyHandler, virtaulCellFocus, virtualScrollEditActionBegin, virtualScrollEditSuccess, virtualScrollEditCancel, virtualScrollEdit, refreshVirtualCache, editReset, virtualScrollAddActionBegin, getVirtualData, refreshInfiniteModeBlocks, resetInfiniteBlocks, infiniteScrollHandler, infinitePageQuery, appendInfiniteContent, removeInfiniteRows, setInfiniteCache, initialCollapse, getAggregateQuery, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, gridObserver, BlazorAction, InfiniteScroll, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
+export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, InfiniteScrollSettings, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, headerValueAccessor, getUpdateUsingRaf, isExportColumns, updateColumnTypeForExportColumns, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, getTransformValues, applyBiggerTheme, alignFrozenEditForm, ensureLastRow, ensureFirstRow, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, beforeAutoFill, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, exportGroupCaption, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, columnDataStateChange, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, beforeFltrcMenuOpen, valCustomPlacement, filterCboxValue, componentRendered, restoreFocus, detailStateChange, detailIndentCellInfo, virtaulKeyHandler, virtaulCellFocus, virtualScrollEditActionBegin, virtualScrollEditSuccess, virtualScrollEditCancel, virtualScrollEdit, refreshVirtualCache, editReset, virtualScrollAddActionBegin, getVirtualData, refreshInfiniteModeBlocks, resetInfiniteBlocks, infiniteScrollHandler, infinitePageQuery, appendInfiniteContent, removeInfiniteRows, setInfiniteCache, initialCollapse, getAggregateQuery, closeFilterDialog, columnChooserCancelBtnClick, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, gridObserver, BlazorAction, InfiniteScroll, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
 //# sourceMappingURL=ej2-grids.es2015.js.map

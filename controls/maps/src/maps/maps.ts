@@ -41,9 +41,12 @@ import { FontModel, DataLabel, MarkerSettings, IAnnotationRenderingEventArgs } f
 import { NavigationLineSettingsModel, changeBorderWidth } from './index';
 import { NavigationLine } from './layers/navigation-selected-line';
 import { DataManager, Query } from '@syncfusion/ej2-data';
-import { ExportUtils } from '../maps/utils/export';
 import { ExportType } from '../maps/utils/enum';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
+import { Print } from './model/print';
+import { PdfExport } from './model/export-pdf';
+import { ImageExport } from './model/export-image';
+
 /**
  * Represents the Maps control.
  * ```html
@@ -98,6 +101,21 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * Sets and gets the module to add annotation elements in maps.
      */
     public annotationsModule: Annotations;
+    /**
+     * This module enables the print functionality in Maps control.
+     * @private
+     */
+    public printModule: Print;
+    /**
+     * This module enables the export to PDF functionality in Maps control.
+     * @private
+     */
+    public pdfExportModule: PdfExport;
+    /**
+     * This module enables the export to image functionality in Maps control.
+     * @private
+     */
+    public imageExportModule: ImageExport;
 
 
     // Maps pblic API Declaration
@@ -140,6 +158,24 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      */
     @Property('MouseMove')
     public tooltipDisplayMode: TooltipGesture;
+    /**
+     * Enables or disables the print functionality in map.
+     * @default false
+     */
+    @Property(false)
+    public allowPrint: boolean;
+    /**
+     * Enables or disables the export to image functionality in map.
+     * @default false
+     */
+    @Property(false)
+    public allowImageExport: boolean;
+    /**
+     * Enables or disables the export to PDF functionality in map.
+     * @default false
+     */
+    @Property(false)
+    public allowPdfExport: boolean;
     /**
      * Sets and gets the title to be displayed for maps.
      */
@@ -740,6 +776,14 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
 
         this.isDevice = Browser.isDevice;
         this.isBlazor = isBlazor();
+        if (!this.isBlazor) {
+            this.allowPrint = true;
+            this.allowImageExport = true;
+            this.allowPdfExport = true;
+            Maps.Inject(Print);
+            Maps.Inject(PdfExport);
+            Maps.Inject(ImageExport);
+        }
         this.initPrivateVariable();
         this.allowServerDataBinding = false;
         this.unWireEVents();
@@ -1224,9 +1268,6 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
         removeElement(this.element.id + '_Secondary_Element');
         removeElement(this.element.id + '_tile_parent');
         removeElement(this.element.id + '_tiles');
-        if (document.getElementsByClassName('e-tooltip-wrap')[0]) {
-            remove(document.getElementsByClassName('e-tooltip-wrap')[0]);
-        }
         if (this.svgObject) {
             while (this.svgObject.childNodes.length > 0) {
                 this.svgObject.removeChild(this.svgObject.firstChild);
@@ -1790,6 +1831,16 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
             removeClass(getElementByID(this.selectedElementId[0]));
             this.selectedElementId.splice(0, 1);
         }
+        if (this.legendSettings.visible) {
+          let legendSelectedElements: number = this.legendSelectionCollection.length;
+          for (let i: number = 0; i < legendSelectedElements; i++) {
+              removeClass(getElementByID(this.legendSelectionCollection[i]['legendElement']['id']));
+              this.selectedLegendElementId.splice(0, 1);
+          }
+        }
+        this.shapeSelectionItem = [];
+        this.legendSelectionCollection = [];
+
     }
 
     /**
@@ -1807,9 +1858,9 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
     private setLocaleConstants(): void {
         // Need to modify after the api confirm
         this.defaultLocalConstants = {
-            ZoomIn: 'Zoom In',
+            ZoomIn: 'Zoom in',
             Zoom: 'Zoom',
-            ZoomOut: 'Zoom Out',
+            ZoomOut: 'Zoom out',
             Pan: 'Pan',
             Reset: 'Reset',
         };
@@ -1819,8 +1870,23 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * This method disposes the maps component.
      */
     public destroy(): void {
-        this.unWireEVents();
-        super.destroy();
+      this.unWireEVents();
+      this.shapeSelectionItem = [];
+      this.toggledShapeElementId = [];
+      this.toggledLegendId = [];
+      this.legendSelectionCollection = [];
+      this.selectedLegendElementId = [];
+      this.selectedNavigationElementId = [];
+      this.selectedBubbleElementId = [];
+      this.selectedMarkerElementId = [];
+      this.selectedElementId = [];
+      this.dataLabelShape = [];
+      this.zoomShapeCollection = [];
+      this.zoomLabelPositions = [];
+      this.mouseDownEvent = { x: null, y: null };
+      this.mouseClickEvent = { x: null, y: null };
+      this.removeSvg();
+      super.destroy();
     }
 
     /**
@@ -1983,6 +2049,24 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
                 args: [this, Annotations]
             });
         }
+        if (this.allowPrint) {
+            modules.push({
+                member: 'Print',
+                args: [this]
+            });
+        }
+        if (this.allowImageExport) {
+            modules.push({
+                member: 'ImageExport',
+                args: [this]
+            });
+        }
+        if (this.allowPdfExport) {
+            modules.push({
+                member: 'PdfExport',
+                args: [this]
+            });
+        }
 
         return modules;
     }
@@ -2069,27 +2153,31 @@ export class Maps extends Component<HTMLElement> implements INotifyPropertyChang
      * @param id - Specifies the element to be printed.
      */
     public print(id?: string[] | string | Element): void {
-        let exportChart: ExportUtils = new ExportUtils(this);
-        exportChart.print(id);
+        if ((this.allowPrint) && (this.printModule)) {
+        this.printModule.print(id);
+       }
     }
     /**
      * This method handles the export functionality for the maps component.
      * @param type - Specifies the type of the exported file.
      * @param fileName - Specifies the name of the file with which the rendered maps need to be exported.
      * @param orientation - Specifies the orientation of the pdf document in exporting.
-     * @param isDownload - Specifies whether to download as a file or get as base64 string for the file
+     * @param allowDownload - Specifies whether to download as a file or get as base64 string for the file
      */
-    public export(type: ExportType, fileName: string, orientation?: PdfPageOrientation, isDownload?: boolean): Promise<string> {
-        let exportMap: ExportUtils = new ExportUtils(this);
-        if (isNullOrUndefined(isDownload) || isDownload) {
-            return new Promise((resolve: Function, reject: Function) => {
-                resolve(exportMap.export(type, fileName, true, orientation));
-            });
-        } else {
-            return new Promise((resolve: Function, reject: Function) => {
-                resolve(exportMap.export(type, fileName, isDownload, orientation));
-            });
+    public export(type: ExportType, fileName: string, orientation?: PdfPageOrientation, allowDownload?: boolean): Promise<string> {
+        if (isNullOrUndefined(allowDownload)) {
+            allowDownload = true;
         }
+        if ((type !== 'PDF') && (this.allowImageExport) && (this.imageExportModule)) {
+            return new Promise((resolve: Function, reject: Function) => {
+                resolve(this.imageExportModule.export(type, fileName, allowDownload));
+            });
+    } else if ((this.allowPdfExport) && (this.pdfExportModule)) {
+        return new Promise((resolve: Function, reject: Function) => {
+                resolve(this.pdfExportModule.export(type, fileName, allowDownload, orientation));
+            });
+    }
+        return null;
     }
     /**
      * To find visibility of layers and markers for required modules load.

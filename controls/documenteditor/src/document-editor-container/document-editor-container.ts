@@ -13,7 +13,8 @@ import { StatusBar } from './properties-pane/status-bar';
 // tslint:disable-next-line:max-line-length
 import { ViewChangeEventArgs, RequestNavigateEventArgs, ContainerContentChangeEventArgs, ContainerSelectionChangeEventArgs, ContainerDocumentChangeEventArgs, CustomContentMenuEventArgs, BeforeOpenCloseCustomContentMenuEventArgs, BeforePaneSwitchEventArgs, LayoutType } from '../document-editor/base';
 import { createSpinner } from '@syncfusion/ej2-popups';
-import { ContainerServerActionSettingsModel, DocumentEditorSettingsModel } from '../document-editor/document-editor-model';
+// tslint:disable-next-line:max-line-length
+import { ContainerServerActionSettingsModel, DocumentEditorSettingsModel, FormFieldSettingsModel } from '../document-editor/document-editor-model';
 import { CharacterFormatProperties, ParagraphFormatProperties, SectionFormatProperties } from '../document-editor/implementation';
 import { ToolbarItem } from '../document-editor/base/types';
 import { CustomToolbarItemModel } from '../document-editor/base/events-helper';
@@ -259,6 +260,7 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
      * Defines the settings for DocumentEditor customization.
      * @default {}
      */
+    // tslint:disable-next-line:max-line-length
     @Complex<DocumentEditorSettingsModel>({}, DocumentEditorSettings)
     public documentEditorSettings: DocumentEditorSettingsModel;
     /**
@@ -647,8 +649,30 @@ export class DocumentEditorContainer extends Component<HTMLElement> implements I
         }
     }
     private customizeDocumentEditorSettings(): void {
+        if (this.documentEditorSettings.formFieldSettings) {
+            let settings: FormFieldSettingsModel = this.documentEditorSettings.formFieldSettings;
+            let documentEditor: DocumentEditor = this.documentEditor;
+            if (!isNullOrUndefined(settings.applyShading)) {
+                documentEditor.documentEditorSettings.formFieldSettings.applyShading = settings.applyShading;
+            }
+            if (!isNullOrUndefined(settings.formFillingMode)) {
+                documentEditor.documentEditorSettings.formFieldSettings.formFillingMode = settings.formFillingMode;
+            }
+            if (!isNullOrUndefined(settings.formattingExceptions)) {
+                documentEditor.documentEditorSettings.formFieldSettings.formattingExceptions = settings.formattingExceptions;
+            }
+            if (!isNullOrUndefined(settings.selectionColor)) {
+                documentEditor.documentEditorSettings.formFieldSettings.selectionColor = settings.selectionColor;
+            }
+            if (!isNullOrUndefined(settings.shadingColor)) {
+                documentEditor.documentEditorSettings.formFieldSettings.shadingColor = settings.shadingColor;
+            }
+        }
         if (this.documentEditorSettings.searchHighlightColor) {
             this.documentEditor.documentEditorSettings.searchHighlightColor = this.documentEditorSettings.searchHighlightColor;
+        }
+        if (this.documentEditorSettings.fontFamilies) {
+            this.documentEditor.documentEditorSettings.fontFamilies = this.documentEditorSettings.fontFamilies;
         }
     }
     /**

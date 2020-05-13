@@ -170,7 +170,7 @@ var SvgRenderer = /** @class */ (function () {
      * @param {TextAttributes} options - Options needed to draw a text in SVG
      * @return {Element}
      */
-    SvgRenderer.prototype.createText = function (options, label, transX, transY) {
+    SvgRenderer.prototype.createText = function (options, label, transX, transY, dy, isTSpan) {
         var text = document.createElementNS(this.svgLink, 'text');
         text = this.setElementAttributes(options, text);
         if (!sf.base.isNullOrUndefined(label)) {
@@ -604,7 +604,7 @@ var CanvasRenderer = /** @class */ (function () {
      * @param {string} label - Specifies the text which has to be drawn on the canvas
      * @return {void}
      */
-    CanvasRenderer.prototype.createText = function (options, label, transX, transY) {
+    CanvasRenderer.prototype.createText = function (options, label, transX, transY, dy, isTSpan) {
         var fontWeight = this.getOptionValue(options, 'font-weight');
         if (!sf.base.isNullOrUndefined(fontWeight) && fontWeight.toLowerCase() === 'regular') {
             fontWeight = 'normal';
@@ -615,6 +615,7 @@ var CanvasRenderer = /** @class */ (function () {
         var font = (fontStyle + ' ' + fontWeight + ' ' + fontSize + ' ' + fontFamily);
         var anchor = this.getOptionValue(options, 'text-anchor');
         var opacity = options.opacity !== undefined ? options.opacity : 1;
+        var rotation = sf.base.isNullOrUndefined(options.labelRotation) ? 0 : options.labelRotation;
         if (anchor === 'middle') {
             anchor = 'center';
         }
@@ -626,10 +627,12 @@ var CanvasRenderer = /** @class */ (function () {
         if (options.baseline) {
             this.ctx.textBaseline = options.baseline;
         }
-        var txtlngth = 0;
-        this.ctx.translate(options.x + (txtlngth / 2) + (transX ? transX : 0), options.y + (transY ? transY : 0));
-        this.ctx.rotate(options.labelRotation * Math.PI / 180);
-        this.ctx.fillText(label, 0, 0);
+        if (!isTSpan) {
+            var txtlngth = 0;
+            this.ctx.translate(options.x + (txtlngth / 2) + (transX ? transX : 0), options.y + (transY ? transY : 0));
+            this.ctx.rotate(options.labelRotation * Math.PI / 180);
+        }
+        this.ctx.fillText(label, isTSpan ? options.x : 0, isTSpan ? dy : 0);
         this.ctx.restore();
         return this.canvasObj;
     };
@@ -1590,6 +1593,8 @@ var Tooltip = /** @class */ (function (_super) {
         var tspanOption;
         this.findFormattedText();
         var isHeader;
+        var isRtlEnabled = document.body.getAttribute('dir') === 'rtl';
+        var anchor = isRtlEnabled ? 'end' : 'start';
         this.leftSpace = this.areaBounds.x + this.location.x;
         this.rightSpace = (this.areaBounds.x + this.areaBounds.width) - this.leftSpace;
         var headerContent = this.header.replace(/<b>/g, '').replace(/<\/b>/g, '').trim();
@@ -1616,7 +1621,7 @@ var Tooltip = /** @class */ (function (_super) {
             removeElement(this.element.id + '_trackball_group');
             removeElement(this.element.id + 'SVG_tooltip_definition');
         }
-        var options = new TextOption(this.element.id + '_text', this.marginX * 2, (this.marginY * 2 + this.padding * 2 + (this.marginY === 2 ? 3 : 0)), 'start', '');
+        var options = new TextOption(this.element.id + '_text', this.marginX * 2, (this.marginY * 2 + this.padding * 2 + (this.marginY === 2 ? 3 : 0)), anchor, '');
         var parentElement = textElement(options, font, null, groupElement);
         var withoutHeader = this.formattedText.length === 1 && this.formattedText[0].indexOf(' : <b>') > -1;
         isHeader = this.header !== '';

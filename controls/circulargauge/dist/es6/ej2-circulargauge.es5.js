@@ -686,6 +686,24 @@ var VisibleLabels = /** @__PURE__ @class */ (function () {
     }
     return VisibleLabels;
 }());
+/**
+ * To trigger the download element
+ * @param fileName
+ * @param type
+ * @param url
+ */
+function triggerDownload(fileName, type, url, isDownload) {
+    createElement('a', {
+        attrs: {
+            'download': fileName + '.' + type.toLocaleLowerCase(),
+            'href': url
+        }
+    }).dispatchEvent(new MouseEvent(isDownload ? 'click' : 'move', {
+        view: window,
+        bubbles: false,
+        cancelable: true
+    }));
+}
 
 var __extends$2 = (undefined && undefined.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -3931,21 +3949,175 @@ var LegendOptions = /** @__PURE__ @class */ (function () {
 }());
 
 /**
- * Represent the print and export for gauge
+ * Represent the Pdf export for gauge
+ * @hidden
  */
-var ExportUtils = /** @__PURE__ @class */ (function () {
+var PdfExport = /** @__PURE__ @class */ (function () {
     /**
      * Constructor for gauge
      * @param control
      */
-    function ExportUtils(control) {
+    function PdfExport(control) {
+        this.control = control;
+    }
+    /**
+     * To export the file as image/svg format
+     * @param type
+     * @param fileName
+     * @param orientation
+     * @param allowDownload
+     * @private
+     */
+    PdfExport.prototype.export = function (type, fileName, orientation, allowDownload) {
+        var _this = this;
+        var promise = new Promise(function (resolve, reject) {
+            var element = createElement('canvas', {
+                id: 'ej2-canvas',
+                attrs: {
+                    'width': _this.control.availableSize.width.toString(),
+                    'height': _this.control.availableSize.height.toString()
+                }
+            });
+            var isDownload = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
+            orientation = isNullOrUndefined(orientation) ? PdfPageOrientation.Landscape : orientation;
+            var url = window.URL.createObjectURL(new Blob([(new XMLSerializer()).serializeToString(_this.control.svgObject)], { type: 'image/svg+xml' }));
+            var image = new Image();
+            var context = element.getContext('2d');
+            image.onload = (function () {
+                context.drawImage(image, 0, 0);
+                window.URL.revokeObjectURL(url);
+                var document = new PdfDocument();
+                var imageString = element.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
+                document.pageSettings.orientation = orientation;
+                imageString = imageString.slice(imageString.indexOf(',') + 1);
+                document.pages.add().graphics.
+                    drawImage(new PdfBitmap(imageString), 0, 0, _this.control.availableSize.width, _this.control.availableSize.height);
+                if (allowDownload) {
+                    document.save(fileName + '.pdf');
+                    document.destroy();
+                }
+                else {
+                    resolve(null);
+                }
+            });
+            image.src = url;
+        });
+        return promise;
+    };
+    PdfExport.prototype.getModuleName = function () {
+        // Returns te module name
+        return 'PdfExport';
+    };
+    /**
+     * To destroy the PdfExport.
+     * @return {void}
+     * @private
+     */
+    PdfExport.prototype.destroy = function (gauge) {
+        // Destroy method performed here
+    };
+    return PdfExport;
+}());
+
+/**
+ * Represent the Image Export for gauge
+ * @hidden
+ */
+var ImageExport = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for gauge
+     * @param control
+     */
+    function ImageExport(control) {
+        this.control = control;
+    }
+    /**
+     * To export the file as image/svg format
+     * @param type
+     * @param fileName
+     * @param allowDownload
+     * @private
+     */
+    ImageExport.prototype.export = function (type, fileName, allowDownload) {
+        var _this = this;
+        var promise = new Promise(function (resolve, reject) {
+            var isDownload = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
+            var element = createElement('canvas', {
+                id: 'ej2-canvas',
+                attrs: {
+                    'width': _this.control.availableSize.width.toString(),
+                    'height': _this.control.availableSize.height.toString()
+                }
+            });
+            var svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+                _this.control.svgObject.outerHTML +
+                '</svg>';
+            var url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] :
+                [(new XMLSerializer()).serializeToString(_this.control.svgObject)], { type: 'image/svg+xml' }));
+            if (type === 'SVG') {
+                if (allowDownload) {
+                    triggerDownload(fileName, type, url, isDownload);
+                }
+                else {
+                    resolve(null);
+                }
+            }
+            else {
+                var image_1 = new Image();
+                var context_1 = element.getContext('2d');
+                image_1.onload = (function () {
+                    context_1.drawImage(image_1, 0, 0);
+                    window.URL.revokeObjectURL(url);
+                    if (allowDownload) {
+                        triggerDownload(fileName, type, element.toDataURL('image/png').replace('image/png', 'image/octet-stream'), isDownload);
+                    }
+                    else {
+                        if (type === 'JPEG') {
+                            resolve(element.toDataURL('image/jpeg'));
+                        }
+                        else if (type === 'PNG') {
+                            resolve(element.toDataURL('image/png'));
+                        }
+                    }
+                });
+                image_1.src = url;
+            }
+        });
+        return promise;
+    };
+    ImageExport.prototype.getModuleName = function () {
+        // Returns te module name
+        return 'ImageExport';
+    };
+    /**
+     * To destroy the ImageExport.
+     * @return {void}
+     * @private
+     */
+    ImageExport.prototype.destroy = function (gauge) {
+        // Destroy method performed here
+    };
+    return ImageExport;
+}());
+
+/**
+ * Represent the print for gauge
+ * @hidden
+ */
+var Print = /** @__PURE__ @class */ (function () {
+    /**
+     * Constructor for gauge
+     * @param control
+     */
+    function Print(control) {
         this.control = control;
     }
     /**
      * To print the gauge
      * @param elements
+     * @private
      */
-    ExportUtils.prototype.print = function (elements) {
+    Print.prototype.print = function (elements) {
         var _this = this;
         this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
         this.printWindow.moveTo(0, 0);
@@ -3964,7 +4136,7 @@ var ExportUtils = /** @__PURE__ @class */ (function () {
      * @param elements
      * @private
      */
-    ExportUtils.prototype.getHTMLContent = function (elements) {
+    Print.prototype.getHTMLContent = function (elements) {
         var div = createElement('div');
         if (elements) {
             if (elements instanceof Array) {
@@ -3984,73 +4156,19 @@ var ExportUtils = /** @__PURE__ @class */ (function () {
         }
         return div;
     };
-    /**
-     * To export the file as image/svg format
-     * @param type
-     * @param fileName
-     */
-    ExportUtils.prototype.export = function (type, fileName, orientation) {
-        var _this = this;
-        var element = createElement('canvas', {
-            id: 'ej2-canvas',
-            attrs: {
-                'width': this.control.availableSize.width.toString(),
-                'height': this.control.availableSize.height.toString()
-            }
-        });
-        var isDownload = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
-        orientation = isNullOrUndefined(orientation) ? PdfPageOrientation.Landscape : orientation;
-        var svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
-            this.control.svgObject.outerHTML +
-            '</svg>';
-        var url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] :
-            [(new XMLSerializer()).serializeToString(this.control.svgObject)], { type: 'image/svg+xml' }));
-        if (type === 'SVG') {
-            this.triggerDownload(fileName, type, url, isDownload);
-        }
-        else {
-            var image_1 = new Image();
-            var ctx_1 = element.getContext('2d');
-            image_1.onload = (function () {
-                ctx_1.drawImage(image_1, 0, 0);
-                window.URL.revokeObjectURL(url);
-                if (type === 'PDF') {
-                    var document_1 = new PdfDocument();
-                    var imageString = element.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
-                    document_1.pageSettings.orientation = orientation;
-                    imageString = imageString.slice(imageString.indexOf(',') + 1);
-                    document_1.pages.add().graphics.drawImage(new PdfBitmap(imageString), 0, 0, _this.control.availableSize.width, _this.control.availableSize.height);
-                    if (isDownload) {
-                        document_1.save(fileName + '.pdf');
-                        document_1.destroy();
-                    }
-                }
-                else {
-                    _this.triggerDownload(fileName, type, element.toDataURL('image/png').replace('image/png', 'image/octet-stream'), isDownload);
-                }
-            });
-            image_1.src = url;
-        }
+    Print.prototype.getModuleName = function () {
+        // Returns te module name
+        return 'Print';
     };
     /**
-     * To trigger the download element
-     * @param fileName
-     * @param type
-     * @param url
+     * To destroy the Print.
+     * @return {void}
+     * @private
      */
-    ExportUtils.prototype.triggerDownload = function (fileName, type, url, isDownload) {
-        createElement('a', {
-            attrs: {
-                'download': fileName + '.' + type.toLocaleLowerCase(),
-                'href': url
-            }
-        }).dispatchEvent(new MouseEvent(isDownload ? 'click' : 'move', {
-            view: window,
-            bubbles: false,
-            cancelable: true
-        }));
+    Print.prototype.destroy = function (gauge) {
+        // Destroy method performed here
     };
-    return ExportUtils;
+    return Print;
 }());
 
 var __extends = (undefined && undefined.__extends) || (function () {
@@ -4097,12 +4215,21 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
         _this.isDrag = false;
         return _this;
     }
+    CircularGauge_1 = CircularGauge;
     /**
      *  To create svg object, renderer and binding events for the container.
      */
     //tslint:disable
     CircularGauge.prototype.preRender = function () {
         this.isBlazor = isBlazor();
+        if (!this.isBlazor) {
+            this.allowPrint = true;
+            this.allowImageExport = true;
+            this.allowPdfExport = true;
+            CircularGauge_1.Inject(Print);
+            CircularGauge_1.Inject(PdfExport);
+            CircularGauge_1.Inject(ImageExport);
+        }
         this.unWireEvents();
         this.trigger(load, this.isBlazor ? null : { gauge: this });
         this.initPrivateVariable();
@@ -4728,18 +4855,33 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
      * @param id - Specifies the element to print the circular gauge.
      */
     CircularGauge.prototype.print = function (id) {
-        var exportChart = new ExportUtils(this);
-        exportChart.print(id);
+        if (this.allowPrint && this.printModule) {
+            this.printModule.print(id);
+        }
     };
     /**
      * This method is used to perform the export functionality for the circular gauge.
      * @param type - Specifies the type of the export.
      * @param fileName - Specifies the file name for the exported file.
      * @param orientation - Specified the orientation for the exported pdf document.
+     * @param allowDownload - Specifies whether to download as a file.
      */
-    CircularGauge.prototype.export = function (type, fileName, orientation) {
-        var exportMap = new ExportUtils(this);
-        exportMap.export(type, fileName, orientation);
+    CircularGauge.prototype.export = function (type, fileName, orientation, allowDownload) {
+        var _this = this;
+        if (isNullOrUndefined(allowDownload)) {
+            allowDownload = true;
+        }
+        if (type == 'PDF' && this.allowPdfExport && this.pdfExportModule) {
+            return new Promise(function (resolve, reject) {
+                resolve(_this.pdfExportModule.export(type, fileName, orientation, allowDownload));
+            });
+        }
+        else if (this.allowImageExport && (type !== 'PDF') && this.imageExportModule) {
+            return new Promise(function (resolve, reject) {
+                resolve(_this.imageExportModule.export(type, fileName, allowDownload));
+            });
+        }
+        return null;
     };
     /**
      * Method to set mouse x, y from events
@@ -4839,6 +4981,24 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
                 args: [this, GaugeTooltip]
             });
         }
+        if (this.allowPrint) {
+            modules.push({
+                member: 'Print',
+                args: [this, Print]
+            });
+        }
+        if (this.allowImageExport) {
+            modules.push({
+                member: 'ImageExport',
+                args: [this, ImageExport]
+            });
+        }
+        if (this.allowPdfExport) {
+            modules.push({
+                member: 'PdfExport',
+                args: [this, PdfExport]
+            });
+        }
         if (this.legendSettings.visible) {
             modules.push({
                 member: 'Legend',
@@ -4926,6 +5086,7 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
     CircularGauge.prototype.getModuleName = function () {
         return 'circulargauge';
     };
+    var CircularGauge_1;
     __decorate([
         Property(null)
     ], CircularGauge.prototype, "width", void 0);
@@ -4959,6 +5120,15 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Property(false)
     ], CircularGauge.prototype, "enableRangeDrag", void 0);
+    __decorate([
+        Property(false)
+    ], CircularGauge.prototype, "allowPrint", void 0);
+    __decorate([
+        Property(false)
+    ], CircularGauge.prototype, "allowImageExport", void 0);
+    __decorate([
+        Property(false)
+    ], CircularGauge.prototype, "allowPdfExport", void 0);
     __decorate([
         Property(null)
     ], CircularGauge.prototype, "centerX", void 0);
@@ -5034,7 +5204,7 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
     __decorate([
         Event()
     ], CircularGauge.prototype, "beforePrint", void 0);
-    CircularGauge = __decorate([
+    CircularGauge = CircularGauge_1 = __decorate([
         NotifyPropertyChanges
     ], CircularGauge);
     return CircularGauge;
@@ -5048,5 +5218,5 @@ var CircularGauge = /** @__PURE__ @class */ (function (_super) {
  * Circular Gauge component exported.
  */
 
-export { CircularGauge, Annotations, Line, Label, Range, Tick, Cap, NeedleTail, Animation$1 as Animation, Annotation, Pointer, Axis, Border, Font, RangeTooltip, AnnotationTooltip, Margin, TooltipSettings, GaugeTooltip, measureText, toPixel, getFontStyle, setStyles, measureElementRect, stringToNumber, textElement, appendPath, calculateSum, linear, getAngleFromValue, getDegree, getValueFromAngle, isCompleteAngle, getAngleFromLocation, getLocationFromAngle, getPathArc, getRangePath, getRoundedPathArc, getRoundedPath, getCompleteArc, getCirclePath, getCompletePath, getElement, getTemplateFunction, removeElement, getPointer, getRange, getElementSize, getMousePosition, getLabelFormat, calculateShapes, getRangeColor, CustomizeOption, PathOption, RectOption, Size, GaugeLocation, Rect, textTrim, showTooltip, TextOption, VisibleLabels, Location, LegendSettings, Legend, Index, LegendOptions };
+export { CircularGauge, Annotations, Line, Label, Range, Tick, Cap, NeedleTail, Animation$1 as Animation, Annotation, Pointer, Axis, Border, Font, RangeTooltip, AnnotationTooltip, Margin, TooltipSettings, GaugeTooltip, measureText, toPixel, getFontStyle, setStyles, measureElementRect, stringToNumber, textElement, appendPath, calculateSum, linear, getAngleFromValue, getDegree, getValueFromAngle, isCompleteAngle, getAngleFromLocation, getLocationFromAngle, getPathArc, getRangePath, getRoundedPathArc, getRoundedPath, getCompleteArc, getCirclePath, getCompletePath, getElement, getTemplateFunction, removeElement, getPointer, getRange, getElementSize, getMousePosition, getLabelFormat, calculateShapes, getRangeColor, CustomizeOption, PathOption, RectOption, Size, GaugeLocation, Rect, textTrim, showTooltip, TextOption, VisibleLabels, triggerDownload, Location, LegendSettings, Legend, Index, LegendOptions, ImageExport, PdfExport, Print };
 //# sourceMappingURL=ej2-circulargauge.es5.js.map

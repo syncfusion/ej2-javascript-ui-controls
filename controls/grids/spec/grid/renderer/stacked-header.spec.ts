@@ -1,7 +1,7 @@
 /**
  * Stacked header render spec
  */
-import { EmitType } from '@syncfusion/ej2-base';
+import { EmitType, Draggable  } from '@syncfusion/ej2-base';
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { Grid } from '../../../src/grid/base/grid';
 import { Reorder } from '../../../src/grid/actions/reorder';
@@ -76,6 +76,8 @@ describe('Stacked header render module', () => {
         it('EJ2-7378- script error on stacked header dragging', () => {
             let trs: NodeListOf<HTMLTableRowElement> = gridObj.getHeaderContent().querySelectorAll('tr');
             let header: HeaderRender = new HeaderRender(gridObj, gridObj.serviceLocator);
+            header.draggable = new Draggable(gridObj.getHeaderContent() as HTMLElement,{});
+            header.draggable.currentStateTarget = trs[0].querySelectorAll('.e-stackedheadercell')[0];
             expect((<any>header).helper({sender: {target: trs[0].querySelectorAll('.e-stackedheadercell')[0]}})).not.toBeFalsy();
         });
 
@@ -84,6 +86,8 @@ describe('Stacked header render module', () => {
             gridObj.dataBind();
             let trs: NodeListOf<HTMLTableRowElement> = gridObj.getHeaderContent().querySelectorAll('tr');
             let header: HeaderRender = new HeaderRender(gridObj, gridObj.serviceLocator);
+            header.draggable = new Draggable(gridObj.getHeaderContent() as HTMLElement,{});
+            header.draggable.currentStateTarget = trs[0].querySelectorAll('.e-stackedheadercell')[0];
             expect((<any>header).helper({sender: {target: trs[0].querySelectorAll('.e-stackedheadercell')[0]}})).toBeFalsy();
         });
 

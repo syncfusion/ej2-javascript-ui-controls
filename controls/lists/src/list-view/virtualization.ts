@@ -734,7 +734,8 @@ export class Virtualization {
             // tslint:disable-next-line:no-any
             (this.listViewInstance as any).renderCheckbox(args);
             // tslint:enable-next-line:no-any
-            if (!isNullOrUndefined(this.listViewInstance.virtualCheckBox.outerHTML)) {
+            if ((!isNullOrUndefined(this.listViewInstance.virtualCheckBox)) &&
+                (!isNullOrUndefined(this.listViewInstance.virtualCheckBox.outerHTML))) {
                 let div: HTMLElement = document.createElement('div');
                 div.innerHTML = this.listViewInstance.template || commonTemplate;
                 div.children[0].classList.add('e-checkbox');

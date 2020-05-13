@@ -14,7 +14,7 @@ import { ITooltipRenderEventArgs } from '../../chart/model/chart-interface';
 import { tooltipRender } from '../../common/model/constants';
 import { Tooltip as SVGTooltip, ITooltipAnimationCompleteArgs } from '@syncfusion/ej2-svg-base';
 import { ChartShape } from '../../chart/utils/enum';
-
+import { AccumulationSelection } from '../../accumulation-chart';
 
 /**
  * Tooltip Module used to render the tooltip for series.
@@ -125,8 +125,13 @@ export class BaseTooltip extends ChartData {
 
     public highlightPoint(series: Series | AccumulationSeries, pointIndex: number, highlight: boolean): void {
         let element: HTMLElement = this.getElement(this.element.id + '_Series_' + series.index + '_Point_' + pointIndex);
-        if (element) {
+        let selectionModule: AccumulationSelection = (this.control as AccumulationChart).accumulationSelectionModule;
+        let isSelectedElement: boolean = selectionModule && selectionModule.selectedDataIndexes.length > 0 ? true : false;
+        if (element && (!isSelectedElement || isSelectedElement && element.getAttribute('class')
+            && element.getAttribute('class').indexOf('_ej2_chart_selection_series_') === -1)) {
             element.setAttribute('opacity', (highlight ? series.opacity / 2 : series.opacity).toString());
+        } else {
+            element.setAttribute('opacity', series.opacity.toString());
         }
     }
 

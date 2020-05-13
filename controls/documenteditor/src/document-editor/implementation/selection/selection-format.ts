@@ -266,7 +266,8 @@ export class SelectionCharacterFormat {
      */
     private notifyPropertyChanged(propertyName: string): void {
         // tslint:disable-next-line:max-line-length
-        if (!isNullOrUndefined(this.selection) && (this.selection.isCleared || this.selection.owner.isReadOnlyMode || !this.selection.owner.isDocumentLoaded || this.selection.owner.isPastingContent) && !this.selection.isRetrieveFormatting) {
+        if (!isNullOrUndefined(this.selection) && (this.selection.isCleared || (this.selection.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) ||
+            !this.selection.owner.isDocumentLoaded || this.selection.owner.isPastingContent) && !this.selection.isRetrieveFormatting) {
             return;
         }
         if (!isNullOrUndefined(this.selection) && !isNullOrUndefined(this.selection.start) && !this.selection.isRetrieveFormatting) {
@@ -769,7 +770,7 @@ export class SelectionParagraphFormat {
      */
     private notifyPropertyChanged(propertyName: string): void {
         if (!isNullOrUndefined(this.selection) &&
-            (this.selection.owner.isReadOnlyMode || !this.selection.owner.isDocumentLoaded)
+            ((this.selection.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) || !this.selection.owner.isDocumentLoaded)
             && !this.selection.isRetrieveFormatting) {
             return;
         }
@@ -980,7 +981,8 @@ export class SelectionParagraphFormat {
      * @private
      */
     public setList(listAdv: WList): void {
-        if (this.documentHelper.owner.isReadOnlyMode || !this.documentHelper.owner.isDocumentLoaded) {
+        // tslint:disable-next-line:max-line-length
+        if ((this.documentHelper.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) || !this.documentHelper.owner.isDocumentLoaded) {
             return;
         }
         let list: WList = this.documentHelper.getListById(this.listId);

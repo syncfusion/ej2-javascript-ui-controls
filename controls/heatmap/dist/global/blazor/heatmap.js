@@ -7057,6 +7057,12 @@ var HeatMap = /** @class */ (function (_super) {
         var width = stringToNumber(this.width, this.element.offsetWidth) || this.element.offsetWidth || 600;
         var height = stringToNumber(this.height, this.element.offsetHeight) || this.element.offsetHeight || 450;
         this.availableSize = new Size(width, height);
+        var align = document.getElementById(this.element.id).align;
+        if (align === 'center') {
+            var containerWidth = this.availableSize.width.toString();
+            this.element.style.width = containerWidth + 'px';
+            this.element.style.margin = '0 auto';
+        }
     };
     HeatMap.prototype.renderTitle = function () {
         if (this.titleSettings.text) {

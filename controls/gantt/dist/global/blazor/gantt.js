@@ -993,19 +993,49 @@ var DateProcessor = /** @class */ (function () {
         return (date.getHours() * 60 * 60) + (date.getMinutes() * 60) + date.getSeconds() + (date.getMilliseconds() / 1000);
     };
     /**
+     *
+     * @private
+     */
+    DateProcessor.prototype.offset = function (date, localOffset, timezone) {
+        var convertedDate = new Date(date.toLocaleString('en-US', { timeZone: timezone }));
+        if (!isNaN(convertedDate.getTime())) {
+            return ((date.getTime() - convertedDate.getTime()) / 60000) + localOffset;
+        }
+        return 0;
+    };
+    /**
      * @param date
      * @private
      */
-    DateProcessor.prototype.getDateFromFormat = function (date) {
+    DateProcessor.prototype.convert = function (date, timezone) {
+        var fromOffset = date.getTimezoneOffset();
+        var toOffset = this.offset(date, fromOffset, timezone);
+        date = new Date(date.getTime() + (fromOffset - toOffset) * 60000);
+        var toLocalOffset = date.getTimezoneOffset();
+        return new Date(date.getTime() + (toLocalOffset - fromOffset) * 60000);
+    };
+    /**
+     * @param date
+     * @private
+     */
+    DateProcessor.prototype.getDateFromFormat = function (date, toConvert) {
+        var updatedDate;
         if (sf.base.isNullOrUndefined(date)) {
             return null;
         }
         else if (date instanceof Date) {
-            return new Date(date.getTime());
+            updatedDate = new Date(date.getTime());
         }
         else {
             var dateObject = this.parent.globalize.parseDate(date, { format: this.parent.getDateFormat(), type: 'dateTime' });
-            return sf.base.isNullOrUndefined(dateObject) && !isNaN(new Date(date).getTime()) ? new Date(date) : dateObject;
+            updatedDate = sf.base.isNullOrUndefined(dateObject) && !isNaN(new Date(date).getTime()) ? new Date(date) : dateObject;
+        }
+        if (!sf.base.isNullOrUndefined(this.parent.timezone) && toConvert) {
+            var convertedDate = this.convert(updatedDate, this.parent.timezone);
+            return convertedDate;
+        }
+        else {
+            return updatedDate;
         }
     };
     /**
@@ -1403,8 +1433,8 @@ var TaskProcessor = /** @class */ (function (_super) {
         var name = null;
         progress = progress ? parseFloat(progress.toString()) ? parseFloat(progress.toString()) : 0 : 0;
         var predecessors = data[taskSettings.dependency];
-        var baselineStartDate = this.getDateFromFormat(data[taskSettings.baselineStartDate]);
-        var baselineEndDate = this.getDateFromFormat(data[taskSettings.baselineEndDate]);
+        var baselineStartDate = this.getDateFromFormat(data[taskSettings.baselineStartDate], true);
+        var baselineEndDate = this.getDateFromFormat(data[taskSettings.baselineEndDate], true);
         var ganttData = {};
         var ganttProperties = {};
         var autoSchedule = (this.parent.taskMode === 'Auto') ? true :
@@ -1638,8 +1668,8 @@ var TaskProcessor = /** @class */ (function (_super) {
         var ganttProperties = ganttData.ganttProperties;
         var duration = data[taskSettings.duration];
         duration = sf.base.isNullOrUndefined(duration) || duration === '' ? null : duration;
-        var startDate = this.getDateFromFormat(data[taskSettings.startDate]);
-        var endDate = this.getDateFromFormat(data[taskSettings.endDate]);
+        var startDate = this.getDateFromFormat(data[taskSettings.startDate], true);
+        var endDate = this.getDateFromFormat(data[taskSettings.endDate], true);
         var isMileStone = taskSettings.milestone ? data[taskSettings.milestone] ? true : false : false;
         var durationMapping = data[taskSettings.durationUnit] ? data[taskSettings.durationUnit] : '';
         this.parent.setRecordValue('durationUnit', this.validateDurationUnitMapping(durationMapping), ganttProperties, true);
@@ -2082,12 +2112,27 @@ var TaskProcessor = /** @class */ (function (_super) {
         var duration = task.ganttProperties.duration;
         var durationUnit = task.ganttProperties.durationUnit;
         if (!sf.base.isNullOrUndefined(duration)) {
-            this.parent.setRecordValue(mapping, this.getDurationInDay(duration, durationUnit), task);
-            this.parent.setRecordValue('taskData.' + mapping, this.getDurationString(duration, durationUnit), task);
+            this.parent.setRecordValue(mapping, task.ganttProperties.duration, task);
+            /* tslint:disable-next-line:no-any */
+            var durationValue = (sf.base.getValue(mapping, task.taskData));
+            if (isNaN(durationValue) && sf.base.isNullOrUndefined(this.parent.taskFields.durationUnit) && !sf.base.isNullOrUndefined(durationValue)) {
+                this.parent.setRecordValue('taskData.' + mapping, this.getDurationString(duration, durationUnit), task);
+            }
+            else {
+                if (typeof durationValue === 'string') {
+                    this.parent.setRecordValue('taskData.' + mapping, duration.toString(), task);
+                }
+                else {
+                    this.parent.setRecordValue('taskData.' + mapping, duration, task);
+                }
+            }
         }
         else {
             this.parent.setRecordValue(mapping, duration, task);
             this.parent.setRecordValue('taskData.' + mapping, duration, task);
+        }
+        if (this.parent.taskFields.durationUnit) {
+            task.taskData[this.parent.taskFields.durationUnit] = task.ganttProperties.durationUnit;
         }
     };
     TaskProcessor.prototype.getWorkInHour = function (work, workUnit) {
@@ -2225,6 +2270,9 @@ var TaskProcessor = /** @class */ (function (_super) {
             }
         }
     };
+    /**
+     * @private
+     */
     TaskProcessor.prototype.updateResourceName = function (data) {
         var resourceInfo = data.ganttProperties.resourceInfo;
         var resourceName = [];
@@ -2269,13 +2317,13 @@ var TaskProcessor = /** @class */ (function (_super) {
     };
     TaskProcessor.prototype.validateDurationUnitMapping = function (durationUnit) {
         var unit = durationUnit;
-        if (unit === 'minute') {
+        if ((unit === 'minute') || (unit === 'minutes') || (unit === 'm') || (unit === 'min')) {
             unit = 'minute';
         }
-        else if (unit === 'hour') {
+        else if ((unit === 'hour') || (unit === 'hours') || (unit === 'h') || (unit === 'hr')) {
             unit = 'hour';
         }
-        else if (unit === 'day') {
+        else if ((unit === 'day') || (unit === 'days') || (unit === 'd')) {
             unit = 'day';
         }
         else {
@@ -2683,6 +2731,8 @@ var cancelIcon = 'e-cancel';
 
 
 var editIcon = 'e-edit';
+var indentIcon = 'e-indent';
+var outdentIcon = 'e-outdent';
 var addIcon = 'e-add';
 var addAboveIcon = 'e-add-above';
 var addBelowIcon = 'e-add-below';
@@ -5132,6 +5182,11 @@ var GanttTreeGrid = /** @class */ (function () {
         }
         else if (sf.base.getValue('type', args) === 'save') {
             if (this.parent.editModule && this.parent.editModule.cellEditModule) {
+                var data = sf.base.getValue('data', args);
+                if (!sf.base.isNullOrUndefined(data) && !sf.base.isNullOrUndefined(this.parent.getTaskByUniqueID(data.uniqueID))) {
+                    /* tslint:disable-next-line */
+                    this.parent.getTaskByUniqueID(data.uniqueID).taskData[this.parent.taskFields.duration] = data.taskData[this.parent.taskFields.duration];
+                }
                 this.parent.editModule.cellEditModule.initiateCellEdit(args, this.currentEditRow);
                 this.currentEditRow = {};
             }
@@ -10843,8 +10898,25 @@ var Gantt = /** @class */ (function (_super) {
             work: 'Work',
             taskType: 'Task Type',
             unassignedTask: 'Unassigned Task',
-            group: 'Group'
+            group: 'Group',
+            indent: 'Indent',
+            outdent: 'Outdent'
         };
+        if (sf.base.isBlazor()) {
+            var blazorLocale = {
+                zoomIn: 'Zoom In',
+                zoomOut: 'Zoom Out',
+                zoomToFit: 'Zoom To Fit',
+                excelExport: 'Excel Export',
+                csvExport: 'CSV Export',
+                pdfExport: 'Pdf Export',
+                expandAll: 'Expand All',
+                collapseAll: 'Collapse All',
+                nextTimeSpan: 'Next Timespan',
+                prevTimeSpan: 'Previous Timespan',
+            };
+            sf.base.extend(ganttLocale, blazorLocale, {}, true);
+        }
         return ganttLocale;
     };
     /**
@@ -11261,6 +11333,32 @@ var Gantt = /** @class */ (function (_super) {
     Gantt.prototype.updateRecordByID = function (data) {
         if (this.editModule && this.editSettings.allowEditing) {
             this.editModule.updateRecordByID(data);
+        }
+    };
+    /**
+     * To update existing taskId with new unique Id.
+     */
+    Gantt.prototype.updateTaskId = function (currentId, newId) {
+        this.editModule.updateTaskId(currentId, newId);
+    };
+    /**
+     * To indent the level of selected task to the hierarchical Gantt task.
+     * @return {void}
+     * @public
+     */
+    Gantt.prototype.indent = function () {
+        if (this.editModule && this.editSettings.allowEditing) {
+            this.editModule.indent();
+        }
+    };
+    /**
+     * To outdent the level of selected task from the hierarchical Gantt task.
+     * @return {void}
+     * @public
+     */
+    Gantt.prototype.outdent = function () {
+        if (this.editModule && this.editSettings.allowEditing) {
+            this.editModule.outdent();
         }
     };
     /**
@@ -11814,6 +11912,9 @@ var Gantt = /** @class */ (function (_super) {
     __decorate([
         sf.base.Property()
     ], Gantt.prototype, "columnMenuItems", void 0);
+    __decorate([
+        sf.base.Property()
+    ], Gantt.prototype, "timezone", void 0);
     __decorate([
         sf.base.Property(false)
     ], Gantt.prototype, "collapseAllParentTasks", void 0);
@@ -12888,7 +12989,7 @@ var TaskbarEdit = /** @class */ (function () {
         this.dragMouseLeave = false;
         this.isMouseDragged = false;
         this.previousItemProperty = ['left', 'progress', 'duration', 'isMilestone', 'startDate', 'endDate', 'width', 'progressWidth',
-            'autoLeft', 'autoDuration', 'autoStartDate', 'autoEndDate', 'autoWidth',];
+            'autoLeft', 'autoDuration', 'autoStartDate', 'autoEndDate', 'autoWidth'];
         this.tapPointOnFocus = false;
         this.touchEdit = false;
     };
@@ -13231,10 +13332,6 @@ var TaskbarEdit = /** @class */ (function () {
         this.dragMouseLeave = false;
         this.isMouseDragCheck();
         if (this.isMouseDragged && this.taskBarEditAction) {
-            if (this.taskBarEditAction === 'ConnectorPointLeftDrag' ||
-                this.taskBarEditAction === 'ConnectorPointRightDrag') {
-                this.updateConnectorLineSecondProperties(event);
-            }
             this.taskBarEditingAction(event, false);
         }
         else if (!this.parent.isAdaptive && !this.taskBarEditAction) {
@@ -13278,6 +13375,7 @@ var TaskbarEdit = /** @class */ (function () {
             }
             else if (this.taskBarEditAction === 'ConnectorPointLeftDrag' ||
                 this.taskBarEditAction === 'ConnectorPointRightDrag') {
+                this.updateConnectorLineSecondProperties(e);
                 this.triggerDependencyEvent(e);
                 if (!this.parent.isAdaptive) {
                     this.drawFalseLine();
@@ -14068,10 +14166,12 @@ var TaskbarEdit = /** @class */ (function () {
             this.finalPredecessor = predecessor;
         }
         var isValidLink = this.parent.connectorLineEditModule.validatePredecessorRelation(this.connectorSecondRecord, this.finalPredecessor);
+        var predecessorArray = this.parent.predecessorModule.calculatePredecessor(predecessor, this.connectorSecondRecord);
         var args = {};
         args.fromItem = fromItem;
         args.toItem = toItem;
         args.newPredecessorString = this.finalPredecessor;
+        args.predecessor = predecessorArray && predecessorArray[0];
         args.isValidLink = isValidLink;
         args.requestType = 'ValidateDependency';
         this.parent.trigger('actionBegin', args);
@@ -14291,24 +14391,31 @@ var DialogEdit = /** @class */ (function () {
         var dialogFields = [];
         var fieldItem = {};
         var fields;
-        if (Object.keys(this.parent.columnMapping).length !== 0) {
+        var columnMapping = this.parent.columnMapping;
+        if (Object.keys(columnMapping).length !== 0) {
             fieldItem.type = 'General';
             fields = this.getGeneralColumnFields();
             dialogFields.push(fieldItem);
         }
-        if (!sf.base.isNullOrUndefined(sf.base.getValue('dependency', this.parent.columnMapping))) {
+        if (!sf.base.isNullOrUndefined(sf.base.getValue('dependency', columnMapping))) {
             fieldItem = {};
-            fieldItem.type = 'Dependency';
+            if (this.parent.columnByField[columnMapping.dependency.valueOf()].visible !== false) {
+                fieldItem.type = 'Dependency';
+            }
             dialogFields.push(fieldItem);
         }
-        if (!sf.base.isNullOrUndefined(sf.base.getValue('resourceInfo', this.parent.columnMapping))) {
+        if (!sf.base.isNullOrUndefined(sf.base.getValue('resourceInfo', columnMapping))) {
             fieldItem = {};
-            fieldItem.type = 'Resources';
+            if (this.parent.columnByField[columnMapping.resourceInfo.valueOf()].visible !== false) {
+                fieldItem.type = 'Resources';
+            }
             dialogFields.push(fieldItem);
         }
-        if (!sf.base.isNullOrUndefined(sf.base.getValue('notes', this.parent.columnMapping))) {
+        if (!sf.base.isNullOrUndefined(sf.base.getValue('notes', columnMapping))) {
             fieldItem = {};
-            fieldItem.type = 'Notes';
+            if (this.parent.columnByField[columnMapping.notes.valueOf()].visible !== false) {
+                fieldItem.type = 'Notes';
+            }
             dialogFields.push(fieldItem);
         }
         if (this.parent.customColumns.length > 0) {
@@ -14953,6 +15060,9 @@ var DialogEdit = /** @class */ (function () {
             }
         }
     };
+    /**
+     * @private
+     */
     DialogEdit.prototype.validateDuration = function (ganttData) {
         var ganttProp = ganttData.ganttProperties;
         if (!this.dialogEditValidationFlag) {
@@ -15294,6 +15404,9 @@ var DialogEdit = /** @class */ (function () {
             + '' + itemName + 'TabContainer');
         for (var _i = 0, _a = Object.keys(itemModel); _i < _a.length; _i++) {
             var key = _a[_i];
+            if (this.parent.columnByField[key].visible === false) {
+                continue;
+            }
             var column = this.parent.columnByField[key];
             var inputModel = itemModel[key];
             divElement.appendChild(this.renderInputElements(inputModel, column));
@@ -16747,9 +16860,10 @@ var Edit$2 = /** @class */ (function () {
     function Edit$$1(parent) {
         this.isFromDeleteMethod = false;
         this.targetedRecords = [];
-        /**
-         * @private
-         */
+        /** @hidden */
+        this.updateParentRecords = [];
+        /** @hidden */
+        this.isaddtoBottom = false;
         this.confirmDialog = null;
         this.taskbarMoved = false;
         this.predecessorUpdated = false;
@@ -17436,6 +17550,7 @@ var Edit$2 = /** @class */ (function () {
     };
     /**
      * Method to copy the ganttProperties values
+     * @private
      */
     Edit$$1.prototype.updateGanttProperties = function (data, updateData) {
         var skipProperty = ['taskId', 'uniqueID', 'rowUniqueID', 'parentId'];
@@ -17988,10 +18103,23 @@ var Edit$2 = /** @class */ (function () {
             }
         }
     };
+    Edit$$1.prototype.deleteResourceRecords = function (selectedRecords) {
+        var deleteRecords = [];
+        for (var i = 0; i < selectedRecords.length; i++) {
+            /* tslint:disable-next-line */
+            if (selectedRecords[i].parentItem) {
+                for (var j = 0; j < this.parent.getTaskIds().length; j++) {
+                    if (this.parent.getTaskIds()[j] === 'T' + selectedRecords[i].ganttProperties.taskId) {
+                        deleteRecords.push(this.parent.currentViewData[j]);
+                    }
+                }
+            }
+        }
+        this.deleteRow(deleteRecords);
+    };
     Edit$$1.prototype.deleteSelectedItems = function () {
         if (!this.isFromDeleteMethod) {
             var selectedRecords = [];
-            var deleteRecords = [];
             if (this.parent.selectionSettings.mode !== 'Cell') {
                 selectedRecords = this.parent.selectionModule.getSelectedRecords();
             }
@@ -17999,17 +18127,7 @@ var Edit$2 = /** @class */ (function () {
                 selectedRecords = this.parent.selectionModule.getCellSelectedRecords();
             }
             if (this.parent.viewType === 'ResourceView') {
-                for (var i = 0; i < selectedRecords.length; i++) {
-                    /* tslint:disable-next-line */
-                    if (selectedRecords[i].parentItem) {
-                        for (var j = 0; j < this.parent.getTaskIds().length; j++) {
-                            if (this.parent.getTaskIds()[j] === 'T' + selectedRecords[i].ganttProperties.taskId) {
-                                deleteRecords.push(this.parent.currentViewData[j]);
-                            }
-                        }
-                    }
-                }
-                this.deleteRow(deleteRecords);
+                this.deleteResourceRecords(selectedRecords);
             }
             else {
                 this.deleteRow(selectedRecords);
@@ -18017,7 +18135,12 @@ var Edit$2 = /** @class */ (function () {
         }
         else {
             if (this.targetedRecords.length) {
-                this.deleteRow(this.targetedRecords);
+                if (this.parent.viewType === 'ResourceView') {
+                    this.deleteResourceRecords(this.targetedRecords);
+                }
+                else {
+                    this.deleteRow(this.targetedRecords);
+                }
             }
             this.isFromDeleteMethod = false;
         }
@@ -18168,6 +18291,66 @@ var Edit$2 = /** @class */ (function () {
         this.parent.setRecordValue('predecessorsName', predecessorString, record.ganttProperties, true);
         this.parent.setRecordValue('taskData.' + this.parent.taskFields.dependency, predecessorString, record);
         this.parent.setRecordValue(this.parent.taskFields.dependency, predecessorString, record);
+    };
+    /**
+     * Method to update TaskID of a gantt record
+     */
+    Edit$$1.prototype.updateTaskId = function (currentId, newId) {
+        var cId = typeof currentId === 'number' ? currentId.toString() : currentId;
+        var nId = typeof newId === 'number' ? newId.toString() : newId;
+        var ids = this.parent.ids;
+        if (!sf.base.isNullOrUndefined(cId) && !sf.base.isNullOrUndefined(nId)) {
+            var cIndex = ids.indexOf(cId);
+            var nIndex = ids.indexOf(nId);
+            // return false for invalid taskID
+            if (cIndex === -1 || nIndex > -1) {
+                return;
+            }
+            var thisRecord = this.parent.flatData[cIndex];
+            thisRecord.ganttProperties.taskId = thisRecord.ganttProperties.rowUniqueID = nId;
+            thisRecord.taskData[this.parent.taskFields.id] = nId;
+            thisRecord[this.parent.taskFields.id] = nId;
+            ids[cIndex] = nId;
+            if (thisRecord.hasChildRecords && this.parent.taskFields.parentID) {
+                var childRecords = thisRecord.childRecords;
+                for (var count = 0; count < childRecords.length; count++) {
+                    var childRecord = childRecords[count];
+                    childRecord[this.parent.taskFields.parentID] = newId;
+                    this.parent.chartRowsModule.refreshRecords([childRecord]);
+                }
+            }
+            if (this.parent.taskFields.dependency && !sf.base.isNullOrUndefined(thisRecord.ganttProperties.predecessor)) {
+                var predecessors = thisRecord.ganttProperties.predecessor;
+                var currentGanttRecord = void 0;
+                for (var i = 0; i < predecessors.length; i++) {
+                    var predecessor = predecessors[i];
+                    if (predecessor.to === cId) {
+                        currentGanttRecord = this.parent.flatData[ids.indexOf(predecessor.from)];
+                    }
+                    else if (predecessor.from === cId) {
+                        currentGanttRecord = this.parent.flatData[ids.indexOf(predecessor.to)];
+                    }
+                    this.updatePredecessorOnUpdateId(currentGanttRecord, cId, nId);
+                }
+            }
+            this.updatePredecessorOnUpdateId(thisRecord, cId, nId);
+            this.parent.treeGrid.refresh();
+        }
+    };
+    Edit$$1.prototype.updatePredecessorOnUpdateId = function (currentGanttRecord, cId, nId) {
+        if (this.parent.currentViewData.indexOf(currentGanttRecord) > -1) {
+            var pred = currentGanttRecord.ganttProperties.predecessor;
+            for (var j = 0; j < pred.length; j++) {
+                var pre = pred[j];
+                if (pre.to === cId) {
+                    pre.to = nId;
+                }
+                else if (pre.from === cId) {
+                    pre.from = nId;
+                }
+            }
+        }
+        this.updatePredecessorValues(currentGanttRecord, currentGanttRecord.ganttProperties.predecessor);
     };
     Edit$$1.prototype.deleteChildRecords = function (record) {
         var childRecords = record.childRecords;
@@ -18932,6 +19115,469 @@ var Edit$2 = /** @class */ (function () {
         currentViewData.splice(currentViewDataIndex, 1);
         ids.splice(idsIndex, 1);
     };
+    /**
+     * indent a selected record
+     */
+    Edit$$1.prototype.indent = function () {
+        var index = this.parent.selectedRowIndex;
+        var isSelected = this.parent.selectionModule ? this.parent.selectionModule.selectedRowIndexes.length === 1 ||
+            this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
+        var dropIndex;
+        var prevRecord = this.parent.currentViewData[this.parent.selectionModule.getSelectedRowIndexes()[0] - 1];
+        if (!this.parent.editSettings.allowEditing || index === 0 || index === -1 || !isSelected ||
+            this.parent.viewType === 'ResourceView' || this.parent.currentViewData[index].level - prevRecord.level === 1) {
+            return;
+        }
+        else {
+            if (prevRecord.level > this.parent.selectionModule.getSelectedRecords()[0].level) {
+                var thisParent = this.parent.getRecordByID(prevRecord.parentItem.taskId);
+                for (var i = 0; i < this.parent.currentViewData.length; i++) {
+                    if (this.parent.currentViewData[i].taskData === thisParent.taskData) {
+                        dropIndex = i;
+                    }
+                }
+            }
+            else {
+                dropIndex = this.parent.selectionModule.getSelectedRowIndexes()[0] - 1;
+            }
+            this.indentOutdentRow([this.parent.selectionModule.getSelectedRowIndexes()[0]], dropIndex, 'child');
+            //this.parent.treeGrid.refresh();
+        }
+    };
+    /**
+     * To perform outdent operation for selected row
+     */
+    Edit$$1.prototype.outdent = function () {
+        var index = this.parent.selectionModule.getSelectedRowIndexes()[0];
+        var dropIndex;
+        var isSelected = this.parent.selectionModule ? this.parent.selectionModule.selectedRowIndexes.length === 1 ||
+            this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
+        if (!this.parent.editSettings.allowEditing || index === -1 || index === 0 || !isSelected ||
+            this.parent.viewType === 'ResourceView' || this.parent.currentViewData[index].level === 0) {
+            return;
+        }
+        else {
+            var thisParent = this.parent.getRecordByID(this.parent.selectionModule.getSelectedRecords()[0].parentItem.taskId);
+            for (var i = 0; i < this.parent.currentViewData.length; i++) {
+                if (this.parent.currentViewData[i].taskData === thisParent.taskData) {
+                    dropIndex = i;
+                }
+            }
+            this.indentOutdentRow([index], dropIndex, 'below');
+        }
+    };
+    Edit$$1.prototype.indentOutdentRow = function (fromIndexes, toIndex, pos) {
+        if (fromIndexes[0] !== toIndex && pos === 'above' || 'below' || 'child') {
+            if (pos === 'above') {
+                this.dropPosition = 'topSegment';
+            }
+            if (pos === 'below') {
+                this.dropPosition = 'bottomSegment';
+            }
+            if (pos === 'child') {
+                this.dropPosition = 'middleSegment';
+            }
+            var record = [];
+            for (var i = 0; i < fromIndexes.length; i++) {
+                record[i] = this.parent.currentViewData[fromIndexes[i]];
+            }
+            var isByMethod = true;
+            var args = {
+                data: record,
+                dropIndex: toIndex,
+                dropPosition: this.dropPosition
+            };
+            this.reArrangeRows(args, isByMethod);
+        }
+        else {
+            return;
+        }
+    };
+    Edit$$1.prototype.reArrangeRows = function (args, isByMethod) {
+        this.dropPosition = args.dropPosition;
+        if (args.dropPosition !== 'Invalid' && this.parent.editModule) {
+            var obj = this.parent;
+            var draggedRec = void 0;
+            var droppedRec = void 0;
+            this.droppedRecord = obj.currentViewData[args.dropIndex];
+            var dragRecords = [];
+            droppedRec = this.droppedRecord;
+            if (!args.data[0]) {
+                dragRecords.push(args.data);
+            }
+            else {
+                dragRecords = args.data;
+            }
+            var c = 0;
+            var dLength = dragRecords.length;
+            for (var i = 0; i < dLength; i++) {
+                this.parent.isOnEdit = true;
+                draggedRec = dragRecords[i];
+                this.draggedRecord = draggedRec;
+                if (this.dropPosition !== 'Invalid') {
+                    if (isByMethod) {
+                        this.deleteDragRow();
+                    }
+                    var recordIndex1 = this.ganttData.indexOf(droppedRec);
+                    if (this.dropPosition === 'topSegment') {
+                        this.dropAtTop(recordIndex1);
+                    }
+                    if (this.dropPosition === 'bottomSegment') {
+                        if (!droppedRec.hasChildRecords) {
+                            if (this.parent.taskFields.parentID && this.parent.dataSource.length > 0) {
+                                this.parent.dataSource.splice(recordIndex1 + 1, 0, this.draggedRecord.taskData);
+                            }
+                            this.parent.flatData.splice(recordIndex1 + 1, 0, this.draggedRecord);
+                            this.ganttData.splice(recordIndex1 + 1, 0, this.draggedRecord);
+                            this.parent.ids.splice(recordIndex1 + 1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
+                        }
+                        else {
+                            c = this.parent.editModule.getChildCount(droppedRec, 0);
+                            if (this.parent.taskFields.parentID && this.parent.dataSource.length > 0) {
+                                this.parent.dataSource.splice(recordIndex1 + c + 1, 0, this.draggedRecord.taskData);
+                            }
+                            this.ganttData.splice(recordIndex1 + c + 1, 0, this.draggedRecord);
+                            this.parent.flatData.splice(recordIndex1 + c + 1, 0, this.draggedRecord);
+                            this.parent.ids.splice(recordIndex1 + c + 1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
+                        }
+                        draggedRec.parentItem = this.ganttData[recordIndex1].parentItem;
+                        draggedRec.parentUniqueID = this.ganttData[recordIndex1].parentUniqueID;
+                        draggedRec.level = this.ganttData[recordIndex1].level;
+                        if (draggedRec.hasChildRecords) {
+                            var level = 1;
+                            this.updateChildRecordLevel(draggedRec, level);
+                            this.updateChildRecord(draggedRec, recordIndex1 + c + 1);
+                        }
+                        if (droppedRec.parentItem) {
+                            var record = this.parent.getParentTask(droppedRec.parentItem).childRecords;
+                            var childRecords = record;
+                            var droppedRecordIndex = childRecords.indexOf(droppedRec) + 1;
+                            childRecords.splice(droppedRecordIndex, 0, draggedRec);
+                        }
+                    }
+                    if (this.dropPosition === 'middleSegment') {
+                        this.dropMiddle(recordIndex1);
+                    }
+                    if (!sf.base.isNullOrUndefined(draggedRec.parentItem && this.updateParentRecords.indexOf(draggedRec.parentItem) !== -1)) {
+                        this.updateParentRecords.push(draggedRec.parentItem);
+                    }
+                }
+                this.refreshDataSource();
+            }
+            if (this.dropPosition === 'middleSegment') {
+                if (droppedRec.ganttProperties.predecessor) {
+                    this.parent.editModule.removePredecessorOnDelete(droppedRec);
+                    droppedRec.ganttProperties.predecessor = null;
+                    droppedRec.ganttProperties.predecessorsName = null;
+                    droppedRec[this.parent.taskFields.dependency] = null;
+                    droppedRec.taskData[this.parent.taskFields.dependency] = null;
+                }
+                if (droppedRec.ganttProperties.isMilestone) {
+                    this.parent.setRecordValue('isMilestone', false, droppedRec.ganttProperties, true);
+                    if (!sf.base.isNullOrUndefined(droppedRec.taskData[this.parent.taskFields.milestone])) {
+                        if (droppedRec.taskData[this.parent.taskFields.milestone] === true) {
+                            droppedRec.taskData[this.parent.taskFields.milestone] = false;
+                        }
+                    }
+                }
+            }
+            // method to update the edited parent records
+            for (var k = 0; k < this.updateParentRecords.length; k++) {
+                this.parent.dataOperation.updateParentItems(this.updateParentRecords[k]);
+            }
+            this.updateParentRecords = [];
+            this.parent.isOnEdit = false;
+        }
+        this.parent.treeGrid.refresh();
+        args.requestType = 'rowDropped';
+        args.modifiedRecords = this.parent.editedRecords;
+        this.parent.trigger('actionComplete', args);
+        this.parent.editedRecords = [];
+    };
+    Edit$$1.prototype.refreshDataSource = function () {
+        var draggedRec = this.draggedRecord;
+        var droppedRec = this.droppedRecord;
+        var proxy = this.parent;
+        var tempData;
+        var indx;
+        if (this.parent.dataSource instanceof sf.data.DataManager && this.parent.dataSource.dataSource.json.length > 0) {
+            tempData = proxy.dataSource.dataSource.json;
+        }
+        else {
+            tempData = proxy.dataSource;
+        }
+        if (tempData.length > 0 && (!sf.base.isNullOrUndefined(droppedRec) && !droppedRec.parentItem)) {
+            for (var i = 0; i < Object.keys(tempData).length; i++) {
+                if (tempData[i][this.parent.taskFields.child] === droppedRec.taskData[this.parent.taskFields.child]) {
+                    indx = i;
+                }
+            }
+            if (this.dropPosition === 'topSegment') {
+                if (!this.parent.taskFields.parentID) {
+                    tempData.splice(indx, 0, draggedRec.taskData);
+                }
+            }
+            else if (this.dropPosition === 'bottomSegment') {
+                if (!this.parent.taskFields.parentID) {
+                    tempData.splice(indx + 1, 0, draggedRec.taskData);
+                }
+            }
+        }
+        else if (!this.parent.taskFields.parentID && (!sf.base.isNullOrUndefined(droppedRec) && droppedRec.parentItem)) {
+            if (this.dropPosition === 'topSegment' || this.dropPosition === 'bottomSegment') {
+                var rowPos = this.dropPosition === 'topSegment' ? 'Above' : 'Below';
+                this.parent.editModule.addRowSelectedItem = droppedRec;
+                this.parent.editModule.updateRealDataSource(draggedRec, rowPos);
+                delete this.parent.editModule.addRowSelectedItem;
+            }
+        }
+        if (this.parent.taskFields.parentID) {
+            if (draggedRec.parentItem) {
+                if (this.dropPosition === 'topSegment' || this.dropPosition === 'bottomSegment') {
+                    draggedRec[this.parent.taskFields.parentID] = droppedRec[this.parent.taskFields.parentID];
+                    draggedRec.taskData[this.parent.taskFields.parentID] = droppedRec[this.parent.taskFields.parentID];
+                }
+                else {
+                    draggedRec[this.parent.taskFields.parentID] = droppedRec[this.parent.taskFields.id];
+                    draggedRec.taskData[this.parent.taskFields.parentID] = droppedRec[this.parent.taskFields.id];
+                }
+            }
+            else {
+                draggedRec[this.parent.taskFields.parentID] = null;
+                draggedRec.taskData[this.parent.taskFields.parentID] = null;
+            }
+        }
+    };
+    Edit$$1.prototype.deleteDragRow = function () {
+        if (this.parent.dataSource instanceof sf.data.DataManager && this.parent.dataSource.dataSource.json.length > 0) {
+            this.ganttData = this.parent.dataSource.dataSource.json;
+        }
+        else {
+            this.ganttData = this.parent.currentViewData;
+        }
+        var delRow;
+        delRow = this.parent.getTaskByUniqueID(this.draggedRecord.uniqueID);
+        this.removeRecords(delRow);
+    };
+    Edit$$1.prototype.dropAtTop = function (recordIndex1) {
+        var obj = this.parent;
+        if (obj.taskFields.parentID && this.parent.dataSource.length > 0) {
+            this.parent.dataSource.splice(recordIndex1, 0, this.draggedRecord.taskData);
+        }
+        this.draggedRecord.level = this.ganttData[recordIndex1].level;
+        this.draggedRecord.parentUniqueID = this.ganttData[recordIndex1].parentUniqueID;
+        this.draggedRecord.parentItem = this.ganttData[recordIndex1].parentItem;
+        this.ganttData.splice(recordIndex1, 0, this.draggedRecord);
+        this.parent.flatData.splice(recordIndex1, 0, this.draggedRecord);
+        this.parent.ids.splice(recordIndex1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
+        if (this.draggedRecord.hasChildRecords) {
+            var levl = 1;
+            this.updateChildRecord(this.draggedRecord, recordIndex1);
+            this.updateChildRecordLevel(this.draggedRecord, levl);
+        }
+        if (this.droppedRecord.parentItem) {
+            var record = this.parent.getParentTask(this.droppedRecord.parentItem).childRecords;
+            var childRecords = record;
+            var droppedRecordIndex = childRecords.indexOf(this.droppedRecord);
+            childRecords.splice(droppedRecordIndex, 0, this.draggedRecord);
+        }
+        if (!sf.base.isNullOrUndefined(this.draggedRecord.parentItem && this.updateParentRecords.indexOf(this.draggedRecord.parentItem) !== -1)) {
+            this.updateParentRecords.push(this.draggedRecord.parentItem);
+        }
+    };
+    Edit$$1.prototype.dropMiddle = function (recordIndex1) {
+        var obj = this.parent;
+        var childRec = this.parent.editModule.getChildCount(this.droppedRecord, 0);
+        var childRecordsLength = (sf.base.isNullOrUndefined(childRec) ||
+            childRec === 0) ? recordIndex1 + 1 :
+            childRec + recordIndex1 + 1;
+        if (this.dropPosition === 'middleSegment') {
+            if (obj.taskFields.parentID && this.parent.dataSource.length > 0) {
+                this.parent.dataSource.splice(childRecordsLength, 0, this.draggedRecord.taskData);
+            }
+            this.parent.flatData.splice(childRecordsLength, 0, this.draggedRecord);
+            this.ganttData.splice(childRecordsLength, 0, this.draggedRecord);
+            this.parent.ids.splice(childRecordsLength, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
+            this.recordLevel();
+            if (this.draggedRecord.hasChildRecords) {
+                this.updateChildRecord(this.draggedRecord, childRecordsLength, this.droppedRecord.expanded);
+            }
+            if (sf.base.isNullOrUndefined(this.draggedRecord.parentItem &&
+                this.updateParentRecords.indexOf(this.draggedRecord.parentItem) !== -1)) {
+                this.updateParentRecords.push(this.draggedRecord.parentItem);
+            }
+        }
+    };
+    Edit$$1.prototype.updateChildRecordLevel = function (record, levl) {
+        var length = 0;
+        var currentRec;
+        levl++;
+        if (!record.hasChildRecords) {
+            return 0;
+        }
+        length = record.childRecords.length;
+        for (var j = 0; j < length; j++) {
+            currentRec = record.childRecords[j];
+            var parentData = void 0;
+            if (record.parentItem) {
+                parentData = this.parent.getParentTask(record.parentItem);
+            }
+            currentRec.level = record.parentItem ? parentData.level + levl : record.level + 1;
+            if (currentRec.hasChildRecords) {
+                levl--;
+                levl = this.updateChildRecordLevel(currentRec, levl);
+            }
+        }
+        return levl;
+    };
+    Edit$$1.prototype.updateChildRecord = function (record, count, expanded) {
+        var currentRec;
+        var obj = this.parent;
+        var length = 0;
+        if (!record.hasChildRecords) {
+            return 0;
+        }
+        length = record.childRecords.length;
+        for (var i = 0; i < length; i++) {
+            currentRec = record.childRecords[i];
+            count++;
+            obj.currentViewData.splice(count, 0, currentRec);
+            obj.flatData.splice(count, 0, currentRec);
+            this.parent.ids.splice(count, 0, currentRec.ganttProperties.rowUniqueID.toString());
+            if (obj.taskFields.parentID && obj.dataSource.length > 0) {
+                obj.dataSource.splice(count, 0, currentRec.taskData);
+            }
+            if (currentRec.hasChildRecords) {
+                count = this.updateChildRecord(currentRec, count);
+            }
+        }
+        return count;
+    };
+    Edit$$1.prototype.removeRecords = function (record) {
+        var obj = this.parent;
+        var dataSource;
+        dataSource = this.parent.dataSource;
+        var delRow = record;
+        var flatParent = this.parent.getParentTask(delRow.parentItem);
+        if (delRow) {
+            if (delRow.parentItem) {
+                var childRecords = flatParent ? flatParent.childRecords : [];
+                var childIndex = 0;
+                if (childRecords && childRecords.length > 0) {
+                    childIndex = childRecords.indexOf(delRow);
+                    flatParent.childRecords.splice(childIndex, 1);
+                    // collection for updating parent record
+                    this.updateParentRecords.push(flatParent);
+                }
+            }
+            //method to delete the record from datasource collection
+            if (delRow && !this.parent.taskFields.parentID) {
+                var deleteRecordIDs = [];
+                deleteRecordIDs.push(delRow.ganttProperties.rowUniqueID.toString());
+                this.parent.editModule.removeFromDataSource(deleteRecordIDs);
+            }
+            if (obj.taskFields.parentID) {
+                if (delRow.hasChildRecords && delRow.childRecords.length > 0) {
+                    this.removeChildItem(delRow);
+                }
+                var indx = void 0;
+                var ganttData = dataSource.length > 0 ?
+                    dataSource : this.parent.currentViewData;
+                for (var i = 0; i < ganttData.length; i++) {
+                    if (ganttData[i][this.parent.taskFields.id] === delRow.taskData[this.parent.taskFields.id]) {
+                        indx = i;
+                    }
+                }
+                if (indx !== -1) {
+                    if (dataSource.length > 0) {
+                        dataSource.splice(indx, 1);
+                    }
+                    this.ganttData.splice(indx, 1);
+                    this.parent.flatData.splice(indx, 1);
+                    this.parent.ids.splice(indx, 1);
+                }
+            }
+            var recordIdx = this.ganttData.indexOf(delRow);
+            if (!obj.taskFields.parentID) {
+                var deletedRecordCount = this.parent.editModule.getChildCount(delRow, 0);
+                this.ganttData.splice(recordIdx, deletedRecordCount + 1);
+                this.parent.flatData.splice(recordIdx, deletedRecordCount + 1);
+                this.parent.ids.splice(recordIdx, deletedRecordCount + 1);
+            }
+            if (delRow.parentItem && flatParent && flatParent.childRecords && !flatParent.childRecords.length) {
+                flatParent.expanded = false;
+                flatParent.hasChildRecords = false;
+            }
+        }
+    };
+    Edit$$1.prototype.removeChildItem = function (record) {
+        var obj = this.parent;
+        var currentRec;
+        var indx;
+        for (var i = 0; i < record.childRecords.length; i++) {
+            currentRec = record.childRecords[i];
+            var data = void 0;
+            data = this.parent.dataSource.length > 0 ?
+                this.parent.dataSource : this.parent.currentViewData;
+            for (var i_1 = 0; i_1 < data.length; i_1++) {
+                if (data[i_1][this.parent.taskFields.id] === currentRec.taskData[this.parent.taskFields.id]) {
+                    indx = i_1;
+                }
+            }
+            if (indx !== -1) {
+                if (obj.dataSource.length > 0) {
+                    obj.dataSource.splice(indx, 1);
+                }
+                this.ganttData.splice(indx, 1);
+                this.parent.flatData.splice(indx, 1);
+                this.parent.ids.splice(indx, 1);
+            }
+            if (currentRec.hasChildRecords) {
+                this.removeChildItem(currentRec);
+            }
+        }
+    };
+    Edit$$1.prototype.recordLevel = function () {
+        var obj = this.parent;
+        var draggedRec = this.draggedRecord;
+        var droppedRec = this.droppedRecord;
+        var childItem = obj.taskFields.child;
+        if (!droppedRec.hasChildRecords) {
+            droppedRec.hasChildRecords = true;
+            if (!droppedRec.childRecords.length) {
+                droppedRec.childRecords = [];
+                if (!obj.taskFields.parentID && sf.base.isNullOrUndefined(droppedRec.taskData[childItem])) {
+                    droppedRec.taskData[childItem] = [];
+                }
+            }
+        }
+        if (this.dropPosition === 'middleSegment') {
+            var parentItem = sf.base.extend({}, droppedRec);
+            delete parentItem.childRecords;
+            var createParentItem = {
+                uniqueID: parentItem.uniqueID,
+                expanded: parentItem.expanded,
+                level: parentItem.level,
+                index: parentItem.index,
+                taskId: parentItem.ganttProperties.rowUniqueID
+            };
+            draggedRec.parentItem = createParentItem;
+            draggedRec.parentUniqueID = droppedRec.uniqueID;
+            droppedRec.childRecords.splice(droppedRec.childRecords.length, 0, draggedRec);
+            if (!sf.base.isNullOrUndefined(draggedRec) && !obj.taskFields.parentID && !sf.base.isNullOrUndefined(droppedRec.taskData[childItem])) {
+                droppedRec.taskData[obj.taskFields.child].splice(droppedRec.childRecords.length, 0, draggedRec.taskData);
+            }
+            if (!draggedRec.hasChildRecords) {
+                draggedRec.level = droppedRec.level + 1;
+            }
+            else {
+                var level = 1;
+                draggedRec.level = droppedRec.level + 1;
+                this.updateChildRecordLevel(draggedRec, level);
+            }
+            droppedRec.expanded = true;
+        }
+    };
     return Edit$$1;
 }());
 
@@ -19223,30 +19869,21 @@ var Filter$1 = /** @class */ (function () {
     Filter$$1.prototype.setPosition = function (li, ul) {
         var gridPos = this.parent.element.getBoundingClientRect();
         var liPos = li.getBoundingClientRect();
-        var left = liPos.left - gridPos.left;
-        var top = liPos.top - gridPos.top;
-        if (gridPos.height < top) {
-            top = top - ul.offsetHeight + liPos.height;
+        var left = liPos.right + window.scrollX;
+        var top = liPos.top + window.scrollY;
+        if (gridPos.right < (left + ul.offsetWidth)) {
+            if ((liPos.left - ul.offsetWidth) > gridPos.left) {
+                left = (liPos.left - ul.offsetWidth);
+            }
+            else {
+                left -= (left + ul.offsetWidth) - gridPos.right;
+            }
         }
-        else if (gridPos.height < top + ul.offsetHeight) {
-            top = gridPos.height - ul.offsetHeight;
-        }
-        if (window.innerHeight < ul.offsetHeight + top + gridPos.top) {
-            top = window.innerHeight - ul.offsetHeight - gridPos.top;
-        }
-        left += (this.parent.enableRtl ? -ul.offsetWidth : liPos.width);
-        if (gridPos.width <= left + ul.offsetWidth) {
-            left -= liPos.width + ul.offsetWidth;
-        }
-        else if (left < 0) {
-            left += ul.offsetWidth + liPos.width;
-        }
-        ul.style.top = top + 7 + 'px';
-        ul.style.left = left + 7 + 'px';
+        ul.style.top = top + 'px';
+        ul.style.left = left + 'px';
     };
     Filter$$1.prototype.updateFilterMenuPosition = function (element, args) {
         this.parent.element.appendChild(element);
-        element.querySelector('.e-valid-input').focus();
         var targetElement;
         if (this.parent.showColumnMenu) {
             targetElement = document.querySelector('#treeGrid' + this.parent.controlId + '_gridcontrol_colmenu_Filter');
@@ -19256,6 +19893,7 @@ var Filter$1 = /** @class */ (function () {
             targetElement = this.parent.treeGrid.grid.getColumnHeaderByField(args.columnName).querySelector('.e-filtermenudiv');
             sf.grids.getFilterMenuPostion(targetElement, sf.base.getValue('filterModel.dlgObj', args), this.parent.treeGrid.grid);
         }
+        element.querySelector('.e-valid-input').focus();
     };
     Filter$$1.prototype.removeEventListener = function () {
         if (this.parent.isDestroyed) {
@@ -19791,7 +20429,8 @@ var Toolbar$3 = /** @class */ (function () {
     function Toolbar$$1(parent) {
         this.predefinedItems = {};
         this.items = ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll', 'Search',
-            'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport', 'CsvExport', 'PdfExport'];
+            'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport',
+            'CsvExport', 'PdfExport', 'Indent', 'Outdent'];
         this.parent = parent;
         this.id = this.parent.element.id;
         this.parent.on('ui-toolbarupdate', this.propertyChanged, this);
@@ -19813,7 +20452,8 @@ var Toolbar$3 = /** @class */ (function () {
                 this.parent.element.appendChild(this.element);
             }
             var preItems = ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll',
-                'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport', 'CsvExport', 'PdfExport'];
+                'PrevTimeSpan', 'NextTimeSpan', 'ZoomIn', 'ZoomOut', 'ZoomToFit', 'ExcelExport', 'CsvExport',
+                'PdfExport', 'Indent', 'Outdent'];
             for (var _i = 0, preItems_1 = preItems; _i < preItems_1.length; _i++) {
                 var item = preItems_1[_i];
                 var itemStr = item.toLowerCase();
@@ -20010,6 +20650,16 @@ var Toolbar$3 = /** @class */ (function () {
                             gObj.editModule.dialogModule.openToolbarEditDialog();
                         }
                         break;
+                    case gID + '_indent':
+                        if (gObj.editModule && gObj.selectionModule.getSelectedRecords().length) {
+                            gObj.indent();
+                        }
+                        break;
+                    case gID + '_outdent':
+                        if (gObj.editModule && gObj.selectionModule.getSelectedRecords().length) {
+                            gObj.outdent();
+                        }
+                        break;
                     case gID + '_update':
                         gObj.editModule.cellEditModule.isCellEdit = false;
                         gObj.treeGrid.grid.saveCell();
@@ -20105,11 +20755,13 @@ var Toolbar$3 = /** @class */ (function () {
         var disableItems = [];
         var edit = gObj.editSettings;
         var gID = this.id;
+        var ind = gObj.selectedRowIndex;
+        var previousGanttRecord;
         var isSelected = gObj.selectionModule ? gObj.selectionModule.selectedRowIndexes.length === 1 ||
             gObj.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
         var toolbarItems = this.toolbar ? this.toolbar.items : [];
         var toolbarDefaultItems = [gID + '_add', gID + '_edit', gID + '_delete',
-            gID + '_update', gID + '_cancel'];
+            gID + '_update', gID + '_cancel', gID + '_indent', gID + '_outdent'];
         var isResouceParent = ((this.parent.viewType === 'ResourceView' && sf.base.getValue('data.level', args) !== 0
             || this.parent.viewType === 'ProjectView'));
         if (!sf.base.isNullOrUndefined(this.parent.editModule)) {
@@ -20119,6 +20771,27 @@ var Toolbar$3 = /** @class */ (function () {
             edit.allowAdding && isResouceParent && !touchEdit ? enableItems.push(gID + '_add') : disableItems.push(gID + '_add');
             edit.allowEditing && isResouceParent && hasData && isSelected && !touchEdit ?
                 enableItems.push(gID + '_edit') : disableItems.push(gID + '_edit');
+            if (!edit.allowEditing || ind === 0 || ind === -1 || !hasData || !isSelected || this.parent.viewType === 'ResourceView') {
+                disableItems.push(gID + '_indent');
+                disableItems.push(gID + '_outdent');
+            }
+            else {
+                if (gObj.currentViewData[ind].level === 0 && hasData && !touchEdit) {
+                    enableItems.push(gID + '_indent');
+                    disableItems.push(gID + '_outdent');
+                }
+                else {
+                    previousGanttRecord = gObj.currentViewData[ind - 1];
+                    if ((gObj.currentViewData[ind].level - previousGanttRecord.level === 1) && ind !== -1) {
+                        disableItems.push(gID + '_indent');
+                        enableItems.push(gID + '_outdent');
+                    }
+                    else if (ind !== -1) {
+                        enableItems.push(gID + '_indent');
+                        enableItems.push(gID + '_outdent');
+                    }
+                }
+            }
             var isDeleteSelected = gObj.selectionModule ? gObj.selectionModule.selectedRowIndexes.length > 0 ||
                 gObj.selectionModule.getSelectedRowCellIndexes().length > 0 ? true : false : false;
             edit.allowDeleting && isResouceParent && hasData && isDeleteSelected && !touchEdit ?
@@ -20430,7 +21103,7 @@ var EventMarker$1 = /** @class */ (function () {
         var spanElement;
         var rightArrow;
         for (var i = 0; i < this.parent.eventMarkers.length; i++) {
-            left = this.parent.dataOperation.getTaskLeft(this.parent.dateValidationModule.getDateFromFormat(this.parent.eventMarkers[i].day), false);
+            left = this.parent.dataOperation.getTaskLeft(this.parent.dateValidationModule.getDateFromFormat(this.parent.eventMarkers[i].day, true), false);
             eventMarkerElement = sf.base.createElement('div', {
                 className: eventMarkersChild, styles: "left:" + left + "px;  height:100%;",
                 id: 'stripline' + i
@@ -20690,6 +21363,12 @@ var ContextMenu$2 = /** @class */ (function () {
             case 'Manual':
                 this.parent.changeTaskMode(this.rowData);
                 break;
+            case 'Indent':
+                this.parent.indent();
+                break;
+            case 'Outdent':
+                this.parent.outdent();
+                break;
         }
         args.type = 'Content';
         args.rowData = this.rowData;
@@ -20740,6 +21419,10 @@ var ContextMenu$2 = /** @class */ (function () {
             args.type = 'Content';
             args.disableItems = this.disableItems;
             args.hideItems = this.hideItems;
+            if (args.rowData.level === 0 && this.parent.viewType === 'ResourceView') {
+                args.cancel = true;
+                return;
+            }
             var callBackPromise_1 = new sf.data.Deferred();
             this.parent.trigger('contextMenuOpen', args, function (args) {
                 callBackPromise_1.resolve(args);
@@ -20838,6 +21521,25 @@ var ContextMenu$2 = /** @class */ (function () {
                         item.items = subMenu;
                     }
                     break;
+                case 'Indent':
+                    var index = this.parent.selectedRowIndex;
+                    var isSelected = this.parent.selectionModule ? this.parent.selectionModule.selectedRowIndexes.length === 1 ||
+                        this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
+                    var prevRecord = this.parent.currentViewData[this.parent.selectionModule.getSelectedRowIndexes()[0] - 1];
+                    if (!this.parent.editSettings.allowEditing || index === 0 || index === -1 || !isSelected ||
+                        this.parent.viewType === 'ResourceView' || this.parent.currentViewData[index].level - prevRecord.level === 1) {
+                        this.hideItems.push(item.text);
+                    }
+                    break;
+                case 'Outdent':
+                    var ind = this.parent.selectionModule.getSelectedRowIndexes()[0];
+                    var isSelect = this.parent.selectionModule ? this.parent.selectionModule.selectedRowIndexes.length === 1 ||
+                        this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
+                    if (!this.parent.editSettings.allowEditing || ind === -1 || ind === 0 || !isSelect ||
+                        this.parent.viewType === 'ResourceView' || this.parent.currentViewData[ind].level === 0) {
+                        this.hideItems.push(item.text);
+                    }
+                    break;
             }
         }
     };
@@ -20900,6 +21602,12 @@ var ContextMenu$2 = /** @class */ (function () {
             case 'TaskInformation':
                 contentMenuItem = this.createItemModel(content, item, this.getLocale('taskInformation'), this.getIconCSS(editIcon, iconCSS));
                 break;
+            case 'Indent':
+                contentMenuItem = this.createItemModel(content, item, this.getLocale('indent'), this.getIconCSS(indentIcon, iconCSS));
+                break;
+            case 'Outdent':
+                contentMenuItem = this.createItemModel(content, item, this.getLocale('outdent'), this.getIconCSS(outdentIcon, iconCSS));
+                break;
             case 'Save':
                 contentMenuItem = this.createItemModel(editIcon, item, this.getLocale('save'), this.getIconCSS(saveIcon, iconCSS));
                 break;
@@ -20912,7 +21620,9 @@ var ContextMenu$2 = /** @class */ (function () {
                 contentMenuItem.items = [];
                 contentMenuItem.items.push(this.createItemModel(content, 'Above', this.getLocale('above'), this.getIconCSS(addAboveIcon, iconCSS)));
                 contentMenuItem.items.push(this.createItemModel(content, 'Below', this.getLocale('below'), this.getIconCSS(addBelowIcon, iconCSS)));
-                contentMenuItem.items.push(this.createItemModel(content, 'Child', this.getLocale('child')));
+                if (this.parent.viewType !== 'ResourceView') {
+                    contentMenuItem.items.push(this.createItemModel(content, 'Child', this.getLocale('child')));
+                }
                 contentMenuItem.items.push(this.createItemModel(content, 'Milestone', this.getLocale('milestone')));
                 break;
             case 'DeleteTask':
@@ -20961,7 +21671,7 @@ var ContextMenu$2 = /** @class */ (function () {
         return ['AutoFitAll', 'AutoFit',
             'TaskInformation', 'DeleteTask', 'Save', 'Cancel',
             'SortAscending', 'SortDescending', 'Add',
-            'DeleteDependency', 'Convert', 'TaskMode'
+            'DeleteDependency', 'Convert', 'TaskMode', 'Indent', 'Outdent'
         ];
     };
     /**
@@ -21121,6 +21831,8 @@ var RowDD$1 = /** @class */ (function () {
         /** @hidden */
         this.isaddtoBottom = false;
         /** @hidden */
+        this.isSharedTask = false;
+        /** @hidden */
         this.canDrop = true;
         this.parent = gantt;
         sf.treegrid.TreeGrid.Inject(sf.treegrid.RowDD);
@@ -21218,6 +21930,9 @@ var RowDD$1 = /** @class */ (function () {
         if (this.parent.filterSettings.columns.length > 0 || this.parent.sortSettings.columns.length > 0) {
             args.cancel = true;
         }
+        if (this.parent.viewType === 'ResourceView' && sf.base.getValue('level', args.data[0]) === 0) {
+            args.cancel = true;
+        }
     };
     RowDD$$1.prototype.rowDrop = function (args) {
         var ganttDragelem = document.querySelector('.e-ganttdrag');
@@ -21226,6 +21941,24 @@ var RowDD$1 = /** @class */ (function () {
         }
         args.dropRecord = this.parent.currentViewData[args.dropIndex];
         this.parent.trigger('rowDrop', args);
+        if (this.parent.viewType === 'ResourceView') {
+            if (args.dropPosition === 'middleSegment') {
+                if (args.dropRecord.level === 1) {
+                    args.cancel = true; // preventing to drop the record as child to any child records 
+                }
+                else if (args.dropRecord.uniqueID === sf.base.getValue('parentItem', args.data[0]).uniqueID) {
+                    args.cancel = true;
+                }
+            }
+            if (args.dropPosition !== 'middleSegment') {
+                if (args.dropRecord.level === 0) {
+                    args.cancel = true;
+                }
+                else if (sf.base.getValue('parentItem', args.data[0]).uniqueID === args.dropRecord.parentItem.uniqueID) {
+                    args.cancel = true;
+                }
+            }
+        }
         if (!args.cancel) {
             args.cancel = true;
             args.requestType = 'beforeDrop';
@@ -21233,6 +21966,7 @@ var RowDD$1 = /** @class */ (function () {
             this.dropRows(args, true); // method to update the data collections based on drop action
         }
     };
+    /* tslint:disable-next-line:max-func-body-length */
     RowDD$$1.prototype.dropRows = function (args, isByMethod) {
         this.dropPosition = args.dropPosition;
         if (args.dropPosition !== 'Invalid' && this.parent.editModule) {
@@ -21259,40 +21993,56 @@ var RowDD$1 = /** @class */ (function () {
                         this.deleteDragRow();
                     }
                     var recordIndex1 = this.ganttData.indexOf(droppedRecord);
+                    if (this.parent.viewType === 'ResourceView') {
+                        this.checkisSharedTask();
+                        this.previousParent = this.draggedRecord.parentItem.uniqueID;
+                    }
                     if (this.dropPosition === 'topSegment') {
                         this.dropAtTop(recordIndex1);
                     }
                     if (this.dropPosition === 'bottomSegment') {
-                        if (!droppedRecord.hasChildRecords) {
-                            if (this.parent.taskFields.parentID && this.parent.dataSource.length > 0) {
-                                this.parent.dataSource.splice(recordIndex1 + 1, 0, this.draggedRecord.taskData);
+                        if (!this.isSharedTask) {
+                            if (!droppedRecord.hasChildRecords) {
+                                if (this.parent.taskFields.parentID && this.parent.dataSource.length > 0) {
+                                    this.parent.dataSource.splice(recordIndex1 + 1, 0, this.draggedRecord.taskData);
+                                }
+                                this.ganttData.splice(recordIndex1 + 1, 0, this.draggedRecord);
+                                this.parent.flatData.splice(recordIndex1 + 1, 0, this.draggedRecord);
+                                this.parent.ids.splice(recordIndex1 + 1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
+                                if (this.parent.viewType === 'ResourceView') {
+                                    /* tslint:disable-next-line */
+                                    var taskId = this.draggedRecord.level === 0 ? 'R' + this.draggedRecord.ganttProperties.taskId : 'T' + this.draggedRecord.ganttProperties.taskId;
+                                    this.parent.getTaskIds().splice(recordIndex1 + 1, 0, taskId);
+                                }
                             }
-                            this.ganttData.splice(recordIndex1 + 1, 0, this.draggedRecord);
-                            this.parent.flatData.splice(recordIndex1 + 1, 0, this.draggedRecord);
-                            this.parent.ids.splice(recordIndex1 + 1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
-                        }
-                        else {
-                            count = this.parent.editModule.getChildCount(droppedRecord, 0);
-                            if (this.parent.taskFields.parentID && this.parent.dataSource.length > 0) {
-                                this.parent.dataSource.splice(recordIndex1 + count + 1, 0, this.draggedRecord.taskData);
+                            else {
+                                count = this.parent.editModule.getChildCount(droppedRecord, 0);
+                                if (this.parent.taskFields.parentID && this.parent.dataSource.length > 0) {
+                                    this.parent.dataSource.splice(recordIndex1 + count + 1, 0, this.draggedRecord.taskData);
+                                }
+                                this.ganttData.splice(recordIndex1 + count + 1, 0, this.draggedRecord);
+                                this.parent.flatData.splice(recordIndex1 + count + 1, 0, this.draggedRecord);
+                                this.parent.ids.splice(recordIndex1 + count + 1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
+                                if (this.parent.viewType === 'ResourceView') {
+                                    /* tslint:disable-next-line */
+                                    var spliceId = this.draggedRecord.level === 0 ? 'R' + this.draggedRecord.ganttProperties.taskId : 'T' + this.draggedRecord.ganttProperties.taskId;
+                                    this.parent.getTaskIds().splice(recordIndex1 + count + 1, 0, spliceId);
+                                }
                             }
-                            this.ganttData.splice(recordIndex1 + count + 1, 0, this.draggedRecord);
-                            this.parent.flatData.splice(recordIndex1 + count + 1, 0, this.draggedRecord);
-                            this.parent.ids.splice(recordIndex1 + count + 1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
-                        }
-                        draggedRecord.parentItem = this.ganttData[recordIndex1].parentItem;
-                        draggedRecord.parentUniqueID = this.ganttData[recordIndex1].parentUniqueID;
-                        draggedRecord.level = this.ganttData[recordIndex1].level;
-                        if (draggedRecord.hasChildRecords) {
-                            var level = 1;
-                            this.updateChildRecordLevel(draggedRecord, level);
-                            this.updateChildRecord(draggedRecord, recordIndex1 + count + 1);
-                        }
-                        if (droppedRecord.parentItem) {
-                            var rec = this.parent.getParentTask(droppedRecord.parentItem).childRecords;
-                            var childRecords = rec;
-                            var droppedRecordIndex = childRecords.indexOf(droppedRecord) + 1;
-                            childRecords.splice(droppedRecordIndex, 0, draggedRecord);
+                            draggedRecord.parentItem = this.ganttData[recordIndex1].parentItem;
+                            draggedRecord.parentUniqueID = this.ganttData[recordIndex1].parentUniqueID;
+                            draggedRecord.level = this.ganttData[recordIndex1].level;
+                            if (draggedRecord.hasChildRecords) {
+                                var level = 1;
+                                this.updateChildRecordLevel(draggedRecord, level);
+                                this.updateChildRecord(draggedRecord, recordIndex1 + count + 1);
+                            }
+                            if (droppedRecord.parentItem) {
+                                var rec = this.parent.getParentTask(droppedRecord.parentItem).childRecords;
+                                var childRecords = rec;
+                                var droppedRecordIndex = childRecords.indexOf(droppedRecord) + 1;
+                                childRecords.splice(droppedRecordIndex, 0, draggedRecord);
+                            }
                         }
                     }
                     if (this.dropPosition === 'middleSegment') {
@@ -21321,6 +22071,38 @@ var RowDD$1 = /** @class */ (function () {
                     }
                 }
             }
+            if (this.parent.viewType === 'ResourceView' && !this.isSharedTask) {
+                var parentUniqueID = void 0;
+                if (this.dropPosition === 'middleSegment') {
+                    parentUniqueID = this.droppedRecord.uniqueID;
+                }
+                else {
+                    parentUniqueID = this.droppedRecord.parentItem.uniqueID;
+                }
+                var droppedParentItem = this.parent.getTaskByUniqueID(parentUniqueID);
+                var editedObj = {};
+                editedObj[this.parent.taskFields.resourceInfo] = [];
+                editedObj[this.parent.taskFields.resourceInfo].push(droppedParentItem.ganttProperties.taskId);
+                this.removeExistingResources();
+                var tempResourceInfo = this.parent.dataOperation.setResourceInfo(editedObj);
+                var currentTask = this.draggedRecord;
+                if (sf.base.isNullOrUndefined(currentTask.ganttProperties.resourceInfo)) {
+                    currentTask.ganttProperties.resourceInfo = [];
+                }
+                if (droppedParentItem.ganttProperties.taskName === 'Unassigned Task') {
+                    currentTask.ganttProperties.resourceInfo = [];
+                }
+                else {
+                    currentTask.ganttProperties.resourceInfo.push(tempResourceInfo[0]);
+                }
+                this.updateCurrentTask(currentTask);
+                if (droppedParentItem.ganttProperties.taskName === 'Unassigned Task') {
+                    this.deleteSharedResourceTask();
+                }
+                else {
+                    this.updateSharedResourceTask();
+                }
+            }
             // method to update the edited parent records
             for (var j = 0; j < this.updateParentRecords.length; j++) {
                 this.parent.dataOperation.updateParentItems(this.updateParentRecords[j]);
@@ -21333,6 +22115,89 @@ var RowDD$1 = /** @class */ (function () {
         args.modifiedRecords = this.parent.editedRecords;
         this.parent.trigger('actionComplete', args);
         this.parent.editedRecords = [];
+    };
+    RowDD$$1.prototype.updateCurrentTask = function (currentTask) {
+        this.parent.dataOperation.updateMappingData(currentTask, 'resourceInfo');
+        this.parent.editModule.updateResourceRelatedFields(currentTask, 'resource');
+        /* tslint:disable-next-line:no-any */
+        this.parent.editModule.dialogModule.dialogEditValidationFlag = false;
+        this.parent.editModule.dialogModule.validateDuration(currentTask);
+        this.parent.dataOperation.updateWidthLeft(currentTask);
+        this.parent.dataOperation.updateTaskData(currentTask);
+    };
+    RowDD$$1.prototype.deleteSharedResourceTask = function () {
+        for (var i = 0; i < this.parent.getTaskIds().length; i++) {
+            if (this.parent.getTaskIds()[i] === 'T' + this.draggedRecord.ganttProperties.taskId) {
+                /* tslint:disable-next-line */
+                if (this.parent.getTaskByUniqueID(this.parent.currentViewData[i].parentItem.uniqueID).ganttProperties.taskName !== 'Unassigned Task') {
+                    this.removeRecords(this.parent.currentViewData[i]);
+                }
+                /* tslint:disable-next-line */
+                if (!sf.base.isNullOrUndefined(this.parent.currentViewData[i].parentItem && this.updateParentRecords.indexOf(this.parent.currentViewData[i].parentItem) !== -1)) {
+                    this.updateParentRecords.push(this.parent.currentViewData[i].parentItem);
+                }
+            }
+        }
+    };
+    RowDD$$1.prototype.removeExistingResources = function () {
+        var preParentRecord = this.parent.getTaskByUniqueID(this.previousParent);
+        if (this.draggedRecord.ganttProperties.resourceInfo) {
+            for (var count = 0; count < this.draggedRecord.ganttProperties.resourceInfo.length; count++) {
+                /* tslint:disable-next-line */
+                if (this.draggedRecord.ganttProperties.resourceInfo[count][this.parent.resourceFields.id] === preParentRecord.ganttProperties.taskId) {
+                    this.draggedRecord.ganttProperties.resourceInfo.splice(count, 1);
+                    break;
+                }
+            }
+        }
+    };
+    /*update the record for the same task which are shared with other tasks*/
+    RowDD$$1.prototype.updateSharedResourceTask = function () {
+        for (var i = 0; i < this.parent.getTaskIds().length; i++) {
+            if (this.parent.getTaskIds()[i] === 'T' + this.draggedRecord.ganttProperties.taskId) {
+                this.parent.editModule.updateGanttProperties(this.draggedRecord, this.parent.currentViewData[i]);
+                this.parent.dataOperation.updateTaskData(this.parent.currentViewData[i]);
+                /* tslint:disable-next-line */
+                if (!sf.base.isNullOrUndefined(this.parent.currentViewData[i].parentItem && this.updateParentRecords.indexOf(this.parent.currentViewData[i].parentItem) !== -1)) {
+                    this.updateParentRecords.push(this.parent.currentViewData[i].parentItem);
+                }
+            }
+        }
+    };
+    RowDD$$1.prototype._getExistingTaskWithID = function (record) {
+        var existingTasks = [];
+        for (var i = 0; i < this.parent.getTaskIds().length; i++) {
+            if (this.parent.getTaskIds()[i] === 'T' + record.ganttProperties.taskId) {
+                existingTasks.push(this.parent.currentViewData[i]);
+            }
+        }
+        return existingTasks;
+    };
+    /*Method to remove resource from resource Info collection and update reosurce related fields*/
+    RowDD$$1.prototype.removeResourceInfo = function (record) {
+        var droppedParentItem = this.parent.getTaskByUniqueID(this.draggedRecord.parentItem.uniqueID);
+        if (record.ganttProperties.resourceInfo && record.ganttProperties.resourceInfo.length > 1) {
+            var sameIdTasks = this._getExistingTaskWithID(record);
+            var currentTask = void 0;
+            if (sameIdTasks == null) {
+                return;
+            }
+            for (var i = 0; i < sameIdTasks.length; i++) {
+                currentTask = sameIdTasks[i];
+                var resources = currentTask.ganttProperties.resourceInfo;
+                for (var count = 0; count < resources.length; count++) {
+                    if (resources[count][this.parent.resourceFields.id] === droppedParentItem.ganttProperties.taskId) {
+                        resources.splice(count, 1);
+                        this.parent.setRecordValue('resourceInfo', resources, currentTask.ganttProperties, true);
+                        this.updateCurrentTask(currentTask);
+                        if (!sf.base.isNullOrUndefined(currentTask.parentItem && this.updateParentRecords.indexOf(currentTask.parentItem) !== -1)) {
+                            this.updateParentRecords.push(currentTask.parentItem);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
     };
     RowDD$$1.prototype.refreshDataSource = function () {
         var draggedRecord = this.draggedRecord;
@@ -21394,13 +22259,18 @@ var RowDD$1 = /** @class */ (function () {
         var childRecordsLength = (sf.base.isNullOrUndefined(childRecords) ||
             childRecords === 0) ? recordIndex1 + 1 :
             childRecords + recordIndex1 + 1;
-        if (this.dropPosition === 'middleSegment') {
+        if (this.dropPosition === 'middleSegment' && !this.isSharedTask) {
             if (gObj.taskFields.parentID && this.parent.dataSource.length > 0) {
                 this.parent.dataSource.splice(childRecordsLength, 0, this.draggedRecord.taskData);
             }
             this.ganttData.splice(childRecordsLength, 0, this.draggedRecord);
             this.parent.flatData.splice(childRecordsLength, 0, this.draggedRecord);
             this.parent.ids.splice(childRecordsLength, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
+            if (this.parent.viewType === 'ResourceView') {
+                /* tslint:disable-next-line */
+                var recordId = this.draggedRecord.level === 0 ? 'R' + this.draggedRecord.ganttProperties.taskId : 'T' + this.draggedRecord.ganttProperties.taskId;
+                this.parent.getTaskIds().splice(childRecordsLength, 0, recordId);
+            }
             if (this.draggedRecord.hasChildRecords) {
                 this.updateChildRecord(this.draggedRecord, childRecordsLength, this.droppedRecord.expanded);
             }
@@ -21463,30 +22333,55 @@ var RowDD$1 = /** @class */ (function () {
         deletedRow = this.parent.getTaskByUniqueID(this.draggedRecord.uniqueID);
         this.removeRecords(deletedRow);
     };
+    //method to check the dropped record has already present in the child collection
+    RowDD$$1.prototype.checkisSharedTask = function () {
+        this.isSharedTask = false;
+        var sharedTask = null;
+        var parentUniqueID = this.droppedRecord.level === 0 ? this.droppedRecord.uniqueID : this.droppedRecord.parentItem.uniqueID;
+        var droppedParentItem = this.parent.getTaskByUniqueID(parentUniqueID);
+        var childTasks = droppedParentItem.childRecords;
+        for (var i = 0; i < childTasks.length; i++) {
+            if ('T' + this.draggedRecord.ganttProperties.taskId === 'T' + childTasks[i].ganttProperties.taskId) {
+                this.isSharedTask = true;
+                sharedTask = childTasks[i];
+            }
+        }
+        if (this.isSharedTask) {
+            this.removeResourceInfo(sharedTask);
+        }
+    };
     RowDD$$1.prototype.dropAtTop = function (recordIndex1) {
         var gObj = this.parent;
-        if (gObj.taskFields.parentID && this.parent.dataSource.length > 0) {
-            this.parent.dataSource.splice(recordIndex1, 0, this.draggedRecord.taskData);
-        }
-        this.draggedRecord.parentItem = this.ganttData[recordIndex1].parentItem;
-        this.draggedRecord.parentUniqueID = this.ganttData[recordIndex1].parentUniqueID;
-        this.draggedRecord.level = this.ganttData[recordIndex1].level;
-        this.ganttData.splice(recordIndex1, 0, this.draggedRecord);
-        this.parent.flatData.splice(recordIndex1, 0, this.draggedRecord);
-        this.parent.ids.splice(recordIndex1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
-        if (this.draggedRecord.hasChildRecords) {
-            var level = 1;
-            this.updateChildRecord(this.draggedRecord, recordIndex1);
-            this.updateChildRecordLevel(this.draggedRecord, level);
-        }
-        if (this.droppedRecord.parentItem) {
-            var rec = this.parent.getParentTask(this.droppedRecord.parentItem).childRecords;
-            var childRecords = rec;
-            var droppedRecordIndex = childRecords.indexOf(this.droppedRecord);
-            childRecords.splice(droppedRecordIndex, 0, this.draggedRecord);
-        }
-        if (!sf.base.isNullOrUndefined(this.draggedRecord.parentItem && this.updateParentRecords.indexOf(this.draggedRecord.parentItem) !== -1)) {
-            this.updateParentRecords.push(this.draggedRecord.parentItem);
+        if (!this.isSharedTask) {
+            if (gObj.taskFields.parentID && this.parent.dataSource.length > 0) {
+                this.parent.dataSource.splice(recordIndex1, 0, this.draggedRecord.taskData);
+            }
+            this.draggedRecord.parentItem = this.ganttData[recordIndex1].parentItem;
+            this.draggedRecord.parentUniqueID = this.ganttData[recordIndex1].parentUniqueID;
+            this.draggedRecord.level = this.ganttData[recordIndex1].level;
+            this.ganttData.splice(recordIndex1, 0, this.draggedRecord);
+            this.parent.flatData.splice(recordIndex1, 0, this.draggedRecord);
+            this.parent.ids.splice(recordIndex1, 0, this.draggedRecord.ganttProperties.rowUniqueID.toString());
+            if (this.parent.viewType === 'ResourceView') {
+                /* tslint:disable-next-line */
+                var id = this.draggedRecord.level === 0 ? 'R' + this.draggedRecord.ganttProperties.taskId : 'T' + this.draggedRecord.ganttProperties.taskId;
+                this.parent.getTaskIds().splice(recordIndex1, 0, id);
+            }
+            if (this.draggedRecord.hasChildRecords) {
+                var level = 1;
+                this.updateChildRecord(this.draggedRecord, recordIndex1);
+                this.updateChildRecordLevel(this.draggedRecord, level);
+            }
+            if (this.droppedRecord.parentItem) {
+                var rec = this.parent.getParentTask(this.droppedRecord.parentItem).childRecords;
+                var childRecords = rec;
+                var droppedRecordIndex = childRecords.indexOf(this.droppedRecord);
+                childRecords.splice(droppedRecordIndex, 0, this.draggedRecord);
+            }
+            /* tslint:disable-next-line */
+            if (!sf.base.isNullOrUndefined(this.draggedRecord.parentItem && this.updateParentRecords.indexOf(this.draggedRecord.parentItem) !== -1)) {
+                this.updateParentRecords.push(this.draggedRecord.parentItem);
+            }
         }
     };
     RowDD$$1.prototype.updateChildRecordLevel = function (record, level) {
@@ -21545,6 +22440,14 @@ var RowDD$1 = /** @class */ (function () {
                 var childRecords = flatParentData ? flatParentData.childRecords : [];
                 var childIndex = 0;
                 if (childRecords && childRecords.length > 0) {
+                    if (this.parent.viewType === 'ResourceView' && childRecords.length === 1) {
+                        //For updating the parent record which has zero parent reords.
+                        this.parent.isOnDelete = true;
+                        childRecords[0].isDelete = true;
+                        this.parent.dataOperation.updateParentItems(flatParentData);
+                        this.parent.isOnDelete = false;
+                        childRecords[0].isDelete = false;
+                    }
                     childIndex = childRecords.indexOf(deletedRow);
                     flatParentData.childRecords.splice(childIndex, 1);
                     // collection for updating parent record
@@ -21576,6 +22479,9 @@ var RowDD$1 = /** @class */ (function () {
                     this.ganttData.splice(idx, 1);
                     this.parent.flatData.splice(idx, 1);
                     this.parent.ids.splice(idx, 1);
+                    if (this.parent.viewType === 'ResourceView') {
+                        this.parent.getTaskIds().splice(idx, 1);
+                    }
                 }
             }
             var recordIndex = this.ganttData.indexOf(deletedRow);
@@ -21584,6 +22490,9 @@ var RowDD$1 = /** @class */ (function () {
                 this.ganttData.splice(recordIndex, deletedRecordCount + 1);
                 this.parent.flatData.splice(recordIndex, deletedRecordCount + 1);
                 this.parent.ids.splice(recordIndex, deletedRecordCount + 1);
+                if (this.parent.viewType === 'ResourceView') {
+                    this.parent.getTaskIds().splice(recordIndex, deletedRecordCount + 1);
+                }
             }
             if (deletedRow.parentItem && flatParentData && flatParentData.childRecords && !flatParentData.childRecords.length) {
                 flatParentData.expanded = false;
@@ -21612,6 +22521,9 @@ var RowDD$1 = /** @class */ (function () {
                 this.ganttData.splice(idx, 1);
                 this.parent.flatData.splice(idx, 1);
                 this.parent.ids.splice(idx, 1);
+                if (this.parent.viewType === 'ResourceView') {
+                    this.parent.getTaskIds().splice(idx, 1);
+                }
             }
             if (currentRecord.hasChildRecords) {
                 this.removeChildItem(currentRecord);

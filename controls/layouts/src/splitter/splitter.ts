@@ -1171,7 +1171,7 @@ export class Splitter extends Component<HTMLElement> {
     }
 
     private isSeparator(target: HTMLElement): boolean {
-        return ((target.classList.contains(RESIZE_BAR) || target.classList.contains(SPLIT_BAR)) ? false : true);
+        return (target.classList.contains(SPLIT_BAR) ? false : true);
     }
 
     private isMouseEvent(e: MouseEvent | TouchEvent | PointerEvent | KeyboardEvent): boolean {
@@ -1225,9 +1225,14 @@ export class Splitter extends Component<HTMLElement> {
             totalWidth += this.orientation === 'Horizontal' ? (children[i] as HTMLElement).offsetWidth :
              (children[i] as HTMLElement).offsetHeight;
         }
-        let diff : number =  this.orientation === 'Horizontal' ? (this.element.offsetWidth -
-            (this.allBars[0].offsetWidth * this.allBars.length)) - totalWidth :
-        (this.element.offsetHeight - (this.allBars[0].offsetHeight * this.allBars.length)) - totalWidth;
+        for (let j : number = 0 ; j < this.allBars.length ; j++) {
+            totalWidth +=  this.orientation === 'Horizontal' ? parseInt(getComputedStyle(this.allBars[j]).marginLeft, 10) +
+            parseInt(getComputedStyle(this.allBars[j]).marginLeft, 10) : parseInt(getComputedStyle(this.allBars[j]).marginTop, 10) +
+            parseInt(getComputedStyle(this.allBars[j]).marginBottom, 10) ;
+        }
+        let diff : number = this.orientation === 'Horizontal' ? this.element.offsetWidth -
+                ((this.border * 2) + totalWidth) :
+                this.element.offsetHeight - ((this.border * 2) + totalWidth);
         for (let i : number = 0; i < this.allPanes.length; i++) {
             if (!this.paneSettings[i].size && !(this.allPanes[i].innerText === '')) {
                 flexPaneIndexes[flexCount] = i;
@@ -1277,6 +1282,15 @@ export class Splitter extends Component<HTMLElement> {
         }
         if (icon.classList.contains(ARROW_RIGHT) || icon.classList.contains(ARROW_DOWN)) {
             this.expandAction(e);
+        }
+        let totalWidth : number = 0;
+        let children : HTMLCollection = this.element.children;
+        for (let i : number = 0; i < children.length; i++) {
+            totalWidth += this.orientation === 'Horizontal' ? (children[i] as HTMLElement).offsetWidth :
+             (children[i] as HTMLElement).offsetHeight;
+        }
+        if (totalWidth > this.element.offsetWidth) {
+            this.updateSplitterSize();
         }
     }
 
@@ -1393,8 +1407,11 @@ export class Splitter extends Component<HTMLElement> {
                 this.hideTargetBarIcon(this.currentSeparator, this.rightArrow);
             }
         } else if (!this.splitInstance.prevPaneCollapsed && !this.splitInstance.nextPaneExpanded) {
-            this.resizableModel(this.currentBarIndex, true);
-            if (!this.splitInstance.nextPaneNextEle.classList.contains(COLLAPSE_PANE)) {
+            if (this.paneSettings[this.currentBarIndex].resizable) {
+                this.resizableModel(this.currentBarIndex, true);
+            }
+            if (!this.splitInstance.nextPaneNextEle.classList.contains(COLLAPSE_PANE) &&
+            this.paneSettings[this.currentBarIndex + 1].resizable) {
                 this.resizableModel(this.currentBarIndex + 1, true);
             }
             if (!this.paneSettings[this.currentBarIndex].collapsible) {
@@ -1530,10 +1547,14 @@ export class Splitter extends Component<HTMLElement> {
             if (this.paneSettings[this.nextPaneIndex].collapsible) {
                 removeClass([e.target as HTMLElement], HIDE_ICON);
             }
-            this.resizableModel(this.currentBarIndex, true);
+            if (this.paneSettings[this.currentBarIndex].resizable) {
+                this.resizableModel(this.currentBarIndex, true);
+            }
             if (!isNullOrUndefined(this.prevBar) &&
                 !this.splitInstance.prevPanePreEle.classList.contains(COLLAPSE_PANE)) {
-                this.resizableModel(this.currentBarIndex - 1, true);
+                if (this.paneSettings[this.currentBarIndex - 1].resizable) {
+                    this.resizableModel(this.currentBarIndex - 1, true);
+                }
                 if (this.paneSettings[this.prevPaneIndex].collapsible) {
                     this.showTargetBarIcon(this.prevBar, this.rightArrow);
                 }
@@ -1909,7 +1930,9 @@ export class Splitter extends Component<HTMLElement> {
         this.addStaticPaneClass();
         this.previousPane.style.flexBasis = this.prevPaneCurrentWidth;
         this.nextPane.style.flexBasis = this.nextPaneCurrentWidth;
-        this.updateSplitterSize();
+        if (!(this.allPanes.length > 2)) {
+            this.updateSplitterSize();
+        }
     }
 
     private validateMinRange(paneIndex: number, paneCurrentWidth: number, pane: HTMLElement): number {

@@ -121,6 +121,7 @@ export class ListBox extends DropDownBase {
     private targetInputElement: HTMLInputElement | string;
     private isValidKey: boolean = false;
     private isFiltered: boolean;
+    private clearFilterIconElem: Element;
     private remoteFilterAction: boolean;
     private mainList: HTMLElement;
     private remoteCustomValue: boolean;
@@ -195,6 +196,13 @@ export class ListBox extends DropDownBase {
      */
     @Property(true)
     public ignoreCase: boolean;
+
+    /**
+     * Accepts the value to be displayed as a watermark text on the filter bar. 
+     * @default null
+     */
+    @Property(null)
+    public filterBarPlaceholder: string;
 
     /**
      * Triggers while rendering each list item.
@@ -571,6 +579,22 @@ export class ListBox extends DropDownBase {
             this.isValidKey = false;
         }
         this.keyDownStatus = false;
+        this.refreshClearIcon();
+    }
+
+    private clearText(): void {
+        this.filterInput.value = '';
+        this.refreshClearIcon();
+        let event: KeyboardEvent = document.createEvent('KeyboardEvent');
+        this.isValidKey = true;
+        this.KeyUp(event);
+    }
+
+    private refreshClearIcon(): void {
+        if (this.filterInput.parentElement.querySelector('.' + listBoxClasses.clearIcon)) {
+            let clearElement: HTMLElement = <HTMLElement>this.filterInput.parentElement.querySelector('.' + listBoxClasses.clearIcon);
+            clearElement.style.visibility = this.filterInput.value === '' ? 'hidden' : 'visible';
+        }
     }
 
     protected onActionComplete(
@@ -637,14 +661,9 @@ export class ListBox extends DropDownBase {
         this.trigger('drag', this.getDragArgs(args as DragEventArgs & BlazorDragEventArgs));
         let listObj: ListBox = this.getComponent(args.target);
         if (listObj && listObj.listData.length === 0) {
-            if (isBlazor()) {
-                listObj.ulElement.childNodes.forEach((elem: HTMLElement) => {
-                    if (elem.nodeName === '#text') {
-                        elem.nodeValue = '';
-                    }
-                });
-            } else {
-                listObj.ulElement.innerHTML = '';
+            let noRecElem: Element = listObj.ulElement.getElementsByClassName('e-list-nrt')[0];
+            if (noRecElem) {
+                listObj.ulElement.removeChild(noRecElem);
             }
         }
     }
@@ -1055,7 +1074,6 @@ export class ListBox extends DropDownBase {
                     let dataValue2: string = this.getFormattedValue(liEle[index].getAttribute('data-value')) as string;
                     this.value = (this.value as string[]).filter((e: string) => e !== dataValue2);
                 }
-
             }
             if (document.querySelectorAll('ul').length < 2) {
                 this.updateMainList();
@@ -1125,6 +1143,9 @@ export class ListBox extends DropDownBase {
         EventHandler.remove(this.list, 'click', this.clickHandler);
         EventHandler.remove(wrapper, 'keydown', this.keyDownHandler);
         EventHandler.remove(wrapper, 'focusout', this.focusOutHandler);
+        if (this.allowFiltering) {
+            EventHandler.remove(this.clearFilterIconElem, 'click', this.clearText);
+        }
         if (this.toolbarSettings.items.length) {
             EventHandler.remove(this.getToolElem(), 'click', this.toolbarClickHandler);
         }
@@ -1177,16 +1198,23 @@ export class ListBox extends DropDownBase {
                 this.filterInput = this.list.querySelector('.e-input-filter');
             } else {
                 this.filterParent = this.createElement('span', {
-                    className: 'e-filter-parent'
+                    className: listBoxClasses.filterParent
                 });
                 this.filterInput = <HTMLInputElement>this.createElement('input', {
                     attrs: { type: 'text' },
-                    className: 'e-input-filter'
+                    className: listBoxClasses.filterInput
                 });
                 this.element.parentNode.insertBefore(this.filterInput, this.element);
+                let backIcon: boolean = false;
+                if (Browser.isDevice) {
+                    backIcon = true;
+                }
                 filterInputObj = Input.createInput(
                     {
-                        element: this.filterInput
+                        element: this.filterInput,
+                        buttons: backIcon ?
+                            [listBoxClasses.backIcon, listBoxClasses.filterBarClearIcon] : [listBoxClasses.filterBarClearIcon],
+                        properties: { placeholder: this.filterBarPlaceholder }
                     },
                     this.createElement
                 );
@@ -1207,6 +1235,11 @@ export class ListBox extends DropDownBase {
                 addClass([this.list], 'e-filter-list');
             }
             this.inputString = this.filterInput.value;
+            this.clearFilterIconElem = this.filterInput.parentElement.querySelector('.' + listBoxClasses.clearIcon);
+            if (!Browser.isDevice && this.clearFilterIconElem) {
+                EventHandler.add(this.clearFilterIconElem, 'click', this.clearText, this);
+                (this.clearFilterIconElem as HTMLElement).style.visibility = 'hidden';
+            }
             EventHandler.add(this.filterInput, 'input', this.onInput, this);
             EventHandler.add(this.filterInput, 'keyup', this.KeyUp, this);
             EventHandler.add(this.filterInput, 'keydown', this.onKeyDown, this);
@@ -1465,14 +1498,9 @@ export class ListBox extends DropDownBase {
                 tListBox.liCollections = tliCollections.concat(rLiCollection.reverse());
             }
             if (tListBox.listData.length === 0) {
-                if (isBlazor()) {
-                    tListBox.ulElement.childNodes.forEach((elem: HTMLElement) => {
-                    if (elem.nodeName === '#text') {
-                        elem.nodeValue = '';
-                    }
-                });
-                } else {
-                    tListBox.ulElement.innerHTML = '';
+                let noRecElem: Element = tListBox.ulElement.getElementsByClassName('e-list-nrt')[0];
+                if (noRecElem) {
+                    tListBox.ulElement.removeChild(noRecElem);
                 }
             }
             dataIdx.sort((n1: number, n2: number) => n2 - n1).forEach((i: number) => {
@@ -1533,7 +1561,7 @@ export class ListBox extends DropDownBase {
             }
         }
         if (fListBox.value.length === 1 && fListBox.getSelectedItems().length) {
-            fListBox.value[0] = fListBox.getSelectedItems()[0].innerHTML;
+            fListBox.value[0] = fListBox.getFormattedValue(fListBox.getSelectedItems()[0].getAttribute('data-value'));
         }
     }
 
@@ -1559,25 +1587,15 @@ export class ListBox extends DropDownBase {
             return;
         }
         if (tListBox.listData.length === 0) {
-            if (isBlazor()) {
-                tListBox.ulElement.childNodes.forEach((elem: HTMLElement) => {
-                    if (elem.nodeName === '#text') {
-                        elem.nodeValue = '';
-                    }
-                });
-            } else {
-                tListBox.ulElement.innerHTML = '';
+            let noRecElem: Element = tListBox.ulElement.getElementsByClassName('e-list-nrt')[0];
+            if (noRecElem) {
+                tListBox.ulElement.removeChild(noRecElem);
             }
         }
         if (isRefresh) {
-            if (isBlazor()) {
-                fListBox.ulElement.childNodes.forEach((elem: HTMLElement) => {
-                    if (elem.nodeName === '#text') {
-                        elem.nodeValue = '';
-                    }
-                });
-            } else {
-                fListBox.ulElement.innerHTML = '';
+            let noRecElem: Element = fListBox.ulElement.getElementsByClassName('e-list-nrt')[0];
+            if (noRecElem) {
+                fListBox.ulElement.removeChild(noRecElem);
             }
         } else {
             moveTo(
@@ -1842,6 +1860,9 @@ export class ListBox extends DropDownBase {
         let ele: Element = this.list.getElementsByClassName('e-focused')[0];
         if (ele) {
             ele.classList.remove('e-focused');
+        }
+        if (this.allowFiltering) {
+            this.refreshClearIcon();
         }
     }
 
@@ -2143,6 +2164,11 @@ export class ListBox extends DropDownBase {
                         removeClass([this.list], 'e-filter-list');
                     }
                     break;
+                case 'filterBarPlaceholder':
+                    if (this.allowFiltering) {
+                        if (this.filterInput) { Input.setPlaceholder(newProp.filterBarPlaceholder, this.filterInput as HTMLInputElement); }
+                    }
+                    break;
                 case 'scope':
                     if (this.allowDragAndDrop) {
                         (getComponent(this.ulElement, 'sortable') as Sortable).scope = newProp.scope;
@@ -2264,3 +2290,17 @@ export interface DropEventArgs {
     cancel?: boolean;
     items?: Object[];
 }
+interface ListBoxClassList {
+    backIcon: string;
+    filterBarClearIcon: string;
+    filterInput: string;
+    filterParent: string;
+    clearIcon: string;
+}
+const listBoxClasses: ListBoxClassList = {
+    backIcon: 'e-input-group-icon e-back-icon e-icons',
+    filterBarClearIcon: 'e-input-group-icon e-clear-icon e-icons',
+    filterInput: 'e-input-filter',
+    filterParent: 'e-filter-parent',
+    clearIcon: 'e-clear-icon',
+};

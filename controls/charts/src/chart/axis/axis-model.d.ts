@@ -394,6 +394,12 @@ export interface AxisModel {
     zoomPosition?: number;
 
     /**
+       * Enables the scrollbar for zooming.
+       * @default true
+       */
+    enableScrollbarOnZooming?: boolean;
+
+    /**
      * If set to true, the axis will render at the opposite side of its default position.
      * @default false
      */

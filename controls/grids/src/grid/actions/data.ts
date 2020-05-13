@@ -223,8 +223,8 @@ export class Data implements IDataProcessor {
         let needForeignKeySearch: boolean = false;
         if (this.parent.searchSettings.key.length) {
             needForeignKeySearch = this.parent.getForeignKeyColumns().some((col: Column) => fields.indexOf(col.field) > -1);
-            if (needForeignKeySearch && !((<{getModulename?: Function}>this.dataManager.adaptor).getModulename &&
-            (<{getModulename?: Function}>this.dataManager.adaptor).getModulename() === 'ODataV4Adaptor')) {
+            if (needForeignKeySearch && ((<{ getModuleName?: Function }>this.dataManager.adaptor).getModuleName &&
+                (<{ getModuleName?: Function }>this.dataManager.adaptor).getModuleName() === 'ODataV4Adaptor')) {
                 for (let i: number = 0; i < fields.length; i++) {
                     let column: Column = this.getColumnByField(fields[i]);
                     if (column.isForeignColumn()) {

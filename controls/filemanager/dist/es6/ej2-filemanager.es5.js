@@ -4095,7 +4095,9 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
     };
     LargeIconsView.prototype.resizeHandler = function () {
         this.getItemCount();
-        this.adjustHeight();
+        if (!isNullOrUndefined(this.listObj)) {
+            this.adjustHeight();
+        }
     };
     LargeIconsView.prototype.splitterResizeHandler = function () {
         this.getItemCount();

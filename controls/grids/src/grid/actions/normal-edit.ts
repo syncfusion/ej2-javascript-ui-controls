@@ -560,6 +560,10 @@ export class NormalEdit {
             requestType: 'delete', type: events.actionBegin, foreignKeyData: {}, //foreign key support
             data: data ? data : this.parent.getSelectedRecords(), tr: this.parent.getSelectedRows(), cancel: false
         };
+        if (!isNullOrUndefined(this.parent.commandDelIndex)) {
+            (<{ data?: Object[] }>args).data[0] =
+            this.parent.getRowObjectFromUID(this.parent.getRowByIndex(this.parent.commandDelIndex).getAttribute('data-uid')).data;
+        }
         if (this.parent.enableVirtualization && (<{ data?: Object[] }>args).data.length > 1) {
             let uid: string = this.parent.getSelectedRows()[0].getAttribute('data-uid');
             (<{ data?: Object[] }>args).data = [this.parent.getRowObjectFromUID(uid).data];

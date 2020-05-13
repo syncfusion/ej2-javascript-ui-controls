@@ -1081,7 +1081,7 @@ describe('Uploader Control', () => {
         })
         it('getPersistData method ', () => {
             let stringItems: any = uploadObj.getPersistData();
-            expect(stringItems.length).toBe(2);
+            expect(stringItems.length).toBe(16);
         });
         it('format the size in KB ', () => {
             let size: string = uploadObj.bytesToSize(20000);

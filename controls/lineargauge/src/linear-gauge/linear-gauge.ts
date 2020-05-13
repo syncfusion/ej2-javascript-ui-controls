@@ -21,9 +21,11 @@ import { AxisRenderer } from './axes/axis-renderer';
 import { Annotations } from './annotations/annotations';
 import { GaugeTooltip } from './user-interaction/tooltip';
 import { getThemeStyle } from './model/theme';
-import { ExportUtils } from '../linear-gauge/utils/export';
 import { PdfPageOrientation } from '@syncfusion/ej2-pdf-export';
 import { ExportType } from '../linear-gauge/utils/enum';
+import { Print } from './model/print';
+import { PdfExport } from './model/pdf-export';
+import { ImageExport } from './model/image-export';
 
 /**
  * Represents the EJ2 Linear gauge control.
@@ -49,6 +51,24 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
     public tooltipModule: GaugeTooltip;
 
     /**
+     * This module enables the print functionality in linear gauge control.
+     * @private
+     */
+    public printModule: Print;
+
+    /**
+     * This module enables the export to PDF functionality in linear gauge control.
+     * @private
+     */
+    public pdfExportModule: PdfExport;
+
+    /**
+     *  This module enables the export to image functionality in linear gauge control.
+     * @private
+     */
+    public imageExportModule: ImageExport;
+
+    /**
      * Specifies the width of the linear gauge as a string in order to provide input as both like '100px' or '100%'.
      * If specified as '100%, gauge will render to the full width of its parent element.
      * @default null
@@ -72,6 +92,27 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      */
     @Property('Vertical')
     public orientation: Orientation;
+
+    /**
+     * Enables or disables the print functionality in linear gauge.
+     * @default false
+     */
+    @Property(false)
+    public allowPrint: boolean;
+
+     /**
+      * Enables or disables the export to image functionality in linear gauge.
+      * @default false
+      */
+    @Property(false)
+    public allowImageExport: boolean;
+
+     /**
+      * Enables or disables the export to PDF functionality in linear gauge.
+      * @default false
+      */
+    @Property(false)
+    public allowPdfExport: boolean;
 
     /**
      * Specifies the options to customize the margins of the linear gauge.
@@ -401,6 +442,14 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
 
     protected preRender(): void {
         this.isBlazor = isBlazor();
+        if (!this.isBlazor) {
+            this.allowPrint = true;
+            this.allowImageExport = true;
+            this.allowPdfExport = true;
+            LinearGauge.Inject(Print);
+            LinearGauge.Inject(PdfExport);
+            LinearGauge.Inject(ImageExport);
+        }
         this.unWireEvents();
         this.trigger(load, { gauge: !this.isBlazor ? this : null });
         this.initPrivateVariable();
@@ -1018,8 +1067,9 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * @param id - Specifies the element to print the linear gauge.
      */
     public print(id?: string[] | string | Element): void {
-        let exportChart: ExportUtils = new ExportUtils(this);
-        exportChart.print(id);
+        if ((this.allowPrint) && (this.printModule)) {
+        this.printModule.print(id);
+        }
     }
     /**
      * This method handles the export functionality for linear gauge.
@@ -1027,9 +1077,20 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
      * @param fileName - Specifies the file name for the exported file.
      * @param orientation - Specified the orientation for the exported pdf document.
      */
-    public export(type: ExportType, fileName: string, orientation?: PdfPageOrientation): void {
-        let exportMap: ExportUtils = new ExportUtils(this);
-        exportMap.export(type, fileName, orientation);
+    public export(type: ExportType, fileName: string, orientation?: PdfPageOrientation, allowDownload?: boolean): Promise<string> {
+        if (isNullOrUndefined(allowDownload)) {
+            allowDownload = true;
+        }
+        if ((type !== 'PDF') && (this.allowImageExport) && (this.imageExportModule)) {
+            return new Promise((resolve: Function, reject: Function) => {
+                resolve(this.imageExportModule.export(type, fileName, allowDownload));
+            });
+        } else if ((this.allowPdfExport) && (this.pdfExportModule)) {
+            return new Promise((resolve: Function, reject: Function) => {
+                resolve(this.pdfExportModule.export(type, fileName, orientation, allowDownload));
+            });
+        }
+        return null;
     }
 
     /**
@@ -1236,6 +1297,24 @@ export class LinearGauge extends Component<HTMLElement> implements INotifyProper
             modules.push({
                 member: 'Tooltip',
                 args: [this, GaugeTooltip]
+            });
+        }
+        if (this.allowPrint) {
+            modules.push({
+                member: 'Print',
+                args: [this]
+            });
+        }
+        if (this.allowImageExport) {
+            modules.push({
+                member: 'ImageExport',
+                args: [this]
+            });
+        }
+        if (this.allowPdfExport) {
+            modules.push({
+                member: 'PdfExport',
+                args: [this]
             });
         }
         return modules;

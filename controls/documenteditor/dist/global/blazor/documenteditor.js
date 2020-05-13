@@ -3302,6 +3302,9 @@ var HelperMethods = /** @class */ (function () {
         return formattedValue;
     };
     /* tslint:enable:no-any */
+    /**
+     * @private
+     */
     HelperMethods.capitaliseFirst = function (value, type) {
         var text = '';
         if (type === 'Title case') {
@@ -12015,7 +12018,6 @@ var Renderer = /** @class */ (function () {
         this.isFieldCode = false;
         this.leftPosition = 0;
         this.topPosition = 0;
-        this.isFormField = false;
         this.height = 0;
         this.documentHelper = documentHelper;
     }
@@ -12471,6 +12473,24 @@ var Renderer = /** @class */ (function () {
         if (lineWidget.isFirstLine() && !paraFormat.bidi) {
             left += HelperMethods.convertPointToPixel(paraFormat.firstLineIndent);
         }
+        if (this.documentHelper && this.documentHelper.selection && !sf.base.isNullOrUndefined(this.documentHelper.selection.formFieldHighlighters)
+            && this.documentHelper.selection.formFieldHighlighters.containsKey(lineWidget)) {
+            if (this.documentHelper.owner.documentEditorSettings
+                && this.documentHelper.owner.documentEditorSettings.formFieldSettings.applyShading) {
+                var widgetInfo = page.documentHelper.selection.formFieldHighlighters.get(lineWidget);
+                for (var i = 0; i < widgetInfo.length; i++) {
+                    this.pageContext.fillStyle = this.documentHelper.owner.documentEditorSettings.formFieldSettings.shadingColor;
+                    var height = lineWidget.height;
+                    var isLastLine = lineWidget.isLastLine();
+                    if (isLastLine) {
+                        // tslint:disable-next-line:max-line-length
+                        height = height - HelperMethods.convertPointToPixel(this.documentHelper.layout.getAfterSpacing(lineWidget.paragraph));
+                    }
+                    // tslint:disable-next-line:max-line-length
+                    this.pageContext.fillRect(this.getScaledValue(widgetInfo[i].left, 1), this.getScaledValue(top, 2), this.getScaledValue(widgetInfo[i].width), this.getScaledValue(height));
+                }
+            }
+        }
         if (this.documentHelper.owner.searchModule) {
             // tslint:disable-next-line:max-line-length
             if (!sf.base.isNullOrUndefined(page.documentHelper.owner.searchModule.searchHighlighters) && page.documentHelper.owner.searchModule.searchHighlighters.containsKey(lineWidget)) {
@@ -12572,15 +12592,9 @@ var Renderer = /** @class */ (function () {
                 if ((!sf.base.isNullOrUndefined(element.fieldEnd) || element.hasFieldEnd)) {
                     this.isFieldCode = true;
                 }
-                if (!sf.base.isNullOrUndefined(element.formFieldData) && element.hasFieldEnd && !sf.base.isNullOrUndefined(element.fieldEnd)) {
-                    this.isFormField = true;
-                }
             }
             else if (element.fieldType === 2 || element.fieldType === 1) {
                 this.isFieldCode = false;
-                if (element.fieldType === 1) {
-                    this.isFormField = false;
-                }
             }
         }
     };
@@ -12693,12 +12707,6 @@ var Renderer = /** @class */ (function () {
             }
             // tslint:disable-next-line:max-line-length
             this.pageContext.fillRect(this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width), this.getScaledValue(elementBox.height));
-        }
-        if (this.documentHelper && this.documentHelper.owner.documentEditorSettings
-            && this.documentHelper.owner.documentEditorSettings.formFieldSettings.applyShading && this.isFormField) {
-            this.pageContext.fillStyle = this.documentHelper.owner.documentEditorSettings.formFieldSettings.shadingColor;
-            // tslint:disable-next-line:max-line-length
-            this.pageContext.fillRect(this.getScaledValue(left + leftMargin, 1), this.getScaledValue(top + topMargin, 2), this.getScaledValue(elementBox.width) + 0.5, this.getScaledValue(elementBox.height));
         }
         var color = format.fontColor;
         this.pageContext.textBaseline = 'alphabetic';
@@ -15145,7 +15153,7 @@ var DocumentHelper = /** @class */ (function () {
          * @private
          */
         this.onPaste = function (event) {
-            if (!_this.owner.isReadOnlyMode) {
+            if (!_this.owner.isReadOnlyMode || _this.selection.isInlineFormFillMode()) {
                 _this.owner.editorModule.pasteInternal(event);
             }
             _this.editableDiv.innerText = '';
@@ -15416,6 +15424,7 @@ var DocumentHelper = /** @class */ (function () {
                 if (_this.selection.checkAndEnableHeaderFooter(cursorPoint, _this.owner.viewer.findFocusedPage(cursorPoint, true))) {
                     return;
                 }
+                var formField = _this.selection.getCurrentFormField();
                 if (!_this.isDocumentProtected && _this.owner.enableFormField) {
                     var formatType = _this.selection.getFormFieldType();
                     if (formatType) {
@@ -15434,6 +15443,10 @@ var DocumentHelper = /** @class */ (function () {
                                 break;
                         }
                     }
+                }
+                else if (_this.isDocumentProtected && formField && formField.formFieldData instanceof TextFormField
+                    && formField.formFieldData.type === 'Text') {
+                    _this.selection.selectField();
                 }
                 else {
                     _this.tapCount = 2;
@@ -15497,8 +15510,13 @@ var DocumentHelper = /** @class */ (function () {
                     _this.selection.navigateHyperLinkOnEvent(touchPoint, false);
                 }
                 if (_this.isLeftButtonPressed(event) && _this.isDocumentProtected && _this.protectionType === 'FormFieldsOnly' && _this.selection) {
-                    var formField = _this.selection.getCurrentFormField();
-                    if (formField && formField.formFieldData && formField.formFieldData.enabled) {
+                    var widget = _this.getLineWidget(touchPoint);
+                    var formField = _this.selection.getHyperLinkFieldInCurrentSelection(widget, touchPoint, true);
+                    if (sf.base.isNullOrUndefined(formField)) {
+                        formField = _this.selection.getCurrentFormField();
+                    }
+                    // tslint:disable-next-line:max-line-length
+                    if (formField && formField.formFieldData && formField.formFieldData.enabled && !_this.selection.isInlineFormFillMode(formField)) {
                         var data = { 'fieldName': formField.formFieldData.name };
                         if (formField.formFieldData instanceof TextFormField) {
                             data.value = formField.resultText;
@@ -15510,7 +15528,10 @@ var DocumentHelper = /** @class */ (function () {
                             data.value = formField.formFieldData.selectedIndex;
                         }
                         _this.owner.trigger('beforeFormFieldFill', data);
-                        if (formField.formFieldData instanceof TextFormField || formField.formFieldData instanceof DropDownFormField) {
+                        // tslint:disable-next-line:max-line-length
+                        if (_this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Popup' && !(formField.formFieldData instanceof CheckBoxFormField)
+                            || (formField.formFieldData instanceof TextFormField && !(formField.formFieldData.type === 'Text'))
+                            || formField.formFieldData instanceof DropDownFormField) {
                             _this.formFillPopup.showPopUp(formField, touchPoint);
                         }
                         else {
@@ -15519,6 +15540,9 @@ var DocumentHelper = /** @class */ (function () {
                             data.isCanceled = false;
                             _this.owner.trigger('afterFormFieldFill', data);
                         }
+                    }
+                    if (!formField && _this.isFormFillProtectedMode) {
+                        _this.selection.navigateToNextFormField();
                     }
                 }
                 else {
@@ -16076,6 +16100,26 @@ var DocumentHelper = /** @class */ (function () {
         enumerable: true,
         configurable: true
     });
+    Object.defineProperty(DocumentHelper.prototype, "isInlineFormFillProtectedMode", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.isFormFillProtectedMode && this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Inline';
+        },
+        enumerable: true,
+        configurable: true
+    });
+    Object.defineProperty(DocumentHelper.prototype, "isFormFillProtectedMode", {
+        /**
+         * @private
+         */
+        get: function () {
+            return this.isDocumentProtected && this.protectionType === 'FormFieldsOnly';
+        },
+        enumerable: true,
+        configurable: true
+    });
     DocumentHelper.prototype.initalizeStyles = function () {
         /* tslint:disable-next-line:max-line-length */
         this.preDefinedStyles.add('Normal', '{"type":"Paragraph","name":"Normal","next":"Normal"}');
@@ -16567,6 +16611,10 @@ var DocumentHelper = /** @class */ (function () {
         this.layout.isInitialLoad = true;
         this.layout.layoutItems(sections, false);
         if (this.owner.selection) {
+            this.selection.previousSelectedFormField = undefined;
+            if (this.formFields.length > 0) {
+                this.owner.selection.highlightFormFields();
+            }
             this.owner.selection.editRangeCollection = [];
             this.owner.selection.selectRange(this.owner.documentStart, this.owner.documentStart);
             if (this.isDocumentProtected) {
@@ -17437,6 +17485,14 @@ var DocumentHelper = /** @class */ (function () {
             }
             else {
                 this.selection.setHyperlinkContentToToolTip(hyperlinkField, widget, touchPoint.x, false);
+            }
+            if (formField) {
+                // tslint:disable-next-line:max-line-length
+                var isInlineFormFillMode = (formField.formFieldData instanceof TextFormField) && formField.formFieldData.type === 'Text';
+                if (this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Inline' && isInlineFormFillMode) {
+                    //Update text cursor in text form field.
+                    formField = undefined;
+                }
             }
         }
         var isCtrlkeyPressed = this.isIosDevice ? event.metaKey : event.ctrlKey;
@@ -23553,7 +23609,20 @@ var BookmarkElementBox = /** @class */ (function (_super) {
 var ShapeCommon = /** @class */ (function (_super) {
     __extends(ShapeCommon, _super);
     function ShapeCommon() {
-        return _super !== null && _super.apply(this, arguments) || this;
+        var _this = _super !== null && _super.apply(this, arguments) || this;
+        /**
+         * @private
+         */
+        _this.name = '';
+        /**
+         * @private
+         */
+        _this.alternativeText = '';
+        /**
+         * @private
+         */
+        _this.title = '';
+        return _this;
     }
     /**
      *
@@ -28700,7 +28769,8 @@ var SelectionCharacterFormat = /** @class */ (function () {
      */
     SelectionCharacterFormat.prototype.notifyPropertyChanged = function (propertyName) {
         // tslint:disable-next-line:max-line-length
-        if (!sf.base.isNullOrUndefined(this.selection) && (this.selection.isCleared || this.selection.owner.isReadOnlyMode || !this.selection.owner.isDocumentLoaded || this.selection.owner.isPastingContent) && !this.selection.isRetrieveFormatting) {
+        if (!sf.base.isNullOrUndefined(this.selection) && (this.selection.isCleared || (this.selection.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) ||
+            !this.selection.owner.isDocumentLoaded || this.selection.owner.isPastingContent) && !this.selection.isRetrieveFormatting) {
             return;
         }
         if (!sf.base.isNullOrUndefined(this.selection) && !sf.base.isNullOrUndefined(this.selection.start) && !this.selection.isRetrieveFormatting) {
@@ -29239,7 +29309,7 @@ var SelectionParagraphFormat = /** @class */ (function () {
      */
     SelectionParagraphFormat.prototype.notifyPropertyChanged = function (propertyName) {
         if (!sf.base.isNullOrUndefined(this.selection) &&
-            (this.selection.owner.isReadOnlyMode || !this.selection.owner.isDocumentLoaded)
+            ((this.selection.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) || !this.selection.owner.isDocumentLoaded)
             && !this.selection.isRetrieveFormatting) {
             return;
         }
@@ -29453,7 +29523,8 @@ var SelectionParagraphFormat = /** @class */ (function () {
      * @private
      */
     SelectionParagraphFormat.prototype.setList = function (listAdv) {
-        if (this.documentHelper.owner.isReadOnlyMode || !this.documentHelper.owner.isDocumentLoaded) {
+        // tslint:disable-next-line:max-line-length
+        if ((this.documentHelper.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) || !this.documentHelper.owner.isDocumentLoaded) {
             return;
         }
         var list = this.documentHelper.getListById(this.listId);
@@ -32285,7 +32356,7 @@ var TextPosition = /** @class */ (function () {
                     || nextValidInline instanceof BookmarkElementBox && nextValidInline.bookmarkType === 1) {
                     inline = nextValidInline;
                     this.currentWidget = inline.line;
-                    this.offset = this.currentWidget.getOffset(inline, 1);
+                    this.offset = this.currentWidget.getOffset(inline, this.documentHelper.isFormFillProtectedMode ? 0 : 1);
                 }
             }
         }
@@ -34244,6 +34315,10 @@ var Selection = /** @class */ (function () {
         /**
          * @private
          */
+        this.isHighlightFormFields = false;
+        /**
+         * @private
+         */
         this.isHightlightEditRegionInternal = false;
         /**
          * @private
@@ -34261,7 +34336,15 @@ var Selection = /** @class */ (function () {
          * @private
          */
         this.editRegionHighlighters = undefined;
+        /**
+         * @private
+         */
+        this.formFieldHighlighters = undefined;
         this.isSelectList = false;
+        /**
+         * @private
+         */
+        this.previousSelectedFormField = undefined;
         /**
          * @private
          */
@@ -34299,6 +34382,7 @@ var Selection = /** @class */ (function () {
         this.imageFormatInternal = new SelectionImageFormat(this);
         this.editRangeCollection = [];
         this.editRegionHighlighters = new Dictionary();
+        this.formFieldHighlighters = new Dictionary();
     }
     Object.defineProperty(Selection.prototype, "isHighlightEditRegion", {
         /**
@@ -34817,15 +34901,19 @@ var Selection = /** @class */ (function () {
      */
     Selection.prototype.selectFieldInternal = function (fieldStart) {
         if (fieldStart) {
+            var formFillingMode = this.documentHelper.isFormFillProtectedMode;
             var fieldEnd = fieldStart.fieldEnd;
-            var offset = fieldStart.line.getOffset(fieldStart, 0);
+            if (formFillingMode) {
+                fieldStart = fieldStart.fieldSeparator;
+            }
+            var offset = fieldStart.line.getOffset(fieldStart, formFillingMode ? 1 : 0);
             var startPosition = new TextPosition(this.owner);
             startPosition.setPositionParagraph(fieldStart.line, offset);
             var isBookmark = fieldStart.nextNode instanceof BookmarkElementBox;
-            if (isBookmark) {
+            if (isBookmark && !formFillingMode) {
                 fieldEnd = fieldStart.nextElement.reference;
             }
-            var endoffset = fieldEnd.line.getOffset(fieldEnd, 1);
+            var endoffset = fieldEnd.line.getOffset(fieldEnd, formFillingMode ? 0 : 1);
             var endPosition = new TextPosition(this.owner);
             endPosition.setPositionParagraph(fieldEnd.line, endoffset);
             //selects the field range
@@ -35062,6 +35150,10 @@ var Selection = /** @class */ (function () {
             this.addEditRegionHighlight(lineWidget, left, width);
             return;
         }
+        else if (this.isHighlightFormFields) {
+            this.addFormFieldHighlight(lineWidget, left, width);
+            return;
+        }
         else {
             if (widgets.containsKey(lineWidget)) {
                 if (widgets.get(lineWidget) instanceof SelectionWidgetInfo) {
@@ -35149,6 +35241,22 @@ var Selection = /** @class */ (function () {
         return editRegionHighlight;
     };
     /**
+     * @private
+     */
+    Selection.prototype.addFormFieldHighlight = function (lineWidget, left, width) {
+        var highlighters = undefined;
+        var collection = this.formFieldHighlighters;
+        if (collection.containsKey(lineWidget)) {
+            highlighters = collection.get(lineWidget);
+        }
+        else {
+            highlighters = [];
+            collection.add(lineWidget, highlighters);
+        }
+        var formFieldHighlight = new SelectionWidgetInfo(left, width);
+        highlighters.push(formFieldHighlight);
+    };
+    /**
      * Create selection highlight inside table
      * @private
      */
@@ -35165,7 +35273,7 @@ var Selection = /** @class */ (function () {
         var isVisiblePage = this.viewer.containerTop <= pageTop
             || pageTop < this.viewer.containerTop + this.documentHelper.selectionCanvas.height;
         var widgets = this.selectedWidgets;
-        if (!this.isHightlightEditRegionInternal) {
+        if (!this.isHightlightEditRegionInternal && !this.isHighlightFormFields) {
             if (widgets.containsKey(cellWidget) && widgets.get(cellWidget) instanceof SelectionWidgetInfo) {
                 selectionWidget = widgets.get(cellWidget);
                 if (isVisiblePage) {
@@ -35541,6 +35649,15 @@ var Selection = /** @class */ (function () {
         this.updateForwardSelection();
         this.upDownSelectionLength = this.start.location.x;
         this.fireSelectionChanged(true);
+        if (this.documentHelper.isFormFillProtectedMode) {
+            var formField = this.getCurrentFormField();
+            if (formField) {
+                var fieldEndOffset = formField.line.getOffset(formField.fieldEnd, 1);
+                if (this.end.offset === fieldEndOffset) {
+                    this.selectPrevNextFormField(true);
+                }
+            }
+        }
     };
     /**
      * Move to next paragraph
@@ -35570,6 +35687,13 @@ var Selection = /** @class */ (function () {
         this.updateBackwardSelection();
         this.upDownSelectionLength = this.start.location.x;
         this.fireSelectionChanged(true);
+        if (this.documentHelper.isFormFillProtectedMode) {
+            var formField = this.getCurrentFormField();
+            if (!formField) {
+                formField = this.getPreviousFormField();
+                this.selectPrevNextFormField(false, formField);
+            }
+        }
     };
     /**
      * Move to previous paragraph
@@ -35625,6 +35749,10 @@ var Selection = /** @class */ (function () {
      * @private
      */
     Selection.prototype.moveUp = function () {
+        if (this.documentHelper.isFormFillProtectedMode) {
+            this.selectPrevNextFormField(false);
+            return;
+        }
         if (sf.base.isNullOrUndefined(this.start)) {
             return;
         }
@@ -35646,6 +35774,10 @@ var Selection = /** @class */ (function () {
      * @private
      */
     Selection.prototype.moveDown = function () {
+        if (this.documentHelper.isFormFillProtectedMode) {
+            this.selectPrevNextFormField(true);
+            return;
+        }
         if (sf.base.isNullOrUndefined(this.start)) {
             return;
         }
@@ -36136,57 +36268,146 @@ var Selection = /** @class */ (function () {
             && start.paragraph.paragraphFormat.listFormat.listId !== -1 && !this.owner.isReadOnlyMode) {
             this.owner.editorModule.updateListLevel(isShiftTab ? false : true);
         }
-        else if (!this.owner.isReadOnlyMode) {
+        else if (!this.owner.isReadOnlyMode && !this.documentHelper.isFormFillProtectedMode) {
             this.owner.editorModule.handleTextInput('\t');
         }
         if (this.documentHelper.protectionType === 'FormFieldsOnly' && this.documentHelper.formFields.length > 0) {
-            if (isShiftTab) {
-                this.selectPreviousFormField();
-            }
-            else {
-                this.selectNextFormField();
-            }
+            this.selectPrevNextFormField(!isShiftTab);
         }
         this.checkForCursorVisibility();
     };
-    /**
-     * @private
-     * Navigates to next form field
-     */
-    Selection.prototype.selectNextFormField = function () {
-        // tslint:disable-next-line:max-line-length
-        var currentStart = this.owner.selection.end;
-        for (var i = 0; i < this.documentHelper.formFields.length; i++) {
-            // tslint:disable-next-line:max-line-length
-            if (!this.documentHelper.formFields[i].formFieldData.enabled) {
-                continue;
-            }
-            var paraIndex = this.owner.selection.getElementPosition(this.documentHelper.formFields[i]).startPosition;
-            if (paraIndex.isExistAfter(currentStart)) {
-                this.selectFieldInternal(this.documentHelper.formFields[i]);
-                break;
-            }
-            else if (i === (this.documentHelper.formFields.length - 1)) {
-                this.selectFieldInternal(this.documentHelper.formFields[0]);
-            }
-        }
-    };
-    Selection.prototype.selectPreviousFormField = function () {
-        // tslint:disable-next-line:max-line-length
+    // returns current field in FormFill mode (if Selection goes before field seperator)
+    Selection.prototype.getPreviousFormField = function () {
         var currentStart = this.owner.selection.start;
+        var formField;
         for (var i = (this.documentHelper.formFields.length - 1); i >= 0; i--) {
             // tslint:disable-next-line:max-line-length
             if (!this.documentHelper.formFields[i].formFieldData.enabled) {
                 continue;
             }
-            var paraIndex = this.owner.selection.getElementPosition(this.documentHelper.formFields[i]).startPosition;
+            var paraIndex = this.getElementPosition(this.documentHelper.formFields[i]).startPosition;
             if (paraIndex.isExistBefore(currentStart)) {
-                this.selectFieldInternal(this.documentHelper.formFields[i]);
+                formField = this.documentHelper.formFields[i];
                 break;
             }
             else if (i === 0) {
-                this.selectFieldInternal(this.documentHelper.formFields[(this.documentHelper.formFields.length - 1)]);
+                formField = this.documentHelper.formFields[(this.documentHelper.formFields.length - 1)];
             }
+        }
+        return formField;
+    };
+    // Navigates & Selects next form field
+    Selection.prototype.selectPrevNextFormField = function (forward, formField) {
+        if (this.documentHelper.isFormFillProtectedMode) {
+            if (!formField) {
+                formField = this.getCurrentFormField();
+            }
+            var index = this.documentHelper.formFields.indexOf(formField);
+            if (forward) {
+                for (var i = index;; i++) {
+                    if (i === (this.documentHelper.formFields.length - 1)) {
+                        i = 0;
+                    }
+                    else {
+                        i = i + 1;
+                    }
+                    if (!this.documentHelper.formFields[i].formFieldData.enabled) {
+                        i = i - 1;
+                        continue;
+                    }
+                    this.selectFieldInternal(this.documentHelper.formFields[i]);
+                    break;
+                }
+            }
+            else {
+                for (var i = index;; i--) {
+                    if (i === 0) {
+                        i = (this.documentHelper.formFields.length - 1);
+                    }
+                    else {
+                        i = i - 1;
+                    }
+                    if (!this.documentHelper.formFields[i].formFieldData.enabled) {
+                        i = i + 1;
+                        continue;
+                    }
+                    this.selectFieldInternal(this.documentHelper.formFields[i]);
+                    break;
+                }
+            }
+        }
+    };
+    /**
+     * @private
+     */
+    Selection.prototype.navigateToNextFormField = function () {
+        var currentStart = this.owner.selection.end;
+        var currentFormField;
+        for (var i = 0; i < this.documentHelper.formFields.length; i++) {
+            currentFormField = this.documentHelper.formFields[i];
+            if (!this.documentHelper.formFields[i].formFieldData.enabled) {
+                continue;
+            }
+            var paraIndex = this.getElementPosition(this.documentHelper.formFields[i]).startPosition;
+            if (paraIndex.isExistAfter(currentStart)) {
+                // tslint:disable-next-line:max-line-length
+                if (currentFormField.formFieldData instanceof TextFormField && currentFormField.formFieldData.type === 'Text' &&
+                    this.documentHelper.isInlineFormFillProtectedMode) {
+                    this.selectTextElementStartOfField(this.documentHelper.formFields[i]);
+                }
+                else {
+                    this.selectFieldInternal(this.documentHelper.formFields[i]);
+                }
+                break;
+            }
+            else if (i === (this.documentHelper.formFields.length - 1)) {
+                currentFormField = this.documentHelper.formFields[0];
+                // tslint:disable-next-line:max-line-length
+                if (currentFormField.formFieldData instanceof TextFormField && currentFormField.formFieldData.type === 'Text' &&
+                    this.documentHelper.isInlineFormFillProtectedMode) {
+                    this.selectTextElementStartOfField(this.documentHelper.formFields[0]);
+                }
+                else {
+                    this.selectFieldInternal(this.documentHelper.formFields[0]);
+                }
+            }
+        }
+    };
+    /**
+     * @private
+     */
+    Selection.prototype.selectTextElementStartOfField = function (formField) {
+        var fieldSeparator = formField.fieldSeparator;
+        var element = fieldSeparator.nextElement;
+        if (element) {
+            while (!(element instanceof TextElementBox)) {
+                element = element.nextElement;
+            }
+            var offset = formField.line.getOffset(element, 0);
+            var point = this.getPhysicalPositionInternal(formField.line, offset, false);
+            this.selectInternal(formField.line, element, 0, point);
+        }
+    };
+    Selection.prototype.triggerFormFillEvent = function () {
+        var previousField = this.previousSelectedFormField;
+        var currentField = this.getCurrentFormField();
+        var previousFieldData;
+        var currentFieldData;
+        if (currentField !== previousField && previousField && previousField.formFieldData instanceof TextFormField
+            && previousField.formFieldData.type === 'Text') {
+            if (previousField.formFieldData.format !== '') {
+                // Need to handle update form field format
+                //this.owner.editor.applyFormTextFormat(previousField);
+            }
+            // tslint:disable-next-line:max-line-length
+            previousFieldData = { 'fieldName': previousField.formFieldData.name, 'value': this.owner.editorModule.getFormFieldText(previousField) };
+            this.owner.trigger('afterFormFieldFill', previousFieldData);
+        }
+        if (currentField !== previousField && currentField && currentField.formFieldData instanceof TextFormField
+            && currentField.formFieldData.type === 'Text') {
+            // tslint:disable-next-line:max-line-length
+            currentFieldData = { 'fieldName': currentField.formFieldData.name, 'value': this.owner.editorModule.getFormFieldText(currentField) };
+            this.owner.trigger('beforeFormFieldFill', currentFieldData);
         }
     };
     Selection.prototype.selectPreviousCell = function () {
@@ -38810,6 +39031,9 @@ var Selection = /** @class */ (function () {
      */
     Selection.prototype.getPreviousValidElement = function (inline) {
         var previousValidInline = undefined;
+        if (this.documentHelper.isFormFillProtectedMode && inline.fieldType === 2) {
+            return inline;
+        }
         while (inline instanceof FieldElementBox) {
             if (HelperMethods.isLinkedFieldCharacter(inline)) {
                 if (inline instanceof FieldElementBox && inline.fieldType === 0) {
@@ -38862,7 +39086,7 @@ var Selection = /** @class */ (function () {
             if (nextInline instanceof FieldElementBox && nextInline.fieldType === 1
                 || nextInline instanceof BookmarkElementBox && nextInline.bookmarkType === 1) {
                 inline = nextInline;
-                index = 1;
+                index = this.documentHelper.isFormFillProtectedMode ? 0 : 1;
             }
         }
         else if (index === 0 && inline.previousNode instanceof FieldElementBox) {
@@ -39936,6 +40160,9 @@ var Selection = /** @class */ (function () {
             'isImageSelected': isImageSelected
         };
     };
+    /**
+     * @private
+     */
     Selection.prototype.checkAllFloatingElements = function (widget, caretPosition) {
         var bodyWidget;
         var isShapeSelected = false;
@@ -40446,6 +40673,10 @@ var Selection = /** @class */ (function () {
             this.owner.fireSelectionChange();
         }
         this.documentHelper.updateFocus();
+        if (this.documentHelper.isInlineFormFillProtectedMode && isSelectionChanged) {
+            this.triggerFormFillEvent();
+            this.previousSelectedFormField = this.getCurrentFormField();
+        }
     };
     //Formats Retrieval
     /**
@@ -41614,6 +41845,10 @@ var Selection = /** @class */ (function () {
         if (sf.base.isNullOrUndefined(inline)) {
             field = this.getHyperLinkFields(this.end.paragraph, checkedFields, isRetrieve);
         }
+        else if (this.documentHelper.isFormFillProtectedMode && inline instanceof BookmarkElementBox
+            && inline.previousNode instanceof FieldElementBox && inline.previousNode.fieldType === 1) {
+            field = undefined;
+        }
         else {
             var paragraph = inline.line.paragraph;
             field = this.getHyperLinkFieldInternal(paragraph, inline, checkedFields, isRetrieve, false);
@@ -41835,6 +42070,23 @@ var Selection = /** @class */ (function () {
         return false;
     };
     /**
+     * Return true if selection is in text form field
+     * @private
+     */
+    Selection.prototype.isInlineFormFillMode = function (field) {
+        if (this.documentHelper.isInlineFormFillProtectedMode) {
+            if (sf.base.isNullOrUndefined(field)) {
+                field = this.getCurrentFormField();
+            }
+            if (field) {
+                if (field.formFieldData instanceof TextFormField && field.formFieldData.type === 'Text') {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
+    /**
      * @private
      */
     Selection.prototype.getFormFieldType = function () {
@@ -41857,7 +42109,34 @@ var Selection = /** @class */ (function () {
      * @private
      */
     Selection.prototype.getCurrentFormField = function () {
-        var field = this.getHyperlinkField(true);
+        var field;
+        if (this.documentHelper.isFormFillProtectedMode && this.owner.documentEditorSettings.formFieldSettings &&
+            this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Inline') {
+            for (var i = 0; i < this.documentHelper.formFields.length; i++) {
+                var formField = this.documentHelper.formFields[i];
+                var offset = formField.fieldSeparator.line.getOffset(formField.fieldSeparator, 1);
+                var fieldStart = new TextPosition(this.owner);
+                fieldStart.setPositionParagraph(formField.fieldSeparator.line, offset);
+                var fieldEndElement = formField.fieldEnd;
+                offset = fieldEndElement.line.getOffset(fieldEndElement, 0);
+                var fieldEnd = new TextPosition(this.owner);
+                fieldEnd.setPositionParagraph(fieldEndElement.line, offset);
+                var start = this.start;
+                var end = this.end;
+                if (!this.isForward) {
+                    start = this.end;
+                    end = this.start;
+                }
+                if ((start.isExistAfter(fieldStart) || start.isAtSamePosition(fieldStart))
+                    && (end.isExistBefore(fieldEnd) || end.isAtSamePosition(fieldEnd))) {
+                    field = formField;
+                    break;
+                }
+            }
+        }
+        else {
+            field = this.getHyperlinkField(true);
+        }
         if (field instanceof FieldElementBox && field.fieldType === 0 && !sf.base.isNullOrUndefined(field.formFieldData)) {
             return field;
         }
@@ -42081,7 +42360,7 @@ var Selection = /** @class */ (function () {
             if (this.isHideSelection(this.start.paragraph)) {
                 this.caret.style.display = 'none';
             }
-            else if (this.isEmpty && (!this.owner.isReadOnlyMode || this.owner.enableCursorOnReadOnly)) {
+            else if (this.isEmpty && (!this.owner.isReadOnlyMode || this.owner.enableCursorOnReadOnly || this.isInlineFormFillMode())) {
                 var caretLeft = parseInt(this.caret.style.left.replace('px', ''), 10);
                 if (caretLeft < left || caretLeft > right) {
                     this.caret.style.display = 'none';
@@ -42487,7 +42766,7 @@ var Selection = /** @class */ (function () {
                     break;
             }
         }
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.isInlineFormFillMode()) {
             this.owner.editorModule.onKeyDownInternal(event, ctrl, shift, alt);
         }
         else if (this.documentHelper.isDocumentProtected && this.documentHelper.protectionType === 'FormFieldsOnly') {
@@ -42907,6 +43186,35 @@ var Selection = /** @class */ (function () {
             this.highlightEditRegionInternal(this.editRangeCollection[j]);
         }
         this.isHightlightEditRegionInternal = false;
+        this.viewer.updateScrollBars();
+    };
+    /**
+     * @private
+     */
+    Selection.prototype.highlightFormFields = function () {
+        if (sf.base.isNullOrUndefined(this.formFieldHighlighters)) {
+            this.formFieldHighlighters = new Dictionary();
+        }
+        this.formFieldHighlighters.clear();
+        var formFields = this.documentHelper.formFields;
+        for (var i = 0; i < formFields.length; i++) {
+            var formField = formFields[i];
+            var offset = formField.line.getOffset(formField, 0);
+            var startPosition = new TextPosition(this.owner);
+            startPosition.setPositionParagraph(formField.line, offset);
+            var endElement = formField.fieldEnd;
+            offset = endElement.line.getOffset(endElement, 1);
+            var endPosition = new TextPosition(this.owner);
+            endPosition.setPositionParagraph(endElement.line, offset);
+            this.isHighlightFormFields = true;
+            this.highlight(startPosition.paragraph, startPosition, endPosition);
+            if (this.isHighlightNext) {
+                this.highlightNextBlock(this.hightLightNextParagraph, startPosition, endPosition);
+                this.isHighlightNext = false;
+                this.hightLightNextParagraph = undefined;
+            }
+        }
+        this.isHighlightFormFields = false;
         this.viewer.updateScrollBars();
     };
     /**
@@ -45757,10 +46065,10 @@ var TableResizer = /** @class */ (function () {
         this.owner.documentHelper.layout.reLayoutTable(table);
         this.owner.editorModule.reLayout(this.owner.selection);
         if (row) {
-            this.currentResizingTable = row.ownerTable;
+            this.getRowReSizerPosition(undefined, this.startingPoint);
         }
-        if (this.currentResizingTable.childWidgets === undefined
-            || this.currentResizingTable.childWidgets[this.resizerPosition] === undefined) {
+        if (this.currentResizingTable && (this.currentResizingTable.childWidgets === undefined
+            || this.currentResizingTable.childWidgets[this.resizerPosition] === undefined)) {
             this.resizerPosition = -1;
         }
     };
@@ -47300,6 +47608,9 @@ var Editor = /** @class */ (function () {
         if (this.selection.isHighlightEditRegion) {
             this.selection.onHighlight();
         }
+        if (this.documentHelper.formFields.length > 0) {
+            this.selection.highlightFormFields();
+        }
         if (!this.isPaste) {
             this.copiedContent = undefined;
             this.copiedTextContent = '';
@@ -47491,25 +47802,25 @@ var Editor = /** @class */ (function () {
                     break;
                 case 49:
                     event.preventDefault();
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.onApplyParagraphFormat('lineSpacing', 1, false, false);
                     }
                     break;
                 case 50:
                     event.preventDefault();
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.onApplyParagraphFormat('lineSpacing', 2, false, false);
                     }
                     break;
                 case 53:
                     event.preventDefault();
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.onApplyParagraphFormat('lineSpacing', 1.5, false, false);
                     }
                     break;
                 case 66:
                     event.preventDefault();
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.toggleBold();
                     }
                     break;
@@ -47520,7 +47831,7 @@ var Editor = /** @class */ (function () {
                     }
                     break;
                 case 69:
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.toggleTextAlignment('Center');
                     }
                     event.preventDefault();
@@ -47534,12 +47845,12 @@ var Editor = /** @class */ (function () {
                     break;
                 case 73:
                     event.preventDefault();
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.toggleItalic();
                     }
                     break;
                 case 74:
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.toggleTextAlignment('Justify');
                     }
                     event.preventDefault();
@@ -47551,13 +47862,13 @@ var Editor = /** @class */ (function () {
                     }
                     break;
                 case 76:
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.toggleTextAlignment('Left');
                     }
                     event.preventDefault();
                     break;
                 case 77:
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.owner.selection.increaseIndent();
                     }
                     event.preventDefault();
@@ -47569,14 +47880,14 @@ var Editor = /** @class */ (function () {
                     }
                     break;
                 case 82:
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.toggleTextAlignment('Right');
                     }
                     event.preventDefault();
                     break;
                 case 85:
                     event.preventDefault();
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.owner.selection.toggleUnderline('Single');
                     }
                     break;
@@ -47600,19 +47911,19 @@ var Editor = /** @class */ (function () {
                     break;
                 case 219:
                     event.preventDefault();
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.onApplyCharacterFormat('fontSize', 'decrement', true);
                     }
                     break;
                 case 221:
                     event.preventDefault();
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.onApplyCharacterFormat('fontSize', 'increment', true);
                     }
                     break;
                 case 187:
                     event.preventDefault();
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.toggleBaselineAlignment('Subscript');
                     }
                     break;
@@ -47741,7 +48052,7 @@ var Editor = /** @class */ (function () {
      * @private
      */
     Editor.prototype.handleBackKey = function () {
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             this.owner.editorModule.onBackSpace();
         }
         this.selection.checkForCursorVisibility();
@@ -47751,7 +48062,7 @@ var Editor = /** @class */ (function () {
      * @private
      */
     Editor.prototype.handleDelete = function () {
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             this.owner.editorModule.delete();
         }
         this.selection.checkForCursorVisibility();
@@ -47761,7 +48072,7 @@ var Editor = /** @class */ (function () {
      * @private
      */
     Editor.prototype.handleEnterKey = function () {
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             if (sf.base.Browser.isDevice) {
                 this.documentHelper.isCompositionStart = false;
             }
@@ -47774,7 +48085,7 @@ var Editor = /** @class */ (function () {
      */
     Editor.prototype.handleTextInput = function (text) {
         var _this = this;
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             if (this.animationTimer) {
                 clearTimeout(this.animationTimer);
             }
@@ -47847,6 +48158,20 @@ var Editor = /** @class */ (function () {
      */
     //tslint:disable: max-func-body-length
     Editor.prototype.insertTextInternal = function (text, isReplace) {
+        if (this.documentHelper.protectionType === 'FormFieldsOnly' && this.selection.isInlineFormFillMode()) {
+            var inline = this.selection.getCurrentFormField();
+            //(inline.formFieldData as TextFormField).isContentChanged = true;
+            var resultText = this.getFormFieldText();
+            var rex = new RegExp(this.owner.documentHelper.textHelper.getEnSpaceCharacter(), 'gi');
+            if (resultText.length > 0 && resultText.replace(rex, '') === '') {
+                resultText = '';
+                this.selection.selectFieldInternal(inline);
+            }
+            var maxLength = inline.formFieldData.maxLength;
+            if (maxLength !== 0 && resultText.length >= maxLength) {
+                return;
+            }
+        }
         var selection = this.documentHelper.selection;
         var insertPosition;
         var isRemoved = true;
@@ -49178,6 +49503,10 @@ var Editor = /** @class */ (function () {
                 this.previousCharFormat = undefined;
                 this.previousParaFormat = undefined;
             }
+            if (this.documentHelper.protectionType === 'FormFieldsOnly' && this.documentHelper.selection.isInlineFormFillMode()) {
+                htmlContent = '';
+                rtfContent = '';
+            }
             if (rtfContent !== '') {
                 this.pasteAjax(rtfContent, '.rtf');
             }
@@ -49596,6 +49925,21 @@ var Editor = /** @class */ (function () {
     Editor.prototype.pasteContents = function (content, currentFormat) {
         if (typeof (content) !== 'string') {
             this.copiedContent = content;
+        }
+        if (this.documentHelper.protectionType === 'FormFieldsOnly' && this.documentHelper.selection.isInlineFormFillMode()) {
+            var inline = this.selection.getCurrentFormField();
+            var resultText = this.getFormFieldText();
+            var maxLength = inline.formFieldData.maxLength;
+            var selectedTextLength = this.documentHelper.selection.text.length;
+            if (maxLength > 0) {
+                if (selectedTextLength === 0) {
+                    var contentlength = maxLength - resultText.length;
+                    content = content.substring(0, contentlength);
+                }
+                else if (selectedTextLength > 0) {
+                    content = content.substring(0, selectedTextLength);
+                }
+            }
         }
         this.pasteContentsInternal(this.getBlocks(content), currentFormat);
         this.isInsertField = false;
@@ -51381,6 +51725,20 @@ var Editor = /** @class */ (function () {
         this.owner.viewer.cutFromTop(blockToShift.y);
         this.documentHelper.blockToShift = blockToShift;
     };
+    /**
+     * @private
+     */
+    Editor.prototype.allowFormattingInFormFields = function (property) {
+        if (this.documentHelper.protectionType === 'FormFieldsOnly' && this.selection.isInlineFormFillMode() &&
+            !sf.base.isNullOrUndefined(this.owner.documentEditorSettings.formFieldSettings.formattingExceptions)) {
+            for (var j = 0; j < this.owner.documentEditorSettings.formFieldSettings.formattingExceptions.length; j++) {
+                if (property.toLowerCase() === this.owner.documentEditorSettings.formFieldSettings.formattingExceptions[j].toLowerCase()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    };
     //Paste Implementation ends
     //Character Format apply implementation starts
     /**
@@ -51393,12 +51751,14 @@ var Editor = /** @class */ (function () {
      * @private
      */
     Editor.prototype.onApplyCharacterFormat = function (property, value, update) {
-        if (this.restrictFormatting) {
+        var allowFormatting = this.documentHelper.isFormFillProtectedMode
+            && this.documentHelper.selection.isInlineFormFillMode() && this.allowFormattingInFormFields(property);
+        if (this.restrictFormatting && !allowFormatting) {
             return;
         }
         this.documentHelper.layout.isBidiReLayout = true;
         var selection = this.documentHelper.selection;
-        if (selection.owner.isReadOnlyMode || !selection.owner.isDocumentLoaded) {
+        if ((selection.owner.isReadOnlyMode && !allowFormatting) || !selection.owner.isDocumentLoaded) {
             return;
         }
         update = sf.base.isNullOrUndefined(update) ? false : update;
@@ -51596,7 +51956,7 @@ var Editor = /** @class */ (function () {
      * Increases the left indent of selected paragraphs to a factor of 36 points.
      */
     Editor.prototype.increaseIndent = function () {
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             this.onApplyParagraphFormat('leftIndent', this.documentHelper.defaultTabWidth, true, false);
         }
     };
@@ -51604,7 +51964,7 @@ var Editor = /** @class */ (function () {
      * Decreases the left indent of selected paragraphs to a factor of 36 points.
      */
     Editor.prototype.decreaseIndent = function () {
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             this.onApplyParagraphFormat('leftIndent', -this.documentHelper.defaultTabWidth, true, false);
         }
     };
@@ -51620,7 +51980,7 @@ var Editor = /** @class */ (function () {
      * @param {string} fontFamily Bullet font family
      */
     Editor.prototype.applyBullet = function (bullet, fontFamily) {
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             this.applyBulletOrNumbering(bullet, 'Bullet', fontFamily);
         }
     };
@@ -51631,7 +51991,7 @@ var Editor = /** @class */ (function () {
      * @param listLevelPattern  Default value of ‘listLevelPattern’ parameter is ListLevelPattern.Arabic
      */
     Editor.prototype.applyNumbering = function (numberFormat, listLevelPattern) {
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             this.applyBulletOrNumbering(numberFormat, listLevelPattern, 'Verdana');
         }
     };
@@ -51691,7 +52051,7 @@ var Editor = /** @class */ (function () {
      */
     Editor.prototype.updateProperty = function (type, value) {
         var selection = this.selection;
-        if (selection.owner.isReadOnlyMode || !selection.owner.isDocumentLoaded) {
+        if ((selection.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) || !selection.owner.isDocumentLoaded) {
             return;
         }
         var startPosition = selection.start;
@@ -52037,7 +52397,7 @@ var Editor = /** @class */ (function () {
      * Toggles the bold property of selected contents.
      */
     Editor.prototype.toggleBold = function () {
-        if (this.documentHelper.owner.isReadOnlyMode) {
+        if (this.documentHelper.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) {
             return;
         }
         var value = this.getCurrentSelectionValue('bold');
@@ -52047,7 +52407,7 @@ var Editor = /** @class */ (function () {
      * Toggles the bold property of selected contents.
      */
     Editor.prototype.toggleItalic = function () {
-        if (this.documentHelper.owner.isReadOnlyMode) {
+        if (this.documentHelper.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) {
             return;
         }
         var value = this.getCurrentSelectionValue('italic');
@@ -52096,7 +52456,7 @@ var Editor = /** @class */ (function () {
      * @param underline Default value of ‘underline’ parameter is Single.
      */
     Editor.prototype.toggleUnderline = function (underline) {
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             this.updateProperty(1, underline);
         }
     };
@@ -52105,7 +52465,7 @@ var Editor = /** @class */ (function () {
      * @param {Strikethrough} strikethrough Default value of strikethrough parameter is SingleStrike.
      */
     Editor.prototype.toggleStrikethrough = function (strikethrough) {
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             var value = void 0;
             if (sf.base.isNullOrUndefined(strikethrough)) {
                 value = this.selection.characterFormat.strikethrough === 'SingleStrike' ? 'None' : 'SingleStrike';
@@ -52434,7 +52794,8 @@ var Editor = /** @class */ (function () {
      * @param  {TextAlignment} textAlignment
      */
     Editor.prototype.toggleTextAlignment = function (textAlignment) {
-        if (this.documentHelper.owner.isReadOnlyMode || !this.documentHelper.owner.isDocumentLoaded) {
+        // tslint:disable-next-line:max-line-length
+        if ((this.documentHelper.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) || !this.documentHelper.owner.isDocumentLoaded) {
             return;
         }
         // Toggle performed based on current selection format similar to MS word behavior.
@@ -52460,14 +52821,16 @@ var Editor = /** @class */ (function () {
      * @private
      */
     Editor.prototype.onApplyParagraphFormat = function (property, value, update, isSelectionChanged) {
-        if (this.restrictFormatting) {
+        var allowFormatting = this.documentHelper.isFormFillProtectedMode
+            && this.documentHelper.selection.isInlineFormFillMode() && this.allowFormattingInFormFields(property);
+        if (this.restrictFormatting && !allowFormatting) {
             return;
         }
         var action = property === 'bidi' ? 'ParagraphBidi' : (property[0].toUpperCase() + property.slice(1));
         this.documentHelper.owner.isShiftingEnabled = true;
         var selection = this.documentHelper.selection;
         this.initHistory(action);
-        if (this.documentHelper.owner.isReadOnlyMode || !this.documentHelper.owner.isDocumentLoaded) {
+        if ((this.owner.isReadOnlyMode && !allowFormatting) || !this.owner.isDocumentLoaded) {
             return;
         }
         if (property === 'leftIndent') {
@@ -55415,6 +55778,7 @@ var Editor = /** @class */ (function () {
                         this.updateHistoryPosition(selection.end, false);
                     }
                     this.reLayout(selection);
+                    this.insertSpaceInFormField();
                 }
             }
             this.documentHelper.triggerSpellCheck = false;
@@ -55517,6 +55881,19 @@ var Editor = /** @class */ (function () {
         var indexInInline = 0;
         var inlineObj = currentLineWidget.getInline(offset, indexInInline);
         var inline = inlineObj.element;
+        if (this.selection.isInlineFormFillMode()) {
+            if (inline instanceof FieldElementBox && inline.fieldType === 2) {
+                return;
+            }
+            var resultText = this.getFormFieldText();
+            if (resultText.length === 1) {
+                this.selection.selectFieldInternal(this.selection.getCurrentFormField());
+                // tslint:disable-next-line:max-line-length
+                this.insertTextInternal(this.documentHelper.textHelper.repeatChar(this.documentHelper.textHelper.getEnSpaceCharacter(), 5), true);
+                this.selection.selectTextElementStartOfField(this.selection.getCurrentFormField());
+                return;
+            }
+        }
         indexInInline = inlineObj.index;
         if (inline instanceof TextElementBox) {
             inline.ignoreOnceItems = [];
@@ -55818,6 +56195,7 @@ var Editor = /** @class */ (function () {
             selection.selectContent(textPosition, true);
             // if (this.documentHelper.owner.enableEditorHistory) {
             this.reLayout(selection);
+            this.insertSpaceInFormField();
             // }
             // this.updateSelectionRangeOffSet(selection.start, selection.end);
             // }
@@ -55853,6 +56231,27 @@ var Editor = /** @class */ (function () {
         var indexInInline = 0;
         var inlineObj = paragraph.getInline(selection.start.offset, indexInInline);
         var inline = inlineObj.element;
+        if (this.selection.isInlineFormFillMode()) {
+            if (inline instanceof FieldElementBox && inline.fieldType === 1) {
+                return;
+            }
+            var resultText = this.getFormFieldText();
+            if (!(inline instanceof TextElementBox)) {
+                inline = inline.nextElement;
+            }
+            if (resultText.length === 1 && inline instanceof TextElementBox) {
+                this.selection.selectFieldInternal(this.selection.getCurrentFormField());
+                // tslint:disable-next-line:max-line-length
+                this.insertTextInternal(this.documentHelper.textHelper.repeatChar(this.documentHelper.textHelper.getEnSpaceCharacter(), 5), true);
+                this.selection.selectTextElementStartOfField(this.selection.getCurrentFormField());
+                return;
+            }
+            else {
+                if (inline instanceof FieldElementBox && inline.fieldType === 1) {
+                    return;
+                }
+            }
+        }
         indexInInline = inlineObj.index;
         if (paragraph.paragraphFormat.listFormat && paragraph.paragraphFormat.listFormat.listId !== -1 &&
             this.documentHelper.isListTextSelected && selection.contextType === 'List') {
@@ -55861,6 +56260,10 @@ var Editor = /** @class */ (function () {
         }
         if (!sf.base.isNullOrUndefined(inline) && indexInInline === inline.length && !sf.base.isNullOrUndefined(inline.nextNode)) {
             inline = inline.nextNode;
+            if (inline instanceof FieldElementBox && inline.fieldType === 1 &&
+                !sf.base.isNullOrUndefined(inline.fieldBegin.formFieldData)) {
+                return;
+            }
             indexInInline = 0;
         }
         if (!sf.base.isNullOrUndefined(inline)) {
@@ -58975,6 +59378,61 @@ var Editor = /** @class */ (function () {
             count = count + 1;
         }
         return name;
+    };
+    // Inserts 5 space on Form Fill inline mode if length is 0
+    Editor.prototype.insertSpaceInFormField = function () {
+        if (this.documentHelper.isInlineFormFillProtectedMode && this.selection.isInlineFormFillMode()) {
+            var resultText = this.getFormFieldText();
+            if (resultText.length === 0 || resultText === '\r') {
+                // tslint:disable-next-line:max-line-length
+                this.insertTextInternal(this.documentHelper.textHelper.repeatChar(this.documentHelper.textHelper.getEnSpaceCharacter(), 5), true);
+                this.selection.selectTextElementStartOfField(this.selection.getCurrentFormField());
+            }
+        }
+    };
+    /**
+     * @private
+     */
+    Editor.prototype.getFormFieldText = function (formField) {
+        if (sf.base.isNullOrUndefined(formField)) {
+            formField = this.selection.getCurrentFormField();
+        }
+        var seperator = formField.fieldSeparator;
+        var text = this.getNextRenderedWidgetText(seperator);
+        return text;
+    };
+    Editor.prototype.getNextRenderedWidgetText = function (seperator) {
+        var text = '';
+        if (seperator instanceof FieldElementBox && seperator.fieldType === 2) {
+            var textElement = seperator;
+            do {
+                if (!(sf.base.isNullOrUndefined(textElement)) && textElement instanceof TextElementBox) {
+                    text = text + textElement.text;
+                }
+                if (sf.base.isNullOrUndefined(textElement.nextNode)) {
+                    text += '\r';
+                    var nextBlock = textElement.paragraph.nextRenderedWidget;
+                    if (sf.base.isNullOrUndefined(nextBlock)) {
+                        break;
+                    }
+                    if (nextBlock instanceof TableWidget) {
+                        nextBlock = this.selection.getFirstParagraphBlock(nextBlock);
+                    }
+                    while (nextBlock.isEmpty()) {
+                        text += '\r';
+                        nextBlock = nextBlock.nextRenderedWidget;
+                    }
+                    // tslint:disable-next-line:max-line-length
+                    textElement = nextBlock.childWidgets[0].children[0];
+                }
+                else {
+                    textElement = textElement.nextNode;
+                }
+            } 
+            // tslint:disable-next-line:max-line-length
+            while (!(textElement instanceof FieldElementBox && textElement.fieldType === 1 && textElement === seperator.fieldEnd));
+        }
+        return text;
     };
     return Editor;
 }());
@@ -63477,7 +63935,9 @@ var WordExport = /** @class */ (function () {
                 this.serializePicture(writer, item);
             }
             else if (item.hasOwnProperty('shapeId')) {
+                var currentParargaph = this.paragraph;
                 this.serializeShape(writer, item);
+                this.paragraph = currentParargaph;
             }
             else if (item.hasOwnProperty('bookmarkType')) {
                 this.serializeBookMark(writer, item);
@@ -65144,12 +65604,13 @@ var WordExport = /** @class */ (function () {
     };
     WordExport.prototype.serializeShapeDrawingGraphics = function (writer, shape) {
         var val = shape.autoShapeType;
+        var id = shape.shapeId;
         writer.writeStartElement('wp', 'wrapNone', this.wpNamespace);
         writer.writeEndElement();
         writer.writeStartElement('wp', 'docPr', this.wpNamespace);
-        writer.writeAttributeString(undefined, 'id', undefined, (this.mDocPrID++).toString());
-        writer.writeAttributeString(undefined, 'name', undefined, '1'.toString());
-        writer.writeAttributeString(undefined, 'title', undefined, '');
+        writer.writeAttributeString(undefined, 'id', undefined, id.toString());
+        writer.writeAttributeString(undefined, 'name', undefined, shape.name);
+        writer.writeAttributeString(undefined, 'title', undefined, shape.title);
         writer.writeEndElement();
         writer.writeStartElement('a', 'graphic', this.aNamespace);
         writer.writeStartElement('a', 'graphicData', this.aNamespace);
@@ -68334,15 +68795,15 @@ var SfdtExport = /** @class */ (function () {
             inline.lineFormat.lineFormatType = element.lineFormat.lineFormatType;
             inline.lineFormat.color = element.lineFormat.color;
             inline.lineFormat.weight = element.lineFormat.weight;
-            inline.lineFormat.dashStyle = element.lineFormat.dashStyle;
+            inline.lineFormat.lineStyle = element.lineFormat.dashStyle;
         }
         if (element.textFrame) {
             inline.textFrame = {};
             inline.textFrame.textVerticalAlignment = element.textFrame.textVerticalAlignment;
-            inline.textFrame.marginLeft = HelperMethods.convertPixelToPoint(element.textFrame.marginLeft);
-            inline.textFrame.marginRight = HelperMethods.convertPixelToPoint(element.textFrame.marginRight);
-            inline.textFrame.marginTop = HelperMethods.convertPixelToPoint(element.textFrame.marginTop);
-            inline.textFrame.marginBottom = HelperMethods.convertPixelToPoint(element.textFrame.marginBottom);
+            inline.textFrame.leftMargin = HelperMethods.convertPixelToPoint(element.textFrame.marginLeft);
+            inline.textFrame.rightMargin = HelperMethods.convertPixelToPoint(element.textFrame.marginRight);
+            inline.textFrame.topMargin = HelperMethods.convertPixelToPoint(element.textFrame.marginTop);
+            inline.textFrame.bottomMargin = HelperMethods.convertPixelToPoint(element.textFrame.marginBottom);
             inline.textFrame.blocks = [];
             for (var j = 0; j < element.textFrame.childWidgets.length; j++) {
                 var textFrameBlock = element.textFrame.childWidgets[j];
@@ -74007,13 +74468,10 @@ var FontDialog = /** @class */ (function () {
             innerHTML: locale.getConstant('Font')
         });
         var fontNameValues = sf.base.createElement('select', { id: this.target.id + '_fontName' });
-        fontNameValues.innerHTML = '<option>Arial</option><option>Calibri</option><option>Candara</option><option>Comic Sans MS</option>' +
-            '<option>Consolas</option><option>Constantia</option><option>Corbel</option>' +
-            '<option>Courier New</option><option>Ebrima</option><option>Franklin Gothic</option>' +
-            '<option>Gabriola</option><option>Gadugi</option><option>Georgia</option><option>Impact</option>' +
-            '<option>Javanese Text</option><option>Microsoft Sans Serif</option><option>MS Gothic</option><option>MS UI Gothic</option>' +
-            '<option>Segoe Print</option><option>Times New Roman</option><option>Verdana</option><option>Segoe UI</option>' +
-            '<option>Algerian</option><option>Cambria</option><option>Georgia</option><option>Consolas</option>';
+        var fontValues = this.documentHelper.owner.documentEditorSettings.fontFamilies;
+        for (var i = 0; i < fontValues.length; i++) {
+            fontNameValues.innerHTML += '<option>' + fontValues[i] + '</option>';
+        }
         fontSubDiv1.appendChild(fontNameLabel);
         fontSubDiv1.appendChild(fontNameValues);
         fontDiv.appendChild(fontSubDiv1);
@@ -80975,7 +81433,10 @@ var DocumentEditorSettings = /** @class */ (function (_super) {
         sf.base.Property('#FFE97F')
     ], DocumentEditorSettings.prototype, "searchHighlightColor", void 0);
     __decorate([
-        sf.base.Property({ shadingColor: '#cfcfcf', applyShading: true, selectionColor: '#cccccc' })
+        sf.base.Property(['Algerian', 'Arial', 'Calibri', 'Cambria', 'Cambria Math', 'Candara', 'Courier New', 'Georgia', 'Impact', 'Segoe Print', 'Segoe Script', 'Segoe UI', 'Symbol', 'Times New Roman', 'Verdana', 'Windings'])
+    ], DocumentEditorSettings.prototype, "fontFamilies", void 0);
+    __decorate([
+        sf.base.Property({ shadingColor: '#cfcfcf', applyShading: true, selectionColor: '#cccccc', formFillingMode: 'Popup' })
     ], DocumentEditorSettings.prototype, "formFieldSettings", void 0);
     return DocumentEditorSettings;
 }(sf.base.ChildProperty));
@@ -82350,7 +82811,13 @@ var DocumentEditor = /** @class */ (function (_super) {
                     formData.value = formField[i].formFieldData.checked;
                 }
                 else if (formField[i].formFieldData instanceof TextFormField) {
-                    var resultText = formField[i].resultText;
+                    var resultText = '';
+                    if (this.documentHelper.isInlineFormFillProtectedMode) {
+                        resultText = this.editorModule.getFormFieldText(formField[i]);
+                    }
+                    else {
+                        resultText = formField[i].resultText;
+                    }
                     var rex = new RegExp(this.documentHelper.textHelper.getEnSpaceCharacter(), 'gi');
                     if (resultText.replace(rex, '') === '') {
                         resultText = '';
@@ -82972,6 +83439,12 @@ var FormFieldSettings = /** @class */ (function (_super) {
     __decorate([
         sf.base.Property('#cccccc')
     ], FormFieldSettings.prototype, "selectionColor", void 0);
+    __decorate([
+        sf.base.Property('Popup')
+    ], FormFieldSettings.prototype, "formFillingMode", void 0);
+    __decorate([
+        sf.base.Property([])
+    ], FormFieldSettings.prototype, "formattingExceptions", void 0);
     return FormFieldSettings;
 }(sf.base.ChildProperty));
 /**
@@ -84137,28 +84610,29 @@ var Text = /** @class */ (function () {
     };
     Text.prototype.createDropDownListForFamily = function (fontSelectElement) {
         var _this = this;
-        var fontStyle = [{ FontName: 'Algerian' }, { FontName: 'Arial' },
-            { FontName: 'Calibri' }, { FontName: 'Cambria' }, { FontName: 'Cambria Math' }, { FontName: 'Candara' },
-            { FontName: 'Courier New' }, { FontName: 'Georgia' }, { FontName: 'Impact' }, { FontName: 'Segoe Print' },
-            { FontName: 'Segoe Script' }, { FontName: 'Segoe UI' }, { FontName: 'Symbol' },
-            { FontName: 'Times New Roman' }, { FontName: 'Verdana' }, { FontName: 'Windings' }
-        ];
+        var fontStyle;
         this.fontFamily = new sf.dropdowns.ComboBox({
             dataSource: fontStyle,
             query: new sf.data.Query().select(['FontName']),
-            fields: { text: 'FontName', value: 'FontName' },
+            fields: { text: 'FontName', value: 'FontValue' },
             popupHeight: '150px',
             cssClass: 'e-de-prop-dropdown',
             allowCustom: true,
             showClearButton: false,
             enableRtl: this.isRtl
         });
+        this.fontFamily.appendTo(fontSelectElement);
+        var fontFamilyValue = this.container.documentEditorSettings.fontFamilies;
+        for (var i = 0; i < fontFamilyValue.length; i++) {
+            var fontValue = fontFamilyValue[i];
+            var fontStyleValue = { 'FontName': fontValue, 'FontValue': fontValue };
+            this.fontFamily.addItem(fontStyleValue, i);
+        }
         if (!this.container.enableCsp) {
             this.fontFamily.itemTemplate = '<span style="font-family: ${FontName};">${FontName}</span>';
             this.fontFamily.isStringTemplate = true;
         }
         this.fontFamily.focus = function () { _this.isRetrieving = false; _this.fontFamily.element.select(); };
-        this.fontFamily.appendTo(fontSelectElement);
         this.fontFamily.element.parentElement.setAttribute('title', this.localObj.getConstant('Font'));
     };
     Text.prototype.wireEvent = function () {
@@ -87348,8 +87822,30 @@ var DocumentEditorContainer = /** @class */ (function (_super) {
         }
     };
     DocumentEditorContainer.prototype.customizeDocumentEditorSettings = function () {
+        if (this.documentEditorSettings.formFieldSettings) {
+            var settings = this.documentEditorSettings.formFieldSettings;
+            var documentEditor = this.documentEditor;
+            if (!sf.base.isNullOrUndefined(settings.applyShading)) {
+                documentEditor.documentEditorSettings.formFieldSettings.applyShading = settings.applyShading;
+            }
+            if (!sf.base.isNullOrUndefined(settings.formFillingMode)) {
+                documentEditor.documentEditorSettings.formFieldSettings.formFillingMode = settings.formFillingMode;
+            }
+            if (!sf.base.isNullOrUndefined(settings.formattingExceptions)) {
+                documentEditor.documentEditorSettings.formFieldSettings.formattingExceptions = settings.formattingExceptions;
+            }
+            if (!sf.base.isNullOrUndefined(settings.selectionColor)) {
+                documentEditor.documentEditorSettings.formFieldSettings.selectionColor = settings.selectionColor;
+            }
+            if (!sf.base.isNullOrUndefined(settings.shadingColor)) {
+                documentEditor.documentEditorSettings.formFieldSettings.shadingColor = settings.shadingColor;
+            }
+        }
         if (this.documentEditorSettings.searchHighlightColor) {
             this.documentEditor.documentEditorSettings.searchHighlightColor = this.documentEditorSettings.searchHighlightColor;
+        }
+        if (this.documentEditorSettings.fontFamilies) {
+            this.documentEditor.documentEditorSettings.fontFamilies = this.documentEditorSettings.fontFamilies;
         }
     };
     /**

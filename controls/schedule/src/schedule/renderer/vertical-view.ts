@@ -370,6 +370,9 @@ export class VerticalView extends ViewBase implements IRenderer {
         if (this.parent.activeViewOptions.allowVirtualScrolling) {
             clsList.push(cls.VIRTUAL_SCROLL_CLASS);
         }
+        if (this.parent.eventSettings.ignoreWhitespace) {
+            clsList.push(cls.IGNORE_WHITESPACE);
+        }
         this.renderPanel(type);
         addClass([this.element], clsList);
         this.element.appendChild(this.createTableLayout(cls.OUTER_TABLE_CLASS) as HTMLElement);
@@ -558,7 +561,6 @@ export class VerticalView extends ViewBase implements IRenderer {
         let wrap: Element = createElement('div', { className: cls.CONTENT_WRAP_CLASS });
         let tbl: Element = this.createTableLayout(cls.CONTENT_TABLE_CLASS);
         this.addAutoHeightClass(tbl);
-        this.addIgnoreWhitespaceClass(tbl);
         this.createColGroup(tbl, this.colLevels.slice(-1)[0]);
         this.renderContentTable(tbl);
         wrap.appendChild(tbl);

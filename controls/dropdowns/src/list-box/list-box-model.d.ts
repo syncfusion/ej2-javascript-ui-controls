@@ -122,6 +122,12 @@ export interface ListBoxModel extends DropDownBaseModel{
     ignoreCase?: boolean;
 
     /**
+     * Accepts the value to be displayed as a watermark text on the filter bar. 
+     * @default null
+     */
+    filterBarPlaceholder?: string;
+
+    /**
      * Triggers while rendering each list item.
      * @event
      * @blazorProperty 'OnItemRender'

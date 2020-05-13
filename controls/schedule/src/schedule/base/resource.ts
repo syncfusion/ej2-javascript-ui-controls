@@ -72,9 +72,6 @@ export class ResourceBase {
             && this.parent.activeViewOptions.group.resources.length > 0) {
             addClass([tbl], cls.AUTO_HEIGHT);
         }
-        if (this.parent.eventSettings.ignoreWhitespace) {
-            addClass([tbl], cls.IGNORE_WHITESPACE);
-        }
         let tBody: Element = tbl.querySelector('tbody');
         let resData: TdData[] = this.generateTreeData(true) as TdData[];
         this.countCalculation(resColl.slice(0, -2), resColl.slice(0, -1));
@@ -505,6 +502,10 @@ export class ResourceBase {
     public bindResourcesData(isSetModel: boolean): void {
         this.parent.showSpinner();
         if (isBlazor()) {
+            if (!this.parent.isServerRenderer() && this.parent.tempResourceCollection) {
+                this.parent.resourceCollection = this.parent.tempResourceCollection || [];
+                this.refreshLayout(false);
+            }
             // the resourceCollection will be updated in layoutReady method
             // tslint:disable-next-line:no-any
             // (this.parent as any).interopAdaptor.invokeMethodAsync('BindResourcesData').then((result: string) => {
@@ -791,6 +792,17 @@ export class ResourceBase {
             return (data[0] as { [key: string]: Object })[resource.cssClassField] as string;
         }
         return undefined;
+    }
+
+    public getResourceRenderDates(): Date[] {
+        let resourceDates: Date[] = [].concat.apply([], this.lastResourceLevel.map((e: TdData) => e.renderDates));
+        let removeDuplicateDates: Function = (dateColl: Date[]) => dateColl.filter((date: Date, index: number, dates: Date[]) =>
+            dates.map((dateObj: Date) => dateObj.getTime()).indexOf(date.getTime()) === index);
+        let renderDates: Date[] = removeDuplicateDates(resourceDates);
+        renderDates.sort((a: Date, b: Date) => {
+            return a.getDay() - b.getDay();
+        });
+        return renderDates;
     }
 
     private filterData(dataSource: Object[], field: string, value: string): Object[] {

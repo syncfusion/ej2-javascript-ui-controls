@@ -90,3 +90,26 @@ export interface IPeriodSelectorControl {
      */
     rangeNavigatorControl: RangeNavigator;
 }
+
+/**
+ * Header Footer Content
+ * @private
+ */
+export interface IPDFArgs {
+    /**
+     * Content of the header
+     */
+    content: string;
+    /**
+     * FontSize of the content
+     */
+    fontSize?: number;
+    /**
+     * x position for the content
+     */
+    x?: number;
+    /**
+     * y position for the content
+     */
+    y?: number;
+}

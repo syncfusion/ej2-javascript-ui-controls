@@ -12,7 +12,7 @@ import * as EVENTS from './../../common/constant';
 import { ServiceLocator } from '../services/service-locator';
 import { RenderType } from '../base/enum';
 import { DialogRenderer } from '../renderer/dialog-renderer';
-import { Uploader, MetaData, UploadingEventArgs } from '@syncfusion/ej2-inputs';
+import { Uploader, MetaData, UploadingEventArgs, SelectedEventArgs } from '@syncfusion/ej2-inputs';
 import * as classes from '../base/classes';
 import { IHtmlFormatterCallBack } from '../../common';
 import { sanitizeHelper, convertToBlob } from '../base/util';
@@ -267,9 +267,29 @@ export class PasteCleanup {
           setTimeout(() => { this.popupClose(popupObj, uploadObj, imgElem, e); }, 900); },
         uploading: (e: UploadingEventArgs) => {
             this.parent.trigger(events.imageUploading, e);
+            this.parent.inputElement.contentEditable = 'false';
         },
         failure: (e: Object) => {
           setTimeout(() => { this.uploadFailure(imgElem, uploadObj, popupObj, e); }, 900);
+        },
+        canceling: () => {
+          this.parent.inputElement.contentEditable = 'true';
+          if (imgElem.nextSibling.textContent === ' ') {
+            detach(imgElem.nextSibling);
+          }
+          detach(imgElem);
+          popupObj.close();
+        },
+        selected: (e: SelectedEventArgs) => {
+          e.cancel  = true;
+        },
+        removing: () => {
+          this.parent.inputElement.contentEditable = 'true';
+          if (imgElem.nextSibling.textContent === ' ') {
+            detach(imgElem.nextSibling);
+          }
+          detach(imgElem);
+          popupObj.close();
         }
       });
       uploadObj.appendTo(popupObj.element.childNodes[0] as HTMLElement);
@@ -291,6 +311,7 @@ export class PasteCleanup {
       detach(popupObj.element.querySelector('.e-rte-dialog-upload .e-file-select-wrap') as HTMLElement);
   }
   private uploadFailure(imgElem: Element, uploadObj: Uploader, popupObj: Popup, e: Object): void {
+    this.parent.inputElement.contentEditable = 'true';
     detach(imgElem);
     if (popupObj) {
       popupObj.close();
@@ -299,6 +320,7 @@ export class PasteCleanup {
     uploadObj.destroy();
   }
   private popupClose(popupObj: Popup, uploadObj: Uploader, imgElem: Element, e: Object): void {
+    this.parent.inputElement.contentEditable = 'true';
     this.parent.trigger(events.imageUploadSuccess, e, (e: object) => {
       if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
           let url: string = this.parent.insertImageSettings.path + (e as MetaData).file.name;

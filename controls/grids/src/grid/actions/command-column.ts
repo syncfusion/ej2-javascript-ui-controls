@@ -86,10 +86,12 @@ export class CommandColumn {
                     if (gObj.editSettings.mode !== 'Batch') {
                         gObj.editModule.endEdit();
                     }
+                    gObj.commandDelIndex = parseInt(closest(target, 'tr').getAttribute('aria-rowindex'), 10);
                     gObj.clearSelection();
                     //for toogle issue when dbl click
-                    gObj.selectRow(parseInt(closest(target, 'tr').getAttribute('aria-rowindex'), 10), false);
+                    gObj.selectRow(gObj.commandDelIndex, false);
                     gObj.editModule.deleteRecord();
+                    gObj.commandDelIndex = undefined;
                     break;
             }
         });

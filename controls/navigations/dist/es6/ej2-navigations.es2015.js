@@ -11033,6 +11033,9 @@ let TreeView = TreeView_1 = class TreeView extends Component {
             let selected = currLi.classList.contains(ACTIVE);
             let expanded = (currLi.getAttribute('aria-expanded') === 'true') ? true : false;
             let hasChildren = (currLi.getAttribute('aria-expanded') === null) ? false : true;
+            if (this.isBlazorPlatform) {
+                hasChildren = currLi.getAttribute('aria-expanded') === 'true' ? true : (currLi.querySelector('.e-icon-expandable') || currLi.querySelector('.e-icon-collapsible')) != null ? true : false;
+            }
             let checked = null;
             if (this.showCheckBox) {
                 checked = select('.' + CHECKBOXWRAP, currLi).getAttribute('aria-checked');

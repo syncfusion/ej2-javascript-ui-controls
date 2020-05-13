@@ -6,10 +6,15 @@ import { getElement, removeElement } from '../utils/helper';
 import { ExportType } from '../utils/enum';
 import { IPrintEventArgs, IAfterExportEventArgs } from '../../chart/model/chart-interface';
 import { beforePrint, afterExport } from '../model/constants';
-import { PdfPageOrientation, PdfDocument, PdfBitmap, SizeF, PdfMargins } from '@syncfusion/ej2-pdf-export';
+import {
+    PdfPageOrientation, PdfDocument, PdfBitmap, SizeF, PdfMargins, PdfStandardFont, PdfPageTemplateElement,
+    PdfSolidBrush, PdfColor
+} from '@syncfusion/ej2-pdf-export';
 import { RangeNavigator } from '../..';
 import { StockChart } from '../../stock-chart/stock-chart';
 import { BulletChart } from '../../bullet-chart/bullet-chart';
+import { IPDFArgs } from '../../common/model/interface';
+
 /**
  * Export Functionalities
  */
@@ -80,13 +85,14 @@ export class ExportUtils {
         type: ExportType, fileName: string,
         orientation?: PdfPageOrientation,
         controls?: (Chart | AccumulationChart | RangeNavigator | StockChart | BulletChart)[],
-        width?: number, height?: number, isVertical?: boolean
+        width?: number, height?: number, isVertical?: boolean,
+        header?: IPDFArgs, footer?: IPDFArgs
     ): void {
         let controlValue: IControlValue = this.getControlsValue(controls, isVertical);
         width = width ? width : controlValue.width;
         height = height ? height : controlValue.height;
         let element: HTMLCanvasElement = this.control.svgObject as HTMLCanvasElement;
-        let isCanvas: boolean = (this.control as Chart). enableCanvas;
+        let isCanvas: boolean = (this.control as Chart).enableCanvas;
         let image: string;
         if (!isCanvas) {
             element = <HTMLCanvasElement>createElement('canvas', {
@@ -123,7 +129,7 @@ export class ExportUtils {
             }
             image = canvas.toDataURL();
             if (type === 'PDF') {
-                this.exportPdf(canvas, orientation, width, height, isDownload, fileName);
+                this.exportPdf(canvas, orientation, width, height, isDownload, fileName, header, footer);
             } else {
                 this.doexport(type, image, fileName);
             }
@@ -134,7 +140,7 @@ export class ExportUtils {
                 ctx.drawImage(image, 0, 0);
                 window.URL.revokeObjectURL(url);
                 if (type === 'PDF') {
-                    this.exportPdf(element, orientation, width, height, isDownload, fileName);
+                    this.exportPdf(element, orientation, width, height, isDownload, fileName, header, footer);
                 } else {
                     if (window.navigator.msSaveOrOpenBlob) {
                         window.navigator.msSaveOrOpenBlob(element.msToBlob(), fileName + '.' + (type as string).toLocaleLowerCase());
@@ -157,10 +163,10 @@ export class ExportUtils {
     /**
      * To get data url for charts.
      */
-    public getDataUrl(chart: Chart): { element: HTMLCanvasElement, dataUrl?: string, blobUrl?: string} {
+    public getDataUrl(chart: Chart): { element: HTMLCanvasElement, dataUrl?: string, blobUrl?: string } {
         let controlValue: IControlValue = this.getControlsValue([chart]);
         let element: HTMLCanvasElement = this.control.svgObject as HTMLCanvasElement;
-        let isCanvas: boolean = (this.control as Chart). enableCanvas;
+        let isCanvas: boolean = (this.control as Chart).enableCanvas;
         if (!isCanvas) {
             element = <HTMLCanvasElement>createElement('canvas', {
                 id: 'ej2-canvas',
@@ -185,7 +191,7 @@ export class ExportUtils {
                 name: afterExport, cancel: false, dataUrl: element.toDataURL('image/png')
             };
             chart.trigger(afterExport, argsData);
-            return { element: canvas, dataUrl: canvas.toDataURL()};
+            return { element: canvas, dataUrl: canvas.toDataURL() };
         } else {
             let image: HTMLImageElement = new Image();
             let ctx: CanvasRenderingContext2D = element.getContext('2d');
@@ -199,7 +205,7 @@ export class ExportUtils {
                 return argsData.dataUrl;
             });
             image.src = url;
-            return { element: element, blobUrl: url};
+            return { element: element, blobUrl: url };
         }
     }
 
@@ -240,7 +246,7 @@ export class ExportUtils {
             let svg: Node = control.svgObject.cloneNode(true);
             let groupEle: Element = control.renderer.createGroup({
                 style: (isNullOrUndefined(isVertical) || isVertical) ? 'transform: translateY(' + height + 'px)' :
-                        'transform: translateX(' + width + 'px)'
+                    'transform: translateX(' + width + 'px)'
 
             });
             if (!isCanvas) {
@@ -278,13 +284,14 @@ export class ExportUtils {
      * We cant export svg to other formats in IE
      */
     // tslint:disable:no-string-literal
-    private canvasRender( enableCanvas: boolean, chart: Chart): void {
+    private canvasRender(enableCanvas: boolean, chart: Chart): void {
         chart.enableCanvas = enableCanvas;
         chart['preRender']();
         chart['render']();
     }
-    private exportPdf(element: HTMLCanvasElement, orientation: PdfPageOrientation,
-                      width: number, height: number, isDownload: boolean, fileName: String): void {
+
+    // tslint:disable-next-line:max-line-length
+    private exportPdf(element: HTMLCanvasElement, orientation: PdfPageOrientation, width: number, height: number, isDownload: boolean, fileName: String, header?: IPDFArgs, footer?: IPDFArgs): void {
         let document: PdfDocument = new PdfDocument();
         let margin: PdfMargins = document.pageSettings.margins;
         let pdfDefaultWidth: number = document.pageSettings.width;
@@ -294,6 +301,20 @@ export class ExportUtils {
         document.pageSettings.orientation = orientation;
         exactWidth = (pdfDefaultWidth < width) ? (width + margin.left + margin.right) : pdfDefaultWidth;
         exactHeight = (pdfDefaultHeight < height) ? (height + margin.top + margin.bottom) : pdfDefaultHeight;
+        if (header !== undefined) {
+            let font: PdfStandardFont = new PdfStandardFont(1, header.fontSize || 15);
+            let pdfHeader: PdfPageTemplateElement = new PdfPageTemplateElement(exactWidth, 40);
+            // tslint:disable-next-line:max-line-length
+            pdfHeader.graphics.drawString(header.content + '', font, null, new PdfSolidBrush(new PdfColor(0, 0, 0)), header.x, header.y, null);
+            document.template.top = pdfHeader;
+        }
+        if (footer !== undefined) {
+            let font: PdfStandardFont = new PdfStandardFont(1, footer.fontSize || 15);
+            let pdfFooter: PdfPageTemplateElement = new PdfPageTemplateElement(exactWidth, 40);
+            // tslint:disable-next-line:max-line-length
+            pdfFooter.graphics.drawString(footer.content + '', font, null, new PdfSolidBrush(new PdfColor(0, 0, 0)), footer.x, footer.y, null);
+            document.template.bottom = pdfFooter;
+        }
         document.pageSettings.size = new SizeF(exactWidth, exactHeight);
         imageString = imageString.slice(imageString.indexOf(',') + 1);
         document.pages.add().graphics.drawImage(

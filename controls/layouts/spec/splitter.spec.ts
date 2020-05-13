@@ -782,7 +782,7 @@ describe('Splitter Control', () => {
         });
 
         it('check isSeparator method', () => {
-           expect(splitterObj.isSeparator(document.querySelector('.e-resize-handler'))).toEqual(false);
+           expect(splitterObj.isSeparator(document.querySelector('.e-resize-handler'))).toEqual(true);
         });
 
         it('Hovering on splitbar', () => {

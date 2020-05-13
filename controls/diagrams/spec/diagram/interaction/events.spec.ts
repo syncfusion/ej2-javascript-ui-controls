@@ -789,3 +789,55 @@ describe('Diagram Control', () => {
     });
 
 });
+describe('Connector state of completed while dragging', () => {
+    let diagram: Diagram;
+    let ele: HTMLElement;
+
+    let mouseEvents: MouseEvents = new MouseEvents();
+
+    beforeAll((): void => {
+        const isDef = (o: any) => o !== undefined && o !== null;
+        if (!isDef(window.performance)) {
+            console.log("Unsupported environment, window.performance.memory is unavailable");
+            this.skip(); //Skips test (in Chai)
+            return;
+        }
+        ele = createElement('div', { id: 'diagrambac' });
+        document.body.appendChild(ele);
+        let selArray: (NodeModel | ConnectorModel)[] = [];
+        let connector: ConnectorModel = {
+            id: 'connector1', 
+            sourcePoint: { x: 100, y: 100},
+            targetPoint: { x: 300, y: 300}
+            
+        };
+
+        diagram = new Diagram({
+            width: 1000, height: 1000,
+            connectors: [connector]
+        });
+
+        diagram.appendTo('#diagrambac');
+        selArray.push(diagram.nodes[0]);
+        diagram.select(selArray);
+    });
+
+    afterAll((): void => {
+        diagram.destroy();
+        ele.remove();
+    });
+    it('Checking connector state while  dragging', (done: Function) => {
+        debugger
+        let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
+        mouseEvents.dragAndDropEvent(diagramCanvas, 300, 300,500,500);
+        diagram.positionChange = (args: IDraggingEventArgs) => {
+                args.cancel=true;
+                if(args.state){
+                expect(args.state === "Completed").toBe(true);
+                done();
+                }
+        };
+        done();
+        
+    });
+});

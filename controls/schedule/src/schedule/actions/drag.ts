@@ -221,7 +221,9 @@ export class DragAndDrop extends ActionBase {
         this.heightUptoCursorPoint = (this.heightUptoCursorPoint === 0) ?
             Math.ceil((Math.abs(this.actionObj.clone.getBoundingClientRect().top - this.actionObj.Y) / this.heightPerMinute)) *
             this.heightPerMinute : this.heightUptoCursorPoint;
-        this.isAllDayDrag = this.actionObj.clone.classList.contains(cls.ALLDAY_APPOINTMENT_CLASS);
+        this.isAllDayDrag = (this.parent.activeViewOptions.timeScale.enable) ?
+            this.actionObj.clone.classList.contains(cls.ALLDAY_APPOINTMENT_CLASS) :
+            this.actionObj.event[this.parent.eventFields.isAllDay] as boolean;
         if (this.isStepDragging && this.minDiff === 0) {
             this.calculateMinutesDiff(eventObj);
         }
@@ -234,6 +236,8 @@ export class DragAndDrop extends ActionBase {
             } else {
                 this.daysVariation = 0;
             }
+        } else {
+            this.daysVariation = 0;
         }
         if (this.parent.eventDragArea) {
             let targetElement: HTMLElement = eventArgs.target as HTMLElement;

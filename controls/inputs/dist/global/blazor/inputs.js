@@ -1921,17 +1921,10 @@ var NumericTextBox = /** @class */ (function (_super) {
                     this.validateStep();
                     break;
                 case 'showSpinButton':
-                    if (newProp.showSpinButton) {
-                        this.spinBtnCreation();
-                    }
-                    else {
-                        sf.base.detach(this.spinUp);
-                        sf.base.detach(this.spinDown);
-                    }
+                    this.updateSpinButton(newProp);
                     break;
                 case 'showClearButton':
-                    exports.Input.setClearButton(newProp.showClearButton, this.element, this.inputWrapper, undefined, this.createElement);
-                    this.bindClearEvent();
+                    this.updateClearButton(newProp);
                     break;
                 case 'floatLabelType':
                     this.floatLabelType = newProp.floatLabelType;
@@ -1977,6 +1970,36 @@ var NumericTextBox = /** @class */ (function (_super) {
                 case 'decimals':
                     this.decimals = newProp.decimals;
                     this.updateValue(this.value);
+            }
+        }
+    };
+    NumericTextBox.prototype.updateClearButton = function (newProp) {
+        if (sf.base.isBlazor()) {
+            if (this.showClearButton) {
+                this.inputWrapper.clearButton = this.container.querySelector('.e-clear-icon');
+                exports.Input.wireClearBtnEvents(this.element, this.inputWrapper.clearButton, this.inputWrapper.container);
+            }
+        }
+        else {
+            exports.Input.setClearButton(newProp.showClearButton, this.element, this.inputWrapper, undefined, this.createElement);
+            this.bindClearEvent();
+        }
+    };
+    NumericTextBox.prototype.updateSpinButton = function (newProp) {
+        if (sf.base.isBlazor()) {
+            if (this.showSpinButton) {
+                this.spinDown = this.container.querySelector('.' + SPINDOWN);
+                this.spinUp = this.container.querySelector('.' + SPINUP);
+                this.wireSpinBtnEvents();
+            }
+        }
+        else {
+            if (newProp.showSpinButton) {
+                this.spinBtnCreation();
+            }
+            else {
+                sf.base.detach(this.spinUp);
+                sf.base.detach(this.spinDown);
             }
         }
     };
@@ -2293,7 +2316,7 @@ function strippedValue(element, maskValues) {
             }
             if (!checkMask) {
                 if ((maskValue[i] !== this.promptChar) && (!sf.base.isNullOrUndefined(this.customRegExpCollec[k]) &&
-                    ((!sf.base.isNullOrUndefined(this.regExpCollec[this.customRegExpCollec[k]])) ||
+                    ((this._callPasteHandler || !sf.base.isNullOrUndefined(this.regExpCollec[this.customRegExpCollec[k]])) ||
                         (this.customRegExpCollec[k].length > 2 && this.customRegExpCollec[k][0] === '[' &&
                             this.customRegExpCollec[k][this.customRegExpCollec[k].length - 1] === ']') ||
                         (!sf.base.isNullOrUndefined(this.customCharacters) &&
@@ -6263,7 +6286,13 @@ var Slider = /** @class */ (function (_super) {
         _super.prototype.destroy.call(this);
         this.unwireEvents();
         window.removeEventListener('resize', this.onresize);
-        sf.base.removeClass([this.sliderContainer], [classNames.sliderDisabled]);
+        if (!sf.base.isBlazor() && !this.isServerRendered) {
+            sf.base.removeClass([this.sliderContainer], [classNames.sliderDisabled]);
+        }
+        else {
+            sf.base.removeClass([this.sliderContainer], [classNames.sliderDisabled, classNames.sliderContainer, classNames.controlWrapper,
+                classNames.horizontalSlider, classNames.verticalSlider]);
+        }
         this.firstHandle.removeAttribute('aria-orientation');
         if (this.type === 'Range') {
             this.secondHandle.removeAttribute('aria-orientation');
@@ -7838,7 +7867,7 @@ var Uploader = /** @class */ (function (_super) {
         }
     };
     Uploader.prototype.getPersistData = function () {
-        return this.addOnPersist([]);
+        return this.addOnPersist(['filesData']);
     };
     /**
      * Return the module name of the component.
@@ -8014,6 +8043,10 @@ var Uploader = /** @class */ (function (_super) {
     };
     Uploader.prototype.renderPreLoadFiles = function () {
         if (this.files.length) {
+            if (this.enablePersistence && this.filesData.length) {
+                this.createFileList(this.filesData);
+                return;
+            }
             if (sf.base.isNullOrUndefined(this.files[0].size)) {
                 return;
             }
@@ -8310,6 +8343,9 @@ var Uploader = /** @class */ (function (_super) {
             return;
         }
         this.dropZoneElement.classList.add(DRAG_HOVER);
+        if (this.dropEffect !== 'Default') {
+            e.dataTransfer.dropEffect = this.dropEffect.toLowerCase();
+        }
         e.preventDefault();
         e.stopPropagation();
     };
@@ -8630,11 +8666,13 @@ var Uploader = /** @class */ (function (_super) {
         var _loop_4 = function (i) {
             // tslint:disable-next-line
             this_2.filesEntries[i].file(function (fileObj) {
-                var path = _this.filesEntries[i].fullPath;
-                files.push({ 'path': path, 'file': fileObj });
-                if (i === _this.filesEntries.length - 1) {
-                    _this.filesEntries = [];
-                    _this.renderSelectedFiles(event, files, true);
+                if (_this.filesEntries) {
+                    var path = _this.filesEntries[i].fullPath;
+                    files.push({ 'path': path, 'file': fileObj });
+                    if (i === _this.filesEntries.length - 1) {
+                        _this.filesEntries = [];
+                        _this.renderSelectedFiles(event, files, true);
+                    }
                 }
             });
         };
@@ -10858,6 +10896,9 @@ var Uploader = /** @class */ (function (_super) {
     __decorate$4([
         sf.base.Property(false)
     ], Uploader.prototype, "directoryUpload", void 0);
+    __decorate$4([
+        sf.base.Property('Default')
+    ], Uploader.prototype, "dropEffect", void 0);
     __decorate$4([
         sf.base.Event()
     ], Uploader.prototype, "created", void 0);

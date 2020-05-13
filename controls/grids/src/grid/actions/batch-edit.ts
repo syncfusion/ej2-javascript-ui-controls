@@ -679,6 +679,10 @@ export class BatchEdit {
             tr.classList.add('e-insertedrow');
             if (tbody.querySelector('.e-emptyrow')) {
                 tbody.querySelector('.e-emptyrow').remove();
+                if (this.parent.getFrozenColumns()) {
+                    let moveTbody: Element = this.parent.getContent().querySelector('.e-movablecontent').querySelector('tbody');
+                    moveTbody.firstElementChild.remove();
+                }
             }
             if (gObj.getFrozenColumns()) {
                 mTr = this.renderMovable(tr);
@@ -711,8 +715,7 @@ export class BatchEdit {
             let addedRecords: string = 'addedRecords';
             let dRecords: string = 'deletedRecords';
             let btmIdx: number = this.parent.getCurrentViewRecords().length + changes[addedRecords].length - changes[dRecords].length - 1;
-            this.parent.editSettings.newRowPosition === 'Top' ? gObj.selectRow(0) :
-                gObj.selectRow(btmIdx);
+            this.parent.editSettings.newRowPosition === 'Top' ? gObj.selectRow(0) : gObj.selectRow(btmIdx);
             if (!data) {
                 index = this.findNextEditableCell(0, true);
                 col = (gObj.getColumns()[index] as Column);

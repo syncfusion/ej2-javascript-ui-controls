@@ -3302,3 +3302,85 @@ describe('EJ2-37578 - [ObjectObject] while editing the fields  that are undefine
         destroy(gridObj);
     });
 });
+
+describe('adding rows in empty grid through edit cell and press enter in batch edit ', () => {
+    let gridObj: Grid;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data.slice(0,0),
+                editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch'},
+                columns: [
+                    { field: 'OrderID', headerText: 'Order ID' },
+                    { field: 'CustomerID', headerText: 'CustomerID' },
+                    { field: 'EmployeeID', headerText: 'Employee ID' }],
+                allowPaging: true,
+                pageSettings: { pageSize: 8, pageCount: 4, currentPage: 1 },
+                allowSelection: true,
+            }, done);
+    });
+
+    it('pressing enter after editcell', (done: Function) => {
+        let cellEdit = (args?: any): void =>{
+        let cell = gridObj.element.querySelectorAll('.e-rowcell')[1]
+        gridObj.keyboardModule.keyAction({ action: 'enter', preventDefault: preventDefault, target: cell } as any);
+        done();
+        }
+        gridObj.cellEdit = cellEdit;
+        gridObj.addRecord({OrderID:1, CustomerID:''});
+        gridObj.addRecord({OrderID:2, CustomerID:''});
+        gridObj.editCell(0,'CustomerID');
+        
+    });
+
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null ;
+    });
+
+    describe('EJ2-39071- Unnecessary to include an Empty row in Grid when inserted a row with Frozen Column', () => {
+        let gridObj: Grid;
+        let elem: HTMLElement;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: [],
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+                    allowPaging: true,
+                    frozenColumns:2,        
+                    pageSettings: { pageCount: 5 },
+                    toolbar: ['Add',  'Delete', 'Update', 'Cancel'],
+                    columns: [
+                        { field: 'OrderID', type: 'number', isPrimaryKey: true, visible: true, validationRules: { required: true } },
+                        { field: 'CustomerID', type: 'string',validationRules: { required: true } },
+                        { field: 'EmployeeID', type: 'number', allowEditing: false },
+                        { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
+                    ]
+                }, done);
+        });
+        it('Disable altrow', (done: Function) => {
+            let dataBound = (args: Object) => {
+                done();
+            };
+            gridObj.dataBound = dataBound;
+            gridObj.refreshColumns();
+        });
+        it('Add start', (done: Function) => {
+            let batchAdd = (args?: any): void => {
+                expect(elem.children.length).toBe(1);
+                gridObj.batchAdd = null;
+                done();
+            };
+            gridObj.batchAdd = batchAdd;
+            elem = gridObj.getContent().querySelector('.e-movablecontent').querySelector('tbody');
+            (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
+           
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = elem = null ;
+        });
+    });
+    
+});

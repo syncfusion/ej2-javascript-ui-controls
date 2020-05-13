@@ -4103,8 +4103,16 @@ export class PivotEngine {
                     delete formatSetting.type;
                     if ((formatSetting.format) && !(this.formatRegex.test(formatSetting.format))) {
                         let pattern: string[] = formatSetting.format.match(this.customRegex);
+                        let flag: boolean = true;
+                        if (pattern == null) {
+                            pattern = formatSetting.format.match(/^(('[^']+'|''|[^*@0])*)(\*.)?((([0#,]*[0,]*[0#]*)(\.[0#]*)?)|([#,]*@+#*))(E\+?0+)?(('[^']+'|''|[^*#@,.E])*)$/);
+                            delete formatSetting.useGrouping;
+                            flag = false;
+                        }
                         let integerPart: string = pattern[6];
-                        formatSetting.useGrouping = integerPart.indexOf(',') !== -1;
+                        if (flag) {
+                            formatSetting.useGrouping = integerPart.indexOf(',') !== -1;
+                        }
                         let decimalPart: string = pattern[5];
                         if (isBlazor() && decimalPart && decimalPart.indexOf('.') !== -1 && formatSetting.maximumFractionDigits) {
                             delete formatSetting.maximumFractionDigits;
@@ -5039,9 +5047,9 @@ export interface IField {
      * It allows to set the visibility of filter icon in grouping bar and field list button.
      */
     showFilterIcon?: boolean;
-     /** 
-     * It allows to set the visibility of sort icon in grouping bar and field list button.
-     */
+    /** 
+    * It allows to set the visibility of sort icon in grouping bar and field list button.
+    */
     showSortIcon?: boolean;
     /** 
      * It allows to set the visibility of remove icon in grouping bar button.

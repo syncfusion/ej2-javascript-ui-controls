@@ -180,24 +180,31 @@ export class DialogEdit {
         let dialogFields: AddDialogFieldSettingsModel[] = [];
         let fieldItem: AddDialogFieldSettingsModel = {};
         let fields: string[];
-        if (Object.keys(this.parent.columnMapping).length !== 0) {
+        let columnMapping: { [key: string]: string; } = this.parent.columnMapping;
+        if (Object.keys(columnMapping).length !== 0) {
             fieldItem.type = 'General';
             fields = this.getGeneralColumnFields();
             dialogFields.push(fieldItem);
         }
-        if (!isNullOrUndefined(getValue('dependency', this.parent.columnMapping))) {
+        if (!isNullOrUndefined(getValue('dependency', columnMapping))) {
             fieldItem = {};
-            fieldItem.type = 'Dependency';
+            if (this.parent.columnByField[columnMapping.dependency.valueOf()].visible !== false) {
+                fieldItem.type = 'Dependency';
+            }
             dialogFields.push(fieldItem);
         }
-        if (!isNullOrUndefined(getValue('resourceInfo', this.parent.columnMapping))) {
+        if (!isNullOrUndefined(getValue('resourceInfo', columnMapping))) {
             fieldItem = {};
-            fieldItem.type = 'Resources';
+            if (this.parent.columnByField[columnMapping.resourceInfo.valueOf()].visible !== false) {
+                fieldItem.type = 'Resources';
+            }
             dialogFields.push(fieldItem);
         }
-        if (!isNullOrUndefined(getValue('notes', this.parent.columnMapping))) {
+        if (!isNullOrUndefined(getValue('notes', columnMapping))) {
             fieldItem = {};
-            fieldItem.type = 'Notes';
+            if (this.parent.columnByField[columnMapping.notes.valueOf()].visible !== false) {
+                fieldItem.type = 'Notes';
+            }
             dialogFields.push(fieldItem);
         }
         if (this.parent.customColumns.length > 0) {
@@ -822,7 +829,10 @@ export class DialogEdit {
         }
     }
 
-    private validateDuration(ganttData: IGanttData): void {
+    /**
+     * @private
+     */
+    public validateDuration(ganttData: IGanttData): void {
         let ganttProp: ITaskData = ganttData.ganttProperties;
         if (!this.dialogEditValidationFlag) {
             if (isNullOrUndefined(ganttProp.duration)) {
@@ -1140,6 +1150,9 @@ export class DialogEdit {
         let divElement: HTMLElement = this.createDivElement('e-edit-form-row', ganttObj.element.id
             + '' + itemName + 'TabContainer');
         for (let key of Object.keys(itemModel)) {
+            if (this.parent.columnByField[key].visible === false) {
+                continue;
+            }
             let column: GanttColumnModel = this.parent.columnByField[key];
             let inputModel: { [key: string]: Object } = itemModel[key];
             divElement.appendChild(this.renderInputElements(inputModel, column));

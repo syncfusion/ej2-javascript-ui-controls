@@ -412,6 +412,8 @@ export interface IDependencyEventArgs {
     isValidLink?: boolean;
     /** Defines the request type. */
     requestType?: string;
+    /** Defines predecessor object */
+    predecessor?: IPredecessor;
 }
 
 export interface ITaskAddedEventArgs {

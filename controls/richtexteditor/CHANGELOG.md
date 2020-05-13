@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.52 (2020-05-13)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#F152908` - The issue sublist remains after deleting the parent list element in the Rich Text Editor has been resolved.
+
 ## 18.1.48 (2020-05-05)
 
 ### RichTextEditor

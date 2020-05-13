@@ -5861,3 +5861,252 @@ describe('Shape Selection Validation', () => {
         expect(editor.documentHelper.pages[0].bodyWidgets[0].floatingElements.length).toBe(2);
     });
 });
+
+let textInlineSfdt: any = {
+    "sections": [
+        {
+            "blocks": [
+                {
+                    "paragraphFormat": {
+                        "styleName": "Normal"
+                    },
+                    "inlines": [
+                        {
+                            "text": "Name: "
+                        },
+                        {
+                            "hasFieldEnd": true,
+                            "formFieldData": {
+                                "name": "Text1",
+                                "enabled": true,
+                                "helpText": "",
+                                "statusText": "",
+                                "textInput": {
+                                    "type": "Text",
+                                    "maxLength": 0,
+                                    "defaultValue": "SYNC",
+                                    "format": ""
+                                }
+                            },
+                            "fieldType": 0
+                        },
+                        {
+                            "name": "Text1",
+                            "bookmarkType": 0
+                        },
+                        {
+                            "text": " FORMTEXT "
+                        },
+                        {
+                            "fieldType": 2
+                        },
+                        {
+                            "name": "_GoBack",
+                            "bookmarkType": 0
+                        },
+                        {
+                            "name": "_GoBack",
+                            "bookmarkType": 1
+                        },
+                        {
+                            "text": "SYNC"
+                        },
+                        {
+                            "fieldType": 1
+                        },
+                        {
+                            "name": "Text1",
+                            "bookmarkType": 1
+                        }
+                    ]
+                },
+                {
+                    "paragraphFormat": {
+                        "styleName": "Normal"
+                    },
+                    "inlines": [
+                        {
+                            "text": "Male: "
+                        },
+                        {
+                            "hasFieldEnd": true,
+                            "formFieldData": {
+                                "name": "Check1",
+                                "enabled": false,
+                                "helpText": "",
+                                "statusText": "",
+                                "checkBox": {
+                                    "sizeType": "Auto",
+                                    "size": 20,
+                                    "defaultValue": true,
+                                    "checked": true
+                                }
+                            },
+                            "fieldType": 0
+                        },
+                        {
+                            "name": "Check1",
+                            "bookmarkType": 0
+                        },
+                        {
+                            "text": " FORMCHECKBOX "
+                        },
+                        {
+                            "fieldType": 1
+                        },
+                        {
+                            "name": "Check1",
+                            "bookmarkType": 1
+                        }
+                    ]
+                },
+                {
+                    "paragraphFormat": {
+                        "styleName": "Normal"
+                    },
+                    "inlines": [
+                        {
+                            "text": "Age: "
+                        },
+                        {
+                            "hasFieldEnd": true,
+                            "formFieldData": {
+                                "name": "Dropdown1",
+                                "enabled": true,
+                                "helpText": "",
+                                "statusText": "",
+                                "dropDownList": {
+                                    "dropDownItems": [
+                                        "21",
+                                        "22",
+                                        "23"
+                                    ],
+                                    "selectedIndex": 0
+                                }
+                            },
+                            "fieldType": 0
+                        },
+                        {
+                            "name": "Dropdown1",
+                            "bookmarkType": 0
+                        },
+                        {
+                            "text": " FORMDROPDOWN "
+                        },
+                        {
+                            "fieldType": 1
+                        },
+                        {
+                            "name": "Dropdown1",
+                            "bookmarkType": 1
+                        }
+                    ]
+                }
+            ],
+            "headersFooters": {},
+            "sectionFormat": {
+                "headerDistance": 36.0,
+                "footerDistance": 36.0,
+                "pageWidth": 612.0,
+                "pageHeight": 792.0,
+                "leftMargin": 72.0,
+                "rightMargin": 72.0,
+                "topMargin": 72.0,
+                "bottomMargin": 72.0,
+                "differentFirstPage": false,
+                "differentOddAndEvenPages": false,
+                "bidi": false,
+                "restartPageNumbering": false,
+                "pageStartingNumber": 0
+            }
+        }
+    ],
+    "defaultTabWidth": 36.0,
+    "formatting": false,
+    "protectionType": "FormFieldsOnly",
+    "enforcement": true,
+    "dontUseHTMLParagraphAutoSpacing": false
+}
+
+describe('Text form field Inline validation', () => {
+    let editor: DocumentEditor = undefined;
+    let documentHelper: DocumentHelper;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection);
+        editor = new DocumentEditor({
+            height: '500px', enableEditor: true, enableSelection: true, acceptTab: true,
+            documentEditorSettings: { formFieldSettings: { formFillingMode: 'Inline' } }
+        });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        editor.documentEditorSettings.formFieldSettings.formFillingMode = 'Inline';
+        documentHelper = editor.documentHelper;
+        editor.open(JSON.stringify(textInlineSfdt));
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Navigate to next form field on Mouse Up', () => {
+        let formFields: FieldElementBox[] = documentHelper.formFields;
+        let currentFormField: FieldElementBox = editor.selection.getCurrentFormField();
+        expect(currentFormField).toBeUndefined;
+        let event: any = {
+            preventDefault: () => { return true; },
+            offsetX: 105,
+            offsetY: 100,
+            ctrlKey: false,
+            which: 1
+        };
+        documentHelper.onMouseUpInternal(event);
+        currentFormField = editor.selection.getCurrentFormField();
+        expect(currentFormField).toBe(formFields[0]);
+
+        event.offsetX = 250;
+        documentHelper.onMouseUpInternal(event);
+        currentFormField = editor.selection.getCurrentFormField();
+        expect(currentFormField).toBe(formFields[0]);
+
+        event.offsetX = 250;
+        event.offsetY = 300;
+        documentHelper.onMouseUpInternal(event);
+        currentFormField = editor.selection.getCurrentFormField();
+        expect(currentFormField).toBe(formFields[0]);
+    });
+    it('arrow Key navigation form fields Validation', () => {
+        let formFields: FieldElementBox[] = documentHelper.formFields;
+        let currentFormField: FieldElementBox = editor.selection.getCurrentFormField();
+        expect(currentFormField).toBeUndefined;
+        let keyEvent: any = {
+            keyCode: 40,
+            preventDefault: () => { return true; }
+        }
+        editor.selectionModule.onKeyDownInternal(keyEvent, false, false, false);
+        currentFormField = editor.selection.getCurrentFormField();
+        expect(currentFormField).toBe(formFields[2]);
+        editor.selectionModule.onKeyDownInternal(keyEvent, false, false, false);
+        currentFormField = editor.selection.getCurrentFormField();
+        expect(currentFormField).toBe(formFields[0]);
+        editor.selectionModule.onKeyDownInternal(keyEvent, false, false, false);
+        currentFormField = editor.selection.getCurrentFormField();
+        expect(currentFormField).toBe(formFields[2]);
+
+        keyEvent.keyCode = 38;
+        editor.selectionModule.onKeyDownInternal(keyEvent, false, false, false);
+        currentFormField = editor.selection.getCurrentFormField();
+        expect(currentFormField).toBe(formFields[0]);
+        editor.selectionModule.onKeyDownInternal(keyEvent, false, false, false);
+        currentFormField = editor.selection.getCurrentFormField();
+        expect(currentFormField).toBe(formFields[2]);
+    });
+});

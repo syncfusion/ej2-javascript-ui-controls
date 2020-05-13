@@ -21,6 +21,11 @@ export class FormFields {
     // tslint:disable-next-line
     private maintanMinTabindex: any = {};
     private isSignatureField: boolean = false;
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public readOnlyCollection: any = [];
     // tslint:disable-next-line
     private currentTarget: any;
     /**
@@ -89,6 +94,67 @@ export class FormFields {
     /**
      * @private
      */
+    public formFieldCollections(): void {
+        // tslint:disable-next-line
+        let data: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_formfields');
+        if (data !== null) {
+            // tslint:disable-next-line
+            let formFieldsData: any = JSON.parse(data);
+            for (let i: number = 0; i < formFieldsData.length; i++) {
+                // tslint:disable-next-line
+                let currentData: any = formFieldsData[i];
+                // tslint:disable-next-line
+                let type: string = currentData['Name'];
+                // tslint:disable-next-line
+                let formFieldCollection: any = { fieldName: this.retriveFieldName(currentData), id: this.pdfViewer.element.id + 'input_' + parseFloat(currentData['PageIndex']) + '_' + i, isReadOnly: false, type: type };
+                this.pdfViewer.formFieldCollections.push(formFieldCollection);
+            }
+        }
+    }
+    // tslint:disable-next-line
+    public updateFormFieldValues(formFields: any): void {
+        this.readOnlyCollection.push(formFields.id);
+        if (formFields) {
+            // tslint:disable-next-line
+            let currentElement: any = document.getElementById(formFields.id);
+            if (currentElement) {
+                if (formFields.isReadOnly) {
+                    currentElement.disabled = true;
+                    currentElement.style.cursor = 'default';
+                } else {
+                    currentElement.disabled = false;
+                }
+            }
+        }
+    }
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public retriveFieldName(currentData: any): string {
+        // tslint:disable-next-line
+        let currentField: any;
+        // tslint:disable-next-line
+        switch (currentData['Name']) {
+            case 'Textbox':
+            case 'Password':
+            case 'SignatureField':
+                currentField = currentData.FieldName;
+                break;
+            case 'RadioButton':
+            case 'CheckBox':
+                currentField = currentData.GroupName;
+                break;
+            case 'DropDown':
+            case 'ListBox':
+                currentField = currentData.Text;
+                break;
+        }
+        return currentField;
+    }
+    /**
+     * @private
+     */
     // tslint:disable-next-line
     public downloadFormFieldsData(): any {
         // tslint:disable-next-line
@@ -97,60 +163,62 @@ export class FormFields {
         let formFieldsData: any = JSON.parse(data);
         // tslint:disable-next-line
         let datas: any = {};
-        for (let m: number = 0; m < formFieldsData.length; m++) {
-            // tslint:disable-next-line
-            let currentData: any = formFieldsData[m];
-            if (currentData.Name === 'Textbox' || currentData.Name === 'Password' || currentData.Multiline) {
-                if (currentData.Text === '' || currentData.Text === null) {
-                    this.pdfViewerBase.validateForm = true;
-                    this.nonFillableFields[currentData.FieldName] = currentData.Text;
-                } else {
-                    delete(this.nonFillableFields[currentData.FieldName]);
-                }
-                datas[currentData.FieldName] = currentData.Text;
-            } else if (currentData.Name === 'RadioButton' && currentData.Selected) {
-                if (currentData.Selected === false) {
-                    this.pdfViewerBase.validateForm = true;
-                    this.nonFillableFields[currentData.GroupName] = currentData.Value;
-                } else {
-                    delete(this.nonFillableFields[currentData.GroupName]);
-                }
-                datas[currentData.GroupName] = currentData.Value;
-            } else if (currentData.Name === 'CheckBox') {
-                if (currentData.Selected === false) {
-                    this.pdfViewerBase.validateForm = true;
-                }
-                datas[currentData.GroupName] = currentData.Selected;
-            } else if (currentData.Name === 'DropDown') {
-                if (currentData.SelectedValue === '') {
-                    this.pdfViewerBase.validateForm = true;
-                    this.nonFillableFields[currentData.Text] = currentData.SelectedValue;
-                } else {
-                    delete(this.nonFillableFields[currentData.Text]);
-                }
-                datas[currentData.Text] = currentData.SelectedValue;
-            } else if (currentData.Name === 'ListBox') {
+        if (formFieldsData) {
+            for (let m: number = 0; m < formFieldsData.length; m++) {
                 // tslint:disable-next-line
-                let childItems: any = currentData['TextList'];
-                let childItemsText: string[] = [];
-                for (let m: number = 0; m < currentData.SelectedList.length; m++) {
+                let currentData: any = formFieldsData[m];
+                if (currentData.Name === 'Textbox' || currentData.Name === 'Password' || currentData.Multiline) {
+                    if (currentData.Text === '' || currentData.Text === null) {
+                        this.pdfViewerBase.validateForm = true;
+                        this.nonFillableFields[currentData.FieldName] = currentData.Text;
+                    } else {
+                        delete(this.nonFillableFields[currentData.FieldName]);
+                    }
+                    datas[currentData.FieldName] = currentData.Text;
+                } else if (currentData.Name === 'RadioButton' && currentData.Selected) {
+                    if (currentData.Selected === false) {
+                        this.pdfViewerBase.validateForm = true;
+                        this.nonFillableFields[currentData.GroupName] = currentData.Value;
+                    } else {
+                        delete(this.nonFillableFields[currentData.GroupName]);
+                    }
+                    datas[currentData.GroupName] = currentData.Value;
+                } else if (currentData.Name === 'CheckBox') {
+                    if (currentData.Selected === false) {
+                        this.pdfViewerBase.validateForm = true;
+                    }
+                    datas[currentData.GroupName] = currentData.Selected;
+                } else if (currentData.Name === 'DropDown') {
+                    if (currentData.SelectedValue === '') {
+                        this.pdfViewerBase.validateForm = true;
+                        this.nonFillableFields[currentData.Text] = currentData.SelectedValue;
+                    } else {
+                        delete(this.nonFillableFields[currentData.Text]);
+                    }
+                    datas[currentData.Text] = currentData.SelectedValue;
+                } else if (currentData.Name === 'ListBox') {
                     // tslint:disable-next-line
-                    let currentElement: any = currentData.SelectedList[m];
-                    childItemsText.push(childItems[currentElement]);
+                    let childItems: any = currentData['TextList'];
+                    let childItemsText: string[] = [];
+                    for (let m: number = 0; m < currentData.SelectedList.length; m++) {
+                        // tslint:disable-next-line
+                        let currentElement: any = currentData.SelectedList[m];
+                        childItemsText.push(childItems[currentElement]);
+                    }
+                    datas[currentData.Text] = JSON.stringify(childItemsText);
+                } else if (currentData.Name === 'SignatureField') {
+                    // tslint:disable-next-line
+                    let collectionData: any = processPathData(currentData.Value);
+                    // tslint:disable-next-line
+                    let csData: any = splitArrayCollection(collectionData);
+                    if (currentData.Value === null || currentData.Value === '') {
+                        this.pdfViewerBase.validateForm = true;
+                        this.nonFillableFields[currentData.FieldName] = JSON.stringify(csData);
+                    } else {
+                        delete(this.nonFillableFields[currentData.FieldName]);
+                    }
+                    datas[currentData.FieldName] = JSON.stringify(csData);
                 }
-                datas[currentData.Text] = JSON.stringify(childItemsText);
-            } else if (currentData.Name === 'SignatureField') {
-                // tslint:disable-next-line
-                let collectionData: any = processPathData(currentData.Value);
-                // tslint:disable-next-line
-                let csData: any = splitArrayCollection(collectionData);
-                if (currentData.Value === null || currentData.Value === '') {
-                    this.pdfViewerBase.validateForm = true;
-                    this.nonFillableFields[currentData.FieldName] = JSON.stringify(csData);
-                } else {
-                    delete(this.nonFillableFields[currentData.FieldName]);
-                }
-                datas[currentData.FieldName] = JSON.stringify(csData);
             }
         }
         return (JSON.stringify(datas));
@@ -444,7 +512,14 @@ export class FormFields {
     }
     // tslint:disable-next-line
     private checkIsReadonly(data: any, inputField: any): void {
-        if (data.IsReadonly || (!this.pdfViewer.enableFormFields)) {
+        let isReadonly: Boolean = false;
+        for (let n: number = 0; n < this.readOnlyCollection.length; n++) {
+            if (inputField.id === this.readOnlyCollection[n]) {
+                isReadonly = true;
+                break;
+            }
+        }
+        if (data.IsReadonly || (!this.pdfViewer.enableFormFields) || isReadonly) {
             inputField.disabled = true;
             inputField.style.cursor = 'default';
             inputField.style.backgroundColor = 'none';
@@ -764,6 +839,7 @@ export class FormFields {
      */
     public destroy(): void {
         this.currentTarget = null;
+        this.readOnlyCollection = [];
     }
 
     /**

@@ -907,7 +907,7 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         this.currentSeparator = this.isSeparator(target) ? target.parentElement : target;
     };
     Splitter.prototype.isSeparator = function (target) {
-        return ((target.classList.contains(RESIZE_BAR) || target.classList.contains(SPLIT_BAR)) ? false : true);
+        return (target.classList.contains(SPLIT_BAR) ? false : true);
     };
     Splitter.prototype.isMouseEvent = function (e) {
         var isMouse = false;
@@ -959,9 +959,14 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
             totalWidth += this.orientation === 'Horizontal' ? children[i].offsetWidth :
                 children[i].offsetHeight;
         }
-        var diff = this.orientation === 'Horizontal' ? (this.element.offsetWidth -
-            (this.allBars[0].offsetWidth * this.allBars.length)) - totalWidth :
-            (this.element.offsetHeight - (this.allBars[0].offsetHeight * this.allBars.length)) - totalWidth;
+        for (var j = 0; j < this.allBars.length; j++) {
+            totalWidth += this.orientation === 'Horizontal' ? parseInt(getComputedStyle(this.allBars[j]).marginLeft, 10) +
+                parseInt(getComputedStyle(this.allBars[j]).marginLeft, 10) : parseInt(getComputedStyle(this.allBars[j]).marginTop, 10) +
+                parseInt(getComputedStyle(this.allBars[j]).marginBottom, 10);
+        }
+        var diff = this.orientation === 'Horizontal' ? this.element.offsetWidth -
+            ((this.border * 2) + totalWidth) :
+            this.element.offsetHeight - ((this.border * 2) + totalWidth);
         for (var i = 0; i < this.allPanes.length; i++) {
             if (!this.paneSettings[i].size && !(this.allPanes[i].innerText === '')) {
                 flexPaneIndexes[flexCount] = i;
@@ -1009,6 +1014,15 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         }
         if (icon.classList.contains(ARROW_RIGHT) || icon.classList.contains(ARROW_DOWN)) {
             this.expandAction(e);
+        }
+        var totalWidth = 0;
+        var children = this.element.children;
+        for (var i = 0; i < children.length; i++) {
+            totalWidth += this.orientation === 'Horizontal' ? children[i].offsetWidth :
+                children[i].offsetHeight;
+        }
+        if (totalWidth > this.element.offsetWidth) {
+            this.updateSplitterSize();
         }
     };
     Splitter.prototype.expandAction = function (e) {
@@ -1126,8 +1140,11 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
             }
         }
         else if (!this.splitInstance.prevPaneCollapsed && !this.splitInstance.nextPaneExpanded) {
-            this.resizableModel(this.currentBarIndex, true);
-            if (!this.splitInstance.nextPaneNextEle.classList.contains(COLLAPSE_PANE)) {
+            if (this.paneSettings[this.currentBarIndex].resizable) {
+                this.resizableModel(this.currentBarIndex, true);
+            }
+            if (!this.splitInstance.nextPaneNextEle.classList.contains(COLLAPSE_PANE) &&
+                this.paneSettings[this.currentBarIndex + 1].resizable) {
                 this.resizableModel(this.currentBarIndex + 1, true);
             }
             if (!this.paneSettings[this.currentBarIndex].collapsible) {
@@ -1261,10 +1278,14 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
             if (this.paneSettings[this.nextPaneIndex].collapsible) {
                 removeClass([e.target], HIDE_ICON);
             }
-            this.resizableModel(this.currentBarIndex, true);
+            if (this.paneSettings[this.currentBarIndex].resizable) {
+                this.resizableModel(this.currentBarIndex, true);
+            }
             if (!isNullOrUndefined(this.prevBar) &&
                 !this.splitInstance.prevPanePreEle.classList.contains(COLLAPSE_PANE)) {
-                this.resizableModel(this.currentBarIndex - 1, true);
+                if (this.paneSettings[this.currentBarIndex - 1].resizable) {
+                    this.resizableModel(this.currentBarIndex - 1, true);
+                }
                 if (this.paneSettings[this.prevPaneIndex].collapsible) {
                     this.showTargetBarIcon(this.prevBar, this.rightArrow);
                 }
@@ -1638,7 +1659,9 @@ var Splitter = /** @__PURE__ @class */ (function (_super) {
         this.addStaticPaneClass();
         this.previousPane.style.flexBasis = this.prevPaneCurrentWidth;
         this.nextPane.style.flexBasis = this.nextPaneCurrentWidth;
-        this.updateSplitterSize();
+        if (!(this.allPanes.length > 2)) {
+            this.updateSplitterSize();
+        }
     };
     Splitter.prototype.validateMinRange = function (paneIndex, paneCurrentWidth, pane) {
         var paneMinRange = null;
@@ -2162,6 +2185,7 @@ var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, 
 // constant class definitions
 var preventSelect = 'e-prevent';
 var dragging = 'e-dragging';
+var dragRestrict = 'e-drag-restrict';
 var drag = 'e-drag';
 var resize = 'e-resize';
 var resizeicon = 'e-dl-icon';
@@ -2303,8 +2327,8 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
     };
     DashboardLayout.prototype.createPanelElement = function (cssClass, idValue) {
         var ele = this.createElement('div');
-        if (cssClass) {
-            addClass([ele], [cssClass]);
+        if (cssClass && cssClass.length > 0) {
+            addClass([ele], cssClass);
         }
         if (idValue) {
             ele.setAttribute('id', idValue);
@@ -2475,8 +2499,8 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         if (className) {
             addClass([element], [className]);
         }
-        if (cssClass) {
-            addClass([element], [cssClass]);
+        if (cssClass && cssClass.length > 0) {
+            addClass([element], cssClass);
         }
         if (idValue) {
             element.setAttribute('id', idValue);
@@ -2510,9 +2534,10 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         if (!this.isBlazor) {
             addClass([cellElement], [panel, panelTransition]);
         }
+        var cssClass = panelModel.cssClass ? panelModel.cssClass.split(' ') : null;
         this.panelContent = cellElement.querySelector('.e-panel-container') ?
             cellElement.querySelector('.e-panel-container') :
-            this.createSubElement(panelModel.cssClass, cellElement.id + '_content', panelContainer);
+            this.createSubElement(cssClass, cellElement.id + '_content', panelContainer);
         if (!this.isBlazor) {
             cellElement.appendChild(this.panelContent);
             if (!panelModel.enabled) {
@@ -2521,7 +2546,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         }
         if (panelModel.header) {
             var headerTemplateElement = cellElement.querySelector('.e-panel-header') ?
-                cellElement.querySelector('.e-panel-header') : this.createSubElement('', cellElement.id + 'template', '');
+                cellElement.querySelector('.e-panel-header') : this.createSubElement([], cellElement.id + 'template', '');
             if (!this.isBlazor) {
                 addClass([headerTemplateElement], [header]);
             }
@@ -2533,8 +2558,9 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
             }
         }
         if (panelModel.content) {
+            var cssClass_1 = panelModel.cssClass ? panelModel.cssClass.split(' ') : null;
             this.panelBody = cellElement.querySelector('.e-panel-content') ? cellElement.querySelector('.e-panel-content') :
-                this.createSubElement(panelModel.cssClass, cellElement.id + '_body', panelContent);
+                this.createSubElement(cssClass_1, cellElement.id + '_body', panelContent);
             var headerHeight = this.panelContent.querySelector('.e-panel-header') ?
                 window.getComputedStyle(this.panelContent.querySelector('.e-panel-header')).height : '0px';
             var contentHeightValue = 'calc( 100% - ' + headerHeight + ')';
@@ -3150,7 +3176,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                 }
             }
             else {
-                cellElement = this.createPanelElement(panel.cssClass, panel.id);
+                cellElement = this.createPanelElement(panel.cssClass ? panel.cssClass.split(' ') : null, panel.id);
             }
             cellElement.style.zIndex = '' + panel.zIndex;
             this.element.appendChild(cellElement);
@@ -4136,6 +4162,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
     DashboardLayout.prototype.enableDraggingContent = function (collections) {
         var _this = this;
         for (var i = 0; i < collections.length; i++) {
+            var abortArray = ['.e-resize', '.' + dragRestrict];
             var cellElement = collections[i];
             {
                 this.dragobj = new Draggable(cellElement, {
@@ -4144,7 +4171,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
                     dragArea: this.element,
                     isDragScroll: true,
                     handle: this.draggableHandle ? this.draggableHandle : '.e-panel',
-                    abort: '.e-resize',
+                    abort: abortArray,
                     dragStart: this.onDraggingStart.bind(this),
                     dragStop: function (args) {
                         var model = _this.getCellInstance(_this.mainElement.id);
@@ -4504,13 +4531,14 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
         this.setMinMaxValues(panelInstance);
         var cell = document.getElementById(panel.id);
         this.mainElement = cell;
+        var cssClass = panelInstance.cssClass ? panelInstance.cssClass.split(' ') : null;
         this.panelContent = cell.querySelector('.e-panel-container') ?
             cell.querySelector('.e-panel-container') :
-            this.createSubElement(panelInstance.cssClass, cell.id + '_content', panelContainer);
+            this.createSubElement(cssClass, cell.id + '_content', panelContainer);
         cell.appendChild(this.panelContent);
         if (panelInstance.header) {
             var headerTemplateElement = cell.querySelector('.e-panel-header') ?
-                cell.querySelector('.e-panel-header') : this.createSubElement('', cell.id + 'template', '');
+                cell.querySelector('.e-panel-header') : this.createSubElement([], cell.id + 'template', '');
             addClass([headerTemplateElement], [header]);
             headerTemplateElement.innerHTML = '';
             var id = this.element.id + 'HeaderTemplate' + panelInstance.id;
@@ -4523,8 +4551,9 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
             }
         }
         if (panelInstance.content) {
+            var cssClass_2 = panelInstance.cssClass ? panelInstance.cssClass.split(' ') : null;
             this.panelBody = cell.querySelector('.e-panel-content') ? cell.querySelector('.e-panel-content') :
-                this.createSubElement(panelInstance.cssClass, cell.id + '_body', panelContent);
+                this.createSubElement(cssClass_2, cell.id + '_body', panelContent);
             this.panelBody.innerHTML = '';
             var headerHeight = this.panelContent.querySelector('.e-panel-header') ?
                 window.getComputedStyle(this.panelContent.querySelector('.e-panel-header')).height : '0px';
@@ -4797,7 +4826,7 @@ var DashboardLayout = /** @__PURE__ @class */ (function (_super) {
      */
     DashboardLayout.prototype.onPropertyChanged = function (newProp, oldProp) {
         var _this = this;
-        if (newProp.panels) {
+        if (newProp.panels && newProp.panels.length > 0) {
             this.checkForIDValues(newProp.panels);
         }
         for (var _i = 0, _a = Object.keys(newProp); _i < _a.length; _i++) {

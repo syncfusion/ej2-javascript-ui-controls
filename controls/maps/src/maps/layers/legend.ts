@@ -1230,7 +1230,7 @@ export class Legend {
                     break;
             }
             if ((legend.height || legend.width) && legend.mode !== 'Interactive') {
-                map.mapAreaRect = map.totalRect = totalRect;
+                map.totalRect = totalRect;
             } else {
                 map.mapAreaRect = totalRect;
             }
@@ -1826,7 +1826,7 @@ export class Legend {
                 let dataPathValueCase : string | number = !isNullOrUndefined(dataPathValue)
                 ? dataPathValue.toLowerCase() : dataPathValue;
                 let shapeDataValueCase : string = !isNullOrUndefined(shapeData['properties'][shapePath])
-                && isNaN(shapeData['properties'][shapePath]) ? shapeData['properties'][shapePath].toLowerCase() : shapePath;
+                && isNaN(shapeData['properties'][shapePath]) ? shapeData['properties'][shapePath].toLowerCase() : shapeData['properties'][shapePath];
                 if (shapeDataValueCase === dataPathValueCase) {
                     legendData.push({
                         layerIndex: layerIndex, shapeIndex: i, dataIndex: dataIndex,

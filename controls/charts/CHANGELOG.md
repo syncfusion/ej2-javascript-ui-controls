@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.52 (2020-05-13)
+
+### Accumulation chart
+
+#### Bug Fixes
+
+- `#I273694` - Legend paging issue when legend position in Right side fixed.
+
 ## 18.1.48 (2020-05-05)
 
 ### Chart
@@ -9,6 +17,7 @@
 #### Bug Fixes
 
 - `#273192` - Trendlines are short and have the wrong slope direction issue fixed.
+- `#267962` - when using react parcel, chart throws console error issue fixed.
 
 ## 18.1.45 (2020-04-21)
 

@@ -1186,14 +1186,14 @@ describe('TreeMap component Spec', () => {
                     preventDefault: prevent,
                 };
                 treemap.mouseEndOnTreeMap(<PointerEvent>eventObj);                
-                rectEle = document.getElementById('drill-container_Level_Index_0_Item_Index_0_Text');
+                rectEle = document.getElementById('drill-container_Level_Index_0_Item_Index_0_Text_0');
                 eventObj = {
                     target: rectEle,
                     type: 'mousedown',
                     preventDefault: prevent,
                 };
                 treemap.mouseEndOnTreeMap(<PointerEvent>eventObj);                
-                rectEle = document.getElementById('drill-container_Level_Index_1_Item_Index_1_Text');
+                rectEle = document.getElementById('drill-container_Level_Index_0_Item_Index_1_Text');
                 eventObj = {
                     target: rectEle,
                     type: 'mousedown',

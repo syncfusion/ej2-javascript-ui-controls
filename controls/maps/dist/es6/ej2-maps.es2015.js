@@ -222,6 +222,24 @@ function calculateBound(value, min, max) {
     return value;
 }
 /**
+ * To trigger the download element
+ * @param fileName
+ * @param type
+ * @param url
+ */
+function triggerDownload(fileName, type, url, isDownload) {
+    createElement('a', {
+        attrs: {
+            'download': fileName + '.' + type.toLocaleLowerCase(),
+            'href': url
+        }
+    }).dispatchEvent(new MouseEvent(isDownload ? 'click' : 'move', {
+        view: window,
+        bubbles: false,
+        cancelable: true
+    }));
+}
+/**
  * Map internal class for point
  */
 class Point {
@@ -1751,7 +1769,7 @@ function getShapeData(targetId, map) {
  */
 function triggerShapeEvent(targetId, selection, maps, eventName) {
     let shape = getShapeData(targetId, maps);
-    let eventArgs = {
+    let eventArgs = (selection.enableMultiSelect) ? {
         cancel: false,
         name: eventName,
         fill: selection.fill,
@@ -1762,6 +1780,16 @@ function triggerShapeEvent(targetId, selection, maps, eventName) {
         target: targetId,
         maps: maps,
         shapeDataCollection: maps.shapeSelectionItem
+    } : {
+        cancel: false,
+        name: eventName,
+        fill: selection.fill,
+        opacity: selection.opacity,
+        border: selection.border,
+        shapeData: shape.shapeData,
+        data: shape.data,
+        target: targetId,
+        maps: maps
     };
     if (maps.isBlazor) {
         const { maps, shapeData } = eventArgs, blazorEventArgs = __rest(eventArgs, ["maps", "shapeData"]);
@@ -3866,7 +3894,7 @@ class Marker {
             value: options.data["name"]
         };
         if (this.maps.isBlazor) {
-            const { maps, marker: marker$$1, data } = eventArgs, blazorEventArgs = __rest$1(eventArgs, ["maps", "marker", "data"]);
+            const { maps, marker: marker$$1 } = eventArgs, blazorEventArgs = __rest$1(eventArgs, ["maps", "marker"]);
             eventArgs = blazorEventArgs;
         }
         this.maps.trigger(markerClick, eventArgs);
@@ -5622,9 +5650,10 @@ class Annotations {
 }
 
 /**
- * Annotation Module handles the Annotation for Maps
+ * This module enables the print functionality in maps.
+ * @hidden
  */
-class ExportUtils {
+class Print {
     /**
      * Constructor for Maps
      * @param control
@@ -5635,6 +5664,7 @@ class ExportUtils {
     /**
      * To print the Maps
      * @param elements
+     * @private
      */
     print(elements) {
         this.printWindow = window.open('', 'print', 'height=' + window.outerHeight + ',width=' + window.outerWidth + ',tabbar=no');
@@ -5675,11 +5705,42 @@ class ExportUtils {
         return div;
     }
     /**
+     * Get module name.
+     */
+    getModuleName() {
+        return 'Print';
+    }
+    /**
+     * To destroy the print.
+     * @return {void}
+     * @private
+     */
+    destroy(maps) {
+        /**
+         * Destroy method performed here
+         */
+    }
+}
+
+/**
+ * This module enables the export to PDF functionality in Maps control.
+ * @hidden
+ */
+class PdfExport {
+    /**
+     * Constructor for Maps
+     * @param control
+     */
+    constructor(control) {
+        this.control = control;
+    }
+    /**
      * To export the file as image/svg format
      * @param type
      * @param fileName
+     * @private
      */
-    export(type, fileName, exportDownload, orientation) {
+    export(type, fileName, allowDownload, orientation) {
         // tslint:disable-next-line:max-func-body-length
         let promise = new Promise((resolve, reject) => {
             let canvasElement = createElement('canvas', {
@@ -5689,133 +5750,250 @@ class ExportUtils {
                     'height': this.control.availableSize.height.toString()
                 }
             });
-            let isDownload = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
             orientation = isNullOrUndefined(orientation) ? PdfPageOrientation.Landscape : orientation;
-            let toolbarEle = document.getElementById(this.control.element.id + '_ToolBar');
             let svgParent = document.getElementById(this.control.element.id + '_Tile_SVG_Parent');
             let svgData;
+            let url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] :
+                [(new XMLSerializer()).serializeToString(this.control.svgObject)], { type: 'image/svg+xml' }));
+            let pdfDocument = new PdfDocument();
+            let image = new Image();
+            let ctx = canvasElement.getContext('2d');
             if (!this.control.isTileMap) {
-                svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+                image.onload = (() => {
+                    ctx.drawImage(image, 0, 0);
+                    window.URL.revokeObjectURL(url);
+                    if (type === 'PDF') {
+                        let imageString = canvasElement.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
+                        pdfDocument.pageSettings.orientation = orientation;
+                        imageString = imageString.slice(imageString.indexOf(',') + 1);
+                        pdfDocument.pages.add().graphics.drawImage(new PdfBitmap(imageString), 0, 0, (this.control.availableSize.width - 60), this.control.availableSize.height);
+                        if (allowDownload) {
+                            pdfDocument.save(fileName + '.pdf');
+                            pdfDocument.destroy();
+                        }
+                        else {
+                            resolve(null);
+                        }
+                    }
+                });
+                image.src = url;
+            }
+            else {
+                let xHttp = new XMLHttpRequest();
+                let tileLength = this.control.mapLayerPanel.tiles.length;
+                for (let i = 0; i <= tileLength + 1; i++) {
+                    let tile = document.getElementById('tile_' + (i - 1));
+                    let tileImg = new Image();
+                    tileImg.crossOrigin = 'Anonymous';
+                    ctx.fillStyle = this.control.background ? this.control.background : '#FFFFFF';
+                    ctx.fillRect(0, 0, this.control.availableSize.width, this.control.availableSize.height);
+                    ctx.font = this.control.titleSettings.textStyle.size + ' Arial';
+                    ctx.fillStyle = document.getElementById(this.control.element.id + '_Map_title').getAttribute('fill');
+                    ctx.fillText(this.control.titleSettings.text, parseFloat(document.getElementById(this.control.element.id + '_Map_title').getAttribute('x')), parseFloat(document.getElementById(this.control.element.id + '_Map_title').getAttribute('y')));
+                    tileImg.onload = (() => {
+                        if (i === 0 || i === tileLength + 1) {
+                            if (i === 0) {
+                                ctx.setTransform(1, 0, 0, 1, 0, 0);
+                                ctx.rect(0, parseFloat(svgParent.style.top), parseFloat(svgParent.style.width), parseFloat(svgParent.style.height));
+                                ctx.clip();
+                            }
+                            else {
+                                ctx.setTransform(1, 0, 0, 1, parseFloat(svgParent.style.left), parseFloat(svgParent.style.top));
+                            }
+                        }
+                        else {
+                            ctx.setTransform(1, 0, 0, 1, parseFloat(tile.style.left) + 10, parseFloat(tile.style.top) +
+                                (parseFloat(document.getElementById(this.control.element.id + '_tile_parent').style.top)));
+                        }
+                        ctx.drawImage(tileImg, 0, 0);
+                        if (i === tileLength + 1) {
+                            if (type === 'PDF') {
+                                localStorage.setItem('saved-image-example', canvasElement.toDataURL('image/jpeg'));
+                                let x = localStorage.getItem('saved-image-example');
+                                pdfDocument.pageSettings.orientation = orientation;
+                                x = x.slice(x.indexOf(',') + 1);
+                                pdfDocument.pages.add().graphics.drawImage(new PdfBitmap(x), 0, 0, (this.control.availableSize.width - 60), this.control.availableSize.height);
+                                if (allowDownload) {
+                                    pdfDocument.save(fileName + '.pdf');
+                                    pdfDocument.destroy();
+                                }
+                                else {
+                                    resolve(null);
+                                }
+                            }
+                        }
+                    });
+                    if (i === 0 || i === tileLength + 1) {
+                        if (i === 0) {
+                            tileImg.src = url;
+                        }
+                        else {
+                            setTimeout(() => {
+                                tileImg.src = window.URL.createObjectURL(new Blob([(new XMLSerializer()).serializeToString(document.getElementById(this.control.element.id + '_Tile_SVG'))], { type: 'image/svg+xml' }));
+                                // tslint:disable-next-line:align
+                            }, 300);
+                        }
+                    }
+                    else {
+                        xHttp.open('GET', tile.children[0].getAttribute('src'), true);
+                        xHttp.send();
+                        tileImg.src = tile.children[0].getAttribute('src');
+                    }
+                }
+            }
+        });
+        return promise;
+    }
+    /**
+     * Get module name.
+     */
+    getModuleName() {
+        return 'PdfExport';
+    }
+    /**
+     * To destroy the PdfExports.
+     * @return {void}
+     * @private
+     */
+    destroy(maps) {
+        /**
+         * Destroy method performed here
+         */
+    }
+}
+
+/**
+ * This module enables the export to Image functionality in Maps control.
+ * @hidden
+ */
+class ImageExport {
+    /**
+     * Constructor for Maps
+     * @param control
+     */
+    constructor(control) {
+        this.control = control;
+    }
+    /**
+     * To export the file as image/svg format
+     * @param type
+     * @param fileName
+     * @private
+     */
+    export(type, fileName, allowDownload) {
+        // tslint:disable-next-line:max-func-body-length
+        let promise = new Promise((resolve, reject) => {
+            let imageCanvasElement = createElement('canvas', {
+                id: 'ej2-canvas',
+                attrs: {
+                    'width': this.control.availableSize.width.toString(),
+                    'height': this.control.availableSize.height.toString()
+                }
+            });
+            let isDownload = !(Browser.userAgent.toString().indexOf('HeadlessChrome') > -1);
+            let toolbarEle = document.getElementById(this.control.element.id + '_ToolBar');
+            let svgParent = document.getElementById(this.control.element.id + '_Tile_SVG_Parent');
+            let svgDataElement;
+            if (!this.control.isTileMap) {
+                svgDataElement = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
                     this.control.svgObject.outerHTML + '</svg>';
             }
             else {
                 let tileSvg = document.getElementById(this.control.element.id + '_Tile_SVG');
-                svgData = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
+                svgDataElement = '<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">' +
                     this.control.svgObject.outerHTML + tileSvg.outerHTML + '</svg>';
             }
-            let url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgData] :
+            let url = window.URL.createObjectURL(new Blob(type === 'SVG' ? [svgDataElement] :
                 [(new XMLSerializer()).serializeToString(this.control.svgObject)], { type: 'image/svg+xml' }));
             if (type === 'SVG') {
-                if (exportDownload) {
-                    this.triggerDownload(fileName, type, url, isDownload);
+                if (allowDownload) {
+                    triggerDownload(fileName, type, url, isDownload);
                 }
                 else {
                     resolve(null);
                 }
             }
             else {
-                let pdfDocument = new PdfDocument();
                 let image = new Image();
-                let ctx = canvasElement.getContext('2d');
+                let ctxt = imageCanvasElement.getContext('2d');
                 if (!this.control.isTileMap) {
                     image.onload = (() => {
-                        ctx.drawImage(image, 0, 0);
+                        ctxt.drawImage(image, 0, 0);
                         window.URL.revokeObjectURL(url);
-                        if (type === 'PDF') {
-                            let imageString = canvasElement.toDataURL('image/jpeg').replace('image/jpeg', 'image/octet-stream');
-                            pdfDocument.pageSettings.orientation = orientation;
-                            imageString = imageString.slice(imageString.indexOf(',') + 1);
-                            pdfDocument.pages.add().graphics.drawImage(new PdfBitmap(imageString), 0, 0, (this.control.availableSize.width - 60), this.control.availableSize.height);
-                            if (exportDownload) {
-                                pdfDocument.save(fileName + '.pdf');
-                                pdfDocument.destroy();
-                            }
-                            else {
-                                resolve(null);
-                            }
+                        if (allowDownload) {
+                            triggerDownload(fileName, type, imageCanvasElement.toDataURL('image/png').replace('image/png', 'image/octet-stream'), isDownload);
                         }
                         else {
-                            if (exportDownload) {
-                                this.triggerDownload(fileName, type, canvasElement.toDataURL('image/png').replace('image/png', 'image/octet-stream'), isDownload);
+                            if (type === 'PNG') {
+                                resolve(imageCanvasElement.toDataURL('image/png'));
                             }
-                            else {
-                                resolve(canvasElement.toDataURL('image/png'));
+                            else if (type === 'JPEG') {
+                                resolve(imageCanvasElement.toDataURL('image/jpeg'));
                             }
                         }
                     });
                     image.src = url;
                 }
                 else {
-                    let xHttp = new XMLHttpRequest();
-                    let tileLength = this.control.mapLayerPanel.tiles.length;
-                    for (let i = 0; i <= tileLength + 1; i++) {
+                    let imgxHttp = new XMLHttpRequest();
+                    let imgTileLength = this.control.mapLayerPanel.tiles.length;
+                    for (let i = 0; i <= imgTileLength + 1; i++) {
                         let tile = document.getElementById('tile_' + (i - 1));
-                        let tileImg = new Image();
-                        tileImg.crossOrigin = 'Anonymous';
-                        ctx.fillStyle = this.control.background ? this.control.background : '#FFFFFF';
-                        ctx.fillRect(0, 0, this.control.availableSize.width, this.control.availableSize.height);
-                        ctx.font = this.control.titleSettings.textStyle.size + ' Arial';
-                        ctx.fillStyle = document.getElementById(this.control.element.id + '_Map_title').getAttribute('fill');
-                        ctx.fillText(this.control.titleSettings.text, parseFloat(document.getElementById(this.control.element.id + '_Map_title').getAttribute('x')), parseFloat(document.getElementById(this.control.element.id + '_Map_title').getAttribute('y')));
-                        tileImg.onload = (() => {
-                            if (i === 0 || i === tileLength + 1) {
+                        let exportTileImg = new Image();
+                        exportTileImg.crossOrigin = 'Anonymous';
+                        ctxt.fillStyle = this.control.background ? this.control.background : '#FFFFFF';
+                        ctxt.fillRect(0, 0, this.control.availableSize.width, this.control.availableSize.height);
+                        ctxt.font = this.control.titleSettings.textStyle.size + ' Arial';
+                        ctxt.fillStyle = document.getElementById(this.control.element.id + '_Map_title').getAttribute('fill');
+                        ctxt.fillText(this.control.titleSettings.text, parseFloat(document.getElementById(this.control.element.id + '_Map_title').getAttribute('x')), parseFloat(document.getElementById(this.control.element.id + '_Map_title').getAttribute('y')));
+                        exportTileImg.onload = (() => {
+                            if (i === 0 || i === imgTileLength + 1) {
                                 if (i === 0) {
-                                    ctx.setTransform(1, 0, 0, 1, 0, 0);
-                                    ctx.rect(0, parseFloat(svgParent.style.top), parseFloat(svgParent.style.width), parseFloat(svgParent.style.height));
-                                    ctx.clip();
+                                    ctxt.setTransform(1, 0, 0, 1, 0, 0);
+                                    ctxt.rect(0, parseFloat(svgParent.style.top), parseFloat(svgParent.style.width), parseFloat(svgParent.style.height));
+                                    ctxt.clip();
                                 }
                                 else {
-                                    ctx.setTransform(1, 0, 0, 1, parseFloat(svgParent.style.left), parseFloat(svgParent.style.top));
+                                    ctxt.setTransform(1, 0, 0, 1, parseFloat(svgParent.style.left), parseFloat(svgParent.style.top));
                                 }
                             }
                             else {
-                                ctx.setTransform(1, 0, 0, 1, parseFloat(tile.style.left) + 10, parseFloat(tile.style.top) +
+                                ctxt.setTransform(1, 0, 0, 1, parseFloat(tile.style.left) + 10, parseFloat(tile.style.top) +
                                     (parseFloat(document.getElementById(this.control.element.id + '_tile_parent').style.top)));
                             }
-                            ctx.drawImage(tileImg, 0, 0);
-                            if (i === tileLength + 1) {
-                                if (type === 'PDF') {
-                                    localStorage.setItem('saved-image-example', canvasElement.toDataURL('image/jpeg'));
-                                    let x = localStorage.getItem('saved-image-example');
-                                    pdfDocument.pageSettings.orientation = orientation;
-                                    x = x.slice(x.indexOf(',') + 1);
-                                    pdfDocument.pages.add().graphics.drawImage(new PdfBitmap(x), 0, 0, (this.control.availableSize.width - 60), this.control.availableSize.height);
-                                    if (exportDownload) {
-                                        pdfDocument.save(fileName + '.pdf');
-                                        pdfDocument.destroy();
-                                    }
-                                    else {
-                                        resolve(null);
-                                    }
+                            ctxt.drawImage(exportTileImg, 0, 0);
+                            if (i === imgTileLength + 1) {
+                                localStorage.setItem('local-canvasImage', imageCanvasElement.toDataURL('image/png'));
+                                let localBase64 = localStorage.getItem('local-canvasImage');
+                                if (allowDownload) {
+                                    triggerDownload(fileName, type, localBase64, isDownload);
+                                    localStorage.removeItem('local-canvasImage');
                                 }
                                 else {
-                                    localStorage.setItem('local-canvasImage', canvasElement.toDataURL('image/png'));
-                                    let localBase64 = localStorage.getItem('local-canvasImage');
-                                    if (exportDownload) {
-                                        this.triggerDownload(fileName, type, localBase64, isDownload);
-                                        localStorage.removeItem('local-canvasImage');
-                                    }
-                                    else {
+                                    if (type === 'PNG') {
                                         resolve(localBase64);
+                                    }
+                                    else if (type === 'JPEG') {
+                                        resolve(imageCanvasElement.toDataURL('image/jpeg'));
                                     }
                                 }
                             }
                         });
-                        if (i === 0 || i === tileLength + 1) {
+                        if (i === 0 || i === imgTileLength + 1) {
                             if (i === 0) {
-                                tileImg.src = url;
+                                exportTileImg.src = url;
                             }
                             else {
                                 setTimeout(() => {
-                                    tileImg.src = window.URL.createObjectURL(new Blob([(new XMLSerializer()).serializeToString(document.getElementById(this.control.element.id + '_Tile_SVG'))], { type: 'image/svg+xml' }));
+                                    exportTileImg.src = window.URL.createObjectURL(new Blob([(new XMLSerializer()).serializeToString(document.getElementById(this.control.element.id + '_Tile_SVG'))], { type: 'image/svg+xml' }));
                                     // tslint:disable-next-line:align
                                 }, 300);
                             }
                         }
                         else {
-                            xHttp.open('GET', tile.children[0].getAttribute('src'), true);
-                            xHttp.send();
-                            tileImg.src = tile.children[0].getAttribute('src');
+                            imgxHttp.open('GET', tile.children[0].getAttribute('src'), true);
+                            imgxHttp.send();
+                            exportTileImg.src = tile.children[0].getAttribute('src');
                         }
                     }
                 }
@@ -5824,22 +6002,20 @@ class ExportUtils {
         return promise;
     }
     /**
-     * To trigger the download element
-     * @param fileName
-     * @param type
-     * @param url
+     * Get module name.
      */
-    triggerDownload(fileName, type, url, isDownload) {
-        createElement('a', {
-            attrs: {
-                'download': fileName + '.' + type.toLocaleLowerCase(),
-                'href': url
-            }
-        }).dispatchEvent(new MouseEvent(isDownload ? 'click' : 'move', {
-            view: window,
-            bubbles: false,
-            cancelable: true
-        }));
+    getModuleName() {
+        return 'ImageExport';
+    }
+    /**
+     * To destroy the ImageExport.
+     * @return {void}
+     * @private
+     */
+    destroy(maps) {
+        /**
+         * Destroy method performed here
+         */
     }
 }
 
@@ -5849,6 +6025,7 @@ var __decorate = (undefined && undefined.__decorate) || function (decorators, ta
     else for (var i = decorators.length - 1; i >= 0; i--) if (d = decorators[i]) r = (c < 3 ? d(r) : c > 3 ? d(target, key, r) : d(target, key)) || r;
     return c > 3 && r && Object.defineProperty(target, key, r), r;
 };
+var Maps_1;
 /**
  * Maps Component file
  */
@@ -5862,7 +6039,7 @@ var __decorate = (undefined && undefined.__decorate) || function (decorators, ta
  * </script>
  * ```
  */
-let Maps = class Maps extends Component {
+let Maps = Maps_1 = class Maps extends Component {
     /**
      * Constructor for creating the widget
      */
@@ -5989,6 +6166,14 @@ let Maps = class Maps extends Component {
     preRender() {
         this.isDevice = Browser.isDevice;
         this.isBlazor = isBlazor();
+        if (!this.isBlazor) {
+            this.allowPrint = true;
+            this.allowImageExport = true;
+            this.allowPdfExport = true;
+            Maps_1.Inject(Print);
+            Maps_1.Inject(PdfExport);
+            Maps_1.Inject(ImageExport);
+        }
         this.initPrivateVariable();
         this.allowServerDataBinding = false;
         this.unWireEVents();
@@ -6448,9 +6633,6 @@ let Maps = class Maps extends Component {
         removeElement(this.element.id + '_Secondary_Element');
         removeElement(this.element.id + '_tile_parent');
         removeElement(this.element.id + '_tiles');
-        if (document.getElementsByClassName('e-tooltip-wrap')[0]) {
-            remove(document.getElementsByClassName('e-tooltip-wrap')[0]);
-        }
         if (this.svgObject) {
             while (this.svgObject.childNodes.length > 0) {
                 this.svgObject.removeChild(this.svgObject.firstChild);
@@ -6976,6 +7158,15 @@ let Maps = class Maps extends Component {
             removeClass(getElementByID(this.selectedElementId[0]));
             this.selectedElementId.splice(0, 1);
         }
+        if (this.legendSettings.visible) {
+            let legendSelectedElements = this.legendSelectionCollection.length;
+            for (let i = 0; i < legendSelectedElements; i++) {
+                removeClass(getElementByID(this.legendSelectionCollection[i]['legendElement']['id']));
+                this.selectedLegendElementId.splice(0, 1);
+            }
+        }
+        this.shapeSelectionItem = [];
+        this.legendSelectionCollection = [];
     }
     /**
      * This method is used to set culture for maps component.
@@ -6991,9 +7182,9 @@ let Maps = class Maps extends Component {
     setLocaleConstants() {
         // Need to modify after the api confirm
         this.defaultLocalConstants = {
-            ZoomIn: 'Zoom In',
+            ZoomIn: 'Zoom in',
             Zoom: 'Zoom',
-            ZoomOut: 'Zoom Out',
+            ZoomOut: 'Zoom out',
             Pan: 'Pan',
             Reset: 'Reset',
         };
@@ -7003,6 +7194,21 @@ let Maps = class Maps extends Component {
      */
     destroy() {
         this.unWireEVents();
+        this.shapeSelectionItem = [];
+        this.toggledShapeElementId = [];
+        this.toggledLegendId = [];
+        this.legendSelectionCollection = [];
+        this.selectedLegendElementId = [];
+        this.selectedNavigationElementId = [];
+        this.selectedBubbleElementId = [];
+        this.selectedMarkerElementId = [];
+        this.selectedElementId = [];
+        this.dataLabelShape = [];
+        this.zoomShapeCollection = [];
+        this.zoomLabelPositions = [];
+        this.mouseDownEvent = { x: null, y: null };
+        this.mouseClickEvent = { x: null, y: null };
+        this.removeSvg();
         super.destroy();
     }
     /**
@@ -7162,6 +7368,24 @@ let Maps = class Maps extends Component {
                 args: [this, Annotations]
             });
         }
+        if (this.allowPrint) {
+            modules.push({
+                member: 'Print',
+                args: [this]
+            });
+        }
+        if (this.allowImageExport) {
+            modules.push({
+                member: 'ImageExport',
+                args: [this]
+            });
+        }
+        if (this.allowPdfExport) {
+            modules.push({
+                member: 'PdfExport',
+                args: [this]
+            });
+        }
         return modules;
     }
     /**
@@ -7239,28 +7463,32 @@ let Maps = class Maps extends Component {
      * @param id - Specifies the element to be printed.
      */
     print(id) {
-        let exportChart = new ExportUtils(this);
-        exportChart.print(id);
+        if ((this.allowPrint) && (this.printModule)) {
+            this.printModule.print(id);
+        }
     }
     /**
      * This method handles the export functionality for the maps component.
      * @param type - Specifies the type of the exported file.
      * @param fileName - Specifies the name of the file with which the rendered maps need to be exported.
      * @param orientation - Specifies the orientation of the pdf document in exporting.
-     * @param isDownload - Specifies whether to download as a file or get as base64 string for the file
+     * @param allowDownload - Specifies whether to download as a file or get as base64 string for the file
      */
-    export(type, fileName, orientation, isDownload) {
-        let exportMap = new ExportUtils(this);
-        if (isNullOrUndefined(isDownload) || isDownload) {
+    export(type, fileName, orientation, allowDownload) {
+        if (isNullOrUndefined(allowDownload)) {
+            allowDownload = true;
+        }
+        if ((type !== 'PDF') && (this.allowImageExport) && (this.imageExportModule)) {
             return new Promise((resolve, reject) => {
-                resolve(exportMap.export(type, fileName, true, orientation));
+                resolve(this.imageExportModule.export(type, fileName, allowDownload));
             });
         }
-        else {
+        else if ((this.allowPdfExport) && (this.pdfExportModule)) {
             return new Promise((resolve, reject) => {
-                resolve(exportMap.export(type, fileName, isDownload, orientation));
+                resolve(this.pdfExportModule.export(type, fileName, allowDownload, orientation));
             });
         }
+        return null;
     }
     /**
      * To find visibility of layers and markers for required modules load.
@@ -7386,6 +7614,15 @@ __decorate([
 __decorate([
     Property('MouseMove')
 ], Maps.prototype, "tooltipDisplayMode", void 0);
+__decorate([
+    Property(false)
+], Maps.prototype, "allowPrint", void 0);
+__decorate([
+    Property(false)
+], Maps.prototype, "allowImageExport", void 0);
+__decorate([
+    Property(false)
+], Maps.prototype, "allowPdfExport", void 0);
 __decorate([
     Complex({}, TitleSettings)
 ], Maps.prototype, "titleSettings", void 0);
@@ -7518,7 +7755,7 @@ __decorate([
 __decorate([
     Event()
 ], Maps.prototype, "pan", void 0);
-Maps = __decorate([
+Maps = Maps_1 = __decorate([
     NotifyPropertyChanges
 ], Maps);
 
@@ -7873,14 +8110,14 @@ class DataLabel {
         for (let j = 0; j < properties.length; j++) {
             if (shapeProperties[properties[j]]) {
                 propertyPath = properties[j];
-                datasrcObj = this.getDataLabel(layer.dataSource, labelpath, shapeData['properties'][propertyPath], layer.shapeDataPath);
+                datasrcObj = this.getDataLabel(layer.dataSource, layer.shapeDataPath, shapeData['properties'][propertyPath], layer.shapeDataPath);
                 if (datasrcObj) {
                     break;
                 }
             }
         }
-        datasrcObj = this.getDataLabel(layer.dataSource, labelpath, shapeData['properties'][propertyPath], layer.shapeDataPath);
-        if (!isNullOrUndefined(shapes['property']) && ((shapeProperties[labelpath]) || datasrcObj)) {
+        datasrcObj = this.getDataLabel(layer.dataSource, layer.shapeDataPath, shapeData['properties'][propertyPath], layer.shapeDataPath);
+        if (!isNullOrUndefined(shapes['property'])) {
             shapePoint = [[]];
             if (!layerData[index]['_isMultiPolygon'] && layerData[index]['type'] !== 'Point') {
                 shapePoint.push(this.getPoint(layerData[index], []));
@@ -7914,7 +8151,19 @@ class DataLabel {
             }
         }
         text = (!isNullOrUndefined(datasrcObj)) ? !isNullOrUndefined(datasrcObj[labelpath]) ?
-            datasrcObj[labelpath].toString() : datasrcObj[labelpath] : shapeData['properties'][labelpath];
+            datasrcObj[layer.shapeDataPath].toString() : datasrcObj[layer.shapeDataPath] : shapeData['properties'][labelpath];
+        if ((Object.prototype.toString.call(layer.shapePropertyPath) === '[object Array]') &&
+            (isNullOrUndefined(text) && layer.dataSource['length'] === 0)) {
+            for (var l = 0; l < layer.shapePropertyPath.length; l++) {
+                if (shapeData['properties'][layer.shapePropertyPath[l]]) {
+                    text = shapeData['properties'][layer.shapePropertyPath[l]];
+                    break;
+                }
+            }
+        }
+        if (isNullOrUndefined(text) && (layer.dataLabelSettings.template !== "" && layer.dataSource['length'] === 0)) {
+            text = shapeData['properties'][layer.shapePropertyPath];
+        }
         let dataLabelText = text;
         let projectionType = this.maps.projectionType;
         if (isPoint) {
@@ -9465,7 +9714,7 @@ class Legend {
                     break;
             }
             if ((legend.height || legend.width) && legend.mode !== 'Interactive') {
-                map.mapAreaRect = map.totalRect = totalRect;
+                map.totalRect = totalRect;
             }
             else {
                 map.mapAreaRect = totalRect;
@@ -10059,7 +10308,7 @@ class Legend {
                 let dataPathValueCase = !isNullOrUndefined(dataPathValue)
                     ? dataPathValue.toLowerCase() : dataPathValue;
                 let shapeDataValueCase = !isNullOrUndefined(shapeData['properties'][shapePath])
-                    && isNaN(shapeData['properties'][shapePath]) ? shapeData['properties'][shapePath].toLowerCase() : shapePath;
+                    && isNaN(shapeData['properties'][shapePath]) ? shapeData['properties'][shapePath].toLowerCase() : shapeData['properties'][shapePath];
                 if (shapeDataValueCase === dataPathValueCase) {
                     legendData.push({
                         layerIndex: layerIndex, shapeIndex: i, dataIndex: dataIndex,
@@ -10499,6 +10748,7 @@ class Selection {
                         removeClass(ele);
                         this.removedSelectionList(ele);
                         if (this.selectionType === 'Shape') {
+                            this.maps.shapeSelectionItem = [];
                             let selectionLength = this.maps.selectedElementId.length;
                             for (let i = 0; i < selectionLength; i++) {
                                 ele = layetElement.getElementsByClassName(this.selectionType + 'selectionMapStyle')[0];
@@ -11810,17 +12060,19 @@ class Zoom {
                 scale: map.scale, tileZoomLevel: map.tileZoomLevel, latitude: location['latitude'], longitude: location['longitude']
             };
             map.trigger(pan, panArgs);
-            if (panningXDirection && panningYDirection) {
-                map.translatePoint = new Point(x, y);
-                this.applyTransform();
-            }
-            else if (panningXDirection) {
-                map.translatePoint = new Point(x, map.translatePoint.y);
-                this.applyTransform();
-            }
-            else if (panningYDirection) {
-                map.translatePoint = new Point(map.translatePoint.x, y);
-                this.applyTransform();
+            if (!panArgs.cancel) {
+                if (panningXDirection && panningYDirection) {
+                    map.translatePoint = new Point(x, y);
+                    this.applyTransform();
+                }
+                else if (panningXDirection) {
+                    map.translatePoint = new Point(x, map.translatePoint.y);
+                    this.applyTransform();
+                }
+                else if (panningYDirection) {
+                    map.translatePoint = new Point(map.translatePoint.x, y);
+                    this.applyTransform();
+                }
             }
             this.maps.zoomNotApplied = false;
         }
@@ -12162,7 +12414,7 @@ class Zoom {
         let toolBarSize = this.toolBarGroup.getBoundingClientRect();
         rectSVGObject.setAttribute('height', (toolBarSize.height + padding / 2).toString());
         rectSVGObject.setAttribute('width', (toolBarSize.width + padding / 2).toString());
-        let size = map.mapAreaRect;
+        let size = !isNullOrUndefined(map.totalRect) ? map.totalRect : map.mapAreaRect;
         let x = 0;
         let y = 0;
         switch (map.zoomSettings.verticalAlignment) {
@@ -12498,5 +12750,5 @@ class Zoom {
  * exporting all modules from maps index
  */
 
-export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClusterRendering, markerClick, markerClusterClick, markerMouseMove, markerClusterMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, CenterPosition, TooltipSettings, Margin, ConnectorLineSettings, MarkerClusterSettings, MarkerClusterData, ColorMappingSettings, InitialShapeSelectionSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, ToggleLegendSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, formatValue, convertStringToValue, convertElementFromLabel, drawSymbols, getValueFromObject, markerColorChoose, markerShapeChoose, clusterTemplate, mergeSeparateCluster, clusterSeparate, marker, markerTemplate, maintainSelection, maintainStyleClass, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, getRatioOfBubble, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, calculateCenterFromPixel, getTranslate, getZoomTranslate, fixInitialScaleForTile, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, triggerItemSelectionEvent, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, compareZoomFactor, calculateZoomLevel, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations };
+export { Maps, load, loaded, click, rightClick, doubleClick, resize, tooltipRender, shapeSelected, shapeHighlight, mousemove, mouseup, mousedown, layerRendering, shapeRendering, markerRendering, markerClusterRendering, markerClick, markerClusterClick, markerMouseMove, markerClusterMouseMove, dataLabelRendering, bubbleRendering, bubbleClick, bubbleMouseMove, animationComplete, legendRendering, annotationRendering, itemSelection, itemHighlight, beforePrint, zoomIn, zoomOut, pan, Annotation, Arrow, Font, Border, CenterPosition, TooltipSettings, Margin, ConnectorLineSettings, MarkerClusterSettings, MarkerClusterData, ColorMappingSettings, InitialShapeSelectionSettings, SelectionSettings, HighlightSettings, NavigationLineSettings, BubbleSettings, CommonTitleSettings, SubTitleSettings, TitleSettings, ZoomSettings, ToggleLegendSettings, LegendSettings, DataLabelSettings, ShapeSettings, MarkerBase, MarkerSettings, LayerSettings, Tile, MapsAreaSettings, Size, stringToNumber, calculateSize, createSvg, getMousePosition, degreesToRadians, radiansToDegrees, convertGeoToPoint, convertTileLatLongToPoint, xToCoordinate, yToCoordinate, aitoff, roundTo, sinci, acos, calculateBound, triggerDownload, Point, MinMax, GeoLocation, measureText, TextOption, PathOption, ColorValue, RectOption, CircleOption, PolygonOption, PolylineOption, LineOption, Line, MapLocation, Rect, PatternOptions, renderTextElement, convertElement, formatValue, convertStringToValue, convertElementFromLabel, drawSymbols, getValueFromObject, markerColorChoose, markerShapeChoose, clusterTemplate, mergeSeparateCluster, clusterSeparate, marker, markerTemplate, maintainSelection, maintainStyleClass, appendShape, drawCircle, drawRectangle, drawPath, drawPolygon, drawPolyline, drawLine, calculateShapes, drawDiamond, drawTriangle, drawCross, drawHorizontalLine, drawVerticalLine, drawStar, drawBalloon, drawPattern, getFieldData, checkShapeDataFields, checkPropertyPath, filter, getRatioOfBubble, findMidPointOfPolygon, isCustomPath, textTrim, findPosition, removeElement, calculateCenterFromPixel, getTranslate, getZoomTranslate, fixInitialScaleForTile, getElementByID, Internalize, getTemplateFunction, getElement, getShapeData, triggerShapeEvent, getElementsByClassName, querySelector, getTargetElement, createStyle, customizeStyle, triggerItemSelectionEvent, removeClass, elementAnimate, timeout, showTooltip, wordWrap, createTooltip, drawSymbol, renderLegendShape, getElementOffset, changeBorderWidth, changeNavaigationLineWidth, targetTouches, calculateScale, getDistance, getTouches, getTouchCenter, sum, zoomAnimate, animate, MapAjax, smoothTranslate, compareZoomFactor, calculateZoomLevel, LayerPanel, Bubble, BingMap, Marker, ColorMapping, DataLabel, NavigationLine, Legend, Highlight, Selection, MapsTooltip, Zoom, Annotations, Print, ImageExport, PdfExport };
 //# sourceMappingURL=ej2-maps.es2015.js.map

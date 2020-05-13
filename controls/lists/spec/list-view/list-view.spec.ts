@@ -530,6 +530,18 @@ describe('ListView', () => {
             expect(ele.querySelectorAll('.e-checklist').length).toBe(2);
         });
 
+        it('query range', () => {
+            let li: HTMLElement = ele.querySelector('li');
+            treeObj.showCheckBox = false;
+            treeObj.dataBind();
+            treeObj.selectItem(document.getElementsByClassName("e-list-item")[0]);
+            treeObj.dataBind();
+            treeObj.query = new Query().range(1,2);
+            treeObj.dataBind();
+            treeObj.removeItem(document.getElementsByClassName("e-list-item")[0]);
+            expect(ele.querySelectorAll('.e-checklist').length).toBe(0);
+        });
+
         it('contentcontainer after and before empty the datasource', () => {
             let listele: HTMLElement = createElement('div', { id: 'ListView' });
             let listObj = new ListView({ dataSource: [] });

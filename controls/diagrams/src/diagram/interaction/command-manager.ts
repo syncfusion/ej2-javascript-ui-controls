@@ -827,6 +827,7 @@ export class CommandHandler {
         if (this.diagram.selectedItems.nodes.length > 0) {
             selectedItems = selectedItems.concat(this.diagram.selectedItems.nodes);
             for (let j: number = 0; j < this.diagram.selectedItems.nodes.length; j++) {
+                if (!(selectedItems[j] as Node).isPhase) {
                 let node: NodeModel = clone(this.diagram.selectedItems.nodes[j]);
                 if (node.wrapper && (node.offsetX !== node.wrapper.offsetX)) {
                     node.offsetX = node.wrapper.offsetX;
@@ -874,6 +875,7 @@ export class CommandHandler {
                     childTable[node.id].width = swimlane.wrapper.actualSize.width;
                 }
             }
+        }
         }
         if (this.clipboardData.pasteIndex === 0) {
             this.startGroupAction();
@@ -4441,7 +4443,7 @@ export class CommandHandler {
     /**
      * @private
      */
-    public renderContainerHelper(node: NodeModel | SelectorModel): NodeModel | ConnectorModel {
+    public renderContainerHelper(node: NodeModel | SelectorModel | ConnectorModel): NodeModel | ConnectorModel {
         return renderContainerHelper(this.diagram, node);
     }
 

@@ -418,3 +418,7 @@ export const setInfiniteCache: string = 'set-infinite-cache';
 export const initialCollapse: string = 'initial-collapse';
 /** @hidden */
 export const getAggregateQuery: string = 'get-aggregate-query';
+/** @hidden */
+export const closeFilterDialog: string = 'close-filter-dialog';
+/** @hidden */
+export const columnChooserCancelBtnClick: string = 'columnChooserCancelBtnClick';

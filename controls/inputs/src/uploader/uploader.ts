@@ -48,6 +48,7 @@ const HIDDEN_INPUT: string = 'e-hidden-file-input';
 const INVALID_FILE: string = 'e-file-invalid';
 const INFORMATION: string = 'e-file-information';
 
+export type DropEffect = 'Copy' | 'Move' | 'Link' | 'None'| 'Default';
 export class FilesProp extends ChildProperty<FilesProp> {
     /**
      * Specifies the name of the file
@@ -720,6 +721,16 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     public directoryUpload: boolean;
 
     /**
+     * Specifies the drag operation effect to the uploader component. Possible values are Copy , Move, Link and None.
+     * 
+     * By default, the uploader component works based on the browser drag operation effect.
+     * 
+     * @default 'Default'
+     */
+    @Property('Default')
+    public dropEffect: DropEffect;
+
+    /**
      * Triggers when the component is created.
      * @event
      * @blazorProperty 'Created' 
@@ -1252,7 +1263,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     }
 
     protected getPersistData(): string {
-        return this.addOnPersist([]);
+        return this.addOnPersist(['filesData']);
     }
 
     /**
@@ -1435,6 +1446,10 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
 
     private renderPreLoadFiles(): void {
         if (this.files.length) {
+            if (this.enablePersistence && this.filesData.length) {
+                this.createFileList(this.filesData);
+                return;
+            }
             if (isNullOrUndefined(this.files[0].size)) {
                 return;
             }
@@ -1726,6 +1741,9 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
     private dragHover(e: DragEvent): void {
         if (!this.enabled) { return; }
         this.dropZoneElement.classList.add(DRAG_HOVER);
+        if (this.dropEffect !== 'Default') {
+            e.dataTransfer.dropEffect = this.dropEffect.toLowerCase();
+        }
         e.preventDefault();
         e.stopPropagation();
     }
@@ -2029,11 +2047,13 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         for (let i: number = 0; i < this.filesEntries.length; i++) {
             // tslint:disable-next-line
             this.filesEntries[i].file( (fileObj: any) => {
-                let path: string = this.filesEntries[i].fullPath;
-                files.push({'path': path, 'file': fileObj});
-                if (i === this.filesEntries.length - 1) {
-                    this.filesEntries = [];
-                    this.renderSelectedFiles(event, files, true);
+                if (this.filesEntries) {
+                    let path: string = this.filesEntries[i].fullPath;
+                    files.push({'path': path, 'file': fileObj});
+                    if (i === this.filesEntries.length - 1) {
+                        this.filesEntries = [];
+                        this.renderSelectedFiles(event, files, true);
+                    }
                 }
             });
         }

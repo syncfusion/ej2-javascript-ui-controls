@@ -297,16 +297,16 @@ export class StampAnnotation {
             let top: number = this.ConvertPointToPixel((parseFloat(position.Y)) + 10);
             positions = { width: width, height: height, left: left, top: top };
         } else if (isImport) {
-            let width: number = this.ConvertPointToPixel((parseFloat(position.Width)) - 15);
-            let height: number = this.ConvertPointToPixel((parseFloat(position.Height)) - 15);
-            let left: number = this.ConvertPointToPixel((parseFloat(position.X)) + 5);
-            let top: number = this.ConvertPointToPixel((parseFloat(position.Y)) + 5);
+            let width: number = parseFloat(position.Width) - 15;
+            let height: number = parseFloat(position.Height) - 15;
+            let left: number = parseFloat(position.X) + 5;
+            let top: number = parseFloat(position.Y) + 5;
             positions = { width: width, height: height, left: left, top: top };
         } else {
-            let width: number = this.ConvertPointToPixel((parseFloat(position.Width)));
-            let height: number = this.ConvertPointToPixel((parseFloat(position.Height)));
-            let left: number = this.ConvertPointToPixel((parseFloat(position.X)));
-            let top: number = this.ConvertPointToPixel((parseFloat(position.Y)));
+            let width: number = parseFloat(position.Width);
+            let height: number = parseFloat(position.Height);
+            let left: number = parseFloat(position.X);
+            let top: number = parseFloat(position.Y);
             positions = { width: width, height: height, left: left, top: top };
         }
         return positions;

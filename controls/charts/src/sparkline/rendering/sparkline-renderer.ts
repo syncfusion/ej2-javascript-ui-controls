@@ -582,7 +582,7 @@ export class SparklineRenderer {
             option.id = textId + i;
             option.x = temp.location.x + dataLabel.offset.x;
             option.y = ((spark.type === 'Pie') ? temp.location.y : ((temp.markerPosition > this.axisHeight) ? (temp.location.y +
-                (size.height / 2) + space + padding) : (temp.location.y - (size.height / 2) - space - padding))) + dataLabel.offset.y;
+                (size.height / 2) + space + 2 + padding) : (temp.location.y - (size.height / 2) - space - padding))) + dataLabel.offset.y;
             option.text = (dataLabel.format !== '') ? this.formatter(dataLabel.format, this.sparkline.dataSource[i]) :
                 temp.yVal.toString();
             let labelArgs: IDataLabelRenderingEventArgs = {

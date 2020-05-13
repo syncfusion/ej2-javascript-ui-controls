@@ -89,6 +89,7 @@ describe('header renderer module', () => {
             let target: any = gridObj.element.querySelector('.e-headercell');
             let trs = gridObj.getContent().querySelectorAll('tr');
             let eve: any = { sender: { target } };
+            (gridObj.renderModule as any).headerRenderer.draggable.currentStateTarget = target;
             (<any>gridObj).headerModule.helper(eve);
 
         });

@@ -4704,8 +4704,16 @@ class PivotEngine {
                     delete formatSetting.type;
                     if ((formatSetting.format) && !(this.formatRegex.test(formatSetting.format))) {
                         let pattern = formatSetting.format.match(this.customRegex);
+                        let flag = true;
+                        if (pattern == null) {
+                            pattern = formatSetting.format.match(/^(('[^']+'|''|[^*@0])*)(\*.)?((([0#,]*[0,]*[0#]*)(\.[0#]*)?)|([#,]*@+#*))(E\+?0+)?(('[^']+'|''|[^*#@,.E])*)$/);
+                            delete formatSetting.useGrouping;
+                            flag = false;
+                        }
                         let integerPart = pattern[6];
-                        formatSetting.useGrouping = integerPart.indexOf(',') !== -1;
+                        if (flag) {
+                            formatSetting.useGrouping = integerPart.indexOf(',') !== -1;
+                        }
                         let decimalPart = pattern[5];
                         if (isBlazor() && decimalPart && decimalPart.indexOf('.') !== -1 && formatSetting.maximumFractionDigits) {
                             delete formatSetting.maximumFractionDigits;
@@ -12345,7 +12353,10 @@ class DrillThroughDialog {
                             'AddItem': addItems, 'RemoveItem': currModule.gridIndexObjects, 'ModifiedItem': currModule.gridData
                         }).then((data) => {
                             currModule.parent.updateBlazorData(data, currModule.parent);
+                            currModule.parent.allowServerDataBinding = false;
                             currModule.parent.setProperties({ pivotValues: currModule.parent.engineModule.pivotValues }, true);
+                            delete currModule.parent.bulkChanges.pivotValues;
+                            currModule.parent.allowServerDataBinding = true;
                             currModule.isUpdated = false;
                             currModule.gridIndexObjects = {};
                         });
@@ -13758,7 +13769,11 @@ class PivotChart {
         else {
             pivot.engineModule.generateGridData(pivot.dataSourceSettings);
         }
+        pivot.parent.allowServerDataBinding = false;
         pivot.parent.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
+        /* tslint:disable-next-line:no-any */
+        delete pivot.parent.bulkChanges.pivotValues;
+        pivot.parent.allowServerDataBinding = true;
         pivot.parent.renderPivotGrid();
         //});
     }
@@ -19180,7 +19195,7 @@ class OlapEngine {
         return xmlMsg;
     }
     getConnectionInfo(connectionString, locale) {
-        let connectionInfo = { url: '', LCID: '1033' };
+        let connectionInfo = { url: '', LCID: !isNullOrUndefined(locale) ? locale.toString() : '1033' };
         if (connectionString !== '') {
             for (let obj of connectionString.split(';')) {
                 if (obj.toLowerCase().indexOf('locale') < 0 && connectionInfo.url.length === 0) {
@@ -19188,9 +19203,6 @@ class OlapEngine {
                 }
                 else if (obj.toLowerCase().indexOf('locale') >= 0) {
                     connectionInfo.LCID = obj.replace(/ /g, '').split('=')[1];
-                }
-                else if (!isNullOrUndefined(locale)) {
-                    connectionInfo.LCID = locale.toString();
                 }
             }
         }
@@ -19961,7 +19973,11 @@ let PivotView = PivotView_1 = class PivotView extends Component {
     initProperties() {
         this.pivotRefresh = Component.prototype.refresh;
         this.isScrolling = false;
+        this.allowServerDataBinding = false;
         this.setProperties({ pivotValues: [] }, true);
+        /* tslint:disable-next-line:no-any */
+        delete this.bulkChanges.pivotValues;
+        this.allowServerDataBinding = true;
         this.scrollPosObject = {
             vertical: 0, horizontal: 0, verticalSection: 0,
             horizontalSection: 0, top: 0, left: 0, scrollDirection: { direction: '', position: 0 }
@@ -20605,7 +20621,10 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                     /* tslint:disable */
                     pivot.interopAdaptor.invokeMethodAsync('PivotInteropMethod', interopArguments['key'], interopArguments['arg']).then((data) => {
                         pivot.updateBlazorData(data, pivot);
+                        pivot.allowServerDataBinding = false;
                         pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
+                        delete pivot.bulkChanges.pivotValues;
+                        pivot.allowServerDataBinding = true;
                         pivot.enginePopulatedEventMethod('updateDataSource', pivot);
                         if (pivot.calculatedFieldModule && pivot.calculatedFieldModule.isRequireUpdate) {
                             pivot.calculatedFieldModule.endDialog();
@@ -20615,7 +20634,11 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                     /* tslint:enable */
                 }
                 else {
+                    pivot.allowServerDataBinding = false;
                     pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
+                    /* tslint:disable-next-line:no-any */
+                    delete pivot.bulkChanges.pivotValues;
+                    pivot.allowServerDataBinding = true;
                     pivot.enginePopulatedEventMethod('updateDataSource');
                 }
             }
@@ -20646,7 +20669,11 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                     else {
                         pivot.olapEngineModule.renderEngine(pivot.dataSourceSettings, customProperties);
                     }
+                    pivot.allowServerDataBinding = false;
                     pivot.setProperties({ pivotValues: pivot.olapEngineModule.pivotValues }, true);
+                    /* tslint:disable-next-line:no-any */
+                    delete pivot.bulkChanges.pivotValues;
+                    pivot.allowServerDataBinding = true;
                     pivot.enginePopulatedEventMethod('updateDataSource');
                 }
                 else {
@@ -20667,14 +20694,21 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                         let datasourceSettings = window[sfBlazor].copyWithoutCircularReferences([pivot.dataSourceSettings], pivot.dataSourceSettings);
                         pivot.interopAdaptor.invokeMethodAsync('PivotInteropMethod', 'renderEngine', { 'dataSourceSettings': datasourceSettings, 'customProperties': customArgs }).then((data) => {
                             pivot.updateBlazorData(data, pivot);
+                            pivot.allowServerDataBinding = false;
                             pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
+                            delete pivot.bulkChanges.pivotValues;
+                            pivot.allowServerDataBinding = true;
                             pivot.enginePopulatedEventMethod('updateDataSource', pivot);
                         });
                         /* tslint:enable */
                     }
                     else {
                         pivot.engineModule.renderEngine(pivot.dataSourceSettings, customProperties, pivot.getValueCellInfo.bind(pivot));
+                        pivot.allowServerDataBinding = false;
                         pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
+                        /* tslint:disable-next-line:no-any */
+                        delete pivot.bulkChanges.pivotValues;
+                        pivot.allowServerDataBinding = true;
                         pivot.enginePopulatedEventMethod('updateDataSource');
                     }
                 }
@@ -20833,7 +20867,10 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                             pivot.interopAdaptor.invokeMethodAsync('PivotInteropMethod', 'onDrill', { 'dataSourceSettings': dataSourceSettings, 'drilledItem': drillItem }).then((data) => {
                                 pivot.updateBlazorData(data, pivot);
                                 pivot.engineModule.drilledMembers = pivot.dataSourceSettings.drilledMembers;
+                                pivot.allowServerDataBinding = false;
                                 pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
+                                delete pivot.bulkChanges.pivotValues;
+                                pivot.allowServerDataBinding = true;
                                 pivot.renderPivotGrid();
                             });
                             /* tslint:enable */
@@ -20847,7 +20884,11 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                         pivot.engineModule.generateGridData(pivot.dataSourceSettings);
                     }
                     if (!(isBlazor() && pivot.enableVirtualization)) {
+                        pivot.allowServerDataBinding = false;
                         pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
+                        /* tslint:disable-next-line:no-any */
+                        delete pivot.bulkChanges.pivotValues;
+                        pivot.allowServerDataBinding = true;
                         pivot.renderPivotGrid();
                     }
                 }
@@ -20924,7 +20965,11 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             pivot.trigger(drill, drillArgs, (observedArgs) => {
                 if (!observedArgs.cancel) {
                     this.olapEngineModule.updateDrilledInfo(this.dataSourceSettings);
+                    this.allowServerDataBinding = false;
                     this.setProperties({ pivotValues: this.olapEngineModule.pivotValues }, true);
+                    /* tslint:disable-next-line:no-any */
+                    delete this.bulkChanges.pivotValues;
+                    this.allowServerDataBinding = true;
                     this.renderPivotGrid();
                 }
                 else {
@@ -20964,7 +21009,11 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                 if (!observedArgs.cancel) {
                     this.setProperties({ dataSourceSettings: { drilledMembers: drilledMembers } }, true);
                     this.olapEngineModule.updateDrilledInfo(this.dataSourceSettings);
+                    this.allowServerDataBinding = false;
                     this.setProperties({ pivotValues: this.olapEngineModule.pivotValues }, true);
+                    /* tslint:disable-next-line:no-any */
+                    delete this.bulkChanges.pivotValues;
+                    this.allowServerDataBinding = true;
                     this.renderPivotGrid();
                 }
                 else {
@@ -21377,7 +21426,10 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                         /* tslint:disable */
                         pivot.interopAdaptor.invokeMethodAsync('PivotInteropMethod', 'applyValueSorting', { 'valueSortSettings': pivot.dataSourceSettings.valueSortSettings.properties }).then((data) => {
                             pivot.updateBlazorData(data, pivot);
+                            pivot.allowServerDataBinding = false;
                             pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
+                            delete pivot.bulkChanges.pivotValues;
+                            pivot.allowServerDataBinding = true;
                             pivot.renderPivotGrid();
                         });
                         /* tslint:enable */
@@ -21393,7 +21445,11 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                     pivot.engineModule.generateGridData(pivot.dataSourceSettings);
                 }
                 if (!(isBlazor() && pivot.enableVirtualization)) {
+                    pivot.allowServerDataBinding = false;
                     pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
+                    /* tslint:disable-next-line:no-any */
+                    delete pivot.bulkChanges.pivotValues;
+                    pivot.allowServerDataBinding = true;
                     pivot.renderPivotGrid();
                 }
             }
@@ -21968,7 +22024,11 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                 }
                 else {
                     this.engineModule.renderEngine(this.dataSourceSettings, customProperties, this.getValueCellInfo.bind(this));
+                    this.allowServerDataBinding = false;
                     this.setProperties({ pivotValues: this.engineModule.pivotValues }, true);
+                    /* tslint:disable-next-line:no-any */
+                    delete this.bulkChanges.pivotValues;
+                    this.allowServerDataBinding = true;
                     this.enginePopulatedEventMethod('initEngine');
                 }
             }
@@ -21976,7 +22036,11 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                 customProperties.savedFieldList = this.olapEngineModule.fieldList;
                 customProperties.savedFieldListData = this.olapEngineModule.fieldListData;
                 this.olapEngineModule.renderEngine(this.dataSourceSettings, customProperties);
+                this.allowServerDataBinding = false;
                 this.setProperties({ pivotValues: this.olapEngineModule.pivotValues }, true);
+                /* tslint:disable-next-line:no-any */
+                delete this.bulkChanges.pivotValues;
+                this.allowServerDataBinding = true;
                 this.enginePopulatedEventMethod('initEngine');
             }
         });
@@ -22012,11 +22076,19 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                 pivot.dataSourceSettings = observedArgs.dataSourceSettings;
                 if (pivot.dataType === 'olap') {
                     pivot.olapEngineModule.pivotValues = isBlazor() ? pivot.olapEngineModule.pivotValues : observedArgs.pivotValues;
+                    pivot.allowServerDataBinding = false;
                     pivot.setProperties({ pivotValues: pivot.olapEngineModule.pivotValues }, true);
+                    /* tslint:disable-next-line:no-any */
+                    delete pivot.bulkChanges.pivotValues;
+                    pivot.allowServerDataBinding = true;
                 }
                 else {
                     pivot.engineModule.pivotValues = isBlazor() ? pivot.engineModule.pivotValues : observedArgs.pivotValues;
+                    pivot.allowServerDataBinding = false;
                     pivot.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
+                    /* tslint:disable-next-line:no-any */
+                    delete pivot.bulkChanges.pivotValues;
+                    pivot.allowServerDataBinding = true;
                 }
                 pivot.pivotCommon.engineModule = pivot.dataType === 'olap' ? pivot.olapEngineModule : pivot.engineModule;
                 pivot.pivotCommon.dataSourceSettings = pivot.dataSourceSettings;

@@ -752,6 +752,9 @@ export class Editor {
         if (this.selection.isHighlightEditRegion) {
             this.selection.onHighlight();
         }
+        if (this.documentHelper.formFields.length > 0) {
+            this.selection.highlightFormFields();
+        }
         if (!this.isPaste) {
             this.copiedContent = undefined;
             this.copiedTextContent = '';
@@ -1048,25 +1051,25 @@ export class Editor {
                     break;
                 case 49:
                     event.preventDefault();
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.onApplyParagraphFormat('lineSpacing', 1, false, false);
                     }
                     break;
                 case 50:
                     event.preventDefault();
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.onApplyParagraphFormat('lineSpacing', 2, false, false);
                     }
                     break;
                 case 53:
                     event.preventDefault();
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.onApplyParagraphFormat('lineSpacing', 1.5, false, false);
                     }
                     break;
                 case 66:
                     event.preventDefault();
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.toggleBold();
                     }
                     break;
@@ -1077,7 +1080,7 @@ export class Editor {
                     }
                     break;
                 case 69:
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.toggleTextAlignment('Center');
                     }
                     event.preventDefault();
@@ -1091,12 +1094,12 @@ export class Editor {
                     break;
                 case 73:
                     event.preventDefault();
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.toggleItalic();
                     }
                     break;
                 case 74:
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.toggleTextAlignment('Justify');
                     }
                     event.preventDefault();
@@ -1108,13 +1111,13 @@ export class Editor {
                     }
                     break;
                 case 76:
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.toggleTextAlignment('Left');
                     }
                     event.preventDefault();
                     break;
                 case 77:
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.owner.selection.increaseIndent();
                     }
                     event.preventDefault();
@@ -1126,14 +1129,14 @@ export class Editor {
                     }
                     break;
                 case 82:
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.toggleTextAlignment('Right');
                     }
                     event.preventDefault();
                     break;
                 case 85:
                     event.preventDefault();
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.owner.selection.toggleUnderline('Single');
                     }
                     break;
@@ -1157,19 +1160,19 @@ export class Editor {
                     break;
                 case 219:
                     event.preventDefault();
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.onApplyCharacterFormat('fontSize', 'decrement', true);
                     }
                     break;
                 case 221:
                     event.preventDefault();
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.onApplyCharacterFormat('fontSize', 'increment', true);
                     }
                     break;
                 case 187:
                     event.preventDefault();
-                    if (!this.owner.isReadOnlyMode) {
+                    if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
                         this.toggleBaselineAlignment('Subscript');
                     }
                     break;
@@ -1295,7 +1298,7 @@ export class Editor {
      * @private
      */
     public handleBackKey(): void {
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             this.owner.editorModule.onBackSpace();
         }
         this.selection.checkForCursorVisibility();
@@ -1306,7 +1309,7 @@ export class Editor {
      * @private
      */
     public handleDelete(): void {
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             this.owner.editorModule.delete();
         }
         this.selection.checkForCursorVisibility();
@@ -1316,7 +1319,7 @@ export class Editor {
      * @private
      */
     public handleEnterKey(): void {
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             if (Browser.isDevice) {
                 this.documentHelper.isCompositionStart = false;
             }
@@ -1329,7 +1332,7 @@ export class Editor {
      * @private
      */
     public handleTextInput(text: string): void {
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             if (this.animationTimer) {
                 clearTimeout(this.animationTimer);
             }
@@ -1402,6 +1405,20 @@ export class Editor {
      */
     //tslint:disable: max-func-body-length
     public insertTextInternal(text: string, isReplace: boolean): void {
+        if (this.documentHelper.protectionType === 'FormFieldsOnly' && this.selection.isInlineFormFillMode()) {
+            let inline: FieldElementBox = this.selection.getCurrentFormField();
+            //(inline.formFieldData as TextFormField).isContentChanged = true;
+            let resultText: string = this.getFormFieldText();
+            let rex: RegExp = new RegExp(this.owner.documentHelper.textHelper.getEnSpaceCharacter(), 'gi');
+            if (resultText.length > 0 && resultText.replace(rex, '') === '') {
+                resultText = '';
+                this.selection.selectFieldInternal(inline);
+            }
+            let maxLength: number = (inline.formFieldData as TextFormField).maxLength;
+            if (maxLength !== 0 && resultText.length >= maxLength) {
+                return;
+            }
+        }
         let selection: Selection = this.documentHelper.selection;
         let insertPosition: TextPosition; let isRemoved: boolean = true;
         this.isListTextSelected();
@@ -1529,7 +1546,6 @@ export class Editor {
                         this.documentHelper.layout.reArrangeElementsForRtl(selection.start.currentWidget, bidi);
                     }
                     this.documentHelper.layout.reLayoutParagraph(insertPosition.paragraph, inline.line.indexInOwner, 0);
-
                 }
             }
             this.setPositionParagraph(paragraphInfo.paragraph, paragraphInfo.offset + text.length, true);
@@ -2698,6 +2714,10 @@ export class Editor {
                 this.previousCharFormat = undefined;
                 this.previousParaFormat = undefined;
             }
+            if (this.documentHelper.protectionType === 'FormFieldsOnly' && this.documentHelper.selection.isInlineFormFillMode()) {
+                htmlContent = '';
+                rtfContent = '';
+            }
             if (rtfContent !== '') {
                 this.pasteAjax(rtfContent, '.rtf');
             } else if (htmlContent !== '') {
@@ -3103,6 +3123,21 @@ export class Editor {
         if (typeof (content) !== 'string') {
             this.copiedContent = content;
         }
+        if (this.documentHelper.protectionType === 'FormFieldsOnly' && this.documentHelper.selection.isInlineFormFillMode()) {
+            let inline: FieldElementBox = this.selection.getCurrentFormField();
+            let resultText: string = this.getFormFieldText();
+            let maxLength: number = (inline.formFieldData as TextFormField).maxLength;
+            let selectedTextLength: number = this.documentHelper.selection.text.length;
+            if (maxLength > 0) {
+                if (selectedTextLength === 0) {
+                    let contentlength: number = maxLength - resultText.length;
+                    content = content.substring(0, contentlength);
+                } else if (selectedTextLength > 0) {
+                    content = content.substring(0, selectedTextLength);
+                }
+            }
+        }
+
         this.pasteContentsInternal(this.getBlocks(content), currentFormat);
         this.isInsertField = false;
     }
@@ -3233,7 +3268,7 @@ export class Editor {
         let insertIndex: number = table.getIndex();
         if (moveRows) {
             //Moves the rows to table.
-            for (let i: number = 0, index: number = 0; i < table.childWidgets.length; i++, index++) {
+            for (let i: number = 0, index: number = 0; i < table.childWidgets.length; i++ , index++) {
                 let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
                 newTable.childWidgets.splice(index, 0, row);
                 row.containerWidget = newTable;
@@ -4849,6 +4884,22 @@ export class Editor {
         this.owner.viewer.cutFromTop(blockToShift.y);
         this.documentHelper.blockToShift = blockToShift;
     }
+
+    /**
+     * @private
+     */
+    public allowFormattingInFormFields(property: string): boolean {
+        if (this.documentHelper.protectionType === 'FormFieldsOnly' && this.selection.isInlineFormFillMode() &&
+            !isNullOrUndefined(this.owner.documentEditorSettings.formFieldSettings.formattingExceptions)) {
+            for (let j: number = 0; j < this.owner.documentEditorSettings.formFieldSettings.formattingExceptions.length; j++) {
+                if (property.toLowerCase() === this.owner.documentEditorSettings.formFieldSettings.formattingExceptions[j].toLowerCase()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     //Paste Implementation ends
     //Character Format apply implementation starts
 
@@ -4862,12 +4913,14 @@ export class Editor {
      * @private
      */
     public onApplyCharacterFormat(property: string, value: Object, update?: boolean): void {
-        if (this.restrictFormatting) {
+        let allowFormatting: boolean = this.documentHelper.isFormFillProtectedMode
+            && this.documentHelper.selection.isInlineFormFillMode() && this.allowFormattingInFormFields(property);
+        if (this.restrictFormatting && !allowFormatting) {
             return;
         }
         this.documentHelper.layout.isBidiReLayout = true;
         let selection: Selection = this.documentHelper.selection;
-        if (selection.owner.isReadOnlyMode || !selection.owner.isDocumentLoaded) {
+        if ((selection.owner.isReadOnlyMode && !allowFormatting) || !selection.owner.isDocumentLoaded) {
             return;
         }
         update = isNullOrUndefined(update) ? false : update;
@@ -5065,7 +5118,7 @@ export class Editor {
      * Increases the left indent of selected paragraphs to a factor of 36 points.
      */
     public increaseIndent(): void {
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             this.onApplyParagraphFormat('leftIndent', this.documentHelper.defaultTabWidth, true, false);
         }
     }
@@ -5073,7 +5126,7 @@ export class Editor {
      * Decreases the left indent of selected paragraphs to a factor of 36 points.
      */
     public decreaseIndent(): void {
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             this.onApplyParagraphFormat('leftIndent', -this.documentHelper.defaultTabWidth, true, false);
         }
     }
@@ -5089,7 +5142,7 @@ export class Editor {
      * @param {string} fontFamily Bullet font family     
      */
     public applyBullet(bullet: string, fontFamily: string): void {
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             this.applyBulletOrNumbering(bullet, 'Bullet', fontFamily);
         }
     }
@@ -5100,7 +5153,7 @@ export class Editor {
      * @param listLevelPattern  Default value of ‘listLevelPattern’ parameter is ListLevelPattern.Arabic
      */
     public applyNumbering(numberFormat: string, listLevelPattern?: ListLevelPattern): void {
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             this.applyBulletOrNumbering(numberFormat, listLevelPattern, 'Verdana');
         }
     }
@@ -5160,7 +5213,7 @@ export class Editor {
      */
     public updateProperty(type: number, value: Object): void {
         let selection: Selection = this.selection;
-        if (selection.owner.isReadOnlyMode || !selection.owner.isDocumentLoaded) {
+        if ((selection.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) || !selection.owner.isDocumentLoaded) {
             return;
         }
         let startPosition: TextPosition = selection.start;
@@ -5497,7 +5550,7 @@ export class Editor {
      * Toggles the bold property of selected contents.
      */
     public toggleBold(): void {
-        if (this.documentHelper.owner.isReadOnlyMode) {
+        if (this.documentHelper.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) {
             return;
         }
         let value: boolean = this.getCurrentSelectionValue('bold');
@@ -5507,7 +5560,7 @@ export class Editor {
      * Toggles the bold property of selected contents.
      */
     public toggleItalic(): void {
-        if (this.documentHelper.owner.isReadOnlyMode) {
+        if (this.documentHelper.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) {
             return;
         }
         let value: boolean = this.getCurrentSelectionValue('italic');
@@ -5554,7 +5607,7 @@ export class Editor {
      * @param underline Default value of ‘underline’ parameter is Single.
      */
     public toggleUnderline(underline?: Underline): void {
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             this.updateProperty(1, underline);
         }
     }
@@ -5563,7 +5616,7 @@ export class Editor {
      * @param {Strikethrough} strikethrough Default value of strikethrough parameter is SingleStrike.
      */
     public toggleStrikethrough(strikethrough?: Strikethrough): void {
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             let value: Strikethrough;
             if (isNullOrUndefined(strikethrough)) {
                 value = this.selection.characterFormat.strikethrough === 'SingleStrike' ? 'None' : 'SingleStrike';
@@ -5867,7 +5920,8 @@ export class Editor {
      * @param  {TextAlignment} textAlignment
      */
     public toggleTextAlignment(textAlignment: TextAlignment): void {
-        if (this.documentHelper.owner.isReadOnlyMode || !this.documentHelper.owner.isDocumentLoaded) {
+        // tslint:disable-next-line:max-line-length
+        if ((this.documentHelper.owner.isReadOnlyMode && !this.selection.isInlineFormFillMode()) || !this.documentHelper.owner.isDocumentLoaded) {
             return;
         }
         // Toggle performed based on current selection format similar to MS word behavior.
@@ -5891,14 +5945,17 @@ export class Editor {
      * @private
      */
     public onApplyParagraphFormat(property: string, value: Object, update: boolean, isSelectionChanged: boolean): void {
-        if (this.restrictFormatting) {
+        let allowFormatting: boolean = this.documentHelper.isFormFillProtectedMode
+            && this.documentHelper.selection.isInlineFormFillMode() && this.allowFormattingInFormFields(property);
+        if (this.restrictFormatting && !allowFormatting) {
             return;
         }
+
         let action: Action = property === 'bidi' ? 'ParagraphBidi' : (property[0].toUpperCase() + property.slice(1)) as Action;
         this.documentHelper.owner.isShiftingEnabled = true;
         let selection: Selection = this.documentHelper.selection;
         this.initHistory(action);
-        if (this.documentHelper.owner.isReadOnlyMode || !this.documentHelper.owner.isDocumentLoaded) {
+        if ((this.owner.isReadOnlyMode && !allowFormatting) || !this.owner.isDocumentLoaded) {
             return;
         }
         if (property === 'leftIndent') {
@@ -8750,6 +8807,7 @@ export class Editor {
                         this.updateHistoryPosition(selection.end, false);
                     }
                     this.reLayout(selection);
+                    this.insertSpaceInFormField();
                 }
             }
             this.documentHelper.triggerSpellCheck = false;
@@ -8851,6 +8909,19 @@ export class Editor {
         let indexInInline: number = 0;
         let inlineObj: ElementInfo = currentLineWidget.getInline(offset, indexInInline);
         let inline: ElementBox = inlineObj.element;
+        if (this.selection.isInlineFormFillMode()) {
+            if (inline instanceof FieldElementBox && inline.fieldType === 2) {
+                return;
+            }
+            let resultText: string = this.getFormFieldText();
+            if (resultText.length === 1) {
+                this.selection.selectFieldInternal(this.selection.getCurrentFormField());
+                // tslint:disable-next-line:max-line-length
+                this.insertTextInternal(this.documentHelper.textHelper.repeatChar(this.documentHelper.textHelper.getEnSpaceCharacter(), 5), true);
+                this.selection.selectTextElementStartOfField(this.selection.getCurrentFormField());
+                return;
+            }
+        }
         indexInInline = inlineObj.index;
         if (inline instanceof TextElementBox) {
             (inline as TextElementBox).ignoreOnceItems = [];
@@ -9141,6 +9212,7 @@ export class Editor {
             selection.selectContent(textPosition, true);
             // if (this.documentHelper.owner.enableEditorHistory) {
             this.reLayout(selection);
+            this.insertSpaceInFormField();
             // }
             // this.updateSelectionRangeOffSet(selection.start, selection.end);
             // }
@@ -9173,6 +9245,26 @@ export class Editor {
         // tslint:disable-next-line:max-line-length
         let paragraph: ParagraphWidget = selection.start.paragraph; let offset: number = selection.start.offset; let indexInInline: number = 0;
         let inlineObj: ElementInfo = paragraph.getInline(selection.start.offset, indexInInline); let inline: ElementBox = inlineObj.element;
+        if (this.selection.isInlineFormFillMode()) {
+            if (inline instanceof FieldElementBox && inline.fieldType === 1) {
+                return;
+            }
+            let resultText: string = this.getFormFieldText();
+            if (!(inline instanceof TextElementBox)) {
+                inline = inline.nextElement;
+            }
+            if (resultText.length === 1 && inline instanceof TextElementBox) {
+                this.selection.selectFieldInternal(this.selection.getCurrentFormField());
+                // tslint:disable-next-line:max-line-length
+                this.insertTextInternal(this.documentHelper.textHelper.repeatChar(this.documentHelper.textHelper.getEnSpaceCharacter(), 5), true);
+                this.selection.selectTextElementStartOfField(this.selection.getCurrentFormField());
+                return;
+            } else {
+                if (inline instanceof FieldElementBox && inline.fieldType === 1) {
+                    return;
+                }
+            }
+        }
         indexInInline = inlineObj.index;
         if (paragraph.paragraphFormat.listFormat && paragraph.paragraphFormat.listFormat.listId !== -1 &&
             this.documentHelper.isListTextSelected && selection.contextType === 'List') {
@@ -9180,6 +9272,10 @@ export class Editor {
         }
         if (!isNullOrUndefined(inline) && indexInInline === inline.length && !isNullOrUndefined(inline.nextNode)) {
             inline = inline.nextNode as ElementBox;
+            if (inline instanceof FieldElementBox && inline.fieldType === 1 &&
+                !isNullOrUndefined(inline.fieldBegin.formFieldData)) {
+                return;
+            }
             indexInInline = 0;
         }
         if (!isNullOrUndefined(inline)) {
@@ -12237,7 +12333,61 @@ export class Editor {
         }
         return name;
     }
+    // Inserts 5 space on Form Fill inline mode if length is 0
+    private insertSpaceInFormField(): void {
+        if (this.documentHelper.isInlineFormFillProtectedMode && this.selection.isInlineFormFillMode()) {
+            let resultText: string = this.getFormFieldText();
+            if (resultText.length === 0 || resultText === '\r') {
+                // tslint:disable-next-line:max-line-length
+                this.insertTextInternal(this.documentHelper.textHelper.repeatChar(this.documentHelper.textHelper.getEnSpaceCharacter(), 5), true);
+                this.selection.selectTextElementStartOfField(this.selection.getCurrentFormField());
+            }
+        }
+    }
+    /**
+     * @private
+     */
+    public getFormFieldText(formField?: FieldElementBox): string {
+        if (isNullOrUndefined(formField)) {
+            formField = this.selection.getCurrentFormField();
+        }
+        let seperator: FieldElementBox = formField.fieldSeparator;
+        let text: string = this.getNextRenderedWidgetText(seperator);
+        return text;
+    }
 
+    private getNextRenderedWidgetText(seperator: ElementBox): string {
+        let text: string = '';
+        if (seperator instanceof FieldElementBox && seperator.fieldType === 2) {
+            let textElement: ElementBox = seperator;
+            do {
+                if (!(isNullOrUndefined(textElement)) && textElement instanceof TextElementBox) {
+                    text = text + textElement.text;
+                }
+                if (isNullOrUndefined(textElement.nextNode)) {
+                    text += '\r';
+                    let nextBlock: BlockWidget = textElement.paragraph.nextRenderedWidget as BlockWidget;
+                    if (isNullOrUndefined(nextBlock)) {
+                        break;
+                    }
+                    if (nextBlock instanceof TableWidget) {
+                        nextBlock = this.selection.getFirstParagraphBlock(nextBlock);
+                    }
+                    while ((nextBlock as ParagraphWidget).isEmpty()) {
+                        text += '\r';
+                        nextBlock = nextBlock.nextRenderedWidget as BlockWidget;
+                    }
+                    // tslint:disable-next-line:max-line-length
+                    textElement = ((nextBlock as ParagraphWidget).childWidgets[0] as LineWidget).children[0];
+                } else {
+                    textElement = textElement.nextNode;
+                }
+            }
+            // tslint:disable-next-line:max-line-length
+            while (!(textElement instanceof FieldElementBox && textElement.fieldType === 1 && textElement === seperator.fieldEnd));
+        }
+        return text;
+    }
 }
 /**
  * @private

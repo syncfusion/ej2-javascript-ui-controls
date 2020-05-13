@@ -13,3 +13,6 @@ export * from './circular-gauge-model';
 export * from './axes/axis-model';
 export * from './model/base-model';
 export * from './legend/legend';
+export * from './model/image-export';
+export * from './model/pdf-export';
+export * from './model/print';

@@ -1,4 +1,5 @@
-import { RangeNavigator, AreaSeries, ILabelRenderEventsArgs } from '../../../src/range-navigator/index';
+import { RangeNavigator, ILabelRenderEventsArgs } from '../../../src/range-navigator/index';
+import { AreaSeries } from '../../../src/chart/index';
 import { Logarithmic, DateTime, LineSeries } from '../../../src/chart/index';
 import { createElement, remove, EventHandler } from '@syncfusion/ej2-base';
 import  {profile , inMB, getMemoryProfile} from '../../common.spec';

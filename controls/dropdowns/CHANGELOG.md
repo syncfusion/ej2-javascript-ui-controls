@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.52 (2020-05-13)
+
+### ListBox
+
+#### Bug Fixes
+
+- Move to and move from throws script error when listbox rendered with item template issue fixed.
+
 ## 18.1.48 (2020-05-05)
 
 ### MultiSelect

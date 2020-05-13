@@ -295,6 +295,11 @@ export class DiagramContextMenu {
             diagramArgs.cancel = hidden;
             this.hiddenItems = [];
         }
+        /* tslint:disable */
+        if (this.parent.selectedItems && (this.parent.selectedItems.nodes[0] as any).isPhase) {
+            args.cancel = true;
+        }
+        /* tslint:enable */
     }
 
     private ensureTarget(item: MenuItemModel): boolean {

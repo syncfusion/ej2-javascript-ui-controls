@@ -1889,8 +1889,8 @@
         height: auto;
       }
 
-      .e-ignore-whitespace .e-work-cells,
-      .e-ignore-whitespace .e-resource-cells {
+      &.e-ignore-whitespace .e-work-cells,
+      &.e-ignore-whitespace .e-resource-cells {
         height: 42px;
       }
 

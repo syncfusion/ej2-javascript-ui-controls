@@ -603,6 +603,18 @@ export class DocumentHelper {
         }
         this.currentSelectedCommentInternal = value;
     }
+    /**
+     * @private
+     */
+    get isInlineFormFillProtectedMode(): boolean {
+        return this.isFormFillProtectedMode && this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Inline';
+    }
+    /**
+     * @private
+     */
+    get isFormFillProtectedMode(): boolean {
+        return this.isDocumentProtected && this.protectionType === 'FormFieldsOnly';
+    }
     //#endregion
 
     constructor(owner: DocumentEditor) {
@@ -1135,7 +1147,7 @@ export class DocumentHelper {
      * @private
      */
     public onPaste = (event: ClipboardEvent): void => {
-        if (!this.owner.isReadOnlyMode) {
+        if (!this.owner.isReadOnlyMode || this.selection.isInlineFormFillMode()) {
             this.owner.editorModule.pasteInternal(event);
         }
         this.editableDiv.innerText = '';
@@ -1283,6 +1295,10 @@ export class DocumentHelper {
         this.layout.isInitialLoad = true;
         this.layout.layoutItems(sections, false);
         if (this.owner.selection) {
+            this.selection.previousSelectedFormField = undefined;
+            if (this.formFields.length > 0) {
+                this.owner.selection.highlightFormFields();
+            }
             this.owner.selection.editRangeCollection = [];
             this.owner.selection.selectRange(this.owner.documentStart, this.owner.documentStart);
             if (this.isDocumentProtected) {
@@ -1591,6 +1607,7 @@ export class DocumentHelper {
             if (this.selection.checkAndEnableHeaderFooter(cursorPoint, this.owner.viewer.findFocusedPage(cursorPoint, true))) {
                 return;
             }
+            let formField: FieldElementBox = this.selection.getCurrentFormField();
             if (!this.isDocumentProtected && this.owner.enableFormField) {
                 let formatType: FormFieldType = this.selection.getFormFieldType();
                 if (formatType) {
@@ -1609,6 +1626,9 @@ export class DocumentHelper {
                             break;
                     }
                 }
+            } else if (this.isDocumentProtected && formField && formField.formFieldData instanceof TextFormField
+                && formField.formFieldData.type === 'Text') {
+                this.selection.selectField();
             } else {
                 this.tapCount = 2;
                 return;
@@ -1670,8 +1690,13 @@ export class DocumentHelper {
                 this.selection.navigateHyperLinkOnEvent(touchPoint, false);
             }
             if (this.isLeftButtonPressed(event) && this.isDocumentProtected && this.protectionType === 'FormFieldsOnly' && this.selection) {
-                let formField: FieldElementBox = this.selection.getCurrentFormField();
-                if (formField && formField.formFieldData && formField.formFieldData.enabled) {
+                let widget: LineWidget = this.getLineWidget(touchPoint);
+                let formField: FieldElementBox = this.selection.getHyperLinkFieldInCurrentSelection(widget, touchPoint, true);
+                if (isNullOrUndefined(formField)) {
+                    formField = this.selection.getCurrentFormField();
+                }
+                // tslint:disable-next-line:max-line-length
+                if (formField && formField.formFieldData && formField.formFieldData.enabled && !this.selection.isInlineFormFillMode(formField)) {
                     let data: FormFieldFillEventArgs = { 'fieldName': formField.formFieldData.name };
                     if (formField.formFieldData instanceof TextFormField) {
                         data.value = formField.resultText;
@@ -1681,7 +1706,10 @@ export class DocumentHelper {
                         data.value = (formField.formFieldData as DropDownFormField).selectedIndex;
                     }
                     this.owner.trigger('beforeFormFieldFill', data);
-                    if (formField.formFieldData instanceof TextFormField || formField.formFieldData instanceof DropDownFormField) {
+                    // tslint:disable-next-line:max-line-length
+                    if (this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Popup' && !(formField.formFieldData instanceof CheckBoxFormField)
+                        || (formField.formFieldData instanceof TextFormField && !(formField.formFieldData.type === 'Text'))
+                        || formField.formFieldData instanceof DropDownFormField) {
                         this.formFillPopup.showPopUp(formField, touchPoint);
                     } else {
                         this.owner.editor.toggleCheckBoxFormField(formField);
@@ -1689,6 +1717,9 @@ export class DocumentHelper {
                         data.isCanceled = false;
                         this.owner.trigger('afterFormFieldFill', data);
                     }
+                }
+                if (!formField && this.isFormFillProtectedMode) {
+                    this.selection.navigateToNextFormField();
                 }
             } else {
                 let formField: FieldElementBox = this.selection.getCurrentFormField();
@@ -2813,6 +2844,14 @@ export class DocumentHelper {
                 this.selection.setHyperlinkContentToToolTip(formField, widget, touchPoint.x, true);
             } else {
                 this.selection.setHyperlinkContentToToolTip(hyperlinkField, widget, touchPoint.x, false);
+            }
+            if (formField) {
+                // tslint:disable-next-line:max-line-length
+                let isInlineFormFillMode: boolean = (formField.formFieldData instanceof TextFormField) && formField.formFieldData.type === 'Text';
+                if (this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Inline' && isInlineFormFillMode) {
+                    //Update text cursor in text form field.
+                    formField = undefined;
+                }
             }
         }
         let isCtrlkeyPressed: boolean = this.isIosDevice ? event.metaKey : event.ctrlKey;

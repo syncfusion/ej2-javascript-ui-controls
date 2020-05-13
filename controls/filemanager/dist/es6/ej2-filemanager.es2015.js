@@ -3945,7 +3945,9 @@ class LargeIconsView {
     }
     resizeHandler() {
         this.getItemCount();
-        this.adjustHeight();
+        if (!isNullOrUndefined(this.listObj)) {
+            this.adjustHeight();
+        }
     }
     splitterResizeHandler() {
         this.getItemCount();

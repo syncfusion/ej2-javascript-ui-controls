@@ -567,6 +567,10 @@ export class FreeTextAnnotation {
             let inputEleHeight: number = parseFloat(this.inputBoxElement.style.height);
             let inputEleWidth: number = parseFloat(this.inputBoxElement.style.width);
             let inputEleLeft: number = parseFloat(this.inputBoxElement.style.left);
+            if (this.pdfViewerBase.isMixedSizeDocument) {
+                let canvas: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
+                this.inputBoxElement.style.left = inputEleLeft - canvas.offsetLeft;
+            }
             let inputEleTop: number = parseFloat(this.inputBoxElement.style.top);
             let zoomFactor: number = this.pdfViewerBase.getZoomFactor();
             let inputValue: string = this.inputBoxElement.value;
@@ -746,6 +750,7 @@ export class FreeTextAnnotation {
     public addInuptElemet(currentPosition: PointModel, annotation: PdfAnnotationBaseModel = null): void {
         let pageIndex: number = this.pdfViewerBase.currentPageNumber - 1;
         let pageDiv: HTMLElement = this.pdfViewerBase.getElement('_pageDiv_' + (pageIndex));
+        let canvass: HTMLElement = document.getElementById(this.pdfViewer.element.id + '_annotationCanvas_' + pageIndex);
         let zoomFactor: number = this.pdfViewerBase.getZoomFactor();
         this.inputBoxElement.value = (annotation && annotation.dynamicText) ? annotation.dynamicText : this.defaultText;
         this.inputBoxElement.style.boxSizing = 'border-box';
@@ -825,6 +830,9 @@ export class FreeTextAnnotation {
             this.inputBoxElement.style.fontSize = (this.selectedAnnotation.fontSize * zoomFactor) + 'px';
             this.inputBoxElement.style.fontFamily = this.selectedAnnotation.fontFamily;
             this.pdfViewer.nodePropertyChange(this.selectedAnnotation, {});
+        }
+        if (this.pdfViewerBase.isMixedSizeDocument) {
+            this.inputBoxElement.style.left = (currentPosition.x) + canvass.offsetLeft + 'px';
         }
         this.pdfViewer.annotation.freeTextAnnotationModule.isFreeTextValueChange = false;
         pageDiv.appendChild(this.inputBoxElement);

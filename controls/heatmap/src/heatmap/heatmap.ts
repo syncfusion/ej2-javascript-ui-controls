@@ -826,6 +826,12 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         let width: number = stringToNumber(this.width, this.element.offsetWidth) || this.element.offsetWidth || 600;
         let height: number = stringToNumber(this.height, this.element.offsetHeight) || this.element.offsetHeight || 450;
         this.availableSize = new Size(width, height);
+        let align: string = (document.getElementById(this.element.id) as HTMLInputElement).align;
+        if (align === 'center') {
+            let containerWidth: string = this.availableSize.width.toString();
+            this.element.style.width = containerWidth + 'px';
+            this.element.style.margin = '0 auto';
+        }
     }
 
     private renderTitle(): void {

@@ -76,7 +76,7 @@ export class DropDownEditCell implements IEditCell {
         if (this.flag && (<DataManager>this.column.dataSource)) {
             if ('result' in this.column.dataSource) {
                 this.column.dataSource.result = e.result;
-            } else {
+            } else if (this.column.dataSource instanceof DataManager) {
                 (<DataManager>this.column.dataSource).dataSource.json = e.result;
             }
         }

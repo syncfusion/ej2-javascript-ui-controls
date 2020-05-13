@@ -6,6 +6,7 @@ import { PdfAnnotationBaseModel } from '../../diagram/pdf-annotation-model';
 import { PdfAnnotationBase } from '../../diagram/pdf-annotation';
 import { splitArrayCollection, processPathData, getPathString } from '@syncfusion/ej2-drawings';
 import { ColorPicker } from '@syncfusion/ej2-inputs';
+import { cloneObject } from '../../diagram/drawing-util';
 
 /**
  * @hidden
@@ -323,7 +324,8 @@ export class Signature {
                         // tslint:disable-next-line:max-line-length
                         let strokeColorString: string = pageAnnotationObject.annotations[z].strokeColor;
                         pageAnnotationObject.annotations[z].strokeColor = JSON.stringify(this.getRgbCode(strokeColorString));
-                        pageAnnotationObject.annotations[z].bounds = JSON.stringify(pageAnnotationObject.annotations[z].bounds);
+                        // tslint:disable-next-line:max-line-length
+                        pageAnnotationObject.annotations[z].bounds = JSON.stringify(this.pdfViewer.annotation.getBounds(pageAnnotationObject.annotations[z].bounds, pageAnnotationObject.pageIndex));
                         // tslint:disable-next-line
                         let collectionData: any = processPathData(pageAnnotationObject.annotations[z].data);
                         // tslint:disable-next-line
@@ -396,10 +398,10 @@ export class Signature {
             if (currentAnnotation) {
                 // tslint:disable-next-line
                 let bounds: any = currentAnnotation.Bounds;
-                let currentLeft: number = this.ConvertPointToPixel(bounds.X);
-                let currentTop: number = this.ConvertPointToPixel(bounds.Y);
-                let currentWidth: number = this.ConvertPointToPixel(bounds.Width);
-                let currentHeight: number = this.ConvertPointToPixel(bounds.Height);
+                let currentLeft: number = bounds.X;
+                let currentTop: number = bounds.Y;
+                let currentWidth: number = bounds.Width;
+                let currentHeight: number = bounds.Height;
                 // tslint:disable-next-line
                 let data: any = currentAnnotation.PathData;
                 if (isImport) {
@@ -449,6 +451,7 @@ export class Signature {
         let storeObject: any = window.sessionStorage.getItem(this.pdfViewerBase.documentId + '_annotations_sign');
         let index: number = 0;
         if (!storeObject) {
+            this.storeSignatureCollections(annotation, pageNumber);
             let shapeAnnotation: IPageAnnotations = { pageIndex: pageNumber, annotations: [] };
             shapeAnnotation.annotations.push(annotation);
             index = shapeAnnotation.annotations.indexOf(annotation);
@@ -457,6 +460,7 @@ export class Signature {
             let annotationStringified: string = JSON.stringify(annotationCollection);
             window.sessionStorage.setItem(this.pdfViewerBase.documentId + '_annotations_sign', annotationStringified);
         } else {
+            this.storeSignatureCollections(annotation, pageNumber);
             let annotObject: IPageAnnotations[] = JSON.parse(storeObject);
             window.sessionStorage.removeItem(this.pdfViewerBase.documentId + '_annotations_sign');
             let pageIndex: number = this.pdfViewer.annotationModule.getPageCollection(annotObject, pageNumber);
@@ -478,7 +482,7 @@ export class Signature {
      * @private
      */
     // tslint:disable-next-line
-    public modifySignatureCollection(property: string, pageNumber: number, annotationBase: any): ISignAnnotation {
+    public modifySignatureCollection(property: string, pageNumber: number, annotationBase: any, isSignatureEdited?: boolean): ISignAnnotation {
         this.pdfViewerBase.isDocumentEdited = true;
         let currentAnnotObject: ISignAnnotation = null;
         let pageAnnotations: ISignAnnotation[] = this.getAnnotations(pageNumber, null);
@@ -490,15 +494,23 @@ export class Signature {
                         pageAnnotations[i].bounds = { left: annotationBase.wrapper.bounds.left, top: annotationBase.wrapper.bounds.top, width: annotationBase.bounds.width, height: annotationBase.bounds.height };
                     } else if (property === 'stroke') {
                         pageAnnotations[i].strokeColor = annotationBase.wrapper.children[0].style.strokeColor;
-                        let date: Date = new Date();
                     } else if (property === 'opacity') {
                         pageAnnotations[i].opacity = annotationBase.wrapper.children[0].style.opacity;
-                        let date: Date = new Date();
                     } else if (property === 'thickness') {
                         pageAnnotations[i].thickness = annotationBase.wrapper.children[0].style.strokeWidth;
-                        let date: Date = new Date();
                     } else if (property === 'delete') {
+                        this.updateSignatureCollection(pageAnnotations[i]);
                         currentAnnotObject = pageAnnotations.splice(i, 1)[0];
+                        break;
+                    }
+                    if (property && property !== 'delete') {
+                        this.storeSignatureCollections(pageAnnotations[i], pageNumber);
+                    }
+                    if (isSignatureEdited) {
+                        pageAnnotations[i].opacity = annotationBase.wrapper.children[0].style.opacity;
+                        pageAnnotations[i].strokeColor = annotationBase.wrapper.children[0].style.strokeColor;
+                        pageAnnotations[i].thickness = annotationBase.wrapper.children[0].style.strokeWidth;
+                        this.storeSignatureCollections(pageAnnotations[i], pageNumber);
                         break;
                     }
                 }
@@ -507,6 +519,78 @@ export class Signature {
         }
         return currentAnnotObject;
     }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public storeSignatureCollections(annotation: any, pageNumber: number): void {
+        // tslint:disable-next-line
+        let collectionDetails: any = this.checkSignatureCollection(annotation);
+        // tslint:disable-next-line
+        let selectAnnotation: any = cloneObject(annotation);
+        selectAnnotation.annotationId = annotation.signatureName;
+        selectAnnotation.pageNumber = pageNumber;
+        delete selectAnnotation.annotName;
+        if (annotation.id) {
+            selectAnnotation.uniqueKey = annotation.id;
+            delete selectAnnotation.id;
+        }
+        if (collectionDetails.isExisting) {
+            this.pdfViewer.signatureCollection.splice(collectionDetails.position, 0, selectAnnotation);
+        } else {
+            this.pdfViewer.signatureCollection.push(selectAnnotation);
+        }
+    }
+
+    // tslint:disable-next-line
+    private checkSignatureCollection(signature: any): any {
+        // tslint:disable-next-line
+        let collections: any = this.pdfViewer.signatureCollection;
+        if (collections && signature) {
+            for (let i: number = 0; i < collections.length; i++) {
+                if (collections[i].annotationId === signature.signatureName) {
+                    this.pdfViewer.signatureCollection.splice(i, 1);
+                    return { isExisting: true, position: i };
+                }
+            }
+        }
+        return { isExisting: false, position: null };
+    }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public updateSignatureCollection(signature: any): void {
+        // tslint:disable-next-line
+        let collections: any = this.pdfViewer.signatureCollection;
+        if (collections && signature) {
+            for (let i: number = 0; i < collections.length; i++) {
+                if (collections[i].annotationId === signature.signatureName) {
+                    this.pdfViewer.signatureCollection.splice(i, 1);
+                    break;
+                }
+            }
+        }
+    }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public addInCollection(pageNumber: number, signature: any): void {
+        if (signature) {
+            this.storeSignatureCollections(signature, pageNumber);
+            // tslint:disable-next-line
+            let pageSignatures: any[] = this.getAnnotations(pageNumber, null);
+            if (pageSignatures) {
+                pageSignatures.push(signature);
+            }
+            this.manageAnnotations(pageSignatures, pageNumber);
+        }
+    }
+
     // tslint:disable-next-line
     private getAnnotations(pageIndex: number, shapeAnnotations: any[]): any[] {
         // tslint:disable-next-line
@@ -563,6 +647,34 @@ export class Signature {
     // tslint:disable-next-line
     public ConvertPointToPixel(number: any): any {
         return (number * (96 / 72));
+    }
+
+    /**
+     * @private
+     */
+    // tslint:disable-next-line
+    public updateSignatureCollections(signature: any, pageIndex: number, isImport?: boolean): any {
+        let annot: PdfAnnotationBaseModel;
+        //tslint:disable-next-line
+        if (signature) {
+            // tslint:disable-next-line
+            let bounds: any = signature.Bounds;
+            let currentLeft: number = bounds.X;
+            let currentTop: number = bounds.Y;
+            let currentWidth: number = bounds.Width;
+            let currentHeight: number = bounds.Height;
+            // tslint:disable-next-line
+            let data: any = signature.PathData;
+            if (isImport) {
+                data = getPathString(JSON.parse(signature.PathData));
+            }
+            annot = {
+                // tslint:disable-next-line:max-line-length
+                id: 'sign' + signature.SignatureName, bounds: { x: currentLeft, y: currentTop, width: currentWidth, height: currentHeight }, pageIndex: pageIndex, data: data,
+                shapeAnnotationType: 'HandWrittenSignature', opacity: signature.Opacity, strokeColor: signature.StrokeColor, thickness: signature.Thickness, signatureName: signature.SignatureName,
+            };
+            return annot;
+        }
     }
 
     /**

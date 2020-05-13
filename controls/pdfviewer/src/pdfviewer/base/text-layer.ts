@@ -38,6 +38,7 @@ export class TextLayer {
             textLayer.style.height = pageHeight + 'px';
             pageDiv.appendChild(textLayer);
         }
+        this.pdfViewerBase.applyElementStyles(textLayer, pageNumber);
         return textLayer;
     }
     /**

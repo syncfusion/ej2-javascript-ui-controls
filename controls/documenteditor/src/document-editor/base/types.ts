@@ -1180,7 +1180,8 @@ export type Action = 'Insert' | 'Delete' | 'BackSpace' | 'Selection' | 'MultiSel
     | 'ListCharacterFormat' | 'ContinueNumbering' | 'RestartNumbering' | 'ListSelect' | 'Shading' | 'Borders' | 'TOC' | 'StyleName'
     | 'ApplyStyle' | 'SectionBreak' | 'PageBreak' | 'IMEInput' | 'TableAutoFitToContents' | 'TableAutoFitToWindow' | 'TableFixedColumnWidth'
     | 'ParagraphBidi' | 'TableBidi' | 'ContextualSpacing' | 'RestrictEditing' | 'RemoveEditRange' | 'InsertComment' | 'DeleteComment'
-    | 'RemoveInline' | 'DeleteAllComments' | 'InsertCommentWidget' | 'DeleteCommentWidget' | 'FormField' | 'UpdateFormField';
+    | 'RemoveInline' | 'DeleteAllComments' | 'InsertCommentWidget' | 'DeleteCommentWidget' | 'FormField' | 'UpdateFormField' |
+    'FormTextFormat';
 /**
  * Enum for direction
  */
@@ -1409,3 +1410,16 @@ export type AutoShapeType = 'Rectangle' | 'Oval';
  * @private
  */
 export type TextWrappingStyle = 'Inline' | 'InFrontOfText' | 'BehindText';
+
+/**
+ * Form Filling Mode
+ */
+export type FormFillingMode = 'Inline' | 'Popup';
+
+/**
+ * Specifies the list of Formatting Exceptions
+ */
+export type FormattingExceptions = 'Bold' | 'Italic' | 'FontSize' | 'FontFamily' | 'HighlightColor' |
+    'BaselineAlignment' | 'Strikethrough' | 'Underline' | 'FontColor' | 'TextAlignment' | 'LeftIndent' | 'RightIndent' | 'LineSpacing'
+    | 'LineSpacingType' | 'FirstLineIndent' | 'AfterSpacing'
+    | 'BeforeSpacing' | 'ContextualSpacing' | 'ListFormat';

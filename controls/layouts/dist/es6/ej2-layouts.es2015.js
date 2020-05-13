@@ -883,7 +883,7 @@ let Splitter = class Splitter extends Component {
         this.currentSeparator = this.isSeparator(target) ? target.parentElement : target;
     }
     isSeparator(target) {
-        return ((target.classList.contains(RESIZE_BAR) || target.classList.contains(SPLIT_BAR)) ? false : true);
+        return (target.classList.contains(SPLIT_BAR) ? false : true);
     }
     isMouseEvent(e) {
         let isMouse = false;
@@ -934,9 +934,14 @@ let Splitter = class Splitter extends Component {
             totalWidth += this.orientation === 'Horizontal' ? children[i].offsetWidth :
                 children[i].offsetHeight;
         }
-        let diff = this.orientation === 'Horizontal' ? (this.element.offsetWidth -
-            (this.allBars[0].offsetWidth * this.allBars.length)) - totalWidth :
-            (this.element.offsetHeight - (this.allBars[0].offsetHeight * this.allBars.length)) - totalWidth;
+        for (let j = 0; j < this.allBars.length; j++) {
+            totalWidth += this.orientation === 'Horizontal' ? parseInt(getComputedStyle(this.allBars[j]).marginLeft, 10) +
+                parseInt(getComputedStyle(this.allBars[j]).marginLeft, 10) : parseInt(getComputedStyle(this.allBars[j]).marginTop, 10) +
+                parseInt(getComputedStyle(this.allBars[j]).marginBottom, 10);
+        }
+        let diff = this.orientation === 'Horizontal' ? this.element.offsetWidth -
+            ((this.border * 2) + totalWidth) :
+            this.element.offsetHeight - ((this.border * 2) + totalWidth);
         for (let i = 0; i < this.allPanes.length; i++) {
             if (!this.paneSettings[i].size && !(this.allPanes[i].innerText === '')) {
                 flexPaneIndexes[flexCount] = i;
@@ -984,6 +989,15 @@ let Splitter = class Splitter extends Component {
         }
         if (icon.classList.contains(ARROW_RIGHT) || icon.classList.contains(ARROW_DOWN)) {
             this.expandAction(e);
+        }
+        let totalWidth = 0;
+        let children = this.element.children;
+        for (let i = 0; i < children.length; i++) {
+            totalWidth += this.orientation === 'Horizontal' ? children[i].offsetWidth :
+                children[i].offsetHeight;
+        }
+        if (totalWidth > this.element.offsetWidth) {
+            this.updateSplitterSize();
         }
     }
     expandAction(e) {
@@ -1100,8 +1114,11 @@ let Splitter = class Splitter extends Component {
             }
         }
         else if (!this.splitInstance.prevPaneCollapsed && !this.splitInstance.nextPaneExpanded) {
-            this.resizableModel(this.currentBarIndex, true);
-            if (!this.splitInstance.nextPaneNextEle.classList.contains(COLLAPSE_PANE)) {
+            if (this.paneSettings[this.currentBarIndex].resizable) {
+                this.resizableModel(this.currentBarIndex, true);
+            }
+            if (!this.splitInstance.nextPaneNextEle.classList.contains(COLLAPSE_PANE) &&
+                this.paneSettings[this.currentBarIndex + 1].resizable) {
                 this.resizableModel(this.currentBarIndex + 1, true);
             }
             if (!this.paneSettings[this.currentBarIndex].collapsible) {
@@ -1234,10 +1251,14 @@ let Splitter = class Splitter extends Component {
             if (this.paneSettings[this.nextPaneIndex].collapsible) {
                 removeClass([e.target], HIDE_ICON);
             }
-            this.resizableModel(this.currentBarIndex, true);
+            if (this.paneSettings[this.currentBarIndex].resizable) {
+                this.resizableModel(this.currentBarIndex, true);
+            }
             if (!isNullOrUndefined(this.prevBar) &&
                 !this.splitInstance.prevPanePreEle.classList.contains(COLLAPSE_PANE)) {
-                this.resizableModel(this.currentBarIndex - 1, true);
+                if (this.paneSettings[this.currentBarIndex - 1].resizable) {
+                    this.resizableModel(this.currentBarIndex - 1, true);
+                }
                 if (this.paneSettings[this.prevPaneIndex].collapsible) {
                     this.showTargetBarIcon(this.prevBar, this.rightArrow);
                 }
@@ -1610,7 +1631,9 @@ let Splitter = class Splitter extends Component {
         this.addStaticPaneClass();
         this.previousPane.style.flexBasis = this.prevPaneCurrentWidth;
         this.nextPane.style.flexBasis = this.nextPaneCurrentWidth;
-        this.updateSplitterSize();
+        if (!(this.allPanes.length > 2)) {
+            this.updateSplitterSize();
+        }
     }
     validateMinRange(paneIndex, paneCurrentWidth, pane) {
         let paneMinRange = null;
@@ -2120,6 +2143,7 @@ var __decorate$1 = (undefined && undefined.__decorate) || function (decorators, 
 // constant class definitions
 const preventSelect = 'e-prevent';
 const dragging = 'e-dragging';
+const dragRestrict = 'e-drag-restrict';
 const drag = 'e-drag';
 const resize = 'e-resize';
 const resizeicon = 'e-dl-icon';
@@ -2254,8 +2278,8 @@ let DashboardLayout = class DashboardLayout extends Component {
     }
     createPanelElement(cssClass, idValue) {
         let ele = this.createElement('div');
-        if (cssClass) {
-            addClass([ele], [cssClass]);
+        if (cssClass && cssClass.length > 0) {
+            addClass([ele], cssClass);
         }
         if (idValue) {
             ele.setAttribute('id', idValue);
@@ -2426,8 +2450,8 @@ let DashboardLayout = class DashboardLayout extends Component {
         if (className) {
             addClass([element], [className]);
         }
-        if (cssClass) {
-            addClass([element], [cssClass]);
+        if (cssClass && cssClass.length > 0) {
+            addClass([element], cssClass);
         }
         if (idValue) {
             element.setAttribute('id', idValue);
@@ -2460,9 +2484,10 @@ let DashboardLayout = class DashboardLayout extends Component {
         if (!this.isBlazor) {
             addClass([cellElement], [panel, panelTransition]);
         }
+        let cssClass = panelModel.cssClass ? panelModel.cssClass.split(' ') : null;
         this.panelContent = cellElement.querySelector('.e-panel-container') ?
             cellElement.querySelector('.e-panel-container') :
-            this.createSubElement(panelModel.cssClass, cellElement.id + '_content', panelContainer);
+            this.createSubElement(cssClass, cellElement.id + '_content', panelContainer);
         if (!this.isBlazor) {
             cellElement.appendChild(this.panelContent);
             if (!panelModel.enabled) {
@@ -2471,7 +2496,7 @@ let DashboardLayout = class DashboardLayout extends Component {
         }
         if (panelModel.header) {
             let headerTemplateElement = cellElement.querySelector('.e-panel-header') ?
-                cellElement.querySelector('.e-panel-header') : this.createSubElement('', cellElement.id + 'template', '');
+                cellElement.querySelector('.e-panel-header') : this.createSubElement([], cellElement.id + 'template', '');
             if (!this.isBlazor) {
                 addClass([headerTemplateElement], [header]);
             }
@@ -2483,8 +2508,9 @@ let DashboardLayout = class DashboardLayout extends Component {
             }
         }
         if (panelModel.content) {
+            let cssClass = panelModel.cssClass ? panelModel.cssClass.split(' ') : null;
             this.panelBody = cellElement.querySelector('.e-panel-content') ? cellElement.querySelector('.e-panel-content') :
-                this.createSubElement(panelModel.cssClass, cellElement.id + '_body', panelContent);
+                this.createSubElement(cssClass, cellElement.id + '_body', panelContent);
             let headerHeight = this.panelContent.querySelector('.e-panel-header') ?
                 window.getComputedStyle(this.panelContent.querySelector('.e-panel-header')).height : '0px';
             let contentHeightValue = 'calc( 100% - ' + headerHeight + ')';
@@ -3093,7 +3119,7 @@ let DashboardLayout = class DashboardLayout extends Component {
                 }
             }
             else {
-                cellElement = this.createPanelElement(panel.cssClass, panel.id);
+                cellElement = this.createPanelElement(panel.cssClass ? panel.cssClass.split(' ') : null, panel.id);
             }
             cellElement.style.zIndex = '' + panel.zIndex;
             this.element.appendChild(cellElement);
@@ -4063,6 +4089,7 @@ let DashboardLayout = class DashboardLayout extends Component {
     }
     enableDraggingContent(collections) {
         for (let i = 0; i < collections.length; i++) {
+            let abortArray = ['.e-resize', '.' + dragRestrict];
             let cellElement = collections[i];
             {
                 this.dragobj = new Draggable(cellElement, {
@@ -4071,7 +4098,7 @@ let DashboardLayout = class DashboardLayout extends Component {
                     dragArea: this.element,
                     isDragScroll: true,
                     handle: this.draggableHandle ? this.draggableHandle : '.e-panel',
-                    abort: '.e-resize',
+                    abort: abortArray,
                     dragStart: this.onDraggingStart.bind(this),
                     dragStop: (args) => {
                         let model = this.getCellInstance(this.mainElement.id);
@@ -4431,13 +4458,14 @@ let DashboardLayout = class DashboardLayout extends Component {
         this.setMinMaxValues(panelInstance);
         let cell = document.getElementById(panel.id);
         this.mainElement = cell;
+        let cssClass = panelInstance.cssClass ? panelInstance.cssClass.split(' ') : null;
         this.panelContent = cell.querySelector('.e-panel-container') ?
             cell.querySelector('.e-panel-container') :
-            this.createSubElement(panelInstance.cssClass, cell.id + '_content', panelContainer);
+            this.createSubElement(cssClass, cell.id + '_content', panelContainer);
         cell.appendChild(this.panelContent);
         if (panelInstance.header) {
             let headerTemplateElement = cell.querySelector('.e-panel-header') ?
-                cell.querySelector('.e-panel-header') : this.createSubElement('', cell.id + 'template', '');
+                cell.querySelector('.e-panel-header') : this.createSubElement([], cell.id + 'template', '');
             addClass([headerTemplateElement], [header]);
             headerTemplateElement.innerHTML = '';
             let id = this.element.id + 'HeaderTemplate' + panelInstance.id;
@@ -4450,8 +4478,9 @@ let DashboardLayout = class DashboardLayout extends Component {
             }
         }
         if (panelInstance.content) {
+            let cssClass = panelInstance.cssClass ? panelInstance.cssClass.split(' ') : null;
             this.panelBody = cell.querySelector('.e-panel-content') ? cell.querySelector('.e-panel-content') :
-                this.createSubElement(panelInstance.cssClass, cell.id + '_body', panelContent);
+                this.createSubElement(cssClass, cell.id + '_body', panelContent);
             this.panelBody.innerHTML = '';
             let headerHeight = this.panelContent.querySelector('.e-panel-header') ?
                 window.getComputedStyle(this.panelContent.querySelector('.e-panel-header')).height : '0px';
@@ -4721,7 +4750,7 @@ let DashboardLayout = class DashboardLayout extends Component {
      * @private
      */
     onPropertyChanged(newProp, oldProp) {
-        if (newProp.panels) {
+        if (newProp.panels && newProp.panels.length > 0) {
             this.checkForIDValues(newProp.panels);
         }
         for (let prop of Object.keys(newProp)) {

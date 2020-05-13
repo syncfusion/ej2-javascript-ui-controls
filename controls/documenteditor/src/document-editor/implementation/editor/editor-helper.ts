@@ -423,8 +423,10 @@ export class HelperMethods {
         return formattedValue;
     }
     /* tslint:enable:no-any */
-
-    private static capitaliseFirst(value: string, type: string): string {
+    /**
+     * @private
+     */
+    public static capitaliseFirst(value: string, type: string): string {
         let text: string = '';
         if (type === 'Title case') {
             let valArry: string[] = value.split(' ');

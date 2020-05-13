@@ -47,7 +47,7 @@ export class EventMarker {
 
         for (let i: number = 0; i < this.parent.eventMarkers.length; i++) {
             left = this.parent.dataOperation.getTaskLeft(
-                this.parent.dateValidationModule.getDateFromFormat(this.parent.eventMarkers[i].day), false);
+                this.parent.dateValidationModule.getDateFromFormat(this.parent.eventMarkers[i].day, true), false);
             eventMarkerElement = createElement('div', {
                 className: cls.eventMarkersChild, styles: `left:${left}px;  height:100%;`,
                 id: 'stripline' + i

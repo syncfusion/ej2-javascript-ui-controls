@@ -277,7 +277,8 @@ export class DropDownButton extends Component<HTMLButtonElement> implements INot
         this.dropDown.hide();
         attributes(this.element, {
             ['aria-haspopup']: this.items.length || this.target ? 'true' : 'false', ['aria-expanded']: 'false',
-            ['aria-owns']: this.getPopUpElement().id, ['type']: 'button'
+            ['aria-owns']: this.getPopUpElement().id, ['type']: 'button',
+            ['aria-label']: this.element.textContent + ' dropdownbutton'
         });
         if (this.cssClass) { addClass([div], this.cssClass.split(' ')); }
     }

@@ -165,6 +165,12 @@ export class ContextMenu {
             case 'Manual':
                 this.parent.changeTaskMode(this.rowData);
                 break;
+            case 'Indent':
+                this.parent.indent();
+                break;
+            case 'Outdent':
+                this.parent.outdent();
+                break;
         }
         args.type = 'Content';
         args.rowData = this.rowData;
@@ -212,6 +218,10 @@ export class ContextMenu {
             args.type = 'Content';
             args.disableItems = this.disableItems;
             args.hideItems = this.hideItems;
+            if (args.rowData.level === 0 && this.parent.viewType === 'ResourceView') {
+                args.cancel = true;
+                return;
+            }
             let callBackPromise: Deferred = new Deferred();
             this.parent.trigger('contextMenuOpen', args, (args: CMenuOpenEventArgs) => {
                 callBackPromise.resolve(args);
@@ -307,6 +317,25 @@ export class ContextMenu {
                         item.items = subMenu;
                     }
                     break;
+                case 'Indent':
+                    let index : number = this.parent.selectedRowIndex;
+                    let isSelected: boolean = this.parent.selectionModule ? this.parent.selectionModule.selectedRowIndexes.length === 1 ||
+                        this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
+                    let prevRecord: IGanttData = this.parent.currentViewData[this.parent.selectionModule.getSelectedRowIndexes()[0] - 1];
+                    if (!this.parent.editSettings.allowEditing || index === 0 || index === -1 || !isSelected ||
+                        this.parent.viewType === 'ResourceView' || this.parent.currentViewData[index].level - prevRecord.level === 1) {
+                            this.hideItems.push(item.text);
+                    }
+                    break;
+                case 'Outdent':
+                    let ind: number = this.parent.selectionModule.getSelectedRowIndexes()[0];
+                    let isSelect: boolean = this.parent.selectionModule ? this.parent.selectionModule.selectedRowIndexes.length === 1 ||
+                        this.parent.selectionModule.getSelectedRowCellIndexes().length === 1 ? true : false : false;
+                    if (!this.parent.editSettings.allowEditing || ind === -1 || ind === 0 || !isSelect ||
+                        this.parent.viewType === 'ResourceView' || this.parent.currentViewData[ind].level === 0) {
+                        this.hideItems.push(item.text);
+                    }
+                    break;
             }
         }
     }
@@ -369,6 +398,14 @@ export class ContextMenu {
                 contentMenuItem = this.createItemModel(
                     cons.content, item, this.getLocale('taskInformation'), this.getIconCSS(cons.editIcon, iconCSS));
                 break;
+            case 'Indent':
+                contentMenuItem = this.createItemModel(
+                    cons.content, item, this.getLocale('indent'), this.getIconCSS(cons.indentIcon, iconCSS));
+                break;
+            case 'Outdent':
+                contentMenuItem = this.createItemModel(
+                    cons.content, item, this.getLocale('outdent'), this.getIconCSS(cons.outdentIcon, iconCSS));
+                break;
             case 'Save':
                 contentMenuItem = this.createItemModel(
                     cons.editIcon, item, this.getLocale('save'), this.getIconCSS(cons.saveIcon, iconCSS));
@@ -386,8 +423,10 @@ export class ContextMenu {
                     this.createItemModel(cons.content, 'Above', this.getLocale('above'), this.getIconCSS(cons.addAboveIcon, iconCSS)));
                 contentMenuItem.items.push(
                     this.createItemModel(cons.content, 'Below', this.getLocale('below'), this.getIconCSS(cons.addBelowIcon, iconCSS)));
+                    if (this.parent.viewType !== 'ResourceView') {
                 contentMenuItem.items.push(
                     this.createItemModel(cons.content, 'Child', this.getLocale('child')));
+                }
                 contentMenuItem.items.push(this.createItemModel(
                     cons.content, 'Milestone',
                     this.getLocale('milestone')));
@@ -463,7 +502,7 @@ export class ContextMenu {
         return ['AutoFitAll', 'AutoFit',
             'TaskInformation', 'DeleteTask', 'Save', 'Cancel',
             'SortAscending', 'SortDescending', 'Add',
-            'DeleteDependency', 'Convert', 'TaskMode'
+            'DeleteDependency', 'Convert', 'TaskMode', 'Indent', 'Outdent'
         ];
     }
     /**

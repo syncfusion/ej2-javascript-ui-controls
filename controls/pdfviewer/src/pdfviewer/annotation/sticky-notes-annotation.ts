@@ -488,6 +488,12 @@ export class StickyNotesAnnotation {
                 this.updateCollections(this.pdfViewer.annotationModule.freeTextAnnotationModule.updateFreeTextAnnotationCollections(pageAnnotations.freeTextAnnotation[i], pageNumber));
             }
         }
+        if (pageAnnotations.signatureAnnotation && pageAnnotations.signatureAnnotation.length !== 0) {
+            for (let i: number = 0; i < pageAnnotations.signatureAnnotation.length; i++) {
+                // tslint:disable-next-line:max-line-length
+                this.updateCollections(this.pdfViewerBase.signatureModule.updateSignatureCollections(pageAnnotations.signatureAnnotation[i], pageNumber), true);
+            }
+        }
         if (this.pdfViewer.toolbarModule) {
             this.renderAnnotationComments(pageCollections, pageNumber);
         }
@@ -502,20 +508,36 @@ export class StickyNotesAnnotation {
      * @private
      */
     // tslint:disable-next-line
-    public updateCollections(annotation: any): void {
+    public updateCollections(annotation: any, isSignature?: boolean): void {
         let isAdded: boolean = false;
         // tslint:disable-next-line
-        let collections: any = this.pdfViewer.annotationCollection;
+        let collections: any;
+        if (isSignature) {
+            collections = this.pdfViewer.signatureCollection;
+        } else {
+            collections = this.pdfViewer.annotationCollection;
+        }
         if (collections && annotation) {
             for (let i: number = 0; i < collections.length; i++) {
-                if (collections[i].annotationId === annotation.annotationId) {
-                    isAdded = true;
-                    break;
+                if (isSignature) {
+                    if (collections[i].signatureName === annotation.signatureName) {
+                        isAdded = true;
+                        break;
+                    }
+                } else {
+                    if (collections[i].annotationId === annotation.annotationId) {
+                        isAdded = true;
+                        break;
+                    }
                 }
             }
         }
         if (!isAdded && annotation) {
-            this.pdfViewer.annotationCollection.push(annotation);
+            if (isSignature) {
+                this.pdfViewer.signatureCollection.push(annotation);
+            } else {
+                this.pdfViewer.annotationCollection.push(annotation);
+            }
         }
 
     }

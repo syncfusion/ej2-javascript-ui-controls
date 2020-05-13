@@ -134,10 +134,11 @@ export class CartesianAxisLayoutPanel {
     public measureDefinition(definition: Row | Column, chart: Chart, size: Size, clipRect: Rect): void {
         let ele: number = 16; // scrollbar element height is 16.
         for (let axis of definition.axes) {
-            axis.scrollBarHeight = chart.scrollBarModule && chart.zoomSettings.enableScrollbar && chart.zoomModule.isZoomed
-                && (axis.zoomFactor < 1 || axis.zoomPosition > 0) ? ele : 0;
+            axis.scrollBarHeight = chart.scrollBarModule && chart.zoomModule && chart.zoomSettings.enableScrollbar &&
+                axis.enableScrollbarOnZooming && chart.zoomModule.isZoomed && (axis.zoomFactor < 1 || axis.zoomPosition > 0) ? ele : 0;
             axis.scrollBarHeight = chart.scrollBarModule && (chart.zoomModule && chart.zoomSettings.enableScrollbar &&
-                chart.zoomModule.isZoomed && (axis.zoomFactor < 1 || axis.zoomPosition > 0) || axis.scrollbarSettings.enable) ? ele : 0;
+                axis.enableScrollbarOnZooming && chart.zoomModule.isZoomed && (axis.zoomFactor < 1 || axis.zoomPosition > 0)
+                || axis.scrollbarSettings.enable) ? ele : 0;
             axis.getModule(chart);
             axis.baseModule.calculateRangeAndInterval(size, axis);
             definition.computeSize(axis, clipRect, axis.scrollBarHeight);
@@ -501,7 +502,8 @@ export class CartesianAxisLayoutPanel {
                     axisLineElement.appendChild(outsideElement);
                 }
             }
-            if (chart.scrollBarModule && (chart.zoomSettings.enableScrollbar || axis.scrollbarSettings.enable)) {
+            if (chart.scrollBarModule && ((chart.zoomSettings.enableScrollbar && axis.enableScrollbarOnZooming) ||
+                axis.scrollbarSettings.enable)) {
                 this.renderScrollbar(chart, axis);
             }
         }
@@ -1372,9 +1374,6 @@ export class CartesianAxisLayoutPanel {
      * @param index 
      */
     private findParentNode(elementId: string, label: Element, axis: Axis, index: number): Element {
-        if (axis.crossAt === null) {
-            return document.getElementById(elementId + 'AxisGroup' + index + 'Inside');
-        }
         if (document.getElementById(elementId + 'AxisGroup' + index + 'Inside').contains(document.getElementById(label.id))) {
             return document.getElementById(elementId + 'AxisGroup' + index + 'Inside');
         } else {

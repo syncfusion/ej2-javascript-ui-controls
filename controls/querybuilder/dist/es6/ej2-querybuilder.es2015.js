@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, classList, cldrData, closest, detach, extend, getComponent, getInstance, getValue, isBlazor, isNullOrUndefined, removeClass, rippleEffect } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, blazorTemplates, classList, cldrData, closest, compile, detach, extend, getComponent, getInstance, getValue, isBlazor, isNullOrUndefined, removeClass, resetBlazorTemplate, rippleEffect, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Button, RadioButton } from '@syncfusion/ej2-buttons';
 import { CheckBoxSelection, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
 import { DataManager, Deferred, Predicate, Query, UrlAdaptor } from '@syncfusion/ej2-data';
@@ -230,6 +230,9 @@ let QueryBuilder = class QueryBuilder extends Component {
             }
         }
     }
+    focusEventHandler(event) {
+        this.target = event.target;
+    }
     clickEventHandler(event) {
         let target = event.target;
         let args;
@@ -322,6 +325,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                 this.beforeSuccessCallBack(args, target);
             }
         }
+        this.target = target;
     }
     beforeSuccessCallBack(args, target) {
         if (!args.cancel) {
@@ -1468,6 +1472,8 @@ let QueryBuilder = class QueryBuilder extends Component {
         return 0;
     }
     renderValues(target, itemData, prevItemData, isRender, rule, tempRule, element) {
+        let filtElem = document.getElementById(element.id.replace('operatorkey', 'filterkey'));
+        let filtObj = getComponent(filtElem, 'dropdownlist');
         if (isRender) {
             let ddlObj = getComponent(target.querySelector('input'), 'dropdownlist');
             if (itemData.operators) {
@@ -1487,15 +1493,34 @@ let QueryBuilder = class QueryBuilder extends Component {
             let parentId = closest(target, '.e-rule-container').id;
             if (prevItemData && prevItemData.template) {
                 this.templateDestroy(prevItemData, parentId + '_valuekey0');
-                detach(target.nextElementSibling.querySelector('#' + parentId + '_valuekey0'));
+                if (isBlazor()) {
+                    if (!(prevItemData.field === itemData.field)) {
+                        blazorTemplates[this.element.id + prevItemData.field] = [];
+                        resetBlazorTemplate(this.element.id + prevItemData.field, 'Template');
+                        detach(target.nextElementSibling.querySelector('.e-blazor-template'));
+                    }
+                }
+                else {
+                    detach(target.nextElementSibling.querySelector('#' + parentId + '_valuekey0'));
+                }
             }
             if (isRender) {
-                this.destroyControls(target);
+                if (isBlazor() && !prevItemData.template) {
+                    this.destroyControls(target);
+                }
+                else if (!isBlazor()) {
+                    this.destroyControls(target);
+                }
             }
-            let filtElem = document.getElementById(element.id.replace('operatorkey', 'filterkey'));
-            let filtObj = getComponent(filtElem, 'dropdownlist');
             itemData.template = this.columns[filtObj.index].template;
             if (itemData.template) {
+                if (isBlazor() && itemData.field) {
+                    this.columnTemplateFn = this.templateParser(itemData.template);
+                    let templateID = this.element.id + itemData.field;
+                    let template = this.columnTemplateFn(itemData, this, 'Template', templateID);
+                    target.nextElementSibling.appendChild(template[0]);
+                    updateBlazorTemplate(templateID, 'Template', this.columns[filtObj.index], false);
+                }
                 addClass([target.nextElementSibling], 'e-template-value');
                 itemData.template = this.columns[filtObj.index].template;
                 let valElem;
@@ -1724,7 +1749,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                     selectedValue = selVal;
                 }
             }
-            if (target.className.indexOf('e-template') > -1) {
+            if (target.classList.contains('e-blazor-template') || target.className.indexOf('e-template') > -1) {
                 rule.rules[index].value = selectedValue;
                 eventsArgs = { groupID: groupElem.id, ruleID: ruleElem.id, value: rule.rules[index].value, type: 'value' };
                 if (!this.isImportRules) {
@@ -2054,6 +2079,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
         return rule;
     }
+    // tslint:disable-next-line:max-func-body-length
     onPropertyChanged(newProp, oldProp) {
         let properties = Object.keys(newProp);
         for (let prop of properties) {
@@ -2123,7 +2149,17 @@ let QueryBuilder = class QueryBuilder extends Component {
                     this.refresh();
                     break;
                 case 'columns':
-                    this.columns = newProp.columns;
+                    if (isBlazor()) {
+                        let columnIndex = Object.keys(newProp.columns).toString();
+                        let columnValue = newProp.columns[columnIndex].values;
+                        while (!this.target.classList.contains('e-blazor-template')) {
+                            this.target = this.target.parentElement;
+                        }
+                        this.updateRules(this.target, columnValue);
+                    }
+                    else {
+                        this.columns = newProp.columns;
+                    }
                     this.columnSort();
                     break;
                 case 'sortDirection':
@@ -2278,6 +2314,19 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
         this.renderComplete();
     }
+    templateParser(template) {
+        if (template) {
+            try {
+                if (document.querySelectorAll(template).length) {
+                    return compile(document.querySelector(template).innerHTML.trim());
+                }
+            }
+            catch (error) {
+                return compile(template);
+            }
+        }
+        return undefined;
+    }
     executeDataManager(query) {
         let data = this.dataManager.executeQuery(query);
         let deferred = new Deferred();
@@ -2301,11 +2350,15 @@ let QueryBuilder = class QueryBuilder extends Component {
     wireEvents() {
         let wrapper = this.getWrapper();
         EventHandler.add(wrapper, 'click', this.clickEventHandler, this);
+        EventHandler.add(wrapper, 'focusout', this.focusEventHandler, this);
+        EventHandler.add(wrapper, 'focusin', this.focusEventHandler, this);
         EventHandler.add(this.element, 'keydown', this.keyBoardHandler, this);
     }
     unWireEvents() {
         let wrapper = this.getWrapper();
         EventHandler.remove(wrapper, 'click', this.clickEventHandler);
+        EventHandler.remove(wrapper, 'focusout', this.focusEventHandler);
+        EventHandler.remove(wrapper, 'focusin', this.focusEventHandler);
         EventHandler.remove(this.element, 'keydown', this.keyBoardHandler);
     }
     getParentGroup(target, isParent) {

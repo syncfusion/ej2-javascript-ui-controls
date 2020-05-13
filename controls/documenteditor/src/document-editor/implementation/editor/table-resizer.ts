@@ -269,10 +269,10 @@ export class TableResizer {
         this.owner.documentHelper.layout.reLayoutTable(table);
         this.owner.editorModule.reLayout(this.owner.selection);
         if (row) {
-            this.currentResizingTable = row.ownerTable;
+            this.getRowReSizerPosition(undefined, this.startingPoint);
         }
-        if (this.currentResizingTable.childWidgets === undefined
-            || this.currentResizingTable.childWidgets[this.resizerPosition] === undefined) {
+        if (this.currentResizingTable && (this.currentResizingTable.childWidgets === undefined
+            || this.currentResizingTable.childWidgets[this.resizerPosition] === undefined)) {
             this.resizerPosition = -1;
         }
     }

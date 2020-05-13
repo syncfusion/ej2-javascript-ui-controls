@@ -531,14 +531,16 @@ export class Crud {
             endDate = new Date(+followEvent);
         } else {
             endDate = new Date(+followEvent[fields.startTime]);
+            let newRecurrenceRule: string = followEvent[fields.recurrenceRule] as string;
             let startDate: Date = parentEvent[fields.startTime] as Date;
             let ruleException: string =
                 (this.parent.currentAction === 'DeleteFollowingEvents') ? followEvent[fields.recurrenceException] as string : null;
-            let dateCollection: number[] = generate(startDate, recurrenceRule, ruleException, this.parent.activeViewOptions.firstDayOfWeek);
+            let dateCollection: number[] =
+                generate(startDate, newRecurrenceRule, ruleException, this.parent.activeViewOptions.firstDayOfWeek);
             let untilDate: Date = new Date(dateCollection.slice(-1)[0]);
             untilDate.setHours(endDate.getHours(), endDate.getMinutes(), endDate.getSeconds());
             endDate.setHours(startDate.getHours(), startDate.getMinutes(), startDate.getSeconds());
-            followEvent[fields.recurrenceRule] = this.getUpdatedRecurrenceRule(recurrenceRule, new Date(+untilDate), false);
+            followEvent[fields.recurrenceRule] = this.getUpdatedRecurrenceRule(newRecurrenceRule, new Date(+untilDate), false);
         }
         parentEvent[fields.recurrenceRule] =
             this.getUpdatedRecurrenceRule(recurrenceRule, util.addDays(new Date(endDate.getTime()), -1), true);

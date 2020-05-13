@@ -88,7 +88,10 @@ export class DrillThroughDialog {
                             'AddItem': addItems, 'RemoveItem': currModule.gridIndexObjects, 'ModifiedItem': currModule.gridData
                         }).then((data: any) => {
                             currModule.parent.updateBlazorData(data, currModule.parent);
+                            currModule.parent.allowServerDataBinding = false;
                             currModule.parent.setProperties({ pivotValues: currModule.parent.engineModule.pivotValues }, true);
+                            delete (currModule.parent as any).bulkChanges.pivotValues;
+                            currModule.parent.allowServerDataBinding = true;
                             currModule.isUpdated = false;
                             currModule.gridIndexObjects = {};
                         });

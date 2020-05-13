@@ -1023,7 +1023,11 @@ export class PivotChart {
         } else {
             (pivot.engineModule as PivotEngine).generateGridData(pivot.dataSourceSettings);
         }
+        pivot.parent.allowServerDataBinding = false;
         pivot.parent.setProperties({ pivotValues: pivot.engineModule.pivotValues }, true);
+        /* tslint:disable-next-line:no-any */
+        delete (pivot.parent as any).bulkChanges.pivotValues;
+        pivot.parent.allowServerDataBinding = true;
         pivot.parent.renderPivotGrid();
         //});
     }

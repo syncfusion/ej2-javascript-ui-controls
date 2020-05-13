@@ -1369,16 +1369,10 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                     this.validateStep();
                     break;
                 case 'showSpinButton':
-                    if (newProp.showSpinButton) {
-                        this.spinBtnCreation();
-                    } else {
-                        detach(this.spinUp);
-                        detach(this.spinDown);
-                    }
+                    this.updateSpinButton(newProp);
                     break;
                 case 'showClearButton':
-                        Input.setClearButton(newProp.showClearButton, this.element, this.inputWrapper, undefined, this.createElement);
-                        this.bindClearEvent();
+                    this.updateClearButton(newProp);
                     break;
                 case 'floatLabelType':
                     this.floatLabelType = newProp.floatLabelType;
@@ -1424,6 +1418,35 @@ export class NumericTextBox extends Component<HTMLInputElement> implements INoti
                 case 'decimals':
                     this.decimals = newProp.decimals;
                     this.updateValue(this.value);
+            }
+        }
+    }
+
+    private updateClearButton(newProp: NumericTextBoxModel): void {
+        if (isBlazor()) {
+            if (this.showClearButton) {
+                this.inputWrapper.clearButton = this.container.querySelector('.e-clear-icon');
+                Input.wireClearBtnEvents(this.element, this.inputWrapper.clearButton, this.inputWrapper.container);
+            }
+        } else {
+            Input.setClearButton(newProp.showClearButton, this.element, this.inputWrapper, undefined, this.createElement);
+            this.bindClearEvent();
+        }
+    }
+
+    private updateSpinButton(newProp: NumericTextBoxModel): void {
+        if (isBlazor()) {
+            if (this.showSpinButton) {
+                this.spinDown = this.container.querySelector('.' + SPINDOWN);
+                this.spinUp = this.container.querySelector('.' + SPINUP);
+                this.wireSpinBtnEvents();
+            }
+        } else {
+            if (newProp.showSpinButton) {
+                this.spinBtnCreation();
+            } else {
+                detach(this.spinUp);
+                detach(this.spinDown);
             }
         }
     }

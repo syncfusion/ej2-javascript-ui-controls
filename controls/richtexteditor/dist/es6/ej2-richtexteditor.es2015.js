@@ -9076,12 +9076,56 @@ class Lists {
             startNode.textContent = '';
         }
     }
+    backspaceList(e) {
+        let range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
+        let startNode = this.parent.domNode.getSelectedNode(range.startContainer, range.startOffset);
+        let endNode = this.parent.domNode.getSelectedNode(range.endContainer, range.endOffset);
+        startNode = startNode.nodeName === 'BR' ? startNode.parentElement : startNode;
+        endNode = endNode.nodeName === 'BR' ? endNode.parentElement : endNode;
+        if (startNode === endNode && !isNullOrUndefined(closest(startNode, 'li')) &&
+            startNode.textContent.trim() === '' && startNode.textContent.charCodeAt(0) === 65279) {
+            startNode.textContent = '';
+        }
+        if (startNode === endNode && startNode.textContent === '') {
+            if (startNode.closest('ul') || startNode.closest('ol')) {
+                let parentList = !isNullOrUndefined(startNode.closest('ul')) ? startNode.closest('ul') : startNode.closest('ol');
+                if (parentList.firstElementChild === startNode && (parentList.children[1].tagName === 'OL' ||
+                    parentList.children[1].tagName === 'UL')) {
+                    if (parentList.tagName === parentList.children[1].tagName) {
+                        while (parentList.children[1].lastChild) {
+                            this.parent.domNode.insertAfter(parentList.children[1].lastChild, parentList.children[1]);
+                        }
+                        detach(parentList.children[1]);
+                    }
+                    else {
+                        parentList.parentElement.insertBefore(parentList.children[1], parentList);
+                    }
+                }
+            }
+        }
+        else if (startNode.firstChild.nodeName === 'BR' && (startNode.childNodes[1].nodeName === 'UL' ||
+            startNode.childNodes[1].nodeName === 'OL')) {
+            let parentList = !isNullOrUndefined(startNode.closest('ul')) ? startNode.closest('ul') : startNode.closest('ol');
+            if (parentList.tagName === startNode.childNodes[1].nodeName) {
+                while (startNode.childNodes[1].lastChild) {
+                    this.parent.domNode.insertAfter(startNode.children[1].lastChild, startNode);
+                }
+                detach(startNode.childNodes[1]);
+            }
+            else {
+                parentList.parentElement.insertBefore(startNode.children[1], parentList);
+            }
+        }
+    }
     keyDownHandler(e) {
         if (e.event.which === 13) {
             this.enterList(e);
         }
         if (e.event.which === 32) {
             this.spaceList(e);
+        }
+        if (e.event.which === 8) {
+            this.backspaceList(e);
         }
         if (e.event.which === 9) {
             let range = this.parent.nodeSelection.getRange(this.parent.currentDocument);
@@ -9369,6 +9413,16 @@ class Lists {
                 nodesTemp.push(node);
             }
         }
+        let parentList = [];
+        for (let k = 0; k < nodesTemp.length; k++) {
+            let nodesTempListParent = nodesTemp[k].closest('LI');
+            if (!isNullOrUndefined(nodesTempListParent) && (nodesTemp.indexOf(nodesTempListParent.parentElement) < 0)) {
+                if (nodesTempListParent.parentElement.innerText === nodesTemp[k].innerText) {
+                    parentList.push(nodesTempListParent.parentElement);
+                }
+            }
+        }
+        nodesTemp = parentList.concat(nodesTemp);
         for (let j = nodesTemp.length - 1; j >= 0; j--) {
             let h = nodesTemp[j];
             let replace = '<' + tagName.toLowerCase() + ' '
@@ -11787,7 +11841,6 @@ class SelectionCommands {
         if (cursorFormat) {
             cursorNode = cursorNodes[0];
             InsertMethods.unwrap(cursorFormat);
-            cursorNodes[0] = InsertMethods.Wrap(cursorNodes[0], this.GetFormatNode(format, value));
         }
         else {
             cursorNode = this.getInsertNode(docElement, range, format, value).firstChild;
@@ -14569,9 +14622,29 @@ class PasteCleanup {
             },
             uploading: (e) => {
                 this.parent.trigger(imageUploading, e);
+                this.parent.inputElement.contentEditable = 'false';
             },
             failure: (e) => {
                 setTimeout(() => { this.uploadFailure(imgElem, uploadObj, popupObj, e); }, 900);
+            },
+            canceling: () => {
+                this.parent.inputElement.contentEditable = 'true';
+                if (imgElem.nextSibling.textContent === ' ') {
+                    detach(imgElem.nextSibling);
+                }
+                detach(imgElem);
+                popupObj.close();
+            },
+            selected: (e) => {
+                e.cancel = true;
+            },
+            removing: () => {
+                this.parent.inputElement.contentEditable = 'true';
+                if (imgElem.nextSibling.textContent === ' ') {
+                    detach(imgElem.nextSibling);
+                }
+                detach(imgElem);
+                popupObj.close();
             }
         });
         uploadObj.appendTo(popupObj.element.childNodes[0]);
@@ -14592,6 +14665,7 @@ class PasteCleanup {
         detach(popupObj.element.querySelector('.e-rte-dialog-upload .e-file-select-wrap'));
     }
     uploadFailure(imgElem, uploadObj, popupObj, e) {
+        this.parent.inputElement.contentEditable = 'true';
         detach(imgElem);
         if (popupObj) {
             popupObj.close();
@@ -14600,6 +14674,7 @@ class PasteCleanup {
         uploadObj.destroy();
     }
     popupClose(popupObj, uploadObj, imgElem, e) {
+        this.parent.inputElement.contentEditable = 'true';
         this.parent.trigger(imageUploadSuccess, e, (e) => {
             if (!isNullOrUndefined(this.parent.insertImageSettings.path)) {
                 let url = this.parent.insertImageSettings.path + e.file.name;
@@ -17324,7 +17399,8 @@ class Image {
                     e.preventDefault();
                 }
                 else {
-                    if (closest(e.target, '#' + this.parent.getID() + '_toolbar')) {
+                    if (closest(e.target, '#' + this.parent.getID() + '_toolbar') ||
+                        this.parent.inputElement.contentEditable === 'false') {
                         e.preventDefault();
                         return;
                     }
@@ -17466,6 +17542,7 @@ class Image {
      * Rendering uploader and popup for drag and drop
      */
     uploadMethod(dragEvent, imageElement) {
+        let isUploading = false;
         let proxy = this;
         let popupEle = this.parent.createElement('div');
         this.parent.element.appendChild(popupEle);
@@ -17501,20 +17578,33 @@ class Image {
                 saveUrl: this.parent.insertImageSettings.saveUrl,
             },
             cssClass: CLS_RTE_DIALOG_UPLOAD,
-            dropArea: this.parent.inputElement,
+            dropArea: this.parent.element,
             allowedExtensions: this.parent.insertImageSettings.allowedTypes.toString(),
             removing: () => {
+                this.parent.inputElement.contentEditable = 'true';
+                isUploading = false;
                 detach(imageElement);
                 this.popupObj.close();
             },
             canceling: () => {
+                this.parent.inputElement.contentEditable = 'true';
+                isUploading = false;
                 detach(imageElement);
                 this.popupObj.close();
             },
             uploading: (e) => {
+                isUploading = true;
                 this.parent.trigger(imageUploading, e);
+                this.parent.inputElement.contentEditable = 'false';
+            },
+            selected: (e) => {
+                if (isUploading) {
+                    e.cancel = true;
+                }
             },
             failure: (e) => {
+                isUploading = false;
+                this.parent.inputElement.contentEditable = 'true';
                 let args = {
                     args: dragEvent,
                     type: 'Images',
@@ -17524,6 +17614,8 @@ class Image {
                 setTimeout(() => { this.uploadFailure(imageElement, args, e); }, 900);
             },
             success: (e) => {
+                isUploading = false;
+                this.parent.inputElement.contentEditable = 'true';
                 let args = {
                     args: dragEvent,
                     type: 'Images',
@@ -19909,12 +20001,40 @@ let RichTextEditor = class RichTextEditor extends Component {
                 range.startContainer.textContent = range.startContainer.textContent.replace(regEx, '');
                 this.formatter.editorManager.nodeSelection.setCursorPoint(this.contentModule.getDocument(), range.startContainer, pointer);
             }
+            else if ((e.code === 'Backspace' && e.which === 8) &&
+                range.startContainer.textContent.charCodeAt(0) === 8203) {
+                let parentEle = range.startContainer.parentElement;
+                let index;
+                let i;
+                for (i = 0; i < parentEle.childNodes.length; i++) {
+                    if (parentEle.childNodes[i] === range.startContainer) {
+                        index = i;
+                    }
+                }
+                let bool = true;
+                let removeNodeArray = [];
+                for (i = index; i >= 0; i--) {
+                    if (parentEle.childNodes[i].textContent.charCodeAt(0) === 8203 && bool) {
+                        removeNodeArray.push(i);
+                    }
+                    else {
+                        bool = false;
+                    }
+                }
+                if (removeNodeArray.length > 0) {
+                    for (i = removeNodeArray.length - 1; i > 0; i--) {
+                        parentEle.childNodes[removeNodeArray[i]].textContent = '';
+                    }
+                }
+                this.formatter.editorManager.nodeSelection.setCursorPoint(this.contentModule.getDocument(), range.startContainer, range.startOffset);
+            }
         }
         if (this.formatter.getUndoRedoStack().length === 0) {
             this.formatter.saveData();
         }
         if (e.action !== 'insert-link' &&
-            (e.action && e.action !== 'paste' || e.which === 9)) {
+            (e.action && e.action !== 'paste' || e.which === 9 ||
+                (e.code === 'Backspace' && e.which === 8))) {
             this.formatter.process(this, null, e);
             switch (e.action) {
                 case 'toolbar-focus':
@@ -20057,7 +20177,8 @@ let RichTextEditor = class RichTextEditor extends Component {
             let pastedContentLength = (isNullOrUndefined(e) || isNullOrUndefined(e.clipboardData))
                 ? 0 : e.clipboardData.getData('text/plain').length;
             let totalLength = (currentLength - selectionLength) + pastedContentLength;
-            if (!pasteArgs.cancel && (this.maxLength === -1 || totalLength < this.maxLength)) {
+            if (!pasteArgs.cancel && this.inputElement.contentEditable === 'true' &&
+                (this.maxLength === -1 || totalLength < this.maxLength)) {
                 if (!isNullOrUndefined(this.pasteCleanupModule)) {
                     this.notify(pasteClean, { args: e });
                 }

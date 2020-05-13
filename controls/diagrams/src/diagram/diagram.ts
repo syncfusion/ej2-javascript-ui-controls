@@ -8633,6 +8633,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                                         group.height = (newNode.shape as SwimLane).lanes[0].height;
                                         (group as Node).previewSize = (newNode as Node).previewSize;
                                         (group as Node).dragSize = (newNode as Node).dragSize;
+                                        (group as Node).addInfo = (newNode as Node).addInfo;
                                         newNode = this.add(group) as Node;
                                         this.diagramActions &= ~DiagramAction.PreventCollectionChangeOnDragOver;
                                     }

@@ -27,12 +27,14 @@ function clicked(e: AccordionClickArgs): void {
   if (ele.querySelectorAll('.e-accordion').length > 0) {
     return;
   }
-  nestAcrdn_musNew = new Accordion({
-    items: [
-      { header: 'New Track1' },
-      { header: 'New Track2' }
-    ]
-  }, '#nested_musicNew');
+  if (!document.getElementById("nested_musicNew").classList.contains("e-accordion")) {
+    nestAcrdn_musNew = new Accordion({
+      items: [
+        { header: 'New Track1' },
+        { header: 'New Track2' }
+      ]
+    }, '#nested_musicNew');
+  }
   nestedAcrdn_musOld = new Accordion({
      items: [
       { header: 'Old Track1' },

@@ -7,11 +7,12 @@ import { SvgRenderer } from '@syncfusion/ej2-svg-base';
 import { Maps, FontModel, BorderModel, LayerSettings, ProjectionType, ISelectionEventArgs, itemSelection } from '../../index';
 import { animationComplete, IAnimationCompleteEventArgs, Alignment, LayerSettingsModel } from '../index';
 import {
-    MarkerType, IShapeSelectedEventArgs, ITouches, IShapes, SelectionSettingsModel, HighlightSettingsModel,
+    MarkerType, IShapeSelectedEventArgs, ITouches, IShapes, SelectionSettingsModel,
     MarkerClusterSettingsModel, IMarkerRenderingEventArgs, MarkerSettings, markerClusterRendering,
     IMarkerClusterRenderingEventArgs, MarkerClusterData
 } from '../index';
 import { CenterPositionModel, ConnectorLineSettingsModel, MarkerSettingsModel } from '../model/base-model';
+import { ExportType } from '../utils/enum';
 
 /**
  * Maps internal use of `Size` type
@@ -244,6 +245,24 @@ export function calculateBound(value: number, min: number, max: number): number 
     return value;
 }
 
+ /**
+  * To trigger the download element
+  * @param fileName 
+  * @param type 
+  * @param url 
+  */
+  export function triggerDownload(fileName: string, type: ExportType, url: string, isDownload: boolean): void {
+        createElement('a', {
+            attrs: {
+                'download': fileName + '.' + (type as string).toLocaleLowerCase(),
+                'href': url
+            }
+        }).dispatchEvent(new MouseEvent(isDownload ? 'click' : 'move', {
+            view: window,
+            bubbles: false,
+            cancelable: true
+        }));
+    }
 /**
  * Map internal class for point
  */
@@ -1876,10 +1895,21 @@ export function getShapeData(targetId: string, map: Maps): { shapeData: object, 
  * @private
  */
 export function triggerShapeEvent(
-    targetId: string, selection: SelectionSettingsModel | HighlightSettingsModel, maps: Maps, eventName: string
+  targetId: string, selection: SelectionSettingsModel, maps: Maps, eventName: string
 ): IShapeSelectedEventArgs {
-    let shape: { shapeData: object, data: object } = getShapeData(targetId, maps);
-    let eventArgs: IShapeSelectedEventArgs = {
+  let shape: { shapeData: object, data: object } = getShapeData(targetId, maps);
+  let eventArgs: IShapeSelectedEventArgs = (selection.enableMultiSelect) ? {
+      cancel: false,
+      name: eventName,
+      fill: selection.fill,
+      opacity: selection.opacity,
+      border: selection.border,
+      shapeData: shape.shapeData,
+      data: shape.data,
+      target: targetId,
+      maps: maps,
+      shapeDataCollection: maps.shapeSelectionItem
+  } : {
         cancel: false,
         name: eventName,
         fill: selection.fill,
@@ -1888,16 +1918,16 @@ export function triggerShapeEvent(
         shapeData: shape.shapeData,
         data: shape.data,
         target: targetId,
-        maps: maps,
-        shapeDataCollection: maps.shapeSelectionItem
+        maps: maps
     };
-    if (maps.isBlazor) {
-        const { maps, shapeData, ...blazorEventArgs }: IShapeSelectedEventArgs = eventArgs;
-        eventArgs = blazorEventArgs;
-    }
-    maps.trigger(eventName, eventArgs);
-    return eventArgs;
+  if (maps.isBlazor) {
+      const { maps, shapeData, ...blazorEventArgs }: IShapeSelectedEventArgs = eventArgs;
+      eventArgs = blazorEventArgs;
+  }
+  maps.trigger(eventName, eventArgs);
+  return eventArgs;
 }
+
 /**
  * Function to get elements using class name
  */

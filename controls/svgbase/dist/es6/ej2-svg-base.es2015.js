@@ -168,7 +168,7 @@ class SvgRenderer {
      * @param {TextAttributes} options - Options needed to draw a text in SVG
      * @return {Element}
      */
-    createText(options, label, transX, transY) {
+    createText(options, label, transX, transY, dy, isTSpan) {
         let text = document.createElementNS(this.svgLink, 'text');
         text = this.setElementAttributes(options, text);
         if (!isNullOrUndefined(label)) {
@@ -601,7 +601,7 @@ class CanvasRenderer {
      * @param {string} label - Specifies the text which has to be drawn on the canvas
      * @return {void}
      */
-    createText(options, label, transX, transY) {
+    createText(options, label, transX, transY, dy, isTSpan) {
         let fontWeight = this.getOptionValue(options, 'font-weight');
         if (!isNullOrUndefined(fontWeight) && fontWeight.toLowerCase() === 'regular') {
             fontWeight = 'normal';
@@ -612,6 +612,7 @@ class CanvasRenderer {
         let font = (fontStyle + ' ' + fontWeight + ' ' + fontSize + ' ' + fontFamily);
         let anchor = this.getOptionValue(options, 'text-anchor');
         let opacity = options.opacity !== undefined ? options.opacity : 1;
+        let rotation = isNullOrUndefined(options.labelRotation) ? 0 : options.labelRotation;
         if (anchor === 'middle') {
             anchor = 'center';
         }
@@ -623,10 +624,12 @@ class CanvasRenderer {
         if (options.baseline) {
             this.ctx.textBaseline = options.baseline;
         }
-        let txtlngth = 0;
-        this.ctx.translate(options.x + (txtlngth / 2) + (transX ? transX : 0), options.y + (transY ? transY : 0));
-        this.ctx.rotate(options.labelRotation * Math.PI / 180);
-        this.ctx.fillText(label, 0, 0);
+        if (!isTSpan) {
+            let txtlngth = 0;
+            this.ctx.translate(options.x + (txtlngth / 2) + (transX ? transX : 0), options.y + (transY ? transY : 0));
+            this.ctx.rotate(options.labelRotation * Math.PI / 180);
+        }
+        this.ctx.fillText(label, isTSpan ? options.x : 0, isTSpan ? dy : 0);
         this.ctx.restore();
         return this.canvasObj;
     }
@@ -1526,6 +1529,8 @@ let Tooltip = class Tooltip extends Component {
         let tspanOption;
         this.findFormattedText();
         let isHeader;
+        let isRtlEnabled = document.body.getAttribute('dir') === 'rtl';
+        let anchor = isRtlEnabled ? 'end' : 'start';
         this.leftSpace = this.areaBounds.x + this.location.x;
         this.rightSpace = (this.areaBounds.x + this.areaBounds.width) - this.leftSpace;
         let headerContent = this.header.replace(/<b>/g, '').replace(/<\/b>/g, '').trim();
@@ -1552,7 +1557,7 @@ let Tooltip = class Tooltip extends Component {
             removeElement(this.element.id + '_trackball_group');
             removeElement(this.element.id + 'SVG_tooltip_definition');
         }
-        let options = new TextOption(this.element.id + '_text', this.marginX * 2, (this.marginY * 2 + this.padding * 2 + (this.marginY === 2 ? 3 : 0)), 'start', '');
+        let options = new TextOption(this.element.id + '_text', this.marginX * 2, (this.marginY * 2 + this.padding * 2 + (this.marginY === 2 ? 3 : 0)), anchor, '');
         let parentElement = textElement(options, font, null, groupElement);
         let withoutHeader = this.formattedText.length === 1 && this.formattedText[0].indexOf(' : <b>') > -1;
         isHeader = this.header !== '';

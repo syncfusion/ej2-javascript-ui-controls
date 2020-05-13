@@ -19,7 +19,7 @@ export type CornerType =
     'Round';
 
 /** 
- * Corner type
+ * ProgressTheme
  */
 export type ProgressTheme =
     /** Material */

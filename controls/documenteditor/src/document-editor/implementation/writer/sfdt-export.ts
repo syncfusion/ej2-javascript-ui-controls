@@ -444,15 +444,15 @@ export class SfdtExport {
             inline.lineFormat.lineFormatType = element.lineFormat.lineFormatType;
             inline.lineFormat.color = element.lineFormat.color;
             inline.lineFormat.weight = element.lineFormat.weight;
-            inline.lineFormat.dashStyle = element.lineFormat.dashStyle;
+            inline.lineFormat.lineStyle = element.lineFormat.dashStyle;
         }
         if (element.textFrame) {
             inline.textFrame = {};
             inline.textFrame.textVerticalAlignment = element.textFrame.textVerticalAlignment;
-            inline.textFrame.marginLeft = HelperMethods.convertPixelToPoint(element.textFrame.marginLeft);
-            inline.textFrame.marginRight = HelperMethods.convertPixelToPoint(element.textFrame.marginRight);
-            inline.textFrame.marginTop = HelperMethods.convertPixelToPoint(element.textFrame.marginTop);
-            inline.textFrame.marginBottom = HelperMethods.convertPixelToPoint(element.textFrame.marginBottom);
+            inline.textFrame.leftMargin = HelperMethods.convertPixelToPoint(element.textFrame.marginLeft);
+            inline.textFrame.rightMargin = HelperMethods.convertPixelToPoint(element.textFrame.marginRight);
+            inline.textFrame.topMargin = HelperMethods.convertPixelToPoint(element.textFrame.marginTop);
+            inline.textFrame.bottomMargin = HelperMethods.convertPixelToPoint(element.textFrame.marginBottom);
             inline.textFrame.blocks = [];
             for (let j: number = 0; j < element.textFrame.childWidgets.length; j++) {
                 let textFrameBlock: BlockWidget = element.textFrame.childWidgets[j] as BlockWidget;

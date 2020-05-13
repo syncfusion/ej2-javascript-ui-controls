@@ -764,6 +764,10 @@ var setInfiniteCache = 'set-infinite-cache';
 var initialCollapse = 'initial-collapse';
 /** @hidden */
 var getAggregateQuery = 'get-aggregate-query';
+/** @hidden */
+var closeFilterDialog = 'close-filter-dialog';
+/** @hidden */
+var columnChooserCancelBtnClick = 'columnChooserCancelBtnClick';
 
 /**
  * Defines types of Cell
@@ -1032,8 +1036,8 @@ var Data = /** @__PURE__ @class */ (function () {
         var needForeignKeySearch = false;
         if (this.parent.searchSettings.key.length) {
             needForeignKeySearch = this.parent.getForeignKeyColumns().some(function (col) { return fields.indexOf(col.field) > -1; });
-            if (needForeignKeySearch && !(this.dataManager.adaptor.getModulename &&
-                this.dataManager.adaptor.getModulename() === 'ODataV4Adaptor')) {
+            if (needForeignKeySearch && (this.dataManager.adaptor.getModuleName &&
+                this.dataManager.adaptor.getModuleName() === 'ODataV4Adaptor')) {
                 for (var i = 0; i < fields.length; i++) {
                     var column = this.getColumnByField(fields[i]);
                     if (column.isForeignColumn()) {
@@ -2473,8 +2477,11 @@ var ContentRender = /** @__PURE__ @class */ (function () {
         if (gObj.currentViewData.length === 0) {
             return;
         }
-        var dataSource = gObj.currentViewData;
+        var dataSource = this.currentMovableRows || gObj.currentViewData;
         var frag = document.createDocumentFragment();
+        if (!this.initialPageRecords) {
+            this.initialPageRecords = extend([], dataSource);
+        }
         var hdrfrag = document.createDocumentFragment();
         var columns = gObj.getColumns();
         var tr;
@@ -2580,8 +2587,8 @@ var ContentRender = /** @__PURE__ @class */ (function () {
             return;
         }
         if (this.parent.enableVirtualization && this.parent.getFrozenColumns()) {
-            if (this.parent.enableColumnVirtualization) {
-                if (args.requestType === 'virtualscroll' && args.virtualInfo.sentinelInfo.axis === 'X') {
+            if (this.parent.enableColumnVirtualization && args.requestType === 'virtualscroll') {
+                if (args.virtualInfo.sentinelInfo.axis === 'X') {
                     modelData = this.parent.contentModule.generateRows(dataSource, args);
                     args.renderMovableContent = true;
                 }
@@ -2669,21 +2676,31 @@ var ContentRender = /** @__PURE__ @class */ (function () {
                 }
             }
         }
-        if (gObj.frozenRows && args.requestType === 'virtualscroll' && args.virtualInfo.sentinelInfo.axis === 'X') {
+        var isVFFrozenOnly = gObj.frozenRows && !gObj.getFrozenColumns() && this.parent.enableVirtualization
+            && args.requestType === 'reorder';
+        if ((gObj.frozenRows && args.requestType === 'virtualscroll' && args.virtualInfo.sentinelInfo.axis === 'X') || isVFFrozenOnly) {
             var bIndex = args.virtualInfo.blockIndexes;
+            var page = args.virtualInfo.page;
             args.virtualInfo.blockIndexes = [1, 2];
+            if (isVFFrozenOnly) {
+                args.virtualInfo.page = 1;
+            }
+            var data = isVFFrozenOnly ? this.initialPageRecords : dataSource;
             var mhdrData = this.vgenerator
-                .generateRows(dataSource, args);
+                .generateRows(data, args);
             mhdrData.splice(this.parent.frozenRows);
             for (var i = 0; i < this.parent.frozenRows; i++) {
-                if (args.virtualInfo.columnIndexes[0] === 0) {
-                    mhdrData[i].cells.splice(0, this.parent.getFrozenColumns());
-                }
+                mhdrData[i].cells.splice(0, this.parent.getFrozenColumns());
                 tr = row.render(mhdrData[i], columns);
                 hdrfrag.appendChild(tr);
             }
             args.virtualInfo.blockIndexes = bIndex;
+            args.virtualInfo.page = page;
+            if (isVFFrozenOnly && args.virtualInfo.page === 1) {
+                modelData.splice(0, this.parent.frozenRows);
+            }
         }
+        this.virtualFrozenHdrRefresh(hdrfrag, modelData, row, args, dataSource, columns);
         for (var i = startIndex, len = modelData.length; i < len; i++) {
             if (!this.isAddRows) {
                 this.rows.push(modelData[i]);
@@ -2696,7 +2713,9 @@ var ContentRender = /** @__PURE__ @class */ (function () {
             }
             if (!gObj.rowTemplate) {
                 tr = row.render(modelData[i], columns);
-                if (gObj.frozenRows && i < gObj.frozenRows && args.requestType !== 'virtualscroll') {
+                var isVFreorder = gObj.enableVirtualization
+                    && (args.requestType === 'reorder' || args.requestType === 'refresh');
+                if (gObj.frozenRows && i < gObj.frozenRows && args.requestType !== 'virtualscroll' && !isVFreorder) {
                     hdrfrag.appendChild(tr);
                 }
                 else {
@@ -2749,7 +2768,7 @@ var ContentRender = /** @__PURE__ @class */ (function () {
             hdrTbody.innerHTML = '';
             hdrTbody.appendChild(hdrfrag);
         }
-        if (gObj.frozenRows && idx === 0 && cont.offsetHeight === Number(gObj.height)) {
+        if (!gObj.enableVirtualization && gObj.frozenRows && idx === 0 && cont.offsetHeight === Number(gObj.height)) {
             cont.style.height = (cont.offsetHeight - hdrTbody.offsetHeight) + 'px';
         }
         if (frzCols && idx === 0) {
@@ -2794,7 +2813,8 @@ var ContentRender = /** @__PURE__ @class */ (function () {
                 if (isVFTable) {
                     if (!args.renderMovableContent) {
                         _this.appendContent(fCont.querySelector('tbody'), frag, args);
-                        if (_this.parent.enableColumnVirtualization && mCont.scrollLeft > 0) {
+                        if (_this.parent.enableColumnVirtualization && args.requestType === 'virtualscroll'
+                            && mCont.scrollLeft > 0) {
                             _this.parent.setColumnIndexesInView(_this.viewColIndexes);
                             args.virtualInfo.columnIndexes = _this.viewColIndexes;
                         }
@@ -2832,6 +2852,28 @@ var ContentRender = /** @__PURE__ @class */ (function () {
     ContentRender.prototype.appendContent = function (tbody, frag, args) {
         tbody.appendChild(frag);
         this.getTable().appendChild(tbody);
+    };
+    ContentRender.prototype.getReorderedVFRows = function (args) {
+        return this.parent.contentModule.getReorderedFrozenRows(args);
+    };
+    ContentRender.prototype.virtualFrozenHdrRefresh = function (hdrfrag, modelData, row, args, dataSource, columns) {
+        if (this.parent.frozenRows && this.parent.getFrozenColumns() && this.parent.enableVirtualization
+            && (args.requestType === 'reorder' || args.requestType === 'refresh')) {
+            var tr = void 0;
+            this.currentMovableRows = dataSource;
+            var fhdrData = this.getReorderedVFRows(args);
+            for (var i = 0; i < fhdrData.length; i++) {
+                tr = row.render(fhdrData[i], columns);
+                hdrfrag.appendChild(tr);
+            }
+            if (args.virtualInfo.page === 1) {
+                modelData.splice(0, this.parent.frozenRows);
+            }
+            if (args.renderMovableContent) {
+                this.parent.currentViewData = this.currentMovableRows;
+                this.currentMovableRows = null;
+            }
+        }
     };
     /**
      * Get the content div element of grid
@@ -3015,7 +3057,8 @@ var ContentRender = /** @__PURE__ @class */ (function () {
     ContentRender.prototype.colGroupRefresh = function () {
         if (this.getColGroup()) {
             var colGroup = void 0;
-            if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns()) {
+            if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns()
+                && this.parent.contentModule.isXaxis()) {
                 colGroup = this.parent.getMovableVirtualHeader().querySelector('colgroup').cloneNode(true);
             }
             else {
@@ -3113,7 +3156,7 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
         this.notfrzIdx = 0;
         this.helper = function (e) {
             var gObj = _this.parent;
-            var target = e.sender.target;
+            var target = _this.draggable.currentStateTarget;
             var parentEle = parentsUntil(target, 'e-headercell');
             if (!(gObj.allowReordering || gObj.allowGrouping) || (!isNullOrUndefined(parentEle)
                 && parentEle.querySelectorAll('.e-checkselectall').length > 0)) {
@@ -3164,7 +3207,7 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
         this.dragStart = function (e) {
             var gObj = _this.parent;
             gObj.element.querySelector('.e-gridpopup').style.display = 'none';
-            gObj.notify(columnDragStart, { target: e.target, column: _this.column, event: e.event });
+            gObj.notify(columnDragStart, { target: _this.draggable.currentStateTarget, column: _this.column, event: e.event });
             if (isBlazor()) {
                 e.bindEvents(e.dragElement);
             }
@@ -3396,6 +3439,11 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
         var cols = this.parent.getColumns();
         var col;
         var indexes = this.parent.getColumnIndexesInView();
+        if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns()
+            && this.parent.contentModule.isXaxis()) {
+            cols = extend([], this.parent.getColumns());
+            cols.splice(0, this.parent.getFrozenColumns());
+        }
         colGroup.id = this.parent.element.id + 'colGroup';
         if (this.parent.allowGrouping) {
             for (var i = 0, len = this.parent.groupSettings.columns.length; i < len; i++) {
@@ -3474,8 +3522,8 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
             left = this.parent.getContent().querySelector('.e-movablecontent').scrollLeft;
         }
         if (!cols.columns) {
-            if (left && left > 0 && this.parent.enableColumnVirtualization
-                && this.parent.inViewIndexes[0] !== 0) {
+            if (left && left > 0 && this.parent.contentModule.isXaxis()
+                && this.parent.inViewIndexes[0] !== 0 && this.frzIdx > this.parent.getFrozenColumns()) {
                 rows[index].cells.push(this.generateCell(cols, CellType.Header, this.colDepth - index, (isFirstObj ? '' : (isFirstCol ? 'e-firstcell' : '')) + lastCol, index, this.parent.getColumnIndexByUid(cols.uid)));
             }
             else {
@@ -3649,8 +3697,11 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
         var setFrozenTable = isBlazor() && this.parent.isServerRendered && this.parent.frozenRows !== 0 && frzCols !== 0;
         var headerDiv = this.getPanel();
         this.toggleStackClass(headerDiv);
-        var table = (this.parent.enableColumnVirtualization && frzCols) || this.freezeReorder
-            ? this.headerPanel.querySelector('.e-movableheader').querySelector('.e-table') : this.getTable();
+        var table = this.freezeReorder ? this.headerPanel.querySelector('.e-movableheader').querySelector('.e-table')
+            : this.getTable();
+        if (isVFTable) {
+            table = this.parent.contentModule.getVirtualFreezeHeader();
+        }
         if (setFrozenTable && !isVFTable) {
             table = this.freezeReorder ? this.headerPanel.querySelector('.e-movableheader').querySelector('.e-table') :
                 this.headerPanel.querySelector('.e-frozenheader').querySelector('.e-table');
@@ -3680,7 +3731,7 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
             this.parent.notify(colGroupRefresh, {});
             this.widthService.setWidthToColumns();
             this.parent.updateDefaultCursor();
-            if (!frzCols) {
+            if (!frzCols || (this.parent.enableColumnVirtualization && frzCols)) {
                 this.initializeHeaderDrag();
             }
             var rows = [].slice.call(headerDiv.querySelectorAll('tr.e-columnheader'));
@@ -3693,6 +3744,9 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
             }
             if (!frzCols) {
                 this.parent.notify(headerRefreshed, { rows: this.rows, args: { isFrozen: this.parent.getFrozenColumns() !== 0 } });
+            }
+            if (this.parent.enableColumnVirtualization && parentsUntil(table, 'e-movableheader')) {
+                this.parent.notify(headerRefreshed, { rows: this.rows, args: { isFrozen: false, isXaxis: true } });
             }
             if (this.parent.allowTextWrap && this.parent.textWrapSettings.wrapMode === 'Header') {
                 wrap(rows, true);
@@ -3730,18 +3784,15 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
         if (!(this.parent.allowReordering || (this.parent.allowGrouping && this.parent.groupSettings.showDropArea))) {
             return;
         }
-        var headerRows = [].slice.call(gObj.getHeaderContent().querySelectorAll('.e-columnheader'));
-        for (var i = 0, len = headerRows.length; i < len; i++) {
-            var drag = new Draggable(headerRows[i], {
-                dragTarget: '.e-headercell',
-                distance: 5,
-                helper: this.helper,
-                dragStart: this.dragStart,
-                drag: this.drag,
-                dragStop: this.dragStop,
-                abort: '.e-rhandler'
-            });
-        }
+        this.draggable = new Draggable(gObj.getHeaderContent(), {
+            dragTarget: '.e-headercell',
+            distance: 5,
+            helper: this.helper,
+            dragStart: this.dragStart,
+            drag: this.drag,
+            dragStop: this.dragStop,
+            abort: '.e-rhandler'
+        });
     };
     HeaderRender.prototype.initializeHeaderDrop = function () {
         var gObj = this.parent;
@@ -4776,7 +4827,14 @@ var Render = /** @__PURE__ @class */ (function () {
             if (args === void 0) { args = { requestType: 'refresh' }; }
             if (args.requestType === 'delete' && isBlazor() && !gObj.isJsComponent) {
                 var data = 'data';
-                args[data] = gObj.getSelectedRecords();
+                if (isNullOrUndefined(gObj.commandDelIndex)) {
+                    args[data] = gObj.getSelectedRecords();
+                }
+                else {
+                    var tempSelectedRecord = args[data];
+                    args[data] = {};
+                    args[data][0] = tempSelectedRecord;
+                }
             }
             if (args.cancel) {
                 gObj.notify(cancelBegin, args);
@@ -5521,7 +5579,8 @@ var ColumnWidthService = /** @__PURE__ @class */ (function () {
         if (frzCols && index >= frzCols && mHdr && mHdr.querySelector('colgroup')) {
             headerCol = mHdr.querySelector('colgroup').children[index - frzCols];
         }
-        else if (this.parent.enableColumnVirtualization && frzCols && mHdr.scrollLeft > 0) {
+        else if (this.parent.enableColumnVirtualization && frzCols && this.parent.contentModule.isXaxis()
+            && mHdr.scrollLeft > 0) {
             var colGroup = mHdr.querySelector('colgroup');
             headerCol = colGroup.children[(colGroup.children.length - 1) - index];
         }
@@ -5539,7 +5598,8 @@ var ColumnWidthService = /** @__PURE__ @class */ (function () {
             contentCol = this.parent.getContent().querySelector('.e-movablecontent')
                 .querySelector('colgroup').children[index - frzCols];
         }
-        else if (this.parent.enableColumnVirtualization && frzCols && mCont.scrollLeft > 0) {
+        else if (this.parent.enableColumnVirtualization && frzCols && this.parent.contentModule.isXaxis()
+            && mCont.scrollLeft > 0) {
             var colGroup = this.parent.getContent().querySelector('.e-movablecontent')
                 .querySelector('colgroup');
             contentCol = colGroup.children[(colGroup.children.length - 1) - index];
@@ -6871,6 +6931,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.disableUI = false;
         this.isPersisted = false;
         this.cmdKeyPressed = false;
+        this.cellselected = false;
         /**
          * @hidden
          */
@@ -6986,8 +7047,10 @@ var Selection = /** @__PURE__ @class */ (function () {
         var isRemoved = false;
         if (gObj.enableVirtualization && index > -1) {
             this.parent.notify(selectVirtualRow, { selectedIndex: index });
-            if (selectedRow && gObj.getRowObjectFromUID(selectedRow.getAttribute('data-uid'))) {
-                selectData = gObj.getRowObjectFromUID(selectedRow.getAttribute('data-uid')).data;
+            var frozenData = gObj.getFrozenColumns() ? gObj.contentModule.getRowObjectByIndex(index)
+                : null;
+            if (selectedRow && (gObj.getRowObjectFromUID(selectedRow.getAttribute('data-uid')) || frozenData)) {
+                selectData = frozenData ? frozenData : gObj.getRowObjectFromUID(selectedRow.getAttribute('data-uid')).data;
             }
             else {
                 var prevSelectedData = this.parent.getSelectedRecords();
@@ -7682,6 +7745,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                 args[previousRowCellIndex] = this.prevECIdxs;
             }
             this.parent.trigger(cellSelecting, this.fDataUpdate(args), this.successCallBack(args, isToggle, cellIndex, selectedCell, selectedData));
+            this.cellselected = true;
         }
         else {
             this.successCallBack(args, isToggle, cellIndex, selectedCell, selectedData)(args);
@@ -7819,7 +7883,10 @@ var Selection = /** @__PURE__ @class */ (function () {
             else {
                 cellSelectedArgs = { data: selectedData, cellIndex: edIndex, selectedRowCellIndex: _this.selectedRowCellIndexes };
             }
-            _this.onActionComplete(cellSelectedArgs, cellSelected);
+            if (!_this.isDragged) {
+                _this.onActionComplete(cellSelectedArgs, cellSelected);
+                _this.cellselected = true;
+            }
             _this.updateCellProps(stIndex, edIndex);
         });
     };
@@ -8005,6 +8072,7 @@ var Selection = /** @__PURE__ @class */ (function () {
                     cellSelectedArgs = { data: selectedData, cellIndex: cellIndexes[0], selectedRowCellIndex: this.selectedRowCellIndexes };
                 }
                 this.onActionComplete(cellSelectedArgs, cellSelected);
+                this.cellselected = true;
             }
             this.updateCellProps(cellIndex, cellIndex);
         }
@@ -8147,7 +8215,9 @@ var Selection = /** @__PURE__ @class */ (function () {
             }
             this.selectedRowCellIndexes = [];
             this.isCellSelected = false;
-            this.cellDeselect(cellDeselected, rowCell, data, cells, foreignKeyData$$1);
+            if (!this.isDragged && this.cellselected) {
+                this.cellDeselect(cellDeselected, rowCell, data, cells, foreignKeyData$$1);
+            }
         }
     };
     Selection.prototype.getSelectedCellsElement = function () {
@@ -8490,6 +8560,14 @@ var Selection = /** @__PURE__ @class */ (function () {
         else {
             this.mUPTarget = null;
         }
+        if (this.isDragged) {
+            var target = e.target;
+            var rowIndex = parseInt(target.parentElement.getAttribute('aria-rowindex'), 10);
+            var cellIndex = parseInt(target.getAttribute('aria-colindex'), 10);
+            this.isDragged = false;
+            this.clearCellSelection();
+            this.selectCellsByRange({ rowIndex: this.startDIndex, cellIndex: this.startDCellIndex }, { rowIndex: rowIndex, cellIndex: cellIndex });
+        }
         this.isDragged = false;
         this.updateAutoFillPosition();
         if (this.isAutoFillSel) {
@@ -8701,6 +8779,7 @@ var Selection = /** @__PURE__ @class */ (function () {
     };
     Selection.prototype.render = function (e) {
         EventHandler.add(this.parent.getContent(), 'mousedown', this.mouseDownHandler, this);
+        this.initPerisistSelection();
     };
     Selection.prototype.onPropertyChanged = function (e) {
         if (e.module !== this.getModuleName()) {
@@ -8986,6 +9065,9 @@ var Selection = /** @__PURE__ @class */ (function () {
             state = this.getCurrentBatchRecordChanges().some(function (data) {
                 return data[_this.primaryKey] in _this.selectedRowState;
             });
+        }
+        if (this.parent.isPersistSelection) {
+            this.totalRecordsCount = this.parent.pageSettings.totalRecordsCount;
         }
         this.checkSelectAllAction(!state);
         if (isBlazor() && this.parent.isServerRendered && this.parent.enableVirtualization) {
@@ -9364,6 +9446,7 @@ var Selection = /** @__PURE__ @class */ (function () {
             case 'upArrow':
             case 'enter':
             case 'shiftEnter':
+                this.target = e.element;
                 this.applyDownUpKey(rowIndex, cellIndex);
                 break;
             case 'rightArrow':
@@ -9917,7 +10000,7 @@ var Scroll = /** @__PURE__ @class */ (function () {
     Scroll.prototype.setHeight = function () {
         var mHdrHeight = 0;
         var content = this.parent.getContent().querySelector('.e-content');
-        if (this.parent.frozenRows && this.parent.height !== 'auto') {
+        if (!this.parent.enableVirtualization && this.parent.frozenRows && this.parent.height !== 'auto') {
             var tbody = this.parent.getHeaderContent().querySelector('tbody');
             mHdrHeight = tbody ? tbody.offsetHeight : 0;
             content.style.height = formatUnit(this.parent.height - mHdrHeight);
@@ -10025,6 +10108,7 @@ var Scroll = /** @__PURE__ @class */ (function () {
                 _this.previousValues.top = !isHeader ? _this.previousValues.top : target.scrollTop;
                 return;
             }
+            _this.parent.notify(closeFilterDialog, e);
             element.scrollLeft = left;
             if (isFooter) {
                 _this.header.scrollLeft = left;
@@ -11433,6 +11517,8 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         /** @hidden */
         _this.isAutoGen = false;
         _this.mediaBindInstance = {};
+        /** @hidden */
+        _this.commandDelIndex = undefined;
         // enable/disable logger for MVC & Core
         _this.enableLogger = true;
         _this.needsID = true;
@@ -12283,6 +12369,10 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         var headerCells = [].slice.call(this.getHeaderContent().querySelectorAll('.e-headercell:not(.e-stackedheadercell)'));
         var stdHdrCell = [].slice.call(this.getHeaderContent().querySelectorAll('.e-stackedheadercell'));
         var cols = this.getColumns();
+        if (this.enableColumnVirtualization && this.getFrozenColumns()) {
+            var cells = this.contentModule.getHeaderCells();
+            headerCells = cells.length ? cells : headerCells;
+        }
         for (var i = 0; i < headerCells.length; i++) {
             var cell = headerCells[i];
             if (this.allowGrouping || this.allowReordering || this.allowSorting) {
@@ -12365,6 +12455,11 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
         }
         var columns = vLen === 0 ? this.columnModel :
             this.columnModel.slice(inview[0], inview[vLen - 1] + 1);
+        if (this.contentModule && this.enableColumnVirtualization && this.getFrozenColumns() && inview.length
+            && inview[0] > 0) {
+            var frozenCols = this.contentModule.ensureFrozenCols(columns);
+            columns = frozenCols;
+        }
         return columns;
     };
     /**
@@ -14857,6 +14952,23 @@ var Grid = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    /**
+     * @hidden
+     */
+    Grid.prototype.resetFilterDlgPosition = function (field) {
+        var header = this.getColumnHeaderByField(field);
+        if (header) {
+            var target = header.querySelector('.e-filtermenudiv');
+            var filterDlg = this.element.querySelector('.e-filter-popup');
+            if (target && filterDlg) {
+                var gClient = this.element.getBoundingClientRect();
+                var fClient = target.getBoundingClientRect();
+                if (filterDlg) {
+                    filterDlg.style.left = (fClient.right - gClient.left).toString() + 'px';
+                }
+            }
+        }
+    };
     var Grid_1;
     __decorate$1([
         Property()
@@ -15334,6 +15446,11 @@ var Print = /** @__PURE__ @class */ (function () {
         });
         document.body.appendChild(element);
         var printGrid = new Grid(getPrintGridModel(gObj, gObj.hierarchyPrintMode));
+        /* tslint:disable-next-line:no-any */
+        if (this.parent.isAngular) {
+            /* tslint:disable-next-line:no-any */
+            printGrid.viewContainerRef = this.parent.viewContainerRef;
+        }
         /* tslint:disable:no-empty */
         printGrid.load = function () { };
         printGrid.query = gObj.getQuery().clone();
@@ -15346,8 +15463,8 @@ var Print = /** @__PURE__ @class */ (function () {
         }
         gObj.notify(printGridInit, { element: element, printgrid: printGrid });
         this.parent.log('exporting_begin', this.getModuleName());
-        printGrid.appendTo(element);
         printGrid.registeredTemplate = this.parent.registeredTemplate;
+        printGrid.appendTo(element);
         printGrid.trigger = gObj.trigger;
     };
     Print.prototype.contentReady = function () {
@@ -20945,6 +21062,7 @@ var Filter = /** @__PURE__ @class */ (function () {
         this.parent.on(filterOpen, this.columnMenuFilter, this);
         this.parent.on(click, this.filterIconClickHandler, this);
         this.parent.on('persist-data-changed', this.initialEnd, this);
+        this.parent.on(closeFilterDialog, this.clickHandler, this);
     };
     /**
      * @hidden
@@ -20963,6 +21081,7 @@ var Filter = /** @__PURE__ @class */ (function () {
         this.parent.off(filterOpen, this.columnMenuFilter);
         this.parent.off(filterMenuClose, this.filterMenuClose);
         this.parent.off(click, this.filterIconClickHandler);
+        this.parent.off(closeFilterDialog, this.clickHandler);
     };
     Filter.prototype.filterMenuClose = function (args) {
         this.fltrDlgDetails.isOpen = false;
@@ -22453,9 +22572,10 @@ var Reorder = /** @__PURE__ @class */ (function () {
     Reorder.prototype.chkDropPosition = function (srcElem, destElem) {
         var col = this.parent.getColumnByUid(destElem.firstElementChild.getAttribute('e-mappinguid'));
         var bool = col ? !col.lockColumn : true;
-        return (srcElem.parentElement.isEqualNode(destElem.parentElement) || (this.parent.getFrozenColumns()
-            && Array.prototype.indexOf.call(closest(srcElem, 'thead').children, srcElem.parentElement)
-                === Array.prototype.indexOf.call(closest(destElem, 'thead').children, destElem.parentElement)))
+        return ((srcElem.parentElement.isEqualNode(destElem.parentElement) || this.parent.enableColumnVirtualization)
+            || (this.parent.getFrozenColumns()
+                && Array.prototype.indexOf.call(closest(srcElem, 'thead').children, srcElem.parentElement)
+                    === Array.prototype.indexOf.call(closest(destElem, 'thead').children, destElem.parentElement)))
             && this.targetParentContainerIndex(srcElem, destElem) > -1 && bool;
     };
     Reorder.prototype.chkDropAllCols = function (srcElem, destElem) {
@@ -22524,7 +22644,7 @@ var Reorder = /** @__PURE__ @class */ (function () {
             if (this.parent.enableColumnVirtualization) {
                 var columns = this.parent.columns;
                 var sourceUid_1 = this.element.querySelector('.e-headercelldiv').getAttribute('e-mappinguid');
-                var col = this.parent.getColumns(true).filter(function (col) { return col.uid === sourceUid_1; });
+                var col = this.parent.columns.filter(function (col) { return col.uid === sourceUid_1; });
                 var colMatchIndex_1 = null;
                 var column_1 = col[0];
                 var destUid_1 = destElem.querySelector('.e-headercelldiv').getAttribute('e-mappinguid');
@@ -22671,19 +22791,23 @@ var Reorder = /** @__PURE__ @class */ (function () {
         return parents$$1[parents$$1.length - 1];
     };
     Reorder.prototype.reorderSingleColumn = function (fromFName, toFName) {
-        var fColumn = this.parent.getColumnByField(fromFName);
-        var toColumn = this.parent.getColumnByField(toFName);
+        var fColumn = this.parent.enableColumnVirtualization ?
+            this.parent.columns.filter(function (col) { return col.field === fromFName; })[0]
+            : this.parent.getColumnByField(fromFName);
+        var toColumn = this.parent.enableColumnVirtualization ?
+            this.parent.columns.filter(function (col) { return col.field === toFName; })[0]
+            : this.parent.getColumnByField(toFName);
         if ((!isNullOrUndefined(fColumn) && (!fColumn.allowReordering || fColumn.lockColumn)) ||
             (!isNullOrUndefined(toColumn) && (!toColumn.allowReordering || fColumn.lockColumn))) {
             this.parent.log('action_disabled_column', { moduleName: this.getModuleName(), column: fColumn, destColumn: toColumn });
             return;
         }
-        var column = this.parent.getColumnByField(toFName);
+        var column = toColumn;
         var parent = this.getColParent(column, this.parent.columns);
         var columns = parent ? parent.columns : this.parent.columns;
         var destIndex = inArray(column, columns);
         if (destIndex > -1) {
-            this.moveColumns(destIndex, this.parent.getColumnByField(fromFName), true);
+            this.moveColumns(destIndex, fColumn, true);
         }
     };
     Reorder.prototype.reorderMultipleColumns = function (fromFNames, toFName) {
@@ -22776,7 +22900,10 @@ var Reorder = /** @__PURE__ @class */ (function () {
             this.createReorderElement();
         }
     };
-    Reorder.prototype.createReorderElement = function () {
+    Reorder.prototype.createReorderElement = function (e) {
+        if (e && e.args.isXaxis) {
+            this.setDisplay('none');
+        }
         var header = this.parent.element.querySelector('.e-headercontent');
         this.upArrow = header.appendChild(this.parent
             .createElement('div', { className: 'e-icons e-icon-reorderuparrow e-reorderuparrow', attrs: { style: 'display:none' } }));
@@ -22847,7 +22974,8 @@ var Reorder = /** @__PURE__ @class */ (function () {
         }
         var closest$$1 = closest(target, '.e-headercell:not(.e-stackedHeaderCell)');
         var cloneElement = gObj.element.querySelector('.e-cloneproperties');
-        var isLeft = this.x > getPosition(e.event).x + gObj.getContent().firstElementChild.scrollLeft;
+        var content = gObj.getFrozenColumns() ? gObj.getMovableVirtualContent() : gObj.getContent().firstElementChild;
+        var isLeft = this.x > getPosition(e.event).x + content.scrollLeft;
         removeClass(gObj.getHeaderTable().querySelectorAll('.e-reorderindicate'), ['e-reorderindicate']);
         this.setDisplay('none');
         this.stopTimer();
@@ -22899,6 +23027,15 @@ var Reorder = /** @__PURE__ @class */ (function () {
         if ((isLeft && cliRect.left < cliRectBase.left) || (!isLeft && cliRect.right > cliRectBase.right)) {
             return;
         }
+        if (this.parent.getFrozenColumns() && target.classList.contains('e-headercell')) {
+            var col = this.parent.getColumnByUid(target.firstElementChild.getAttribute('e-mappinguid'));
+            var fhdrWidth = Math.round(this.parent.getFrozenVirtualHeader().getBoundingClientRect().right);
+            var mhdrRight = Math.round(this.parent.getMovableVirtualHeader().getBoundingClientRect().right);
+            if (col && this.parent.getNormalizedColumnIndex(col.uid) >= this.parent.getFrozenColumns()
+                && ((isLeft && Math.round(cliRect.left) < fhdrWidth) || (!isLeft && mhdrRight < cliRect.right))) {
+                return;
+            }
+        }
         this.upArrow.style.top = cliRect.top + cliRect.height - cliRectBase.top + 'px';
         this.downArrow.style.top = cliRect.top - cliRectBase.top - 4 + 'px';
         this.upArrow.style.left = this.downArrow.style.left = (isLeft ? cliRect.left : cliRect.right) - cliRectBase.left - 4 + 'px';
@@ -22912,7 +23049,8 @@ var Reorder = /** @__PURE__ @class */ (function () {
         if (!e.column.allowReordering || e.column.lockColumn) {
             return;
         }
-        this.x = getPosition(e.event).x + gObj.getContent().firstElementChild.scrollLeft;
+        var content = gObj.getFrozenColumns() ? gObj.getMovableVirtualContent() : gObj.getContent().firstElementChild;
+        this.x = getPosition(e.event).x + content.scrollLeft;
         gObj.trigger(columnDragStart, {
             target: target, draggableType: 'headercell', column: e.column
         });
@@ -26016,11 +26154,23 @@ var VirtualRowModelGenerator = /** @__PURE__ @class */ (function () {
             this.parent.contentModule.startColIndex = indexes[0];
             this.parent.contentModule.endColIndex = indexes[indexes.length - 1];
         }
+        this.addFrozenIndex(indexes);
         return indexes;
     };
+    VirtualRowModelGenerator.prototype.addFrozenIndex = function (indexes) {
+        if (this.parent.getFrozenColumns() && this.parent.enableColumnVirtualization && indexes[0] === 0) {
+            for (var i = 0; i < this.parent.getFrozenColumns(); i++) {
+                indexes.push(indexes[indexes.length - 1] + 1);
+            }
+        }
+    };
     VirtualRowModelGenerator.prototype.checkAndResetCache = function (action) {
-        var clear = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder',
-            'save', 'delete'].some(function (value) { return action === value; });
+        var actions = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'reorder',
+            'save', 'delete'];
+        if (this.parent.getFrozenColumns() && this.parent.frozenRows && this.parent.enableColumnVirtualization && action === 'reorder') {
+            actions = ['paging', 'refresh', 'sorting', 'filtering', 'searching', 'grouping', 'ungrouping', 'save', 'delete'];
+        }
+        var clear = actions.some(function (value) { return action === value; });
         if (clear) {
             this.cache = {};
             this.data = {};
@@ -26137,6 +26287,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         _this.isNormaledit = _this.parent.editSettings.mode === 'Normal';
         _this.virtualData = {};
         _this.emptyRowData = {};
+        _this.vfColIndex = [];
         _this.locator = locator;
         _this.eventListener('on');
         _this.parent.on(columnVisibilityChanged, _this.setVisible, _this);
@@ -26227,6 +26378,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
                 if (Browser.isIE) {
                     this.parent.hideSpinner();
                 }
+                this.requestType = this.requestType === 'virtualscroll' ? this.empty : this.requestType;
                 this.restoreEdit();
                 return;
             }
@@ -26256,6 +26408,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             }
         }
         if (!isBlazor() || (isBlazor() && !this.parent.isServerRendered)) {
+            this.requestType = 'virtualscroll';
             this.parent.notify(viewInfo.event, { requestType: 'virtualscroll', virtualInfo: viewInfo,
                 focusElement: scrollArgs.focusElement });
         }
@@ -26410,13 +26563,19 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             this.virtualEle.adjustTable(cOff, translate);
         }
     };
+    // tslint:disable-next-line:max-func-body-length
     VirtualContentRenderer.prototype.appendContent = function (target, newChild, e) {
         var _this = this;
         // currentInfo value will be used if there are multiple dom updates happened due to mousewheel
+        var colVFtable = this.parent.enableColumnVirtualization && this.parent.getFrozenColumns() !== 0;
+        this.checkFirstBlockColIndexes(e);
         var info = e.virtualInfo.sentinelInfo && e.virtualInfo.sentinelInfo.axis === 'Y' && this.currentInfo.page &&
             this.currentInfo.page !== e.virtualInfo.page ? this.currentInfo : e.virtualInfo;
         this.prevInfo = this.prevInfo || e.virtualInfo;
         var cBlock = (info.columnIndexes[0]) - 1;
+        if (colVFtable && info.columnIndexes[0] === this.parent.getFrozenColumns()) {
+            cBlock = (info.columnIndexes[0] - this.parent.getFrozenColumns()) - 1;
+        }
         var cOffset = this.getColumnOffset(cBlock);
         var width;
         var blocks = info.blockIndexes;
@@ -26481,10 +26640,16 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             }
             else {
                 this.parent.getMovableVirtualContent().querySelector('.e-table').appendChild(target);
+                this.requestType = this.requestType === 'virtualscroll' ? this.empty : this.requestType;
+            }
+            if (this.vfColIndex.length) {
+                e.virtualInfo.columnIndexes = info.columnIndexes = extend([], this.vfColIndex);
+                this.vfColIndex = e.renderMovableContent ? [] : this.vfColIndex;
             }
         }
         else {
             this.getTable().appendChild(target);
+            this.requestType = this.requestType === 'virtualscroll' ? this.empty : this.requestType;
         }
         if (this.parent.groupSettings.columns.length) {
             if (!isGroupAdaptive(this.parent) && info.direction === 'up') {
@@ -26513,9 +26678,31 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             && e.requestType === 'virtualscroll' && e.virtualInfo.sentinelInfo.axis === 'X') {
             this.refreshMvTbalTransform();
         }
+        if (e.requestType === 'virtualscroll' && e.virtualInfo.sentinelInfo.axis === 'X') {
+            this.parent.notify(autoCol, {});
+        }
         this.focusCell(e);
         this.restoreEdit();
         this.restoreAdd();
+    };
+    VirtualContentRenderer.prototype.checkFirstBlockColIndexes = function (e) {
+        if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns() && e.virtualInfo.columnIndexes[0] === 0) {
+            var indexes = [];
+            if (!e.renderMovableContent && e.virtualInfo.columnIndexes.length > this.parent.getFrozenColumns()) {
+                this.vfColIndex = e.virtualInfo.columnIndexes;
+                for (var i = 0; i < this.parent.getFrozenColumns(); i++) {
+                    indexes.push(i);
+                }
+                e.virtualInfo.columnIndexes = indexes;
+            }
+            else if (e.renderMovableContent) {
+                if (!this.vfColIndex.length) {
+                    this.vfColIndex = extend([], e.virtualInfo.columnIndexes);
+                }
+                e.virtualInfo.columnIndexes = extend([], this.vfColIndex);
+                e.virtualInfo.columnIndexes.splice(0, this.parent.getFrozenColumns());
+            }
+        }
     };
     VirtualContentRenderer.prototype.focusCell = function (e) {
         if (this.activeKey !== 'upArrow' && this.activeKey !== 'downArrow') {
@@ -26759,7 +26946,9 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         return dataIndex;
     };
     VirtualContentRenderer.prototype.actionBegin = function (args) {
-        this.requestType = args.requestType;
+        if (args.requestType !== 'virtualscroll') {
+            this.requestType = args.requestType;
+        }
     };
     VirtualContentRenderer.prototype.virtualCellFocus = function (e) {
         // To decide the action (select or scroll), when using arrow keys for cell focus
@@ -26821,6 +27010,10 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
                 this.parent.editModule.previousVirtualData = {};
             }
         }
+        if (this.parent.enableColumnVirtualization && args.requestType === 'filterafteropen'
+            && this.currentInfo.columnIndexes && this.currentInfo.columnIndexes[0] > 0) {
+            this.parent.resetFilterDlgPosition(args.columnName);
+        }
     };
     VirtualContentRenderer.prototype.resetIsedit = function () {
         if (this.parent.enableVirtualization && this.isNormaledit) {
@@ -26870,6 +27063,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             }
         }
     };
+    /** @hidden */
     VirtualContentRenderer.prototype.getRowObjectByIndex = function (index) {
         var data = this.getRowCollection(index, false, true);
         return data;
@@ -26899,8 +27093,9 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
     };
     VirtualContentRenderer.prototype.resetScrollPosition = function (action) {
         if (this.actions.some(function (value) { return value === action; })) {
-            this.preventEvent = this.content.scrollTop !== 0;
-            this.content.scrollTop = 0;
+            var content = this.parent.getFrozenColumns() ? this.parent.getMovableVirtualContent() : this.content;
+            this.preventEvent = content.scrollTop !== 0;
+            content.scrollTop = 0;
         }
         if (action !== 'virtualscroll') {
             this.isAdd = false;
@@ -26929,7 +27124,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
         var rowCollection = isMovable ? this.parent.getMovableDataRows() : this.parent.getDataRows();
         var collection = isRowObject ? this.parent.getCurrentViewRecords() : rowCollection;
         var selectedRow = collection[index - startIdx];
-        if (this.parent.frozenRows && this.parent.pageSettings.currentPage > 1) {
+        if (!isRowObject && this.parent.frozenRows && this.parent.pageSettings.currentPage > 1) {
             selectedRow = index <= this.parent.frozenRows ? rowCollection[index]
                 : rowCollection[(index - startIdx) + this.parent.frozenRows];
         }
@@ -26977,6 +27172,13 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
     };
     VirtualContentRenderer.prototype.setVisible = function (columns) {
         var gObj = this.parent;
+        var frozenCols = this.parent.getFrozenColumns();
+        var fcntColGrp;
+        var mcntColGrp;
+        if (frozenCols) {
+            fcntColGrp = [].slice.call(this.parent.getFrozenVirtualContent().querySelectorAll('col'));
+            mcntColGrp = [].slice.call(this.parent.getMovableVirtualContent().querySelectorAll('col'));
+        }
         if (isBlazor() && gObj.isServerRendered) {
             this.parent.notify('setvisibility', columns);
         }
@@ -26995,8 +27197,22 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
             var column = columns[c];
             var idx = gObj.getNormalizedColumnIndex(column.uid);
             var displayVal = column.visible === true ? '' : 'none';
+            var colGrp = void 0;
+            if (fcntColGrp && mcntColGrp) {
+                if (idx >= frozenCols) {
+                    colGrp = mcntColGrp;
+                    tr = this.parent.getMovableRows();
+                    idx = idx - frozenCols;
+                }
+                else {
+                    colGrp = fcntColGrp;
+                }
+            }
+            else {
+                colGrp = this.getColGroup().children;
+            }
             if (idx !== -1 && testRow && idx < testRow.cells.length) {
-                setStyleAttribute(this.getColGroup().childNodes[idx], { 'display': displayVal });
+                setStyleAttribute(colGrp[idx], { 'display': displayVal });
             }
             if (!needFullRefresh) {
                 var width = void 0;
@@ -27031,7 +27247,7 @@ var VirtualContentRenderer = /** @__PURE__ @class */ (function (_super) {
                 VTablewidth: width, translateX: translateX });
             this.parent.notify('setcolumnstyles', {});
         }
-        if (needFullRefresh) {
+        if (needFullRefresh || frozenCols) {
             this.refreshContentRows({ requestType: 'refresh' });
         }
         else {
@@ -27097,7 +27313,9 @@ var VirtualHeaderRenderer = /** @__PURE__ @class */ (function (_super) {
         _super.prototype.renderTable.call(this);
         this.virtualEle.table = this.getTable();
         this.virtualEle.content = this.getPanel().querySelector('.e-headercontent');
-        this.virtualEle.content.style.position = 'relative';
+        if (!this.parent.getFrozenColumns()) {
+            this.virtualEle.content.style.position = 'relative';
+        }
         this.virtualEle.renderWrapper();
         this.virtualEle.renderPlaceHolder('absolute');
     };
@@ -27105,28 +27323,42 @@ var VirtualHeaderRenderer = /** @__PURE__ @class */ (function (_super) {
         this.virtualEle.wrapper.appendChild(table);
     };
     VirtualHeaderRenderer.prototype.refreshUI = function () {
-        if (this.parent.getFrozenColumns() && this.parent.enableColumnVirtualization) {
-            this.parent.contentModule
-                .setTable(this.parent.getMovableVirtualContent().querySelector('.e-table'));
-        }
+        this.setFrozenTable(this.parent.getMovableVirtualContent());
         this.gen.refreshColOffsets();
         this.parent.setColumnIndexesInView(this.gen.getColumnIndexes(this.getPanel().querySelector('.e-headercontent')));
         _super.prototype.refreshUI.call(this);
-        if (this.parent.getFrozenColumns() && this.parent.enableColumnVirtualization) {
-            this.parent.contentModule.setTable(this.parent.getFrozenVirtualContent()
-                .querySelector('.e-table'));
-        }
+        this.setFrozenTable(this.parent.getFrozenVirtualContent());
     };
     VirtualHeaderRenderer.prototype.setVisible = function (columns) {
         var gObj = this.parent;
         var displayVal;
         var idx;
         var needFullRefresh;
+        var frozenCols = this.parent.getFrozenColumns();
+        var fhdrColGrp;
+        var mhdrColGrp;
+        if (frozenCols) {
+            fhdrColGrp = [].slice.call(this.parent.getFrozenVirtualHeader().querySelectorAll('col'));
+            mhdrColGrp = [].slice.call(this.parent.getMovableVirtualHeader().querySelectorAll('col'));
+        }
         for (var c = 0, clen = columns.length; c < clen; c++) {
             var column = columns[c];
             idx = gObj.getNormalizedColumnIndex(column.uid);
             displayVal = column.visible ? '' : 'none';
-            setStyleAttribute(this.getColGroup().children[idx], { 'display': displayVal });
+            var colGrp = void 0;
+            if (fhdrColGrp && mhdrColGrp) {
+                if (idx >= frozenCols) {
+                    colGrp = mhdrColGrp;
+                    idx = idx - frozenCols;
+                }
+                else {
+                    colGrp = fhdrColGrp;
+                }
+            }
+            else {
+                colGrp = this.getColGroup().children;
+            }
+            setStyleAttribute(colGrp[idx], { 'display': displayVal });
             if (gObj.enableColumnVirtualization && !gObj.groupSettings.columns.length) {
                 var tablewidth = void 0;
                 if (column.visible) {
@@ -27147,13 +27379,28 @@ var VirtualHeaderRenderer = /** @__PURE__ @class */ (function (_super) {
             else {
                 needFullRefresh = true;
             }
-            if (needFullRefresh) {
+            if (needFullRefresh && !frozenCols) {
                 this.refreshUI();
             }
         }
+        if (frozenCols) {
+            this.parent.notify(columnPositionChanged, {});
+        }
+    };
+    VirtualHeaderRenderer.prototype.setFrozenTable = function (content) {
+        if (this.parent.getFrozenColumns() && this.parent.enableColumnVirtualization
+            && this.parent.contentModule.isXaxis()) {
+            this.parent.contentModule
+                .setTable(content.querySelector('.e-table'));
+        }
     };
     VirtualHeaderRenderer.prototype.setDisplayNone = function (col, displayVal) {
-        for (var _i = 0, _a = [].slice.apply(this.getTable().querySelectorAll('th.e-headercell')); _i < _a.length; _i++) {
+        var frozenCols = this.parent.getFrozenColumns();
+        var table = this.getTable();
+        if (frozenCols && col.index >= frozenCols) {
+            table = this.parent.getMovableVirtualHeader().querySelector('.e-table');
+        }
+        for (var _i = 0, _a = [].slice.apply(table.querySelectorAll('th.e-headercell')); _i < _a.length; _i++) {
             var ele = _a[_i];
             if (ele.querySelector('[e-mappinguid]') &&
                 ele.querySelector('[e-mappinguid]').getAttribute('e-mappinguid') === col.uid) {
@@ -27206,6 +27453,9 @@ var VirtualElementHandler = /** @__PURE__ @class */ (function () {
     VirtualElementHandler.prototype.setVirtualHeight = function (height, width) {
         this.placeholder.style.height = height + "px";
         this.placeholder.style.width = width;
+    };
+    VirtualElementHandler.prototype.setFreezeWrapperWidth = function (wrapper, width, full) {
+        wrapper.style.width = width ? width + "px" : full ? '100%' : '';
     };
     return VirtualElementHandler;
 }());
@@ -27295,6 +27545,10 @@ var InlineEditRender = /** @__PURE__ @class */ (function () {
         args.row = this.parent.createElement('tr', { className: 'e-row e-addedrow' });
         if (tbody.querySelector('.e-emptyrow')) {
             tbody.querySelector('.e-emptyrow').remove();
+            if (this.parent.getFrozenColumns()) {
+                var moveTbody = this.parent.getContent().querySelector('.e-movablecontent').querySelector('tbody');
+                moveTbody.firstElementChild.remove();
+            }
         }
         this.parent.editSettings.newRowPosition === 'Top' ? tbody.insertBefore(args.row, tbody.firstChild) : tbody.appendChild(args.row);
         args.row.appendChild(this.getEditElement(elements, false, undefined, args, true));
@@ -28110,7 +28364,7 @@ var DropDownEditCell = /** @__PURE__ @class */ (function () {
             if ('result' in this.column.dataSource) {
                 this.column.dataSource.result = e.result;
             }
-            else {
+            else if (this.column.dataSource instanceof DataManager) {
                 this.column.dataSource.dataSource.json = e.result;
             }
         }
@@ -28752,6 +29006,10 @@ var NormalEdit = /** @__PURE__ @class */ (function () {
             requestType: 'delete', type: actionBegin, foreignKeyData: {},
             data: data ? data : this.parent.getSelectedRecords(), tr: this.parent.getSelectedRows(), cancel: false
         };
+        if (!isNullOrUndefined(this.parent.commandDelIndex)) {
+            args.data[0] =
+                this.parent.getRowObjectFromUID(this.parent.getRowByIndex(this.parent.commandDelIndex).getAttribute('data-uid')).data;
+        }
         if (this.parent.enableVirtualization && args.data.length > 1) {
             var uid = this.parent.getSelectedRows()[0].getAttribute('data-uid');
             args.data = [this.parent.getRowObjectFromUID(uid).data];
@@ -29503,6 +29761,10 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
             tr.classList.add('e-insertedrow');
             if (tbody.querySelector('.e-emptyrow')) {
                 tbody.querySelector('.e-emptyrow').remove();
+                if (_this.parent.getFrozenColumns()) {
+                    var moveTbody = _this.parent.getContent().querySelector('.e-movablecontent').querySelector('tbody');
+                    moveTbody.firstElementChild.remove();
+                }
             }
             if (gObj.getFrozenColumns()) {
                 mTr = _this.renderMovable(tr);
@@ -29537,8 +29799,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
             var addedRecords = 'addedRecords';
             var dRecords = 'deletedRecords';
             var btmIdx = _this.parent.getCurrentViewRecords().length + changes[addedRecords].length - changes[dRecords].length - 1;
-            _this.parent.editSettings.newRowPosition === 'Top' ? gObj.selectRow(0) :
-                gObj.selectRow(btmIdx);
+            _this.parent.editSettings.newRowPosition === 'Top' ? gObj.selectRow(0) : gObj.selectRow(btmIdx);
             if (!data) {
                 index = _this.findNextEditableCell(0, true);
                 col = gObj.getColumns()[index];
@@ -30345,7 +30606,7 @@ var Edit = /** @__PURE__ @class */ (function () {
             return;
         }
         if (!data) {
-            if (!gObj.getSelectedRecords().length) {
+            if (!gObj.getSelectedRecords().length && isNullOrUndefined(gObj.commandDelIndex)) {
                 this.showDialog('DeleteOperationAlert', this.alertDObj);
                 return;
             }
@@ -31262,6 +31523,7 @@ var ColumnChooser = /** @__PURE__ @class */ (function () {
             }
             this.removeCancelIcon();
             this.dlgObj.show();
+            this.parent.notify(columnChooserOpened, { dialog: this.dlgObj });
         }
         else {
             // this.unWireEvents();
@@ -31362,7 +31624,7 @@ var ColumnChooser = /** @__PURE__ @class */ (function () {
                     }
                 },
                 {
-                    click: this.clearActions.bind(this),
+                    click: this.clearBtnClick.bind(this),
                     buttonModel: { cssClass: 'e-flat e-cc e-cc-cnbtn', content: this.l10n.getConstant('CancelButton') }
                 }],
             content: this.renderChooserList(),
@@ -31400,7 +31662,6 @@ var ColumnChooser = /** @__PURE__ @class */ (function () {
     };
     ColumnChooser.prototype.confirmDlgBtnClick = function (args) {
         var _this = this;
-        this.parent.notify(columnChooserOpened, { event: args, dialog: this.dlgObj });
         this.stateChangeColumns = [];
         this.changedStateColumns = [];
         this.changedColumns = (this.changedColumns.length > 0) ? this.changedColumns : this.unchangedColumns;
@@ -31459,6 +31720,10 @@ var ColumnChooser = /** @__PURE__ @class */ (function () {
         // this.unWireEvents();
         this.hideDialog();
         this.addcancelIcon();
+    };
+    ColumnChooser.prototype.clearBtnClick = function () {
+        this.clearActions();
+        this.parent.notify(columnChooserCancelBtnClick, { dialog: this.dlgObj });
     };
     ColumnChooser.prototype.checkstatecolumn = function (isChecked, coluid, selectAll) {
         if (selectAll === void 0) { selectAll = false; }
@@ -33441,10 +33706,6 @@ var PdfExport = /** @__PURE__ @class */ (function () {
         var _this = this;
         var columnCount = gridColumn.length + childLevels;
         var depth = measureColumnDepth(eCols);
-        var index = this.parent.getIndentCount();
-        if (this.parent.allowGrouping) {
-            index = this.parent.groupSettings.columns.length;
-        }
         var cols = eCols;
         pdfGrid.columns.add(columnCount);
         pdfGrid.headers.add(rows.length);
@@ -33493,7 +33754,7 @@ var PdfExport = /** @__PURE__ @class */ (function () {
                 }
                 else if (cols[i].visible || _this.hideColumnInclude) {
                     spanCnt++;
-                    applyTextAndSpan(rowIndex, i + colIndex + index, cols[i], depth, 0);
+                    applyTextAndSpan(rowIndex, i + colIndex, cols[i], depth, 0);
                 }
             }
             return spanCnt;
@@ -34514,10 +34775,12 @@ var CommandColumn = /** @__PURE__ @class */ (function () {
                     if (gObj.editSettings.mode !== 'Batch') {
                         gObj.editModule.endEdit();
                     }
+                    gObj.commandDelIndex = parseInt(closest(target, 'tr').getAttribute('aria-rowindex'), 10);
                     gObj.clearSelection();
                     //for toogle issue when dbl click
-                    gObj.selectRow(parseInt(closest(target, 'tr').getAttribute('aria-rowindex'), 10), false);
+                    gObj.selectRow(gObj.commandDelIndex, false);
                     gObj.editModule.deleteRecord();
+                    gObj.commandDelIndex = undefined;
                     break;
             }
         });
@@ -35366,7 +35629,9 @@ var FreezeRender = /** @__PURE__ @class */ (function (_super) {
         if (!isBlazor() || this.parent.frozenRows === 0) {
             this.updateColgroup();
         }
-        this.widthService.setWidthToTable();
+        if (!this.parent.enableVirtualization) {
+            this.widthService.setWidthToTable();
+        }
         if (this.parent.allowTextWrap && this.parent.textWrapSettings.wrapMode === 'Header') {
             wrap([].slice.call(this.movableHeader.querySelectorAll('tr.e-columnheader')), true);
         }
@@ -35378,9 +35643,15 @@ var FreezeRender = /** @__PURE__ @class */ (function (_super) {
         this.parent.notify(headerRefreshed, { rows: this.rows, args: { isFrozen: false } });
     };
     FreezeRender.prototype.rfshMovable = function () {
-        if (!isBlazor() || this.parent.frozenRows === 0) {
-            this.getFrozenHeader().appendChild(this.getTable());
-            this.getMovableHeader().appendChild(this.createTable());
+        if (this.parent.enableColumnVirtualization) {
+            this.parent.getFrozenVirtualHeader().querySelector('.e-virtualtable').appendChild(this.getTable());
+            this.parent.getMovableVirtualHeader().querySelector('.e-virtualtable').appendChild(this.createTable());
+        }
+        else {
+            if (!isBlazor() || this.parent.frozenRows === 0) {
+                this.getFrozenHeader().appendChild(this.getTable());
+                this.getMovableHeader().appendChild(this.createTable());
+            }
         }
         this.refreshStackedHdrHgt();
         this.addMovableFirstCls();
@@ -35406,7 +35677,7 @@ var FreezeRender = /** @__PURE__ @class */ (function (_super) {
             var filterRow = this.getTable().querySelector('.e-filterbar');
             if (this.parent.allowFiltering && filterRow && this.getMovableHeader().querySelector('thead')) {
                 this.getMovableHeader().querySelector('thead')
-                    .appendChild(renderMovable(filterRow, this.parent.getFrozenColumns()));
+                    .appendChild(this.filterRenderer(filterRow, this.parent.getFrozenColumns()));
                 var elements = [].slice.call(this.getMovableHeader().
                     querySelectorAll('thead .e-filterbarcell .e-input'));
                 for (var _i = 0, elements_1 = elements; _i < elements_1.length; _i++) {
@@ -35500,12 +35771,12 @@ var FreezeRender = /** @__PURE__ @class */ (function (_super) {
             mRowHgt = width[i];
             if (!isNullOrUndefined(fRows[i]) && fRows[i].childElementCount && ((isWrap && fRowHgt < mRowHgt) ||
                 (!isWrap && fRowHgt < mRowHgt) || (this.parent.allowResizing && this.parent.resizeModule &&
-                !this.parent.resizeModule.isFrozenColResized))) {
+                this.parent.resizeModule.isFrozenColResized === false))) {
                 fRows[i].style.height = mRowHgt + 'px';
             }
             if (mRows && !isNullOrUndefined(mRows[i]) && mRows[i].childElementCount && ((isWrap && fRowHgt > mRowHgt) ||
                 (!isWrap && fRowHgt > mRowHgt) || (this.parent.allowResizing && this.parent.resizeModule &&
-                this.parent.resizeModule.isFrozenColResized))) {
+                this.parent.resizeModule.isFrozenColResized === true))) {
                 mRows[i].style.height = fRowHgt + 'px';
             }
         }
@@ -35597,6 +35868,14 @@ var FreezeRender = /** @__PURE__ @class */ (function (_super) {
         remove(this.getMovableHeader().querySelector('colgroup'));
         mTable.insertBefore(renderMovable(this.getFrozenHeader().querySelector('colgroup'), this.parent.getFrozenColumns()), mTable.querySelector('thead'));
     };
+    FreezeRender.prototype.filterRenderer = function (ele, frozenColumn) {
+        var clone = ele.cloneNode(true);
+        clone.innerHTML = '';
+        for (var i = frozenColumn; i < this.parent.getColumns().length; i++) {
+            clone.appendChild(ele.removeChild(ele.children[frozenColumn]));
+        }
+        return clone;
+    };
     return FreezeRender;
 }(HeaderRender));
 
@@ -35621,6 +35900,7 @@ var VirtualFreezeRenderer = /** @__PURE__ @class */ (function (_super) {
     __extends$28(VirtualFreezeRenderer, _super);
     function VirtualFreezeRenderer(parent, locator) {
         var _this = _super.call(this, parent, locator) || this;
+        _this.frzeeLoad = 1;
         _this.serviceLoc = locator;
         return _this;
     }
@@ -35657,16 +35937,14 @@ var VirtualFreezeRenderer = /** @__PURE__ @class */ (function (_super) {
      * @hidden
      */
     VirtualFreezeRenderer.prototype.generateRows = function (data, notifyArgs) {
-        var isSplit = false;
         var virtualRows = this.virtualRenderer.vgenerator.generateRows(data, notifyArgs);
         var arr = [];
         arr = virtualRows.map(function (row) { return extend({}, row); });
-        if (this.parent.enableColumnVirtualization && this.parent.getFrozenColumns() && notifyArgs.renderMovableContent) {
-            var left = this.parent.getMovableVirtualContent().scrollLeft;
-            isSplit = notifyArgs.requestType === 'virtualscroll' && left > 0 && notifyArgs.virtualInfo.columnIndexes[0] !== 0;
+        if (!this.firstPageRecords) {
+            this.firstPageRecords = data;
         }
         var rows = this.freezeRowGenerator.generateRows(data, notifyArgs, arr);
-        return isSplit ? virtualRows : rows;
+        return rows;
     };
     /**
      * @hidden
@@ -35696,8 +35974,77 @@ var VirtualFreezeRenderer = /** @__PURE__ @class */ (function (_super) {
      * @hidden
      */
     VirtualFreezeRenderer.prototype.getColGroup = function () {
-        var colGroup = this.parent.getMovableVirtualContent().querySelector('colgroup');
+        var mCol = this.parent.getMovableVirtualContent().querySelector('colgroup');
+        var fCol = this.parent.getFrozenVirtualContent().querySelector('colgroup');
+        var colGroup = this.isXaxis() ? mCol : fCol;
         return colGroup;
+    };
+    /**
+     * @hidden
+     */
+    VirtualFreezeRenderer.prototype.getReorderedFrozenRows = function (args) {
+        var rows;
+        var bIndex = args.virtualInfo.blockIndexes;
+        var colIndex = args.virtualInfo.columnIndexes;
+        var page = args.virtualInfo.page;
+        args.virtualInfo.blockIndexes = [1, 2];
+        args.virtualInfo.page = 1;
+        if (!args.renderMovableContent) {
+            args.virtualInfo.columnIndexes = [];
+        }
+        var virtualRows = this.virtualRenderer.vgenerator.generateRows(this.firstPageRecords, args);
+        rows = this.splitReorderedRows(virtualRows);
+        args.virtualInfo.blockIndexes = bIndex;
+        args.virtualInfo.columnIndexes = colIndex;
+        args.virtualInfo.page = page;
+        return rows.splice(0, this.parent.frozenRows);
+    };
+    VirtualFreezeRenderer.prototype.splitReorderedRows = function (rows) {
+        var frzCols = this.parent.getFrozenColumns();
+        for (var i = 0, len = rows.length; i < len; i++) {
+            if (this.frzeeLoad % 2 === 0) {
+                rows[i].cells = rows[i].cells.slice(frzCols, rows[i].cells.length);
+            }
+            else {
+                rows[i].isFreezeRow = true;
+                rows[i].cells = rows[i].cells.slice(0, frzCols);
+            }
+        }
+        this.frzeeLoad++;
+        return rows;
+    };
+    VirtualFreezeRenderer.prototype.isXaxis = function () {
+        var value = false;
+        if (this.virtualRenderer) {
+            value = this.virtualRenderer.requestType === 'virtualscroll'
+                && this.virtualRenderer.currentInfo.sentinelInfo.axis === 'X';
+        }
+        return value;
+    };
+    VirtualFreezeRenderer.prototype.getHeaderCells = function () {
+        var content = this.isXaxis() ? this.parent.getMovableVirtualHeader() : this.parent.getHeaderContent();
+        return content ? [].slice.call(content.querySelectorAll('.e-headercell:not(.e-stackedheadercell)')) : [];
+    };
+    VirtualFreezeRenderer.prototype.getVirtualFreezeHeader = function () {
+        var headerTable;
+        if (this.isXaxis()) {
+            headerTable = this.parent.getMovableVirtualHeader().querySelector('.e-table');
+        }
+        else {
+            headerTable = this.parent.getFrozenVirtualHeader().querySelector('.e-table');
+        }
+        return headerTable;
+    };
+    VirtualFreezeRenderer.prototype.ensureFrozenCols = function (columns) {
+        var frozenCols = this.parent.columns.slice(0, this.parent.getFrozenColumns());
+        columns = frozenCols.concat(columns);
+        return columns;
+    };
+    /**
+     * @hidden
+     */
+    VirtualFreezeRenderer.prototype.getRowObjectByIndex = function (index) {
+        return this.virtualRenderer.getRowObjectByIndex(index);
     };
     return VirtualFreezeRenderer;
 }(FreezeContentRender));
@@ -37719,5 +38066,5 @@ var MaskedTextBoxCellEdit = /** @__PURE__ @class */ (function () {
  * Export Grid components
  */
 
-export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, InfiniteScrollSettings, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, headerValueAccessor, getUpdateUsingRaf, isExportColumns, updateColumnTypeForExportColumns, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, getTransformValues, applyBiggerTheme, alignFrozenEditForm, ensureLastRow, ensureFirstRow, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, beforeAutoFill, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, exportGroupCaption, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, columnDataStateChange, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, beforeFltrcMenuOpen, valCustomPlacement, filterCboxValue, componentRendered, restoreFocus, detailStateChange, detailIndentCellInfo, virtaulKeyHandler, virtaulCellFocus, virtualScrollEditActionBegin, virtualScrollEditSuccess, virtualScrollEditCancel, virtualScrollEdit, refreshVirtualCache, editReset, virtualScrollAddActionBegin, getVirtualData, refreshInfiniteModeBlocks, resetInfiniteBlocks, infiniteScrollHandler, infinitePageQuery, appendInfiniteContent, removeInfiniteRows, setInfiniteCache, initialCollapse, getAggregateQuery, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, gridObserver, BlazorAction, InfiniteScroll, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
+export { CheckBoxFilterBase, ExcelFilterBase, SortDescriptor, SortSettings, Predicate$1 as Predicate, InfiniteScrollSettings, FilterSettings, SelectionSettings, SearchSettings, RowDropSettings, TextWrapSettings, GroupSettings, EditSettings, Grid, CellType, RenderType, ToolbarItem, doesImplementInterface, valueAccessor, headerValueAccessor, getUpdateUsingRaf, isExportColumns, updateColumnTypeForExportColumns, updatecloneRow, getCollapsedRowsCount, recursive, iterateArrayOrObject, iterateExtend, templateCompiler, setStyleAndAttributes, extend$1 as extend, setColumnIndex, prepareColumns, setCssInGridPopUp, getActualProperties, parentsUntil, getElementIndex, inArray, getActualPropFromColl, removeElement, getPosition, getUid, appendChildren, parents, calculateAggregate, getScrollBarWidth, getRowHeight, isComplexField, getComplexFieldID, setComplexFieldID, isEditable, isActionPrevent, wrap, setFormatter, addRemoveActiveClasses, distinctStringValues, getFilterMenuPostion, getZIndexCalcualtion, toogleCheckbox, createCboxWithWrap, removeAddCboxClasses, refreshForeignData, getForeignData, getColumnByForeignKeyValue, getDatePredicate, renderMovable, isGroupAdaptive, getObject, getCustomDateFormat, getExpandedState, getPrintGridModel, extendObjWithFn, measureColumnDepth, checkDepth, refreshFilteredColsUid, Global, getTransformValues, applyBiggerTheme, alignFrozenEditForm, ensureLastRow, ensureFirstRow, created, destroyed, load, rowDataBound, queryCellInfo, headerCellInfo, actionBegin, actionComplete, actionFailure, dataBound, rowSelecting, rowSelected, rowDeselecting, rowDeselected, cellSelecting, cellSelected, cellDeselecting, cellDeselected, columnDragStart, columnDrag, columnDrop, rowDragStartHelper, rowDragStart, rowDrag, rowDrop, beforePrint, printComplete, detailDataBound, toolbarClick, batchAdd, batchCancel, batchDelete, beforeBatchAdd, beforeBatchDelete, beforeBatchSave, beginEdit, cellEdit, cellSave, cellSaved, endAdd, endDelete, endEdit, recordDoubleClick, recordClick, beforeDataBound, beforeOpenColumnChooser, resizeStart, onResize, resizeStop, checkBoxChange, beforeCopy, beforePaste, beforeAutoFill, filterChoiceRequest, filterAfterOpen, filterBeforeOpen, filterSearchBegin, commandClick, exportGroupCaption, initialLoad, initialEnd, dataReady, contentReady, uiUpdate, onEmpty, inBoundModelChanged, modelChanged, colGroupRefresh, headerRefreshed, pageBegin, pageComplete, sortBegin, sortComplete, filterBegin, filterComplete, searchBegin, searchComplete, reorderBegin, reorderComplete, rowDragAndDropBegin, rowDragAndDropComplete, groupBegin, groupComplete, ungroupBegin, ungroupComplete, groupAggregates, refreshFooterRenderer, refreshAggregateCell, refreshAggregates, rowSelectionBegin, rowSelectionComplete, columnSelectionBegin, columnSelectionComplete, cellSelectionBegin, cellSelectionComplete, beforeCellFocused, cellFocused, keyPressed, click, destroy, columnVisibilityChanged, scroll, columnWidthChanged, columnPositionChanged, rowDragAndDrop, rowsAdded, rowsRemoved, columnDragStop, headerDrop, dataSourceModified, refreshComplete, refreshVirtualBlock, dblclick, toolbarRefresh, bulkSave, autoCol, tooltipDestroy, updateData, editBegin, editComplete, addBegin, addComplete, saveComplete, deleteBegin, deleteComplete, preventBatch, dialogDestroy, crudAction, addDeleteAction, destroyForm, doubleTap, beforeExcelExport, excelExportComplete, excelQueryCellInfo, excelHeaderQueryCellInfo, exportDetailDataBound, beforePdfExport, pdfExportComplete, pdfQueryCellInfo, pdfHeaderQueryCellInfo, accessPredicate, contextMenuClick, freezeRender, freezeRefresh, contextMenuOpen, columnMenuClick, columnMenuOpen, filterOpen, filterDialogCreated, filterMenuClose, initForeignKeyColumn, getForeignKeyData, generateQuery, showEmptyGrid, foreignKeyData, columnDataStateChange, dataStateChange, dataSourceChanged, rtlUpdated, beforeFragAppend, frozenHeight, textWrapRefresh, recordAdded, cancelBegin, editNextValCell, hierarchyPrint, expandChildGrid, printGridInit, exportRowDataBound, rowPositionChanged, columnChooserOpened, batchForm, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, partialRefresh, beforeCustomFilterOpen, selectVirtualRow, columnsPrepared, cBoxFltrBegin, cBoxFltrComplete, fltrPrevent, beforeFltrcMenuOpen, valCustomPlacement, filterCboxValue, componentRendered, restoreFocus, detailStateChange, detailIndentCellInfo, virtaulKeyHandler, virtaulCellFocus, virtualScrollEditActionBegin, virtualScrollEditSuccess, virtualScrollEditCancel, virtualScrollEdit, refreshVirtualCache, editReset, virtualScrollAddActionBegin, getVirtualData, refreshInfiniteModeBlocks, resetInfiniteBlocks, infiniteScrollHandler, infinitePageQuery, appendInfiniteContent, removeInfiniteRows, setInfiniteCache, initialCollapse, getAggregateQuery, closeFilterDialog, columnChooserCancelBtnClick, Data, Sort, Page, Selection, Filter, Search, Scroll, resizeClassList, Resize, Reorder, RowDD, Group, getCloneProperties, Print, DetailRow, Toolbar$1 as Toolbar, Aggregate, summaryIterator, VirtualScroll, Edit, BatchEdit, InlineEdit, NormalEdit, DialogEdit, ColumnChooser, ExcelExport, PdfExport, ExportHelper, ExportValueFormatter, Clipboard, CommandColumn, CheckBoxFilter, menuClass, ContextMenu$1 as ContextMenu, Freeze, ColumnMenu, ExcelFilter, ForeignKey, Logger, detailLists, gridObserver, BlazorAction, InfiniteScroll, Column, CommandColumnModel, Row, Cell, HeaderRender, ContentRender, RowRenderer, CellRenderer, HeaderCellRenderer, FilterCellRenderer, StackedHeaderCellRenderer, Render, IndentCellRenderer, GroupCaptionCellRenderer, GroupCaptionEmptyCellRenderer, BatchEditRender, DialogEditRender, InlineEditRender, EditRender, BooleanEditCell, DefaultEditCell, DropDownEditCell, NumericEditCell, DatePickerEditCell, CommandColumnRenderer, FreezeContentRender, FreezeRender, StringFilterUI, NumberFilterUI, DateFilterUI, BooleanFilterUI, FlMenuOptrUI, AutoCompleteEditCell, ComboboxEditCell, MultiSelectEditCell, TimePickerEditCell, ToggleEditCell, MaskedTextBoxCellEdit, VirtualContentRenderer, VirtualHeaderRenderer, VirtualElementHandler, CellRendererFactory, ServiceLocator, RowModelGenerator, GroupModelGenerator, FreezeRowModelGenerator, ValueFormatter, VirtualRowModelGenerator, InterSectionObserver, Pager, ExternalMessage, NumericContainer, PagerMessage, PagerDropDown };
 //# sourceMappingURL=ej2-grids.es5.js.map

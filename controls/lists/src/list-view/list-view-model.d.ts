@@ -208,12 +208,6 @@ export interface ListViewModel extends ComponentModel{
     width?: number | string;
 
     /**
-     * It is used for set checkBox in virtualization with template concept ListView component.
-     * @default ''
-     */
-    virtualCheckBox?: Element | string;
-
-    /**
      * The ListView component supports to customize the content of each list items with the help of `template` property.
      *     
      * @default null

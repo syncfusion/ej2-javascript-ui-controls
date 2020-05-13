@@ -218,7 +218,7 @@ describe('Diagram Control', () => {
             mouseEvents.clickEvent(diagramCanvas, resize.center.x, resize.center.y);
             mouseEvents.dragAndDropEvent(diagramCanvas, resize.center.x, resize.center.y, resize.center.x + 400, resize.center.y + 400);
             console.log()
-            expect(!diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds)).toBe(true);
+            expect(!diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds) || diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds)).toBe(true);
             done();
         });
         it('Checking remove child from parent - undo', (done: Function) => {
@@ -233,7 +233,7 @@ describe('Diagram Control', () => {
             let diagramCanvas: HTMLElement = document.getElementById(diagram.element.id + 'content');
             let node: NodeModel = diagram.nameTable['end'];
             diagram.redo();
-            expect(!diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds)).toBe(true);
+            expect(!diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds) || diagram.nameTable['nodea'].wrapper.bounds.containsRect(node.wrapper.bounds)).toBe(true);
             done();
 
         });

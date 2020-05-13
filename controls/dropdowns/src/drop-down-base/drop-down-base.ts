@@ -590,8 +590,11 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             }
             let content: string = actionFailure ?
             this.l10n.getConstant('actionFailureTemplate') : this.l10n.getConstant('noRecordsTemplate');
-            if (isBlazor() && this.getModuleName() === 'listbox' && ele.childNodes[1]) {
-                ele.childNodes[1].nodeValue = content;
+            if (this.getModuleName() === 'listbox') {
+                let liElem: Element = this.createElement('li');
+                liElem.textContent = content;
+                ele.appendChild(liElem);
+                liElem.classList.add('e-list-nrt');
             } else {
                 ele.innerHTML = content;
             }

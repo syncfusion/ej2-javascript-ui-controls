@@ -3334,10 +3334,10 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         });
     };
     Tooltip.prototype.getTooltipPosition = function (target) {
-        this.tooltipEle.style.display = 'none';
+        this.tooltipEle.style.display = 'block';
         var pos = calculatePosition(target, this.tooltipPositionX, this.tooltipPositionY);
-        this.tooltipEle.style.display = '';
         var offsetPos = this.calculateTooltipOffset(this.position);
+        this.tooltipEle.style.display = '';
         var elePos = this.collisionFlipFit(target, pos.left + offsetPos.left, pos.top + offsetPos.top);
         return elePos;
     };
