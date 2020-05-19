@@ -3044,11 +3044,11 @@ class HelperMethods {
             case 'lowercase':
                 text = value.toLowerCase();
                 break;
-            case 'first capital':
-                text = this.capitaliseFirst(value, 'First capital');
+            case 'firstcapital':
+                text = this.capitaliseFirst(value, 'FirstCapital');
                 break;
-            case 'title case':
-                text = this.capitaliseFirst(value, 'Title case');
+            case 'titlecase':
+                text = this.capitaliseFirst(value, 'Titlecase');
                 break;
         }
         return text;
@@ -3099,18 +3099,22 @@ class HelperMethods {
     /**
      * @private
      */
-    static capitaliseFirst(value, type) {
+    static capitaliseFirst(value, type, splitBy) {
         let text = '';
-        if (type === 'Title case') {
-            let valArry = value.split(' ');
+        if (type === 'Titlecase') {
+            let valArry = splitBy ? value.split(splitBy) : value.split(' ');
             for (let i = 0; i < valArry.length; i++) {
-                text += this.capitaliseFirstInternal(valArry[i]);
-                if (valArry.length >= 0) {
+                // tslint:disable-next-line:max-line-length
+                text += splitBy ? valArry[i].charAt(0).toUpperCase() + valArry[i].slice(1, valArry[i].length) : this.capitaliseFirstInternal(valArry[i]);
+                if (valArry.length >= 0 && !splitBy) {
                     text += ' ';
                 }
             }
+            if (!splitBy) {
+                text = this.capitaliseFirst(text, 'Titlecase', '\r');
+            }
         }
-        else if (type === 'First capital') {
+        else if (type === 'FirstCapital') {
             text = this.capitaliseFirstInternal(value);
         }
         return text;
@@ -5728,7 +5732,7 @@ class Layout {
             }
             this.layoutFieldCharacters(element);
             if (element.line.isLastLine() && isNullOrUndefined(element.nextNode) && !this.isFieldCode) {
-                if (isNullOrUndefined(element.fieldSeparator)) {
+                if (element.fieldType !== 2 && isNullOrUndefined(element.fieldSeparator)) {
                     this.layoutEmptyLineWidget(paragraph, false, element.line);
                 }
                 this.moveToNextLine(line);
@@ -6258,7 +6262,7 @@ class Layout {
                         checkBoxTextElement.text = String.fromCharCode(9744);
                     }
                     if (formFieldData.sizeType !== 'Auto') {
-                        checkBoxTextElement.characterFormat.fontSize = fieldBegin.characterFormat.fontSize;
+                        checkBoxTextElement.characterFormat.fontSize = formFieldData.size;
                     }
                     checkBoxTextElement.line = fieldBegin.line;
                     let index = fieldBegin.line.children.indexOf(fieldBegin.fieldEnd);
@@ -11932,7 +11936,9 @@ class Renderer {
         for (let i = 0; i < cellWidget.childWidgets.length; i++) {
             let widget = cellWidget.childWidgets[i];
             let width = cellWidget.width + cellWidget.margin.left - cellWidget.leftBorderWidth;
-            this.clipRect(cellWidget.x, cellWidget.y, this.getScaledValue(width), this.getScaledValue(this.height));
+            if (!this.isPrinting) {
+                this.clipRect(cellWidget.x, cellWidget.y, this.getScaledValue(width), this.getScaledValue(this.height));
+            }
             this.renderWidget(page, widget);
             this.pageContext.restore();
         }
@@ -13804,7 +13810,8 @@ class RestrictEditing {
             id: this.viewer.owner.containerId + '_addUser',
             className: 'e-btn e-primary e-flat',
             innerHTML: localObj.getConstant('More users') + '...',
-            styles: 'margin-top: 3px'
+            styles: 'margin-top: 3px',
+            attrs: { type: 'button' }
         });
         this.userWholeDiv.appendChild(this.addUser);
         this.restrictPaneWholeDiv.appendChild(this.userWholeDiv);
@@ -13813,7 +13820,8 @@ class RestrictEditing {
         this.enforceProtection = createElement('button', {
             id: this.viewer.owner.containerId + '_addUser',
             innerHTML: localObj.getConstant('Enforcing Protection'),
-            className: 'e-btn e-de-rp-btn-enforce'
+            className: 'e-btn e-de-rp-btn-enforce',
+            attrs: { type: 'button' }
         });
         lastDiv.appendChild(this.enforceProtection);
         this.restrictPane.appendChild(this.restrictPaneWholeDiv);
@@ -13832,13 +13840,19 @@ class RestrictEditing {
         this.stopProtectionDiv.appendChild(this.stopReadOnlyOptions);
         let navigateNext = createElement('div', { className: 'e-de-rp-enforce-nav' });
         // tslint:disable-next-line:max-line-length
-        let navigateNextButton = createElement('button', { innerHTML: localObj.getConstant('Find Next Region I Can Edit'), className: 'e-btn e-de-rp-nav-btn' });
+        let navigateNextButton = createElement('button', {
+            innerHTML: localObj.getConstant('Find Next Region I Can Edit'), className: 'e-btn e-de-rp-nav-btn',
+            attrs: { type: 'button' }
+        });
         navigateNext.appendChild(navigateNextButton);
         navigateNextButton.addEventListener('click', this.navigateNextRegion);
         this.stopReadOnlyOptions.appendChild(navigateNext);
         let showAllRegion = createElement('div', { className: 'e-de-rp-enforce-nav' });
         // tslint:disable-next-line:max-line-length
-        let showAllRegionButton = createElement('button', { innerHTML: localObj.getConstant('Show All Regions I Can Edit'), className: 'e-btn e-de-rp-nav-btn' });
+        let showAllRegionButton = createElement('button', {
+            innerHTML: localObj.getConstant('Show All Regions I Can Edit'), className: 'e-btn e-de-rp-nav-btn',
+            attrs: { type: 'button' }
+        });
         showAllRegion.appendChild(showAllRegionButton);
         showAllRegionButton.addEventListener('click', this.showAllRegion);
         this.stopReadOnlyOptions.appendChild(showAllRegion);
@@ -13851,7 +13865,8 @@ class RestrictEditing {
         let lastButtonDiv = createElement('div', { className: 'e-de-rp-enforce' });
         this.stopProtection = createElement('button', {
             innerHTML: localObj.getConstant('Stop Protection'),
-            className: 'e-btn e-de-rp-btn-stop-enforce'
+            className: 'e-btn e-de-rp-btn-stop-enforce',
+            attrs: { type: 'button' }
         });
         lastButtonDiv.appendChild(this.stopProtection);
         this.stopProtectionDiv.appendChild(lastButtonDiv);
@@ -14934,11 +14949,12 @@ class DocumentHelper {
                         !this.owner.useCtrlClickToFollowHyperlink) && this.isLeftButtonPressed(event) === true))) {
                     this.selection.navigateHyperLinkOnEvent(touchPoint, false);
                 }
-                if (this.isLeftButtonPressed(event) && this.isDocumentProtected && this.protectionType === 'FormFieldsOnly' && this.selection) {
+                if (this.isMouseDown && this.isLeftButtonPressed(event) && this.isDocumentProtected
+                    && this.protectionType === 'FormFieldsOnly' && this.selection) {
                     let widget = this.getLineWidget(touchPoint);
                     let formField = this.selection.getHyperLinkFieldInCurrentSelection(widget, touchPoint, true);
                     if (isNullOrUndefined(formField)) {
-                        formField = this.selection.getCurrentFormField();
+                        formField = this.selection.getCurrentFormField(true);
                     }
                     // tslint:disable-next-line:max-line-length
                     if (formField && formField.formFieldData && formField.formFieldData.enabled && !this.selection.isInlineFormFillMode(formField)) {
@@ -14970,10 +14986,12 @@ class DocumentHelper {
                         this.selection.navigateToNextFormField();
                     }
                 }
-                else {
-                    let formField = this.selection.getCurrentFormField();
-                    if (formField && formField.formFieldData) {
-                        this.selection.selectField();
+                else if (this.isMouseDown) {
+                    if (this.formFields.length > 0) {
+                        let formField = this.selection.getCurrentFormField(true);
+                        if (formField && formField.formFieldData) {
+                            this.selection.selectField();
+                        }
                     }
                 }
                 if (!this.owner.isReadOnlyMode && this.isSelectionInListText(touchPoint)) {
@@ -16857,7 +16875,14 @@ class DocumentHelper {
         let isCtrlkeyPressed = this.isIosDevice ? event.metaKey : event.ctrlKey;
         if ((!isNullOrUndefined(hyperlinkField) && (isCtrlkeyPressed &&
             this.owner.useCtrlClickToFollowHyperlink || !this.owner.useCtrlClickToFollowHyperlink)) || formField) {
-            div.style.cursor = 'pointer';
+            if (!isNullOrUndefined(formField)) {
+                if (this.isFormFillProtectedMode) {
+                    div.style.cursor = 'default';
+                }
+            }
+            else {
+                div.style.cursor = 'pointer';
+            }
             return;
         }
         else if (touchPoint.x >= lineLeft &&
@@ -30869,7 +30894,8 @@ class TextPosition {
         let inline = inlineInfo.element;
         index = inlineInfo.index;
         let lineIndex = this.paragraph.childWidgets.indexOf(this.currentWidget);
-        if (inline instanceof FieldElementBox && inline.fieldType === 1 && !isNullOrUndefined(inline.fieldBegin)) {
+        if (inline instanceof FieldElementBox && inline.fieldType === 1 && !isNullOrUndefined(inline.fieldBegin)
+            || inline instanceof BookmarkElementBox && inline.bookmarkType === 1) {
             this.movePreviousPositionInternal(inline);
         }
         this.updateOffsetToPrevPosition(index, false);
@@ -31061,14 +31087,16 @@ class TextPosition {
      */
     movePreviousPositionInternal(fieldEnd) {
         let inline;
-        if (isNullOrUndefined(fieldEnd.fieldSeparator)) {
+        if (fieldEnd instanceof FieldElementBox && isNullOrUndefined(fieldEnd.fieldSeparator)) {
             inline = this.selection.getPreviousValidElement(fieldEnd.fieldBegin);
         }
         else {
             inline = this.selection.getPreviousValidElement(fieldEnd);
         }
         this.currentWidget = inline.line;
-        this.offset = this.currentWidget.getOffset(inline, inline instanceof FieldElementBox ? 0 : inline.length);
+        // tslint:disable-next-line:max-line-length
+        let index = inline instanceof FieldElementBox || inline instanceof BookmarkElementBox && inline.bookmarkType === 1 ? 0 : inline.length;
+        this.offset = this.currentWidget.getOffset(inline, index);
     }
     /**
      * Moves the text position to start of the word.
@@ -32647,6 +32675,10 @@ class Selection {
         /**
          * @private
          */
+        this.isFormatUpdated = false;
+        /**
+         * @private
+         */
         this.pasteOptions = (event) => {
             if (event.item.text === 'Keep source formatting') {
                 this.owner.editor.applyPasteOptions('KeepSourceFormatting');
@@ -32898,7 +32930,14 @@ class Selection {
      * Gets bookmark name collection.
      */
     get bookmarks() {
-        return this.getSelBookmarks();
+        return this.getSelBookmarks(false);
+    }
+    /**
+     * Gets the bookmark name collection in current selection
+     * @param includeHidden - Decide whether to include hidden bookmark name in current selection or not.
+     */
+    getBookmarks(includeHidden) {
+        return this.getSelBookmarks(includeHidden);
     }
     /**
      * @private
@@ -32915,7 +32954,7 @@ class Selection {
         }
         return false;
     }
-    getSelBookmarks() {
+    getSelBookmarks(includeHidden) {
         let bookmarkCln = [];
         let bookmarks = this.documentHelper.bookmarks;
         let start = this.start;
@@ -32929,11 +32968,11 @@ class Selection {
         let isCellSelected = false;
         let selectedCells = this.getSelectedCells();
         for (let i = 0; i < bookmarks.length; i++) {
-            if (bookmarks.keys[i].indexOf('_') !== 0) {
+            if (includeHidden || !includeHidden && bookmarks.keys[i].indexOf('_') !== 0) {
                 bookmrkStart = bookmarks.get(bookmarks.keys[i]);
                 bookmrkEnd = bookmrkStart.reference;
                 let bmStartPos = this.getElementPosition(bookmrkStart).startPosition;
-                let bmEndPos = this.getElementPosition(bookmrkEnd).startPosition;
+                let bmEndPos = this.getElementPosition(bookmrkEnd, true).startPosition;
                 if (bmStartPos.paragraph.isInsideTable || bmEndPos.paragraph.isInsideTable) {
                     if (selectedCells.length > 0) {
                         if (selectedCells.indexOf(bmStartPos.paragraph.associatedCell) >= 0
@@ -33854,11 +33893,9 @@ class Selection {
         this.fireSelectionChanged(true);
         if (this.documentHelper.isFormFillProtectedMode) {
             let formField = this.getCurrentFormField();
-            if (formField) {
-                let fieldEndOffset = formField.line.getOffset(formField.fieldEnd, 1);
-                if (this.end.offset === fieldEndOffset) {
-                    this.selectPrevNextFormField(true);
-                }
+            if (!formField) {
+                formField = this.getFormFieldInFormFillMode();
+                this.selectPrevNextFormField(true, formField);
             }
         }
     }
@@ -33893,7 +33930,7 @@ class Selection {
         if (this.documentHelper.isFormFillProtectedMode) {
             let formField = this.getCurrentFormField();
             if (!formField) {
-                formField = this.getPreviousFormField();
+                formField = this.getFormFieldInFormFillMode();
                 this.selectPrevNextFormField(false, formField);
             }
         }
@@ -34479,8 +34516,8 @@ class Selection {
         }
         this.checkForCursorVisibility();
     }
-    // returns current field in FormFill mode (if Selection goes before field seperator)
-    getPreviousFormField() {
+    // returns current field in FormFill mode
+    getFormFieldInFormFillMode() {
         let currentStart = this.owner.selection.start;
         let formField;
         for (let i = (this.documentHelper.formFields.length - 1); i >= 0; i--) {
@@ -34598,9 +34635,9 @@ class Selection {
         let currentFieldData;
         if (currentField !== previousField && previousField && previousField.formFieldData instanceof TextFormField
             && previousField.formFieldData.type === 'Text') {
-            if (previousField.formFieldData.format !== '') {
+            if (previousField.formFieldData.format !== '' && !this.isFormatUpdated) {
                 // Need to handle update form field format
-                //this.owner.editor.applyFormTextFormat(previousField);
+                this.owner.editor.applyFormTextFormat(previousField);
             }
             // tslint:disable-next-line:max-line-length
             previousFieldData = { 'fieldName': previousField.formFieldData.name, 'value': this.owner.editorModule.getFormFieldText(previousField) };
@@ -40310,29 +40347,31 @@ class Selection {
      * Get selected form field type
      * @private
      */
-    getCurrentFormField() {
+    getCurrentFormField(checkFieldResult) {
         let field;
-        if (this.documentHelper.isFormFillProtectedMode && this.owner.documentEditorSettings.formFieldSettings &&
+        if (checkFieldResult || this.documentHelper.isFormFillProtectedMode && this.owner.documentEditorSettings.formFieldSettings &&
             this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Inline') {
             for (let i = 0; i < this.documentHelper.formFields.length; i++) {
                 let formField = this.documentHelper.formFields[i];
-                let offset = formField.fieldSeparator.line.getOffset(formField.fieldSeparator, 1);
-                let fieldStart = new TextPosition(this.owner);
-                fieldStart.setPositionParagraph(formField.fieldSeparator.line, offset);
-                let fieldEndElement = formField.fieldEnd;
-                offset = fieldEndElement.line.getOffset(fieldEndElement, 0);
-                let fieldEnd = new TextPosition(this.owner);
-                fieldEnd.setPositionParagraph(fieldEndElement.line, offset);
-                let start = this.start;
-                let end = this.end;
-                if (!this.isForward) {
-                    start = this.end;
-                    end = this.start;
-                }
-                if ((start.isExistAfter(fieldStart) || start.isAtSamePosition(fieldStart))
-                    && (end.isExistBefore(fieldEnd) || end.isAtSamePosition(fieldEnd))) {
-                    field = formField;
-                    break;
+                if (HelperMethods.isLinkedFieldCharacter(formField)) {
+                    let offset = formField.fieldSeparator.line.getOffset(formField.fieldSeparator, 1);
+                    let fieldStart = new TextPosition(this.owner);
+                    fieldStart.setPositionParagraph(formField.fieldSeparator.line, offset);
+                    let fieldEndElement = formField.fieldEnd;
+                    offset = fieldEndElement.line.getOffset(fieldEndElement, 0);
+                    let fieldEnd = new TextPosition(this.owner);
+                    fieldEnd.setPositionParagraph(fieldEndElement.line, offset);
+                    let start = this.start;
+                    let end = this.end;
+                    if (!this.isForward) {
+                        start = this.end;
+                        end = this.start;
+                    }
+                    if ((start.isExistAfter(fieldStart) || start.isAtSamePosition(fieldStart))
+                        && (end.isExistBefore(fieldEnd) || end.isAtSamePosition(fieldEnd))) {
+                        field = formField;
+                        break;
+                    }
                 }
             }
         }
@@ -41398,25 +41437,29 @@ class Selection {
         }
         this.formFieldHighlighters.clear();
         let formFields = this.documentHelper.formFields;
-        for (let i = 0; i < formFields.length; i++) {
-            let formField = formFields[i];
-            let offset = formField.line.getOffset(formField, 0);
-            let startPosition = new TextPosition(this.owner);
-            startPosition.setPositionParagraph(formField.line, offset);
-            let endElement = formField.fieldEnd;
-            offset = endElement.line.getOffset(endElement, 1);
-            let endPosition = new TextPosition(this.owner);
-            endPosition.setPositionParagraph(endElement.line, offset);
-            this.isHighlightFormFields = true;
-            this.highlight(startPosition.paragraph, startPosition, endPosition);
-            if (this.isHighlightNext) {
-                this.highlightNextBlock(this.hightLightNextParagraph, startPosition, endPosition);
-                this.isHighlightNext = false;
-                this.hightLightNextParagraph = undefined;
+        if (!isNullOrUndefined(formFields) && formFields.length > 0) {
+            for (let i = 0; i < formFields.length; i++) {
+                let formField = formFields[i];
+                if (HelperMethods.isLinkedFieldCharacter(formField)) {
+                    let offset = formField.line.getOffset(formField, 0);
+                    let startPosition = new TextPosition(this.owner);
+                    startPosition.setPositionParagraph(formField.line, offset);
+                    let endElement = formField.fieldEnd;
+                    offset = endElement.line.getOffset(endElement, 1);
+                    let endPosition = new TextPosition(this.owner);
+                    endPosition.setPositionParagraph(endElement.line, offset);
+                    this.isHighlightFormFields = true;
+                    this.highlight(startPosition.paragraph, startPosition, endPosition);
+                    if (this.isHighlightNext) {
+                        this.highlightNextBlock(this.hightLightNextParagraph, startPosition, endPosition);
+                        this.isHighlightNext = false;
+                        this.hightLightNextParagraph = undefined;
+                    }
+                }
             }
+            this.isHighlightFormFields = false;
+            this.viewer.updateScrollBars();
         }
-        this.isHighlightFormFields = false;
-        this.viewer.updateScrollBars();
     }
     /**
      * @private
@@ -41572,8 +41615,8 @@ class Selection {
     /**
      * @private
      */
-    getElementPosition(element) {
-        let offset = element.line.getOffset(element, 1);
+    getElementPosition(element, isEnd) {
+        let offset = element.line.getOffset(element, isEnd ? 0 : 1);
         let startPosition = new TextPosition(this.owner);
         startPosition.setPositionParagraph(element.line, offset);
         return { 'startPosition': startPosition, 'endPosition': undefined };
@@ -45262,12 +45305,19 @@ class Editor {
     insertEditingRegion(user) {
         this.insertEditRangeElement(user && user !== '' ? user : 'Everyone');
     }
-    /**
-     * Enforce document protection.
-     */
-    enforceProtection(credential, limitToFormatting, isReadOnly) {
+    enforceProtection(credential, restrictFormatType, isReadOnly) {
+        let typeOfProtection;
+        let limitToFormatting;
+        if (typeof (restrictFormatType) === 'boolean') {
+            typeOfProtection = isReadOnly ? 'ReadOnly' : this.documentHelper.protectionType;
+            limitToFormatting = restrictFormatType;
+        }
+        else {
+            limitToFormatting = true;
+            typeOfProtection = restrictFormatType;
+        }
         this.documentHelper.restrictFormatting = limitToFormatting;
-        this.documentHelper.protectionType = isReadOnly ? 'ReadOnly' : this.documentHelper.protectionType;
+        this.documentHelper.protectionType = typeOfProtection;
         this.selection.isHighlightEditRegion = true;
         this.addProtection(credential, this.documentHelper.protectionType);
     }
@@ -45718,9 +45768,7 @@ class Editor {
         if (this.selection.isHighlightEditRegion) {
             this.selection.onHighlight();
         }
-        if (this.documentHelper.formFields.length > 0) {
-            this.selection.highlightFormFields();
-        }
+        this.selection.highlightFormFields();
         if (!this.isPaste) {
             this.copiedContent = undefined;
             this.copiedTextContent = '';
@@ -46269,7 +46317,6 @@ class Editor {
     insertTextInternal(text, isReplace) {
         if (this.documentHelper.protectionType === 'FormFieldsOnly' && this.selection.isInlineFormFillMode()) {
             let inline = this.selection.getCurrentFormField();
-            //(inline.formFieldData as TextFormField).isContentChanged = true;
             let resultText = this.getFormFieldText();
             let rex = new RegExp(this.owner.documentHelper.textHelper.getEnSpaceCharacter(), 'gi');
             if (resultText.length > 0 && resultText.replace(rex, '') === '') {
@@ -53781,7 +53828,6 @@ class Editor {
         paragraph.containerWidget = container;
         paragraph.index = blockIndex;
         this.updateNextBlocksIndex(paragraph, true);
-        // tslint:disable-next-line:max-line-length
         this.documentHelper.layout.layoutBodyWidgetCollection(blockIndex, container, paragraph, false);
     }
     /**
@@ -54337,7 +54383,7 @@ class Editor {
             }
             let resultText = this.getFormFieldText();
             if (!(inline instanceof TextElementBox)) {
-                inline = inline.nextElement;
+                inline = this.selection.getNextRenderedElementBox(inline, 1);
             }
             if (resultText.length === 1 && inline instanceof TextElementBox) {
                 this.selection.selectFieldInternal(this.selection.getCurrentFormField());
@@ -57402,12 +57448,17 @@ class Editor {
     // tslint:disable-next-line:max-line-length
     updateFormFieldInternal(field, formFieldData, value, reset) {
         if (formFieldData instanceof TextFormField) {
-            if (reset && value === '') {
-                value = this.getDefaultText(formFieldData);
+            if (value === '') {
+                if (reset) {
+                    value = this.getDefaultText(formFieldData);
+                }
+                else {
+                    value = this.documentHelper.textHelper.repeatChar(this.documentHelper.textHelper.getEnSpaceCharacter(), 5);
+                }
             }
             let formattedText = value;
             let type = formFieldData.type;
-            if (type === 'Text') {
+            if (type === 'Text' && formFieldData.format !== '') {
                 formattedText = HelperMethods.formatText(formFieldData.format, value);
             }
             this.updateFormFieldResult(field, formattedText);
@@ -57476,6 +57527,22 @@ class Editor {
         }
         return name;
     }
+    /**
+     * @private
+     */
+    applyFormTextFormat(formField) {
+        if (!isNullOrUndefined(formField)) {
+            let text = this.getFormFieldText(formField);
+            let currentValue = text;
+            text = HelperMethods.formatText(formField.formFieldData.format, text);
+            this.applyTextFormatInternal(formField, text);
+            this.initHistory('FormTextFormat');
+            if (this.editorHistory) {
+                this.editorHistory.currentBaseHistoryInfo.setFormFieldInfo(formField, currentValue);
+                this.editorHistory.updateHistory();
+            }
+        }
+    }
     // Inserts 5 space on Form Fill inline mode if length is 0
     insertSpaceInFormField() {
         if (this.documentHelper.isInlineFormFillProtectedMode && this.selection.isInlineFormFillMode()) {
@@ -57530,6 +57597,50 @@ class Editor {
             while (!(textElement instanceof FieldElementBox && textElement.fieldType === 1 && textElement === seperator.fieldEnd));
         }
         return text;
+    }
+    /**
+     * @private
+     */
+    applyTextFormatInternal(field, text) {
+        let textElement = field.fieldSeparator.nextElement;
+        let start = 0;
+        text = text.replace(/\r/g, '');
+        do {
+            if (!isNullOrUndefined(textElement) && textElement instanceof TextElementBox) {
+                textElement.text = text.slice(start, start + textElement.text.length);
+                start = start + textElement.length;
+            }
+            if (isNullOrUndefined(textElement.nextElement)) {
+                if (!isNullOrUndefined(textElement.line.nextLine)) {
+                    textElement = textElement.line.nextLine.children[0];
+                }
+                else {
+                    // tslint:disable-next-line:max-line-length
+                    this.documentHelper.layout.layoutBodyWidgetCollection(textElement.paragraph.index, textElement.paragraph.bodyWidget, textElement.paragraph, true);
+                    let nextBlock = textElement.paragraph.nextRenderedWidget;
+                    if (isNullOrUndefined(nextBlock)) {
+                        break;
+                    }
+                    if (nextBlock instanceof TableWidget) {
+                        nextBlock = this.selection.getFirstParagraphBlock(nextBlock);
+                    }
+                    while (nextBlock.isEmpty()) {
+                        nextBlock = nextBlock.nextRenderedWidget;
+                    }
+                    // tslint:disable-next-line:max-line-length
+                    textElement = nextBlock.childWidgets[0].children[0];
+                }
+            }
+            else {
+                textElement = textElement.nextElement;
+            }
+        } while (!(textElement instanceof FieldElementBox && textElement.fieldType === 1 &&
+            textElement.fieldBegin.formFieldData instanceof TextFormField));
+        // tslint:disable-next-line:max-line-length
+        this.documentHelper.layout.layoutBodyWidgetCollection(textElement.paragraph.index, textElement.paragraph.bodyWidget, textElement.paragraph, true);
+        this.selection.isFormatUpdated = true;
+        this.reLayout(this.selection, false);
+        this.selection.isFormatUpdated = false;
     }
 }
 
@@ -57826,6 +57937,22 @@ class BaseHistoryInfo {
         // tslint:disable-next-line:max-line-length
         this.removedNodes.push({ 'editStart': editStart, 'startIndex': editStart.indexInOwner, 'endIndex': editStart.editRangeEnd.indexInOwner });
     }
+    revertFormTextFormat() {
+        /* tslint:disable:no-any */
+        let fieldInfo = this.removedNodes[0];
+        let text = fieldInfo.value;
+        /* tslint:enable:no-any */
+        let formField = fieldInfo.formField;
+        if (this.editorHistory.isUndoing) {
+            this.owner.editorModule.applyTextFormatInternal(formField, text);
+            this.editorHistory.recordChanges(this);
+        }
+        else {
+            text = HelperMethods.formatText(formField.formFieldData.format, text);
+            this.owner.editorModule.applyTextFormatInternal(formField, text);
+            this.editorHistory.undoStack.push(this);
+        }
+    }
     revertFormField() {
         /* tslint:disable:no-any */
         let fieldInfo = this.removedNodes[0];
@@ -57903,6 +58030,10 @@ class BaseHistoryInfo {
      */
     // tslint:disable: max-func-body-length
     revert() {
+        if (this.action === 'FormTextFormat') {
+            this.revertFormTextFormat();
+            return;
+        }
         if (this.action === 'UpdateFormField') {
             this.revertFormField();
             return;
@@ -64672,9 +64803,9 @@ class WordExport {
                     writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.dropDownList.selectedIndex.toString());
                     writer.writeEndElement();
                 }
-                for (let i = 0; i < formFieldData.dropDownList.dropdownItems.length; i++) {
+                for (let i = 0; i < formFieldData.dropDownList.dropDownItems.length; i++) {
                     writer.writeStartElement(undefined, 'listEntry', this.wNamespace);
-                    writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.dropDownList.dropdownItems[i].toString());
+                    writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.dropDownList.dropDownItems[i].toString());
                     writer.writeEndElement();
                 }
                 writer.writeEndElement();
@@ -66318,6 +66449,8 @@ class SfdtExport {
         this.lists = undefined;
         this.document = undefined;
         this.endCell = undefined;
+        this.startColumnIndex = undefined;
+        this.endColumnIndex = undefined;
     }
     /**
      * Serialize the data as Syncfusion document text.
@@ -66635,7 +66768,7 @@ class SfdtExport {
                     else {
                         inline.formFieldData.dropDownList = {};
                         this.checkboxOrDropdown = true;
-                        inline.formFieldData.dropDownList.dropdownItems = element.formFieldData.dropDownItems;
+                        inline.formFieldData.dropDownList.dropDownItems = element.formFieldData.dropDownItems;
                         inline.formFieldData.dropDownList.selectedIndex = element.formFieldData.selectedIndex;
                     }
                 }
@@ -67221,7 +67354,7 @@ class SfdtExport {
         tableFormat.shading = this.writeShading(wTableFormat.shading);
         tableFormat.cellSpacing = wTableFormat.hasValue('cellSpacing') ? wTableFormat.cellSpacing : undefined;
         tableFormat.leftIndent = wTableFormat.hasValue('leftIndent') ? wTableFormat.leftIndent : undefined;
-        tableFormat.tableAlignment = wTableFormat.hasValue('tableAlignment"') ? wTableFormat.tableAlignment : undefined;
+        tableFormat.tableAlignment = wTableFormat.hasValue('tableAlignment') ? wTableFormat.tableAlignment : undefined;
         tableFormat.topMargin = wTableFormat.hasValue('topMargin') ? wTableFormat.topMargin : undefined;
         tableFormat.rightMargin = wTableFormat.hasValue('rightMargin') ? wTableFormat.rightMargin : undefined;
         tableFormat.leftMargin = wTableFormat.hasValue('leftMargin') ? wTableFormat.leftMargin : undefined;
@@ -76368,7 +76501,7 @@ class TextFormFieldDialog {
             innerHTML: localValue.getConstant('Text format')
         });
         let textFormatList = createElement('input');
-        let formatDropDownitems = ['Uppercase', 'Lowercase', 'First capital', 'Title case'];
+        let formatDropDownitems = ['Uppercase', 'Lowercase', 'FirstCapital', 'Titlecase'];
         this.textFormatDropDown = new ComboBox({
             dataSource: formatDropDownitems,
             popupHeight: '150px',
@@ -76473,7 +76606,7 @@ class TextFormFieldDialog {
         if (args.value === 'Regular text') {
             this.defaultTextLabel.innerHTML = this.localObj.getConstant('Default text');
             this.textFormatLabel.innerHTML = this.localObj.getConstant('Text format');
-            this.textFormatDropDown.dataSource = ['Uppercase', 'Lowercase', 'First capital', 'Title case'];
+            this.textFormatDropDown.dataSource = ['Uppercase', 'Lowercase', 'FirstCapital', 'Titlecase'];
         }
         else if (args.value === 'Number') {
             this.defaultTextLabel.innerHTML = this.localObj.getConstant('Default number');
@@ -78717,7 +78850,7 @@ class CommentView {
         let userName = createElement('div', { className: 'e-de-cmt-author-name' });
         userName.textContent = this.comment.author;
         //if (this.comment.author === this.owner.currentUser) {
-        this.menuBar = createElement('button', { className: 'e-de-cp-option' });
+        this.menuBar = createElement('button', { className: 'e-de-cp-option', attrs: { type: 'button' } });
         let userOption = [{ text: localObj.getConstant('Edit') },
             { text: localObj.getConstant('Delete') },
             { text: localObj.getConstant('Reply') },
@@ -78774,13 +78907,17 @@ class CommentView {
         this.textArea.addEventListener('keydown', this.updateTextAreaHeight.bind(this));
         this.textArea.addEventListener('keyup', this.enableDisablePostButton.bind(this));
         let editRegionFooter = createElement('div', { className: 'e-de-cmt-action-button' });
-        let postButton = createElement('button', { className: 'e-de-cmt-post-btn e-btn e-flat' });
+        let postButton = createElement('button', {
+            className: 'e-de-cmt-post-btn e-btn e-flat',
+            attrs: { type: 'button' }
+        });
         //tslint:disable-next-line:max-line-length
         this.postButton = new Button({ cssClass: 'e-btn e-flat e-primary e-de-overlay', iconCss: 'e-de-cmt-post', disabled: true }, postButton);
         postButton.addEventListener('click', this.postComment.bind(this));
         postButton.title = localObj.getConstant('Post');
         let cancelButton = createElement('button', {
-            className: 'e-de-cmt-cancel-btn e-btn e-flat'
+            className: 'e-de-cmt-cancel-btn e-btn e-flat',
+            attrs: { type: 'button' }
         });
         this.cancelButton = new Button({ cssClass: 'e-btn e-flat', iconCss: 'e-de-cmt-cancel' }, cancelButton);
         cancelButton.title = localObj.getConstant('Cancel');
@@ -78826,12 +78963,13 @@ class CommentView {
         this.replyViewTextBox.addEventListener('keyup', this.enableDisableReplyPostButton.bind(this));
         let editRegionFooter = createElement('div', { styles: 'display:none', className: 'e-de-cmt-action-button' });
         //tslint:disable-next-line:max-line-length
-        let postButton = createElement('button', { className: 'e-de-cmt-post-btn e-de-overlay e-btn e-flat' });
+        let postButton = createElement('button', { className: 'e-de-cmt-post-btn e-de-overlay e-btn e-flat', attrs: { type: 'button' } });
         this.replyPostButton = new Button({ cssClass: 'e-btn e-flat e-primary', iconCss: 'e-de-cmt-post', disabled: true }, postButton);
         postButton.addEventListener('click', this.postReply.bind(this));
         postButton.title = localObj.getConstant('Post');
         let cancelButton = createElement('button', {
-            className: 'e-de-cmt-cancel-btn e-btn e-flat'
+            className: 'e-de-cmt-cancel-btn e-btn e-flat',
+            attrs: { type: 'button' }
         });
         this.replyCancelButton = new Button({ cssClass: 'e-btn e-flat', iconCss: 'e-de-cmt-cancel' }, cancelButton);
         cancelButton.addEventListener('click', this.cancelReply.bind(this));
@@ -78845,13 +78983,14 @@ class CommentView {
     }
     initResolveOption(localObj) {
         let editRegionFooter = createElement('div', { className: 'e-de-cmt-resolve-btn' });
-        let postButton = createElement('button', { className: 'e-de-cmt-post-btn e-btn e-flat' });
         //tslint:disable-next-line:max-line-length
+        let postButton = createElement('button', { className: 'e-de-cmt-post-btn e-btn e-flat', attrs: { type: 'button' } });
         this.reopenButton = new Button({ cssClass: 'e-btn e-flat', iconCss: 'e-de-cmt-reopen' }, postButton);
         postButton.title = localObj.getConstant('Reopen');
         postButton.addEventListener('click', this.reopenButtonClick.bind(this));
         let cancelButton = createElement('button', {
-            className: 'e-de-cmt-cancel-btn e-btn e-flat'
+            className: 'e-de-cmt-cancel-btn e-btn e-flat',
+            attrs: { type: 'button' }
         });
         cancelButton.title = localObj.getConstant('Delete');
         this.deleteButton = new Button({ cssClass: 'e-btn e-flat', iconCss: 'e-de-cmt-delete' }, cancelButton);
@@ -79598,6 +79737,7 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
     }
     /**
      * Gets the total number of pages.
+     * @blazorType int
      * @returns {number}
      */
     get pageCount() {
@@ -79736,8 +79876,8 @@ let DocumentEditor = DocumentEditor_1 = class DocumentEditor extends Component {
         return this.enableImageResizer && !isNullOrUndefined(this.imageResizerModule);
     }
     preRender() {
-        this.findResultsList = [];
         //pre render section
+        this.findResultsList = [];
     }
     render() {
         if (!isNullOrUndefined(this.element)) {
@@ -81717,6 +81857,13 @@ class Toolbar$1 {
                 itemId !== id + CLIPBOARD_ID && itemId !== id + RESTRICT_EDITING_ID && itemId !== id + UPDATE_FIELDS_ID
                 && item.type !== 'Separator') {
                 if (enable && this.isCommentEditing && itemId === id + COMMENT_ID) {
+                    continue;
+                }
+                if (itemId !== id + UNDO_ID && itemId !== id + REDO_ID && itemId !== id + INSERT_TABLE_ID &&
+                    itemId !== id + INSERT_LINK_ID && itemId !== id + BOOKMARK_ID && itemId !== id + COMMENT_ID &&
+                    itemId !== id + HEADER_ID && itemId !== id + TABLE_OF_CONTENT_ID && itemId !== id + FOOTER_ID &&
+                    itemId !== id + PAGE_SET_UP_ID && itemId !== id + PAGE_NUMBER_ID && itemId !== id + INSERT_IMAGE_ID
+                    && itemId !== id + FORM_FIELDS_ID && itemId !== BREAK_ID) {
                     continue;
                 }
                 let element = document.getElementById(item.id);

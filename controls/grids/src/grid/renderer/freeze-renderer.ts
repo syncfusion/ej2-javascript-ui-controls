@@ -40,6 +40,7 @@ export class FreezeContentRender extends ContentRender implements IRenderer {
         if (isBlazor() && !this.parent.isJsComponent) { return; }
         super.renderEmpty(tbody);
         this.getMovableContent().querySelector('tbody').innerHTML = '<tr><td></td></tr>';
+        addClass([this.getMovableContent().querySelector('tbody').querySelector('tr')], ['e-emptyrow']);
         this.getFrozenContent().querySelector('.e-emptyrow').querySelector('td').colSpan = this.parent.getFrozenColumns();
         (this.getFrozenContent() as HTMLElement).style.borderRightWidth = '0px';
         if (this.parent.frozenRows) {
@@ -295,8 +296,8 @@ export class FreezeRender extends HeaderRender implements IRenderer {
         let width: number[] = [];
         for (let i: number = 0, len: number = fRows.length; i < len; i++) { //separate loop for performance issue 
             if (!isNullOrUndefined(fRows[i]) && !isNullOrUndefined(mRows[i])) {
-                height[i] = fRows[i].offsetHeight; //https://pagebuildersandwich.com/increased-plugins-performance-200/
-                width[i] = mRows[i].offsetHeight;
+                height[i] = fRows[i].getBoundingClientRect().height; //https://pagebuildersandwich.com/increased-plugins-performance-200/
+                width[i] = mRows[i].getBoundingClientRect().height;
             }
         }
         for (let i: number = 0, len: number = fRows.length; i < len; i++) {

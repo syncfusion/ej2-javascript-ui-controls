@@ -23,6 +23,8 @@ export const rowSelected: string = 'rowSelected';
 /** @hidden */
 export const checkboxChange: string = 'checkboxChange';
 /** @hidden */
+export const rowDeselecting: string = 'rowDeselecting';
+/** @hidden */
 export const rowDeselected: string = 'rowDeselected';
 /** @hidden */
 export const toolbarClick: string = 'toolbarClick';

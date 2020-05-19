@@ -373,8 +373,8 @@ export class DateRangePicker extends CalendarBase {
      * Set the predefined ranges which let the user pick required range easily in a component.
      * > For more details refer to 
      * [`Preset Ranges`](../../daterangepicker/customization#preset-ranges) documentation.
-     * @default null
      * {% codeBlock src='daterangepicker/presets/index.md' %}{% endcodeBlock %}
+     * @default null
      */
     @Collection<PresetsModel>([{}], Presets)
     public presets: PresetsModel[];

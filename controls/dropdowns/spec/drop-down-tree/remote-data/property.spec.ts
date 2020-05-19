@@ -1139,6 +1139,10 @@ describe('DropDown Tree control Remote datasource', () => {
             it('functionality testing', (done: Function) => {
                 expect(ddtreeObj.value).not.toBe(null);
                 expect(ddtreeObj.text).toBe('Music')
+                var hiddenElement = ddtreeObj.inputWrapper.querySelector('option');
+                expect(hiddenElement).not.toBe(null);
+                expect(hiddenElement.getAttribute('value')).toBe('01');
+                expect(hiddenElement.text).toBe('Music');
                 ddtreeObj.destroy();
                 ddtreeObj = new DropDownTree({
                     fields: {
@@ -1155,6 +1159,8 @@ describe('DropDown Tree control Remote datasource', () => {
                 });
                 expect(ddtreeObj.value).toBe(null);
                 expect(ddtreeObj.text).toBe(null);
+                var hiddenElement_1 = ddtreeObj.inputWrapper.querySelector('option');
+                expect(hiddenElement_1).toBe(null);
                 done();
             }, 100);
         });
@@ -1205,6 +1211,10 @@ describe('DropDown Tree control Remote datasource', () => {
             it('functionality testing', (done: Function) => {
                 expect(ddtreeObj.value).not.toBe(null);
                 expect(ddtreeObj.text).toBe('Music')
+                var hiddenElement = ddtreeObj.inputWrapper.querySelector('option');
+                expect(hiddenElement).not.toBe(null);
+                expect(hiddenElement.getAttribute('value')).toBe('01');
+                expect(hiddenElement.text).toBe('Music');
                 ddtreeObj.destroy();
                 ddtreeObj = new DropDownTree({
                     fields: {
@@ -1221,6 +1231,8 @@ describe('DropDown Tree control Remote datasource', () => {
                 });
                 expect(ddtreeObj.value).toBe(null);
                 expect(ddtreeObj.text).toBe(null);
+                var hiddenElement_1 = ddtreeObj.inputWrapper.querySelector('option');
+                expect(hiddenElement_1).toBe(null);
                 done();
             }, 100);
         });

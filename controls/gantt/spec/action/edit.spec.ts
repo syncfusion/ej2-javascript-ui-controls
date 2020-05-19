@@ -377,4 +377,41 @@ describe('Gantt Edit support', () => {
             expect(ganttObj.flatData[0].ganttProperties.isMilestone).toBe(true);
         });
     });
+
+    describe('Adding record with empty dataSource', () => {
+        let ganttObj_tree: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj_tree = createGantt(
+                {
+                    dataSource: [],
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        dependency: 'Predecessor',
+                        child: 'subtasks'
+                    },
+                    editSettings: {
+                        allowAdding: true
+                    },
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019')
+                }, done);
+        });
+        it('Adding record with empty dataSource', () => {
+            let data: object[] = [ { TaskID: 2, TaskName: 'Child Task 1', StartDate: new Date('04/02/2019'), Duration: 2}];
+            ganttObj_tree.addRecord(data[0]);
+            expect(ganttObj_tree.currentViewData.length).toBe(1);
+            expect(ganttObj_tree.treeGrid.flatData.length).toBe(1);
+            expect(ganttObj_tree.flatData.length).toBe(1);
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj_tree);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 2000);
+        });
+    });
 });

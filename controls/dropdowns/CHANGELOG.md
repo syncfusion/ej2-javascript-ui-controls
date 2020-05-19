@@ -2,6 +2,30 @@
 
 ## [Unreleased]
 
+## 18.1.53 (2020-05-19)
+
+### MultiSelect
+
+#### Bug Fixes
+
+- `#273796` - Now, filtering works properly when paste the value in the input element.
+
+### Dropdown Tree
+
+#### Bug Fixes
+
+- `#274351` - The issue with "The Dropdown Tree initialized value which is not getting it in the form post" has been resolved.
+
+### ListBox
+
+#### New Features
+
+- Provided Placeholder support to filterbar in listbox.
+
+#### Bug Fixes
+
+- Move to and move from throws script error when listbox rendered with item template issue fixed.
+
 ## 18.1.52 (2020-05-13)
 
 ### ListBox

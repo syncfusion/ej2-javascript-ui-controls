@@ -1908,6 +1908,9 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
         if (this.isBlazorServerRender() && isNullOrUndefined(this.headerContent)) {
             this.headerContent = this.element.getElementsByClassName('e-dlg-header-content')[0];
         }
+        if (this.isBlazorServerRender() && isNullOrUndefined(this.contentEle)) {
+            this.contentEle = this.element.querySelector('#' + this.element.id + '_dialog-content');
+        }
         if (!this.isBlazorServerRender()) {
             this.setTargetContent();
             if (this.header !== '' && !isNullOrUndefined(this.header)) {
@@ -2276,7 +2279,7 @@ var Dialog = /** @__PURE__ @class */ (function (_super) {
     };
     Dialog.prototype.createHeaderContent = function () {
         if (isNullOrUndefined(this.headerContent)) {
-            this.headerContent = this.createElement('div', { className: DLG_HEADER_CONTENT });
+            this.headerContent = this.createElement('div', { id: this.element.id + '_dialog-header', className: DLG_HEADER_CONTENT });
         }
     };
     Dialog.prototype.renderCloseIcon = function () {
@@ -3337,8 +3340,8 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         this.tooltipEle.style.display = 'block';
         var pos = calculatePosition(target, this.tooltipPositionX, this.tooltipPositionY);
         var offsetPos = this.calculateTooltipOffset(this.position);
-        this.tooltipEle.style.display = '';
         var elePos = this.collisionFlipFit(target, pos.left + offsetPos.left, pos.top + offsetPos.top);
+        this.tooltipEle.style.display = '';
         return elePos;
     };
     Tooltip.prototype.reposition = function (target) {
@@ -3438,12 +3441,14 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         this.updateTipPosition(position);
         var leftValue;
         var topValue;
+        this.tooltipEle.style.display = 'block';
         var tooltipWidth = this.tooltipEle.clientWidth;
         var tooltipHeight = this.tooltipEle.clientHeight;
         var arrowEle = this.tooltipEle.querySelector('.' + ARROW_TIP);
         var arrowInnerELe = this.tooltipEle.querySelector('.' + ARROW_TIP_INNER);
         var tipWidth = arrowEle.offsetWidth;
         var tipHeight = arrowEle.offsetHeight;
+        this.tooltipEle.style.display = '';
         if (this.tipClass === TIP_BOTTOM || this.tipClass === TIP_TOP) {
             if (this.tipClass === TIP_BOTTOM) {
                 topValue = '99.9%';
@@ -3832,6 +3837,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
         }
         var eleOffset = { left: elePos.left, top: elePos.top };
         var left = fit(this.tooltipEle, (this.target ? this.element : null), { X: true, Y: false }, eleOffset).left;
+        this.tooltipEle.style.display = 'block';
         if (this.showTipPointer && (newpos.indexOf('Bottom') === 0 || newpos.indexOf('Top') === 0)) {
             var arrowEle = this.tooltipEle.querySelector('.' + ARROW_TIP);
             var arrowleft = parseInt(arrowEle.style.left, 10) - (left - elePos.left);
@@ -3843,6 +3849,7 @@ var Tooltip = /** @__PURE__ @class */ (function (_super) {
             }
             arrowEle.style.left = arrowleft.toString() + 'px';
         }
+        this.tooltipEle.style.display = '';
         eleOffset.left = left;
         return eleOffset;
     };

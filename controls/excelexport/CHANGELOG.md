@@ -2,7 +2,15 @@
 
 ## [Unreleased]
 
-## 18.1.52 (2020-05-13)
+## 18.1.53 (2020-05-19)
+
+### Excel Export
+
+#### Bug Fixes
+
+- Fixed currency format thousand separator missing issue.
+
+## 18.1.36-beta (2020-03-19)
 
 ### Excel Export
 

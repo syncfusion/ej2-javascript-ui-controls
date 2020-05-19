@@ -190,6 +190,12 @@ export interface TreeGridModel extends ComponentModel{
     showColumnMenu?: boolean;
 
     /**
+    * If `showColumnChooser` is set to true, it allows you to dynamically show or hide columns.
+    * @default false
+    */
+    showColumnChooser?: boolean;
+
+    /**
    * If `allowSorting` is set to true, it allows sorting of treegrid records when column header is clicked.
    * @default false
    */

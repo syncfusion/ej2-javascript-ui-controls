@@ -447,6 +447,11 @@ export const dialogOpen: string = 'dialogOpen';
  * @hidden
  * @deprecated
  */
+export const beforeDialogClose: string = 'beforeDialogClose';
+/** 
+ * @hidden
+ * @deprecated
+ */
 export const dialogClose: string = 'dialogClose';
 /** 
  * @hidden

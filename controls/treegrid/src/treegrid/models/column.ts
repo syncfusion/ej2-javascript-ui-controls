@@ -299,6 +299,13 @@ export class Column {
      */
     public hideAtMedia: string;
 
+   /**
+    * If `showInColumnChooser` set to false, then hide the particular column in column chooser.
+    *  By default all columns are displayed in column Chooser.
+    * @default true
+    */
+   public showInColumnChooser?: boolean;
+
     /**
      * The `filterBarTemplate` is used to add a custom component instead of default input component for filter bar.   
      * It have create and read functions.  
@@ -563,6 +570,13 @@ export interface ColumnModel {
    */
 
   displayAsCheckBox?: boolean;
+
+  /**
+   * If `showInColumnChooser` set to false, then hide the particular column in column chooser.
+   *  By default all columns are displayed in column Chooser.
+   * @default true
+   */
+  showInColumnChooser?: boolean;
 
   /**
    * Defines the method which is used to achieve custom formatting from an external function.

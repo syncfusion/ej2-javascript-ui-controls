@@ -8125,6 +8125,10 @@ let Chart = class Chart extends Component {
             this.initializeIndicator();
             this.initializeTrendLine();
             this.renderSeries();
+            // Trendline is append to DOM after the series
+            if (this.trendLineElements) {
+                appendChildElement(this.enableCanvas, this.svgObject, this.trendLineElements, this.redraw);
+            }
             this.appendElementsAfterSeries(axisElement);
         }
     }
@@ -8209,9 +8213,6 @@ let Chart = class Chart extends Component {
             if (series.trendlines.length) {
                 this.trendLineModule.getTrendLineElements(series, this);
             }
-        }
-        if (this.trendLineElements) {
-            appendChildElement(this.enableCanvas, this.svgObject, this.trendLineElements, this.redraw);
         }
     }
     appendElementsAfterSeries(axisElement) {
@@ -10356,8 +10357,9 @@ class DateTime extends NiceInterval {
     }
     /** @private */
     blazorCustomFormat(axis) {
-        if (this.chart.isBlazor && axis.actualIntervalType === 'Years') {
-            return 'yyyy';
+        if (this.chart.isBlazor) {
+            return axis.actualIntervalType === 'Years' ? (axis.isIntervalInDecimal ? 'yyyy' : 'MMM y') :
+                (axis.actualIntervalType === 'Days' && !axis.isIntervalInDecimal) ? 'ddd HH tt' : '';
         }
         else {
             return '';
@@ -13883,7 +13885,7 @@ class ScatterSeries {
         // Scatter series DataLabel is not rendered after selecting StackingColumn
         series.isRectSeries = false;
         let marker = series.marker;
-        let visiblePoints = series.points;
+        let visiblePoints = this.enableComplexProperty(series);
         let argsData;
         let getCoordinate = series.chart.chartAreaType === 'PolarRadar' ? TransformToVisible : getPoint;
         let startLocation;
@@ -13910,6 +13912,46 @@ class ScatterSeries {
                 }
             }
         }
+    }
+    /**
+     * To improve the chart performance.
+     * @return {void}
+     * @private
+     */
+    enableComplexProperty(series) {
+        let tempPoints2 = [];
+        let tempPoints = [];
+        let yVisibleRange = series.yAxis.visibleRange;
+        let xVisibleRange = series.xAxis.visibleRange;
+        let areaBounds = series.clipRect;
+        let seriesPoints = series.points;
+        let yTolerance = Math.abs(yVisibleRange.delta / areaBounds.height);
+        let xTolerance = Math.abs(xVisibleRange.delta / areaBounds.width);
+        let prevYValue = (seriesPoints[0] && seriesPoints[0].y > yTolerance) ? 0 : yTolerance;
+        let prevXValue = (seriesPoints[0] && seriesPoints[0].x > xTolerance) ? 0 : xTolerance;
+        let yVal = 0;
+        let xVal = 0;
+        for (let currentPoint of seriesPoints) {
+            currentPoint.symbolLocations = [];
+            yVal = currentPoint.yValue ? currentPoint.yValue : yVisibleRange.min;
+            xVal = currentPoint.xValue ? currentPoint.xValue : xVisibleRange.min;
+            if (Math.abs(prevYValue - yVal) >= yTolerance || Math.abs(prevXValue - xVal) >= xTolerance) {
+                tempPoints.push(currentPoint);
+                prevYValue = yVal;
+                prevXValue = xVal;
+            }
+        }
+        let currentTempPoint;
+        for (let i = 0; i < tempPoints.length; i++) {
+            currentTempPoint = tempPoints[i];
+            if (isNullOrUndefined(currentTempPoint.x) || currentTempPoint.x === '') {
+                continue;
+            }
+            else {
+                tempPoints2.push(currentTempPoint);
+            }
+        }
+        return tempPoints2;
     }
     /**
      * To append scatter element
@@ -14732,11 +14774,11 @@ class SplineBase extends LineBase {
         }
         return i;
     }
-    filterEmptyPoints(series) {
+    filterEmptyPoints(series, seriesPoints) {
         if (series.emptyPointSettings.mode !== 'Drop' && this.isPointInRange(series.points)) {
-            return series.points;
+            return seriesPoints ? seriesPoints : series.points;
         }
-        let points = extend([], series.points, null, true);
+        let points = seriesPoints ? seriesPoints : extend([], series.points, null, true);
         for (let i = 0; i < points.length; i++) {
             points[i].index = i;
             if (points[i].isEmpty) {
@@ -14960,21 +15002,10 @@ class SplineSeries extends SplineBase {
         let firstPoint = null;
         let direction = '';
         let startPoint = 'M';
-        let tempPoints = [];
         let points = [];
-        let point;
-        let pointIndex = 0;
-        tempPoints = this.filterEmptyPoints(series);
-        for (let i = 0; i < tempPoints.length; i++) {
-            point = tempPoints[i];
-            if (isNullOrUndefined(point.x) || point.x === '') {
-                continue;
-            }
-            else {
-                point.index = pointIndex++;
-                points.push(point);
-            }
-        }
+        let tempPoints = [];
+        tempPoints = this.enableComplexProperty(series);
+        points = this.filterEmptyPoints(series, tempPoints);
         let previous;
         let getCoordinate = series.chart.chartAreaType === 'PolarRadar' ? TransformToVisible : getPoint;
         for (let point of points) {
@@ -26595,7 +26626,7 @@ let AccumulationChart = class AccumulationChart extends Component {
         let maxWidth = 0;
         let titleWidth = 0;
         this.titleCollection = getTitle(this.title, this.titleStyle, this.initialClipRect.width);
-        titleHeight = measureText(this.title, this.titleStyle).height * this.titleCollection.length;
+        titleHeight = this.title ? measureText(this.title, this.titleStyle).height * this.titleCollection.length : titleHeight;
         if (this.subTitle) {
             for (let titleText of this.titleCollection) {
                 titleWidth = measureText(titleText, this.titleStyle).width;

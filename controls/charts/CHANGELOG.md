@@ -2,6 +2,20 @@
 
 ## [Unreleased]
 
+## 18.1.53 (2020-05-19)
+
+### Accumulation chart
+
+#### Bug Fixes
+
+- `#153764` - The size of the doughnuts graphs does not display correctly in the Edge browser issue fixed.
+
+### Chart
+
+#### Bug Fixes
+
+- `#273192` - Trendlines are placed behind the series issue has been fixed.
+
 ## 18.1.52 (2020-05-13)
 
 ### Accumulation chart

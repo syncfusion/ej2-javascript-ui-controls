@@ -590,6 +590,7 @@ export class StampAnnotation {
                 // tslint:disable-next-line
                 let settings: any = { opacity: annotationObject.opacity, author: annotationObject.author, modifiedDate: annotationObject.modifiedDate };
                 if (annotation.shapeAnnotationType === 'Image') {
+                    this.pdfViewerBase.stampAdded = false;
                     this.pdfViewer.fireAnnotationAdd(annotationObject.pageNumber, annotationObject.annotName, 'Image', bounds, settings);
                 } else {
                     this.pdfViewer.fireAnnotationAdd(annotationObject.pageNumber, annotationObject.annotName, 'Stamp', bounds, settings);

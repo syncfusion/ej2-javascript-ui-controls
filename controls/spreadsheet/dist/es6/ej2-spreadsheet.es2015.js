@@ -18765,26 +18765,17 @@ class SpreadsheetHyperlink {
                             rangeIndexes[1] - this.parent.viewport.leftIndex : rangeIndexes[1];
                     }
                     if (!isNullOrUndefined(sheet)) {
+                        let rangeAddr = getRangeAddress(rangeIndexes);
                         if (sheet === this.parent.getActiveSheet()) {
-                            this.parent.selectRange(getRangeAddress(rangeIndexes));
+                            getUpdateUsingRaf(() => { this.parent.goTo(rangeAddr); });
                         }
                         else {
-                            sheet.selectedRange = selRange;
-                            this.parent.activeSheetIndex = sheetIdx;
-                            this.parent.dataBind();
+                            if (rangeAddr.indexOf(':') >= 0) {
+                                let addArr = rangeAddr.split(':');
+                                rangeAddr = addArr[0] === addArr[1] ? addArr[0] : rangeAddr;
+                            }
+                            getUpdateUsingRaf(() => { this.parent.goTo(this.parent.sheets[sheetIdx].name + '!' + rangeAddr); });
                         }
-                        if (this.parent.scrollSettings.enableVirtualization) {
-                            rangeIndexes[0] = rangeIndexes[0] >= this.parent.viewport.rowCount ?
-                                rangeIndexes[0] - (this.parent.viewport.rowCount - 2) : 0;
-                            rangeIndexes[2] = rangeIndexes[2] >= this.parent.viewport.rowCount ?
-                                rangeIndexes[2] - (this.parent.viewport.rowCount - 2) : 0;
-                            rangeIndexes[1] = rangeIndexes[1] >= this.parent.viewport.colCount ?
-                                rangeIndexes[1] - (this.parent.viewport.colCount - 2) : 0;
-                            rangeIndexes[3] = rangeIndexes[3] >= this.parent.viewport.colCount ?
-                                rangeIndexes[3] - (this.parent.viewport.colCount - 2) : 0;
-                        }
-                        let rangeAddr = getRangeAddress(rangeIndexes);
-                        getUpdateUsingRaf(() => { this.parent.goTo(rangeAddr); });
                     }
                 }
             }
@@ -19859,7 +19850,7 @@ class DataValidation {
                 colIdx = colIdx >= this.parent.viewport.leftIndex ?
                     colIdx - this.parent.viewport.leftIndex : colIdx;
             }
-            let cell = getCell(rowIdx, colIdx, sheet);
+            let cell = getCell(indexes[0], indexes[1], sheet);
             let tr = mainCont.getElementsByTagName('tr')[rowIdx];
             let tdEle;
             if (tr) {
@@ -20880,15 +20871,8 @@ class ProtectSheet {
     }
     lockCellsHandler(args) {
         let sheet = this.parent.getActiveSheet();
-        let cell = getCell(args.rowIdx, args.colIdx, sheet);
-        if (cell) {
-            if (args.isLocked) {
-                cell.isLocked = args.isLocked;
-            }
-            else {
-                cell.isLocked = false;
-            }
-        }
+        let cellObj = { isLocked: args.isLocked ? args.isLocked : false };
+        setCell(args.rowIdx, args.colIdx, sheet, cellObj, true);
     }
     /**
      * Get the module name.

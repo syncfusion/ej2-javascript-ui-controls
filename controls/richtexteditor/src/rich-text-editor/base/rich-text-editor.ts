@@ -3,7 +3,7 @@ import { Property, NotifyPropertyChanges, INotifyPropertyChanged, formatUnit, L1
 import { setStyleAttribute, Event, removeClass, print as printWindow, attributes } from '@syncfusion/ej2-base';
 import { isNullOrUndefined as isNOU, compile, append, extend, debounce, isBlazor } from '@syncfusion/ej2-base';
 import { Touch as EJ2Touch, TapEventArgs } from '@syncfusion/ej2-base';
-import { getScrollableParent, BeforeOpenEventArgs } from '@syncfusion/ej2-popups';
+import { getScrollableParent, BeforeOpenEventArgs, BeforeCloseEventArgs } from '@syncfusion/ej2-popups';
 import { RichTextEditorModel } from './rich-text-editor-model';
 import * as events from '../base/constant';
 import * as classes from '../base/classes';
@@ -689,6 +689,16 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
     @Event()
     public dialogOpen: EmitType<Object>;
     /**
+     * Event triggers when the dialog is being closed.
+     * If you cancel this event, the dialog remains opened.
+     * Set the cancel argument to true to prevent closing a dialog.
+     * @event
+     * @blazorProperty 'OnDialogClose'
+     * @blazorType Syncfusion.EJ2.Blazor.Popups.BeforeOpenEventArgs
+     */
+    @Event()
+    public beforeDialogClose: EmitType<BeforeCloseEventArgs>;
+    /**
      * Event triggers after the dialog has been closed.
      * @event
      * @blazorProperty 'DialogClosed'
@@ -1250,37 +1260,15 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.editorMode === 'HTML' && ((e.which === 8 && e.code === 'Backspace') || (e.which === 46 && e.code === 'Delete'))) {
             let range: Range = this.getRange();
             let startNode: Element = range.startContainer.nodeName === '#text' ? range.startContainer.parentElement :
-                range.startContainer as Element;
+            range.startContainer as Element;
             if (closest(startNode, 'pre') &&
-                (e.which === 8 && range.startContainer.textContent.charCodeAt(range.startOffset - 1) === 8203) ||
-                (e.which === 46 && range.startContainer.textContent.charCodeAt(range.startOffset) === 8203)) {
+            (e.which === 8 && range.startContainer.textContent.charCodeAt(range.startOffset - 1) === 8203) ||
+            (e.which === 46 && range.startContainer.textContent.charCodeAt(range.startOffset) === 8203)) {
                 let regEx: RegExp = new RegExp(String.fromCharCode(8203), 'g');
                 let pointer: number = e.which === 8 ? range.startOffset - 1 : range.startOffset;
                 range.startContainer.textContent = range.startContainer.textContent.replace(regEx, '');
                 this.formatter.editorManager.nodeSelection.setCursorPoint(
-                    this.contentModule.getDocument(), range.startContainer as Element, pointer);
-            } else if ((e.code === 'Backspace' && e.which === 8) &&
-                range.startContainer.textContent.charCodeAt(0) === 8203) {
-                let parentEle: Element = range.startContainer.parentElement;
-                let index: number;
-                let i: number;
-                for (i = 0; i < parentEle.childNodes.length; i++) { if (parentEle.childNodes[i] === range.startContainer) { index = i; } }
-                let bool: boolean = true;
-                let removeNodeArray: number[] = [];
-                for (i = index; i >= 0; i--) {
-                    if (parentEle.childNodes[i].textContent.charCodeAt(0) === 8203 && bool) {
-                        removeNodeArray.push(i);
-                    } else {
-                        bool = false;
-                    }
-                }
-                if (removeNodeArray.length > 0) {
-                    for (i = removeNodeArray.length - 1; i > 0; i--) {
-                        parentEle.childNodes[removeNodeArray[i]].textContent = '';
-                    }
-                }
-                this.formatter.editorManager.nodeSelection.setCursorPoint(
-                    this.contentModule.getDocument(), range.startContainer as Element, range.startOffset);
+                this.contentModule.getDocument(), range.startContainer as Element, pointer);
             }
         }
         if (this.formatter.getUndoRedoStack().length === 0) {

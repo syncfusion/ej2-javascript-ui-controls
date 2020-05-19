@@ -5395,7 +5395,11 @@ var Browser = /** @class */ (function () {
          */
         get: function () {
             if (isUndefined(window.browserDetails.isTouch)) {
-                return window.browserDetails.isTouch = ('ontouchstart' in window);
+                return (window.browserDetails.isTouch =
+                    ('ontouchstart' in window.navigator) ||
+                        (window &&
+                            window.navigator &&
+                            (window.navigator.maxTouchPoints > 0)) || ('ontouchstart' in window));
             }
             return window.browserDetails.isTouch;
         },
@@ -8283,7 +8287,7 @@ var Touch = /** @class */ (function (_super) {
         _this.tapCount = 0;
         _this.startEvent = function (evt) {
             if (_this.touchAction === true) {
-                var point = (evt.changedTouches ? evt.changedTouches[0] : evt);
+                var point = _this.updateChangeTouches(evt);
                 if (evt.changedTouches !== undefined) {
                     _this.touchAction = false;
                 }
@@ -8300,7 +8304,7 @@ var Touch = /** @class */ (function (_super) {
             }
         };
         _this.moveEvent = function (evt) {
-            var point = evt.changedTouches ? evt.changedTouches[0] : evt;
+            var point = _this.updateChangeTouches(evt);
             _this.movedPoint = point;
             _this.isTouchMoved = !(point.clientX === _this.startPoint.clientX && point.clientY === _this.startPoint.clientY);
             var eScrollArgs = {};
@@ -8341,10 +8345,7 @@ var Touch = /** @class */ (function (_super) {
         _this.swipeFn = function (evt) {
             clearTimeout(_this.timeOutTapHold);
             clearTimeout(_this.timeOutTap);
-            var point = evt;
-            if (evt.changedTouches) {
-                point = evt.changedTouches[0];
-            }
+            var point = _this.updateChangeTouches(evt);
             var diffX = point.clientX - _this.startPoint.clientX;
             var diffY = point.clientY - _this.startPoint.clientY;
             diffX = Math.floor(diffX < 0 ? -1 * diffX : diffX);
@@ -8456,7 +8457,7 @@ var Touch = /** @class */ (function (_super) {
         EventHandler.remove(this.element, Browser.touchCancelEvent, this.cancelEvent);
     };
     Touch.prototype.calcPoints = function (evt) {
-        var point = evt.changedTouches ? evt.changedTouches[0] : evt;
+        var point = this.updateChangeTouches(evt);
         this.defaultArgs = { originalEvent: evt };
         this.distanceX = Math.abs((Math.abs(point.clientX) - Math.abs(this.startPoint.clientX)));
         this.distanceY = Math.abs((Math.abs(point.clientY) - Math.abs(this.startPoint.clientY)));
@@ -8468,7 +8469,7 @@ var Touch = /** @class */ (function (_super) {
         }
     };
     Touch.prototype.calcScrollPoints = function (evt) {
-        var point = evt.changedTouches ? evt.changedTouches[0] : evt;
+        var point = this.updateChangeTouches(evt);
         this.defaultArgs = { originalEvent: evt };
         this.distanceX = Math.abs((Math.abs(point.clientX) - Math.abs(this.lastMovedPoint.clientX)));
         this.distanceY = Math.abs((Math.abs(point.clientY) - Math.abs(this.lastMovedPoint.clientY)));
@@ -8499,6 +8500,11 @@ var Touch = /** @class */ (function (_super) {
         }
         return (ele[keys[0] + temp[1]] === 0) ||
             (ele[keys[1] + temp[0]] + ele[keys[0] + temp[1]] >= ele[keys[0] + temp[0]]);
+    };
+    Touch.prototype.updateChangeTouches = function (evt) {
+        // tslint:disable-next-line:max-line-length
+        var point = evt.changedTouches && evt.changedTouches.length !== 0 ? evt.changedTouches[0] : evt;
+        return point;
     };
     __decorate$5([
         Event$1()
@@ -8663,7 +8669,19 @@ var SanitizeHtmlHelper = /** @class */ (function () {
         this.removeXssTags();
         this.removeJsEvents();
         this.removeXssAttrs();
-        return this.wrapElement.innerHTML;
+        var tempEleValue = this.wrapElement.innerHTML;
+        this.removeElement();
+        return tempEleValue;
+    };
+    SanitizeHtmlHelper.removeElement = function () {
+        // Removes an element's attibute to avoid html tag validation
+        var nodes = this.wrapElement.children;
+        for (var j = 0; j < nodes.length; j++) {
+            var attribute = nodes[j].attributes;
+            for (var i = 0; i < attribute.length; i++) {
+                this.wrapElement.children[j].removeAttribute(attribute[i].localName);
+            }
+        }
     };
     SanitizeHtmlHelper.removeXssTags = function () {
         var elements = this.wrapElement.querySelectorAll(this.removeTags.join(','));

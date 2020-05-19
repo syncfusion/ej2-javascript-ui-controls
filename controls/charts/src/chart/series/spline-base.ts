@@ -86,11 +86,11 @@ export class SplineBase extends LineBase {
         }
         return i;
     }
-    public filterEmptyPoints(series: Series): Points[] {
+    public filterEmptyPoints(series: Series, seriesPoints?: Points[]): Points[] {
         if (series.emptyPointSettings.mode !== 'Drop' && this.isPointInRange(series.points)) {
-            return series.points;
+            return seriesPoints ? seriesPoints : series.points;
         }
-        let points: Points[] = extend([], series.points, null, true) as Points[];
+        let points: Points[] = seriesPoints ? seriesPoints :  extend([], series.points, null, true) as Points[];
         for (let i: number = 0; i < points.length; i++) {
             points[i].index = i;
             if (points[i].isEmpty) {

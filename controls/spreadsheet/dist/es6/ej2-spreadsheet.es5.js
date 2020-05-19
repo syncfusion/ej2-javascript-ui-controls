@@ -19223,13 +19223,13 @@ var SpreadsheetHyperlink = /** @__PURE__ @class */ (function () {
                         range[1] = address;
                     }
                     selRange = range[1];
-                    var sheetIdx = void 0;
+                    var sheetIdx_1;
                     for (var idx = 0; idx < this.parent.sheets.length; idx++) {
                         if (this.parent.sheets[idx].name === range[0]) {
-                            sheetIdx = idx;
+                            sheetIdx_1 = idx;
                         }
                     }
-                    sheet = this.parent.sheets[sheetIdx];
+                    sheet = this.parent.sheets[sheetIdx_1];
                     if (range[1].indexOf(':') !== -1) {
                         var colIndex = range[1].indexOf(':');
                         var left = range[1].substr(0, colIndex);
@@ -19257,26 +19257,17 @@ var SpreadsheetHyperlink = /** @__PURE__ @class */ (function () {
                             rangeIndexes[1] - this.parent.viewport.leftIndex : rangeIndexes[1];
                     }
                     if (!isNullOrUndefined(sheet)) {
+                        var rangeAddr_1 = getRangeAddress(rangeIndexes);
                         if (sheet === this.parent.getActiveSheet()) {
-                            this.parent.selectRange(getRangeAddress(rangeIndexes));
+                            getUpdateUsingRaf(function () { _this.parent.goTo(rangeAddr_1); });
                         }
                         else {
-                            sheet.selectedRange = selRange;
-                            this.parent.activeSheetIndex = sheetIdx;
-                            this.parent.dataBind();
+                            if (rangeAddr_1.indexOf(':') >= 0) {
+                                var addArr = rangeAddr_1.split(':');
+                                rangeAddr_1 = addArr[0] === addArr[1] ? addArr[0] : rangeAddr_1;
+                            }
+                            getUpdateUsingRaf(function () { _this.parent.goTo(_this.parent.sheets[sheetIdx_1].name + '!' + rangeAddr_1); });
                         }
-                        if (this.parent.scrollSettings.enableVirtualization) {
-                            rangeIndexes[0] = rangeIndexes[0] >= this.parent.viewport.rowCount ?
-                                rangeIndexes[0] - (this.parent.viewport.rowCount - 2) : 0;
-                            rangeIndexes[2] = rangeIndexes[2] >= this.parent.viewport.rowCount ?
-                                rangeIndexes[2] - (this.parent.viewport.rowCount - 2) : 0;
-                            rangeIndexes[1] = rangeIndexes[1] >= this.parent.viewport.colCount ?
-                                rangeIndexes[1] - (this.parent.viewport.colCount - 2) : 0;
-                            rangeIndexes[3] = rangeIndexes[3] >= this.parent.viewport.colCount ?
-                                rangeIndexes[3] - (this.parent.viewport.colCount - 2) : 0;
-                        }
-                        var rangeAddr_1 = getRangeAddress(rangeIndexes);
-                        getUpdateUsingRaf(function () { _this.parent.goTo(rangeAddr_1); });
                     }
                 }
             }
@@ -20359,7 +20350,7 @@ var DataValidation = /** @__PURE__ @class */ (function () {
                 colIdx = colIdx >= this.parent.viewport.leftIndex ?
                     colIdx - this.parent.viewport.leftIndex : colIdx;
             }
-            var cell_1 = getCell(rowIdx, colIdx, sheet);
+            var cell_1 = getCell(indexes[0], indexes[1], sheet);
             var tr = mainCont.getElementsByTagName('tr')[rowIdx];
             var tdEle_1;
             if (tr) {
@@ -21387,15 +21378,8 @@ var ProtectSheet = /** @__PURE__ @class */ (function () {
     };
     ProtectSheet.prototype.lockCellsHandler = function (args) {
         var sheet = this.parent.getActiveSheet();
-        var cell = getCell(args.rowIdx, args.colIdx, sheet);
-        if (cell) {
-            if (args.isLocked) {
-                cell.isLocked = args.isLocked;
-            }
-            else {
-                cell.isLocked = false;
-            }
-        }
+        var cellObj = { isLocked: args.isLocked ? args.isLocked : false };
+        setCell(args.rowIdx, args.colIdx, sheet, cellObj, true);
     };
     /**
      * Get the module name.

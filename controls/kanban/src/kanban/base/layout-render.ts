@@ -52,15 +52,19 @@ export class LayoutRender extends MobileLayout {
             this.destroy();
             this.parent.on(events.dataReady, this.initRender, this);
             this.parent.on(events.contentReady, this.scrollUiUpdate, this);
-            if (this.parent.isAdaptive && this.parent.swimlaneSettings.keyField) {
-                this.renderSwimlaneHeader();
-            }
+        }
+        if (this.parent.isAdaptive && this.parent.swimlaneSettings.keyField && this.parent.kanbanData.length !== 0) {
+            this.renderSwimlaneHeader();
+        }
+        if (!this.parent.isBlazorRender()) {
             let header: HTMLElement = createElement('div', { className: cls.HEADER_CLASS });
             this.parent.element.appendChild(header);
             this.renderHeader(header);
             this.renderContent();
             this.renderCards();
             this.renderValidation();
+        } else {
+            this.initializeSwimlaneTree();
         }
         this.parent.notify(events.contentReady, {});
         this.wireEvents();
@@ -89,6 +93,9 @@ export class LayoutRender extends MobileLayout {
                     className: index === -1 ? cls.HEADER_CELLS_CLASS : cls.HEADER_CELLS_CLASS + ' ' + cls.COLLAPSED_CLASS,
                     attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField }
                 });
+                if (this.parent.kanbanData.length !== 0 && this.parent.swimlaneSettings.keyField && !this.parent.isAdaptive) {
+                    th.classList.add(cls.HEADER_BOTTOM_CLASS);
+                }
                 let classList: string[] = [];
                 if (column.allowToggle) {
                     classList.push(cls.HEADER_ROW_TOGGLE_CLASS);
@@ -159,11 +166,7 @@ export class LayoutRender extends MobileLayout {
         let className: string;
         let isCollaspsed: boolean = false;
         this.swimlaneRow = this.kanbanRows;
-        if (this.parent.swimlaneSettings.keyField && this.parent.isAdaptive) {
-            this.swimlaneRow = [this.kanbanRows[this.swimlaneIndex]];
-            this.renderSwimlaneTree();
-            this.parent.element.querySelector('.' + cls.TOOLBAR_SWIMLANE_NAME_CLASS).innerHTML = this.swimlaneRow[0].textField;
-        }
+        this.initializeSwimlaneTree();
         for (let row of this.swimlaneRow) {
             if (this.parent.swimlaneSettings.keyField && this.parent.swimlaneToggleArray.length !== 0) {
                 let index: number = this.parent.swimlaneToggleArray.indexOf(row.keyField);
@@ -202,6 +205,18 @@ export class LayoutRender extends MobileLayout {
                     tBody.appendChild(tr);
                 }
             });
+        }
+    }
+
+    private initializeSwimlaneTree(): void {
+        if (this.parent.swimlaneSettings.keyField && this.parent.isAdaptive && this.parent.kanbanData.length !== 0) {
+            if (!this.parent.isBlazorRender()) {
+                this.swimlaneRow = [this.kanbanRows[this.swimlaneIndex]];
+                this.renderSwimlaneTree();
+                this.parent.element.querySelector('.' + cls.TOOLBAR_SWIMLANE_NAME_CLASS).innerHTML = this.swimlaneRow[0].textField;
+            } else {
+                this.renderSwimlaneTree();
+            }
         }
     }
 
@@ -641,6 +656,9 @@ export class LayoutRender extends MobileLayout {
 
     public wireDragEvent(): void {
         if (this.parent.allowDragAndDrop) {
+            this.parent.element.querySelectorAll('.' + cls.CARD_CLASS).forEach((card: HTMLElement): void => {
+                 card.classList.add(cls.DRAGGABLE_CLASS);
+            });
             this.parent.dragAndDropModule.wireDragEvents(this.parent.element.querySelector('.' + cls.CONTENT_CLASS));
         }
     }

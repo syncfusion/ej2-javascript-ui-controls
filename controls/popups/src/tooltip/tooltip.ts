@@ -440,8 +440,8 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         this.tooltipEle.style.display = 'block';
         let pos: OffsetPosition = calculatePosition(target, this.tooltipPositionX, this.tooltipPositionY);
         let offsetPos: OffsetPosition = this.calculateTooltipOffset(this.position);
-        this.tooltipEle.style.display = '';
         let elePos: OffsetPosition = this.collisionFlipFit(target, pos.left + offsetPos.left, pos.top + offsetPos.top);
+        this.tooltipEle.style.display = '';
         return elePos;
     }
     private reposition(target: HTMLElement): void {
@@ -538,10 +538,12 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         if (this.showTipPointer === false) { return; }
         this.updateTipPosition(position);
         let leftValue: string; let topValue: string;
+        this.tooltipEle.style.display = 'block';
         let tooltipWidth: number = this.tooltipEle.clientWidth; let tooltipHeight: number = this.tooltipEle.clientHeight;
         let arrowEle: HTMLElement = this.tooltipEle.querySelector('.' + ARROW_TIP) as HTMLElement;
         let arrowInnerELe: HTMLElement = this.tooltipEle.querySelector('.' + ARROW_TIP_INNER) as HTMLElement;
         let tipWidth: number = arrowEle.offsetWidth; let tipHeight: number = arrowEle.offsetHeight;
+        this.tooltipEle.style.display = '';
         if (this.tipClass === TIP_BOTTOM || this.tipClass === TIP_TOP) {
             if (this.tipClass === TIP_BOTTOM) {
                 topValue = '99.9%';
@@ -913,6 +915,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
         }
         let eleOffset: OffsetPosition = { left: elePos.left, top: elePos.top };
         let left: number = fit(this.tooltipEle, (this.target ? this.element : null), { X: true, Y: false }, eleOffset).left;
+        this.tooltipEle.style.display = 'block';
         if (this.showTipPointer && (newpos.indexOf('Bottom') === 0 || newpos.indexOf('Top') === 0)) {
             let arrowEle: HTMLElement = this.tooltipEle.querySelector('.' + ARROW_TIP) as HTMLElement;
             let arrowleft: number = parseInt(arrowEle.style.left, 10) - (left - elePos.left);
@@ -923,6 +926,7 @@ export class Tooltip extends Component<HTMLElement> implements INotifyPropertyCh
             }
             arrowEle.style.left = arrowleft.toString() + 'px';
         }
+        this.tooltipEle.style.display = '';
         eleOffset.left = left;
         return eleOffset;
     }

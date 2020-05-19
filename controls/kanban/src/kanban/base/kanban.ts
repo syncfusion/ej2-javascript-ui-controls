@@ -183,6 +183,7 @@ export class Kanban extends Component<HTMLElement> {
 
     /**
      * Enable or disable the columns when empty dataSource.
+     * @deprecated
      * @default false
      */
     @Property(false)
@@ -549,9 +550,9 @@ export class Kanban extends Component<HTMLElement> {
     }
 
     private isDevice(ref?: object): void {
-        if (Browser.isDevice && this.isBlazorRender() && ref) {
+        if (Browser.isDevice && isBlazor() && ref) {
             // tslint:disable-next-line
-            (ref as any).invokeMethodAsync('IsDevice', true);
+            (ref as any).invokeMethodAsync('IsDevice', true, ((window.innerWidth * 80) / 100));
         }
     }
 
@@ -567,6 +568,13 @@ export class Kanban extends Component<HTMLElement> {
      */
     public updateDataSource(data: { [key: string]: Object[] }): void {
         this.kanbanData = data.Result;
+    }
+
+    /**
+     * @hidden
+     */
+    public hideDeviceMenu(): void {
+        this.layoutModule.hidePopup();
     }
 
     /**

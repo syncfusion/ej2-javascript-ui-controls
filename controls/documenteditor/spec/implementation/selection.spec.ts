@@ -6046,8 +6046,7 @@ describe('Text form field Inline validation', () => {
         (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
         editor.appendTo('#container');
         editor.documentEditorSettings.formFieldSettings.formFillingMode = 'Inline';
-        documentHelper = editor.documentHelper;
-        editor.open(JSON.stringify(textInlineSfdt));
+        documentHelper = editor.documentHelper;        
     });
     afterAll((done) => {
         editor.destroy();
@@ -6058,32 +6057,35 @@ describe('Text form field Inline validation', () => {
         }, 1000);
     });
     it('Navigate to next form field on Mouse Up', () => {
+        editor.open(JSON.stringify(textInlineSfdt));
         let formFields: FieldElementBox[] = documentHelper.formFields;
         let currentFormField: FieldElementBox = editor.selection.getCurrentFormField();
         expect(currentFormField).toBeUndefined;
         let event: any = {
             preventDefault: () => { return true; },
-            offsetX: 105,
-            offsetY: 100,
+            offsetX: 145,
+            offsetY: 125,
             ctrlKey: false,
             which: 1
         };
+        documentHelper.isMouseDown = true;
         documentHelper.onMouseUpInternal(event);
         currentFormField = editor.selection.getCurrentFormField();
         expect(currentFormField).toBe(formFields[0]);
 
-        event.offsetX = 250;
+        event.offsetX = 260;
         documentHelper.onMouseUpInternal(event);
         currentFormField = editor.selection.getCurrentFormField();
         expect(currentFormField).toBe(formFields[0]);
 
-        event.offsetX = 250;
+        event.offsetX = 260;
         event.offsetY = 300;
         documentHelper.onMouseUpInternal(event);
         currentFormField = editor.selection.getCurrentFormField();
         expect(currentFormField).toBe(formFields[0]);
     });
     it('arrow Key navigation form fields Validation', () => {
+        editor.open(JSON.stringify(textInlineSfdt));
         let formFields: FieldElementBox[] = documentHelper.formFields;
         let currentFormField: FieldElementBox = editor.selection.getCurrentFormField();
         expect(currentFormField).toBeUndefined;
@@ -6093,20 +6095,46 @@ describe('Text form field Inline validation', () => {
         }
         editor.selectionModule.onKeyDownInternal(keyEvent, false, false, false);
         currentFormField = editor.selection.getCurrentFormField();
-        expect(currentFormField).toBe(formFields[2]);
-        editor.selectionModule.onKeyDownInternal(keyEvent, false, false, false);
-        currentFormField = editor.selection.getCurrentFormField();
         expect(currentFormField).toBe(formFields[0]);
         editor.selectionModule.onKeyDownInternal(keyEvent, false, false, false);
         currentFormField = editor.selection.getCurrentFormField();
         expect(currentFormField).toBe(formFields[2]);
+        editor.selectionModule.onKeyDownInternal(keyEvent, false, false, false);
+        currentFormField = editor.selection.getCurrentFormField();
+        expect(currentFormField).toBe(formFields[0]);
 
         keyEvent.keyCode = 38;
         editor.selectionModule.onKeyDownInternal(keyEvent, false, false, false);
         currentFormField = editor.selection.getCurrentFormField();
-        expect(currentFormField).toBe(formFields[0]);
+        expect(currentFormField).toBe(formFields[2]);
         editor.selectionModule.onKeyDownInternal(keyEvent, false, false, false);
         currentFormField = editor.selection.getCurrentFormField();
+        expect(currentFormField).toBe(formFields[0]);
+    });
+    it('Tab & shift Key navigation form fields Validation', () => {
+        editor.open(JSON.stringify(textInlineSfdt));
+        let formFields: FieldElementBox[] = documentHelper.formFields;
+        let currentFormField: FieldElementBox = editor.selection.getCurrentFormField();
+        expect(currentFormField).toBeUndefined;
+        let keyEvent: any = {
+            keyCode: 9,
+            preventDefault: () => { return true; }
+        }
+        editor.editorModule.onKeyDownInternal(keyEvent, false, false, false);
+        currentFormField = editor.selection.getCurrentFormField();
+        expect(currentFormField).toBe(formFields[0]);
+        editor.editorModule.onKeyDownInternal(keyEvent, false, false, false);
+        currentFormField = editor.selection.getCurrentFormField();
         expect(currentFormField).toBe(formFields[2]);
+        editor.editorModule.onKeyDownInternal(keyEvent, false, false, false);
+        currentFormField = editor.selection.getCurrentFormField();
+        expect(currentFormField).toBe(formFields[0]);
+
+        editor.editorModule.onKeyDownInternal(keyEvent, false, true, false);
+        currentFormField = editor.selection.getCurrentFormField();
+        expect(currentFormField).toBe(formFields[2]);
+        editor.editorModule.onKeyDownInternal(keyEvent, false, true, false);
+        currentFormField = editor.selection.getCurrentFormField();
+        expect(currentFormField).toBe(formFields[0]);
     });
 });

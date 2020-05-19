@@ -1849,6 +1849,9 @@ let Dialog = class Dialog extends Component {
         if (this.isBlazorServerRender() && isNullOrUndefined(this.headerContent)) {
             this.headerContent = this.element.getElementsByClassName('e-dlg-header-content')[0];
         }
+        if (this.isBlazorServerRender() && isNullOrUndefined(this.contentEle)) {
+            this.contentEle = this.element.querySelector('#' + this.element.id + '_dialog-content');
+        }
         if (!this.isBlazorServerRender()) {
             this.setTargetContent();
             if (this.header !== '' && !isNullOrUndefined(this.header)) {
@@ -2214,7 +2217,7 @@ let Dialog = class Dialog extends Component {
     }
     createHeaderContent() {
         if (isNullOrUndefined(this.headerContent)) {
-            this.headerContent = this.createElement('div', { className: DLG_HEADER_CONTENT });
+            this.headerContent = this.createElement('div', { id: this.element.id + '_dialog-header', className: DLG_HEADER_CONTENT });
         }
     }
     renderCloseIcon() {
@@ -3250,8 +3253,8 @@ let Tooltip = class Tooltip extends Component {
         this.tooltipEle.style.display = 'block';
         let pos = calculatePosition(target, this.tooltipPositionX, this.tooltipPositionY);
         let offsetPos = this.calculateTooltipOffset(this.position);
-        this.tooltipEle.style.display = '';
         let elePos = this.collisionFlipFit(target, pos.left + offsetPos.left, pos.top + offsetPos.top);
+        this.tooltipEle.style.display = '';
         return elePos;
     }
     reposition(target) {
@@ -3351,12 +3354,14 @@ let Tooltip = class Tooltip extends Component {
         this.updateTipPosition(position);
         let leftValue;
         let topValue;
+        this.tooltipEle.style.display = 'block';
         let tooltipWidth = this.tooltipEle.clientWidth;
         let tooltipHeight = this.tooltipEle.clientHeight;
         let arrowEle = this.tooltipEle.querySelector('.' + ARROW_TIP);
         let arrowInnerELe = this.tooltipEle.querySelector('.' + ARROW_TIP_INNER);
         let tipWidth = arrowEle.offsetWidth;
         let tipHeight = arrowEle.offsetHeight;
+        this.tooltipEle.style.display = '';
         if (this.tipClass === TIP_BOTTOM || this.tipClass === TIP_TOP) {
             if (this.tipClass === TIP_BOTTOM) {
                 topValue = '99.9%';
@@ -3741,6 +3746,7 @@ let Tooltip = class Tooltip extends Component {
         }
         let eleOffset = { left: elePos.left, top: elePos.top };
         let left = fit(this.tooltipEle, (this.target ? this.element : null), { X: true, Y: false }, eleOffset).left;
+        this.tooltipEle.style.display = 'block';
         if (this.showTipPointer && (newpos.indexOf('Bottom') === 0 || newpos.indexOf('Top') === 0)) {
             let arrowEle = this.tooltipEle.querySelector('.' + ARROW_TIP);
             let arrowleft = parseInt(arrowEle.style.left, 10) - (left - elePos.left);
@@ -3752,6 +3758,7 @@ let Tooltip = class Tooltip extends Component {
             }
             arrowEle.style.left = arrowleft.toString() + 'px';
         }
+        this.tooltipEle.style.display = '';
         eleOffset.left = left;
         return eleOffset;
     }

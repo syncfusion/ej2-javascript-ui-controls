@@ -223,10 +223,9 @@ export class Action {
             for (let row of targetRow) {
                 let targetCol: Element = row.querySelector(`.${cls.CONTENT_CELLS_CLASS}[data-key="${key}"]`);
                 let index: number = (targetCol as HTMLTableCellElement).cellIndex;
-                targetCol.appendChild(createElement('div', {
-                    className: cls.COLLAPSE_HEADER_TEXT_CLASS,
-                    innerHTML: this.parent.columns[index].headerText
-                }));
+                let text: string = (this.parent.columns[index].showItemCount ? '[' +
+                    targetCol.querySelectorAll('.' + cls.CARD_CLASS).length + '] ' : '') + this.parent.columns[index].headerText;
+                targetCol.appendChild(createElement('div', { className: cls.COLLAPSE_HEADER_TEXT_CLASS, innerHTML: text }));
                 addClass([targetCol, target], cls.COLLAPSED_CLASS);
                 target.setAttribute('aria-expanded', 'false');
                 targetCol.setAttribute('aria-expanded', 'false');

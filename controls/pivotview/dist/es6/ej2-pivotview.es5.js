@@ -10,7 +10,7 @@ import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
 import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
 import { Workbook } from '@syncfusion/ej2-excel-export';
 import { PdfBorders, PdfColor, PdfDocument, PdfFontFamily, PdfFontStyle, PdfGrid, PdfPageOrientation, PdfPageTemplateElement, PdfPen, PdfSolidBrush, PdfStandardFont, PdfStringFormat, PdfTextAlignment, PdfVerticalAlignment, PointF, RectangleF } from '@syncfusion/ej2-pdf-export';
-import { AreaSeries, BarSeries, BubbleSeries, Category, Chart, ChartLocation, ColumnSeries, Crosshair, Export, Legend, LineSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiLevelLabel, ParetoSeries, PolarSeries, RadarSeries, RangeAreaSeries, RangeColumnSeries, ScatterSeries, ScrollBar, SplineAreaSeries, SplineSeries, StackingAreaSeries, StackingBarSeries, StackingColumnSeries, StepAreaSeries, StepLineSeries, Tooltip as Tooltip$1, Zoom } from '@syncfusion/ej2-charts';
+import { AreaSeries, BarSeries, BubbleSeries, Category, Chart, ColumnSeries, Crosshair, Export, Legend, LineSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiLevelLabel, ParetoSeries, PolarSeries, RadarSeries, RangeAreaSeries, RangeColumnSeries, ScatterSeries, ScrollBar, SplineAreaSeries, SplineSeries, StackingAreaSeries, StackingBarSeries, StackingColumnSeries, StepAreaSeries, StepLineSeries, Tooltip as Tooltip$1, Zoom } from '@syncfusion/ej2-charts';
 
 /**
  * This is a file to perform common utility for OLAP and Relational datasource
@@ -14893,6 +14893,22 @@ var MinorTickLines = /** @__PURE__ @class */ (function (_super) {
     return MinorTickLines;
 }(ChildProperty));
 /**
+ * Allows to configure the position of the legend such as top and left in the chart.
+ */
+var ChartLocation = /** @__PURE__ @class */ (function (_super) {
+    __extends$3(ChartLocation, _super);
+    function ChartLocation() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        Property(0)
+    ], ChartLocation.prototype, "x", void 0);
+    __decorate$3([
+        Property(0)
+    ], ChartLocation.prototype, "y", void 0);
+    return ChartLocation;
+}(ChildProperty));
+/**
  * Allow options to customize the border of the chart series such as color and border size in the pivot chart.
  * For example, to display the chart series border color as red, set the properties `color` to either **"red"** or **"#FF0000"** or **"rgba(255,0,0,1.0)"** and `width` to **0.5**.
  */
@@ -20079,6 +20095,8 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         _this_1.posCount = 0;
         /** @hidden */
         _this_1.isModified = false;
+        /** @hidden */
+        _this_1.isInitialRendering = false;
         _this_1.needsID = true;
         _this_1.pivotRefresh = Component.prototype.refresh;
         _this_1.pivotView = _this_1;
@@ -20737,8 +20755,11 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
         this.trigger(load, loadArgs, function (observedArgs) {
             if (isBlazor()) {
                 observedArgs.dataSourceSettings.dataSource = _this_1.dataSourceSettings.dataSource;
+                PivotUtil.updateDataSourceSettings(_this_1, observedArgs.dataSourceSettings);
             }
-            _this_1.dataSourceSettings = observedArgs.dataSourceSettings;
+            else {
+                _this_1.dataSourceSettings = observedArgs.dataSourceSettings;
+            }
             _this_1.fieldsType = observedArgs.fieldsType;
             _this_1.updateClass();
             _this_1.notify(initSubComponent, {});
@@ -21140,6 +21161,10 @@ var PivotView = /** @__PURE__ @class */ (function (_super) {
             if (this.toolbarModule && this.toolbarModule.action !== 'New' && this.toolbarModule.action !== 'Load'
                 && this.toolbarModule.action !== 'Remove') {
                 this.isModified = true;
+            }
+            if (isBlazor() && !this.isInitialRendering) {
+                this.isModified = false;
+                this.isInitialRendering = !this.isInitialRendering;
             }
             this.toolbarModule.action = '';
         }

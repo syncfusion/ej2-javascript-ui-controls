@@ -3,7 +3,7 @@
  */
 import { createElement, remove } from '@syncfusion/ej2-base';
 import { Gantt, Selection, Toolbar, DayMarkers, Edit, Filter,  ContextMenu, Sort, ColumnMenu, ITaskbarClickEventArgs, RecordDoubleClickEventArgs } from '../../src/index';
-import { unscheduledData } from '../base/data-source.spec';
+import { unscheduledData, projectResources, resourceGanttData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent } from './gantt-util.spec';
 Gantt.Inject(Edit, Selection, ContextMenu, Sort, Toolbar, Filter, DayMarkers, ColumnMenu);
 describe('Gantt - Base', () => {
@@ -198,6 +198,50 @@ describe('Gantt - Base', () => {
                     expect(htmlElement.classList.contains('e-gantt')).toEqual(true);
                 }
             }, htmlElement);
+        });
+    });
+    describe('Task Data Resource type', () => {
+        let ganttObj_tree: Gantt;
+        beforeAll((done: Function) => {
+            ganttObj_tree = createGantt(
+                {
+                    dataSource: resourceGanttData,
+                    taskFields: {
+                        id: 'TaskID',
+                        name: 'TaskName',
+                        startDate: 'StartDate',
+                        duration: 'Duration',
+                        progress: 'Progress',
+                        resourceInfo: 'resources',
+                        child: 'subtasks'
+                    },
+                    editSettings: {
+                        allowEditing: true
+                    },
+                    resourceFields: {
+                        id: 'ResourceId', //resource Id Mapping
+                        name: 'ResourceName', //resource Name mapping
+                        unit: 'ResourceUnit', //resource Unit mapping
+                    },
+                    resources: projectResources,
+                    projectStartDate: new Date('03/25/2019'),
+                    projectEndDate: new Date('05/30/2019')
+                }, done);
+        });
+        it('Resource task data type check', () => {
+            expect(ganttObj_tree.currentViewData[1].taskData[ganttObj_tree.taskFields.resourceInfo][2]["custom"]).toBe("check");
+            expect(typeof (ganttObj_tree.currentViewData[1].taskData[ganttObj_tree.taskFields.resourceInfo][1])).toBe("object");
+        });
+        it('type check after updated the task', () => {
+            let data: object[] = [{ TaskID: 2, TaskName: 'Child Task 1', StartDate: new Date('04/02/2019'), Duration: 0, resources: [{ ResourceId: 1, ResourceUnit: 50, customValue: 'check' }] }];
+            ganttObj_tree.updateRecordByID(data[0]);
+            expect(ganttObj_tree.currentViewData[1].taskData[ganttObj_tree.taskFields.resourceInfo][0]["custom"]).toBe("check");
+        });
+        afterAll(() => {
+            destroyGantt(ganttObj_tree);
+        });
+        beforeEach((done: Function) => {
+            setTimeout(done, 2000);
         });
     });
 });

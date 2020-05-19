@@ -1,4 +1,3 @@
-
 /**
  * SanitizeHtmlHelper for sanitize the value.
  */
@@ -167,7 +166,20 @@ export class SanitizeHtmlHelper {
         this.removeXssTags();
         this.removeJsEvents();
         this.removeXssAttrs();
-        return this.wrapElement.innerHTML;
+        let tempEleValue: string = this.wrapElement.innerHTML;
+        this.removeElement();
+        return tempEleValue;
+    }
+
+    private static removeElement(): void {
+         // Removes an element's attibute to avoid html tag validation
+         let nodes: HTMLCollection = this.wrapElement.children;
+         for (let j: number = 0; j < nodes.length; j++) {
+             let attribute: NamedNodeMap = nodes[j].attributes;
+             for (let i: number = 0; i < attribute.length; i++) {
+                 this.wrapElement.children[j].removeAttribute(attribute[i].localName);
+             }
+         }
     }
 
     private static removeXssTags(): void {

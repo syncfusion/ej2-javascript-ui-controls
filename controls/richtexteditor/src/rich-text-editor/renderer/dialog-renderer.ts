@@ -18,15 +18,12 @@ export class DialogRenderer {
      */
     public render(e: DialogModel): Dialog {
         let dlgObj: Dialog;
-        if (isNOU(e.beforeOpen)) {
-            e.beforeOpen = this.beforeOpen.bind(this);
-        }
-        if (isNOU(e.open)) {
-            e.open = this.open.bind(this);
-        }
+        e.beforeOpen = this.beforeOpen.bind(this);
+        e.open = this.open.bind(this);
         if (isNOU(e.close)) {
             e.close = this.close.bind(this);
         }
+        e.beforeClose = this.beforeClose.bind(this);
         dlgObj = new Dialog(e);
         dlgObj.isStringTemplate = true;
         return dlgObj;
@@ -36,6 +33,9 @@ export class DialogRenderer {
     }
     private open(args: Object): void {
         this.parent.trigger(events.dialogOpen, args);
+    }
+    private beforeClose(args: Object): void {
+        this.parent.trigger(events.beforeDialogClose, args);
     }
     /**
      * dialog close method

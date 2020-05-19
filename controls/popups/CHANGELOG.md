@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.53 (2020-05-19)
+
+### Tooltip
+
+#### Bug Fixes
+
+- `#275330` - The issue with tooltip position misalignment has been resolved.
+
 ## 18.1.46 (2020-04-28)
 
 ### Dialog

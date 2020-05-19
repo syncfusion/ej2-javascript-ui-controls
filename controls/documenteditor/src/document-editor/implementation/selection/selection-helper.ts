@@ -626,7 +626,8 @@ export class TextPosition {
         let inline: ElementBox = inlineInfo.element;
         index = inlineInfo.index;
         let lineIndex: number = this.paragraph.childWidgets.indexOf(this.currentWidget);
-        if (inline instanceof FieldElementBox && inline.fieldType === 1 && !isNullOrUndefined((inline as FieldElementBox).fieldBegin)) {
+        if (inline instanceof FieldElementBox && inline.fieldType === 1 && !isNullOrUndefined((inline as FieldElementBox).fieldBegin)
+            || inline instanceof BookmarkElementBox && inline.bookmarkType === 1) {
             this.movePreviousPositionInternal(inline as FieldElementBox);
         }
         this.updateOffsetToPrevPosition(index, false);
@@ -813,13 +814,15 @@ export class TextPosition {
      */
     public movePreviousPositionInternal(fieldEnd: FieldElementBox): void {
         let inline: ElementBox;
-        if (isNullOrUndefined(fieldEnd.fieldSeparator)) {
+        if (fieldEnd instanceof FieldElementBox && isNullOrUndefined(fieldEnd.fieldSeparator)) {
             inline = this.selection.getPreviousValidElement(fieldEnd.fieldBegin);
         } else {
             inline = this.selection.getPreviousValidElement(fieldEnd);
         }
         this.currentWidget = inline.line;
-        this.offset = this.currentWidget.getOffset(inline, inline instanceof FieldElementBox ? 0 : inline.length);
+        // tslint:disable-next-line:max-line-length
+        let index: number = inline instanceof FieldElementBox || inline instanceof BookmarkElementBox && inline.bookmarkType === 1 ? 0 : inline.length;
+        this.offset = this.currentWidget.getOffset(inline, index);
     }
     /**
      * Moves the text position to start of the word.

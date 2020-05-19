@@ -386,7 +386,6 @@ export class Toolbar {
                     break;
                 case 'PageNumber':
                     toolbarItems.push({
-
                         prefixIcon: 'e-de-ctnr-pagenumber', tooltipText: locale.getConstant('Add page numbers'),
                         id: id + PAGE_NUMBER_ID, text: this.onWrapText(locale.getConstant('Page Number')),
                         cssClass: className
@@ -629,6 +628,13 @@ export class Toolbar {
                 itemId !== id + CLIPBOARD_ID && itemId !== id + RESTRICT_EDITING_ID && itemId !== id + UPDATE_FIELDS_ID
                 && item.type !== 'Separator') {
                 if (enable && this.isCommentEditing && itemId === id + COMMENT_ID) {
+                    continue;
+                }
+                if (itemId !== id + UNDO_ID && itemId !== id + REDO_ID && itemId !== id + INSERT_TABLE_ID &&
+                    itemId !== id + INSERT_LINK_ID && itemId !== id + BOOKMARK_ID && itemId !== id + COMMENT_ID &&
+                    itemId !== id + HEADER_ID && itemId !== id + TABLE_OF_CONTENT_ID && itemId !== id + FOOTER_ID &&
+                    itemId !== id + PAGE_SET_UP_ID && itemId !== id + PAGE_NUMBER_ID && itemId !== id + INSERT_IMAGE_ID
+                    && itemId !== id + FORM_FIELDS_ID  && itemId !== BREAK_ID) {
                     continue;
                 }
                 let element: HTMLElement = document.getElementById(item.id);

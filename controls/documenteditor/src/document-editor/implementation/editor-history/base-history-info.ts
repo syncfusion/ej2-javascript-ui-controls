@@ -9,7 +9,7 @@ import {
     IWidget, BlockWidget,
     ParagraphWidget, LineWidget, BodyWidget, TableCellWidget,
     FieldElementBox, TableWidget, TableRowWidget, BookmarkElementBox, HeaderFooterWidget,
-    EditRangeStartElementBox, CommentElementBox, CheckBoxFormField, TextFrame
+    EditRangeStartElementBox, CommentElementBox, CheckBoxFormField, TextFrame, TextFormField
 } from '../viewer/page';
 import { Dictionary } from '../../base/dictionary';
 import { DocumentEditor } from '../../document-editor';
@@ -20,7 +20,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
 import { ElementBox } from '../viewer/page';
 import { TableResizer } from '../editor/table-resizer';
 import { WTableFormat, WRowFormat, WCellFormat, WParagraphStyle } from '../format/index';
-import { ParagraphInfo } from '../editor/editor-helper';
+import { ParagraphInfo, HelperMethods } from '../editor/editor-helper';
 import { BookmarkInfo } from './history-helper';
 import { DocumentHelper } from '../viewer';
 
@@ -137,6 +137,21 @@ export class BaseHistoryInfo {
         // tslint:disable-next-line:max-line-length
         this.removedNodes.push({ 'editStart': editStart, 'startIndex': editStart.indexInOwner, 'endIndex': editStart.editRangeEnd.indexInOwner });
     }
+    private revertFormTextFormat(): void {
+        /* tslint:disable:no-any */
+        let fieldInfo: any = this.removedNodes[0];
+        let text: any = fieldInfo.value;
+        /* tslint:enable:no-any */
+        let formField: FieldElementBox = fieldInfo.formField;
+        if (this.editorHistory.isUndoing) {
+            this.owner.editorModule.applyTextFormatInternal(formField, text);
+            this.editorHistory.recordChanges(this);
+        } else {
+            text = HelperMethods.formatText((formField.formFieldData as TextFormField).format, text);
+            this.owner.editorModule.applyTextFormatInternal(formField, text);
+            this.editorHistory.undoStack.push(this);
+        }
+    }
     private revertFormField(): void {
         /* tslint:disable:no-any */
         let fieldInfo: any = this.removedNodes[0];
@@ -208,6 +223,10 @@ export class BaseHistoryInfo {
      */
     // tslint:disable: max-func-body-length
     public revert(): void {
+        if (this.action === 'FormTextFormat') {
+            this.revertFormTextFormat();
+            return;
+        }
         if (this.action === 'UpdateFormField') {
             this.revertFormField();
             return;

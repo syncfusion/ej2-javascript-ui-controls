@@ -317,8 +317,9 @@ export class DateTime extends NiceInterval {
 
     /** @private */
     private blazorCustomFormat(axis: Axis): string {
-        if (this.chart.isBlazor && axis.actualIntervalType === 'Years') {
-            return 'yyyy';
+        if (this.chart.isBlazor) {
+            return axis.actualIntervalType === 'Years' ? (axis.isIntervalInDecimal ? 'yyyy' : 'MMM y') :
+                    (axis.actualIntervalType === 'Days' && !axis.isIntervalInDecimal) ? 'ddd HH tt' : '';
         } else {
             return '';
         }

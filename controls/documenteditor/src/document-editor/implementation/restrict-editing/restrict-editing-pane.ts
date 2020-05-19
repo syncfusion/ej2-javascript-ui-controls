@@ -175,7 +175,8 @@ export class RestrictEditing {
             id: this.viewer.owner.containerId + '_addUser',
             className: 'e-btn e-primary e-flat',
             innerHTML: localObj.getConstant('More users') + '...',
-            styles: 'margin-top: 3px'
+            styles: 'margin-top: 3px',
+            attrs: { type: 'button' }
         }) as HTMLButtonElement;
         this.userWholeDiv.appendChild(this.addUser);
 
@@ -185,7 +186,8 @@ export class RestrictEditing {
         this.enforceProtection = createElement('button', {
             id: this.viewer.owner.containerId + '_addUser',
             innerHTML: localObj.getConstant('Enforcing Protection'),
-            className: 'e-btn e-de-rp-btn-enforce'
+            className: 'e-btn e-de-rp-btn-enforce',
+            attrs: { type: 'button' }
         }) as HTMLButtonElement;
         lastDiv.appendChild(this.enforceProtection);
         this.restrictPane.appendChild(this.restrictPaneWholeDiv);
@@ -204,14 +206,20 @@ export class RestrictEditing {
         this.stopProtectionDiv.appendChild(this.stopReadOnlyOptions);
         let navigateNext: HTMLElement = createElement('div', { className: 'e-de-rp-enforce-nav' });
         // tslint:disable-next-line:max-line-length
-        let navigateNextButton: HTMLElement = createElement('button', { innerHTML: localObj.getConstant('Find Next Region I Can Edit'), className: 'e-btn e-de-rp-nav-btn' });
+        let navigateNextButton: HTMLElement = createElement('button', {
+            innerHTML: localObj.getConstant('Find Next Region I Can Edit'), className: 'e-btn e-de-rp-nav-btn',
+            attrs: { type: 'button' }
+        });
         navigateNext.appendChild(navigateNextButton);
         navigateNextButton.addEventListener('click', this.navigateNextRegion);
         this.stopReadOnlyOptions.appendChild(navigateNext);
 
         let showAllRegion: HTMLElement = createElement('div', { className: 'e-de-rp-enforce-nav' });
         // tslint:disable-next-line:max-line-length
-        let showAllRegionButton: HTMLElement = createElement('button', { innerHTML: localObj.getConstant('Show All Regions I Can Edit'), className: 'e-btn e-de-rp-nav-btn' });
+        let showAllRegionButton: HTMLElement = createElement('button', {
+            innerHTML: localObj.getConstant('Show All Regions I Can Edit'), className: 'e-btn e-de-rp-nav-btn',
+            attrs: { type: 'button' }
+        });
         showAllRegion.appendChild(showAllRegionButton);
         showAllRegionButton.addEventListener('click', this.showAllRegion);
         this.stopReadOnlyOptions.appendChild(showAllRegion);
@@ -226,7 +234,8 @@ export class RestrictEditing {
         let lastButtonDiv: HTMLElement = createElement('div', { className: 'e-de-rp-enforce' });
         this.stopProtection = createElement('button', {
             innerHTML: localObj.getConstant('Stop Protection'),
-            className: 'e-btn e-de-rp-btn-stop-enforce'
+            className: 'e-btn e-de-rp-btn-stop-enforce',
+            attrs: { type: 'button' }
         }) as HTMLButtonElement;
         lastButtonDiv.appendChild(this.stopProtection);
         this.stopProtectionDiv.appendChild(lastButtonDiv);

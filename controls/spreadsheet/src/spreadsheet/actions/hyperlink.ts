@@ -269,25 +269,16 @@ export class SpreadsheetHyperlink {
                             rangeIndexes[1] - this.parent.viewport.leftIndex : rangeIndexes[1];
                     }
                     if (!isNullOrUndefined(sheet)) {
-                        if (sheet === this.parent.getActiveSheet()) {
-                            this.parent.selectRange(getRangeAddress(rangeIndexes));
-                        } else {
-                            sheet.selectedRange = selRange;
-                            this.parent.activeSheetIndex  = sheetIdx;
-                            this.parent.dataBind();
-                        }
-                        if (this.parent.scrollSettings.enableVirtualization) {
-                            rangeIndexes[0] = rangeIndexes[0] >= this.parent.viewport.rowCount ?
-                                rangeIndexes[0] - (this.parent.viewport.rowCount - 2) : 0;
-                            rangeIndexes[2] = rangeIndexes[2] >= this.parent.viewport.rowCount ?
-                                rangeIndexes[2] - (this.parent.viewport.rowCount - 2) : 0;
-                            rangeIndexes[1] = rangeIndexes[1] >= this.parent.viewport.colCount ?
-                                rangeIndexes[1] - (this.parent.viewport.colCount - 2) : 0;
-                            rangeIndexes[3] = rangeIndexes[3] >= this.parent.viewport.colCount ?
-                                rangeIndexes[3] - (this.parent.viewport.colCount - 2) : 0;
-                        }
                         let rangeAddr: string = getRangeAddress(rangeIndexes);
-                        getUpdateUsingRaf((): void => { this.parent.goTo(rangeAddr); });
+                        if (sheet === this.parent.getActiveSheet()) {
+                            getUpdateUsingRaf((): void => { this.parent.goTo(rangeAddr); });
+                        } else {
+                            if (rangeAddr.indexOf(':') >= 0) {
+                                let addArr: string[] = rangeAddr.split(':');
+                                rangeAddr = addArr[0] === addArr[1] ? addArr[0] : rangeAddr;
+                            }
+                            getUpdateUsingRaf((): void => { this.parent.goTo(this.parent.sheets[sheetIdx].name + '!' + rangeAddr); });
+                        }
                     }
                 }
             } else {

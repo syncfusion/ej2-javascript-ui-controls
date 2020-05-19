@@ -738,14 +738,17 @@ exports.cssClass = {
                 innerDiv.appendChild(anchorTag(createElement, dataSource, fields, text, null, curOpt.itemNavigable));
             }
             else {
-                innerDiv.appendChild(createElement('span', {
-                    className: exports.cssClass.text, innerHTML: text,
+                var element = createElement('span', {
+                    className: exports.cssClass.text,
                     attrs: (ariaAttributes.itemText !== '' ? { role: ariaAttributes.itemText } : {})
-                }));
+                });
                 if (options && options.enableHtmlSanitizer) {
-                    var textElement = innerDiv.querySelector('.' + exports.cssClass.text);
-                    textElement.innerText = sf.base.SanitizeHtmlHelper.sanitize(text);
+                    element.innerText = sf.base.SanitizeHtmlHelper.sanitize(text);
                 }
+                else {
+                    element.innerHTML = text;
+                }
+                innerDiv.appendChild(element);
             }
             li.appendChild(innerDiv);
         }

@@ -3382,5 +3382,104 @@ describe('adding rows in empty grid through edit cell and press enter in batch e
             gridObj = elem = null ;
         });
     });
+
+     describe('EJ2-39517- Border Misalignment issue with Frozen Columns in Grid in batch edit', () => {
+        let gridObj: Grid;
+        let fElem: HTMLElement;
+        let mElem: HTMLElement;
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data.slice(0,7),
+                    editSettings: { allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch' },
+                    allowPaging: true,
+                    frozenColumns:2,        
+                    pageSettings: { pageCount: 5 },
+                    toolbar: ['Add',  'Delete', 'Update', 'Cancel'],
+                    columns: [
+                        { field: 'OrderID', type: 'number', isPrimaryKey: true, visible: true, validationRules: { required: true } },
+                        { field: 'CustomerID', type: 'string',validationRules: { required: true } },
+                        { field: 'EmployeeID', type: 'number', allowEditing: false },
+                        { field: 'Freight', format: 'C2', type: 'number', editType: 'numericedit' },
+                    ]
+                }, done);
+        });
+        it('Check Frozen-Content Height', (done: Function) => {
+            let batchDelete = (args?: any): void => {
+                expect(fElem.offsetHeight).toBe(Math.floor(mElem.offsetHeight));
+                gridObj.batchDelete = null;
+                done();
+            };
+            gridObj.batchDelete = batchDelete;
+            mElem = gridObj.getContent().querySelector('.e-movablecontent').querySelector('tbody');
+            fElem = gridObj.getContent().querySelector('.e-frozencontent'); 
+            gridObj.deleteRow(gridObj.getContent().querySelectorAll('.e-row')[2] as any);
+           
+        });
+        afterAll(() => {
+            destroy(gridObj);
+            gridObj = fElem = mElem = null ;
+        });
+    });
     
+});
+
+describe('EJ2-39455- Cell editing is not working properly in last batch added row by tab key', () => {
+    let gridObj: Grid;
+    let preventDefault: Function = new Function();
+    beforeAll((done: Function) => {
+        gridObj = createGrid(
+            {
+                dataSource: data,
+                allowPaging: true,
+                height: 410,
+                frozenColumns: 1,
+                frozenRows: 2,
+                editSettings: {
+                    allowEditing: true, allowAdding: true, allowDeleting: true, mode: 'Batch', newRowPosition: 'Bottom'
+                },
+                pageSettings: { pageCount: 5 },
+                toolbar: ['Add', 'Edit', 'Delete', 'Update', 'Cancel'],
+                columns: [
+                    { field: 'OrderID', type: 'number', isPrimaryKey: true, visible: true },
+                    { field: 'CustomerID', type: 'string' },
+                    { field: 'EmployeeID', type: 'number'},
+                    { field: 'Freight', type: 'number' },
+                    { field: 'ShipCity', type: 'string' },
+                    { field: 'ShipName', isIdentity: true },
+                    { field: 'ShipCountry', type: 'string' },
+                ],
+            }, done);
+    });
+    it('Check the Movable insertrow cells text', () => {
+        let cell: HTMLElement= gridObj.getContent().querySelector('.e-movablecontent').querySelectorAll('.e-row')[9].childNodes[5] as any;
+        cell.click();
+        gridObj.keyboardModule.keyAction({ action: 'f2', preventDefault: preventDefault, target: cell } as any);
+        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: cell } as any);
+        gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = '10560';
+        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
+        gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = 'JHON';
+        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
+        gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = '7';
+        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
+        gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = '5.3';
+        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
+        gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = 'Newyork';
+        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
+        gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = 'America';
+        gridObj.keyboardModule.keyAction({ action: 'tab', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
+        gridObj.element.querySelector('.e-editedbatchcell').querySelector('input').value = 'U.S';
+        gridObj.keyboardModule.keyAction({ action: 'enter', preventDefault: preventDefault, target: gridObj.element.querySelector('.e-editedbatchcell') } as any);
+        let mText: any = gridObj.element.querySelector('.e-movablecontent').querySelector('table').querySelector('.e-insertedrow');
+        expect(mText.cells[0].innerText).toBe('JHON');
+        expect(mText.cells[1].innerText).toBe('7');
+        expect(mText.cells[2].innerText).toBe('5.3');
+        expect(mText.cells[3].innerText).toBe('Newyork');
+        expect(mText.cells[4].innerText).toBe('America');
+        expect(mText.cells[5].innerText).toBe('U.S');
+    });
+    afterAll(() => {
+        destroy(gridObj);
+        gridObj = null;
+    });
 });

@@ -90,6 +90,12 @@ export class ToolbarRenderer implements IRenderer {
 
     private removePopupContainer(): void {
         if (Browser.isDevice && !isNullOrUndefined(this.popupContainer)) {
+            let popupEle : HTMLElement = this.popupContainer.querySelector('.e-dropdown-popup.e-tbar-btn.e-control');
+            if (popupEle) {
+                this.popupContainer.parentNode.insertBefore(popupEle, this.popupContainer.nextSibling);
+                popupEle.style.removeProperty('position');
+                removeClass([popupEle], 'e-popup-modal');
+            }
             detach(this.popupContainer);
             this.popupContainer = undefined;
         }
@@ -259,8 +265,7 @@ export class ToolbarRenderer implements IRenderer {
                 } else {
                     let ele: HTMLElement = (dropDownArgs.element.querySelector('.e-control.e-colorpicker') as HTMLElement);
                     let inst: ColorPicker = getInstance(ele, ColorPicker) as ColorPicker;
-                    inst.showButtons = (dropDownArgs.element.querySelector('.e-color-palette')) ? false : true;
-                    inst.dataBind();
+                    inst.showButtons = (dropDownArgs.element.querySelector('.e-color-palette')) ? false : true; inst.dataBind();
                 }
                 dropDownArgs.element.onclick = (args: MouseEventArgs): void => {
                     if ((args.target as HTMLElement).classList.contains('e-cancel')) { dropDown.toggle(); }
@@ -282,7 +287,6 @@ export class ToolbarRenderer implements IRenderer {
                     || element.parentElement.classList.contains(CLS_COLOR_CONTENT))) {
                     let colorpickerValue: string = element.classList.contains(CLS_RTE_ELEMENTS) ? element.style.borderBottomColor :
                         (element.querySelector('.' + CLS_RTE_ELEMENTS) as HTMLElement).style.borderBottomColor;
-                    /* tslint:enable */
                     range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.parent.contentModule.getDocument());
                     if ((range.startContainer.nodeName === 'TD' || range.startContainer.nodeName === 'TH' ||
                         closest(range.startContainer.parentNode, 'td,th')) && range.collapsed) {
@@ -304,19 +308,22 @@ export class ToolbarRenderer implements IRenderer {
                     dropElement.style.display = 'none'; (dropElement.lastElementChild as HTMLElement).style.display = 'none';
                     removeClass([dropElement.lastElementChild as HTMLElement], 'e-popup-overlay');
                 }
-                if (Browser.isDevice && !isNullOrUndefined(dropElement)) { detach(dropElement); }
+                if (Browser.isDevice && !isNullOrUndefined(dropElement)) {
+                    let popupEle: HTMLElement = dropElement.querySelector('.e-dropdown-popup.e-tbar-btn.e-control');
+                    if (popupEle) {
+                        dropElement.parentNode.insertBefore(popupEle, dropElement.nextSibling);
+                        popupEle.style.removeProperty('position'); removeClass([popupEle], 'e-popup-modal');
+                    }
+                    detach(dropElement); proxy.popupContainer = undefined; }
             }
         });
-        dropDown.isStringTemplate = true; dropDown.createElement = proxy.parent.createElement;
-        dropDown.appendTo(args.element);
+        dropDown.isStringTemplate = true; dropDown.createElement = proxy.parent.createElement; dropDown.appendTo(args.element);
         let popupElement: Element = document.getElementById(dropDown.element.id + '-popup');
         popupElement.setAttribute('aria-owns', this.parent.getID());
         dropDown.element.insertBefore(content, dropDown.element.querySelector('.e-caret'));
-        args.element.tabIndex = -1;
-        dropDown.element.removeAttribute('type');
+        args.element.tabIndex = -1; dropDown.element.removeAttribute('type');
         dropDown.element.onmousedown = (): void => { proxy.parent.notify(events.selectionSave, {}); };
-        dropDown.element.onkeydown = (): void => { proxy.parent.notify(events.selectionSave, {}); };
-        return dropDown;
+        dropDown.element.onkeydown = (): void => { proxy.parent.notify(events.selectionSave, {}); }; return dropDown;
     }
     private pickerRefresh(dropDownArgs: OpenCloseMenuEventArgs): void {
         if (this.parent.backgroundColor.mode === 'Picker') {

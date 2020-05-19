@@ -307,14 +307,14 @@ describe('Chart', () => {
                 let target: HTMLElement = document.getElementById('container_Series_0_Point_1');
                 let series: Series = <Series>chartObj.visibleSeries[1];
                 let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
-                let y: number = series.points[1].regions[0].y + parseFloat(chartArea.getAttribute('y')) + element.offsetTop;
-                let x: number = series.points[1].regions[0].x + parseFloat(chartArea.getAttribute('x')) + element.offsetLeft;
+                let y: number = series.points[0].regions[0].y + parseFloat(chartArea.getAttribute('y')) + element.offsetTop;
+                let x: number = series.points[0].regions[0].x + parseFloat(chartArea.getAttribute('x')) + element.offsetLeft;
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
 
                 let tooltip: HTMLElement = document.getElementById('container_tooltip');
                 expect(tooltip != null).toBe(true);
                 expect(tooltip.childNodes[0].childNodes[0].childNodes[1].textContent.replace(/\u200E/g, '')).toEqual('Power5 : 173.233');
-                expect(parseFloat(tooltip.style.top) < (series.points[1].regions[0].y + parseFloat(chartArea.getAttribute('y'))));
+                expect(parseFloat(tooltip.style.top) < (series.points[0].regions[0].y + parseFloat(chartArea.getAttribute('y'))));
                 done();
                 done();
             };
@@ -329,8 +329,8 @@ describe('Chart', () => {
                 let series: Series = <Series>chartObj.visibleSeries[1];
 
                 let chartArea: HTMLElement = document.getElementById('container_ChartAreaBorder');
-                let y: number = series.points[1].regions[0].y + parseFloat(chartArea.getAttribute('y')) + element.offsetTop;
-                let x: number = series.points[1].regions[0].x + parseFloat(chartArea.getAttribute('x')) + element.offsetLeft;
+                let y: number = series.points[0].regions[0].y + parseFloat(chartArea.getAttribute('y')) + element.offsetTop;
+                let x: number = series.points[0].regions[0].x + parseFloat(chartArea.getAttribute('x')) + element.offsetLeft;
                 trigger.mousemovetEvent(target, Math.ceil(x), Math.ceil(y));
 
                 let tooltip: HTMLElement = document.getElementById('container_tooltip');

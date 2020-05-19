@@ -10,7 +10,7 @@ import { DropDownButton } from '@syncfusion/ej2-splitbuttons';
 import { Button, CheckBox, RadioButton } from '@syncfusion/ej2-buttons';
 import { Workbook } from '@syncfusion/ej2-excel-export';
 import { PdfBorders, PdfColor, PdfDocument, PdfFontFamily, PdfFontStyle, PdfGrid, PdfPageOrientation, PdfPageTemplateElement, PdfPen, PdfSolidBrush, PdfStandardFont, PdfStringFormat, PdfTextAlignment, PdfVerticalAlignment, PointF, RectangleF } from '@syncfusion/ej2-pdf-export';
-import { AreaSeries, BarSeries, BubbleSeries, Category, Chart, ChartLocation, ColumnSeries, Crosshair, Export, Legend, LineSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiLevelLabel, ParetoSeries, PolarSeries, RadarSeries, RangeAreaSeries, RangeColumnSeries, ScatterSeries, ScrollBar, SplineAreaSeries, SplineSeries, StackingAreaSeries, StackingBarSeries, StackingColumnSeries, StepAreaSeries, StepLineSeries, Tooltip as Tooltip$1, Zoom } from '@syncfusion/ej2-charts';
+import { AreaSeries, BarSeries, BubbleSeries, Category, Chart, ColumnSeries, Crosshair, Export, Legend, LineSeries, MultiColoredAreaSeries, MultiColoredLineSeries, MultiLevelLabel, ParetoSeries, PolarSeries, RadarSeries, RangeAreaSeries, RangeColumnSeries, ScatterSeries, ScrollBar, SplineAreaSeries, SplineSeries, StackingAreaSeries, StackingBarSeries, StackingColumnSeries, StepAreaSeries, StepLineSeries, Tooltip as Tooltip$1, Zoom } from '@syncfusion/ej2-charts';
 
 /**
  * This is a file to perform common utility for OLAP and Relational datasource
@@ -14446,6 +14446,17 @@ __decorate$3([
     Property(null)
 ], MinorTickLines.prototype, "color", void 0);
 /**
+ * Allows to configure the position of the legend such as top and left in the chart.
+ */
+class ChartLocation extends ChildProperty {
+}
+__decorate$3([
+    Property(0)
+], ChartLocation.prototype, "x", void 0);
+__decorate$3([
+    Property(0)
+], ChartLocation.prototype, "y", void 0);
+/**
  * Allow options to customize the border of the chart series such as color and border size in the pivot chart.
  * For example, to display the chart series border color as red, set the properties `color` to either **"red"** or **"#FF0000"** or **"rgba(255,0,0,1.0)"** and `width` to **0.5**.
  */
@@ -19444,6 +19455,8 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         this.posCount = 0;
         /** @hidden */
         this.isModified = false;
+        /** @hidden */
+        this.isInitialRendering = false;
         this.needsID = true;
         this.pivotRefresh = Component.prototype.refresh;
         this.pivotView = this;
@@ -20098,8 +20111,11 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         this.trigger(load, loadArgs, (observedArgs) => {
             if (isBlazor()) {
                 observedArgs.dataSourceSettings.dataSource = this.dataSourceSettings.dataSource;
+                PivotUtil.updateDataSourceSettings(this, observedArgs.dataSourceSettings);
             }
-            this.dataSourceSettings = observedArgs.dataSourceSettings;
+            else {
+                this.dataSourceSettings = observedArgs.dataSourceSettings;
+            }
             this.fieldsType = observedArgs.fieldsType;
             this.updateClass();
             this.notify(initSubComponent, {});
@@ -20500,6 +20516,10 @@ let PivotView = PivotView_1 = class PivotView extends Component {
             if (this.toolbarModule && this.toolbarModule.action !== 'New' && this.toolbarModule.action !== 'Load'
                 && this.toolbarModule.action !== 'Remove') {
                 this.isModified = true;
+            }
+            if (isBlazor() && !this.isInitialRendering) {
+                this.isModified = false;
+                this.isInitialRendering = !this.isInitialRendering;
             }
             this.toolbarModule.action = '';
         }

@@ -5,10 +5,12 @@ import { PageEventArgs, QueryCellInfoEventArgs, doesImplementInterface, RowDataB
 import { Column, ColumnModel } from '../../src';
 import { ITreeData } from '../../src/treegrid/base/interface';
 import { profile, inMB, getMemoryProfile } from '../common.spec';
+import { ColumnChooser } from '../../src/treegrid/actions/column-chooser';
 
 /**
  * Grid Column spec 
  */
+TreeGrid.Inject(ColumnChooser);
 describe('TreeGrid Column Module', () => {
   beforeAll(() => {
     const isDef = (o: any) => o !== undefined && o !== null;
@@ -275,3 +277,85 @@ describe('Checkbox Column', () => {
     destroy(gridObj);
   });
 });
+describe('Column Chooser', () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        showColumnChooser:false,
+        toolbar:['ColumnChooser'],
+        columns: [
+          { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true,  textAlign: 'Right', width: 100 },
+          { field: 'taskName', headerText: 'Task Name', width: 250, showInColumnChooser: false },
+          { field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 135 },
+          { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 90 },
+          { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 90 }
+        ]
+       
+      },
+      done
+    );
+  });
+  it('Column chooser testing', () => {
+    gridObj.showColumnChooser= true;
+    gridObj.dataBind();
+    (<HTMLElement>gridObj.grid.toolbarModule.getToolbar().querySelector('#' + gridObj.grid.element.id + '_columnchooser')).click();
+    (<any>gridObj.element.querySelectorAll('.e-cc-chbox')[3]).click();
+    (<any> gridObj.element.querySelector('.e-cc_okbtn')).click()
+    expect(gridObj.getVisibleColumns().length).toBe(4);
+  
+  });
+  
+  afterAll(() => {
+    destroy(gridObj);
+  });
+}); 
+
+
+describe('Column Chooser', () => {
+  let gridObj: TreeGrid;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        childMapping: 'subtasks',
+        treeColumnIndex: 1,
+        showColumnChooser: true,
+        toolbar:['ColumnChooser'],
+        columns: [
+          { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true,  textAlign: 'Right', width: 100 },
+          { field: 'taskName', headerText: 'Task Name', width: 250, showInColumnChooser: false },
+          { field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 135 },
+          { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 90 },
+          { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 90 }
+        ]
+       
+      },
+      done
+    );
+  });
+  it('Check ShowInColumnChooser method', () => {
+    (<HTMLElement>gridObj.grid.toolbarModule.getToolbar().querySelector('#' + gridObj.grid.element.id + '_columnchooser')).click();
+      expect(gridObj.element.querySelectorAll('.e-cclist').length).toBe(5);
+      expect(gridObj.element.querySelectorAll('.e-cclist')[0].textContent).toBe('Select All');
+      expect(gridObj.element.querySelectorAll('.e-cclist')[1].textContent).toBe('Task ID');
+      expect(gridObj.element.querySelectorAll('.e-cclist')[2].textContent).toBe('Priority');
+      expect(gridObj.element.querySelectorAll('.e-cclist')[3].textContent).toBe('Duration');
+      expect(gridObj.element.querySelectorAll('.e-cclist')[4].textContent).toBe('Progress'); 
+    });
+  it('Check showcolumnchooser', () => {
+    (<HTMLElement>gridObj.grid.toolbarModule.getToolbar().querySelector('#' + gridObj.grid.element.id + '_columnchooser')).click();
+    (<any>gridObj.element.querySelectorAll('.e-cc-chbox')[2]).click();
+    (<any>gridObj.element.querySelectorAll('.e-cc-chbox')[3]).click();
+    (<any> gridObj.element.querySelector('.e-cc_okbtn')).click()
+    expect(gridObj.getVisibleColumns().length).toBe(3);
+ 
+  });
+
+  afterAll(() => {
+    destroy(gridObj);
+  });
+}); 

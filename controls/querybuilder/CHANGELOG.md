@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.53 (2020-05-19)
+
+### QueryBuilder
+
+#### Bug Fixes
+
+- Issue with boolean value has been resolved.
+
 ## 18.1.48 (2020-05-05)
 
 ### QueryBuilder

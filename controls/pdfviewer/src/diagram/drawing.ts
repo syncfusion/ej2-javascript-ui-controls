@@ -39,9 +39,11 @@ export class Drawing {
      */
     public renderLabels(viewer: PdfViewer): void {
         let annotations: PdfAnnotationBaseModel[] = viewer.annotations;
-        for (let i: number = 0; i < annotations.length; i++) {
-            let annotation: PdfAnnotationBaseModel = annotations[i];
-            this.initObject(annotation);
+        if (annotations) {
+            for (let i: number = 0; i < annotations.length; i++) {
+                let annotation: PdfAnnotationBaseModel = annotations[i];
+                this.initObject(annotation);
+            }
         }
     }
 

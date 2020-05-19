@@ -18,7 +18,6 @@ const REGX_BROWSER: { [key: string]: RegExp } = {
     MOZILLA: /(mozilla)(?:.*? rv:([\w.]+)|)/i
 };
 
-// 
 interface MyWindow extends Window {
     browserDetails: BrowserDetails;
     cordova: Object;
@@ -186,7 +185,11 @@ export class Browser {
      */
     static get isTouch(): Boolean {
         if (isUndefined(window.browserDetails.isTouch)) {
-            return window.browserDetails.isTouch = ('ontouchstart' in window);
+            return (window.browserDetails.isTouch =
+                ('ontouchstart' in window.navigator) ||
+                (window &&
+                    window.navigator &&
+                    (window.navigator.maxTouchPoints > 0)) || ('ontouchstart' in window));
         }
         return window.browserDetails.isTouch;
     }

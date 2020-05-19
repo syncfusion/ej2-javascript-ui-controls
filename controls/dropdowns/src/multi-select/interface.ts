@@ -61,4 +61,5 @@ export interface IMulitSelect extends Component<HTMLElement> {
     getLocaleName?(): string;
     filterParent: HTMLElement;
     enableGroupCheckBox : boolean;
+    pasteHandler?(e?: KeyboardEventArgs): void;
 }

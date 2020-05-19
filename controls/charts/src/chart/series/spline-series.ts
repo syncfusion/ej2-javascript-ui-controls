@@ -4,7 +4,6 @@ import { Chart } from '../chart';
 import { Series, Points } from './chart-series';
 import { SplineBase } from './spline-base';
 import { Axis } from '../../chart/axis/axis';
-import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 
 /**
@@ -23,18 +22,9 @@ export class SplineSeries extends SplineBase {
         let firstPoint: Points = null;
         let direction: string = '';
         let startPoint: string = 'M';
-        let tempPoints: Points[] = []; let points: Points[] = [];
-        let point: Points; let pointIndex: number = 0;
-        tempPoints = this.filterEmptyPoints(series);
-        for (let i: number = 0; i < tempPoints.length; i++) {
-            point = tempPoints[i];
-            if (isNullOrUndefined(point.x) || point.x === '') {
-                continue;
-            } else {
-                point.index = pointIndex++;
-                points.push(point);
-            }
-        }
+        let points: Points[] = []; let tempPoints: Points[] = [];
+        tempPoints = this.enableComplexProperty(series);
+        points = this.filterEmptyPoints(series, tempPoints);
         let previous: number;
         let getCoordinate: Function = series.chart.chartAreaType === 'PolarRadar' ? TransformToVisible : getPoint;
         for (let point of points) {

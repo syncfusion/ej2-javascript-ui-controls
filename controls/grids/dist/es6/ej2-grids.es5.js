@@ -6366,7 +6366,7 @@ var ContentFocus = /** @__PURE__ @class */ (function () {
         };
     }
     ContentFocus.prototype.getTable = function () {
-        return (this.parent.frozenColumns ?
+        return (this.parent.getFrozenColumns() ?
             this.parent.getContent().querySelector('.e-movablecontent .e-table') :
             this.parent.getContentTable());
     };
@@ -10505,9 +10505,11 @@ var Clipboard = /** @__PURE__ @class */ (function () {
     };
     Clipboard.prototype.pasteHandler = function (e) {
         var _this = this;
-        if (e.keyCode === 86 && e.ctrlKey && !this.parent.isEdit) {
-            var target_1 = closest(document.activeElement, '.e-rowcell');
-            if (!target_1) {
+        var grid = this.parent;
+        if (e.keyCode === 86 && e.ctrlKey && !grid.isEdit) {
+            var target = closest(document.activeElement, '.e-rowcell');
+            if (!target || !grid.editSettings.allowEditing || grid.editSettings.mode !== 'Batch' ||
+                grid.selectionSettings.mode !== 'Cell' || grid.selectionSettings.cellSelectionMode === 'Flow') {
                 return;
             }
             this.activeElement = document.activeElement;
@@ -10518,7 +10520,7 @@ var Clipboard = /** @__PURE__ @class */ (function () {
             setTimeout(function () {
                 _this.activeElement.focus();
                 window.scrollTo(x_1, y_1);
-                _this.paste(_this.clipBoardTextArea.value, parseInt(target_1.parentElement.getAttribute('aria-rowindex'), 10), parseInt(target_1.getAttribute('aria-colindex'), 10));
+                _this.paste(_this.clipBoardTextArea.value, _this.parent.getSelectedRowCellIndexes()[0].rowIndex, _this.parent.getSelectedRowCellIndexes()[0].cellIndexes[0]);
             }, 10);
         }
     };
@@ -10697,7 +10699,22 @@ var Clipboard = /** @__PURE__ @class */ (function () {
             }
             if (isElement) {
                 if (!cells[j].classList.contains('e-hide')) {
-                    this.copyContent += cells[j].innerText;
+                    if (isBlazor()) {
+                        if ((!cells[j].classList.contains('e-gridchkbox')) &&
+                            Object.keys(cells[j].querySelectorAll('.e-check')).length) {
+                            this.copyContent += true;
+                        }
+                        else if ((!cells[j].classList.contains('e-gridchkbox')) &&
+                            Object.keys(cells[j].querySelectorAll('.e-uncheck')).length) {
+                            this.copyContent += false;
+                        }
+                        else {
+                            this.copyContent += cells[j].innerText;
+                        }
+                    }
+                    else {
+                        this.copyContent += cells[j].innerText;
+                    }
                 }
             }
             else {
@@ -23162,9 +23179,9 @@ var RowDD = /** @__PURE__ @class */ (function () {
             }
             _this.processArgs(target);
             gObj.trigger(rowDragStart, {
-                rows: _this.rows,
-                target: e.target, draggableType: 'rows', fromIndex: parseInt(_this.rows[0].getAttribute('aria-rowindex'), 10),
-                data: _this.rowData
+                rows: (isBlazor()) ? null : _this.rows, target: (isBlazor()) ? null : e.target,
+                draggableType: 'rows', fromIndex: parseInt(_this.rows[0].getAttribute('aria-rowindex'), 10),
+                data: (Object.keys(_this.rowData[0]).length > 0) ? _this.rowData : _this.currentViewData()
             });
             if (isBlazor()) {
                 e.bindEvents(e.dragElement);
@@ -23280,65 +23297,56 @@ var RowDD = /** @__PURE__ @class */ (function () {
             }
             _this.processArgs(target);
             var args = {
-                target: target, draggableType: 'rows',
+                target: (isBlazor()) ? null : target, draggableType: 'rows',
                 cancel: false,
                 fromIndex: parseInt(_this.rows[0].getAttribute('aria-rowindex'), 10),
-                dropIndex: _this.dragTarget,
-                rows: _this.rows, data: _this.dragStartData
+                dropIndex: _this.dragTarget, rows: (isBlazor()) ? null : _this.rows,
+                data: (Object.keys(_this.dragStartData[0]).length > 0) ? _this.dragStartData : _this.currentViewData()
             };
-            gObj.trigger(rowDrop, args);
-            if (!parentsUntil(target, 'e-gridcontent') || args.cancel) {
-                _this.dragTarget = null;
-                remove(e.helper);
-                return;
-            }
-            _this.isRefresh = false;
-            var selectedIndexes = _this.parent.getSelectedRowIndexes();
-            if (gObj.isRowDragable()) {
-                if (!isBlazor()) {
-                    if (!_this.parent.rowDropSettings.targetID &&
-                        _this.startedRow.querySelector('td.e-selectionbackground') && selectedIndexes.length > 1 &&
-                        selectedIndexes.length !== _this.parent.getCurrentViewRecords().length) {
-                        _this.reorderRows(selectedIndexes, args.dropIndex);
+            gObj.trigger(rowDrop, args, function () {
+                if (!parentsUntil(target, 'e-gridcontent') || args.cancel) {
+                    _this.dragTarget = null;
+                    remove(e.helper);
+                    return;
+                }
+                _this.isRefresh = false;
+                var selectedIndexes = _this.parent.getSelectedRowIndexes();
+                if (gObj.isRowDragable()) {
+                    if (!isBlazor()) {
+                        if (!_this.parent.rowDropSettings.targetID &&
+                            _this.startedRow.querySelector('td.e-selectionbackground') && selectedIndexes.length > 1 &&
+                            selectedIndexes.length !== _this.parent.getCurrentViewRecords().length) {
+                            _this.reorderRows(selectedIndexes, args.dropIndex);
+                        }
+                        else {
+                            _this.reorderRows([parseInt(_this.startedRow.getAttribute('aria-rowindex'), 10)], _this.dragTarget);
+                        }
                     }
                     else {
-                        _this.reorderRows([parseInt(_this.startedRow.getAttribute('aria-rowindex'), 10)], _this.dragTarget);
+                        var draggedData = _this.parent.getSelectedRecords().length ?
+                            _this.parent.getSelectedRecords() : _this.currentViewData();
+                        var changeRecords = {
+                            addedRecords: [],
+                            deletedRecords: draggedData,
+                            changedRecords: []
+                        };
+                        var toIdx = _this.dragTarget ? _this.dragTarget : args.dropIndex;
+                        var dragDropDestinationIndex = 'dragDropDestinationIndex';
+                        var query = new Query;
+                        query[dragDropDestinationIndex] = toIdx;
+                        _this.saveChange(changeRecords, query);
+                        changeRecords.deletedRecords = [];
+                        changeRecords.addedRecords = draggedData;
+                        _this.saveChange(changeRecords, query);
+                    }
+                    _this.dragTarget = null;
+                    if (!gObj.rowDropSettings.targetID) {
+                        remove(e.helper);
+                        gObj.refresh();
                     }
                 }
-                else {
-                    var fromIdx = parseInt(_this.startedRow.getAttribute('aria-rowindex'), 10);
-                    var currentVdata = [];
-                    var ind = 0;
-                    for (var i = 0; i < selectedIndexes.length; i++) {
-                        var currentV = 'currentViewData';
-                        currentVdata[ind] = _this.parent[currentV][selectedIndexes[i]];
-                    }
-                    if (!(_this.parent.rowDropSettings.targetID && selectedIndexes.length)) {
-                        currentVdata[ind] = _this.parent.currentViewData[fromIdx];
-                    }
-                    var draggedData = _this.parent.getSelectedRecords().length ? _this.parent.getSelectedRecords() : (currentVdata);
-                    var changeRecords = {
-                        addedRecords: [],
-                        deletedRecords: draggedData,
-                        changedRecords: []
-                    };
-                    var toIdx = _this.dragTarget ? _this.dragTarget : args.dropIndex;
-                    toIdx = (toIdx - draggedData.length + 1) > 0 ? (toIdx - draggedData.length + 1) : toIdx;
-                    var dragDropDestinationIndex = 'dragDropDestinationIndex';
-                    var query = new Query;
-                    query[dragDropDestinationIndex] = toIdx;
-                    _this.saveChange(changeRecords, query);
-                    changeRecords.deletedRecords = [];
-                    changeRecords.addedRecords = draggedData;
-                    _this.saveChange(changeRecords, query);
-                }
-                _this.dragTarget = null;
-                if (!gObj.rowDropSettings.targetID) {
-                    remove(e.helper);
-                    gObj.refresh();
-                }
-            }
-            _this.isRefresh = true;
+                _this.isRefresh = true;
+            });
         };
         this.removeCell = function (targetRow, className) {
             return [].slice.call(targetRow.querySelectorAll('td')).filter(function (cell) {
@@ -23357,6 +23365,19 @@ var RowDD = /** @__PURE__ @class */ (function () {
         this.parent.addEventListener(dataBound, this.onDataBoundFn);
         this.parent.on(uiUpdate, this.enableAfterRender, this);
     }
+    RowDD.prototype.currentViewData = function () {
+        var selectedIndexes = this.parent.getSelectedRowIndexes();
+        var currentVdata = [];
+        var fromIdx = parseInt(this.startedRow.getAttribute('aria-rowindex'), 10);
+        for (var i = 0, n = selectedIndexes.length; i < n; i++) {
+            var currentV = 'currentViewData';
+            currentVdata[i] = this.parent[currentV][selectedIndexes[i]];
+        }
+        if (!this.parent.rowDropSettings.targetID && selectedIndexes.length === 0) {
+            currentVdata[0] = this.parent.currentViewData[fromIdx];
+        }
+        return currentVdata;
+    };
     RowDD.prototype.saveChange = function (changeRecords, query) {
         var _this = this;
         this.parent.getDataModule().saveChanges(changeRecords, this.parent.getPrimaryKeyFieldNames()[0], {}, query)
@@ -23602,11 +23623,9 @@ var RowDD = /** @__PURE__ @class */ (function () {
             }
             else {
                 var currentVdata = [];
-                var ind = 0;
                 var selectedIndex = srcControl_1.getSelectedRowIndexes();
                 for (var i = 0; i < selectedIndex.length; i++) {
-                    currentVdata[ind] = srcControl_1.currentViewData[selectedIndex[i]];
-                    ind++;
+                    currentVdata[i] = srcControl_1.currentViewData[selectedIndex[i]];
                 }
                 records = currentVdata;
                 var changes = {
@@ -29633,6 +29652,9 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                     }
                     delete selectedRows[i];
                 }
+                var fCont = gObj.getContent().querySelector('.e-frozencontent');
+                var mCont = gObj.getContent().querySelector('.e-movablecontent');
+                fCont.style.height = mCont.offsetHeight - getScrollBarWidth() + 'px';
             }
             else if (!_this.parent.getFrozenColumns() && (selectedRows.length === 1 || data)) {
                 var uid = beforeBatchDeleteArgs.row.getAttribute('data-uid');
@@ -29981,6 +30003,9 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                 gObj.selectRow(_this.cellDetails.rowIndex, true);
             }
             _this.renderer.update(cellEditArgs);
+            if (gObj.getFrozenColumns()) {
+                alignFrozenEditForm(row.querySelector('td:not(.e-hide)'), _this.comparingRow(row).querySelector('td:not(.e-hide)'));
+            }
             _this.parent.notify(batchEditFormRendered, cellEditArgs);
             _this.form = gObj.element.querySelector('#' + gObj.element.id + 'EditForm');
             gObj.editModule.applyFormValidation([col]);
@@ -30034,7 +30059,7 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                 movableRowObject = this.parent.getMovableRowsObject()[movRowIndex];
             }
             else {
-                movableRowObject = this.parent.getRowObjectFromUID(rowObj.uid);
+                movableRowObject = this.parent.getMovableRowsObject()[rowIndex];
             }
             movableRowObject.changes = extend({}, {}, currentRowObj.changes, true);
             if (rowObj.data[field] !== value) {
@@ -30124,6 +30149,10 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         var args = this.generateCellArgs();
         args.value = args.previousValue;
         this.successCallBack(args, args.cell.parentElement, args.column, true)(args);
+        if (this.parent.getFrozenColumns()) {
+            var tr = isBlazor() ? parentsUntil(this.form, 'e-row') : args.cell.parentElement;
+            this.comparingRow(tr).querySelector('td:not(.e-hide)').style.height = tr.getBoundingClientRect().height + 'px';
+        }
     };
     BatchEdit.prototype.generateCellArgs = function () {
         var gObj = this.parent;
@@ -30174,6 +30203,9 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         }
         else {
             this.successCallBack(args, tr, col)(args);
+        }
+        if (gObj.getFrozenColumns()) {
+            this.comparingRow(tr).querySelector('td:not(.e-hide)').style.height = tr.getBoundingClientRect().height + 'px';
         }
     };
     BatchEdit.prototype.successCallBack = function (cellSaveArgs, tr, column, isEscapeCellEdit) {
@@ -30301,6 +30333,18 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
             this.parent.isEdit = false;
             this.isColored = false;
         }
+    };
+    BatchEdit.prototype.comparingRow = function (row) {
+        var gObj = this.parent;
+        var comparingElement = row.offsetParent.parentElement.className;
+        var comparingRow;
+        if (comparingElement.includes('e-frozencontent') || comparingElement.includes('e-frozenheader')) {
+            comparingRow = gObj.getMovableRowByIndex(parseInt(row.getAttribute('aria-rowindex'), 10));
+        }
+        if (comparingElement.includes('e-movablecontent') || comparingElement.includes('e-movableheader')) {
+            comparingRow = gObj.getFrozenRowByIndex(parseInt(row.getAttribute('aria-rowindex'), 10));
+        }
+        return comparingRow;
     };
     return BatchEdit;
 }());
@@ -30875,8 +30919,10 @@ var Edit = /** @__PURE__ @class */ (function () {
         if (gObj.editSettings.template) {
             var elements = [].slice.call(form.elements);
             for (var k = 0; k < elements.length; k++) {
-                if (elements[k].hasAttribute('name')) {
-                    var field = setComplexFieldID(elements[k].getAttribute('name'));
+                if ((elements[k].hasAttribute('name') && (elements[k].className !== 'e-multi-hidden')) ||
+                    elements[k].classList.contains('e-multiselect')) {
+                    var field = (elements[k].hasAttribute('name')) ? setComplexFieldID(elements[k].getAttribute('name')) :
+                        setComplexFieldID(elements[k].getAttribute('id'));
                     var column = gObj.getColumnByField(field) || { field: field, type: elements[k].getAttribute('type') };
                     var value = void 0;
                     if (column.type === 'checkbox' || column.type === 'boolean') {
@@ -30894,6 +30940,9 @@ var Edit = /** @__PURE__ @class */ (function () {
                                 value = elements[k].value;
                             }
                         }
+                    }
+                    else if (elements[k].ej2_instances) {
+                        value = elements[k].ej2_instances[0].value;
                     }
                     if (column.edit && typeof column.edit.read === 'string') {
                         value = getValue(column.edit.read, window)(elements[k], value);
@@ -33486,6 +33535,7 @@ var PdfExport = /** @__PURE__ @class */ (function () {
         var columns = isExportColumns(pdfExportProperties) ?
             prepareColumns(pdfExportProperties.columns, gObj.enableColumnVirtualization) :
             helper.getGridExportColumns(gObj.columns);
+        columns = columns.filter(function (columns) { return isNullOrUndefined(columns.commands); });
         var isGrouping = false;
         if (gObj.groupSettings.columns.length) {
             isGrouping = true;
@@ -33707,6 +33757,10 @@ var PdfExport = /** @__PURE__ @class */ (function () {
         var columnCount = gridColumn.length + childLevels;
         var depth = measureColumnDepth(eCols);
         var cols = eCols;
+        var index = 0;
+        if (this.parent.allowGrouping) {
+            index = this.parent.groupSettings.columns.length;
+        }
         pdfGrid.columns.add(columnCount);
         pdfGrid.headers.add(rows.length);
         var applyTextAndSpan = function (rowIdx, colIdx, col, rowSpan, colSpan) {
@@ -33754,7 +33808,7 @@ var PdfExport = /** @__PURE__ @class */ (function () {
                 }
                 else if (cols[i].visible || _this.hideColumnInclude) {
                     spanCnt++;
-                    applyTextAndSpan(rowIndex, i + colIndex, cols[i], depth, 0);
+                    applyTextAndSpan(rowIndex, i + colIndex + index, cols[i], depth, 0);
                 }
             }
             return spanCnt;
@@ -35516,6 +35570,7 @@ var FreezeContentRender = /** @__PURE__ @class */ (function (_super) {
         }
         _super.prototype.renderEmpty.call(this, tbody);
         this.getMovableContent().querySelector('tbody').innerHTML = '<tr><td></td></tr>';
+        addClass([this.getMovableContent().querySelector('tbody').querySelector('tr')], ['e-emptyrow']);
         this.getFrozenContent().querySelector('.e-emptyrow').querySelector('td').colSpan = this.parent.getFrozenColumns();
         this.getFrozenContent().style.borderRightWidth = '0px';
         if (this.parent.frozenRows) {
@@ -35757,8 +35812,8 @@ var FreezeRender = /** @__PURE__ @class */ (function (_super) {
         var width = [];
         for (var i = 0, len = fRows.length; i < len; i++) { //separate loop for performance issue 
             if (!isNullOrUndefined(fRows[i]) && !isNullOrUndefined(mRows[i])) {
-                height[i] = fRows[i].offsetHeight; //https://pagebuildersandwich.com/increased-plugins-performance-200/
-                width[i] = mRows[i].offsetHeight;
+                height[i] = fRows[i].getBoundingClientRect().height; //https://pagebuildersandwich.com/increased-plugins-performance-200/
+                width[i] = mRows[i].getBoundingClientRect().height;
             }
         }
         for (var i = 0, len = fRows.length; i < len; i++) {

@@ -4067,17 +4067,21 @@ var WebApiAdaptor = /** @class */ (function (_super) {
     WebApiAdaptor.prototype.getModuleName = function () {
         return 'WebApiAdaptor';
     };
+    WebApiAdaptor.prototype.addParams = function (options) {
+        var urlParams = new UrlAdaptor();
+        urlParams.addParams(options);
+    };
     /**
      * Prepare and returns request body which is used to insert a new record in the table.
      * @param  {DataManager} dm
      * @param  {Object} data
      * @param  {string} tableName?
      */
-    WebApiAdaptor.prototype.insert = function (dm, data, tableName) {
+    WebApiAdaptor.prototype.insert = function (dm, data, tableName, query) {
         return {
             type: 'POST',
             url: dm.dataSource.url,
-            data: JSON.stringify(data)
+            data: JSON.stringify(sf.base.extend({}, { value: data }, DataUtil.getAddParams(this, dm, query ? query : new Query())))
         };
     };
     /**
@@ -4087,11 +4091,11 @@ var WebApiAdaptor = /** @class */ (function (_super) {
      * @param  {number} value
      * @param  {string} tableName?
      */
-    WebApiAdaptor.prototype.remove = function (dm, keyField, value, tableName) {
+    WebApiAdaptor.prototype.remove = function (dm, keyField, value, tableName, query) {
         return {
             type: 'DELETE',
             url: dm.dataSource.url + '/' + value,
-            data: JSON.stringify(value)
+            data: JSON.stringify(sf.base.extend({}, { key: value }, DataUtil.getAddParams(this, dm, query ? query : new Query())))
         };
     };
     /**
@@ -4101,11 +4105,11 @@ var WebApiAdaptor = /** @class */ (function (_super) {
      * @param  {Object} value
      * @param  {string} tableName?
      */
-    WebApiAdaptor.prototype.update = function (dm, keyField, value, tableName) {
+    WebApiAdaptor.prototype.update = function (dm, keyField, value, tableName, query) {
         return {
             type: 'PUT',
             url: dm.dataSource.url,
-            data: JSON.stringify(value)
+            data: JSON.stringify(sf.base.extend({}, { value: value }, DataUtil.getAddParams(this, dm, query ? query : new Query())))
         };
     };
     WebApiAdaptor.prototype.batchRequest = function (dm, changes, e) {

@@ -976,13 +976,12 @@
       width: auto;
     }
 
-    .e-frozenheader table tr td.e-rowcell {
-      height: $grid-rowcell-line-height + $grid-content-padding + $grid-content-padding;
+    .e-frozenheader table .e-insertedrow td.e-rowcell,
+    .e-frozencontent table .e-insertedrow td.e-rowcell,
+    & .e-row.e-emptyrow {
+        height: $grid-rowcell-line-height + $grid-content-padding + $grid-content-padding;
     }
 
-    .e-frozencontent table tr td:first-child:empty,
-    .e-movablecontent table tr td:first-child:empty,
-    .e-frozenhdrcont table tr td:first-child:empty,
     &:not(.e-grid-min-height) .e-gridcontent tr td:not(.e-indentcell):first-child:empty,
     &:not(.e-grid-min-height) .e-gridcontent tr.e-row .e-rowcell:empty {
       height: $grid-rowcell-line-height + $grid-content-padding + $grid-content-padding;

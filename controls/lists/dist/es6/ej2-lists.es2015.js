@@ -735,14 +735,17 @@ var ListBase;
                 innerDiv.appendChild(anchorTag(createElement, dataSource, fields, text, null, curOpt.itemNavigable));
             }
             else {
-                innerDiv.appendChild(createElement('span', {
-                    className: cssClass.text, innerHTML: text,
+                let element = createElement('span', {
+                    className: cssClass.text,
                     attrs: (ariaAttributes.itemText !== '' ? { role: ariaAttributes.itemText } : {})
-                }));
+                });
                 if (options && options.enableHtmlSanitizer) {
-                    let textElement = innerDiv.querySelector('.' + cssClass.text);
-                    textElement.innerText = SanitizeHtmlHelper.sanitize(text);
+                    element.innerText = SanitizeHtmlHelper.sanitize(text);
                 }
+                else {
+                    element.innerHTML = text;
+                }
+                innerDiv.appendChild(element);
             }
             li.appendChild(innerDiv);
         }

@@ -3555,7 +3555,10 @@ class Series {
                 let element = document.getElementById(tempID);
                 if (this.heatMap.tempRectHoverClass !== tempID) {
                     if (this.heatMap.cellSettings.enableCellHighlighting) {
-                        let oldElement = document.getElementById(this.heatMap.tempRectHoverClass);
+                        let oldElement;
+                        if (this.heatMap.tempRectHoverClass) {
+                            oldElement = document.getElementById(this.heatMap.tempRectHoverClass);
+                        }
                         if (oldElement && !this.heatMap.rectSelected) {
                             oldElement.setAttribute('opacity', '1');
                         }
@@ -3568,7 +3571,10 @@ class Series {
             }
             else {
                 if (this.heatMap.cellSettings.enableCellHighlighting) {
-                    let oldElement = document.getElementById(this.heatMap.tempRectHoverClass);
+                    let oldElement;
+                    if (this.heatMap.tempRectHoverClass) {
+                        oldElement = document.getElementById(this.heatMap.tempRectHoverClass);
+                    }
                     if (oldElement && !this.heatMap.rectSelected) {
                         oldElement.setAttribute('opacity', '1');
                         this.heatMap.tempRectHoverClass = '';
@@ -3673,7 +3679,7 @@ class Tooltip$1 {
         let ele = document.getElementById(this.heatMap.element.id + 'Celltooltipcontainer');
         if (!isShow) {
             if (ele && ele.style.visibility !== 'hidden') {
-                if (this.tooltipObject && isFadeout) {
+                if (this.tooltipObject && isFadeout && this.heatMap.isRectBoundary) {
                     this.tooltipObject.fadeOut();
                 }
                 else {
@@ -6845,11 +6851,33 @@ let HeatMap = class HeatMap extends Component {
         let firstRectDetails = [];
         let lastRectDetails = [];
         let isRect;
+        let borderBoundary = 5;
         firstRectDetails.push(this.heatMapSeries.rectPositionCollection[0][0]);
         lastRectDetails.push(this.heatMapSeries.rectPositionCollection[this.yLength - 1][this.xLength - 1]);
-        isRect = (x >= firstRectDetails[0].x && y >= firstRectDetails[0].y &&
+        if (this.cellSettings.border.width > borderBoundary && (x >= firstRectDetails[0].x && y >= firstRectDetails[0].y &&
             x <= (lastRectDetails[0].x + lastRectDetails[0].width) &&
-            y <= (lastRectDetails[0].y + lastRectDetails[0].height)) ? true : false;
+            y <= (lastRectDetails[0].y + lastRectDetails[0].height)) && this.cellSettings.tileType === 'Rect') {
+            let currentRect = this.heatMapSeries.getCurrentRect(x, y);
+            let rectHeight = lastRectDetails[0].height;
+            let rectWidth = lastRectDetails[0].width;
+            let cellBorder = this.cellSettings.border.width / 2;
+            if ((x >= (currentRect.x + cellBorder) && (y >= (currentRect.y + cellBorder)) &&
+                (x <= (currentRect.x + (rectWidth - cellBorder)) &&
+                    (y <= (currentRect.y + (rectHeight - cellBorder)))))) {
+                isRect = true;
+                this.isRectBoundary = true;
+            }
+            else {
+                isRect = false;
+                this.isRectBoundary = false;
+            }
+        }
+        else {
+            isRect = (x >= firstRectDetails[0].x && y >= firstRectDetails[0].y &&
+                x <= (lastRectDetails[0].x + lastRectDetails[0].width) &&
+                y <= (lastRectDetails[0].y + lastRectDetails[0].height));
+            this.isRectBoundary = isRect;
+        }
         return isRect;
     }
     setTheme() {
@@ -7339,13 +7367,18 @@ let HeatMap = class HeatMap extends Component {
         }
         else {
             if (e !== null) {
+                let borderBoundary = 5;
                 if (!isheatmapRect) {
-                    if ((this.cellSettings.enableCellHighlighting || this.showTooltip) && !this.enableCanvasRendering) {
+                    if ((this.cellSettings.enableCellHighlighting || this.showTooltip) && !this.enableCanvasRendering &&
+                        this.cellSettings.border.width < borderBoundary) {
                         this.heatMapSeries.highlightSvgRect(e.target.id);
                     }
                     if (this.tooltipModule && this.showTooltip) {
                         this.tooltipModule.showHideTooltip(false, true);
                     }
+                }
+                else if (!this.showTooltip && this.cellSettings.border.width > borderBoundary) {
+                    this.heatMapSeries.highlightSvgRect(e.target.id);
                 }
             }
             this.tempTooltipRectId = '';

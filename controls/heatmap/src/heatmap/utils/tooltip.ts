@@ -76,7 +76,7 @@ export class Tooltip {
         let ele: HTMLElement = document.getElementById(this.heatMap.element.id + 'Celltooltipcontainer');
         if (!isShow) {
             if (ele && ele.style.visibility !== 'hidden') {
-                if (this.tooltipObject && isFadeout) {
+                if (this.tooltipObject && isFadeout && this.heatMap.isRectBoundary) {
                     this.tooltipObject.fadeOut();
                 } else {
                     if (this.tooltipObject && this.tooltipObject.element) {

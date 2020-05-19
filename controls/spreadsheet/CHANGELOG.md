@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.1.53 (2020-05-19)
+
+### Spreadsheet
+
+#### Bug Fixes
+
+`#I275309`- Dropdownlist added randomly in cells while scrolling issue fixed.
+`#I275297`- Lock cell functionality misbehaves for empty cells in spreadsheet issue fixed.
+
 ## 18.1.48 (2020-05-05)
 
 ### Spreadsheet

@@ -5484,8 +5484,10 @@ let FileManager = FileManager_1 = class FileManager extends Component {
     adjustHeight() {
         let toolbar = select('#' + this.element.id + TOOLBAR_ID, this.element);
         let toolBarHeight = toolbar ? toolbar.offsetHeight : 0;
-        this.splitterObj.height = (this.element.clientHeight - toolBarHeight).toString();
-        this.splitterObj.dataBind();
+        if (this.splitterObj) {
+            this.splitterObj.height = (this.element.clientHeight - toolBarHeight).toString();
+            this.splitterObj.dataBind();
+        }
     }
     /* istanbul ignore next */
     splitterResize() {
@@ -5810,7 +5812,7 @@ let FileManager = FileManager_1 = class FileManager extends Component {
         }
     }
     wireEvents() {
-        window.addEventListener('resize', this.resizeHandler.bind(this));
+        EventHandler.add(window, 'resize', this.resizeHandler, this);
         this.keyboardModule = new KeyboardEvents(this.element, {
             keyAction: this.keyActionHandler.bind(this),
             keyConfigs: this.keyConfigs,
@@ -5818,6 +5820,7 @@ let FileManager = FileManager_1 = class FileManager extends Component {
         });
     }
     unWireEvents() {
+        EventHandler.remove(window, 'resize', this.resizeHandler);
         this.keyboardModule.destroy();
     }
     setPath() {

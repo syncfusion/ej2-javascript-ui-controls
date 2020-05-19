@@ -5650,8 +5650,10 @@ var FileManager = /** @class */ (function (_super) {
     FileManager.prototype.adjustHeight = function () {
         var toolbar = sf.base.select('#' + this.element.id + TOOLBAR_ID, this.element);
         var toolBarHeight = toolbar ? toolbar.offsetHeight : 0;
-        this.splitterObj.height = (this.element.clientHeight - toolBarHeight).toString();
-        this.splitterObj.dataBind();
+        if (this.splitterObj) {
+            this.splitterObj.height = (this.element.clientHeight - toolBarHeight).toString();
+            this.splitterObj.dataBind();
+        }
     };
     /* istanbul ignore next */
     FileManager.prototype.splitterResize = function () {
@@ -5976,7 +5978,7 @@ var FileManager = /** @class */ (function (_super) {
         }
     };
     FileManager.prototype.wireEvents = function () {
-        window.addEventListener('resize', this.resizeHandler.bind(this));
+        sf.base.EventHandler.add(window, 'resize', this.resizeHandler, this);
         this.keyboardModule = new sf.base.KeyboardEvents(this.element, {
             keyAction: this.keyActionHandler.bind(this),
             keyConfigs: this.keyConfigs,
@@ -5984,6 +5986,7 @@ var FileManager = /** @class */ (function (_super) {
         });
     };
     FileManager.prototype.unWireEvents = function () {
+        sf.base.EventHandler.remove(window, 'resize', this.resizeHandler);
         this.keyboardModule.destroy();
     };
     FileManager.prototype.setPath = function () {

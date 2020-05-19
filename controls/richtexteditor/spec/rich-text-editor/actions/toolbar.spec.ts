@@ -1069,7 +1069,7 @@ describe("Toolbar - Actions Module", () => {
                 target: formatDropDownItem
             };
             rteObj.toolbarModule.dropDownModule.formatDropDown.clickHandler(mouseEventArgs);
-            expect(document.querySelector(".e-dropdown-popup")).toBe(null);
+            expect(document.querySelector(".e-dropdown-popup")).not.toBe(null);
         });
     });
 

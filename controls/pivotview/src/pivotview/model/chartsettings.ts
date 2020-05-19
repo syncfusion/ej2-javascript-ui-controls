@@ -16,8 +16,8 @@ import { CornerRadiusModel as PivotChartCornerRadiusModel } from '@syncfusion/ej
 import { MajorGridLinesModel as PivotChartMajorGridLinesModel } from '@syncfusion/ej2-charts';
 import { IAnimationCompleteEventArgs, StripLineSettingsModel as PivotChartStripLineSettingsModel } from '@syncfusion/ej2-charts';
 import { CrosshairTooltipModel as PivotChartCrosshairTooltipModel, IZoomCompleteEventArgs } from '@syncfusion/ej2-charts';
-import { LocationModel, AccEmptyPointMode, MarkerSettingsModel as PivotChartMarkerSettingsModel } from '@syncfusion/ej2-charts';
-import { CrosshairSettingsModel as PivotChartCrosshairSettingsModel, IDragCompleteEventArgs, ChartLocation } from '@syncfusion/ej2-charts';
+import { LocationModel as PivotChartLocationModel, AccEmptyPointMode, MarkerSettingsModel as PivotChartMarkerSettingsModel } from '@syncfusion/ej2-charts';
+import { CrosshairSettingsModel as PivotChartCrosshairSettingsModel, IDragCompleteEventArgs } from '@syncfusion/ej2-charts';
 import { LabelBorderModel as PivotChartLabelBorderModel, MarginModel as PivotChartMarginModel } from '@syncfusion/ej2-charts';
 import { MinorTickLinesModel as PivotChartMinorTickLinesModel, IAxisLabelRenderEventArgs } from '@syncfusion/ej2-charts';
 import { Segment, AxisPosition, LegendSettingsModel, ILoadedEventArgs } from '@syncfusion/ej2-charts';
@@ -1291,6 +1291,29 @@ export class MinorTickLines extends ChildProperty<MinorTickLines> {
 }
 
 /**
+ * Allows to configure the position of the legend such as top and left in the chart.
+ */
+export class ChartLocation extends ChildProperty<ChartLocation> {
+
+     /**
+      * Allows to set the x(left) value of the legend position
+      * @default 0
+      * @blazorType int
+      */
+     @Property(0)
+     public x: number;
+
+     /**
+      * Allows to set the y(top) value of the legend position
+      * @default 0
+      * @blazorType int
+      */
+     @Property(0)
+     public y: number;
+
+}
+
+/**
  * Allow options to customize the border of the chart series such as color and border size in the pivot chart. 
  * For example, to display the chart series border color as red, set the properties `color` to either **"red"** or **"#FF0000"** or **"rgba(255,0,0,1.0)"** and `width` to **0.5**.
  */
@@ -2302,8 +2325,8 @@ export class PivotChartSettingsLegendSettings {
       * chart.appendTo('#Chart');
       * ```
       */
-     @Complex<LocationModel>({ x: 0, y: 0 }, ChartLocation)
-     public location: LocationModel;
+     @Complex<PivotChartLocationModel>({ x: 0, y: 0 }, ChartLocation)
+     public location: PivotChartLocationModel;
 
      /**
       * Allows to set the position of the legend in the chart are,

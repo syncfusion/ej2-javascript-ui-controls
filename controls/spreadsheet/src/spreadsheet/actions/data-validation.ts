@@ -127,7 +127,7 @@ export class DataValidation {
                 colIdx = colIdx >= this.parent.viewport.leftIndex ?
                     colIdx - this.parent.viewport.leftIndex : colIdx;
             }
-            let cell: CellModel = getCell(rowIdx, colIdx, sheet);
+            let cell: CellModel = getCell(indexes[0], indexes[1], sheet);
             let tr: HTMLElement = mainCont.getElementsByTagName('tr')[rowIdx];
             let tdEle: HTMLElement;
             if (tr) {

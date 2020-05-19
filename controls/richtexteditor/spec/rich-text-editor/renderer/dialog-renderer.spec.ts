@@ -10,6 +10,7 @@ describe('Image Dialog', () => {
     let beforeDialogOpenEvent: boolean = false;
     let dialogOpenEvent: boolean = false;
     let dialogCloseEvent: boolean = false;
+    let beforeDialogCloseEvent: boolean = false;
     beforeAll(() => {
         rteObj = renderRTE({
             height: 400,
@@ -20,6 +21,7 @@ describe('Image Dialog', () => {
             insertImageSettings: { resize: true, minHeight: 80, minWidth: 80 },
             beforeDialogOpen: beforeDialogOpen,
             dialogOpen: dialogOpen,
+            beforeDialogClose: beforeDialogClose,
             dialogClose: dialogClose
         });
         function beforeDialogOpen(args: any): void {
@@ -27,6 +29,9 @@ describe('Image Dialog', () => {
         }
         function dialogOpen(args: any): void {
             dialogOpenEvent = true;
+        }
+        function beforeDialogClose (args: any): void {
+            beforeDialogCloseEvent = true;
         }
         function dialogClose(args: any): void {
             dialogCloseEvent = true;
@@ -43,6 +48,8 @@ describe('Image Dialog', () => {
         expect(dialogOpenEvent).toBe(true);
         dialogOpenEvent = false;
         (<HTMLElement>rteEle.querySelectorAll(".e-cancel")[0] as HTMLElement).click();
+        expect(beforeDialogCloseEvent).toBe(true);
+        beforeDialogCloseEvent = false;
         expect(dialogCloseEvent).toBe(true);
         dialogCloseEvent = false;
         let target = <HTMLElement>rteEle.querySelectorAll(".e-content")[0]
@@ -63,6 +70,7 @@ describe('Image Dialog', () => {
             expect(beforeDialogOpenEvent).toBe(true);
             expect(dialogOpenEvent).toBe(true);
             (<HTMLElement>rteEle.querySelectorAll(".e-dlg-closeicon-btn")[0] as HTMLElement).click();
+            expect(beforeDialogCloseEvent).toBe(true);
             expect(dialogCloseEvent).toBe(true);
             done();
         }, 200);
@@ -75,6 +83,7 @@ describe('Link Dialog', () => {
     let beforeDialogOpenEvent: boolean = false;
     let dialogOpenEvent: boolean = false;
     let dialogCloseEvent: boolean = false;
+    let beforeDialogCloseEvent: boolean = false;
     beforeAll(() => {
         rteObj = renderRTE({
             height: 400,
@@ -84,6 +93,7 @@ describe('Link Dialog', () => {
             insertImageSettings: { resize: true, minHeight: 80, minWidth: 80 },
             beforeDialogOpen: beforeDialogOpen,
             dialogOpen: dialogOpen,
+            beforeDialogClose: beforeDialogClose,
             dialogClose: dialogClose
         });
         function beforeDialogOpen(args: any): void {
@@ -91,6 +101,9 @@ describe('Link Dialog', () => {
         }
         function dialogOpen(args: any): void {
             dialogOpenEvent = true;
+        }
+        function beforeDialogClose (args: any): void {
+            beforeDialogCloseEvent = true;
         }
         function dialogClose(args: any): void {
             dialogCloseEvent = true;
@@ -105,6 +118,7 @@ describe('Link Dialog', () => {
         expect(beforeDialogOpenEvent).toBe(true);
         expect(dialogOpenEvent).toBe(true);
         (<HTMLElement>rteEle.querySelectorAll(".e-footer-content")[0].childNodes[1] as HTMLElement).click();
+        expect(beforeDialogCloseEvent).toBe(true);
         expect(dialogCloseEvent).toBe(true);
     });
 });
@@ -115,6 +129,7 @@ describe('Table Dialog QuickToolbar', () => {
     let beforeDialogOpenEvent: boolean = false;
     let dialogOpenEvent: boolean = false;
     let dialogCloseEvent: boolean = false;
+    let beforeDialogCloseEvent: boolean = false;
     beforeAll(() => {
         rteObj = renderRTE({
             height: 400,
@@ -127,6 +142,7 @@ describe('Table Dialog QuickToolbar', () => {
             insertImageSettings: { resize: true, minHeight: 80, minWidth: 80 },
             beforeDialogOpen: beforeDialogOpen,
             dialogOpen: dialogOpen,
+            beforeDialogClose: beforeDialogClose,
             dialogClose: dialogClose
         });
         function beforeDialogOpen(args: any): void {
@@ -134,6 +150,9 @@ describe('Table Dialog QuickToolbar', () => {
         }
         function dialogOpen(args: any): void {
             dialogOpenEvent = true;
+        }
+        function beforeDialogClose (args: any): void {
+            beforeDialogCloseEvent = true;
         }
         function dialogClose(args: any): void {
             dialogCloseEvent = true;
@@ -162,6 +181,7 @@ describe('Table Dialog QuickToolbar', () => {
         let eventsArg: any = { pageX: 50, pageY: 300, target: tar };
         beforeDialogOpenEvent = false;
         dialogOpenEvent = false;
+        beforeDialogCloseEvent = false;
         dialogCloseEvent = false;
         (<any>rteObj).tableModule.editAreaClickHandler({ args: eventsArg });
         setTimeout(function () {
@@ -169,6 +189,7 @@ describe('Table Dialog QuickToolbar', () => {
             expect(beforeDialogOpenEvent).toBe(true);
             expect(dialogOpenEvent).toBe(true);
             (<HTMLElement>rteEle.querySelectorAll(".e-cancel")[0] as HTMLElement).click();
+            expect(beforeDialogCloseEvent).toBe(true);
             expect(dialogCloseEvent).toBe(true);
             done();
         }, 200);
@@ -181,6 +202,7 @@ describe('Table Dialog', () => {
     let beforeDialogOpenEvent: boolean = false;
     let dialogOpenEvent: boolean = false;
     let dialogCloseEvent: boolean = false;
+    let beforeDialogCloseEvent: boolean = false;
     beforeAll(() => {
         rteObj = renderRTE({
             height: 400,
@@ -193,6 +215,7 @@ describe('Table Dialog', () => {
             insertImageSettings: { resize: true, minHeight: 80, minWidth: 80 },
             beforeDialogOpen: beforeDialogOpen,
             dialogOpen: dialogOpen,
+            beforeDialogClose: beforeDialogClose,
             dialogClose: dialogClose
         });
         function beforeDialogOpen(args: any): void {
@@ -200,6 +223,9 @@ describe('Table Dialog', () => {
         }
         function dialogOpen(args: any): void {
             dialogOpenEvent = true;
+        }
+        function beforeDialogClose (args: any): void {
+            beforeDialogCloseEvent = true;
         }
         function dialogClose(args: any): void {
             dialogCloseEvent = true;
@@ -215,6 +241,7 @@ describe('Table Dialog', () => {
         expect(beforeDialogOpenEvent).toBe(true);
         expect(dialogOpenEvent).toBe(true);
         (<HTMLElement>rteEle.querySelectorAll(".e-insert-table")[0] as HTMLElement).click();
+        expect(beforeDialogCloseEvent).toBe(true);
         expect(dialogCloseEvent).toBe(true);
     });
 });

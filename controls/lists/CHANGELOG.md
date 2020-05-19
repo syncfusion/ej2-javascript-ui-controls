@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.53 (2020-05-19)
+
+### ListView
+
+#### Bug Fixes
+
+- #152966 - The issue with `The console error thrown when enabling the htmlSanitizer in the ListView` has been resolved.
+
 ## 18.1.46 (2020-04-28)
 
 ### ListBox

@@ -729,5 +729,34 @@ describe('CR ISSUE InPlace-Editor Control', () => {
                 done();
             }, 4000);
         });
+        it('enableHtmlSanitizer as true', () => {
+            editorObj = renderEditor({
+                template:"<img src='fail' onerror='alert();' /> test",
+                enableHtmlSanitizer: true,
+                mode: 'Inline'
+            });
+            ele = editorObj.element;
+            let inputEle: HTMLElement = (<HTMLElement>selectAll('.e-editable-overlay-icon', ele)[0]);
+            inputEle.click();
+            expect(editorObj.template).toBe('<img src="fail"> test');
+            expect((<HTMLElement>selectAll('.e-editable-component', ele)[0]).querySelectorAll('script').length).toBe(0);
+        });
+    });
+    describe('Check enableHtmlSanitizer for value property', () => {
+        let ele: HTMLElement;
+        let editorObj: InPlaceEditor;
+        afterEach((): void => {
+            destroy(editorObj);
+        });
+        it('enableHtmlSanitizer', () => {
+            editorObj = renderEditor({
+            type: 'RTE',
+            enableHtmlSanitizer: true,
+            value: "<img src='fail' onerror='alert();' /> test",
+            });
+            ele = editorObj.element;
+            expect(ele.querySelector('.e-editable-value').innerHTML).toBe('<img src="fail"> test');
+            expect(editorObj.value).toBe('<img src="fail"> test');
+        });
     });
 });

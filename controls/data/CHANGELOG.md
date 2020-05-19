@@ -8,6 +8,14 @@
 
 #### Bug Fixes
 
+- `274575` - Provided `addParams` support for CRUD action in `WebApiAdaptor`.
+
+## 18.1.43 (2020-04-07)
+
+### DataManager
+
+#### Bug Fixes
+
 - `269287` - Provided the support to use complex data field as primary key.
 
 ## 17.4.41 (2020-01-07)

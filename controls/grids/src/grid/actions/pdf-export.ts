@@ -226,6 +226,7 @@ export class PdfExport {
         let columns: Column[] = isExportColumns(pdfExportProperties) ?
             prepareColumns(pdfExportProperties.columns, gObj.enableColumnVirtualization) :
             helper.getGridExportColumns(gObj.columns as Column[]);
+        columns = columns.filter((columns: Column) => { return isNullOrUndefined(columns.commands); });
         let isGrouping: boolean = false;
         if (gObj.groupSettings.columns.length) {
             isGrouping = true;
@@ -450,6 +451,10 @@ export class PdfExport {
         let columnCount: number = gridColumn.length + childLevels;
         let depth: number = measureColumnDepth(eCols);
         let cols: Column[] | string[] | ColumnModel[] = eCols;
+        let index: number = 0;
+        if (this.parent.allowGrouping) {
+            index = this.parent.groupSettings.columns.length;
+        }
         pdfGrid.columns.add(columnCount);
         pdfGrid.headers.add(rows.length);
         let applyTextAndSpan: Function = (rowIdx: number, colIdx: number, col: Column, rowSpan: number, colSpan: number) => {
@@ -497,7 +502,7 @@ export class PdfExport {
                     colIndex = colIndex + newSpanCnt - 1;
                 } else if (cols[i].visible || this.hideColumnInclude) {
                     spanCnt++;
-                    applyTextAndSpan(rowIndex, i + colIndex, cols[i] as Column, depth, 0);
+                    applyTextAndSpan(rowIndex, i + colIndex + index, cols[i] as Column, depth, 0);
                 }
             }
             return spanCnt;

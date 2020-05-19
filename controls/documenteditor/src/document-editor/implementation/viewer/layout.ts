@@ -541,7 +541,7 @@ export class Layout {
             }
             this.layoutFieldCharacters(element);
             if (element.line.isLastLine() && isNullOrUndefined(element.nextNode) && !this.isFieldCode) {
-                if (isNullOrUndefined(element.fieldSeparator)) {
+                if (element.fieldType !== 2 && isNullOrUndefined(element.fieldSeparator)) {
                     this.layoutEmptyLineWidget(paragraph, false, element.line);
                 }
                 this.moveToNextLine(line);
@@ -1048,7 +1048,7 @@ export class Layout {
                         checkBoxTextElement.text = String.fromCharCode(9744);
                     }
                     if (formFieldData.sizeType !== 'Auto') {
-                        checkBoxTextElement.characterFormat.fontSize = fieldBegin.characterFormat.fontSize;
+                        checkBoxTextElement.characterFormat.fontSize = formFieldData.size;
                     }
                     checkBoxTextElement.line = fieldBegin.line;
                     let index: number = fieldBegin.line.children.indexOf(fieldBegin.fieldEnd);

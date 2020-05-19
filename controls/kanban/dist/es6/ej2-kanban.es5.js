@@ -1,4 +1,4 @@
-import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, classList, closest, compile, createElement, detach, extend, formatUnit, isBlazor, isNullOrUndefined, remove, removeClass } from '@syncfusion/ej2-base';
+import { Browser, ChildProperty, Collection, Complex, Component, Draggable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, Touch, addClass, append, classList, closest, compile, createElement, detach, extend, formatUnit, isBlazor, isNullOrUndefined, remove, removeClass, setStyleAttribute } from '@syncfusion/ej2-base';
 import { Dialog, Popup, Tooltip, createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
 import { DataManager, Query } from '@syncfusion/ej2-data';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
@@ -389,6 +389,8 @@ var HEADER_TABLE_CLASS = 'e-header-table';
 /** @hidden */
 var HEADER_CELLS_CLASS = 'e-header-cells';
 /** @hidden */
+var HEADER_BOTTOM_CLASS = 'e-header-bottom';
+/** @hidden */
 var HEADER_WRAP_CLASS = 'e-header-wrap';
 /** @hidden */
 var HEADER_TITLE_CLASS = 'e-header-title';
@@ -426,6 +428,8 @@ var CARD_ITEM_COUNT_CLASS = 'e-item-count';
 var CARD_WRAPPER_CLASS = 'e-card-wrapper';
 /** @hidden */
 var CARD_CLASS = 'e-card';
+/** @hidden */
+var DRAGGABLE_CLASS = 'e-draggable';
 /** @hidden */
 var CARD_HEADER_CLASS = 'e-card-header';
 /** @hidden */
@@ -753,10 +757,9 @@ var Action = /** @__PURE__ @class */ (function () {
                 var row = targetRow_2[_a];
                 var targetCol = row.querySelector("." + CONTENT_CELLS_CLASS + "[data-key=\"" + key + "\"]");
                 var index = targetCol.cellIndex;
-                targetCol.appendChild(createElement('div', {
-                    className: COLLAPSE_HEADER_TEXT_CLASS,
-                    innerHTML: this.parent.columns[index].headerText
-                }));
+                var text = (this.parent.columns[index].showItemCount ? '[' +
+                    targetCol.querySelectorAll('.' + CARD_CLASS).length + '] ' : '') + this.parent.columns[index].headerText;
+                targetCol.appendChild(createElement('div', { className: COLLAPSE_HEADER_TEXT_CLASS, innerHTML: text }));
                 addClass([targetCol, target], COLLAPSED_CLASS);
                 target.setAttribute('aria-expanded', 'false');
                 targetCol.setAttribute('aria-expanded', 'false');
@@ -929,19 +932,20 @@ var Crud = /** @__PURE__ @class */ (function () {
                 var modifiedData = [];
                 if (_this.parent.cardSettings.priority) {
                     cardData instanceof Array ? modifiedData = cardData : modifiedData.push(cardData);
-                    modifiedData = _this.priorityOrder(modifiedData, addArgs);
+                    if (!_this.parent.isBlazorRender()) {
+                        modifiedData = _this.priorityOrder(modifiedData, addArgs);
+                    }
                 }
-                var editParms = {
-                    addedRecords: (cardData instanceof Array) ? cardData : [cardData],
-                    changedRecords: _this.parent.cardSettings.priority ? modifiedData : [], deletedRecords: []
-                };
+                var addedRecords = (cardData instanceof Array) ? cardData : [cardData];
+                var changedRecords = _this.parent.cardSettings.priority ? modifiedData : [];
+                var editParms = { addedRecords: addedRecords, changedRecords: changedRecords, deletedRecords: [] };
                 if (cardData instanceof Array || modifiedData.length > 0) {
                     if (!_this.parent.isBlazorRender()) {
                         promise = _this.parent.dataModule.dataManager.saveChanges(editParms, _this.keyField, _this.getTable(), _this.getQuery());
                     }
                     else {
                         // tslint:disable-next-line
-                        _this.parent.interopAdaptor.invokeMethodAsync('AddCards', { Records: cardData }, _this.keyField);
+                        _this.parent.interopAdaptor.invokeMethodAsync('AddCards', { AddedRecords: addedRecords, ChangedRecords: changedRecords }, _this.keyField);
                     }
                 }
                 else {
@@ -976,7 +980,9 @@ var Crud = /** @__PURE__ @class */ (function () {
                 if (_this.parent.cardSettings.priority) {
                     var modifiedData = [];
                     cardData instanceof Array ? modifiedData = cardData : modifiedData.push(cardData);
-                    cardData = _this.priorityOrder(modifiedData, updateArgs);
+                    if (!_this.parent.isBlazorRender()) {
+                        cardData = _this.priorityOrder(modifiedData, updateArgs);
+                    }
                 }
                 var editParms = {
                     addedRecords: [], changedRecords: (cardData instanceof Array) ? cardData : [cardData], deletedRecords: []
@@ -987,7 +993,7 @@ var Crud = /** @__PURE__ @class */ (function () {
                     }
                     else {
                         // tslint:disable-next-line
-                        _this.parent.interopAdaptor.invokeMethodAsync('UpdateCards', { Records: cardData }, _this.keyField);
+                        _this.parent.interopAdaptor.invokeMethodAsync('UpdateCards', { ChangedRecords: cardData }, _this.keyField);
                     }
                 }
                 else {
@@ -1034,7 +1040,7 @@ var Crud = /** @__PURE__ @class */ (function () {
                     }
                     else {
                         // tslint:disable-next-line
-                        _this.parent.interopAdaptor.invokeMethodAsync('DeleteCards', { Records: cardData }, _this.keyField);
+                        _this.parent.interopAdaptor.invokeMethodAsync('DeleteCards', { DeletedRecords: cardData }, _this.keyField);
                     }
                 }
                 else {
@@ -2441,49 +2447,68 @@ var MobileLayout = /** @__PURE__ @class */ (function () {
         this.parent = parent;
     }
     MobileLayout.prototype.renderSwimlaneHeader = function () {
-        var toolbarWrapper = createElement('div', { className: SWIMLANE_HEADER_CLASS });
-        toolbarWrapper.innerHTML = '<div class="' + SWIMLANE_HEADER_TOOLBAR_CLASS + '"><div class="' + TOOLBAR_MENU_CLASS + '">' +
-            '<div class="e-icons ' + TOOLBAR_MENU_ICON_CLASS + '"></div></div><div class="' + TOOLBAR_LEVEL_TITLE_CLASS + '">' +
-            '<div class="' + TOOLBAR_SWIMLANE_NAME_CLASS + '"></div></div></div>';
-        this.parent.element.appendChild(toolbarWrapper);
+        var toolbarWrapper;
+        if (this.parent.isBlazorRender()) {
+            toolbarWrapper = this.parent.element.querySelector('.' + SWIMLANE_HEADER_CLASS);
+        }
+        else {
+            toolbarWrapper = createElement('div', { className: SWIMLANE_HEADER_CLASS });
+            toolbarWrapper.innerHTML = '<div class="' + SWIMLANE_HEADER_TOOLBAR_CLASS + '"><div class="' + TOOLBAR_MENU_CLASS +
+                '"><div class="e-icons ' + TOOLBAR_MENU_ICON_CLASS + '"></div></div><div class="' + TOOLBAR_LEVEL_TITLE_CLASS +
+                '"><div class="' + TOOLBAR_SWIMLANE_NAME_CLASS + '"></div></div></div>';
+            this.parent.element.appendChild(toolbarWrapper);
+        }
         EventHandler.add(toolbarWrapper.querySelector('.' + TOOLBAR_MENU_ICON_CLASS), 'click', this.menuClick, this);
     };
     MobileLayout.prototype.renderSwimlaneTree = function () {
+        var treeWrapper;
         var height = this.parent.element.querySelector('.' + SWIMLANE_HEADER_CLASS).offsetHeight;
         var treeHeight = window.innerHeight - height;
-        this.popupOverlay = createElement('div', { className: SWIMLANE_OVERLAY_CLASS, styles: 'height: ' + treeHeight + 'px;' });
-        var wrapper = createElement('div', { className: SWIMLANE_CONTENT_CLASS, styles: 'top:' + height + 'px;' });
-        var treeWrapper = createElement('div', {
-            className: SWIMLANE_RESOURCE_CLASS + ' e-popup-close',
-            styles: 'height: ' + treeHeight + 'px;'
-        });
-        wrapper.appendChild(treeWrapper);
-        wrapper.appendChild(this.popupOverlay);
-        this.parent.element.appendChild(wrapper);
-        var swimlaneTree = createElement('div', { className: SWIMLANE_TREE_CLASS });
-        treeWrapper.appendChild(swimlaneTree);
-        this.treeViewObj = new TreeView({
-            cssClass: this.parent.cssClass,
-            enableRtl: this.parent.enableRtl,
-            fields: {
-                dataSource: this.parent.layoutModule.kanbanRows,
-                id: 'keyField',
-                text: 'textField'
-            },
-            nodeTemplate: this.parent.swimlaneSettings.template,
-            nodeClicked: this.treeSwimlaneClick.bind(this)
-        });
-        this.treeViewObj.appendTo(swimlaneTree);
-        this.treePopup = new Popup(treeWrapper, {
+        if (!this.parent.isBlazorRender()) {
+            this.popupOverlay = createElement('div', { className: SWIMLANE_OVERLAY_CLASS, styles: 'height: ' + treeHeight + 'px;' });
+            var wrapper = createElement('div', { className: SWIMLANE_CONTENT_CLASS, styles: 'top:' + height + 'px;' });
+            treeWrapper = createElement('div', {
+                className: SWIMLANE_RESOURCE_CLASS + ' e-popup-close',
+                styles: 'height: ' + treeHeight + 'px;'
+            });
+            wrapper.appendChild(treeWrapper);
+            wrapper.appendChild(this.popupOverlay);
+            this.parent.element.appendChild(wrapper);
+            var swimlaneTree = createElement('div', { className: SWIMLANE_TREE_CLASS });
+            treeWrapper.appendChild(swimlaneTree);
+            this.treeViewObj = new TreeView({
+                cssClass: this.parent.cssClass,
+                enableRtl: this.parent.enableRtl,
+                fields: {
+                    dataSource: this.parent.layoutModule.kanbanRows,
+                    id: 'keyField',
+                    text: 'textField'
+                },
+                nodeTemplate: this.parent.swimlaneSettings.template,
+                nodeClicked: this.treeSwimlaneClick.bind(this)
+            });
+            this.treeViewObj.appendTo(swimlaneTree);
+        }
+        else {
+            this.popupOverlay = this.parent.element.querySelector('.' + SWIMLANE_CONTENT_CLASS + ' .' + SWIMLANE_OVERLAY_CLASS);
+            setStyleAttribute(this.parent.element.querySelector('.' + SWIMLANE_OVERLAY_CLASS), { 'height': treeHeight + 'px' });
+            setStyleAttribute(this.parent.element.querySelector('.' + SWIMLANE_CONTENT_CLASS), { 'top': height + 'px' });
+            treeWrapper = this.parent.element.querySelector('.' + SWIMLANE_RESOURCE_CLASS);
+            setStyleAttribute(treeWrapper, { 'height': treeHeight + 'px' });
+        }
+        var popupObj = {
             targetType: 'relative',
             actionOnScroll: 'none',
-            content: this.treeViewObj.element,
             enableRtl: this.parent.enableRtl,
             zIndex: 10,
             hideAnimation: { name: 'SlideLeftOut', duration: 500 },
             showAnimation: { name: 'SlideLeftIn', duration: 500 },
             viewPortElement: this.parent.element.querySelector('.' + CONTENT_CLASS)
-        });
+        };
+        if (!this.parent.isBlazorRender()) {
+            popupObj.content = this.treeViewObj.element;
+        }
+        this.treePopup = new Popup(treeWrapper, popupObj);
     };
     MobileLayout.prototype.menuClick = function (event) {
         if (this.parent.element.querySelector('.' + SWIMLANE_RESOURCE_CLASS).classList.contains('e-popup-open')) {
@@ -2491,9 +2516,11 @@ var MobileLayout = /** @__PURE__ @class */ (function () {
             removeClass([this.popupOverlay], 'e-enable');
         }
         else {
-            var treeNodes = [].slice.call(this.treeViewObj.element.querySelectorAll('.e-list-item'));
-            removeClass(treeNodes, 'e-active');
-            addClass([treeNodes[this.parent.layoutModule.swimlaneIndex]], 'e-active');
+            if (!this.parent.isBlazorRender()) {
+                var treeNodes = [].slice.call(this.treeViewObj.element.querySelectorAll('.e-list-item'));
+                removeClass(treeNodes, 'e-active');
+                addClass([treeNodes[this.parent.layoutModule.swimlaneIndex]], 'e-active');
+            }
             this.treePopup.show();
             addClass([this.popupOverlay], 'e-enable');
         }
@@ -2505,6 +2532,13 @@ var MobileLayout = /** @__PURE__ @class */ (function () {
         this.parent.layoutModule.scrollLeft = 0;
         this.parent.notify(dataReady, { processedData: this.parent.kanbanData });
         args.event.preventDefault();
+    };
+    /**
+     * @hidden
+     */
+    MobileLayout.prototype.hidePopup = function () {
+        this.treePopup.hide();
+        removeClass([this.popupOverlay], 'e-enable');
     };
     MobileLayout.prototype.getWidth = function () {
         return (window.innerWidth * 80) / 100;
@@ -2564,15 +2598,20 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
             this.destroy();
             this.parent.on(dataReady, this.initRender, this);
             this.parent.on(contentReady, this.scrollUiUpdate, this);
-            if (this.parent.isAdaptive && this.parent.swimlaneSettings.keyField) {
-                this.renderSwimlaneHeader();
-            }
+        }
+        if (this.parent.isAdaptive && this.parent.swimlaneSettings.keyField && this.parent.kanbanData.length !== 0) {
+            this.renderSwimlaneHeader();
+        }
+        if (!this.parent.isBlazorRender()) {
             var header = createElement('div', { className: HEADER_CLASS });
             this.parent.element.appendChild(header);
             this.renderHeader(header);
             this.renderContent();
             this.renderCards();
             this.renderValidation();
+        }
+        else {
+            this.initializeSwimlaneTree();
         }
         this.parent.notify(contentReady, {});
         this.wireEvents();
@@ -2600,6 +2639,9 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
                     className: index === -1 ? HEADER_CELLS_CLASS : HEADER_CELLS_CLASS + ' ' + COLLAPSED_CLASS,
                     attrs: { 'data-role': 'kanban-column', 'data-key': column.keyField }
                 });
+                if (this_1.parent.kanbanData.length !== 0 && this_1.parent.swimlaneSettings.keyField && !this_1.parent.isAdaptive) {
+                    th_1.classList.add(HEADER_BOTTOM_CLASS);
+                }
                 var classList$$1 = [];
                 if (column.allowToggle) {
                     classList$$1.push(HEADER_ROW_TOGGLE_CLASS);
@@ -2675,11 +2717,7 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         var className;
         var isCollaspsed = false;
         this.swimlaneRow = this.kanbanRows;
-        if (this.parent.swimlaneSettings.keyField && this.parent.isAdaptive) {
-            this.swimlaneRow = [this.kanbanRows[this.swimlaneIndex]];
-            this.renderSwimlaneTree();
-            this.parent.element.querySelector('.' + TOOLBAR_SWIMLANE_NAME_CLASS).innerHTML = this.swimlaneRow[0].textField;
-        }
+        this.initializeSwimlaneTree();
         var _loop_2 = function (row) {
             if (this_2.parent.swimlaneSettings.keyField && this_2.parent.swimlaneToggleArray.length !== 0) {
                 var index = this_2.parent.swimlaneToggleArray.indexOf(row.keyField);
@@ -2724,6 +2762,18 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
         for (var _i = 0, _a = this.swimlaneRow; _i < _a.length; _i++) {
             var row = _a[_i];
             _loop_2(row);
+        }
+    };
+    LayoutRender.prototype.initializeSwimlaneTree = function () {
+        if (this.parent.swimlaneSettings.keyField && this.parent.isAdaptive && this.parent.kanbanData.length !== 0) {
+            if (!this.parent.isBlazorRender()) {
+                this.swimlaneRow = [this.kanbanRows[this.swimlaneIndex]];
+                this.renderSwimlaneTree();
+                this.parent.element.querySelector('.' + TOOLBAR_SWIMLANE_NAME_CLASS).innerHTML = this.swimlaneRow[0].textField;
+            }
+            else {
+                this.renderSwimlaneTree();
+            }
         }
     };
     LayoutRender.prototype.renderSwimlaneRow = function (tBody, row, isCollapsed) {
@@ -3180,6 +3230,9 @@ var LayoutRender = /** @__PURE__ @class */ (function (_super) {
     };
     LayoutRender.prototype.wireDragEvent = function () {
         if (this.parent.allowDragAndDrop) {
+            this.parent.element.querySelectorAll('.' + CARD_CLASS).forEach(function (card) {
+                card.classList.add(DRAGGABLE_CLASS);
+            });
             this.parent.dragAndDropModule.wireDragEvents(this.parent.element.querySelector('.' + CONTENT_CLASS));
         }
     };
@@ -3513,9 +3566,9 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
         this.interopAdaptor.invokeMethodAsync('PropertyChanged');
     };
     Kanban.prototype.isDevice = function (ref) {
-        if (Browser.isDevice && this.isBlazorRender() && ref) {
+        if (Browser.isDevice && isBlazor() && ref) {
             // tslint:disable-next-line
-            ref.invokeMethodAsync('IsDevice', true);
+            ref.invokeMethodAsync('IsDevice', true, ((window.innerWidth * 80) / 100));
         }
     };
     /**
@@ -3529,6 +3582,12 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
      */
     Kanban.prototype.updateDataSource = function (data) {
         this.kanbanData = data.Result;
+    };
+    /**
+     * @hidden
+     */
+    Kanban.prototype.hideDeviceMenu = function () {
+        this.layoutModule.hidePopup();
     };
     /**
      * @hidden

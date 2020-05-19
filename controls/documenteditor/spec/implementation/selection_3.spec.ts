@@ -382,7 +382,7 @@ describe('BookMark validation in double tap', () => {
         editor.selection.handleLeftKey();
         editor.selection.selectCurrentWord();
         expect(editor.selection.start.offset).toBe(8);
-        expect(editor.selection.end.offset).toBe(12);
+        expect(editor.selection.end.offset).toBe(11);
     });
     it('start of line selection containing Bookmark element-select current word validation', () => {
         editor.selection.handleHomeKey();

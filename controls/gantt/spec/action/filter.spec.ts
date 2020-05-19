@@ -65,7 +65,7 @@ describe('Gantt filter support', () => {
             expect(ganttObj.currentViewData.length).toBe(41);
         });
 
-        it('TaskID FilterMenu Click Function', (done: Function) => {
+        it('TaskID FilterMenu Click Function', () => {
             let filterMenuIcon: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol').getElementsByClassName('e-icon-filter')[0] as HTMLElement;
             triggerMouseEvent(filterMenuIcon, 'click');
             let input: HTMLInputElement = (<HTMLInputElement>ganttObj.element.querySelector('.e-numerictextbox'));
@@ -73,24 +73,23 @@ describe('Gantt filter support', () => {
                 ganttObj.dataBound = () => {
                     expect(ganttObj.currentViewData.length).toBe(1);
                     ganttObj.dataBound = null;
-                    ganttObj.dataBind();
-                    done();
+                    ganttObj.dataBind();                    
                 }
                 ganttObj.dataBind();
                 let inputValue: any = (document.getElementsByClassName('e-numerictextbox')[0] as any).ej2_instances[0];
                 inputValue.value = 1;
                 inputValue.dataBind();
-                let filterButton: HTMLElement = ganttObj.element.querySelector('.e-flmenu-okbtn') as HTMLElement;
+                let filterButton: HTMLElement = document.body.querySelector('.e-flmenu-okbtn') as HTMLElement;
                 triggerMouseEvent(filterButton, 'click');
             }
-        }, 1000);
+        });
 
         it('Predecessor FilterMenu Click Function', () => {
             ganttObj.clearFiltering();
             let filterMenuIcon: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol').getElementsByClassName('e-icon-filter')[5] as HTMLElement;
             triggerMouseEvent(filterMenuIcon, 'click');
             expect(ganttObj.element.querySelectorAll('.e-headercell')[5].getElementsByClassName('e-headertext')[0].textContent).toBe('Predecessor');
-            let clearButton: HTMLElement = ganttObj.element.querySelector('.e-flmenu-cancelbtn') as HTMLElement;
+            let clearButton: HTMLElement = document.body.querySelector('.e-flmenu-cancelbtn') as HTMLElement;
             triggerMouseEvent(clearButton, 'click');
         });
 
@@ -98,7 +97,7 @@ describe('Gantt filter support', () => {
             let filterMenuIcon: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol').getElementsByClassName('e-icon-filter')[1] as HTMLElement;
             triggerMouseEvent(filterMenuIcon, 'click');
             expect(ganttObj.element.querySelectorAll('.e-headercell')[1].getElementsByClassName('e-headertext')[0].textContent).toBe('Resources');
-            let clearButton: HTMLElement = ganttObj.element.querySelector('.e-flmenu-cancelbtn') as HTMLElement;
+            let clearButton: HTMLElement = document.body.querySelector('.e-flmenu-cancelbtn') as HTMLElement;
             triggerMouseEvent(clearButton, 'click');
         });
 
@@ -109,7 +108,7 @@ describe('Gantt filter support', () => {
                 triggerMouseEvent(columnMenuIcon, 'click');
                 let filterIcon: HTMLElement = document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_colmenu_Filter').getElementsByClassName('e-icon-filter')[0] as HTMLElement;
                 triggerMouseEvent(filterIcon, 'click');
-                expect(ganttObj.element.querySelector('.e-flmenu')).not.toBe(null);
+                expect(document.body.querySelector('.e-flmenu')).not.toBe(null);
                 done();
             }
             ganttObj.refresh();
@@ -120,7 +119,7 @@ describe('Gantt filter support', () => {
             triggerMouseEvent(columnMenuIcon, 'click');
             let filterIcon: HTMLElement = document.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_colmenu_Filter').getElementsByClassName('e-icon-filter')[0] as HTMLElement;
             triggerMouseEvent(filterIcon, 'click');
-            expect(ganttObj.element.querySelector('.e-flmenu')).not.toBe(null);
+            expect(document.body.querySelector('.e-flmenu')).not.toBe(null);
         });
 
         it('Disable Filtering and enable Search Toolbar', (done: Function) => {

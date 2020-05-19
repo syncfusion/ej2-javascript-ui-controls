@@ -68,19 +68,20 @@ export class Crud {
                 let modifiedData: { [key: string]: Object }[] = [];
                 if (this.parent.cardSettings.priority) {
                     cardData instanceof Array ? modifiedData = cardData : modifiedData.push(cardData);
-                    modifiedData = this.priorityOrder(modifiedData, addArgs);
+                    if (!this.parent.isBlazorRender()) {
+                        modifiedData = this.priorityOrder(modifiedData, addArgs);
+                    }
                 }
-                let editParms: SaveChanges = {
-                    addedRecords: (cardData instanceof Array) ? cardData : [cardData],
-                    changedRecords: this.parent.cardSettings.priority ? modifiedData : [], deletedRecords: []
-                };
+                let addedRecords: { [key: string]: Object }[] = (cardData instanceof Array) ? cardData : [cardData];
+                let changedRecords: { [key: string]: Object }[] = this.parent.cardSettings.priority ? modifiedData : [];
+                let editParms: SaveChanges = { addedRecords: addedRecords, changedRecords: changedRecords, deletedRecords: [] };
                 if (cardData instanceof Array || modifiedData.length > 0) {
                     if (!this.parent.isBlazorRender()) {
                         promise = this.parent.dataModule.dataManager.saveChanges(
                             editParms, this.keyField, this.getTable(), this.getQuery()) as Promise<Object>;
                     } else {
                         // tslint:disable-next-line
-                        (this.parent as any).interopAdaptor.invokeMethodAsync('AddCards', { Records: cardData }, this.keyField);
+                        (this.parent as any).interopAdaptor.invokeMethodAsync('AddCards', { AddedRecords: addedRecords, ChangedRecords: changedRecords }, this.keyField);
                     }
                 } else {
                     if (!this.parent.isBlazorRender()) {
@@ -113,7 +114,9 @@ export class Crud {
                 if (this.parent.cardSettings.priority) {
                     let modifiedData: { [key: string]: Object }[] = [];
                     cardData instanceof Array ? modifiedData = cardData : modifiedData.push(cardData);
-                    cardData = this.priorityOrder(modifiedData, updateArgs);
+                    if (!this.parent.isBlazorRender()) {
+                        cardData = this.priorityOrder(modifiedData, updateArgs);
+                    }
                 }
                 let editParms: SaveChanges = {
                     addedRecords: [], changedRecords: (cardData instanceof Array) ? cardData : [cardData], deletedRecords: []
@@ -124,7 +127,7 @@ export class Crud {
                             editParms, this.keyField, this.getTable(), this.getQuery()) as Promise<Object>;
                     } else {
                         // tslint:disable-next-line
-                        (this.parent as any).interopAdaptor.invokeMethodAsync('UpdateCards', { Records: cardData }, this.keyField);
+                        (this.parent as any).interopAdaptor.invokeMethodAsync('UpdateCards', { ChangedRecords: cardData }, this.keyField);
                     }
                 } else {
                     if (!this.parent.isBlazorRender()) {
@@ -168,7 +171,7 @@ export class Crud {
                             editParms, this.keyField, this.getTable(), this.getQuery()) as Promise<Object>;
                     } else {
                         // tslint:disable-next-line
-                        (this.parent as any).interopAdaptor.invokeMethodAsync('DeleteCards', { Records: cardData }, this.keyField);
+                        (this.parent as any).interopAdaptor.invokeMethodAsync('DeleteCards', { DeletedRecords: cardData }, this.keyField);
                     }
                 } else {
                     if (!this.parent.isBlazorRender()) {

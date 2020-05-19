@@ -1340,7 +1340,7 @@ export interface GridModel extends ComponentModel{
     /**
      * Triggers when row element's drag(move) starts. 
      * @event
-     * @deprecated  
+     * @blazorProperty 'RowDrag'
      */
     rowDragStart?: EmitType<RowDragEventArgs>;
 
@@ -1354,7 +1354,7 @@ export interface GridModel extends ComponentModel{
     /**
      * Triggers when row elements are dropped on the target row. 
      * @event
-     * @deprecated 
+     * @blazorProperty 'RowDrop'
      */
     rowDrop?: EmitType<RowDragEventArgs>;
 

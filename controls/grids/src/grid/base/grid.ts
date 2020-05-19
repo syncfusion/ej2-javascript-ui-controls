@@ -1812,7 +1812,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**  
      * Triggers when row element's drag(move) starts. 
      * @event
-     * @deprecated  
+     * @blazorProperty 'RowDrag'
      */
     @Event()
     public rowDragStart: EmitType<RowDragEventArgs>;
@@ -1828,7 +1828,7 @@ export class Grid extends Component<HTMLElement> implements INotifyPropertyChang
     /**  
      * Triggers when row elements are dropped on the target row. 
      * @event
-     * @deprecated 
+     * @blazorProperty 'RowDrop'
      */
     @Event()
     public rowDrop: EmitType<RowDragEventArgs>;

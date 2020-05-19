@@ -2,19 +2,31 @@
 
 ## [Unreleased]
 
+## 18.1.53 (2020-05-19)
+
+### Grid
+
+#### Bug Fixes
+
+- `#275858` - Border misalignment issue with `frozen` columns in batch editing has been fixed.
+- `#275150` - Grid with `frozen` columns and row height is not set properly issue has been fixed.
+- `#275631` - Grid with `frozen` columns and cell editing is not working properly issue has been fixed.
+- `#152895, #271656, #273560` - Grouped Headers are not rendered properly in pdf document issue has been resolved.
+- `#270479` - Script error while using `isFrozen` property in batch editing has been fixed.
+- `#275867` - Misalignment while editing the cell with frozen columns has been fixed.
+
 ## 18.1.52 (2020-05-13)
 
 ### Grid
 
 #### Bug Fixes
 
--`#273572` - script error after pressing enter key in batch edit mode issue has been resolved.
-
--`#153383` - grid lines mismatched while scrolling with frozen column in `firefox` issue has been resolved.
--`#273838` - Unnecessary to include an Empty row when inserting a `frozenColumn` Grid row issue has been resolved.
--`#274520` - `cellSeletected` and `cellDeSelected` events triggers many time while selecting cells via mouse issue has been resolved.
--`#275010` - Need internal events for column chooser buttons issue has been fixed.
--`#274227` - cancel icon not rendered in the filter bar with movable header has been fixed.
+- `#273572` - script error after pressing enter key in batch edit mode issue has been resolved.
+- `#153383` - grid lines mismatched while scrolling with frozen column in `firefox` issue has been resolved.
+- `#273838` - Unnecessary to include an Empty row when inserting a `frozenColumn` Grid row issue has been resolved.
+- `#274520` - `cellSeletected` and `cellDeSelected` events triggers many time while selecting cells via mouse issue has been resolved.
+- `#275010` - Need internal events for column chooser buttons issue has been fixed.
+- `#274227` - cancel icon not rendered in the filter bar with movable header has been fixed.
 
 #### New Features
 
@@ -66,7 +78,6 @@
 - `#271748` - Autofit min and max width issue has been resolved.
 - `#223835, #272592` - script error while navigating from movable to frozen header issue has been resolved.
 - `#272340`- Mismatch of `requestType` while clear filtering in excel and Checkbox filter issue has been fixed.
-- `#152895`, `#271656`, `#273560`- Grouped Headers are not rendered properly in pdf document issue has been resolved.
 
 ## 18.1.44 (2020-04-14)
 

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.53 (2020-05-19)
+
+### File Manager
+
+#### Bug Fixes
+
+- Resolved the script error thrown from the File Manager component when resizing the window.
+
 ## 18.1.46 (2020-04-28)
 
 ### File Manager

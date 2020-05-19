@@ -6,8 +6,8 @@ import { ListView, SelectedCollection} from '@syncfusion/ej2-lists';
 import { L10n, EventHandler } from '@syncfusion/ej2-base';
 import { locale, updateToggleItem, dialog} from '../common/index';
 import { CheckBox } from '@syncfusion/ej2-buttons';
-import { SheetModel } from '../../workbook';
-import { applyLockCells, CellModel, getCell } from '../../workbook/index';
+import { SheetModel} from '../../workbook';
+import { applyLockCells, CellModel, setCell} from '../../workbook/index';
 /**
  * The `Protect-sheet` module is used to handle the Protecting functionalities in Spreadsheet.
  */
@@ -197,14 +197,10 @@ export class ProtectSheet {
     }
     }
 
-    private lockCellsHandler(args: {rowIdx: number, colIdx: number, isLocked?: boolean }): void {
+    private lockCellsHandler(args: { rowIdx: number, colIdx: number, isLocked?: boolean }): void {
         let sheet: SheetModel = this.parent.getActiveSheet();
-        let cell: CellModel = getCell(args.rowIdx, args.colIdx, sheet);
-        if (cell) {
-            if (args.isLocked) {
-                cell.isLocked = args.isLocked;
-            } else {cell.isLocked = false; }
-        }
+        let cellObj: CellModel = { isLocked: args.isLocked ? args.isLocked : false };
+        setCell(args.rowIdx, args.colIdx, sheet, cellObj, true);
     }
 
     /**

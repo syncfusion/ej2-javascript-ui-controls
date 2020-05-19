@@ -1,9 +1,9 @@
-import { TreeGrid, Filter as TreeGridFilter, FilterSettingsModel as TreeFilterSettingsModel  } from '@syncfusion/ej2-treegrid';
+import { TreeGrid, Filter as TreeGridFilter, FilterSettingsModel as TreeFilterSettingsModel } from '@syncfusion/ej2-treegrid';
 import { FilterEventArgs, filterAfterOpen, GroupEventArgs, getFilterMenuPostion, ColumnMenuOpenEventArgs } from '@syncfusion/ej2-grids';
 import { getActualProperties, IFilterMUI, Filter as GridFilter, IXLFilter } from '@syncfusion/ej2-grids';
 import { Gantt } from '../base/gantt';
 import { FilterSettingsModel, ColumnModel, TaskFieldsModel } from '../models/models';
-import { getValue, isNullOrUndefined, remove, createElement } from '@syncfusion/ej2-base';
+import { getValue, isNullOrUndefined, remove, createElement, addClass } from '@syncfusion/ej2-base';
 import { DropDownList } from '@syncfusion/ej2-dropdowns';
 import { NumericTextBox, TextBox } from '@syncfusion/ej2-inputs';
 import { DatePicker, DateTimePicker } from '@syncfusion/ej2-calendars';
@@ -180,7 +180,7 @@ export class Filter {
      * @param args 
      */
     private columnMenuOpen(args: ColumnMenuOpenEventArgs): void {
-        if (this.filterMenuElement && this.parent.element.contains(this.filterMenuElement)) {
+        if (this.filterMenuElement && document.body.contains(this.filterMenuElement)) {
             remove(this.filterMenuElement);
         }
         this.filterMenuElement = null;
@@ -231,10 +231,12 @@ export class Filter {
     }
 
     private updateFilterMenuPosition(element: HTMLElement, args: GroupEventArgs): void {
-        this.parent.element.appendChild(element);
+        addClass([element], 'e-gantt');
+        document.body.appendChild(element);
         let targetElement: HTMLElement;
         if (this.parent.showColumnMenu) {
             targetElement = document.querySelector('#treeGrid' + this.parent.controlId + '_gridcontrol_colmenu_Filter');
+            element.style.zIndex = targetElement.parentElement.style.zIndex;
             this.setPosition(targetElement, getValue('filterModel.dlgObj.element', args));
         } else {
             targetElement = this.parent.treeGrid.grid.getColumnHeaderByField(args.columnName).querySelector('.e-filtermenudiv');

@@ -282,6 +282,7 @@ export class ComboBox extends DropDownList {
             EventHandler.add(this.inputElement, 'input', this.onInput, this);
             EventHandler.add(this.inputElement, 'keyup', this.onFilterUp, this);
             EventHandler.add(this.inputElement, 'keydown', this.onFilterDown, this);
+            EventHandler.add(this.inputElement, 'paste', this.pasteHandler, this);
         }
         this.bindCommonEvent();
     }
@@ -632,6 +633,7 @@ export class ComboBox extends DropDownList {
             EventHandler.remove(this.inputElement, 'input', this.onInput);
             EventHandler.remove(this.inputElement, 'keyup', this.onFilterUp);
             EventHandler.remove(this.inputElement, 'keydown', this.onFilterDown);
+            EventHandler.remove(this.inputElement, 'paste', this.pasteHandler);
         }
         this.unBindCommonEvent();
     }

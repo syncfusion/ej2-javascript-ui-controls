@@ -788,7 +788,7 @@ export class DiagramEventHandler {
         let targetObject: SelectorModel = eventArgs.source;
         if (targetObject && (targetObject instanceof Selector) && targetObject.connectors.length) {
             let selectedConnector: ConnectorModel = targetObject.connectors[0];
-            padding = (selectedConnector.constraints & ConnectorConstraints.ConnectNearPort) ? selectedConnector.connectPadding : 0;
+            padding = (selectedConnector.constraints & ConnectorConstraints.ConnectToNearByPort) ? selectedConnector.connectionPadding : 0;
         }
         return padding || 0;
     }
@@ -1492,8 +1492,8 @@ export class DiagramEventHandler {
             if (wrapper && (obj as Node).ports && (obj as Node).ports.length &&
                 !checkPort(obj, wrapper) && (source instanceof Selector) && source.connectors.length) {
                 let currentConnector: ConnectorModel = source.connectors[0];
-                if ((currentConnector.constraints & ConnectorConstraints.ConnectNearPort) &&
-                    !(currentConnector.constraints & ConnectorConstraints.ConnectNearNode)) {
+                if ((currentConnector.constraints & ConnectorConstraints.ConnectToNearByPort) &&
+                    !(currentConnector.constraints & ConnectorConstraints.ConnectToNearByNode)) {
                     wrapper = this.diagram.findElementUnderMouse(obj, this.currentPosition, 0);
                     if (!wrapper) { obj = null; }
                 }
@@ -1951,8 +1951,9 @@ class ObjectFinder {
             }
         }
         let container: Container; let bounds: Rect; let child: DiagramElement; let matrix: Matrix;
-        let endPadding: number = (source && (source instanceof Connector) && ((source.constraints & ConnectorConstraints.ConnectNearNode) ||
-            (source.constraints & ConnectorConstraints.ConnectNearPort)) && source.connectPadding) || 0;
+        let endPadding: number = (source && (source instanceof Connector) &&
+            ((source.constraints & ConnectorConstraints.ConnectToNearByNode) ||
+            (source.constraints & ConnectorConstraints.ConnectToNearByPort)) && source.connectionPadding) || 0;
         let objArray: Object[] = diagram.spatialSearch.findObjects(
             new Rect(pt.x - 50 - endPadding, pt.y - 50 - endPadding, 100 + endPadding, 100 + endPadding));
         let layerObjTable: {} = {}; let layerTarger: (NodeModel | ConnectorModel)[];
@@ -1978,8 +1979,7 @@ class ObjectFinder {
                     if (!source || (isSelected(diagram, obj) === false)) {
                         if (canEnablePointerEvents(obj, diagram)) {
                             if ((obj instanceof Connector) ? isPointOverConnector(obj, pt) : pointInBounds) {
-                                let padding: number = (obj instanceof Connector) ? obj.hitPadding || 0 : 0;
-                                let element: DiagramElement;
+                                let padding: number = (obj instanceof Connector) ? obj.hitPadding || 0 : 0; let element: DiagramElement;
                                 element = this.findElementUnderMouse(obj as IElement, pt, endPadding || padding);
                                 if (element && (obj as Node).id !== 'helper') {
                                     insertObject(obj, 'zIndex', layerTarger);

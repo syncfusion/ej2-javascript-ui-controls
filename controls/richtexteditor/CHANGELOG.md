@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.53 (2020-05-19)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#F150037` -  The issue with "throwing script error while dynamically enable/disable the toolbar" has been resolved.
+
 ## 18.1.52 (2020-05-13)
 
 ### RichTextEditor

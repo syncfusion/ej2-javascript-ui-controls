@@ -3995,17 +3995,21 @@ class WebApiAdaptor extends ODataAdaptor {
     getModuleName() {
         return 'WebApiAdaptor';
     }
+    addParams(options) {
+        let urlParams = new UrlAdaptor();
+        urlParams.addParams(options);
+    }
     /**
      * Prepare and returns request body which is used to insert a new record in the table.
      * @param  {DataManager} dm
      * @param  {Object} data
      * @param  {string} tableName?
      */
-    insert(dm, data, tableName) {
+    insert(dm, data, tableName, query) {
         return {
             type: 'POST',
             url: dm.dataSource.url,
-            data: JSON.stringify(data)
+            data: JSON.stringify(extend({}, { value: data }, DataUtil.getAddParams(this, dm, query ? query : new Query())))
         };
     }
     /**
@@ -4015,11 +4019,11 @@ class WebApiAdaptor extends ODataAdaptor {
      * @param  {number} value
      * @param  {string} tableName?
      */
-    remove(dm, keyField, value, tableName) {
+    remove(dm, keyField, value, tableName, query) {
         return {
             type: 'DELETE',
             url: dm.dataSource.url + '/' + value,
-            data: JSON.stringify(value)
+            data: JSON.stringify(extend({}, { key: value }, DataUtil.getAddParams(this, dm, query ? query : new Query())))
         };
     }
     /**
@@ -4029,11 +4033,11 @@ class WebApiAdaptor extends ODataAdaptor {
      * @param  {Object} value
      * @param  {string} tableName?
      */
-    update(dm, keyField, value, tableName) {
+    update(dm, keyField, value, tableName, query) {
         return {
             type: 'PUT',
             url: dm.dataSource.url,
-            data: JSON.stringify(value)
+            data: JSON.stringify(extend({}, { value: value }, DataUtil.getAddParams(this, dm, query ? query : new Query())))
         };
     }
     batchRequest(dm, changes, e) {

@@ -755,8 +755,10 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     private adjustHeight(): void {
         let toolbar: HTMLElement = <HTMLElement>select('#' + this.element.id + CLS.TOOLBAR_ID, this.element);
         let toolBarHeight: number = toolbar ? toolbar.offsetHeight : 0;
-        this.splitterObj.height = (this.element.clientHeight - toolBarHeight).toString();
-        this.splitterObj.dataBind();
+        if (this.splitterObj) {
+            this.splitterObj.height = (this.element.clientHeight - toolBarHeight).toString();
+            this.splitterObj.dataBind();
+        }
     }
     /* istanbul ignore next */
     private splitterResize(): void {
@@ -1088,7 +1090,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     }
 
     private wireEvents(): void {
-        window.addEventListener('resize', this.resizeHandler.bind(this));
+        EventHandler.add(<HTMLElement & Window>window, 'resize', this.resizeHandler, this);
         this.keyboardModule = new KeyboardEvents(
             this.element,
             {
@@ -1100,6 +1102,7 @@ export class FileManager extends Component<HTMLElement> implements INotifyProper
     }
 
     private unWireEvents(): void {
+        EventHandler.remove(<HTMLElement & Window>window, 'resize', this.resizeHandler);
         this.keyboardModule.destroy();
     }
 

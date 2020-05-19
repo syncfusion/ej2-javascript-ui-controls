@@ -65,6 +65,8 @@ export class GanttTreeGrid {
         this.parent.treeGrid.treeColumnIndex = this.parent.treeColumnIndex;
         this.parent.treeGrid.columns = this.treeGridColumns;
         this.parent.treeGrid.dataSource = this.parent.flatData;
+        let isGantt: string = 'isGantt';
+        this.parent.treeGrid[isGantt] = true;
         this.parent.treeGrid.rowHeight = this.parent.rowHeight;
         this.parent.treeGrid.gridLines = this.parent.gridLines;
         this.parent.treeGrid.searchSettings = this.parent.searchSettings;
@@ -249,6 +251,7 @@ export class GanttTreeGrid {
                 if (!isNullOrUndefined(data) && !isNullOrUndefined(this.parent.getTaskByUniqueID(data.uniqueID))) {
                     /* tslint:disable-next-line */
                     this.parent.getTaskByUniqueID(data.uniqueID).taskData[this.parent.taskFields.duration] = data.taskData[this.parent.taskFields.duration];
+                    this.parent.getTaskByUniqueID(data.uniqueID).taskData[this.parent.taskFields.resourceInfo] = data.taskData[this.parent.taskFields.resourceInfo];
                 }
                 this.parent.editModule.cellEditModule.initiateCellEdit(args, this.currentEditRow);
                 this.currentEditRow = {};

@@ -671,7 +671,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         return select('.' + ELEMENTS, this.formEle);
     };
     InPlaceEditor.prototype.getLocale = function (prop, val) {
-        return new L10n('inplace-editor', prop, this.locale).getConstant(val);
+        return new L10n(this.getModuleName(), prop, this.locale).getConstant(val);
     };
     InPlaceEditor.prototype.checkValue = function (val) {
         return (!this.isEmpty(val)) ? val : this.emptyText;
@@ -682,9 +682,13 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
         this.setProperties({ model: model }, true);
     };
     InPlaceEditor.prototype.updateValue = function () {
+        var value = this.value;
+        if (this.enableHtmlSanitizer && typeof (this.value) === 'string') {
+            value = this.sanitizeHelper(this.value);
+        }
         if (!isNullOrUndefined(this.value)) {
-            this.setProperties({ value: getCompValue(this.type, this.value) }, true);
-            this.extendModelValue(getCompValue(this.type, this.value));
+            this.setProperties({ value: getCompValue(this.type, value) }, true);
+            this.extendModelValue(getCompValue(this.type, value));
         }
     };
     InPlaceEditor.prototype.updateModelValue = function () {
@@ -700,6 +704,9 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
             this.notify(update, { type: this.type });
         }
         else if (this.componentObj) {
+            if (this.type === 'Numeric' && this.componentObj.value === null) {
+                this.componentObj.setProperties({ value: 0 }, true);
+            }
             this.setProperties({ value: this.componentObj.value }, true);
             this.extendModelValue(this.componentObj.value);
         }
@@ -920,6 +927,7 @@ var InPlaceEditor = /** @__PURE__ @class */ (function (_super) {
     };
     InPlaceEditor.prototype.appendTemplate = function (trgEle, tempStr) {
         tempStr = typeof (tempStr) === 'string' ? this.sanitizeHelper(tempStr) : tempStr;
+        this.setProperties({ template: tempStr }, true);
         if (typeof tempStr === 'string' || isNullOrUndefined(tempStr.innerHTML)) {
             if (tempStr[0] === '.' || tempStr[0] === '#') {
                 if (document.querySelectorAll(tempStr).length) {

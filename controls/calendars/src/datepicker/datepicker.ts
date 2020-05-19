@@ -1987,6 +1987,7 @@ export class DatePicker extends Calendar implements IInput {
                 case 'showClearButton':
                     Input.setClearButton(this.showClearButton, this.inputElement, this.inputWrapper);
                     this.bindClearEvent();
+                    this.index = this.showClearButton ? 2 : 1;
                     break;
                 case 'strictMode':
                     this.invalidValueString = null;

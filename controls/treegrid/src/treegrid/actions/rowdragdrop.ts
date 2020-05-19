@@ -93,10 +93,10 @@ export class RowDD {
                 this.dropRows(args, isByMethod);
             }
             //this.refreshGridDataSource();
-            this.parent.refresh();
             if (tObj.isLocalData) {
                 tObj.flatData = this.orderToIndex(tObj.flatData);
             }
+            this.parent.refresh();
         } else {
             return;
         }
@@ -105,6 +105,12 @@ export class RowDD {
     private orderToIndex(currentData: ITreeData[]): ITreeData[] {
         for (let i: number = 0; i < currentData.length; i++) {
             currentData[i].index = i;
+            if (!isNullOrUndefined(currentData[i].parentItem)) {
+                let updatedParent: ITreeData = currentData.filter((data: ITreeData) => {
+                    return data.uniqueID === currentData[i].parentUniqueID;
+                })[0];
+                currentData[i].parentItem.index = updatedParent.index;
+            }
         }
         return currentData;
     }
@@ -514,10 +520,10 @@ export class RowDD {
                 if (!isCountRequired(this.parent)) {
                     this.dropRows(args);
                 }
-                tObj.refresh();
                 if (tObj.isLocalData) {
                     tObj.flatData = this.orderToIndex(tObj.flatData);
                 }
+                tObj.refresh();
                 if (!isNullOrUndefined(tObj.getHeaderContent().querySelector('.e-firstrow-border'))) {
                     tObj.getHeaderContent().querySelector('.e-firstrow-border').remove();
                 }

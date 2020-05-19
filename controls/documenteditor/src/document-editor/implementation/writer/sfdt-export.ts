@@ -54,6 +54,8 @@ export class SfdtExport {
         this.lists = undefined;
         this.document = undefined;
         this.endCell = undefined;
+        this.startColumnIndex = undefined;
+        this.endColumnIndex = undefined;
     }
     /**
      * Serialize the data as Syncfusion document text.
@@ -368,7 +370,7 @@ export class SfdtExport {
                     } else {
                         inline.formFieldData.dropDownList = {};
                         this.checkboxOrDropdown = true;
-                        inline.formFieldData.dropDownList.dropdownItems = (element.formFieldData as DropDownFormField).dropDownItems;
+                        inline.formFieldData.dropDownList.dropDownItems = (element.formFieldData as DropDownFormField).dropDownItems;
                         inline.formFieldData.dropDownList.selectedIndex = (element.formFieldData as DropDownFormField).selectedIndex;
                     }
                 }
@@ -942,7 +944,7 @@ export class SfdtExport {
         tableFormat.shading = this.writeShading(wTableFormat.shading);
         tableFormat.cellSpacing = wTableFormat.hasValue('cellSpacing') ? wTableFormat.cellSpacing : undefined;
         tableFormat.leftIndent = wTableFormat.hasValue('leftIndent') ? wTableFormat.leftIndent : undefined;
-        tableFormat.tableAlignment = wTableFormat.hasValue('tableAlignment"') ? wTableFormat.tableAlignment : undefined;
+        tableFormat.tableAlignment = wTableFormat.hasValue('tableAlignment') ? wTableFormat.tableAlignment : undefined;
         tableFormat.topMargin = wTableFormat.hasValue('topMargin') ? wTableFormat.topMargin : undefined;
         tableFormat.rightMargin = wTableFormat.hasValue('rightMargin') ? wTableFormat.rightMargin : undefined;
         tableFormat.leftMargin = wTableFormat.hasValue('leftMargin') ? wTableFormat.leftMargin : undefined;

@@ -119,4 +119,10 @@ export interface TaskFieldsModel {
      */
     manual?: string;
 
+    /**
+     * To map taskType value of task from data source
+     * @default null      
+     */
+    type?: string;
+
 }

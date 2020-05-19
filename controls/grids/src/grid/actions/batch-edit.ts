@@ -5,7 +5,7 @@ import { isNullOrUndefined, KeyboardEventArgs, isUndefined } from '@syncfusion/e
 import { IGrid, BeforeBatchAddArgs, BeforeBatchDeleteArgs, BeforeBatchSaveArgs } from '../base/interface';
 import { BatchAddArgs, CellEditArgs, CellSaveArgs, CellFocusArgs, BatchCancelArgs } from '../base/interface';
 import { CellType } from '../base/enum';
-import { parentsUntil, inArray, refreshForeignData, getObject, alignFrozenEditForm } from '../base/util';
+import { parentsUntil, inArray, refreshForeignData, getObject, alignFrozenEditForm, getScrollBarWidth } from '../base/util';
 import * as events from '../base/constant';
 import { EditRender } from '../renderer/edit-renderer';
 import { RowRenderer } from '../renderer/row-renderer';
@@ -553,6 +553,9 @@ export class BatchEdit {
                     }
                     delete selectedRows[i];
                 }
+                let fCont: Element = gObj.getContent().querySelector('.e-frozencontent');
+                let mCont: HTMLElement = gObj.getContent().querySelector('.e-movablecontent') as HTMLElement;
+                (fCont as HTMLElement).style.height = mCont.offsetHeight - getScrollBarWidth() + 'px';
             } else if (!this.parent.getFrozenColumns() && (selectedRows.length === 1 || data)) {
                 let uid: string = beforeBatchDeleteArgs.row.getAttribute('data-uid');
                 uid = data && this.parent.editModule.deleteRowUid ? uid = this.parent.editModule.deleteRowUid : uid;
@@ -898,6 +901,9 @@ export class BatchEdit {
                 gObj.selectRow(this.cellDetails.rowIndex, true);
             }
             this.renderer.update(cellEditArgs);
+            if (gObj.getFrozenColumns()) {
+                alignFrozenEditForm(row.querySelector('td:not(.e-hide)'), this.comparingRow(row).querySelector('td:not(.e-hide)'));
+            }
             this.parent.notify(events.batchEditFormRendered, cellEditArgs);
             this.form = gObj.element.querySelector('#' + gObj.element.id + 'EditForm');
             gObj.editModule.applyFormValidation([col]);
@@ -954,7 +960,7 @@ export class BatchEdit {
                 let movRowIndex: number = parseInt(movRowEle.getAttribute('aria-rowindex'), 10);
                 movableRowObject = this.parent.getMovableRowsObject()[movRowIndex];
             } else {
-                movableRowObject = this.parent.getRowObjectFromUID(rowObj.uid);
+                movableRowObject = this.parent.getMovableRowsObject()[rowIndex];
             }
             movableRowObject.changes = extend({}, {}, currentRowObj.changes, true);
             if (rowObj.data[field] !== value) {
@@ -1046,6 +1052,10 @@ export class BatchEdit {
         let args: CellSaveArgs = this.generateCellArgs();
         args.value = args.previousValue;
         this.successCallBack(args, args.cell.parentElement, args.column, true)(args);
+        if (this.parent.getFrozenColumns()) {
+            let tr: Element = isBlazor() ? parentsUntil(this.form, 'e-row') : args.cell.parentElement;
+            (this.comparingRow(tr).querySelector('td:not(.e-hide)') as HTMLElement).style.height = tr.getBoundingClientRect().height + 'px';
+        }
     }
 
     private generateCellArgs(): Object {
@@ -1096,6 +1106,9 @@ export class BatchEdit {
             gObj.notify(events.batchForm, { formObj: this.form });
         } else {
             this.successCallBack(args, tr, col)(args);
+        }
+        if (gObj.getFrozenColumns()) {
+            (this.comparingRow(tr).querySelector('td:not(.e-hide)') as HTMLElement).style.height = tr.getBoundingClientRect().height + 'px';
         }
     }
 
@@ -1222,5 +1235,18 @@ export class BatchEdit {
             this.parent.isEdit = false;
             this.isColored = false;
         }
+    }
+
+    private comparingRow(row: Element): Element {
+        let gObj: IGrid = this.parent;
+        let comparingElement: string = (row as HTMLElement).offsetParent.parentElement.className;
+        let comparingRow: Element;
+        if (comparingElement.includes('e-frozencontent') || comparingElement.includes('e-frozenheader')) {
+                   comparingRow =  gObj.getMovableRowByIndex(parseInt(row.getAttribute('aria-rowindex'), 10));
+                }
+        if (comparingElement.includes('e-movablecontent') || comparingElement.includes('e-movableheader')) {
+                    comparingRow = gObj.getFrozenRowByIndex(parseInt(row.getAttribute('aria-rowindex'), 10));
+                }
+        return comparingRow;
     }
 }

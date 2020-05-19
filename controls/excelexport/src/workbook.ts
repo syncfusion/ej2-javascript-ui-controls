@@ -807,7 +807,7 @@ export class Workbook {
         switch (type) {
             case 'number':
                 try {
-                    returnFormat = this.intl.getNumberPattern({ format: numberFormat, currency: this.currency });
+                    returnFormat = this.intl.getNumberPattern({ format: numberFormat, currency: this.currency, useGrouping: true });
                 } catch (error) {
                     returnFormat = numberFormat;
                 }

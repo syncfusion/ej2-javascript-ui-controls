@@ -272,11 +272,26 @@ export class Editor {
         this.insertEditRangeElement(user && user !== '' ? user : 'Everyone');
     }
     /**
+     * Enforce document protection by protection type.
+     */
+    public enforceProtection(credential: string, protectionType: ProtectionType): void;
+    /**
      * Enforce document protection.
      */
-    public enforceProtection(credential: string, limitToFormatting: boolean, isReadOnly: boolean): void {
+    public enforceProtection(credential: string, limitToFormatting: boolean, isReadOnly: boolean): void;
+
+    public enforceProtection(credential: string, restrictFormatType: boolean | ProtectionType, isReadOnly?: boolean): void {
+        let typeOfProtection: ProtectionType;
+        let limitToFormatting: boolean;
+        if (typeof (restrictFormatType) === 'boolean') {
+            typeOfProtection = isReadOnly ? 'ReadOnly' : this.documentHelper.protectionType;
+            limitToFormatting = restrictFormatType;
+        } else {
+            limitToFormatting = true;
+            typeOfProtection = restrictFormatType;
+        }
         this.documentHelper.restrictFormatting = limitToFormatting;
-        this.documentHelper.protectionType = isReadOnly ? 'ReadOnly' : this.documentHelper.protectionType;
+        this.documentHelper.protectionType = typeOfProtection;
         this.selection.isHighlightEditRegion = true;
         this.addProtection(credential, this.documentHelper.protectionType);
     }
@@ -752,9 +767,7 @@ export class Editor {
         if (this.selection.isHighlightEditRegion) {
             this.selection.onHighlight();
         }
-        if (this.documentHelper.formFields.length > 0) {
-            this.selection.highlightFormFields();
-        }
+        this.selection.highlightFormFields();
         if (!this.isPaste) {
             this.copiedContent = undefined;
             this.copiedTextContent = '';
@@ -1407,7 +1420,6 @@ export class Editor {
     public insertTextInternal(text: string, isReplace: boolean): void {
         if (this.documentHelper.protectionType === 'FormFieldsOnly' && this.selection.isInlineFormFillMode()) {
             let inline: FieldElementBox = this.selection.getCurrentFormField();
-            //(inline.formFieldData as TextFormField).isContentChanged = true;
             let resultText: string = this.getFormFieldText();
             let rex: RegExp = new RegExp(this.owner.documentHelper.textHelper.getEnSpaceCharacter(), 'gi');
             if (resultText.length > 0 && resultText.replace(rex, '') === '') {
@@ -3268,7 +3280,7 @@ export class Editor {
         let insertIndex: number = table.getIndex();
         if (moveRows) {
             //Moves the rows to table.
-            for (let i: number = 0, index: number = 0; i < table.childWidgets.length; i++ , index++) {
+            for (let i: number = 0, index: number = 0; i < table.childWidgets.length; i++, index++) {
                 let row: TableRowWidget = table.childWidgets[i] as TableRowWidget;
                 newTable.childWidgets.splice(index, 0, row);
                 row.containerWidget = newTable;
@@ -8718,7 +8730,6 @@ export class Editor {
         paragraph.containerWidget = container;
         paragraph.index = blockIndex;
         this.updateNextBlocksIndex(paragraph, true);
-        // tslint:disable-next-line:max-line-length
         this.documentHelper.layout.layoutBodyWidgetCollection(blockIndex, container as BodyWidget, paragraph, false);
     }
     /**
@@ -9251,7 +9262,7 @@ export class Editor {
             }
             let resultText: string = this.getFormFieldText();
             if (!(inline instanceof TextElementBox)) {
-                inline = inline.nextElement;
+                inline = this.selection.getNextRenderedElementBox(inline, 1);
             }
             if (resultText.length === 1 && inline instanceof TextElementBox) {
                 this.selection.selectFieldInternal(this.selection.getCurrentFormField());
@@ -12184,7 +12195,7 @@ export class Editor {
                 defaultText = this.documentHelper.textHelper.repeatChar(this.documentHelper.textHelper.getEnSpaceCharacter(), 5);
             }
         } else if (formField instanceof TextFormField) {
-            if (formField.defaultValue! !== '') {
+            if (formField.defaultValue !== '') {
                 defaultText = formField.defaultValue;
             } else {
                 defaultText = this.documentHelper.textHelper.repeatChar(this.documentHelper.textHelper.getEnSpaceCharacter(), 5);
@@ -12261,12 +12272,16 @@ export class Editor {
     // tslint:disable-next-line:max-line-length
     public updateFormFieldInternal(field: FieldElementBox, formFieldData: FormField, value: string | number, reset?: boolean): void {
         if (formFieldData instanceof TextFormField) {
-            if (reset && value === '') {
-                value = this.getDefaultText(formFieldData) as string;
+            if (value === '') {
+                if (reset) {
+                    value = this.getDefaultText(formFieldData) as string;
+                } else {
+                    value = this.documentHelper.textHelper.repeatChar(this.documentHelper.textHelper.getEnSpaceCharacter(), 5);
+                }
             }
             let formattedText: string = value as string;
             let type: TextFormFieldType = formFieldData.type;
-            if (type === 'Text') {
+            if (type === 'Text' && formFieldData.format !== '') {
                 formattedText = HelperMethods.formatText(formFieldData.format, value as string);
             }
             this.updateFormFieldResult(field, formattedText);
@@ -12333,6 +12348,22 @@ export class Editor {
         }
         return name;
     }
+    /**
+     * @private
+     */
+    public applyFormTextFormat(formField: FieldElementBox): void {
+        if (!isNullOrUndefined(formField)) {
+            let text: string = this.getFormFieldText(formField);
+            let currentValue: string = text;
+            text = HelperMethods.formatText((formField.formFieldData as TextFormField).format, text);
+            this.applyTextFormatInternal(formField, text);
+            this.initHistory('FormTextFormat');
+            if (this.editorHistory) {
+                this.editorHistory.currentBaseHistoryInfo.setFormFieldInfo(formField, currentValue);
+                this.editorHistory.updateHistory();
+            }
+        }
+    }
     // Inserts 5 space on Form Fill inline mode if length is 0
     private insertSpaceInFormField(): void {
         if (this.documentHelper.isInlineFormFillProtectedMode && this.selection.isInlineFormFillMode()) {
@@ -12387,6 +12418,48 @@ export class Editor {
             while (!(textElement instanceof FieldElementBox && textElement.fieldType === 1 && textElement === seperator.fieldEnd));
         }
         return text;
+    }
+    /**
+     * @private
+     */
+    public applyTextFormatInternal(field: FieldElementBox, text: string): void {
+        let textElement: ElementBox = field.fieldSeparator.nextElement;
+        let start: number = 0;
+        text = text.replace(/\r/g, '');
+        do {
+            if (!isNullOrUndefined(textElement) && textElement instanceof TextElementBox) {
+                textElement.text = text.slice(start, start + textElement.text.length);
+                start = start + textElement.length;
+            }
+            if (isNullOrUndefined(textElement.nextElement)) {
+                if (!isNullOrUndefined(textElement.line.nextLine)) {
+                    textElement = textElement.line.nextLine.children[0];
+                } else {
+                    // tslint:disable-next-line:max-line-length
+                    this.documentHelper.layout.layoutBodyWidgetCollection(textElement.paragraph.index, textElement.paragraph.bodyWidget, textElement.paragraph, true);
+                    let nextBlock: BlockWidget = textElement.paragraph.nextRenderedWidget as BlockWidget;
+                    if (isNullOrUndefined(nextBlock)) {
+                        break;
+                    }
+                    if (nextBlock instanceof TableWidget) {
+                        nextBlock = this.selection.getFirstParagraphBlock(nextBlock);
+                    }
+                    while ((nextBlock as ParagraphWidget).isEmpty()) {
+                        nextBlock = nextBlock.nextRenderedWidget as BlockWidget;
+                    }
+                    // tslint:disable-next-line:max-line-length
+                    textElement = ((nextBlock as ParagraphWidget).childWidgets[0] as LineWidget).children[0];
+                }
+            } else {
+                textElement = textElement.nextElement;
+            }
+        } while (!(textElement instanceof FieldElementBox && textElement.fieldType === 1 &&
+            textElement.fieldBegin.formFieldData instanceof TextFormField));
+        // tslint:disable-next-line:max-line-length
+        this.documentHelper.layout.layoutBodyWidgetCollection(textElement.paragraph.index, textElement.paragraph.bodyWidget, textElement.paragraph, true);
+        this.selection.isFormatUpdated = true;
+        this.reLayout(this.selection, false);
+        this.selection.isFormatUpdated = false;
     }
 }
 /**

@@ -1,5 +1,5 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
-import { TableOfContentsSettings, ParagraphWidget } from '../../src/document-editor/index';
+import { TableOfContentsSettings, ParagraphWidget, TextFormField, ElementBox } from '../../src/document-editor/index';
 import { createElement } from '@syncfusion/ej2-base';
 import { Editor, TableCellWidget, TextElementBox, TextHelper, RtlInfo, ListTextElementBox, LineWidget, TabElementBox, TextPosition } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
@@ -339,3 +339,47 @@ describe('Cut and undo operation at end of table in second page', () => {
     });
 });
 
+describe('Restrict editing public API validation by Protectiontype', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableLocalPaste: false });
+        DocumentEditor.Inject(Editor, Selection);
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Form field Protection type', () => {
+        editor.editor.insertText('Name: ');
+        editor.editor.insertFormField('Text');
+        editor.editor.updateFormField(editor.documentHelper.formFields[0], 'Test');
+        editor.editor.enforceProtection('', 'FormFieldsOnly');
+        editor.selection.selectFieldInternal(editor.documentHelper.formFields[0]);
+        editor.editor.insertText('sync');
+        let textElement: string = (editor.documentHelper.formFields[0].fieldSeparator.nextElement as TextElementBox).text;
+        expect(textElement).toBe('sync');
+    });
+    it('Read Only Protection type', () => {
+        editor.openBlank();
+        editor.editor.insertText('Test');
+        editor.editor.enforceProtection('', 'ReadOnly');
+        let event: any = { which: 83 };
+        editor.documentHelper.onKeyPressInternal(event);
+        let textElement: ElementBox[] = ((editor.documentHelper.pages[0].bodyWidgets[0].childWidgets[0] as ParagraphWidget).childWidgets[0] as LineWidget).children;
+        expect(textElement.length).toBe(1);
+        expect((textElement[0] as TextElementBox).text).toBe('Test');
+    });
+});

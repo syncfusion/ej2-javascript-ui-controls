@@ -124,7 +124,9 @@
 
       .e-swimlane {
         .e-header-cells {
-          border-bottom: 1px solid $kanban-header-border-color;
+          &.e-header-bottom {
+            border-bottom: 1px solid $kanban-header-border-color;
+          }
         }
       }
     }
@@ -214,13 +216,16 @@
 
           .e-card-wrapper {
             overflow: auto;
-            padding: 8px;
+            padding: 8px 8px 0;
 
             .e-card {
               border: 1px solid transparent;
-              cursor: all-scroll;
               margin-bottom: 8px;
               min-height: 50px;
+
+              &.e-draggable {
+                cursor: all-scroll;
+              }
 
               .e-card-header {
                 padding-bottom: 0;
@@ -347,7 +352,6 @@
 
         &:not(.e-swimlane-row) .e-content-cells {
           border: 1px solid transparent;
-          height: 100px;
           vertical-align: top;
 
           &.e-min-color {
@@ -360,6 +364,10 @@
 
           &:focus {
             border: 1px solid $kanban-border-color;
+          }
+
+          .e-card-wrapper {
+            min-height: 50px;
           }
         }
 
@@ -477,6 +485,7 @@
 
         .e-swimlane-resource {
           background: $kanban-bg-color;
+          border: 1px solid $kanban-header-border-color;
           height: 100%;
           width: 225px;
 
@@ -547,16 +556,17 @@
     z-index: 1004;
 
     .e-popup-header {
-      padding: 5px;
+      @if $kanban-skin == 'bootstrap4' {
+        padding-top: 3px;
+      }
 
       .e-close {
-        border: 0;
-        height: auto;
-        padding: 4px;
-        width: auto;
-
-        @if ($kanban-skin != 'bootstrap4') {
+        @if $kanban-skin != 'bootstrap4' {
           background-color: transparent;
+        }
+
+        @if ($kanban-skin == 'fabric' or $kanban-skin == 'bootstrap') {
+          border: 0;
         }
       }
     }
@@ -572,6 +582,12 @@
 
       @if $kanban-skin == 'highcontrast' {
         color: $kanban-default-font;
+      }
+      @if ($kanban-skin == 'fabric' or $kanban-skin == 'highcontrast')  {
+        padding: 3px;
+      }
+      @if $kanban-skin == 'bootstrap' {
+        padding: 4px;
       }
     }
   }

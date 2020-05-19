@@ -691,7 +691,7 @@ export interface ConnectorModel extends NodeBaseModel{
      * Sets the connector padding value
      * @default 0
      */
-    connectPadding?: number;
+    connectionPadding?: number;
 
     /**
      * Defines the type of the connector

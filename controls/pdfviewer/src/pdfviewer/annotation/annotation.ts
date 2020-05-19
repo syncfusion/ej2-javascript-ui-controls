@@ -3118,9 +3118,6 @@ export class Annotation {
                 }
             }
         }
-        if (overlappedAnnotations && overlappedAnnotations.length > 0 && overlappedAnnotations[0].subject === 'Volume calculation') {
-            annotSettings.calibrate = overlappedAnnotations[0].calibrate;
-        }
         if (overlappedAnnotations && overlappedAnnotations.length > 0) {
             annotationCollection = overlappedAnnotations;
             // tslint:disable-next-line
@@ -3128,6 +3125,9 @@ export class Annotation {
                 // tslint:disable-next-line
                 let overlappedObject: any = cloneObject(annotationCollection[i]);
                 overlappedObject.annotationId = annotationCollection[i].annotName;
+                if (annotationId === annotationCollection[i].annotName && annotation.measureType && annotation.measureType === 'Volume') {
+                    annotSettings.calibrate = annotationCollection[i].calibrate;
+                }
                 delete overlappedObject.annotName;
                 overlappedCollection.push(overlappedObject);
             }
@@ -3170,9 +3170,6 @@ export class Annotation {
         }
     }
 
-    /**
-     * @private
-     */
     // tslint:disable-next-line
     public selectSignature ( signatureId: string, pageNumber: number, signatureModule: any): void {
         // tslint:disable-next-line
@@ -3186,9 +3183,6 @@ export class Annotation {
         }
     }
 
-    /**
-     * @private
-     */
     // tslint:disable-next-line
     public editSignature(signature: any): void {
         // tslint:disable-next-line
@@ -3236,9 +3230,6 @@ export class Annotation {
         }
     }
 
-    /**
-     * @private
-     */
     // tslint:disable-next-line
     public editAnnotation(annotation: any): void {
         // tslint:disable-next-line
@@ -3383,6 +3374,20 @@ export class Annotation {
                         labelOpacity: annotation.labelSettings.opacity, fontColor: annotation.labelSettings.fontColor, fontSize: annotation.labelSettings.fontSize, fontFamily: annotation.labelSettings.fontFamily,
                         labelContent: annotation.labelSettings.labelContent, labelFillColor: annotation.labelSettings.fillColor
                     });
+                }
+                if (this.pdfViewer.enableShapeLabel && annotation.calibrate && annotation.calibrate.depth) {
+                    if (this.pdfViewer.annotationModule.measureAnnotationModule.volumeDepth !== annotation.calibrate.depth) {
+                        this.pdfViewer.annotationModule.measureAnnotationModule.volumeDepth = annotation.calibrate.depth;
+                        // tslint:disable-next-line:max-line-length
+                        currentAnnotation.notes = this.pdfViewer.annotationModule.measureAnnotationModule.calculateVolume(currentAnnotation.vertexPoints);
+                        currentAnnotation.labelContent = currentAnnotation.notes;
+                        if (annotation.labelSettings && annotation.labelSettings.labelContent) {
+                            annotation.labelSettings.labelContent = currentAnnotation.notes;
+                        }
+                        this.pdfViewer.nodePropertyChange(currentAnnotation, { labelContent: currentAnnotation.labelContent });
+                        // tslint:disable-next-line:max-line-length
+                        this.pdfViewer.annotationModule.stickyNotesAnnotationModule.addTextToComments(currentAnnotation.annotName, currentAnnotation.notes);
+                    }
                 }
             } else if (annotation.type === 'FreeText' || annotation.shapeAnnotationType === 'FreeText') {
                 annotationType = 'freetext';
@@ -3536,20 +3541,18 @@ export class Annotation {
                 newAnnotation.strokeColor = annotation.strokeColor;
                 newAnnotation.thickness = annotation.thickness;
                 newAnnotation.annotationSettings = annotation.annotationSettings;
-                if (annotation.calibrate ) {
-                if (newAnnotation.annotName === annotation.annotationId) {
-                if (newAnnotation.calibrate.depth !== annotation.calibrate.depth) {
-                    newAnnotation.calibrate.depth = annotation.calibrate.depth;
-                    this.pdfViewer.annotationModule.measureAnnotationModule.volumeDepth = annotation.calibrate.depth;
-                    // tslint:disable-next-line:max-line-length
-                    newAnnotation.note = this.pdfViewer.annotationModule.measureAnnotationModule.calculateVolume(newAnnotation.vertexPoints);
-                    // tslint:disable-next-line:max-line-length
-                    this.pdfViewer.annotationModule.stickyNotesAnnotationModule.addTextToComments(newAnnotation.annotName, newAnnotation.note);
-                }
-                }
+                if (annotation.calibrate) {
+                    if (newAnnotation.annotName === annotation.annotationId) {
+                        if (newAnnotation.calibrate.depth !== annotation.calibrate.depth) {
+                            newAnnotation.calibrate.depth = annotation.calibrate.depth;
+                            this.pdfViewer.annotationModule.measureAnnotationModule.volumeDepth = annotation.calibrate.depth;
+                            // tslint:disable-next-line:max-line-length
+                            newAnnotation.note = this.pdfViewer.annotationModule.measureAnnotationModule.calculateVolume(newAnnotation.vertexPoints);
+                        }
+                    }
                 }
             }
-            if (this.pdfViewer.enableShapeLabel) {
+            if (this.pdfViewer.enableShapeLabel && annotation.labelSettings) {
                 let text: string = annotation.labelSettings.labelContent;
                 newAnnotation.note = text;
                 if (newAnnotation.labelContent) {

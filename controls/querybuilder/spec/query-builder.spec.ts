@@ -1145,8 +1145,7 @@ describe('QueryBuilder', () => {
            expect(document.getElementsByClassName('e-querybuilder-error').length).toBe(0);
            queryBuilder.validateFields();
            filterElem = queryBuilder.element.querySelector('.e-rule-operator input.e-control').ej2_instances;
-           expect(filterElem[0].element.parentElement.classList.contains('e-tooltip')).toBeTruthy();
-           expect(document.getElementsByClassName('e-querybuilder-error').length).toBe(2);
+           expect(document.getElementsByClassName('e-querybuilder-error').length).toBe(1);
            filterElem[0].showPopup();
            items = document.getElementById('querybuilder_group0_rule0_operatorkey_options').querySelectorAll('li');
           items[3].click();

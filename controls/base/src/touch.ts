@@ -181,7 +181,7 @@ export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
 
     private startEvent: Function = (evt: MouseEventArgs | TouchEventArgs): void => {
         if (this.touchAction === true) {
-            let point: MouseEventArgs | TouchEventArgs = (evt.changedTouches ? evt.changedTouches[0] : evt);
+            let point: MouseEventArgs | TouchEventArgs = this.updateChangeTouches(evt);
             if (evt.changedTouches !== undefined) {
                 this.touchAction = false;
             }
@@ -199,7 +199,7 @@ export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
     }
 
     private moveEvent: Function = (evt: MouseEventArgs | TouchEventArgs): void => {
-        let point: MouseEventArgs | TouchEventArgs = evt.changedTouches ? evt.changedTouches[0] : evt;
+        let point: MouseEventArgs | TouchEventArgs = this.updateChangeTouches(evt);
         this.movedPoint = point;
         this.isTouchMoved = !(point.clientX === this.startPoint.clientX && point.clientY === this.startPoint.clientY);
         let eScrollArgs: Object = {};
@@ -256,8 +256,7 @@ export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
     private swipeFn: Function = (evt: MouseEventArgs | TouchEventArgs): void => {
         clearTimeout(this.timeOutTapHold);
         clearTimeout(this.timeOutTap);
-        let point: MouseEventArgs | TouchEventArgs = evt;
-        if (evt.changedTouches) { point = evt.changedTouches[0]; }
+        let point: MouseEventArgs | TouchEventArgs = this.updateChangeTouches(evt);
         let diffX: number = point.clientX - this.startPoint.clientX;
         let diffY: number = point.clientY - this.startPoint.clientY;
         diffX = Math.floor(diffX < 0 ? -1 * diffX : diffX);
@@ -309,7 +308,7 @@ export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
     }
 
     private calcPoints(evt: MouseEventArgs | TouchEventArgs): void {
-        let point: MouseEventArgs | TouchEventArgs = evt.changedTouches ? evt.changedTouches[0] : evt;
+        let point: MouseEventArgs | TouchEventArgs = this.updateChangeTouches(evt);
         this.defaultArgs = { originalEvent: evt };
         this.distanceX = Math.abs((Math.abs(point.clientX) - Math.abs(this.startPoint.clientX)));
         this.distanceY = Math.abs((Math.abs(point.clientY) - Math.abs(this.startPoint.clientY)));
@@ -321,7 +320,7 @@ export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
     }
 
     private calcScrollPoints(evt: MouseEventArgs | TouchEventArgs): void {
-        let point: MouseEventArgs | TouchEventArgs = evt.changedTouches ? evt.changedTouches[0] : evt;
+        let point: MouseEventArgs | TouchEventArgs = this.updateChangeTouches(evt);
         this.defaultArgs = { originalEvent: evt };
         this.distanceX = Math.abs((Math.abs(point.clientX) - Math.abs(this.lastMovedPoint.clientX)));
         this.distanceY = Math.abs((Math.abs(point.clientY) - Math.abs(this.lastMovedPoint.clientY)));
@@ -353,6 +352,12 @@ export class Touch extends Base<HTMLElement> implements INotifyPropertyChanged {
         }
         return (ele[keys[0] + temp[1]] === 0) ||
             (ele[keys[1] + temp[0]] + ele[keys[0] + temp[1]] >= ele[keys[0] + temp[0]]);
+    }
+
+    private updateChangeTouches(evt: MouseEventArgs | TouchEventArgs): MouseEventArgs | TouchEventArgs {
+        // tslint:disable-next-line:max-line-length
+        let point: MouseEventArgs | TouchEventArgs = evt.changedTouches && evt.changedTouches.length !== 0 ? evt.changedTouches[0] : evt;
+        return point;
     }
 }
 

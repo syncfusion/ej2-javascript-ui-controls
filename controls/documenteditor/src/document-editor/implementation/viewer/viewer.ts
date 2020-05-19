@@ -1689,11 +1689,12 @@ export class DocumentHelper {
                     !this.owner.useCtrlClickToFollowHyperlink) && this.isLeftButtonPressed(event) === true))) {
                 this.selection.navigateHyperLinkOnEvent(touchPoint, false);
             }
-            if (this.isLeftButtonPressed(event) && this.isDocumentProtected && this.protectionType === 'FormFieldsOnly' && this.selection) {
+            if (this.isMouseDown && this.isLeftButtonPressed(event) && this.isDocumentProtected
+                && this.protectionType === 'FormFieldsOnly' && this.selection) {
                 let widget: LineWidget = this.getLineWidget(touchPoint);
                 let formField: FieldElementBox = this.selection.getHyperLinkFieldInCurrentSelection(widget, touchPoint, true);
                 if (isNullOrUndefined(formField)) {
-                    formField = this.selection.getCurrentFormField();
+                    formField = this.selection.getCurrentFormField(true);
                 }
                 // tslint:disable-next-line:max-line-length
                 if (formField && formField.formFieldData && formField.formFieldData.enabled && !this.selection.isInlineFormFillMode(formField)) {
@@ -1721,10 +1722,12 @@ export class DocumentHelper {
                 if (!formField && this.isFormFillProtectedMode) {
                     this.selection.navigateToNextFormField();
                 }
-            } else {
-                let formField: FieldElementBox = this.selection.getCurrentFormField();
-                if (formField && formField.formFieldData) {
-                    this.selection.selectField();
+            } else if (this.isMouseDown) {
+                if (this.formFields.length > 0) {
+                    let formField: FieldElementBox = this.selection.getCurrentFormField(true);
+                    if (formField && formField.formFieldData) {
+                        this.selection.selectField();
+                    }
                 }
             }
             if (!this.owner.isReadOnlyMode && this.isSelectionInListText(touchPoint)) {
@@ -2857,7 +2860,13 @@ export class DocumentHelper {
         let isCtrlkeyPressed: boolean = this.isIosDevice ? event.metaKey : event.ctrlKey;
         if ((!isNullOrUndefined(hyperlinkField) && (isCtrlkeyPressed &&
             this.owner.useCtrlClickToFollowHyperlink || !this.owner.useCtrlClickToFollowHyperlink)) || formField) {
-            div.style.cursor = 'pointer';
+            if (!isNullOrUndefined(formField)) {
+                if (this.isFormFillProtectedMode) {
+                    div.style.cursor = 'default';
+                }
+            } else {
+                div.style.cursor = 'pointer';
+            }
             return;
         } else if (touchPoint.x >= lineLeft &&
             // tslint:disable-next-line:max-line-length

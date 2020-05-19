@@ -463,6 +463,13 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
     public step: number;
 
     /**
+     * Specifies the width of the Slider.
+     * @default null
+     */
+    @Property(null)
+    public width: number | string;
+
+    /**
      * Gets/Sets the minimum value of the slider.
      *
      * {% codeBlock src="slider/min-max-api/index.ts" %}{% endcodeBlock %}
@@ -742,6 +749,16 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
         this.setCSSClass();
     }
 
+    private setElementWidth(width: number | string): void {
+        if (!isNullOrUndefined(width)) {
+            if (typeof width === 'number') {
+                this.sliderContainer.style.width = formatUnit(width);
+            } else if (typeof width === 'string') {
+                this.sliderContainer.style.width = (width.match(/px|%|em/)) ? <string>(width) : <string>(formatUnit(width));
+            }
+        }
+    }
+
     private setCSSClass(oldCSSClass?: string): void {
         if (oldCSSClass) {
             removeClass([this.element], oldCSSClass.split(' '));
@@ -788,7 +805,7 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
             this.sliderTrack = this.createElement('div', { className: classNames.sliderTrack });
             this.element.appendChild(this.sliderTrack);
         }
-
+        this.setElementWidth(this.width);
         this.element.tabIndex = -1;
         this.getThemeInitialization();
         this.setHandler();
@@ -3290,6 +3307,13 @@ export class Slider extends Component<HTMLElement> implements INotifyPropertyCha
                     this.reposition();
                     if (isBlazor() && !this.isServerRendered) {
                         this.isServerRendered = true;
+                    }
+                    break;
+                case 'width':
+                    this.setElementWidth(newProp.width);
+                    this.setMinMaxValue();
+                    if (this.limits) {
+                        this.limitsPropertyChange();
                     }
                     break;
             }

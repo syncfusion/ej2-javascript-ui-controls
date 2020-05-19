@@ -1726,16 +1726,16 @@ describe('Diagram Control', () => {
                 connectors: [
                     {
                         id: 'connector1', sourcePoint: { x: 100, y: 200 }, targetPoint: { x: 200, y: 200 },
-                        type: 'Straight', connectPadding: 50, constraints: ConnectorConstraints.Default,
+                        type: 'Straight', connectionPadding : 50, constraints: ConnectorConstraints.Default,
                         annotations: [{ content: 'dddd', style: { color: 'red' } }]
                     }, {
-                        id: 'connector2', sourcePoint: { x: 100, y: 200 }, targetPoint: { x: 200, y: 200 }, sourcePortID: 'fff', connectPadding: 50, constraints: (ConnectorConstraints.Default & ~ConnectorConstraints.ConnectNearAll),
+                        id: 'connector2', sourcePoint: { x: 100, y: 200 }, targetPoint: { x: 200, y: 200 }, sourcePortID: 'fff', connectionPadding : 50, constraints: (ConnectorConstraints.Default & ~ConnectorConstraints.ConnectToNearByElement),
                     }, {
                         id: 'connector3',
-                        type: 'Straight', sourcePoint: { x: 100, y: 200 }, targetPoint: { x: 200, y: 200 }, connectPadding: 50, constraints: (ConnectorConstraints.Default & ~ConnectorConstraints.ConnectNearNode)
+                        type: 'Straight', sourcePoint: { x: 100, y: 200 }, targetPoint: { x: 200, y: 200 }, connectionPadding : 50, constraints: (ConnectorConstraints.Default & ~ConnectorConstraints.ConnectToNearByPort)
                     }, {
                         id: 'connector4',
-                        type: 'Straight', sourcePoint: { x: 100, y: 200 }, targetPoint: { x: 200, y: 200 }, connectPadding: 50, constraints: (ConnectorConstraints.Default & ~ConnectorConstraints.ConnectNearPort)
+                        type: 'Straight', sourcePoint: { x: 100, y: 200 }, targetPoint: { x: 200, y: 200 }, connectionPadding : 50, constraints: (ConnectorConstraints.Default & ~ConnectorConstraints.ConnectToNearByNode)
                     }],
                 snapSettings: { constraints: SnapConstraints.ShowLines }
             });

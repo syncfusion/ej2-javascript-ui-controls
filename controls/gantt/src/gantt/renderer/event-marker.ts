@@ -2,7 +2,7 @@
  * To render and update event markers in Gantt
  */
 import { Gantt } from '../base/gantt';
-import { createElement, formatUnit, remove, isNullOrUndefined  } from '@syncfusion/ej2-base';
+import { createElement, formatUnit, remove, isNullOrUndefined } from '@syncfusion/ej2-base';
 import * as cls from '../base/css-constants';
 export class EventMarker {
     public parent: Gantt;
@@ -24,8 +24,8 @@ export class EventMarker {
             }
             this.eventMarkersContainer.innerHTML = '';
             this.getEventMarkersElements(this.eventMarkersContainer);
-        } else if (this.eventMarkersContainer) {
-            remove(this.eventMarkersContainer);
+        } else {
+            this.removeContainer();
         }
     }
     /**
@@ -34,6 +34,7 @@ export class EventMarker {
     public removeContainer(): void {
         if (this.eventMarkersContainer) {
             remove(this.eventMarkersContainer);
+            this.eventMarkersContainer = null;
         }
     }
     /**

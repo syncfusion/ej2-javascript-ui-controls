@@ -117,6 +117,7 @@ export interface KanbanModel extends ComponentModel{
 
     /**
      * Enable or disable the columns when empty dataSource.
+     * @deprecated
      * @default false
      */
     showEmptyColumn?: boolean;

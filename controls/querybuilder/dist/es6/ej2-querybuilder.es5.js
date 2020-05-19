@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, blazorTemplates, classList, cldrData, closest, compile, detach, extend, getComponent, getInstance, getValue, isBlazor, isNullOrUndefined, removeClass, resetBlazorTemplate, rippleEffect, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, blazorTemplates, classList, cldrData, closest, compile, detach, extend, getComponent, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, removeClass, resetBlazorTemplate, rippleEffect, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Button, RadioButton } from '@syncfusion/ej2-buttons';
 import { CheckBoxSelection, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
 import { DataManager, Deferred, Predicate, Query, UrlAdaptor } from '@syncfusion/ej2-data';
@@ -862,7 +862,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                 value = this.selectedColumn.values[rbValue];
             }
             else {
-                var valColl = ['True', 'False'];
+                var valColl = [true, false];
                 value = valColl[rbValue];
             }
         }
@@ -1011,8 +1011,8 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             }
             if (ddlArgs.previousItemData) {
                 var prevValue = ddlArgs.previousItemData.value.toLowerCase();
-                if (prevValue.indexOf('between') > -1 || (prevValue.indexOf('in') > -1 || (prevValue.indexOf('null') > -1)
-                    || (prevValue.indexOf('empty') > -1) && prevValue.indexOf('contains') < 0)) {
+                if ((prevValue.indexOf('between') > -1 || (prevValue.indexOf('in') > -1 || (prevValue.indexOf('null') > -1)
+                    || (prevValue.indexOf('empty') > -1)) && prevValue.indexOf('contains') < 0)) {
                     filterElem = operatorElem.previousElementSibling;
                     tempRule.type = rule.type;
                 }
@@ -1057,6 +1057,8 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     operatorList = this.customOperators[this.selectedColumn.type + 'Operator'];
                 }
                 var height = (this.element.className.indexOf('e-device') > -1) ? '250px' : '200px';
+                var value = operatorList[0].value;
+                value = rule ? (rule.operator !== '' ? rule.operator : value) : value;
                 var dropDownList = new DropDownList({
                     dataSource: operatorList,
                     fields: { text: 'key', value: 'value' },
@@ -1064,7 +1066,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     popupHeight: ((operatorList.length > 5) ? height : 'auto'),
                     change: this.changeField.bind(this),
                     index: 0,
-                    value: rule ? rule.operator : null
+                    value: value
                 });
                 dropDownList.appendTo('#' + ruleId + '_operatorkey');
                 tempRule.operator = (rule && rule.operator !== '') ? rule.operator : operatorList[0].value;
@@ -1462,27 +1464,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                             }
                             break;
                         case 'boolean':
-                            {
-                                var values = itemData.values && itemData.values.length ? itemData.values : ['True', 'False'];
-                                var isCheck = false;
-                                if (rule.type === 'boolean' && rule.value) {
-                                    isCheck = values[i].toLowerCase() === rule.value.toString().toLowerCase();
-                                }
-                                else if (itemData.value) {
-                                    isCheck = values[i].toLowerCase() === itemData.value.toString().toLowerCase();
-                                }
-                                else if (i === 0) {
-                                    isCheck = true;
-                                }
-                                var radiobutton = new RadioButton({
-                                    label: values[i].toString(), name: parentId + 'default', checked: isCheck, value: values[i],
-                                    change: this.changeValue.bind(this, i)
-                                });
-                                radiobutton.appendTo('#' + parentId + '_valuekey' + i);
-                                if (isCheck) {
-                                    this.updateRules(radiobutton.element, values[i], 0);
-                                }
-                            }
+                            this.processBoolValues(itemData, rule, parentId, i);
                             break;
                         case 'date':
                             {
@@ -1533,6 +1515,46 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                     }
                 }
             }
+        }
+    };
+    QueryBuilder.prototype.processBoolValues = function (itemData, rule, parentId, i) {
+        var isCheck = false;
+        var value;
+        var orgValue;
+        if (itemData.values) {
+            var values = itemData.values;
+            if (rule.type === 'boolean' && rule.value) {
+                isCheck = values[i].toLowerCase() === rule.value.toString().toLowerCase();
+            }
+            else if (itemData.value) {
+                isCheck = values[i].toLowerCase() === itemData.value.toString().toLowerCase();
+            }
+            else if (i === 0) {
+                isCheck = true;
+            }
+            orgValue = value = values[i];
+        }
+        else {
+            var values = [true, false];
+            if (rule.type === 'boolean' && rule.value) {
+                isCheck = values[i].toString().toLowerCase() === rule.value.toString().toLowerCase();
+            }
+            else if (itemData.value) {
+                isCheck = values[i].toString().toLowerCase() === itemData.value.toString().toLowerCase();
+            }
+            else if (i === 0) {
+                isCheck = true;
+            }
+            value = values[i].toString();
+            orgValue = values[i];
+        }
+        var radiobutton = new RadioButton({
+            label: value, name: parentId + 'default', checked: isCheck, value: value,
+            change: this.changeValue.bind(this, i)
+        });
+        radiobutton.appendTo('#' + parentId + '_valuekey' + i);
+        if (isCheck) {
+            this.updateRules(radiobutton.element, orgValue, 0);
         }
     };
     QueryBuilder.prototype.getOperatorIndex = function (ddlObj, rule) {
@@ -1661,7 +1683,17 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
             case 'radio':
                 var radioBtnObj = getComponent(element, controlName);
                 if (radioBtnObj.checked) {
-                    rule.value = radioBtnObj.value;
+                    if (typeof rule.value === 'boolean') {
+                        rule.value = radioBtnObj.value === 'true';
+                    }
+                    else {
+                        if (this.getColumn(rule.field).values) {
+                            rule.value = radioBtnObj.value;
+                        }
+                        else {
+                            rule.value = radioBtnObj.value === 'true';
+                        }
+                    }
                 }
                 radioBtnObj.refresh();
                 break;
@@ -2273,6 +2305,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
         }
     };
     QueryBuilder.prototype.preRender = function () {
+        this.element.id = this.element.id || getUniqueID('ej2-querybuilder');
         this.defaultLocale = {
             StartsWith: 'Starts With',
             EndsWith: 'Ends With',
@@ -3288,7 +3321,7 @@ var QueryBuilder = /** @__PURE__ @class */ (function (_super) {
                         valueStr += '("%' + rule.value + '%")';
                     }
                     else {
-                        if (rule.type === 'number') {
+                        if (rule.type === 'number' || typeof rule.value === 'boolean') {
                             valueStr += rule.value;
                         }
                         else {

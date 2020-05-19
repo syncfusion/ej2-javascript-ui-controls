@@ -920,6 +920,9 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
         if (this.isBlazorServerRender() && isNullOrUndefined(this.headerContent)) {
             this.headerContent = this.element.getElementsByClassName('e-dlg-header-content')[0] as HTMLElement;
         }
+        if (this.isBlazorServerRender() && isNullOrUndefined(this.contentEle)) {
+            this.contentEle = this.element.querySelector('#' + this.element.id + '_dialog-content');
+        }
         if (!this.isBlazorServerRender()) {
             this.setTargetContent();
             if (this.header !== '' && !isNullOrUndefined(this.header)) {
@@ -1264,7 +1267,7 @@ export class Dialog extends Component<HTMLElement> implements INotifyPropertyCha
 
     private createHeaderContent(): void {
         if (isNullOrUndefined(this.headerContent)) {
-            this.headerContent = this.createElement('div', { className: DLG_HEADER_CONTENT });
+            this.headerContent = this.createElement('div', { id: this.element.id + '_dialog-header', className: DLG_HEADER_CONTENT });
         }
     }
 

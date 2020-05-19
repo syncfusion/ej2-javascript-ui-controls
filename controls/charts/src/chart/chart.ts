@@ -1703,6 +1703,10 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             this.initializeTrendLine();
 
             this.renderSeries();
+            // Trendline is append to DOM after the series
+            if (this.trendLineElements) {
+                appendChildElement(this.enableCanvas, this.svgObject, this.trendLineElements, this.redraw);
+            }
 
             this.appendElementsAfterSeries(axisElement);
         }
@@ -1791,10 +1795,6 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             if (series.trendlines.length) {
                 this.trendLineModule.getTrendLineElements(series, this);
             }
-        }
-
-        if (this.trendLineElements) {
-            appendChildElement(this.enableCanvas, this.svgObject, this.trendLineElements, this.redraw);
         }
     }
 

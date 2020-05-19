@@ -1147,7 +1147,7 @@ describe('MultiSelect module', () => {
         it('With Fields - String - Remote Data with loadingText locale value testing', (done: Function) => {
             L10n.load({
                 'fr-BE': {
-                    'inplace-editor': {
+                    'inplaceeditor': {
                         'loadingText': 'chargement'
                     }
                 }

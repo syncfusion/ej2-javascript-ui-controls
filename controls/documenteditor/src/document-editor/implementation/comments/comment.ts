@@ -483,7 +483,7 @@ export class CommentPane {
             commentStart = comment.commentStart;
         }
         if (commentStart.commentMark !== undefined) {
-            commentStart.commentMark.title =  localValue.getConstant('Click to see this comment');
+            commentStart.commentMark.title = localValue.getConstant('Click to see this comment');
         }
         return this.getFirstCommentInLine(commentStart);
 
@@ -640,7 +640,7 @@ export class CommentView {
         let userName: HTMLElement = createElement('div', { className: 'e-de-cmt-author-name' });
         userName.textContent = this.comment.author;
         //if (this.comment.author === this.owner.currentUser) {
-        this.menuBar = createElement('button', { className: 'e-de-cp-option' });
+        this.menuBar = createElement('button', { className: 'e-de-cp-option', attrs: { type: 'button' } });
         let userOption: ItemModel[] = [{ text: localObj.getConstant('Edit') },
         { text: localObj.getConstant('Delete') },
         { text: localObj.getConstant('Reply') },
@@ -699,13 +699,17 @@ export class CommentView {
         this.textArea.addEventListener('keydown', this.updateTextAreaHeight.bind(this));
         this.textArea.addEventListener('keyup', this.enableDisablePostButton.bind(this));
         let editRegionFooter: HTMLElement = createElement('div', { className: 'e-de-cmt-action-button' });
-        let postButton: HTMLButtonElement = createElement('button', { className: 'e-de-cmt-post-btn e-btn e-flat' }) as HTMLButtonElement;
+        let postButton: HTMLButtonElement = createElement('button', {
+            className: 'e-de-cmt-post-btn e-btn e-flat',
+            attrs: { type: 'button' }
+        }) as HTMLButtonElement;
         //tslint:disable-next-line:max-line-length
         this.postButton = new Button({ cssClass: 'e-btn e-flat e-primary e-de-overlay', iconCss: 'e-de-cmt-post', disabled: true }, postButton);
         postButton.addEventListener('click', this.postComment.bind(this));
         postButton.title = localObj.getConstant('Post');
         let cancelButton: HTMLButtonElement = createElement('button', {
-            className: 'e-de-cmt-cancel-btn e-btn e-flat'
+            className: 'e-de-cmt-cancel-btn e-btn e-flat',
+            attrs: { type: 'button' }
         }) as HTMLButtonElement;
         this.cancelButton = new Button({ cssClass: 'e-btn e-flat', iconCss: 'e-de-cmt-cancel' }, cancelButton);
         cancelButton.title = localObj.getConstant('Cancel');
@@ -755,13 +759,14 @@ export class CommentView {
 
         let editRegionFooter: HTMLElement = createElement('div', { styles: 'display:none', className: 'e-de-cmt-action-button' });
         //tslint:disable-next-line:max-line-length
-        let postButton: HTMLButtonElement = createElement('button', { className: 'e-de-cmt-post-btn e-de-overlay e-btn e-flat' }) as HTMLButtonElement;
+        let postButton: HTMLButtonElement = createElement('button', { className: 'e-de-cmt-post-btn e-de-overlay e-btn e-flat', attrs: { type: 'button' } }) as HTMLButtonElement;
         this.replyPostButton = new Button({ cssClass: 'e-btn e-flat e-primary', iconCss: 'e-de-cmt-post', disabled: true }, postButton);
 
         postButton.addEventListener('click', this.postReply.bind(this));
         postButton.title = localObj.getConstant('Post');
         let cancelButton: HTMLButtonElement = createElement('button', {
-            className: 'e-de-cmt-cancel-btn e-btn e-flat'
+            className: 'e-de-cmt-cancel-btn e-btn e-flat',
+            attrs: { type: 'button' }
         }) as HTMLButtonElement;
         this.replyCancelButton = new Button({ cssClass: 'e-btn e-flat', iconCss: 'e-de-cmt-cancel' }, cancelButton);
 
@@ -777,13 +782,14 @@ export class CommentView {
 
     private initResolveOption(localObj: L10n): void {
         let editRegionFooter: HTMLElement = createElement('div', { className: 'e-de-cmt-resolve-btn' });
-        let postButton: HTMLButtonElement = createElement('button', { className: 'e-de-cmt-post-btn e-btn e-flat' }) as HTMLButtonElement;
         //tslint:disable-next-line:max-line-length
+        let postButton: HTMLButtonElement = createElement('button', { className: 'e-de-cmt-post-btn e-btn e-flat', attrs: { type: 'button' } }) as HTMLButtonElement;
         this.reopenButton = new Button({ cssClass: 'e-btn e-flat', iconCss: 'e-de-cmt-reopen' }, postButton);
         postButton.title = localObj.getConstant('Reopen');
         postButton.addEventListener('click', this.reopenButtonClick.bind(this));
         let cancelButton: HTMLButtonElement = createElement('button', {
-            className: 'e-de-cmt-cancel-btn e-btn e-flat'
+            className: 'e-de-cmt-cancel-btn e-btn e-flat',
+            attrs: { type: 'button' }
         }) as HTMLButtonElement;
         cancelButton.title = localObj.getConstant('Delete');
         this.deleteButton = new Button({ cssClass: 'e-btn e-flat', iconCss: 'e-de-cmt-delete' }, cancelButton);

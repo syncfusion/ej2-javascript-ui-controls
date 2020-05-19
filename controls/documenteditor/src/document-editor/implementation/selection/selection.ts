@@ -150,6 +150,10 @@ export class Selection {
     /**
      * @private
      */
+    public isFormatUpdated: boolean = false;
+    /**
+     * @private
+     */
     get isHighlightEditRegion(): boolean {
         return this.isHighlightEditRegionIn;
     }
@@ -359,11 +363,20 @@ export class Selection {
     public get contextType(): ContextType {
         return this.contextTypeInternal;
     }
+
     /**
      * Gets bookmark name collection.
      */
     public get bookmarks(): string[] {
-        return this.getSelBookmarks();
+        return this.getSelBookmarks(false);
+    }
+
+    /**
+     * Gets the bookmark name collection in current selection
+     * @param includeHidden - Decide whether to include hidden bookmark name in current selection or not.
+     */
+    public getBookmarks(includeHidden?: boolean): string[] {
+        return this.getSelBookmarks(includeHidden);
     }
     /**
      * @private
@@ -400,7 +413,7 @@ export class Selection {
         this.editRegionHighlighters = new Dictionary<LineWidget, SelectionWidgetInfo[]>();
         this.formFieldHighlighters = new Dictionary<LineWidget, SelectionWidgetInfo[]>();
     }
-    private getSelBookmarks(): string[] {
+    private getSelBookmarks(includeHidden: boolean): string[] {
         let bookmarkCln: string[] = [];
         let bookmarks: Dictionary<string, BookmarkElementBox> = this.documentHelper.bookmarks;
         let start: TextPosition = this.start;
@@ -414,11 +427,11 @@ export class Selection {
         let isCellSelected: boolean = false;
         let selectedCells: TableCellWidget[] = this.getSelectedCells();
         for (let i: number = 0; i < bookmarks.length; i++) {
-            if (bookmarks.keys[i].indexOf('_') !== 0) {
+            if (includeHidden || !includeHidden && bookmarks.keys[i].indexOf('_') !== 0) {
                 bookmrkStart = bookmarks.get(bookmarks.keys[i]);
                 bookmrkEnd = bookmrkStart.reference;
                 let bmStartPos: TextPosition = this.getElementPosition(bookmrkStart).startPosition;
-                let bmEndPos: TextPosition = this.getElementPosition(bookmrkEnd).startPosition;
+                let bmEndPos: TextPosition = this.getElementPosition(bookmrkEnd, true).startPosition;
                 if (bmStartPos.paragraph.isInsideTable || bmEndPos.paragraph.isInsideTable) {
                     if (selectedCells.length > 0) {
                         if (selectedCells.indexOf(bmStartPos.paragraph.associatedCell) >= 0
@@ -1330,11 +1343,9 @@ export class Selection {
         this.fireSelectionChanged(true);
         if (this.documentHelper.isFormFillProtectedMode) {
             let formField: FieldElementBox = this.getCurrentFormField();
-            if (formField) {
-                let fieldEndOffset: number = formField.line.getOffset(formField.fieldEnd, 1);
-                if (this.end.offset === fieldEndOffset) {
-                    this.selectPrevNextFormField(true);
-                }
+            if (!formField) {
+                formField = this.getFormFieldInFormFillMode();
+                this.selectPrevNextFormField(true, formField);
             }
         }
     }
@@ -1370,7 +1381,7 @@ export class Selection {
         if (this.documentHelper.isFormFillProtectedMode) {
             let formField: FieldElementBox = this.getCurrentFormField();
             if (!formField) {
-                formField = this.getPreviousFormField();
+                formField = this.getFormFieldInFormFillMode();
                 this.selectPrevNextFormField(false, formField);
             }
         }
@@ -1949,8 +1960,8 @@ export class Selection {
         }
         this.checkForCursorVisibility();
     }
-    // returns current field in FormFill mode (if Selection goes before field seperator)
-    private getPreviousFormField(): FieldElementBox {
+    // returns current field in FormFill mode
+    private getFormFieldInFormFillMode(): FieldElementBox {
         let currentStart: TextPosition = this.owner.selection.start;
         let formField: FieldElementBox;
         for (let i: number = (this.documentHelper.formFields.length - 1); i >= 0; i--) {
@@ -2061,9 +2072,9 @@ export class Selection {
         let currentFieldData: FormFieldFillEventArgs;
         if (currentField !== previousField && previousField && previousField.formFieldData instanceof TextFormField
             && previousField.formFieldData.type === 'Text') {
-            if ((previousField.formFieldData as TextFormField).format !== '') {
+            if ((previousField.formFieldData as TextFormField).format !== '' && !this.isFormatUpdated) {
                 // Need to handle update form field format
-                //this.owner.editor.applyFormTextFormat(previousField);
+                this.owner.editor.applyFormTextFormat(previousField);
             }
             // tslint:disable-next-line:max-line-length
             previousFieldData = { 'fieldName': previousField.formFieldData.name, 'value': this.owner.editorModule.getFormFieldText(previousField) };
@@ -7580,30 +7591,32 @@ export class Selection {
      * Get selected form field type
      * @private
      */
-    public getCurrentFormField(): FieldElementBox {
+    public getCurrentFormField(checkFieldResult?: boolean): FieldElementBox {
         let field: FieldElementBox;
-        if (this.documentHelper.isFormFillProtectedMode && this.owner.documentEditorSettings.formFieldSettings &&
+        if (checkFieldResult || this.documentHelper.isFormFillProtectedMode && this.owner.documentEditorSettings.formFieldSettings &&
             this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Inline') {
             for (let i: number = 0; i < this.documentHelper.formFields.length; i++) {
                 let formField: FieldElementBox = this.documentHelper.formFields[i];
-                let offset: number = formField.fieldSeparator.line.getOffset(formField.fieldSeparator, 1);
-                let fieldStart: TextPosition = new TextPosition(this.owner);
-                fieldStart.setPositionParagraph(formField.fieldSeparator.line, offset);
+                if (HelperMethods.isLinkedFieldCharacter(formField)) {
+                    let offset: number = formField.fieldSeparator.line.getOffset(formField.fieldSeparator, 1);
+                    let fieldStart: TextPosition = new TextPosition(this.owner);
+                    fieldStart.setPositionParagraph(formField.fieldSeparator.line, offset);
 
-                let fieldEndElement: FieldElementBox = formField.fieldEnd;
-                offset = fieldEndElement.line.getOffset(fieldEndElement, 0);
-                let fieldEnd: TextPosition = new TextPosition(this.owner);
-                fieldEnd.setPositionParagraph(fieldEndElement.line, offset);
-                let start: TextPosition = this.start;
-                let end: TextPosition = this.end;
-                if (!this.isForward) {
-                    start = this.end;
-                    end = this.start;
-                }
-                if ((start.isExistAfter(fieldStart) || start.isAtSamePosition(fieldStart))
-                    && (end.isExistBefore(fieldEnd) || end.isAtSamePosition(fieldEnd))) {
-                    field = formField;
-                    break;
+                    let fieldEndElement: FieldElementBox = formField.fieldEnd;
+                    offset = fieldEndElement.line.getOffset(fieldEndElement, 0);
+                    let fieldEnd: TextPosition = new TextPosition(this.owner);
+                    fieldEnd.setPositionParagraph(fieldEndElement.line, offset);
+                    let start: TextPosition = this.start;
+                    let end: TextPosition = this.end;
+                    if (!this.isForward) {
+                        start = this.end;
+                        end = this.start;
+                    }
+                    if ((start.isExistAfter(fieldStart) || start.isAtSamePosition(fieldStart))
+                        && (end.isExistBefore(fieldEnd) || end.isAtSamePosition(fieldEnd))) {
+                        field = formField;
+                        break;
+                    }
                 }
             }
         } else {
@@ -8665,27 +8678,30 @@ export class Selection {
         }
         this.formFieldHighlighters.clear();
         let formFields: FieldElementBox[] = this.documentHelper.formFields;
-        for (let i: number = 0; i < formFields.length; i++) {
-            let formField: FieldElementBox = formFields[i];
+        if (!isNullOrUndefined(formFields) && formFields.length > 0) {
+            for (let i: number = 0; i < formFields.length; i++) {
+                let formField: FieldElementBox = formFields[i];
+                if (HelperMethods.isLinkedFieldCharacter(formField)) {
+                    let offset: number = formField.line.getOffset(formField, 0);
+                    let startPosition: TextPosition = new TextPosition(this.owner);
+                    startPosition.setPositionParagraph(formField.line, offset);
 
-            let offset: number = formField.line.getOffset(formField, 0);
-            let startPosition: TextPosition = new TextPosition(this.owner);
-            startPosition.setPositionParagraph(formField.line, offset);
-
-            let endElement: FieldElementBox = formField.fieldEnd;
-            offset = endElement.line.getOffset(endElement, 1);
-            let endPosition: TextPosition = new TextPosition(this.owner);
-            endPosition.setPositionParagraph(endElement.line, offset);
-            this.isHighlightFormFields = true;
-            this.highlight(startPosition.paragraph, startPosition, endPosition);
-            if (this.isHighlightNext) {
-                this.highlightNextBlock(this.hightLightNextParagraph, startPosition, endPosition);
-                this.isHighlightNext = false;
-                this.hightLightNextParagraph = undefined;
+                    let endElement: FieldElementBox = formField.fieldEnd;
+                    offset = endElement.line.getOffset(endElement, 1);
+                    let endPosition: TextPosition = new TextPosition(this.owner);
+                    endPosition.setPositionParagraph(endElement.line, offset);
+                    this.isHighlightFormFields = true;
+                    this.highlight(startPosition.paragraph, startPosition, endPosition);
+                    if (this.isHighlightNext) {
+                        this.highlightNextBlock(this.hightLightNextParagraph, startPosition, endPosition);
+                        this.isHighlightNext = false;
+                        this.hightLightNextParagraph = undefined;
+                    }
+                }
             }
+            this.isHighlightFormFields = false;
+            this.viewer.updateScrollBars();
         }
-        this.isHighlightFormFields = false;
-        this.viewer.updateScrollBars();
     }
     /**
      * @private
@@ -8842,8 +8858,8 @@ export class Selection {
     /**
      * @private
      */
-    public getElementPosition(element: ElementBox): PositionInfo {
-        let offset: number = element.line.getOffset(element, 1);
+    public getElementPosition(element: ElementBox, isEnd?: boolean): PositionInfo {
+        let offset: number = element.line.getOffset(element, isEnd ? 0 : 1);
         let startPosition: TextPosition = new TextPosition(this.owner);
         startPosition.setPositionParagraph(element.line, offset);
         return { 'startPosition': startPosition, 'endPosition': undefined };

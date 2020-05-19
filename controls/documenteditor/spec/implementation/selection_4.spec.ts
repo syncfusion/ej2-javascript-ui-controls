@@ -35,14 +35,14 @@ describe('Selection bookmark property validation', () => {
         editor.selection.handleLeftKey();
         editor.selection.selectCurrentWord();
         editor.editor.insertBookmark('b1');
-        expect(editor.selection.bookmarks[0]).toBe('b1');
+        expect(editor.selection.getBookmarks()[0]).toBe('b1');
     });
     it('Multiple lines in a paragraph with selection', () => {
         editor.openBlank();
         editor.editor.insertText('Adventure Works Cycles, the fictitious company on which the AdventureWorks sample databases are based, is a large');
         editor.selection.handleShiftUpKey();
         editor.editor.insertBookmark('b1');
-        expect(editor.selection.bookmarks[0]).toBe('b1');
+        expect(editor.selection.getBookmarks()[0]).toBe('b1');
     });
     it('Multiple lines in different paragraph with selection', () => {
         editor.openBlank();
@@ -53,7 +53,7 @@ describe('Selection bookmark property validation', () => {
         editor.selection.handleShiftUpKey();
         editor.selection.handleShiftUpKey();
         editor.editor.insertBookmark('b1');
-        expect(editor.selection.bookmarks[0]).toBe('b1');
+        expect(editor.selection.getBookmarks()[0]).toBe('b1');
     });
     it('Inside table cell with selection', () => {
         editor.openBlank();
@@ -70,7 +70,7 @@ describe('Selection bookmark property validation', () => {
         editor.editor.insertBookmark('b2');
         editor.selection.handleShiftLeftKey();
         editor.selection.selectAll()
-        expect(editor.selection.bookmarks.length).toBe(2);
+        expect(editor.selection.getBookmarks().length).toBe(2);
     });
     it('Single line in a paragraph without selection', () => {
         editor.openBlank();
@@ -79,7 +79,7 @@ describe('Selection bookmark property validation', () => {
         editor.selection.selectCurrentWord();
         editor.editor.insertBookmark('b1');
         editor.selection.handleLeftKey();
-        expect(editor.selection.bookmarks[0]).toBe('b1');
+        expect(editor.selection.getBookmarks()[0]).toBe('b1');
     });
     it('Empty bookmark on single line in a paragraph without selection', () => {
         editor.openBlank();
@@ -89,7 +89,7 @@ describe('Selection bookmark property validation', () => {
         editor.editor.insertBookmark('b1');
         editor.selection.handleLeftKey();
         editor.selection.handleLeftKey();
-        expect(editor.selection.bookmarks.length).toBe(0);
+        expect(editor.selection.getBookmarks().length).toBe(0);
     });
     it('single line in a paragraph with selection 2', () => {
         editor.openBlank();
@@ -99,7 +99,7 @@ describe('Selection bookmark property validation', () => {
         editor.selection.handleLeftKey();
         editor.selection.handleLeftKey();
         editor.selection.selectCurrentWord();
-        expect(editor.selection.bookmarks.length).toBe(1);
+        expect(editor.selection.getBookmarks().length).toBe(1);
     });
     it('combination paragraph and table contains bookmark validation ', () => {
         editor.openBlank();
@@ -115,7 +115,7 @@ describe('Selection bookmark property validation', () => {
         editor.selection.selectCurrentWord();
         editor.editor.insertBookmark('b2');
         editor.selection.selectAll();
-        expect(editor.selection.bookmarks.length).toBe(2);
+        expect(editor.selection.getBookmarks().length).toBe(2);
     });
     it('insert text after bookmark insert validation', () => {
         editor.openBlank();
@@ -135,7 +135,7 @@ describe('Selection bookmark property validation', () => {
         editor.selection.handleDownKey();
         editor.selection.handleShiftRightKey();
         editor.selection.handleShiftRightKey();
-        expect(editor.selection.bookmarks.length).toBe(0);
+        expect(editor.selection.getBookmarks().length).toBe(0);
     });
 });
 
@@ -561,5 +561,45 @@ describe('shift down key validation', () => {
         editor.open(JSON.stringify(loadData));
         editor.selection.handleShiftDownKey();
         expect(editor.selection.start.currentWidget).not.toBe(editor.selection.end.currentWidget);
+    });
+});
+
+/**
+ * Hidden bookmark API validation
+ */
+let bookmarkData:any={"sections":[{"sectionFormat":{"pageWidth":612,"pageHeight":792,"leftMargin":72,"rightMargin":72,"topMargin":72,"bottomMargin":72,"differentFirstPage":false,"differentOddAndEvenPages":false,"headerDistance":36,"footerDistance":36,"bidi":false},"blocks":[{"paragraphFormat":{"styleName":"Toc1","listFormat":{},"tabs":[{"position":468,"deletePosition":0,"tabJustification":"Right","tabLeader":"Dot"}]},"characterFormat":{},"inlines":[{"characterFormat":{},"fieldType":0,"hasFieldEnd":true},{"characterFormat":{},"text":"TOC \\o \"1-3\" \\h \\z"},{"characterFormat":{},"fieldType":2},{"characterFormat":{},"fieldType":0,"hasFieldEnd":true},{"characterFormat":{},"text":" HYPERLINK \\l \"_Toc000000001\" "},{"characterFormat":{},"fieldType":2},{"characterFormat":{},"text":"Heading 1"},{"characterFormat":{},"text":"\t"},{"characterFormat":{},"fieldType":0,"hasFieldEnd":true},{"characterFormat":{},"text":" PAGEREF_Toc000000001 \\h "},{"characterFormat":{},"fieldType":2},{"characterFormat":{},"text":"1"},{"characterFormat":{},"fieldType":1},{"characterFormat":{},"fieldType":1}]},{"paragraphFormat":{"listFormat":{}},"characterFormat":{},"inlines":[{"characterFormat":{},"fieldType":1}]},{"paragraphFormat":{"styleName":"Normal","listFormat":{}},"characterFormat":{},"inlines":[]},{"paragraphFormat":{"styleName":"Heading 1","listFormat":{}},"characterFormat":{},"inlines":[{"characterFormat":{},"bookmarkType":0,"name":"_Toc000000001"},{"characterFormat":{},"text":"Heading 1"},{"characterFormat":{},"bookmarkType":1,"name":"_Toc000000001"}]}],"headersFooters":{"header":{"blocks":[{"paragraphFormat":{"listFormat":{}},"characterFormat":{},"inlines":[]}]},"footer":{"blocks":[{"paragraphFormat":{"listFormat":{}},"characterFormat":{},"inlines":[]}]},"evenHeader":{},"evenFooter":{},"firstPageHeader":{},"firstPageFooter":{}}}],"characterFormat":{"bold":false,"italic":false,"fontSize":11,"fontFamily":"Calibri","underline":"None","strikethrough":"None","baselineAlignment":"Normal","highlightColor":"NoColor","fontColor":"#000000","fontSizeBidi":11,"fontFamilyBidi":"Calibri"},"paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":0,"afterSpacing":0,"lineSpacing":1,"lineSpacingType":"Multiple","listFormat":{},"bidi":false},"defaultTabWidth":36,"enforcement":false,"hashValue":"","saltValue":"","formatting":false,"protectionType":"NoProtection","dontUseHTMLParagraphAutoSpacing":false,"styles":[{"name":"Normal","type":"Paragraph","paragraphFormat":{"listFormat":{}},"characterFormat":{},"next":"Normal"},{"name":"Heading 1","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":12,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level1","listFormat":{}},"characterFormat":{"fontSize":16,"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Normal","link":"Heading 1 Char","next":"Normal"},{"name":"Heading 1 Char","type":"Character","characterFormat":{"fontSize":16,"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Default Paragraph Font"},{"name":"Default Paragraph Font","type":"Character","characterFormat":{}},{"name":"Heading 2","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level2","listFormat":{}},"characterFormat":{"fontSize":13,"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Normal","link":"Heading 2 Char","next":"Normal"},{"name":"Heading 2 Char","type":"Character","characterFormat":{"fontSize":13,"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Default Paragraph Font"},{"name":"Heading 3","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level3","listFormat":{}},"characterFormat":{"fontSize":12,"fontFamily":"Calibri Light","fontColor":"#1F3763"},"basedOn":"Normal","link":"Heading 3 Char","next":"Normal"},{"name":"Heading 3 Char","type":"Character","characterFormat":{"fontSize":12,"fontFamily":"Calibri Light","fontColor":"#1F3763"},"basedOn":"Default Paragraph Font"},{"name":"Heading 4","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level4","listFormat":{}},"characterFormat":{"italic":true,"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Normal","link":"Heading 4 Char","next":"Normal"},{"name":"Heading 4 Char","type":"Character","characterFormat":{"italic":true,"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Default Paragraph Font"},{"name":"Heading 5","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level5","listFormat":{}},"characterFormat":{"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Normal","link":"Heading 5 Char","next":"Normal"},{"name":"Heading 5 Char","type":"Character","characterFormat":{"fontFamily":"Calibri Light","fontColor":"#2F5496"},"basedOn":"Default Paragraph Font"},{"name":"Heading 6","type":"Paragraph","paragraphFormat":{"leftIndent":0,"rightIndent":0,"firstLineIndent":0,"textAlignment":"Left","beforeSpacing":2,"afterSpacing":0,"lineSpacing":1.0791666507720947,"lineSpacingType":"Multiple","outlineLevel":"Level6","listFormat":{}},"characterFormat":{"fontFamily":"Calibri Light","fontColor":"#1F3763"},"basedOn":"Normal","link":"Heading 6 Char","next":"Normal"},{"name":"Heading 6 Char","type":"Character","characterFormat":{"fontFamily":"Calibri Light","fontColor":"#1F3763"},"basedOn":"Default Paragraph Font"},{"name":"Toc1","type":"Paragraph","paragraphFormat":{"afterSpacing":5,"listFormat":{}},"characterFormat":{},"basedOn":"Normal","next":"Normal"}],"lists":[],"abstractLists":[],"comments":[]};
+describe('Hidden Bookmark API', () => {
+    let editor: DocumentEditor = undefined;
+    let documentHelper: DocumentHelper;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, SfdtExport);
+        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+        editor.open(JSON.stringify(bookmarkData));
+    });
+    afterAll((done) => {
+        document.body.removeChild(document.getElementById('container'));
+        editor.destroy();
+        editor = undefined;
+        documentHelper = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('include hidden bookmark validation', () => {
+        editor.selection.handleDownKey();
+        editor.selection.handleDownKey();
+        editor.selection.handleDownKey();
+        editor.selection.handleRightKey()
+        editor.selection.handleRightKey()
+        expect(editor.selection.getBookmarks().length).toBe(0);
+        expect(editor.selection.getBookmarks(true).length).toBe(1)
     });
 });

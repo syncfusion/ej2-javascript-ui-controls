@@ -295,6 +295,7 @@ export class CheckBoxSelection {
             EventHandler.add(this.filterInput, 'keyup', this.parent.KeyUp, this.parent);
             EventHandler.add(this.filterInput, 'keydown', this.parent.onKeyDown, this.parent);
             EventHandler.add(this.filterInput, 'blur', this.onBlur, this);
+            EventHandler.add(this.filterInput, 'paste', this.parent.pasteHandler, this.parent);
             this.parent.searchBoxHeight = (this.filterInputObj.container.parentElement).getBoundingClientRect().height;
             return this.filterInputObj;
         }
@@ -390,7 +391,7 @@ export class CheckBoxSelection {
     }
     }
     protected onDocumentClick(e: MouseEvent): void {
-        if (!this.parent.element.classList.contains('e-listbox') && this.parent.element.tagName !== 'EJS-LISTBOX') {
+        if (this.parent.getLocaleName() !== 'listbox') {
         let target: HTMLElement = <HTMLElement>e.target;
         if (!isNullOrUndefined(this.parent.popupObj) && closest(target, '#' + this.parent.popupObj.element.id)) {
             e.preventDefault();

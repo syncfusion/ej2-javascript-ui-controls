@@ -191,6 +191,19 @@ describe('Heatmap Control', () => {
             trigger.mousemoveEvent(tempElement, 0, 0, 60, 20, false);
             expect(document.getElementById('containerCelltooltipcontainer_path').getAttribute("fill")).toBe("Pink");
         });
+        it('Check tooltip Color', function () {
+            heatmap.tooltipRender = function (args) {
+                args.cancel = false;
+            };
+            heatmap.tooltipSettings.fill = "RED";
+            heatmap.cellSettings.border.width = 10;
+            heatmap.refresh();
+            tempElement = document.getElementById('container_HeatMapRect_0');
+            trigger.mousemoveEvent(tempElement, 0, 0, 150, 31, false);
+            expect(document.getElementById('containerCelltooltipcontainer_path').getAttribute("fill")).toBe("RED");
+            heatmap.cellSettings.border.width = 1;
+            heatmap.refresh();
+        });
         it('Check tooltip template support', function () {
             heatmap.tooltipSettings.template = "<div>${xValue}</div><div>${yValue}</div>${value}";
             heatmap.refresh();

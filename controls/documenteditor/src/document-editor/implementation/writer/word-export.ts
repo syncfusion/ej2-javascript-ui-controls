@@ -3870,9 +3870,9 @@ export class WordExport {
                     writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.dropDownList.selectedIndex.toString());
                     writer.writeEndElement();
                 }
-                for (let i: number = 0; i < formFieldData.dropDownList.dropdownItems.length; i++) {
+                for (let i: number = 0; i < formFieldData.dropDownList.dropDownItems.length; i++) {
                     writer.writeStartElement(undefined, 'listEntry', this.wNamespace);
-                    writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.dropDownList.dropdownItems[i].toString());
+                    writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.dropDownList.dropDownItems[i].toString());
                     writer.writeEndElement();
                 }
                 writer.writeEndElement();

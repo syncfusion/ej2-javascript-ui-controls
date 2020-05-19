@@ -6,7 +6,8 @@ import { Series, Points } from './chart-series';
 import { MarkerSettingsModel } from '../series/chart-series-model';
 import { IPointRenderEventArgs } from '../../chart/model/chart-interface';
 import { pointRender } from '../../common/model/constants';
-import { Axis } from '../../chart/axis/axis';
+import { Axis, VisibleRangeModel } from '../../chart/axis/axis';
+import { isNullOrUndefined } from '@syncfusion/ej2-base';
 
 /**
  * `ScatterSeries` module is used to render the scatter series.
@@ -24,7 +25,7 @@ export class ScatterSeries {
 		// Scatter series DataLabel is not rendered after selecting StackingColumn
         series.isRectSeries = false;
         let marker: MarkerSettingsModel = series.marker;
-        let visiblePoints: Points[] = series.points;
+        let visiblePoints: Points[] = this.enableComplexProperty(series);
         let argsData: IPointRenderEventArgs;
         let getCoordinate: Function = series.chart.chartAreaType === 'PolarRadar' ? TransformToVisible : getPoint;
         let startLocation: ChartLocation;
@@ -52,12 +53,53 @@ export class ScatterSeries {
             }
         }
     }
+
+    /**
+     * To improve the chart performance.
+     * @return {void}
+     * @private
+     */
+
+    public enableComplexProperty(series: Series): Points[] {
+        let tempPoints2: Points[] = [];
+        let tempPoints: Points[] = [];
+        let yVisibleRange: VisibleRangeModel = series.yAxis.visibleRange;
+        let xVisibleRange: VisibleRangeModel = series.xAxis.visibleRange;
+        let areaBounds: Rect = series.clipRect;
+        let seriesPoints: Points[] = <Points[]>series.points;
+        let yTolerance: number = Math.abs(yVisibleRange.delta / areaBounds.height);
+        let xTolerance: number = Math.abs(xVisibleRange.delta / areaBounds.width);
+        let prevYValue: number = (seriesPoints[0] && seriesPoints[0].y > yTolerance) ? 0 : yTolerance;
+        let prevXValue: number = (seriesPoints[0] && seriesPoints[0].x > xTolerance) ? 0 : xTolerance;
+        let yVal: number = 0;
+        let xVal: number = 0;
+        for (let currentPoint of seriesPoints) {
+            currentPoint.symbolLocations = [];
+            yVal = currentPoint.yValue ? currentPoint.yValue : yVisibleRange.min;
+            xVal = currentPoint.xValue ? currentPoint.xValue : xVisibleRange.min;
+            if (Math.abs(prevYValue - yVal) >= yTolerance || Math.abs(prevXValue - xVal) >= xTolerance) {
+                tempPoints.push(currentPoint);
+                prevYValue = yVal;
+                prevXValue = xVal;
+            }
+        }
+        let currentTempPoint: Points;
+        for (let i: number = 0; i < tempPoints.length; i++) {
+            currentTempPoint = tempPoints[i];
+            if (isNullOrUndefined(currentTempPoint.x) || currentTempPoint.x === '') {
+                continue;
+            } else {
+                tempPoints2.push(currentTempPoint);
+            }
+        }
+        return tempPoints2;
+    }
     /**
      * To append scatter element
-     * @param series 
-     * @param point 
-     * @param argsData 
-     * @param startLocation 
+     * @param series
+     * @param point
+     * @param argsData
+     * @param startLocation
      */
     private refresh(series: Series, point: Points, argsData: IPointRenderEventArgs, startLocation: ChartLocation): void {
         let chart: Chart = series.chart;
@@ -123,7 +165,7 @@ export class ScatterSeries {
     }
 
     /**
-     * To destroy the scatter. 
+     * To destroy the scatter.
      * @return {void}
      */
 

@@ -4,7 +4,7 @@
 import { Component, INotifyPropertyChanged, NotifyPropertyChanges, getComponent, MouseEventArgs, Browser } from '@syncfusion/ej2-base';
 import { Property, ChildProperty, Complex, L10n, closest, extend, isNullOrUndefined, Collection, cldrData } from '@syncfusion/ej2-base';
 import { getInstance, addClass, removeClass, rippleEffect, detach, classList, isBlazor } from '@syncfusion/ej2-base';
-import { Internationalization, DateFormatOptions, KeyboardEventArgs } from '@syncfusion/ej2-base';
+import { Internationalization, DateFormatOptions, KeyboardEventArgs, getUniqueID } from '@syncfusion/ej2-base';
 import { QueryBuilderModel, ShowButtonsModel, ColumnsModel, RuleModel } from './query-builder-model';
 import { Button, RadioButton, ChangeEventArgs as ButtonChangeEventArgs, CheckBox } from '@syncfusion/ej2-buttons';
 import { DropDownList, ChangeEventArgs as DropDownChangeEventArgs, FieldSettingsModel, CheckBoxSelection } from '@syncfusion/ej2-dropdowns';
@@ -993,7 +993,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             if (this.selectedColumn.values) {
                 value = this.selectedColumn.values[rbValue];
             } else {
-                let valColl: string [] = ['True', 'False'];
+                let valColl: boolean[] = [true, false];
                 value = valColl[rbValue];
             }
         } else if (element.className.indexOf('e-multiselect') > -1) {
@@ -1134,8 +1134,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             }
             if (ddlArgs.previousItemData) {
                 let prevValue: string = ddlArgs.previousItemData.value.toLowerCase();
-                if (prevValue.indexOf('between') > -1 || (prevValue.indexOf('in') > -1 || (prevValue.indexOf('null') > -1)
-                || (prevValue.indexOf('empty') > -1) && prevValue.indexOf('contains') < 0)) {
+                if ((prevValue.indexOf('between') > -1 || (prevValue.indexOf('in') > -1 || (prevValue.indexOf('null') > -1)
+                || (prevValue.indexOf('empty') > -1)) && prevValue.indexOf('contains') < 0)) {
                     filterElem = operatorElem.previousElementSibling; tempRule.type = rule.type;
                 }
             }
@@ -1177,6 +1177,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     operatorList = this.customOperators[this.selectedColumn.type + 'Operator'];
                 }
                 let height: string = (this.element.className.indexOf('e-device') > -1) ? '250px' : '200px';
+                let value: string = operatorList[0].value as string;
+                value = rule ? (rule.operator !== '' ? rule.operator : value) : value;
                 let dropDownList: DropDownList = new DropDownList({
                     dataSource: operatorList,
                     fields: { text: 'key', value: 'value' },
@@ -1184,7 +1186,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     popupHeight: ((operatorList.length > 5) ? height : 'auto'),
                     change: this.changeField.bind(this),
                     index: 0,
-                    value: rule ? rule.operator : null
+                    value: value
                 });
                 dropDownList.appendTo('#' + ruleId + '_operatorkey');
                 tempRule.operator = (rule && rule.operator !== '') ? rule.operator : operatorList[0].value as string;
@@ -1548,26 +1550,8 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                             this.renderNumberValue(parentId, rule, tempRule.operator, i, ruleValElem, itemData, length);
                         }
                             break;
-                        case 'boolean': {
-                            let values: string[] =
-                                itemData.values && itemData.values.length ? itemData.values as string[] : ['True', 'False'];
-                            let isCheck: boolean = false;
-                            if (rule.type === 'boolean' && rule.value) {
-                                isCheck = values[i].toLowerCase() === rule.value.toString().toLowerCase();
-                            } else if (itemData.value) {
-                                isCheck = values[i].toLowerCase() === itemData.value.toString().toLowerCase();
-                            } else if (i === 0) {
-                                isCheck = true;
-                            }
-                            let radiobutton: RadioButton = new RadioButton({
-                                label: values[i].toString(), name: parentId + 'default', checked: isCheck, value: values[i],
-                                change: this.changeValue.bind(this, i)
-                            });
-                            radiobutton.appendTo('#' + parentId + '_valuekey' + i);
-                            if (isCheck) {
-                                this.updateRules(radiobutton.element, values[i], 0);
-                            }
-                        }
+                        case 'boolean':
+                            this.processBoolValues(itemData, rule, parentId, i);
                             break;
                         case 'date': {
                             let selectedValue: Date = new Date(); let selVal: string; let column: ColumnsModel;
@@ -1610,6 +1594,39 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     }
                 }
             }
+        }
+    }
+
+    private processBoolValues(itemData: ColumnsModel, rule: RuleModel, parentId: string, i: number): void {
+        let isCheck: boolean = false; let value: string; let orgValue: string | boolean;
+        if (itemData.values) {
+            let values: string[] = itemData.values as string[];
+            if (rule.type === 'boolean' && rule.value) {
+                isCheck = values[i].toLowerCase() === rule.value.toString().toLowerCase();
+            } else if (itemData.value) {
+                isCheck = values[i].toLowerCase() === itemData.value.toString().toLowerCase();
+            } else if (i === 0) {
+                isCheck = true;
+            }
+            orgValue = value = values[i];
+        } else {
+            let values: boolean[] = [true, false];
+            if (rule.type === 'boolean' && rule.value) {
+                isCheck = values[i].toString().toLowerCase() === rule.value.toString().toLowerCase();
+            } else if (itemData.value) {
+                isCheck = values[i].toString().toLowerCase() === itemData.value.toString().toLowerCase();
+            } else if (i === 0) {
+                isCheck = true;
+            }
+            value = values[i].toString(); orgValue = values[i];
+        }
+        let radiobutton: RadioButton = new RadioButton({
+            label: value, name: parentId + 'default', checked: isCheck, value: value,
+            change: this.changeValue.bind(this, i)
+        });
+        radiobutton.appendTo('#' + parentId + '_valuekey' + i);
+        if (isCheck) {
+            this.updateRules(radiobutton.element, orgValue, 0);
         }
     }
     private getOperatorIndex(ddlObj: DropDownList, rule: RuleModel): number {
@@ -1731,7 +1748,15 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
             case 'radio':
                 let radioBtnObj: RadioButton = getComponent(element, controlName) as RadioButton;
                 if (radioBtnObj.checked) {
-                    rule.value = radioBtnObj.value;
+                    if (typeof rule.value === 'boolean') {
+                        rule.value = radioBtnObj.value === 'true';
+                    } else {
+                        if (this.getColumn(rule.field).values) {
+                            rule.value = radioBtnObj.value;
+                        } else {
+                            rule.value = radioBtnObj.value === 'true';
+                        }
+                    }
                 }
                 radioBtnObj.refresh();
                 break;
@@ -2291,6 +2316,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
         }
     }
     protected preRender(): void {
+        this.element.id = this.element.id || getUniqueID('ej2-querybuilder');
         this.defaultLocale = {
             StartsWith: 'Starts With',
             EndsWith: 'Ends With',
@@ -3213,7 +3239,7 @@ export class QueryBuilder extends Component<HTMLDivElement> implements INotifyPr
                     } else if (rule.operator.indexOf('contains') > -1) {
                         valueStr += '("%' + rule.value + '%")';
                     } else {
-                        if (rule.type === 'number') {
+                        if (rule.type === 'number' || typeof rule.value === 'boolean') {
                             valueStr += rule.value;
                         } else {
                             valueStr += '"' + rule.value + '"';

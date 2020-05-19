@@ -3742,7 +3742,10 @@ var Series = /** @__PURE__ @class */ (function () {
                 var element = document.getElementById(tempID);
                 if (this.heatMap.tempRectHoverClass !== tempID) {
                     if (this.heatMap.cellSettings.enableCellHighlighting) {
-                        var oldElement = document.getElementById(this.heatMap.tempRectHoverClass);
+                        var oldElement = void 0;
+                        if (this.heatMap.tempRectHoverClass) {
+                            oldElement = document.getElementById(this.heatMap.tempRectHoverClass);
+                        }
                         if (oldElement && !this.heatMap.rectSelected) {
                             oldElement.setAttribute('opacity', '1');
                         }
@@ -3755,7 +3758,10 @@ var Series = /** @__PURE__ @class */ (function () {
             }
             else {
                 if (this.heatMap.cellSettings.enableCellHighlighting) {
-                    var oldElement = document.getElementById(this.heatMap.tempRectHoverClass);
+                    var oldElement = void 0;
+                    if (this.heatMap.tempRectHoverClass) {
+                        oldElement = document.getElementById(this.heatMap.tempRectHoverClass);
+                    }
                     if (oldElement && !this.heatMap.rectSelected) {
                         oldElement.setAttribute('opacity', '1');
                         this.heatMap.tempRectHoverClass = '';
@@ -3879,7 +3885,7 @@ var Tooltip$1 = /** @__PURE__ @class */ (function () {
         var ele = document.getElementById(this.heatMap.element.id + 'Celltooltipcontainer');
         if (!isShow) {
             if (ele && ele.style.visibility !== 'hidden') {
-                if (this.tooltipObject && isFadeout) {
+                if (this.tooltipObject && isFadeout && this.heatMap.isRectBoundary) {
                     this.tooltipObject.fadeOut();
                 }
                 else {
@@ -7114,11 +7120,33 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
         var firstRectDetails = [];
         var lastRectDetails = [];
         var isRect;
+        var borderBoundary = 5;
         firstRectDetails.push(this.heatMapSeries.rectPositionCollection[0][0]);
         lastRectDetails.push(this.heatMapSeries.rectPositionCollection[this.yLength - 1][this.xLength - 1]);
-        isRect = (x >= firstRectDetails[0].x && y >= firstRectDetails[0].y &&
+        if (this.cellSettings.border.width > borderBoundary && (x >= firstRectDetails[0].x && y >= firstRectDetails[0].y &&
             x <= (lastRectDetails[0].x + lastRectDetails[0].width) &&
-            y <= (lastRectDetails[0].y + lastRectDetails[0].height)) ? true : false;
+            y <= (lastRectDetails[0].y + lastRectDetails[0].height)) && this.cellSettings.tileType === 'Rect') {
+            var currentRect = this.heatMapSeries.getCurrentRect(x, y);
+            var rectHeight = lastRectDetails[0].height;
+            var rectWidth = lastRectDetails[0].width;
+            var cellBorder = this.cellSettings.border.width / 2;
+            if ((x >= (currentRect.x + cellBorder) && (y >= (currentRect.y + cellBorder)) &&
+                (x <= (currentRect.x + (rectWidth - cellBorder)) &&
+                    (y <= (currentRect.y + (rectHeight - cellBorder)))))) {
+                isRect = true;
+                this.isRectBoundary = true;
+            }
+            else {
+                isRect = false;
+                this.isRectBoundary = false;
+            }
+        }
+        else {
+            isRect = (x >= firstRectDetails[0].x && y >= firstRectDetails[0].y &&
+                x <= (lastRectDetails[0].x + lastRectDetails[0].width) &&
+                y <= (lastRectDetails[0].y + lastRectDetails[0].height));
+            this.isRectBoundary = isRect;
+        }
         return isRect;
     };
     HeatMap.prototype.setTheme = function () {
@@ -7611,13 +7639,18 @@ var HeatMap = /** @__PURE__ @class */ (function (_super) {
         }
         else {
             if (e !== null) {
+                var borderBoundary = 5;
                 if (!isheatmapRect) {
-                    if ((this.cellSettings.enableCellHighlighting || this.showTooltip) && !this.enableCanvasRendering) {
+                    if ((this.cellSettings.enableCellHighlighting || this.showTooltip) && !this.enableCanvasRendering &&
+                        this.cellSettings.border.width < borderBoundary) {
                         this.heatMapSeries.highlightSvgRect(e.target.id);
                     }
                     if (this.tooltipModule && this.showTooltip) {
                         this.tooltipModule.showHideTooltip(false, true);
                     }
+                }
+                else if (!this.showTooltip && this.cellSettings.border.width > borderBoundary) {
+                    this.heatMapSeries.highlightSvgRect(e.target.id);
                 }
             }
             this.tempTooltipRectId = '';

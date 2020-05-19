@@ -365,6 +365,10 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
     /**
      * @private
      */
+    public isRectBoundary: boolean;
+    /**
+     * @private
+     */
     private border: Object;
 
     /**
@@ -899,11 +903,33 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         let firstRectDetails: CurrentRect[] = [];
         let lastRectDetails: CurrentRect[] = [];
         let isRect: boolean;
+        let borderBoundary: number = 5;
         firstRectDetails.push(this.heatMapSeries.rectPositionCollection[0][0]);
         lastRectDetails.push(this.heatMapSeries.rectPositionCollection[this.yLength - 1][this.xLength - 1]);
-        isRect = (x >= firstRectDetails[0].x && y >= firstRectDetails[0].y &&
+
+        if (this.cellSettings.border.width > borderBoundary && (x >= firstRectDetails[0].x && y >= firstRectDetails[0].y &&
             x <= (lastRectDetails[0].x + lastRectDetails[0].width) &&
-            y <= (lastRectDetails[0].y + lastRectDetails[0].height)) ? true : false;
+           y <= (lastRectDetails[0].y + lastRectDetails[0].height)) && this.cellSettings.tileType === 'Rect') {
+            let currentRect: CurrentRect = this.heatMapSeries.getCurrentRect(x, y);
+            let rectHeight: number =  lastRectDetails[0].height;
+            let rectWidth: number =  lastRectDetails[0].width;
+            let cellBorder: number = this.cellSettings.border.width / 2;
+            if ((x >= (currentRect.x + cellBorder) && ( y >= (currentRect.y + cellBorder)) &&
+            (x <= (currentRect.x + (rectWidth - cellBorder)) &&
+            (y <= (currentRect.y + (rectHeight - cellBorder)))))) {
+                isRect = true;
+                this.isRectBoundary = true;
+            } else {
+                isRect = false;
+                this.isRectBoundary = false;
+                }
+        } else {
+            isRect = (x >= firstRectDetails[0].x && y >= firstRectDetails[0].y &&
+                x <= (lastRectDetails[0].x + lastRectDetails[0].width) &&
+                y <= (lastRectDetails[0].y + lastRectDetails[0].height));
+            this.isRectBoundary = isRect;
+        }
+
         return isRect;
     }
     private setTheme(): void {
@@ -1415,13 +1441,17 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
             }
         } else {
             if (e !== null) {
+                let borderBoundary: number = 5;
                 if (!isheatmapRect) {
-                    if ((this.cellSettings.enableCellHighlighting || this.showTooltip) && !this.enableCanvasRendering) {
+                    if ((this.cellSettings.enableCellHighlighting || this.showTooltip) && !this.enableCanvasRendering &&
+                        this.cellSettings.border.width < borderBoundary) {
                         this.heatMapSeries.highlightSvgRect((<Element>e.target).id);
                     }
                     if (this.tooltipModule && this.showTooltip) {
                         this.tooltipModule.showHideTooltip(false, true);
                     }
+                } else if (!this.showTooltip && this.cellSettings.border.width > borderBoundary) {
+                    this.heatMapSeries.highlightSvgRect((<Element>e.target).id);
                 }
             }
             this.tempTooltipRectId = '';

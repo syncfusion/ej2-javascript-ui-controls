@@ -435,3 +435,54 @@ describe('Treegrid Row Reorder', () => {
       destroy(TreeGridObj);
     });
 });
+
+
+describe('Treegrid Row Drop as Child', () => {
+  let gridObj: TreeGrid;
+  let actionComplete: () => void;
+  beforeAll((done: Function) => {
+    gridObj = createGrid(
+      {
+        dataSource: sampleData,
+        allowRowDragAndDrop: true,
+        childMapping: 'subtasks',
+        height: '400',
+        allowSelection: true,
+        selectionSettings: { type: 'Multiple' },
+        treeColumnIndex: 1,
+        columns: [
+            { field: 'taskID', headerText: 'Task ID', isPrimaryKey: true, textAlign: 'Right', width: 100 },
+            { field: 'taskName', headerText: 'Task Name', width: 250 },
+            { field: 'startDate', headerText: 'Start Date', textAlign: 'Right', width: 135, format: { skeleton: 'yMd', type: 'date' }},
+            { field: 'endDate', headerText: 'End Date', textAlign: 'Right', width: 135, format: { skeleton: 'yMd', type: 'date' }},
+            { field: 'duration', headerText: 'Duration', textAlign: 'Right', width: 120 },
+            { field: 'progress', headerText: 'Progress', textAlign: 'Right', width: 120 },
+            { field: 'priority', headerText: 'Priority', textAlign: 'Left', width: 135 },
+        ]
+      },
+      done
+    );
+  });
+  it('Expand Icon Checking', (done: Function) => {    
+    actionComplete = (args?: any): void => {
+      expect((gridObj.getRows()[2] as HTMLTableRowElement).getElementsByClassName('e-treegridexpand').length).toBe(1);    
+      done();
+    };
+    gridObj.actionComplete = actionComplete;
+    gridObj.rowDragAndDropModule.reorderRows([2],3,'child');
+  });
+
+  it('Expand Testing', () => {    
+    ((gridObj.getRows()[2] as HTMLTableRowElement).getElementsByClassName('e-treegridexpand')[0] as HTMLElement).click();
+    expect((gridObj.getRows()[3] as HTMLTableRowElement).style.display).toBe('none');          
+  });
+
+  it('Collapse Testing', () => {    
+    ((gridObj.getRows()[2] as HTMLTableRowElement).getElementsByClassName('e-treegridcollapse')[0] as HTMLElement).click();
+    expect((gridObj.getRows()[3] as HTMLTableRowElement).style.display).toBe('table-row');          
+  });
+  
+  afterAll(() => {
+    destroy(gridObj);
+  });
+});

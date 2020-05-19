@@ -449,6 +449,11 @@ var dialogOpen = 'dialogOpen';
  * @hidden
  * @deprecated
  */
+var beforeDialogClose = 'beforeDialogClose';
+/**
+ * @hidden
+ * @deprecated
+ */
 var dialogClose = 'dialogClose';
 /**
  * @hidden
@@ -2247,6 +2252,12 @@ var ToolbarRenderer = /** @class */ (function () {
     };
     ToolbarRenderer.prototype.removePopupContainer = function () {
         if (sf.base.Browser.isDevice && !sf.base.isNullOrUndefined(this.popupContainer)) {
+            var popupEle = this.popupContainer.querySelector('.e-dropdown-popup.e-tbar-btn.e-control');
+            if (popupEle) {
+                this.popupContainer.parentNode.insertBefore(popupEle, this.popupContainer.nextSibling);
+                popupEle.style.removeProperty('position');
+                sf.base.removeClass([popupEle], 'e-popup-modal');
+            }
             sf.base.detach(this.popupContainer);
             this.popupContainer = undefined;
         }
@@ -2457,7 +2468,6 @@ var ToolbarRenderer = /** @class */ (function () {
                     || element.parentElement.classList.contains(CLS_COLOR_CONTENT))) {
                     var colorpickerValue = element.classList.contains(CLS_RTE_ELEMENTS) ? element.style.borderBottomColor :
                         element.querySelector('.' + CLS_RTE_ELEMENTS).style.borderBottomColor;
-                    /* tslint:enable */
                     range = proxy.parent.formatter.editorManager.nodeSelection.getRange(proxy.parent.contentModule.getDocument());
                     if ((range.startContainer.nodeName === 'TD' || range.startContainer.nodeName === 'TH' ||
                         sf.base.closest(range.startContainer.parentNode, 'td,th')) && range.collapsed) {
@@ -2482,7 +2492,14 @@ var ToolbarRenderer = /** @class */ (function () {
                     sf.base.removeClass([dropElement.lastElementChild], 'e-popup-overlay');
                 }
                 if (sf.base.Browser.isDevice && !sf.base.isNullOrUndefined(dropElement)) {
+                    var popupEle = dropElement.querySelector('.e-dropdown-popup.e-tbar-btn.e-control');
+                    if (popupEle) {
+                        dropElement.parentNode.insertBefore(popupEle, dropElement.nextSibling);
+                        popupEle.style.removeProperty('position');
+                        sf.base.removeClass([popupEle], 'e-popup-modal');
+                    }
                     sf.base.detach(dropElement);
+                    proxy.popupContainer = undefined;
                 }
             }
         });
@@ -11953,6 +11970,7 @@ var SelectionCommands = /** @class */ (function () {
         if (cursorFormat) {
             cursorNode = cursorNodes[0];
             InsertMethods.unwrap(cursorFormat);
+            cursorNodes[0] = InsertMethods.Wrap(cursorNodes[0], this.GetFormatNode(format, value));
         }
         else {
             cursorNode = this.getInsertNode(docElement, range, format, value).firstChild;
@@ -18567,7 +18585,8 @@ var Table = /** @class */ (function () {
         this.contentModule.getEditPanel().appendChild(tableReBox);
     };
     Table.prototype.removeResizeEle = function () {
-        var item = this.contentModule.getEditPanel().querySelectorAll('.e-column-resize, .e-row-resize, .e-table-box');
+        var item = this.parent.contentModule.getEditPanel().
+            querySelectorAll('.e-column-resize, .e-row-resize, .e-table-box');
         if (item.length > 0) {
             for (var i = 0; i < item.length; i++) {
                 sf.base.detach(item[i]);
@@ -19194,15 +19213,12 @@ var DialogRenderer = /** @class */ (function () {
      */
     DialogRenderer.prototype.render = function (e) {
         var dlgObj;
-        if (sf.base.isNullOrUndefined(e.beforeOpen)) {
-            e.beforeOpen = this.beforeOpen.bind(this);
-        }
-        if (sf.base.isNullOrUndefined(e.open)) {
-            e.open = this.open.bind(this);
-        }
+        e.beforeOpen = this.beforeOpen.bind(this);
+        e.open = this.open.bind(this);
         if (sf.base.isNullOrUndefined(e.close)) {
             e.close = this.close.bind(this);
         }
+        e.beforeClose = this.beforeClose.bind(this);
         dlgObj = new sf.popups.Dialog(e);
         dlgObj.isStringTemplate = true;
         return dlgObj;
@@ -19212,6 +19228,9 @@ var DialogRenderer = /** @class */ (function () {
     };
     DialogRenderer.prototype.open = function (args) {
         this.parent.trigger(dialogOpen, args);
+    };
+    DialogRenderer.prototype.beforeClose = function (args) {
+        this.parent.trigger(beforeDialogClose, args);
     };
     /**
      * dialog close method
@@ -20255,33 +20274,6 @@ var RichTextEditor = /** @class */ (function (_super) {
                 var pointer = e.which === 8 ? range.startOffset - 1 : range.startOffset;
                 range.startContainer.textContent = range.startContainer.textContent.replace(regEx, '');
                 this.formatter.editorManager.nodeSelection.setCursorPoint(this.contentModule.getDocument(), range.startContainer, pointer);
-            }
-            else if ((e.code === 'Backspace' && e.which === 8) &&
-                range.startContainer.textContent.charCodeAt(0) === 8203) {
-                var parentEle = range.startContainer.parentElement;
-                var index = void 0;
-                var i = void 0;
-                for (i = 0; i < parentEle.childNodes.length; i++) {
-                    if (parentEle.childNodes[i] === range.startContainer) {
-                        index = i;
-                    }
-                }
-                var bool = true;
-                var removeNodeArray = [];
-                for (i = index; i >= 0; i--) {
-                    if (parentEle.childNodes[i].textContent.charCodeAt(0) === 8203 && bool) {
-                        removeNodeArray.push(i);
-                    }
-                    else {
-                        bool = false;
-                    }
-                }
-                if (removeNodeArray.length > 0) {
-                    for (i = removeNodeArray.length - 1; i > 0; i--) {
-                        parentEle.childNodes[removeNodeArray[i]].textContent = '';
-                    }
-                }
-                this.formatter.editorManager.nodeSelection.setCursorPoint(this.contentModule.getDocument(), range.startContainer, range.startOffset);
             }
         }
         if (this.formatter.getUndoRedoStack().length === 0) {
@@ -21688,6 +21680,9 @@ var RichTextEditor = /** @class */ (function (_super) {
     ], RichTextEditor.prototype, "dialogOpen", void 0);
     __decorate$1([
         sf.base.Event()
+    ], RichTextEditor.prototype, "beforeDialogClose", void 0);
+    __decorate$1([
+        sf.base.Event()
     ], RichTextEditor.prototype, "dialogClose", void 0);
     __decorate$1([
         sf.base.Event()
@@ -21927,6 +21922,7 @@ exports.readOnlyMode = readOnlyMode;
 exports.pasteClean = pasteClean;
 exports.beforeDialogOpen = beforeDialogOpen;
 exports.dialogOpen = dialogOpen;
+exports.beforeDialogClose = beforeDialogClose;
 exports.dialogClose = dialogClose;
 exports.beforeQuickToolbarOpen = beforeQuickToolbarOpen;
 exports.quickToolbarOpen = quickToolbarOpen;

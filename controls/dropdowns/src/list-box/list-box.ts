@@ -383,6 +383,7 @@ export class ListBox extends DropDownBase {
         } else {
             this.sortedData = this.jsonData = this.listData = data;
         }
+        this.initDraggable();
     }
     private initWrapper(): void {
         let hiddenSelect: Element = this.createElement('select', { className: 'e-hidden-select', attrs: { 'multiple': '' } });
@@ -428,6 +429,9 @@ export class ListBox extends DropDownBase {
     }
 
     private initDraggable(): void {
+        if (this.ulElement) {
+            this.ulElement.id = this.element.id + '_parent';
+        }
         if (this.allowDragAndDrop) {
             new Sortable(this.ulElement, {
                 scope: this.scope,
@@ -573,12 +577,7 @@ export class ListBox extends DropDownBase {
     }
 
     private onInput(): void {
-        if (this.keyDownStatus) {
-            this.isValidKey = true;
-        } else {
-            this.isValidKey = false;
-        }
-        this.keyDownStatus = false;
+        this.isValidKey = true;
         this.refreshClearIcon();
     }
 
@@ -602,12 +601,20 @@ export class ListBox extends DropDownBase {
         list: obj[] | boolean[] | string[] | number[],
         e?: Object): void {
         let searchEle: Element;
-        if (this.allowFiltering) {
-            searchEle = this.list.getElementsByClassName('e-filter-parent')[0];
+        if (this.allowFiltering && this.list.getElementsByClassName('e-filter-parent')[0]) {
+            if (isBlazor() && this.isServerRendered) {
+                searchEle = this.list.getElementsByClassName('e-filter-parent')[0];
+            } else {
+                searchEle = this.list.getElementsByClassName('e-filter-parent')[0].cloneNode(true) as Element;
+            }
         }
         super.onActionComplete(ulElement, list, e);
         if (this.allowFiltering && !isNullOrUndefined(searchEle)) {
             this.list.insertBefore(searchEle, this.list.firstElementChild);
+            if (!isBlazor() && !this.isServerRendered) {
+                this.filterParent = this.list.getElementsByClassName('e-filter-parent')[0] as HTMLElement;
+                this.filterWireEvents(searchEle);
+            }
         }
         this.initWrapper();
         this.setSelection();
@@ -625,7 +632,11 @@ export class ListBox extends DropDownBase {
             }
         } else {
             if (this.allowFiltering) {
-                (this.list.getElementsByClassName('e-input-filter')[0] as HTMLElement).focus();
+                let filterElem: HTMLInputElement = (this.list.getElementsByClassName('e-input-filter')[0] as HTMLInputElement);
+                let txtLength: number = this.filterInput.value.length;
+                filterElem.selectionStart = txtLength;
+                filterElem.selectionEnd = txtLength;
+                filterElem.focus();
             }
         }
         this.initLoad = false;
@@ -1143,7 +1154,7 @@ export class ListBox extends DropDownBase {
         EventHandler.remove(this.list, 'click', this.clickHandler);
         EventHandler.remove(wrapper, 'keydown', this.keyDownHandler);
         EventHandler.remove(wrapper, 'focusout', this.focusOutHandler);
-        if (this.allowFiltering) {
+        if (this.allowFiltering && this.clearFilterIconElem) {
             EventHandler.remove(this.clearFilterIconElem, 'click', this.clearText);
         }
         if (this.toolbarSettings.items.length) {
@@ -1205,15 +1216,10 @@ export class ListBox extends DropDownBase {
                     className: listBoxClasses.filterInput
                 });
                 this.element.parentNode.insertBefore(this.filterInput, this.element);
-                let backIcon: boolean = false;
-                if (Browser.isDevice) {
-                    backIcon = true;
-                }
                 filterInputObj = Input.createInput(
                     {
                         element: this.filterInput,
-                        buttons: backIcon ?
-                            [listBoxClasses.backIcon, listBoxClasses.filterBarClearIcon] : [listBoxClasses.filterBarClearIcon],
+                        buttons: [listBoxClasses.filterBarClearIcon],
                         properties: { placeholder: this.filterBarPlaceholder }
                     },
                     this.createElement
@@ -1235,16 +1241,25 @@ export class ListBox extends DropDownBase {
                 addClass([this.list], 'e-filter-list');
             }
             this.inputString = this.filterInput.value;
-            this.clearFilterIconElem = this.filterInput.parentElement.querySelector('.' + listBoxClasses.clearIcon);
-            if (!Browser.isDevice && this.clearFilterIconElem) {
-                EventHandler.add(this.clearFilterIconElem, 'click', this.clearText, this);
-                (this.clearFilterIconElem as HTMLElement).style.visibility = 'hidden';
-            }
-            EventHandler.add(this.filterInput, 'input', this.onInput, this);
-            EventHandler.add(this.filterInput, 'keyup', this.KeyUp, this);
-            EventHandler.add(this.filterInput, 'keydown', this.onKeyDown, this);
+            this.filterWireEvents();
             return filterInputObj;
         }
+    }
+
+    private filterWireEvents(filterElem?: Element): void {
+        if (filterElem) {
+            this.filterInput = filterElem.querySelector('.e-input-filter');
+        }
+        this.clearFilterIconElem = this.filterInput.parentElement.querySelector('.' + listBoxClasses.clearIcon);
+        if (this.clearFilterIconElem) {
+            EventHandler.add(this.clearFilterIconElem, 'click', this.clearText, this);
+            if (!filterElem) {
+                (this.clearFilterIconElem as HTMLElement).style.visibility = 'hidden';
+            }
+        }
+        EventHandler.add(this.filterInput, 'input', this.onInput, this);
+        EventHandler.add(this.filterInput, 'keyup', this.KeyUp, this);
+        EventHandler.add(this.filterInput, 'keydown', this.onKeyDown, this);
     }
 
     private selectHandler(e: MouseEvent | { target: EventTarget, ctrlKey?: boolean, shiftKey?: boolean }, isKey?: boolean): void {
@@ -1705,8 +1720,6 @@ export class ListBox extends DropDownBase {
         this.keyDownHandler(e);
         event.stopPropagation();
     }
-
-    private keyDownStatus: boolean = false;
 
     private keyDownHandler(e: KeyboardEvent): void {
         if ([32, 35, 36, 37, 38, 39, 40, 65].indexOf(e.keyCode) > -1 && !this.allowFiltering) {

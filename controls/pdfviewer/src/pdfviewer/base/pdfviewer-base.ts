@@ -687,63 +687,65 @@ export class PdfViewerBase {
     // tslint:disable-next-line
     private createAjaxRequest(jsonObject: any, documentData: string, password: string): void {
         let proxy: PdfViewerBase = this;
-        this.loadRequestHandler = new AjaxHandler(this.pdfViewer);
-        this.loadRequestHandler.url = this.pdfViewer.serviceUrl + '/' + this.pdfViewer.serverActionSettings.load;
-        this.loadRequestHandler.responseType = 'json';
-        this.loadRequestHandler.mode = true;
-        // tslint:disable-next-line
-        jsonObject['action'] = 'Load';
-        // tslint:disable-next-line
-        jsonObject['elementId'] = this.pdfViewer.element.id;
-        this.loadRequestHandler.send(jsonObject);
-        // tslint:disable-next-line
-        this.loadRequestHandler.onSuccess = function (result: any) {
+        if (this.pdfViewer.serverActionSettings) {
+            this.loadRequestHandler = new AjaxHandler(this.pdfViewer);
+            this.loadRequestHandler.url = this.pdfViewer.serviceUrl + '/' + this.pdfViewer.serverActionSettings.load;
+            this.loadRequestHandler.responseType = 'json';
+            this.loadRequestHandler.mode = true;
             // tslint:disable-next-line
-            let data: any = result.data;
-            if (data) {
-                if (typeof data !== 'object') {
-                    try {
-                        data = JSON.parse(data);
-                    } catch (error) {
-                        proxy.onControlError(500, data, this.pdfViewer.serverActionSettings.load);
-                        data = null;
-                    }
-                }
+            jsonObject['action'] = 'Load';
+            // tslint:disable-next-line
+            jsonObject['elementId'] = this.pdfViewer.element.id;
+            this.loadRequestHandler.send(jsonObject);
+            // tslint:disable-next-line
+            this.loadRequestHandler.onSuccess = function (result: any) {
+                // tslint:disable-next-line
+                let data: any = result.data;
                 if (data) {
-                    while (typeof data !== 'object') {
-                        data = JSON.parse(data);
-                        // tslint:disable-next-line
-                        if (typeof parseInt(data) === 'number' && !isNaN(parseInt(data))) {
-                            // tslint:disable-next-line
-                            data = parseInt(data);
-                            break;
+                    if (typeof data !== 'object') {
+                        try {
+                            data = JSON.parse(data);
+                        } catch (error) {
+                            proxy.onControlError(500, data, this.pdfViewer.serverActionSettings.load);
+                            data = null;
                         }
                     }
-                    // tslint:disable-next-line
-                    if (data.uniqueId === proxy.documentId || (typeof parseInt(data) === 'number' && !isNaN(parseInt(data)))) {
-                        proxy.requestSuccess(data, documentData, password);
+                    if (data) {
+                        while (typeof data !== 'object') {
+                            data = JSON.parse(data);
+                            // tslint:disable-next-line
+                            if (typeof parseInt(data) === 'number' && !isNaN(parseInt(data))) {
+                                // tslint:disable-next-line
+                                data = parseInt(data);
+                                break;
+                            }
+                        }
+                        // tslint:disable-next-line
+                        if (data.uniqueId === proxy.documentId || (typeof parseInt(data) === 'number' && !isNaN(parseInt(data)))) {
+                            proxy.requestSuccess(data, documentData, password);
+                        }
                     }
                 }
-            }
-        };
-        // tslint:disable-next-line
-        this.loadRequestHandler.onFailure = function (result: any) {
-            let statusString: string = result.status.toString().split('')[0];
-            if (statusString === '4') {
-                proxy.openNotificationPopup('Client error');
-            } else {
-                proxy.openNotificationPopup();
-            }
-            proxy.showLoadingIndicator(false);
-            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, proxy.pdfViewer.serverActionSettings.load);
-        };
-        // tslint:disable-next-line
-        this.loadRequestHandler.onError = function (result: any) {
-            proxy.openNotificationPopup();
-            proxy.showLoadingIndicator(false);
+            };
             // tslint:disable-next-line
-            proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, proxy.pdfViewer.serverActionSettings.load);
-        };
+            this.loadRequestHandler.onFailure = function (result: any) {
+                let statusString: string = result.status.toString().split('')[0];
+                if (statusString === '4') {
+                    proxy.openNotificationPopup('Client error');
+                } else {
+                    proxy.openNotificationPopup();
+                }
+                proxy.showLoadingIndicator(false);
+                proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, proxy.pdfViewer.serverActionSettings.load);
+            };
+            // tslint:disable-next-line
+            this.loadRequestHandler.onError = function (result: any) {
+                proxy.openNotificationPopup();
+                proxy.showLoadingIndicator(false);
+                // tslint:disable-next-line
+                proxy.pdfViewer.fireAjaxRequestFailed(result.status, result.statusText, proxy.pdfViewer.serverActionSettings.load);
+            };
+        }
     }
 
     /**
@@ -955,11 +957,15 @@ export class PdfViewerBase {
     private saveDocumentInfo(): void {
         window.sessionStorage.setItem('currentDocument', this.documentId);
         window.sessionStorage.setItem('serviceURL', this.pdfViewer.serviceUrl);
-        window.sessionStorage.setItem('unload', this.pdfViewer.serverActionSettings.unload);
+        if (this.pdfViewer.serverActionSettings) {
+            window.sessionStorage.setItem('unload', this.pdfViewer.serverActionSettings.unload);
+        }
     }
     private saveDocumentHashData(): void {
         window.sessionStorage.setItem('hashId', this.hashId);
-        window.sessionStorage.setItem('documentLiveCount', this.documentLiveCount.toString());
+        if (this.documentLiveCount) {
+            window.sessionStorage.setItem('documentLiveCount', this.documentLiveCount.toString());
+        }
     }
     // tslint:disable-next-line
     private saveFormfieldsData(data: any): void {
@@ -5478,8 +5484,10 @@ export class PdfViewerBase {
         this.isAnnotationAdded = false;
         this.currentPosition = this.prevPosition = this.getMousePosition(evt);
         this.eventArgs = {};
+        let isStamp: boolean = false;
         if (this.pdfViewer.tool === 'Stamp') {
             this.pdfViewer.tool = '';
+            isStamp = true;
         }
         let target: PdfAnnotationBaseModel;
         if (Browser.isDevice && this.pdfViewer.annotation) {
@@ -5504,6 +5512,7 @@ export class PdfViewerBase {
                     this.pdfViewer.nodePropertyChange(stampObj, { opacity: this.pdfViewer.stampSettings.opacity });
                     this.pdfViewer.annotation.stampAnnotationModule.isStampAddMode = false;
                     if (stampObj.shapeAnnotationType === 'Image' && !this.isAlreadyAdded) {
+                        this.stampAdded = true;
                         this.customStampCollection.push({ customStampName: stampObj.id, customStampImageSource: stampObj.data });
                     }
                     this.isAlreadyAdded = false;
@@ -5571,10 +5580,15 @@ export class PdfViewerBase {
             }
         }
         if (!this.tool || (this.tool && !(this.tool as PolygonDrawingTool).drawingObject)) {
-            this.action = this.findToolToActivate(obj, this.currentPosition);
-            this.tool = this.getTool(this.action);
-            if (!this.tool) {
-                this.action = this.pdfViewer.tool || 'Select';
+            if (!isStamp) {
+                this.action = this.findToolToActivate(obj, this.currentPosition);
+                this.tool = this.getTool(this.action);
+                if (!this.tool) {
+                    this.action = this.pdfViewer.tool || 'Select';
+                    this.tool = this.getTool(this.action);
+                }
+            } else {
+                this.action = 'Select';
                 this.tool = this.getTool(this.action);
             }
         }

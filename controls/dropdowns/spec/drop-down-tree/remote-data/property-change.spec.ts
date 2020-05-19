@@ -58,6 +58,10 @@ describe('DropDown Tree control Remote datasource', () => {
             expect(ddtreeObj.value.length).toBe(1);
             expect(ddtreeObj.value[0]).toBe('01');
             expect(ddtreeObj.text).toBe('Music');
+            var hiddenElement = ddtreeObj.inputWrapper.querySelector('option');
+            expect(hiddenElement).not.toBe(null);
+            expect(hiddenElement.getAttribute('value')).toBe('01');
+            expect(hiddenElement.text).toBe('Music');
             ddtreeObj.text = 'aaa';
             ddtreeObj.dataBind();
             expect(ddtreeObj.value[0]).toBe('01');
@@ -147,6 +151,10 @@ describe('DropDown Tree control Remote datasource', () => {
             expect(ddtreeObj.value.length).toBe(1);
             expect(ddtreeObj.value[0]).toBe('01');
             expect(ddtreeObj.text).toBe('Music');
+            var hiddenElement = ddtreeObj.inputWrapper.querySelector('option');
+            expect(hiddenElement).not.toBe(null);
+            expect(hiddenElement.getAttribute('value')).toBe('01');
+            expect(hiddenElement.text).toBe('Music');
             ddtreeObj.value = ['aaa'];
             ddtreeObj.dataBind();
             expect(ddtreeObj.value[0]).toBe('01');

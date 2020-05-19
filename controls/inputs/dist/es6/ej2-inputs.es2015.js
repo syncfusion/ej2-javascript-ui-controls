@@ -3840,6 +3840,16 @@ let Slider = class Slider extends Component {
         addClass([this.element], classNames.root);
         this.setCSSClass();
     }
+    setElementWidth(width) {
+        if (!isNullOrUndefined(width)) {
+            if (typeof width === 'number') {
+                this.sliderContainer.style.width = formatUnit(width);
+            }
+            else if (typeof width === 'string') {
+                this.sliderContainer.style.width = (width.match(/px|%|em/)) ? (width) : (formatUnit(width));
+            }
+        }
+    }
     setCSSClass(oldCSSClass) {
         if (oldCSSClass) {
             removeClass([this.element], oldCSSClass.split(' '));
@@ -3885,6 +3895,7 @@ let Slider = class Slider extends Component {
             this.sliderTrack = this.createElement('div', { className: classNames.sliderTrack });
             this.element.appendChild(this.sliderTrack);
         }
+        this.setElementWidth(this.width);
         this.element.tabIndex = -1;
         this.getThemeInitialization();
         this.setHandler();
@@ -6378,6 +6389,13 @@ let Slider = class Slider extends Component {
                         this.isServerRendered = true;
                     }
                     break;
+                case 'width':
+                    this.setElementWidth(newProp.width);
+                    this.setMinMaxValue();
+                    if (this.limits) {
+                        this.limitsPropertyChange();
+                    }
+                    break;
             }
         }
     }
@@ -6495,6 +6513,9 @@ __decorate$2([
 __decorate$2([
     Property(1)
 ], Slider.prototype, "step", void 0);
+__decorate$2([
+    Property(null)
+], Slider.prototype, "width", void 0);
 __decorate$2([
     Property(0)
 ], Slider.prototype, "min", void 0);
@@ -7511,7 +7532,7 @@ let Uploader = class Uploader extends Component {
                     break;
                 case 'dropArea':
                     this.unBindDropEvents();
-                    this.setDropArea();
+                    this.updateDropArea();
                     break;
                 case 'htmlAttributes':
                     this.updateHTMLAttrToElement();
@@ -7554,7 +7575,7 @@ let Uploader = class Uploader extends Component {
                 this.browseButton.innerText = (this.buttons.browse === 'Browse...') ?
                     this.localizedTexts('Browse') : this.buttons.browse;
                 this.browseButton.setAttribute('title', this.browseButton.innerText);
-                if (this.uploadWrapper) {
+                if (this.uploadWrapper && !isNullOrUndefined(this.uploadWrapper.querySelector('.' + DROP_AREA))) {
                     this.uploadWrapper.querySelector('.' + DROP_AREA).innerHTML = this.localizedTexts('dropFilesHint');
                 }
             }
@@ -7864,9 +7885,6 @@ let Uploader = class Uploader extends Component {
         inputWrapper.appendChild(this.element);
         this.dropAreaWrapper.appendChild(this.browseButton);
         this.dropAreaWrapper.appendChild(inputWrapper);
-        let fileDropArea = this.createElement('span', { className: DROP_AREA });
-        fileDropArea.innerHTML = this.localizedTexts('dropFilesHint');
-        this.dropAreaWrapper.appendChild(fileDropArea);
         this.uploadWrapper = this.createElement('div', { className: CONTROL_WRAPPER });
         this.dropAreaWrapper.parentElement.insertBefore(this.uploadWrapper, this.dropAreaWrapper);
         this.uploadWrapper.appendChild(this.dropAreaWrapper);
@@ -7932,18 +7950,41 @@ let Uploader = class Uploader extends Component {
                 element = element.parentNode;
                 if (element === this.dropZoneElement) {
                     enableDropText = true;
-                    dropTextArea.textContent = this.localizedTexts('dropFilesHint');
+                    if (!dropTextArea) {
+                        this.createDropTextHint();
+                    }
+                    else {
+                        dropTextArea.innerHTML = this.localizedTexts('dropFilesHint');
+                    }
                 }
             }
-            if (!enableDropText) {
-                dropTextArea.textContent = '';
+            if (!enableDropText && dropTextArea) {
+                dropTextArea.remove();
             }
         }
-        else {
+        else if (!isNullOrUndefined(this.uploaderOptions) && this.uploaderOptions.dropArea === undefined) {
+            this.createDropTextHint();
             this.dropZoneElement = this.uploadWrapper;
-            dropTextArea.textContent = this.localizedTexts('dropFilesHint');
+            this.setProperties({ dropArea: this.uploadWrapper }, true);
         }
         this.bindDropEvents();
+    }
+    updateDropArea() {
+        if (this.dropArea) {
+            this.setDropArea();
+        }
+        else {
+            this.dropZoneElement = null;
+            let dropTextArea = this.dropAreaWrapper.querySelector('.e-file-drop');
+            if (dropTextArea) {
+                dropTextArea.remove();
+            }
+        }
+    }
+    createDropTextHint() {
+        let fileDropArea = this.createElement('span', { className: DROP_AREA });
+        fileDropArea.innerHTML = this.localizedTexts('dropFilesHint');
+        this.dropAreaWrapper.appendChild(fileDropArea);
     }
     updateHTMLAttrToElement() {
         if (!isNullOrUndefined(this.htmlAttributes)) {

@@ -901,6 +901,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         if (!this.isRemoteData) {
             this.setTreeValue();
             this.setTreeText();
+            this.updateHiddenValue();
             this.setSelectedValue();
         }
         if ((this.allowMultiSelection || this.showCheckBox) && this.mode !== 'Delimiter') {
@@ -1963,6 +1964,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         if (this.isFirstRender && this.isRemoteData) {
             this.setTreeValue();
             this.setTreeText();
+            this.updateHiddenValue();
             this.setSelectedValue();
             this.treeObj.element.focus();
         }
@@ -2142,6 +2144,17 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         }
     }
 
+    private updateHiddenValue(): void {
+        if (this.allowMultiSelection || this.showCheckBox) {
+            return;
+        }
+        if (this.value && this.value.length) {
+            this.hiddenElement.innerHTML = '<option selected value ="' + this.value[0] + '">' + this.text + '</option>';
+        } else {
+            this.hiddenElement.innerHTML = '';
+        }
+    }
+
     /* Triggers when the tree node is selected */
     private onNodeSelected(args: NodeSelectEventArgs): void {
         if (this.showCheckBox) {
@@ -2164,7 +2177,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
                 this.currentValue = this.value;
                 attributes(this.inputWrapper, { 'aria-describedby': this.element.id });
                 attributes(this.inputWrapper, { 'aria-activedescendant': id.toString() });
-                this.hiddenElement.innerHTML += '<option selected value ="' + this.value[0] + '">' + this.text + '</option>';
+                this.updateHiddenValue();
                 this.showOverAllClear();
                 this.hidePopup();
                 this.isNodeSelected = true;
@@ -2585,6 +2598,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         this.setProperties({ text: null }, true);
         this.selectedData = [];
         setValue('selectedNodes', [], this.treeObj);
+        this.hiddenElement.innerHTML = '';
         if (this.showCheckBox) {
             this.treeObj.uncheckAll();
             this.setMultiSelect();
@@ -2773,6 +2787,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         } else {
             this.setTreeValue();
         }
+        this.updateHiddenValue();
     }
 
     private updateText(text: string): void {
@@ -2781,6 +2796,7 @@ export class DropDownTree extends Component<HTMLElement> implements INotifyPrope
         } else {
             this.setTreeText();
         }
+        this.updateHiddenValue();
     }
 
     private updateModelMode(): void {

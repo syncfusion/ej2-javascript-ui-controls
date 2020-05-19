@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.1.53 (2020-05-19)
+
+### Common
+
+#### Bug Fixes
+
+- `I271681` - Resolved script error while using mouse click events in Firefox browser.
+- `I276939` - Resolved `Drag and drop` not working in touch mode issue.
+
 ## 18.1.44 (2020-04-14)
 
 ### Common

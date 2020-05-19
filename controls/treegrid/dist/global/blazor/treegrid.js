@@ -227,6 +227,8 @@ var rowSelected = 'rowSelected';
 /** @hidden */
 var checkboxChange = 'checkboxChange';
 /** @hidden */
+var rowDeselecting = 'rowDeselecting';
+/** @hidden */
 var rowDeselected = 'rowDeselected';
 /** @hidden */
 var toolbarClick = 'toolbarClick';
@@ -1549,45 +1551,46 @@ var DataManipulation = /** @class */ (function () {
             }
         }
         else if (data instanceof Array) {
-            this.hierarchyData = [];
-            this.taskIds = [];
-            for (var i = 0; i < Object.keys(data).length; i++) {
-                var tempData = data[i];
-                this.hierarchyData.push(sf.base.extend({}, tempData));
-                if (!sf.base.isNullOrUndefined(tempData[this.parent.idMapping])) {
-                    this.taskIds.push(tempData[this.parent.idMapping]);
-                }
-            }
-            if (this.isSelfReference) {
-                var selfData = [];
-                var mappingData = new sf.data.DataManager(this.hierarchyData).executeLocal(new sf.data.Query()
-                    .group(this.parent.parentIdMapping));
-                for (var i = 0; i < mappingData.length; i++) {
-                    var groupData = mappingData[i];
-                    var index = this.taskIds.indexOf(groupData.key);
-                    if (!sf.base.isNullOrUndefined(groupData.key)) {
-                        if (index > -1) {
-                            var childData = (groupData.items);
-                            this.hierarchyData[index][this.parent.childMapping] = childData;
-                            continue;
-                        }
-                    }
-                    selfData.push.apply(selfData, groupData.items);
-                }
-                this.hierarchyData = this.selfReferenceUpdate(selfData);
-            }
-            if (!Object.keys(this.hierarchyData).length) {
-                this.parent.flatData = [];
-            }
-            else {
-                this.createRecords(this.hierarchyData);
-            }
-            this.storedIndex = -1;
+            this.convertJSONData(data);
         }
-        // else if (data instanceof DataManager && this.parent.isLocalData) {
-        //   this.convertToFlatData(data.dataSource.json);
-        // }
-        //this.crudActions();
+    };
+    DataManipulation.prototype.convertJSONData = function (data) {
+        this.hierarchyData = [];
+        this.taskIds = [];
+        for (var i = 0; i < Object.keys(data).length; i++) {
+            var tempData = data[i];
+            this.hierarchyData.push(sf.base.extend({}, tempData));
+            if (!sf.base.isNullOrUndefined(tempData[this.parent.idMapping])) {
+                this.taskIds.push(tempData[this.parent.idMapping]);
+            }
+        }
+        if (this.isSelfReference) {
+            var selfData = [];
+            var mappingData = new sf.data.DataManager(this.hierarchyData).executeLocal(new sf.data.Query()
+                .group(this.parent.parentIdMapping));
+            for (var i = 0; i < mappingData.length; i++) {
+                var groupData = mappingData[i];
+                var index = this.taskIds.indexOf(groupData.key);
+                if (!sf.base.isNullOrUndefined(groupData.key)) {
+                    if (index > -1) {
+                        var childData = (groupData.items);
+                        this.hierarchyData[index][this.parent.childMapping] = childData;
+                        continue;
+                    }
+                }
+                selfData.push.apply(selfData, groupData.items);
+            }
+            this.hierarchyData = this.selfReferenceUpdate(selfData);
+        }
+        if (!Object.keys(this.hierarchyData).length) {
+            var isGantt = 'isGantt';
+            var referenceData = !(this.parent.dataSource instanceof sf.data.DataManager) && this.parent[isGantt];
+            this.parent.flatData = referenceData ? (this.parent.dataSource) : [];
+        }
+        else {
+            this.createRecords(this.hierarchyData);
+        }
+        this.storedIndex = -1;
     };
     // private crudActions(): void {
     //   if (this.parent.dataSource instanceof DataManager && (this.parent.dataSource.adaptor instanceof RemoteSaveAdaptor)) {
@@ -2708,6 +2711,15 @@ var TreeGrid = /** @class */ (function (_super) {
                 member: 'columnMenu', args: [this]
             });
         }
+        if (this.showColumnChooser) {
+            modules.push({
+                member: 'ColumnChooser', args: [this]
+            });
+        }
+        this.extendRequiredModules(modules);
+        return modules;
+    };
+    TreeGrid.prototype.extendRequiredModules = function (modules) {
         if (this.allowRowDragAndDrop) {
             modules.push({
                 member: 'rowDragAndDrop',
@@ -2738,7 +2750,6 @@ var TreeGrid = /** @class */ (function (_super) {
                 args: [this]
             });
         }
-        return modules;
     };
     TreeGrid.prototype.isCommandColumn = function (columns) {
         var _this = this;
@@ -2754,7 +2765,9 @@ var TreeGrid = /** @class */ (function (_super) {
      * @hidden
      */
     TreeGrid.prototype.unwireEvents = function () {
-        sf.base.EventHandler.remove(this.grid.element, 'click', this.mouseClickHandler);
+        if (this.grid && this.grid.element) {
+            sf.base.EventHandler.remove(this.grid.element, 'click', this.mouseClickHandler);
+        }
     };
     /**
      * For internal use only - To Initialize the component rendering.
@@ -2937,6 +2950,7 @@ var TreeGrid = /** @class */ (function (_super) {
         this.grid.enableHover = this.enableHover;
         this.grid.enableAutoFill = this.enableAutoFill;
         this.grid.allowRowDragAndDrop = this.allowRowDragAndDrop;
+        this.grid.showColumnChooser = this.showColumnChooser;
         this.grid.rowDropSettings = sf.grids.getActualProperties(this.rowDropSettings);
         this.grid.rowHeight = this.rowHeight;
         this.grid.gridLines = this.gridLines;
@@ -2970,31 +2984,6 @@ var TreeGrid = /** @class */ (function (_super) {
     TreeGrid.prototype.bindGridEvents = function () {
         var _this = this;
         var treeGrid = this;
-        this.grid.rowSelecting = this.triggerEvents.bind(this);
-        this.grid.rowSelected = function (args) {
-            if (!sf.base.isBlazor()) {
-                _this.selectedRowIndex = _this.grid.selectedRowIndex;
-            }
-            else if (sf.base.isBlazor() && _this.isServerRendered) {
-                _this.allowServerDataBinding = false;
-                _this.setProperties({ selectedRowIndex: _this.grid.selectedRowIndex }, true);
-                _this.allowServerDataBinding = true;
-            }
-            treeGrid.notify(rowSelected, args);
-            _this.trigger(rowSelected, args);
-        };
-        this.grid.rowDeselected = function (args) {
-            _this.selectedRowIndex = _this.grid.selectedRowIndex;
-            if (sf.base.isBlazor()) {
-                var data = 'data';
-                var rowIndex = 'rowIndex';
-                var row = 'row';
-                args[data] = args[data][args[data].length - 1];
-                args[rowIndex] = args[rowIndex][args[rowIndex].length - 1];
-                args[row] = args[row][args[row].length - 1];
-            }
-            _this.trigger(rowDeselected, args);
-        };
         this.grid.resizeStop = function (args) {
             _this.updateColumnModel();
             _this.trigger(resizeStop, args);
@@ -3026,7 +3015,6 @@ var TreeGrid = /** @class */ (function (_super) {
         this.grid.pdfHeaderQueryCellInfo = this.triggerEvents.bind(this);
         this.grid.dataSourceChanged = this.triggerEvents.bind(this);
         this.grid.recordDoubleClick = this.triggerEvents.bind(this);
-        this.grid.rowDeselecting = this.triggerEvents.bind(this);
         this.grid.cellDeselected = this.triggerEvents.bind(this);
         this.grid.cellDeselecting = this.triggerEvents.bind(this);
         this.grid.columnMenuOpen = this.triggerEvents.bind(this);
@@ -3052,6 +3040,7 @@ var TreeGrid = /** @class */ (function (_super) {
         };
         this.grid.printComplete = this.triggerEvents.bind(this);
         this.grid.actionFailure = this.triggerEvents.bind(this);
+        this.extendedGridRowSelectEvents();
         this.extendedGridDataBoundEvent();
         this.extendedGridEvents();
         this.extendedGridActionEvents();
@@ -3059,6 +3048,52 @@ var TreeGrid = /** @class */ (function (_super) {
         this.extendedGridBatchEvents();
         this.bindGridDragEvents();
         this.bindCallBackEvents();
+    };
+    TreeGrid.prototype.extendedGridRowSelectEvents = function () {
+        var _this = this;
+        var treeGrid = this;
+        this.grid.rowSelecting = function (args) {
+            if (sf.base.isNullOrUndefined(args.target) || !(args.target.classList.contains('e-treegridexpand') ||
+                args.target.classList.contains('e-treegridcollapse'))) {
+                treeGrid.notify(rowSelecting, args);
+                _this.trigger(rowSelecting, args);
+            }
+            else {
+                args.cancel = true;
+            }
+        };
+        this.grid.rowSelected = function (args) {
+            if (!sf.base.isBlazor()) {
+                _this.selectedRowIndex = _this.grid.selectedRowIndex;
+            }
+            else if (sf.base.isBlazor() && _this.isServerRendered) {
+                _this.allowServerDataBinding = false;
+                _this.setProperties({ selectedRowIndex: _this.grid.selectedRowIndex }, true);
+                _this.allowServerDataBinding = true;
+            }
+            treeGrid.notify(rowSelected, args);
+            _this.trigger(rowSelected, args);
+        };
+        this.grid.rowDeselected = function (args) {
+            _this.selectedRowIndex = _this.grid.selectedRowIndex;
+            if (sf.base.isBlazor()) {
+                var length_1 = 'length';
+                args.data = args.data[args.data[length_1] - 1];
+                args.rowIndex = args.rowIndex[args.rowIndex[length_1] - 1];
+                args.row = args.row[args.row[length_1] - 1];
+            }
+            _this.trigger(rowDeselected, args);
+        };
+        this.grid.rowDeselecting = function (args) {
+            if (sf.base.isNullOrUndefined(args.target) || !(args.target.classList.contains('e-treegridexpand') ||
+                args.target.classList.contains('e-treegridcollapse'))) {
+                treeGrid.notify(rowDeselecting, args);
+                _this.trigger(rowDeselecting, args);
+            }
+            else {
+                args.cancel = true;
+            }
+        };
     };
     TreeGrid.prototype.extendedGridDataBoundEvent = function () {
         var _this = this;
@@ -3745,6 +3780,9 @@ var TreeGrid = /** @class */ (function (_super) {
                 case 'frozenRows':
                     this.grid.frozenRows = this.frozenRows;
                     break;
+                case 'showColumnChooser':
+                    this.grid.showColumnChooser = this.showColumnChooser;
+                    break;
                 case 'frozenColumns':
                     this.grid.frozenColumns = this.frozenColumns;
                     break;
@@ -3831,8 +3869,12 @@ var TreeGrid = /** @class */ (function (_super) {
         this.removeListener();
         this.unwireEvents();
         _super.prototype.destroy.call(this);
-        this.grid.destroy();
-        this.dataModule.destroy();
+        if (this.grid) {
+            this.grid.destroy();
+        }
+        if (this.dataModule) {
+            this.dataModule.destroy();
+        }
         var modules = ['dataModule', 'sortModule', 'renderModule', 'filterModule', 'printModule', 'clipboardModule',
             'excelExportModule', 'pdfExportModule', 'toolbarModule', 'summaryModule', 'reorderModule', 'resizeModule',
             'pagerModule', 'keyboardModule', 'columnMenuModule', 'contextMenuModule', 'editModule', 'virtualScrollModule',
@@ -4298,10 +4340,16 @@ var TreeGrid = /** @class */ (function (_super) {
         this.grid[persist2].apply(this, [storedColumn, columns]);
     };
     TreeGrid.prototype.updateTreeGridModel = function () {
+        if (sf.base.isBlazor() && this.isServerRendered) {
+            this.allowServerDataBinding = false;
+        }
         this.setProperties({ filterSettings: sf.grids.getObject('properties', this.grid.filterSettings) }, true);
         this.setProperties({ pageSettings: sf.grids.getObject('properties', this.grid.pageSettings) }, true);
         this.setProperties({ searchSettings: sf.grids.getObject('properties', this.grid.searchSettings) }, true);
         this.setProperties({ sortSettings: sf.grids.getObject('properties', this.grid.sortSettings) }, true);
+        if (sf.base.isBlazor() && this.isServerRendered) {
+            this.allowServerDataBinding = true;
+        }
     };
     /**
      * Gets the content table of the TreeGrid.
@@ -4714,9 +4762,9 @@ var TreeGrid = /** @class */ (function (_super) {
                 }
                 var data_1 = sf.base.getValue('result', _this.dataSource);
                 var childData = extendArray(expandingArgs.childData);
-                var length_1 = record[_this.childMapping] ?
+                var length_2 = record[_this.childMapping] ?
                     record[_this.childMapping].length > childData.length ? record[_this.childMapping].length : childData.length : childData.length;
-                for (var i = 0; i < length_1; i++) {
+                for (var i = 0; i < length_2; i++) {
                     if (record[_this.childMapping]) {
                         data_1.filter(function (e, i) {
                             if (e[_this.parentIdMapping] === record[_this.idMapping]) {
@@ -5163,6 +5211,9 @@ var TreeGrid = /** @class */ (function (_super) {
     __decorate([
         sf.base.Property(false)
     ], TreeGrid.prototype, "showColumnMenu", void 0);
+    __decorate([
+        sf.base.Property(false)
+    ], TreeGrid.prototype, "showColumnChooser", void 0);
     __decorate([
         sf.base.Property(false)
     ], TreeGrid.prototype, "allowSorting", void 0);
@@ -5921,18 +5972,27 @@ var RowDD$1 = /** @class */ (function () {
                 this.dropRows(args, isByMethod);
             }
             //this.refreshGridDataSource();
-            this.parent.refresh();
             if (tObj.isLocalData) {
                 tObj.flatData = this.orderToIndex(tObj.flatData);
             }
+            this.parent.refresh();
         }
         else {
             return;
         }
     };
     RowDD$$1.prototype.orderToIndex = function (currentData) {
-        for (var i = 0; i < currentData.length; i++) {
+        var _loop_1 = function (i) {
             currentData[i].index = i;
+            if (!sf.base.isNullOrUndefined(currentData[i].parentItem)) {
+                var updatedParent = currentData.filter(function (data) {
+                    return data.uniqueID === currentData[i].parentUniqueID;
+                })[0];
+                currentData[i].parentItem.index = updatedParent.index;
+            }
+        };
+        for (var i = 0; i < currentData.length; i++) {
+            _loop_1(i);
         }
         return currentData;
     };
@@ -6332,10 +6392,10 @@ var RowDD$1 = /** @class */ (function () {
                     if (!isCountRequired(this.parent)) {
                         this.dropRows(args);
                     }
-                    tObj.refresh();
                     if (tObj.isLocalData) {
                         tObj.flatData = this.orderToIndex(tObj.flatData);
                     }
+                    tObj.refresh();
                     if (!sf.base.isNullOrUndefined(tObj.getHeaderContent().querySelector('.e-firstrow-border'))) {
                         tObj.getHeaderContent().querySelector('.e-firstrow-border').remove();
                     }
@@ -10051,6 +10111,31 @@ var Freeze$1 = /** @class */ (function () {
 }());
 
 /**
+ * TreeGrid ColumnChooser module
+ * @hidden
+ */
+var ColumnChooser$1 = /** @class */ (function () {
+    /**
+     * Constructor for render module
+     */
+    function ColumnChooser$$1(parent) {
+        sf.grids.Grid.Inject(sf.grids.ColumnChooser);
+        this.parent = parent;
+    }
+    ColumnChooser$$1.prototype.destroy = function () {
+        //this.parent.grid.ColumnChooserModule.destroy();
+    };
+    /**
+     * For internal use only - Get the module name.
+     * @private
+     */
+    ColumnChooser$$1.prototype.getModuleName = function () {
+        return 'ColumnChooser';
+    };
+    return ColumnChooser$$1;
+}());
+
+/**
  * actions export
  */
 
@@ -10076,6 +10161,7 @@ exports.actionComplete = actionComplete;
 exports.rowSelecting = rowSelecting;
 exports.rowSelected = rowSelected;
 exports.checkboxChange = checkboxChange;
+exports.rowDeselecting = rowDeselecting;
 exports.rowDeselected = rowDeselected;
 exports.toolbarClick = toolbarClick;
 exports.beforeExcelExport = beforeExcelExport;
@@ -10173,6 +10259,7 @@ exports.DetailRow = DetailRow$1;
 exports.VirtualScroll = VirtualScroll$1;
 exports.TreeVirtual = TreeVirtual;
 exports.Freeze = Freeze$1;
+exports.ColumnChooser = ColumnChooser$1;
 
 return exports;
 

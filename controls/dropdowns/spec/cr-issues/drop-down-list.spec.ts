@@ -1020,4 +1020,58 @@ describe('DropDownList', () => {
             }, 3000);
         });
     });
+    describe('EJ2-39447- Dropdownlist', () => {
+        let keyboardEventArgs = {
+            preventDefault: function () { },
+            altKey: false,
+            ctrlKey: false,
+            shiftKey: false,
+        };
+        let isPopupFiltered: boolean = false;
+        let ddlObj: DropDownList;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'dropdown' });
+        let sportsData: { [key: string]: Object }[] =  [
+            { Id: 'Game1', Game: 'American Football' },
+            { Id: 'Game2', Game: 'Badminton' },
+            { Id: 'Game3', Game: 'Basketball' },
+            { Id: 'Game4', Game: 'Cricket' },
+            { Id: 'Game5', Game: 'Football' },
+            { Id: 'Game6', Game: 'Golf' },
+            { Id: 'Game7', Game: 'Hockey' },
+            { Id: 'Game8', Game: 'Rugby' },
+            { Id: 'Game9', Game: 'Snooker' },
+            { Id: 'Game10', Game: 'Tennis' }
+        ];
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+            }
+        });
+        it('Filtering dropdown popup using paste testcase', () => {
+            ddlObj = new DropDownList({
+                dataSource: sportsData,
+                fields: { text: 'Game', value: 'Id' },
+                allowFiltering: true,
+                filtering: function (e) {
+                    isPopupFiltered = true;
+                }
+            });
+            ddlObj.appendTo(element);
+            ddlObj.showPopup();
+            expect((<any>ddlObj).list.querySelectorAll('li').length === 10).toBe(true);
+            // Filter popup by pasting value
+            (<any>ddlObj).filterInput.value = "Cricket";
+            keyboardEventArgs.altKey = false;
+            (<any>ddlObj).pasteHandler(keyboardEventArgs);
+            setTimeout (function () {
+                expect((<any>ddlObj).list.querySelectorAll('li').length === 1).toBe(true);
+                // Checking popup is filtered when paste
+                expect(isPopupFiltered).toBe(true)
+            },)
+        });
+    });
 });

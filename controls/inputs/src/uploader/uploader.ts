@@ -1073,7 +1073,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                     break;
                 case 'dropArea':
                     this.unBindDropEvents();
-                    this.setDropArea();
+                    this.updateDropArea();
                     break;
                 case 'htmlAttributes':
                     this.updateHTMLAttrToElement();
@@ -1117,7 +1117,7 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 this.browseButton.innerText = (this.buttons.browse === 'Browse...') ?
                 this.localizedTexts('Browse') : this.buttons.browse;
                 this.browseButton.setAttribute('title', this.browseButton.innerText);
-                if (this.uploadWrapper) {
+                if (this.uploadWrapper && !isNullOrUndefined(this.uploadWrapper.querySelector('.' + DROP_AREA))) {
                     this.uploadWrapper.querySelector('.' + DROP_AREA).innerHTML = this.localizedTexts('dropFilesHint');
                 }
             }
@@ -1435,9 +1435,6 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
         inputWrapper.appendChild(this.element);
         this.dropAreaWrapper.appendChild(this.browseButton);
         this.dropAreaWrapper.appendChild(inputWrapper);
-        let fileDropArea: HTMLElement = this.createElement('span', { className: DROP_AREA});
-        fileDropArea.innerHTML = this.localizedTexts('dropFilesHint');
-        this.dropAreaWrapper.appendChild(fileDropArea);
         this.uploadWrapper = this.createElement('div', { className: CONTROL_WRAPPER });
         this.dropAreaWrapper.parentElement.insertBefore(this.uploadWrapper, this.dropAreaWrapper);
         this.uploadWrapper.appendChild(this.dropAreaWrapper);
@@ -1505,20 +1502,43 @@ export class Uploader extends Component<HTMLInputElement> implements INotifyProp
                 element = element.parentNode as HTMLElement;
                 if (element === this.dropZoneElement) {
                     enableDropText = true;
-                    dropTextArea.textContent = this.localizedTexts('dropFilesHint');
+                    if (!dropTextArea) {
+                        this.createDropTextHint();
+                    } else {
+                        dropTextArea.innerHTML = this.localizedTexts('dropFilesHint');
+                    }
                 }
             }
-            if (!enableDropText) {
-                dropTextArea.textContent = '';
+            if (!enableDropText && dropTextArea) {
+                dropTextArea.remove();
             }
-        } else {
+        } else if (!isNullOrUndefined(this.uploaderOptions) && this.uploaderOptions.dropArea === undefined) {
+            this.createDropTextHint();
             this.dropZoneElement = this.uploadWrapper;
-            dropTextArea.textContent = this.localizedTexts('dropFilesHint');
+            this.setProperties({dropArea: this.uploadWrapper }, true);
         }
         this.bindDropEvents();
     }
 
-    private updateHTMLAttrToElement(): void {
+    private updateDropArea() : void {
+        if (this.dropArea) {
+            this.setDropArea();
+        } else {
+            this.dropZoneElement = null;
+            let dropTextArea: HTMLElement = <HTMLElement>this.dropAreaWrapper.querySelector('.e-file-drop');
+            if (dropTextArea) {
+                dropTextArea.remove();
+            }
+        }
+    }
+
+    private createDropTextHint () : void {
+        let fileDropArea: HTMLElement = this.createElement('span', { className: DROP_AREA});
+        fileDropArea.innerHTML = this.localizedTexts('dropFilesHint');
+        this.dropAreaWrapper.appendChild(fileDropArea);
+    }
+
+        private updateHTMLAttrToElement(): void {
         if ( !isNullOrUndefined(this.htmlAttributes)) {
             for (let pro of Object.keys(this.htmlAttributes)) {
                 if (wrapperAttr.indexOf(pro) < 0 ) {

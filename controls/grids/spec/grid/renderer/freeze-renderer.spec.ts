@@ -490,4 +490,57 @@ describe('Freeze render module', () => {
             destroy(gridObj);
         });
     });
+
+    describe('EJ2-39341 - Row height is not set properly in the grid when having frozen column', () => {
+        let gridObj: Grid;
+        let data1: Object[] = [
+            {
+                OrderID: 10248, CustomerID: 'VINET', EmployeeID: 5, OrderDate: new Date(8364186e5),
+                ShipName: 'Vins et alcools Chevalier', Freight: 1.2, Verified: !0
+            },
+            {
+                OrderID: 10249, CustomerID: '', EmployeeID: 6, OrderDate: new Date(836505e6),
+                ShipName: 'Toms Spezialitäten', Freight: 2.4, Verified: !1
+            },
+            {
+                OrderID: 10250, CustomerID: '', EmployeeID: 2, OrderDate: new Date(8367642e5),
+                ShipName: 'Hanari Carnes', Freight: null, Verified: !0
+            },
+            {
+                OrderID: 10251, CustomerID: 'HANAR', EmployeeID: 7, OrderDate: new Date(8367642e5),
+                ShipName: 'Hanari Carnes', Freight: '', Verified: !0
+            }
+        ];
+        beforeAll((done: Function) => {
+            gridObj = createGrid(
+                {
+                    dataSource: data1,
+                    frozenColumns: 2,
+                    frozenRows: 2,
+                    editSettings: { allowAdding: true, allowEditing: true, allowDeleting: true, mode: 'Batch' },
+                    rowHeight: 20,
+                    columns: [
+                        { field: 'CustomerID', headerText: 'Customer ID', width: 130, minWidth: 10 },
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right', minWidth: 10 },
+                        { field: 'Freight', width: 125, minWidth: 10 },
+                        { field: 'ShipName', headerText: 'Ship Name', width: 300, minWidth: 10 },
+                    ]
+                }, done);
+        });
+      
+        it('Ensure Rows Height', () => {
+        let fHead: HTMLElement = gridObj.element.querySelector('.e-frozenheader').querySelector('table').rows[2];
+        let mHead: HTMLElement = gridObj.element.querySelector('.e-movableheader').querySelector('table').rows[2];
+        let fContent: HTMLElement = gridObj.element.querySelector('.e-frozencontent').querySelector('table').rows[0];
+        let mContent: HTMLElement = gridObj.element.querySelector('.e-movablecontent').querySelector('table').rows[0];
+        expect(fHead.offsetHeight).toBe(gridObj.rowHeight);
+        expect(mHead.offsetHeight).toBe(gridObj.rowHeight);
+        expect(fContent.offsetHeight).toBe(gridObj.rowHeight);
+        expect(mContent.offsetHeight).toBe(gridObj.rowHeight);
+        });
+       
+        afterAll(() => {
+            destroy(gridObj);
+        });
+    });
 });

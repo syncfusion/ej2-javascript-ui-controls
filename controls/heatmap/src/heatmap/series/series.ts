@@ -593,7 +593,10 @@ export class Series {
                 let element: HTMLElement = document.getElementById(tempID);
                 if (this.heatMap.tempRectHoverClass !== tempID) {
                     if (this.heatMap.cellSettings.enableCellHighlighting) {
-                        let oldElement: HTMLElement = document.getElementById(this.heatMap.tempRectHoverClass);
+                        let oldElement: HTMLElement;
+                        if (this.heatMap.tempRectHoverClass) {
+                            oldElement = document.getElementById(this.heatMap.tempRectHoverClass);
+                        }
                         if (oldElement && !this.heatMap.rectSelected) {
                             oldElement.setAttribute('opacity', '1');
                         }
@@ -605,7 +608,10 @@ export class Series {
                 }
             } else {
                 if (this.heatMap.cellSettings.enableCellHighlighting) {
-                    let oldElement: HTMLElement = document.getElementById(this.heatMap.tempRectHoverClass);
+                    let oldElement: HTMLElement;
+                    if (this.heatMap.tempRectHoverClass) {
+                        oldElement = document.getElementById(this.heatMap.tempRectHoverClass);
+                    }
                     if (oldElement && !this.heatMap.rectSelected) {
                         oldElement.setAttribute('opacity', '1');
                         this.heatMap.tempRectHoverClass = '';

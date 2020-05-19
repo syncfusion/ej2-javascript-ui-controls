@@ -4,7 +4,7 @@ import { isNullOrUndefined } from '@syncfusion/ej2-base';
  * Gantt taskbaredit spec
  */
 import { Gantt, Edit, Toolbar } from '../../src/index';
-import { cellEditData, resourcesData, resources, scheduleModeData } from '../base/data-source.spec';
+import { cellEditData, resourcesData, resources, scheduleModeData, resourceDataTaskType, resourceResources, taskTypeData, taskTypeWorkData } from '../base/data-source.spec';
 import { createGantt, destroyGantt, triggerMouseEvent, triggerKeyboardEvent, getKeyUpObj } from '../base/gantt-util.spec';
 import { DatePickerEditCell } from '@syncfusion/ej2-grids';
 import { Input } from '@syncfusion/ej2-inputs';
@@ -818,15 +818,15 @@ describe('Work', () => {
         expect(ganttObj.currentViewData[1].ganttProperties.workUnit).toBe('hour');
         expect(ganttObj.currentViewData[1].ganttProperties.taskType).toBe('FixedWork');
         //Task with resource
-        expect(ganttObj.currentViewData[2].ganttProperties.resourceNames).toBe('Resource 3[40%],Resource 1');
+        expect(ganttObj.currentViewData[2].ganttProperties.resourceNames).toBe('Resource 3[41.67%],Resource 1[41.67%]');
         expect(ganttObj.currentViewData[2].ganttProperties.work).toBe(20);
-        expect(ganttObj.currentViewData[2].ganttProperties.duration).toBe(1.79);
+        expect(ganttObj.currentViewData[2].ganttProperties.duration).toBe(3);
         expect(ganttObj.currentViewData[2].ganttProperties.workUnit).toBe('hour');
         expect(ganttObj.currentViewData[2].ganttProperties.taskType).toBe('FixedWork');
         //Parent Task without resource
         expect(ganttObj.currentViewData[0].ganttProperties.resourceInfo).toBe(null);
         expect(ganttObj.currentViewData[0].ganttProperties.work).toBe(140);
-        expect(ganttObj.currentViewData[0].ganttProperties.duration).toBe(13);
+        expect(ganttObj.currentViewData[0].ganttProperties.duration).toBe(3);
         expect(ganttObj.currentViewData[0].ganttProperties.workUnit).toBe('hour');
         expect(ganttObj.currentViewData[0].ganttProperties.taskType).toBe('FixedDuration');
     });
@@ -975,5 +975,216 @@ describe('Schedule mode', () => {
             triggerMouseEvent(element, 'click');
         }
         expect(ganttObj.getFormatedDate(ganttObj.currentViewData[2].ganttProperties.startDate, 'M/d/yyyy')).toBe('2/27/2017');
+    });
+});
+describe('adding task type in taskFields', () => {
+    let ganttObj: Gantt;
+
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: taskTypeData,
+            allowSorting: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency:'Predecessor',
+                child: 'subtasks',
+                type: 'taskType'
+            },
+            taskType: 'FixedUnit',
+            splitterSettings: {
+                columnIndex: 8
+            },
+            editSettings: {
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+            columns: [
+                { field: 'TaskID' },
+                { field: 'TaskName', headerText: 'Task Name', width: '180' },
+                { field: 'Duration', width: '100' },
+                { field: 'taskType', headerText: 'Task Type', width: '110' }
+            ],
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 1000);
+    });
+    it('task type on load time', () => {
+        expect(ganttObj.currentViewData[0].ganttProperties.taskType).toBe('FixedDuration');
+        expect(ganttObj.currentViewData[1].ganttProperties.taskType).toBe('FixedUnit');
+        expect(ganttObj.currentViewData[2].ganttProperties.taskType).toBe('FixedDuration');
+        expect(ganttObj.currentViewData[7].ganttProperties.taskType).toBe('FixedUnit');
+        expect(ganttObj.currentViewData[8].ganttProperties.taskType).toBe('FixedDuration');
+    });
+});
+describe('work mapping with tasktype', () => {
+    let ganttObj: Gantt;
+
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: taskTypeWorkData,
+            allowSorting: true,
+            taskFields: {
+                id: 'TaskID',
+                name: 'TaskName',
+                startDate: 'StartDate',
+                duration: 'Duration',
+                progress: 'Progress',
+                dependency:'Predecessor',
+                child: 'subtasks',
+                type: 'taskType',
+                work: 'work'
+            },
+            splitterSettings: {
+                columnIndex: 8
+            },
+            editSettings: {
+                allowEditing: true,
+                allowDeleting: true,
+                allowTaskbarEditing: true,
+                showDeleteConfirmDialog: true
+            },
+            toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel'],
+            columns: [
+                { field: 'TaskID' },
+                { field: 'TaskName', headerText: 'Task Name', width: '180' },
+                { field: 'Duration', width: '100' },
+                { field: 'work', width: '100' },
+                { field: 'taskType', headerText: 'Task Type', width: '110' }
+            ],
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 1000);
+        // ganttObj.openEditDialog(3);
+    });
+    it('task type with work mapping on load time', () => {
+        expect(ganttObj.currentViewData[0].ganttProperties.taskType).toBe('FixedDuration');
+        expect(ganttObj.currentViewData[1].ganttProperties.taskType).toBe('FixedWork');
+        expect(ganttObj.currentViewData[2].ganttProperties.taskType).toBe('FixedDuration');
+        expect(ganttObj.currentViewData[7].ganttProperties.taskType).toBe('FixedWork');
+        expect(ganttObj.currentViewData[8].ganttProperties.taskType).toBe('FixedDuration');
+    });
+});
+describe('taskType with resourceUnit mapping', () => {
+    let ganttObj: Gantt;
+
+    beforeAll((done: Function) => {
+        ganttObj = createGantt({
+            dataSource: resourceDataTaskType,
+        taskFields: {
+            id: 'TaskID',
+            name: 'TaskName',
+            startDate: 'StartDate',
+            duration: 'Duration',
+            progress: 'Progress',
+            dependency: 'Predecessor',
+            resourceInfo: 'resources',
+            work: 'work',
+            child: 'subtasks',
+            type: 'type'
+        },
+        editSettings: {
+            allowAdding: true,
+            allowEditing: true,
+            allowDeleting: true,
+            allowTaskbarEditing: true,
+            showDeleteConfirmDialog: true
+        },
+        resources: resourceResources,
+        resourceFields: {
+            id: 'resourceId',
+            name: 'resourceName',
+            unit: 'unit'
+        },
+        workUnit: 'Hour',
+        toolbar: ['Add', 'Edit', 'Update', 'Delete', 'Cancel', 'ExpandAll', 'CollapseAll'],
+        allowSelection: true,
+        height: '450px',
+        treeColumnIndex: 1,
+        highlightWeekends: true,
+        columns: [
+            { field: 'TaskID', visible: false },
+            { field: 'TaskName', headerText: 'Task Name', width: '180' },
+            { field: 'resources', headerText: 'Resources', width: '160' },
+            { field: 'work', width: '110' },
+            { field: 'Duration', width: '100' },
+            { field: 'taskType', headerText: 'Task Type', width: '110' }
+        ],
+        editDialogFields: [
+            { type: 'General', headerText: 'General' },
+            { type: 'Dependency' },
+            { type: 'Resources' }
+        ],
+        labelSettings: {
+            rightLabel: 'resources'
+        },
+        splitterSettings: {
+            columnIndex: 5.1
+        },
+        projectStartDate: new Date('03/28/2019'),
+        projectEndDate: new Date('07/28/2019')
+        }, done);
+    });
+    afterAll(() => {
+        if (ganttObj) {
+            destroyGantt(ganttObj);
+        }
+    });
+    beforeEach((done: Function) => {
+        setTimeout(done, 1000);
+    });
+    it('task type with work mapping and unit mapping on load time', () => {
+        expect(ganttObj.currentViewData[0].ganttProperties.taskType).toBe('FixedDuration');
+        expect(ganttObj.currentViewData[1].ganttProperties.taskType).toBe('FixedWork');
+        expect(ganttObj.currentViewData[2].ganttProperties.taskType).toBe('FixedDuration');
+        expect(ganttObj.currentViewData[6].ganttProperties.taskType).toBe('FixedUnit');
+    });
+    it('testing load time fixed duration task', () => {
+        expect(ganttObj.currentViewData[2].ganttProperties.work).toBe(96);
+        let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(3) > td:nth-child(5)')
+        triggerMouseEvent(duration, 'dblclick');
+        let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolDuration') as HTMLElement;
+        input.value = '5 days';
+        let update: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_Gantt_Toolbar > div > div:nth-child(3)') as HTMLElement;
+        triggerMouseEvent(update, 'click');
+        expect(ganttObj.currentViewData[2].ganttProperties.work).toBe(120);
+    });
+    it('testing load time fixed unit task', () => {
+        expect(ganttObj.currentViewData[6].ganttProperties.work).toBe(48);
+        let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(7) > td:nth-child(5)')
+        triggerMouseEvent(duration, 'dblclick');
+        let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolDuration') as HTMLElement;
+        input.value = '4 days';
+        let update: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_Gantt_Toolbar > div > div:nth-child(3)') as HTMLElement;
+        triggerMouseEvent(update, 'click');
+        expect(ganttObj.currentViewData[6].ganttProperties.work).toBe(64);
+    });
+    it('testing load time fixed work task', () => {
+        expect(ganttObj.currentViewData[5].ganttProperties.resourceInfo[0]['unit']).toBe(125);
+        let duration: HTMLElement = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrol_content_table > tbody > tr:nth-child(6) > td:nth-child(5)')
+        triggerMouseEvent(duration, 'dblclick');
+        let input: any = ganttObj.element.querySelector('#treeGrid' + ganttObj.element.id + '_gridcontrolDuration') as HTMLElement;
+        input.value = '8 days';
+        let update: HTMLElement = ganttObj.element.querySelector('#' + ganttObj.element.id + '_Gantt_Toolbar > div > div:nth-child(3)') as HTMLElement;
+        triggerMouseEvent(update, 'click');
+        expect(ganttObj.currentViewData[5].ganttProperties.resourceInfo[0]['unit']).toBe(46.88);
     });
 });

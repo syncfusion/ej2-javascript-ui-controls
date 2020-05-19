@@ -105,7 +105,7 @@ export class TextFormFieldDialog {
             innerHTML: localValue.getConstant('Text format')
         });
         let textFormatList: HTMLInputElement = createElement('input') as HTMLInputElement;
-        let formatDropDownitems: string[] = ['Uppercase', 'Lowercase', 'First capital', 'Title case'];
+        let formatDropDownitems: string[] = ['Uppercase', 'Lowercase', 'FirstCapital', 'Titlecase'];
         this.textFormatDropDown = new ComboBox({
             dataSource: formatDropDownitems,
             popupHeight: '150px',
@@ -217,7 +217,7 @@ export class TextFormFieldDialog {
         if (args.value === 'Regular text') {
             this.defaultTextLabel.innerHTML = this.localObj.getConstant('Default text');
             this.textFormatLabel.innerHTML = this.localObj.getConstant('Text format');
-            this.textFormatDropDown.dataSource = ['Uppercase', 'Lowercase', 'First capital', 'Title case'];
+            this.textFormatDropDown.dataSource = ['Uppercase', 'Lowercase', 'FirstCapital', 'Titlecase'];
         } else if (args.value === 'Number') {
             this.defaultTextLabel.innerHTML = this.localObj.getConstant('Default number');
             this.textFormatLabel.innerHTML = this.localObj.getConstant('Number format');

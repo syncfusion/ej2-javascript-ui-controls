@@ -598,7 +598,7 @@ export class ContentFocus implements IFocus {
     }
 
     public getTable(): HTMLTableElement {
-        return <HTMLTableElement>(this.parent.frozenColumns ?
+        return <HTMLTableElement>(this.parent.getFrozenColumns() ?
             this.parent.getContent().querySelector('.e-movablecontent .e-table') :
             this.parent.getContentTable());
     }

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.53 (2020-05-19)
+
+### In-place Editor
+
+#### Bug Fixes
+
+- `#273057` - Resolved the `EnableHtmlSanitizer` property is not working properly for In-place Editor value.
+
 ## 17.4.51 (2020-02-25)
 
 ### In-place Editor

@@ -196,6 +196,36 @@ describe('Slider Control', () => {
             expect((document.getElementsByClassName('e-slider-container')[0]).classList.contains("e-vertical")).toBe(true);
         });
 
+        it('Slider Width:number testing', () => {
+            slider = new Slider({ width: 100 });
+            slider.appendTo('#slider');
+            expect((<HTMLElement>document.getElementsByClassName('e-slider-container')[0]).offsetWidth).toBe(100);
+        });
+
+        it('Slider Width:string testing', () => {
+            slider = new Slider({ width: "100px" });
+            slider.appendTo('#slider');
+            expect((<HTMLElement>document.getElementsByClassName('e-slider-container')[0]).offsetWidth).toBe(100);
+        });
+
+        it('Slider Width:string dynamic testing', () => {
+            slider = new Slider({ width: "100px" });
+            slider.appendTo('#slider');
+            expect((<HTMLElement>document.getElementsByClassName('e-slider-container')[0]).offsetWidth).toBe(100);
+            slider.width = "200px";
+            slider.dataBind();
+            expect((<HTMLElement>document.getElementsByClassName('e-slider-container')[0]).offsetWidth).toBe(200);
+        });
+
+        it('Slider Width:number dynamic testing', () => {
+            slider = new Slider({ width: 100 });
+            slider.appendTo('#slider');
+            expect((<HTMLElement>document.getElementsByClassName('e-slider-container')[0]).offsetWidth).toBe(100);
+            slider.width = 200;
+            slider.dataBind();
+            expect((<HTMLElement>document.getElementsByClassName('e-slider-container')[0]).offsetWidth).toBe(200);
+        });
+
         it('Dynamic Slider Orientation testing', () => {
             slider = new Slider({ orientation: 'Vertical' });
             slider.orientation = 'Horizontal';

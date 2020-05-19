@@ -808,11 +808,11 @@ export enum ConnectorConstraints {
     /** Enables or disables routing to the connector. */
     InheritLineRouting = 1 << 16,
     /** Enables or disables near node padding to the connector. */
-    ConnectNearNode = 1 << 17,
+    ConnectToNearByNode = 1 << 17,
     /** Enables or disables near port padding to the connector. */
-    ConnectNearPort = 1 << 18,
+    ConnectToNearByPort = 1 << 18,
     /** Enables or disables Enables or disables near port and node padding to the connector. */
-    ConnectNearAll = 1 << 17 | 1 << 18,
+    ConnectToNearByElement = 1 << 17 | 1 << 18,
     /** Enables all constraints. */
     Default = 1 << 1 | 1 << 2 | 1 << 3 | 1 << 4 | 1 << 5 | 1 << 9 | 1 << 10 | 1 << 11 | 1 << 13 | 1 << 16 | 1 << 17 | 1 << 18
 }

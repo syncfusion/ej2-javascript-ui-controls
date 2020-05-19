@@ -361,6 +361,7 @@ export declare class QueryBuilder extends Component<HTMLDivElement> implements I
     private processValueString;
     private parseDate;
     private renderControls;
+    private processBoolValues;
     private getOperatorIndex;
     private renderValues;
     private updateValues;

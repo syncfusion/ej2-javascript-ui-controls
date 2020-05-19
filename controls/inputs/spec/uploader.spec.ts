@@ -485,12 +485,12 @@ describe('Uploader Control', () => {
             document.body.appendChild(dropElement);
             uploadObj.dropArea = document.getElementById('dropele');
             uploadObj.dataBind();
-            expect(uploadObj.dropAreaWrapper.querySelector('.e-file-drop').textContent).toEqual('');
+            expect(uploadObj.dropAreaWrapper.querySelector('.e-file-drop')).toBeUndefined;
         });
         it('drop area set null ', () => {
             uploadObj.dropArea = null;
             uploadObj.dataBind();
-            expect(uploadObj.dropAreaWrapper.querySelector('.e-file-drop').textContent).toEqual('Or drop files here');
+            expect(uploadObj.dropAreaWrapper.querySelector('.e-file-drop')).toBeUndefined;
         });
         it('set allowed extensions ', () => {
             uploadObj.allowedExtensions = '.pdf';
@@ -626,7 +626,7 @@ describe('Uploader Control', () => {
         it('dropArea as other then parent element', () => {
             uploadObj = new Uploader({autoUpload: false, dropArea: document.getElementById('dropele') });
             uploadObj.appendTo(document.getElementById('upload'));
-            expect(uploadObj.dropAreaWrapper.querySelector('.e-file-drop').textContent).toBe('');
+            expect(uploadObj.dropAreaWrapper.querySelector('.e-file-drop')).toBeUndefined;
         });
         it('dropArea as parent element', () => {
             let element1: HTMLElement = createElement('input', {id: 'upload1'}); 
@@ -2907,7 +2907,7 @@ describe('Uploader Control', () => {
             expect(document.querySelector('.e-file-drop').textContent).toEqual('Or drop files here');
             uploadObj.dropArea = '#dropele';
             uploadObj.dataBind();
-            expect(document.querySelector('.e-file-drop').textContent).toEqual('');
+            expect(uploadObj.dropAreaWrapper.querySelector('.e-file-drop')).toBeUndefined;
             uploadObj.dropArea = '.e-upload';
             uploadObj.dataBind();
             expect(document.querySelector('.e-file-drop').textContent).toEqual('Or drop files here');
@@ -4507,5 +4507,238 @@ describe('Uploader Control', () => {
             expect(uploadObj.uploadWrapper.classList.contains('custom-class-one')).toBe(true);
             expect(uploadObj.uploadWrapper.classList.contains('custom-class-two')).toBe(true);
         });   
+    });
+    describe('EJ2-31022 - Provide support for enable and disable the drag and drop option in Uploader', function () {
+        let uploadObj: any;
+        beforeEach(function () {
+            L10n.load({
+                'fr-BE': {
+                   'uploader' : {
+                    'Browse' : 'Feuilleter',
+                    'Clear' : 'clair',
+                    'Upload' : 'télécharger',
+                    'dropFilesHint' : 'ou Déposez les fichiers ici',
+                    'readyToUploadMessage' : 'Prêt à télécharger',
+                    'inProgress' : 'Télécharger en cours', 
+                    'uploadFailedMessage' : 'Impossible d`importer le fichier',
+                    'uploadSuccessMessage' : 'Fichiers chargés avec succès',
+                    'invalidMaxFileSize' : 'La taille du fichier est trop grande',
+                    'invalidMinFileSize' : 'La taille du fichier est trop petite',
+                    'invalidFileType' : 'File type is not allowed'
+                     }
+                 }
+            });
+            let inputElement: HTMLElement = createElement('input', { id: 'uploader' });
+            document.body.appendChild(inputElement);
+        });
+        afterEach(function () {
+            if (uploadObj) {
+                uploadObj.destroy();
+                document.body.innerHTML = '';
+            }
+        });
+        it('No dropArea value is given while rendering', function () {
+            uploadObj = new Uploader({});
+            uploadObj.appendTo('#uploader');
+            expect(!isUndefined(uploadObj.dropAreaWrapper.querySelector('.e-file-drop'))).toBe(true);
+            expect(uploadObj.dropAreaWrapper.querySelector('.e-file-drop').textContent).toEqual('Or drop files here');
+            expect(!isUndefined(uploadObj.dropZoneElement)).toBe(true);
+            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(4);
+            expect(uploadObj.dropArea).toEqual(uploadObj.uploadWrapper);
+        });
+        it('No dropArea value is given while rendering as well as render with localization', function () {
+            uploadObj = new Uploader({
+                locale: 'fr-BE',
+            });
+            uploadObj.appendTo('#uploader');
+            let localeText : string = 'ou Déposez les fichiers ici';
+            expect(uploadObj.browseButton.innerText).toEqual('Feuilleter');
+            expect(!isUndefined(uploadObj.dropAreaWrapper.querySelector('.e-file-drop'))).toBe(true);
+            expect(uploadObj.uploadWrapper.querySelector('.e-file-drop').textContent).toBe(localeText);
+            expect(!isUndefined(uploadObj.dropZoneElement)).toBe(true);
+            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(4);
+            expect(uploadObj.dropArea).toEqual(uploadObj.uploadWrapper);
+        });
+        it('No dropArea value is given while rendering and give localization as dynamic', function () {
+            uploadObj = new Uploader({
+            });
+            uploadObj.appendTo('#uploader');
+            uploadObj.locale = 'fr-BE';
+            uploadObj.dataBind();
+            let localeText : string = 'ou Déposez les fichiers ici';
+            expect(uploadObj.browseButton.innerText).toEqual('Feuilleter');
+            expect(!isUndefined(uploadObj.dropAreaWrapper.querySelector('.e-file-drop'))).toBe(true);
+            expect(uploadObj.uploadWrapper.querySelector('.e-file-drop').textContent).toBe(localeText);
+            expect(!isUndefined(uploadObj.dropZoneElement)).toBe(true);
+            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(4);
+            expect(uploadObj.dropArea).toEqual(uploadObj.uploadWrapper);
+        });
+        it('dropArea value is  given as custom-HTMLElement while rendering', function () {
+            let dropElement: HTMLElement = createElement('div', {id: 'dropele'});
+            document.body.appendChild(dropElement);
+            uploadObj = new Uploader({
+                dropArea: document.getElementById('dropele')
+            });
+            uploadObj.appendTo('#uploader');
+            expect(uploadObj.dropAreaWrapper.querySelector('.e-file-drop')).toBeUndefined;
+            expect(!isUndefined(uploadObj.dropZoneElement)).toBe(true);
+            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(4);
+        });
+        it('dropArea value is  given as custom-HTMLElement while rendering as well as render with localization', function () {
+            let dropElement: HTMLElement = createElement('div', {id: 'dropele'});
+            document.body.appendChild(dropElement);
+            uploadObj = new Uploader({
+                dropArea: document.getElementById('dropele'),
+                locale : 'fr-BE',
+            });
+            uploadObj.appendTo('#uploader');
+            expect(uploadObj.dropAreaWrapper.querySelector('.e-file-drop')).toBeUndefined;
+            expect(uploadObj.browseButton.innerText).toEqual('Feuilleter');
+            expect(!isUndefined(uploadObj.dropZoneElement)).toBe(true);
+            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(4);
+        });
+        it('dropArea value is  given as custom-HTMLElement while rendering and enter localization as dynamic', function () {
+            let dropElement: HTMLElement = createElement('div', {id: 'dropele'});
+            document.body.appendChild(dropElement);
+            uploadObj = new Uploader({
+                dropArea: document.getElementById('dropele'),
+            });
+            uploadObj.appendTo('#uploader');
+            uploadObj.locale = 'fr-BE';
+            uploadObj.dataBind();
+            expect(uploadObj.dropAreaWrapper.querySelector('.e-file-drop')).toBeUndefined;
+            expect(uploadObj.browseButton.innerText).toEqual('Feuilleter');
+            expect(!isUndefined(uploadObj.dropZoneElement)).toBe(true);
+            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(4);
+        });
+        it('dropArea value is given as null while rendering', function () {
+            uploadObj = new Uploader({
+                dropArea : null,
+            });
+            uploadObj.appendTo('#uploader');
+            expect(uploadObj.dropAreaWrapper.querySelector('.e-file-drop')).toBeUndefined;
+            expect(uploadObj.dropZoneElement).toBeUndefined;
+        });
+        it('dropArea value is given as null while rendering as well as with localization', function () {
+            uploadObj = new Uploader({
+                dropArea : null,
+                locale : 'fr-BE',
+            });
+            uploadObj.appendTo('#uploader');
+            expect(uploadObj.browseButton.innerText).toEqual('Feuilleter');
+            expect(uploadObj.dropAreaWrapper.querySelector('.e-file-drop')).toBeUndefined;
+            expect(uploadObj.dropZoneElement).toBeUndefined;
+        });
+        it('dropArea value is given as null while rendering and enter localization as dynamic', function () {
+            uploadObj = new Uploader({
+                dropArea : null,
+            });
+            uploadObj.appendTo('#uploader');
+            uploadObj.locale = 'fr-BE';
+            uploadObj.dataBind();
+            expect(uploadObj.browseButton.innerText).toEqual('Feuilleter');
+            expect(uploadObj.dropAreaWrapper.querySelector('.e-file-drop')).toBeUndefined;
+            expect(uploadObj.dropZoneElement).toBeUndefined;
+        });
+        it('dropArea value is  given as default uploader while rendering', function () {
+            uploadObj = new Uploader({
+                dropArea: '.e-upload',
+            });
+            uploadObj.appendTo('#uploader');
+            expect(!isUndefined(uploadObj.dropAreaWrapper.querySelector('.e-file-drop'))).toBe(true);
+            expect(uploadObj.dropAreaWrapper.querySelector('.e-file-drop').textContent).toEqual('Or drop files here');
+            expect(!isUndefined(uploadObj.dropZoneElement)).toBe(true);
+            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(4);
+        });
+        it('dropArea value is  given as default uploader while rendering as well as with localization', function () {
+            uploadObj = new Uploader({
+                dropArea: '.e-upload',
+                locale: 'fr-BE',
+            });
+            uploadObj.appendTo('#uploader');
+            let localeText : string = 'ou Déposez les fichiers ici';
+            expect(uploadObj.browseButton.innerText).toEqual('Feuilleter');
+            expect(!isUndefined(uploadObj.dropAreaWrapper.querySelector('.e-file-drop'))).toBe(true);
+            expect(uploadObj.uploadWrapper.querySelector('.e-file-drop').textContent).toBe(localeText);
+            expect(!isUndefined(uploadObj.dropZoneElement)).toBe(true);
+            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(4);
+        });
+        it('dropArea value is  given as default uploader while rendering and enter localization as dynamic', function () {
+            uploadObj = new Uploader({
+                dropArea: '.e-upload',
+            });
+            uploadObj.appendTo('#uploader');
+            uploadObj.locale = 'fr-BE';
+            uploadObj.dataBind();
+            let localeText : string = 'ou Déposez les fichiers ici';
+            expect(uploadObj.browseButton.innerText).toEqual('Feuilleter');
+            expect(!isUndefined(uploadObj.dropAreaWrapper.querySelector('.e-file-drop'))).toBe(true);
+            expect(uploadObj.uploadWrapper.querySelector('.e-file-drop').textContent).toBe(localeText);
+            expect(!isUndefined(uploadObj.dropZoneElement)).toBe(true);
+            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(4);
+        });
+        it('dropArea value is given as custom-HTMLelement after rendering as dynamic', function () {
+            uploadObj = new Uploader({});
+            uploadObj.appendTo('#uploader');
+            let dropElement: HTMLElement = createElement('div', {id: 'dropele'});
+            document.body.appendChild(dropElement);
+            uploadObj.dropArea = document.getElementById('dropele');
+            uploadObj.dataBind();
+            expect(uploadObj.dropAreaWrapper.querySelector('.e-file-drop')).toBeUndefined;
+            expect(!isUndefined(uploadObj.dropZoneElement)).toBe(true);
+            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(4);
+        });
+        it('dropArea value is given as custom-HTMLelement after rendering and give localization also as dynamic', function () {
+            uploadObj = new Uploader({});
+            uploadObj.appendTo('#uploader');
+            let dropElement: HTMLElement = createElement('div', {id: 'dropele'});
+            document.body.appendChild(dropElement);
+            uploadObj.dropArea = document.getElementById('dropele');
+            uploadObj.locale = 'fr-BE',
+            uploadObj.dataBind();
+            expect(uploadObj.dropAreaWrapper.querySelector('.e-file-drop')).toBeUndefined;
+            expect(uploadObj.browseButton.innerText).toEqual('Feuilleter');
+            expect(!isUndefined(uploadObj.dropZoneElement)).toBe(true);
+            expect(uploadObj.dropZoneElement.__eventList.events.length).toBe(4);
+        });
+        it('dropArea value is  given as default uploader as dynamic', function () {
+            uploadObj = new Uploader({});
+            uploadObj.appendTo('#uploader');
+            uploadObj.dropArea = '.e-upload';
+            uploadObj.dataBind();
+            expect(!isUndefined(uploadObj.dropAreaWrapper.querySelector('.e-file-drop'))).toBe(true);
+            expect(uploadObj.dropAreaWrapper.querySelector('.e-file-drop').textContent).toEqual('Or drop files here');
+            expect(!isUndefined(uploadObj.dropZoneElement)).toBe(true);
+        });
+        it('dropArea value is  given as  default uploader as dynamic and also enter localization as dynamic', function () {
+            uploadObj = new Uploader({});
+            uploadObj.appendTo('#uploader');
+            uploadObj.dropArea = '.e-upload';
+            uploadObj.locale = 'fr-BE';
+            uploadObj.dataBind();
+            let localeText : string = 'ou Déposez les fichiers ici';
+            expect(uploadObj.browseButton.innerText).toEqual('Feuilleter');
+            expect(!isUndefined(uploadObj.dropAreaWrapper.querySelector('.e-file-drop'))).toBe(true);
+            expect(uploadObj.dropAreaWrapper.querySelector('.e-file-drop').textContent).toBe(localeText);
+            expect(!isUndefined(uploadObj.dropZoneElement)).toBe(true);
+        });
+        it('dropArea value is given as null after rendering as dynamic', function () {
+            uploadObj = new Uploader({});
+            uploadObj.appendTo('#uploader');
+            uploadObj.dropArea = null;
+            uploadObj.dataBind();
+            expect(uploadObj.dropAreaWrapper.querySelector('.e-file-drop')).toBeUndefined;
+            expect(uploadObj.dropZoneElement).toBeNull;
+        });
+        it('dropArea value is given as null after rendering and give localization also as dynamic', function () {
+            uploadObj = new Uploader({});
+            uploadObj.appendTo('#uploader');
+            uploadObj.dropArea = null;
+            uploadObj.locale = 'fr-BE',
+            uploadObj.dataBind();
+            expect(uploadObj.dropAreaWrapper.querySelector('.e-file-drop')).toBeUndefined;
+            expect(uploadObj.browseButton.innerText).toEqual('Feuilleter');
+            expect(uploadObj.dropZoneElement).toBeNull;
+        });
     });
 });

@@ -460,6 +460,8 @@ describe('Dialog Control', () => {
             dialog.dataBind();
             expect(document.getElementById('dialog').querySelectorAll('.e-icon-dlg-close').length).toBe(1);
             expect(document.getElementById('dialog').querySelectorAll('.e-dlg-header').length).toBe(1);
+            let headerContent: HTMLElement = document.getElementById('dialog').querySelector('.e-dlg-header-content');
+            expect(headerContent.id.indexOf('_dialog-header') > 0).toBe(true);
         });
 
         it('showCloseIcon notify property changes testing if header and content is given to empty', () => {

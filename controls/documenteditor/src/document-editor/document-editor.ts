@@ -664,9 +664,10 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
     public commentReviewPane: CommentReviewPane;
     /**
      * Gets the total number of pages.
+     * @blazorType int
      * @returns {number}
      */
-    get pageCount(): number {
+    public get pageCount(): number {
         if (!this.isDocumentLoaded || isNullOrUndefined(this.viewer) || this.viewer instanceof WebLayoutViewer) {
             return 1;
         }
@@ -815,8 +816,8 @@ export class DocumentEditor extends Component<HTMLElement> implements INotifyPro
         this.parser = new SfdtReader(this.documentHelper);
     }
     protected preRender(): void {
-        this.findResultsList = [];
         //pre render section
+        this.findResultsList = [];
     }
     protected render(): void {
         if (!isNullOrUndefined(this.element)) {

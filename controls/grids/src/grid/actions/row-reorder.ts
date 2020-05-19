@@ -105,9 +105,9 @@ export class RowDD {
 
         this.processArgs(target);
         gObj.trigger(events.rowDragStart, {
-            rows: this.rows,
-            target: e.target, draggableType: 'rows', fromIndex: parseInt(this.rows[0].getAttribute('aria-rowindex'), 10),
-            data: this.rowData
+            rows: (isBlazor()) ? null : this.rows, target: (isBlazor()) ? null : e.target,
+            draggableType: 'rows', fromIndex: parseInt(this.rows[0].getAttribute('aria-rowindex'), 10),
+            data: (Object.keys(this.rowData[0]).length > 0) ? this.rowData as Object[] : this.currentViewData()
         });
         if (isBlazor()) {
             e.bindEvents(e.dragElement);
@@ -219,66 +219,70 @@ export class RowDD {
         }
         this.processArgs(target);
         let args: RowDropEventArgs = {
-            target: target, draggableType: 'rows',
+            target: (isBlazor()) ? null : target, draggableType: 'rows',
             cancel: false,
             fromIndex: parseInt(this.rows[0].getAttribute('aria-rowindex'), 10),
-            dropIndex: this.dragTarget,
-            rows: this.rows, data: this.dragStartData as Object[]
+            dropIndex: this.dragTarget, rows: (isBlazor()) ? null : this.rows,
+            data: (Object.keys(this.dragStartData[0]).length > 0) ? this.dragStartData as Object[] : this.currentViewData()
         };
-        gObj.trigger(events.rowDrop, args);
+        gObj.trigger(events.rowDrop, args, () => {
 
-        if (!parentsUntil(target, 'e-gridcontent') || args.cancel) {
-            this.dragTarget = null;
-            remove(e.helper);
-            return;
-        }
-        this.isRefresh = false;
-        let selectedIndexes: number[] = this.parent.getSelectedRowIndexes();
-        if (gObj.isRowDragable()) {
-            if (!isBlazor()) {
-                if (!this.parent.rowDropSettings.targetID &&
-                    this.startedRow.querySelector('td.e-selectionbackground') && selectedIndexes.length > 1 &&
-                    selectedIndexes.length !== this.parent.getCurrentViewRecords().length) {
-                    this.reorderRows(selectedIndexes, args.dropIndex);
-                } else {
-                    this.reorderRows([parseInt(this.startedRow.getAttribute('aria-rowindex'), 10)], this.dragTarget);
-                }
-            } else {
-                let fromIdx: number = parseInt(this.startedRow.getAttribute('aria-rowindex'), 10);
-                let currentVdata: object[] = [];
-                let ind: number = 0;
-                for (let i: number = 0; i < selectedIndexes.length; i++) {
-                    let currentV: string = 'currentViewData';
-                    currentVdata[ind] = this.parent[currentV][selectedIndexes[i]];
-                }
-                if (!(this.parent.rowDropSettings.targetID && selectedIndexes.length)) {
-                    currentVdata[ind] = this.parent.currentViewData[fromIdx];
-                }
-                let draggedData: object[] = this.parent.getSelectedRecords().length ? this.parent.getSelectedRecords() : (currentVdata);
-                let changeRecords: { addedRecords: Object[], deletedRecords: Object[], changedRecords: Object[] } = {
-                    addedRecords: [],
-                    deletedRecords: draggedData,
-                    changedRecords: []
-                };
-                let toIdx: number = this.dragTarget ? this.dragTarget : args.dropIndex;
-                toIdx = (toIdx - draggedData.length + 1) > 0 ? (toIdx - draggedData.length + 1) : toIdx;
-                let dragDropDestinationIndex: string = 'dragDropDestinationIndex';
-                let query: Query = new Query;
-                query[dragDropDestinationIndex] = toIdx;
-                this.saveChange(changeRecords, query);
-                changeRecords.deletedRecords = [];
-                changeRecords.addedRecords = draggedData;
-                this.saveChange(changeRecords, query);
-            }
-            this.dragTarget = null;
-            if (!gObj.rowDropSettings.targetID) {
+            if (!parentsUntil(target, 'e-gridcontent') || args.cancel) {
+                this.dragTarget = null;
                 remove(e.helper);
-                gObj.refresh();
+                return;
             }
-        }
-        this.isRefresh = true;
+            this.isRefresh = false;
+            let selectedIndexes: number[] = this.parent.getSelectedRowIndexes();
+            if (gObj.isRowDragable()) {
+                if (!isBlazor()) {
+                    if (!this.parent.rowDropSettings.targetID &&
+                        this.startedRow.querySelector('td.e-selectionbackground') && selectedIndexes.length > 1 &&
+                        selectedIndexes.length !== this.parent.getCurrentViewRecords().length) {
+                        this.reorderRows(selectedIndexes, args.dropIndex);
+                    } else {
+                        this.reorderRows([parseInt(this.startedRow.getAttribute('aria-rowindex'), 10)], this.dragTarget);
+                    }
+                } else {
+                    let draggedData: object[] = this.parent.getSelectedRecords().length ?
+                        this.parent.getSelectedRecords() : this.currentViewData();
+                    let changeRecords: { addedRecords: Object[], deletedRecords: Object[], changedRecords: Object[] } = {
+                        addedRecords: [],
+                        deletedRecords: draggedData,
+                        changedRecords: []
+                    };
+                    let toIdx: number = this.dragTarget ? this.dragTarget : args.dropIndex;
+                    let dragDropDestinationIndex: string = 'dragDropDestinationIndex';
+                    let query: Query = new Query;
+                    query[dragDropDestinationIndex] = toIdx;
+                    this.saveChange(changeRecords, query);
+                    changeRecords.deletedRecords = [];
+                    changeRecords.addedRecords = draggedData;
+                    this.saveChange(changeRecords, query);
+                }
+                this.dragTarget = null;
+                if (!gObj.rowDropSettings.targetID) {
+                    remove(e.helper);
+                    gObj.refresh();
+                }
+            }
+            this.isRefresh = true;
+        });
     }
 
+    private currentViewData(): object[] {
+        let selectedIndexes: number[] = this.parent.getSelectedRowIndexes();
+        let currentVdata: object[] = [];
+        let fromIdx: number = parseInt(this.startedRow.getAttribute('aria-rowindex'), 10);
+        for (let i: number = 0, n: number = selectedIndexes.length; i < n; i++) {
+            let currentV: string = 'currentViewData';
+            currentVdata[i] = this.parent[currentV][selectedIndexes[i]];
+        }
+        if (!this.parent.rowDropSettings.targetID && selectedIndexes.length === 0) {
+            currentVdata[0] = this.parent.currentViewData[fromIdx];
+        }
+        return currentVdata;
+    }
     private saveChange(changeRecords: object, query: Query): void {
         this.parent.getDataModule().saveChanges(changeRecords, this.parent.getPrimaryKeyFieldNames()[0], {}, query)
             .then(() => {
@@ -560,11 +564,9 @@ export class RowDD {
                 });
             } else {
                 let currentVdata: object[] = [];
-                let ind: number = 0;
                 let selectedIndex: number[] = srcControl.getSelectedRowIndexes();
                 for (let i: number = 0; i < selectedIndex.length; i++) {
-                    currentVdata[ind] = srcControl.currentViewData[selectedIndex[i]];
-                    ind++;
+                    currentVdata[i] = srcControl.currentViewData[selectedIndex[i]];
                 }
                 records =  currentVdata;
                 let changes: { addedRecords: Object[], deletedRecords: Object[], changedRecords: Object[] } = {

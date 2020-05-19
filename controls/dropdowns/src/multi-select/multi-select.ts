@@ -1132,6 +1132,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             }
         }
         this.isValidKey = (this.isPopupOpen() && e.keyCode === 8) || this.isValidKey;
+        this.isValidKey = e.ctrlKey && e.keyCode === 86 ? false : this.isValidKey;
         if (this.isValidKey) {
             this.isValidKey = false;
             this.expandTextbox();
@@ -2500,7 +2501,7 @@ export class MultiSelect extends DropDownBase implements IInput {
     }
     private clearAllCallback(e: MouseEvent, isClearAll?: boolean): void {
         let tempValues: string[] | number[] = this.value ? <string[]>this.value.slice() : <string[]>[];
-        if (this.mainList && this.listData && (this.allowFiltering || this.allowCustomValue)) {
+        if (this.mainList && this.listData && ((this.allowFiltering && this.mode !== 'CheckBox') || this.allowCustomValue)) {
             let list: HTMLElement = this.mainList.cloneNode ? <HTMLElement>this.mainList.cloneNode(true) : this.mainList;
             this.onActionComplete(list, this.mainData);
         }
@@ -2563,6 +2564,7 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         EventHandler.add(this.componentWrapper, 'mouseout', this.mouseOut, this);
         EventHandler.add(this.overAllClear, 'mouseup', this.ClearAll, this);
+        EventHandler.add(this.inputElement, 'paste', this.pasteHandler, this);
     }
     private onInput(e: KeyboardEventArgs): void {
         if (this.keyDownStatus) {
@@ -2575,6 +2577,11 @@ export class MultiSelect extends DropDownBase implements IInput {
         if (Browser.isDevice && Browser.info.name === 'mozilla') {
             this.search(e);
         }
+    }
+    private pasteHandler (event: KeyboardEventArgs): void {
+        setTimeout((): void => {
+            this.search(event);
+        });
     }
     private search(e: KeyboardEventArgs): void {
         if (!this.isPopupOpen() && this.openOnClick) {
@@ -3391,12 +3398,19 @@ export class MultiSelect extends DropDownBase implements IInput {
         EventHandler.remove(this.componentWrapper, 'mousemove', this.mouseIn);
         EventHandler.remove(this.componentWrapper, 'mouseout', this.mouseOut);
         EventHandler.remove(this.overAllClear, 'mousedown', this.ClearAll);
+        EventHandler.remove(this.inputElement, 'paste', this.pasteHandler);
     }
     private selectAllItem(state: boolean, event?: MouseEvent | KeyboardEventArgs, list? : HTMLElement): void {
         let li: HTMLElement[] & NodeListOf<Element>;
         li = <HTMLElement[] & NodeListOf<Element>>this.list.querySelectorAll(state ?
             'li.e-list-item:not([aria-selected="true"]):not(.e-reorder-hide)' :
             'li.e-list-item[aria-selected="true"]:not(.e-reorder-hide)');
+        if (this.value && this.value.length && this.isPopupOpen() && event && event.target
+        && closest(event.target as Element, '.e-close-hooker')) {
+            li = <HTMLElement[] & NodeListOf<Element>>this.mainList.querySelectorAll(state ?
+                'li.e-list-item:not([aria-selected="true"]):not(.e-reorder-hide)' :
+                'li.e-list-item[aria-selected="true"]:not(.e-reorder-hide)');
+        }
         if (this.enableGroupCheckBox && this.mode === 'CheckBox' && !isNullOrUndefined(this.fields.groupBy)) {
             let target: Element = <Element>(event ? event.target : null);
             target = (event && (event as KeyboardEvent).keyCode === 32) ? list : target;
@@ -4002,6 +4016,8 @@ export class MultiSelect extends DropDownBase implements IInput {
         this.popupObj = null;
         this.mainList = null;
         this.mainData = null;
+        this.filterParent = null;
+        this.ulElement = null;
         super.destroy();
         let temp: string[] = ['readonly', 'aria-disabled', 'aria-placeholder', 'placeholder'];
         let length: number = temp.length;

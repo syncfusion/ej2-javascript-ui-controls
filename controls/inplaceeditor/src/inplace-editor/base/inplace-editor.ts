@@ -837,7 +837,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         return select('.' + classes.ELEMENTS, this.formEle);
     }
     private getLocale(prop: Object, val: string): string {
-        return new L10n('inplace-editor', prop, this.locale).getConstant(val);
+        return new L10n(this.getModuleName(), prop, this.locale).getConstant(val);
     }
     private checkValue(val: string): string {
         return (!this.isEmpty(val)) ? val : this.emptyText;
@@ -848,9 +848,13 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         this.setProperties({ model: model }, true);
     }
     private updateValue(): void {
+        let value : string | number | string[] | number[] | Date | Date[] = this.value;
+        if (this.enableHtmlSanitizer && typeof(this.value) === 'string') {
+                value = this.sanitizeHelper(this.value);
+        }
         if (!isNOU(this.value)) {
-            this.setProperties({ value: getCompValue(this.type, this.value) }, true);
-            this.extendModelValue(getCompValue(this.type, this.value));
+            this.setProperties({ value: getCompValue(this.type, value) }, true);
+            this.extendModelValue(getCompValue(this.type, value));
         }
     }
     private updateModelValue(): void {
@@ -864,6 +868,9 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
         if (this.isExtModule) {
             this.notify(events.update, { type: this.type });
         } else if (this.componentObj) {
+            if (this.type === 'Numeric' && this.componentObj.value === null) {
+                this.componentObj.setProperties({ value: 0 }, true);
+            }
             this.setProperties({ value: this.componentObj.value }, true);
             this.extendModelValue(this.componentObj.value);
         }
@@ -1067,6 +1074,7 @@ export class InPlaceEditor extends Component<HTMLElement> implements INotifyProp
     }
     private appendTemplate(trgEle: HTMLElement, tempStr: string | HTMLElement): void {
         tempStr = typeof(tempStr) === 'string' ? this.sanitizeHelper(tempStr) : tempStr;
+        this.setProperties({ template: tempStr }, true);
         if (typeof tempStr === 'string' || isNOU((<HTMLElement>tempStr).innerHTML)) {
             if ((<string>tempStr)[0] === '.' || (<string>tempStr)[0] === '#') {
                 if (document.querySelectorAll(<string>tempStr).length) {

@@ -1,5 +1,5 @@
 import { Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, KeyboardEvents, L10n, NotifyPropertyChanges, Property, addClass, classList, closest, compile, createElement, extend, getElement, getEnumValue, getValue, isBlazor, isNullOrUndefined, merge, removeClass, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
-import { Aggregate, CellType, Clipboard, ColumnMenu, CommandColumn, ContextMenu, DetailRow, Edit, ExcelExport, Filter, Freeze, Grid, InterSectionObserver, Page, PdfExport, Print, RenderType, Reorder, Resize, RowDD, RowDropSettings, Scroll, Sort, Toolbar, VirtualContentRenderer, VirtualRowModelGenerator, VirtualScroll, appendChildren, calculateAggregate, getActualProperties, getObject, getUid, gridObserver, iterateArrayOrObject, parentsUntil } from '@syncfusion/ej2-grids';
+import { Aggregate, CellType, Clipboard, ColumnChooser, ColumnMenu, CommandColumn, ContextMenu, DetailRow, Edit, ExcelExport, Filter, Freeze, Grid, InterSectionObserver, Page, PdfExport, Print, RenderType, Reorder, Resize, RowDD, RowDropSettings, Scroll, Sort, Toolbar, VirtualContentRenderer, VirtualRowModelGenerator, VirtualScroll, appendChildren, calculateAggregate, getActualProperties, getObject, getUid, gridObserver, iterateArrayOrObject, parentsUntil } from '@syncfusion/ej2-grids';
 import { createCheckBox } from '@syncfusion/ej2-buttons';
 import { CacheAdaptor, DataManager, DataUtil, Deferred, JsonAdaptor, ODataAdaptor, Predicate, Query, RemoteSaveAdaptor, UrlAdaptor, WebApiAdaptor, WebMethodAdaptor } from '@syncfusion/ej2-data';
 import { createSpinner, hideSpinner, showSpinner } from '@syncfusion/ej2-popups';
@@ -186,6 +186,8 @@ const rowSelecting = 'rowSelecting';
 const rowSelected = 'rowSelected';
 /** @hidden */
 const checkboxChange = 'checkboxChange';
+/** @hidden */
+const rowDeselecting = 'rowDeselecting';
 /** @hidden */
 const rowDeselected = 'rowDeselected';
 /** @hidden */
@@ -1446,45 +1448,46 @@ class DataManipulation {
             }
         }
         else if (data instanceof Array) {
-            this.hierarchyData = [];
-            this.taskIds = [];
-            for (let i = 0; i < Object.keys(data).length; i++) {
-                let tempData = data[i];
-                this.hierarchyData.push(extend({}, tempData));
-                if (!isNullOrUndefined(tempData[this.parent.idMapping])) {
-                    this.taskIds.push(tempData[this.parent.idMapping]);
-                }
-            }
-            if (this.isSelfReference) {
-                let selfData = [];
-                let mappingData = new DataManager(this.hierarchyData).executeLocal(new Query()
-                    .group(this.parent.parentIdMapping));
-                for (let i = 0; i < mappingData.length; i++) {
-                    let groupData = mappingData[i];
-                    let index = this.taskIds.indexOf(groupData.key);
-                    if (!isNullOrUndefined(groupData.key)) {
-                        if (index > -1) {
-                            let childData = (groupData.items);
-                            this.hierarchyData[index][this.parent.childMapping] = childData;
-                            continue;
-                        }
-                    }
-                    selfData.push.apply(selfData, groupData.items);
-                }
-                this.hierarchyData = this.selfReferenceUpdate(selfData);
-            }
-            if (!Object.keys(this.hierarchyData).length) {
-                this.parent.flatData = [];
-            }
-            else {
-                this.createRecords(this.hierarchyData);
-            }
-            this.storedIndex = -1;
+            this.convertJSONData(data);
         }
-        // else if (data instanceof DataManager && this.parent.isLocalData) {
-        //   this.convertToFlatData(data.dataSource.json);
-        // }
-        //this.crudActions();
+    }
+    convertJSONData(data) {
+        this.hierarchyData = [];
+        this.taskIds = [];
+        for (let i = 0; i < Object.keys(data).length; i++) {
+            let tempData = data[i];
+            this.hierarchyData.push(extend({}, tempData));
+            if (!isNullOrUndefined(tempData[this.parent.idMapping])) {
+                this.taskIds.push(tempData[this.parent.idMapping]);
+            }
+        }
+        if (this.isSelfReference) {
+            let selfData = [];
+            let mappingData = new DataManager(this.hierarchyData).executeLocal(new Query()
+                .group(this.parent.parentIdMapping));
+            for (let i = 0; i < mappingData.length; i++) {
+                let groupData = mappingData[i];
+                let index = this.taskIds.indexOf(groupData.key);
+                if (!isNullOrUndefined(groupData.key)) {
+                    if (index > -1) {
+                        let childData = (groupData.items);
+                        this.hierarchyData[index][this.parent.childMapping] = childData;
+                        continue;
+                    }
+                }
+                selfData.push.apply(selfData, groupData.items);
+            }
+            this.hierarchyData = this.selfReferenceUpdate(selfData);
+        }
+        if (!Object.keys(this.hierarchyData).length) {
+            let isGantt = 'isGantt';
+            let referenceData = !(this.parent.dataSource instanceof DataManager) && this.parent[isGantt];
+            this.parent.flatData = referenceData ? (this.parent.dataSource) : [];
+        }
+        else {
+            this.createRecords(this.hierarchyData);
+        }
+        this.storedIndex = -1;
     }
     // private crudActions(): void {
     //   if (this.parent.dataSource instanceof DataManager && (this.parent.dataSource.adaptor instanceof RemoteSaveAdaptor)) {
@@ -2505,6 +2508,15 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
                 member: 'columnMenu', args: [this]
             });
         }
+        if (this.showColumnChooser) {
+            modules.push({
+                member: 'ColumnChooser', args: [this]
+            });
+        }
+        this.extendRequiredModules(modules);
+        return modules;
+    }
+    extendRequiredModules(modules) {
         if (this.allowRowDragAndDrop) {
             modules.push({
                 member: 'rowDragAndDrop',
@@ -2535,7 +2547,6 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
                 args: [this]
             });
         }
-        return modules;
     }
     isCommandColumn(columns) {
         return columns.some((col) => {
@@ -2550,7 +2561,9 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
      * @hidden
      */
     unwireEvents() {
-        EventHandler.remove(this.grid.element, 'click', this.mouseClickHandler);
+        if (this.grid && this.grid.element) {
+            EventHandler.remove(this.grid.element, 'click', this.mouseClickHandler);
+        }
     }
     /**
      * For internal use only - To Initialize the component rendering.
@@ -2730,6 +2743,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         this.grid.enableHover = this.enableHover;
         this.grid.enableAutoFill = this.enableAutoFill;
         this.grid.allowRowDragAndDrop = this.allowRowDragAndDrop;
+        this.grid.showColumnChooser = this.showColumnChooser;
         this.grid.rowDropSettings = getActualProperties(this.rowDropSettings);
         this.grid.rowHeight = this.rowHeight;
         this.grid.gridLines = this.gridLines;
@@ -2762,31 +2776,6 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
     }
     bindGridEvents() {
         let treeGrid = this;
-        this.grid.rowSelecting = this.triggerEvents.bind(this);
-        this.grid.rowSelected = (args) => {
-            if (!isBlazor()) {
-                this.selectedRowIndex = this.grid.selectedRowIndex;
-            }
-            else if (isBlazor() && this.isServerRendered) {
-                this.allowServerDataBinding = false;
-                this.setProperties({ selectedRowIndex: this.grid.selectedRowIndex }, true);
-                this.allowServerDataBinding = true;
-            }
-            treeGrid.notify(rowSelected, args);
-            this.trigger(rowSelected, args);
-        };
-        this.grid.rowDeselected = (args) => {
-            this.selectedRowIndex = this.grid.selectedRowIndex;
-            if (isBlazor()) {
-                let data = 'data';
-                let rowIndex = 'rowIndex';
-                let row = 'row';
-                args[data] = args[data][args[data].length - 1];
-                args[rowIndex] = args[rowIndex][args[rowIndex].length - 1];
-                args[row] = args[row][args[row].length - 1];
-            }
-            this.trigger(rowDeselected, args);
-        };
         this.grid.resizeStop = (args) => {
             this.updateColumnModel();
             this.trigger(resizeStop, args);
@@ -2818,7 +2807,6 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         this.grid.pdfHeaderQueryCellInfo = this.triggerEvents.bind(this);
         this.grid.dataSourceChanged = this.triggerEvents.bind(this);
         this.grid.recordDoubleClick = this.triggerEvents.bind(this);
-        this.grid.rowDeselecting = this.triggerEvents.bind(this);
         this.grid.cellDeselected = this.triggerEvents.bind(this);
         this.grid.cellDeselecting = this.triggerEvents.bind(this);
         this.grid.columnMenuOpen = this.triggerEvents.bind(this);
@@ -2844,6 +2832,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         };
         this.grid.printComplete = this.triggerEvents.bind(this);
         this.grid.actionFailure = this.triggerEvents.bind(this);
+        this.extendedGridRowSelectEvents();
         this.extendedGridDataBoundEvent();
         this.extendedGridEvents();
         this.extendedGridActionEvents();
@@ -2851,6 +2840,51 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         this.extendedGridBatchEvents();
         this.bindGridDragEvents();
         this.bindCallBackEvents();
+    }
+    extendedGridRowSelectEvents() {
+        let treeGrid = this;
+        this.grid.rowSelecting = (args) => {
+            if (isNullOrUndefined(args.target) || !(args.target.classList.contains('e-treegridexpand') ||
+                args.target.classList.contains('e-treegridcollapse'))) {
+                treeGrid.notify(rowSelecting, args);
+                this.trigger(rowSelecting, args);
+            }
+            else {
+                args.cancel = true;
+            }
+        };
+        this.grid.rowSelected = (args) => {
+            if (!isBlazor()) {
+                this.selectedRowIndex = this.grid.selectedRowIndex;
+            }
+            else if (isBlazor() && this.isServerRendered) {
+                this.allowServerDataBinding = false;
+                this.setProperties({ selectedRowIndex: this.grid.selectedRowIndex }, true);
+                this.allowServerDataBinding = true;
+            }
+            treeGrid.notify(rowSelected, args);
+            this.trigger(rowSelected, args);
+        };
+        this.grid.rowDeselected = (args) => {
+            this.selectedRowIndex = this.grid.selectedRowIndex;
+            if (isBlazor()) {
+                let length = 'length';
+                args.data = args.data[args.data[length] - 1];
+                args.rowIndex = args.rowIndex[args.rowIndex[length] - 1];
+                args.row = args.row[args.row[length] - 1];
+            }
+            this.trigger(rowDeselected, args);
+        };
+        this.grid.rowDeselecting = (args) => {
+            if (isNullOrUndefined(args.target) || !(args.target.classList.contains('e-treegridexpand') ||
+                args.target.classList.contains('e-treegridcollapse'))) {
+                treeGrid.notify(rowDeselecting, args);
+                this.trigger(rowDeselecting, args);
+            }
+            else {
+                args.cancel = true;
+            }
+        };
     }
     extendedGridDataBoundEvent() {
         let treeGrid = this;
@@ -3527,6 +3561,9 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
                 case 'frozenRows':
                     this.grid.frozenRows = this.frozenRows;
                     break;
+                case 'showColumnChooser':
+                    this.grid.showColumnChooser = this.showColumnChooser;
+                    break;
                 case 'frozenColumns':
                     this.grid.frozenColumns = this.frozenColumns;
                     break;
@@ -3613,8 +3650,12 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         this.removeListener();
         this.unwireEvents();
         super.destroy();
-        this.grid.destroy();
-        this.dataModule.destroy();
+        if (this.grid) {
+            this.grid.destroy();
+        }
+        if (this.dataModule) {
+            this.dataModule.destroy();
+        }
         let modules = ['dataModule', 'sortModule', 'renderModule', 'filterModule', 'printModule', 'clipboardModule',
             'excelExportModule', 'pdfExportModule', 'toolbarModule', 'summaryModule', 'reorderModule', 'resizeModule',
             'pagerModule', 'keyboardModule', 'columnMenuModule', 'contextMenuModule', 'editModule', 'virtualScrollModule',
@@ -4078,10 +4119,16 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         this.grid[persist2].apply(this, [storedColumn, columns]);
     }
     updateTreeGridModel() {
+        if (isBlazor() && this.isServerRendered) {
+            this.allowServerDataBinding = false;
+        }
         this.setProperties({ filterSettings: getObject('properties', this.grid.filterSettings) }, true);
         this.setProperties({ pageSettings: getObject('properties', this.grid.pageSettings) }, true);
         this.setProperties({ searchSettings: getObject('properties', this.grid.searchSettings) }, true);
         this.setProperties({ sortSettings: getObject('properties', this.grid.sortSettings) }, true);
+        if (isBlazor() && this.isServerRendered) {
+            this.allowServerDataBinding = true;
+        }
     }
     /**
      * Gets the content table of the TreeGrid.
@@ -4933,6 +4980,9 @@ __decorate([
 ], TreeGrid.prototype, "showColumnMenu", void 0);
 __decorate([
     Property(false)
+], TreeGrid.prototype, "showColumnChooser", void 0);
+__decorate([
+    Property(false)
 ], TreeGrid.prototype, "allowSorting", void 0);
 __decorate([
     Property(true)
@@ -5678,10 +5728,10 @@ class RowDD$1 {
                 this.dropRows(args, isByMethod);
             }
             //this.refreshGridDataSource();
-            this.parent.refresh();
             if (tObj.isLocalData) {
                 tObj.flatData = this.orderToIndex(tObj.flatData);
             }
+            this.parent.refresh();
         }
         else {
             return;
@@ -5690,6 +5740,12 @@ class RowDD$1 {
     orderToIndex(currentData) {
         for (let i = 0; i < currentData.length; i++) {
             currentData[i].index = i;
+            if (!isNullOrUndefined(currentData[i].parentItem)) {
+                let updatedParent = currentData.filter((data) => {
+                    return data.uniqueID === currentData[i].parentUniqueID;
+                })[0];
+                currentData[i].parentItem.index = updatedParent.index;
+            }
         }
         return currentData;
     }
@@ -6089,10 +6145,10 @@ class RowDD$1 {
                     if (!isCountRequired(this.parent)) {
                         this.dropRows(args);
                     }
-                    tObj.refresh();
                     if (tObj.isLocalData) {
                         tObj.flatData = this.orderToIndex(tObj.flatData);
                     }
+                    tObj.refresh();
                     if (!isNullOrUndefined(tObj.getHeaderContent().querySelector('.e-firstrow-border'))) {
                         tObj.getHeaderContent().querySelector('.e-firstrow-border').remove();
                     }
@@ -9705,6 +9761,30 @@ class Freeze$1 {
 }
 
 /**
+ * TreeGrid ColumnChooser module
+ * @hidden
+ */
+class ColumnChooser$1 {
+    /**
+     * Constructor for render module
+     */
+    constructor(parent) {
+        Grid.Inject(ColumnChooser);
+        this.parent = parent;
+    }
+    destroy() {
+        //this.parent.grid.ColumnChooserModule.destroy();
+    }
+    /**
+     * For internal use only - Get the module name.
+     * @private
+     */
+    getModuleName() {
+        return 'ColumnChooser';
+    }
+}
+
+/**
  * actions export
  */
 
@@ -9716,5 +9796,5 @@ class Freeze$1 {
  * Export TreeGrid component
  */
 
-export { TreeGrid, load, rowDataBound, dataBound, queryCellInfo, beforeDataBound, actionBegin, dataStateChange, actionComplete, rowSelecting, rowSelected, checkboxChange, rowDeselected, toolbarClick, beforeExcelExport, beforePdfExport, resizeStop, expanded, expanding, collapsed, collapsing, remoteExpand, localPagedExpandCollapse, pagingActions, printGridInit, contextMenuOpen, contextMenuClick, beforeCopy, beforePaste, savePreviousRowPosition, crudAction, beginEdit, beginAdd, recordDoubleClick, cellSave, cellSaved, cellEdit, batchDelete, batchCancel, batchAdd, beforeBatchDelete, beforeBatchAdd, beforeBatchSave, batchSave, keyPressed, updateData, doubleTap, virtualColumnIndex, virtualActionArgs, dataListener, indexModifier, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, detailDataBound, rowDrag, rowDragStartHelper, rowDrop, rowDragStart, rowsAdd, rowsRemove, rowdraging, rowDropped, DataManipulation, Reorder$1 as Reorder, Resize$1 as Resize, RowDD$1 as RowDD, Column, EditSettings, Predicate$1 as Predicate, FilterSettings, PageSettings, SearchSettings, SelectionSettings, AggregateColumn, AggregateRow, SortDescriptor, SortSettings, RowDropSettings$1 as RowDropSettings, Render, TreeVirtualRowModelGenerator, isRemoteData, isCountRequired, isCheckboxcolumn, isFilterChildHierarchy, findParentRecords, getExpandStatus, findChildrenRecords, isOffline, extendArray, getPlainData, getParentData, ToolbarItem, ContextMenuItems, Filter$1 as Filter, ExcelExport$1 as ExcelExport, PdfExport$1 as PdfExport, Page$1 as Page, Toolbar$1 as Toolbar, Aggregate$1 as Aggregate, Sort$1 as Sort, TreeClipboard, ColumnMenu$1 as ColumnMenu, ContextMenu$1 as ContextMenu, Edit$1 as Edit, CommandColumn$1 as CommandColumn, Selection, DetailRow$1 as DetailRow, VirtualScroll$1 as VirtualScroll, TreeVirtual, Freeze$1 as Freeze };
+export { TreeGrid, load, rowDataBound, dataBound, queryCellInfo, beforeDataBound, actionBegin, dataStateChange, actionComplete, rowSelecting, rowSelected, checkboxChange, rowDeselecting, rowDeselected, toolbarClick, beforeExcelExport, beforePdfExport, resizeStop, expanded, expanding, collapsed, collapsing, remoteExpand, localPagedExpandCollapse, pagingActions, printGridInit, contextMenuOpen, contextMenuClick, beforeCopy, beforePaste, savePreviousRowPosition, crudAction, beginEdit, beginAdd, recordDoubleClick, cellSave, cellSaved, cellEdit, batchDelete, batchCancel, batchAdd, beforeBatchDelete, beforeBatchAdd, beforeBatchSave, batchSave, keyPressed, updateData, doubleTap, virtualColumnIndex, virtualActionArgs, dataListener, indexModifier, beforeStartEdit, beforeBatchCancel, batchEditFormRendered, detailDataBound, rowDrag, rowDragStartHelper, rowDrop, rowDragStart, rowsAdd, rowsRemove, rowdraging, rowDropped, DataManipulation, Reorder$1 as Reorder, Resize$1 as Resize, RowDD$1 as RowDD, Column, EditSettings, Predicate$1 as Predicate, FilterSettings, PageSettings, SearchSettings, SelectionSettings, AggregateColumn, AggregateRow, SortDescriptor, SortSettings, RowDropSettings$1 as RowDropSettings, Render, TreeVirtualRowModelGenerator, isRemoteData, isCountRequired, isCheckboxcolumn, isFilterChildHierarchy, findParentRecords, getExpandStatus, findChildrenRecords, isOffline, extendArray, getPlainData, getParentData, ToolbarItem, ContextMenuItems, Filter$1 as Filter, ExcelExport$1 as ExcelExport, PdfExport$1 as PdfExport, Page$1 as Page, Toolbar$1 as Toolbar, Aggregate$1 as Aggregate, Sort$1 as Sort, TreeClipboard, ColumnMenu$1 as ColumnMenu, ContextMenu$1 as ContextMenu, Edit$1 as Edit, CommandColumn$1 as CommandColumn, Selection, DetailRow$1 as DetailRow, VirtualScroll$1 as VirtualScroll, TreeVirtual, Freeze$1 as Freeze, ColumnChooser$1 as ColumnChooser };
 //# sourceMappingURL=ej2-treegrid.es2015.js.map

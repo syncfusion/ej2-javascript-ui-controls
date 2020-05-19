@@ -126,46 +126,48 @@ public isRemote(): boolean {
         }
       }
     } else if (data instanceof Array) {
-      this.hierarchyData = [];
-      this.taskIds = [];
-      for (let i: number = 0; i < Object.keys(data).length; i++) {
-        let tempData: Object = data[i];
-        this.hierarchyData.push(extend({}, tempData));
-        if (!isNullOrUndefined(tempData[this.parent.idMapping])) {
-          this.taskIds.push(tempData[this.parent.idMapping]);
-        }
-      }
-      if (this.isSelfReference) {
-        let selfData: ITreeData[] = [];
-        let mappingData: Object[] = new DataManager(this.hierarchyData).executeLocal(
-          new Query()
-            .group(this.parent.parentIdMapping)
-        );
-        for (let i: number = 0; i < mappingData.length; i++) {
-          let groupData: Group = mappingData[i];
-          let index: number = this.taskIds.indexOf(groupData.key);
-          if (!isNullOrUndefined(groupData.key)) {
-            if (index > -1) {
-              let childData: Object[] = (groupData.items);
-              this.hierarchyData[index][this.parent.childMapping] = childData;
-              continue;
-            }
-          }
-          selfData.push.apply(selfData, groupData.items);
-        }
-        this.hierarchyData = this.selfReferenceUpdate(selfData);
-      }
-      if (!Object.keys(this.hierarchyData).length) {
-        this.parent.flatData = [];
-      } else {
-        this.createRecords(this.hierarchyData);
-      }
-      this.storedIndex = -1;
+      this.convertJSONData(data);
+    }
   }
-  // else if (data instanceof DataManager && this.parent.isLocalData) {
-  //   this.convertToFlatData(data.dataSource.json);
-  // }
-    //this.crudActions();
+
+  private convertJSONData(data: Object): void {
+    this.hierarchyData = [];
+    this.taskIds = [];
+    for (let i: number = 0; i < Object.keys(data).length; i++) {
+      let tempData: Object = data[i];
+      this.hierarchyData.push(extend({}, tempData));
+      if (!isNullOrUndefined(tempData[this.parent.idMapping])) {
+        this.taskIds.push(tempData[this.parent.idMapping]);
+      }
+    }
+    if (this.isSelfReference) {
+      let selfData: ITreeData[] = [];
+      let mappingData: Object[] = new DataManager(this.hierarchyData).executeLocal(
+        new Query()
+          .group(this.parent.parentIdMapping)
+      );
+      for (let i: number = 0; i < mappingData.length; i++) {
+        let groupData: Group = mappingData[i];
+        let index: number = this.taskIds.indexOf(groupData.key);
+        if (!isNullOrUndefined(groupData.key)) {
+          if (index > -1) {
+            let childData: Object[] = (groupData.items);
+            this.hierarchyData[index][this.parent.childMapping] = childData;
+            continue;
+          }
+        }
+        selfData.push.apply(selfData, groupData.items);
+      }
+      this.hierarchyData = this.selfReferenceUpdate(selfData);
+    }
+    if (!Object.keys(this.hierarchyData).length) {
+      let isGantt: string = 'isGantt';
+      let referenceData: boolean = !(this.parent.dataSource instanceof DataManager) && this.parent[isGantt];
+      this.parent.flatData = referenceData ? <Object[]>(this.parent.dataSource) : [];
+    } else {
+      this.createRecords(this.hierarchyData);
+    }
+    this.storedIndex = -1;
   }
   // private crudActions(): void {
   //   if (this.parent.dataSource instanceof DataManager && (this.parent.dataSource.adaptor instanceof RemoteSaveAdaptor)) {

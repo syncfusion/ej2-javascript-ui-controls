@@ -127,4 +127,10 @@ export class TaskFields extends ChildProperty<TaskFields> {
      */
     @Property(null)
     public manual: string;
+    /** 
+     * To map taskType value of task from data source
+     * @default null      
+     */
+    @Property(null)
+    public type: string;
 }

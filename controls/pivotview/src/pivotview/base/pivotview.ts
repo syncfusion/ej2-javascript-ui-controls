@@ -535,6 +535,8 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
     /** @hidden */
     public isModified: boolean = false;
     /** @hidden */
+    private isInitialRendering: boolean = false;
+    /** @hidden */
     public lastGridSettings: GridSettingsModel;
     protected needsID: boolean = true;
     private cellTemplateFn: Function;
@@ -2198,8 +2200,11 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         this.trigger(events.load, loadArgs, (observedArgs: LoadEventArgs) => {
             if (isBlazor()) {
                 observedArgs.dataSourceSettings.dataSource = this.dataSourceSettings.dataSource;
+                PivotUtil.updateDataSourceSettings(this, observedArgs.dataSourceSettings);
             }
-            this.dataSourceSettings = observedArgs.dataSourceSettings;
+            else {
+                this.dataSourceSettings = observedArgs.dataSourceSettings;
+            }
             this.fieldsType = observedArgs.fieldsType;
             this.updateClass();
             this.notify(events.initSubComponent, {});
@@ -2608,6 +2613,11 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
             if (this.toolbarModule && this.toolbarModule.action !== 'New' && this.toolbarModule.action !== 'Load'
                 && this.toolbarModule.action !== 'Remove') {
                 this.isModified = true;
+            }
+            if (isBlazor() && !this.isInitialRendering) {
+                this.isModified = false;
+                this.isInitialRendering = !this.isInitialRendering;
+                
             }
             this.toolbarModule.action = '';
         }

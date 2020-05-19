@@ -2036,8 +2036,16 @@ export class CommandHandler {
                     this.moveObject(selectedObject[1].id, selectedObject[0].id);
                 } else if (action === 'SendForward') {
                     this.moveObject(selectedObject[0].id, selectedObject[1].id);
-                } else if (action === 'BringToFront' || action === 'SendToBack') {
+                } else if (action === 'BringToFront' ) {
                     this.moveObject(selectedObject[0].id, zIndexTable[selectedObject[0].zIndex + 1]);
+                } else if (action === 'SendToBack') {
+                    let layer: LayerModel = this.getObjectLayer(selectedObject[0].id);
+                    for (let i: number = 0; i <= selectedObject[0].zIndex; i++) {
+                        if (layer.objects[i] !== selectedObject[0].id) {
+                            this.moveSvgNode(layer.objects[i], selectedObject[0].id);
+                            this.updateNativeNodeIndex(selectedObject[0].id);
+                        }
+                    }
                 }
             } else {
                 this.diagram.refreshCanvasLayers();

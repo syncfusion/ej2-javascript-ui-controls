@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, blazorTemplates, classList, cldrData, closest, compile, detach, extend, getComponent, getInstance, getValue, isBlazor, isNullOrUndefined, removeClass, resetBlazorTemplate, rippleEffect, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Event, EventHandler, Internationalization, L10n, NotifyPropertyChanges, Property, addClass, blazorTemplates, classList, cldrData, closest, compile, detach, extend, getComponent, getInstance, getUniqueID, getValue, isBlazor, isNullOrUndefined, removeClass, resetBlazorTemplate, rippleEffect, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { Button, RadioButton } from '@syncfusion/ej2-buttons';
 import { CheckBoxSelection, DropDownList, MultiSelect } from '@syncfusion/ej2-dropdowns';
 import { DataManager, Deferred, Predicate, Query, UrlAdaptor } from '@syncfusion/ej2-data';
@@ -797,7 +797,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                 value = this.selectedColumn.values[rbValue];
             }
             else {
-                let valColl = ['True', 'False'];
+                let valColl = [true, false];
                 value = valColl[rbValue];
             }
         }
@@ -943,8 +943,8 @@ let QueryBuilder = class QueryBuilder extends Component {
             }
             if (ddlArgs.previousItemData) {
                 let prevValue = ddlArgs.previousItemData.value.toLowerCase();
-                if (prevValue.indexOf('between') > -1 || (prevValue.indexOf('in') > -1 || (prevValue.indexOf('null') > -1)
-                    || (prevValue.indexOf('empty') > -1) && prevValue.indexOf('contains') < 0)) {
+                if ((prevValue.indexOf('between') > -1 || (prevValue.indexOf('in') > -1 || (prevValue.indexOf('null') > -1)
+                    || (prevValue.indexOf('empty') > -1)) && prevValue.indexOf('contains') < 0)) {
                     filterElem = operatorElem.previousElementSibling;
                     tempRule.type = rule.type;
                 }
@@ -989,6 +989,8 @@ let QueryBuilder = class QueryBuilder extends Component {
                     operatorList = this.customOperators[this.selectedColumn.type + 'Operator'];
                 }
                 let height = (this.element.className.indexOf('e-device') > -1) ? '250px' : '200px';
+                let value = operatorList[0].value;
+                value = rule ? (rule.operator !== '' ? rule.operator : value) : value;
                 let dropDownList = new DropDownList({
                     dataSource: operatorList,
                     fields: { text: 'key', value: 'value' },
@@ -996,7 +998,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                     popupHeight: ((operatorList.length > 5) ? height : 'auto'),
                     change: this.changeField.bind(this),
                     index: 0,
-                    value: rule ? rule.operator : null
+                    value: value
                 });
                 dropDownList.appendTo('#' + ruleId + '_operatorkey');
                 tempRule.operator = (rule && rule.operator !== '') ? rule.operator : operatorList[0].value;
@@ -1387,27 +1389,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                             }
                             break;
                         case 'boolean':
-                            {
-                                let values = itemData.values && itemData.values.length ? itemData.values : ['True', 'False'];
-                                let isCheck = false;
-                                if (rule.type === 'boolean' && rule.value) {
-                                    isCheck = values[i].toLowerCase() === rule.value.toString().toLowerCase();
-                                }
-                                else if (itemData.value) {
-                                    isCheck = values[i].toLowerCase() === itemData.value.toString().toLowerCase();
-                                }
-                                else if (i === 0) {
-                                    isCheck = true;
-                                }
-                                let radiobutton = new RadioButton({
-                                    label: values[i].toString(), name: parentId + 'default', checked: isCheck, value: values[i],
-                                    change: this.changeValue.bind(this, i)
-                                });
-                                radiobutton.appendTo('#' + parentId + '_valuekey' + i);
-                                if (isCheck) {
-                                    this.updateRules(radiobutton.element, values[i], 0);
-                                }
-                            }
+                            this.processBoolValues(itemData, rule, parentId, i);
                             break;
                         case 'date':
                             {
@@ -1458,6 +1440,46 @@ let QueryBuilder = class QueryBuilder extends Component {
                     }
                 }
             }
+        }
+    }
+    processBoolValues(itemData, rule, parentId, i) {
+        let isCheck = false;
+        let value;
+        let orgValue;
+        if (itemData.values) {
+            let values = itemData.values;
+            if (rule.type === 'boolean' && rule.value) {
+                isCheck = values[i].toLowerCase() === rule.value.toString().toLowerCase();
+            }
+            else if (itemData.value) {
+                isCheck = values[i].toLowerCase() === itemData.value.toString().toLowerCase();
+            }
+            else if (i === 0) {
+                isCheck = true;
+            }
+            orgValue = value = values[i];
+        }
+        else {
+            let values = [true, false];
+            if (rule.type === 'boolean' && rule.value) {
+                isCheck = values[i].toString().toLowerCase() === rule.value.toString().toLowerCase();
+            }
+            else if (itemData.value) {
+                isCheck = values[i].toString().toLowerCase() === itemData.value.toString().toLowerCase();
+            }
+            else if (i === 0) {
+                isCheck = true;
+            }
+            value = values[i].toString();
+            orgValue = values[i];
+        }
+        let radiobutton = new RadioButton({
+            label: value, name: parentId + 'default', checked: isCheck, value: value,
+            change: this.changeValue.bind(this, i)
+        });
+        radiobutton.appendTo('#' + parentId + '_valuekey' + i);
+        if (isCheck) {
+            this.updateRules(radiobutton.element, orgValue, 0);
         }
     }
     getOperatorIndex(ddlObj, rule) {
@@ -1586,7 +1608,17 @@ let QueryBuilder = class QueryBuilder extends Component {
             case 'radio':
                 let radioBtnObj = getComponent(element, controlName);
                 if (radioBtnObj.checked) {
-                    rule.value = radioBtnObj.value;
+                    if (typeof rule.value === 'boolean') {
+                        rule.value = radioBtnObj.value === 'true';
+                    }
+                    else {
+                        if (this.getColumn(rule.field).values) {
+                            rule.value = radioBtnObj.value;
+                        }
+                        else {
+                            rule.value = radioBtnObj.value === 'true';
+                        }
+                    }
                 }
                 radioBtnObj.refresh();
                 break;
@@ -2197,6 +2229,7 @@ let QueryBuilder = class QueryBuilder extends Component {
         }
     }
     preRender() {
+        this.element.id = this.element.id || getUniqueID('ej2-querybuilder');
         this.defaultLocale = {
             StartsWith: 'Starts With',
             EndsWith: 'Ends With',
@@ -3208,7 +3241,7 @@ let QueryBuilder = class QueryBuilder extends Component {
                         valueStr += '("%' + rule.value + '%")';
                     }
                     else {
-                        if (rule.type === 'number') {
+                        if (rule.type === 'number' || typeof rule.value === 'boolean') {
                             valueStr += rule.value;
                         }
                         else {

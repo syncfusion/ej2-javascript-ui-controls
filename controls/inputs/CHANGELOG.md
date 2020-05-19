@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.53 (2020-05-19)
+
+### Slider
+
+#### New Features
+
+- Now, you can set the width of the slider component using `width` property.
+
 ## 18.1.52 (2020-05-13)
 
 ### Uploader

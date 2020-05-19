@@ -3,6 +3,7 @@
 
     &.e-splitter-horizontal,
     &.e-splitter-vertical {
+      background-color: $splitter-background-color;
       border: solid 1px $splitter-border-color;
 
       .e-pane {

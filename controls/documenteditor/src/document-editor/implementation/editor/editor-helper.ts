@@ -369,11 +369,11 @@ export class HelperMethods {
             case 'lowercase':
                 text = value.toLowerCase();
                 break;
-            case 'first capital':
-                text = this.capitaliseFirst(value, 'First capital');
+            case 'firstcapital':
+                text = this.capitaliseFirst(value, 'FirstCapital');
                 break;
-            case 'title case':
-                text = this.capitaliseFirst(value, 'Title case');
+            case 'titlecase':
+                text = this.capitaliseFirst(value, 'Titlecase');
                 break;
         }
         return text;
@@ -426,17 +426,21 @@ export class HelperMethods {
     /**
      * @private
      */
-    public static capitaliseFirst(value: string, type: string): string {
+    public static capitaliseFirst(value: string, type: string, splitBy?: string): string {
         let text: string = '';
-        if (type === 'Title case') {
-            let valArry: string[] = value.split(' ');
+        if (type === 'Titlecase') {
+            let valArry: string[] = splitBy ? value.split(splitBy) : value.split(' ');
             for (let i: number = 0; i < valArry.length; i++) {
-                text += this.capitaliseFirstInternal(valArry[i]);
-                if (valArry.length >= 0) {
+                // tslint:disable-next-line:max-line-length
+                text += splitBy ? valArry[i].charAt(0).toUpperCase() + valArry[i].slice(1, valArry[i].length) : this.capitaliseFirstInternal(valArry[i]);
+                if (valArry.length >= 0 && !splitBy) {
                     text += ' ';
                 }
             }
-        } else if (type === 'First capital') {
+            if (!splitBy) {
+                text = this.capitaliseFirst(text, 'Titlecase', '\r');
+            }
+        } else if (type === 'FirstCapital') {
             text = this.capitaliseFirstInternal(value);
         }
         return text;

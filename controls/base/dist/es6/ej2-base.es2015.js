@@ -5289,7 +5289,11 @@ class Browser {
      */
     static get isTouch() {
         if (isUndefined(window.browserDetails.isTouch)) {
-            return window.browserDetails.isTouch = ('ontouchstart' in window);
+            return (window.browserDetails.isTouch =
+                ('ontouchstart' in window.navigator) ||
+                    (window &&
+                        window.navigator &&
+                        (window.navigator.maxTouchPoints > 0)) || ('ontouchstart' in window));
         }
         return window.browserDetails.isTouch;
     }
@@ -7981,7 +7985,7 @@ let Touch = class Touch extends Base {
         this.tapCount = 0;
         this.startEvent = (evt) => {
             if (this.touchAction === true) {
-                let point = (evt.changedTouches ? evt.changedTouches[0] : evt);
+                let point = this.updateChangeTouches(evt);
                 if (evt.changedTouches !== undefined) {
                     this.touchAction = false;
                 }
@@ -7998,7 +8002,7 @@ let Touch = class Touch extends Base {
             }
         };
         this.moveEvent = (evt) => {
-            let point = evt.changedTouches ? evt.changedTouches[0] : evt;
+            let point = this.updateChangeTouches(evt);
             this.movedPoint = point;
             this.isTouchMoved = !(point.clientX === this.startPoint.clientX && point.clientY === this.startPoint.clientY);
             let eScrollArgs = {};
@@ -8039,10 +8043,7 @@ let Touch = class Touch extends Base {
         this.swipeFn = (evt) => {
             clearTimeout(this.timeOutTapHold);
             clearTimeout(this.timeOutTap);
-            let point = evt;
-            if (evt.changedTouches) {
-                point = evt.changedTouches[0];
-            }
+            let point = this.updateChangeTouches(evt);
             let diffX = point.clientX - this.startPoint.clientX;
             let diffY = point.clientY - this.startPoint.clientY;
             diffX = Math.floor(diffX < 0 ? -1 * diffX : diffX);
@@ -8153,7 +8154,7 @@ let Touch = class Touch extends Base {
         EventHandler.remove(this.element, Browser.touchCancelEvent, this.cancelEvent);
     }
     calcPoints(evt) {
-        let point = evt.changedTouches ? evt.changedTouches[0] : evt;
+        let point = this.updateChangeTouches(evt);
         this.defaultArgs = { originalEvent: evt };
         this.distanceX = Math.abs((Math.abs(point.clientX) - Math.abs(this.startPoint.clientX)));
         this.distanceY = Math.abs((Math.abs(point.clientY) - Math.abs(this.startPoint.clientY)));
@@ -8165,7 +8166,7 @@ let Touch = class Touch extends Base {
         }
     }
     calcScrollPoints(evt) {
-        let point = evt.changedTouches ? evt.changedTouches[0] : evt;
+        let point = this.updateChangeTouches(evt);
         this.defaultArgs = { originalEvent: evt };
         this.distanceX = Math.abs((Math.abs(point.clientX) - Math.abs(this.lastMovedPoint.clientX)));
         this.distanceY = Math.abs((Math.abs(point.clientY) - Math.abs(this.lastMovedPoint.clientY)));
@@ -8196,6 +8197,11 @@ let Touch = class Touch extends Base {
         }
         return (ele[keys[0] + temp[1]] === 0) ||
             (ele[keys[1] + temp[0]] + ele[keys[0] + temp[1]] >= ele[keys[0] + temp[0]]);
+    }
+    updateChangeTouches(evt) {
+        // tslint:disable-next-line:max-line-length
+        let point = evt.changedTouches && evt.changedTouches.length !== 0 ? evt.changedTouches[0] : evt;
+        return point;
     }
 };
 __decorate$5([
@@ -8357,7 +8363,19 @@ class SanitizeHtmlHelper {
         this.removeXssTags();
         this.removeJsEvents();
         this.removeXssAttrs();
-        return this.wrapElement.innerHTML;
+        let tempEleValue = this.wrapElement.innerHTML;
+        this.removeElement();
+        return tempEleValue;
+    }
+    static removeElement() {
+        // Removes an element's attibute to avoid html tag validation
+        let nodes = this.wrapElement.children;
+        for (let j = 0; j < nodes.length; j++) {
+            let attribute = nodes[j].attributes;
+            for (let i = 0; i < attribute.length; i++) {
+                this.wrapElement.children[j].removeAttribute(attribute[i].localName);
+            }
+        }
     }
     static removeXssTags() {
         let elements = this.wrapElement.querySelectorAll(this.removeTags.join(','));

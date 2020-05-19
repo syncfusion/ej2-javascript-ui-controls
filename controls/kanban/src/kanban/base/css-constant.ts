@@ -22,6 +22,8 @@ export const HEADER_TABLE_CLASS: string = 'e-header-table';
 /** @hidden */
 export const HEADER_CELLS_CLASS: string = 'e-header-cells';
 /** @hidden */
+export const HEADER_BOTTOM_CLASS: string = 'e-header-bottom';
+/** @hidden */
 export const HEADER_WRAP_CLASS: string = 'e-header-wrap';
 /** @hidden */
 export const HEADER_TITLE_CLASS: string = 'e-header-title';
@@ -59,6 +61,8 @@ export const CARD_ITEM_COUNT_CLASS: string = 'e-item-count';
 export const CARD_WRAPPER_CLASS: string = 'e-card-wrapper';
 /** @hidden */
 export const CARD_CLASS: string = 'e-card';
+/** @hidden */
+export const DRAGGABLE_CLASS: string = 'e-draggable';
 /** @hidden */
 export const CARD_HEADER_CLASS: string = 'e-card-header';
 /** @hidden */

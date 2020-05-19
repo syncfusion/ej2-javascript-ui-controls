@@ -114,22 +114,22 @@ let connector2: ConnectorModel = {
     id: 'connector2', type: 'Straight', sourceID: 'Meeting', targetID: 'BoardDecision', annotations: [{
         id: 'label8', content: '~ConnectNearAll'
 
-    }], connectPadding: 25, constraints: ConnectorConstraints.Default & ~(ConnectorConstraints.ConnectNearAll)
+    }], connectionPadding: 25, constraints: ConnectorConstraints.Default & ~(ConnectorConstraints.ConnectToNearByElement)
 };
 let connector3: ConnectorModel = {
     id: 'connector3', type: 'Straight', sourceID: 'BoardDecision', targetID: 'Project', annotations: [{
         id: 'label8', content: '~ConnectNearPort'
 
-    }], connectPadding: 25, constraints: ConnectorConstraints.Default & ~(ConnectorConstraints.ConnectNearPort)
+    }], connectionPadding: 25, constraints: ConnectorConstraints.Default & ~(ConnectorConstraints.ConnectToNearByPort)
 };
 let connector4: ConnectorModel = {
     id: 'connector4', type: 'Straight', sourceID: 'Project', targetID: 'End', annotations: [{
         id: 'label8', content: '~ConnectNearNode'
 
-    }], connectPadding: 25, constraints: ConnectorConstraints.Default & ~(ConnectorConstraints.ConnectNearNode)
+    }], connectionPadding: 25, constraints: ConnectorConstraints.Default & ~(ConnectorConstraints.ConnectToNearByElement)
 };
 let connector5: ConnectorModel = {
-    id: 'connector5', type: 'Straight', sourceID: 'BoardDecision', targetID: 'Reject', connectPadding: 25,
+    id: 'connector5', type: 'Straight', sourceID: 'BoardDecision', targetID: 'Reject', connectionPadding: 25,
 };
 
 let diagram: Diagram = new Diagram({

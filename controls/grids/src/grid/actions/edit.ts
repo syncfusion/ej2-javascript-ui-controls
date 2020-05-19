@@ -531,8 +531,10 @@ export class Edit implements IAction {
         if (gObj.editSettings.template) {
             let elements: HTMLInputElement[] = [].slice.call((<HTMLFormElement>form).elements);
             for (let k: number = 0; k < elements.length; k++) {
-                if (elements[k].hasAttribute('name')) {
-                    let field: string = setComplexFieldID(elements[k].getAttribute('name'));
+                if ((elements[k].hasAttribute('name') && (elements[k].className !== 'e-multi-hidden')) ||
+                    elements[k].classList.contains('e-multiselect')) {
+                    let field: string = (elements[k].hasAttribute('name')) ? setComplexFieldID(elements[k].getAttribute('name')) :
+                        setComplexFieldID(elements[k].getAttribute('id'));
                     let column: Column = gObj.getColumnByField(field) || { field: field, type: elements[k].getAttribute('type') } as Column;
                     let value: string | Date | boolean;
                     if (column.type === 'checkbox' || column.type === 'boolean') {
@@ -545,10 +547,12 @@ export class Edit implements IAction {
                             elements[k].blur();
                             value = ((<EJ2Intance>(elements[k] as Element)).ej2_instances[0] as { value?: string | boolean | Date }).value;
                             if ((column.type === 'date' || column.type === 'dateTime' || column.type === 'datetime') &&
-                            ((<EJ2Intance>(elements[k] as Element)).ej2_instances[0].isServerRendered)) {
+                                ((<EJ2Intance>(elements[k] as Element)).ej2_instances[0].isServerRendered)) {
                                 value = elements[k].value;
                             }
                         }
+                    } else if ((<EJ2Intance>(elements[k] as Element)).ej2_instances) {
+                        value = ((<EJ2Intance>(elements[k] as Element)).ej2_instances[0] as { value?: string | boolean | Date }).value;
                     }
                     if (column.edit && typeof column.edit.read === 'string') {
                         value = getValue(column.edit.read, window)(elements[k], value);

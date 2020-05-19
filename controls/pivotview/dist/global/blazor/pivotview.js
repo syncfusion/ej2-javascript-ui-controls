@@ -14883,6 +14883,22 @@ var MinorTickLines = /** @class */ (function (_super) {
     return MinorTickLines;
 }(sf.base.ChildProperty));
 /**
+ * Allows to configure the position of the legend such as top and left in the chart.
+ */
+var ChartLocation = /** @class */ (function (_super) {
+    __extends$3(ChartLocation, _super);
+    function ChartLocation() {
+        return _super !== null && _super.apply(this, arguments) || this;
+    }
+    __decorate$3([
+        sf.base.Property(0)
+    ], ChartLocation.prototype, "x", void 0);
+    __decorate$3([
+        sf.base.Property(0)
+    ], ChartLocation.prototype, "y", void 0);
+    return ChartLocation;
+}(sf.base.ChildProperty));
+/**
  * Allow options to customize the border of the chart series such as color and border size in the pivot chart.
  * For example, to display the chart series border color as red, set the properties `color` to either **"red"** or **"#FF0000"** or **"rgba(255,0,0,1.0)"** and `width` to **0.5**.
  */
@@ -15381,7 +15397,7 @@ var PivotChartSettingsLegendSettings = /** @class */ (function () {
         sf.base.Property(null)
     ], PivotChartSettingsLegendSettings.prototype, "width", void 0);
     __decorate$3([
-        sf.base.Complex({ x: 0, y: 0 }, sf.charts.ChartLocation)
+        sf.base.Complex({ x: 0, y: 0 }, ChartLocation)
     ], PivotChartSettingsLegendSettings.prototype, "location", void 0);
     __decorate$3([
         sf.base.Property('Auto')
@@ -20069,6 +20085,8 @@ var PivotView = /** @class */ (function (_super) {
         _this_1.posCount = 0;
         /** @hidden */
         _this_1.isModified = false;
+        /** @hidden */
+        _this_1.isInitialRendering = false;
         _this_1.needsID = true;
         _this_1.pivotRefresh = sf.base.Component.prototype.refresh;
         _this_1.pivotView = _this_1;
@@ -20727,8 +20745,11 @@ var PivotView = /** @class */ (function (_super) {
         this.trigger(load, loadArgs, function (observedArgs) {
             if (sf.base.isBlazor()) {
                 observedArgs.dataSourceSettings.dataSource = _this_1.dataSourceSettings.dataSource;
+                PivotUtil.updateDataSourceSettings(_this_1, observedArgs.dataSourceSettings);
             }
-            _this_1.dataSourceSettings = observedArgs.dataSourceSettings;
+            else {
+                _this_1.dataSourceSettings = observedArgs.dataSourceSettings;
+            }
             _this_1.fieldsType = observedArgs.fieldsType;
             _this_1.updateClass();
             _this_1.notify(initSubComponent, {});
@@ -21130,6 +21151,10 @@ var PivotView = /** @class */ (function (_super) {
             if (this.toolbarModule && this.toolbarModule.action !== 'New' && this.toolbarModule.action !== 'Load'
                 && this.toolbarModule.action !== 'Remove') {
                 this.isModified = true;
+            }
+            if (sf.base.isBlazor() && !this.isInitialRendering) {
+                this.isModified = false;
+                this.isInitialRendering = !this.isInitialRendering;
             }
             this.toolbarModule.action = '';
         }

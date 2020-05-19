@@ -433,7 +433,7 @@ describe('Gantt dialog module', () => {
                 let workInputObj: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'EstimatedWork')).ej2_instances[0];
                 workInputObj.value = 40;
                 let duration: any = (<EJ2Instance>document.getElementById(ganttObj.element.id + 'Duration')).ej2_instances[0];
-                expect(duration.value).toBe('1.25 days');
+                expect(duration.value).toBe('3 days');
                 let cancelRecord: HTMLElement = ganttObj.element.querySelectorAll('#' + ganttObj.element.id + '_dialog > div.e-footer-content > button.e-control')[1] as HTMLElement;
                 triggerMouseEvent(cancelRecord, 'click');
             }

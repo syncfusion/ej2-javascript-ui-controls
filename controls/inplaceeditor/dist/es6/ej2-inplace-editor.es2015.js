@@ -634,7 +634,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         return select('.' + ELEMENTS, this.formEle);
     }
     getLocale(prop, val) {
-        return new L10n('inplace-editor', prop, this.locale).getConstant(val);
+        return new L10n(this.getModuleName(), prop, this.locale).getConstant(val);
     }
     checkValue(val) {
         return (!this.isEmpty(val)) ? val : this.emptyText;
@@ -645,9 +645,13 @@ let InPlaceEditor = class InPlaceEditor extends Component {
         this.setProperties({ model: model }, true);
     }
     updateValue() {
+        let value = this.value;
+        if (this.enableHtmlSanitizer && typeof (this.value) === 'string') {
+            value = this.sanitizeHelper(this.value);
+        }
         if (!isNullOrUndefined(this.value)) {
-            this.setProperties({ value: getCompValue(this.type, this.value) }, true);
-            this.extendModelValue(getCompValue(this.type, this.value));
+            this.setProperties({ value: getCompValue(this.type, value) }, true);
+            this.extendModelValue(getCompValue(this.type, value));
         }
     }
     updateModelValue() {
@@ -663,6 +667,9 @@ let InPlaceEditor = class InPlaceEditor extends Component {
             this.notify(update, { type: this.type });
         }
         else if (this.componentObj) {
+            if (this.type === 'Numeric' && this.componentObj.value === null) {
+                this.componentObj.setProperties({ value: 0 }, true);
+            }
             this.setProperties({ value: this.componentObj.value }, true);
             this.extendModelValue(this.componentObj.value);
         }
@@ -882,6 +889,7 @@ let InPlaceEditor = class InPlaceEditor extends Component {
     }
     appendTemplate(trgEle, tempStr) {
         tempStr = typeof (tempStr) === 'string' ? this.sanitizeHelper(tempStr) : tempStr;
+        this.setProperties({ template: tempStr }, true);
         if (typeof tempStr === 'string' || isNullOrUndefined(tempStr.innerHTML)) {
             if (tempStr[0] === '.' || tempStr[0] === '#') {
                 if (document.querySelectorAll(tempStr).length) {

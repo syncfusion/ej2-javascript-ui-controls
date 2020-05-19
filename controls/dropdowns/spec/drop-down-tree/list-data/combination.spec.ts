@@ -793,4 +793,91 @@ describe('DropDown Tree control List datasource', () => {
             expect(i).toBe(2);
         });
     });
+    
+     // DOM Element testing
+
+     describe('combinational testing', () => {
+        let originalTimeout: any;
+        let ddtreeObj: any;
+        let mouseEventArgs: any;
+        let tapEvent: any;
+        let keyboardEventArgs: any;
+        beforeEach((): void => {
+            originalTimeout = jasmine.DEFAULT_TIMEOUT_INTERVAL;
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = 10000;
+            mouseEventArgs = {
+                preventDefault: (): void => { },
+                stopImmediatePropagation: (): void => { },
+                target: null,
+                type: null,
+                shiftKey: false,
+                ctrlKey: false,
+                originalEvent: { target: null }
+            };
+            keyboardEventArgs = {
+                preventDefault: (): void => { },
+                action: null,
+                target: null,
+                currentTarget: null,
+                stopImmediatePropagation: (): void => { },
+            };
+            tapEvent = {
+                originalEvent: mouseEventArgs,
+                tapCount: 1
+            };
+            let ele: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'ddtree' });
+            document.body.appendChild(ele);
+            ddtreeObj = undefined
+        });
+        afterEach((): void => {
+            if (ddtreeObj)
+                ddtreeObj.destroy();
+            document.body.innerHTML = '';
+            jasmine.DEFAULT_TIMEOUT_INTERVAL = originalTimeout;
+        });
+
+        it('Hidden element testing while declaring value property at initial rendering', () => {
+            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: 'id', parentValue: 'pid', hasChildren: 'hasChild', text: 'name' }, value: ['1'] }, '#ddtree');
+            var hiddenElement = ddtreeObj.inputWrapper.querySelector('option');
+            expect(hiddenElement).not.toBe(null);
+            expect(hiddenElement.getAttribute('value')).toBe('1');
+            expect(hiddenElement.text).toBe('Australia');
+        });
+        it('Hidden element testing while declaring value property at initial rendering', () => {
+            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: 'id', parentValue: 'pid', hasChildren: 'hasChild', text: 'name'  }, text: 'Acre' }, '#ddtree');
+            var hiddenElement = ddtreeObj.inputWrapper.querySelector('option');
+            expect(hiddenElement).not.toBe(null);
+            expect(hiddenElement.getAttribute('value')).toBe('10');
+            expect(hiddenElement.text).toBe('Acre');
+        });
+        it('Hidden element testing while declaring value property at initial rendering', () => {
+            ddtreeObj = new DropDownTree({ fields: {dataSource: listData, value: 'id', parentValue: 'pid', hasChildren: 'hasChild', text: 'name' , selected: 'isSelected' } }, '#ddtree');
+            var hiddenElement = ddtreeObj.inputWrapper.querySelector('option');
+            expect(hiddenElement).not.toBe(null);
+            expect(hiddenElement.getAttribute('value')).toBe('2');
+            expect(hiddenElement.text).toBe('New South Wales');
+        });
+        it('Hidden element testing while declaring value property dynamically', () => {
+            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: 'id', parentValue: 'pid', hasChildren: 'hasChild', text: 'name' } }, '#ddtree');
+            var hiddenElement = ddtreeObj.inputWrapper.querySelector('option');
+            expect(hiddenElement).toBe(null);
+            ddtreeObj.value = ['1'];
+            ddtreeObj.dataBind();
+            var hiddenElement_1 = ddtreeObj.inputWrapper.querySelector('option');
+            expect(hiddenElement_1).not.toBe(null);
+            expect(hiddenElement_1.getAttribute('value')).toBe('1');
+            expect(hiddenElement_1.text).toBe('Australia');
+        });
+        it('Hidden element testing while declaring text property dynamically', () => {
+            ddtreeObj = new DropDownTree({ fields: { dataSource: listData, value: 'id', parentValue: 'pid', hasChildren: 'hasChild', text: 'name' } }, '#ddtree');
+            var hiddenElement = ddtreeObj.inputWrapper.querySelector('option');
+            expect(hiddenElement).toBe(null);
+            ddtreeObj.text = 'Acre'
+            ddtreeObj.dataBind();
+            var hiddenElement_1 = ddtreeObj.inputWrapper.querySelector('option');
+            expect(hiddenElement_1).not.toBe(null);
+            expect(hiddenElement_1.getAttribute('value')).toBe('10');
+            expect(hiddenElement_1.text).toBe('Acre');
+        });
+    });
 });

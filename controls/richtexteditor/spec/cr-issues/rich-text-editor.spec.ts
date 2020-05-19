@@ -922,4 +922,73 @@ describe('RTE CR issues', () => {
           }, 100);
         });
     });
+
+    describe("Test the toolbar based on focus and blur events", () => {
+        let rteEle: HTMLElement;
+        let rteObj: RichTextEditor;
+
+        beforeEach(() => {
+            rteObj = renderRTE({
+                toolbarSettings: {
+                    enable: false,
+                    enableFloating: false,
+                    items: [
+                        "Bold",
+                        "Italic",
+                        "Underline",
+                        "StrikeThrough",
+                        "FontName",
+                        "FontSize",
+                        "FontColor",
+                        "BackgroundColor",
+                        "LowerCase",
+                        "UpperCase",
+                        "SuperScript",
+                        "SubScript",
+                        "|",
+                        "Formats",
+                        "Alignments",
+                        "OrderedList",
+                        "UnorderedList",
+                        "Outdent",
+                        "Indent",
+                        "|",
+                        "CreateTable",
+                        "CreateLink",
+                        "Image",
+                        "|",
+                        "ClearFormat",
+                        "Print",
+                        "SourceCode",
+                        "FullScreen",
+                        "|",
+                        "Undo",
+                        "Redo"
+                    ]
+                },
+                focus: function () {
+                    rteObj.toolbarSettings.enable = true;
+                    rteObj.dataBind();
+                },
+                blur: function () {
+                    rteObj.toolbarSettings.enable = false;
+                    rteObj.dataBind();
+                }
+            });
+
+            rteEle = rteObj.element;
+        });
+
+        afterEach(() => {
+            destroy(rteObj);
+        });
+        it("Check toolbar", () => {
+            expect(rteEle.querySelectorAll(".e-toolbar").length).toBe(0);
+            rteObj.focusIn();
+            expect(rteEle.querySelectorAll(".e-toolbar").length).not.toBe(0);
+            rteObj.focusOut();
+            expect(rteEle.querySelectorAll(".e-toolbar").length).toBe(0);
+        });
+    });
+    
 });

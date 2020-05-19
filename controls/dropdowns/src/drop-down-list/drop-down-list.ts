@@ -137,6 +137,7 @@ export class DropDownList extends DropDownBase implements IInput {
     private serverPopupEle: HTMLElement;
     protected isServerBlazor: boolean;
     private isServerIncrementalSearch: boolean;
+    private isServerNavigation: boolean;
 
     /**
      * Sets CSS classes to the root element of the component that allows customization of appearance.
@@ -934,6 +935,7 @@ export class DropDownList extends DropDownBase implements IInput {
         let preventHomeEnd: boolean = this.getModuleName() !== 'dropdownlist' && (e.action === 'home' || e.action === 'end');
         this.isEscapeKey = e.action === 'escape';
         this.isTabKey = !this.isPopupOpen && e.action === 'tab';
+        let isNavAction: boolean = e.action === 'down' || e.action === 'up' || e.action === 'home' || e.action === 'end';
         let isNavigation: boolean = (e.action === 'down' || e.action === 'up' || e.action === 'pageUp' || e.action === 'pageDown'
             || e.action === 'home' || e.action === 'end');
         if ((this.isEditTextBox() || preventAction || preventHomeEnd) && !this.isPopupOpen) {
@@ -947,7 +949,9 @@ export class DropDownList extends DropDownBase implements IInput {
             }
             if (!(this.isServerBlazor && e.action === 'open') && isNullOrUndefined(this.list) || (!isNullOrUndefined(this.liCollections) &&
                 isNavigation && this.liCollections.length === 0) || this.isRequested) {
-                return;
+                if (!(this.isServerBlazor && isNavAction)) {
+                    return;
+                }
             }
             if ((isTabAction && this.getModuleName() !== 'autocomplete') && this.isPopupOpen
             || e.action === 'escape') { e.preventDefault(); }
@@ -956,21 +960,7 @@ export class DropDownList extends DropDownBase implements IInput {
             switch (e.action) {
                 case 'down':
                 case 'up':
-                    let focusEle: Element = this.list.querySelector('.' + dropDownListClasses.focus);
-                    if (this.isSelectFocusItem(focusEle)) {
-                        this.setSelection(focusEle, e);
-                    } else {
-                        let nextItem: Element;
-                        let index: number = e.action === 'down' ? this.activeIndex + 1 : this.activeIndex - 1;
-                        let startIndex: number = 0;
-                        if (this.getModuleName() === 'autocomplete') {
-                            startIndex = e.action === 'down' && isNullOrUndefined(this.activeIndex) ? 0 : this.liCollections.length - 1;
-                            index = index < 0 ? this.liCollections.length - 1 : index === this.liCollections.length ? 0 : index;
-                        }
-                        nextItem = isNullOrUndefined(this.activeIndex) ? this.liCollections[startIndex] : this.liCollections[index];
-                        if (!isNullOrUndefined(nextItem)) { this.setSelection(nextItem, e); }
-                    }
-                    e.preventDefault();
+                    this.updateUpDownAction(e);
                     break;
                 case 'pageUp':
                     this.pageUpSelection(this.activeIndex - this.getPageCount(), e);
@@ -981,19 +971,10 @@ export class DropDownList extends DropDownBase implements IInput {
                     e.preventDefault();
                     break;
                 case 'home':
-                    if (this.getModuleName() === 'dropdownlist') {
-                        e.preventDefault();
-                        if (this.activeIndex === 0) { return; }
-                        this.setSelection(this.liCollections[0], e);
-                    }
+                    this.updateHomeEndAction(e);
                     break;
                 case 'end':
-                    if (this.getModuleName() === 'dropdownlist') {
-                        e.preventDefault();
-                        let lastLi: number = this.getItems().length - 1;
-                        if (this.activeIndex === lastLi) { return; }
-                        this.setSelection(this.liCollections[lastLi], e);
-                    }
+                    this.updateHomeEndAction(e);
                     break;
                 case 'space':
                     if (this.getModuleName() === 'dropdownlist') {
@@ -1023,6 +1004,52 @@ export class DropDownList extends DropDownBase implements IInput {
                         this.focusDropDown(e);
                     }
                     break;
+            }
+        }
+    }
+
+    private updateUpDownAction(e: KeyboardEventArgs): void {
+        if (this.isServerBlazor && isNullOrUndefined(this.list)) {
+            this.isServerNavigation = true;
+            // tslint:disable-next-line
+            (this as any).interopAdaptor.invokeMethodAsync('OnServerRenderList', true, false);
+        } else {
+            this.isServerNavigation = false;
+            let focusEle: Element = this.list.querySelector('.' + dropDownListClasses.focus);
+            if (this.isSelectFocusItem(focusEle)) {
+                this.setSelection(focusEle, e);
+            } else {
+                let nextItem: Element;
+                let index: number = e.action === 'down' ? this.activeIndex + 1 : this.activeIndex - 1;
+                let startIndex: number = 0;
+                if (this.getModuleName() === 'autocomplete') {
+                    startIndex = e.action === 'down' && isNullOrUndefined(this.activeIndex) ? 0 : this.liCollections.length - 1;
+                    index = index < 0 ? this.liCollections.length - 1 : index === this.liCollections.length ? 0 : index;
+                }
+                nextItem = isNullOrUndefined(this.activeIndex) ? this.liCollections[startIndex] : this.liCollections[index];
+                if (!isNullOrUndefined(nextItem)) { this.setSelection(nextItem, e); }
+            }
+            e.preventDefault();
+        }
+    }
+
+    private updateHomeEndAction(e: KeyboardEventArgs): void {
+        if (this.getModuleName() === 'dropdownlist') {
+            if (this.isServerBlazor && isNullOrUndefined(this.list)) {
+                this.isServerNavigation = true;
+                // tslint:disable-next-line
+                (this as any).interopAdaptor.invokeMethodAsync('OnServerRenderList', true, false);
+            } else {
+                this.isServerNavigation = false;
+                let findLi: number = 0;
+                if (e.action === 'home') {
+                    findLi = 0;
+                } else {
+                    findLi = this.getItems().length - 1;
+                }
+                e.preventDefault();
+                if (this.activeIndex === findLi) { return; }
+                this.setSelection(this.liCollections[findLi], e);
             }
         }
     }
@@ -1466,7 +1493,7 @@ export class DropDownList extends DropDownBase implements IInput {
      * Filter bar implementation
      */
     protected onFilterUp(e: KeyboardEventArgs): void {
-        if (this.isValidKey || e.keyCode === 40 || e.keyCode === 38) {
+        if (!(e.ctrlKey && e.keyCode === 86) && (this.isValidKey || e.keyCode === 40 || e.keyCode === 38)) {
             this.isValidKey = false;
             switch (e.keyCode) {
                 case 38:  //up arrow 
@@ -1700,6 +1727,7 @@ export class DropDownList extends DropDownBase implements IInput {
             EventHandler.add(this.filterInput, 'keyup', this.onFilterUp, this);
             EventHandler.add(this.filterInput, 'keydown', this.onFilterDown, this);
             EventHandler.add(this.filterInput, 'blur', this.onBlur, this);
+            EventHandler.add(this.filterInput, 'paste', this.pasteHandler, this);
             return this.filterInputObj;
         } else {
             return inputObject;
@@ -1714,6 +1742,13 @@ export class DropDownList extends DropDownBase implements IInput {
             this.preventAutoFill = true;
             this.searchLists(e as KeyboardEventArgs);
         }
+    }
+
+    protected pasteHandler (e: KeyboardEventArgs): void {
+        setTimeout((): void => {
+            this.typedString = this.filterInput.value;
+            this.searchLists(e);
+        });
     }
 
     protected onActionFailure(e: Object): void {
@@ -2215,6 +2250,7 @@ export class DropDownList extends DropDownBase implements IInput {
             EventHandler.remove(this.filterInput, 'keyup', this.onFilterUp);
             EventHandler.remove(this.filterInput, 'keydown', this.onFilterDown);
             EventHandler.remove(this.filterInput, 'blur', this.onBlur);
+            EventHandler.remove(this.filterInput, 'paste', this.pasteHandler);
             this.filterInput = null;
         }
         attributes(this.targetElement(), { 'aria-expanded': 'false', 'aria-activedescendant': null });
@@ -2697,6 +2733,15 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.isServerIncrementalSearch = false;
                 this.initial = false;
                 this.onServerIncrementalSearch(this.searchKeyEvent);
+            }
+            if (this.isServerNavigation && this.searchKeyEvent) {
+                if (this.searchKeyEvent.action === 'down' || this.searchKeyEvent.action === 'up') {
+                    this.isServerNavigation = false;
+                    this.updateUpDownAction(this.searchKeyEvent);
+                } else if (this.searchKeyEvent.action === 'home' || this.searchKeyEvent.action === 'end') {
+                    this.isServerNavigation = false;
+                    this.updateHomeEndAction(this.searchKeyEvent);
+                }
             }
             if (this.beforePopupOpen) {
                 this.invokeRenderPopup();

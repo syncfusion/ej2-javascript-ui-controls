@@ -520,7 +520,8 @@ export class Table {
     }
 
     private removeResizeEle(): void {
-        let item: NodeListOf<Element> = this.contentModule.getEditPanel().querySelectorAll('.e-column-resize, .e-row-resize, .e-table-box');
+        let item: NodeListOf<Element> = this.parent.contentModule.getEditPanel().
+        querySelectorAll('.e-column-resize, .e-row-resize, .e-table-box');
         if (item.length > 0) {
             for (let i: number = 0; i < item.length; i++) {
                 detach(item[i]);

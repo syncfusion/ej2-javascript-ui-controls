@@ -442,7 +442,9 @@ export class Renderer {
         for (let i: number = 0; i < cellWidget.childWidgets.length; i++) {
             let widget: Widget = cellWidget.childWidgets[i] as Widget;
             let width: number = cellWidget.width + cellWidget.margin.left - cellWidget.leftBorderWidth;
-            this.clipRect(cellWidget.x, cellWidget.y, this.getScaledValue(width), this.getScaledValue(this.height));
+            if (!this.isPrinting) {
+                this.clipRect(cellWidget.x, cellWidget.y, this.getScaledValue(width), this.getScaledValue(this.height));
+            }
             this.renderWidget(page, widget);
             this.pageContext.restore();
         }

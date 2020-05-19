@@ -1851,4 +1851,110 @@ describe('MultiSelect', () => {
             (<any>listObj).onBlur();
         });
     });
+    describe('EJ2-39000', () => {
+        let mulObj: MultiSelect;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
+        let sportsData: { [key: string]: Object }[] =  [
+            { Id: 'Game1', Game: 'American Football' },
+            { Id: 'Game2', Game: 'Badminton' },
+            { Id: 'Game3', Game: 'Basketball' },
+            { Id: 'Game4', Game: 'Cricket' },
+            { Id: 'Game5', Game: 'Football' },
+            { Id: 'Game6', Game: 'Golf' },
+            { Id: 'Game7', Game: 'Hockey' },
+            { Id: 'Game8', Game: 'Rugby' },
+            { Id: 'Game9', Game: 'Snooker' },
+            { Id: 'Game10', Game: 'Tennis' }
+        ];
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+            }
+        });
+        it('clear icon not working when filtering testcase', () => {
+            mulObj = new MultiSelect({
+                dataSource: sportsData,
+                fields: { text: 'Game', value: 'Id' },
+                mode: 'CheckBox',
+                allowFiltering: true,
+            });
+            mulObj.appendTo(element);
+            mulObj.showPopup();
+            expect((<any>mulObj).isPopupOpen()).toBe(true);
+            expect((<any>mulObj).list.querySelectorAll('li').length === 10).toBe(true);
+            // Select value from popup
+            mouseEventArgs.target =  (<any>mulObj).list.querySelectorAll('li')[3];
+            mouseEventArgs.type = 'click';
+            (<any>mulObj).onMouseClick(mouseEventArgs);
+            expect((<any>mulObj).value.length === 1).toBe(true);
+            // Filter popup by pressing key A
+            (<any>mulObj).checkBoxSelectionModule.filterInput.value = "a";
+            keyboardEventArgs.altKey = false;
+            keyboardEventArgs.keyCode = 65;
+            (<any>mulObj).keyDownStatus = true;
+            (<any>mulObj).onInput();
+            (<any>mulObj).KeyUp(keyboardEventArgs);
+            expect((<any>mulObj).list.querySelectorAll('li').length === 1).toBe(true);
+            // Clear the value using clear button
+            mouseEventArgs.target = (<any>mulObj).overAllClear;
+            (<any>mulObj).ClearAll(mouseEventArgs);
+            expect((<any>mulObj).value.length === 0).toBe(true);
+            expect((<any>mulObj).list.querySelectorAll('li').length === 1).toBe(true);
+        });
+    });
+    describe('EJ2-39447', () => {
+        let isPopupFiltered: boolean = false;
+        let mulObj: MultiSelect;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
+        let sportsData: { [key: string]: Object }[] =  [
+            { Id: 'Game1', Game: 'American Football' },
+            { Id: 'Game2', Game: 'Badminton' },
+            { Id: 'Game3', Game: 'Basketball' },
+            { Id: 'Game4', Game: 'Cricket' },
+            { Id: 'Game5', Game: 'Football' },
+            { Id: 'Game6', Game: 'Golf' },
+            { Id: 'Game7', Game: 'Hockey' },
+            { Id: 'Game8', Game: 'Rugby' },
+            { Id: 'Game9', Game: 'Snooker' },
+            { Id: 'Game10', Game: 'Tennis' }
+        ];
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+            }
+        });
+        it('Filtering popup using paste testcase', () => {
+            mulObj = new MultiSelect({
+                dataSource: sportsData,
+                fields: { text: 'Game', value: 'Id' },
+                mode: 'CheckBox',
+                allowFiltering: true,
+                filtering: function (e) {
+                    isPopupFiltered = true;
+                }
+            });
+            mulObj.appendTo(element);
+            mulObj.showPopup();
+            expect((<any>mulObj).isPopupOpen()).toBe(true);
+            expect((<any>mulObj).list.querySelectorAll('li').length === 10).toBe(true);
+            // Filter popup by pasting value
+            (<any>mulObj).checkBoxSelectionModule.filterInput.value = "Cricket";
+            keyboardEventArgs.altKey = false;
+            (<any>mulObj).keyDownStatus = true;
+            (<any>mulObj).pasteHandler(keyboardEventArgs);
+            setTimeout (function () {
+                expect((<any>mulObj).list.querySelectorAll('li').length === 1).toBe(true);
+                // Checking popup is filtered when paste
+                expect(isPopupFiltered).toBe(true)
+            },)
+        });
+    });
 });

@@ -3260,11 +3260,11 @@ var HelperMethods = /** @__PURE__ @class */ (function () {
             case 'lowercase':
                 text = value.toLowerCase();
                 break;
-            case 'first capital':
-                text = this.capitaliseFirst(value, 'First capital');
+            case 'firstcapital':
+                text = this.capitaliseFirst(value, 'FirstCapital');
                 break;
-            case 'title case':
-                text = this.capitaliseFirst(value, 'Title case');
+            case 'titlecase':
+                text = this.capitaliseFirst(value, 'Titlecase');
                 break;
         }
         return text;
@@ -3315,18 +3315,22 @@ var HelperMethods = /** @__PURE__ @class */ (function () {
     /**
      * @private
      */
-    HelperMethods.capitaliseFirst = function (value, type) {
+    HelperMethods.capitaliseFirst = function (value, type, splitBy) {
         var text = '';
-        if (type === 'Title case') {
-            var valArry = value.split(' ');
+        if (type === 'Titlecase') {
+            var valArry = splitBy ? value.split(splitBy) : value.split(' ');
             for (var i = 0; i < valArry.length; i++) {
-                text += this.capitaliseFirstInternal(valArry[i]);
-                if (valArry.length >= 0) {
+                // tslint:disable-next-line:max-line-length
+                text += splitBy ? valArry[i].charAt(0).toUpperCase() + valArry[i].slice(1, valArry[i].length) : this.capitaliseFirstInternal(valArry[i]);
+                if (valArry.length >= 0 && !splitBy) {
                     text += ' ';
                 }
             }
+            if (!splitBy) {
+                text = this.capitaliseFirst(text, 'Titlecase', '\r');
+            }
         }
-        else if (type === 'First capital') {
+        else if (type === 'FirstCapital') {
             text = this.capitaliseFirstInternal(value);
         }
         return text;
@@ -6233,7 +6237,7 @@ var Layout = /** @__PURE__ @class */ (function () {
             }
             this.layoutFieldCharacters(element);
             if (element.line.isLastLine() && isNullOrUndefined(element.nextNode) && !this.isFieldCode) {
-                if (isNullOrUndefined(element.fieldSeparator)) {
+                if (element.fieldType !== 2 && isNullOrUndefined(element.fieldSeparator)) {
                     this.layoutEmptyLineWidget(paragraph, false, element.line);
                 }
                 this.moveToNextLine(line);
@@ -6763,7 +6767,7 @@ var Layout = /** @__PURE__ @class */ (function () {
                         checkBoxTextElement.text = String.fromCharCode(9744);
                     }
                     if (formFieldData.sizeType !== 'Auto') {
-                        checkBoxTextElement.characterFormat.fontSize = fieldBegin.characterFormat.fontSize;
+                        checkBoxTextElement.characterFormat.fontSize = formFieldData.size;
                     }
                     checkBoxTextElement.line = fieldBegin.line;
                     var index = fieldBegin.line.children.indexOf(fieldBegin.fieldEnd);
@@ -12462,7 +12466,9 @@ var Renderer = /** @__PURE__ @class */ (function () {
         for (var i = 0; i < cellWidget.childWidgets.length; i++) {
             var widget = cellWidget.childWidgets[i];
             var width = cellWidget.width + cellWidget.margin.left - cellWidget.leftBorderWidth;
-            this.clipRect(cellWidget.x, cellWidget.y, this.getScaledValue(width), this.getScaledValue(this.height));
+            if (!this.isPrinting) {
+                this.clipRect(cellWidget.x, cellWidget.y, this.getScaledValue(width), this.getScaledValue(this.height));
+            }
             this.renderWidget(page, widget);
             this.pageContext.restore();
         }
@@ -14371,7 +14377,8 @@ var RestrictEditing = /** @__PURE__ @class */ (function () {
             id: this.viewer.owner.containerId + '_addUser',
             className: 'e-btn e-primary e-flat',
             innerHTML: localObj.getConstant('More users') + '...',
-            styles: 'margin-top: 3px'
+            styles: 'margin-top: 3px',
+            attrs: { type: 'button' }
         });
         this.userWholeDiv.appendChild(this.addUser);
         this.restrictPaneWholeDiv.appendChild(this.userWholeDiv);
@@ -14380,7 +14387,8 @@ var RestrictEditing = /** @__PURE__ @class */ (function () {
         this.enforceProtection = createElement('button', {
             id: this.viewer.owner.containerId + '_addUser',
             innerHTML: localObj.getConstant('Enforcing Protection'),
-            className: 'e-btn e-de-rp-btn-enforce'
+            className: 'e-btn e-de-rp-btn-enforce',
+            attrs: { type: 'button' }
         });
         lastDiv.appendChild(this.enforceProtection);
         this.restrictPane.appendChild(this.restrictPaneWholeDiv);
@@ -14399,13 +14407,19 @@ var RestrictEditing = /** @__PURE__ @class */ (function () {
         this.stopProtectionDiv.appendChild(this.stopReadOnlyOptions);
         var navigateNext = createElement('div', { className: 'e-de-rp-enforce-nav' });
         // tslint:disable-next-line:max-line-length
-        var navigateNextButton = createElement('button', { innerHTML: localObj.getConstant('Find Next Region I Can Edit'), className: 'e-btn e-de-rp-nav-btn' });
+        var navigateNextButton = createElement('button', {
+            innerHTML: localObj.getConstant('Find Next Region I Can Edit'), className: 'e-btn e-de-rp-nav-btn',
+            attrs: { type: 'button' }
+        });
         navigateNext.appendChild(navigateNextButton);
         navigateNextButton.addEventListener('click', this.navigateNextRegion);
         this.stopReadOnlyOptions.appendChild(navigateNext);
         var showAllRegion = createElement('div', { className: 'e-de-rp-enforce-nav' });
         // tslint:disable-next-line:max-line-length
-        var showAllRegionButton = createElement('button', { innerHTML: localObj.getConstant('Show All Regions I Can Edit'), className: 'e-btn e-de-rp-nav-btn' });
+        var showAllRegionButton = createElement('button', {
+            innerHTML: localObj.getConstant('Show All Regions I Can Edit'), className: 'e-btn e-de-rp-nav-btn',
+            attrs: { type: 'button' }
+        });
         showAllRegion.appendChild(showAllRegionButton);
         showAllRegionButton.addEventListener('click', this.showAllRegion);
         this.stopReadOnlyOptions.appendChild(showAllRegion);
@@ -14418,7 +14432,8 @@ var RestrictEditing = /** @__PURE__ @class */ (function () {
         var lastButtonDiv = createElement('div', { className: 'e-de-rp-enforce' });
         this.stopProtection = createElement('button', {
             innerHTML: localObj.getConstant('Stop Protection'),
-            className: 'e-btn e-de-rp-btn-stop-enforce'
+            className: 'e-btn e-de-rp-btn-stop-enforce',
+            attrs: { type: 'button' }
         });
         lastButtonDiv.appendChild(this.stopProtection);
         this.stopProtectionDiv.appendChild(lastButtonDiv);
@@ -15519,11 +15534,12 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
                         !_this.owner.useCtrlClickToFollowHyperlink) && _this.isLeftButtonPressed(event) === true))) {
                     _this.selection.navigateHyperLinkOnEvent(touchPoint, false);
                 }
-                if (_this.isLeftButtonPressed(event) && _this.isDocumentProtected && _this.protectionType === 'FormFieldsOnly' && _this.selection) {
+                if (_this.isMouseDown && _this.isLeftButtonPressed(event) && _this.isDocumentProtected
+                    && _this.protectionType === 'FormFieldsOnly' && _this.selection) {
                     var widget = _this.getLineWidget(touchPoint);
                     var formField = _this.selection.getHyperLinkFieldInCurrentSelection(widget, touchPoint, true);
                     if (isNullOrUndefined(formField)) {
-                        formField = _this.selection.getCurrentFormField();
+                        formField = _this.selection.getCurrentFormField(true);
                     }
                     // tslint:disable-next-line:max-line-length
                     if (formField && formField.formFieldData && formField.formFieldData.enabled && !_this.selection.isInlineFormFillMode(formField)) {
@@ -15555,10 +15571,12 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
                         _this.selection.navigateToNextFormField();
                     }
                 }
-                else {
-                    var formField = _this.selection.getCurrentFormField();
-                    if (formField && formField.formFieldData) {
-                        _this.selection.selectField();
+                else if (_this.isMouseDown) {
+                    if (_this.formFields.length > 0) {
+                        var formField = _this.selection.getCurrentFormField(true);
+                        if (formField && formField.formFieldData) {
+                            _this.selection.selectField();
+                        }
                     }
                 }
                 if (!_this.owner.isReadOnlyMode && _this.isSelectionInListText(touchPoint)) {
@@ -17508,7 +17526,14 @@ var DocumentHelper = /** @__PURE__ @class */ (function () {
         var isCtrlkeyPressed = this.isIosDevice ? event.metaKey : event.ctrlKey;
         if ((!isNullOrUndefined(hyperlinkField) && (isCtrlkeyPressed &&
             this.owner.useCtrlClickToFollowHyperlink || !this.owner.useCtrlClickToFollowHyperlink)) || formField) {
-            div.style.cursor = 'pointer';
+            if (!isNullOrUndefined(formField)) {
+                if (this.isFormFillProtectedMode) {
+                    div.style.cursor = 'default';
+                }
+            }
+            else {
+                div.style.cursor = 'pointer';
+            }
             return;
         }
         else if (touchPoint.x >= lineLeft &&
@@ -32551,7 +32576,8 @@ var TextPosition = /** @__PURE__ @class */ (function () {
         var inline = inlineInfo.element;
         index = inlineInfo.index;
         var lineIndex = this.paragraph.childWidgets.indexOf(this.currentWidget);
-        if (inline instanceof FieldElementBox && inline.fieldType === 1 && !isNullOrUndefined(inline.fieldBegin)) {
+        if (inline instanceof FieldElementBox && inline.fieldType === 1 && !isNullOrUndefined(inline.fieldBegin)
+            || inline instanceof BookmarkElementBox && inline.bookmarkType === 1) {
             this.movePreviousPositionInternal(inline);
         }
         this.updateOffsetToPrevPosition(index, false);
@@ -32743,14 +32769,16 @@ var TextPosition = /** @__PURE__ @class */ (function () {
      */
     TextPosition.prototype.movePreviousPositionInternal = function (fieldEnd) {
         var inline;
-        if (isNullOrUndefined(fieldEnd.fieldSeparator)) {
+        if (fieldEnd instanceof FieldElementBox && isNullOrUndefined(fieldEnd.fieldSeparator)) {
             inline = this.selection.getPreviousValidElement(fieldEnd.fieldBegin);
         }
         else {
             inline = this.selection.getPreviousValidElement(fieldEnd);
         }
         this.currentWidget = inline.line;
-        this.offset = this.currentWidget.getOffset(inline, inline instanceof FieldElementBox ? 0 : inline.length);
+        // tslint:disable-next-line:max-line-length
+        var index = inline instanceof FieldElementBox || inline instanceof BookmarkElementBox && inline.bookmarkType === 1 ? 0 : inline.length;
+        this.offset = this.currentWidget.getOffset(inline, index);
     };
     /**
      * Moves the text position to start of the word.
@@ -34358,6 +34386,10 @@ var Selection = /** @__PURE__ @class */ (function () {
         /**
          * @private
          */
+        this.isFormatUpdated = false;
+        /**
+         * @private
+         */
         this.pasteOptions = function (event) {
             if (event.item.text === 'Keep source formatting') {
                 _this.owner.editor.applyPasteOptions('KeepSourceFormatting');
@@ -34690,11 +34722,18 @@ var Selection = /** @__PURE__ @class */ (function () {
          * Gets bookmark name collection.
          */
         get: function () {
-            return this.getSelBookmarks();
+            return this.getSelBookmarks(false);
         },
         enumerable: true,
         configurable: true
     });
+    /**
+     * Gets the bookmark name collection in current selection
+     * @param includeHidden - Decide whether to include hidden bookmark name in current selection or not.
+     */
+    Selection.prototype.getBookmarks = function (includeHidden) {
+        return this.getSelBookmarks(includeHidden);
+    };
     Object.defineProperty(Selection.prototype, "isCleared", {
         /**
          * @private
@@ -34718,7 +34757,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         enumerable: true,
         configurable: true
     });
-    Selection.prototype.getSelBookmarks = function () {
+    Selection.prototype.getSelBookmarks = function (includeHidden) {
         var bookmarkCln = [];
         var bookmarks = this.documentHelper.bookmarks;
         var start = this.start;
@@ -34732,11 +34771,11 @@ var Selection = /** @__PURE__ @class */ (function () {
         var isCellSelected = false;
         var selectedCells = this.getSelectedCells();
         for (var i = 0; i < bookmarks.length; i++) {
-            if (bookmarks.keys[i].indexOf('_') !== 0) {
+            if (includeHidden || !includeHidden && bookmarks.keys[i].indexOf('_') !== 0) {
                 bookmrkStart = bookmarks.get(bookmarks.keys[i]);
                 bookmrkEnd = bookmrkStart.reference;
                 var bmStartPos = this.getElementPosition(bookmrkStart).startPosition;
-                var bmEndPos = this.getElementPosition(bookmrkEnd).startPosition;
+                var bmEndPos = this.getElementPosition(bookmrkEnd, true).startPosition;
                 if (bmStartPos.paragraph.isInsideTable || bmEndPos.paragraph.isInsideTable) {
                     if (selectedCells.length > 0) {
                         if (selectedCells.indexOf(bmStartPos.paragraph.associatedCell) >= 0
@@ -35661,11 +35700,9 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.fireSelectionChanged(true);
         if (this.documentHelper.isFormFillProtectedMode) {
             var formField = this.getCurrentFormField();
-            if (formField) {
-                var fieldEndOffset = formField.line.getOffset(formField.fieldEnd, 1);
-                if (this.end.offset === fieldEndOffset) {
-                    this.selectPrevNextFormField(true);
-                }
+            if (!formField) {
+                formField = this.getFormFieldInFormFillMode();
+                this.selectPrevNextFormField(true, formField);
             }
         }
     };
@@ -35700,7 +35737,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         if (this.documentHelper.isFormFillProtectedMode) {
             var formField = this.getCurrentFormField();
             if (!formField) {
-                formField = this.getPreviousFormField();
+                formField = this.getFormFieldInFormFillMode();
                 this.selectPrevNextFormField(false, formField);
             }
         }
@@ -36286,8 +36323,8 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
         this.checkForCursorVisibility();
     };
-    // returns current field in FormFill mode (if Selection goes before field seperator)
-    Selection.prototype.getPreviousFormField = function () {
+    // returns current field in FormFill mode
+    Selection.prototype.getFormFieldInFormFillMode = function () {
         var currentStart = this.owner.selection.start;
         var formField;
         for (var i = (this.documentHelper.formFields.length - 1); i >= 0; i--) {
@@ -36405,9 +36442,9 @@ var Selection = /** @__PURE__ @class */ (function () {
         var currentFieldData;
         if (currentField !== previousField && previousField && previousField.formFieldData instanceof TextFormField
             && previousField.formFieldData.type === 'Text') {
-            if (previousField.formFieldData.format !== '') {
+            if (previousField.formFieldData.format !== '' && !this.isFormatUpdated) {
                 // Need to handle update form field format
-                //this.owner.editor.applyFormTextFormat(previousField);
+                this.owner.editor.applyFormTextFormat(previousField);
             }
             // tslint:disable-next-line:max-line-length
             previousFieldData = { 'fieldName': previousField.formFieldData.name, 'value': this.owner.editorModule.getFormFieldText(previousField) };
@@ -42118,29 +42155,31 @@ var Selection = /** @__PURE__ @class */ (function () {
      * Get selected form field type
      * @private
      */
-    Selection.prototype.getCurrentFormField = function () {
+    Selection.prototype.getCurrentFormField = function (checkFieldResult) {
         var field;
-        if (this.documentHelper.isFormFillProtectedMode && this.owner.documentEditorSettings.formFieldSettings &&
+        if (checkFieldResult || this.documentHelper.isFormFillProtectedMode && this.owner.documentEditorSettings.formFieldSettings &&
             this.owner.documentEditorSettings.formFieldSettings.formFillingMode === 'Inline') {
             for (var i = 0; i < this.documentHelper.formFields.length; i++) {
                 var formField = this.documentHelper.formFields[i];
-                var offset = formField.fieldSeparator.line.getOffset(formField.fieldSeparator, 1);
-                var fieldStart = new TextPosition(this.owner);
-                fieldStart.setPositionParagraph(formField.fieldSeparator.line, offset);
-                var fieldEndElement = formField.fieldEnd;
-                offset = fieldEndElement.line.getOffset(fieldEndElement, 0);
-                var fieldEnd = new TextPosition(this.owner);
-                fieldEnd.setPositionParagraph(fieldEndElement.line, offset);
-                var start = this.start;
-                var end = this.end;
-                if (!this.isForward) {
-                    start = this.end;
-                    end = this.start;
-                }
-                if ((start.isExistAfter(fieldStart) || start.isAtSamePosition(fieldStart))
-                    && (end.isExistBefore(fieldEnd) || end.isAtSamePosition(fieldEnd))) {
-                    field = formField;
-                    break;
+                if (HelperMethods.isLinkedFieldCharacter(formField)) {
+                    var offset = formField.fieldSeparator.line.getOffset(formField.fieldSeparator, 1);
+                    var fieldStart = new TextPosition(this.owner);
+                    fieldStart.setPositionParagraph(formField.fieldSeparator.line, offset);
+                    var fieldEndElement = formField.fieldEnd;
+                    offset = fieldEndElement.line.getOffset(fieldEndElement, 0);
+                    var fieldEnd = new TextPosition(this.owner);
+                    fieldEnd.setPositionParagraph(fieldEndElement.line, offset);
+                    var start = this.start;
+                    var end = this.end;
+                    if (!this.isForward) {
+                        start = this.end;
+                        end = this.start;
+                    }
+                    if ((start.isExistAfter(fieldStart) || start.isAtSamePosition(fieldStart))
+                        && (end.isExistBefore(fieldEnd) || end.isAtSamePosition(fieldEnd))) {
+                        field = formField;
+                        break;
+                    }
                 }
             }
         }
@@ -43207,25 +43246,29 @@ var Selection = /** @__PURE__ @class */ (function () {
         }
         this.formFieldHighlighters.clear();
         var formFields = this.documentHelper.formFields;
-        for (var i = 0; i < formFields.length; i++) {
-            var formField = formFields[i];
-            var offset = formField.line.getOffset(formField, 0);
-            var startPosition = new TextPosition(this.owner);
-            startPosition.setPositionParagraph(formField.line, offset);
-            var endElement = formField.fieldEnd;
-            offset = endElement.line.getOffset(endElement, 1);
-            var endPosition = new TextPosition(this.owner);
-            endPosition.setPositionParagraph(endElement.line, offset);
-            this.isHighlightFormFields = true;
-            this.highlight(startPosition.paragraph, startPosition, endPosition);
-            if (this.isHighlightNext) {
-                this.highlightNextBlock(this.hightLightNextParagraph, startPosition, endPosition);
-                this.isHighlightNext = false;
-                this.hightLightNextParagraph = undefined;
+        if (!isNullOrUndefined(formFields) && formFields.length > 0) {
+            for (var i = 0; i < formFields.length; i++) {
+                var formField = formFields[i];
+                if (HelperMethods.isLinkedFieldCharacter(formField)) {
+                    var offset = formField.line.getOffset(formField, 0);
+                    var startPosition = new TextPosition(this.owner);
+                    startPosition.setPositionParagraph(formField.line, offset);
+                    var endElement = formField.fieldEnd;
+                    offset = endElement.line.getOffset(endElement, 1);
+                    var endPosition = new TextPosition(this.owner);
+                    endPosition.setPositionParagraph(endElement.line, offset);
+                    this.isHighlightFormFields = true;
+                    this.highlight(startPosition.paragraph, startPosition, endPosition);
+                    if (this.isHighlightNext) {
+                        this.highlightNextBlock(this.hightLightNextParagraph, startPosition, endPosition);
+                        this.isHighlightNext = false;
+                        this.hightLightNextParagraph = undefined;
+                    }
+                }
             }
+            this.isHighlightFormFields = false;
+            this.viewer.updateScrollBars();
         }
-        this.isHighlightFormFields = false;
-        this.viewer.updateScrollBars();
     };
     /**
      * @private
@@ -43381,8 +43424,8 @@ var Selection = /** @__PURE__ @class */ (function () {
     /**
      * @private
      */
-    Selection.prototype.getElementPosition = function (element) {
-        var offset = element.line.getOffset(element, 1);
+    Selection.prototype.getElementPosition = function (element, isEnd) {
+        var offset = element.line.getOffset(element, isEnd ? 0 : 1);
         var startPosition = new TextPosition(this.owner);
         startPosition.setPositionParagraph(element.line, offset);
         return { 'startPosition': startPosition, 'endPosition': undefined };
@@ -47162,12 +47205,19 @@ var Editor = /** @__PURE__ @class */ (function () {
     Editor.prototype.insertEditingRegion = function (user) {
         this.insertEditRangeElement(user && user !== '' ? user : 'Everyone');
     };
-    /**
-     * Enforce document protection.
-     */
-    Editor.prototype.enforceProtection = function (credential, limitToFormatting, isReadOnly) {
+    Editor.prototype.enforceProtection = function (credential, restrictFormatType, isReadOnly) {
+        var typeOfProtection;
+        var limitToFormatting;
+        if (typeof (restrictFormatType) === 'boolean') {
+            typeOfProtection = isReadOnly ? 'ReadOnly' : this.documentHelper.protectionType;
+            limitToFormatting = restrictFormatType;
+        }
+        else {
+            limitToFormatting = true;
+            typeOfProtection = restrictFormatType;
+        }
         this.documentHelper.restrictFormatting = limitToFormatting;
-        this.documentHelper.protectionType = isReadOnly ? 'ReadOnly' : this.documentHelper.protectionType;
+        this.documentHelper.protectionType = typeOfProtection;
         this.selection.isHighlightEditRegion = true;
         this.addProtection(credential, this.documentHelper.protectionType);
     };
@@ -47618,9 +47668,7 @@ var Editor = /** @__PURE__ @class */ (function () {
         if (this.selection.isHighlightEditRegion) {
             this.selection.onHighlight();
         }
-        if (this.documentHelper.formFields.length > 0) {
-            this.selection.highlightFormFields();
-        }
+        this.selection.highlightFormFields();
         if (!this.isPaste) {
             this.copiedContent = undefined;
             this.copiedTextContent = '';
@@ -48170,7 +48218,6 @@ var Editor = /** @__PURE__ @class */ (function () {
     Editor.prototype.insertTextInternal = function (text, isReplace) {
         if (this.documentHelper.protectionType === 'FormFieldsOnly' && this.selection.isInlineFormFillMode()) {
             var inline = this.selection.getCurrentFormField();
-            //(inline.formFieldData as TextFormField).isContentChanged = true;
             var resultText = this.getFormFieldText();
             var rex = new RegExp(this.owner.documentHelper.textHelper.getEnSpaceCharacter(), 'gi');
             if (resultText.length > 0 && resultText.replace(rex, '') === '') {
@@ -55691,7 +55738,6 @@ var Editor = /** @__PURE__ @class */ (function () {
         paragraph.containerWidget = container;
         paragraph.index = blockIndex;
         this.updateNextBlocksIndex(paragraph, true);
-        // tslint:disable-next-line:max-line-length
         this.documentHelper.layout.layoutBodyWidgetCollection(blockIndex, container, paragraph, false);
     };
     /**
@@ -56247,7 +56293,7 @@ var Editor = /** @__PURE__ @class */ (function () {
             }
             var resultText = this.getFormFieldText();
             if (!(inline instanceof TextElementBox)) {
-                inline = inline.nextElement;
+                inline = this.selection.getNextRenderedElementBox(inline, 1);
             }
             if (resultText.length === 1 && inline instanceof TextElementBox) {
                 this.selection.selectFieldInternal(this.selection.getCurrentFormField());
@@ -59315,12 +59361,17 @@ var Editor = /** @__PURE__ @class */ (function () {
     // tslint:disable-next-line:max-line-length
     Editor.prototype.updateFormFieldInternal = function (field, formFieldData, value, reset) {
         if (formFieldData instanceof TextFormField) {
-            if (reset && value === '') {
-                value = this.getDefaultText(formFieldData);
+            if (value === '') {
+                if (reset) {
+                    value = this.getDefaultText(formFieldData);
+                }
+                else {
+                    value = this.documentHelper.textHelper.repeatChar(this.documentHelper.textHelper.getEnSpaceCharacter(), 5);
+                }
             }
             var formattedText = value;
             var type = formFieldData.type;
-            if (type === 'Text') {
+            if (type === 'Text' && formFieldData.format !== '') {
                 formattedText = HelperMethods.formatText(formFieldData.format, value);
             }
             this.updateFormFieldResult(field, formattedText);
@@ -59389,6 +59440,22 @@ var Editor = /** @__PURE__ @class */ (function () {
         }
         return name;
     };
+    /**
+     * @private
+     */
+    Editor.prototype.applyFormTextFormat = function (formField) {
+        if (!isNullOrUndefined(formField)) {
+            var text = this.getFormFieldText(formField);
+            var currentValue = text;
+            text = HelperMethods.formatText(formField.formFieldData.format, text);
+            this.applyTextFormatInternal(formField, text);
+            this.initHistory('FormTextFormat');
+            if (this.editorHistory) {
+                this.editorHistory.currentBaseHistoryInfo.setFormFieldInfo(formField, currentValue);
+                this.editorHistory.updateHistory();
+            }
+        }
+    };
     // Inserts 5 space on Form Fill inline mode if length is 0
     Editor.prototype.insertSpaceInFormField = function () {
         if (this.documentHelper.isInlineFormFillProtectedMode && this.selection.isInlineFormFillMode()) {
@@ -59443,6 +59510,50 @@ var Editor = /** @__PURE__ @class */ (function () {
             while (!(textElement instanceof FieldElementBox && textElement.fieldType === 1 && textElement === seperator.fieldEnd));
         }
         return text;
+    };
+    /**
+     * @private
+     */
+    Editor.prototype.applyTextFormatInternal = function (field, text) {
+        var textElement = field.fieldSeparator.nextElement;
+        var start = 0;
+        text = text.replace(/\r/g, '');
+        do {
+            if (!isNullOrUndefined(textElement) && textElement instanceof TextElementBox) {
+                textElement.text = text.slice(start, start + textElement.text.length);
+                start = start + textElement.length;
+            }
+            if (isNullOrUndefined(textElement.nextElement)) {
+                if (!isNullOrUndefined(textElement.line.nextLine)) {
+                    textElement = textElement.line.nextLine.children[0];
+                }
+                else {
+                    // tslint:disable-next-line:max-line-length
+                    this.documentHelper.layout.layoutBodyWidgetCollection(textElement.paragraph.index, textElement.paragraph.bodyWidget, textElement.paragraph, true);
+                    var nextBlock = textElement.paragraph.nextRenderedWidget;
+                    if (isNullOrUndefined(nextBlock)) {
+                        break;
+                    }
+                    if (nextBlock instanceof TableWidget) {
+                        nextBlock = this.selection.getFirstParagraphBlock(nextBlock);
+                    }
+                    while (nextBlock.isEmpty()) {
+                        nextBlock = nextBlock.nextRenderedWidget;
+                    }
+                    // tslint:disable-next-line:max-line-length
+                    textElement = nextBlock.childWidgets[0].children[0];
+                }
+            }
+            else {
+                textElement = textElement.nextElement;
+            }
+        } while (!(textElement instanceof FieldElementBox && textElement.fieldType === 1 &&
+            textElement.fieldBegin.formFieldData instanceof TextFormField));
+        // tslint:disable-next-line:max-line-length
+        this.documentHelper.layout.layoutBodyWidgetCollection(textElement.paragraph.index, textElement.paragraph.bodyWidget, textElement.paragraph, true);
+        this.selection.isFormatUpdated = true;
+        this.reLayout(this.selection, false);
+        this.selection.isFormatUpdated = false;
     };
     return Editor;
 }());
@@ -59804,6 +59915,22 @@ var BaseHistoryInfo = /** @__PURE__ @class */ (function () {
         // tslint:disable-next-line:max-line-length
         this.removedNodes.push({ 'editStart': editStart, 'startIndex': editStart.indexInOwner, 'endIndex': editStart.editRangeEnd.indexInOwner });
     };
+    BaseHistoryInfo.prototype.revertFormTextFormat = function () {
+        /* tslint:disable:no-any */
+        var fieldInfo = this.removedNodes[0];
+        var text = fieldInfo.value;
+        /* tslint:enable:no-any */
+        var formField = fieldInfo.formField;
+        if (this.editorHistory.isUndoing) {
+            this.owner.editorModule.applyTextFormatInternal(formField, text);
+            this.editorHistory.recordChanges(this);
+        }
+        else {
+            text = HelperMethods.formatText(formField.formFieldData.format, text);
+            this.owner.editorModule.applyTextFormatInternal(formField, text);
+            this.editorHistory.undoStack.push(this);
+        }
+    };
     BaseHistoryInfo.prototype.revertFormField = function () {
         /* tslint:disable:no-any */
         var fieldInfo = this.removedNodes[0];
@@ -59881,6 +60008,10 @@ var BaseHistoryInfo = /** @__PURE__ @class */ (function () {
      */
     // tslint:disable: max-func-body-length
     BaseHistoryInfo.prototype.revert = function () {
+        if (this.action === 'FormTextFormat') {
+            this.revertFormTextFormat();
+            return;
+        }
         if (this.action === 'UpdateFormField') {
             this.revertFormField();
             return;
@@ -66749,9 +66880,9 @@ var WordExport = /** @__PURE__ @class */ (function () {
                     writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.dropDownList.selectedIndex.toString());
                     writer.writeEndElement();
                 }
-                for (var i = 0; i < formFieldData.dropDownList.dropdownItems.length; i++) {
+                for (var i = 0; i < formFieldData.dropDownList.dropDownItems.length; i++) {
                     writer.writeStartElement(undefined, 'listEntry', this.wNamespace);
-                    writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.dropDownList.dropdownItems[i].toString());
+                    writer.writeAttributeString(undefined, 'val', this.wNamespace, formFieldData.dropDownList.dropDownItems[i].toString());
                     writer.writeEndElement();
                 }
                 writer.writeEndElement();
@@ -68401,6 +68532,8 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
         this.lists = undefined;
         this.document = undefined;
         this.endCell = undefined;
+        this.startColumnIndex = undefined;
+        this.endColumnIndex = undefined;
     };
     /**
      * Serialize the data as Syncfusion document text.
@@ -68718,7 +68851,7 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
                     else {
                         inline.formFieldData.dropDownList = {};
                         this.checkboxOrDropdown = true;
-                        inline.formFieldData.dropDownList.dropdownItems = element.formFieldData.dropDownItems;
+                        inline.formFieldData.dropDownList.dropDownItems = element.formFieldData.dropDownItems;
                         inline.formFieldData.dropDownList.selectedIndex = element.formFieldData.selectedIndex;
                     }
                 }
@@ -69304,7 +69437,7 @@ var SfdtExport = /** @__PURE__ @class */ (function () {
         tableFormat.shading = this.writeShading(wTableFormat.shading);
         tableFormat.cellSpacing = wTableFormat.hasValue('cellSpacing') ? wTableFormat.cellSpacing : undefined;
         tableFormat.leftIndent = wTableFormat.hasValue('leftIndent') ? wTableFormat.leftIndent : undefined;
-        tableFormat.tableAlignment = wTableFormat.hasValue('tableAlignment"') ? wTableFormat.tableAlignment : undefined;
+        tableFormat.tableAlignment = wTableFormat.hasValue('tableAlignment') ? wTableFormat.tableAlignment : undefined;
         tableFormat.topMargin = wTableFormat.hasValue('topMargin') ? wTableFormat.topMargin : undefined;
         tableFormat.rightMargin = wTableFormat.hasValue('rightMargin') ? wTableFormat.rightMargin : undefined;
         tableFormat.leftMargin = wTableFormat.hasValue('leftMargin') ? wTableFormat.leftMargin : undefined;
@@ -78571,7 +78704,7 @@ var TextFormFieldDialog = /** @__PURE__ @class */ (function () {
             innerHTML: localValue.getConstant('Text format')
         });
         var textFormatList = createElement('input');
-        var formatDropDownitems = ['Uppercase', 'Lowercase', 'First capital', 'Title case'];
+        var formatDropDownitems = ['Uppercase', 'Lowercase', 'FirstCapital', 'Titlecase'];
         this.textFormatDropDown = new ComboBox({
             dataSource: formatDropDownitems,
             popupHeight: '150px',
@@ -78676,7 +78809,7 @@ var TextFormFieldDialog = /** @__PURE__ @class */ (function () {
         if (args.value === 'Regular text') {
             this.defaultTextLabel.innerHTML = this.localObj.getConstant('Default text');
             this.textFormatLabel.innerHTML = this.localObj.getConstant('Text format');
-            this.textFormatDropDown.dataSource = ['Uppercase', 'Lowercase', 'First capital', 'Title case'];
+            this.textFormatDropDown.dataSource = ['Uppercase', 'Lowercase', 'FirstCapital', 'Titlecase'];
         }
         else if (args.value === 'Number') {
             this.defaultTextLabel.innerHTML = this.localObj.getConstant('Default number');
@@ -80966,7 +81099,7 @@ var CommentView = /** @__PURE__ @class */ (function () {
         var userName = createElement('div', { className: 'e-de-cmt-author-name' });
         userName.textContent = this.comment.author;
         //if (this.comment.author === this.owner.currentUser) {
-        this.menuBar = createElement('button', { className: 'e-de-cp-option' });
+        this.menuBar = createElement('button', { className: 'e-de-cp-option', attrs: { type: 'button' } });
         var userOption = [{ text: localObj.getConstant('Edit') },
             { text: localObj.getConstant('Delete') },
             { text: localObj.getConstant('Reply') },
@@ -81023,13 +81156,17 @@ var CommentView = /** @__PURE__ @class */ (function () {
         this.textArea.addEventListener('keydown', this.updateTextAreaHeight.bind(this));
         this.textArea.addEventListener('keyup', this.enableDisablePostButton.bind(this));
         var editRegionFooter = createElement('div', { className: 'e-de-cmt-action-button' });
-        var postButton = createElement('button', { className: 'e-de-cmt-post-btn e-btn e-flat' });
+        var postButton = createElement('button', {
+            className: 'e-de-cmt-post-btn e-btn e-flat',
+            attrs: { type: 'button' }
+        });
         //tslint:disable-next-line:max-line-length
         this.postButton = new Button({ cssClass: 'e-btn e-flat e-primary e-de-overlay', iconCss: 'e-de-cmt-post', disabled: true }, postButton);
         postButton.addEventListener('click', this.postComment.bind(this));
         postButton.title = localObj.getConstant('Post');
         var cancelButton = createElement('button', {
-            className: 'e-de-cmt-cancel-btn e-btn e-flat'
+            className: 'e-de-cmt-cancel-btn e-btn e-flat',
+            attrs: { type: 'button' }
         });
         this.cancelButton = new Button({ cssClass: 'e-btn e-flat', iconCss: 'e-de-cmt-cancel' }, cancelButton);
         cancelButton.title = localObj.getConstant('Cancel');
@@ -81075,12 +81212,13 @@ var CommentView = /** @__PURE__ @class */ (function () {
         this.replyViewTextBox.addEventListener('keyup', this.enableDisableReplyPostButton.bind(this));
         var editRegionFooter = createElement('div', { styles: 'display:none', className: 'e-de-cmt-action-button' });
         //tslint:disable-next-line:max-line-length
-        var postButton = createElement('button', { className: 'e-de-cmt-post-btn e-de-overlay e-btn e-flat' });
+        var postButton = createElement('button', { className: 'e-de-cmt-post-btn e-de-overlay e-btn e-flat', attrs: { type: 'button' } });
         this.replyPostButton = new Button({ cssClass: 'e-btn e-flat e-primary', iconCss: 'e-de-cmt-post', disabled: true }, postButton);
         postButton.addEventListener('click', this.postReply.bind(this));
         postButton.title = localObj.getConstant('Post');
         var cancelButton = createElement('button', {
-            className: 'e-de-cmt-cancel-btn e-btn e-flat'
+            className: 'e-de-cmt-cancel-btn e-btn e-flat',
+            attrs: { type: 'button' }
         });
         this.replyCancelButton = new Button({ cssClass: 'e-btn e-flat', iconCss: 'e-de-cmt-cancel' }, cancelButton);
         cancelButton.addEventListener('click', this.cancelReply.bind(this));
@@ -81094,13 +81232,14 @@ var CommentView = /** @__PURE__ @class */ (function () {
     };
     CommentView.prototype.initResolveOption = function (localObj) {
         var editRegionFooter = createElement('div', { className: 'e-de-cmt-resolve-btn' });
-        var postButton = createElement('button', { className: 'e-de-cmt-post-btn e-btn e-flat' });
         //tslint:disable-next-line:max-line-length
+        var postButton = createElement('button', { className: 'e-de-cmt-post-btn e-btn e-flat', attrs: { type: 'button' } });
         this.reopenButton = new Button({ cssClass: 'e-btn e-flat', iconCss: 'e-de-cmt-reopen' }, postButton);
         postButton.title = localObj.getConstant('Reopen');
         postButton.addEventListener('click', this.reopenButtonClick.bind(this));
         var cancelButton = createElement('button', {
-            className: 'e-de-cmt-cancel-btn e-btn e-flat'
+            className: 'e-de-cmt-cancel-btn e-btn e-flat',
+            attrs: { type: 'button' }
         });
         cancelButton.title = localObj.getConstant('Delete');
         this.deleteButton = new Button({ cssClass: 'e-btn e-flat', iconCss: 'e-de-cmt-delete' }, cancelButton);
@@ -81877,6 +82016,7 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
     Object.defineProperty(DocumentEditor.prototype, "pageCount", {
         /**
          * Gets the total number of pages.
+         * @blazorType int
          * @returns {number}
          */
         get: function () {
@@ -82078,8 +82218,8 @@ var DocumentEditor = /** @__PURE__ @class */ (function (_super) {
         configurable: true
     });
     DocumentEditor.prototype.preRender = function () {
-        this.findResultsList = [];
         //pre render section
+        this.findResultsList = [];
     };
     DocumentEditor.prototype.render = function () {
         if (!isNullOrUndefined(this.element)) {
@@ -84087,6 +84227,13 @@ var Toolbar$1 = /** @__PURE__ @class */ (function () {
                 itemId !== id + CLIPBOARD_ID && itemId !== id + RESTRICT_EDITING_ID && itemId !== id + UPDATE_FIELDS_ID
                 && item.type !== 'Separator') {
                 if (enable && this.isCommentEditing && itemId === id + COMMENT_ID) {
+                    continue;
+                }
+                if (itemId !== id + UNDO_ID && itemId !== id + REDO_ID && itemId !== id + INSERT_TABLE_ID &&
+                    itemId !== id + INSERT_LINK_ID && itemId !== id + BOOKMARK_ID && itemId !== id + COMMENT_ID &&
+                    itemId !== id + HEADER_ID && itemId !== id + TABLE_OF_CONTENT_ID && itemId !== id + FOOTER_ID &&
+                    itemId !== id + PAGE_SET_UP_ID && itemId !== id + PAGE_NUMBER_ID && itemId !== id + INSERT_IMAGE_ID
+                    && itemId !== id + FORM_FIELDS_ID && itemId !== BREAK_ID) {
                     continue;
                 }
                 var element = document.getElementById(item.id);

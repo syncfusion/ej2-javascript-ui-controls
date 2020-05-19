@@ -1,4 +1,4 @@
-import { Browser, KeyboardEventArgs, remove, EventHandler, isUndefined, closest, classList } from '@syncfusion/ej2-base';
+import { Browser, KeyboardEventArgs, remove, EventHandler, isUndefined, closest, classList, isBlazor } from '@syncfusion/ej2-base';
 import { IGrid, IAction, BeforeCopyEventArgs, BeforePasteEventArgs } from '../base/interface';
 import { Column } from '../models/column';
 import { parentsUntil } from '../base/util';
@@ -54,9 +54,11 @@ export class Clipboard implements IAction {
     }
 
     private pasteHandler(e: KeyboardEvent): void {
-        if (e.keyCode === 86 && e.ctrlKey && !this.parent.isEdit) {
+        let grid: IGrid = this.parent;
+        if (e.keyCode === 86 && e.ctrlKey && !grid.isEdit) {
             let target: HTMLElement = closest(document.activeElement, '.e-rowcell') as HTMLElement;
-            if (!target) {
+            if (!target || !grid.editSettings.allowEditing || grid.editSettings.mode !== 'Batch' ||
+                grid.selectionSettings.mode !== 'Cell' || grid.selectionSettings.cellSelectionMode === 'Flow') {
                 return;
             }
             this.activeElement = document.activeElement;
@@ -70,8 +72,9 @@ export class Clipboard implements IAction {
                     window.scrollTo(x, y);
                     this.paste(
                         this.clipBoardTextArea.value,
-                        parseInt(target.parentElement.getAttribute('aria-rowindex'), 10),
-                        parseInt(target.getAttribute('aria-colindex'), 10));
+                        this.parent.getSelectedRowCellIndexes()[0].rowIndex,
+                        this.parent.getSelectedRowCellIndexes()[0].cellIndexes[0]
+                        );
                 },
                 10);
         }
@@ -256,7 +259,19 @@ export class Clipboard implements IAction {
             }
             if (isElement) {
                 if (!(cells[j] as HTMLElement).classList.contains('e-hide')) {
-                    this.copyContent += (cells[j] as HTMLElement).innerText;
+                    if (isBlazor()) {
+                        if ((!(cells[j] as HTMLElement).classList.contains('e-gridchkbox')) &&
+                            Object.keys((cells[j] as HTMLElement).querySelectorAll('.e-check')).length) {
+                            this.copyContent += true;
+                        } else if ((!(cells[j] as HTMLElement).classList.contains('e-gridchkbox')) &&
+                            Object.keys((cells[j] as HTMLElement).querySelectorAll('.e-uncheck')).length) {
+                            this.copyContent += false;
+                        } else {
+                            this.copyContent += (cells[j] as HTMLElement).innerText;
+                        }
+                    } else {
+                        this.copyContent += (cells[j] as HTMLElement).innerText;
+                    }
                 }
             } else {
                 this.copyContent += cells[j];

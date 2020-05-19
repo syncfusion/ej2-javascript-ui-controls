@@ -200,6 +200,12 @@ export interface SliderModel extends ComponentModel{
     step?: number;
 
     /**
+     * Specifies the width of the Slider.
+     * @default null
+     */
+    width?: number | string;
+
+    /**
      * Gets/Sets the minimum value of the slider.
      *
      * {% codeBlock src="slider/min-max-api/index.ts" %}{% endcodeBlock %}

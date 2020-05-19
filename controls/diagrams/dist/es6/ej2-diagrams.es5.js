@@ -1953,11 +1953,11 @@ var ConnectorConstraints;
     /** Enables or disables routing to the connector. */
     ConnectorConstraints[ConnectorConstraints["InheritLineRouting"] = 65536] = "InheritLineRouting";
     /** Enables or disables near node padding to the connector. */
-    ConnectorConstraints[ConnectorConstraints["ConnectNearNode"] = 131072] = "ConnectNearNode";
+    ConnectorConstraints[ConnectorConstraints["ConnectToNearByNode"] = 131072] = "ConnectToNearByNode";
     /** Enables or disables near port padding to the connector. */
-    ConnectorConstraints[ConnectorConstraints["ConnectNearPort"] = 262144] = "ConnectNearPort";
+    ConnectorConstraints[ConnectorConstraints["ConnectToNearByPort"] = 262144] = "ConnectToNearByPort";
     /** Enables or disables Enables or disables near port and node padding to the connector. */
-    ConnectorConstraints[ConnectorConstraints["ConnectNearAll"] = 393216] = "ConnectNearAll";
+    ConnectorConstraints[ConnectorConstraints["ConnectToNearByElement"] = 393216] = "ConnectToNearByElement";
     /** Enables all constraints. */
     ConnectorConstraints[ConnectorConstraints["Default"] = 470590] = "Default";
 })(ConnectorConstraints || (ConnectorConstraints = {}));
@@ -8615,7 +8615,7 @@ var Connector = /** @__PURE__ @class */ (function (_super) {
     ], Connector.prototype, "hitPadding", void 0);
     __decorate$6([
         Property(0)
-    ], Connector.prototype, "connectPadding", void 0);
+    ], Connector.prototype, "connectionPadding", void 0);
     __decorate$6([
         Property('Straight')
     ], Connector.prototype, "type", void 0);
@@ -25925,7 +25925,7 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
         var targetObject = eventArgs.source;
         if (targetObject && (targetObject instanceof Selector) && targetObject.connectors.length) {
             var selectedConnector = targetObject.connectors[0];
-            padding = (selectedConnector.constraints & ConnectorConstraints.ConnectNearPort) ? selectedConnector.connectPadding : 0;
+            padding = (selectedConnector.constraints & ConnectorConstraints.ConnectToNearByPort) ? selectedConnector.connectionPadding : 0;
         }
         return padding || 0;
     };
@@ -26638,8 +26638,8 @@ var DiagramEventHandler = /** @__PURE__ @class */ (function () {
             if (wrapper && obj.ports && obj.ports.length &&
                 !checkPort(obj, wrapper) && (source instanceof Selector) && source.connectors.length) {
                 var currentConnector = source.connectors[0];
-                if ((currentConnector.constraints & ConnectorConstraints.ConnectNearPort) &&
-                    !(currentConnector.constraints & ConnectorConstraints.ConnectNearNode)) {
+                if ((currentConnector.constraints & ConnectorConstraints.ConnectToNearByPort) &&
+                    !(currentConnector.constraints & ConnectorConstraints.ConnectToNearByNode)) {
                     wrapper = this.diagram.findElementUnderMouse(obj, this.currentPosition, 0);
                     if (!wrapper) {
                         obj = null;
@@ -27107,8 +27107,9 @@ var ObjectFinder = /** @__PURE__ @class */ (function () {
         var bounds;
         var child;
         var matrix;
-        var endPadding = (source && (source instanceof Connector) && ((source.constraints & ConnectorConstraints.ConnectNearNode) ||
-            (source.constraints & ConnectorConstraints.ConnectNearPort)) && source.connectPadding) || 0;
+        var endPadding = (source && (source instanceof Connector) &&
+            ((source.constraints & ConnectorConstraints.ConnectToNearByNode) ||
+                (source.constraints & ConnectorConstraints.ConnectToNearByPort)) && source.connectionPadding) || 0;
         var objArray = diagram.spatialSearch.findObjects(new Rect(pt.x - 50 - endPadding, pt.y - 50 - endPadding, 100 + endPadding, 100 + endPadding));
         var layerObjTable = {};
         var layerTarger;
@@ -29487,8 +29488,17 @@ var CommandHandler = /** @__PURE__ @class */ (function () {
                 else if (action === 'SendForward') {
                     this.moveObject(selectedObject[0].id, selectedObject[1].id);
                 }
-                else if (action === 'BringToFront' || action === 'SendToBack') {
+                else if (action === 'BringToFront') {
                     this.moveObject(selectedObject[0].id, zIndexTable[selectedObject[0].zIndex + 1]);
+                }
+                else if (action === 'SendToBack') {
+                    var layer_3 = this.getObjectLayer(selectedObject[0].id);
+                    for (var i = 0; i <= selectedObject[0].zIndex; i++) {
+                        if (layer_3.objects[i] !== selectedObject[0].id) {
+                            this.moveSvgNode(layer_3.objects[i], selectedObject[0].id);
+                            this.updateNativeNodeIndex(selectedObject[0].id);
+                        }
+                    }
                 }
             }
             else {

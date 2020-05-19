@@ -4656,6 +4656,7 @@ var DatePicker = /** @class */ (function (_super) {
                 case 'showClearButton':
                     sf.inputs.Input.setClearButton(this.showClearButton, this.inputElement, this.inputWrapper);
                     this.bindClearEvent();
+                    this.index = this.showClearButton ? 2 : 1;
                     break;
                 case 'strictMode':
                     this.invalidValueString = null;

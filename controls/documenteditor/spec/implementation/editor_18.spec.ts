@@ -1,5 +1,5 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
-import { TableOfContentsSettings, ParagraphWidget, TableWidget, FieldElementBox, TextFormField, ElementBox, WParagraphFormat, WCharacterFormat } from '../../src/document-editor/index';
+import { TableOfContentsSettings, ParagraphWidget, TableWidget, FieldElementBox, TextFormField, ElementBox, WParagraphFormat, WCharacterFormat, HelperMethods } from '../../src/document-editor/index';
 import { createElement } from '@syncfusion/ej2-base';
 import { Editor, EditorHistory, TableCellWidget, TextElementBox, TextHelper, RtlInfo, ListTextElementBox, LineWidget, TabElementBox, TextPosition } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
@@ -718,5 +718,54 @@ describe('Form Filling validation For Formatting', () => {
     expect(editor.documentHelper.protectionType).toBe('FormFieldsOnly');
     expect(editor.documentHelper.isDocumentProtected).toBe(true);
   });
-
+  it('Inline TextFormField validation For Textformatting', () => {
+    editor.editor.addProtection('', 'FormFieldsOnly');
+    editor.documentEditorSettings.formFieldSettings.formFillingMode = 'Inline';
+    let formfield: FieldElementBox = editor.documentHelper.formFields[0];
+    (formfield.formFieldData as TextFormField).format = 'uppercase';
+    editor.editor.applyFormTextFormat(formfield);
+    let resultText: string = formfield.resultText;
+    let formattedText: string = resultText.toUpperCase();
+    expect(resultText).toBe(formattedText);
+    (formfield.formFieldData as TextFormField).format = 'lowercase';
+    editor.editor.applyFormTextFormat(formfield);
+    resultText = formfield.resultText;
+    formattedText = resultText.toLowerCase();
+    expect(resultText).toBe(formattedText);
+    (formfield.formFieldData as TextFormField).format = 'first capital';
+    editor.editor.applyFormTextFormat(formfield);
+    resultText = formfield.resultText;
+    formattedText = HelperMethods.formatText('first capital', resultText);
+    expect(resultText).toBe(formattedText);
+  });
+  it('Inline TextFormField validation For delete', () => {
+    editor.editor.addProtection('', 'FormFieldsOnly');
+    editor.documentEditorSettings.formFieldSettings.formFillingMode = 'Inline';
+    let formfield: FieldElementBox = editor.documentHelper.formFields[0];
+    editor.selection.selectFieldInternal(formfield);
+    editor.editor.delete();
+    let resultText: string = editor.editor.getFormFieldText(formfield);
+    let text: string = editor.documentHelper.textHelper.repeatChar(editor.documentHelper.textHelper.getEnSpaceCharacter(), 5);
+    expect(resultText).toBe(text);
+  });
+  it('Inline TextFormField validation For insert text', () => {
+    editor.editor.addProtection('', 'FormFieldsOnly');
+    editor.documentEditorSettings.formFieldSettings.formFillingMode = 'Inline';
+    let formfield: FieldElementBox = editor.documentHelper.formFields[0];
+    editor.selection.handleControlRightKey();
+    editor.selection.handleRightKey();;
+    editor.editor.insertText('Hello');
+    let resultText: string = editor.editor.getFormFieldText(formfield);
+    expect(resultText).toBe('Hello');
+  });
+  it('Inline TextFormField validation For backspace', () => {
+    editor.editor.addProtection('', 'FormFieldsOnly');
+    editor.documentEditorSettings.formFieldSettings.formFillingMode = 'Inline';
+    let formfield: FieldElementBox = editor.documentHelper.formFields[0];
+    editor.selection.selectFieldInternal(formfield);
+    editor.editor.onBackSpace();
+    let resultText: string = editor.editor.getFormFieldText(formfield);
+    let text: string = editor.documentHelper.textHelper.repeatChar(editor.documentHelper.textHelper.getEnSpaceCharacter(), 5);
+    expect(resultText).toBe(text);
+  });
 });

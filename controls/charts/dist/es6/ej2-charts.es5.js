@@ -8587,6 +8587,10 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
             this.initializeIndicator();
             this.initializeTrendLine();
             this.renderSeries();
+            // Trendline is append to DOM after the series
+            if (this.trendLineElements) {
+                appendChildElement(this.enableCanvas, this.svgObject, this.trendLineElements, this.redraw);
+            }
             this.appendElementsAfterSeries(axisElement);
         }
     };
@@ -8674,9 +8678,6 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
             if (series.trendlines.length) {
                 this.trendLineModule.getTrendLineElements(series, this);
             }
-        }
-        if (this.trendLineElements) {
-            appendChildElement(this.enableCanvas, this.svgObject, this.trendLineElements, this.redraw);
         }
     };
     Chart.prototype.appendElementsAfterSeries = function (axisElement) {
@@ -10885,8 +10886,9 @@ var DateTime = /** @__PURE__ @class */ (function (_super) {
     };
     /** @private */
     DateTime.prototype.blazorCustomFormat = function (axis) {
-        if (this.chart.isBlazor && axis.actualIntervalType === 'Years') {
-            return 'yyyy';
+        if (this.chart.isBlazor) {
+            return axis.actualIntervalType === 'Years' ? (axis.isIntervalInDecimal ? 'yyyy' : 'MMM y') :
+                (axis.actualIntervalType === 'Days' && !axis.isIntervalInDecimal) ? 'ddd HH tt' : '';
         }
         else {
             return '';
@@ -14762,7 +14764,7 @@ var ScatterSeries = /** @__PURE__ @class */ (function () {
         // Scatter series DataLabel is not rendered after selecting StackingColumn
         series.isRectSeries = false;
         var marker = series.marker;
-        var visiblePoints = series.points;
+        var visiblePoints = this.enableComplexProperty(series);
         var argsData;
         var getCoordinate = series.chart.chartAreaType === 'PolarRadar' ? TransformToVisible : getPoint;
         var startLocation;
@@ -14790,6 +14792,47 @@ var ScatterSeries = /** @__PURE__ @class */ (function () {
                 }
             }
         }
+    };
+    /**
+     * To improve the chart performance.
+     * @return {void}
+     * @private
+     */
+    ScatterSeries.prototype.enableComplexProperty = function (series) {
+        var tempPoints2 = [];
+        var tempPoints = [];
+        var yVisibleRange = series.yAxis.visibleRange;
+        var xVisibleRange = series.xAxis.visibleRange;
+        var areaBounds = series.clipRect;
+        var seriesPoints = series.points;
+        var yTolerance = Math.abs(yVisibleRange.delta / areaBounds.height);
+        var xTolerance = Math.abs(xVisibleRange.delta / areaBounds.width);
+        var prevYValue = (seriesPoints[0] && seriesPoints[0].y > yTolerance) ? 0 : yTolerance;
+        var prevXValue = (seriesPoints[0] && seriesPoints[0].x > xTolerance) ? 0 : xTolerance;
+        var yVal = 0;
+        var xVal = 0;
+        for (var _i = 0, seriesPoints_1 = seriesPoints; _i < seriesPoints_1.length; _i++) {
+            var currentPoint = seriesPoints_1[_i];
+            currentPoint.symbolLocations = [];
+            yVal = currentPoint.yValue ? currentPoint.yValue : yVisibleRange.min;
+            xVal = currentPoint.xValue ? currentPoint.xValue : xVisibleRange.min;
+            if (Math.abs(prevYValue - yVal) >= yTolerance || Math.abs(prevXValue - xVal) >= xTolerance) {
+                tempPoints.push(currentPoint);
+                prevYValue = yVal;
+                prevXValue = xVal;
+            }
+        }
+        var currentTempPoint;
+        for (var i = 0; i < tempPoints.length; i++) {
+            currentTempPoint = tempPoints[i];
+            if (isNullOrUndefined(currentTempPoint.x) || currentTempPoint.x === '') {
+                continue;
+            }
+            else {
+                tempPoints2.push(currentTempPoint);
+            }
+        }
+        return tempPoints2;
     };
     /**
      * To append scatter element
@@ -15730,11 +15773,11 @@ var SplineBase = /** @__PURE__ @class */ (function (_super) {
         }
         return i;
     };
-    SplineBase.prototype.filterEmptyPoints = function (series) {
+    SplineBase.prototype.filterEmptyPoints = function (series, seriesPoints) {
         if (series.emptyPointSettings.mode !== 'Drop' && this.isPointInRange(series.points)) {
-            return series.points;
+            return seriesPoints ? seriesPoints : series.points;
         }
-        var points = extend([], series.points, null, true);
+        var points = seriesPoints ? seriesPoints : extend([], series.points, null, true);
         for (var i = 0; i < points.length; i++) {
             points[i].index = i;
             if (points[i].isEmpty) {
@@ -15977,40 +16020,29 @@ var SplineSeries = /** @__PURE__ @class */ (function (_super) {
         var firstPoint = null;
         var direction = '';
         var startPoint = 'M';
-        var tempPoints = [];
         var points = [];
-        var point;
-        var pointIndex = 0;
-        tempPoints = this.filterEmptyPoints(series);
-        for (var i = 0; i < tempPoints.length; i++) {
-            point = tempPoints[i];
-            if (isNullOrUndefined(point.x) || point.x === '') {
-                continue;
-            }
-            else {
-                point.index = pointIndex++;
-                points.push(point);
-            }
-        }
+        var tempPoints = [];
+        tempPoints = this.enableComplexProperty(series);
+        points = this.filterEmptyPoints(series, tempPoints);
         var previous;
         var getCoordinate = series.chart.chartAreaType === 'PolarRadar' ? TransformToVisible : getPoint;
         for (var _i = 0, points_1 = points; _i < points_1.length; _i++) {
-            var point_1 = points_1[_i];
-            previous = this.getPreviousIndex(points, point_1.index - 1, series);
-            point_1.symbolLocations = [];
-            point_1.regions = [];
-            if (point_1.visible && withInRange(points[previous], point_1, points[this.getNextIndex(points, point_1.index - 1, series)], series)) {
+            var point = points_1[_i];
+            previous = this.getPreviousIndex(points, point.index - 1, series);
+            point.symbolLocations = [];
+            point.regions = [];
+            if (point.visible && withInRange(points[previous], point, points[this.getNextIndex(points, point.index - 1, series)], series)) {
                 if (firstPoint !== null) {
-                    direction = this.getSplineDirection(series.drawPoints[previous], firstPoint, point_1, xAxis, yAxis, isInverted, series, startPoint, getCoordinate, direction);
+                    direction = this.getSplineDirection(series.drawPoints[previous], firstPoint, point, xAxis, yAxis, isInverted, series, startPoint, getCoordinate, direction);
                     startPoint = 'L';
                 }
-                firstPoint = point_1;
-                this.storePointLocation(point_1, series, isInverted, getCoordinate);
+                firstPoint = point;
+                this.storePointLocation(point, series, isInverted, getCoordinate);
             }
             else {
                 startPoint = 'M';
                 firstPoint = null;
-                point_1.symbolLocations = [];
+                point.symbolLocations = [];
             }
         }
         if ((points.length > 0 && series.drawPoints.length > 0) && series.chart.chartAreaType === 'PolarRadar' && series.isClosed) {
@@ -28231,7 +28263,7 @@ var AccumulationChart = /** @__PURE__ @class */ (function (_super) {
         var maxWidth = 0;
         var titleWidth = 0;
         this.titleCollection = getTitle(this.title, this.titleStyle, this.initialClipRect.width);
-        titleHeight = measureText(this.title, this.titleStyle).height * this.titleCollection.length;
+        titleHeight = this.title ? measureText(this.title, this.titleStyle).height * this.titleCollection.length : titleHeight;
         if (this.subTitle) {
             for (var _i = 0, _a = this.titleCollection; _i < _a.length; _i++) {
                 var titleText = _a[_i];
