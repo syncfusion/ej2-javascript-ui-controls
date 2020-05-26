@@ -159,11 +159,7 @@ export class CellRenderer implements ICellRenderer<Column> {
         let fromFormatter: Object = this.invokeFormatter(column, value, data);
 
         innerHtml = !isNullOrUndefined(column.formatter) ? isNullOrUndefined(fromFormatter) ? '' : fromFormatter.toString() : innerHtml;
-        node.setAttribute('aria-label', (innerHtml === '' ? 'empty' : innerHtml) + ' column header ' + cell.column.headerText);
-        if (!isNullOrUndefined(cell.column.headerText)) {
-            node.setAttribute('aria-label', innerHtml + ' column header ' + cell.column.headerText);
-        }
-
+        node.setAttribute('aria-label', innerHtml + ' column header ' + cell.column.headerText);
         if (this.evaluate(node, cell, data, attributes, fData, isEdit) && column.type !== 'checkbox') {
             this.appendHtml(node, innerHtml, column.getDomSetter ? column.getDomSetter() : 'innerHTML');
         } else if (column.type === 'checkbox') {

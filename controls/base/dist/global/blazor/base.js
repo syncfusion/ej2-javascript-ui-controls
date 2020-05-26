@@ -2012,7 +2012,7 @@ var Observer = /** @class */ (function () {
                     return promise;
                 }
                 promise.then(function (data) {
-                    data = typeof data === 'string' && _this.isJson(data) ? JSON.parse(data) : data;
+                    data = typeof data === 'string' && _this.isJson(data) ? JSON.parse(data, _this.dateReviver) : data;
                     extend(argument, argument, data, true);
                     if (successHandler && isTrigger) {
                         successHandler.call(obj_1.context, argument);
@@ -2022,7 +2022,8 @@ var Observer = /** @class */ (function () {
                     }
                 }).catch(function (data) {
                     if (errorHandler) {
-                        errorHandler.call(obj_1.context, typeof data === 'string' && _this.isJson(data) ? JSON.parse(data) : data);
+                        errorHandler.call(obj_1.context, typeof data === 'string' &&
+                            _this.isJson(data) ? JSON.parse(data, _this.dateReviver) : data);
                     }
                 });
             }
@@ -2033,6 +2034,14 @@ var Observer = /** @class */ (function () {
                 return this.blazorCallback(objs, argument, successHandler, errorHandler, index + 1);
             }
         }
+    };
+    // tslint:disable-next-line:no-any
+    Observer.prototype.dateReviver = function (key, value) {
+        var dPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/;
+        if (isBlazor && typeof value === 'string' && value.match(dPattern) !== null) {
+            return (new Date(value));
+        }
+        return (value);
     };
     Observer.prototype.isJson = function (value) {
         try {

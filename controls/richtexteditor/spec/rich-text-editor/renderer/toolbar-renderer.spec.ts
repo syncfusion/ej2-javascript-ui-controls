@@ -88,7 +88,6 @@ describe('Toolbar - Renderer', () => {
             rteEle = rteObj.element;
         });
         it('Open fontColor dropdown button', function () {
-            debugger;
             let trgEle : HTMLElement = rteEle.querySelectorAll(".e-toolbar-item")[1];
             (trgEle.firstElementChild as HTMLElement).click();
             dispatchEvent(trgEle.firstElementChild, 'mousedown');

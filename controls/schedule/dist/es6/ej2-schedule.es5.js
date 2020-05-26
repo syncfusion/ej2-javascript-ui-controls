@@ -5753,7 +5753,8 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         var headerTemplate = createElement('div', { className: POPUP_HEADER_CLASS });
         if (this.isQuickTemplate(headerType) && this.parent.quickInfoTemplates.header) {
             var headerArgs = extend({}, headerData, !isBlazor() ? { elementType: headerType.toLowerCase() } :
-                { elementType: headerType.toLowerCase(),
+                {
+                    elementType: headerType.toLowerCase(),
                     startTimeValue: addLocalOffset(headerData[this.parent.eventFields.startTime]),
                     endTimeValue: addLocalOffset(headerData[this.parent.eventFields.endTime])
                 }, true);
@@ -5787,7 +5788,8 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         var contentTemplate = createElement('div', { className: POPUP_CONTENT_CLASS });
         if (this.isQuickTemplate(type) && this.parent.quickInfoTemplates.content) {
             var contentArgs = extend({}, data, !isBlazor() ? { elementType: type.toLowerCase() } :
-                { elementType: type.toLowerCase(),
+                {
+                    elementType: type.toLowerCase(),
                     startTimeValue: addLocalOffset(data[this.parent.eventFields.startTime]),
                     endTimeValue: addLocalOffset(data[this.parent.eventFields.endTime])
                 }, true);
@@ -5851,7 +5853,8 @@ var QuickPopups = /** @__PURE__ @class */ (function () {
         var footerTemplate = createElement('div', { className: POPUP_FOOTER_CLASS });
         if (this.isQuickTemplate(footerType) && this.parent.quickInfoTemplates.footer) {
             var footerArgs = extend({}, footerData, !isBlazor() ? { elementType: footerType.toLowerCase() } :
-                { elementType: footerType.toLowerCase(),
+                {
+                    elementType: footerType.toLowerCase(),
                     startTimeValue: addLocalOffset(footerData[this.parent.eventFields.startTime]),
                     endTimeValue: addLocalOffset(footerData[this.parent.eventFields.endTime])
                 }, true);
@@ -13332,6 +13335,8 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Refreshes the Scheduler
+     * @method refresh
+     * @returns {void}
      */
     Schedule.prototype.refresh = function () {
         if (!this.isServerRenderer()) {
@@ -13442,12 +13447,16 @@ var Schedule = /** @__PURE__ @class */ (function (_super) {
     };
     /**
      * Allows to show the spinner on schedule at the required scenarios.
+     * @method showSpinner
+     * @returns {void}
      */
     Schedule.prototype.showSpinner = function () {
         showSpinner(this.element);
     };
     /**
      * When the spinner is shown manually using `showSpinner` method, it can be hidden using this `hideSpinner` method.
+     * @method hideSpinner
+     * @returns {void}
      */
     Schedule.prototype.hideSpinner = function () {
         hideSpinner(this.element);
@@ -17070,8 +17079,10 @@ var DragAndDrop = /** @__PURE__ @class */ (function (_super) {
         if (this.isAllowDrop(e)) {
             return;
         }
-        var dragArgs = { cancel: false, data: this.getChangedData(),
-            event: e, element: this.actionObj.element, target: e.target };
+        var dragArgs = {
+            cancel: false, data: this.getChangedData(),
+            event: e, element: this.actionObj.element, target: e.target
+        };
         this.parent.trigger(dragStop, dragArgs, function (dragEventArgs) {
             if (dragEventArgs.cancel) {
                 return;
@@ -18129,7 +18140,7 @@ var ViewBase = /** @__PURE__ @class */ (function () {
             return;
         }
         var scrollWrap = this.getContentAreaElement();
-        var elementSelector = "." + WORK_CELLS_CLASS + "[data-date=\"" + resetTime(new Date(+scrollDate)).getTime() + "\"]";
+        var elementSelector = "." + WORK_CELLS_CLASS + "[data-date=\"" + this.parent.getMsFromDate(new Date(resetTime(new Date(+scrollDate)).getTime())) + "\"]";
         var dateElement = scrollWrap.querySelector(elementSelector);
         if (this.parent.currentView === 'Month' && dateElement) {
             scrollWrap.scrollTop = dateElement.offsetTop;

@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.54 (2020-05-26)
+
+### RichTextEditor
+
+#### Bug Fixes
+
+- `#275859` -  The issue with unable to edit the Rich Text Editor content after pasting the content with table has been resolved.
+
 ## 18.1.53 (2020-05-19)
 
 ### RichTextEditor

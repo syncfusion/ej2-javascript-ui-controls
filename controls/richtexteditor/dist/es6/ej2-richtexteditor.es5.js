@@ -10410,7 +10410,12 @@ var InsertHtml = /** @__PURE__ @class */ (function () {
         else {
             var blockNode = this.getImmediateBlockNode(nodes[nodes.length - 1], editNode);
             var splitedElm = nodeCutter.GetSpliceNode(range, blockNode);
-            splitedElm.parentNode.replaceChild(node, splitedElm);
+            if (splitedElm.nodeName === 'TD' || splitedElm.nodeName === 'TH') {
+                splitedElm.appendChild(node);
+            }
+            else {
+                splitedElm.parentNode.replaceChild(node, splitedElm);
+            }
             var isFirstTextNode = true;
             var isPreviousInlineElem = void 0;
             var paraElm = void 0;
@@ -11973,7 +11978,6 @@ var SelectionCommands = /** @__PURE__ @class */ (function () {
         if (cursorFormat) {
             cursorNode = cursorNodes[0];
             InsertMethods.unwrap(cursorFormat);
-            cursorNodes[0] = InsertMethods.Wrap(cursorNodes[0], this.GetFormatNode(format, value));
         }
         else {
             cursorNode = this.getInsertNode(docElement, range, format, value).firstChild;
@@ -17482,6 +17486,9 @@ var Image = /** @__PURE__ @class */ (function () {
             if (this.uploadObj.allowedExtensions.toLocaleLowerCase().indexOf(('.' + e.type).toLocaleLowerCase()) === -1) {
                 this.dialogObj.getButtons(0).element.setAttribute('disabled', 'disabled');
             }
+            else {
+                this.dialogObj.getButtons(0).element.removeAttribute('disabled');
+            }
         }
     };
     Image.prototype.fileSelect = function () {
@@ -18224,7 +18231,8 @@ var Table = /** @__PURE__ @class */ (function () {
             var selection = this.parent.formatter.editorManager.nodeSelection.save(range, this.contentModule.getDocument());
             var ele = this.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range)[0];
             ele = (ele && ele.tagName !== 'TD' && ele.tagName !== 'TH') ? ele.parentElement : ele;
-            if ((event.keyCode === 8 || event.keyCode === 46)) {
+            if ((event.keyCode === 8 || event.keyCode === 46) ||
+                (event.ctrlKey && event.keyCode === 88)) {
                 if (ele && ele.tagName === 'TBODY') {
                     event.preventDefault();
                     proxy.removeTable(selection, event, true);
@@ -20278,6 +20286,33 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
                 range.startContainer.textContent = range.startContainer.textContent.replace(regEx, '');
                 this.formatter.editorManager.nodeSelection.setCursorPoint(this.contentModule.getDocument(), range.startContainer, pointer);
             }
+            else if ((e.code === 'Backspace' && e.which === 8) &&
+                range.startContainer.textContent.charCodeAt(0) === 8203 && range.collapsed) {
+                var parentEle = range.startContainer.parentElement;
+                var index = void 0;
+                var i = void 0;
+                for (i = 0; i < parentEle.childNodes.length; i++) {
+                    if (parentEle.childNodes[i] === range.startContainer) {
+                        index = i;
+                    }
+                }
+                var bool = true;
+                var removeNodeArray = [];
+                for (i = index; i >= 0; i--) {
+                    if (parentEle.childNodes[i].nodeType === 3 && parentEle.childNodes[i].textContent.charCodeAt(0) === 8203 && bool) {
+                        removeNodeArray.push(i);
+                    }
+                    else {
+                        bool = false;
+                    }
+                }
+                if (removeNodeArray.length > 0) {
+                    for (i = removeNodeArray.length - 1; i > 0; i--) {
+                        parentEle.childNodes[removeNodeArray[i]].textContent = '';
+                    }
+                }
+                this.formatter.editorManager.nodeSelection.setCursorPoint(this.contentModule.getDocument(), range.startContainer, range.startOffset);
+            }
         }
         if (this.formatter.getUndoRedoStack().length === 0) {
             this.formatter.saveData();
@@ -20305,6 +20340,10 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
     };
     RichTextEditor.prototype.keyUp = function (e) {
         this.notify(keyUp, { member: 'keyup', args: e });
+        if (e.code === 'KeyX' && e.which === 88 && e.keyCode === 88 && e.ctrlKey && (this.inputElement.innerHTML === '' ||
+            this.inputElement.innerHTML === '<br>')) {
+            this.inputElement.innerHTML = getEditValue('<p><br></p>', this);
+        }
         var allowedKeys = e.which === 32 || e.which === 13 || e.which === 8 || e.which === 46;
         if (((e.key !== 'shift' && !e.ctrlKey) && e.key && e.key.length === 1 || allowedKeys) || (this.editorMode === 'Markdown'
             && ((e.key !== 'shift' && !e.ctrlKey) && e.key && e.key.length === 1 || allowedKeys)) && !this.inlineMode.enable) {
@@ -20541,12 +20580,7 @@ var RichTextEditor = /** @__PURE__ @class */ (function (_super) {
             }
             this.removeHtmlAttributes();
             this.removeAttributes();
-            if (!(isBlazor() && this.isServerRendered)) {
-                _super.prototype.destroy.call(this);
-            }
-            else {
-                this.isDestroyed = true;
-            }
+            _super.prototype.destroy.call(this);
             this.isRendered = false;
             if (this.enablePersistence) {
                 window.localStorage.removeItem(this.getModuleName() + this.element.id);

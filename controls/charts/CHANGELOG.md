@@ -2,6 +2,22 @@
 
 ## [Unreleased]
 
+## 18.1.54 (2020-05-26)
+
+### Stock Chart
+
+#### Bug Fixes
+
+- `#262890` - Label position is not working in stock chart primary y axis issue fixed.
+
+### Chart
+
+#### Bug Fixes
+
+- `#273192` - Trendline slopes are not proper as per the datasource issue fixed.
+- `#277748` - Chart rendered twice in blazor is now resolved.
+- `#273410` - Chart resize issue in blazor has been fixed.
+
 ## 18.1.53 (2020-05-19)
 
 ### Accumulation chart
@@ -9,12 +25,14 @@
 #### Bug Fixes
 
 - `#153764` - The size of the doughnuts graphs does not display correctly in the Edge browser issue fixed.
+- `#277504` - Explode Index 0 is not working in accumulation chart issue fixed.
 
 ### Chart
 
 #### Bug Fixes
 
 - `#273192` - Trendlines are placed behind the series issue has been fixed.
+- `#274960` - `pageX` and `pageY` has been added in `pointClick event`.
 
 ## 18.1.52 (2020-05-13)
 

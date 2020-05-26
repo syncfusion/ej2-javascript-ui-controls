@@ -130,8 +130,10 @@ export class PdfExport {
         this.headerOnPages = args[header];
         this.drawPosition = args[drawPos];
         this.parent.log('exporting_begin', this.getModuleName());
-        if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.dataSource)
-        && pdfExportProperties.dataSource instanceof DataManager) {
+        if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.dataSource)) {
+            if (!(pdfExportProperties.dataSource instanceof DataManager)) {
+                pdfExportProperties.dataSource = new DataManager(pdfExportProperties.dataSource);
+            }
             return new Promise((resolve: Function, reject: Function) => {
                 (<DataManager>pdfExportProperties.dataSource).executeQuery(new Query()).then((returnType: Object) => {
                     this.exportWithData(parent, pdfDoc, resolve, returnType, pdfExportProperties, isMultipleExport);

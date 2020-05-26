@@ -338,6 +338,18 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
         }
         return value;
     };
+    DropDownBase.prototype.templateCompiler = function (baseTemplate) {
+        var checkTemplate = false;
+        if (baseTemplate) {
+            try {
+                checkTemplate = (document.querySelectorAll(baseTemplate).length) ? true : false;
+            }
+            catch (exception) {
+                checkTemplate = false;
+            }
+        }
+        return checkTemplate;
+    };
     DropDownBase.prototype.l10nUpdate = function (actionFailure) {
         var ele = this.getModuleName() === 'listbox' ? this.ulElement : this.list;
         if (this.noRecordsTemplate !== 'No Records Found' || this.actionFailureTemplate !== 'The Request Failed') {
@@ -346,7 +358,13 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
             var compiledString = void 0;
             var templateId = actionFailure ? this.actionFailureTemplateId : this.noRecordsTemplateId;
             ele.innerHTML = '';
-            compiledString = compile(template);
+            var tempaltecheck = this.templateCompiler(template);
+            if (tempaltecheck) {
+                compiledString = compile(document.querySelector(template).innerHTML.trim());
+            }
+            else {
+                compiledString = compile(template);
+            }
             for (var _i = 0, _a = compiledString({}, null, null, templateId, this.isStringTemplate); _i < _a.length; _i++) {
                 var item = _a[_i];
                 ele.appendChild(item);
@@ -734,7 +752,14 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
             var dataSource = this.dataSource;
             var option = { groupTemplateID: this.groupTemplateId, isStringTemplate: this.isStringTemplate };
             var headerItems = listEle.querySelectorAll('.' + dropDownBaseClasses.group);
-            var tempHeaders = ListBase.renderGroupTemplate(this.groupTemplate, dataSource, this.fields.properties, headerItems, option);
+            var groupcheck = this.templateCompiler(this.groupTemplate);
+            if (groupcheck) {
+                var groupValue = document.querySelector(this.groupTemplate).innerHTML.trim();
+                var tempHeaders = ListBase.renderGroupTemplate(groupValue, dataSource, this.fields.properties, headerItems, option);
+            }
+            else {
+                var tempHeaders = ListBase.renderGroupTemplate(this.groupTemplate, dataSource, this.fields.properties, headerItems, option);
+            }
             this.DropDownBaseupdateBlazorTemplates(false, true, false, false, false, false, false, false);
         }
     };
@@ -841,8 +866,16 @@ var DropDownBase = /** @__PURE__ @class */ (function (_super) {
         var option = this.listOption(dataSource, fields);
         option.templateID = this.itemTemplateId;
         option.isStringTemplate = this.isStringTemplate;
-        return ListBase.renderContentTemplate(this.createElement, this.itemTemplate, dataSource, fields.properties, option);
+        var itemcheck = this.templateCompiler(this.itemTemplate);
+        if (itemcheck) {
+            var itemValue = document.querySelector(this.itemTemplate).innerHTML.trim();
+            return ListBase.renderContentTemplate(this.createElement, itemValue, dataSource, fields.properties, option);
+        }
+        else {
+            return ListBase.renderContentTemplate(this.createElement, this.itemTemplate, dataSource, fields.properties, option);
+        }
     };
+    
     DropDownBase.prototype.typeOfData = function (items) {
         var item = { typeof: null, item: null };
         for (var i = 0; (!isNullOrUndefined(items) && i < items.length); i++) {
@@ -1944,8 +1977,8 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
                 this.searchKeyEvent = e;
                 this.renderList();
             }
-            if (!(this.isServerBlazor && e.action === 'open') && isNullOrUndefined(this.list) || (!isNullOrUndefined(this.liCollections) &&
-                isNavigation && this.liCollections.length === 0) || this.isRequested) {
+            if (!(this.isServerBlazor && (e.action === 'open' || e.action === 'space')) && isNullOrUndefined(this.list) ||
+                (!isNullOrUndefined(this.liCollections) && isNavigation && this.liCollections.length === 0) || this.isRequested) {
                 if (!(this.isServerBlazor && isNavAction)) {
                     return;
                 }
@@ -2362,6 +2395,18 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             this.targetElement().removeAttribute('aria-live');
         }
     };
+    DropDownList.prototype.dropdownCompiler = function (dropdownTemplate) {
+        var checkTemplate = false;
+        if (dropdownTemplate) {
+            try {
+                checkTemplate = (document.querySelectorAll(dropdownTemplate).length) ? true : false;
+            }
+            catch (exception) {
+                checkTemplate = false;
+            }
+        }
+        return checkTemplate;
+    };
     DropDownList.prototype.setValueTemplate = function () {
         var compiledString;
         if (!this.valueTempElement) {
@@ -2371,7 +2416,13 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
         }
         this.valueTempElement.innerHTML = '';
         var templateData = (isBlazor()) ? JSON.parse(JSON.stringify(this.itemData)) : this.itemData;
-        compiledString = compile(this.valueTemplate);
+        var valuecheck = this.dropdownCompiler(this.valueTemplate);
+        if (valuecheck) {
+            compiledString = compile(document.querySelector(this.valueTemplate).innerHTML.trim());
+        }
+        else {
+            compiledString = compile(this.valueTemplate);
+        }
         for (var _i = 0, _a = compiledString(templateData, null, null, this.valueTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
             var item = _a[_i];
             this.valueTempElement.appendChild(item);
@@ -3459,7 +3510,13 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             this.footer = this.createElement('div');
             addClass([this.footer], dropDownListClasses.footer);
         }
-        compiledString = compile(this.footerTemplate);
+        var footercheck = this.dropdownCompiler(this.footerTemplate);
+        if (footercheck) {
+            compiledString = compile(document.querySelector(this.footerTemplate).innerHTML.trim());
+        }
+        else {
+            compiledString = compile(this.footerTemplate);
+        }
         for (var _i = 0, _a = compiledString({}, null, null, this.footerTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
             var item = _a[_i];
             this.footer.appendChild(item);
@@ -3476,7 +3533,13 @@ var DropDownList = /** @__PURE__ @class */ (function (_super) {
             this.header = this.createElement('div');
             addClass([this.header], dropDownListClasses.header);
         }
-        compiledString = compile(this.headerTemplate);
+        var headercheck = this.dropdownCompiler(this.headerTemplate);
+        if (headercheck) {
+            compiledString = compile(document.querySelector(this.headerTemplate).innerHTML.trim());
+        }
+        else {
+            compiledString = compile(this.headerTemplate);
+        }
         for (var _i = 0, _a = compiledString({}, null, null, this.headerTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
             var item = _a[_i];
             this.header.appendChild(item);
@@ -9748,6 +9811,18 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             e.preventDefault();
         }
     };
+    MultiSelect.prototype.multiCompiler = function (multiselectTemplate) {
+        var checkTemplate = false;
+        if (multiselectTemplate) {
+            try {
+                checkTemplate = (document.querySelectorAll(multiselectTemplate).length) ? true : false;
+            }
+            catch (exception) {
+                checkTemplate = false;
+            }
+        }
+        return checkTemplate;
+    };
     MultiSelect.prototype.getChip = function (data, value, e) {
         var _this = this;
         var itemData = { text: value, value: value };
@@ -9755,6 +9830,7 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
             className: CHIP$1,
             attrs: { 'data-value': value, 'title': data }
         });
+        var compiledString;
         var chipContent = this.createElement('span', { className: CHIP_CONTENT$1 });
         var chipClose = this.createElement('span', { className: CHIP_CLOSE$1 });
         if (this.mainData) {
@@ -9762,7 +9838,13 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
                 : this.getDataByValue(value);
         }
         if (this.valueTemplate && !isNullOrUndefined(itemData)) {
-            var compiledString = compile(this.valueTemplate);
+            var valuecheck = this.multiCompiler(this.valueTemplate);
+            if (valuecheck) {
+                compiledString = compile(document.querySelector(this.valueTemplate).innerHTML.trim());
+            }
+            else {
+                compiledString = compile(this.valueTemplate);
+            }
             for (var _i = 0, _a = compiledString(itemData, null, null, this.valueTemplateId, this.isStringTemplate); _i < _a.length; _i++) {
                 var item = _a[_i];
                 chipContent.appendChild(item);
@@ -9958,7 +10040,13 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         }
         this.header = this.createElement('div');
         addClass([this.header], HEADER$1);
-        compiledString = compile(this.headerTemplate);
+        var headercheck = this.multiCompiler(this.headerTemplate);
+        if (headercheck) {
+            compiledString = compile(document.querySelector(this.headerTemplate).innerHTML.trim());
+        }
+        else {
+            compiledString = compile(this.headerTemplate);
+        }
         var elements = compiledString({}, null, null, this.headerTemplateId, this.isStringTemplate);
         for (var temp = 0; temp < elements.length; temp++) {
             this.header.appendChild(elements[temp]);
@@ -9979,7 +10067,13 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
         }
         this.footer = this.createElement('div');
         addClass([this.footer], FOOTER$1);
-        compiledString = compile(this.footerTemplate);
+        var footercheck = this.multiCompiler(this.footerTemplate);
+        if (footercheck) {
+            compiledString = compile(document.querySelector(this.footerTemplate).innerHTML.trim());
+        }
+        else {
+            compiledString = compile(this.footerTemplate);
+        }
         var elements = compiledString({}, null, null, this.footerTemplateId, this.isStringTemplate);
         for (var temp = 0; temp < elements.length; temp++) {
             this.footer.appendChild(elements[temp]);
@@ -11120,7 +11214,8 @@ var MultiSelect = /** @__PURE__ @class */ (function (_super) {
      * @private
      */
     MultiSelect.prototype.onPropertyChanged = function (newProp, oldProp) {
-        if (newProp.dataSource && !isNullOrUndefined(Object.keys(newProp.dataSource))) {
+        if (newProp.dataSource && !isNullOrUndefined(Object.keys(newProp.dataSource))
+            || newProp.query && !isNullOrUndefined(Object.keys(newProp.query))) {
             this.mainList = null;
             this.mainData = null;
             this.isFirstClick = false;

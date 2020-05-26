@@ -10306,7 +10306,12 @@ class InsertHtml {
         else {
             let blockNode = this.getImmediateBlockNode(nodes[nodes.length - 1], editNode);
             let splitedElm = nodeCutter.GetSpliceNode(range, blockNode);
-            splitedElm.parentNode.replaceChild(node, splitedElm);
+            if (splitedElm.nodeName === 'TD' || splitedElm.nodeName === 'TH') {
+                splitedElm.appendChild(node);
+            }
+            else {
+                splitedElm.parentNode.replaceChild(node, splitedElm);
+            }
             let isFirstTextNode = true;
             let isPreviousInlineElem;
             let paraElm;
@@ -11858,7 +11863,6 @@ class SelectionCommands {
         if (cursorFormat) {
             cursorNode = cursorNodes[0];
             InsertMethods.unwrap(cursorFormat);
-            cursorNodes[0] = InsertMethods.Wrap(cursorNodes[0], this.GetFormatNode(format, value));
         }
         else {
             cursorNode = this.getInsertNode(docElement, range, format, value).firstChild;
@@ -17368,6 +17372,9 @@ class Image {
             if (this.uploadObj.allowedExtensions.toLocaleLowerCase().indexOf(('.' + e.type).toLocaleLowerCase()) === -1) {
                 this.dialogObj.getButtons(0).element.setAttribute('disabled', 'disabled');
             }
+            else {
+                this.dialogObj.getButtons(0).element.removeAttribute('disabled');
+            }
         }
     }
     fileSelect() {
@@ -18103,7 +18110,8 @@ class Table {
             let selection = this.parent.formatter.editorManager.nodeSelection.save(range, this.contentModule.getDocument());
             let ele = this.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range)[0];
             ele = (ele && ele.tagName !== 'TD' && ele.tagName !== 'TH') ? ele.parentElement : ele;
-            if ((event.keyCode === 8 || event.keyCode === 46)) {
+            if ((event.keyCode === 8 || event.keyCode === 46) ||
+                (event.ctrlKey && event.keyCode === 88)) {
                 if (ele && ele.tagName === 'TBODY') {
                     event.preventDefault();
                     proxy.removeTable(selection, event, true);
@@ -20020,6 +20028,33 @@ let RichTextEditor = class RichTextEditor extends Component {
                 range.startContainer.textContent = range.startContainer.textContent.replace(regEx, '');
                 this.formatter.editorManager.nodeSelection.setCursorPoint(this.contentModule.getDocument(), range.startContainer, pointer);
             }
+            else if ((e.code === 'Backspace' && e.which === 8) &&
+                range.startContainer.textContent.charCodeAt(0) === 8203 && range.collapsed) {
+                let parentEle = range.startContainer.parentElement;
+                let index;
+                let i;
+                for (i = 0; i < parentEle.childNodes.length; i++) {
+                    if (parentEle.childNodes[i] === range.startContainer) {
+                        index = i;
+                    }
+                }
+                let bool = true;
+                let removeNodeArray = [];
+                for (i = index; i >= 0; i--) {
+                    if (parentEle.childNodes[i].nodeType === 3 && parentEle.childNodes[i].textContent.charCodeAt(0) === 8203 && bool) {
+                        removeNodeArray.push(i);
+                    }
+                    else {
+                        bool = false;
+                    }
+                }
+                if (removeNodeArray.length > 0) {
+                    for (i = removeNodeArray.length - 1; i > 0; i--) {
+                        parentEle.childNodes[removeNodeArray[i]].textContent = '';
+                    }
+                }
+                this.formatter.editorManager.nodeSelection.setCursorPoint(this.contentModule.getDocument(), range.startContainer, range.startOffset);
+            }
         }
         if (this.formatter.getUndoRedoStack().length === 0) {
             this.formatter.saveData();
@@ -20047,6 +20082,10 @@ let RichTextEditor = class RichTextEditor extends Component {
     }
     keyUp(e) {
         this.notify(keyUp, { member: 'keyup', args: e });
+        if (e.code === 'KeyX' && e.which === 88 && e.keyCode === 88 && e.ctrlKey && (this.inputElement.innerHTML === '' ||
+            this.inputElement.innerHTML === '<br>')) {
+            this.inputElement.innerHTML = getEditValue('<p><br></p>', this);
+        }
         let allowedKeys = e.which === 32 || e.which === 13 || e.which === 8 || e.which === 46;
         if (((e.key !== 'shift' && !e.ctrlKey) && e.key && e.key.length === 1 || allowedKeys) || (this.editorMode === 'Markdown'
             && ((e.key !== 'shift' && !e.ctrlKey) && e.key && e.key.length === 1 || allowedKeys)) && !this.inlineMode.enable) {
@@ -20282,12 +20321,7 @@ let RichTextEditor = class RichTextEditor extends Component {
             }
             this.removeHtmlAttributes();
             this.removeAttributes();
-            if (!(isBlazor() && this.isServerRendered)) {
-                super.destroy();
-            }
-            else {
-                this.isDestroyed = true;
-            }
+            super.destroy();
             this.isRendered = false;
             if (this.enablePersistence) {
                 window.localStorage.removeItem(this.getModuleName() + this.element.id);

@@ -1039,7 +1039,7 @@ export class TreeMap extends Component<HTMLElement> implements INotifyPropertyCh
                     options: eventArgs.item['options'],
                     rect: eventArgs.item['rect']
                 };
-                eventArgs.item = data;
+                eventArgs.item = this.layout.renderItems[itemIndex]['data'];
                 const {treemap, ...blazorEventArgs} : IItemClickEventArgs = eventArgs;
                 eventArgs = blazorEventArgs;
             }

@@ -1168,7 +1168,7 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
         let cldrObj: string[];
         let nameSpace: string = '';
         if (this.locale === 'en' || this.locale === 'en-US') {
-            nameSpace = isBlazor() ? 'days.' : 'days.stand-alone.' ;
+            nameSpace = isBlazor() ? 'days.' : 'days.stand-alone.';
             cldrObj = <string[]>(getValue(nameSpace + type, getDefaultDateObject(this.getCalendarMode())));
         } else {
             nameSpace = isBlazor() ? '' + this.locale + '.dates.days.' + type :
@@ -1752,7 +1752,6 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
      * Called internally, if any of the property value changed.
      * @private
      */
-
     public onPropertyChanged(newProp: ScheduleModel, oldProp: ScheduleModel): void {
         let state: StateArgs = { isRefresh: false, isResource: false, isDate: false, isView: false, isLayout: false, isDataManager: false };
         for (let prop of Object.keys(newProp)) {
@@ -1953,6 +1952,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Refreshes the Scheduler
+     * @method refresh
+     * @returns {void}
      */
     public refresh(): void {
         if (!this.isServerRenderer()) {
@@ -2058,6 +2059,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Allows to show the spinner on schedule at the required scenarios.
+     * @method showSpinner
+     * @returns {void}
      */
     public showSpinner(): void {
         showSpinner(this.element);
@@ -2065,6 +2068,8 @@ export class Schedule extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * When the spinner is shown manually using `showSpinner` method, it can be hidden using this `hideSpinner` method.
+     * @method hideSpinner
+     * @returns {void}
      */
     public hideSpinner(): void {
         hideSpinner(this.element);

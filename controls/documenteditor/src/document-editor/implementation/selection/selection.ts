@@ -8441,7 +8441,7 @@ export class Selection {
         if (bookmarks.containsKey(name)) {
             //bookmark start element
             let bookmrkElmnt: BookmarkElementBox = bookmarks.get(name);
-            let offset: number = bookmrkElmnt.line.getOffset(bookmrkElmnt, 1);
+            let offset: number = bookmrkElmnt.line.getOffset(bookmrkElmnt, 0);
             let startPosition: TextPosition = new TextPosition(this.owner);
             startPosition.setPositionParagraph(bookmrkElmnt.line, offset);
             if (moveToStart) {
@@ -8449,7 +8449,7 @@ export class Selection {
             } else {
                 //bookmark end element
                 let bookmrkEnd: BookmarkElementBox = bookmrkElmnt.reference;
-                let endoffset: number = bookmrkEnd.line.getOffset(bookmrkEnd, 0);
+                let endoffset: number = bookmrkEnd.line.getOffset(bookmrkEnd, 1);
                 let endPosition: TextPosition = new TextPosition(this.owner);
                 endPosition.setPositionParagraph(bookmrkEnd.line, endoffset);
                 //selects the bookmark range

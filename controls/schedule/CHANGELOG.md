@@ -2,6 +2,14 @@
 
 ## [Unreleased]
 
+## 18.1.54 (2020-05-26)
+
+### Schedule
+
+#### Bug Fixes
+
+- `#151241` - An issue with `popupOpenEventArgs` API documentation has missing possible type value has been fixed.
+
 ## 18.1.52 (2020-05-13)
 
 ### Schedule

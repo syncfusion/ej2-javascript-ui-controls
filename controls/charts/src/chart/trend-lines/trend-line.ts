@@ -121,7 +121,8 @@ export class Trendlines {
                     break;
             }
         } else {
-            slope = Math.abs(((points.length * xyAvg) - (xAvg * yAvg)) / ((points.length * xxAvg) - (xAvg * xAvg)));
+            slope = ((points.length * xyAvg) - (xAvg * yAvg)) / ((points.length * xxAvg) - (xAvg * xAvg));
+            slope = (type === 'Linear' ? slope : Math.abs(slope));
             if (type === 'Exponential' || type === 'Power') {
                 intercept = Math.exp((yAvg - (slope * xAvg)) / points.length);
             } else {

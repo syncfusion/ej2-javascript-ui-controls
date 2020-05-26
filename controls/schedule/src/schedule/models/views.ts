@@ -11,7 +11,7 @@ import { HeaderRows } from './header-rows';
 export class Views extends ChildProperty<Views> {
     /** 
      * It accepts the schedule view name, based on which we can define with its related properties in a single object.
-     *  The applicable view names are,
+     * The applicable view names are,
      * * Day
      * * Week
      * * WorkWeek
@@ -180,6 +180,9 @@ export class Views extends ChildProperty<Views> {
 
     /** 
      * It is used to specify the year view rendering orientation on the schedule.
+     * The applicable orientation values are,
+     * * Horizontal
+     * * Vertical
      * @default 'Horizontal'
      */
     @Property('Horizontal')

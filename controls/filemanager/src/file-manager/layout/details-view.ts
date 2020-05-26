@@ -484,6 +484,7 @@ export class DetailsView {
                             this.parent.setProperties({ selectedItems: slItems }, true);
                         }
                         this.selectRecords(this.parent.selectedItems);
+                        this.parent.setProperties({ selectedItems: this.parent.selectedItems }, true);
                     } else if (!isNOU(this.gridObj)) {
                         this.gridObj.clearSelection();
                     }
@@ -1097,6 +1098,7 @@ export class DetailsView {
             this.parent.selectedItems.push(name);
             selectSize++;
         }
+        this.parent.setProperties({ selectedItems: this.parent.selectedItems }, true);
     }
 
     private onDeSelection(args: RowDeselectEventArgs): void {

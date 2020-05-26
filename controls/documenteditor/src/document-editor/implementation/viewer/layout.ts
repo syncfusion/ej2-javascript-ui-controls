@@ -1271,8 +1271,8 @@ export class Layout {
             let val: number = i % 3;
             if ((abstractList.levels[0] as WListLevel).listLevelPattern === 'Bullet') {
                 listLevel.listLevelPattern = 'Bullet';
-                listLevel.numberFormat = val === 0 ? '\uf0b7' : val === 1 ? '\uf0a7' : '\uf0d8';
-                listLevel.characterFormat.fontFamily = listLevel.numberFormat === '\uf0a7' || '\uf0d8' ? 'Wingdings' : 'Symbol';
+                listLevel.numberFormat = val === 0 ? '\uf0b7' : val === 1 ? '\uf06f' + '\u0020' : '\uf0a7';
+                listLevel.characterFormat.fontFamily = listLevel.numberFormat === '\uf0a7' ? 'Wingdings' : 'Symbol';
 
             } else {
                 listLevel.listLevelPattern = this.getListLevelPattern(val);
@@ -1759,7 +1759,7 @@ export class Layout {
             }
             paragraphWidget.containerWidget = nextBody;
             this.viewer.updateClientAreaLocation(paragraphWidget, this.viewer.clientActiveArea);
-            if (index === 0) {
+            if (index === 0 && !(line.children[0] instanceof ListTextElementBox)) {
                 let firstLineIndent: number = -HelperMethods.convertPointToPixel(paragraphWidget.paragraphFormat.firstLineIndent);
                 this.viewer.updateClientWidth(firstLineIndent);
             }
@@ -2271,9 +2271,7 @@ export class Layout {
         let firstLineIndent: number = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent);
         if (!isNullOrUndefined(element) && lineWidget.isFirstLine()) {
             clientWidth = this.viewer.clientArea.x + firstLineIndent;
-            if (!(element instanceof ListTextElementBox)) {
-                clientActiveX = clientActiveX + firstLineIndent;
-            }
+            clientActiveX = clientActiveX + firstLineIndent;
         } else {
             clientWidth = this.viewer.clientArea.x;
         }
@@ -3355,7 +3353,7 @@ export class Layout {
             }
             // tslint:disable-next-line:max-line-length
             if ((viewer instanceof PageLayoutViewer && (viewer as PageLayoutViewer).visiblePages.indexOf(page) !== -1) || isUpdateVerticalPosition) {
-                this.updateCellVerticalPosition(cellWidget, false, false);
+                this.updateCellVerticalPosition(cellWidget, false, cellWidget.ownerTable.isInsideTable);
             }
             //Renders the current table row contents, after relayout based on editing.
             // if (viewer instanceof PageLayoutViewer && (viewer as PageLayoutViewer).visiblePages.indexOf(page) !== -1) {
@@ -3627,13 +3625,13 @@ export class Layout {
             case 0:
                 return 'Arabic';
             case 1:
-                return 'UpRoman';
+                return 'LowLetter';
             case 2:
                 return 'LowRoman';
             case 3:
                 return 'UpLetter';
             case 4:
-                return 'LowLetter';
+                return 'UpRoman';
             case 5:
                 return 'Ordinal';
             case 6:

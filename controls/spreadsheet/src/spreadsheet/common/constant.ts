@@ -337,5 +337,12 @@ export let defaultLocale: object = {
     EmptyError: 'You must enter a value',
     ClearHighlight: 'Clear Highlight',
     HighlightInvalidData: 'Highlight Invalid Data',
-    ClearValidation: 'Clear Validation'
+    ClearValidation: 'Clear Validation',
+    ISNUMBER:  'Returns true when the value parses as a numeric value.',
+    ROUND: 'Rounds a number to a specified number of digits.',
+    GEOMEAN: 'Returns the geometric mean of an array or range of positive data.',
+    POWER: 'Returns the result of a number raised to power',
+    LOG: 'Returns the logarithm of a number to the base that you specify.',
+    TRUNC: 'Returns the truncated value of a number to a specified number of decimal places.',
+    EXP: 'Returns e raised to the power of the given number.'
 };

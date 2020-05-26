@@ -231,6 +231,9 @@ export class PivotChart {
                         tupInfo.measureName : cell.actualText;
                     if (!totColIndex[cell.colIndex] && cell.axis === 'value' && firstRowCell.type !== 'header' &&
                         actualText !== '' && (chartSettings.enableMultiAxis ? true : actualText === this.currentMeasure)) {
+                        if (isNullOrUndefined(firstRowCell.members)) { 
+                            firstRowCell.members = []; 
+                        }
                         if (this.parent.dataType === 'olap' ? (lastHierarchy === firstRowCell.hierarchy ?
                             ((firstRowCell.memberType === 3 && prevMemberCell) ?
                                 (fieldPos === this.measurePos ? prevMemberCell.isDrilled : true) : firstRowCell.isDrilled) : true)
@@ -589,11 +592,13 @@ export class PivotChart {
             let cKeys: string[] = Object.keys(rows);
             for (let cellIndex of cKeys) {
                 let cell: IAxisSet = rows[Number(cellIndex)] as IAxisSet;
-                if (cell.axis !== 'column') {
-                    return colIndexColl;
-                } else if ((cell.type === 'sum' || (this.dataSourceSettings.columns.length === 0 ? false : cell.type === 'grand sum'))
-                    && cell.rowSpan !== -1) {
-                    colIndexColl[cell.colIndex] = cell.colIndex;
+                if (!isNullOrUndefined(cell)) {
+                    if (cell.axis !== 'column') {
+                        return colIndexColl;
+                    } else if ((cell.type === 'sum' || (this.dataSourceSettings.columns.length === 0 ? false : cell.type === 'grand sum'))
+                        && cell.rowSpan !== -1) {
+                        colIndexColl[cell.colIndex] = cell.colIndex;
+                    }
                 }
             }
         }

@@ -2342,14 +2342,6 @@ export class Annotation {
                 this.pdfViewerBase.isDocumentEdited = true;
             } else if (this.pdfViewerBase.tool instanceof MoveTool || this.pdfViewerBase.tool instanceof ResizeTool) {
                 this.pdfViewerBase.isDocumentEdited = true;
-                if (this.pdfViewerBase.tool instanceof ResizeTool) {
-                    this.triggerAnnotationResize(pdfAnnotationBase);
-                }
-                if (this.pdfViewerBase.tool instanceof MoveTool) {
-                    if (this.pdfViewerBase.action !== 'Select') {
-                        this.triggerAnnotationMove(pdfAnnotationBase);
-                    }
-                }
                 if (pdfAnnotationBase.measureType === '' || isNullOrUndefined(pdfAnnotationBase.measureType)) {
                     if (pdfAnnotationBase.shapeAnnotationType === 'FreeText') {
                         // tslint:disable-next-line:max-line-length
@@ -2362,14 +2354,19 @@ export class Annotation {
                         this.pdfViewer.annotation.shapeAnnotationModule.modifyInCollection('bounds', this.pdfViewer.annotation.getEventPageNumber(event), pdfAnnotationBase);
                     }
                     // tslint:disable-next-line:max-line-length
-                    this.pdfViewer.annotation.shapeAnnotationModule.modifyInCollection('bounds', this.pdfViewer.annotation.getEventPageNumber(event), pdfAnnotationBase);
-                    // tslint:disable-next-line:max-line-length
                 } else if (pdfAnnotationBase.measureType === 'Distance' || pdfAnnotationBase.measureType === 'Perimeter' || pdfAnnotationBase.measureType === 'Radius' || pdfAnnotationBase.measureType === 'Area' || pdfAnnotationBase.measureType === 'Volume') {
                     this.pdfViewer.annotation.measureAnnotationModule.modifyInCollection('bounds', this.pdfViewer.annotation.getEventPageNumber(event), pdfAnnotationBase);
                 }
+                if (this.pdfViewerBase.tool instanceof ResizeTool) {
+                    this.triggerAnnotationResize(pdfAnnotationBase);
+                }
+                if (this.pdfViewerBase.tool instanceof MoveTool) {
+                    if (this.pdfViewerBase.action !== 'Select') {
+                        this.triggerAnnotationMove(pdfAnnotationBase);
+                    }
+                }
             } else if (this.pdfViewerBase.tool instanceof ConnectTool) {
                 this.pdfViewerBase.isDocumentEdited = true;
-                this.triggerAnnotationResize(pdfAnnotationBase);
                 if (pdfAnnotationBase.measureType === '' || isNullOrUndefined(pdfAnnotationBase.measureType)) {
                     // tslint:disable-next-line:max-line-length
                     if ((pdfAnnotationBase.shapeAnnotationType === 'Line' || pdfAnnotationBase.shapeAnnotationType === 'LineWidthArrowHead' || pdfAnnotationBase.shapeAnnotationType === 'Polygon')) {
@@ -2384,6 +2381,7 @@ export class Annotation {
                     // tslint:disable-next-line:max-line-length
                     this.pdfViewer.annotation.measureAnnotationModule.modifyInCollection('bounds', this.pdfViewer.annotation.getEventPageNumber(event), pdfAnnotationBase);
                 }
+                this.triggerAnnotationResize(pdfAnnotationBase);
             }
             // tslint:disable-next-line:max-line-length
             if (this.pdfViewerBase.navigationPane && this.pdfViewerBase.navigationPane.annotationMenuObj && this.pdfViewer.isSignatureEditable && pdfAnnotationBase.shapeAnnotationType === 'HandWrittenSignature') {
@@ -2408,7 +2406,6 @@ export class Annotation {
             }
         }
     }
-
     /**
      * @private
      */
@@ -3237,6 +3234,7 @@ export class Annotation {
         let annotationId: string;
         let annotationType: string;
         let pageNumber: number;
+        let isTextMarkupUpdate: boolean = false;
         if (this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
             currentAnnotation = this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation;
             annotationId = currentAnnotation.annotName;
@@ -3256,19 +3254,20 @@ export class Annotation {
             pageNumber = currentAnnotation.pageIndex;
          }
         if (annotation.shapeAnnotationType === 'textMarkup') {
-        if (! this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
-            // tslint:disable-next-line:max-line-length
-            currentAnnotation = this.pdfViewer.annotationModule.textMarkupAnnotationModule.getAnnotations(annotation.pageNumber, annotation);
-            for (let i: number = 0; i < currentAnnotation.length; i++) {
-                if (annotation.annotationId === currentAnnotation[i].annotName) {
-                    currentAnnotation = currentAnnotation[i];
-                    this.textMarkupAnnotationModule.currentTextMarkupAnnotation = currentAnnotation;
-                    this.textMarkupAnnotationModule.selectTextMarkupCurrentPage = currentAnnotation.pageNumber;
-                    break;
+            if (!this.pdfViewer.annotationModule.textMarkupAnnotationModule.currentTextMarkupAnnotation) {
+                // tslint:disable-next-line:max-line-length
+                currentAnnotation = this.pdfViewer.annotationModule.textMarkupAnnotationModule.getAnnotations(annotation.pageNumber, annotation);
+                for (let i: number = 0; i < currentAnnotation.length; i++) {
+                    if (annotation.annotationId === currentAnnotation[i].annotName) {
+                        isTextMarkupUpdate = true;
+                        currentAnnotation = currentAnnotation[i];
+                        this.textMarkupAnnotationModule.currentTextMarkupAnnotation = currentAnnotation;
+                        this.textMarkupAnnotationModule.selectTextMarkupCurrentPage = currentAnnotation.pageNumber;
+                        break;
+                    }
                 }
             }
         }
-    }
         if (currentAnnotation) {
             // tslint:disable-next-line
             let clonedObject: any = cloneObject(currentAnnotation);
@@ -3278,6 +3277,14 @@ export class Annotation {
                 annotationType = 'textMarkup';
             }
             if (annotation.type === 'TextMarkup' || annotation.shapeAnnotationType === 'textMarkup') {
+                if (currentAnnotation.annotationSettings && annotation.annotationSettings) {
+                    if (currentAnnotation.annotationSettings.isLock !== annotation.annotationSettings.isLock) {
+                        // tslint:disable-next-line:max-line-length
+                        let pageAnnotations: ITextMarkupAnnotation[] = this.textMarkupAnnotationModule.modifyAnnotationProperty('AnnotationSettings', annotation.annotationSettings.isLock, null);
+                        // tslint:disable-next-line:max-line-length
+                        this.textMarkupAnnotationModule.manageAnnotations(pageAnnotations, this.textMarkupAnnotationModule.selectTextMarkupCurrentPage);
+                    }
+                }
                 if (currentAnnotation.opacity !== annotation.opacity) {
                     this.pdfViewer.annotationModule.textMarkupAnnotationModule.modifyOpacityProperty(null, annotation.opacity);
                 }
@@ -3285,6 +3292,10 @@ export class Annotation {
                     this.pdfViewer.annotationModule.textMarkupAnnotationModule.modifyColorProperty(annotation.color);
                 }
                 annotationType = 'textMarkup';
+                if (isTextMarkupUpdate) {
+                    this.textMarkupAnnotationModule.currentTextMarkupAnnotation = null;
+                    this.textMarkupAnnotationModule.selectTextMarkupCurrentPage = null;
+                }
                 // tslint:disable-next-line:max-line-length
             } else if (annotation.type === 'StickyNotes' || annotation.type === 'Stamp' || annotation.shapeAnnotationType === 'sticky' || annotation.shapeAnnotationType === 'stamp') {
                 if (currentAnnotation.opacity !== annotation.opacity) {

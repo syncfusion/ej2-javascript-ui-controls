@@ -2,7 +2,7 @@ import { DocumentEditor } from '../../document-editor';
 import {
     Widget, BodyWidget, TableRowWidget, TableWidget,
     LineWidget, ElementBox, TextElementBox, ListTextElementBox, ImageElementBox, Page, ParagraphWidget, TableCellWidget,
-    FieldElementBox, BlockWidget, BlockContainer, BookmarkElementBox, DocumentHelper, ShapeElementBox
+    FieldElementBox, BlockWidget, BlockContainer, BookmarkElementBox, DocumentHelper, ShapeElementBox, CommentCharacterElementBox
 } from '../index';
 import { ElementInfo, IndexInfo, HelperMethods } from '../index';
 import { Point } from '../index';
@@ -886,6 +886,9 @@ export class TextPosition {
         } else if (inline instanceof FieldElementBox && (inline as FieldElementBox).fieldType === 1) {
             // tslint:disable-next-line:max-line-length
             this.getNextWordOffsetFieldEnd(inline as FieldElementBox, indexInInline, type, isInField, endSelection, endPosition, excludeSpace);
+        } else if (inline instanceof CommentCharacterElementBox) {
+            // tslint:disable-next-line:max-line-length
+            this.getNextWordOffsetComment(inline as CommentCharacterElementBox, indexInInline, type, isInField, endSelection, endPosition, excludeSpace);
         }
     }
     /**
@@ -980,6 +983,10 @@ export class TextPosition {
                 // tslint:disable-next-line:max-line-length
                 let txt: string = indexInInline > 0 && span.text.length - 1 >= indexInInline ? span.text.slice(indexInInline, span.length) : span.text;
                 wordEndIndex = HelperMethods.indexOfAny(txt, HelperMethods.wordSplitCharacters);
+                if (wordEndIndex === -1 && span.nextNode instanceof CommentCharacterElementBox &&
+                    isNullOrUndefined(span.nextNode.nextNode)) {
+                    wordEndIndex = span.length;
+                }
                 if (wordEndIndex !== -1) {
                     if (isInField) {
                         endSelection = false;
@@ -1028,6 +1035,16 @@ export class TextPosition {
     private getNextWordOffsetFieldSeparator(fieldSeparator: FieldElementBox | BookmarkElementBox, indexInInline: number, type: number, isInField: boolean, endSelection: boolean, endPosition: TextPosition, excludeSpace: boolean): void {
         if (!isNullOrUndefined(fieldSeparator.nextNode)) {
             this.getNextWordOffset(fieldSeparator.nextNode, 0, type, isInField, endSelection, endPosition, excludeSpace);
+        }
+    }
+    /**
+     * get next word offset from comment
+     * @private
+     */
+    // tslint:disable-next-line:max-line-length
+    private getNextWordOffsetComment(comment: ElementBox, indexInInline: number, type: number, isInField: boolean, endSelection: boolean, endPosition: TextPosition, excludeSpace: boolean): void {
+        if (!isNullOrUndefined(comment.nextNode)) {
+            this.getNextWordOffset(comment.nextNode, 0, type, isInField, endSelection, endPosition, excludeSpace);
         }
     }
     /**
@@ -1080,6 +1097,9 @@ export class TextPosition {
         } else if (inline instanceof ListTextElementBox && inline.previousNode) {
             // tslint:disable-next-line:max-line-length
             this.getPreviousWordOffsetSpan(inline.previousNode as ListTextElementBox, selection, indexInInline, type, isInField, isStarted, endSelection, endPosition);
+        } else if (inline instanceof CommentCharacterElementBox) {
+            // tslint:disable-next-line:max-line-length
+            this.getPreviousWordOffsetComment(inline, selection, indexInInline, type, isInField, isStarted, endSelection, endPosition);
         }
     }
     // tslint:disable-next-line:max-line-length
@@ -1138,6 +1158,24 @@ export class TextPosition {
     // tslint:disable-next-line:max-line-length
     private getPreviousWordOffsetFieldSeparator(fieldSeparator: FieldElementBox, selection: Selection, indexInInline: number, type: number, isInField: boolean, isStarted: boolean, endSelection: boolean, endPosition: TextPosition): void {
         this.getPreviousWordOffsetFieldBegin(fieldSeparator.fieldBegin, selection, fieldSeparator.fieldBegin.length, type, isInField, isStarted, endSelection, endPosition);
+    }
+    /* get previous word offset from comment
+    * @private
+    */
+    // tslint:disable-next-line:max-line-length
+    private getPreviousWordOffsetComment(comment: ElementBox, selection: Selection, indexInInline: number, type: number, isInField: boolean, isStarted: boolean, endSelection: boolean, endPosition: TextPosition): void {
+        if (comment.previousNode) {
+            let inline: TextElementBox = comment.previousNode as TextElementBox;
+            if (comment.previousNode instanceof TextElementBox
+                && HelperMethods.lastIndexOfAny(inline.text, HelperMethods.wordSplitCharacters) !== inline.text.length - 1) {
+                this.getPreviousWordOffset(inline, selection, indexInInline, type, isInField, isStarted, endSelection, endPosition);
+            } else {
+                // tslint:disable-next-line:max-line-length
+                this.getPreviousWordOffset(comment.previousNode, selection, comment.previousNode.length, type, isInField, isStarted, endSelection, endPosition);
+            }
+        } else {
+            endPosition.setPositionParagraph(comment.line, selection.getStartLineOffset(comment.line));
+        }
     }
     /**
      * get previous word offset from field begin
@@ -1227,6 +1265,10 @@ export class TextPosition {
 
                 let txt: string = span.text.length > indexInInline ? span.text.slice(0, indexInInline) : span.text;
                 wordStartIndex = HelperMethods.lastIndexOfAny(txt, HelperMethods.wordSplitCharacters);
+                // tslint:disable-next-line:max-line-length
+                if (wordStartIndex === -1 && span.previousElement instanceof CommentCharacterElementBox && isNullOrUndefined(span.previousNode.previousNode)) {
+                    wordStartIndex = span.length;
+                }
                 if (wordStartIndex !== -1) {
                     if (isInField) {
                         endSelection = false;

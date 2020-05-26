@@ -1767,9 +1767,9 @@ var KanbanDialog = /** @__PURE__ @class */ (function () {
                 break;
             case 'TextArea':
                 remove(element);
-                var divElement = createElement('div', { className: 'e-float-input' });
+                var divElement = createElement('div');
                 element = createElement('textarea', {
-                    className: FIELD_CLASS, attrs: { 'name': field.key, 'rows': '2' },
+                    className: FIELD_CLASS, attrs: { 'name': field.key, 'rows': '3' },
                     innerHTML: fieldValue
                 });
                 wrapper.appendChild(divElement).appendChild(element);
@@ -3371,7 +3371,7 @@ var Kanban = /** @__PURE__ @class */ (function (_super) {
      */
     Kanban.prototype.render = function () {
         if (!this.isBlazorRender()) {
-            var addClasses = [];
+            var addClasses = [ROOT_CLASS];
             var removeClasses = [];
             if (this.enableRtl) {
                 addClasses.push(RTL_CLASS);

@@ -121,12 +121,14 @@ export interface PortModel {
     /**
      * Defines the collection of the objects that are connected to a particular port
      * @default undefined
+     * @blazorDefaultValue new string[] { }
      */
     outEdges?: string[];
 
     /**
      * Defines the collection of the objects that are connected to a particular port
      * @default undefined
+     * @blazorDefaultValue new string[] { }
      */
     inEdges?: string[];
 

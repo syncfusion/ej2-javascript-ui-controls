@@ -7,6 +7,10 @@ export interface QuickInfoTemplatesModel {
 
     /**
      * Template option to customize the header section of quick popup.
+     * The applicable template types are,
+     * * Both
+     * * Cell
+     * * Event
      *  @default 'Both'
      */
     templateType?: TemplateType;

@@ -3703,6 +3703,7 @@ export class Editor {
                         }
                     }
                 }
+                row.bottomBorderWidth = 0;
             }
             for (let i: number = 0; i < rowCount; i++) {
                 let cellCountInfo: CellCountInfo = this.updateRowspan(row, rowPlacement === 'Below' ? endCell : startCell, rowPlacement);
@@ -9322,6 +9323,8 @@ export class Editor {
                 inline = inline.nextNode;
                 offset = inline.line.getOffset(inline, 0);
                 paragraph = inline.line.paragraph;
+            } else if (inline instanceof EditRangeEndElementBox) {
+                offset++;
             }
             if (inline.length === 1 && inline.nextNode instanceof EditRangeEndElementBox
                 && inline.previousNode instanceof EditRangeStartElementBox) {
@@ -9986,7 +9989,12 @@ export class Editor {
             if (!isNullOrUndefined(element) && element instanceof ListTextElementBox) {
                 let text: string = this.documentHelper.layout.getListNumber(paragraph.paragraphFormat.listFormat);
                 if (isUpdate) {
+                    let prevWidth: number = element.width;
                     element.text = text;
+                    let currentWidth: number = this.documentHelper.textHelper.getTextSize(element, element.characterFormat);
+                    if (currentWidth > prevWidth) {
+                        element.width = currentWidth;
+                    }
                 }
             }
         }

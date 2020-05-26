@@ -512,6 +512,7 @@ export class Gantt extends Component<HTMLElement>
     /**
      * Defines start date of the project, if `projectStartDate` value not set then it will be calculated from data source.
      * @default null
+     * @blazorType Date
      */
     @Property(null)
     public projectStartDate: Date | string;
@@ -519,6 +520,7 @@ export class Gantt extends Component<HTMLElement>
     /** 
      * Defines end date of the project, if `projectEndDate` value not set then it will be calculated from data source.
      * @default null     
+     * @blazorType Date
      */
     @Property(null)
     public projectEndDate: Date | string;

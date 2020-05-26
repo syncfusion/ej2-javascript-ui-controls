@@ -10219,7 +10219,7 @@ describe('ListLevel API validation', () => {
         let pattern = layout.getListLevelPattern(0);
         expect(pattern).toBe('Arabic');
         pattern = layout.getListLevelPattern(1);
-        expect(pattern).toBe('UpRoman');
+        expect(pattern).toBe('LowLetter');
         pattern = layout.getListLevelPattern(2);
         expect(pattern).toBe('LowRoman');
         pattern = layout.getListLevelPattern(3);
@@ -10227,7 +10227,7 @@ describe('ListLevel API validation', () => {
     });
     it('listLevelPatter validation -2', () => {
         let pattern = layout.getListLevelPattern(4);
-        expect(pattern).toBe('LowLetter');
+        expect(pattern).toBe('UpRoman');
         pattern = layout.getListLevelPattern(6);
         expect(pattern).toBe('Number');
         pattern = layout.getListLevelPattern(7);

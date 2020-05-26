@@ -1,6 +1,6 @@
 import { isNullOrUndefined , isBlazor} from '@syncfusion/ej2-base';
 import { Column } from '../models/column';
-import { iterateArrayOrObject, isActionPrevent } from '../base/util';
+import { iterateArrayOrObject } from '../base/util';
 import * as events from '../base/constant';
 import { IGrid } from '../base/interface';
 
@@ -94,15 +94,6 @@ export class ShowHide {
      * @return {void}
      */
     public setVisible(columns?: Column[], changedStateColumns: Column[] = []): void {
-        if (isActionPrevent(this.parent)) {
-            this.parent.notify(
-                events.preventBatch,
-                {
-                    instance: this, handler: this.setVisible,
-                    arg1: columns
-                });
-            return;
-        }
         changedStateColumns = (changedStateColumns.length > 0) ? changedStateColumns :
             isBlazor() ? (JSON.parse(JSON.stringify(columns))) : columns;
         let args: Object = {

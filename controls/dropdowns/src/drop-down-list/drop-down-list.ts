@@ -947,8 +947,8 @@ export class DropDownList extends DropDownBase implements IInput {
                 this.searchKeyEvent = e;
                 this.renderList();
             }
-            if (!(this.isServerBlazor && e.action === 'open') && isNullOrUndefined(this.list) || (!isNullOrUndefined(this.liCollections) &&
-                isNavigation && this.liCollections.length === 0) || this.isRequested) {
+            if (!(this.isServerBlazor && (e.action === 'open' || e.action === 'space')) && isNullOrUndefined(this.list) ||
+                (!isNullOrUndefined(this.liCollections) && isNavigation && this.liCollections.length === 0) || this.isRequested) {
                 if (!(this.isServerBlazor && isNavAction)) {
                     return;
                 }
@@ -1357,6 +1357,20 @@ export class DropDownList extends DropDownBase implements IInput {
         }
     }
 
+    private dropdownCompiler(dropdownTemplate: string): boolean {
+        let checkTemplate: boolean = false;
+        if (dropdownTemplate) {
+            let exception: Object;
+            try {
+                checkTemplate = (document.querySelectorAll(dropdownTemplate).length) ? true : false;
+
+            } catch (exception) {
+                checkTemplate = false;
+            }
+        }
+        return checkTemplate;
+    }
+
     private setValueTemplate(): void {
         let compiledString: Function;
         if (!this.valueTempElement) {
@@ -1366,7 +1380,12 @@ export class DropDownList extends DropDownBase implements IInput {
         }
         this.valueTempElement.innerHTML = '';
         let templateData: FieldSettingsModel = (isBlazor()) ? JSON.parse(JSON.stringify(this.itemData)) : this.itemData;
-        compiledString = compile(this.valueTemplate);
+        let valuecheck: boolean = this.dropdownCompiler(this.valueTemplate);
+        if (valuecheck) {
+            compiledString = compile(document.querySelector(this.valueTemplate).innerHTML.trim());
+        } else {
+            compiledString = compile(this.valueTemplate);
+        }
         for (let item of compiledString(templateData, null, null, this.valueTemplateId, this.isStringTemplate)) {
             this.valueTempElement.appendChild(item);
         }
@@ -2432,7 +2451,12 @@ export class DropDownList extends DropDownBase implements IInput {
             this.footer = this.createElement('div');
             addClass([this.footer], dropDownListClasses.footer);
         }
-        compiledString = compile(this.footerTemplate);
+        let footercheck: boolean = this.dropdownCompiler(this.footerTemplate);
+        if (footercheck) {
+            compiledString = compile(document.querySelector(this.footerTemplate).innerHTML.trim());
+        } else {
+            compiledString = compile(this.footerTemplate);
+        }
         for (let item of compiledString({}, null, null, this.footerTemplateId, this.isStringTemplate)) {
             this.footer.appendChild(item);
         }
@@ -2448,7 +2472,12 @@ export class DropDownList extends DropDownBase implements IInput {
             this.header = this.createElement('div');
             addClass([this.header], dropDownListClasses.header);
         }
-        compiledString = compile(this.headerTemplate);
+        let headercheck: boolean = this.dropdownCompiler(this.headerTemplate);
+        if (headercheck) {
+            compiledString = compile(document.querySelector(this.headerTemplate).innerHTML.trim());
+        } else {
+            compiledString = compile(this.headerTemplate);
+        }
         for (let item of compiledString({}, null, null, this.headerTemplateId, this.isStringTemplate)) {
             this.header.appendChild(item);
         }

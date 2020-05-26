@@ -142,6 +142,7 @@ export class SummaryModelGenerator implements IModelGenerator<AggregateColumnMod
             'attributes': attrs,
             'cellType': cellType
         };
+        (<{ headerText?: string }>opt.column).headerText = column.headerText;
 
         return new Cell<AggregateColumnModel>(opt);
     }

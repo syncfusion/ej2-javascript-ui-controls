@@ -175,7 +175,7 @@ export class Edit implements IAction {
         if (this.parent.height !== 'auto' && this.parent.editSettings.newRowPosition === 'Bottom' && args &&
             args.requestType === 'add' && this.parent.height > this.parent.getContentTable().scrollHeight) {
             addClass(tr.querySelectorAll('.e-rowcell'), 'e-lastrowadded');
-        } else if (checkLastRow) {
+        } else if (checkLastRow && tr && tr.classList) {
             addClass(tr.querySelectorAll('.e-rowcell'), 'e-lastrowcell');
         }
     }

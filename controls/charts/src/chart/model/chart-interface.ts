@@ -63,6 +63,10 @@ export interface IPointEventArgs extends IChartEventArgs {
     x: number;
     /** Defines current mouse y location */
     y: number;
+    /** Defines current window page x location */
+    pageX?: number;
+    /** Defines current window page y location */
+    pageY?: number;
 }
 
 /**

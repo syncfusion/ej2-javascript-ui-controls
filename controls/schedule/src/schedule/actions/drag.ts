@@ -296,8 +296,10 @@ export class DragAndDrop extends ActionBase {
         if (this.isAllowDrop(e)) {
             return;
         }
-        let dragArgs: DragEventArgs = { cancel: false, data: this.getChangedData(),
-            event: e, element: this.actionObj.element, target: e.target as HTMLElement };
+        let dragArgs: DragEventArgs = {
+            cancel: false, data: this.getChangedData(),
+            event: e, element: this.actionObj.element, target: e.target as HTMLElement
+        };
         this.parent.trigger(events.dragStop, dragArgs, (dragEventArgs: DragEventArgs) => {
             if (dragEventArgs.cancel) {
                 return;

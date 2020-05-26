@@ -6,12 +6,14 @@ export class Holiday extends ChildProperty<Holiday> {
     /**
      * Defines start date of holiday.
      * @default null
+     * @blazorType Date
      */
     @Property(null)
     public from: Date | string;
     /**
      * Defines end date of holiday.
      * @default null
+     * @blazorType Date
      */
     @Property(null)
     public to: Date | string;

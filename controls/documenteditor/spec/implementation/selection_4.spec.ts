@@ -602,4 +602,81 @@ describe('Hidden Bookmark API', () => {
         expect(editor.selection.getBookmarks().length).toBe(0);
         expect(editor.selection.getBookmarks(true).length).toBe(1)
     });
+    it('select comment word Control right shift key', () => {
+        editor.openBlank();
+        editor.editorModule.insertText('hello syncfusion world');
+        editor.selection.handleHomeKey();
+        editor.selection.handleControlRightKey();
+        editor.selection.handleControlShiftRightKey();
+        editor.editorModule.insertComment('syncfusion');
+        editor.selection.handleHomeKey();
+        editor.selection.handleControlShiftRightKey();
+        editor.selection.handleControlShiftRightKey();
+        editor.selection.handleControlShiftRightKey();
+        expect(editor.selection.isEmpty).toBe(false)
+    });
+    it('select comment word Control left shift key ', () => {
+        editor.openBlank();
+        editor.editorModule.insertText('hello syncfusion world');
+        editor.selection.handleHomeKey();
+        editor.selection.handleControlRightKey();
+        editor.selection.handleControlShiftRightKey();
+        editor.editorModule.insertComment('syncfusion');
+        editor.selection.handleHomeKey();
+        editor.selection.handleControlRightKey();
+        editor.selection.handleControlRightKey();
+        editor.selection.handleControlRightKey();
+        editor.selection.handleControlShiftLeftKey();
+        editor.selection.handleControlShiftLeftKey();
+        editor.selection.handleControlShiftLeftKey();
+        expect(editor.selection.isEmpty).toBe(false)
+    });
+    it('select single word comment word Control right shift key', () => {
+        editor.openBlank();
+        editor.editorModule.insertText('hello');
+        editor.selection.selectAll();
+        editor.editorModule.insertComment('syncfusion');
+        editor.selection.handleHomeKey();
+        editor.selection.handleControlShiftRightKey();
+        expect(editor.selection.isEmpty).toBe(false);
+    });
+});
+
+
+
+describe('Bookmark navigate API', () => {
+    let editor: DocumentEditor = undefined;
+    let documentHelper: DocumentHelper;
+    beforeAll(() => {
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, TablePropertiesDialog, SfdtExport);
+        editor = new DocumentEditor({ enableEditor: true, enableSelection: true, isReadOnly: false, enableTablePropertiesDialog: true });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        documentHelper = editor.documentHelper;
+    });
+    afterAll((done) => {
+        document.body.removeChild(document.getElementById('container'));
+        editor.destroy();
+        editor = undefined;
+        documentHelper = undefined;
+        setTimeout(function () {
+            done();
+        }, 1000);
+    });
+    it('insert bookmark validation', () => {
+        editor.editor.insertText('sample');
+        editor.selection.selectAll();
+        editor.editor.insertBookmark('sample');
+        expect(editor.selection.start.currentWidget.children.length).toBe(3);
+    });
+    it('Navigate bookmark and delete validation', () => {
+        editor.selection.selectBookmark('sample');
+        editor.editor.delete();
+        expect(editor.selection.start.currentWidget.children.length).toBe(0);
+    });
 });

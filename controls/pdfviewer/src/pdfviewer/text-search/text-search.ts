@@ -61,7 +61,6 @@ export class TextSearch {
     public isTextRetrieved: boolean = false;
     private isTextSearched: boolean = false;
     private isTextSearchEventTriggered: boolean = false;
-
     /**
      * @private
      */
@@ -700,14 +699,19 @@ export class TextSearch {
             if (this.pdfViewer.magnificationModule) {
                 previousZoomFactor = this.pdfViewer.magnificationModule.previousZoomFactor;
             }
-            // tslint:disable-next-line
-            textDiv.style.width = (parseFloat(textDiv.style.width) / previousZoomFactor) * this.pdfViewerBase.getZoomFactor() + 'px';
-            // tslint:disable-next-line
-            textDiv.style.height = (parseFloat(textDiv.style.height) / previousZoomFactor) * this.pdfViewerBase.getZoomFactor() + 'px';
-            // tslint:disable-next-line
-            textDiv.style.top = (parseFloat(textDiv.style.top) / previousZoomFactor) * this.pdfViewerBase.getZoomFactor() + 'px';
-            // tslint:disable-next-line
-            textDiv.style.left = (parseFloat(textDiv.style.left) / previousZoomFactor) * this.pdfViewerBase.getZoomFactor() + 'px';
+            // tslint:disable-next-line:max-line-length
+            let outputdata: string = pageIndex + '_' + previousZoomFactor + '_' + this.pdfViewerBase.getZoomFactor();
+            if (textDiv.getAttribute('name') !== outputdata) {
+                // tslint:disable-next-line
+                textDiv.style.width = (parseFloat(textDiv.style.width) / previousZoomFactor) * this.pdfViewerBase.getZoomFactor() + 'px';
+                // tslint:disable-next-line
+                textDiv.style.height = (parseFloat(textDiv.style.height) / previousZoomFactor) * this.pdfViewerBase.getZoomFactor() + 'px';
+                // tslint:disable-next-line
+                textDiv.style.top = (parseFloat(textDiv.style.top) / previousZoomFactor) * this.pdfViewerBase.getZoomFactor() + 'px';
+                // tslint:disable-next-line
+                textDiv.style.left = (parseFloat(textDiv.style.left) / previousZoomFactor) * this.pdfViewerBase.getZoomFactor() + 'px';
+                textDiv.setAttribute('name', outputdata);
+            }
         }
     }
 
@@ -961,6 +965,8 @@ export class TextSearch {
     private createSearchBoxButtons(id: string, className: string): HTMLElement {
         // tslint:disable-next-line:max-line-length
         let button: HTMLElement = createElement('button', { id: this.pdfViewer.element.id + '_' + id, className: 'e-btn e-icon-btn e-pv-search-btn ' + className });
+        button.setAttribute('type', 'button');
+        // tslint:disable-next-line:max-line-length
         let iconSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_' + id + 'Icon', className: 'e-pv-icon-search ' + className + '-icon' });
         (button as HTMLButtonElement).disabled = true;
         button.appendChild(iconSpan);

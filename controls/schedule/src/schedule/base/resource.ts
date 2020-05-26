@@ -1,7 +1,7 @@
 import {
     extend, isNullOrUndefined, createElement, EventHandler, addClass, append, removeClass, remove, closest, classList, isBlazor
 } from '@syncfusion/ej2-base';
-import { DataManager, Query, DataUtil } from '@syncfusion/ej2-data';
+import { DataManager, Query } from '@syncfusion/ej2-data';
 import { TreeView, NodeClickEventArgs } from '@syncfusion/ej2-navigations';
 import { Popup } from '@syncfusion/ej2-popups';
 import { Data } from '../actions/data';

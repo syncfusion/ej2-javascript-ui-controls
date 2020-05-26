@@ -2376,7 +2376,7 @@ describe('WebApi Adaptor', () => {
             expect(result).toBe('Inserted successfully');
         });
         it('check dparams of post', () => {
-            expect(request.params).toEqual('{"value":{"OrderID":10980,"EmployeeId":4,"Freight":25.55,"CustomerID":"TOMSP"}}');
+            expect(request.params).toEqual('{"OrderID":10980,"EmployeeId":4,"Freight":25.55,"CustomerID":"TOMSP"}');
         });
     });
     describe('update method', () => {
@@ -2410,7 +2410,7 @@ describe('WebApi Adaptor', () => {
             expect(result).toBe('Updated successfully');
         });
         it('check params of post', () => {
-            expect(request.params).toEqual('{"value":{"OrderID":10248,"EmployeeId":4,"Freight":78.55,"CustomerID":"VINET"}}');
+            expect(request.params).toEqual('{"OrderID":10248,"EmployeeId":4,"Freight":78.55,"CustomerID":"VINET"}');
         });
     });
     describe('remove method', () => {
@@ -2443,7 +2443,7 @@ describe('WebApi Adaptor', () => {
             expect(result).toBe('Removed successfully');
         });
         it('check params of post', () => {
-            expect(request.params).toEqual('{"key":10980}');
+            expect(request.params).toEqual('10980');
         });
     });
     describe('batchRequst method', () => {

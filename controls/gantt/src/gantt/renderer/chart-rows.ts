@@ -1098,7 +1098,7 @@ export class ChartRows {
             tr.replaceChild(this.getGanttChartRow(index, data).childNodes[0], tr.childNodes[0]);
             this.triggerQueryTaskbarInfoByIndex(tr as Element, data);
             /* tslint:disable-next-line */
-            let dataId: number | string = this.parent.viewType === 'ProjectView' ? parseInt(data.ganttProperties.rowUniqueID) : data.ganttProperties.rowUniqueID;
+            let dataId: number | string = this.parent.viewType === 'ProjectView' ? data.ganttProperties.taskId : data.ganttProperties.rowUniqueID;
             this.parent.treeGrid.grid.setRowData(dataId, data);
             let row: Row<Column> = this.parent.treeGrid.grid.getRowObjectFromUID(
                 this.parent.treeGrid.grid.getDataRows()[index].getAttribute('data-uid'));

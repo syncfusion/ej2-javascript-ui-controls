@@ -185,7 +185,9 @@ export class InsertHtml {
         } else {
             let blockNode: Node = this.getImmediateBlockNode(nodes[nodes.length - 1], editNode);
             let splitedElm: Node = nodeCutter.GetSpliceNode(range, blockNode as HTMLElement);
-            splitedElm.parentNode.replaceChild(node, splitedElm);
+            if (splitedElm.nodeName === 'TD' || splitedElm.nodeName === 'TH') { splitedElm.appendChild(node);
+            } else { splitedElm.parentNode.replaceChild(node, splitedElm);
+            }
             let isFirstTextNode: boolean = true;
             let isPreviousInlineElem: boolean; let paraElm: HTMLElement; let previousParent: HTMLElement;
             range.deleteContents();
@@ -221,10 +223,8 @@ export class InsertHtml {
             }
             node.parentNode.replaceChild(fragment, node);
         }
-        if (lastSelectionNode.nodeName === '#text') {
-            this.placeCursorEnd(lastSelectionNode, node, nodeSelection, docElement, editNode);
-        } else {
-            this.cursorPos(lastSelectionNode, node, nodeSelection, docElement, editNode);
+        if (lastSelectionNode.nodeName === '#text') { this.placeCursorEnd(lastSelectionNode, node, nodeSelection, docElement, editNode);
+        } else { this.cursorPos(lastSelectionNode, node, nodeSelection, docElement, editNode);
         }
     }
     private static placeCursorEnd(

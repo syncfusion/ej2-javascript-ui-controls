@@ -1989,6 +1989,7 @@ var SummaryModelGenerator = /** @__PURE__ @class */ (function () {
             'attributes': attrs,
             'cellType': cellType
         };
+        opt.column.headerText = column.headerText;
         return new Cell(opt);
     };
     SummaryModelGenerator.prototype.buildSummaryData = function (data, args) {
@@ -3154,6 +3155,7 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
         var _this = this;
         this.frzIdx = 0;
         this.notfrzIdx = 0;
+        this.isFirstCol = false;
         this.helper = function (e) {
             var gObj = _this.parent;
             var target = _this.draggable.currentStateTarget;
@@ -3552,14 +3554,17 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
             }
         }
         else {
+            this.isFirstCol = false;
             var colSpan = this.getCellCnt(cols, 0);
             if (colSpan) {
                 var frzObj = this.refreshFrozenHdr(cols.columns, { isPartial: false, isComp: true, cnt: 0 });
                 var stackedLockColsCount = this.getStackedLockColsCount(cols, 0);
                 if (!frzCols && (!this.parent.lockcolPositionCount
                     || (!this.lockColsRendered && stackedLockColsCount) || (this.lockColsRendered && (colSpan - stackedLockColsCount)))
-                    || (frzCols && ((!isMovable && (this.parent.frozenColumns - this.frzIdx > 0 || (frzObj.isPartial)))
-                        || (isMovable && (colSpan + this.frzIdx > this.parent.frozenColumns && !frzObj.isComp))))) {
+                    || (frzCols && ((!isMovable && this.checkFrozenStackHeader(cols.columns, isMovable)
+                        && (this.parent.frozenColumns - this.frzIdx > 0 || (frzObj.isPartial)))
+                        || (isMovable && ((colSpan + this.frzIdx > this.parent.frozenColumns && !frzObj.isComp)
+                            || this.checkFrozenStackHeader(cols.columns, isMovable)))))) {
                     rows[index].cells.push(new Cell({
                         cellType: CellType.StackedHeader, column: cols,
                         colSpan: this.getColSpan(colSpan, isMovable, frzObj.cnt, stackedLockColsCount)
@@ -3573,11 +3578,31 @@ var HeaderRender = /** @__PURE__ @class */ (function () {
             }
             if (this.lockColsRendered) {
                 for (var i = 0, len = cols.columns.length; i < len; i++) {
-                    rows = this.appendCells(cols.columns[i], rows, index + 1, isFirstObj, i === 0, i === (len - 1) && isLastCol, isMovable);
+                    var isFirstCol_1 = this.isFirstCol = cols.columns[i].visible && !this.isFirstCol;
+                    var isLastCol_1 = i === (len - 1) && !isFirstCol_1;
+                    rows = this.appendCells(cols.columns[i], rows, index + 1, isFirstObj, isFirstCol_1, isLastCol_1 && isLastCol_1, isMovable);
                 }
             }
         }
         return rows;
+    };
+    HeaderRender.prototype.checkFrozenStackHeader = function (cols, isMovable) {
+        var isTrue = false;
+        for (var i = 0; i < cols.length; i++) {
+            var col = cols[i];
+            var colIndex = this.parent.getNormalizedColumnIndex(col.uid);
+            if (!col.columns) {
+                if (isMovable && colIndex >= this.parent.getFrozenColumns() && col.visible) {
+                    isTrue = true;
+                    break;
+                }
+                if (!isMovable && colIndex < this.parent.getFrozenColumns() && col.visible) {
+                    isTrue = true;
+                    break;
+                }
+            }
+        }
+        return isTrue;
     };
     HeaderRender.prototype.getStackedLockColsCount = function (col, lockColsCount) {
         if (col.columns) {
@@ -3936,10 +3961,7 @@ var CellRenderer = /** @__PURE__ @class */ (function () {
         }
         var fromFormatter = this.invokeFormatter(column, value, data);
         innerHtml = !isNullOrUndefined(column.formatter) ? isNullOrUndefined(fromFormatter) ? '' : fromFormatter.toString() : innerHtml;
-        node.setAttribute('aria-label', (innerHtml === '' ? 'empty' : innerHtml) + ' column header ' + cell.column.headerText);
-        if (!isNullOrUndefined(cell.column.headerText)) {
-            node.setAttribute('aria-label', innerHtml + ' column header ' + cell.column.headerText);
-        }
+        node.setAttribute('aria-label', innerHtml + ' column header ' + cell.column.headerText);
         if (this.evaluate(node, cell, data, attributes$$1, fData, isEdit) && column.type !== 'checkbox') {
             this.appendHtml(node, innerHtml, column.getDomSetter ? column.getDomSetter() : 'innerHTML');
         }
@@ -6541,6 +6563,7 @@ var ContentFocus = /** @__PURE__ @class */ (function () {
         return function (rowIndex, cellIndex, action) {
             if (!isNullOrUndefined(table.rows[rowIndex])) {
                 var cell = void 0;
+                cellIndex = table.querySelector('.e-emptyrow') ? 0 : cellIndex;
                 if (table.rows[rowIndex].cells[0].classList.contains('e-editcell')) {
                     cell = table.rows[rowIndex].cells[0].querySelectorAll('td')[cellIndex];
                 }
@@ -6956,7 +6979,7 @@ var Selection = /** @__PURE__ @class */ (function () {
         this.parent.trigger(type, this.fDataUpdate(args));
     };
     Selection.prototype.fDataUpdate = function (args) {
-        if (args.cellIndex || args.rowIndex) {
+        if (!isNullOrUndefined(args.cellIndex) || !isNullOrUndefined(args.rowIndex)) {
             var rowObj = this.getRowObj(isNullOrUndefined(args.rowIndex) ? isNullOrUndefined(args.cellIndex) ?
                 this.currentIndex : args.cellIndex.rowIndex : args.rowIndex);
             args.foreignKeyData = rowObj.foreignKeyData;
@@ -9908,13 +9931,6 @@ var ShowHide = /** @__PURE__ @class */ (function () {
     ShowHide.prototype.setVisible = function (columns, changedStateColumns) {
         var _this = this;
         if (changedStateColumns === void 0) { changedStateColumns = []; }
-        if (isActionPrevent(this.parent)) {
-            this.parent.notify(preventBatch, {
-                instance: this, handler: this.setVisible,
-                arg1: columns
-            });
-            return;
-        }
         changedStateColumns = (changedStateColumns.length > 0) ? changedStateColumns :
             isBlazor() ? (JSON.parse(JSON.stringify(columns))) : columns;
         var args = {
@@ -30003,9 +30019,6 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
                 gObj.selectRow(_this.cellDetails.rowIndex, true);
             }
             _this.renderer.update(cellEditArgs);
-            if (gObj.getFrozenColumns()) {
-                alignFrozenEditForm(row.querySelector('td:not(.e-hide)'), _this.comparingRow(row).querySelector('td:not(.e-hide)'));
-            }
             _this.parent.notify(batchEditFormRendered, cellEditArgs);
             _this.form = gObj.element.querySelector('#' + gObj.element.id + 'EditForm');
             gObj.editModule.applyFormValidation([col]);
@@ -30149,10 +30162,6 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         var args = this.generateCellArgs();
         args.value = args.previousValue;
         this.successCallBack(args, args.cell.parentElement, args.column, true)(args);
-        if (this.parent.getFrozenColumns()) {
-            var tr = isBlazor() ? parentsUntil(this.form, 'e-row') : args.cell.parentElement;
-            this.comparingRow(tr).querySelector('td:not(.e-hide)').style.height = tr.getBoundingClientRect().height + 'px';
-        }
     };
     BatchEdit.prototype.generateCellArgs = function () {
         var gObj = this.parent;
@@ -30203,9 +30212,6 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
         }
         else {
             this.successCallBack(args, tr, col)(args);
-        }
-        if (gObj.getFrozenColumns()) {
-            this.comparingRow(tr).querySelector('td:not(.e-hide)').style.height = tr.getBoundingClientRect().height + 'px';
         }
     };
     BatchEdit.prototype.successCallBack = function (cellSaveArgs, tr, column, isEscapeCellEdit) {
@@ -30333,18 +30339,6 @@ var BatchEdit = /** @__PURE__ @class */ (function () {
             this.parent.isEdit = false;
             this.isColored = false;
         }
-    };
-    BatchEdit.prototype.comparingRow = function (row) {
-        var gObj = this.parent;
-        var comparingElement = row.offsetParent.parentElement.className;
-        var comparingRow;
-        if (comparingElement.includes('e-frozencontent') || comparingElement.includes('e-frozenheader')) {
-            comparingRow = gObj.getMovableRowByIndex(parseInt(row.getAttribute('aria-rowindex'), 10));
-        }
-        if (comparingElement.includes('e-movablecontent') || comparingElement.includes('e-movableheader')) {
-            comparingRow = gObj.getFrozenRowByIndex(parseInt(row.getAttribute('aria-rowindex'), 10));
-        }
-        return comparingRow;
     };
     return BatchEdit;
 }());
@@ -30592,7 +30586,7 @@ var Edit = /** @__PURE__ @class */ (function () {
             args.requestType === 'add' && this.parent.height > this.parent.getContentTable().scrollHeight) {
             addClass(tr.querySelectorAll('.e-rowcell'), 'e-lastrowadded');
         }
-        else if (checkLastRow) {
+        else if (checkLastRow && tr && tr.classList) {
             addClass(tr.querySelectorAll('.e-rowcell'), 'e-lastrowcell');
         }
     };
@@ -32537,8 +32531,10 @@ var ExcelExport = /** @__PURE__ @class */ (function () {
     /* tslint:disable-next-line:no-any */
     ExcelExport.prototype.processRecords = function (gObj, exportProperties, isMultipleExport, workbook) {
         var _this = this;
-        if (!isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.dataSource) &&
-            exportProperties.dataSource instanceof DataManager) {
+        if (!isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.dataSource)) {
+            if (!(exportProperties.dataSource instanceof DataManager)) {
+                exportProperties.dataSource = new DataManager(exportProperties.dataSource);
+            }
             return new Promise(function (resolve, reject) {
                 var dataManager = exportProperties.dataSource.executeQuery(new Query());
                 dataManager.then(function (r) {
@@ -33437,8 +33433,10 @@ var PdfExport = /** @__PURE__ @class */ (function () {
         this.headerOnPages = args[header];
         this.drawPosition = args[drawPos];
         this.parent.log('exporting_begin', this.getModuleName());
-        if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.dataSource)
-            && pdfExportProperties.dataSource instanceof DataManager) {
+        if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.dataSource)) {
+            if (!(pdfExportProperties.dataSource instanceof DataManager)) {
+                pdfExportProperties.dataSource = new DataManager(pdfExportProperties.dataSource);
+            }
             return new Promise(function (resolve, reject) {
                 pdfExportProperties.dataSource.executeQuery(new Query()).then(function (returnType) {
                     _this.exportWithData(parent, pdfDoc, resolve, returnType, pdfExportProperties, isMultipleExport);

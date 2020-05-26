@@ -1,4 +1,5 @@
-import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex } from '@syncfusion/ej2-base';
+// tslint:disable-next-line:max-line-length
+import { Component, INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, L10n, Collection, Complex, isBlazor } from '@syncfusion/ej2-base';
 import { ModuleDeclaration, isNullOrUndefined, Property, Event, EmitType } from '@syncfusion/ej2-base';
 // tslint:disable-next-line:max-line-length
 import { PdfViewerModel, HighlightSettingsModel, UnderlineSettingsModel, StrikethroughSettingsModel, LineSettingsModel, ArrowSettingsModel, RectangleSettingsModel, CircleSettingsModel, PolygonSettingsModel, StampSettingsModel, StickyNotesSettingsModel, CustomStampSettingsModel, VolumeSettingsModel, RadiusSettingsModel, AreaSettingsModel, PerimeterSettingsModel, DistanceSettingsModel, MeasurementSettingsModel, FreeTextSettingsModel, AnnotationSelectorSettingsModel, TextSearchColorSettingsModel, DocumentTextCollectionSettingsModel, TextDataSettingsModel, RectangleBoundsModel } from './pdfviewer-model';
@@ -243,6 +244,12 @@ export class StrikethroughSettings extends ChildProperty<StrikethroughSettings> 
     @Property(null)
     public customData: object;
 
+    /**
+     * specifies the locked action of the annotation.
+     */
+    @Property(false)
+    public isLock: boolean;
+
 }
 
 /**
@@ -291,6 +298,12 @@ export class UnderlineSettings extends ChildProperty<UnderlineSettings> {
     @Property(null)
     public customData: object;
 
+    /**
+     * specifies the locked action of the annotation.
+     */
+    @Property(false)
+    public isLock: boolean;
+
 }
 
 /**
@@ -338,6 +351,13 @@ export class HighlightSettings extends ChildProperty<HighlightSettings> {
      */
     @Property(null)
     public customData: object;
+
+    /**
+     * specifies the locked action of the annotation.
+     */
+    @Property(false)
+    public isLock: boolean;
+
 }
 
 /**
@@ -2537,21 +2557,21 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * Defines the settings of highlight annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, color: '#FFDF56', author: 'Guest', subject: 'Highlight', modifiedDate: '', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges } })
+    @Property({ opacity: 1, color: '#FFDF56', author: 'Guest', subject: 'Highlight', modifiedDate: '', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false })
     public highlightSettings: HighlightSettingsModel;
 
     /**
      * Defines the settings of strikethrough annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, color: '#ff0000', author: 'Guest', subject: 'Strikethrough', modifiedDate: '', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges } })
+    @Property({ opacity: 1, color: '#ff0000', author: 'Guest', subject: 'Strikethrough', modifiedDate: '', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock : false })
     public strikethroughSettings: StrikethroughSettingsModel;
 
     /**
      * Defines the settings of underline annotation.
      */
     // tslint:disable-next-line:max-line-length
-    @Property({ opacity: 1, color: '#00ff00', author: 'Guest', subject: 'Underline', modifiedDate: '', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges } })
+    @Property({ opacity: 1, color: '#00ff00', author: 'Guest', subject: 'Underline', modifiedDate: '', annotationSelectorSettings: { selectionBorderColor: '', resizerBorderColor: 'black', resizerFillColor: '#FF4081', resizerSize: 8, selectionBorderThickness: 1, resizerShape: 'Square', selectorLineDashArray: [], resizerLocation: AnnotationResizerLocation.Corners | AnnotationResizerLocation.Edges }, isLock: false })
     public underlineSettings: UnderlineSettingsModel;
 
     /**
@@ -3356,6 +3376,13 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
                         this.formFieldsModule.formFieldsReadOnly(this.enableFormFields);
                     }
                     break;
+                case 'highlightSettings':
+                case 'underlineSettings':
+                case 'strikethroughSettings':
+                    if (this.annotationModule && this.annotationModule.textMarkupAnnotationModule) {
+                        this.annotationModule.textMarkupAnnotationModule.updateTextMarkupSettings(prop);
+                    }
+                    break;
             }
         }
     }
@@ -4101,14 +4128,26 @@ export class PdfViewer extends Component<HTMLElement> implements INotifyProperty
      * @private
      */
     // tslint:disable-next-line
-    public firePrintStart(): boolean {
+    public async firePrintStart(): Promise<void> {
         let eventArgs: PrintStartEventArgs = { fileName: this.downloadFileName, cancel: false };
-        this.trigger('printStart', eventArgs);
-        if (eventArgs.cancel) {
-           return false;
+        if (isBlazor) {
+           eventArgs = await this.triggerEvent('printStart', eventArgs) as PrintStartEventArgs || eventArgs;
         } else {
-            return true;
+            this.triggerEvent('printStart', eventArgs);
         }
+        if (!eventArgs.cancel) {
+            this.printModule.print();
+        }
+    }
+    /**
+     * @private
+     */
+    public async triggerEvent(eventName: string, args: object): Promise<void | object> {
+        let eventArgs: void | object = await this.trigger(eventName, args);
+        if (isBlazor && typeof eventArgs === 'string') {
+            eventArgs = JSON.parse(eventArgs as string);
+        }
+        return eventArgs;
     }
     /**
      * @private

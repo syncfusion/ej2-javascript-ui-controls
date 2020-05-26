@@ -2,6 +2,15 @@
 
 ## [Unreleased]
 
+## 18.1.54 (2020-05-26)
+
+### Gantt
+
+#### Bug Fixes
+
+- `#277029` - Update value not display on edit action issue has been fixed.
+- `#276942` - Issue while passing additional parameter to the server side on CRUD operation has been fixed.
+
 ## 18.1.53 (2020-05-19)
 
 ### Gantt

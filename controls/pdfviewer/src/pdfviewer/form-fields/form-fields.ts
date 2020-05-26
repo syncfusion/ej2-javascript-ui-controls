@@ -527,7 +527,9 @@ export class FormFields {
             // tslint:disable-next-line
             let borderColor: any = data.BackColor;
             inputField.style.backgroundColor = 'rgba(' + borderColor.R + ',' + borderColor.G + ',' + borderColor.B + ',' + 0.2 + ')';
-            inputField.style.color = 'black';
+            // tslint:disable-next-line
+            let fontColor: any = data.FontColor;
+            inputField.style.color = 'rgba(' + fontColor.R + ',' + fontColor.G + ',' + fontColor.B + ',' + 1 + ')';
         }
     }
     /**
@@ -581,13 +583,17 @@ export class FormFields {
             inputField.style.borderColor = 'rgba(' + borderColor.R + ',' + borderColor.G + ',' + borderColor.B + ',' + 1 + ')';
         }
         if (inputField.type !== 'checkbox' && inputField.type !== 'radio') {
-            inputField.style.borderStyle = 'solid';
+            let borderStyle: number = data.BorderStyle;
+            this.addBorderStylePropety(borderStyle, inputField);
         }
     }
     // tslint:disable-next-line
     private applyDefaultColor(inputField: any): void {
         if (inputField.style.backgroundColor === 'rgba(255, 255, 255, 0.2)' || inputField.style.backgroundColor === 'rgba(0, 0, 0, 0.2)') {
             inputField.style.backgroundColor = 'rgba(0, 20, 200, 0.2)';
+        }
+        if (inputField.style.color === 'rgba(255, 255, 255, 0.2)') {
+            inputField.style.color = 'black';
         }
     }
     // tslint:disable-next-line
@@ -606,6 +612,33 @@ export class FormFields {
                 break;
             case 3:
                 inputField.style.textAlign = 'justify';
+                break;
+        }
+    }
+    // tslint:disable-next-line
+    private addBorderStylePropety(borderStyle: number, inputField: any): any {
+        // tslint:disable-next-line
+        switch (borderStyle) {
+            case 0:
+                inputField.style.borderStyle = 'solid';
+                break;
+            case 1:
+                inputField.style.borderStyle = 'dashed';
+                break;
+            case 2:
+                inputField.style.borderStyle = 'outset';
+                break;
+            case 3:
+                inputField.style.borderStyle = 'inset';
+                break;
+            case 4:
+                inputField.style.borderStyle = 'outset';
+                break;
+            case 5:
+                inputField.style.borderStyle = 'dotted';
+                break;
+            case 6:
+                inputField.style.borderStyle = 'inset';
                 break;
         }
     }

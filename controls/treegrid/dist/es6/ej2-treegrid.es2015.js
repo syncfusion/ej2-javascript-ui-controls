@@ -1136,6 +1136,9 @@ __decorate$4([
 __decorate$4([
     Property(false)
 ], SelectionSettings.prototype, "checkboxOnly", void 0);
+__decorate$4([
+    Property(true)
+], SelectionSettings.prototype, "enableToggle", void 0);
 
 /**
  * TreeGrid render module
@@ -2621,6 +2624,16 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
         }
         this.clipboardModule = this.grid.clipboardModule = new TreeClipboard(this);
     }
+    updateSelectionProperty() {
+        if (!isBlazor()) {
+            this.selectedRowIndex = this.grid.selectedRowIndex;
+        }
+        else if (isBlazor() && this.isServerRendered) {
+            this.allowServerDataBinding = false;
+            this.setProperties({ selectedRowIndex: this.grid.selectedRowIndex }, true);
+            this.allowServerDataBinding = true;
+        }
+    }
     gridRendered(args, fn) {
         if (args.id === this.element.id + '_gridcontrol') {
             this.grid = args.grid;
@@ -2854,19 +2867,12 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
             }
         };
         this.grid.rowSelected = (args) => {
-            if (!isBlazor()) {
-                this.selectedRowIndex = this.grid.selectedRowIndex;
-            }
-            else if (isBlazor() && this.isServerRendered) {
-                this.allowServerDataBinding = false;
-                this.setProperties({ selectedRowIndex: this.grid.selectedRowIndex }, true);
-                this.allowServerDataBinding = true;
-            }
+            this.updateSelectionProperty();
             treeGrid.notify(rowSelected, args);
             this.trigger(rowSelected, args);
         };
         this.grid.rowDeselected = (args) => {
-            this.selectedRowIndex = this.grid.selectedRowIndex;
+            this.updateSelectionProperty();
             if (isBlazor()) {
                 let length = 'length';
                 args.data = args.data[args.data[length] - 1];
@@ -3293,6 +3299,7 @@ let TreeGrid = TreeGrid_1 = class TreeGrid extends Component {
      */
     autoGenerateColumns() {
         if (!this.columns.length && (!this.dataModule.isRemote() && Object.keys(this.dataSource).length)) {
+            this.columns = [];
             let record;
             // if (this.dataSource instanceof DataManager) {
             //   record = (<DataManager>this.dataSource).dataSource.json[0];

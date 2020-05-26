@@ -8906,18 +8906,19 @@ let Chart = class Chart extends Component {
         if (this.clickCount === 1 && this.pointClick) {
             this.singleClickTimer = +setTimeout(() => {
                 this.clickCount = 0;
-                this.triggerPointEvent(pointClick);
+                this.triggerPointEvent(pointClick, e);
             }, 400);
         }
         else if (this.clickCount === 2 && this.pointDoubleClick) {
             clearTimeout(this.singleClickTimer);
             this.clickCount = 0;
-            this.triggerPointEvent(pointDoubleClick);
+            this.triggerPointEvent(pointDoubleClick, e);
         }
         this.notify('click', e);
         return false;
     }
-    triggerPointEvent(event) {
+    triggerPointEvent(event, e) {
+        let evt = e;
         let data = new ChartData(this);
         let pointData = data.getData();
         if (pointData.series && pointData.point) {
@@ -8925,7 +8926,7 @@ let Chart = class Chart extends Component {
                 series: this.isBlazor ? {} : pointData.series,
                 point: pointData.point,
                 seriesIndex: pointData.series.index, pointIndex: pointData.point.index,
-                x: this.mouseX, y: this.mouseY
+                x: this.mouseX, y: this.mouseY, pageX: evt.pageX, pageY: evt.pageY
             });
         }
     }
@@ -8938,7 +8939,7 @@ let Chart = class Chart extends Component {
         let element = e.target;
         this.trigger(chartMouseMove, { target: element.id, x: this.mouseX, y: this.mouseY });
         if (this.pointMove) {
-            this.triggerPointEvent(pointMove);
+            this.triggerPointEvent(pointMove, e);
         }
         // Tooltip for chart series.
         if (!this.isTouch) {
@@ -9424,6 +9425,15 @@ let Chart = class Chart extends Component {
             this.svgObject.appendChild(this.zoomModule.pinchTarget);
             removeLength = 1;
         }
+        if (this.resizeTo && this.isBlazor && this.element.childElementCount) {
+            let containerCollection = document.querySelectorAll('.e-chart');
+            for (let index = 0; index < containerCollection.length; index++) {
+                let container = containerCollection[index];
+                while (container.firstChild) {
+                    remove(this.svgObject);
+                }
+            }
+        }
         if (this.svgObject) {
             while (this.svgObject.childNodes.length > removeLength) {
                 this.svgObject.removeChild(this.svgObject.firstChild);
@@ -9666,7 +9676,13 @@ let Chart = class Chart extends Component {
                         break;
                     case 'locale':
                     case 'currencyCode':
-                        super.refresh();
+                        if (this.isBlazor) {
+                            this.setCulture();
+                            renderer = true;
+                        }
+                        else {
+                            this.refresh();
+                        }
                         break;
                     case 'tooltip':
                         if (this.tooltipModule) { // To check the tooltip enable is true.
@@ -12852,7 +12868,7 @@ class PolarSeries extends PolarRadarPanel {
             visiblePoint.visible = visiblePoint.visible && !((!isNullOrUndefined(yAxisMin) && visiblePoint.yValue < yAxisMin) ||
                 (!isNullOrUndefined(yAxisMax) && visiblePoint.yValue > yAxisMax));
         }
-        if (series.drawType.indexOf('Column') > -1) {
+        if ((series.drawType.indexOf('Column') > -1) && (series.points.length > 0)) {
             this.columnDrawTypeRender(series, xAxis, yAxis);
         }
         else {
@@ -16504,7 +16520,8 @@ class Trendlines {
             }
         }
         else {
-            slope = Math.abs(((points.length * xyAvg) - (xAvg * yAvg)) / ((points.length * xxAvg) - (xAvg * xAvg)));
+            slope = ((points.length * xyAvg) - (xAvg * yAvg)) / ((points.length * xxAvg) - (xAvg * xAvg));
+            slope = (type === 'Linear' ? slope : Math.abs(slope));
             if (type === 'Exponential' || type === 'Power') {
                 intercept = Math.exp((yAvg - (slope * xAvg)) / points.length);
             }

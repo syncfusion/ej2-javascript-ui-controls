@@ -771,3 +771,674 @@ describe('Form Filling validation For Formatting', () => {
         expect(editor.selection.paragraphFormat.textAlignment).toBe('Center');
     });
 });
+
+/**
+ * Restrict editing inside
+ */
+
+ let restrictData:any={
+	"sections": [
+		{
+			"blocks": [
+				{
+					"paragraphFormat": {
+						"styleName": "Normal"
+					},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": "Out of table"
+						}
+					]
+				},
+				{
+					"paragraphFormat": {},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"rows": [
+						{
+							"cells": [
+								{
+									"blocks": [
+										{
+											"paragraphFormat": {
+												"styleName": "Section Title"
+											},
+											"characterFormat": {},
+											"inlines": [
+												{
+													"characterFormat": {},
+													"text": "TITLE IN TABLE"
+												}
+											]
+										}
+									],
+									"cellFormat": {
+										"borders": {
+											"top": {},
+											"left": {},
+											"right": {},
+											"bottom": {},
+											"diagonalDown": {},
+											"diagonalUp": {},
+											"horizontal": {},
+											"vertical": {}
+										},
+										"shading": {
+											"backgroundColor": "#415364FF",
+											"foregroundColor": "empty",
+											"textureStyle": "TextureNone"
+										},
+										"preferredWidth": 468,
+										"preferredWidthType": "Point",
+										"cellWidth": 468,
+										"columnSpan": 1,
+										"rowSpan": 1,
+										"verticalAlignment": "Center"
+									},
+									"columnIndex": 0
+								}
+							],
+							"rowFormat": {
+								"height": 20,
+								"allowBreakAcrossPages": true,
+								"heightType": "AtLeast",
+								"isHeader": false,
+								"borders": {
+									"top": {},
+									"left": {},
+									"right": {},
+									"bottom": {},
+									"diagonalDown": {},
+									"diagonalUp": {},
+									"horizontal": {},
+									"vertical": {}
+								},
+								"gridBefore": 1,
+								"gridBeforeWidth": 0,
+								"gridBeforeWidthType": "Point",
+								"gridAfter": 0,
+								"leftMargin": 5.4,
+								"topMargin": 0,
+								"rightMargin": 5.4,
+								"bottomMargin": 0
+							}
+						}
+					],
+					"grid": [
+						468
+					],
+					"tableFormat": {
+						"borders": {
+							"top": {},
+							"left": {},
+							"right": {},
+							"bottom": {},
+							"diagonalDown": {},
+							"diagonalUp": {},
+							"horizontal": {},
+							"vertical": {}
+						},
+						"shading": {},
+						"leftIndent": 0,
+						"topMargin": 0,
+						"rightMargin": 5.4,
+						"leftMargin": 5.4,
+						"bottomMargin": 0,
+						"bidi": false,
+						"allowAutoFit": true
+					},
+					"columnCount": 1
+				},
+				{
+					"paragraphFormat": {},
+					"characterFormat": {},
+					"inlines": []
+				},
+				{
+					"rows": [
+						{
+							"cells": [
+								{
+									"blocks": [
+										{
+											"paragraphFormat": {
+												"listFormat": {},
+												"styleName": "Normal"
+											},
+											"characterFormat": {},
+											"inlines": [
+												{
+													"characterFormat": {},
+													"text": "Key 0"
+												}
+											]
+										}
+									],
+									"cellFormat": {
+										"borders": {
+											"top": {},
+											"left": {},
+											"right": {},
+											"bottom": {},
+											"diagonalDown": {},
+											"diagonalUp": {},
+											"horizontal": {},
+											"vertical": {}
+										},
+										"shading": {},
+										"preferredWidth": 234,
+										"cellWidth": 234,
+										"columnSpan": 1,
+										"rowSpan": 1
+									},
+									"columnIndex": 0
+								},
+								{
+									"blocks": [
+										{
+											"paragraphFormat": {
+												"listFormat": {},
+												"styleName": "Normal"
+											},
+											"inlines": [
+												{
+													"editRangeId": "0",
+													"columnFirst": 1,
+													"columnLast": 1,
+													"user": "Everyone"
+												},
+												{
+													"characterFormat": {},
+													"text": " "
+												}
+											]
+										},
+										{
+											"paragraphFormat": {
+												"styleName": "Restricted Editing"
+											},
+											"inlines": [
+												{
+													"editableRangeStart": {
+														"user": "Everyone",
+														"group": "",
+														"columnFirst": 1,
+														"columnLast": 1
+													},
+													"editRangeId": "0"
+												}
+											]
+										}
+									],
+									"cellFormat": {
+										"borders": {
+											"top": {},
+											"left": {},
+											"right": {},
+											"bottom": {},
+											"diagonalDown": {},
+											"diagonalUp": {},
+											"horizontal": {},
+											"vertical": {}
+										},
+										"shading": {},
+										"preferredWidth": 234,
+										"cellWidth": 234,
+										"columnSpan": 1,
+										"rowSpan": 1
+									},
+									"columnIndex": 1
+								}
+							],
+							"rowFormat": {
+								"height": 0,
+								"heightType": "Auto",
+								"borders": {
+									"top": {},
+									"left": {},
+									"right": {},
+									"bottom": {},
+									"diagonalDown": {},
+									"diagonalUp": {},
+									"horizontal": {},
+									"vertical": {}
+								},
+								"gridBefore": 0,
+								"gridAfter": 0
+							}
+						},
+						{
+							"cells": [
+								{
+									"blocks": [
+										{
+											"paragraphFormat": {
+												"listFormat": {},
+												"styleName": "Normal"
+											},
+											"characterFormat": {},
+											"inlines": [
+												{
+													"characterFormat": {},
+													"text": "Key 1"
+												}
+											]
+										}
+									],
+									"cellFormat": {
+										"borders": {
+											"top": {},
+											"left": {},
+											"right": {},
+											"bottom": {},
+											"diagonalDown": {},
+											"diagonalUp": {},
+											"horizontal": {},
+											"vertical": {}
+										},
+										"shading": {},
+										"preferredWidth": 234,
+										"cellWidth": 234,
+										"columnSpan": 1,
+										"rowSpan": 1
+									},
+									"columnIndex": 0
+								},
+								{
+									"blocks": [
+										{
+											"paragraphFormat": {
+												"listFormat": {},
+												"styleName": "Normal"
+											},
+											"inlines": [
+												{
+													"editRangeId": "1",
+													"columnFirst": 1,
+													"columnLast": 1,
+													"user": "Everyone"
+												},
+												{
+													"characterFormat": {},
+													"text": " "
+												}
+											]
+										},
+										{
+											"paragraphFormat": {
+												"styleName": "Restricted Editing"
+											},
+											"inlines": [
+												{
+													"editableRangeStart": {
+														"user": "Everyone",
+														"group": "",
+														"columnFirst": 1,
+														"columnLast": 1
+													},
+													"editRangeId": "1"
+												}
+											]
+										}
+									],
+									"cellFormat": {
+										"borders": {
+											"top": {},
+											"left": {},
+											"right": {},
+											"bottom": {},
+											"diagonalDown": {},
+											"diagonalUp": {},
+											"horizontal": {},
+											"vertical": {}
+										},
+										"shading": {},
+										"preferredWidth": 234,
+										"cellWidth": 234,
+										"columnSpan": 1,
+										"rowSpan": 1
+									},
+									"columnIndex": 1
+								}
+							],
+							"rowFormat": {
+								"height": 0,
+								"heightType": "Auto",
+								"borders": {
+									"top": {},
+									"left": {},
+									"right": {},
+									"bottom": {},
+									"diagonalDown": {},
+									"diagonalUp": {},
+									"horizontal": {},
+									"vertical": {}
+								},
+								"gridBefore": 0,
+								"gridAfter": 0
+							}
+						}
+					],
+					"grid": [
+						234,
+						234
+					],
+					"tableFormat": {
+						"borders": {
+							"top": {
+								"lineStyle": "Single",
+								"lineWidth": 0.5
+							},
+							"left": {
+								"lineStyle": "Single",
+								"lineWidth": 0.5
+							},
+							"right": {
+								"lineStyle": "Single",
+								"lineWidth": 0.5
+							},
+							"bottom": {
+								"lineStyle": "Single",
+								"lineWidth": 0.5
+							},
+							"diagonalDown": {},
+							"diagonalUp": {},
+							"horizontal": {
+								"lineStyle": "Single",
+								"lineWidth": 0.5
+							},
+							"vertical": {
+								"lineStyle": "Single",
+								"lineWidth": 0.5
+							}
+						},
+						"shading": {},
+						"topMargin": 0,
+						"rightMargin": 5.4,
+						"leftMargin": 5.4,
+						"bottomMargin": 0,
+						"preferredWidthType": "Auto"
+					},
+					"columnCount": 2
+				},
+				{
+					"paragraphFormat": {},
+					"characterFormat": {},
+					"inlines": [
+						{
+							"characterFormat": {},
+							"text": ""
+						}
+					]
+				}
+			],
+			"headersFooters": {},
+			"sectionFormat": {
+				"headerDistance": 36.0,
+				"footerDistance": 36.0,
+				"pageWidth": 612.0,
+				"pageHeight": 792.0,
+				"leftMargin": 72.0,
+				"rightMargin": 72.0,
+				"topMargin": 72.0,
+				"bottomMargin": 72.0,
+				"differentFirstPage": false,
+				"differentOddAndEvenPages": false,
+				"bidi": false
+			}
+		}
+	],
+	"characterFormat": {
+		"bold": false,
+		"italic": false,
+		"fontSize": 10,
+		"fontFamily": "Arial",
+		"underline": "None",
+		"strikethrough": "None",
+		"baselineAlignment": "Normal",
+		"highlightColor": "NoColor",
+		"fontColor": "#000000",
+		"fontSizeBidi": 10,
+		"fontFamilyBidi": "Arial"
+	},
+	"paragraphFormat": {
+		"leftIndent": 0,
+		"rightIndent": 0,
+		"firstLineIndent": 0,
+		"textAlignment": "Left",
+		"beforeSpacing": 0,
+		"afterSpacing": 0,
+		"lineSpacing": 1,
+		"lineSpacingType": "Multiple",
+		"listFormat": {},
+		"bidi": false
+	},
+	"defaultTabWidth": 36,
+	"styles": [
+		{
+			"name": "Normal",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"leftIndent": 0,
+				"rightIndent": 0,
+				"firstLineIndent": 0,
+				"textAlignment": "Left",
+				"beforeSpacing": 0,
+				"afterSpacing": 0,
+				"lineSpacing": 1.15,
+				"lineSpacingType": "Multiple",
+				"listFormat": {},
+				"bidi": false
+			},
+			"characterFormat": {
+				"bold": false,
+				"italic": false,
+				"fontSize": 10,
+				"fontFamily": "Arial",
+				"underline": "None",
+				"strikethrough": "None",
+				"baselineAlignment": "Normal",
+				"highlightColor": "NoColor",
+				"fontColor": "#000000",
+				"fontSizeBidi": 10,
+				"fontFamilyBidi": "Arial"
+			},
+			"next": "Normal"
+		},
+		{
+			"name": "Notes",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"leftIndent": 0,
+				"rightIndent": 0,
+				"firstLineIndent": 0,
+				"textAlignment": "Left",
+				"beforeSpacing": 0,
+				"afterSpacing": 0,
+				"lineSpacing": 1.15,
+				"lineSpacingType": "Multiple",
+				"listFormat": {},
+				"bidi": false
+			},
+			"characterFormat": {
+				"bold": false,
+				"italic": true,
+				"fontSize": 9,
+				"fontFamily": "Arial",
+				"underline": "None",
+				"strikethrough": "None",
+				"baselineAlignment": "Normal",
+				"highlightColor": "NoColor",
+				"fontColor": "#000000",
+				"fontSizeBidi": 9,
+				"fontFamilyBidi": "Arial",
+				"bidi": false
+			},
+			"next": "Notes"
+		},
+		{
+			"name": "Restricted Editing",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"leftIndent": 0,
+				"rightIndent": 0,
+				"firstLineIndent": 0,
+				"textAlignment": "Left",
+				"beforeSpacing": 0,
+				"afterSpacing": 0,
+				"lineSpacing": 0,
+				"lineSpacingType": "Multiple",
+				"listFormat": {},
+				"bidi": false
+			},
+			"characterFormat": {
+				"bold": false,
+				"italic": false,
+				"fontSize": 1,
+				"fontFamily": "Arial",
+				"underline": "None",
+				"strikethrough": "None",
+				"baselineAlignment": "Normal",
+				"highlightColor": "NoColor",
+				"fontColor": "#000000FF",
+				"fontSizeBidi": 1,
+				"fontFamilyBidi": "Arial"
+			},
+			"basedOn": "Normal",
+			"next": "Restricted Editing"
+		},
+		{
+			"name": "Section Title",
+			"type": "Paragraph",
+			"paragraphFormat": {
+				"leftIndent": 0,
+				"rightIndent": 0,
+				"firstLineIndent": 0,
+				"textAlignment": "Left",
+				"beforeSpacing": 0,
+				"afterSpacing": 0.2,
+				"lineSpacing": 1,
+				"lineSpacingType": "Multiple",
+				"outlineLevel": "BodyText",
+				"listFormat": {},
+				"bidi": false,
+				"contextualSpacing": false
+			},
+			"characterFormat": {
+				"bold": true,
+				"italic": false,
+				"fontSize": 12,
+				"fontFamily": "Arial",
+				"strikethrough": "None",
+				"fontColor": "#FFFFFFFF",
+				"bidi": false,
+				"fontSizeBidi": 12,
+				"fontFamilyBidi": "Arial"
+			},
+			"basedOn": "Normal",
+			"next": "Section Title"
+		},
+		{
+			"name": "Notes Index",
+			"type": "Paragraph",
+			"paragraphFormat": {},
+			"characterFormat": {
+				"baselineAlignment": "Superscript"
+			},
+			"basedOn": "Normal",
+			"next": "Normal"
+		}
+	],
+	"lists": [
+		{
+			"abstractListId": 0,
+			"listId": 0
+		}
+	],
+	"abstractLists": [
+		{
+			"abstractListId": 0,
+			"levels": [
+				{
+					"characterFormat": {
+						"bold": false,
+						"italic": true,
+						"fontSize": 9,
+						"fontFamily": "Arial",
+						"underline": "None",
+						"strikethrough": "None",
+						"baselineAlignment": "Normal",
+						"highlightColor": "NoColor",
+						"fontColor": "#000000",
+						"fontSizeBidi": 9,
+						"fontFamilyBidi": "Arial",
+						"bidi": false
+					},
+					"paragraphFormat": {
+						"leftIndent": 0,
+						"firstLineIndent": -18,
+						"listFormat": {}
+					},
+					"followCharacter": "Tab",
+					"listLevelPattern": "Arabic",
+					"numberFormat": "%1.",
+					"restartLevel": 0,
+					"startAt": 1
+				}
+			]
+		}
+	],
+	"comments": [],
+	"enforcement": true,
+	"hashValue": "0A6BRhgb7C35JUaau8qeETWxzp4O8TjjGorpxLEPw38dZLWfkB///MlunuZDLzDzBHhdK1B2nMyusb0+do6hSQ==",
+	"saltValue": "ij25cMkkS+M/f5fyEQEFdQ==",
+	"formatting": false,
+	"protectionType": "ReadOnly"
+};
+
+ describe('Delete inside restricked content', () => {
+    let editor: DocumentEditor = undefined;
+    beforeAll(() => {
+        document.body.innerHTML = '';
+        let ele: HTMLElement = createElement('div', { id: 'container' });
+        document.body.appendChild(ele);
+        DocumentEditor.Inject(Editor, Selection, EditorHistory);
+        editor = new DocumentEditor({
+            enableEditor: true, isReadOnly: false, enableEditorHistory: true,
+            documentEditorSettings: { formFieldSettings: { formFillingMode: 'Inline' } }
+        });
+        (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+        (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+        (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+        (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+        editor.appendTo('#container');
+        editor.open(JSON.stringify(restrictData));
+        editor.selection.isHighlightEditRegion = true;
+    });
+    afterAll((done) => {
+        editor.destroy();
+        document.body.removeChild(document.getElementById('container'));
+        editor = undefined;
+        document.body.innerHTML = '';
+        setTimeout(() => {
+            done();
+        }, 1000);
+    });
+    it('Delete', () => {
+        editor.selection.select("0;4;0;1;0;2","0;4;0;1;0;2");
+        editor.editor.delete();
+        expect(editor.selection.start.currentWidget.children.length).toBe(3);
+        editor.editor.delete();
+        expect(editor.selection.start.currentWidget.children.length).toBe(3);
+    });
+    it('Enter inside restricted area', () => {
+        
+        editor.editor.onEnter();
+        editor.selection.select("0;4;0;1;0;2","0;4;0;1;0;2");
+       expect(()=>{ editor.editor.delete();}).not.toThrowError();
+    });
+});

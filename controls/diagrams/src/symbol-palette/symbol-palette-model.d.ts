@@ -125,6 +125,7 @@ export interface SymbolPaletteModel extends ComponentModel{
     /**
      * Defines the collection of symbol groups
      * @default []
+     * @blazorType System.Collections.ObjectModel.ObservableCollection<SymbolPalettePalette>
      */
     palettes?: PaletteModel[];
 

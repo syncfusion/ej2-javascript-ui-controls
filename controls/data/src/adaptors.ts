@@ -1599,22 +1599,17 @@ export class WebApiAdaptor extends ODataAdaptor {
         return 'WebApiAdaptor';
     }
 
-    public addParams(options: { dm: DataManager, query: Query, params: ParamOption[], reqParams: { [key: string]: Object } }): void {
-        let urlParams: UrlAdaptor = new UrlAdaptor();
-        urlParams.addParams(options);
-    }
-
     /**
      * Prepare and returns request body which is used to insert a new record in the table.
      * @param  {DataManager} dm
      * @param  {Object} data
      * @param  {string} tableName?
      */
-    public insert(dm: DataManager, data: Object, tableName?: string, query?: Query): Object {
+    public insert(dm: DataManager, data: Object, tableName?: string): Object {
         return {
             type: 'POST',
             url: dm.dataSource.url,
-            data: JSON.stringify(extend({}, { value: data }, DataUtil.getAddParams(this, dm, query ? query : new Query())))
+            data: JSON.stringify(data)
         };
     }
 
@@ -1625,11 +1620,11 @@ export class WebApiAdaptor extends ODataAdaptor {
      * @param  {number} value
      * @param  {string} tableName?
      */
-    public remove(dm: DataManager, keyField: string, value: number, tableName?: string, query?: Query): Object {
+    public remove(dm: DataManager, keyField: string, value: number, tableName?: string): Object {
         return {
             type: 'DELETE',
             url: dm.dataSource.url + '/' + value,
-            data: JSON.stringify(extend({}, { key: value }, DataUtil.getAddParams(this, dm, query ? query : new Query())))
+            data: JSON.stringify(value)
         };
     }
 
@@ -1640,11 +1635,11 @@ export class WebApiAdaptor extends ODataAdaptor {
      * @param  {Object} value
      * @param  {string} tableName?
      */
-    public update(dm: DataManager, keyField: string, value: Object, tableName?: string, query?: Query): Object {
+    public update(dm: DataManager, keyField: string, value: Object, tableName?: string): Object {
         return {
             type: 'PUT',
             url: dm.dataSource.url,
-            data: JSON.stringify(extend({}, { value: value }, DataUtil.getAddParams(this, dm, query ? query : new Query())))
+            data: JSON.stringify(value)
         };
     }
 

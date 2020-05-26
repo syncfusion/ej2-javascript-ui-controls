@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, addClass, append, attributes, blazorTemplates, classList, closest, compile, createElement, detach, extend, formatUnit, getElement, getInstance, getRandomId, getUniqueID, getValue, isBlazor, isNullOrUndefined, isUndefined, isVisible, matches, merge, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, addClass, append, attributes, blazorTemplates, classList, closest, compile, createElement, detach, extend, formatUnit, getElement, getInstance, getRandomId, getUniqueID, getValue, isBlazor, isNullOrUndefined, isRippleEnabled, isUndefined, isVisible, matches, merge, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { ListBase } from '@syncfusion/ej2-lists';
 import { Popup, calculatePosition, createSpinner, fit, getScrollableParent, getZindexPartial, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Button, createCheckBox, rippleMouseHandler } from '@syncfusion/ej2-buttons';
@@ -2882,6 +2882,7 @@ const CLS_TBARCENTER = 'e-toolbar-center';
 const CLS_TBARPOS = 'e-tbar-pos';
 const CLS_HSCROLLCNT = 'e-hscroll-content';
 const CLS_VSCROLLCNT = 'e-vscroll-content';
+const CLS_HSCROLLBAR$1 = 'e-hscroll-bar';
 const CLS_POPUPNAV = 'e-hor-nav';
 const CLS_POPUPCLASS = 'e-toolbar-pop';
 const CLS_POPUP = 'e-toolbar-popup';
@@ -4782,6 +4783,9 @@ let Toolbar = class Toolbar extends Component {
                 this.refreshPositioning();
             }
         }
+        if (this.element.querySelector('.' + CLS_HSCROLLBAR$1)) {
+            this.scrollStep = this.element.querySelector('.' + CLS_HSCROLLBAR$1).offsetWidth;
+        }
         this.offsetWid = ele.offsetWidth;
         this.tbResize = false;
         this.separator();
@@ -5154,6 +5158,9 @@ let Accordion = class Accordion extends Component {
         ['aria-disabled', 'aria-multiselectable', 'role', 'data-ripple'].forEach((attrb) => {
             this.element.removeAttribute(attrb);
         });
+        if (!this.isNested && isRippleEnabled) {
+            this.removeRippleEffect();
+        }
     }
     preRender() {
         let nested = closest(this.element, '.' + CLS_CONTENT);
@@ -5243,7 +5250,7 @@ let Accordion = class Accordion extends Component {
     wireEvents() {
         EventHandler.add(this.element, 'click', this.clickHandler, this);
         if (!this.isNested && !this.isDestroy) {
-            rippleEffect(this.element, { selector: '.' + CLS_HEADER });
+            this.removeRippleEffect = rippleEffect(this.element, { selector: '.' + CLS_HEADER });
         }
         if (!this.isNested) {
             this.keyModule = new KeyboardEvents(this.element, {

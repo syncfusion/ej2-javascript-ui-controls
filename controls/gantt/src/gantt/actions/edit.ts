@@ -988,7 +988,7 @@ export class Edit {
             }
             if (isRefreshGrid) {
                 /* tslint:disable-next-line */
-                let dataId: number | string = this.parent.viewType === 'ProjectView' ? parseInt(originalData.ganttProperties.rowUniqueID) : originalData.ganttProperties.rowUniqueID;
+                let dataId: number | string = this.parent.viewType === 'ProjectView' ? originalData.ganttProperties.taskId : originalData.ganttProperties.rowUniqueID;
                 this.parent.treeGrid.grid.setRowData(dataId, originalData);
                 let row: Row<Column> = this.parent.treeGrid.grid.getRowObjectFromUID(
                     this.parent.treeGrid.grid.getDataRows()[rowIndex].getAttribute('data-uid'));
@@ -1147,7 +1147,8 @@ export class Edit {
                         changedRecords: isBlazor() ? modifiedTaskData : eventArgs.modifiedTaskData
                     };
                     /* tslint:disable-next-line */
-                    let crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id, null, new Query()) as Promise<Object>;
+                    let query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
+                    let crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id, null, query) as Promise<Object>;
                     crud.then((e: ReturnType) => this.dmSuccess(e, args))
                         .catch((e: { result: Object[] }) => this.dmFailure(e as { result: Object[] }, args));
                 } else {
@@ -2197,7 +2198,8 @@ export class Edit {
                         changedRecords: args.modifiedTaskData
                     };
                     /* tslint:disable-next-line */
-                    let crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id, null, new Query()) as Promise<Object>;
+                    let query: Query = this.parent.query instanceof Query ? this.parent.query : new Query();
+                    let crud: Promise<Object> = data.saveChanges(updatedData, this.parent.taskFields.id, null, query) as Promise<Object>;
                     crud.then((e: { addedRecords: Object[], changedRecords: Object[] }) => {
                         if (this.parent.taskFields.id && !isNullOrUndefined(e.addedRecords[0][this.parent.taskFields.id]) &&
                             e.addedRecords[0][this.parent.taskFields.id] !== args.data.ganttProperties.rowUniqueID) {

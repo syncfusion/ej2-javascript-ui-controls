@@ -27,8 +27,8 @@ export namespace ViewHelper {
                 return proxy.globalize.formatDate(date, { format: 'H', calendar: proxy.getCalendarMode() });
             }
             return isBlazor() ?
-            proxy.globalize.formatDate(date, { format: 'h', calendar: proxy.getCalendarMode() }) :
-            proxy.globalize.formatDate(date, { skeleton: 'h', calendar: proxy.getCalendarMode() });
+                proxy.globalize.formatDate(date, { format: 'h', calendar: proxy.getCalendarMode() }) :
+                proxy.globalize.formatDate(date, { skeleton: 'h', calendar: proxy.getCalendarMode() });
         }
         return proxy.getTimeString(date);
     };
@@ -306,11 +306,11 @@ export class ViewBase {
         }
     }
     public getLabelText(view: string): string {
-        let viewStr : string = view.charAt(0).toLowerCase() + view.substring(1);
+        let viewStr: string = view.charAt(0).toLowerCase() + view.substring(1);
         return this.parent.localeObj.getConstant(viewStr) + ' of ' + capitalizeFirstWord(
             isBlazor() ?
-            this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'D', calendar: this.parent.getCalendarMode() }) :
-            this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'long', calendar: this.parent.getCalendarMode() }),
+                this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'D', calendar: this.parent.getCalendarMode() }) :
+                this.parent.globalize.formatDate(this.parent.selectedDate, { skeleton: 'long', calendar: this.parent.getCalendarMode() }),
             'single');
     }
     public getDateRangeText(): string {
@@ -468,7 +468,8 @@ export class ViewBase {
             return;
         }
         let scrollWrap: HTMLElement = this.getContentAreaElement();
-        let elementSelector: string = `.${cls.WORK_CELLS_CLASS}[data-date="${util.resetTime(new Date(+scrollDate)).getTime()}"]`;
+        let elementSelector: string =
+            `.${cls.WORK_CELLS_CLASS}[data-date="${this.parent.getMsFromDate(new Date(util.resetTime(new Date(+scrollDate)).getTime()))}"]`;
         let dateElement: HTMLElement = scrollWrap.querySelector(elementSelector) as HTMLElement;
         if (this.parent.currentView === 'Month' && dateElement) {
             scrollWrap.scrollTop = dateElement.offsetTop;

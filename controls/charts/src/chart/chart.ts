@@ -2597,18 +2597,19 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             this.singleClickTimer = +setTimeout(
                 (): void => {
                     this.clickCount = 0;
-                    this.triggerPointEvent(pointClick);
+                    this.triggerPointEvent(pointClick, e);
                 },
                 400);
         } else if (this.clickCount === 2 && this.pointDoubleClick) {
             clearTimeout(this.singleClickTimer);
             this.clickCount = 0;
-            this.triggerPointEvent(pointDoubleClick);
+            this.triggerPointEvent(pointDoubleClick, e);
         }
         this.notify('click', e);
         return false;
     }
-    private triggerPointEvent(event: string): void {
+    private triggerPointEvent(event: string, e?: PointerEvent | TouchEvent): void {
+        let evt: PointerEvent = e as PointerEvent;
         let data: ChartData = new ChartData(this);
         let pointData: PointData = data.getData();
         if (pointData.series && pointData.point) {
@@ -2616,7 +2617,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                 series: this.isBlazor ? {} : pointData.series,
                 point: pointData.point,
                 seriesIndex: pointData.series.index, pointIndex: pointData.point.index,
-                x: this.mouseX, y: this.mouseY
+                x: this.mouseX, y: this.mouseY, pageX: evt.pageX, pageY: evt.pageY
             });
         }
     }
@@ -2629,7 +2630,7 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
         let element: Element = <Element>e.target;
         this.trigger(chartMouseMove, { target: element.id, x: this.mouseX, y: this.mouseY });
         if (this.pointMove) {
-            this.triggerPointEvent(pointMove);
+            this.triggerPointEvent(pointMove, e);
         }
         // Tooltip for chart series.
         if (!this.isTouch) {
@@ -3140,6 +3141,15 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
             this.svgObject.appendChild(this.zoomModule.pinchTarget);
             removeLength = 1;
         }
+        if (this.resizeTo && this.isBlazor && this.element.childElementCount) {
+            let containerCollection: NodeListOf<Element> = document.querySelectorAll('.e-chart');
+            for (let index: number = 0; index < containerCollection.length; index++) {
+                let container: Element = containerCollection[index];
+                while (container.firstChild) {
+                    remove(this.svgObject);
+                }
+            }
+        }
         if (this.svgObject) {
             while (this.svgObject.childNodes.length > removeLength) {
                 this.svgObject.removeChild(this.svgObject.firstChild);
@@ -3382,7 +3392,13 @@ export class Chart extends Component<HTMLElement> implements INotifyPropertyChan
                         this.animateSeries = true; break;
                     case 'locale':
                     case 'currencyCode':
-                        super.refresh(); break;
+                        if (this.isBlazor) {
+                            this.setCulture();
+                            renderer = true;
+                        } else {
+                           this.refresh();
+                        }
+                        break;
                     case 'tooltip':
                         if (this.tooltipModule) { // To check the tooltip enable is true.
                             this.tooltipModule.previousPoints = [];

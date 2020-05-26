@@ -291,10 +291,10 @@ export class StampAnnotation {
     private calculateImagePosition(position: any, flags?: boolean, isImport?: boolean): any {
         let positions: IRectCollection = { width: 0, height: 0, left: 0, top: 0 };
         if (flags) {
-            let width: number = this.ConvertPointToPixel((parseFloat(position.Width)) - 20);
-            let height: number = this.ConvertPointToPixel((parseFloat(position.Height)) - 20);
-            let left: number = this.ConvertPointToPixel((parseFloat(position.X)) + 10);
-            let top: number = this.ConvertPointToPixel((parseFloat(position.Y)) + 10);
+            let width: number = this.ConvertPointToPixel((parseFloat(position.Width)));
+            let height: number = this.ConvertPointToPixel((parseFloat(position.Height)));
+            let left: number = this.ConvertPointToPixel((parseFloat(position.X)));
+            let top: number = this.ConvertPointToPixel((parseFloat(position.Y)));
             positions = { width: width, height: height, left: left, top: top };
         } else if (isImport) {
             let width: number = parseFloat(position.Width) - 15;
@@ -1289,6 +1289,7 @@ export class StampAnnotation {
                         let date: Date = new Date();
                         pageAnnotations[i].modifiedDate = date.toLocaleString();
                     }
+                    this.pdfViewer.annotationModule.storeAnnotationCollections(pageAnnotations[i], pageNumber);
                 }
             }
             this.manageAnnotations(pageAnnotations, pageNumber);

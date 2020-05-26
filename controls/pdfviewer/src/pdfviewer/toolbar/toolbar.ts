@@ -1032,8 +1032,8 @@ export class Toolbar {
                 break;
             case this.pdfViewer.element.id + '_print':
             case this.pdfViewer.element.id + '_printIcon': case this.pdfViewer.element.id + '_printText':
-                if (this.pdfViewer.printModule && this.pdfViewer.firePrintStart()) {
-                    this.pdfViewer.printModule.print();
+                if (this.pdfViewer.printModule) {
+                    this.pdfViewer.firePrintStart();
                 }
                 break;
             case this.pdfViewer.element.id + '_undo':

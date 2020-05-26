@@ -1957,4 +1957,57 @@ describe('MultiSelect', () => {
             },)
         });
     });
+    describe('EJ2-39642', () => {
+        let mulObj: MultiSelect;
+        let element: HTMLInputElement = <HTMLInputElement>createElement('input', { id: 'multiselect' });
+        let sportsData: { [key: string]: Object }[] =  [
+            { Name: 'Australia', Code: 'AU' },
+            { Name: 'Bermuda', Code: 'BM' },
+            { Name: 'Canada', Code: 'CA' },
+            { Name: 'Cameroon', Code: 'CM' },
+            { Name: 'Denmark', Code: 'DK' },
+            { Name: 'France', Code: 'FR' },
+            { Name: 'Finland', Code: 'FI' },
+            { Name: 'Germany', Code: 'DE' },
+            { Name: 'Greenland', Code: 'GL' },
+            { Name: 'Hong Kong', Code: 'HK' },
+            { Name: 'India', Code: 'IN' },
+            { Name: 'Italy', Code: 'IT' },
+            { Name: 'Japan', Code: 'JP' },
+            { Name: 'Mexico', Code: 'MX' },
+            { Name: 'Norway', Code: 'NO' },
+            { Name: 'Poland', Code: 'PL' },
+            { Name: 'Switzerland', Code: 'CH' },
+            { Name: 'United Kingdom', Code: 'GB' },
+            { Name: 'United States', Code: 'US' }
+        ];
+        beforeAll(() => {
+            document.body.innerHTML = '';
+            document.body.appendChild(element);
+        });
+        afterAll(() => {
+            if (element) {
+                element.remove();
+            }
+        });
+        it('clear icon not working when filtering testcase', () => {
+            mulObj = new MultiSelect({
+                dataSource: sportsData,
+                fields: { text: 'Game', value: 'Id' },
+                mode: 'CheckBox',
+            });
+            mulObj.appendTo(element);
+            mulObj.showPopup();
+            expect((<any>mulObj).isPopupOpen()).toBe(true);
+            expect((<any>mulObj).list.querySelectorAll('li').length === 19).toBe(true);
+            mulObj.hidePopup();
+            // Changing query
+            (<any>mulObj).query = new Query().where('Code', 'equal', 'IN');
+            (<any>mulObj).dataBind();
+            // Open popup to check query updated list is present
+            mulObj.showPopup();
+            expect((<any>mulObj).isPopupOpen()).toBe(true);
+            expect((<any>mulObj).list.querySelectorAll('li').length === 1).toBe(true);
+        });
+    });
 });

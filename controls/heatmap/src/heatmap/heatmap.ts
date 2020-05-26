@@ -830,11 +830,19 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         let width: number = stringToNumber(this.width, this.element.offsetWidth) || this.element.offsetWidth || 600;
         let height: number = stringToNumber(this.height, this.element.offsetHeight) || this.element.offsetHeight || 450;
         this.availableSize = new Size(width, height);
-        let align: string = (document.getElementById(this.element.id) as HTMLInputElement).align;
-        if (align === 'center') {
-            let containerWidth: string = this.availableSize.width.toString();
-            this.element.style.width = containerWidth + 'px';
-            this.element.style.margin = '0 auto';
+        let alignElement: HTMLElement = this.element;
+        while (alignElement.parentNode) {
+            if (alignElement.tagName === 'BODY') {
+                break;
+            }
+            let align: string = (alignElement as HTMLInputElement).align;
+            if (align === 'center') {
+                let containerWidth: string = this.availableSize.width.toString();
+                this.element.style.width = containerWidth + 'px';
+                this.element.style.margin = '0 auto';
+                break;
+            }
+            alignElement = alignElement.parentElement;
         }
     }
 
@@ -1317,7 +1325,6 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
      */
     public heatMapMouseMove(e: PointerEvent): boolean {
         let pageX: number; let pageY: number;
-        let tooltipText: string;
         let touchArg: TouchEvent;
         let elementRect: ClientRect = this.element.getBoundingClientRect();
         if (e.type === 'touchmove' || e.type === 'touchstart') {
@@ -1333,6 +1340,16 @@ export class HeatMap extends Component<HTMLElement> implements INotifyPropertyCh
         pageX -= elementRect.left;
         pageY -= elementRect.top;
         this.setMouseXY(pageX, pageY);
+        this.mouseAction(e, pageX, pageY, touchArg, elementRect);
+        return true;
+    }
+
+    /**
+     * Handles the mouse Move.
+     * @return {boolean}
+     */
+    private mouseAction(e: PointerEvent, pageX: number, pageY: number, touchArg: TouchEvent, elementRect: ClientRect): boolean {
+        let tooltipText: string;
         if (e.target && (<Element>e.target).id) {
             let isheatmapRect: boolean = this.isHeatmapRect(pageX, pageY);
             if (this.legendModule) {

@@ -288,56 +288,6 @@ describe('Kanban mobile testing', () => {
             expect(element.classList.contains('e-selection')).toBe(true);
         });
     });
-    describe('Drag and drop functionality', () => {
-        let kanbanObj: Kanban;
-        let uA: string = Browser.userAgent;
-        let androidUserAgent: string = 'Mozilla/5.0 (Linux; Android 9; Pixel XL Build/PPP3.180510.008) ' +
-            'AppleWebKit/537.36 (KHTML, like Gecko) Chrome/67.0.3396.81 Mobile Safari/537.36';
-        let dragElement: HTMLElement;
-        beforeAll((done: DoneFn) => {
-            Browser.userAgent = androidUserAgent;
-            let model: KanbanModel = {
-                cardSettings: {
-                    selectionType: "Multiple"
-                }
-            };
-            kanbanObj = util.createKanban(model, kanbanData, done);
-        });
-        afterAll(() => {
-            util.destroy(kanbanObj);
-            Browser.userAgent = uA;
-        });
-        it('checking adaptive rendering or not', () => {
-            expect(kanbanObj.isAdaptive).toEqual(true);
-            expect(kanbanObj.cardSettings.selectionType).toEqual("Multiple");
-            let appElements: HTMLElement = kanbanObj.element.querySelector('.e-card');
-            (kanbanObj.touchModule as any).tapHoldHandler({ originalEvent: { target: appElements, type: 'touchstart' } });
-        });
-
-        it('Dragged clone behavior testing', () => {
-            dragElement = (kanbanObj.element.querySelectorAll('.e-card[data-id="1"]') as NodeListOf<Element>).item(0) as HTMLElement;
-            expect(kanbanObj.element.querySelector('.e-kanban-content').classList.contains('e-draggable')).toEqual(true);
-            util.triggerMouseEvent(dragElement, 'mousedown');
-            util.triggerMouseEvent(dragElement, 'mousemove', 100, 100);
-        });
-
-        it('Created Dropped clone on above the column testing and target is card', () => {
-            let element: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="2"]').item(0);
-            util.triggerMouseEvent(element, 'mousemove', 250, 100);
-            expect(element.previousElementSibling.classList.contains('e-target-dropped-clone')).toEqual(true);
-        });
-
-        it('Dropped clone testing', (done: DoneFn) => {
-            let droppedElement: Element = kanbanObj.element.querySelectorAll('.e-card[data-id="13"]').item(0);
-            setTimeout(
-                () => {
-                    expect(document.body.querySelector('.e-mobile-popup-wrapper')).toBeNull();
-                    done();
-                },
-                400);
-            util.triggerMouseEvent(droppedElement, 'mouseup', 500, 200);
-        });
-    });
 
     it('memory leak', () => {
         profile.sample();

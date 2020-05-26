@@ -724,10 +724,9 @@ export class CommentView {
     private initDateView(): void {
         this.commentDate = createElement('div', { className: 'e-de-cmt-date' });
         let modifiedDate: Date = new Date(this.comment.date);
-        let date: string = modifiedDate.toString().split(' ').splice(1, 2).join(' ');
-        let time: string = modifiedDate.toLocaleTimeString().split(' ')[0].split(':').splice(0, 2).join(':')
-            + modifiedDate.toLocaleTimeString().split(' ')[1];
-        this.commentDate.innerText = date + ', ' + modifiedDate.getFullYear() + ', ' + time;
+        let date: string = modifiedDate.toLocaleDateString([], { year: 'numeric', month: 'long', day: 'numeric' });
+        let time: string = modifiedDate.toLocaleTimeString([], { hour: 'numeric', minute: 'numeric' });
+        this.commentDate.innerText = date + ' ' + time;
         this.commentView.appendChild(this.commentDate);
     }
 

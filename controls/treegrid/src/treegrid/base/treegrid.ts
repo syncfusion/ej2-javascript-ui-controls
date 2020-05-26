@@ -1655,7 +1655,15 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
     }
     this.clipboardModule = this.grid.clipboardModule = new TreeClipboard(this);
   }
-
+ public updateSelectionProperty(): void {
+  if (!isBlazor()) {
+    this.selectedRowIndex = this.grid.selectedRowIndex;
+  } else if (isBlazor() && this.isServerRendered) {
+    this.allowServerDataBinding = false;
+    this.setProperties({ selectedRowIndex: this.grid.selectedRowIndex}, true);
+    this.allowServerDataBinding = true;
+  }
+ }
   private gridRendered(args: { grid: Grid, id: string }, fn: Function): void {
     if (args.id === this.element.id + '_gridcontrol') {
         this.grid = args.grid;
@@ -1881,18 +1889,12 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
       }
     };
     this.grid.rowSelected = (args: RowDeselectEventArgs): void => {
-      if (!isBlazor()) {
-        this.selectedRowIndex = this.grid.selectedRowIndex;
-      } else if (isBlazor() && this.isServerRendered) {
-        this.allowServerDataBinding = false;
-        this.setProperties({ selectedRowIndex: this.grid.selectedRowIndex}, true);
-        this.allowServerDataBinding = true;
-      }
+      this.updateSelectionProperty();
       treeGrid.notify(events.rowSelected, args);
       this.trigger(events.rowSelected, args);
     };
     this.grid.rowDeselected = (args: RowDeselectEventArgs): void => {
-      this.selectedRowIndex = this.grid.selectedRowIndex;
+      this.updateSelectionProperty();
       if (isBlazor()) {
         let length: string = 'length';
         args.data = args.data[args.data[length] - 1];
@@ -2316,6 +2318,7 @@ public pdfExportComplete: EmitType<PdfExportCompleteArgs>;
    */
   private autoGenerateColumns(): void {
     if (!this.columns.length && (!this.dataModule.isRemote() && Object.keys(this.dataSource).length)) {
+      this.columns = [];
       let record: Object;
       // if (this.dataSource instanceof DataManager) {
       //   record = (<DataManager>this.dataSource).dataSource.json[0];

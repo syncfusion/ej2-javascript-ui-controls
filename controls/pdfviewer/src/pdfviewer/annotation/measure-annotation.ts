@@ -371,8 +371,8 @@ export class MeasureAnnotation {
             }
             } else if (shapeAnnotations.shapeAnnotationType) {
                 let annotationObject: IMeasureShapeAnnotation = this.createAnnotationObject(shapeAnnotations);
-                this.pdfViewer.annotationModule.triggerAnnotationAdd(shapeAnnotations);
                 this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_shape_measure');
+                this.pdfViewer.annotationModule.triggerAnnotationAdd(shapeAnnotations);
             }
         }
     }
@@ -979,6 +979,7 @@ export class MeasureAnnotation {
                         pageAnnotations[i].fontSize = annotationBase.fontSize;
                         pageAnnotations[i].modifiedDate = date.toLocaleString();
                     }
+                    this.pdfViewer.annotationModule.storeAnnotationCollections(pageAnnotations[i], pageNumber);
                 }
             }
             this.manageAnnotations(pageAnnotations, pageNumber);

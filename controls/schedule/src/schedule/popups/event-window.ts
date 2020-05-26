@@ -1195,9 +1195,9 @@ export class EventWindow {
         let tempObj: { [key: string]: Object } = extend({}, eventObj, null, true) as { [key: string]: Object };
         if (eventObj[this.fields.isAllDay]) {
             eventObj[this.fields.startTime] = (isNullOrUndefined(eventObj[this.fields.startTime])) ? null
-            : util.resetTime(new Date((<Date>eventObj[this.fields.startTime]).getTime()));
+                : util.resetTime(new Date((<Date>eventObj[this.fields.startTime]).getTime()));
             eventObj[this.fields.endTime] = (isNullOrUndefined(eventObj[this.fields.endTime])) ? null
-            : util.addDays(util.resetTime(new Date((<Date>eventObj[this.fields.endTime]).getTime())), 1);
+                : util.addDays(util.resetTime(new Date((<Date>eventObj[this.fields.endTime]).getTime())), 1);
         }
         return { eventData: eventObj, tempData: tempObj };
     }

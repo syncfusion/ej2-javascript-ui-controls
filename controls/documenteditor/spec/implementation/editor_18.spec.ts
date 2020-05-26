@@ -769,3 +769,39 @@ describe('Form Filling validation For Formatting', () => {
     expect(resultText).toBe(text);
   });
 });
+
+
+describe('Insert row below validation', () => {
+  let editor: DocumentEditor = undefined;
+  beforeAll(() => {
+    document.body.innerHTML = '';
+    let ele: HTMLElement = createElement('div', { id: 'container' });
+    document.body.appendChild(ele);
+    editor = new DocumentEditor({ enableEditor: true, isReadOnly: false, enableEditorHistory: true, enableLocalPaste: false });
+    DocumentEditor.Inject(Editor, Selection, EditorHistory);
+    (editor.documentHelper as any).containerCanvasIn = TestHelper.containerCanvas;
+    (editor.documentHelper as any).selectionCanvasIn = TestHelper.selectionCanvas;
+    (editor.documentHelper.render as any).pageCanvasIn = TestHelper.pageCanvas;
+    (editor.documentHelper.render as any).selectionCanvasIn = TestHelper.pageSelectionCanvas;
+    editor.appendTo('#container');
+  });
+  afterAll((done) => {
+    editor.destroy();
+    document.body.removeChild(document.getElementById('container'));
+    editor = undefined;
+    document.body.innerHTML = '';
+    setTimeout(() => {
+      done();
+    }, 1000);
+  });
+  it('with different border', () => {
+    editor.editorModule.insertTable(2, 2);
+    editor.selection.handleDownKey();
+    editor.selection.selectRow();
+    let settings: any = { type: 'BottomBorder', borderColor: '#000000', lineWidth: 3, borderStyle: 'Single' };
+    editor.editorModule.applyBorders(settings);
+    editor.editor.insertRow();
+    editor.selection.handleUpKey();
+    expect(editor.selection.start.paragraph.associatedCell.ownerRow.bottomBorderWidth).toBe(0);
+  });
+});

@@ -426,6 +426,7 @@ export class FreeTextAnnotation {
                         let date: Date = new Date();
                         pageAnnotations[i].modifiedDate = date.toLocaleString();
                     }
+                    this.pdfViewer.annotationModule.storeAnnotationCollections(pageAnnotations[i], pageNumber);
                 }
             }
             this.manageAnnotations(pageAnnotations, pageNumber);
@@ -618,10 +619,10 @@ export class FreeTextAnnotation {
                     // tslint:disable-next-line
                     fillColor: annot.fillColor, fontSize: annot.fontSize, width: annot.bounds.width, height: annot.bounds.height, fontColor: annot.fontColor, fontFamily: annot.fontFamily, defaultText: annot.dynamicText, fontStyle: annot.font, textAlignment: annot.textAlign
                 };
+                this.pdfViewer.annotation.storeAnnotations(pageIndex, annot, '_annotations_freetext');
                 this.pdfViewer.fireAnnotationAdd(annot.pageIndex, annot.annotName, 'FreeText', bounds, settings);
                 // tslint:disable-next-line
                 this.pdfViewer.annotation.addAction(pageIndex, null, annot as PdfAnnotationBase, 'Addition', '', annot as PdfAnnotationBase, annot);
-                this.pdfViewer.annotation.storeAnnotations(pageIndex, annot, '_annotations_freetext');
                 this.pdfViewer.renderSelector((annot as PdfAnnotationBaseModel).pageIndex);
                 this.pdfViewer.clearSelection(annot.pageIndex);
                 this.selectedAnnotation = annotation;

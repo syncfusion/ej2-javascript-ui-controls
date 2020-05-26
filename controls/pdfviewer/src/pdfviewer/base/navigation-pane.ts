@@ -250,6 +250,7 @@ export class NavigationPane {
         commentpanelTilte.innerText = this.pdfViewer.localeObj.getConstant('Comments');
         let annotationButton: HTMLElement = createElement('button', { id: this.pdfViewer.element.id + '_annotations_btn' });
         annotationButton.setAttribute('aria-label', 'annotation button');
+        annotationButton.setAttribute('type', 'button');
         annotationButton.className = 'e-btn e-pv-tbar-btn e-pv-comment-panel-title-close-div e-btn';
         // tslint:disable-next-line:max-line-length
         let moreOptionButtonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_annotation_more_icon', className: 'e-pv-more-icon e-pv-icon' });
@@ -620,6 +621,7 @@ export class NavigationPane {
         // tslint:disable-next-line:max-line-length
         this.thumbnailButton = createElement('button', { id: this.pdfViewer.element.id + '_thumbnail-view', attrs: { 'disabled': 'disabled', 'aria-label': 'Page Thumbnails', 'tabindex': '-1' } });
         this.thumbnailButton.className = 'e-pv-tbar-btn e-pv-thumbnail-view-button e-btn';
+        this.thumbnailButton.setAttribute('type', 'button');
         // tslint:disable-next-line:max-line-length
         let thumbnailButtonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_thumbnail-view' + '_icon', className: 'e-pv-thumbnail-view-disable-icon e-pv-icon' });
         this.thumbnailButton.appendChild(thumbnailButtonSpan);
@@ -628,6 +630,7 @@ export class NavigationPane {
         thumbnailTooltip.appendTo(this.thumbnailButton);
         // tslint:disable-next-line:max-line-length
         this.bookmarkButton = createElement('button', { id: this.pdfViewer.element.id + '_bookmark', attrs: { 'disabled': 'disabled', 'aria-label': 'Bookmarks', 'tabindex': '-1' } });
+        this.bookmarkButton.setAttribute('type', 'button');
         this.bookmarkButton.className = 'e-pv-tbar-btn e-pv-bookmark-button e-btn';
         // tslint:disable-next-line:max-line-length
         let buttonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_bookmark' + '_icon', className: 'e-pv-bookmark-disable-icon e-pv-icon' });
@@ -672,6 +675,7 @@ export class NavigationPane {
     private createSidebarTitleCloseButton(): void {
         this.closeDiv = createElement('button', { id: this.pdfViewer.element.id + '_close_btn' });
         this.closeDiv.setAttribute('aria-label', 'close button');
+        this.closeDiv.setAttribute('type', 'button');
         this.closeDiv.className = 'e-btn e-pv-tbar-btn e-pv-title-close-div e-btn';
         if (this.pdfViewer.enableRtl) {
             this.closeDiv.style.left = 8 + 'px';

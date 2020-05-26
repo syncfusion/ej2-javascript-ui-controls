@@ -7517,7 +7517,7 @@ var ChartRows = /** @__PURE__ @class */ (function () {
             tr.replaceChild(this.getGanttChartRow(index, data).childNodes[0], tr.childNodes[0]);
             this.triggerQueryTaskbarInfoByIndex(tr, data);
             /* tslint:disable-next-line */
-            var dataId = this.parent.viewType === 'ProjectView' ? parseInt(data.ganttProperties.rowUniqueID) : data.ganttProperties.rowUniqueID;
+            var dataId = this.parent.viewType === 'ProjectView' ? data.ganttProperties.taskId : data.ganttProperties.rowUniqueID;
             this.parent.treeGrid.grid.setRowData(dataId, data);
             var row = this.parent.treeGrid.grid.getRowObjectFromUID(this.parent.treeGrid.grid.getDataRows()[index].getAttribute('data-uid'));
             row.data = data;
@@ -17896,7 +17896,7 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
             }
             if (isRefreshGrid) {
                 /* tslint:disable-next-line */
-                var dataId = this.parent.viewType === 'ProjectView' ? parseInt(originalData.ganttProperties.rowUniqueID) : originalData.ganttProperties.rowUniqueID;
+                var dataId = this.parent.viewType === 'ProjectView' ? originalData.ganttProperties.taskId : originalData.ganttProperties.rowUniqueID;
                 this.parent.treeGrid.grid.setRowData(dataId, originalData);
                 var row = this.parent.treeGrid.grid.getRowObjectFromUID(this.parent.treeGrid.grid.getDataRows()[rowIndex].getAttribute('data-uid'));
                 row.data = originalData;
@@ -18044,7 +18044,8 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                         changedRecords: isBlazor() ? modifiedTaskData : eventArgs.modifiedTaskData
                     };
                     /* tslint:disable-next-line */
-                    var crud = data.saveChanges(updatedData, _this.parent.taskFields.id, null, new Query());
+                    var query = _this.parent.query instanceof Query ? _this.parent.query : new Query();
+                    var crud = data.saveChanges(updatedData, _this.parent.taskFields.id, null, query);
                     crud.then(function (e) { return _this.dmSuccess(e, args); })
                         .catch(function (e) { return _this.dmFailure(e, args); });
                 }
@@ -19098,7 +19099,8 @@ var Edit$2 = /** @__PURE__ @class */ (function () {
                             changedRecords: args.modifiedTaskData
                         };
                         /* tslint:disable-next-line */
-                        var crud = data_1.saveChanges(updatedData, _this.parent.taskFields.id, null, new Query());
+                        var query = _this.parent.query instanceof Query ? _this.parent.query : new Query();
+                        var crud = data_1.saveChanges(updatedData, _this.parent.taskFields.id, null, query);
                         crud.then(function (e) {
                             if (_this.parent.taskFields.id && !isNullOrUndefined(e.addedRecords[0][_this.parent.taskFields.id]) &&
                                 e.addedRecords[0][_this.parent.taskFields.id] !== args.data.ganttProperties.rowUniqueID) {
@@ -20092,6 +20094,7 @@ var Sort$1 = /** @__PURE__ @class */ (function () {
 var Selection$1 = /** @__PURE__ @class */ (function () {
     function Selection$$1(gantt) {
         this.isSelectionFromChart = false;
+        this.multipleIndexes = [];
         this.selectedRowIndexes = [];
         this.enableSelectMultiTouch = false;
         this.openPopup = false;
@@ -20164,7 +20167,7 @@ var Selection$1 = /** @__PURE__ @class */ (function () {
             args[rowIndexes] : [args.rowIndex];
         this.addClass(index);
         this.selectedRowIndexes = extend([], this.getSelectedRowIndexes(), [], true);
-        this.parent.setProperties({ selectedRowIndex: this.parent.treeGrid.selectedRowIndex }, true);
+        this.parent.setProperties({ selectedRowIndex: this.parent.treeGrid.grid.selectedRowIndex }, true);
         if (this.isMultiShiftRequest) {
             this.selectedRowIndexes = index;
         }
@@ -20184,11 +20187,20 @@ var Selection$1 = /** @__PURE__ @class */ (function () {
     Selection$$1.prototype.rowDeselecting = function (args) {
         args.target = this.actualTarget;
         args.isInteracted = this.isInteracted;
+        if (isBlazor() && this.parent.selectionSettings.type === 'Multiple') {
+            this.multipleIndexes = extend([], args.rowIndex, [], true);
+        }
         this.parent.trigger('rowDeselecting', args);
     };
     Selection$$1.prototype.rowDeselected = function (args) {
         var rowIndexes = 'rowIndexes';
-        var index = args[rowIndexes] || args.rowIndex;
+        var index = [];
+        if (this.multipleIndexes.length !== 0) {
+            index = this.multipleIndexes;
+        }
+        else {
+            index = args[rowIndexes] || args.rowIndex;
+        }
         this.removeClass(index);
         this.selectedRowIndexes = extend([], this.getSelectedRowIndexes(), [], true);
         this.parent.setProperties({ selectedRowIndex: -1 }, true);
@@ -20203,6 +20215,7 @@ var Selection$1 = /** @__PURE__ @class */ (function () {
         args.isInteracted = this.isInteracted;
         this.parent.trigger('rowDeselected', args);
         this.isInteracted = false;
+        this.multipleIndexes = [];
     };
     Selection$$1.prototype.cellSelecting = function (args) {
         var callBackPromise = new Deferred();

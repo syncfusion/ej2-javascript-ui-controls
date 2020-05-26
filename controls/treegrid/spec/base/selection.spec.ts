@@ -712,6 +712,38 @@ describe('Selection module', () => {
   });
 });
 
+describe('TreeGrid enabletoggle', () => {
+    let gridObj: TreeGrid;
+    beforeAll((done: Function) => {
+      gridObj = createGrid(
+        {
+          dataSource: sampleData,
+          childMapping: 'subtasks',
+          treeColumnIndex: 2,
+          selectionSettings: { enableToggle: false },
+          columns: [
+            { field: 'taskID', headerText: 'Order ID', isPrimaryKey: true, width: 120 },
+            { field: 'taskName', headerText: 'Customer ID', width: 150 },
+            { field: 'duration', headerText: 'Freight', type: "number", width: 150 },
+            { field: 'progress', headerText: 'Ship Name', width: 150 },
+          ],
+        },
+        done
+      );
+    });
+
+    it('set model for enabletoggle', (done: Function) => {
+       (gridObj.getRows()[0].getElementsByClassName('e-rowcell')[0] as HTMLElement).click();
+       (gridObj.getRows()[0].getElementsByClassName('e-rowcell')[0] as HTMLElement).click();
+      expect(gridObj.getRows()[0].getElementsByClassName('e-active').length > 0).toBe(true);
+      done();
+    });
+    afterAll(() => {
+      destroy(gridObj);
+    });
+  });
+
+
 describe('Expand collapse not to select rows', () => {
   let gridObj: TreeGrid;
   let rowSelected: () => void;

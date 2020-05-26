@@ -978,8 +978,18 @@
 
     .e-frozenheader table .e-insertedrow td.e-rowcell,
     .e-frozencontent table .e-insertedrow td.e-rowcell,
+    .e-movableheader table .e-insertedrow td.e-rowcell,
+    .e-movablecontent table .e-insertedrow td.e-rowcell,
+    &:not(.e-grid-min-height) .e-gridcontent .e-content tr.e-insertedrow .e-rowcell:empty,
     & .e-row.e-emptyrow {
-        height: $grid-rowcell-line-height + $grid-content-padding + $grid-content-padding;
+        height: $grid-rowcell-line-height + $grid-content-padding + $grid-content-padding + 1;
+    }
+
+    .e-editedrow .e-input-group input.e-input,
+    .e-editedrow .e-input-group.e-control-wrapper input.e-input,
+    .e-addedrow .e-input-group input.e-input,
+    .e-addedrow .e-input-group.e-control-wrapper input.e-input {
+        min-height: unset;
     }
 
     &:not(.e-grid-min-height) .e-gridcontent tr td:not(.e-indentcell):first-child:empty,

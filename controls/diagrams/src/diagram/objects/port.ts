@@ -138,6 +138,7 @@ export abstract class Port extends ChildProperty<Port> {
     /**
      * Defines the collection of the objects that are connected to a particular port
      * @default undefined
+     * @blazorDefaultValue new string[] { }
      */
     @Property()
     public outEdges: string[];
@@ -145,6 +146,7 @@ export abstract class Port extends ChildProperty<Port> {
     /**
      * Defines the collection of the objects that are connected to a particular port
      * @default undefined
+     * @blazorDefaultValue new string[] { }
      */
     @Property()
     public inEdges: string[];

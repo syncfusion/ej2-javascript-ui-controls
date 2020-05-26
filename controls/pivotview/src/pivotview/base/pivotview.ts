@@ -2449,7 +2449,11 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
                         let dataSet: IDataSet[] = PivotUtil.getClonedData(this.clonedDataSet) as IDataSet[];
                         this.setProperties({ dataSourceSettings: { dataSource: dataSet } }, true);
                     }
-                    super.refresh();
+                    if (isBlazor()) {
+                        this.refresh();
+                    } else {
+                        super.refresh();
+                    }
                     this.updateClass();
                     break;
                 case 'enableValueSorting':
@@ -4302,7 +4306,13 @@ export class PivotView extends Component<HTMLElement> implements INotifyProperty
         if (isBlazor()) {
             if (pivot.dataType === 'olap') {
                 if (pivot.dataSourceSettings.dataSource instanceof DataManager) {
-                    pivot.dataSourceSettings.dataSource = undefined;
+                    pivot.allowServerDataBinding = false;
+                    pivot.setProperties({
+                        dataSourceSettings: {
+                            dataSource: undefined
+                        }
+                    }, true);
+                    pivot.allowServerDataBinding = true;
                 }
             }
         }

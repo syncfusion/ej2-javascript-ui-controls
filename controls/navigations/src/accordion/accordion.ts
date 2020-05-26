@@ -3,7 +3,7 @@ import { KeyboardEventArgs, BaseEventArgs, Effect, getUniqueID, compile as templ
 import { isVisible, closest, attributes, detach, select, isBlazor, addClass, append } from '@syncfusion/ej2-base';
 import { INotifyPropertyChanged, NotifyPropertyChanges, ChildProperty, Collection, Animation } from '@syncfusion/ej2-base';
 import { setStyleAttribute as setStyle, Complex } from '@syncfusion/ej2-base';
-import { isNullOrUndefined as isNOU, formatUnit, selectAll, SanitizeHtmlHelper } from '@syncfusion/ej2-base';
+import { isNullOrUndefined as isNOU, formatUnit, selectAll, SanitizeHtmlHelper, isRippleEnabled } from '@syncfusion/ej2-base';
 import { AccordionModel, AccordionItemModel, AccordionAnimationSettingsModel, AccordionActionSettingsModel } from './accordion-model';
 
 /**
@@ -249,6 +249,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
   private isAngular: boolean;
   private headerTemplateFn: Function;
   private itemTemplateFn: Function;
+  private removeRippleEffect: Function;
   /**
    * Contains the keyboard configuration of the Accordion.
    */
@@ -391,6 +392,9 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
     ['aria-disabled', 'aria-multiselectable', 'role', 'data-ripple'].forEach((attrb: string): void => {
       this.element.removeAttribute(attrb);
     });
+    if (!this.isNested && isRippleEnabled) {
+      this.removeRippleEffect();
+    }
   }
   protected preRender(): void {
     let nested: Element = closest(this.element, '.' + CLS_CONTENT);
@@ -478,7 +482,7 @@ export class Accordion extends Component<HTMLElement> implements INotifyProperty
   private wireEvents(): void {
     EventHandler.add(this.element, 'click', this.clickHandler, this);
     if (!this.isNested && !this.isDestroy) {
-      rippleEffect(this.element, { selector: '.' + CLS_HEADER });
+      this.removeRippleEffect = rippleEffect(this.element, { selector: '.' + CLS_HEADER });
     }
     if (!this.isNested) {
       this.keyModule = new KeyboardEvents(

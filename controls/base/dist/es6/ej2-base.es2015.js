@@ -1970,7 +1970,7 @@ class Observer {
                     return promise;
                 }
                 promise.then((data) => {
-                    data = typeof data === 'string' && this.isJson(data) ? JSON.parse(data) : data;
+                    data = typeof data === 'string' && this.isJson(data) ? JSON.parse(data, this.dateReviver) : data;
                     extend(argument, argument, data, true);
                     if (successHandler && isTrigger) {
                         successHandler.call(obj.context, argument);
@@ -1980,7 +1980,8 @@ class Observer {
                     }
                 }).catch((data) => {
                     if (errorHandler) {
-                        errorHandler.call(obj.context, typeof data === 'string' && this.isJson(data) ? JSON.parse(data) : data);
+                        errorHandler.call(obj.context, typeof data === 'string' &&
+                            this.isJson(data) ? JSON.parse(data, this.dateReviver) : data);
                     }
                 });
             }
@@ -1991,6 +1992,14 @@ class Observer {
                 return this.blazorCallback(objs, argument, successHandler, errorHandler, index + 1);
             }
         }
+    }
+    // tslint:disable-next-line:no-any
+    dateReviver(key, value) {
+        let dPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/;
+        if (isBlazor && typeof value === 'string' && value.match(dPattern) !== null) {
+            return (new Date(value));
+        }
+        return (value);
     }
     isJson(value) {
         try {

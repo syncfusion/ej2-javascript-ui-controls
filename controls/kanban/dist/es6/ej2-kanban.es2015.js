@@ -1640,9 +1640,9 @@ class KanbanDialog {
                 break;
             case 'TextArea':
                 remove(element);
-                let divElement = createElement('div', { className: 'e-float-input' });
+                let divElement = createElement('div');
                 element = createElement('textarea', {
-                    className: FIELD_CLASS, attrs: { 'name': field.key, 'rows': '2' },
+                    className: FIELD_CLASS, attrs: { 'name': field.key, 'rows': '3' },
                     innerHTML: fieldValue
                 });
                 wrapper.appendChild(divElement).appendChild(element);
@@ -3156,7 +3156,7 @@ let Kanban = class Kanban extends Component {
      */
     render() {
         if (!this.isBlazorRender()) {
-            let addClasses = [];
+            let addClasses = [ROOT_CLASS];
             let removeClasses = [];
             if (this.enableRtl) {
                 addClasses.push(RTL_CLASS);

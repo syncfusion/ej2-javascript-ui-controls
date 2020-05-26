@@ -131,6 +131,7 @@ export class StockChart extends Component<HTMLElement> implements INotifyPropert
 
     /**
      * Options to configure the vertical axis.
+     * @complex {opposedPosition=true, labelPosition=AxisPosition.Outside}
      */
 
     @Complex<StockChartAxisModel>({ name: 'primaryYAxis', opposedPosition: true, labelPosition: 'Inside' }, StockChartAxis)

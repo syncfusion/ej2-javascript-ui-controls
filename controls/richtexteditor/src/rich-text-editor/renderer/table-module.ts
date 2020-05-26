@@ -160,7 +160,8 @@ export class Table {
             let selection: NodeSelection = this.parent.formatter.editorManager.nodeSelection.save(range, this.contentModule.getDocument());
             let ele: HTMLElement = this.parent.formatter.editorManager.nodeSelection.getParentNodeCollection(range)[0] as HTMLElement;
             ele = (ele && ele.tagName !== 'TD' && ele.tagName !== 'TH') ? ele.parentElement : ele;
-            if (((event as KeyboardEventArgs).keyCode === 8 || (event as KeyboardEventArgs).keyCode === 46)) {
+            if (((event as KeyboardEventArgs).keyCode === 8 || (event as KeyboardEventArgs).keyCode === 46) ||
+            (event.ctrlKey && (event as KeyboardEventArgs).keyCode === 88)) {
                 if (ele && ele.tagName === 'TBODY') {
                     event.preventDefault();
                     proxy.removeTable(selection, event as KeyboardEventArgs, true);

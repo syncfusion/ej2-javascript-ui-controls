@@ -1763,9 +1763,9 @@ var KanbanDialog = /** @class */ (function () {
                 break;
             case 'TextArea':
                 sf.base.remove(element);
-                var divElement = sf.base.createElement('div', { className: 'e-float-input' });
+                var divElement = sf.base.createElement('div');
                 element = sf.base.createElement('textarea', {
-                    className: FIELD_CLASS, attrs: { 'name': field.key, 'rows': '2' },
+                    className: FIELD_CLASS, attrs: { 'name': field.key, 'rows': '3' },
                     innerHTML: fieldValue
                 });
                 wrapper.appendChild(divElement).appendChild(element);
@@ -3367,7 +3367,7 @@ var Kanban = /** @class */ (function (_super) {
      */
     Kanban.prototype.render = function () {
         if (!this.isBlazorRender()) {
-            var addClasses = [];
+            var addClasses = [ROOT_CLASS];
             var removeClasses = [];
             if (this.enableRtl) {
                 addClasses.push(RTL_CLASS);

@@ -179,9 +179,9 @@ export class KanbanDialog {
                 break;
             case 'TextArea':
                 remove(element);
-                let divElement: HTMLElement = createElement('div', { className: 'e-float-input' });
+                let divElement: HTMLElement = createElement('div');
                 element = createElement('textarea', {
-                    className: cls.FIELD_CLASS, attrs: { 'name': field.key, 'rows': '2' },
+                    className: cls.FIELD_CLASS, attrs: { 'name': field.key, 'rows': '3' },
                     innerHTML: fieldValue as string
                 });
                 wrapper.appendChild(divElement).appendChild(element);

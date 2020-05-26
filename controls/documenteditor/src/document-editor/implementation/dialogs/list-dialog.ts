@@ -315,10 +315,10 @@ export class ListDialog {
     private listPatternConverter(listLevelPattern: ListLevelPattern): number {
         switch (listLevelPattern) {
             case 'Arabic': return 0;
-            case 'UpRoman': return 1;
+            case 'LowLetter': return 1;
             case 'LowRoman': return 2;
             case 'UpLetter': return 3;
-            case 'LowLetter': return 4;
+            case 'UpRoman': return 4;
             case 'Number': return 5;
             case 'LeadingZero': return 6;
             case 'Bullet': return 7;

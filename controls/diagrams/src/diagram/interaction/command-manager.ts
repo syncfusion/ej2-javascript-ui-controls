@@ -126,7 +126,10 @@ export class CommandHandler {
         }
         getAdornerLayer(this.diagram.element.id).style.pointerEvents = 'all';
     }
-
+    /** @private */
+    public setFocus(): void {
+        document.getElementById(this.diagram.element.id).focus();
+    }
     /**
      * @private
      */
@@ -1632,7 +1635,6 @@ export class CommandHandler {
 
     /** @private */
     public select(obj: NodeModel | ConnectorModel, multipleSelection?: boolean, preventUpdate?: boolean): void {
-        this.diagram.enableServerDataBinding(false);
         let hasLayer: LayerModel = this.getObjectLayer(obj.id);
         if ((canSelect(obj) && !(obj instanceof Selector) && !isSelected(this.diagram, obj))
             && (hasLayer && !hasLayer.lock && hasLayer.visible) && obj.wrapper.visible) {
@@ -1640,6 +1642,7 @@ export class CommandHandler {
             if (!multipleSelection) {
                 this.clearSelection();
             }
+            this.diagram.enableServerDataBinding(false);
             let selectorModel: SelectorModel = this.diagram.selectedItems;
             let convert: Node | Connector = obj as Node | Connector;
             if (convert instanceof Node) {
@@ -1670,8 +1673,8 @@ export class CommandHandler {
             if (!preventUpdate) {
                 this.diagram.renderSelector(multipleSelection);
             }
+            this.diagram.enableServerDataBinding(true);
         }
-        this.diagram.enableServerDataBinding(true);
     }
 
     private getObjectCollectionId(isNode: boolean, clearSelection?: boolean): string[] {

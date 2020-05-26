@@ -99,8 +99,8 @@ describe('Goto and Delete BookMark validation', () => {
         let args: any = { text: 'first' };
         (editor.bookmarkDialogModule as any).selectHandler(args);
         (editor.bookmarkDialogModule as any).gotoBookmark();
-        expect(editor.selection.start.offset).toBe(1);
-        expect(editor.selection.end.offset).toBe(7);
+        expect(editor.selection.start.offset).toBe(0);
+        expect(editor.selection.end.offset).toBe(8);
     });
     it('Delete Bookmark', () => {
         (editor.bookmarkDialogModule as any).deleteBookmark();

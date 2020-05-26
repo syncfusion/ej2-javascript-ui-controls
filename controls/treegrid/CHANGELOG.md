@@ -2,6 +2,18 @@
 
 ## [Unreleased]
 
+## 18.1.54 (2020-05-26)
+
+### TreeGrid
+
+#### New Features
+
+- `#152599` - Provided support for toggling selection by adding `enableToggle` API in selection Settings
+
+#### Bug Fixes
+
+- `#277361` - Auto generated columns work fine when two treegrids are rendered on the same page.
+
 ## 18.1.52 (2020-05-13)
 
 ### TreeGrid

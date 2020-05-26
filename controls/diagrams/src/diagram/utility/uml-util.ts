@@ -29,7 +29,7 @@ export function getULMClassifierShapes(content: DiagramElement, node: NodeModel,
     node.constraints = (NodeConstraints.Default | NodeConstraints.HideThumbs) &
         ~(NodeConstraints.Rotate | NodeConstraints.Resize);
     node.style = {
-        fill: node.style.fill, strokeColor: 'black',
+        fill: node.style.fill, strokeColor: node.style.strokeColor,
         strokeWidth: 1.5
     };
     node.children = [];
@@ -60,7 +60,7 @@ export function getULMClassifierShapes(content: DiagramElement, node: NodeModel,
                 (NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
             verticalAlignment: 'Stretch',
             horizontalAlignment: 'Stretch',
-            style: { fill: node.style.fill, strokeColor: '#ffffff00' }
+            style: { fill: node.style.fill, strokeColor: (node.style.strokeColor === 'black') ? '#ffffff00' : node.style.strokeColor }
         } as NodeModel,
         true);
     diagram.initObject(newObj);
@@ -103,10 +103,13 @@ export function getClassNodes(node: Node, diagram: Diagram, classifier: UmlClass
                                     margin: { left: 14, right: 5 }, horizontalAlignment: 'Left'
                                 }
                             ], verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
-                            style: { fill: node.style.fill, strokeColor: '#ffffff00', textWrapping: textWrap },
+                            style: {
+                                fill: node.style.fill, strokeColor: (node.style.strokeColor === 'black') ?
+                                    '#ffffff00' : node.style.strokeColor, textWrapping: textWrap
+                            },
                             constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) & ~
                                 (NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
-                              minHeight: 25
+                            minHeight: 25
                         } as NodeModel,
                         true);
                     diagram.initObject(temp);
@@ -145,7 +148,8 @@ export function getClassNodes(node: Node, diagram: Diagram, classifier: UmlClass
                     let style: TextStyleModel = getStyle(node, attribute);
                     let temp: NodeModel = new Node(
                         diagram, 'nodes', {
-                            id: randomId() + '_umlProperty', style: { fill: node.style.fill, strokeColor: '#ffffff00' },
+                            id: randomId() + '_umlProperty', style: { fill: node.style.fill,
+                                strokeColor: (node.style.strokeColor === 'black') ? '#ffffff00' : node.style.strokeColor },
                             annotations: [
                                 {
                                     id: 'name', content: attributeText, offset: { x: 0, y: 0.5 },
@@ -158,7 +162,7 @@ export function getClassNodes(node: Node, diagram: Diagram, classifier: UmlClass
                             ], verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
                             constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) & ~
                                 (NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),
-                              minHeight: 25
+                            minHeight: 25
                         } as NodeModel,
                         true);
                     diagram.initObject(temp as Node);
@@ -225,7 +229,10 @@ export function getClassMembers(node: Node, diagram: Diagram, classifier: UmlCla
                                 margin: { left: 14, right: 5 }, horizontalAlignment: 'Left'
                             }
                         ],
-                        style: { fill: node.style.fill, strokeColor: '#ffffff00' },   minHeight: 25,
+                        style: {
+                            fill: node.style.fill, strokeColor: (node.style.strokeColor === 'black') ?
+                                '#ffffff00' : node.style.strokeColor
+                        }, minHeight: 25,
                         constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) & ~
                             (NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize)
                     } as NodeModel,
@@ -248,6 +255,7 @@ export function addSeparator(stack: Node, diagram: Diagram): void {
         diagram, 'nodes', {
             id: randomId() + '_path', height: 1, constraints: NodeConstraints.Default & ~(NodeConstraints.Select),
             verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
+            style: { strokeColor: (stack.style.strokeColor === 'black') ? '#ffffff00' : stack.style.strokeColor }
         } as NodeModel,
         true);
     diagram.initObject(lineObject);

@@ -60,6 +60,7 @@ const CLS_TBARCENTER: Str = 'e-toolbar-center';
 const CLS_TBARPOS: Str = 'e-tbar-pos';
 const CLS_HSCROLLCNT: Str = 'e-hscroll-content';
 const CLS_VSCROLLCNT: Str = 'e-vscroll-content';
+const CLS_HSCROLLBAR: Str = 'e-hscroll-bar';
 const CLS_POPUPNAV: Str = 'e-hor-nav';
 const CLS_POPUPCLASS: Str = 'e-toolbar-pop';
 const CLS_POPUP: Str = 'e-toolbar-popup';
@@ -2067,6 +2068,9 @@ export class Toolbar extends Component<HTMLElement> implements INotifyPropertyCh
             if (this.tbarAlign) { this.removePositioning(); }
             this.popupRefresh(this.popObj.element, false);
             if (this.tbarAlign) { this.refreshPositioning(); }
+        }
+        if (this.element.querySelector('.' + CLS_HSCROLLBAR)) {
+            this.scrollStep = (this.element.querySelector('.' + CLS_HSCROLLBAR) as HTMLElement).offsetWidth;
         }
         this.offsetWid = ele.offsetWidth;
         this.tbResize = false;

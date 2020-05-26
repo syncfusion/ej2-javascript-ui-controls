@@ -158,7 +158,7 @@ export class Selection implements IAction {
     }
 
     private fDataUpdate(args: { cellIndex?: IIndex, foreignKeyData?: Object, rowIndex?: number }): Object {
-        if (args.cellIndex || args.rowIndex) {
+        if (!isNullOrUndefined(args.cellIndex) || !isNullOrUndefined(args.rowIndex)) {
             let rowObj: Row<Column> = this.getRowObj(isNullOrUndefined(args.rowIndex) ? isNullOrUndefined(args.cellIndex) ?
                 this.currentIndex : args.cellIndex.rowIndex : args.rowIndex);
             args.foreignKeyData = rowObj.foreignKeyData;

@@ -81,6 +81,10 @@ export class Palette extends ChildProperty<Palette> {
     /** @private */
     public isInteraction: boolean;
 
+    // tslint:disable-next-line:no-any
+    constructor(parent: any, propName: string, defaultValue: Object, isArray?: boolean) {
+        super(parent, propName, defaultValue, isArray);
+    }
 }
 
 /**
@@ -181,6 +185,7 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     /**
      * Defines the collection of symbol groups
      * @default []
+     * @blazorType System.Collections.ObjectModel.ObservableCollection<SymbolPalettePalette>
      */
     @Collection<PaletteModel>([], Palette)
     public palettes: PaletteModel[];
@@ -466,7 +471,6 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 case 'palettes':
                     for (let i of Object.keys(newProp.palettes)) {
                         let index: number = Number(i);
-
                         if (!this.accordionElement.items[index]) {
                             this.accordionElement.items[index] = {
                                 header: newProp.palettes[index].title || '',
@@ -488,7 +492,9 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                             if (!this.isExpandMode && !this.isMethod && !this.isExpand) {
                                 this.isExpand = true;
                             }
-
+                        }
+                        if (isBlazor() && newProp.palettes[index].symbols === null) {
+                            this.updateBlazorProperties(newProp);
                         }
                     }
                     break;
@@ -534,6 +540,18 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         }
         this.isMethod = false;
     }
+    /**
+     * @private
+     */
+    public updateBlazorProperties(newProp: SymbolPaletteModel): void {
+        let blazorInterop: string = 'sfBlazor';
+        let blazor: string = 'Blazor';
+        if (window && window[blazor]) {
+            let palObj: object = { palette: newProp.palettes };
+            let obj: object = { 'methodName': 'UpdateBlazorProperties', 'paletteobj': palObj };
+            window[blazorInterop].updateBlazorProperties(obj, this);
+        }
+    }
 
     /**
      * Get the properties to be maintained in the persisted state.
@@ -568,8 +586,11 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         }
         this.accordionElement.expanded = (args: ExpandEventArgs) => {
             let index: number = this.accordionElement.items.indexOf(args.item);
+            let isAllowDatabind: boolean = this.allowServerDataBinding;
+            this.allowServerDataBinding = false;
             this.palettes[index].expanded = args.isExpanded;
             (this.palettes[index] as Palette).isInteraction = true;
+            this.allowServerDataBinding = isAllowDatabind;
         };
         this.element.appendChild(accordionDiv);
         let measureElement: string = 'measureElement';
@@ -647,7 +668,53 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             this.element.classList.remove('e-symbolpalette');
         }
     }
-
+    /**
+     * Add particular palettes to symbol palette at runtime
+     * @param { PaletteModel } palettes - Defines the collection of palettes to be added
+     * @blazorArgsType palettes|System.Collections.ObjectModel.ObservableCollection<SymbolPalettePalette>
+     */
+    public addPalettes(palettes: PaletteModel[]): void {
+        let palette: Palette;
+        for (let i: number = 0; i < palettes.length; i++) {
+            let isEnableServerDatabind: boolean = this.allowServerDataBinding;
+            this.isProtectedOnChange = true;
+            this.allowServerDataBinding = false;
+            palette = new Palette(this, 'palettes', palettes[i], true);
+            (this.palettes as Palette[]).push(palette);
+            this.initSymbols(palette);
+            this.allowServerDataBinding = isEnableServerDatabind;
+            this.isProtectedOnChange = false;
+            this.renderPalette(palette);
+        }
+        this.bulkChanges = {};
+        this.accordionElement.refresh();
+    }
+    /**
+     * @private
+     */
+    public removePalette(paletteId: string): void {
+        for (let i: number = 0; i < this.palettes.length; i++) {
+            if (this.palettes[i].id === paletteId) {
+                this.palettes.splice(i, 1);
+                this.accordionElement.items.splice(i, 1);
+                break;
+            }
+        }
+    }
+    /**
+     * Add particular palettes to symbol palette at runtime
+     * @param { PaletteModel } palettes - Defines the collection of palettes to be added
+     * @blazorArgsType palettes|string[]
+     */
+    public removePalettes(palettes: string[]): void {
+        let isEnableServerDatabind: boolean = this.allowServerDataBinding;
+        this.allowServerDataBinding = false;
+        for (let i: number = 0; i < palettes.length; i++) {
+            this.removePalette(palettes[i]);
+        }
+        this.accordionElement.refresh();
+        this.allowServerDataBinding = isEnableServerDatabind;
+    }
     //end region - protected methods
 
     //region - private methods to render symbols
@@ -767,12 +834,18 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
                 // tslint:disable-next-line:no-any 
                 let obj: any = new (Function.prototype.bind.apply(getObjectType(paletteSymbol), param));
                 for (let i: number = 0; i < Object.keys(paletteSymbol).length; i++) {
+                    let isEnableServerDatabind: boolean = this.allowServerDataBinding;
+                    this.allowServerDataBinding = false;
                     obj[Object.keys(paletteSymbol)[i]] = paletteSymbol[Object.keys(paletteSymbol)[i]];
+                    this.allowServerDataBinding = isEnableServerDatabind;
                 }
                 updateDefaultValues(obj, paletteSymbol, obj instanceof Node ? this.nodeDefaults : this.connectorDefaults);
                 symbolPaletteGroup.symbols.push(obj);
                 if (!(obj as Node).children) {
+                    let isEnableServerDatabind: boolean = this.allowServerDataBinding;
+                    this.allowServerDataBinding = false;
                     this.prepareSymbol(obj);
+                    this.allowServerDataBinding = isEnableServerDatabind;
                 }
                 this.symbolTable[obj.id] = obj;
                 let paletteDiv: HTMLElement = document.getElementById(symbolPaletteGroup.id);
@@ -1023,10 +1096,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         if (symbol.shape.type === 'Native') {
             canvas = createSvgElement(
                 'svg', {
-                id: symbol.id + '_preview',
-                width: Math.ceil(symbolPreviewWidth) + 1,
-                height: Math.ceil(symbolPreviewHeight) + 1
-            });
+                    id: symbol.id + '_preview',
+                    width: Math.ceil(symbolPreviewWidth) + 1,
+                    height: Math.ceil(symbolPreviewHeight) + 1
+                });
             let gElement: SVGElement = createSvgElement('g', { id: symbol.id + '_g' });
             canvas.appendChild(gElement);
             previewContainer.appendChild(canvas);
@@ -1100,10 +1173,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         let height: number = size.height + 1;
         let container: HTMLElement = createHtmlElement(
             'div', {
-            id: symbol.id + '_container',
-            style: 'width:' + width + 'px;height:' + height + 'px;float:left;overflow:hidden',
-            title: symbolInfo.tooltip ? symbolInfo.tooltip : symbol.id
-        });
+                id: symbol.id + '_container',
+                style: 'width:' + width + 'px;height:' + height + 'px;float:left;overflow:hidden',
+                title: symbolInfo.tooltip ? symbolInfo.tooltip : symbol.id
+            });
         parentDiv.appendChild(container);
         let canvas: HTMLCanvasElement | SVGElement;
         let gElement: SVGElement;
@@ -1111,10 +1184,10 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
         if (symbol.shape.type === 'Native') {
             canvas = createSvgElement(
                 'svg', {
-                id: symbol.id,
-                width: Math.ceil(symbol.wrapper.actualSize.width) + 1,
-                height: Math.ceil(symbol.wrapper.actualSize.height) + 1
-            });
+                    id: symbol.id,
+                    width: Math.ceil(symbol.wrapper.actualSize.width) + 1,
+                    height: Math.ceil(symbol.wrapper.actualSize.height) + 1
+                });
             gElement = createSvgElement('g', { id: symbol.id + '_g' });
             canvas.appendChild(gElement);
             container.appendChild(canvas);
@@ -1183,17 +1256,17 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
             'div', { 'id': item.id + (isPreview ? '_html_div_preview' : '_html_div') });
         let htmlLayer: HTMLElement = createHtmlElement(
             'div', {
-            'id': item.id + (isPreview ? '_htmlLayer_preview' : '_htmlLayer'),
-            'style': 'width:' + Math.ceil(width + 1) + 'px;' +
-                'height:' + Math.ceil(height + 1) + 'px;position:absolute',
-            'class': 'e-html-layer'
-        });
+                'id': item.id + (isPreview ? '_htmlLayer_preview' : '_htmlLayer'),
+                'style': 'width:' + Math.ceil(width + 1) + 'px;' +
+                    'height:' + Math.ceil(height + 1) + 'px;position:absolute',
+                'class': 'e-html-layer'
+            });
         let htmlLayerDiv: HTMLElement = createHtmlElement(
             'div', {
-            'id': item.id + (isPreview ? '_htmlLayer_div_preview' : '_htmlLayer_div'),
-            'style': 'width:' + Math.ceil(width + 1) + 'px;' +
-                'height:' + Math.ceil(height + 1) + 'px;position:absolute',
-        });
+                'id': item.id + (isPreview ? '_htmlLayer_div_preview' : '_htmlLayer_div'),
+                'style': 'width:' + Math.ceil(width + 1) + 'px;' +
+                    'height:' + Math.ceil(height + 1) + 'px;position:absolute',
+            });
         htmlLayer.appendChild(htmlLayerDiv);
         div.appendChild(htmlLayer);
         canvas = CanvasRenderer.createCanvas(
@@ -1210,22 +1283,22 @@ export class SymbolPalette extends Component<HTMLElement> implements INotifyProp
     ): HTMLElement {
         let div: HTMLElement = createHtmlElement(
             'div', {
-            'id': symbol.id + (isPreview ? '_html_div_preview' : '_html_div')
-        }
+                'id': symbol.id + (isPreview ? '_html_div_preview' : '_html_div')
+            }
         );
         let htmlLayer: HTMLElement = createHtmlElement(
             'div', {
-            'id': symbol.id + (isPreview ? '_htmlLayer_preview' : '_htmlLayer'),
-            'style': 'width:' + Math.ceil(width + 1) + 'px;' +
-                'height:' + Math.ceil(height + 1) + 'px;position:absolute',
-            'class': 'e-html-layer'
-        });
+                'id': symbol.id + (isPreview ? '_htmlLayer_preview' : '_htmlLayer'),
+                'style': 'width:' + Math.ceil(width + 1) + 'px;' +
+                    'height:' + Math.ceil(height + 1) + 'px;position:absolute',
+                'class': 'e-html-layer'
+            });
         let htmlLayerDiv: HTMLElement = createHtmlElement(
             'div', {
-            'id': symbol.id + (isPreview ? '_htmlLayer_div_preview' : '_htmlLayer_div'),
-            'style': 'width:' + Math.ceil(width + 1) + 'px;' +
-                'height:' + Math.ceil(height + 1) + 'px;position:absolute',
-        });
+                'id': symbol.id + (isPreview ? '_htmlLayer_div_preview' : '_htmlLayer_div'),
+                'style': 'width:' + Math.ceil(width + 1) + 'px;' +
+                    'height:' + Math.ceil(height + 1) + 'px;position:absolute',
+            });
         htmlLayer.appendChild(htmlLayerDiv);
         div.appendChild(htmlLayer);
         canvas = CanvasRenderer.createCanvas(

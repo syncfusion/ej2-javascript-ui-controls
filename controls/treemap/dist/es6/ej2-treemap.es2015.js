@@ -3013,7 +3013,7 @@ let TreeMap = TreeMap_1 = class TreeMap extends Component {
                     options: eventArgs.item['options'],
                     rect: eventArgs.item['rect']
                 };
-                eventArgs.item = data;
+                eventArgs.item = this.layout.renderItems[itemIndex]['data'];
                 const { treemap } = eventArgs, blazorEventArgs = __rest(eventArgs, ["treemap"]);
                 eventArgs = blazorEventArgs;
             }

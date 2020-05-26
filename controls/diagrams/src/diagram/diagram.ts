@@ -1693,9 +1693,11 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                     case 'scrollSettings':
                         this.updateScrollSettings(newProp); break;
                     case 'locale':
-                        this.realActions |= RealAction.PreventDataInit;
-                        super.refresh();
-                        this.realActions &= ~RealAction.PreventDataInit;
+                        if(newProp.locale !== oldProp.locale) {
+                            this.realActions |= RealAction.PreventDataInit;
+                            super.refresh();
+                            this.realActions &= ~RealAction.PreventDataInit;
+                        }
                         break;
                     case 'contextMenuSettings':
                         if (newProp.contextMenuSettings.showCustomMenuOnly !== undefined) {
@@ -1882,7 +1884,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
     private setCulture(): void {
         this.localeObj = new L10n(this.getModuleName(), this.defaultLocale, this.locale);
     }
-
+    /* tslint:disable */
     /**
      * Renders the diagram control with nodes and connectors
      */
@@ -1915,7 +1917,18 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.initializeDiagramLayers();
         this.diagramRenderer.setLayers();
         this.initObjects(true);
+        let isLayout: boolean = false;
+        if (isBlazor() && !this.dataSourceSettings.dataSource && this.layout.type !== "None") {
+            for (let obj of this.nodes) {
+                this.insertValue(cloneObject(obj), true);
+            }
+            for (let obj of this.connectors) {
+                this.insertValue(cloneObject(obj), false);
+            }
+            isLayout = true;
+        }
         this.doLayout();
+        if(isLayout) { this.commandHandler.getBlazorOldValues();}
         if (this.lineRoutingModule) {
             let previousConnectorObject: Object[] = [];
             let updateConnectorObject: Object[] = [];
@@ -1987,7 +2000,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         this.renderComplete();
         this.updateFitToPage();
     }
-
+    /* tslint:enable */
     private updateFitToPage(): void {
         if (this.pageSettings && this.pageSettings.fitOptions && this.pageSettings.fitOptions.canFit) {
             this.fitToPage(this.pageSettings.fitOptions);
@@ -2210,7 +2223,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
 
         if (document.getElementById(this.element.id)) {
             this.element.classList.remove('e-diagram');
-            let tooltipelement: HTMLCollection = document.getElementsByClassName('e-tooltip-wrap');
+            let tooltipelement: HTMLCollection = document.getElementsByClassName('e-diagram-tooltip');
             while (tooltipelement.length > 0) {
                 tooltipelement[0].parentNode.removeChild(tooltipelement[0]);
             }
@@ -2629,7 +2642,15 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         if (annotation instanceof TextElement) {
             this.commandHandler.labelDrag(obj.nodes[0], annotation, tx, ty);
         } else {
+            let undoObject: object = cloneObject(this.selectedItems);
+            this.protectPropertyChange(true);
             this.drag(obj, tx, ty);
+            this.protectPropertyChange(false);
+            let entry: HistoryEntry = {
+                type: 'PositionChanged',
+                redoObject: cloneObject(this.selectedItems), undoObject: undoObject, category: 'Internal'
+            };
+            this.addHistoryEntry(entry);
         }
         this.refreshCanvasLayers();
     }
@@ -3865,12 +3886,18 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                 if (children[i] instanceof DiagramNativeElement || ((children[i].id) && (children[i].id).indexOf('icon_content') > 0)) {
                     if ((children[i].id).indexOf('icon_content') > 0 && this.mode === 'SVG') {
                         element = getDiagramElement(children[i].id + '_shape_groupElement', this.element.id);
-                        element.parentNode.removeChild(element);
+                        if (element) {
+                            element.parentNode.removeChild(element);
+                        }
                         element = getDiagramElement(children[i].id + '_rect_groupElement', this.element.id);
+                        if (element) {
                         element.parentNode.removeChild(element);
+                        }
                     }
                     for (let elementId of this.views) {
                         removeElement(children[i].id + '_groupElement', elementId);
+                        let nodeIndex  : number = this.scroller.removeCollection.indexOf(currentObj.id);
+                        this.scroller.removeCollection.splice(nodeIndex , 1 );
                     }
                 } else if (children[i] instanceof DiagramHtmlElement) {
                     for (let elementId of this.views) {
@@ -8759,6 +8786,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
         };
         // tslint:disable-next-line:no-any
         this.droppable.drop = async (args: any) => {
+            this.allowServerDataBinding = false;
             let source: string = 'sourceElement';
             let value: NodeModel | ConnectorModel;
             if (this.currentSymbol) {
@@ -8826,9 +8854,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
                             && canAllowDrop(arg.target)) {
                             addChildToContainer(this, arg.target, clonedObject);
                         } else {
-                            this.allowServerDataBinding = false;
                             value = this.add(clonedObject, true);
-                            this.allowServerDataBinding = true;
                         }
                         if ((clonedObject || value) && canSingleSelect(this)) {
                             this.select([this.nameTable[clonedObject[id]]]);
@@ -8872,6 +8898,7 @@ export class Diagram extends Component<HTMLElement> implements INotifyPropertyCh
             }
             let selectedSymbols: string = 'selectedSymbols';
             if (this.droppable[selectedSymbols]) { remove(this.droppable[selectedSymbols]); }
+            this.allowServerDataBinding = true;
         };
         this.droppable.out = (args: Object) => {
             if (this.currentSymbol && !this.eventHandler.focus) {

@@ -3524,6 +3524,7 @@ export class PdfViewerBase {
             textLayer = this.textLayer.addTextLayer(pageIndex, this.getPageWidth(pageIndex), this.getPageHeight(pageIndex), this.getElement('_pageDiv_' + pageIndex));
         }
         if (textLayer && texts && bounds) {
+            textLayer.style.display = 'block';
             if (textLayer.childNodes.length === 0) {
                 this.textLayer.renderTextContents(pageIndex, texts, bounds, rotation);
             } else {
@@ -4634,6 +4635,10 @@ export class PdfViewerBase {
         }
         let zoomFactor: number = this.retrieveCurrentZoomFactor();
         if (isNaN(tileX) && isNaN(tileY)) {
+            // tslint:disable-next-line:max-line-length
+            if (this.pdfViewer.restrictZoomRequest && !this.pdfViewer.tileRenderingSettings.enableTileRendering) {
+                zoomFactor = 1;
+            }
             window.sessionStorage.setItem(this.documentId + '_' + pageIndex + '_' + zoomFactor, JSON.stringify(storeObject));
             this.sessionStorage.push(this.documentId + '_' + pageIndex + '_' + zoomFactor);
         } else {

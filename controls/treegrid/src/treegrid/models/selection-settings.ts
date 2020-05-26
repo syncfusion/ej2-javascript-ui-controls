@@ -67,4 +67,11 @@ export class SelectionSettings extends ChildProperty<SelectionSettings> {
      */
     @Property(false)
     public checkboxOnly: boolean;
+    /**
+     * If ‘enableToggle’ set to true, then the user can able to perform toggle for the selected row.
+     * @default true 
+     */
+    @Property(true)
+    public enableToggle: boolean;
+
 }

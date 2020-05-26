@@ -3283,6 +3283,7 @@ class LargeIconsView {
                     if (currentSelected.length) {
                         this.selectItems(currentSelected);
                     }
+                    this.parent.setProperties({ selectedItems: this.parent.selectedItems }, true);
                     this.isInteraction = true;
                     this.isInteracted = true;
                     break;
@@ -3870,6 +3871,7 @@ class LargeIconsView {
         if (!isNullOrUndefined(nextItem)) {
             if (!nextItem.classList.contains(ACTIVE)) {
                 this.parent.selectedItems.push(this.getDataName(nextItem));
+                this.parent.setProperties({ selectedItems: this.parent.selectedItems }, true);
                 addClass([nextItem], [ACTIVE]);
                 nextItem.setAttribute('aria-selected', 'true');
                 this.checkState(nextItem, true);
@@ -3890,6 +3892,7 @@ class LargeIconsView {
             let index = this.parent.selectedItems.indexOf(this.getDataName(preItem));
             if (index > -1) {
                 this.parent.selectedItems.splice(index, 1);
+                this.parent.setProperties({ selectedItems: this.parent.selectedItems }, true);
             }
             this.parent.visitedItem = null;
         }
@@ -8021,6 +8024,7 @@ class DetailsView {
                             this.parent.setProperties({ selectedItems: slItems }, true);
                         }
                         this.selectRecords(this.parent.selectedItems);
+                        this.parent.setProperties({ selectedItems: this.parent.selectedItems }, true);
                     }
                     else if (!isNullOrUndefined(this.gridObj)) {
                         this.gridObj.clearSelection();
@@ -8628,6 +8632,7 @@ class DetailsView {
             this.parent.selectedItems.push(name);
             selectSize++;
         }
+        this.parent.setProperties({ selectedItems: this.parent.selectedItems }, true);
     }
     onDeSelection(args) {
         /* istanbul ignore next */

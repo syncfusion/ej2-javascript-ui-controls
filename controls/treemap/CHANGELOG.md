@@ -8,6 +8,14 @@
 
 ## [Unreleased]
 
+## 18.1.54 (2020-05-26)
+
+### TreeMap
+
+#### Bug Fixes
+
+- `OnItemClick` event arguments in the treemap is now improved.
+
 ## 18.1.46 (2020-04-28)
 
 ### TreeMap

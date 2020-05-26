@@ -3146,7 +3146,7 @@ var TreeMap = /** @__PURE__ @class */ (function (_super) {
                     options: eventArgs.item['options'],
                     rect: eventArgs.item['rect']
                 };
-                eventArgs.item = data;
+                eventArgs.item = this.layout.renderItems[itemIndex]['data'];
                 var treemap = eventArgs.treemap, blazorEventArgs = __rest(eventArgs, ["treemap"]);
                 eventArgs = blazorEventArgs;
             }

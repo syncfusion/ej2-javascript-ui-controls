@@ -721,7 +721,11 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'locale':
-                    super.refresh();
+                    if (isBlazor()) {
+                        break;
+                    } else {
+                        super.refresh();
+                    }
                     break;
                 case 'dataSourceSettings':
                     if (PivotUtil.isButtonIconRefesh(prop, oldProp, newProp)) {
@@ -833,7 +837,7 @@ export class PivotFieldList extends Component<HTMLElement> implements INotifyPro
                 const this$: PivotFieldList = this;
                 control.trigger(events.enginePopulated, eventArgs, (observedArgs: EnginePopulatedEventArgs) => {
                     this$.pivotFieldList = observedArgs.pivotFieldList;
-                    this$.olapEngineModule.pivotValues = isBlazor() ? this.engineModule.pivotValues : observedArgs.pivotValues;
+                    this$.olapEngineModule.pivotValues = isBlazor() ? this.olapEngineModule.pivotValues : observedArgs.pivotValues;
                     this$.notify(events.dataReady, {});
                     this$.trigger(events.dataBound);
                 });

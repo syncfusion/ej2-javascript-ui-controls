@@ -1,6 +1,6 @@
 import { DocumentEditor } from '../../src/document-editor/document-editor';
 import { createElement } from '@syncfusion/ej2-base';
-import { Editor, SfdtExport, DocumentHelper } from '../../src/index';
+import { Editor, SfdtExport, DocumentHelper, ListLevelPattern } from '../../src/index';
 import { TestHelper } from '../test-helper.spec';
 import { LayoutViewer, PageLayoutViewer } from '../../src/index';
 import { Selection } from '../../src/index';
@@ -1554,5 +1554,35 @@ describe('List apply validation for level number is greater than 1', () => {
         editor.editor.insertText('Arabic');
         editor.editor.applyNumbering('%1.', 'Arabic');
         expect(editor.selection.paragraphFormat.listLevelNumber).toBe(1);
+    });
+    it('Increase list level validation Numbering', () => {
+        editor.openBlank();
+        editor.editor.applyNumbering('%1.', 'Arabic');
+        editor.editor.insertText('Arabic');
+        editor.editor.onEnter();
+        editor.selection.handleTabKey(true, false);
+        editor.editor.insertText('Lowletter');
+        let pattern: ListLevelPattern = editor.documentHelper.layout.getListLevelPattern(1);
+        expect(pattern).toBe('LowLetter');
+        expect(editor.selection.paragraphFormat.listLevelNumber).toBe(1);
+        editor.editor.onEnter();
+        editor.selection.handleTabKey(true, false);
+        editor.editor.insertText('LowRoman');
+        let patternn: ListLevelPattern = editor.documentHelper.layout.getListLevelPattern(2);
+        expect(patternn).toBe('LowRoman');
+        expect(editor.selection.paragraphFormat.listLevelNumber).toBe(2);
+    });
+    it('Increase list level validation Bullets', () => {
+        editor.openBlank();
+        editor.editor.applyBullet('\uf0b7', 'Symbol');
+        editor.editor.insertText('dot');
+        editor.editor.onEnter();
+        editor.selection.handleTabKey(true, false);
+        editor.editor.insertText('circle');
+        expect(editor.selection.paragraphFormat.listLevelNumber).toBe(1);
+        editor.editor.onEnter();
+        editor.selection.handleTabKey(true, false);
+        editor.editor.insertText('square');
+        expect(editor.selection.paragraphFormat.listLevelNumber).toBe(2);
     });
 });

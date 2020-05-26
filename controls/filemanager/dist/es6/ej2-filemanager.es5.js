@@ -3432,6 +3432,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
                     if (currentSelected.length) {
                         this.selectItems(currentSelected);
                     }
+                    this.parent.setProperties({ selectedItems: this.parent.selectedItems }, true);
                     this.isInteraction = true;
                     this.isInteracted = true;
                     break;
@@ -4020,6 +4021,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
         if (!isNullOrUndefined(nextItem)) {
             if (!nextItem.classList.contains(ACTIVE)) {
                 this.parent.selectedItems.push(this.getDataName(nextItem));
+                this.parent.setProperties({ selectedItems: this.parent.selectedItems }, true);
                 addClass([nextItem], [ACTIVE]);
                 nextItem.setAttribute('aria-selected', 'true');
                 this.checkState(nextItem, true);
@@ -4040,6 +4042,7 @@ var LargeIconsView = /** @__PURE__ @class */ (function () {
             var index = this.parent.selectedItems.indexOf(this.getDataName(preItem));
             if (index > -1) {
                 this.parent.selectedItems.splice(index, 1);
+                this.parent.setProperties({ selectedItems: this.parent.selectedItems }, true);
             }
             this.parent.visitedItem = null;
         }
@@ -8209,6 +8212,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
                             this.parent.setProperties({ selectedItems: slItems }, true);
                         }
                         this.selectRecords(this.parent.selectedItems);
+                        this.parent.setProperties({ selectedItems: this.parent.selectedItems }, true);
                     }
                     else if (!isNullOrUndefined(this.gridObj)) {
                         this.gridObj.clearSelection();
@@ -8818,6 +8822,7 @@ var DetailsView = /** @__PURE__ @class */ (function () {
             this.parent.selectedItems.push(name_3);
             selectSize++;
         }
+        this.parent.setProperties({ selectedItems: this.parent.selectedItems }, true);
     };
     DetailsView.prototype.onDeSelection = function (args) {
         /* istanbul ignore next */

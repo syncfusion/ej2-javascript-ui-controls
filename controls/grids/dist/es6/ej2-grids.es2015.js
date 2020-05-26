@@ -1942,6 +1942,7 @@ class SummaryModelGenerator {
             'attributes': attrs,
             'cellType': cellType
         };
+        opt.column.headerText = column.headerText;
         return new Cell(opt);
     }
     buildSummaryData(data, args) {
@@ -3073,6 +3074,7 @@ class HeaderRender {
     constructor(parent, serviceLocator) {
         this.frzIdx = 0;
         this.notfrzIdx = 0;
+        this.isFirstCol = false;
         this.helper = (e) => {
             let gObj = this.parent;
             let target = this.draggable.currentStateTarget;
@@ -3470,14 +3472,17 @@ class HeaderRender {
             }
         }
         else {
+            this.isFirstCol = false;
             let colSpan = this.getCellCnt(cols, 0);
             if (colSpan) {
                 let frzObj = this.refreshFrozenHdr(cols.columns, { isPartial: false, isComp: true, cnt: 0 });
                 let stackedLockColsCount = this.getStackedLockColsCount(cols, 0);
                 if (!frzCols && (!this.parent.lockcolPositionCount
                     || (!this.lockColsRendered && stackedLockColsCount) || (this.lockColsRendered && (colSpan - stackedLockColsCount)))
-                    || (frzCols && ((!isMovable && (this.parent.frozenColumns - this.frzIdx > 0 || (frzObj.isPartial)))
-                        || (isMovable && (colSpan + this.frzIdx > this.parent.frozenColumns && !frzObj.isComp))))) {
+                    || (frzCols && ((!isMovable && this.checkFrozenStackHeader(cols.columns, isMovable)
+                        && (this.parent.frozenColumns - this.frzIdx > 0 || (frzObj.isPartial)))
+                        || (isMovable && ((colSpan + this.frzIdx > this.parent.frozenColumns && !frzObj.isComp)
+                            || this.checkFrozenStackHeader(cols.columns, isMovable)))))) {
                     rows[index].cells.push(new Cell({
                         cellType: CellType.StackedHeader, column: cols,
                         colSpan: this.getColSpan(colSpan, isMovable, frzObj.cnt, stackedLockColsCount)
@@ -3491,11 +3496,31 @@ class HeaderRender {
             }
             if (this.lockColsRendered) {
                 for (let i = 0, len = cols.columns.length; i < len; i++) {
-                    rows = this.appendCells(cols.columns[i], rows, index + 1, isFirstObj, i === 0, i === (len - 1) && isLastCol, isMovable);
+                    let isFirstCol = this.isFirstCol = cols.columns[i].visible && !this.isFirstCol;
+                    let isLastCol = i === (len - 1) && !isFirstCol;
+                    rows = this.appendCells(cols.columns[i], rows, index + 1, isFirstObj, isFirstCol, isLastCol && isLastCol, isMovable);
                 }
             }
         }
         return rows;
+    }
+    checkFrozenStackHeader(cols, isMovable) {
+        let isTrue = false;
+        for (let i = 0; i < cols.length; i++) {
+            let col = cols[i];
+            let colIndex = this.parent.getNormalizedColumnIndex(col.uid);
+            if (!col.columns) {
+                if (isMovable && colIndex >= this.parent.getFrozenColumns() && col.visible) {
+                    isTrue = true;
+                    break;
+                }
+                if (!isMovable && colIndex < this.parent.getFrozenColumns() && col.visible) {
+                    isTrue = true;
+                    break;
+                }
+            }
+        }
+        return isTrue;
     }
     getStackedLockColsCount(col, lockColsCount) {
         if (col.columns) {
@@ -3849,10 +3874,7 @@ class CellRenderer {
         }
         let fromFormatter = this.invokeFormatter(column, value, data);
         innerHtml = !isNullOrUndefined(column.formatter) ? isNullOrUndefined(fromFormatter) ? '' : fromFormatter.toString() : innerHtml;
-        node.setAttribute('aria-label', (innerHtml === '' ? 'empty' : innerHtml) + ' column header ' + cell.column.headerText);
-        if (!isNullOrUndefined(cell.column.headerText)) {
-            node.setAttribute('aria-label', innerHtml + ' column header ' + cell.column.headerText);
-        }
+        node.setAttribute('aria-label', innerHtml + ' column header ' + cell.column.headerText);
         if (this.evaluate(node, cell, data, attributes$$1, fData, isEdit) && column.type !== 'checkbox') {
             this.appendHtml(node, innerHtml, column.getDomSetter ? column.getDomSetter() : 'innerHTML');
         }
@@ -6243,6 +6265,7 @@ class ContentFocus {
         return (rowIndex, cellIndex, action) => {
             if (!isNullOrUndefined(table.rows[rowIndex])) {
                 let cell;
+                cellIndex = table.querySelector('.e-emptyrow') ? 0 : cellIndex;
                 if (table.rows[rowIndex].cells[0].classList.contains('e-editcell')) {
                     cell = table.rows[rowIndex].cells[0].querySelectorAll('td')[cellIndex];
                 }
@@ -6594,7 +6617,7 @@ class Selection {
         this.parent.trigger(type, this.fDataUpdate(args));
     }
     fDataUpdate(args) {
-        if (args.cellIndex || args.rowIndex) {
+        if (!isNullOrUndefined(args.cellIndex) || !isNullOrUndefined(args.rowIndex)) {
             let rowObj = this.getRowObj(isNullOrUndefined(args.rowIndex) ? isNullOrUndefined(args.cellIndex) ?
                 this.currentIndex : args.cellIndex.rowIndex : args.rowIndex);
             args.foreignKeyData = rowObj.foreignKeyData;
@@ -9510,13 +9533,6 @@ class ShowHide {
      * @return {void}
      */
     setVisible(columns, changedStateColumns = []) {
-        if (isActionPrevent(this.parent)) {
-            this.parent.notify(preventBatch, {
-                instance: this, handler: this.setVisible,
-                arg1: columns
-            });
-            return;
-        }
         changedStateColumns = (changedStateColumns.length > 0) ? changedStateColumns :
             isBlazor() ? (JSON.parse(JSON.stringify(columns))) : columns;
         let args = {
@@ -29179,9 +29195,6 @@ class BatchEdit {
                 gObj.selectRow(this.cellDetails.rowIndex, true);
             }
             this.renderer.update(cellEditArgs);
-            if (gObj.getFrozenColumns()) {
-                alignFrozenEditForm(row.querySelector('td:not(.e-hide)'), this.comparingRow(row).querySelector('td:not(.e-hide)'));
-            }
             this.parent.notify(batchEditFormRendered, cellEditArgs);
             this.form = gObj.element.querySelector('#' + gObj.element.id + 'EditForm');
             gObj.editModule.applyFormValidation([col]);
@@ -29324,10 +29337,6 @@ class BatchEdit {
         let args = this.generateCellArgs();
         args.value = args.previousValue;
         this.successCallBack(args, args.cell.parentElement, args.column, true)(args);
-        if (this.parent.getFrozenColumns()) {
-            let tr = isBlazor() ? parentsUntil(this.form, 'e-row') : args.cell.parentElement;
-            this.comparingRow(tr).querySelector('td:not(.e-hide)').style.height = tr.getBoundingClientRect().height + 'px';
-        }
     }
     generateCellArgs() {
         let gObj = this.parent;
@@ -29378,9 +29387,6 @@ class BatchEdit {
         }
         else {
             this.successCallBack(args, tr, col)(args);
-        }
-        if (gObj.getFrozenColumns()) {
-            this.comparingRow(tr).querySelector('td:not(.e-hide)').style.height = tr.getBoundingClientRect().height + 'px';
         }
     }
     successCallBack(cellSaveArgs, tr, column, isEscapeCellEdit) {
@@ -29507,18 +29513,6 @@ class BatchEdit {
             this.parent.isEdit = false;
             this.isColored = false;
         }
-    }
-    comparingRow(row) {
-        let gObj = this.parent;
-        let comparingElement = row.offsetParent.parentElement.className;
-        let comparingRow;
-        if (comparingElement.includes('e-frozencontent') || comparingElement.includes('e-frozenheader')) {
-            comparingRow = gObj.getMovableRowByIndex(parseInt(row.getAttribute('aria-rowindex'), 10));
-        }
-        if (comparingElement.includes('e-movablecontent') || comparingElement.includes('e-movableheader')) {
-            comparingRow = gObj.getFrozenRowByIndex(parseInt(row.getAttribute('aria-rowindex'), 10));
-        }
-        return comparingRow;
     }
 }
 
@@ -29745,7 +29739,7 @@ class Edit {
             args.requestType === 'add' && this.parent.height > this.parent.getContentTable().scrollHeight) {
             addClass(tr.querySelectorAll('.e-rowcell'), 'e-lastrowadded');
         }
-        else if (checkLastRow) {
+        else if (checkLastRow && tr && tr.classList) {
             addClass(tr.querySelectorAll('.e-rowcell'), 'e-lastrowcell');
         }
     }
@@ -31669,8 +31663,10 @@ class ExcelExport {
     }
     /* tslint:disable-next-line:no-any */
     processRecords(gObj, exportProperties, isMultipleExport, workbook) {
-        if (!isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.dataSource) &&
-            exportProperties.dataSource instanceof DataManager) {
+        if (!isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.dataSource)) {
+            if (!(exportProperties.dataSource instanceof DataManager)) {
+                exportProperties.dataSource = new DataManager(exportProperties.dataSource);
+            }
             return new Promise((resolve, reject) => {
                 let dataManager = exportProperties.dataSource.executeQuery(new Query());
                 dataManager.then((r) => {
@@ -32555,8 +32551,10 @@ class PdfExport {
         this.headerOnPages = args[header];
         this.drawPosition = args[drawPos];
         this.parent.log('exporting_begin', this.getModuleName());
-        if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.dataSource)
-            && pdfExportProperties.dataSource instanceof DataManager) {
+        if (!isNullOrUndefined(pdfExportProperties) && !isNullOrUndefined(pdfExportProperties.dataSource)) {
+            if (!(pdfExportProperties.dataSource instanceof DataManager)) {
+                pdfExportProperties.dataSource = new DataManager(pdfExportProperties.dataSource);
+            }
             return new Promise((resolve, reject) => {
                 pdfExportProperties.dataSource.executeQuery(new Query()).then((returnType) => {
                     this.exportWithData(parent, pdfDoc, resolve, returnType, pdfExportProperties, isMultipleExport);

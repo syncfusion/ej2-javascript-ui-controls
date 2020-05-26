@@ -213,6 +213,10 @@ export class Drawing {
             case 'Stamp':
                 isStamp = true;
                 this.isDynamicStamps = true;
+                if (obj && obj.annotationAddMode && obj.annotationAddMode === 'Existing Annotation') {
+                    obj.bounds.width = obj.bounds.width - 20;
+                    obj.bounds.height = obj.bounds.height - 20;
+                }
                 if (obj.isDynamicStamp) {
                     canvas.horizontalAlignment = 'Left';
                     basicElement = new DrawingElement();
@@ -304,6 +308,10 @@ export class Drawing {
                     canvas.children.push(content1);
                     canvas.minHeight = content.minHeight + 20;
                     canvas.minWidth = content.minWidth + 20;
+                }
+                if (obj && obj.annotationAddMode && obj.annotationAddMode === 'Existing Annotation') {
+                    obj.bounds.width = obj.bounds.width + 20;
+                    obj.bounds.height = obj.bounds.height + 20;
                 }
                 break;
             case 'Image':

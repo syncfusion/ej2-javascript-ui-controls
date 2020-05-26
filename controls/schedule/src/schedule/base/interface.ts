@@ -7,7 +7,7 @@ import { ResourcesModel, ViewsModel } from '../models/models';
  * Interface
  */
 
- /** An interface that holds options to control the actions of scheduler such as editing, navigation, and more. */
+/** An interface that holds options to control the actions of scheduler such as editing, navigation, and more. */
 export interface ActionEventArgs extends ToolbarActionArgs {
     /** Returns the request type of the current action. */
     requestType: string;
@@ -162,7 +162,19 @@ export interface EventRenderedArgs extends BaseEventArgs {
 
 /** An interface that holds options to control the popup open action. */
 export interface PopupOpenEventArgs extends BaseEventArgs {
-    /** Returns the type of the popup which is currently being opted to open. */
+    /**
+     * Returns the type of the popup which is currently being opted to open. 
+     * The available type values are as follows,
+     * * DeleteAlert
+     * * EditEventInfo
+     * * Editor
+     * * EventContainer
+     * * QuickInfo
+     * * RecurrenceAlert
+     * * RecurrenceValidationAlert
+     * * ValidationAlert
+     * * ViewEventInfo
+     */
     type: PopupType;
     /**
      * Returns the cell or event data.
@@ -184,7 +196,19 @@ export interface PopupOpenEventArgs extends BaseEventArgs {
 
 /** An interface that holds options to control the popup close action. */
 export interface PopupCloseEventArgs extends BaseEventArgs {
-    /** Returns the type of the popup which is currently being opted to open. */
+    /** 
+     * Returns the type of the popup which is currently being opted to open.
+     * The available type values are as follows,
+     * * DeleteAlert
+     * * EditEventInfo
+     * * Editor
+     * * EventContainer
+     * * QuickInfo
+     * * RecurrenceAlert
+     * * RecurrenceValidationAlert
+     * * ValidationAlert
+     * * ViewEventInfo
+     */
     type: PopupType;
     /**
      * Returns the cell or event data.

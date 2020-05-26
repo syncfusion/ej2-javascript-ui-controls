@@ -779,6 +779,11 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Opens the specified JSON object.
+     * <br><br>     
+     * The available arguments in options are: 
+     * * file: Specifies the spreadsheet model as object or string. And the object contains the jsonObject, 
+     * which is saved from spreadsheet using saveAsJson method.
+     * 
      * @param options - Options for opening the JSON object.
      */
     public openFromJson(options: { file: string | object }): void {
@@ -789,6 +794,12 @@ export class Workbook extends Component<HTMLElement> implements INotifyPropertyC
 
     /**
      * Saves the Spreadsheet data to Excel file.
+     * <br><br>     
+     * The available arguments in saveOptions are: 
+     * * url: Specifies the save URL.
+     * * fileName: Specifies the file name.
+     * * saveType: Specifies the file type need to be saved. 
+     * 
      * @param {SaveOptions} saveOptions - Options for saving the excel file.
      */
     public save(saveOptions: SaveOptions = {}): void {

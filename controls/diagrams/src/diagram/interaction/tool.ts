@@ -1432,6 +1432,7 @@ export class NodeDrawingTool extends ToolBase {
     public mouseDown(args: MouseEventArgs): void {
         super.mouseDown(args);
         this.inAction = true;
+        this.commandHandler.setFocus();
     }
 
     /**   @private  */
@@ -1501,6 +1502,7 @@ export class ConnectorDrawingTool extends ConnectTool {
     public async mouseDown(args: MouseEventArgs): Promise<void> {
         super.mouseDown(args);
         this.inAction = true;
+        this.commandHandler.setFocus();
     }
 
     /**   @private  */

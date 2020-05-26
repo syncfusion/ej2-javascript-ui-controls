@@ -997,7 +997,7 @@ export class DiagramEventHandler {
     public keyDown(evt: KeyboardEvent): void {
         if (!(this.diagram.diagramActions & DiagramAction.TextEdit) &&
             !(this.checkEditBoxAsTarget(evt)) || (evt.key === 'Escape' || evt.keyCode === 27)) {
-            let i: string;
+            let i: string; let inAction: string = 'inAction';
             let command: CommandModel;
             let keycode: number = evt.keyCode ? evt.keyCode : evt.which;
             let key: string = evt.key;
@@ -1051,6 +1051,10 @@ export class DiagramEventHandler {
                                         this.diagram.currentSymbol = null;
                                         this.diagram.diagramActions =
                                             this.diagram.removeConstraints(diagramActions, DiagramAction.PreventClearSelection);
+                                        this.isMouseDown = false;
+                                    } else if (this.inAction && this.diagram.drawingObject && this.tool && this.tool[inAction]) {
+                                        this.tool.mouseUp(this.eventArgs);
+                                        this.tool = null;
                                         this.isMouseDown = false;
                                     }
                                 }
@@ -1905,7 +1909,8 @@ export class DiagramEventHandler {
                 let index: number = node.wrapper.children.indexOf(target.wrapper) + 1;
                 let temp: NodeModel = new Node(
                     this.diagram, 'nodes', {
-                        style: { fill: node.style.fill, strokeColor: '#ffffff00' },
+                        style: { fill: node.style.fill,
+                        strokeColor: (node.style.strokeColor === 'black') ? '#ffffff00' : node.style.strokeColor },
                         annotations: (target as Node).annotations, verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
                         constraints: (NodeConstraints.Default | NodeConstraints.HideThumbs) & ~
                             (NodeConstraints.Rotate | NodeConstraints.Drag | NodeConstraints.Resize),

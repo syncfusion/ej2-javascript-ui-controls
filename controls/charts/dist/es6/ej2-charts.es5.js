@@ -9386,18 +9386,19 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         if (this.clickCount === 1 && this.pointClick) {
             this.singleClickTimer = +setTimeout(function () {
                 _this.clickCount = 0;
-                _this.triggerPointEvent(pointClick);
+                _this.triggerPointEvent(pointClick, e);
             }, 400);
         }
         else if (this.clickCount === 2 && this.pointDoubleClick) {
             clearTimeout(this.singleClickTimer);
             this.clickCount = 0;
-            this.triggerPointEvent(pointDoubleClick);
+            this.triggerPointEvent(pointDoubleClick, e);
         }
         this.notify('click', e);
         return false;
     };
-    Chart.prototype.triggerPointEvent = function (event) {
+    Chart.prototype.triggerPointEvent = function (event, e) {
+        var evt = e;
         var data = new ChartData(this);
         var pointData = data.getData();
         if (pointData.series && pointData.point) {
@@ -9405,7 +9406,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
                 series: this.isBlazor ? {} : pointData.series,
                 point: pointData.point,
                 seriesIndex: pointData.series.index, pointIndex: pointData.point.index,
-                x: this.mouseX, y: this.mouseY
+                x: this.mouseX, y: this.mouseY, pageX: evt.pageX, pageY: evt.pageY
             });
         }
     };
@@ -9418,7 +9419,7 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
         var element = e.target;
         this.trigger(chartMouseMove, { target: element.id, x: this.mouseX, y: this.mouseY });
         if (this.pointMove) {
-            this.triggerPointEvent(pointMove);
+            this.triggerPointEvent(pointMove, e);
         }
         // Tooltip for chart series.
         if (!this.isTouch) {
@@ -9913,6 +9914,15 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
             this.svgObject.appendChild(this.zoomModule.pinchTarget);
             removeLength = 1;
         }
+        if (this.resizeTo && this.isBlazor && this.element.childElementCount) {
+            var containerCollection = document.querySelectorAll('.e-chart');
+            for (var index = 0; index < containerCollection.length; index++) {
+                var container = containerCollection[index];
+                while (container.firstChild) {
+                    remove(this.svgObject);
+                }
+            }
+        }
         if (this.svgObject) {
             while (this.svgObject.childNodes.length > removeLength) {
                 this.svgObject.removeChild(this.svgObject.firstChild);
@@ -10161,7 +10171,13 @@ var Chart = /** @__PURE__ @class */ (function (_super) {
                         break;
                     case 'locale':
                     case 'currencyCode':
-                        _super.prototype.refresh.call(this);
+                        if (this.isBlazor) {
+                            this.setCulture();
+                            renderer = true;
+                        }
+                        else {
+                            this.refresh();
+                        }
                         break;
                     case 'tooltip':
                         if (this.tooltipModule) { // To check the tooltip enable is true.
@@ -13575,7 +13591,7 @@ var PolarSeries = /** @__PURE__ @class */ (function (_super) {
             visiblePoint.visible = visiblePoint.visible && !((!isNullOrUndefined(yAxisMin) && visiblePoint.yValue < yAxisMin) ||
                 (!isNullOrUndefined(yAxisMax) && visiblePoint.yValue > yAxisMax));
         }
-        if (series.drawType.indexOf('Column') > -1) {
+        if ((series.drawType.indexOf('Column') > -1) && (series.points.length > 0)) {
             this.columnDrawTypeRender(series, xAxis, yAxis);
         }
         else {
@@ -17765,7 +17781,8 @@ var Trendlines = /** @__PURE__ @class */ (function () {
             }
         }
         else {
-            slope = Math.abs(((points.length * xyAvg) - (xAvg * yAvg)) / ((points.length * xxAvg) - (xAvg * xAvg)));
+            slope = ((points.length * xyAvg) - (xAvg * yAvg)) / ((points.length * xxAvg) - (xAvg * xAvg));
+            slope = (type === 'Linear' ? slope : Math.abs(slope));
             if (type === 'Exponential' || type === 'Power') {
                 intercept = Math.exp((yAvg - (slope * xAvg)) / points.length);
             }

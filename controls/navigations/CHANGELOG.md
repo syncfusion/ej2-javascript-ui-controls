@@ -2,7 +2,21 @@
 
 ## [Unreleased]
 
-## 18.1.46 (2020-04-28)
+## 18.1.54 (2020-05-26)
+
+### Accordion
+
+#### Bug Fixes
+
+- `#275090` - An issue with Ripple effect when destroy and rendered nested accordions has been fixed.
+
+### Toolbar
+
+#### Bug Fixes
+
+- `#275422` - An issue with toolbar scrolling is not working properly after perform window resize has been fixed.
+
+## 18.1.54 (2020-05-26)
 
 ### Menu
 

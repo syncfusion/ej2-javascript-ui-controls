@@ -3005,6 +3005,7 @@ var CLS_TBARCENTER = 'e-toolbar-center';
 var CLS_TBARPOS = 'e-tbar-pos';
 var CLS_HSCROLLCNT = 'e-hscroll-content';
 var CLS_VSCROLLCNT = 'e-vscroll-content';
+var CLS_HSCROLLBAR$1 = 'e-hscroll-bar';
 var CLS_POPUPNAV = 'e-hor-nav';
 var CLS_POPUPCLASS = 'e-toolbar-pop';
 var CLS_POPUP = 'e-toolbar-popup';
@@ -4929,6 +4930,9 @@ var Toolbar = /** @class */ (function (_super) {
                 this.refreshPositioning();
             }
         }
+        if (this.element.querySelector('.' + CLS_HSCROLLBAR$1)) {
+            this.scrollStep = this.element.querySelector('.' + CLS_HSCROLLBAR$1).offsetWidth;
+        }
         this.offsetWid = ele.offsetWidth;
         this.tbResize = false;
         this.separator();
@@ -5334,6 +5338,9 @@ var Accordion = /** @class */ (function (_super) {
         ['aria-disabled', 'aria-multiselectable', 'role', 'data-ripple'].forEach(function (attrb) {
             _this.element.removeAttribute(attrb);
         });
+        if (!this.isNested && sf.base.isRippleEnabled) {
+            this.removeRippleEffect();
+        }
     };
     Accordion.prototype.preRender = function () {
         var nested = sf.base.closest(this.element, '.' + CLS_CONTENT);
@@ -5424,7 +5431,7 @@ var Accordion = /** @class */ (function (_super) {
     Accordion.prototype.wireEvents = function () {
         sf.base.EventHandler.add(this.element, 'click', this.clickHandler, this);
         if (!this.isNested && !this.isDestroy) {
-            sf.base.rippleEffect(this.element, { selector: '.' + CLS_HEADER });
+            this.removeRippleEffect = sf.base.rippleEffect(this.element, { selector: '.' + CLS_HEADER });
         }
         if (!this.isNested) {
             this.keyModule = new sf.base.KeyboardEvents(this.element, {

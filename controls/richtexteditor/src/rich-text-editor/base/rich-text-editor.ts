@@ -1260,15 +1260,37 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
         if (this.editorMode === 'HTML' && ((e.which === 8 && e.code === 'Backspace') || (e.which === 46 && e.code === 'Delete'))) {
             let range: Range = this.getRange();
             let startNode: Element = range.startContainer.nodeName === '#text' ? range.startContainer.parentElement :
-            range.startContainer as Element;
+                range.startContainer as Element;
             if (closest(startNode, 'pre') &&
-            (e.which === 8 && range.startContainer.textContent.charCodeAt(range.startOffset - 1) === 8203) ||
-            (e.which === 46 && range.startContainer.textContent.charCodeAt(range.startOffset) === 8203)) {
+                (e.which === 8 && range.startContainer.textContent.charCodeAt(range.startOffset - 1) === 8203) ||
+                (e.which === 46 && range.startContainer.textContent.charCodeAt(range.startOffset) === 8203)) {
                 let regEx: RegExp = new RegExp(String.fromCharCode(8203), 'g');
                 let pointer: number = e.which === 8 ? range.startOffset - 1 : range.startOffset;
                 range.startContainer.textContent = range.startContainer.textContent.replace(regEx, '');
                 this.formatter.editorManager.nodeSelection.setCursorPoint(
-                this.contentModule.getDocument(), range.startContainer as Element, pointer);
+                    this.contentModule.getDocument(), range.startContainer as Element, pointer);
+            } else if ((e.code === 'Backspace' && e.which === 8) &&
+                range.startContainer.textContent.charCodeAt(0) === 8203 && range.collapsed) {
+                let parentEle: Element = range.startContainer.parentElement;
+                let index: number;
+                let i: number;
+                for (i = 0; i < parentEle.childNodes.length; i++) { if (parentEle.childNodes[i] === range.startContainer) { index = i; } }
+                let bool: boolean = true;
+                let removeNodeArray: number[] = [];
+                for (i = index; i >= 0; i--) {
+                    if (parentEle.childNodes[i].nodeType === 3 && parentEle.childNodes[i].textContent.charCodeAt(0) === 8203 && bool) {
+                        removeNodeArray.push(i);
+                    } else {
+                        bool = false;
+                    }
+                }
+                if (removeNodeArray.length > 0) {
+                    for (i = removeNodeArray.length - 1; i > 0; i--) {
+                        parentEle.childNodes[removeNodeArray[i]].textContent = '';
+                    }
+                }
+                this.formatter.editorManager.nodeSelection.setCursorPoint(
+                    this.contentModule.getDocument(), range.startContainer as Element, range.startOffset);
             }
         }
         if (this.formatter.getUndoRedoStack().length === 0) {
@@ -1298,6 +1320,10 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
 
     private keyUp(e: KeyboardEvent): void {
         this.notify(events.keyUp, { member: 'keyup', args: e });
+        if (e.code === 'KeyX' && e.which === 88 && e.keyCode === 88 && e.ctrlKey && (this.inputElement.innerHTML === '' ||
+        this.inputElement.innerHTML === '<br>')) {
+            this.inputElement.innerHTML = getEditValue('<p><br></p>', this);
+        }
         let allowedKeys: boolean = e.which === 32 || e.which === 13 || e.which === 8 || e.which === 46;
         if (((e.key !== 'shift' && !e.ctrlKey) && e.key && e.key.length === 1 || allowedKeys) || (this.editorMode === 'Markdown'
             && ((e.key !== 'shift' && !e.ctrlKey) && e.key && e.key.length === 1 || allowedKeys)) && !this.inlineMode.enable) {
@@ -1532,11 +1558,7 @@ export class RichTextEditor extends Component<HTMLElement> implements INotifyPro
             }
             this.removeHtmlAttributes();
             this.removeAttributes();
-            if (!(isBlazor() && this.isServerRendered)) {
-                super.destroy();
-            } else {
-                this.isDestroyed = true;
-            }
+            super.destroy();
             this.isRendered = false;
             if (this.enablePersistence) { window.localStorage.removeItem(this.getModuleName() + this.element.id); }
         }

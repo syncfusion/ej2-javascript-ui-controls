@@ -8868,8 +8868,9 @@ class ErrorDialog {
         });
         this.parent.element.appendChild(errorDialog);
         let zIndex = target ? Number(target.style.zIndex) + 1 : (this.parent.moduleName === 'pivotfieldlist' &&
-            this.parent.renderMode === 'Popup' && this.parent.control ?
-            this.parent.control.dialogRenderer.fieldListDialog.zIndex + 1 : 1000001);
+            this.parent.renderMode === 'Popup' && this.parent.control ? this.parent.control.dialogRenderer.fieldListDialog.zIndex + 1 :
+            (this.parent.moduleName === 'pivotfieldlist' && this.parent.renderMode === 'Fixed' && this.parent.control ? 1000002 :
+                (this.parent.moduleName === 'pivotview' && this.parent.control ? 1000002 : 1000001)));
         this.errorPopUp = new Dialog({
             animationSettings: { effect: 'Fade' },
             allowDragging: false,
@@ -12973,6 +12974,9 @@ class PivotChart {
                         tupInfo.measureName : cell.actualText;
                     if (!totColIndex[cell.colIndex] && cell.axis === 'value' && firstRowCell.type !== 'header' &&
                         actualText !== '' && (chartSettings.enableMultiAxis ? true : actualText === this.currentMeasure)) {
+                        if (isNullOrUndefined(firstRowCell.members)) {
+                            firstRowCell.members = [];
+                        }
                         if (this.parent.dataType === 'olap' ? (lastHierarchy === firstRowCell.hierarchy ?
                             ((firstRowCell.memberType === 3 && prevMemberCell) ?
                                 (fieldPos === this.measurePos ? prevMemberCell.isDrilled : true) : firstRowCell.isDrilled) : true)
@@ -13326,12 +13330,14 @@ class PivotChart {
             let cKeys = Object.keys(rows);
             for (let cellIndex of cKeys) {
                 let cell = rows[Number(cellIndex)];
-                if (cell.axis !== 'column') {
-                    return colIndexColl;
-                }
-                else if ((cell.type === 'sum' || (this.dataSourceSettings.columns.length === 0 ? false : cell.type === 'grand sum'))
-                    && cell.rowSpan !== -1) {
-                    colIndexColl[cell.colIndex] = cell.colIndex;
+                if (!isNullOrUndefined(cell)) {
+                    if (cell.axis !== 'column') {
+                        return colIndexColl;
+                    }
+                    else if ((cell.type === 'sum' || (this.dataSourceSettings.columns.length === 0 ? false : cell.type === 'grand sum'))
+                        && cell.rowSpan !== -1) {
+                        colIndexColl[cell.colIndex] = cell.colIndex;
+                    }
                 }
             }
         }
@@ -20353,7 +20359,12 @@ let PivotView = PivotView_1 = class PivotView extends Component {
                         let dataSet = PivotUtil.getClonedData(this.clonedDataSet);
                         this.setProperties({ dataSourceSettings: { dataSource: dataSet } }, true);
                     }
-                    super.refresh();
+                    if (isBlazor()) {
+                        this.refresh();
+                    }
+                    else {
+                        super.refresh();
+                    }
                     this.updateClass();
                     break;
                 case 'enableValueSorting':
@@ -22216,7 +22227,13 @@ let PivotView = PivotView_1 = class PivotView extends Component {
         if (isBlazor()) {
             if (pivot.dataType === 'olap') {
                 if (pivot.dataSourceSettings.dataSource instanceof DataManager) {
-                    pivot.dataSourceSettings.dataSource = undefined;
+                    pivot.allowServerDataBinding = false;
+                    pivot.setProperties({
+                        dataSourceSettings: {
+                            dataSource: undefined
+                        }
+                    }, true);
+                    pivot.allowServerDataBinding = true;
                 }
             }
         }
@@ -26254,7 +26271,12 @@ let PivotFieldList = class PivotFieldList extends Component {
         for (let prop of Object.keys(newProp)) {
             switch (prop) {
                 case 'locale':
-                    super.refresh();
+                    if (isBlazor()) {
+                        break;
+                    }
+                    else {
+                        super.refresh();
+                    }
                     break;
                 case 'dataSourceSettings':
                     if (PivotUtil.isButtonIconRefesh(prop, oldProp, newProp)) {
@@ -26370,7 +26392,7 @@ let PivotFieldList = class PivotFieldList extends Component {
                 const this$ = this;
                 control.trigger(enginePopulated, eventArgs, (observedArgs) => {
                     this$.pivotFieldList = observedArgs.pivotFieldList;
-                    this$.olapEngineModule.pivotValues = isBlazor() ? this.engineModule.pivotValues : observedArgs.pivotValues;
+                    this$.olapEngineModule.pivotValues = isBlazor() ? this.olapEngineModule.pivotValues : observedArgs.pivotValues;
                     this$.notify(dataReady, {});
                     this$.trigger(dataBound);
                 });

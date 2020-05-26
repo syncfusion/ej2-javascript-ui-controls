@@ -7,6 +7,10 @@ import { TemplateType } from '../base/type';
 export class QuickInfoTemplates extends ChildProperty<QuickInfoTemplates> {
     /**
      * Template option to customize the header section of quick popup.
+     * The applicable template types are,
+     * * Both
+     * * Cell
+     * * Event
      *  @default 'Both'
      */
     @Property('Both')

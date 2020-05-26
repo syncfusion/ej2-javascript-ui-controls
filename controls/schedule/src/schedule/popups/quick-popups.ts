@@ -571,10 +571,11 @@ export class QuickPopups {
                 {},
                 headerData,
                 !isBlazor() ? { elementType: headerType.toLowerCase() } :
-                {   elementType: headerType.toLowerCase(),
-                    startTimeValue: util.addLocalOffset(headerData[this.parent.eventFields.startTime] as Date),
-                    endTimeValue: util.addLocalOffset(headerData[this.parent.eventFields.endTime] as Date)
-                },
+                    {
+                        elementType: headerType.toLowerCase(),
+                        startTimeValue: util.addLocalOffset(headerData[this.parent.eventFields.startTime] as Date),
+                        endTimeValue: util.addLocalOffset(headerData[this.parent.eventFields.endTime] as Date)
+                    },
                 true
             );
             let templateId: string = this.parent.element.id;
@@ -611,10 +612,11 @@ export class QuickPopups {
                 {},
                 data,
                 !isBlazor() ? { elementType: type.toLowerCase() } :
-                {   elementType: type.toLowerCase(),
-                    startTimeValue: util.addLocalOffset(data[this.parent.eventFields.startTime] as Date),
-                    endTimeValue: util.addLocalOffset(data[this.parent.eventFields.endTime] as Date)
-                },
+                    {
+                        elementType: type.toLowerCase(),
+                        startTimeValue: util.addLocalOffset(data[this.parent.eventFields.startTime] as Date),
+                        endTimeValue: util.addLocalOffset(data[this.parent.eventFields.endTime] as Date)
+                    },
                 true);
             let templateId: string = this.parent.element.id;
             let contentTemp: HTMLElement[] = [].slice.call(
@@ -680,12 +682,13 @@ export class QuickPopups {
                 {},
                 footerData,
                 !isBlazor() ? { elementType: footerType.toLowerCase() } :
-                {   elementType: footerType.toLowerCase(),
-                    startTimeValue: util.addLocalOffset(footerData[this.parent.eventFields.startTime] as Date),
-                    endTimeValue: util.addLocalOffset(footerData[this.parent.eventFields.endTime] as Date)
-                },
+                    {
+                        elementType: footerType.toLowerCase(),
+                        startTimeValue: util.addLocalOffset(footerData[this.parent.eventFields.startTime] as Date),
+                        endTimeValue: util.addLocalOffset(footerData[this.parent.eventFields.endTime] as Date)
+                    },
                 true
-                );
+            );
             let templateId: string = this.parent.element.id;
             let footerTemp: HTMLElement[] = [].slice.call(
                 this.parent.getQuickInfoTemplatesFooter()(footerArgs, this.parent, 'footer', templateId + '_footerTemplate', false));

@@ -2255,6 +2255,18 @@ export class MultiSelect extends DropDownBase implements IInput {
             e.preventDefault();
         }
     }
+    private multiCompiler(multiselectTemplate: string): boolean {
+        let checkTemplate: boolean = false;
+        if (multiselectTemplate) {
+            let exception: Object;
+            try {
+                checkTemplate = (document.querySelectorAll(multiselectTemplate).length) ? true : false;
+            } catch (exception) {
+                checkTemplate = false;
+            }
+        }
+        return checkTemplate;
+    }
     private getChip(
         data: string, value: string | number | boolean,
         e?: MouseEvent | KeyboardEventArgs): void {
@@ -2263,6 +2275,7 @@ export class MultiSelect extends DropDownBase implements IInput {
             className: CHIP,
             attrs: { 'data-value': <string>value, 'title': data }
         });
+        let compiledString: Function;
         let chipContent: HTMLElement = this.createElement('span', { className: CHIP_CONTENT });
         let chipClose: HTMLElement = this.createElement('span', { className: CHIP_CLOSE });
         if (this.mainData) {
@@ -2270,7 +2283,12 @@ export class MultiSelect extends DropDownBase implements IInput {
                 : this.getDataByValue(value);
         }
         if (this.valueTemplate && !isNullOrUndefined(itemData)) {
-            let compiledString: Function = compile(this.valueTemplate);
+            let valuecheck: boolean = this.multiCompiler(this.valueTemplate);
+            if (valuecheck) {
+                compiledString = compile(document.querySelector(this.valueTemplate).innerHTML.trim());
+            } else {
+                compiledString = compile(this.valueTemplate);
+            }
             for (let item of compiledString(itemData, null, null, this.valueTemplateId, this.isStringTemplate)) {
                 chipContent.appendChild(item);
             }
@@ -2452,7 +2470,12 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         this.header = this.createElement('div');
         addClass([this.header], HEADER);
-        compiledString = compile(this.headerTemplate);
+        let headercheck: boolean = this.multiCompiler(this.headerTemplate);
+        if (headercheck) {
+            compiledString = compile(document.querySelector(this.headerTemplate).innerHTML.trim());
+        } else {
+            compiledString = compile(this.headerTemplate);
+        }
         let elements: [Element] = compiledString({}, null, null, this.headerTemplateId, this.isStringTemplate);
         for (let temp: number = 0; temp < elements.length; temp++) {
             this.header.appendChild(elements[temp]);
@@ -2472,7 +2495,12 @@ export class MultiSelect extends DropDownBase implements IInput {
         }
         this.footer = this.createElement('div');
         addClass([this.footer], FOOTER);
-        compiledString = compile(this.footerTemplate);
+        let footercheck: boolean = this.multiCompiler(this.footerTemplate);
+        if (footercheck) {
+            compiledString = compile(document.querySelector(this.footerTemplate).innerHTML.trim());
+        } else {
+            compiledString = compile(this.footerTemplate);
+        }
         let elements: [Element] = compiledString({}, null, null, this.footerTemplateId, this.isStringTemplate);
         for (let temp: number = 0; temp < elements.length; temp++) {
             this.footer.appendChild(elements[temp]);
@@ -3577,7 +3605,8 @@ export class MultiSelect extends DropDownBase implements IInput {
      * @private
      */
     public onPropertyChanged(newProp: MultiSelectModel, oldProp: MultiSelectModel): void {
-        if (newProp.dataSource && !isNullOrUndefined(Object.keys(newProp.dataSource))) {
+        if (newProp.dataSource && !isNullOrUndefined(Object.keys(newProp.dataSource))
+        || newProp.query && !isNullOrUndefined(Object.keys(newProp.query))) {
             this.mainList = null;
             this.mainData = null;
             this.isFirstClick = false;

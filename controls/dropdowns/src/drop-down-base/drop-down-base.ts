@@ -567,6 +567,18 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         }
         return value as string;
     }
+    private templateCompiler(baseTemplate: string): boolean {
+        let checkTemplate: boolean = false;
+        if (baseTemplate) {
+            let exception: Object;
+            try {
+                checkTemplate = (document.querySelectorAll(baseTemplate).length) ? true : false;
+            } catch (exception) {
+                checkTemplate = false;
+            }
+        }
+        return checkTemplate;
+    }
     protected l10nUpdate(actionFailure?: boolean): void {
         let ele: Element = this.getModuleName() === 'listbox' ? this.ulElement : this.list;
         if (this.noRecordsTemplate !== 'No Records Found' || this.actionFailureTemplate !== 'The Request Failed') {
@@ -575,7 +587,12 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             let compiledString: Function;
             let templateId: string = actionFailure ? this.actionFailureTemplateId : this.noRecordsTemplateId;
             ele.innerHTML = '';
-            compiledString = compile(template);
+            let tempaltecheck: boolean = this.templateCompiler(template);
+            if (tempaltecheck) {
+                compiledString = compile(document.querySelector(template).innerHTML.trim());
+            } else {
+                compiledString = compile(template);
+            }
             for (let item of compiledString({}, null, null, templateId, this.isStringTemplate)) {
                 ele.appendChild(item);
             }
@@ -982,10 +999,19 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
             let dataSource: { [key: string]: Object }[] = <{ [key: string]: Object }[]>this.dataSource;
             let option: { [key: string]: Object } = { groupTemplateID: this.groupTemplateId, isStringTemplate: this.isStringTemplate };
             let headerItems: Element[] = <NodeListOf<Element> & Element[]>listEle.querySelectorAll('.' + dropDownBaseClasses.group);
-            let tempHeaders: Element[] = ListBase.renderGroupTemplate(
-                this.groupTemplate as string, <{ [key: string]: Object }[]>dataSource,
-                (this.fields as FieldSettingsModel & { properties: Object }).properties,
-                headerItems, option);
+            let groupcheck: boolean = this.templateCompiler(this.groupTemplate);
+            if (groupcheck) {
+                let groupValue: string = document.querySelector(this.groupTemplate).innerHTML.trim();
+                let tempHeaders: Element[] = ListBase.renderGroupTemplate(
+                    groupValue as string, <{ [key: string]: Object }[]>dataSource,
+                    (this.fields as FieldSettingsModel & { properties: Object }).properties,
+                    headerItems, option);
+            } else {
+                let tempHeaders: Element[] = ListBase.renderGroupTemplate(
+                    this.groupTemplate as string, <{ [key: string]: Object }[]>dataSource,
+                    (this.fields as FieldSettingsModel & { properties: Object }).properties,
+                    headerItems, option);
+            }
             this.DropDownBaseupdateBlazorTemplates(false, true, false, false, false, false, false, false);
         }
     }
@@ -1093,9 +1119,16 @@ export class DropDownBase extends Component<HTMLElement> implements INotifyPrope
         let option: { [key: string]: Object } = <{ [key: string]: Object }>this.listOption(dataSource, fields);
         option.templateID = this.itemTemplateId;
         option.isStringTemplate = this.isStringTemplate;
-        return ListBase.renderContentTemplate(
+        let itemcheck: boolean = this.templateCompiler(this.itemTemplate);
+        if (itemcheck) {
+            let itemValue: string = document.querySelector(this.itemTemplate).innerHTML.trim();
+            return ListBase.renderContentTemplate(
+                this.createElement, itemValue, dataSource, (fields as FieldSettingsModel & { properties: Object }).properties, option);
+        } else {
+            return ListBase.renderContentTemplate(
             this.createElement, this.itemTemplate, dataSource, (fields as FieldSettingsModel & { properties: Object }).properties, option);
-    }
+        }
+    };
 
     protected typeOfData(items:
         { [key: string]: Object }[] | string[] | number[] | boolean[]): { [key: string]: Object } {

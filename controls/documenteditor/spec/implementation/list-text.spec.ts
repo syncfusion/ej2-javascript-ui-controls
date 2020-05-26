@@ -862,7 +862,7 @@ describe('Restart Numbering at level number 1', () => {
         editor.documentHelper.selectionLineWidget = editor.selection.start.currentWidget;
         editor.selection.selectListText();
         editor.editor.applyRestartNumbering(editor.selection);
-        expect(editor.selection.paragraphFormat.listText).toBe('I.');
+        expect(editor.selection.paragraphFormat.listText).toBe('a.');
     });
     it('undo after Restart Numbering apply at list text', () => {
         editor.editorHistory.undo();
@@ -870,7 +870,7 @@ describe('Restart Numbering at level number 1', () => {
     });
     it('redo after Restart Numbering apply at list text', () => {
         editor.editorHistory.redo();
-        expect(editor.selection.paragraphFormat.listText).toBe('I.');
+        expect(editor.selection.paragraphFormat.listText).toBe('a.');
     });
     it('Multiple undo and redo after Restart Numbering at list text', () => {
         let i: number = 0;
@@ -992,7 +992,7 @@ describe('Continue Numbering at level number 1', () => {
     });
     it('undo after Continue Numbering apply at list text', () => {
         editor.editorHistory.undo();
-        expect(editor.selection.paragraphFormat.listText).toBe('I.');
+        expect(editor.selection.paragraphFormat.listText).toBe('a.');
     });
     it('redo after Continue Numbering apply at list text', () => {
         editor.editorHistory.redo();
@@ -1006,7 +1006,7 @@ describe('Continue Numbering at level number 1', () => {
             i++;
         }
         editor.editorHistory.undo();
-        expect(editor.selection.paragraphFormat.listText).toBe('I.');
+        expect(editor.selection.paragraphFormat.listText).toBe('a.');
     });
 });
 describe('Continue Numbering at level number 1', () => {

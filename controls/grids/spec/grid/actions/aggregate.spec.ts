@@ -1522,4 +1522,50 @@ describe('Aggregates Functionality testing', () => {
         });
     });
 
+    describe('EJ2-39551 - Show column names for aria-label in the summary row', () => {
+        let grid: Grid;
+        beforeAll((done: Function) => {
+            grid = createGrid(
+                {
+                    dataSource: data,
+                    allowPaging: true,
+                    pageSettings: { pageCount: 5 },
+                    columns: [
+                        { field: 'OrderID', headerText: 'Order ID', width: 120, textAlign: 'Right' },
+                        { field: 'Freight', width: 120, format: 'C2', textAlign: 'Right' },
+                        { field: 'OrderDate', headerText: 'Order Date', width: 130, format: 'yMd', textAlign: 'Right' },
+                        { field: 'ShipCountry', headerText: 'Ship Country', width: 150 },
+                        { field: 'ShipCity', headerText: 'Ship City', width: 150 }
+                    ],
+                    aggregates: [{
+                        columns: [{
+                                type: 'Sum',
+                                field: 'Freight',
+                                format: 'C2',
+                                footerTemplate: 'Sum: ${Sum}'
+                            }]
+                    },
+                    {
+                        columns: [{
+                                type: 'Average',
+                                field: 'Freight',
+                                format: 'C2',
+                                footerTemplate: 'Average: ${Average}'
+                            }]
+                    }]
+                },done);
+        });
+        it('check aria-label summary-cell', () => {
+            let rows = ((grid.getFooterContentTable() as HTMLTableElement).tFoot.rows[0] as HTMLTableRowElement);
+            expect(rows.cells[0].getAttribute('aria-label').toString().indexOf('Order ID')).toBeGreaterThan(0);
+            expect(rows.cells[1].getAttribute('aria-label').toString().indexOf('Freight')).toBeGreaterThan(0);
+            expect(rows.cells[2].getAttribute('aria-label').toString().indexOf('Order Date')).toBeGreaterThan(0);
+            expect(rows.cells[3].getAttribute('aria-label').toString().indexOf('Ship Country')).toBeGreaterThan(0);
+        });
+        afterAll(() => {
+            destroy(grid);
+            grid = null;
+        });
+    });
+
 });

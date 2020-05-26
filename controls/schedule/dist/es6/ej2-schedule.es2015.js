@@ -5660,7 +5660,8 @@ class QuickPopups {
         let headerTemplate = createElement('div', { className: POPUP_HEADER_CLASS });
         if (this.isQuickTemplate(headerType) && this.parent.quickInfoTemplates.header) {
             let headerArgs = extend({}, headerData, !isBlazor() ? { elementType: headerType.toLowerCase() } :
-                { elementType: headerType.toLowerCase(),
+                {
+                    elementType: headerType.toLowerCase(),
                     startTimeValue: addLocalOffset(headerData[this.parent.eventFields.startTime]),
                     endTimeValue: addLocalOffset(headerData[this.parent.eventFields.endTime])
                 }, true);
@@ -5694,7 +5695,8 @@ class QuickPopups {
         let contentTemplate = createElement('div', { className: POPUP_CONTENT_CLASS });
         if (this.isQuickTemplate(type) && this.parent.quickInfoTemplates.content) {
             let contentArgs = extend({}, data, !isBlazor() ? { elementType: type.toLowerCase() } :
-                { elementType: type.toLowerCase(),
+                {
+                    elementType: type.toLowerCase(),
                     startTimeValue: addLocalOffset(data[this.parent.eventFields.startTime]),
                     endTimeValue: addLocalOffset(data[this.parent.eventFields.endTime])
                 }, true);
@@ -5758,7 +5760,8 @@ class QuickPopups {
         let footerTemplate = createElement('div', { className: POPUP_FOOTER_CLASS });
         if (this.isQuickTemplate(footerType) && this.parent.quickInfoTemplates.footer) {
             let footerArgs = extend({}, footerData, !isBlazor() ? { elementType: footerType.toLowerCase() } :
-                { elementType: footerType.toLowerCase(),
+                {
+                    elementType: footerType.toLowerCase(),
                     startTimeValue: addLocalOffset(footerData[this.parent.eventFields.startTime]),
                     endTimeValue: addLocalOffset(footerData[this.parent.eventFields.endTime])
                 }, true);
@@ -12882,6 +12885,8 @@ let Schedule = class Schedule extends Component {
     }
     /**
      * Refreshes the Scheduler
+     * @method refresh
+     * @returns {void}
      */
     refresh() {
         if (!this.isServerRenderer()) {
@@ -12990,12 +12995,16 @@ let Schedule = class Schedule extends Component {
     }
     /**
      * Allows to show the spinner on schedule at the required scenarios.
+     * @method showSpinner
+     * @returns {void}
      */
     showSpinner() {
         showSpinner(this.element);
     }
     /**
      * When the spinner is shown manually using `showSpinner` method, it can be hidden using this `hideSpinner` method.
+     * @method hideSpinner
+     * @returns {void}
      */
     hideSpinner() {
         hideSpinner(this.element);
@@ -16473,8 +16482,10 @@ class DragAndDrop extends ActionBase {
         if (this.isAllowDrop(e)) {
             return;
         }
-        let dragArgs = { cancel: false, data: this.getChangedData(),
-            event: e, element: this.actionObj.element, target: e.target };
+        let dragArgs = {
+            cancel: false, data: this.getChangedData(),
+            event: e, element: this.actionObj.element, target: e.target
+        };
         this.parent.trigger(dragStop, dragArgs, (dragEventArgs) => {
             if (dragEventArgs.cancel) {
                 return;
@@ -17522,7 +17533,7 @@ class ViewBase {
             return;
         }
         let scrollWrap = this.getContentAreaElement();
-        let elementSelector = `.${WORK_CELLS_CLASS}[data-date="${resetTime(new Date(+scrollDate)).getTime()}"]`;
+        let elementSelector = `.${WORK_CELLS_CLASS}[data-date="${this.parent.getMsFromDate(new Date(resetTime(new Date(+scrollDate)).getTime()))}"]`;
         let dateElement = scrollWrap.querySelector(elementSelector);
         if (this.parent.currentView === 'Month' && dateElement) {
             scrollWrap.scrollTop = dateElement.offsetTop;

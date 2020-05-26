@@ -317,6 +317,18 @@ let DropDownBase = class DropDownBase extends Component {
         }
         return value;
     }
+    templateCompiler(baseTemplate) {
+        let checkTemplate = false;
+        if (baseTemplate) {
+            try {
+                checkTemplate = (document.querySelectorAll(baseTemplate).length) ? true : false;
+            }
+            catch (exception) {
+                checkTemplate = false;
+            }
+        }
+        return checkTemplate;
+    }
     l10nUpdate(actionFailure) {
         let ele = this.getModuleName() === 'listbox' ? this.ulElement : this.list;
         if (this.noRecordsTemplate !== 'No Records Found' || this.actionFailureTemplate !== 'The Request Failed') {
@@ -325,7 +337,13 @@ let DropDownBase = class DropDownBase extends Component {
             let compiledString;
             let templateId = actionFailure ? this.actionFailureTemplateId : this.noRecordsTemplateId;
             ele.innerHTML = '';
-            compiledString = compile(template);
+            let tempaltecheck = this.templateCompiler(template);
+            if (tempaltecheck) {
+                compiledString = compile(document.querySelector(template).innerHTML.trim());
+            }
+            else {
+                compiledString = compile(template);
+            }
             for (let item of compiledString({}, null, null, templateId, this.isStringTemplate)) {
                 ele.appendChild(item);
             }
@@ -709,7 +727,14 @@ let DropDownBase = class DropDownBase extends Component {
             let dataSource = this.dataSource;
             let option = { groupTemplateID: this.groupTemplateId, isStringTemplate: this.isStringTemplate };
             let headerItems = listEle.querySelectorAll('.' + dropDownBaseClasses.group);
-            let tempHeaders = ListBase.renderGroupTemplate(this.groupTemplate, dataSource, this.fields.properties, headerItems, option);
+            let groupcheck = this.templateCompiler(this.groupTemplate);
+            if (groupcheck) {
+                let groupValue = document.querySelector(this.groupTemplate).innerHTML.trim();
+                let tempHeaders = ListBase.renderGroupTemplate(groupValue, dataSource, this.fields.properties, headerItems, option);
+            }
+            else {
+                let tempHeaders = ListBase.renderGroupTemplate(this.groupTemplate, dataSource, this.fields.properties, headerItems, option);
+            }
             this.DropDownBaseupdateBlazorTemplates(false, true, false, false, false, false, false, false);
         }
     }
@@ -816,8 +841,16 @@ let DropDownBase = class DropDownBase extends Component {
         let option = this.listOption(dataSource, fields);
         option.templateID = this.itemTemplateId;
         option.isStringTemplate = this.isStringTemplate;
-        return ListBase.renderContentTemplate(this.createElement, this.itemTemplate, dataSource, fields.properties, option);
+        let itemcheck = this.templateCompiler(this.itemTemplate);
+        if (itemcheck) {
+            let itemValue = document.querySelector(this.itemTemplate).innerHTML.trim();
+            return ListBase.renderContentTemplate(this.createElement, itemValue, dataSource, fields.properties, option);
+        }
+        else {
+            return ListBase.renderContentTemplate(this.createElement, this.itemTemplate, dataSource, fields.properties, option);
+        }
     }
+    ;
     typeOfData(items) {
         let item = { typeof: null, item: null };
         for (let i = 0; (!isNullOrUndefined(items) && i < items.length); i++) {
@@ -1898,8 +1931,8 @@ let DropDownList = class DropDownList extends DropDownBase {
                 this.searchKeyEvent = e;
                 this.renderList();
             }
-            if (!(this.isServerBlazor && e.action === 'open') && isNullOrUndefined(this.list) || (!isNullOrUndefined(this.liCollections) &&
-                isNavigation && this.liCollections.length === 0) || this.isRequested) {
+            if (!(this.isServerBlazor && (e.action === 'open' || e.action === 'space')) && isNullOrUndefined(this.list) ||
+                (!isNullOrUndefined(this.liCollections) && isNavigation && this.liCollections.length === 0) || this.isRequested) {
                 if (!(this.isServerBlazor && isNavAction)) {
                     return;
                 }
@@ -2315,6 +2348,18 @@ let DropDownList = class DropDownList extends DropDownBase {
             this.targetElement().removeAttribute('aria-live');
         }
     }
+    dropdownCompiler(dropdownTemplate) {
+        let checkTemplate = false;
+        if (dropdownTemplate) {
+            try {
+                checkTemplate = (document.querySelectorAll(dropdownTemplate).length) ? true : false;
+            }
+            catch (exception) {
+                checkTemplate = false;
+            }
+        }
+        return checkTemplate;
+    }
     setValueTemplate() {
         let compiledString;
         if (!this.valueTempElement) {
@@ -2324,7 +2369,13 @@ let DropDownList = class DropDownList extends DropDownBase {
         }
         this.valueTempElement.innerHTML = '';
         let templateData = (isBlazor()) ? JSON.parse(JSON.stringify(this.itemData)) : this.itemData;
-        compiledString = compile(this.valueTemplate);
+        let valuecheck = this.dropdownCompiler(this.valueTemplate);
+        if (valuecheck) {
+            compiledString = compile(document.querySelector(this.valueTemplate).innerHTML.trim());
+        }
+        else {
+            compiledString = compile(this.valueTemplate);
+        }
         for (let item of compiledString(templateData, null, null, this.valueTemplateId, this.isStringTemplate)) {
             this.valueTempElement.appendChild(item);
         }
@@ -3402,7 +3453,13 @@ let DropDownList = class DropDownList extends DropDownBase {
             this.footer = this.createElement('div');
             addClass([this.footer], dropDownListClasses.footer);
         }
-        compiledString = compile(this.footerTemplate);
+        let footercheck = this.dropdownCompiler(this.footerTemplate);
+        if (footercheck) {
+            compiledString = compile(document.querySelector(this.footerTemplate).innerHTML.trim());
+        }
+        else {
+            compiledString = compile(this.footerTemplate);
+        }
         for (let item of compiledString({}, null, null, this.footerTemplateId, this.isStringTemplate)) {
             this.footer.appendChild(item);
         }
@@ -3418,7 +3475,13 @@ let DropDownList = class DropDownList extends DropDownBase {
             this.header = this.createElement('div');
             addClass([this.header], dropDownListClasses.header);
         }
-        compiledString = compile(this.headerTemplate);
+        let headercheck = this.dropdownCompiler(this.headerTemplate);
+        if (headercheck) {
+            compiledString = compile(document.querySelector(this.headerTemplate).innerHTML.trim());
+        }
+        else {
+            compiledString = compile(this.headerTemplate);
+        }
         for (let item of compiledString({}, null, null, this.headerTemplateId, this.isStringTemplate)) {
             this.header.appendChild(item);
         }
@@ -9592,12 +9655,25 @@ let MultiSelect = class MultiSelect extends DropDownBase {
             e.preventDefault();
         }
     }
+    multiCompiler(multiselectTemplate) {
+        let checkTemplate = false;
+        if (multiselectTemplate) {
+            try {
+                checkTemplate = (document.querySelectorAll(multiselectTemplate).length) ? true : false;
+            }
+            catch (exception) {
+                checkTemplate = false;
+            }
+        }
+        return checkTemplate;
+    }
     getChip(data, value, e) {
         let itemData = { text: value, value: value };
         let chip = this.createElement('span', {
             className: CHIP$1,
             attrs: { 'data-value': value, 'title': data }
         });
+        let compiledString;
         let chipContent = this.createElement('span', { className: CHIP_CONTENT$1 });
         let chipClose = this.createElement('span', { className: CHIP_CLOSE$1 });
         if (this.mainData) {
@@ -9605,7 +9681,13 @@ let MultiSelect = class MultiSelect extends DropDownBase {
                 : this.getDataByValue(value);
         }
         if (this.valueTemplate && !isNullOrUndefined(itemData)) {
-            let compiledString = compile(this.valueTemplate);
+            let valuecheck = this.multiCompiler(this.valueTemplate);
+            if (valuecheck) {
+                compiledString = compile(document.querySelector(this.valueTemplate).innerHTML.trim());
+            }
+            else {
+                compiledString = compile(this.valueTemplate);
+            }
             for (let item of compiledString(itemData, null, null, this.valueTemplateId, this.isStringTemplate)) {
                 chipContent.appendChild(item);
             }
@@ -9799,7 +9881,13 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         }
         this.header = this.createElement('div');
         addClass([this.header], HEADER$1);
-        compiledString = compile(this.headerTemplate);
+        let headercheck = this.multiCompiler(this.headerTemplate);
+        if (headercheck) {
+            compiledString = compile(document.querySelector(this.headerTemplate).innerHTML.trim());
+        }
+        else {
+            compiledString = compile(this.headerTemplate);
+        }
         let elements = compiledString({}, null, null, this.headerTemplateId, this.isStringTemplate);
         for (let temp = 0; temp < elements.length; temp++) {
             this.header.appendChild(elements[temp]);
@@ -9820,7 +9908,13 @@ let MultiSelect = class MultiSelect extends DropDownBase {
         }
         this.footer = this.createElement('div');
         addClass([this.footer], FOOTER$1);
-        compiledString = compile(this.footerTemplate);
+        let footercheck = this.multiCompiler(this.footerTemplate);
+        if (footercheck) {
+            compiledString = compile(document.querySelector(this.footerTemplate).innerHTML.trim());
+        }
+        else {
+            compiledString = compile(this.footerTemplate);
+        }
         let elements = compiledString({}, null, null, this.footerTemplateId, this.isStringTemplate);
         for (let temp = 0; temp < elements.length; temp++) {
             this.footer.appendChild(elements[temp]);
@@ -10956,7 +11050,8 @@ let MultiSelect = class MultiSelect extends DropDownBase {
      * @private
      */
     onPropertyChanged(newProp, oldProp) {
-        if (newProp.dataSource && !isNullOrUndefined(Object.keys(newProp.dataSource))) {
+        if (newProp.dataSource && !isNullOrUndefined(Object.keys(newProp.dataSource))
+            || newProp.query && !isNullOrUndefined(Object.keys(newProp.query))) {
             this.mainList = null;
             this.mainData = null;
             this.isFirstClick = false;

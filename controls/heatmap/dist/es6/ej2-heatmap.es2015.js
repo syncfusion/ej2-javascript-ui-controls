@@ -4563,6 +4563,7 @@ class Legend {
             let text;
             this.legendLabelTooltip = [];
             let elementSize;
+            let isColorRange = heatMap.isColorRange;
             let colorCollection = heatMap.legendColorCollection;
             if (heatMap.enableCanvasRendering) {
                 let ctx = heatMap.canvasRenderer.ctx;
@@ -4592,12 +4593,11 @@ class Legend {
                         labelX = this.segmentCollections[i];
                     }
                     labelY = rect.y + rect.height + this.labelPadding;
-                    anchor = ((Math.round(value * 100) / 100) === 0 || (i === 0 && heatMap.paletteSettings.type === 'Fixed')) ? 'start' :
-                        (((Math.round(value * 100) / 100) === 100 && heatMap.paletteSettings.type === 'Gradient') ||
-                            (Math.round(heatMap.dataSourceMaxValue * 100) / 100) === colorCollection[i].value &&
-                                heatMap.legendSettings.enableSmartLegend) || (heatMap.legendSettings.enableSmartLegend &&
-                            heatMap.paletteSettings.type === 'Fixed' &&
-                            heatMap.legendSettings.labelDisplayType === 'Edge') ? 'end' : 'middle';
+                    anchor = (((Math.round(value * 100) / 100) === 0 && !isColorRange) || (heatMap.paletteSettings.type === 'Fixed' &&
+                        i === 0)) ? 'start' : (((Math.round(value * 100) / 100) === 100 && heatMap.paletteSettings.type === 'Gradient' &&
+                        !isColorRange) || (Math.round(heatMap.dataSourceMaxValue * 100) / 100) === colorCollection[i].value &&
+                        heatMap.legendSettings.enableSmartLegend) || (heatMap.legendSettings.enableSmartLegend &&
+                        heatMap.paletteSettings.type === 'Fixed' && heatMap.legendSettings.labelDisplayType === 'Edge') ? 'end' : 'middle';
                     dominantBaseline = 'hanging';
                 }
                 else {
@@ -4613,8 +4613,9 @@ class Legend {
                     else {
                         labelY = this.segmentCollections[i];
                     }
-                    dominantBaseline = ((Math.round(value * 100) / 100) === 0 || (i === 0 && heatMap.paletteSettings.type === 'Fixed')) ?
-                        'hanging' : (((Math.round(value * 100) / 100) === 100 && heatMap.paletteSettings.type === 'Gradient') ||
+                    dominantBaseline = (((Math.round(value * 100) / 100) === 0 && !isColorRange) || (i === 0 &&
+                        heatMap.paletteSettings.type === 'Fixed')) ? 'hanging' : (((Math.round(value * 100) / 100) === 100 &&
+                        !isColorRange && heatMap.paletteSettings.type === 'Gradient') ||
                         (Math.round(heatMap.dataSourceMaxValue * 100) / 100) === colorCollection[i].value &&
                             heatMap.legendSettings.enableSmartLegend) || (heatMap.legendSettings.enableSmartLegend &&
                         heatMap.legendSettings.labelDisplayType === 'Edge' &&
@@ -5240,13 +5241,14 @@ class Legend {
                     let previousSegmentWidth = (segmentWidth[i] - segmentWidth[i - 1]) / 2;
                     let nextSegmentWidth = (segmentWidth[i + 1] - segmentWidth[i]) / 2;
                     if (i === colorCollection.length - 1) {
-                        textWrapWidth = previousSegmentWidth;
+                        textWrapWidth = this.heatMap.isColorRange ? (legendRect.width - segmentWidth[i - 1]) / 2 : previousSegmentWidth;
                     }
                     else if (i === 0) {
                         textWrapWidth = nextSegmentWidth;
                     }
                     else {
-                        textWrapWidth = previousSegmentWidth < nextSegmentWidth ? previousSegmentWidth : nextSegmentWidth;
+                        textWrapWidth = (previousSegmentWidth < nextSegmentWidth && !this.heatMap.isColorRange) ?
+                            previousSegmentWidth : nextSegmentWidth;
                     }
                 }
                 else {
@@ -6795,11 +6797,19 @@ let HeatMap = class HeatMap extends Component {
         let width = stringToNumber(this.width, this.element.offsetWidth) || this.element.offsetWidth || 600;
         let height = stringToNumber(this.height, this.element.offsetHeight) || this.element.offsetHeight || 450;
         this.availableSize = new Size(width, height);
-        let align = document.getElementById(this.element.id).align;
-        if (align === 'center') {
-            let containerWidth = this.availableSize.width.toString();
-            this.element.style.width = containerWidth + 'px';
-            this.element.style.margin = '0 auto';
+        let alignElement = this.element;
+        while (alignElement.parentNode) {
+            if (alignElement.tagName === 'BODY') {
+                break;
+            }
+            let align = alignElement.align;
+            if (align === 'center') {
+                let containerWidth = this.availableSize.width.toString();
+                this.element.style.width = containerWidth + 'px';
+                this.element.style.margin = '0 auto';
+                break;
+            }
+            alignElement = alignElement.parentElement;
         }
     }
     renderTitle() {
@@ -7242,7 +7252,6 @@ let HeatMap = class HeatMap extends Component {
     heatMapMouseMove(e) {
         let pageX;
         let pageY;
-        let tooltipText;
         let touchArg;
         let elementRect = this.element.getBoundingClientRect();
         if (e.type === 'touchmove' || e.type === 'touchstart') {
@@ -7259,6 +7268,15 @@ let HeatMap = class HeatMap extends Component {
         pageX -= elementRect.left;
         pageY -= elementRect.top;
         this.setMouseXY(pageX, pageY);
+        this.mouseAction(e, pageX, pageY, touchArg, elementRect);
+        return true;
+    }
+    /**
+     * Handles the mouse Move.
+     * @return {boolean}
+     */
+    mouseAction(e, pageX, pageY, touchArg, elementRect) {
+        let tooltipText;
         if (e.target && e.target.id) {
             let isheatmapRect = this.isHeatmapRect(pageX, pageY);
             if (this.legendModule) {

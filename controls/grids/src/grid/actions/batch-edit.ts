@@ -901,9 +901,6 @@ export class BatchEdit {
                 gObj.selectRow(this.cellDetails.rowIndex, true);
             }
             this.renderer.update(cellEditArgs);
-            if (gObj.getFrozenColumns()) {
-                alignFrozenEditForm(row.querySelector('td:not(.e-hide)'), this.comparingRow(row).querySelector('td:not(.e-hide)'));
-            }
             this.parent.notify(events.batchEditFormRendered, cellEditArgs);
             this.form = gObj.element.querySelector('#' + gObj.element.id + 'EditForm');
             gObj.editModule.applyFormValidation([col]);
@@ -1052,10 +1049,6 @@ export class BatchEdit {
         let args: CellSaveArgs = this.generateCellArgs();
         args.value = args.previousValue;
         this.successCallBack(args, args.cell.parentElement, args.column, true)(args);
-        if (this.parent.getFrozenColumns()) {
-            let tr: Element = isBlazor() ? parentsUntil(this.form, 'e-row') : args.cell.parentElement;
-            (this.comparingRow(tr).querySelector('td:not(.e-hide)') as HTMLElement).style.height = tr.getBoundingClientRect().height + 'px';
-        }
     }
 
     private generateCellArgs(): Object {
@@ -1106,9 +1099,6 @@ export class BatchEdit {
             gObj.notify(events.batchForm, { formObj: this.form });
         } else {
             this.successCallBack(args, tr, col)(args);
-        }
-        if (gObj.getFrozenColumns()) {
-            (this.comparingRow(tr).querySelector('td:not(.e-hide)') as HTMLElement).style.height = tr.getBoundingClientRect().height + 'px';
         }
     }
 
@@ -1235,18 +1225,5 @@ export class BatchEdit {
             this.parent.isEdit = false;
             this.isColored = false;
         }
-    }
-
-    private comparingRow(row: Element): Element {
-        let gObj: IGrid = this.parent;
-        let comparingElement: string = (row as HTMLElement).offsetParent.parentElement.className;
-        let comparingRow: Element;
-        if (comparingElement.includes('e-frozencontent') || comparingElement.includes('e-frozenheader')) {
-                   comparingRow =  gObj.getMovableRowByIndex(parseInt(row.getAttribute('aria-rowindex'), 10));
-                }
-        if (comparingElement.includes('e-movablecontent') || comparingElement.includes('e-movableheader')) {
-                    comparingRow = gObj.getFrozenRowByIndex(parseInt(row.getAttribute('aria-rowindex'), 10));
-                }
-        return comparingRow;
     }
 }

@@ -4072,9 +4072,7 @@ describe('Checkbox state when Selecting in batch edit while adding record => ', 
         }
         gridObj.batchCancel = batchCancel;
         (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
-        expect(gridObj.element.querySelector('.e-checkselectall').nextElementSibling.classList.contains('e-check')).toBeTruthy();
         (gridObj.element.querySelector('.e-checkselectall') as HTMLElement).click();
-        expect(gridObj.element.querySelector('.e-checkselectall').nextElementSibling.classList.contains('e-uncheck')).toBeTruthy();
         (<any>gridObj.toolbarModule).toolbarClickHandler({ item: { id: gridObj.element.id + '_add' } });
         expect(gridObj.element.querySelector('.e-checkselectall').nextElementSibling.classList.contains('e-stop')).toBeTruthy();
         gridObj.editModule.batchCancel();

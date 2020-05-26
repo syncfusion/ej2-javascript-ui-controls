@@ -6495,8 +6495,8 @@ class Layout {
             let val = i % 3;
             if (abstractList.levels[0].listLevelPattern === 'Bullet') {
                 listLevel.listLevelPattern = 'Bullet';
-                listLevel.numberFormat = val === 0 ? '\uf0b7' : val === 1 ? '\uf0a7' : '\uf0d8';
-                listLevel.characterFormat.fontFamily = listLevel.numberFormat === '\uf0a7' || '\uf0d8' ? 'Wingdings' : 'Symbol';
+                listLevel.numberFormat = val === 0 ? '\uf0b7' : val === 1 ? '\uf06f' + '\u0020' : '\uf0a7';
+                listLevel.characterFormat.fontFamily = listLevel.numberFormat === '\uf0a7' ? 'Wingdings' : 'Symbol';
             }
             else {
                 listLevel.listLevelPattern = this.getListLevelPattern(val);
@@ -6993,7 +6993,7 @@ class Layout {
             }
             paragraphWidget.containerWidget = nextBody;
             this.viewer.updateClientAreaLocation(paragraphWidget, this.viewer.clientActiveArea);
-            if (index === 0) {
+            if (index === 0 && !(line.children[0] instanceof ListTextElementBox)) {
                 let firstLineIndent = -HelperMethods.convertPointToPixel(paragraphWidget.paragraphFormat.firstLineIndent);
                 this.viewer.updateClientWidth(firstLineIndent);
             }
@@ -7519,9 +7519,7 @@ class Layout {
         let firstLineIndent = HelperMethods.convertPointToPixel(paragraph.paragraphFormat.firstLineIndent);
         if (!isNullOrUndefined(element) && lineWidget.isFirstLine()) {
             clientWidth = this.viewer.clientArea.x + firstLineIndent;
-            if (!(element instanceof ListTextElementBox)) {
-                clientActiveX = clientActiveX + firstLineIndent;
-            }
+            clientActiveX = clientActiveX + firstLineIndent;
         }
         else {
             clientWidth = this.viewer.clientArea.x;
@@ -8639,7 +8637,7 @@ class Layout {
             }
             // tslint:disable-next-line:max-line-length
             if ((viewer instanceof PageLayoutViewer && viewer.visiblePages.indexOf(page) !== -1) || isUpdateVerticalPosition) {
-                this.updateCellVerticalPosition(cellWidget, false, false);
+                this.updateCellVerticalPosition(cellWidget, false, cellWidget.ownerTable.isInsideTable);
             }
             //Renders the current table row contents, after relayout based on editing.
             // if (viewer instanceof PageLayoutViewer && (viewer as PageLayoutViewer).visiblePages.indexOf(page) !== -1) {
@@ -8916,13 +8914,13 @@ class Layout {
             case 0:
                 return 'Arabic';
             case 1:
-                return 'UpRoman';
+                return 'LowLetter';
             case 2:
                 return 'LowRoman';
             case 3:
                 return 'UpLetter';
             case 4:
-                return 'LowLetter';
+                return 'UpRoman';
             case 5:
                 return 'Ordinal';
             case 6:
@@ -31167,6 +31165,10 @@ class TextPosition {
             // tslint:disable-next-line:max-line-length
             this.getNextWordOffsetFieldEnd(inline, indexInInline, type, isInField, endSelection, endPosition, excludeSpace);
         }
+        else if (inline instanceof CommentCharacterElementBox) {
+            // tslint:disable-next-line:max-line-length
+            this.getNextWordOffsetComment(inline, indexInInline, type, isInField, endSelection, endPosition, excludeSpace);
+        }
     }
     /**
      * get next word offset from field begin
@@ -31269,6 +31271,10 @@ class TextPosition {
                 // tslint:disable-next-line:max-line-length
                 let txt = indexInInline > 0 && span.text.length - 1 >= indexInInline ? span.text.slice(indexInInline, span.length) : span.text;
                 wordEndIndex = HelperMethods.indexOfAny(txt, HelperMethods.wordSplitCharacters);
+                if (wordEndIndex === -1 && span.nextNode instanceof CommentCharacterElementBox &&
+                    isNullOrUndefined(span.nextNode.nextNode)) {
+                    wordEndIndex = span.length;
+                }
                 if (wordEndIndex !== -1) {
                     if (isInField) {
                         endSelection = false;
@@ -31322,6 +31328,16 @@ class TextPosition {
     getNextWordOffsetFieldSeparator(fieldSeparator, indexInInline, type, isInField, endSelection, endPosition, excludeSpace) {
         if (!isNullOrUndefined(fieldSeparator.nextNode)) {
             this.getNextWordOffset(fieldSeparator.nextNode, 0, type, isInField, endSelection, endPosition, excludeSpace);
+        }
+    }
+    /**
+     * get next word offset from comment
+     * @private
+     */
+    // tslint:disable-next-line:max-line-length
+    getNextWordOffsetComment(comment, indexInInline, type, isInField, endSelection, endPosition, excludeSpace) {
+        if (!isNullOrUndefined(comment.nextNode)) {
+            this.getNextWordOffset(comment.nextNode, 0, type, isInField, endSelection, endPosition, excludeSpace);
         }
     }
     /**
@@ -31381,6 +31397,10 @@ class TextPosition {
         else if (inline instanceof ListTextElementBox && inline.previousNode) {
             // tslint:disable-next-line:max-line-length
             this.getPreviousWordOffsetSpan(inline.previousNode, selection, indexInInline, type, isInField, isStarted, endSelection, endPosition);
+        }
+        else if (inline instanceof CommentCharacterElementBox) {
+            // tslint:disable-next-line:max-line-length
+            this.getPreviousWordOffsetComment(inline, selection, indexInInline, type, isInField, isStarted, endSelection, endPosition);
         }
     }
     // tslint:disable-next-line:max-line-length
@@ -31442,6 +31462,26 @@ class TextPosition {
     // tslint:disable-next-line:max-line-length
     getPreviousWordOffsetFieldSeparator(fieldSeparator, selection, indexInInline, type, isInField, isStarted, endSelection, endPosition) {
         this.getPreviousWordOffsetFieldBegin(fieldSeparator.fieldBegin, selection, fieldSeparator.fieldBegin.length, type, isInField, isStarted, endSelection, endPosition);
+    }
+    /* get previous word offset from comment
+    * @private
+    */
+    // tslint:disable-next-line:max-line-length
+    getPreviousWordOffsetComment(comment, selection, indexInInline, type, isInField, isStarted, endSelection, endPosition) {
+        if (comment.previousNode) {
+            let inline = comment.previousNode;
+            if (comment.previousNode instanceof TextElementBox
+                && HelperMethods.lastIndexOfAny(inline.text, HelperMethods.wordSplitCharacters) !== inline.text.length - 1) {
+                this.getPreviousWordOffset(inline, selection, indexInInline, type, isInField, isStarted, endSelection, endPosition);
+            }
+            else {
+                // tslint:disable-next-line:max-line-length
+                this.getPreviousWordOffset(comment.previousNode, selection, comment.previousNode.length, type, isInField, isStarted, endSelection, endPosition);
+            }
+        }
+        else {
+            endPosition.setPositionParagraph(comment.line, selection.getStartLineOffset(comment.line));
+        }
     }
     /**
      * get previous word offset from field begin
@@ -31536,6 +31576,10 @@ class TextPosition {
                 }
                 let txt = span.text.length > indexInInline ? span.text.slice(0, indexInInline) : span.text;
                 wordStartIndex = HelperMethods.lastIndexOfAny(txt, HelperMethods.wordSplitCharacters);
+                // tslint:disable-next-line:max-line-length
+                if (wordStartIndex === -1 && span.previousElement instanceof CommentCharacterElementBox && isNullOrUndefined(span.previousNode.previousNode)) {
+                    wordStartIndex = span.length;
+                }
                 if (wordStartIndex !== -1) {
                     if (isInField) {
                         endSelection = false;
@@ -41200,7 +41244,7 @@ class Selection {
         if (bookmarks.containsKey(name)) {
             //bookmark start element
             let bookmrkElmnt = bookmarks.get(name);
-            let offset = bookmrkElmnt.line.getOffset(bookmrkElmnt, 1);
+            let offset = bookmrkElmnt.line.getOffset(bookmrkElmnt, 0);
             let startPosition = new TextPosition(this.owner);
             startPosition.setPositionParagraph(bookmrkElmnt.line, offset);
             if (moveToStart) {
@@ -41209,7 +41253,7 @@ class Selection {
             else {
                 //bookmark end element
                 let bookmrkEnd = bookmrkElmnt.reference;
-                let endoffset = bookmrkEnd.line.getOffset(bookmrkEnd, 0);
+                let endoffset = bookmrkEnd.line.getOffset(bookmrkEnd, 1);
                 let endPosition = new TextPosition(this.owner);
                 endPosition.setPositionParagraph(bookmrkEnd.line, endoffset);
                 //selects the bookmark range
@@ -48651,6 +48695,7 @@ class Editor {
                         }
                     }
                 }
+                row.bottomBorderWidth = 0;
             }
             for (let i = 0; i < rowCount; i++) {
                 let cellCountInfo = this.updateRowspan(row, rowPlacement === 'Below' ? endCell : startCell, rowPlacement);
@@ -54447,6 +54492,9 @@ class Editor {
                 offset = inline.line.getOffset(inline, 0);
                 paragraph = inline.line.paragraph;
             }
+            else if (inline instanceof EditRangeEndElementBox) {
+                offset++;
+            }
             if (inline.length === 1 && inline.nextNode instanceof EditRangeEndElementBox
                 && inline.previousNode instanceof EditRangeStartElementBox) {
                 let editStart = inline.previousNode;
@@ -55138,7 +55186,12 @@ class Editor {
             if (!isNullOrUndefined(element) && element instanceof ListTextElementBox) {
                 let text = this.documentHelper.layout.getListNumber(paragraph.paragraphFormat.listFormat);
                 if (isUpdate) {
+                    let prevWidth = element.width;
                     element.text = text;
+                    let currentWidth = this.documentHelper.textHelper.getTextSize(element, element.characterFormat);
+                    if (currentWidth > prevWidth) {
+                        element.width = currentWidth;
+                    }
                 }
             }
         }
@@ -70677,10 +70730,10 @@ class ListDialog {
     listPatternConverter(listLevelPattern) {
         switch (listLevelPattern) {
             case 'Arabic': return 0;
-            case 'UpRoman': return 1;
+            case 'LowLetter': return 1;
             case 'LowRoman': return 2;
             case 'UpLetter': return 3;
-            case 'LowLetter': return 4;
+            case 'UpRoman': return 4;
             case 'Number': return 5;
             case 'LeadingZero': return 6;
             case 'Bullet': return 7;
@@ -78931,10 +78984,9 @@ class CommentView {
     initDateView() {
         this.commentDate = createElement('div', { className: 'e-de-cmt-date' });
         let modifiedDate = new Date(this.comment.date);
-        let date = modifiedDate.toString().split(' ').splice(1, 2).join(' ');
-        let time = modifiedDate.toLocaleTimeString().split(' ')[0].split(':').splice(0, 2).join(':')
-            + modifiedDate.toLocaleTimeString().split(' ')[1];
-        this.commentDate.innerText = date + ', ' + modifiedDate.getFullYear() + ', ' + time;
+        let date = modifiedDate.toLocaleDateString([], { year: 'numeric', month: 'long', day: 'numeric' });
+        let time = modifiedDate.toLocaleTimeString([], { hour: 'numeric', minute: 'numeric' });
+        this.commentDate.innerText = date + ' ' + time;
         this.commentView.appendChild(this.commentDate);
     }
     initDrawer() {

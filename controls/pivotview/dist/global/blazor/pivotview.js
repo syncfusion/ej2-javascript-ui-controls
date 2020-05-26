@@ -9006,8 +9006,9 @@ var ErrorDialog = /** @class */ (function () {
         });
         this.parent.element.appendChild(errorDialog);
         var zIndex = target ? Number(target.style.zIndex) + 1 : (this.parent.moduleName === 'pivotfieldlist' &&
-            this.parent.renderMode === 'Popup' && this.parent.control ?
-            this.parent.control.dialogRenderer.fieldListDialog.zIndex + 1 : 1000001);
+            this.parent.renderMode === 'Popup' && this.parent.control ? this.parent.control.dialogRenderer.fieldListDialog.zIndex + 1 :
+            (this.parent.moduleName === 'pivotfieldlist' && this.parent.renderMode === 'Fixed' && this.parent.control ? 1000002 :
+                (this.parent.moduleName === 'pivotview' && this.parent.control ? 1000002 : 1000001)));
         this.errorPopUp = new sf.popups.Dialog({
             animationSettings: { effect: 'Fade' },
             allowDragging: false,
@@ -13266,6 +13267,9 @@ var PivotChart = /** @class */ (function () {
                         tupInfo.measureName : cell.actualText;
                     if (!totColIndex[cell.colIndex] && cell.axis === 'value' && firstRowCell.type !== 'header' &&
                         actualText !== '' && (chartSettings.enableMultiAxis ? true : actualText === this.currentMeasure)) {
+                        if (sf.base.isNullOrUndefined(firstRowCell.members)) {
+                            firstRowCell.members = [];
+                        }
                         if (this.parent.dataType === 'olap' ? (lastHierarchy === firstRowCell.hierarchy ?
                             ((firstRowCell.memberType === 3 && prevMemberCell) ?
                                 (fieldPos === this.measurePos ? prevMemberCell.isDrilled : true) : firstRowCell.isDrilled) : true)
@@ -13625,12 +13629,14 @@ var PivotChart = /** @class */ (function () {
             for (var _a = 0, cKeys_2 = cKeys; _a < cKeys_2.length; _a++) {
                 var cellIndex = cKeys_2[_a];
                 var cell = rows[Number(cellIndex)];
-                if (cell.axis !== 'column') {
-                    return colIndexColl;
-                }
-                else if ((cell.type === 'sum' || (this.dataSourceSettings.columns.length === 0 ? false : cell.type === 'grand sum'))
-                    && cell.rowSpan !== -1) {
-                    colIndexColl[cell.colIndex] = cell.colIndex;
+                if (!sf.base.isNullOrUndefined(cell)) {
+                    if (cell.axis !== 'column') {
+                        return colIndexColl;
+                    }
+                    else if ((cell.type === 'sum' || (this.dataSourceSettings.columns.length === 0 ? false : cell.type === 'grand sum'))
+                        && cell.rowSpan !== -1) {
+                        colIndexColl[cell.colIndex] = cell.colIndex;
+                    }
                 }
             }
         }
@@ -20988,7 +20994,12 @@ var PivotView = /** @class */ (function (_super) {
                         var dataSet = PivotUtil.getClonedData(this.clonedDataSet);
                         this.setProperties({ dataSourceSettings: { dataSource: dataSet } }, true);
                     }
-                    _super.prototype.refresh.call(this);
+                    if (sf.base.isBlazor()) {
+                        this.refresh();
+                    }
+                    else {
+                        _super.prototype.refresh.call(this);
+                    }
                     this.updateClass();
                     break;
                 case 'enableValueSorting':
@@ -22874,7 +22885,13 @@ var PivotView = /** @class */ (function (_super) {
         if (sf.base.isBlazor()) {
             if (pivot.dataType === 'olap') {
                 if (pivot.dataSourceSettings.dataSource instanceof sf.data.DataManager) {
-                    pivot.dataSourceSettings.dataSource = undefined;
+                    pivot.allowServerDataBinding = false;
+                    pivot.setProperties({
+                        dataSourceSettings: {
+                            dataSource: undefined
+                        }
+                    }, true);
+                    pivot.allowServerDataBinding = true;
                 }
             }
         }
@@ -26979,7 +26996,12 @@ var PivotFieldList = /** @class */ (function (_super) {
             var prop = _a[_i];
             switch (prop) {
                 case 'locale':
-                    _super.prototype.refresh.call(this);
+                    if (sf.base.isBlazor()) {
+                        break;
+                    }
+                    else {
+                        _super.prototype.refresh.call(this);
+                    }
                     break;
                 case 'dataSourceSettings':
                     if (PivotUtil.isButtonIconRefesh(prop, oldProp, newProp)) {
@@ -27096,7 +27118,7 @@ var PivotFieldList = /** @class */ (function (_super) {
                 var this$_2 = _this;
                 control.trigger(enginePopulated, eventArgs, function (observedArgs) {
                     this$_2.pivotFieldList = observedArgs.pivotFieldList;
-                    this$_2.olapEngineModule.pivotValues = sf.base.isBlazor() ? _this.engineModule.pivotValues : observedArgs.pivotValues;
+                    this$_2.olapEngineModule.pivotValues = sf.base.isBlazor() ? _this.olapEngineModule.pivotValues : observedArgs.pivotValues;
                     this$_2.notify(dataReady, {});
                     this$_2.trigger(dataBound);
                 });

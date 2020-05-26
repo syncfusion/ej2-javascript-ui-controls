@@ -369,7 +369,7 @@ export class Kanban extends Component<HTMLElement> {
      */
     public render(): void {
         if (!this.isBlazorRender()) {
-            let addClasses: string[] = [];
+            let addClasses: string[] = [cls.ROOT_CLASS];
             let removeClasses: string[] = [];
             if (this.enableRtl) {
                 addClasses.push(cls.RTL_CLASS);

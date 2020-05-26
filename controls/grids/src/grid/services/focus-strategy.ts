@@ -769,6 +769,7 @@ export class ContentFocus implements IFocus {
         return (rowIndex: number, cellIndex: number, action?: string) => {
             if (!isNullOrUndefined(table.rows[rowIndex])) {
                 let cell: HTMLElement;
+                cellIndex = table.querySelector('.e-emptyrow') ? 0 : cellIndex;
                 if (table.rows[rowIndex].cells[0].classList.contains('e-editcell')) {
                     cell = table.rows[rowIndex].cells[0].querySelectorAll('td')[cellIndex];
                 } else {

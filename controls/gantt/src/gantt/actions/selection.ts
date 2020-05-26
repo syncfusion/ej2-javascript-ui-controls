@@ -19,6 +19,7 @@ export class Selection {
     private actualTarget: EventTarget;
     private isInteracted: boolean;
     private prevRowIndex: number;
+    private multipleIndexes: number[] = [];
     public selectedRowIndexes: number[] = [];
     public enableSelectMultiTouch: boolean = false;
     public startIndex: number;
@@ -96,7 +97,7 @@ export class Selection {
             args[rowIndexes] : [args.rowIndex];
         this.addClass(index);
         this.selectedRowIndexes = extend([], this.getSelectedRowIndexes(), [], true) as number[];
-        this.parent.setProperties({ selectedRowIndex: this.parent.treeGrid.selectedRowIndex }, true);
+        this.parent.setProperties({ selectedRowIndex: this.parent.treeGrid.grid.selectedRowIndex }, true);
         if (this.isMultiShiftRequest) {
             this.selectedRowIndexes = index;
         }
@@ -116,11 +117,19 @@ export class Selection {
     private rowDeselecting(args: RowDeselectEventArgs): void {
         args.target = this.actualTarget as Element;
         args.isInteracted = this.isInteracted;
+        if (isBlazor() && this.parent.selectionSettings.type === 'Multiple') {
+            this.multipleIndexes = extend([], args.rowIndex, [], true) as number[];
+        }
         this.parent.trigger('rowDeselecting', args);
     }
     private rowDeselected(args: RowDeselectEventArgs): void {
         let rowIndexes: string = 'rowIndexes';
-        let index: number[] = args[rowIndexes] || args.rowIndex;
+        let index: number[] = [];
+        if (this.multipleIndexes.length !== 0) {
+            index = this.multipleIndexes;
+        } else {
+            index = args[rowIndexes] || args.rowIndex;
+        }
         this.removeClass(index);
         this.selectedRowIndexes = extend([], this.getSelectedRowIndexes(), [], true) as number[];
         this.parent.setProperties({ selectedRowIndex: -1 }, true);
@@ -135,6 +144,7 @@ export class Selection {
         args.isInteracted = this.isInteracted;
         this.parent.trigger('rowDeselected', args);
         this.isInteracted = false;
+        this.multipleIndexes = [];
     }
     private cellSelecting(args: CellSelectingEventArgs): void | Deferred {
         let callBackPromise: Deferred = new Deferred();

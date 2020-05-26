@@ -1,4 +1,4 @@
-import { isNullOrUndefined, getValue, extend } from './util';
+import { isNullOrUndefined, getValue, extend, isBlazor } from './util';
 /**
  * Observer is used to perform event handling based the object.
  * ```
@@ -111,7 +111,7 @@ export class Observer {
         let blazor: string = 'Blazor';
         let curObject: BoundOptions[] = getValue(property, this.boundedEvents).slice(0);
         if (window[blazor]) {
-           return this.blazorCallback(curObject, argument, successHandler, errorHandler, 0);
+            return this.blazorCallback(curObject, argument, successHandler, errorHandler, 0);
         } else {
             for (let cur of curObject) {
                 cur.handler.call(cur.context, argument);
@@ -137,7 +137,7 @@ export class Observer {
                     return promise;
                 }
                 promise.then((data: object) => {
-                    data = typeof data === 'string' && this.isJson(data) ? JSON.parse(data as string) : data;
+                    data = typeof data === 'string' && this.isJson(data) ? JSON.parse(data as string, this.dateReviver) : data;
                     extend(argument, argument, data, true);
                     if (successHandler && isTrigger) {
                         successHandler.call(obj.context, argument);
@@ -146,7 +146,8 @@ export class Observer {
                     }
                 }).catch((data: object) => {
                     if (errorHandler) {
-                        errorHandler.call(obj.context, typeof data === 'string' && this.isJson(data) ? JSON.parse(data) : data);
+                        errorHandler.call(obj.context, typeof data === 'string' &&
+                            this.isJson(data) ? JSON.parse(data, this.dateReviver) : data);
                     }
                 });
             } else if (successHandler && isTrigger) {
@@ -155,6 +156,15 @@ export class Observer {
                 return this.blazorCallback(objs, argument, successHandler, errorHandler, index + 1);
             }
         }
+    }
+
+    // tslint:disable-next-line:no-any
+    public dateReviver(key: any, value: any): void | object {
+        let dPattern: RegExp = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/;
+        if (isBlazor && typeof value === 'string' && value.match(dPattern) !== null) {
+            return (new Date(value));
+        }
+        return (value);
     }
 
     public isJson(value: string): boolean {

@@ -4790,6 +4790,7 @@ var Legend = /** @class */ (function () {
             var text = void 0;
             this.legendLabelTooltip = [];
             var elementSize = void 0;
+            var isColorRange = heatMap.isColorRange;
             var colorCollection = heatMap.legendColorCollection;
             if (heatMap.enableCanvasRendering) {
                 var ctx = heatMap.canvasRenderer.ctx;
@@ -4819,12 +4820,11 @@ var Legend = /** @class */ (function () {
                         labelX = this.segmentCollections[i];
                     }
                     labelY = rect.y + rect.height + this.labelPadding;
-                    anchor = ((Math.round(value * 100) / 100) === 0 || (i === 0 && heatMap.paletteSettings.type === 'Fixed')) ? 'start' :
-                        (((Math.round(value * 100) / 100) === 100 && heatMap.paletteSettings.type === 'Gradient') ||
-                            (Math.round(heatMap.dataSourceMaxValue * 100) / 100) === colorCollection[i].value &&
-                                heatMap.legendSettings.enableSmartLegend) || (heatMap.legendSettings.enableSmartLegend &&
-                            heatMap.paletteSettings.type === 'Fixed' &&
-                            heatMap.legendSettings.labelDisplayType === 'Edge') ? 'end' : 'middle';
+                    anchor = (((Math.round(value * 100) / 100) === 0 && !isColorRange) || (heatMap.paletteSettings.type === 'Fixed' &&
+                        i === 0)) ? 'start' : (((Math.round(value * 100) / 100) === 100 && heatMap.paletteSettings.type === 'Gradient' &&
+                        !isColorRange) || (Math.round(heatMap.dataSourceMaxValue * 100) / 100) === colorCollection[i].value &&
+                        heatMap.legendSettings.enableSmartLegend) || (heatMap.legendSettings.enableSmartLegend &&
+                        heatMap.paletteSettings.type === 'Fixed' && heatMap.legendSettings.labelDisplayType === 'Edge') ? 'end' : 'middle';
                     dominantBaseline = 'hanging';
                 }
                 else {
@@ -4840,8 +4840,9 @@ var Legend = /** @class */ (function () {
                     else {
                         labelY = this.segmentCollections[i];
                     }
-                    dominantBaseline = ((Math.round(value * 100) / 100) === 0 || (i === 0 && heatMap.paletteSettings.type === 'Fixed')) ?
-                        'hanging' : (((Math.round(value * 100) / 100) === 100 && heatMap.paletteSettings.type === 'Gradient') ||
+                    dominantBaseline = (((Math.round(value * 100) / 100) === 0 && !isColorRange) || (i === 0 &&
+                        heatMap.paletteSettings.type === 'Fixed')) ? 'hanging' : (((Math.round(value * 100) / 100) === 100 &&
+                        !isColorRange && heatMap.paletteSettings.type === 'Gradient') ||
                         (Math.round(heatMap.dataSourceMaxValue * 100) / 100) === colorCollection[i].value &&
                             heatMap.legendSettings.enableSmartLegend) || (heatMap.legendSettings.enableSmartLegend &&
                         heatMap.legendSettings.labelDisplayType === 'Edge' &&
@@ -5467,13 +5468,14 @@ var Legend = /** @class */ (function () {
                     var previousSegmentWidth = (segmentWidth[i] - segmentWidth[i - 1]) / 2;
                     var nextSegmentWidth = (segmentWidth[i + 1] - segmentWidth[i]) / 2;
                     if (i === colorCollection.length - 1) {
-                        textWrapWidth = previousSegmentWidth;
+                        textWrapWidth = this.heatMap.isColorRange ? (legendRect.width - segmentWidth[i - 1]) / 2 : previousSegmentWidth;
                     }
                     else if (i === 0) {
                         textWrapWidth = nextSegmentWidth;
                     }
                     else {
-                        textWrapWidth = previousSegmentWidth < nextSegmentWidth ? previousSegmentWidth : nextSegmentWidth;
+                        textWrapWidth = (previousSegmentWidth < nextSegmentWidth && !this.heatMap.isColorRange) ?
+                            previousSegmentWidth : nextSegmentWidth;
                     }
                 }
                 else {
@@ -7063,11 +7065,19 @@ var HeatMap = /** @class */ (function (_super) {
         var width = stringToNumber(this.width, this.element.offsetWidth) || this.element.offsetWidth || 600;
         var height = stringToNumber(this.height, this.element.offsetHeight) || this.element.offsetHeight || 450;
         this.availableSize = new Size(width, height);
-        var align = document.getElementById(this.element.id).align;
-        if (align === 'center') {
-            var containerWidth = this.availableSize.width.toString();
-            this.element.style.width = containerWidth + 'px';
-            this.element.style.margin = '0 auto';
+        var alignElement = this.element;
+        while (alignElement.parentNode) {
+            if (alignElement.tagName === 'BODY') {
+                break;
+            }
+            var align = alignElement.align;
+            if (align === 'center') {
+                var containerWidth = this.availableSize.width.toString();
+                this.element.style.width = containerWidth + 'px';
+                this.element.style.margin = '0 auto';
+                break;
+            }
+            alignElement = alignElement.parentElement;
         }
     };
     HeatMap.prototype.renderTitle = function () {
@@ -7512,7 +7522,6 @@ var HeatMap = /** @class */ (function (_super) {
     HeatMap.prototype.heatMapMouseMove = function (e) {
         var pageX;
         var pageY;
-        var tooltipText;
         var touchArg;
         var elementRect = this.element.getBoundingClientRect();
         if (e.type === 'touchmove' || e.type === 'touchstart') {
@@ -7529,6 +7538,15 @@ var HeatMap = /** @class */ (function (_super) {
         pageX -= elementRect.left;
         pageY -= elementRect.top;
         this.setMouseXY(pageX, pageY);
+        this.mouseAction(e, pageX, pageY, touchArg, elementRect);
+        return true;
+    };
+    /**
+     * Handles the mouse Move.
+     * @return {boolean}
+     */
+    HeatMap.prototype.mouseAction = function (e, pageX, pageY, touchArg, elementRect) {
+        var tooltipText;
         if (e.target && e.target.id) {
             var isheatmapRect = this.isHeatmapRect(pageX, pageY);
             if (this.legendModule) {

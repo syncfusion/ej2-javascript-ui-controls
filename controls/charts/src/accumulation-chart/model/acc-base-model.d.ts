@@ -384,6 +384,7 @@ export interface AccumulationSeriesModel {
      * Index of the point, to be exploded on load.
      * @default null
      * @aspDefaultValueIgnore
+     * @blazorDefaultValue Double.NaN
      */
     explodeIndex?: number;
 

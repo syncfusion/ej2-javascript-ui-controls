@@ -2469,6 +2469,29 @@ class BasicFormulas {
             {
                 formulaName: 'LN', category: 'Math & Trig', description: 'Returns the natural logarithm of a number.'
             },
+            {
+                formulaName: 'ISNUMBER', category: 'Information', description: 'Returns TRUE, if the argument is number and FALSE otherwise.'
+            },
+            {
+                formulaName: 'ROUND', category: 'Math & Trig', description: 'Rounds a number to a specified number of digits.'
+            },
+            {
+                formulaName: 'LOG', category: 'Math & Trig', description: 'Returns the logarithm of a number to the base that you specify.'
+            },
+            {
+                formulaName: 'POWER', category: 'Math & Trig', description: 'Returns the result of a number raised to power.'
+            },
+            {
+                formulaName: 'TRUNC', category: 'Math & Trig',
+                description: 'Returns the truncated value of a number to a specified number of decimal places.'
+            },
+            {
+                formulaName: 'EXP', category: 'Math & Trig', description: 'Returns e raised to the power of the given number.'
+            },
+            {
+                formulaName: 'GEOMEAN', category: 'Statistical',
+                description: 'Returns the geometric mean of an array or range of positive data.'
+            },
         ];
         this.isConcat = false;
         this.parent = parent;
@@ -3679,6 +3702,247 @@ class BasicFormulas {
             }
         }
         return Math.log(logVal);
+    }
+    /** @hidden */
+    ComputeISNUMBER(...logValue) {
+        let argArr = logValue;
+        let logVal;
+        let orgValue;
+        if (logValue.length === 0 || logValue.length > 1) {
+            return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
+        }
+        orgValue = (this.parent.isCellReference(argArr[0])) ? this.parent.getValueFromArg(argArr[0]) :
+            this.parent.getValueFromArg(argArr[0].split(this.parent.tic).join(''));
+        if (orgValue.toString() === '') {
+            return false;
+        }
+        logVal = this.parent.parseFloat(orgValue);
+        return !isNaN(logVal) ? true : false;
+    }
+    /** @hidden */
+    ComputeROUND(...logValue) {
+        let argArr = logValue;
+        let orgValue;
+        let x = 0;
+        let digits = 0;
+        let round;
+        let numStr;
+        let digStr;
+        let mult;
+        if (logValue.length === 0 || logValue.length > 2) {
+            return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
+        }
+        if (logValue.length === 1) {
+            orgValue = (argArr[0].split(this.parent.tic).join('') === 'TRUE')
+                ? '1'
+                : (argArr[0].split(this.parent.tic).join('') === 'FALSE')
+                    ? '0'
+                    : argArr[0];
+            return Math.round(this.parent.parseFloat(orgValue)).toString();
+        }
+        numStr = this.parent.getValueFromArg(argArr[0]);
+        digStr = (argArr[1].split(this.parent.tic).join('')) === '' ? '0' :
+            this.parent.getValueFromArg(argArr[1].split(this.parent.tic).join(''));
+        numStr = (numStr.split(this.parent.tic).join('') === 'TRUE')
+            ? '1'
+            : (numStr.split(this.parent.tic).join('') === 'FALSE')
+                ? '0' : numStr;
+        digStr = (digStr.split(this.parent.tic).join('') === 'TRUE') ? '1'
+            : (digStr.split(this.parent.tic).join('') === 'FALSE')
+                ? '0' : digStr;
+        if (numStr !== '' && digStr !== '') {
+            x = this.parent.parseFloat(numStr);
+            digits = this.parent.parseFloat(digStr);
+            if (!isNaN(digits) && !isNaN(x) && digits > 0) {
+                round = x.toFixed(digits);
+            }
+            else {
+                mult = Math.pow(10, -digits);
+                round = Math.round(x / mult) * mult;
+            }
+        }
+        return round.toString();
+    }
+    /** @hidden */
+    ComputePOWER(...logValue) {
+        let argArr = logValue;
+        let power;
+        let orgNumValue;
+        let orgPowValue;
+        let logNumValue;
+        let logPowValue;
+        if (logValue.length === 0 || logValue.length > 2) {
+            return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
+        }
+        orgNumValue = this.parent.getValueFromArg(argArr[0]);
+        orgPowValue = this.parent.getValueFromArg(argArr[1]);
+        orgNumValue = (orgNumValue.split(this.parent.tic).join('') === 'TRUE') ? '1' :
+            (orgNumValue.split(this.parent.tic).join('') === 'FALSE') ? '0' : orgNumValue;
+        orgPowValue = (orgPowValue.split(this.parent.tic).join('') === 'TRUE') ? '1' :
+            (orgPowValue.split(this.parent.tic).join('') === 'FALSE') ? '0' : orgPowValue;
+        logNumValue = this.parent.parseFloat(orgNumValue);
+        logPowValue = this.parent.parseFloat(orgPowValue);
+        if (!isNaN(logNumValue) && !isNaN(logPowValue)) {
+            if (logNumValue === 0 && logPowValue < 0) {
+                return this.parent.getErrorStrings()[CommonErrors.divzero];
+            }
+            if (logNumValue === 0 && logPowValue === 0) {
+                return this.parent.getErrorStrings()[CommonErrors.num];
+            }
+            power = Math.pow(logNumValue, logPowValue);
+        }
+        else {
+            return this.parent.getErrorStrings()[CommonErrors.value];
+        }
+        return power.toString();
+    }
+    /** @hidden */
+    ComputeLOG(...logValue) {
+        let argArr = logValue;
+        let orgNumValue;
+        let orgBaseValue;
+        let logNumValue;
+        let logBaseValue;
+        if (logValue.length === 0 || logValue.length > 2) {
+            return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
+        }
+        orgNumValue = this.parent.getValueFromArg(argArr[0]);
+        orgBaseValue = (logValue.length === 2) ? this.parent.getValueFromArg(argArr[1]) : '10';
+        if ((orgNumValue === '' || orgNumValue === null) || (orgBaseValue === '' || orgBaseValue === null)) {
+            return this.parent.getErrorStrings()[CommonErrors.num];
+        }
+        orgNumValue = (orgNumValue.split(this.parent.tic).join('') === 'TRUE') ? '1' :
+            (orgNumValue.split(this.parent.tic).join('') === 'FALSE') ? '0' : orgNumValue;
+        orgBaseValue = (orgBaseValue.split(this.parent.tic).join('') === 'TRUE') ? '1' :
+            (orgBaseValue.split(this.parent.tic).join('') === 'FALSE') ? '0' : orgBaseValue;
+        logNumValue = this.parent.parseFloat(orgNumValue);
+        logBaseValue = this.parent.parseFloat(orgBaseValue);
+        if (logNumValue <= 0 || logBaseValue <= 0) {
+            return this.parent.getErrorStrings()[CommonErrors.num];
+        }
+        if (logBaseValue === 1) {
+            return this.parent.getErrorStrings()[CommonErrors.divzero];
+        }
+        if (!isNaN(logNumValue) && !isNaN(logBaseValue)) {
+            return ((Math.log(logNumValue) / Math.LN10) / (Math.log(logBaseValue) / Math.LN10)).toString();
+        }
+        else {
+            return this.parent.getErrorStrings()[CommonErrors.value];
+        }
+    }
+    /** @hidden */
+    ComputeTRUNC(...logValue) {
+        let argArr = logValue;
+        let orgNumValue;
+        let orgDigitValue = 0;
+        let logNumValue;
+        let logDigitValue;
+        let normalizer;
+        if (logValue.length === 0 || logValue.length > 2) {
+            return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
+        }
+        if (logValue.length === 2) {
+            orgDigitValue = this.parent.getValueFromArg(argArr[1]);
+            orgDigitValue = (orgDigitValue.split(this.parent.tic).join('') === 'TRUE') ? '1' :
+                (orgDigitValue.split(this.parent.tic).join('') === 'FALSE') ? '0' : orgDigitValue;
+            orgDigitValue = this.parent.parseFloat(orgDigitValue);
+        }
+        orgNumValue = this.parent.getValueFromArg(argArr[0]);
+        orgNumValue = (orgNumValue.split(this.parent.tic).join('') === 'TRUE') ? '1' :
+            (orgNumValue.split(this.parent.tic).join('') === 'FALSE') ? '0' : orgNumValue;
+        logNumValue = this.parent.parseFloat(orgNumValue.split(this.parent.tic).join(''));
+        if (isNaN(logNumValue) || isNaN(orgDigitValue)) {
+            return (argArr[0] === this.parent.tic || this.parent.isCellReference(argArr[0]) || (argArr[1] === this.parent.tic
+                || this.parent.isCellReference(argArr[1]))) ? this.parent.getErrorStrings()[CommonErrors.value]
+                : this.parent.getErrorStrings()[CommonErrors.name];
+        }
+        normalizer = Math.pow(10, orgDigitValue);
+        logDigitValue = (logNumValue < 0) ? -1 : 1;
+        return (logDigitValue * Math.floor(normalizer * Math.abs(logNumValue)) / normalizer).toString();
+    }
+    /** @hidden */
+    ComputeEXP(...logValue) {
+        let argArr = logValue;
+        let orgNumValue;
+        let logNumValue;
+        if (logValue.length === 0 || logValue.length > 1) {
+            return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
+        }
+        orgNumValue = this.parent.getValueFromArg(argArr[0]);
+        orgNumValue = (orgNumValue.split(this.parent.tic).join('') === 'TRUE') ? '1' :
+            (orgNumValue.split(this.parent.tic).join('') === 'FALSE') ? '0' : orgNumValue;
+        if (orgNumValue === '') {
+            orgNumValue = '0';
+        }
+        logNumValue = this.parent.parseFloat(orgNumValue);
+        if (logNumValue > 709) {
+            return this.parent.getErrorStrings()[CommonErrors.num];
+        }
+        if (isNaN(logNumValue)) {
+            return (argArr[0] === this.parent.tic || this.parent.isCellReference(argArr[0])) ?
+                this.parent.getErrorStrings()[CommonErrors.value]
+                : this.parent.getErrorStrings()[CommonErrors.name];
+        }
+        return Math.exp(logNumValue).toString();
+    }
+    /** @hidden */
+    ComputeGEOMEAN(...logValue) {
+        let argArr = logValue;
+        let sum = 1;
+        let count = 0;
+        let cellVal = 0;
+        let dev;
+        let r;
+        let s;
+        let cell;
+        if (logValue.length === 0) {
+            return this.parent.formulaErrorStrings[FormulasErrorsStrings.wrong_number_arguments];
+        }
+        for (r = 0; r < argArr.length; r++) {
+            if (argArr[r].indexOf(':') > -1) {
+                if (argArr[0] === this.parent.tic) {
+                    return this.parent.getErrorStrings()[CommonErrors.value];
+                }
+                cell = this.parent.getCellCollection(argArr[r].split(this.parent.tic).join(''));
+                for (s = 0; s < cell.length; s++) {
+                    cellVal = this.parent.getValueFromArg(cell[s]);
+                    cellVal = (cellVal.split(this.parent.tic).join('') === 'TRUE') ? '1' :
+                        (cellVal.split(this.parent.tic).join('') === 'FALSE') ? '0' : cellVal;
+                    dev = this.parent.parseFloat(cellVal);
+                    if (dev <= 0) {
+                        return this.parent.getErrorStrings()[CommonErrors.num];
+                    }
+                    else if (!isNaN(dev)) {
+                        count++;
+                        sum = sum * dev;
+                    }
+                }
+            }
+            else {
+                cellVal = this.parent.getValueFromArg(argArr[r]);
+                if (cellVal.length > 0) {
+                    cellVal = (cellVal.split(this.parent.tic).join('') === 'TRUE') ? '1' :
+                        (cellVal.split(this.parent.tic).join('') === 'FALSE') ? '0' : cellVal;
+                    if (!this.parent.isCellReference(argArr[r])) {
+                        if (isNaN(this.parent.parseFloat(cellVal))) {
+                            return this.parent.getErrorStrings()[CommonErrors.name];
+                        }
+                    }
+                    dev = this.parent.parseFloat(cellVal);
+                    if (dev <= 0) {
+                        return this.parent.getErrorStrings()[CommonErrors.num];
+                    }
+                    else if (!isNaN(dev)) {
+                        count++;
+                        sum = sum * dev;
+                    }
+                }
+            }
+        }
+        if (count > 0) {
+            sum = Math.pow(sum, 1 / count);
+        }
+        return sum.toString();
     }
     getDataCollection(cells) {
         let cellsData = [];
@@ -12913,6 +13177,11 @@ let Workbook = Workbook_1 = class Workbook extends Component {
     }
     /**
      * Opens the specified JSON object.
+     * <br><br>
+     * The available arguments in options are:
+     * * file: Specifies the spreadsheet model as object or string. And the object contains the jsonObject,
+     * which is saved from spreadsheet using saveAsJson method.
+     *
      * @param options - Options for opening the JSON object.
      */
     openFromJson(options) {
@@ -12922,6 +13191,12 @@ let Workbook = Workbook_1 = class Workbook extends Component {
     }
     /**
      * Saves the Spreadsheet data to Excel file.
+     * <br><br>
+     * The available arguments in saveOptions are:
+     * * url: Specifies the save URL.
+     * * fileName: Specifies the file name.
+     * * saveType: Specifies the file type need to be saved.
+     *
      * @param {SaveOptions} saveOptions - Options for saving the excel file.
      */
     save(saveOptions = {}) {
@@ -27619,7 +27894,14 @@ let defaultLocale = {
     EmptyError: 'You must enter a value',
     ClearHighlight: 'Clear Highlight',
     HighlightInvalidData: 'Highlight Invalid Data',
-    ClearValidation: 'Clear Validation'
+    ClearValidation: 'Clear Validation',
+    ISNUMBER: 'Returns true when the value parses as a numeric value.',
+    ROUND: 'Rounds a number to a specified number of digits.',
+    GEOMEAN: 'Returns the geometric mean of an array or range of positive data.',
+    POWER: 'Returns the result of a number raised to power',
+    LOG: 'Returns the logarithm of a number to the base that you specify.',
+    TRUNC: 'Returns the truncated value of a number to a specified number of decimal places.',
+    EXP: 'Returns e raised to the power of the given number.'
 };
 
 /**

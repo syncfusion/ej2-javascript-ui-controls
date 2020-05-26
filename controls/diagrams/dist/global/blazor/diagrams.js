@@ -14772,8 +14772,11 @@ var cloneSelectedObjects = function (diagram) {
     var nodes = diagram.selectedItems.nodes;
     var connectors = diagram.selectedItems.connectors;
     diagram.protectPropertyChange(true);
+    var isEnableServerDatabind = diagram.allowServerDataBinding;
+    diagram.allowServerDataBinding = false;
     diagram.selectedItems.nodes = [];
     diagram.selectedItems.connectors = [];
+    diagram.allowServerDataBinding = isEnableServerDatabind;
     diagram.protectPropertyChange(false);
     var clonedSelectedItems = cloneObject(diagram.selectedItems);
     for (var i = 0; i < nodes.length; i++) {
@@ -15131,7 +15134,7 @@ function getULMClassifierShapes(content, node, diagram) {
     node.constraints = (exports.NodeConstraints.Default | exports.NodeConstraints.HideThumbs) &
         ~(exports.NodeConstraints.Rotate | exports.NodeConstraints.Resize);
     node.style = {
-        fill: node.style.fill, strokeColor: 'black',
+        fill: node.style.fill, strokeColor: node.style.strokeColor,
         strokeWidth: 1.5
     };
     node.children = [];
@@ -15160,7 +15163,7 @@ function getULMClassifierShapes(content, node, diagram) {
         constraints: (exports.NodeConstraints.Default | exports.NodeConstraints.HideThumbs) & ~(exports.NodeConstraints.Rotate | exports.NodeConstraints.Drag | exports.NodeConstraints.Resize),
         verticalAlignment: 'Stretch',
         horizontalAlignment: 'Stretch',
-        style: { fill: node.style.fill, strokeColor: '#ffffff00' }
+        style: { fill: node.style.fill, strokeColor: (node.style.strokeColor === 'black') ? '#ffffff00' : node.style.strokeColor }
     }, true);
     diagram.initObject(newObj);
     diagram.nodes.push(newObj);
@@ -15200,7 +15203,10 @@ function getClassNodes(node, diagram, classifier, textWrap) {
                                 margin: { left: 14, right: 5 }, horizontalAlignment: 'Left'
                             }
                         ], verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
-                        style: { fill: node.style.fill, strokeColor: '#ffffff00', textWrapping: textWrap },
+                        style: {
+                            fill: node.style.fill, strokeColor: (node.style.strokeColor === 'black') ?
+                                '#ffffff00' : node.style.strokeColor, textWrapping: textWrap
+                        },
                         constraints: (exports.NodeConstraints.Default | exports.NodeConstraints.HideThumbs) & ~(exports.NodeConstraints.Rotate | exports.NodeConstraints.Drag | exports.NodeConstraints.Resize),
                         minHeight: 25
                     }, true);
@@ -15243,7 +15249,8 @@ function getClassNodes(node, diagram, classifier, textWrap) {
                 if (i !== attributes.length) {
                     var style = getStyle(node, attribute);
                     var temp = new Node(diagram, 'nodes', {
-                        id: randomId() + '_umlProperty', style: { fill: node.style.fill, strokeColor: '#ffffff00' },
+                        id: randomId() + '_umlProperty', style: { fill: node.style.fill,
+                            strokeColor: (node.style.strokeColor === 'black') ? '#ffffff00' : node.style.strokeColor },
                         annotations: [
                             {
                                 id: 'name', content: attributeText, offset: { x: 0, y: 0.5 },
@@ -15323,7 +15330,10 @@ function getClassMembers(node, diagram, classifier, textWrap) {
                             margin: { left: 14, right: 5 }, horizontalAlignment: 'Left'
                         }
                     ],
-                    style: { fill: node.style.fill, strokeColor: '#ffffff00' }, minHeight: 25,
+                    style: {
+                        fill: node.style.fill, strokeColor: (node.style.strokeColor === 'black') ?
+                            '#ffffff00' : node.style.strokeColor
+                    }, minHeight: 25,
                     constraints: (exports.NodeConstraints.Default | exports.NodeConstraints.HideThumbs) & ~(exports.NodeConstraints.Rotate | exports.NodeConstraints.Drag | exports.NodeConstraints.Resize)
                 }, true);
                 diagram.initObject(temp);
@@ -15342,6 +15352,7 @@ function addSeparator(stack, diagram) {
     var lineObject = new Node(diagram, 'nodes', {
         id: randomId() + '_path', height: 1, constraints: exports.NodeConstraints.Default & ~(exports.NodeConstraints.Select),
         verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
+        style: { strokeColor: (stack.style.strokeColor === 'black') ? '#ffffff00' : stack.style.strokeColor }
     }, true);
     diagram.initObject(lineObject);
     diagram.nodes.push(lineObject);
@@ -23848,6 +23859,7 @@ var NodeDrawingTool = /** @class */ (function (_super) {
     NodeDrawingTool.prototype.mouseDown = function (args) {
         _super.prototype.mouseDown.call(this, args);
         this.inAction = true;
+        this.commandHandler.setFocus();
     };
     /**   @private  */
     NodeDrawingTool.prototype.mouseMove = function (args) {
@@ -23911,6 +23923,7 @@ var ConnectorDrawingTool = /** @class */ (function (_super) {
             return __generator$1(this, function (_a) {
                 _super.prototype.mouseDown.call(this, args);
                 this.inAction = true;
+                this.commandHandler.setFocus();
                 return [2 /*return*/];
             });
         });
@@ -26154,6 +26167,7 @@ var DiagramEventHandler = /** @class */ (function () {
     DiagramEventHandler.prototype.keyDown = function (evt) {
         if (!(this.diagram.diagramActions & exports.DiagramAction.TextEdit) &&
             !(this.checkEditBoxAsTarget(evt)) || (evt.key === 'Escape' || evt.keyCode === 27)) {
+            var inAction = 'inAction';
             var command = void 0;
             var keycode = evt.keyCode ? evt.keyCode : evt.which;
             var key = evt.key;
@@ -26208,6 +26222,11 @@ var DiagramEventHandler = /** @class */ (function () {
                                         this.diagram.currentSymbol = null;
                                         this.diagram.diagramActions =
                                             this.diagram.removeConstraints(diagramActions, exports.DiagramAction.PreventClearSelection);
+                                        this.isMouseDown = false;
+                                    }
+                                    else if (this.inAction && this.diagram.drawingObject && this.tool && this.tool[inAction]) {
+                                        this.tool.mouseUp(this.eventArgs);
+                                        this.tool = null;
                                         this.isMouseDown = false;
                                     }
                                 }
@@ -27059,7 +27078,8 @@ var DiagramEventHandler = /** @class */ (function () {
             if (highlighter) {
                 var index = node.wrapper.children.indexOf(target.wrapper) + 1;
                 var temp = new Node(this.diagram, 'nodes', {
-                    style: { fill: node.style.fill, strokeColor: '#ffffff00' },
+                    style: { fill: node.style.fill,
+                        strokeColor: (node.style.strokeColor === 'black') ? '#ffffff00' : node.style.strokeColor },
                     annotations: target.annotations, verticalAlignment: 'Stretch', horizontalAlignment: 'Stretch',
                     constraints: (exports.NodeConstraints.Default | exports.NodeConstraints.HideThumbs) & ~(exports.NodeConstraints.Rotate | exports.NodeConstraints.Drag | exports.NodeConstraints.Resize),
                     minHeight: 25
@@ -27573,6 +27593,10 @@ var CommandHandler = /** @class */ (function () {
             this.diagram.protectPropertyChange(false);
         }
         getAdornerLayer(this.diagram.element.id).style.pointerEvents = 'all';
+    };
+    /** @private */
+    CommandHandler.prototype.setFocus = function () {
+        document.getElementById(this.diagram.element.id).focus();
     };
     /**
      * @private
@@ -29077,7 +29101,6 @@ var CommandHandler = /** @class */ (function () {
     };
     /** @private */
     CommandHandler.prototype.select = function (obj, multipleSelection, preventUpdate) {
-        this.diagram.enableServerDataBinding(false);
         var hasLayer = this.getObjectLayer(obj.id);
         if ((canSelect(obj) && !(obj instanceof Selector) && !isSelected(this.diagram, obj))
             && (hasLayer && !hasLayer.lock && hasLayer.visible) && obj.wrapper.visible) {
@@ -29085,6 +29108,7 @@ var CommandHandler = /** @class */ (function () {
             if (!multipleSelection) {
                 this.clearSelection();
             }
+            this.diagram.enableServerDataBinding(false);
             var selectorModel = this.diagram.selectedItems;
             var convert = obj;
             if (convert instanceof Node) {
@@ -29118,8 +29142,8 @@ var CommandHandler = /** @class */ (function () {
             if (!preventUpdate) {
                 this.diagram.renderSelector(multipleSelection);
             }
+            this.diagram.enableServerDataBinding(true);
         }
-        this.diagram.enableServerDataBinding(true);
     };
     CommandHandler.prototype.getObjectCollectionId = function (isNode, clearSelection) {
         var id = [];
@@ -33577,9 +33601,11 @@ var Diagram = /** @class */ (function (_super) {
                         this.updateScrollSettings(newProp);
                         break;
                     case 'locale':
-                        this.realActions |= exports.RealAction.PreventDataInit;
-                        _super.prototype.refresh.call(this);
-                        this.realActions &= ~exports.RealAction.PreventDataInit;
+                        if (newProp.locale !== oldProp.locale) {
+                            this.realActions |= exports.RealAction.PreventDataInit;
+                            _super.prototype.refresh.call(this);
+                            this.realActions &= ~exports.RealAction.PreventDataInit;
+                        }
                         break;
                     case 'contextMenuSettings':
                         if (newProp.contextMenuSettings.showCustomMenuOnly !== undefined) {
@@ -33751,6 +33777,7 @@ var Diagram = /** @class */ (function (_super) {
     Diagram.prototype.setCulture = function () {
         this.localeObj = new sf.base.L10n(this.getModuleName(), this.defaultLocale, this.locale);
     };
+    /* tslint:disable */
     /**
      * Renders the diagram control with nodes and connectors
      */
@@ -33785,21 +33812,36 @@ var Diagram = /** @class */ (function (_super) {
         this.initializeDiagramLayers();
         this.diagramRenderer.setLayers();
         this.initObjects(true);
+        var isLayout = false;
+        if (sf.base.isBlazor() && !this.dataSourceSettings.dataSource && this.layout.type !== "None") {
+            for (var _i = 0, _a = this.nodes; _i < _a.length; _i++) {
+                var obj = _a[_i];
+                this.insertValue(cloneObject(obj), true);
+            }
+            for (var _b = 0, _c = this.connectors; _b < _c.length; _b++) {
+                var obj = _c[_b];
+                this.insertValue(cloneObject(obj), false);
+            }
+            isLayout = true;
+        }
         this.doLayout();
+        if (isLayout) {
+            this.commandHandler.getBlazorOldValues();
+        }
         if (this.lineRoutingModule) {
             var previousConnectorObject = [];
             var updateConnectorObject = [];
             var changeConnectors = [];
             if (sf.base.isBlazor()) {
-                for (var _i = 0, _a = this.connectors; _i < _a.length; _i++) {
-                    var obj = _a[_i];
+                for (var _d = 0, _e = this.connectors; _d < _e.length; _d++) {
+                    var obj = _e[_d];
                     previousConnectorObject.push(cloneObject(obj, undefined, undefined, true));
                 }
             }
             this.lineRoutingModule.lineRouting(this);
             if (sf.base.isBlazor()) {
-                for (var _b = 0, _c = this.connectors; _b < _c.length; _b++) {
-                    var obj = _c[_b];
+                for (var _f = 0, _g = this.connectors; _f < _g.length; _f++) {
+                    var obj = _g[_f];
                     updateConnectorObject.push(cloneObject(obj, undefined, undefined, true));
                 }
                 this.commandHandler.getObjectChanges(previousConnectorObject, updateConnectorObject, changeConnectors);
@@ -33857,6 +33899,7 @@ var Diagram = /** @class */ (function (_super) {
         this.renderComplete();
         this.updateFitToPage();
     };
+    /* tslint:enable */
     Diagram.prototype.updateFitToPage = function () {
         if (this.pageSettings && this.pageSettings.fitOptions && this.pageSettings.fitOptions.canFit) {
             this.fitToPage(this.pageSettings.fitOptions);
@@ -34058,7 +34101,7 @@ var Diagram = /** @class */ (function (_super) {
         _super.prototype.destroy.call(this);
         if (document.getElementById(this.element.id)) {
             this.element.classList.remove('e-diagram');
-            var tooltipelement = document.getElementsByClassName('e-tooltip-wrap');
+            var tooltipelement = document.getElementsByClassName('e-diagram-tooltip');
             while (tooltipelement.length > 0) {
                 tooltipelement[0].parentNode.removeChild(tooltipelement[0]);
             }
@@ -34441,7 +34484,15 @@ var Diagram = /** @class */ (function (_super) {
             this.commandHandler.labelDrag(obj.nodes[0], annotation, tx, ty);
         }
         else {
+            var undoObject = cloneObject(this.selectedItems);
+            this.protectPropertyChange(true);
             this.drag(obj, tx, ty);
+            this.protectPropertyChange(false);
+            var entry = {
+                type: 'PositionChanged',
+                redoObject: cloneObject(this.selectedItems), undoObject: undoObject, category: 'Internal'
+            };
+            this.addHistoryEntry(entry);
         }
         this.refreshCanvasLayers();
     };
@@ -35663,13 +35714,19 @@ var Diagram = /** @class */ (function (_super) {
                 if (children[i] instanceof DiagramNativeElement || ((children[i].id) && (children[i].id).indexOf('icon_content') > 0)) {
                     if ((children[i].id).indexOf('icon_content') > 0 && this.mode === 'SVG') {
                         element = getDiagramElement(children[i].id + '_shape_groupElement', this.element.id);
-                        element.parentNode.removeChild(element);
+                        if (element) {
+                            element.parentNode.removeChild(element);
+                        }
                         element = getDiagramElement(children[i].id + '_rect_groupElement', this.element.id);
-                        element.parentNode.removeChild(element);
+                        if (element) {
+                            element.parentNode.removeChild(element);
+                        }
                     }
                     for (var _i = 0, _a = this.views; _i < _a.length; _i++) {
                         var elementId = _a[_i];
                         removeElement(children[i].id + '_groupElement', elementId);
+                        var nodeIndex = this.scroller.removeCollection.indexOf(currentObj.id);
+                        this.scroller.removeCollection.splice(nodeIndex, 1);
                     }
                 }
                 else if (children[i] instanceof DiagramHtmlElement) {
@@ -40608,6 +40665,7 @@ var Diagram = /** @class */ (function (_super) {
             return __generator(this, function (_a) {
                 switch (_a.label) {
                     case 0:
+                        this.allowServerDataBinding = false;
                         source = 'sourceElement';
                         if (!this.currentSymbol) return [3 /*break*/, 4];
                         isPhase = false;
@@ -40688,9 +40746,7 @@ var Diagram = /** @class */ (function (_super) {
                                     addChildToContainer(this, arg.target, clonedObject);
                                 }
                                 else {
-                                    this.allowServerDataBinding = false;
                                     value = this.add(clonedObject, true);
-                                    this.allowServerDataBinding = true;
                                 }
                                 if ((clonedObject || value) && canSingleSelect(this)) {
                                     this.select([this.nameTable[clonedObject[id]]]);
@@ -40742,6 +40798,7 @@ var Diagram = /** @class */ (function (_super) {
                         if (this.droppable[selectedSymbols]) {
                             sf.base.remove(this.droppable[selectedSymbols]);
                         }
+                        this.allowServerDataBinding = true;
                         return [2 /*return*/];
                 }
             });
@@ -53459,8 +53516,9 @@ var getObjectType$1 = function (obj) {
  */
 var Palette = /** @class */ (function (_super) {
     __extends$35(Palette, _super);
-    function Palette() {
-        return _super !== null && _super.apply(this, arguments) || this;
+    // tslint:disable-next-line:no-any
+    function Palette(parent, propName, defaultValue, isArray) {
+        return _super.call(this, parent, propName, defaultValue, isArray) || this;
     }
     __decorate$24([
         sf.base.Property('')
@@ -53645,6 +53703,9 @@ var SymbolPalette = /** @class */ (function (_super) {
                                 this.isExpand = true;
                             }
                         }
+                        if (sf.base.isBlazor() && newProp.palettes[index].symbols === null) {
+                            this.updateBlazorProperties(newProp);
+                        }
                     }
                     break;
                 case 'enableAnimation':
@@ -53692,6 +53753,18 @@ var SymbolPalette = /** @class */ (function (_super) {
         this.isMethod = false;
     };
     /**
+     * @private
+     */
+    SymbolPalette.prototype.updateBlazorProperties = function (newProp) {
+        var blazorInterop = 'sfBlazor';
+        var blazor = 'Blazor';
+        if (window && window[blazor]) {
+            var palObj = { palette: newProp.palettes };
+            var obj = { 'methodName': 'UpdateBlazorProperties', 'paletteobj': palObj };
+            window[blazorInterop].updateBlazorProperties(obj, this);
+        }
+    };
+    /**
      * Get the properties to be maintained in the persisted state.
      * @return {string}
      */
@@ -53724,8 +53797,11 @@ var SymbolPalette = /** @class */ (function (_super) {
         }
         this.accordionElement.expanded = function (args) {
             var index = _this.accordionElement.items.indexOf(args.item);
+            var isAllowDatabind = _this.allowServerDataBinding;
+            _this.allowServerDataBinding = false;
             _this.palettes[index].expanded = args.isExpanded;
             _this.palettes[index].isInteraction = true;
+            _this.allowServerDataBinding = isAllowDatabind;
         };
         this.element.appendChild(accordionDiv);
         var measureElement = 'measureElement';
@@ -53796,6 +53872,53 @@ var SymbolPalette = /** @class */ (function (_super) {
             }
             this.element.classList.remove('e-symbolpalette');
         }
+    };
+    /**
+     * Add particular palettes to symbol palette at runtime
+     * @param { PaletteModel } palettes - Defines the collection of palettes to be added
+     * @blazorArgsType palettes|System.Collections.ObjectModel.ObservableCollection<SymbolPalettePalette>
+     */
+    SymbolPalette.prototype.addPalettes = function (palettes) {
+        var palette;
+        for (var i = 0; i < palettes.length; i++) {
+            var isEnableServerDatabind = this.allowServerDataBinding;
+            this.isProtectedOnChange = true;
+            this.allowServerDataBinding = false;
+            palette = new Palette(this, 'palettes', palettes[i], true);
+            this.palettes.push(palette);
+            this.initSymbols(palette);
+            this.allowServerDataBinding = isEnableServerDatabind;
+            this.isProtectedOnChange = false;
+            this.renderPalette(palette);
+        }
+        this.bulkChanges = {};
+        this.accordionElement.refresh();
+    };
+    /**
+     * @private
+     */
+    SymbolPalette.prototype.removePalette = function (paletteId) {
+        for (var i = 0; i < this.palettes.length; i++) {
+            if (this.palettes[i].id === paletteId) {
+                this.palettes.splice(i, 1);
+                this.accordionElement.items.splice(i, 1);
+                break;
+            }
+        }
+    };
+    /**
+     * Add particular palettes to symbol palette at runtime
+     * @param { PaletteModel } palettes - Defines the collection of palettes to be added
+     * @blazorArgsType palettes|string[]
+     */
+    SymbolPalette.prototype.removePalettes = function (palettes) {
+        var isEnableServerDatabind = this.allowServerDataBinding;
+        this.allowServerDataBinding = false;
+        for (var i = 0; i < palettes.length; i++) {
+            this.removePalette(palettes[i]);
+        }
+        this.accordionElement.refresh();
+        this.allowServerDataBinding = isEnableServerDatabind;
     };
     //end region - protected methods
     //region - private methods to render symbols
@@ -53919,12 +54042,18 @@ var SymbolPalette = /** @class */ (function (_super) {
                 // tslint:disable-next-line:no-any 
                 var obj = new (Function.prototype.bind.apply(getObjectType$1(paletteSymbol), param));
                 for (var i_1 = 0; i_1 < Object.keys(paletteSymbol).length; i_1++) {
+                    var isEnableServerDatabind = this.allowServerDataBinding;
+                    this.allowServerDataBinding = false;
                     obj[Object.keys(paletteSymbol)[i_1]] = paletteSymbol[Object.keys(paletteSymbol)[i_1]];
+                    this.allowServerDataBinding = isEnableServerDatabind;
                 }
                 updateDefaultValues(obj, paletteSymbol, obj instanceof Node ? this.nodeDefaults : this.connectorDefaults);
                 symbolPaletteGroup.symbols.push(obj);
                 if (!obj.children) {
+                    var isEnableServerDatabind = this.allowServerDataBinding;
+                    this.allowServerDataBinding = false;
                     this.prepareSymbol(obj);
+                    this.allowServerDataBinding = isEnableServerDatabind;
                 }
                 this.symbolTable[obj.id] = obj;
                 var paletteDiv = document.getElementById(symbolPaletteGroup.id);

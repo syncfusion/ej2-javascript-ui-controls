@@ -1,4 +1,4 @@
-import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, addClass, append, attributes, blazorTemplates, classList, closest, compile, createElement, detach, extend, formatUnit, getElement, getInstance, getRandomId, getUniqueID, getValue, isBlazor, isNullOrUndefined, isUndefined, isVisible, matches, merge, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
+import { Animation, Browser, ChildProperty, Collection, Complex, Component, Draggable, Droppable, Event, EventHandler, KeyboardEvents, L10n, NotifyPropertyChanges, Property, SanitizeHtmlHelper, Touch, addClass, append, attributes, blazorTemplates, classList, closest, compile, createElement, detach, extend, formatUnit, getElement, getInstance, getRandomId, getUniqueID, getValue, isBlazor, isNullOrUndefined, isRippleEnabled, isUndefined, isVisible, matches, merge, remove, removeClass, resetBlazorTemplate, rippleEffect, select, selectAll, setStyleAttribute, setValue, updateBlazorTemplate } from '@syncfusion/ej2-base';
 import { ListBase } from '@syncfusion/ej2-lists';
 import { Popup, calculatePosition, createSpinner, fit, getScrollableParent, getZindexPartial, hideSpinner, isCollide, showSpinner } from '@syncfusion/ej2-popups';
 import { Button, createCheckBox, rippleMouseHandler } from '@syncfusion/ej2-buttons';
@@ -3008,6 +3008,7 @@ var CLS_TBARCENTER = 'e-toolbar-center';
 var CLS_TBARPOS = 'e-tbar-pos';
 var CLS_HSCROLLCNT = 'e-hscroll-content';
 var CLS_VSCROLLCNT = 'e-vscroll-content';
+var CLS_HSCROLLBAR$1 = 'e-hscroll-bar';
 var CLS_POPUPNAV = 'e-hor-nav';
 var CLS_POPUPCLASS = 'e-toolbar-pop';
 var CLS_POPUP = 'e-toolbar-popup';
@@ -4932,6 +4933,9 @@ var Toolbar = /** @__PURE__ @class */ (function (_super) {
                 this.refreshPositioning();
             }
         }
+        if (this.element.querySelector('.' + CLS_HSCROLLBAR$1)) {
+            this.scrollStep = this.element.querySelector('.' + CLS_HSCROLLBAR$1).offsetWidth;
+        }
         this.offsetWid = ele.offsetWidth;
         this.tbResize = false;
         this.separator();
@@ -5337,6 +5341,9 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
         ['aria-disabled', 'aria-multiselectable', 'role', 'data-ripple'].forEach(function (attrb) {
             _this.element.removeAttribute(attrb);
         });
+        if (!this.isNested && isRippleEnabled) {
+            this.removeRippleEffect();
+        }
     };
     Accordion.prototype.preRender = function () {
         var nested = closest(this.element, '.' + CLS_CONTENT);
@@ -5427,7 +5434,7 @@ var Accordion = /** @__PURE__ @class */ (function (_super) {
     Accordion.prototype.wireEvents = function () {
         EventHandler.add(this.element, 'click', this.clickHandler, this);
         if (!this.isNested && !this.isDestroy) {
-            rippleEffect(this.element, { selector: '.' + CLS_HEADER });
+            this.removeRippleEffect = rippleEffect(this.element, { selector: '.' + CLS_HEADER });
         }
         if (!this.isNested) {
             this.keyModule = new KeyboardEvents(this.element, {

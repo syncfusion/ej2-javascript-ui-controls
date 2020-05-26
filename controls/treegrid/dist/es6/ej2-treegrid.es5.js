@@ -1237,6 +1237,9 @@ var SelectionSettings = /** @__PURE__ @class */ (function (_super) {
     __decorate$4([
         Property(false)
     ], SelectionSettings.prototype, "checkboxOnly", void 0);
+    __decorate$4([
+        Property(true)
+    ], SelectionSettings.prototype, "enableToggle", void 0);
     return SelectionSettings;
 }(ChildProperty));
 
@@ -2828,6 +2831,16 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
         }
         this.clipboardModule = this.grid.clipboardModule = new TreeClipboard(this);
     };
+    TreeGrid.prototype.updateSelectionProperty = function () {
+        if (!isBlazor()) {
+            this.selectedRowIndex = this.grid.selectedRowIndex;
+        }
+        else if (isBlazor() && this.isServerRendered) {
+            this.allowServerDataBinding = false;
+            this.setProperties({ selectedRowIndex: this.grid.selectedRowIndex }, true);
+            this.allowServerDataBinding = true;
+        }
+    };
     TreeGrid.prototype.gridRendered = function (args, fn) {
         if (args.id === this.element.id + '_gridcontrol') {
             this.grid = args.grid;
@@ -3065,19 +3078,12 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
             }
         };
         this.grid.rowSelected = function (args) {
-            if (!isBlazor()) {
-                _this.selectedRowIndex = _this.grid.selectedRowIndex;
-            }
-            else if (isBlazor() && _this.isServerRendered) {
-                _this.allowServerDataBinding = false;
-                _this.setProperties({ selectedRowIndex: _this.grid.selectedRowIndex }, true);
-                _this.allowServerDataBinding = true;
-            }
+            _this.updateSelectionProperty();
             treeGrid.notify(rowSelected, args);
             _this.trigger(rowSelected, args);
         };
         this.grid.rowDeselected = function (args) {
-            _this.selectedRowIndex = _this.grid.selectedRowIndex;
+            _this.updateSelectionProperty();
             if (isBlazor()) {
                 var length_1 = 'length';
                 args.data = args.data[args.data[length_1] - 1];
@@ -3512,6 +3518,7 @@ var TreeGrid = /** @__PURE__ @class */ (function (_super) {
      */
     TreeGrid.prototype.autoGenerateColumns = function () {
         if (!this.columns.length && (!this.dataModule.isRemote() && Object.keys(this.dataSource).length)) {
+            this.columns = [];
             var record = void 0;
             // if (this.dataSource instanceof DataManager) {
             //   record = (<DataManager>this.dataSource).dataSource.json[0];

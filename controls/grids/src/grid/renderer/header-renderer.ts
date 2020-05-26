@@ -4,7 +4,7 @@ import { classList } from '@syncfusion/ej2-base';
 import { CellType } from '../base/enum';
 import { IRenderer, IGrid, ICell } from '../base/interface';
 import { RowRenderer } from './row-renderer';
-import { Column } from '../models/column';
+import { Column, ColumnModel } from '../models/column';
 import { Cell } from '../models/cell';
 import { Row } from '../models/row';
 import { ServiceLocator } from '../services/service-locator';
@@ -32,6 +32,7 @@ export class HeaderRender implements IRenderer {
     private lockColsRendered: boolean;
     public freezeReorder: boolean;
     public draggable: Draggable;
+    private isFirstCol: boolean = false;
     private helper: Function = (e: { sender: MouseEvent }) => {
         let gObj: IGrid = this.parent;
         let target: Element = this.draggable.currentStateTarget;
@@ -448,6 +449,7 @@ export class HeaderRender implements IRenderer {
                 this.frzIdx++;
             }
         } else {
+            this.isFirstCol = false;
             let colSpan: number = this.getCellCnt(cols, 0);
             if (colSpan) {
                 let frzObj: { isPartial: boolean, isComp: boolean, cnt: number }
@@ -455,8 +457,10 @@ export class HeaderRender implements IRenderer {
                 let stackedLockColsCount: number = this.getStackedLockColsCount(cols, 0);
                 if (!frzCols && (!this.parent.lockcolPositionCount
                     || (!this.lockColsRendered && stackedLockColsCount) || (this.lockColsRendered && (colSpan - stackedLockColsCount)))
-                    || (frzCols && ((!isMovable && (this.parent.frozenColumns - this.frzIdx > 0 || (frzObj.isPartial)))
-                        || (isMovable && (colSpan + this.frzIdx > this.parent.frozenColumns && !frzObj.isComp))))) {
+                    || (frzCols && ((!isMovable && this.checkFrozenStackHeader(cols.columns, isMovable)
+                        && (this.parent.frozenColumns - this.frzIdx > 0 || (frzObj.isPartial)))
+                        || (isMovable && ((colSpan + this.frzIdx > this.parent.frozenColumns && !frzObj.isComp)
+                            || this.checkFrozenStackHeader(cols.columns, isMovable)))))) {
                     rows[index].cells.push(new Cell<Column>(<{ [x: string]: Object }>{
                         cellType: CellType.StackedHeader, column: cols,
                         colSpan: this.getColSpan(colSpan, isMovable, frzObj.cnt, stackedLockColsCount)
@@ -472,12 +476,33 @@ export class HeaderRender implements IRenderer {
             }
             if (this.lockColsRendered) {
                 for (let i: number = 0, len: number = cols.columns.length; i < len; i++) {
+                    let isFirstCol: boolean = this.isFirstCol = (cols.columns[i] as Column).visible && !this.isFirstCol;
+                    let isLastCol: boolean = i === (len - 1) && !isFirstCol;
                     rows = this.appendCells(
-                        (cols.columns as Column[])[i], rows, index + 1, isFirstObj, i === 0, i === (len - 1) && isLastCol, isMovable);
+                        (cols.columns as Column[])[i], rows, index + 1, isFirstObj, isFirstCol, isLastCol && isLastCol, isMovable);
                 }
             }
         }
         return rows;
+    }
+
+    private checkFrozenStackHeader(cols: Column[] | string[] | ColumnModel[], isMovable: Element): boolean {
+        let isTrue: boolean = false;
+        for (let i: number = 0; i < cols.length; i++) {
+            let col: Column = cols[i] as Column;
+            let colIndex: number = this.parent.getNormalizedColumnIndex(col.uid);
+            if (!col.columns) {
+                if (isMovable && colIndex >= this.parent.getFrozenColumns() && col.visible) {
+                    isTrue = true;
+                    break;
+                }
+                if (!isMovable && colIndex < this.parent.getFrozenColumns() && col.visible) {
+                    isTrue = true;
+                    break;
+                }
+            }
+        }
+        return isTrue;
     }
 
     private getStackedLockColsCount(col: Column, lockColsCount: number): number {

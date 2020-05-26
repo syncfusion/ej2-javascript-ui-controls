@@ -171,7 +171,7 @@ export class StickyNotesAnnotation {
      * @private
      */
     // tslint:disable-next-line
-    public getSettings(annotation : any) : any {
+    public getSettings(annotation: any): any {
         let selector: AnnotationSelectorSettingsModel = this.pdfViewer.annotationSelectorSettings;
         if (annotation.AnnotationSelectorSettings) {
             selector = annotation.AnnotationSelectorSettings;
@@ -207,7 +207,7 @@ export class StickyNotesAnnotation {
                 commentsDivid = proxy.addComments('sticky', pageIndex + 1);
                 document.getElementById(commentsDivid).id = annotationName;
                 // tslint:disable-next-line
-                let annotationSelectorSettings: any = this.pdfViewer.stickyNotesSettings.annotationSelectorSettings ? this.pdfViewer.stickyNotesSettings.annotationSelectorSettings: this.pdfViewer.annotationSelectorSettings;
+                let annotationSelectorSettings: any = this.pdfViewer.stickyNotesSettings.annotationSelectorSettings ? this.pdfViewer.stickyNotesSettings.annotationSelectorSettings : this.pdfViewer.annotationSelectorSettings;
                 annot = {
                     // tslint:disable-next-line:max-line-length
                     bounds: { x: X, y: Y, width: width, height: height }, pageIndex: pageIndex, data: image.src, modifiedDate: date.toLocaleString(),
@@ -235,7 +235,7 @@ export class StickyNotesAnnotation {
                     // tslint:disable-next-line:max-line-length
                     bounds: { left: X, top: Y, width: width, height: height }, review: { state: '', stateModel: '', modifiedDate: '', author: author },
                     annotationSelectorSettings: annotationSelectorSettings,
-                    customData: this.pdfViewer.stickyNotesSettings.customData, annotationSettings: { isLock: isLock}
+                    customData: this.pdfViewer.stickyNotesSettings.customData, annotationSettings: { isLock: isLock }
                 };
             }
             if (!annotation) {
@@ -333,7 +333,7 @@ export class StickyNotesAnnotation {
                             annotationCollections = proxy.updateAnnotationsInDocumentCollections(proxy.pdfViewerBase.annotationComments, proxy.pdfViewerBase.documentAnnotationCollections);
                         } else {
                             // tslint:disable-next-line
-                            let newCollection : any = proxy.pdfViewerBase.createAnnotationsCollection();
+                            let newCollection: any = proxy.pdfViewerBase.createAnnotationsCollection();
                             // tslint:disable-next-line:max-line-length
                             annotationCollections = proxy.updateAnnotationsInDocumentCollections(proxy.pdfViewerBase.annotationComments, newCollection);
                         }
@@ -1271,6 +1271,7 @@ export class StickyNotesAnnotation {
         let moreOptionsButton: HTMLElement = createElement('button', { id: this.pdfViewer.element.id + '_more-options', className: 'e-pv-more-options-button e-btn', attrs: { 'tabindex': '-1' } });
         moreOptionsButton.style.visibility = 'hidden';
         moreOptionsButton.style.zIndex = '1001';
+        moreOptionsButton.setAttribute('type', 'button');
         // tslint:disable-next-line:max-line-length
         let moreOptionsButtonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_more-options_icon', className: 'e-pv-more-icon e-pv-icon' });
         moreOptionsButton.appendChild(moreOptionsButtonSpan);
@@ -1308,6 +1309,7 @@ export class StickyNotesAnnotation {
         let moreButton: HTMLElement = createElement('button', { id: this.pdfViewer.element.id + '_more-options', className: 'e-pv-more-options-button e-btn', attrs: { 'tabindex': '-1' } });
         moreButton.style.visibility = 'hidden';
         moreButton.style.zIndex = '1001';
+        moreButton.setAttribute('type', 'button');
         // tslint:disable-next-line:max-line-length
         let moreButtonSpan: HTMLElement = createElement('span', { id: this.pdfViewer.element.id + '_more-options_icon', className: 'e-pv-more-icon e-pv-icon' });
         moreButton.appendChild(moreButtonSpan);
@@ -2458,6 +2460,7 @@ export class StickyNotesAnnotation {
             for (let i: number = 0; i < pageAnnotations.length; i++) {
                 if (annotationBase.annotName === pageAnnotations[i].annotName) {
                     pageAnnotations[i] = annotationBase;
+                    this.pdfViewer.annotationModule.storeAnnotationCollections(pageAnnotations[i], pageNumber);
                     if (action) {
                         pageAnnotations.splice(i, 1);
                         this.deleteStickyNotesAnnotations(pageAnnotations, pageNumber);
@@ -2887,7 +2890,7 @@ export class StickyNotesAnnotation {
             bounds: { left: annotation.Bounds.X, top: annotation.Bounds.Y, width: annotation.Bounds.Width, height: annotation.Bounds.Height, right: annotation.Bounds.Right, bottom: annotation.Bounds.Bottom },
             annotName: annotation.AnnotName, color: annotation.color,
             annotationSelectorSettings: this.getSettings(annotation),
-            customData: this.pdfViewer.annotation.getCustomData(annotation), annotationSettings: { isLock : isLock}
+            customData: this.pdfViewer.annotation.getCustomData(annotation), annotationSettings: { isLock: isLock }
         };
         this.pdfViewer.annotationModule.storeAnnotations(pageNumber, annotationObject, '_annotations_sticky');
     }
@@ -2912,7 +2915,7 @@ export class StickyNotesAnnotation {
             // tslint:disable-next-line:max-line-length
             bounds: { left: annotation.Bounds.X, top: annotation.Bounds.Y, width: annotation.Bounds.Width, height: annotation.Bounds.Height, right: annotation.Bounds.Right, bottom: annotation.Bounds.Bottom },
             annotationId: annotation.AnnotName, color: annotation.color, pageNumber: pageNumber,
-            customData: this.pdfViewer.annotation.getCustomData(annotation), annotationSettings : {isLock: isLock}
+            customData: this.pdfViewer.annotation.getCustomData(annotation), annotationSettings: { isLock: isLock }
         };
         return annotationObject;
     }

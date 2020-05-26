@@ -2071,8 +2071,11 @@ export let cloneSelectedObjects: Function = (diagram: Diagram): object => {
     let nodes: NodeModel[] = diagram.selectedItems.nodes;
     let connectors: ConnectorModel[] = diagram.selectedItems.connectors;
     diagram.protectPropertyChange(true);
+    let isEnableServerDatabind: boolean = diagram.allowServerDataBinding;
+    diagram.allowServerDataBinding = false;
     diagram.selectedItems.nodes = [];
     diagram.selectedItems.connectors = [];
+    diagram.allowServerDataBinding = isEnableServerDatabind;
     diagram.protectPropertyChange(false);
     let clonedSelectedItems: object = cloneObject(diagram.selectedItems);
     for (let i: number = 0; i < nodes.length; i++) {

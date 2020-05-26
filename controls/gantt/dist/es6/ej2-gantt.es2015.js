@@ -7154,7 +7154,7 @@ class ChartRows {
             tr.replaceChild(this.getGanttChartRow(index, data).childNodes[0], tr.childNodes[0]);
             this.triggerQueryTaskbarInfoByIndex(tr, data);
             /* tslint:disable-next-line */
-            let dataId = this.parent.viewType === 'ProjectView' ? parseInt(data.ganttProperties.rowUniqueID) : data.ganttProperties.rowUniqueID;
+            let dataId = this.parent.viewType === 'ProjectView' ? data.ganttProperties.taskId : data.ganttProperties.rowUniqueID;
             this.parent.treeGrid.grid.setRowData(dataId, data);
             let row = this.parent.treeGrid.grid.getRowObjectFromUID(this.parent.treeGrid.grid.getDataRows()[index].getAttribute('data-uid'));
             row.data = data;
@@ -17435,7 +17435,7 @@ class Edit$2 {
             }
             if (isRefreshGrid) {
                 /* tslint:disable-next-line */
-                let dataId = this.parent.viewType === 'ProjectView' ? parseInt(originalData.ganttProperties.rowUniqueID) : originalData.ganttProperties.rowUniqueID;
+                let dataId = this.parent.viewType === 'ProjectView' ? originalData.ganttProperties.taskId : originalData.ganttProperties.rowUniqueID;
                 this.parent.treeGrid.grid.setRowData(dataId, originalData);
                 let row = this.parent.treeGrid.grid.getRowObjectFromUID(this.parent.treeGrid.grid.getDataRows()[rowIndex].getAttribute('data-uid'));
                 row.data = originalData;
@@ -17582,7 +17582,8 @@ class Edit$2 {
                         changedRecords: isBlazor() ? modifiedTaskData : eventArgs.modifiedTaskData
                     };
                     /* tslint:disable-next-line */
-                    let crud = data.saveChanges(updatedData, this.parent.taskFields.id, null, new Query());
+                    let query = this.parent.query instanceof Query ? this.parent.query : new Query();
+                    let crud = data.saveChanges(updatedData, this.parent.taskFields.id, null, query);
                     crud.then((e) => this.dmSuccess(e, args))
                         .catch((e) => this.dmFailure(e, args));
                 }
@@ -18634,7 +18635,8 @@ class Edit$2 {
                             changedRecords: args.modifiedTaskData
                         };
                         /* tslint:disable-next-line */
-                        let crud = data.saveChanges(updatedData, this.parent.taskFields.id, null, new Query());
+                        let query = this.parent.query instanceof Query ? this.parent.query : new Query();
+                        let crud = data.saveChanges(updatedData, this.parent.taskFields.id, null, query);
                         crud.then((e) => {
                             if (this.parent.taskFields.id && !isNullOrUndefined(e.addedRecords[0][this.parent.taskFields.id]) &&
                                 e.addedRecords[0][this.parent.taskFields.id] !== args.data.ganttProperties.rowUniqueID) {
@@ -19618,6 +19620,7 @@ class Sort$1 {
 class Selection$1 {
     constructor(gantt) {
         this.isSelectionFromChart = false;
+        this.multipleIndexes = [];
         this.selectedRowIndexes = [];
         this.enableSelectMultiTouch = false;
         this.openPopup = false;
@@ -19690,7 +19693,7 @@ class Selection$1 {
             args[rowIndexes] : [args.rowIndex];
         this.addClass(index);
         this.selectedRowIndexes = extend([], this.getSelectedRowIndexes(), [], true);
-        this.parent.setProperties({ selectedRowIndex: this.parent.treeGrid.selectedRowIndex }, true);
+        this.parent.setProperties({ selectedRowIndex: this.parent.treeGrid.grid.selectedRowIndex }, true);
         if (this.isMultiShiftRequest) {
             this.selectedRowIndexes = index;
         }
@@ -19710,11 +19713,20 @@ class Selection$1 {
     rowDeselecting(args) {
         args.target = this.actualTarget;
         args.isInteracted = this.isInteracted;
+        if (isBlazor() && this.parent.selectionSettings.type === 'Multiple') {
+            this.multipleIndexes = extend([], args.rowIndex, [], true);
+        }
         this.parent.trigger('rowDeselecting', args);
     }
     rowDeselected(args) {
         let rowIndexes = 'rowIndexes';
-        let index = args[rowIndexes] || args.rowIndex;
+        let index = [];
+        if (this.multipleIndexes.length !== 0) {
+            index = this.multipleIndexes;
+        }
+        else {
+            index = args[rowIndexes] || args.rowIndex;
+        }
         this.removeClass(index);
         this.selectedRowIndexes = extend([], this.getSelectedRowIndexes(), [], true);
         this.parent.setProperties({ selectedRowIndex: -1 }, true);
@@ -19729,6 +19741,7 @@ class Selection$1 {
         args.isInteracted = this.isInteracted;
         this.parent.trigger('rowDeselected', args);
         this.isInteracted = false;
+        this.multipleIndexes = [];
     }
     cellSelecting(args) {
         let callBackPromise = new Deferred();

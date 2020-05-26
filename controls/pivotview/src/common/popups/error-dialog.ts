@@ -33,8 +33,9 @@ export class ErrorDialog {
         });
         this.parent.element.appendChild(errorDialog);
         let zIndex: number = target ? Number(target.style.zIndex) + 1 : (this.parent.moduleName === 'pivotfieldlist' &&
-            this.parent.renderMode === 'Popup' && this.parent.control ?
-            (this.parent.control as PivotFieldList).dialogRenderer.fieldListDialog.zIndex + 1 : 1000001);
+            this.parent.renderMode === 'Popup' && this.parent.control ? (this.parent.control as PivotFieldList).dialogRenderer.fieldListDialog.zIndex + 1 :
+            (this.parent.moduleName === 'pivotfieldlist' && this.parent.renderMode === 'Fixed' && this.parent.control ? 1000002 :
+            (this.parent.moduleName === 'pivotview' && this.parent.control ? 1000002 : 1000001)));
         this.errorPopUp = new Dialog({
             animationSettings: { effect: 'Fade' },
             allowDragging: false,

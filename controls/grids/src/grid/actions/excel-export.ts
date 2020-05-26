@@ -146,8 +146,10 @@ export class ExcelExport {
 
     /* tslint:disable-next-line:no-any */
     private processRecords(gObj: IGrid, exportProperties: ExcelExportProperties, isMultipleExport: boolean, workbook: any): Promise<any> {
-        if (!isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.dataSource) &&
-            exportProperties.dataSource instanceof DataManager) {
+        if (!isNullOrUndefined(exportProperties) && !isNullOrUndefined(exportProperties.dataSource)) {
+            if (!(exportProperties.dataSource instanceof DataManager)) {
+                exportProperties.dataSource = new DataManager(exportProperties.dataSource);
+            }
             return new Promise((resolve: Function, reject: Function) => {
                 let dataManager: Promise<Object> = (exportProperties.dataSource as DataManager).executeQuery(new Query());
                 dataManager.then((r: ReturnType) => {

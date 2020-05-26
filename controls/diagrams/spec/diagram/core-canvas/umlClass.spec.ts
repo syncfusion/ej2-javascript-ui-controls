@@ -32,6 +32,7 @@ describe('Diagram Control', () => {
                 offsetX: 100,
                 offsetY: 100, style: {
                     fill: '#26A0DA',
+                    strokeColor: 'green',
                 }, borderColor: 'white'
                 ,
                 shape: {
@@ -43,10 +44,10 @@ describe('Diagram Control', () => {
                             { name: 'prescription', type: 'String[*]', scope: 'Protected' },
                             { name: 'allergies', type: 'String[*]', scope: 'Public' }
                         ], methods: [
-                            { scope: 'Package', isSeparator: true, style: {}, parameters: [{ name: 'Date', style: {} }], type: 'History' },
-                            { name: 'getHistory', scope: 'Private', style: {}, parameters: [{ name: 'Date', style: {} }], type: 'History' },
-                            { name: 'getHistory', scope: 'Protected', style: {}, parameters: [{ name: 'Date', style: {} }], type: 'History' },
-                            { name: 'getHistory', scope: 'Public', style: {}, parameters: [{ name: 'Date', style: {} }], type: 'History' }
+                            { scope: 'Package', isSeparator: true, style: { strokeColor: 'green',}, parameters: [{ name: 'Date', style: { strokeColor: 'green',} }], type: 'History' },
+                            { name: 'getHistory', scope: 'Private', style: { strokeColor: 'green',}, parameters: [{ name: 'Date', style: { strokeColor: 'green',} }], type: 'History' },
+                            { name: 'getHistory', scope: 'Protected', style: { strokeColor: 'green',}, parameters: [{ name: 'Date', style: { strokeColor: 'green',} }], type: 'History' },
+                            { name: 'getHistory', scope: 'Public', style: { strokeColor: 'green',}, parameters: [{ name: 'Date', style: { strokeColor: 'green',} }], type: 'History' }
                         ],
                         name: 'Patient'
                     },
@@ -66,7 +67,7 @@ describe('Diagram Control', () => {
                     classShape: {
                         attributes: [], methods: [{
                             name: 'getHistory',
-                            style: {}, parameters: [{ name: 'Date', style: {} }], type: 'History'
+                            style: { strokeColor: 'green',}, parameters: [{ name: 'Date', style: { strokeColor: 'green',} }], type: 'History'
                         }],
                         name: 'Patient'
                     },
@@ -139,7 +140,7 @@ describe('Diagram Control', () => {
                             parameters: [{
                                 name: "amount",
                                 type: "Dollars",
-                                style: {}
+                                style: { strokeColor: 'green',}
                             }],
                         }]
                     }
@@ -167,7 +168,7 @@ describe('Diagram Control', () => {
                             parameters: [{
                                 name: "amount",
                                 type: "Dollars",
-                                style: {}
+                                style: { strokeColor: 'green',}
                             }],
                         }]
                     },
@@ -454,7 +455,7 @@ describe('Diagram Control', () => {
                             { name: 'prescription', type: 'String[*]', scope: 'Protected' },
                             { name: 'allergies', type: 'String[*]', scope: 'Public' }
                         ], methods: [
-                            { scope: 'Package', isSeparator: true, style: {}, parameters: [{ name: 'Date', style: {} }], type: 'History' },
+                            { scope: 'Package', isSeparator: true, style: { strokeColor: 'green',}, parameters: [{ name: 'Date', style: { strokeColor: 'green',} }], type: 'History' },
                         ],
                         name: 'Patient'
                     },
@@ -514,7 +515,7 @@ describe('Diagram Control', () => {
                             { name: 'prescription', type: 'String[*]', scope: 'Protected' },
                             { name: 'allergies', type: 'String[*]', scope: 'Public' }
                         ], methods: [
-                            { scope: 'Package', isSeparator: true, style: {}, parameters: [{ name: 'Date', style: {} }], type: 'History' },
+                            { scope: 'Package', isSeparator: true, style: { strokeColor: 'green',}, parameters: [{ name: 'Date', style: { strokeColor: 'green',} }], type: 'History' },
                         ],
                         name: 'Patient'
                     },
@@ -540,7 +541,7 @@ describe('Diagram Control', () => {
                             { name: 'prescription', type: 'String[*]', scope: 'Protected' },
                             { name: 'allergies', type: 'String[*]', scope: 'Public' }
                         ], methods: [
-                            { scope: 'Package', isSeparator: true, style: {}, parameters: [{ name: 'Date', style: {} }], type: 'History' },
+                            { scope: 'Package', isSeparator: true, style: { strokeColor: 'green',}, parameters: [{ name: 'Date', style: { strokeColor: 'green',} }], type: 'History' },
                         ],
                         name: 'Patient'
                     },

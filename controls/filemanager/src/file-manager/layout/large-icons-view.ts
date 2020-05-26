@@ -635,6 +635,7 @@ export class LargeIconsView {
                     if (currentSelected.length) {
                         this.selectItems(currentSelected);
                     }
+                    this.parent.setProperties({ selectedItems: this.parent.selectedItems }, true);
                     this.isInteraction = true;
                     this.isInteracted = true;
                     break;
@@ -1231,6 +1232,7 @@ export class LargeIconsView {
         if (!isNOU(nextItem)) {
             if (!nextItem.classList.contains(CLS.ACTIVE)) {
                 this.parent.selectedItems.push(this.getDataName(nextItem));
+                this.parent.setProperties({ selectedItems: this.parent.selectedItems }, true);
                 addClass([nextItem], [CLS.ACTIVE]);
                 nextItem.setAttribute('aria-selected', 'true');
                 this.checkState(nextItem, true);
@@ -1251,6 +1253,7 @@ export class LargeIconsView {
             let index: number = this.parent.selectedItems.indexOf(this.getDataName(preItem));
             if (index > -1) {
                 this.parent.selectedItems.splice(index, 1);
+                this.parent.setProperties({ selectedItems: this.parent.selectedItems }, true);
             }
             this.parent.visitedItem = null;
         }
